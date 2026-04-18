@@ -159,7 +159,12 @@ setMethod(
         rownames(matrix_data) <- theObject@lipid_data[[1]]$Name
         data_matrix <- matrix_data
         message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
-        contrasts_results <- runTestsContrasts(
+        run_tests_contrasts_fn <- get0("runTestsContrasts", envir = .GlobalEnv, inherits = FALSE)
+        if (!is.function(run_tests_contrasts_fn)) {
+            run_tests_contrasts_fn <- runTestsContrasts
+        }
+
+        contrasts_results <- run_tests_contrasts_fn(
             data_matrix,
             contrast_strings = contrasts_tbl$contrasts,
             design_matrix = theObject@design_matrix,
@@ -210,4 +215,3 @@ setMethod(
         return(result_object)
     }
 )
-

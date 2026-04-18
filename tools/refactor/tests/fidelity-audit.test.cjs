@@ -374,6 +374,30 @@ entries:
   return { baselineRoot, targetRoot };
 }
 
+function makeManifestSourceGapPair() {
+  const baselineRoot = makeSandbox('fidelity-manifest-source-gap-baseline-');
+  const targetRoot = makeSandbox('fidelity-manifest-source-gap-target-');
+
+  writeFile(path.join(baselineRoot, 'R', 'source_gap.R'), `otherHelper <- function(x) {
+  x
+}
+`);
+  writeFile(path.join(targetRoot, 'R', 'target_gap.R'), `gapHelper <- function(x) {
+  x
+}
+`);
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'manifest-source-gap.yml'), `version: 1
+entries:
+  - id: source_gap
+    source: R/source_gap.R
+    selector: { kind: symbol, value: gapHelper }
+    target: R/target_gap.R
+    group: fidelity.source_gap
+`);
+
+  return { baselineRoot, targetRoot };
+}
+
 function makeBehaviorComparisonPair() {
   const baselineRoot = makeSandbox('fidelity-behavior-baseline-');
   const targetRoot = makeSandbox('fidelity-behavior-target-');
@@ -892,6 +916,57 @@ serialTest('manifest command catalogs entries, classifies fidelity tiers, and em
   assert.match(summaryMarkdown, /Manifest entries: `7`/);
   assert.match(summaryMarkdown, /`normalized_only`: `1`/);
   assert.match(summaryMarkdown, /`manual_merge_expected`: `1`/);
+});
+
+serialTest('manifest command records source lineage gaps instead of aborting when baseline selectors no longer resolve', () => {
+  const { baselineRoot, targetRoot } = makeManifestSourceGapPair();
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'manifest',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot,
+    '--manifest-path',
+    'tools/refactor/manifest-source-gap.yml'
+  ]);
+
+  assert.equal(summary.mode, 'manifest');
+  assert.equal(summary.status, 'completed');
+  assert.equal(summary.entry_count, 1);
+  assert.equal(summary.exception_count, 1);
+  assert.equal(summary.status_counts.source_missing, 1);
+  assert.equal(summary.resolver_counts.source_missing, 1);
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const comparisonRows = querySqlite(
+    auditDb,
+    'select entry_id, status, target_resolver from manifest_entries join manifest_comparisons using (manifest_entry_id)'
+  );
+  assert.deepEqual(comparisonRows, [[
+    'source_gap',
+    'source_missing',
+    'source_missing'
+  ]]);
+
+  const exceptionRows = querySqlite(
+    auditDb,
+    'select exception_type, severity, reason from exceptions order by exception_type'
+  );
+  assert.deepEqual(exceptionRows, [[
+    'source_lineage_gap',
+    'high',
+    'Baseline/source block could not be resolved via `selector:symbol`: Selector did not match any block for entry source_gap'
+  ]]);
+
+  const latestExceptions = JSON.parse(fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-exceptions.json'),
+    'utf8'
+  ));
+  assert.equal(latestExceptions.summary.open_count, 1);
+  assert.equal(latestExceptions.exceptions[0].exception_type, 'source_lineage_gap');
 });
 
 serialTest('behavior command catalogs replay cases, records parity tiers, and emits behavior exceptions', () => {

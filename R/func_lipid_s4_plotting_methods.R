@@ -121,7 +121,12 @@ setMethod(
             # Call the helper function
             tryCatch(
                 {
-                    plotPcaHelper(
+                    plot_pca_helper_fn <- get0("plotPcaHelper", envir = .GlobalEnv, inherits = FALSE)
+                    if (!is.function(plot_pca_helper_fn)) {
+                        plot_pca_helper_fn <- plotPcaHelper
+                    }
+
+                    plot_pca_helper_fn(
                         data = frozen_lipid_matrix_pca_final,
                         design_matrix = design_matrix_filtered_final,
                         sample_id_column = sample_id_col_name,
@@ -286,7 +291,12 @@ setMethod(
             # Call the helper function
             tryCatch(
                 {
-                    plotRleHelper(
+                    plot_rle_helper_fn <- get0("plotRleHelper", envir = .GlobalEnv, inherits = FALSE)
+                    if (!is.function(plot_rle_helper_fn)) {
+                        plot_rle_helper_fn <- plotRleHelper
+                    }
+
+                    plot_rle_helper_fn(
                         Y = t(frozen_lipid_matrix), # Helper expects samples in rows
                         rowinfo = rowinfo_vector,
                         yaxis_limit = yaxis_limit
@@ -633,4 +643,3 @@ setMethod(
         return(density_plots_list)
     }
 )
-

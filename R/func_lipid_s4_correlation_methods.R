@@ -145,6 +145,17 @@ setMethod(
                 dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
             # ---------------------------------------------------- #
 
+            replicate_group_sizes <- table(design_subset[[replicate_group_column_name]])
+            if (any(replicate_group_sizes > 1L)) {
+                warning(
+                    sprintf(
+                        "many-to-many relationship detected while pairing samples by `%s`",
+                        replicate_group_column_name
+                    ),
+                    call. = FALSE
+                )
+            }
+
 
             # --- Calculate Correlations Directly --- #
 

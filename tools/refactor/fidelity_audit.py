@@ -5,6 +5,7 @@ import argparse
 import ast
 import io
 import json
+import os
 import pathlib
 import re
 import sqlite3
@@ -1386,11 +1387,45 @@ def load_testing_matrix_entries() -> list[dict]:
     return [entry for entry in ensure_list(payload.get("testing_matrix")) if isinstance(entry, dict)]
 
 
+def dedupe_paths(paths: list[str]) -> list[str]:
+    seen: set[str] = set()
+    unique: list[str] = []
+    for path in paths:
+        if not path or path in seen:
+            continue
+        seen.add(path)
+        unique.append(path)
+    return unique
+
+
+def discover_project_library_paths(project_root: pathlib.Path) -> list[str]:
+    library_root = project_root / "renv" / "library"
+    if not library_root.exists():
+        return []
+    return dedupe_paths(
+        [
+            str(candidate)
+            for candidate in sorted(library_root.glob("*/*/*"))
+            if candidate.is_dir()
+        ]
+    )
+
+
+def merge_env_paths(preferred: list[str], *existing_values: str | None) -> str:
+    merged = list(preferred)
+    for value in existing_values:
+        if not value:
+            continue
+        merged.extend(segment for segment in value.split(os.pathsep) if segment)
+    return os.pathsep.join(dedupe_paths(merged))
+
+
 def run_contract_test_file(
     target_root: pathlib.Path,
     file_path: pathlib.Path,
     *,
     load_package: bool,
+    library_paths: list[str] | None = None,
 ) -> dict:
     script_path = SCRIPT_DIR / "fidelity_contract_runner.R"
     command = [
@@ -1404,11 +1439,22 @@ def run_contract_test_file(
     ]
     if load_package:
         command.append("--load-package")
+    env = os.environ.copy()
+    if library_paths:
+        merged_paths = merge_env_paths(
+            library_paths,
+            env.get("R_LIBS"),
+            env.get("R_LIBS_USER"),
+            env.get("R_LIBS_SITE"),
+        )
+        env["R_LIBS"] = merged_paths
+        env["R_LIBS_USER"] = merged_paths
     completed = subprocess.run(
         command,
         capture_output=True,
         text=True,
         check=False,
+        env=env,
     )
     if completed.returncode != 0:
         message = completed.stderr.strip() or completed.stdout.strip() or "contract runner failed"
@@ -2044,6 +2090,9 @@ def manifest_exception_severity(exception_type: str) -> str:
         "missing_target_block": "high",
         "selector_ambiguous": "high",
         "semantic_mismatch": "high",
+        "source_lineage_gap": "high",
+        "source_selector_ambiguous": "high",
+        "source_resolution_failure": "high",
         "manual_merge_expected": "medium",
         "ast_only_drift": "medium",
         "target_resolution_asymmetry": "low",
@@ -2054,8 +2103,27 @@ def manifest_exception_severity(exception_type: str) -> str:
 
 def manifest_exception_reason(comparison: dict) -> str:
     status = comparison["status"]
+    baseline_resolver = comparison.get("baseline_source_resolver") or "unresolved"
     target_resolver = comparison.get("target_resolver") or "unresolved"
     note = comparison.get("note")
+    if status == "source_missing":
+        return (
+            f"Baseline/source block could not be resolved via `{baseline_resolver}`."
+            if not note
+            else f"Baseline/source block could not be resolved via `{baseline_resolver}`: {note}"
+        )
+    if status == "source_ambiguous":
+        return (
+            f"Baseline/source selector was ambiguous via `{baseline_resolver}`."
+            if not note
+            else f"Baseline/source selector was ambiguous via `{baseline_resolver}`: {note}"
+        )
+    if status == "source_unresolved":
+        return (
+            f"Baseline/source resolution failed via `{baseline_resolver}`."
+            if not note
+            else f"Baseline/source resolution failed via `{baseline_resolver}`: {note}"
+        )
     if status == "manual_merge_expected":
         return "Manifest entry is marked manual_merge and requires curated reconciliation."
     if status == "content_missing":
@@ -2104,6 +2172,7 @@ def build_manifest_exception(
         "evidence_json": json.dumps(
             {
                 "status": comparison["status"],
+                "baseline_source_resolver": comparison.get("baseline_source_resolver"),
                 "target_resolver": comparison.get("target_resolver"),
                 "source_path": comparison.get("source_path"),
                 "target_path": comparison.get("target_path"),
@@ -3526,6 +3595,10 @@ def contracts_command(args: argparse.Namespace) -> int:
     try:
         matrix_entries = load_testing_matrix_entries()
         contract_files = catalog_contract_files(target_source["path"], args.test_file)
+        library_paths = dedupe_paths(
+            discover_project_library_paths(repo_root) +
+            discover_project_library_paths(target_source["path"])
+        )
         contract_results: list[dict] = []
         if args.execute:
             for file_record in contract_files:
@@ -3533,6 +3606,7 @@ def contracts_command(args: argparse.Namespace) -> int:
                     target_source["path"],
                     file_record["absolute_path"],
                     load_package=bool(args.load_package),
+                    library_paths=library_paths,
                 )
                 contract_results.append(
                     {

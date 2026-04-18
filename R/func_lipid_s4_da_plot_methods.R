@@ -10,7 +10,12 @@ setMethod(
                 ## Count the number of up or down significant differentially expressed lipids.
                 # The contrasts_results_table is already a list of data frames (one per contrast)
                 # So we don't need to wrap it in another list
-                num_sig_de_molecules_first_go <- printCountDaGenesTable(
+                count_da_genes_fn <- get0("printCountDaGenesTable", envir = .GlobalEnv, inherits = FALSE)
+                if (!is.function(count_da_genes_fn)) {
+                    count_da_genes_fn <- printCountDaGenesTable
+                }
+
+                num_sig_de_molecules_first_go <- count_da_genes_fn(
                     list_of_da_tables = object@contrasts_results_table,
                     list_of_descriptions = names(object@contrasts_results_table),
                     formula_string = NA
@@ -71,7 +76,12 @@ setMethod(
                     group_by(comparison, title) |>
                     nest() |>
                     mutate(plot = purrr::map2(data, title, \(x, y) {
-                        plotOneVolcanoNoVerticalLines(x,
+                        volcano_plot_fn <- get0("plotOneVolcanoNoVerticalLines", envir = .GlobalEnv, inherits = FALSE)
+                        if (!is.function(volcano_plot_fn)) {
+                            volcano_plot_fn <- plotOneVolcanoNoVerticalLines
+                        }
+
+                        volcano_plot_fn(x,
                             paste0(idx, " - ", y),
                             log_q_value_column = "lqm",
                             log_fc_column = log2fc_column

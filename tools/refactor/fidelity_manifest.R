@@ -547,8 +547,80 @@ manifest_entry_catalog <- function(entry) {
   )
 }
 
+classify_source_resolution_failure <- function(note) {
+  normalized_note <- note %||% "source resolution failed"
+
+  if (grepl("^Selector matched [0-9]+ blocks", normalized_note)) {
+    return(list(
+      status = "source_ambiguous",
+      exception_candidate = "source_selector_ambiguous",
+      target_resolver = "source_ambiguous"
+    ))
+  }
+
+  if (
+    grepl("^Selector did not match any block", normalized_note) ||
+      grepl("^Anchor (start|end) did not match", normalized_note) ||
+      grepl("^Source file does not exist", normalized_note)
+  ) {
+    return(list(
+      status = "source_missing",
+      exception_candidate = "source_lineage_gap",
+      target_resolver = "source_missing"
+    ))
+  }
+
+  list(
+    status = "source_unresolved",
+    exception_candidate = "source_resolution_failure",
+    target_resolver = "source_unresolved"
+  )
+}
+
+build_source_failure_comparison <- function(entry, note, baseline_source_resolver) {
+  failure <- classify_source_resolution_failure(note)
+  c(
+    manifest_entry_catalog(entry),
+    list(
+      baseline_source_resolver = baseline_source_resolver %||% NA_character_,
+      target_resolver = failure$target_resolver,
+      raw_exact = FALSE,
+      normalized_text_exact = FALSE,
+      ast_exact = FALSE,
+      hash_raw_baseline = NA_character_,
+      hash_raw_target = NA_character_,
+      hash_normalized_baseline = NA_character_,
+      hash_normalized_target = NA_character_,
+      hash_ast_baseline = NA_character_,
+      hash_ast_target = NA_character_,
+      status = failure$status,
+      exception_candidate = failure$exception_candidate,
+      note = note %||% "source resolution failed",
+      source_start_line = NA_integer_,
+      source_end_line = NA_integer_,
+      target_start_line = NA_integer_,
+      target_end_line = NA_integer_
+    )
+  )
+}
+
 compare_manifest_entry <- function(entry, baseline_root, target_root, baseline_cache, target_cache) {
-  source_result <- resolve_entry(entry, baseline_root, baseline_cache)
+  baseline_source_resolver <- paste0("selector:", entry$selector$kind %||% "unknown")
+  source_result <- tryCatch(
+    resolve_entry(entry, baseline_root, baseline_cache),
+    error = function(e) e
+  )
+  if (inherits(source_result, "error")) {
+    return(list(
+      baseline_cache = baseline_cache,
+      target_cache = target_cache,
+      comparison = build_source_failure_comparison(
+        entry,
+        conditionMessage(source_result),
+        baseline_source_resolver
+      )
+    ))
+  }
   baseline_cache <- source_result$cache
   source_block <- augment_block_fidelity(source_result$block)
   target_result <- resolve_target_block(entry, source_block, target_root, target_cache)
@@ -562,7 +634,7 @@ compare_manifest_entry <- function(entry, baseline_root, target_root, baseline_c
     comparison = c(
       manifest_entry_catalog(entry),
       list(
-        baseline_source_resolver = paste0("selector:", entry$selector$kind),
+        baseline_source_resolver = baseline_source_resolver,
         target_resolver = target_result$target_resolver %||% NA_character_,
         raw_exact = classification$raw_exact,
         normalized_text_exact = classification$normalized_text_exact,
