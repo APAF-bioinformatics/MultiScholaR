@@ -1,0 +1,40 @@
+version: 1
+wave: wave2_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_da_results_observer_setup
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: setupProtEnrichDaResultsObserverRegistration }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration_setup
+    note: Second staged enrichment wrapper wave moves the adjacent observer and output registration helpers without rewriting live sources.
+
+  - id: mod_prot_enrich_selected_contrast_observer_setup
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: setupProtEnrichSelectedContrastObserverRegistration }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration_setup
+
+  - id: mod_prot_enrich_contrasts_display_output_setup
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: setupProtEnrichContrastsDisplayOutputRegistration }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration_setup
+
+  - id: mod_prot_enrich_status_output_setup
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: setupProtEnrichStatusOutputRegistration }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.registration_setup

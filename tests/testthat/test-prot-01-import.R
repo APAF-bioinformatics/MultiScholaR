@@ -5,6 +5,11 @@ test_that("raw import snapshot is valid", {
   cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp01_raw_imported.rds")
   
   if (file.exists(cp_file)) {
+    first_line <- tryCatch(readLines(cp_file, n = 1, warn = FALSE), error = function(e) "")
+    if (length(first_line) > 0 && identical(first_line[[1]], "version https://git-lfs.github.com/spec/v1")) {
+      skip("Snapshot cp01 is a Git LFS pointer and the binary artifact is not present")
+    }
+
     result <- readRDS(cp_file)
     expect_type(result, "list")
     expect_true("data" %in% names(result))

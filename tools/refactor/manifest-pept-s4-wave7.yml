@@ -1,0 +1,22 @@
+version: 1
+wave: wave7_proteomics_peptide_s4_accession_method
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_pept_s4_accession_methods.R
+
+entries:
+  - id: pept_s4_accession_method_choose_best_protein_accession
+    source: R/func_pept_s4_objects.R
+    selector: { kind: setMethod, value: chooseBestProteinAccession }
+    target: R/func_pept_s4_accession_methods.R
+    group: proteomics.peptide.s4.accession.methods
+    note: Seventh staged peptide S4 wave moves the exact chooseBestProteinAccession PeptideQuantitativeData method block into a dedicated peptide accession helper without rewriting live sources.

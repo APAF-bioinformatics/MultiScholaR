@@ -1,0 +1,64 @@
+version: 1
+wave: wave1_proteomics_rollup_count_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_rollup_count_helpers.R
+
+entries:
+  - id: prot_rollup_calc_peptides_per_protein
+    source: R/func_prot_rollup.R
+    selector: { kind: symbol, value: calcPeptidesPerProtein }
+    target: R/func_prot_rollup_count_helpers.R
+    group: proteomics.rollup.counts
+    note: Stage the low-risk count/reporting helpers before moving the rollup helper or S4 method shell.
+
+  - id: prot_rollup_calc_total_peptides
+    source: R/func_prot_rollup.R
+    selector: { kind: symbol, value: calcTotalPeptides }
+    target: R/func_prot_rollup_count_helpers.R
+    group: proteomics.rollup.counts
+
+  - id: prot_rollup_count_peptides_per_run
+    source: R/func_prot_rollup.R
+    selector: { kind: symbol, value: countPeptidesPerRun }
+    target: R/func_prot_rollup_count_helpers.R
+    group: proteomics.rollup.counts
+
+  - id: prot_rollup_count_num_peptides
+    source: R/func_prot_rollup.R
+    selector: { kind: symbol, value: count_num_peptides }
+    target: R/func_prot_rollup_count_helpers.R
+    group: proteomics.rollup.counts
+
+  - id: prot_rollup_count_proteins_per_run
+    source: R/func_prot_rollup.R
+    selector: { kind: symbol, value: countProteinsPerRun }
+    target: R/func_prot_rollup_count_helpers.R
+    group: proteomics.rollup.counts
+
+  - id: prot_rollup_count_unique_proteins
+    source: R/func_prot_rollup.R
+    selector: { kind: symbol, value: countUniqueProteins }
+    target: R/func_prot_rollup_count_helpers.R
+    group: proteomics.rollup.counts
+
+  - id: prot_rollup_count_num_proteins
+    source: R/func_prot_rollup.R
+    selector: { kind: symbol, value: count_num_proteins }
+    target: R/func_prot_rollup_count_helpers.R
+    group: proteomics.rollup.counts
+
+  - id: prot_rollup_count_num_samples
+    source: R/func_prot_rollup.R
+    selector: { kind: symbol, value: count_num_samples }
+    target: R/func_prot_rollup_count_helpers.R
+    group: proteomics.rollup.counts

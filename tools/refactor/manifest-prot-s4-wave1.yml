@@ -1,0 +1,29 @@
+version: 1
+wave: wave1_proteomics_s4_protein_core
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_core.R
+
+entries:
+  - id: prot_s4_class_protein_quantitative_data
+    source: R/func_prot_s4_objects.R
+    selector: { kind: symbol, value: ProteinQuantitativeData }
+    target: R/func_prot_s4_core.R
+    group: proteomics.s4.class_definition
+    note: First staged proteomics S4 wave moves the exact ProteinQuantitativeData class definition, including its embedded validity shell, without rewriting live sources.
+
+  - id: prot_s4_initialize_protein_quantitative_data
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: initialize }
+    target: R/func_prot_s4_core.R
+    group: proteomics.s4.initialize
+    note: First staged proteomics S4 wave moves the exact ProteinQuantitativeData initialize method shell without rewriting live sources.

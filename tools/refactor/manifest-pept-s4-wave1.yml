@@ -1,0 +1,36 @@
+version: 1
+wave: wave1_proteomics_peptide_s4_core
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_pept_s4_core.R
+
+entries:
+  - id: pept_s4_class_peptide_quantitative_data
+    source: R/func_pept_s4_objects.R
+    selector: { kind: symbol, value: PeptideQuantitativeData }
+    target: R/func_pept_s4_core.R
+    group: proteomics.peptide.s4.class_definition
+    note: First staged peptide S4 wave moves the exact PeptideQuantitativeData class-definition and validity shell into a dedicated core helper without rewriting live sources.
+
+  - id: pept_s4_constructor_peptide_quantitative_data_diann
+    source: R/func_pept_s4_objects.R
+    selector: { kind: symbol, value: PeptideQuantitativeDataDiann }
+    target: R/func_pept_s4_core.R
+    group: proteomics.peptide.s4.constructor
+    note: First staged peptide S4 wave moves the exact PeptideQuantitativeDataDiann constructor into the dedicated core helper without rewriting live sources.
+
+  - id: pept_s4_calc_peptide_matrix
+    source: R/func_pept_s4_objects.R
+    selector: { kind: setMethod, value: calcPeptideMatrix }
+    target: R/func_pept_s4_core.R
+    group: proteomics.peptide.s4.core_methods
+    note: First staged peptide S4 wave moves the exact calcPeptideMatrix PeptideQuantitativeData method into the dedicated core helper without rewriting live sources.

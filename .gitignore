@@ -55,3 +55,9 @@ data-raw/*.csv
 .Rproj.user
 .Rdata
 .DS_Store
+/.codex
+/.god-module-stabilization/
+/tmp/
+/tools/refactor/__pycache__/
+.renv-paths/
+.refactor-fidelity-audit/

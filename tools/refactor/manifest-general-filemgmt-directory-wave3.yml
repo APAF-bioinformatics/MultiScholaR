@@ -1,0 +1,23 @@
+version: 1
+wave: wave3_general_filemgmt_directory_helper
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+
+entries:
+  - id: general_filemgmt_setup_and_show_directories
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: setupAndShowDirectories }
+    target: R/func_general_filemgmt_directory_helpers.R
+    group: general.filemgmt.directories
+    note: Third bounded general-file-management seam moves setupAndShowDirectories() into the existing directory helper file while intentionally leaving the larger setupDirectories() wrapper live for a later wave.

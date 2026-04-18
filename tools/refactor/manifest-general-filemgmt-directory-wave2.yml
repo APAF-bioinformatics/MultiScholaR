@@ -1,0 +1,23 @@
+version: 1
+wave: wave2_general_filemgmt_directory_helper
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+
+entries:
+  - id: general_filemgmt_create_output_dir
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: createOutputDir }
+    target: R/func_general_filemgmt_directory_helpers.R
+    group: general.filemgmt.directories
+    note: Second bounded general-file-management seam isolates the small output-directory helper while leaving setupDirectories() and setupAndShowDirectories() live for later directory waves.

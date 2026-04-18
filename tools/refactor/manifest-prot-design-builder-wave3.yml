@@ -1,0 +1,34 @@
+version: 1
+wave: wave3_proteomics_design_builder_entrypoints
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_design_builder_display_helpers.R
+  - R/mod_prot_design_builder_action_helpers.R
+  - R/mod_prot_design_builder_state_helpers.R
+  - R/mod_prot_design_builder_server_helpers.R
+  - R/mod_prot_design_builder_ui.R
+  - R/mod_prot_design_builder_server.R
+  - R/mod_prot_design_builder.R
+
+entries:
+  - id: mod_prot_design_builder_ui_entrypoint
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: mod_prot_design_builder_ui }
+    target: R/mod_prot_design_builder_ui.R
+    group: proteomics.design.builder.entrypoints
+    note: Final builder wrapper wave stages the two public entrypoints into dedicated files and leaves mod_prot_design_builder.R as an explicit breadcrumb only after a later live apply.
+
+  - id: mod_prot_design_builder_server_entrypoint
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: mod_prot_design_builder_server }
+    target: R/mod_prot_design_builder_server.R
+    group: proteomics.design.builder.entrypoints

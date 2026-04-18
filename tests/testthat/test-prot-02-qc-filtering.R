@@ -5,6 +5,11 @@ test_that("QC filtered peptide snapshot is valid", {
   cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp02_qc_filtered_peptide.rds")
   
   if (file.exists(cp_file)) {
+    first_line <- tryCatch(readLines(cp_file, n = 1, warn = FALSE), error = function(e) "")
+    if (length(first_line) > 0 && identical(first_line[[1]], "version https://git-lfs.github.com/spec/v1")) {
+      skip("Snapshot cp02 is a Git LFS pointer and the binary artifact is not present")
+    }
+
     obj <- readRDS(cp_file)
     expect_s4_class(obj, "PeptideQuantitativeData")
     expect_true(nrow(obj@peptide_data) > 0)

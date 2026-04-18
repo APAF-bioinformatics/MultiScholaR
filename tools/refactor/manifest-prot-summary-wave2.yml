@@ -1,0 +1,34 @@
+version: 1
+wave: prot_summary_wave2
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_summary_support_helpers.R
+
+entries:
+  - id: mod_prot_summary_activate_rendered_report
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: activateProtSummaryRenderedReport }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.report
+    note: Second staged summary wave moves the report orchestration helper cluster without rewriting live sources.
+
+  - id: mod_prot_summary_run_report_generation
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: runProtSummaryReportGeneration }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.report
+
+  - id: mod_prot_summary_run_report_progress
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: runProtSummaryReportProgress }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.report

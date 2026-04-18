@@ -1,0 +1,34 @@
+version: 1
+wave: wave1_general_filemgmt_paths_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+
+entries:
+  - id: general_filemgmt_get_project_paths
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: getProjectPaths }
+    target: R/func_general_filemgmt_path_helpers.R
+    group: general.filemgmt.paths
+    note: First staged file-management wave isolates the small path lookup and directory helper wrappers while leaving setupDirectories() live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_create_directory_if_missing
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: createDirectoryIfNotExists }
+    target: R/func_general_filemgmt_path_helpers.R
+    group: general.filemgmt.paths
+
+  - id: general_filemgmt_create_dir_if_missing
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: createDirIfNotExists }
+    target: R/func_general_filemgmt_path_helpers.R
+    group: general.filemgmt.paths

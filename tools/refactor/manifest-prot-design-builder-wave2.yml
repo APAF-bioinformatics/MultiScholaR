@@ -1,0 +1,273 @@
+version: 1
+wave: wave2_proteomics_design_builder_pre_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_design_builder_display_helpers.R
+  - R/mod_prot_design_builder_action_helpers.R
+  - R/mod_prot_design_builder_state_helpers.R
+  - R/mod_prot_design_builder.R
+
+entries:
+  - id: mod_prot_design_builder_tech_rep_summary_formatter
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: formatProtDesignTechRepSummary }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+    note: Second builder staging wave splits the remaining pre-server builder body into display, action, and state helper files while keeping the public UI and server entrypoints in mod_prot_design_builder.R.
+
+  - id: mod_prot_design_builder_tech_rep_summary_output
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignTechRepSummaryOutput }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_removed_samples_display_output
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignRemovedSamplesDisplayOutput }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_contrast_factors_info_output
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignContrastFactorsInfoOutput }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_data_table_output
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignDataTableOutput }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_data_table_proxy_refresh_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignDataTableProxyRefreshObserver }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_sample_selection_sync_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignSampleSelectionSyncObserver }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_factor_group_sync_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignFactorGroupSyncObserver }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_input_sync_observer_shells
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignInputSyncObserverShells }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_replicate_inputs_output
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignReplicateInputsOutput }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_range_preview_output
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignRangePreviewOutput }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_available_factors_display_output
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignAvailableFactorsDisplayOutput }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_defined_contrasts_display_output
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignDefinedContrastsDisplayOutput }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_defined_contrasts_display
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: buildProtDesignDefinedContrastsDisplay }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_available_factors_display
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: buildProtDesignAvailableFactorsDisplay }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_removed_samples_display
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: formatProtDesignRemovedSamplesDisplay }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_contrast_factors_info
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: formatProtDesignContrastFactorsInfo }
+    target: R/mod_prot_design_builder_display_helpers.R
+    group: proteomics.design.builder.display
+
+  - id: mod_prot_design_builder_replicate_inputs
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: buildProtDesignReplicateInputs }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+    note: Keep sample-name editing, factor assignment, contrast creation, and removal observer wiring together in one exact-source action-helper slice.
+
+  - id: mod_prot_design_builder_range_preview
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: formatProtDesignRangePreview }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_transform_sample_names
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: transformProtDesignSampleNames }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_bulk_rename_updates
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: applyProtDesignBulkRenameUpdates }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_single_rename_update
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: applyProtDesignSingleRenameUpdate }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_rename_sample_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignRenameSampleObserver }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_bulk_rename_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignBulkRenameObserver }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_factor_append_reset
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: applyProtDesignFactorAppendReset }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_add_factor_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignAddFactorObserver }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_assign_metadata_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignAssignMetadataObserver }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_assign_tech_reps_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignAssignTechRepsObserver }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_contrast_append
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: applyProtDesignContrastAppend }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_add_contrast_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignAddContrastObserver }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_remove_samples_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignRemoveSamplesObserver }
+    target: R/mod_prot_design_builder_action_helpers.R
+    group: proteomics.design.builder.actions
+
+  - id: mod_prot_design_builder_save_results_contrasts_table
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: buildProtDesignSaveResultsContrastsTable }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+    note: Keep the save/reset/initial-state pre-server tail together so the live builder file can shrink down to the public UI plus exported server wrapper shell after review.
+
+  - id: mod_prot_design_builder_save_results_payload
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: buildProtDesignSaveResultsPayload }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+
+  - id: mod_prot_design_builder_save_results_observer_shell
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: runProtDesignSaveResultsObserverShell }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+
+  - id: mod_prot_design_builder_save_results_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignSaveResultsObserver }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+
+  - id: mod_prot_design_builder_reset_confirmation_modal
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: showProtDesignResetConfirmationModal }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+
+  - id: mod_prot_design_builder_reset_request_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignResetRequestObserver }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+
+  - id: mod_prot_design_builder_reset_confirmation_observer_shell
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: runProtDesignResetConfirmationObserverShell }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+
+  - id: mod_prot_design_builder_reset_confirmation_observer
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: registerProtDesignResetConfirmationObserver }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+
+  - id: mod_prot_design_builder_reset_state
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: applyProtDesignResetState }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+
+  - id: mod_prot_design_builder_removed_samples_update
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: applyProtDesignRemovedSamplesUpdate }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state
+
+  - id: mod_prot_design_builder_initial_state
+    source: R/mod_prot_design_builder.R
+    selector: { kind: symbol, value: buildProtDesignInitialState }
+    target: R/mod_prot_design_builder_state_helpers.R
+    group: proteomics.design.builder.state

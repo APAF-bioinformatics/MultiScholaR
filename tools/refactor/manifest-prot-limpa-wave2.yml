@@ -1,0 +1,22 @@
+version: 1
+wave: wave2_proteomics_prot_limpa_dpc_de_conversion_helper
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_limpa_da_helpers.R
+
+entries:
+  - id: prot_limpa_convert_dpc_da_to_standard_format
+    source: R/func_prot_limpa.R
+    selector: { kind: symbol, value: convertDpcDAToStandardFormat }
+    target: R/func_prot_limpa_da_helpers.R
+    group: proteomics.limpa.helpers.da
+    note: Stage the exact convertDpcDAToStandardFormat helper out of func_prot_limpa.R so the public wrapper can shrink toward a QC-only breadcrumb.

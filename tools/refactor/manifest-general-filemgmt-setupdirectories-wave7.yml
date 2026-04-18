@@ -1,0 +1,24 @@
+version: 1
+wave: wave7_general_filemgmt_setupdirectories_print_summary_helper
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+  - R/func_general_filemgmt_setupdirectories_helpers.R
+
+entries:
+  - id: general_filemgmt_print_setup_directories_summary
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: printSetupDirectoriesSummary }
+    target: R/func_general_filemgmt_setupdirectories_helpers.R
+    group: general.filemgmt.setupdirectories
+    note: Seventh bounded general-file-management checkpoint stages the exact-source setupDirectories print-summary seam into the setupDirectories helper file while keeping all_created_paths return assembly and per-omic orchestration live in func_general_filemgmt.R.

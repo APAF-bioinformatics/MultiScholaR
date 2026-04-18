@@ -1,0 +1,22 @@
+version: 1
+wave: wave1_proteomics_prot_limpa_peptide_dpc_quant
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_missingness.R
+
+entries:
+  - id: prot_limpa_peptide_dpc_quant_method
+    source: R/func_prot_limpa.R
+    selector: { kind: expr_index, value: 4 }
+    target: R/func_prot_s4_missingness.R
+    group: proteomics.s4.missingness
+    note: Stage the remaining PeptideQuantitativeData proteinMissingValueImputationLimpa DPC-Quant method out of func_prot_limpa.R into the existing proteomics S4 missingness owner before reconciling func_prot_limpa.R to helper-only ownership.

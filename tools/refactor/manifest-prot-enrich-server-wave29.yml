@@ -1,0 +1,40 @@
+version: 1
+wave: wave29_proteomics_enrichment_run_dependency_annotation_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_run_dependencies_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichRunDependencies }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.run_dependencies.state
+    note: Twenty-ninth staged enrichment helper wave moves the exact-source run-dependency resolver without rewriting live sources.
+  - id: mod_prot_enrich_output_directories_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichOutputDirectories }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.run_dependencies.output_dirs
+    note: Twenty-ninth staged enrichment helper wave moves the exact-source output-directory resolver without rewriting live sources.
+  - id: mod_prot_enrich_uniprot_annotations_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichUniprotAnnotations }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.annotation.uniprot
+    note: Twenty-ninth staged enrichment helper wave moves the exact-source UniProt annotation resolver without rewriting live sources.
+  - id: mod_prot_enrich_annotation_matching_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichAnnotationMatching }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.annotation.matching
+    note: Twenty-ninth staged enrichment helper wave moves the exact-source annotation-matching resolver without rewriting live sources.

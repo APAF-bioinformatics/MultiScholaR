@@ -1,0 +1,52 @@
+version: 1
+wave: wave6_general_plotting_qc_utility_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_plotting_qc_utility_helpers.R
+
+entries:
+  - id: general_plotting_plot_peptides_proteins_counts_per_sample_helper
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotPeptidesProteinsCountsPerSampleHelper }
+    target: R/func_general_plotting_qc_utility_helpers.R
+    group: general.plotting.qc_utility
+    note: Sixth bounded general-plotting wave stages the remaining QC utility helper cluster into a dedicated helper file while keeping reporting helpers and plotPcaDispatch live in func_general_plotting.R.
+
+  - id: general_plotting_plot_histogram_of_percent_missing_per_indvidual
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotHistogramOfPercentMissingPerIndvidual }
+    target: R/func_general_plotting_qc_utility_helpers.R
+    group: general.plotting.qc_utility
+
+  - id: general_plotting_get_one_rle_plot_data
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getOneRlePlotData }
+    target: R/func_general_plotting_qc_utility_helpers.R
+    group: general.plotting.qc_utility
+
+  - id: general_plotting_plot_rle_qc
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotRleQc }
+    target: R/func_general_plotting_qc_utility_helpers.R
+    group: general.plotting.qc_utility
+
+  - id: general_plotting_compare_umap_components_pairs
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: compareUmapComponentsPairs }
+    target: R/func_general_plotting_qc_utility_helpers.R
+    group: general.plotting.qc_utility
+
+  - id: general_plotting_umap_factor_plot
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: umap_factor_plot }
+    target: R/func_general_plotting_qc_utility_helpers.R
+    group: general.plotting.qc_utility

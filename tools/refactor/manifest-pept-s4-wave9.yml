@@ -1,0 +1,43 @@
+version: 1
+wave: wave9_proteomics_peptide_s4_neg_ctrl_optimization
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_pept_s4_norm_methods.R
+
+entries:
+  - id: pept_s4_norm_method_find_best_neg_ctrl_percentage_peptides
+    source: R/func_pept_s4_objects.R
+    selector: { kind: setMethod, value: findBestNegCtrlPercentagePeptides }
+    target: R/func_pept_s4_norm_methods.R
+    group: proteomics.peptide.s4.normalization
+    note: Ninth staged peptide S4 wave moves the exact findBestNegCtrlPercentagePeptides PeptideQuantitativeData method block into the existing peptide normalization helper without rewriting live sources.
+
+  - id: pept_s4_norm_helper_calculate_separation_score
+    source: R/func_pept_s4_objects.R
+    selector: { kind: symbol, value: .peptide_calculateSeparationScore }
+    target: R/func_pept_s4_norm_methods.R
+    group: proteomics.peptide.s4.normalization
+    note: Ninth staged peptide S4 wave moves the exact peptide separation-score helper into the existing normalization helper without rewriting live sources.
+
+  - id: pept_s4_norm_helper_calculate_composite_score
+    source: R/func_pept_s4_objects.R
+    selector: { kind: symbol, value: .peptide_calculateCompositeScore }
+    target: R/func_pept_s4_norm_methods.R
+    group: proteomics.peptide.s4.normalization
+    note: Ninth staged peptide S4 wave moves the exact peptide composite-score helper into the existing normalization helper without rewriting live sources.
+
+  - id: pept_s4_norm_helper_calculate_adaptive_max_k
+    source: R/func_pept_s4_objects.R
+    selector: { kind: symbol, value: .peptide_calculateAdaptiveMaxK }
+    target: R/func_pept_s4_norm_methods.R
+    group: proteomics.peptide.s4.normalization
+    note: Ninth staged peptide S4 wave moves the exact peptide adaptive-max-k helper into the existing normalization helper without rewriting live sources.

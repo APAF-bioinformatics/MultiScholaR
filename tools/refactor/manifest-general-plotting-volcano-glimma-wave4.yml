@@ -1,0 +1,58 @@
+version: 1
+wave: wave4_general_plotting_volcano_glimma_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_plotting_volcano_glimma_helpers.R
+
+entries:
+  - id: general_plotting_plot_one_volcano
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotOneVolcano }
+    target: R/func_general_plotting_volcano_glimma_helpers.R
+    group: general.plotting.volcano_glimma
+    note: Fourth bounded general-plotting wave stages the shared volcano and Glimma helper cluster into a dedicated helper file while keeping the remaining QC utility, palette/theme, and dispatch helpers live in func_general_plotting.R.
+
+  - id: general_plotting_plot_one_volcano_no_vertical_lines
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotOneVolcanoNoVerticalLines }
+    target: R/func_general_plotting_volcano_glimma_helpers.R
+    group: general.plotting.volcano_glimma
+
+  - id: general_plotting_print_one_volcano_plot_with_protein_label
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: printOneVolcanoPlotWithProteinLabel }
+    target: R/func_general_plotting_volcano_glimma_helpers.R
+    group: general.plotting.volcano_glimma
+
+  - id: general_plotting_get_glimma_volcano_proteomics
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getGlimmaVolcanoProteomics }
+    target: R/func_general_plotting_volcano_glimma_helpers.R
+    group: general.plotting.volcano_glimma
+
+  - id: general_plotting_get_glimma_volcano_proteomics_widget
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getGlimmaVolcanoProteomicsWidget }
+    target: R/func_general_plotting_volcano_glimma_helpers.R
+    group: general.plotting.volcano_glimma
+
+  - id: general_plotting_get_glimma_volcano_phosphoproteomics
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getGlimmaVolcanoPhosphoproteomics }
+    target: R/func_general_plotting_volcano_glimma_helpers.R
+    group: general.plotting.volcano_glimma
+
+  - id: general_plotting_plot_volcano
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotVolcano }
+    target: R/func_general_plotting_volcano_glimma_helpers.R
+    group: general.plotting.volcano_glimma

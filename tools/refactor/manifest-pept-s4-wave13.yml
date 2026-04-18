@@ -1,0 +1,22 @@
+version: 1
+wave: wave13_proteomics_peptide_s4_missingness_limpa
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_pept_s4_missingness.R
+
+entries:
+  - id: pept_s4_missingness_peptide_missing_value_imputation_limpa
+    source: R/func_pept_s4_objects.R
+    selector: { kind: setMethod, value: peptideMissingValueImputationLimpa }
+    target: R/func_pept_s4_missingness.R
+    group: proteomics.peptide.s4.missingness
+    note: Thirteenth staged peptide S4 wave moves the exact peptideMissingValueImputationLimpa PeptideQuantitativeData method block into a dedicated peptide missingness helper without rewriting live sources.

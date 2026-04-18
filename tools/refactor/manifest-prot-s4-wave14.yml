@@ -1,0 +1,22 @@
+version: 1
+wave: wave14_proteomics_s4_protein_intensity_filtering
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_qc_methods.R
+
+entries:
+  - id: prot_s4_qc_method_protein_intensity_filtering
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: proteinIntensityFiltering }
+    target: R/func_prot_s4_qc_methods.R
+    group: proteomics.s4.qc.methods
+    note: Fourteenth staged proteomics S4 wave moves the exact ProteinQuantitativeData proteinIntensityFiltering method block into the existing S4 QC-methods helper file without rewriting live sources.

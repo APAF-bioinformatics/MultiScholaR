@@ -1,0 +1,52 @@
+version: 1
+wave: wave5_general_plotting_palette_theme_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_plotting_palette_theme_helpers.R
+
+entries:
+  - id: general_plotting_get_categorical_colour_palette
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getCategoricalColourPalette }
+    target: R/func_general_plotting_palette_theme_helpers.R
+    group: general.plotting.palette_theme
+    note: Fifth bounded general-plotting wave stages the shared palette and theme helper cluster into a dedicated helper file while keeping the remaining QC utility, reporting, and dispatch helpers live in func_general_plotting.R.
+
+  - id: general_plotting_get_one_continous_palette
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getOneContinousPalette }
+    target: R/func_general_plotting_palette_theme_helpers.R
+    group: general.plotting.palette_theme
+
+  - id: general_plotting_get_continous_colour_rules
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getContinousColourRules }
+    target: R/func_general_plotting_palette_theme_helpers.R
+    group: general.plotting.palette_theme
+
+  - id: general_plotting_get_categorical_and_continuous_colour_rules
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getCategoricalAndContinuousColourRules }
+    target: R/func_general_plotting_palette_theme_helpers.R
+    group: general.plotting.palette_theme
+
+  - id: general_plotting_apaf_theme
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: apafTheme }
+    target: R/func_general_plotting_palette_theme_helpers.R
+    group: general.plotting.palette_theme
+
+  - id: general_plotting_get_color_palette
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: get_color_palette }
+    target: R/func_general_plotting_palette_theme_helpers.R
+    group: general.plotting.palette_theme

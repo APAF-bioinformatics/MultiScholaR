@@ -1,0 +1,52 @@
+version: 1
+wave: prot_summary_wave1
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_summary_support_helpers.R
+
+entries:
+  - id: mod_prot_summary_resolve_final_s4_state
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: resolveProtSummaryFinalS4State }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+    note: First staged summary wave moves the already seam-isolated workflow/report support helpers without rewriting live sources.
+
+  - id: mod_prot_summary_build_template_status
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: buildProtSummaryTemplateStatus }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_resolve_report_template
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: resolveProtSummaryReportTemplate }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_ensure_report_template
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: ensureProtSummaryReportTemplate }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_retrieve_report_template_asset
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: retrieveProtSummaryReportTemplateAsset }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_validate_project_dirs
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: validateProtSummaryProjectDirs }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support

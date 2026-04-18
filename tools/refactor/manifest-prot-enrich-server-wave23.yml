@@ -1,0 +1,46 @@
+version: 1
+wave: wave23_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_analysis_input_columns_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichAnalysisInputColumns }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.execution_results
+    note: Twenty-third staged enrichment analysis-body wave moves the next exact-source execution/results helper cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_process_enrichments_args_builder
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: buildProtEnrichProcessEnrichmentsArgs }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.execution_results
+
+  - id: mod_prot_enrich_process_execution_preparer
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: prepareProtEnrichProcessExecution }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.execution_results
+
+  - id: mod_prot_enrich_process_enrichments_executor
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: executeProtEnrichProcessEnrichments }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.execution_results
+
+  - id: mod_prot_enrich_all_contrast_results_builder
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: buildProtEnrichAllContrastResults }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.execution_results

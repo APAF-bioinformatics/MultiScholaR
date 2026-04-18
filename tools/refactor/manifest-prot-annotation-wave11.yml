@@ -1,0 +1,40 @@
+version: 1
+wave: wave11_proteomics_annotation_uniprot_id_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_annotation_uniprot_id_helpers.R
+
+entries:
+  - id: prot_annotation_get_uniprot_regex_patterns
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: getUniprotRegexPatterns }
+    target: R/func_prot_annotation_uniprot_id_helpers.R
+    group: proteomics.annotation.uniprot_id
+    note: Stage the eleventh exact-source annotation wave around the UniProt accession regex and cleaning helpers while keeping subsetQuery(), .prepareUniprotBatchInput(), and the remaining batch-query helpers stable in func_prot_annotation.R for a later review/apply checkpoint.
+
+  - id: prot_annotation_normalize_uniprot_accession
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: normalizeUniprotAccession }
+    target: R/func_prot_annotation_uniprot_id_helpers.R
+    group: proteomics.annotation.uniprot_id
+
+  - id: prot_annotation_clean_isoform_number
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: cleanIsoformNumber }
+    target: R/func_prot_annotation_uniprot_id_helpers.R
+    group: proteomics.annotation.uniprot_id
+
+  - id: prot_annotation_clean_protein_ids
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: .cleanProteinIds }
+    target: R/func_prot_annotation_uniprot_id_helpers.R
+    group: proteomics.annotation.uniprot_id

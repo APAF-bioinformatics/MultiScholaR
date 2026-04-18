@@ -1,0 +1,28 @@
+version: 1
+wave: wave12_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_observer_run_handoff
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: handoffProtEnrichObserverRun }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.observer_entry
+    note: Twelfth staged enrichment wrapper wave moves the next exact-source observer-entry helper pair without rewriting live sources.
+
+  - id: mod_prot_enrich_observer_preflight_run
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: runProtEnrichObserverPreflight }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.observer_entry

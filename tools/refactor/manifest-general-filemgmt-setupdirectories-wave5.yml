@@ -1,0 +1,24 @@
+version: 1
+wave: wave5_general_filemgmt_setupdirectories_existing_dirs_helper
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+  - R/func_general_filemgmt_setupdirectories_helpers.R
+
+entries:
+  - id: general_filemgmt_handle_setup_directories_existing_dirs
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: handleSetupDirectoriesExistingDirs }
+    target: R/func_general_filemgmt_setupdirectories_helpers.R
+    group: general.filemgmt.setupdirectories
+    note: Fifth bounded general-file-management checkpoint stages the exact-source existing-directory decision seam into the setupDirectories helper file while keeping setupDirectories() live for later directory-materialization cleanup.

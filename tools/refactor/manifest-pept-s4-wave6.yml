@@ -1,0 +1,28 @@
+version: 1
+wave: wave6_proteomics_peptide_s4_correlation_cluster
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_pept_s4_qc_methods.R
+
+entries:
+  - id: pept_s4_qc_method_plot_pearson
+    source: R/func_pept_s4_objects.R
+    selector: { kind: setMethod, value: plotPearson }
+    target: R/func_pept_s4_qc_methods.R
+    group: proteomics.peptide.s4.qc_methods
+    note: Sixth staged peptide S4 wave moves the exact plotPearson PeptideQuantitativeData method block into the existing peptide QC helper without rewriting live sources.
+  - id: pept_s4_qc_method_pearson_cor_for_sample_pairs
+    source: R/func_pept_s4_objects.R
+    selector: { kind: setMethod, value: pearsonCorForSamplePairs }
+    target: R/func_pept_s4_qc_methods.R
+    group: proteomics.peptide.s4.qc_methods
+    note: The same wave also moves the exact pearsonCorForSamplePairs PeptideQuantitativeData method block so the adjacent peptide correlation cluster stays together in the existing QC helper.

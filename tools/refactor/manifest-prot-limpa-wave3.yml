@@ -1,0 +1,22 @@
+version: 1
+wave: wave3_proteomics_prot_limpa_qc_helper
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_limpa_qc_helpers.R
+
+entries:
+  - id: prot_limpa_generate_qc_plots
+    source: R/func_prot_limpa.R
+    selector: { kind: symbol, value: generateLimpaQCPlots }
+    target: R/func_prot_limpa_qc_helpers.R
+    group: proteomics.limpa.helpers.qc
+    note: Stage the exact generateLimpaQCPlots helper out of func_prot_limpa.R so the public wrapper can collapse to a final breadcrumb shell after review and apply.

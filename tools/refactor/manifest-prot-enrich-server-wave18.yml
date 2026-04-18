@@ -1,0 +1,28 @@
+version: 1
+wave: wave18_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_results_download_filename_builder
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: buildProtEnrichResultsDownloadFilename }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.downloads
+    note: Eighteenth staged enrichment wrapper wave moves the remaining exact-source download-helper cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_results_download_archive_writer
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: writeProtEnrichResultsDownloadArchive }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.downloads

@@ -1,0 +1,41 @@
+version: 1
+wave: wave1_proteomics_annotation_matching_go_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_annotation_go_helpers.R
+  - R/func_prot_annotation_matching_helpers.R
+
+entries:
+  - id: prot_annotation_go_id_to_term
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: goIdToTerm }
+    target: R/func_prot_annotation_go_helpers.R
+    group: proteomics.annotation.go
+    note: Stage the first exact-source annotation wave around GO-term utilities and the isolated matchAnnotations() helper seam before any live apply.
+
+  - id: prot_annotation_uniprot_go_id_to_term
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: uniprotGoIdToTerm }
+    target: R/func_prot_annotation_go_helpers.R
+    group: proteomics.annotation.go
+
+  - id: prot_annotation_find_fuzzy_matches
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: findFuzzyAnnotationMatches }
+    target: R/func_prot_annotation_matching_helpers.R
+    group: proteomics.annotation.matching
+
+  - id: prot_annotation_match_annotations
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: matchAnnotations }
+    target: R/func_prot_annotation_matching_helpers.R
+    group: proteomics.annotation.matching

@@ -1,0 +1,22 @@
+version: 1
+wave: wave33_proteomics_s4_ruviii_c_varying
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_norm_methods.R
+
+entries:
+  - id: prot_s4_norm_methods_ruviii_c_varying
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: ruvIII_C_Varying }
+    target: R/func_prot_s4_norm_methods.R
+    group: proteomics.s4.norm.methods
+    note: Thirty-third staged proteomics S4 wave moves the exact ProteinQuantitativeData ruvIII_C_Varying method block into the existing S4 normalization-methods helper file without rewriting live sources.

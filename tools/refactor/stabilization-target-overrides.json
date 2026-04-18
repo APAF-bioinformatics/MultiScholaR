@@ -1,0 +1,88 @@
+{
+  "items": {
+    "7-proteomics-enrichment": {
+      "handoverPath": "tools/refactor/HANDOVER-prot-enrich-seams.md",
+      "focusedGateCommands": [
+        [
+          "Rscript",
+          "tools/test_with_renv.R",
+          "tests/testthat/test-prot-11-enrichment-module-contracts.R"
+        ]
+      ],
+      "promptHints": [
+        "Proteomics enrichment is in late-stage direct-extraction/apply mode; prefer reviewed staged/apply checkpoints over rediscovering earlier seam history.",
+        "Treat generated staging collate artifacts as bookkeeping only; the authoritative fidelity checks are the focused enrichment gate plus the post-apply checker."
+      ]
+    },
+    "1-proteomics-da-follow-up": {
+      "focusedGateCommands": [
+        [
+          "Rscript",
+          "tools/test_with_renv.R",
+          "tests/testthat/test-prot-07b-da-handlers-compat.R"
+        ],
+        [
+          "Rscript",
+          "tools/test_with_renv.R",
+          "tests/testthat/test-prot-07c-da-results-characterization.R"
+        ]
+      ],
+      "supplementalReviewCommands": [
+        [
+          "Rscript",
+          "tools/test_with_renv.R",
+          "tests/testthat/test-prot-07-da-analysis.R"
+        ],
+        [
+          "Rscript",
+          "tools/test_with_renv.R",
+          "tests/testthat/test-protein-da-golden-master.R"
+        ],
+        [
+          "Rscript",
+          "tools/test_with_renv.R",
+          "tests/testthat/test-tech-reps-limma.R"
+        ]
+      ],
+      "promptHints": [
+        "Proteomics DA fidelity must cover both the handler path and the exported helper path; do not rely on a single green DA gate.",
+        "When working this bucket, preserve and verify contrast normalization behavior for auto-generated contrasts as well as full_format/friendly_names contrasts."
+      ]
+    },
+    "5-proteomics-design-and-builder": {
+      "handoverPath": "tools/refactor/HANDOVER-prot-design-seams.md",
+      "workTargetPath": "R/mod_prot_design_builder.R",
+      "focusedGateCommands": [
+        [
+          "Rscript",
+          "tools/test_with_renv.R",
+          "tests/testthat/test-prot-04-design.R"
+        ]
+      ],
+      "promptHints": [
+        "Treat R/mod_prot_design.R as a review-frozen public wrapper for this bucket.",
+        "The active structural tail is in R/mod_prot_design_builder.R; prefer bounded builder seams there over new wrapper-only review checkpoints whenever a structural stop point is documented.",
+        "The current late-stage stop point is the remaining proxy/bootstrap and builder-server registration fan-out in R/mod_prot_design_builder.R."
+      ]
+    },
+    "manual-mod-lipid-norm": {
+      "handoverPath": "tools/refactor/HANDOVER-lipid-norm-module-seams.md",
+      "focusedGateCommands": [
+        [
+          "Rscript",
+          "-e",
+          "testthat::test_file('tests/testthat/test-lipid-12-norm-module-contracts.R', stop_on_failure = TRUE)"
+        ],
+        [
+          "Rscript",
+          "-e",
+          "testthat::test_file('tests/testthat/test-lipid_norm_exclusion.R', stop_on_failure = TRUE)"
+        ]
+      ],
+      "promptHints": [
+        "Use the lipid normalization handover as the current stop map; do not reread the full seam history when the handover already names the staged wave and next step.",
+        "The current bounded objective is to review and, if safe, apply the first staged wrapper wave before returning to more in-file seam introduction."
+      ]
+    }
+  }
+}

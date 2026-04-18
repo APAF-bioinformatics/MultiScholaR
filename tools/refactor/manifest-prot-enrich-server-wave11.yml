@@ -1,0 +1,52 @@
+version: 1
+wave: wave11_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_run_observer_shell
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: runProtEnrichObserverShell }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.observer_shell
+    note: Eleventh staged enrichment wrapper wave moves the next exact-source observer-shell helper cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_observer_failure_finalize
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: finalizeProtEnrichObserverFailure }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.observer_shell
+
+  - id: mod_prot_enrich_completion_report
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: reportProtEnrichCompletion }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.observer_shell
+
+  - id: mod_prot_enrich_observer_run_finalize
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: finalizeProtEnrichObserverRun }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.observer_shell
+
+  - id: mod_prot_enrich_completion_log
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: logProtEnrichCompletion }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.observer_shell
+
+  - id: mod_prot_enrich_working_notification_remove
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: removeProtEnrichWorkingNotification }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.observer_shell

@@ -1,0 +1,34 @@
+version: 1
+wave: wave3_general_plotting_heatmap_support_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_plotting_heatmap_support_helpers.R
+
+entries:
+  - id: general_plotting_get_samples_correlation_heatmap
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getSamplesCorrelationHeatMap }
+    target: R/func_general_plotting_heatmap_support_helpers.R
+    group: general.plotting.heatmap_support
+    note: Third bounded general-plotting wave stages the heatmap/save-support cluster into a dedicated helper file while keeping volcano, Glimma, enrichment, and palette/theme helpers live in func_general_plotting.R.
+
+  - id: general_plotting_get_proteins_heatmap
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getProteinsHeatMap }
+    target: R/func_general_plotting_heatmap_support_helpers.R
+    group: general.plotting.heatmap_support
+
+  - id: general_plotting_save_heatmap_products
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: save_heatmap_products }
+    target: R/func_general_plotting_heatmap_support_helpers.R
+    group: general.plotting.heatmap_support

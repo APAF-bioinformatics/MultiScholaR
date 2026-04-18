@@ -1,0 +1,298 @@
+version: 1
+wave: wave1_proteomics_da
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_da_model.R
+  - R/func_prot_da_results.R
+  - R/func_prot_da_volcano.R
+  - R/func_prot_da_heatmap.R
+  - R/func_prot_da_test_helpers.R
+  - R/func_prot_da_compat.R
+  - R/mod_prot_da_ui.R
+  - R/mod_prot_da_handlers_analysis.R
+  - R/mod_prot_da_render_volcano.R
+  - R/mod_prot_da_render_heatmap.R
+  - R/mod_prot_da_render_table.R
+  - R/mod_prot_da_server.R
+
+entries:
+  - id: mod_prot_da_ui_main
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: mod_prot_da_ui }
+    target: R/mod_prot_da_ui.R
+    group: proteomics.da.ui
+
+  - id: mod_prot_da_ui_sidebar
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: mod_prot_da_sidebar_ui }
+    target: R/mod_prot_da_ui.R
+    group: proteomics.da.ui
+
+  - id: mod_prot_da_ui_volcano_tab
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: mod_prot_da_volcano_tab_ui }
+    target: R/mod_prot_da_ui.R
+    group: proteomics.da.ui
+
+  - id: mod_prot_da_ui_heatmap_tab
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: mod_prot_da_heatmap_tab_ui }
+    target: R/mod_prot_da_ui.R
+    group: proteomics.da.ui
+
+  - id: mod_prot_da_ui_table_tab
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: mod_prot_da_table_tab_ui }
+    target: R/mod_prot_da_ui.R
+    group: proteomics.da.ui
+
+  - id: mod_prot_da_handler_init
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: da_server_init_handlers }
+    target: R/mod_prot_da_handlers_analysis.R
+    group: proteomics.da.handlers
+
+  - id: mod_prot_da_handler_load
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: da_server_load_session_handler }
+    target: R/mod_prot_da_handlers_analysis.R
+    group: proteomics.da.handlers
+
+  - id: mod_prot_da_handler_run
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: da_server_run_analysis_handler }
+    target: R/mod_prot_da_handlers_analysis.R
+    group: proteomics.da.handlers
+
+  - id: mod_prot_da_render_volcano
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: da_server_volcano_render_handler }
+    target: R/mod_prot_da_render_volcano.R
+    group: proteomics.da.render
+
+  - id: mod_prot_da_render_heatmap
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: da_server_heatmap_render_handler }
+    target: R/mod_prot_da_render_heatmap.R
+    group: proteomics.da.render
+
+  - id: mod_prot_da_render_table
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: da_server_table_render_handler }
+    target: R/mod_prot_da_render_table.R
+    group: proteomics.da.render
+
+  - id: mod_prot_da_server
+    source: R/mod_prot_da.R
+    selector: { kind: symbol, value: mod_prot_da_server }
+    target: R/mod_prot_da_server.R
+    group: proteomics.da.server
+
+  - id: func_prot_da_volcano_glimma
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: generateProtDAVolcanoPlotGlimma }
+    target: R/func_prot_da_volcano.R
+    group: proteomics.da.volcano
+
+  - id: func_prot_da_volcano_static
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: generateProtDAVolcanoStatic }
+    target: R/func_prot_da_volcano.R
+    group: proteomics.da.volcano
+
+  - id: func_prot_da_heatmap
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: generateProtDAHeatmap }
+    target: R/func_prot_da_heatmap.R
+    group: proteomics.da.heatmap
+
+  - id: func_prot_da_wrapper
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: daAnalysisWrapperFunction }
+    target: R/func_prot_da_model.R
+    group: proteomics.da.model
+
+  - id: func_prot_da_output
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: outputDaAnalysisResults }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.results
+
+  - id: func_prot_da_prepare_volcano
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: prepareDataForVolcanoPlot }
+    target: R/func_prot_da_model.R
+    group: proteomics.da.model
+
+  - id: func_prot_da_ebfit
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: ebFit }
+    target: R/func_prot_da_model.R
+    group: proteomics.da.model
+
+  - id: func_prot_da_run_test
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: runTest }
+    target: R/func_prot_da_model.R
+    group: proteomics.da.model
+
+  - id: func_prot_da_run_tests
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: runTests }
+    target: R/func_prot_da_model.R
+    group: proteomics.da.model
+
+  - id: func_prot_da_run_tests_contrasts
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: runTestsContrasts }
+    target: R/func_prot_da_model.R
+    group: proteomics.da.model
+
+  - id: func_prot_da_save_list
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: saveDaProteinList }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.results
+
+  - id: func_prot_da_long_format
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: createDaResultsLongFormat }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.results
+
+  - id: func_prot_da_counts_1
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: countStatDaGenes }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.results
+
+  - id: func_prot_da_counts_2
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: countStatDaGenesHelper }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.results
+
+  - id: func_prot_da_counts_3
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: printCountDaGenesTable }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.results
+
+  - id: func_prot_da_significant
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: getSignificantData }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.results
+
+  - id: func_prot_da_type_grouping
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: getTypeOfGrouping }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.results
+
+  - id: func_prot_da_extract_results
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: extractResults }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.results
+
+  - id: func_prot_da_write_interactive
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: writeInteractiveVolcanoPlotProteomics }
+    target: R/func_prot_da_volcano.R
+    group: proteomics.da.volcano
+
+  - id: func_prot_da_write_interactive_widget
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: writeInteractiveVolcanoPlotProteomicsWidget }
+    target: R/func_prot_da_volcano.R
+    group: proteomics.da.volcano
+
+  - id: func_prot_da_write_interactive_main
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: writeInteractiveVolcanoPlotProteomicsMain }
+    target: R/func_prot_da_volcano.R
+    group: proteomics.da.volcano
+
+  - id: func_prot_da_data_matrix
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: getDataMatrix }
+    target: R/func_prot_da_heatmap.R
+    group: proteomics.da.heatmap
+
+  - id: func_prot_da_method_main
+    source: R/func_prot_da.R
+    selector: { kind: setMethod, value: differentialAbundanceAnalysis }
+    target: R/func_prot_da_model.R
+    group: proteomics.da.methods
+
+  - id: func_prot_da_method_helper
+    source: R/func_prot_da.R
+    selector: { kind: setMethod, value: differentialAbundanceAnalysisHelper }
+    target: R/func_prot_da_model.R
+    group: proteomics.da.methods
+
+  - id: func_prot_da_method_all_contrasts
+    source: R/func_prot_da.R
+    selector: { kind: setMethod, value: outputDaResultsAllContrasts }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.methods
+
+  - id: func_prot_da_method_long
+    source: R/func_prot_da.R
+    selector: { kind: setMethod, value: getDaResultsLongFormat }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.methods
+
+  - id: func_prot_da_method_wide
+    source: R/func_prot_da.R
+    selector: { kind: setMethod, value: getDaResultsWideFormat }
+    target: R/func_prot_da_results.R
+    group: proteomics.da.methods
+
+  - id: func_prot_da_glimma_start
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: start_glimma_capture }
+    target: R/func_prot_da_test_helpers.R
+    group: proteomics.da.test_helpers
+
+  - id: func_prot_da_glimma_stop
+    source: R/func_prot_da.R
+    selector: { kind: symbol, value: stop_glimma_capture }
+    target: R/func_prot_da_test_helpers.R
+    group: proteomics.da.test_helpers
+
+  - id: compat_protein_wrapper
+    source: R/da_analysis_function_wrapper.R
+    selector: { kind: symbol, value: protein_deAnalysisWrapperFunction }
+    target: R/func_prot_da_compat.R
+    group: proteomics.da.compat
+
+  - id: compat_output_de_results
+    source: R/da_analysis_function_wrapper.R
+    selector: { kind: symbol, value: outputDeAnalysisResults }
+    target: R/func_prot_da_compat.R
+    group: proteomics.da.compat
+
+  - id: compat_de_alias
+    source: R/da_analysis_function_wrapper.R
+    selector: { kind: symbol, value: deAnalysisWrapperFunction }
+    target: R/func_prot_da_compat.R
+    group: proteomics.da.compat
+
+  - id: compat_write_interactive_main
+    action: manual_merge
+    source: R/da_analysis_function_wrapper.R
+    selector: { kind: symbol, value: writeInteractiveVolcanoPlotProteomicsMain }
+    target: R/func_prot_da_volcano.R
+    group: proteomics.da.compat
+    note: prefer canonical func_prot_da version and review de_/da_ compatibility manually

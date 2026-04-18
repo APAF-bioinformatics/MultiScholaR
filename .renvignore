@@ -1,0 +1,15 @@
+.git/
+.github/
+.obsidian/
+.cursor/
+.codex
+docs/
+Workbooks/
+HowTo/
+man/
+mem/
+inst/reports/
+inst/workbooks/
+tools/refactor/staging/
+tests/testdata/
+aa_seq_tbl.tsv

@@ -53,4 +53,39 @@ test_that("matchAnnotations handles mock data", {
   expect_true("gene_names" %in% names(result$annotated_da_results))
 })
 
+test_that("matchAnnotations keeps unmatched proteins while using version-based fuzzy matches", {
+  da_obj <- new("da_results_for_enrichment")
+  da_obj@da_data <- list(
+    "T_vs_C" = data.frame(
+      uniprot_acc = c("P12345.2", "NOT_A_MATCH.1"),
+      log2FC = c(1, -1),
+      fdr_qvalue = c(0.01, 0.02),
+      stringsAsFactors = FALSE
+    )
+  )
+
+  uniprot_ann <- data.frame(
+    Entry = "P12345",
+    gene_names = "GENE1",
+    stringsAsFactors = FALSE
+  )
+
+  result <- matchAnnotations(
+    da_results_s4 = da_obj,
+    uniprot_annotations = uniprot_ann,
+    protein_id_column = "uniprot_acc"
+  )
+
+  matched_row <- result$annotated_da_results |>
+    dplyr::filter(.data$original_id == "P12345.2")
+
+  expect_equal(nrow(matched_row), 1)
+  expect_equal(matched_row$Entry, "P12345")
+  expect_equal(result$match_statistics$exact_matches, 0)
+  expect_equal(result$match_statistics$fuzzy_matches, 1)
+  expect_equal(result$match_statistics$unmatched_proteins, 1)
+  expect_equal(result$match_statistics$match_rate, 50)
+  expect_identical(result$unmatched_proteins, "NOT_A_MATCH.1")
+})
+
 # APAF Bioinformatics | test-prot-10-annotation.R | Approved | 2026-03-13

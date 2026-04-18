@@ -1,0 +1,40 @@
+version: 1
+wave: wave7_general_plotting_reporting_dispatch_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_plotting_reporting_dispatch_helpers.R
+
+entries:
+  - id: general_plotting_print_p_values_distribution
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: printPValuesDistribution }
+    target: R/func_general_plotting_reporting_dispatch_helpers.R
+    group: general.plotting.reporting_dispatch
+    note: Seventh bounded general-plotting wave stages the final reporting and dispatch helper cluster into a dedicated helper file so the live wrapper can drain completely after the reviewed apply.
+
+  - id: general_plotting_gg_save_logging
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: gg_save_logging }
+    target: R/func_general_plotting_reporting_dispatch_helpers.R
+    group: general.plotting.reporting_dispatch
+
+  - id: general_plotting_summarize_qc_plot
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: summarizeQCPlot }
+    target: R/func_general_plotting_reporting_dispatch_helpers.R
+    group: general.plotting.reporting_dispatch
+
+  - id: general_plotting_plot_pca_dispatch
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotPcaDispatch }
+    target: R/func_general_plotting_reporting_dispatch_helpers.R
+    group: general.plotting.reporting_dispatch

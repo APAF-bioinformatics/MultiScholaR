@@ -1,0 +1,145 @@
+version: 1
+wave: wave4_proteomics_norm_server_entrypoints
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_norm_ui.R
+  - R/mod_prot_norm_server_helpers.R
+  - R/mod_prot_norm_server.R
+
+entries:
+  - id: mod_prot_norm_ui_entrypoint
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: mod_prot_norm_ui }
+    target: R/mod_prot_norm_ui.R
+    group: proteomics.norm.wrapper.entrypoints
+    note: Final normalization wrapper wave moves the public UI entrypoint into a dedicated file.
+
+  - id: mod_prot_norm_render_qc_image
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: renderProtNormQcImage }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+    note: Keep the remaining render and observer registration shells together with the final server entrypoint split.
+
+  - id: mod_prot_norm_register_qc_image_outputs
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: registerProtNormQcImageOutputs }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_render_post_norm_summary
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: renderProtNormPostNormFilteringSummary }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_render_filtering_summary_text
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: renderProtNormFilteringSummaryText }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_render_final_qc_plot
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: renderProtNormFinalQcPlot }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_render_ruv_cancor_plot
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: renderProtNormRuvCanonicalCorrelationPlot }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_render_ruv_summary
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: renderProtNormRuvOptimizationSummary }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_render_ruv_table
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: renderProtNormRuvOptimizationTable }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_register_render_outputs
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: registerProtNormRenderOutputs }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_notify_prereq_warning
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: notifyProtNormNormalizationPrereqWarning }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_handle_pre_qc_error
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: handleProtNormPreQcGenerationError }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_tab_entry_workflow
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormTabEntryWorkflow }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_handle_normalization_error
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: handleProtNormNormalizationError }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_run_normalization_workflow
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormNormalizationWorkflow }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_apply_correlation_observer
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormApplyCorrelationObserver }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_skip_correlation_observer
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormSkipCorrelationObserver }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_notify_export_prereq
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: notifyProtNormExportSessionPrereqWarning }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_export_observer
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormExportObserver }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_reset_observer
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: runProtNormResetObserver }
+    target: R/mod_prot_norm_server_helpers.R
+    group: proteomics.norm.wrapper.server_helpers
+
+  - id: mod_prot_norm_server_entrypoint
+    source: R/mod_prot_norm.R
+    selector: { kind: symbol, value: mod_prot_norm_server }
+    target: R/mod_prot_norm_server.R
+    group: proteomics.norm.wrapper.entrypoints

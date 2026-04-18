@@ -1,0 +1,22 @@
+version: 1
+wave: wave25_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_analysis_body_runner
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: runProtEnrichAnalysisBody }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.wrapper
+    note: Twenty-fifth staged enrichment analysis-body wave moves the exact-source wrapper helper without rewriting live sources.

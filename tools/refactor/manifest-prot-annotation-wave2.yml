@@ -1,0 +1,34 @@
+version: 1
+wave: wave2_proteomics_annotation_fasta_leaf_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_annotation_fasta_helpers.R
+
+entries:
+  - id: prot_annotation_get_fasta_fields
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: getFastaFields }
+    target: R/func_prot_annotation_fasta_helpers.R
+    group: proteomics.annotation.fasta
+    note: Stage the second exact-source annotation wave around the isolated FASTA parsing leaf helpers while keeping processFastaFile() and the larger accession-ranking helpers in the main annotation file for now.
+
+  - id: prot_annotation_parse_fasta_object
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: parseFastaObject }
+    target: R/func_prot_annotation_fasta_helpers.R
+    group: proteomics.annotation.fasta
+
+  - id: prot_annotation_parse_fasta_file
+    source: R/func_prot_annotation.R
+    selector: { kind: symbol, value: parseFastaFile }
+    target: R/func_prot_annotation_fasta_helpers.R
+    group: proteomics.annotation.fasta

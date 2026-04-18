@@ -1,0 +1,34 @@
+version: 1
+wave: wave20_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_state_manager_ui_params_updater
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: updateProtEnrichStateManagerUiParams }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.completion
+    note: Twentieth staged enrichment analysis-body wave moves the next exact-source completion-helper cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_completed_state_saver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: saveProtEnrichCompletedState }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.completion
+
+  - id: mod_prot_enrich_tab_status_completer
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: completeProtEnrichTabStatus }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.completion

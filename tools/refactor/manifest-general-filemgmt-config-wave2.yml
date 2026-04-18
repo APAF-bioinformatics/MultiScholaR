@@ -1,0 +1,46 @@
+version: 1
+wave: wave2_general_filemgmt_config_roundtrip_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+  - R/func_general_filemgmt_setupdirectories_helpers.R
+  - R/func_general_filemgmt_config_helpers.R
+
+entries:
+  - id: general_filemgmt_format_config_list
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: formatConfigList }
+    target: R/func_general_filemgmt_config_helpers.R
+    group: general.filemgmt.config
+    note: Second bounded config-helper staging wave isolates the config round-trip formatter into the existing config helper target while keeping results IO, report or project export, and Rmd sourcing helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_update_config_parameter
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: updateConfigParameter }
+    target: R/func_general_filemgmt_config_helpers.R
+    group: general.filemgmt.config
+    note: Second bounded config-helper staging wave isolates the S4 plus global-config parameter updater into the existing config helper target while keeping results IO, report or project export, and Rmd sourcing helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_create_study_parameters_file
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: createStudyParametersFile }
+    target: R/func_general_filemgmt_config_helpers.R
+    group: general.filemgmt.config
+    note: Second bounded config-helper staging wave isolates the study-parameters round-trip writer into the existing config helper target while keeping results IO, report or project export, and Rmd sourcing helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_create_workflow_args_from_config
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: createWorkflowArgsFromConfig }
+    target: R/func_general_filemgmt_config_helpers.R
+    group: general.filemgmt.config
+    note: Second bounded config-helper staging wave isolates the workflow-args config writer into the existing config helper target while keeping results IO, report or project export, and Rmd sourcing helpers live in func_general_filemgmt.R.

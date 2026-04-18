@@ -1,0 +1,52 @@
+version: 1
+wave: wave1_general_plotting_pca_rle_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_plotting_pca_rle_helpers.R
+
+entries:
+  - id: general_plotting_plot_pca_helper
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotPcaHelper }
+    target: R/func_general_plotting_pca_rle_helpers.R
+    group: general.plotting.pca_rle
+    note: First bounded general-plotting wave stages the core PCA and RLE helper cluster into a dedicated helper file while keeping the public S4 plot methods live in func_general_plotting.R.
+
+  - id: general_plotting_plot_pca_list_helper
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotPcaListHelper }
+    target: R/func_general_plotting_pca_rle_helpers.R
+    group: general.plotting.pca_rle
+
+  - id: general_plotting_plot_pca_ggpairs
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotPcaGgpairs }
+    target: R/func_general_plotting_pca_rle_helpers.R
+    group: general.plotting.pca_rle
+
+  - id: general_plotting_plot_rle_helper
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotRleHelper }
+    target: R/func_general_plotting_pca_rle_helpers.R
+    group: general.plotting.pca_rle
+
+  - id: general_plotting_get_max_min_boxplot
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: getMaxMinBoxplot }
+    target: R/func_general_plotting_pca_rle_helpers.R
+    group: general.plotting.pca_rle
+
+  - id: general_plotting_rle_pca_plot_list
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: rlePcaPlotList }
+    target: R/func_general_plotting_pca_rle_helpers.R
+    group: general.plotting.pca_rle

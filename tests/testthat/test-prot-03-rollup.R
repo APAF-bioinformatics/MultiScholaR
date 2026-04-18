@@ -5,6 +5,11 @@ test_that("rolled-up protein snapshot is valid", {
   cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp03_rolled_up_protein.rds")
   
   if (file.exists(cp_file)) {
+    first_line <- tryCatch(readLines(cp_file, n = 1, warn = FALSE), error = function(e) "")
+    if (length(first_line) > 0 && identical(first_line[[1]], "version https://git-lfs.github.com/spec/v1")) {
+      skip("Snapshot cp03 is a Git LFS pointer and the binary artifact is not present")
+    }
+
     obj <- readRDS(cp_file)
     expect_s4_class(obj, "ProteinQuantitativeData")
     expect_true(nrow(obj@protein_quant_table) > 0)

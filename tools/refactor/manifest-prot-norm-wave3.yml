@@ -1,0 +1,22 @@
+version: 1
+wave: wave3_proteomics_norm_function_neg_ctrl_orchestration
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_norm_optimization_helpers.R
+
+entries:
+  - id: prot_norm_find_best_neg_ctrl_percentage
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: findBestNegCtrlPercentage }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.optimization
+    note: Wave 3 stages the remaining exact findBestNegCtrlPercentage orchestration block out of func_prot_norm.R so the live source can collapse to a breadcrumb stub after review.

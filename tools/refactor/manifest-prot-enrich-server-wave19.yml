@@ -1,0 +1,34 @@
+version: 1
+wave: wave19_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_analysis_results_payload_builder
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: buildProtEnrichAnalysisResultsPayload }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.persistence
+    note: Nineteenth staged enrichment analysis-body wave moves the next exact-source results-persistence helper cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_results_args_propagator
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: propagateProtEnrichResultsArgs }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.persistence
+
+  - id: mod_prot_enrich_ui_params_propagator
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: propagateProtEnrichUiParams }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.analysis_body.persistence

@@ -1,0 +1,46 @@
+version: 1
+wave: wave2_general_plotting_qc_support_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_plotting_qc_support_helpers.R
+
+entries:
+  - id: general_plotting_plot_density_of_protein_intensity_per_sample
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotDensityOfProteinIntensityPerSample }
+    target: R/func_general_plotting_qc_support_helpers.R
+    group: general.plotting.qc_support
+    note: Second bounded general-plotting wave stages the non-heatmap QC support cluster into a dedicated helper file while keeping correlation heatmaps, protein heatmaps, volcano, enrichment, and file-writer helpers live in func_general_plotting.R.
+
+  - id: general_plotting_plot_percent_samples_vs_protein_quantified
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotPercentSamplesVsProteinQuantified }
+    target: R/func_general_plotting_qc_support_helpers.R
+    group: general.plotting.qc_support
+
+  - id: general_plotting_plot_num_missing_values
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotNumMissingValues }
+    target: R/func_general_plotting_qc_support_helpers.R
+    group: general.plotting.qc_support
+
+  - id: general_plotting_plot_num_of_values
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotNumOfValues }
+    target: R/func_general_plotting_qc_support_helpers.R
+    group: general.plotting.qc_support
+
+  - id: general_plotting_plot_num_of_values_no_log
+    source: R/func_general_plotting.R
+    selector: { kind: symbol, value: plotNumOfValuesNoLog }
+    target: R/func_general_plotting_qc_support_helpers.R
+    group: general.plotting.qc_support

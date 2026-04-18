@@ -1,0 +1,140 @@
+version: 1
+wave: wave1_proteomics_design_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_design_state_helpers.R
+  - R/mod_prot_design_import_helpers.R
+  - R/mod_prot_design_builder_helpers.R
+
+entries:
+  - id: mod_prot_design_state_checkpoint
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: buildProtDesignStateCheckpoint }
+    target: R/mod_prot_design_state_helpers.R
+    group: proteomics.design.wrapper.state
+    note: Stage the checkpoint builder with the post-checkpoint shell before any live apply.
+
+  - id: mod_prot_design_post_checkpoint
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: completeProtDesignPostCheckpoint }
+    target: R/mod_prot_design_state_helpers.R
+    group: proteomics.design.wrapper.state
+
+  - id: mod_prot_design_imported_contrasts
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: readProtDesignImportedContrasts }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+    note: First staging wave for the accumulated exact-source import seams.
+
+  - id: mod_prot_design_imported_uniprot_sidecar
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: hydrateProtDesignImportedUniprotSidecar }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_imported_fasta_sidecar
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: hydrateProtDesignImportedFastaSidecar }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_imported_config_tables
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: loadProtDesignImportedConfigAndTables }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_import_artifacts
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: resolveProtDesignImportArtifacts }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_imported_workflow_state
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: initializeProtDesignImportedWorkflowState }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_import_confirmation_flow
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: runProtDesignImportConfirmationFlow }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_import_observer_shell
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: runProtDesignImportObserverShell }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_import_modal_shell
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: registerProtDesignImportModalShell }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_import_confirmation_observer
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: registerProtDesignImportConfirmationObserver }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_import_bootstrap
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: initializeProtDesignImportBootstrap }
+    target: R/mod_prot_design_import_helpers.R
+    group: proteomics.design.wrapper.import
+
+  - id: mod_prot_design_builder_artifacts
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: persistProtDesignBuilderArtifacts }
+    target: R/mod_prot_design_builder_helpers.R
+    group: proteomics.design.wrapper.builder
+    note: Stage the builder-side persistence and observer seams as one exact-source helper wave.
+
+  - id: mod_prot_design_builder_results
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: hydrateProtDesignBuilderResults }
+    target: R/mod_prot_design_builder_helpers.R
+    group: proteomics.design.wrapper.builder
+
+  - id: mod_prot_design_builder_save_flow
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: runProtDesignBuilderSaveFlow }
+    target: R/mod_prot_design_builder_helpers.R
+    group: proteomics.design.wrapper.builder
+
+  - id: mod_prot_design_builder_observer_shell
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: runProtDesignBuilderObserverShell }
+    target: R/mod_prot_design_builder_helpers.R
+    group: proteomics.design.wrapper.builder
+
+  - id: mod_prot_design_preview_outputs
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: registerProtDesignPreviewOutputs }
+    target: R/mod_prot_design_builder_helpers.R
+    group: proteomics.design.wrapper.builder
+
+  - id: mod_prot_design_builder_module
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: registerProtDesignBuilderModule }
+    target: R/mod_prot_design_builder_helpers.R
+    group: proteomics.design.wrapper.builder
+
+  - id: mod_prot_design_builder_results_observer
+    source: R/mod_prot_design.R
+    selector: { kind: symbol, value: registerProtDesignBuilderResultsObserver }
+    target: R/mod_prot_design_builder_helpers.R
+    group: proteomics.design.wrapper.builder

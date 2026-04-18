@@ -1,0 +1,46 @@
+version: 1
+wave: wave2_proteomics_norm_function_helper_tail
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_norm_optimization_helpers.R
+
+entries:
+  - id: prot_norm_update_ruv_parameters
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: updateRuvParameters }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.ruv
+    note: Wave 2 stages the remaining helper tail out of func_prot_norm.R before any split of findBestNegCtrlPercentage().
+
+  - id: prot_norm_get_ruviii_replicate_matrix_helper
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: getRuvIIIReplicateMatrixHelper }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.ruv
+
+  - id: prot_norm_get_neg_ctrl_prot_anova_helper
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: getNegCtrlProtAnovaHelper }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.ruv
+
+  - id: prot_norm_extract_ruv_results
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: extractRuvResults }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.ruv
+
+  - id: prot_norm_scale_center_and_fill_missing
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: scaleCenterAndFillMissing }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.ruv

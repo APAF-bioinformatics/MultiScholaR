@@ -1,0 +1,64 @@
+version: 1
+wave: wave2_proteomics_qc_protein_correlation_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_qc_correlation_helpers.R
+
+entries:
+  - id: prot_qc_get_pairs_of_samples_table
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: getPairsOfSamplesTable }
+    target: R/func_prot_qc_correlation_helpers.R
+    group: proteomics.qc.protein.correlation
+    note: Wave 2 stages the remaining protein-QC correlation helper cluster before any live apply.
+
+  - id: prot_qc_calculate_pearson_correlation
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: calulatePearsonCorrelation }
+    target: R/func_prot_qc_correlation_helpers.R
+    group: proteomics.qc.protein.correlation
+
+  - id: prot_qc_calculate_pearson_correlation_matrix
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: calculatePearsonCorrelationMatrix }
+    target: R/func_prot_qc_correlation_helpers.R
+    group: proteomics.qc.protein.correlation
+
+  - id: prot_qc_calculate_pearson_correlation_optimized
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: calculatePearsonCorrelationOptimized }
+    target: R/func_prot_qc_correlation_helpers.R
+    group: proteomics.qc.protein.correlation
+
+  - id: prot_qc_calculate_pairwise_pearson_helper
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: calulatePearsonCorrelationForSamplePairsHelper }
+    target: R/func_prot_qc_correlation_helpers.R
+    group: proteomics.qc.protein.correlation
+
+  - id: prot_qc_filter_samples_by_peptide_correlation
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: filterSamplesByPeptideCorrelationThreshold }
+    target: R/func_prot_qc_correlation_helpers.R
+    group: proteomics.qc.protein.correlation
+
+  - id: prot_qc_find_sample_pairs_below_peptide_correlation
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: findSamplesPairBelowPeptideCorrelationThreshold }
+    target: R/func_prot_qc_correlation_helpers.R
+    group: proteomics.qc.protein.correlation
+
+  - id: prot_qc_filter_samples_by_protein_correlation_helper
+    source: R/func_prot_qc.R
+    selector: { kind: symbol, value: filterSamplesByProteinCorrelationThresholdHelper }
+    target: R/func_prot_qc_correlation_helpers.R
+    group: proteomics.qc.protein.correlation

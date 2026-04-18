@@ -1,0 +1,70 @@
+version: 1
+wave: prot_summary_wave3
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_summary_support_helpers.R
+
+entries:
+  - id: mod_prot_summary_complete_workflow_args_save
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: completeProtSummaryWorkflowArgsSave }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+    note: Third staged summary wave moves the remaining save/publication/GitHub helper family without rewriting live sources.
+
+  - id: mod_prot_summary_prepare_session_state_export
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: prepareProtSummarySessionStateExport }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_complete_session_state_export
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: completeProtSummarySessionStateExport }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_bootstrap_copy_fallback_study_params
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: bootstrapProtSummaryCopyFallbackStudyParams }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_prepare_copy_inputs
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: prepareProtSummaryCopyInputs }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_run_publication_copy
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: runProtSummaryPublicationCopy }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_handle_publication_copy_error
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: handleProtSummaryPublicationCopyError }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_run_github_push
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: runProtSummaryGithubPush }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support
+
+  - id: mod_prot_summary_complete_github_push
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: completeProtSummaryGithubPush }
+    target: R/mod_prot_summary_support_helpers.R
+    group: proteomics.summary.wrapper.support

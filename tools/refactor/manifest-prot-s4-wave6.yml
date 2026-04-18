@@ -1,0 +1,22 @@
+version: 1
+wave: wave6_proteomics_s4_protein_norm_controls
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_norm_controls.R
+
+entries:
+  - id: prot_s4_norm_controls_get_low_cv
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: getLowCoefficientOfVariationProteins }
+    target: R/func_prot_s4_norm_controls.R
+    group: proteomics.s4.norm_controls
+    note: Sixth staged proteomics S4 wave moves the exact ProteinQuantitativeData getLowCoefficientOfVariationProteins method into a dedicated S4 normalization-controls file without rewriting live sources.

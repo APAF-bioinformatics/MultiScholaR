@@ -1,0 +1,58 @@
+version: 1
+wave: prot_summary_wave4
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_summary_server_helpers.R
+
+entries:
+  - id: mod_prot_summary_initialize_default_outputs
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: initializeProtSummaryDefaultOutputs }
+    target: R/mod_prot_summary_server_helpers.R
+    group: proteomics.summary.wrapper.server_helpers
+    note: Fourth staged summary wave moves the isolated top-level wrapper seam shells without rewriting live sources.
+
+  - id: mod_prot_summary_observe_workflow_args_save
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: observeProtSummaryWorkflowArgsSave }
+    target: R/mod_prot_summary_server_helpers.R
+    group: proteomics.summary.wrapper.server_helpers
+
+  - id: mod_prot_summary_observe_publication_copy
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: observeProtSummaryPublicationCopy }
+    target: R/mod_prot_summary_server_helpers.R
+    group: proteomics.summary.wrapper.server_helpers
+
+  - id: mod_prot_summary_observe_session_state_export
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: observeProtSummarySessionStateExport }
+    target: R/mod_prot_summary_server_helpers.R
+    group: proteomics.summary.wrapper.server_helpers
+
+  - id: mod_prot_summary_observe_report_generation
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: observeProtSummaryReportGeneration }
+    target: R/mod_prot_summary_server_helpers.R
+    group: proteomics.summary.wrapper.server_helpers
+
+  - id: mod_prot_summary_observe_github_push
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: observeProtSummaryGithubPush }
+    target: R/mod_prot_summary_server_helpers.R
+    group: proteomics.summary.wrapper.server_helpers
+
+  - id: mod_prot_summary_register_template_status_output
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: registerProtSummaryTemplateStatusOutput }
+    target: R/mod_prot_summary_server_helpers.R
+    group: proteomics.summary.wrapper.server_helpers

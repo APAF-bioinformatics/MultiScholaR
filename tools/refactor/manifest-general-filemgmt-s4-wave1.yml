@@ -1,0 +1,35 @@
+version: 1
+wave: wave1_general_filemgmt_s4_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+  - R/func_general_filemgmt_setupdirectories_helpers.R
+  - R/func_general_filemgmt_s4_helpers.R
+  - R/func_general_filemgmt_config_helpers.R
+  - R/func_general_filemgmt_report_helpers.R
+  - R/func_general_filemgmt_utility_helpers.R
+
+entries:
+  - id: general_filemgmt_extract_metab_s4_params
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: extractMetabS4Params }
+    target: R/func_general_filemgmt_s4_helpers.R
+    group: general.filemgmt.s4
+    note: First bounded S4-helper staging wave isolates the metabolomics workflow-parameter extractor into a dedicated helper target while keeping loadDependencies() and the downstream NA-validation helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_extract_lipid_s4_params
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: extractLipidS4Params }
+    target: R/func_general_filemgmt_s4_helpers.R
+    group: general.filemgmt.s4
+    note: First bounded S4-helper staging wave isolates the lipidomics workflow-parameter extractor into a dedicated helper target while keeping loadDependencies() and the downstream NA-validation helpers live in func_general_filemgmt.R.

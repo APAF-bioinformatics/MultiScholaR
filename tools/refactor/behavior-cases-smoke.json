@@ -1,0 +1,90 @@
+{
+  "cases": [
+    {
+      "id": "count_num_peptides_smoke",
+      "family": "pure_helper",
+      "entity_key": "symbol::count_num_peptides",
+      "fixture_kind": "inline_setup",
+      "normalizer_key": "scalar_integer",
+      "risk_level": "medium",
+      "compare_warnings": false,
+      "baseline_files": [
+        "R/allGenerics.R",
+        "R/func_prot_rollup.R"
+      ],
+      "target_files": [
+        "R/func_prot_rollup_count_helpers.R"
+      ],
+      "setup_code": [
+        "suppressPackageStartupMessages(library(dplyr))",
+        "input_table <- data.frame(Protein.Ids = c('P1', 'P1', 'P2', 'P2'), Stripped.Sequence = c('AA', 'AA', 'BB', 'CC'), stringsAsFactors = FALSE)"
+      ],
+      "call_expr": "count_num_peptides(input_table)",
+      "normalize_expr": "as.integer(result)"
+    },
+    {
+      "id": "count_proteins_per_run_peptide_df_smoke",
+      "family": "tabular_helper",
+      "entity_key": "symbol::countProteinsPerRun",
+      "fixture_kind": "inline_setup",
+      "normalizer_key": "run_count_table",
+      "risk_level": "medium",
+      "compare_warnings": false,
+      "baseline_files": [
+        "R/allGenerics.R",
+        "R/func_prot_rollup.R"
+      ],
+      "target_files": [
+        "R/func_prot_rollup_count_helpers.R"
+      ],
+      "setup_code": [
+        "suppressPackageStartupMessages(library(dplyr))",
+        "data <- data.frame(Run = c('RunB', 'RunA', 'RunA', 'RunB', 'RunC'), Protein.Ids = c('P1', 'P1', 'P2', 'P2', 'P2'), stringsAsFactors = FALSE)"
+      ],
+      "call_expr": "countProteinsPerRun(data)",
+      "normalize_expr": "local({ ordered <- result[order(result[['Run']]), , drop = FALSE]; list(Run = unname(as.character(ordered[['Run']])), n_proteins = unname(as.integer(ordered[['n_proteins']]))) })"
+    },
+    {
+      "id": "count_proteins_per_run_quant_df_smoke",
+      "family": "tabular_helper",
+      "entity_key": "symbol::countProteinsPerRun",
+      "fixture_kind": "inline_setup",
+      "normalizer_key": "run_count_table",
+      "risk_level": "medium",
+      "compare_warnings": false,
+      "baseline_files": [
+        "R/allGenerics.R",
+        "R/func_prot_rollup.R"
+      ],
+      "target_files": [
+        "R/func_prot_rollup_count_helpers.R"
+      ],
+      "setup_code": [
+        "suppressPackageStartupMessages(library(dplyr))",
+        "data <- data.frame(Protein.Ids = c('P1', 'P2', 'P3'), RunB = c(1, NA, 3), RunA = c(NA, 2, 4), stringsAsFactors = FALSE)"
+      ],
+      "call_expr": "countProteinsPerRun(data)",
+      "normalize_expr": "local({ ordered <- result[order(result[['Run']]), , drop = FALSE]; list(Run = unname(as.character(ordered[['Run']])), n_proteins = unname(as.integer(ordered[['n_proteins']]))) })"
+    },
+    {
+      "id": "find_best_k_smoke",
+      "family": "ggplot_helper",
+      "entity_key": "symbol::findBestK",
+      "fixture_kind": "inline_setup",
+      "normalizer_key": "scalar_integer",
+      "risk_level": "high",
+      "compare_messages": true,
+      "baseline_files": [
+        "R/func_prot_norm.R"
+      ],
+      "target_files": [
+        "R/func_prot_norm_optimization_helpers.R"
+      ],
+      "setup_code": [
+        "cancorplot_r1 <- list(data = data.frame(featureset = c('Control', 'All', 'Control', 'All'), cc = c(0.2, 0.9, 0.4, 0.95), K = c(1, 1, 2, 2), stringsAsFactors = FALSE))"
+      ],
+      "call_expr": "findBestK(cancorplot_r1)",
+      "normalize_expr": "as.integer(result)"
+    }
+  ]
+}

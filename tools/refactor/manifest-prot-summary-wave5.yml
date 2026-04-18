@@ -1,0 +1,29 @@
+version: 1
+wave: prot_summary_wave5
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_summary_ui.R
+  - R/mod_prot_summary_server.R
+
+entries:
+  - id: mod_prot_summary_ui_entrypoint
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: mod_prot_summary_ui }
+    target: R/mod_prot_summary_ui.R
+    group: proteomics.summary.wrapper.entrypoints
+    note: Final summary wrapper wave moves the public UI and server entry points into dedicated files and leaves mod_prot_summary.R as an explicit breadcrumb.
+
+  - id: mod_prot_summary_server_entrypoint
+    source: R/mod_prot_summary.R
+    selector: { kind: symbol, value: mod_prot_summary_server }
+    target: R/mod_prot_summary_server.R
+    group: proteomics.summary.wrapper.entrypoints

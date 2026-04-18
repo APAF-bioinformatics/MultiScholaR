@@ -1,13 +1,20 @@
-
-library(MultiScholaR)
-library(dplyr)
-library(tidyr)
-library(tibble)
-library(rlang)
-
-# Source necessary files
-source("R/func_metab_s4_objects.R")
-source("R/func_metab_de.R")
+if (requireNamespace("MultiScholaR", quietly = TRUE)) {
+  library(MultiScholaR)
+} else {
+  tryCatch(
+    devtools::load_all("."),
+    error = function(e) {
+      stop(
+        paste(
+          "Unable to load MultiScholaR from the local checkout.",
+          "Install the package or install the missing package imports required by devtools::load_all().",
+          paste("Original error:", conditionMessage(e))
+        ),
+        call. = FALSE
+      )
+    }
+  )
+}
 
 # Mock assay data
 assay_pos <- data.frame(
@@ -27,14 +34,15 @@ design <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# Create object
-obj <- new("MetaboliteAssayData",
+# Create object using the package API rather than hard-coded source files
+obj <- createMetaboliteAssayData(
   metabolite_data = list(LCMS_Pos = assay_pos),
   design_matrix = design,
   sample_id = "Run",
   group_id = "group",
   metabolite_id_column = "Alignment ID",
-  annotation_id_column = "Metabolite name"
+  annotation_id_column = "Metabolite name",
+  database_identifier_type = "InternalName"
 )
 
 # Mock contrasts table
@@ -44,14 +52,15 @@ contrasts_tbl <- data.frame(
   stringsAsFactors = FALSE
 )
 
-message("\n--- Running runMetabolitesDE ---")
+message("\n--- Running runMetabolitesDA ---")
 tryCatch({
-  results <- runMetabolitesDE(
+  results <- runMetabolitesDA(
     theObject = obj,
     contrasts_tbl = contrasts_tbl,
     formula_string = "~ 0 + group"
   )
-  message("DE Analysis Successful!")
+  message("DA Analysis Successful!")
+  message("Result entries: ", paste(names(results), collapse = ", "))
 }, error = function(e) {
-  message("DE Analysis Failed with error:\n", e$message)
+  message("DA Analysis Failed with error:\n", e$message)
 })

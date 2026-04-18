@@ -1,0 +1,34 @@
+version: 1
+wave: wave27_proteomics_enrichment_organism_filter_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_organism_mapping_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichOrganismMapping }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.organism_filter.mapping
+    note: Twenty-seventh staged enrichment helper wave moves the exact-source organism-mapping helper without rewriting live sources.
+  - id: mod_prot_enrich_organism_filter_applier
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: applyProtEnrichOrganismFilter }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.organism_filter.execution
+    note: Twenty-seventh staged enrichment helper wave moves the exact-source organism-filter execution helper without rewriting live sources.
+  - id: mod_prot_enrich_organism_filter_metadata_persister
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: persistProtEnrichOrganismFilterMetadata }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.organism_filter.reporting
+    note: Twenty-seventh staged enrichment helper wave moves the exact-source organism-filter metadata helper without rewriting live sources.

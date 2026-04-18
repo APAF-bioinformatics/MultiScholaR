@@ -1,0 +1,36 @@
+version: 1
+wave: wave4_general_filemgmt_setupdirectories_helper
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+  - R/func_general_filemgmt_setupdirectories_helpers.R
+
+entries:
+  - id: general_filemgmt_parse_setup_directories_omic_types
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: parseSetupDirectoriesOmicTypes }
+    target: R/func_general_filemgmt_setupdirectories_helpers.R
+    group: general.filemgmt.setupdirectories
+    note: Fourth bounded general-file-management checkpoint stages the exact-source setupDirectories helper cluster while keeping setupDirectories() live for later wrapper cleanup.
+
+  - id: general_filemgmt_get_setup_directories_omic_config
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: getSetupDirectoriesOmicConfig }
+    target: R/func_general_filemgmt_setupdirectories_helpers.R
+    group: general.filemgmt.setupdirectories
+
+  - id: general_filemgmt_build_setup_directories_path_list
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: buildSetupDirectoriesPathList }
+    target: R/func_general_filemgmt_setupdirectories_helpers.R
+    group: general.filemgmt.setupdirectories

@@ -1,0 +1,46 @@
+version: 1
+wave: wave1_proteomics_norm_function_optimization_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_norm_optimization_helpers.R
+
+entries:
+  - id: prot_norm_find_best_k
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: findBestK }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.optimization
+    note: Wave 1 stages the RUV optimization helper cluster out of func_prot_norm.R before any live apply.
+
+  - id: prot_norm_find_best_k_for_assay_list
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: findBestKForAssayList }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.optimization
+
+  - id: prot_norm_calculate_separation_score
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: calculateSeparationScore }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.optimization
+
+  - id: prot_norm_calculate_composite_score
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: calculateCompositeScore }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.optimization
+
+  - id: prot_norm_calculate_adaptive_max_k
+    source: R/func_prot_norm.R
+    selector: { kind: symbol, value: calculateAdaptiveMaxK }
+    target: R/func_prot_norm_optimization_helpers.R
+    group: proteomics.norm.functions.optimization

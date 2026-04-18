@@ -1,0 +1,34 @@
+version: 1
+wave: wave17_proteomics_enrichment_server_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_clusterprofiler_results_table_renderer
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: renderProtEnrichClusterProfilerResultsTable }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.renderers
+    note: Seventeenth staged enrichment wrapper wave moves the remaining exact-source render-helper cluster without rewriting live sources.
+
+  - id: mod_prot_enrich_stringdb_results_table_renderer
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: renderProtEnrichStringDbResultsTable }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.renderers
+
+  - id: mod_prot_enrich_stringdb_plot_renderer
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: renderProtEnrichStringDbPlot }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.wrapper.renderers

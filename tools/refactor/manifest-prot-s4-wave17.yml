@@ -1,0 +1,22 @@
+version: 1
+wave: wave17_proteomics_s4_plot_rle_list
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_qc_methods.R
+
+entries:
+  - id: prot_s4_qc_method_plot_rle_list
+    source: R/func_prot_s4_objects.R
+    selector: { kind: setMethod, value: plotRleList }
+    target: R/func_prot_s4_qc_methods.R
+    group: proteomics.s4.qc.methods
+    note: Seventeenth staged proteomics S4 wave moves the exact ProteinQuantitativeData plotRleList method block into the existing S4 QC-methods helper file without rewriting live sources.

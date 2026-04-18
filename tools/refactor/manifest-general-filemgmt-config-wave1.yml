@@ -1,0 +1,31 @@
+version: 1
+wave: wave1_general_filemgmt_config_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+  - R/func_general_filemgmt_setupdirectories_helpers.R
+  - R/func_general_filemgmt_config_helpers.R
+
+entries:
+  - id: general_filemgmt_read_config_file
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: readConfigFile }
+    target: R/func_general_filemgmt_config_helpers.R
+    group: general.filemgmt.config
+    note: First bounded config-helper staging wave isolates the config reader and section reader into a dedicated helper target while keeping config round-trip writers, results IO, and Rmd sourcing helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_read_config_file_section
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: readConfigFileSection }
+    target: R/func_general_filemgmt_config_helpers.R
+    group: general.filemgmt.config

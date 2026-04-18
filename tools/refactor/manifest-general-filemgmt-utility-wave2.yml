@@ -1,0 +1,69 @@
+version: 1
+wave: wave2_general_filemgmt_dedicated_utility_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+  - R/func_general_filemgmt_setupdirectories_helpers.R
+  - R/func_general_filemgmt_config_helpers.R
+  - R/func_general_filemgmt_report_helpers.R
+  - R/func_general_filemgmt_utility_helpers.R
+
+entries:
+  - id: general_filemgmt_test_required_files
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: testRequiredFiles }
+    target: R/func_general_filemgmt_utility_helpers.R
+    group: general.filemgmt.utilities
+    note: Second bounded utility-helper staging wave retargets the required-file validator into a dedicated file-management utility helper file after func_general_helpers.R failed the duplicate-symbol apply check, while keeping loadDependencies() and downstream S4 or NA-validation helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_test_required_files_warning
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: testRequiredFilesWarning }
+    target: R/func_general_filemgmt_utility_helpers.R
+    group: general.filemgmt.utilities
+    note: Second bounded utility-helper staging wave retargets the warning-only required-file validator into a dedicated file-management utility helper file after func_general_helpers.R failed the duplicate-symbol apply check, while keeping loadDependencies() and downstream S4 or NA-validation helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_test_required_arguments
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: testRequiredArguments }
+    target: R/func_general_filemgmt_utility_helpers.R
+    group: general.filemgmt.utilities
+    note: Second bounded utility-helper staging wave retargets the required-argument validator into a dedicated file-management utility helper file after func_general_helpers.R failed the duplicate-symbol apply check, while keeping loadDependencies() and downstream S4 or NA-validation helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_parse_type
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: parseType }
+    target: R/func_general_filemgmt_utility_helpers.R
+    group: general.filemgmt.utilities
+    note: Second bounded utility-helper staging wave retargets the list-type parser helper into a dedicated file-management utility helper file after func_general_helpers.R failed the duplicate-symbol apply check, while keeping loadDependencies() and downstream S4 or NA-validation helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_parse_string
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: parseString }
+    target: R/func_general_filemgmt_utility_helpers.R
+    group: general.filemgmt.utilities
+    note: Second bounded utility-helper staging wave retargets the quote-stripping parser helper into a dedicated file-management utility helper file after func_general_helpers.R failed the duplicate-symbol apply check, while keeping loadDependencies() and downstream S4 or NA-validation helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_parse_list
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: parseList }
+    target: R/func_general_filemgmt_utility_helpers.R
+    group: general.filemgmt.utilities
+    note: Second bounded utility-helper staging wave retargets the comma-splitting parser helper into a dedicated file-management utility helper file after func_general_helpers.R failed the duplicate-symbol apply check, while keeping loadDependencies() and downstream S4 or NA-validation helpers live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_is_argument_defined
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: isArgumentDefined }
+    target: R/func_general_filemgmt_utility_helpers.R
+    group: general.filemgmt.utilities
+    note: Second bounded utility-helper staging wave retargets the argument-presence helper into a dedicated file-management utility helper file after func_general_helpers.R failed the duplicate-symbol apply check, while keeping loadDependencies() and downstream S4 or NA-validation helpers live in func_general_filemgmt.R.

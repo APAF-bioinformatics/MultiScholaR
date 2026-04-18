@@ -1,0 +1,40 @@
+version: 1
+wave: wave1_general_filemgmt_report_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_path_helpers.R
+  - R/func_general_filemgmt_directory_helpers.R
+  - R/func_general_filemgmt_setupdirectories_helpers.R
+  - R/func_general_filemgmt_config_helpers.R
+  - R/func_general_filemgmt_report_helpers.R
+
+entries:
+  - id: general_filemgmt_copy_to_results_summary
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: copyToResultsSummary }
+    target: R/func_general_filemgmt_report_helpers.R
+    group: general.filemgmt.report
+    note: First bounded report-helper staging wave isolates the results-summary export helper into a dedicated report helper target while keeping sourceRmdFileSimple(), sourceRmdFile(), saveListOfPdfs(), savePlot()/save_plot(), and write_results() live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_download_report_template
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: downloadReportTemplate }
+    target: R/func_general_filemgmt_report_helpers.R
+    group: general.filemgmt.report
+    note: First bounded report-helper staging wave isolates the report-template fetch helper into a dedicated report helper target while keeping sourceRmdFileSimple(), sourceRmdFile(), saveListOfPdfs(), savePlot()/save_plot(), and write_results() live in func_general_filemgmt.R.
+
+  - id: general_filemgmt_render_report
+    source: R/func_general_filemgmt.R
+    selector: { kind: symbol, value: RenderReport }
+    target: R/func_general_filemgmt_report_helpers.R
+    group: general.filemgmt.report
+    note: First bounded report-helper staging wave isolates the report renderer into a dedicated report helper target while keeping sourceRmdFileSimple(), sourceRmdFile(), saveListOfPdfs(), savePlot()/save_plot(), and write_results() live in func_general_filemgmt.R.

@@ -1,0 +1,52 @@
+version: 1
+wave: wave28_proteomics_enrichment_context_contrast_helpers
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_server_helpers.R
+
+entries:
+  - id: mod_prot_enrich_current_s4_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichCurrentS4Object }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.context.current_s4
+    note: Twenty-eighth staged enrichment helper wave moves the exact-source current-S4 resolver without rewriting live sources.
+  - id: mod_prot_enrich_contrast_choices_builder
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: buildProtEnrichContrastChoices }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.contrast.choices
+    note: Twenty-eighth staged enrichment helper wave moves the exact-source contrast-choice builder without rewriting live sources.
+  - id: mod_prot_enrich_raw_contrast_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichRawContrastName }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.contrast.mapping
+    note: Twenty-eighth staged enrichment helper wave moves the exact-source raw-contrast resolver without rewriting live sources.
+  - id: mod_prot_enrich_raw_contrast_reactive_factory
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: createProtEnrichRawContrastNameReactive }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.contrast.reactive
+    note: Twenty-eighth staged enrichment helper wave moves the exact-source raw-contrast reactive factory without rewriting live sources.
+  - id: mod_prot_enrich_selected_contrast_results_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichSelectedContrastResults }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.contrast.results
+    note: Twenty-eighth staged enrichment helper wave moves the exact-source selected-contrast results resolver without rewriting live sources.
+  - id: mod_prot_enrich_selected_da_results_resolver
+    source: R/mod_prot_enrich.R
+    selector: { kind: symbol, value: resolveProtEnrichSelectedDaResults }
+    target: R/mod_prot_enrich_server_helpers.R
+    group: proteomics.enrichment.contrast.da_results
+    note: Twenty-eighth staged enrichment helper wave moves the exact-source selected-DE-results resolver without rewriting live sources.

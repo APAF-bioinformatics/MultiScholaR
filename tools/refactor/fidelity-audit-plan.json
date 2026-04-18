@@ -1,0 +1,650 @@
+{
+  "name": "refactor-fidelity-audit",
+  "updated_at": "2026-04-17",
+  "status": "fa_p6_completed",
+  "artifacts": {
+    "human_plan": "tools/refactor/FIDELITY_AUDIT_IMPLEMENTATION_PLAN.md",
+    "progress_manifest": "tools/refactor/fidelity-audit-plan.json",
+    "future_db": ".refactor-fidelity-audit/audit.db",
+    "future_event_log": ".refactor-fidelity-audit/events.jsonl",
+    "future_report_dir": ".refactor-fidelity-audit/reports"
+  },
+  "skill_basis": {
+    "skill_name": "refactor-fidelity-audit",
+    "role": "thin orchestration layer over deterministic repo-local audit engines",
+    "skill_owns": [
+      "mode selection",
+      "baseline strategy selection",
+      "engine invocation",
+      "triage across structural, behavioral, and curated findings",
+      "report routing for humans and automation"
+    ],
+    "repo_local_engines_own": [
+      "inventory extraction",
+      "manifest-aware block comparison",
+      "behavior replay",
+      "exception persistence",
+      "report materialization"
+    ],
+    "why_this_split_exists": [
+      "stable behavior across sessions and compaction",
+      "shared logic between chat, automation, and CI",
+      "machine-readable evidence instead of prompt-only reasoning"
+    ]
+  },
+  "baseline_strategy": {
+    "required_modes": [
+      "branch_tip",
+      "merge_base",
+      "pinned_commit"
+    ],
+    "default_lane_mode": "pinned_commit",
+    "default_closeout_mode": "pinned_commit_plus_mainline"
+  },
+  "certainty_tiers": [
+    "T0_unseen",
+    "T1_surface_present",
+    "T2_raw_exact",
+    "T3_normalized_or_ast_exact",
+    "T4_behavior_replayed",
+    "T5_contract_replayed",
+    "T6_end_to_end_verified"
+  ],
+  "touch_points": {
+    "package_contract": [
+      "NAMESPACE",
+      "DESCRIPTION Collate",
+      "R file inventory"
+    ],
+    "inventory_entities": [
+      "top-level symbols",
+      "setMethod",
+      "setClass",
+      "setGeneric"
+    ],
+    "manifest_surfaces": [
+      "tools/refactor/manifest-*.yml",
+      "selector resolution",
+      "target resolution asymmetry"
+    ],
+    "behavior_surfaces": [
+      "pure helpers",
+      "data frame helpers",
+      "ggplot-backed helpers",
+      "S4 methods",
+      "module contracts",
+      "golden master tests"
+    ],
+    "curation_surfaces": [
+      "whitespace-only drift",
+      "comment/roxygen drift",
+      "manual merge",
+      "intentional API drift",
+      "semantic mismatch",
+      "fixture gap"
+    ]
+  },
+  "testing_policy": {
+    "package_line_coverage_target_pct": 80,
+    "touched_extracted_helper_target_pct": 90,
+    "touched_preserved_helper_target_pct": 85,
+    "wrapper_policy": "coverage is measured but wrapper/module acceptance requires scenario and contract completeness",
+    "gating_order": [
+      "structural_inventory_and_manifest_fidelity",
+      "differential_helper_replay",
+      "isolated_s4_replay",
+      "module_contract_and_scenario_replay",
+      "package_wide_coverage_pass",
+      "final_exception_curation"
+    ]
+  },
+  "testing_matrix": [
+    {
+      "surface": "extracted_pure_helpers",
+      "primary_evidence": [
+        "differential_replay",
+        "unit_tests"
+      ],
+      "fixture_strategy": [
+        "generated_minimal_fixtures",
+        "edge_case_fixtures",
+        "invalid_input_fixtures"
+      ],
+      "acceptance": {
+        "coverage_target_pct": 90,
+        "requires_baseline_parity_or_exception": true
+      }
+    },
+    {
+      "surface": "preserved_touched_helpers",
+      "primary_evidence": [
+        "differential_replay",
+        "characterization_tests",
+        "regression_tests"
+      ],
+      "fixture_strategy": [
+        "existing_characterization_fixtures",
+        "backward_compatibility_fixtures",
+        "regression_fixtures"
+      ],
+      "acceptance": {
+        "coverage_target_pct": 85,
+        "requires_baseline_parity_or_exception": true
+      }
+    },
+    {
+      "surface": "s4_classes_generics_methods",
+      "primary_evidence": [
+        "inventory_parity",
+        "manifest_fidelity",
+        "isolated_process_replay"
+      ],
+      "fixture_strategy": [
+        "subprocess_per_variant",
+        "slot_shape_assertions",
+        "dispatch_assertions",
+        "representative_object_fixtures"
+      ],
+      "acceptance": {
+        "coverage_target_pct": 85,
+        "requires_clean_json_channel": true
+      }
+    },
+    {
+      "surface": "extracted_wrapper_helpers",
+      "primary_evidence": [
+        "unit_tests",
+        "side_effect_assertions",
+        "differential_replay_when_available"
+      ],
+      "fixture_strategy": [
+        "reactive_stubs",
+        "mock_state_managers",
+        "tempdirs",
+        "notification_capture"
+      ],
+      "acceptance": {
+        "coverage_target_pct": 90,
+        "requires_explicit_side_effect_checks": true
+      }
+    },
+    {
+      "surface": "demonolithed_wrappers_and_modules",
+      "primary_evidence": [
+        "testServer_contract_suites",
+        "compat_tests",
+        "scenario_workflow_tests"
+      ],
+      "required_scenarios": [
+        "initialization",
+        "happy_path",
+        "missing_prerequisite",
+        "invalid_input",
+        "state_restore",
+        "reset_cleanup",
+        "export_report_side_effects",
+        "error_notification"
+      ],
+      "acceptance": {
+        "requires_contract_completeness": true,
+        "target_certainty_tier": "T5_or_T6"
+      }
+    },
+    {
+      "surface": "cross_module_and_workflow_segments",
+      "primary_evidence": [
+        "characterization_tests",
+        "compat_tests",
+        "golden_master_tests",
+        "workflow_smoke_tests"
+      ],
+      "fixture_strategy": [
+        "pinned_workflow_fixtures",
+        "captured_checkpoints",
+        "representative_omics_flows"
+      ],
+      "acceptance": {
+        "target_certainty_tier": "T6"
+      }
+    },
+    {
+      "surface": "exception_curation",
+      "primary_evidence": [
+        "automated_exception_emission",
+        "human_disposition"
+      ],
+      "required_exception_buckets": [
+        "whitespace_only_drift",
+        "comment_only_drift",
+        "target_resolution_asymmetry",
+        "intentional_behavior_change",
+        "unsupported_automation_shape",
+        "missing_fixture",
+        "unresolved_mismatch"
+      ],
+      "acceptance": {
+        "requires_first_class_exception_records": true
+      }
+    }
+  ],
+  "prototype_evidence": {
+    "surface_api": {
+      "baseline": "main@326c04904e504339a7ff15af00240a51cf337343",
+      "target": "HEAD@e924175182214c50fb1caf156fa96fc9db11c579",
+      "r_files": {
+        "main": 92,
+        "head": 200
+      },
+      "unique_symbols": {
+        "main": 615,
+        "head": 1066
+      },
+      "unique_setMethod_targets": {
+        "main": 65,
+        "head": 65
+      },
+      "unique_setClass_targets": {
+        "main": 13,
+        "head": 13
+      },
+      "exports": {
+        "main": 482,
+        "head": 482
+      },
+      "conclusion": "Export parity is insufficient; internal symbol inventory must be audited."
+    },
+    "manifest_fidelity": {
+      "sampled_manifests": [
+        "tools/refactor/manifest-prot-rollup-wave1.yml",
+        "tools/refactor/manifest-prot-rollup-wave2.yml",
+        "tools/refactor/manifest-prot-s4-wave25.yml",
+        "tools/refactor/manifest-prot-limpa-wave1.yml",
+        "tools/refactor/manifest-pept-s4-wave4.yml"
+      ],
+      "selector_kinds_covered": [
+        "symbol",
+        "setMethod",
+        "setClass",
+        "expr_index",
+        "anchor_range"
+      ],
+      "sample_entry_count": 14,
+      "raw_exact": 12,
+      "normalized_text_exact": 14,
+      "ast_exact": 14,
+      "exceptions_observed": [
+        {
+          "type": "whitespace_only_anchor_range",
+          "count": 2,
+          "target_resolution": "normalized_text_search"
+        }
+      ],
+      "conclusion": "Fidelity needs separate raw, normalized-text, and AST tiers plus asymmetric target resolution."
+    },
+    "behavior_replay": {
+      "sample_cases": [
+        "count_num_peptides",
+        "countProteinsPerRun_peptide_df",
+        "countProteinsPerRun_protein_df",
+        "findBestK"
+      ],
+      "passed": 4,
+      "total": 4,
+      "conclusion": "Pure and ggplot-backed helper replay is straightforward."
+    },
+    "s4_replay": {
+      "sample_case": "GridPlotData + InitialiseGrid",
+      "isolated_process_required": true,
+      "identical": true,
+      "operational_issue": "R startup noise contaminated stdout before JSON payload",
+      "conclusion": "S4 replay is feasible but requires isolated subprocesses and strict JSON-channel hygiene."
+    }
+  },
+  "implementation_evidence": {
+    "completed_checkpoint": "FA-P6",
+    "completed_at": "2026-04-17",
+    "implemented_artifacts": [
+      "tools/refactor/fidelity_inventory.R",
+      "tools/refactor/fidelity_manifest.R",
+      "tools/refactor/fidelity_manifest_compare.R",
+      "tools/refactor/fidelity_behavior_replay.R",
+      "tools/refactor/fidelity_contract_runner.R",
+      "tools/refactor/fidelity_inventory_snapshot.R",
+      "tools/refactor/fidelity_audit.py",
+      "tools/refactor/behavior-cases-smoke.json",
+      "tools/refactor/tests/fidelity-audit.test.cjs"
+    ],
+    "refit_entrypoints": [
+      "tools/refactor/extract_blocks.R",
+      "tools/refactor/verify_refactor.R"
+    ],
+    "validated_by": [
+      "node --test tools/refactor/tests/fidelity-audit.test.cjs",
+      "python3 -m py_compile tools/refactor/fidelity_audit.py",
+      "python3 tools/refactor/fidelity_audit.py inventory --repo-root . --side target --target-ref HEAD",
+      "Rscript --vanilla tools/refactor/fidelity_inventory_snapshot.R --repo-root .",
+      "python3 tools/refactor/fidelity_audit.py behavior --repo-root . --baseline-ref main --target-ref WORKTREE --case-path tools/refactor/behavior-cases-smoke.json",
+      "python3 tools/refactor/fidelity_audit.py contracts --repo-root . --target-path .",
+      "python3 tools/refactor/fidelity_audit.py contracts --repo-root <synthetic-fixture> --target-path <synthetic-fixture> --execute",
+      "python3 tools/refactor/fidelity_audit.py manifest --repo-root . --baseline-ref main --target-ref WORKTREE --manifest-path tools/refactor/manifest-wave1.yml --manifest-path tools/refactor/manifest-pept-s4-wave4.yml --run-id fa-p5-manifest-live",
+      "python3 tools/refactor/fidelity_audit.py exceptions --repo-root . --run-id fa-p5-manifest-live --auto-curate",
+      "python3 tools/refactor/fidelity_audit.py closeout --repo-root . --baseline-ref main --mainline-ref main --target-ref WORKTREE --manifest-path tools/refactor/manifest-wave1.yml --manifest-path tools/refactor/manifest-pept-s4-wave4.yml --case-path tools/refactor/behavior-cases-smoke.json --run-id fa-p6-closeout-live"
+    ],
+    "live_inventory_smoke": {
+      "repo_root": ".",
+      "side": "target",
+      "target_ref": "HEAD",
+      "status": "completed",
+      "counts": {
+        "r_files": 200,
+        "collate": 200,
+        "exports": {
+          "functions": 482,
+          "methods": 61,
+          "classes": 13
+        },
+        "entities": {
+          "setClass": 9,
+          "setGeneric": 75,
+          "setMethod": 116,
+          "symbol": 1006
+        },
+        "parse_failures": 0
+      }
+    },
+    "live_surface_smoke": {
+      "repo_root": ".",
+      "baseline": "main@326c04904e504339a7ff15af00240a51cf337343",
+      "target": "WORKTREE",
+      "status": "completed",
+      "total_diffs": 928,
+      "open_diff_count": 723,
+      "diff_counts": {
+        "collate_drift": 90,
+        "definition_drift": 29,
+        "duplicate_definition": 57,
+        "extra_definition": 439,
+        "extra_file": 108,
+        "moved_definition": 205
+      },
+      "severity_counts": {
+        "high": 57,
+        "info": 205,
+        "low": 108,
+        "medium": 558
+      }
+    },
+    "live_manifest_smoke": {
+      "repo_root": ".",
+      "baseline": "main@326c04904e504339a7ff15af00240a51cf337343",
+      "target": "WORKTREE",
+      "manifest_paths": [
+        "tools/refactor/manifest-wave1.yml",
+        "tools/refactor/manifest-pept-s4-wave4.yml"
+      ],
+      "status": "completed",
+      "entry_count": 47,
+      "exception_count": 31,
+      "status_counts": {
+        "ast_only": 1,
+        "content_missing": 29,
+        "manual_merge_expected": 1,
+        "raw_exact": 16
+      },
+      "resolver_counts": {
+        "ast_search": 1,
+        "content_missing": 30,
+        "selector": 16
+      },
+      "important_limitation": "Older manifests can report content_missing when the original target file was later split again; this is a lineage-tracking gap rather than a parser failure."
+    },
+    "behavior_regression_matrix": {
+      "cases": [
+        "exact_scalar",
+        "normalized_table",
+        "warning_diff",
+        "message_diff",
+        "error_match",
+        "s4_grid"
+      ],
+      "passed": 6,
+      "total": 6,
+      "conclusion": "Behavior replay now distinguishes exact, normalized-only, warning/message drift, shared error equivalence, and isolated S4 parity."
+    },
+    "live_behavior_smoke": {
+      "repo_root": ".",
+      "baseline": "main@326c04904e504339a7ff15af00240a51cf337343",
+      "target": "WORKTREE",
+      "case_paths": [
+        "tools/refactor/behavior-cases-smoke.json"
+      ],
+      "status": "completed",
+      "case_count": 4,
+      "exception_count": 0,
+      "status_counts": {
+        "exact_match": 4
+      },
+      "family_counts": {
+        "ggplot_helper": 1,
+        "pure_helper": 1,
+        "tabular_helper": 2
+      },
+      "important_limitation": "The live smoke catalog is currently helper-focused; isolated S4 replay is validated in deterministic synthetic coverage until curated real-file S4 fixtures are added."
+    },
+    "contract_regression_matrix": {
+      "families": [
+        "module_contract",
+        "characterization",
+        "compat",
+        "golden_master",
+        "general_unit"
+      ],
+      "executed_files": 5,
+      "cataloged_cases": 7,
+      "status_counts": {
+        "failed": 1,
+        "passed": 4
+      },
+      "conclusion": "Contract integration now catalogs real testthat families, extracts scenario tags, and persists deterministic execution evidence including skip counts."
+    },
+    "live_contract_catalog": {
+      "repo_root": ".",
+      "target": "WORKTREE",
+      "status": "completed",
+      "matrix_surface_count": 7,
+      "test_file_count": 25,
+      "test_case_count": 747,
+      "family_counts": {
+        "characterization": 2,
+        "compat": 1,
+        "general_unit": 15,
+        "golden_master": 1,
+        "module_contract": 6
+      },
+      "surface_counts": {
+        "cross_module_and_workflow_segments": 4,
+        "demonolithed_wrappers_and_modules": 6,
+        "unspecified_general": 15
+      },
+      "scenario_counts": {
+        "error_notification": 57,
+        "export_report_side_effects": 27,
+        "happy_path": 552,
+        "initialization": 174,
+        "invalid_input": 4,
+        "missing_prerequisite": 85,
+        "reset_cleanup": 55,
+        "state_restore": 51
+      },
+      "important_limitation": "Default live runs stay catalog-first because full package-level contract execution depends on optional load_all() semantics and external package dependencies."
+    },
+    "exception_curation_regression_matrix": {
+      "covered_flows": [
+        "surface_exception_emission",
+        "manifest_auto_curation",
+        "contract_failure_exception_emission",
+        "manual_curate_by_exception_key",
+        "open_only_exception_reporting"
+      ],
+      "conclusion": "Exception curation now supports deterministic auto-curation for low-risk drift and durable manual review state for unresolved parity gaps."
+    },
+    "live_exception_curation_smoke": {
+      "repo_root": ".",
+      "run_id": "fa-p5-manifest-live",
+      "status": "completed",
+      "scope": [
+        "tools/refactor/manifest-wave1.yml",
+        "tools/refactor/manifest-pept-s4-wave4.yml"
+      ],
+      "summary": {
+        "total_count": 31,
+        "open_count": 30,
+        "high_open_count": 29,
+        "auto_curated_count": 1
+      },
+      "type_counts": {
+        "comment_only_drift": 1,
+        "manual_merge_expected": 1,
+        "missing_target_block": 29
+      },
+      "important_limitation": "The selected live manifests expose mostly unresolved second-generation lineage gaps, so auto-curation closed only the single low-risk comment-only drift."
+    },
+    "closeout_regression_matrix": {
+      "covered_flows": [
+        "integrated_closeout_orchestration",
+        "component_run_tracking",
+        "auto_curated_ready_fixture",
+        "dedicated_closeout_report_materialization",
+        "unresolved_exception_closeout_view"
+      ],
+      "conclusion": "The closeout command now provides a deterministic branch-level decision artifact rather than requiring ad hoc sequencing of the individual audit engines."
+    },
+    "live_closeout_smoke": {
+      "repo_root": ".",
+      "run_id": "fa-p6-closeout-live",
+      "status": "blocked",
+      "baseline": "main@326c04904e504339a7ff15af00240a51cf337343",
+      "mainline": "main@326c04904e504339a7ff15af00240a51cf337343",
+      "target": "WORKTREE",
+      "scope": {
+        "manifest_paths": [
+          "tools/refactor/manifest-wave1.yml",
+          "tools/refactor/manifest-pept-s4-wave4.yml"
+        ],
+        "case_paths": [
+          "tools/refactor/behavior-cases-smoke.json"
+        ],
+        "contracts_execute": false
+      },
+      "readiness": {
+        "coverage_campaign_ready": false,
+        "open_exception_count": 753,
+        "high_open_exception_count": 86,
+        "surface_gate": false,
+        "manifest_gate": false,
+        "behavior_gate": true,
+        "contract_gate": false
+      },
+      "component_highlights": {
+        "baseline_surface_exception_count": 723,
+        "manifest_exception_count": 31,
+        "behavior_exception_count": 0,
+        "contract_exception_count": 0
+      },
+      "blockers": [
+        "Surface inventory still has open structural exceptions.",
+        "Manifest fidelity still has open exceptions.",
+        "Contract execution was not requested during closeout.",
+        "High-severity open exceptions remain unresolved."
+      ]
+    }
+  },
+  "implementation_phases": [
+    {
+      "id": "FA-P0",
+      "title": "Parser Foundation",
+      "status": "completed",
+      "deliverables": [
+        "importable parser library",
+        "parser-backed DESCRIPTION handling",
+        "selector resolution library",
+        "SQLite bootstrap",
+        "JSONL event bootstrap"
+      ]
+    },
+    {
+      "id": "FA-P1",
+      "title": "Surface Audit",
+      "status": "completed",
+      "deliverables": [
+        "inventory entity catalog",
+        "inventory diff engine",
+        "export drift report",
+        "collate drift report"
+      ]
+    },
+    {
+      "id": "FA-P2",
+      "title": "Manifest Fidelity",
+      "status": "completed",
+      "deliverables": [
+        "manifest entry catalog",
+        "asymmetric target resolver",
+        "raw/normalized/AST comparison",
+        "exception emission"
+      ]
+    },
+    {
+      "id": "FA-P3",
+      "title": "Behavior Replay",
+      "status": "completed",
+      "deliverables": [
+        "behavior case catalog",
+        "pure helper replay",
+        "ggplot helper replay",
+        "isolated S4 replay"
+      ]
+    },
+    {
+      "id": "FA-P4",
+      "title": "Contract Integration",
+      "status": "completed",
+      "deliverables": [
+        "testthat family integration",
+        "module contract mapping",
+        "golden-master integration",
+        "testing matrix materialization into audit DB"
+      ]
+    },
+    {
+      "id": "FA-P5",
+      "title": "Exception Curation",
+      "status": "completed",
+      "deliverables": [
+        "exception table",
+        "curation statuses",
+        "human review report",
+        "disposition rules"
+      ]
+    },
+    {
+      "id": "FA-P6",
+      "title": "Integrated Closeout Audit",
+      "status": "completed",
+      "deliverables": [
+        "baseline plus mainline closeout run",
+        "final unresolved exception report",
+        "coverage-campaign readiness summary"
+      ]
+    }
+  ],
+  "next_checkpoint": {
+    "id": "POST-FA-P6",
+    "title": "Gap Resolution Before Coverage",
+    "first_tasks": [
+      "Resolve the remaining surface and manifest fidelity blockers surfaced by the closeout report",
+      "Re-run closeout with contract execution once the branch is structurally and behaviorally ready",
+      "Start the >=80 percent coverage campaign only after closeout reports coverage_campaign_ready = true"
+    ]
+  }
+}

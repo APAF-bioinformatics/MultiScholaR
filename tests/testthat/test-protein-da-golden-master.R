@@ -19,20 +19,17 @@ test_that("deAnalysisWrapperFunction alias provides a deprecation warning", {
   )
 })
 
-test_of_fix <- function() {
-  file_content <- readLines("../../R/func_prot_da.R")
-  
-  test_that("Robust contrast matching logic is present", {
-    expect_true(any(grepl("Glimma: Available contrasts in data", file_content)))
-    expect_true(any(grepl("clean_target <- gsub", file_content)))
-  })
+test_that("Robust contrast matching logic is present", {
+  func_body <- as.character(body(MultiScholaR::generateProtDAVolcanoPlotGlimma))
+  expect_true(any(grepl("Glimma: Available contrasts in data", func_body, fixed = TRUE)))
+  expect_true(any(grepl("clean_target <- gsub", func_body, fixed = TRUE)))
+})
 
-  test_that("Final display_df cleaning logic is present", {
-    expect_true(any(grepl("FINAL CLEANING for Glimma table stability", file_content)))
-    expect_true(any(grepl("as.character\\(display_df\\[\\[col\\]\\]\\)", file_content)))
-  })
-}
-test_of_fix()
+test_that("Final display_df cleaning logic is present", {
+  func_body <- as.character(body(MultiScholaR::generateProtDAVolcanoPlotGlimma))
+  expect_true(any(grepl("FINAL CLEANING for Glimma table stability", func_body, fixed = TRUE)))
+  expect_true(any(grepl("as.character(display_df[[col]])", func_body, fixed = TRUE)))
+})
 
 test_that(".capture_checkpoint respects analysis_dir (Issue 3)", {
   # Verify the source code logic for directory resolution
