@@ -1,0 +1,596 @@
+{
+  "curations": [
+    {
+      "id": "surface_duplicate_detect_proteomics_format",
+      "exception_key": "surface_inventory::surface_duplicate_definition::symbol::detectProteomicsFormat",
+      "curation_status": "accepted",
+      "disposition": "canonical_duplicate_retired",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the canonical helper extracted from manifest-import-wave1.yml preserves the func_prot_import.R variant, and characterization coverage in test-prot-01-import.R plus test-prot-01b-import-detection-characterization.R freezes the retained parquet/FragPipe detection behavior while the stale mod_prot_import.R duplicate is intentionally retired."
+    },
+    {
+      "id": "surface_duplicate_update_missing_value_parameters",
+      "exception_key": "surface_inventory::surface_duplicate_definition::symbol::updateMissingValueParameters",
+      "curation_status": "accepted",
+      "disposition": "canonical_duplicate_retired",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the duplicate in func_general_filemgmt.R was intentionally removed in favor of the canonical helper in func_general_helpers.R, and test-general-filemgmt-duplicate-resolution-contracts.R freezes package-level signature parity plus default/helper-only behavior for the surviving implementation."
+    },
+    {
+      "id": "surface_duplicate_write_interactive_main",
+      "exception_key": "surface_inventory::surface_duplicate_definition::symbol::writeInteractiveVolcanoPlotProteomicsMain",
+      "curation_status": "accepted",
+      "disposition": "manual_merge_canonicalized",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because HANDOVER-wave1.md records the explicit manual-merge decision to keep the func_prot_da canonical implementation and retire the da_analysis_function_wrapper duplicate, and test-prot-07b-da-handlers-compat.R freezes the required legacy de_* alias compatibility on the surviving helper."
+    },
+    {
+      "id": "manifest_mod_prot_import_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-import-server-wave3.yml::mod_prot_import_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the entrypoint drift reflects wrapper-shell extraction into mod_prot_import_server.R, and test-prot-01c-import-module-contracts.R exercises the public server wrapper for successful-import side effects, default-config fallback, and unsupported-format cleanup."
+    },
+    {
+      "id": "manifest_mod_prot_design_builder_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-prot-design-builder-wave3.yml::mod_prot_design_builder_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the extracted design-builder wrapper is directly characterized in test-prot-04-design.R, including the public builder entry seam ordering and callback seed handoff through mod_prot_design_builder_server."
+    },
+    {
+      "id": "manifest_mod_prot_enrich_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-prot-enrich-server-wave26.yml::mod_prot_enrich_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the helper-seam extraction is covered by test-prot-11-enrichment-module-contracts.R, which exercises the public wrapper for bootstrap, output/download setup, observer registration, and analysis-method delegation through mod_prot_enrich_server."
+    },
+    {
+      "id": "manifest_mod_prot_summary_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-prot-summary-wave5.yml::mod_prot_summary_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-12-summary-module-contracts.R exercises the extracted summary wrapper across save, export, copy, GitHub, template status, and report observer seams on mod_prot_summary_server."
+    },
+    {
+      "id": "manifest_mod_lipid_da_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-da-module-wave3.yml::mod_lipid_da_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the extracted lipid DA entry wrapper is exercised through test-lipid-02b-da-module-contracts.R, which sources mod_lipid_da_server.R and runs the DA module contract suite against the public server seam."
+    },
+    {
+      "id": "manifest_mod_lipid_design_builder_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-design-builder-wave2.yml::mod_lipid_design_builder_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-13-design-builder-seams.R sources mod_lipid_design_builder_server.R and characterizes the extracted public builder seam directly."
+    },
+    {
+      "id": "manifest_mod_lipid_design_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-design-module-wave2.yml::mod_lipid_design_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-14-design-module-seams.R sources mod_lipid_design_server.R and exercises the extracted design-module server seam directly."
+    },
+    {
+      "id": "manifest_mod_lipid_import_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-import-module-wave3.yml::mod_lipid_import_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-00b-import-module-seams.R sources mod_lipid_import_server.R and characterizes the extracted server wrapper, including shinyFiles wiring and runtime seam behavior."
+    },
+    {
+      "id": "manifest_mod_lipid_import_ui_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-import-module-wave3.yml::mod_lipid_import_ui_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-00b-import-module-seams.R sources mod_lipid_import_ui.R and exercises the extracted public UI seam alongside the paired server wrapper."
+    },
+    {
+      "id": "manifest_mod_lipid_norm_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-norm-module-wave4.yml::mod_lipid_norm_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-12-norm-module-contracts.R sources mod_lipid_norm_server.R and explicitly characterizes the entry-shell seam plus runtime/bootstrap delegation through the extracted public server wrapper."
+    },
+    {
+      "id": "manifest_mod_lipid_norm_ui_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-norm-module-wave4.yml::mod_lipid_norm_ui_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-12-norm-module-contracts.R sources mod_lipid_norm_ui.R and covers the extracted UI helper and public wrapper seams directly."
+    },
+    {
+      "id": "manifest_mod_metab_da_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-metab-da-wave9.yml::mod_metab_da_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-02aa-da-display-filter-characterization.R loads mod_metab_da_server.R and characterizes the extracted server wrapper and display-filter delegation through the public entry shell."
+    },
+    {
+      "id": "manifest_mod_metab_import_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-metab-import-wave6.yml::mod_metab_import_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-00c-import-module-seams.R now freezes the extracted server entry shell, moduleServer handoff, and breadcrumb public-wrapper routing, while test-metab-00b-import-module-helper-characterization.R already covers the imported helper/runtime behavior underneath that shell."
+    },
+    {
+      "id": "manifest_mod_metab_norm_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-metab-norm-module-wave17.yml::mod_metab_norm_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-03c-norm-module-seams.R now freezes the extracted normalization entry shell, moduleServer handoff, and breadcrumb public-wrapper routing, while test-metab-03b-norm-module-helper-characterization.R already covers the helper and observer workflows delegated beneath that shell."
+    },
+    {
+      "id": "manifest_mod_metab_qc_duplicates_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-metab-qc-duplicates-wave7.yml::mod_metab_qc_duplicates_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-01p-qc-duplicates-module-characterization.R loads mod_metab_qc_duplicates_server.R and exercises the extracted public QC-duplicates server wrapper across multiple characterization paths."
+    },
+    {
+      "id": "manifest_mod_metab_qc_itsd_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-metab-qc-itsd-wave1.yml::mod_metab_qc_itsd_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-01r-qc-itsd-module-characterization.R loads mod_metab_qc_itsd_server.R and characterizes the extracted ITSD server wrapper across its observer and rendering paths."
+    },
+    {
+      "id": "manifest_mod_prot_norm_server_entrypoint",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-norm-server-wave4.yml::mod_prot_norm_server_entrypoint",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-05c-norm-module-seams.R now freezes the extracted normalization entry shell, moduleServer handoff, and breadcrumb public-wrapper routing, while test-prot-05b-norm-module-contracts.R already covers the helper/runtime behavior delegated beneath that public server wrapper."
+    },
+    {
+      "id": "manifest_general_filemgmt_read_config_file",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-general-filemgmt-config-wave1.yml::general_filemgmt_read_config_file",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-general-filemgmt-config-contracts.R directly exercises readConfigFile on the extracted helper, including parsed-config normalization and file_type forwarding."
+    },
+    {
+      "id": "manifest_general_plotting_plot_pca_helper",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-general-plotting-pca-rle-wave1.yml::general_plotting_plot_pca_helper",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-general-plotting-pca-helper-characterization.R now freezes the retained mixOmics fast path plus the dependency-absence fallback, and the downstream routing expectations remain covered by test-lipid-10-s4-plotting-methods.R and test-metab-01g-s4-plot-pca-characterization.R."
+    },
+    {
+      "id": "manifest_prot_annotation_match_annotations",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-prot-annotation-wave1.yml::prot_annotation_match_annotations",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-10-annotation.R directly exercises matchAnnotations on the extracted implementation, including unmatched-protein retention and version-based fuzzy matching behavior."
+    },
+    {
+      "id": "manifest_prot_qc_peptide_intensity_filter_helper",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-qc-peptide-wave1.yml::prot_qc_peptide_intensity_filter_helper",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02-qc-peptide-groupaware.R directly exercises peptideIntensityFilteringHelper on the extracted implementation with group-aware filtering expectations."
+    },
+    {
+      "id": "manifest_prot_qc_peptide_missing_values_helper",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-qc-peptide-wave1.yml::prot_qc_peptide_missing_values_helper",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02-qc-peptide-groupaware.R directly exercises removePeptidesWithMissingValuesPercentHelper on the extracted implementation with group-aware missing-value expectations."
+    },
+    {
+      "id": "manifest_func_prot_da_volcano_glimma",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-wave1.yml::func_prot_da_volcano_glimma",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-08-volcano.R and test-protein-da-golden-master.R directly exercise generateProtDAVolcanoPlotGlimma on the extracted implementation, including snapshot-backed and mock-data paths."
+    },
+    {
+      "id": "manifest_func_prot_da_write_interactive_main",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-wave1.yml::func_prot_da_write_interactive_main",
+      "curation_status": "accepted",
+      "disposition": "manual_merge_canonicalized",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the canonical interactive-volcano helper intentionally absorbed the legacy compat path, and test-prot-07b-da-handlers-compat.R freezes the de_* alias support and missing-input behavior on the extracted implementation."
+    },
+    {
+      "id": "manifest_lipid_s4_pearson_correlation_method",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave13.yml::lipid_s4_pearson_correlation_method",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-05-s4-correlation-helpers.R directly exercises pearsonCorForSamplePairs on the extracted lipid S4 implementation and verifies the active source ownership moved to the helper file."
+    },
+    {
+      "id": "manifest_lipid_s4_plot_pca_method",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave20.yml::lipid_s4_plot_pca_method",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-10-s4-plotting-methods.R directly exercises plotPca on the extracted lipid S4 implementation and verifies both active-source routing and returned ggplot behavior."
+    },
+    {
+      "id": "manifest_lipid_s4_plot_pca_method_repair_wave21",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave21-repair.yml::lipid_s4_plot_pca_method_repair",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the repair manifest lands on the same tested plotPca implementation covered by test-lipid-10-s4-plotting-methods.R."
+    },
+    {
+      "id": "manifest_lipid_s4_plot_pca_method_repair_wave22",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave22-repair.yml::lipid_s4_plot_pca_method_repair",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the repair manifest lands on the same tested plotPca implementation covered by test-lipid-10-s4-plotting-methods.R."
+    },
+    {
+      "id": "manifest_lipid_s4_plot_rle_method",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave21.yml::lipid_s4_plot_rle_method",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-10-s4-plotting-methods.R directly exercises plotRle on the extracted lipid S4 implementation and verifies both active-source routing and helper delegation."
+    },
+    {
+      "id": "manifest_lipid_s4_plot_rle_method_repair_wave21",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave21-repair.yml::lipid_s4_plot_rle_method_repair",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the repair manifest lands on the same tested plotRle implementation covered by test-lipid-10-s4-plotting-methods.R."
+    },
+    {
+      "id": "manifest_lipid_s4_plot_rle_method_repair_wave22",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave22-repair.yml::lipid_s4_plot_rle_method_repair",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the repair manifest lands on the same tested plotRle implementation covered by test-lipid-10-s4-plotting-methods.R."
+    },
+    {
+      "id": "manifest_lipid_s4_numsig_bar_plot_method",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave5.yml::lipid_s4_numsig_bar_plot_method",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-07-s4-da-plot-methods.R directly exercises plotNumSigDiffExpBarPlot on the extracted lipid S4 implementation."
+    },
+    {
+      "id": "manifest_lipid_s4_static_volcano_plot_method",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave5.yml::lipid_s4_static_volcano_plot_method",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-07-s4-da-plot-methods.R directly exercises plotVolcanoS4 on the extracted lipid S4 implementation."
+    },
+    {
+      "id": "manifest_lipid_s4_da_analysis_helper_method",
+      "exception_key": "manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-lipid-s4-wave8.yml::lipid_s4_da_analysis_helper_method",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-08-s4-da-analysis-methods.R directly exercises differentialAbundanceAnalysisHelper on the extracted lipid S4 implementation."
+    },
+    {
+      "id": "manifest_lipid_qc_progress_state_get",
+      "exception_key": "manifest_fidelity::ast_only_drift::manifest::tools/refactor/manifest-lipid-qc-wave2.yml::lipid_qc_progress_state_get",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because the AST is identical after extraction into func_lipid_qc_progress_helpers.R, and the helper ownership plus progress-state contract are exercised by test-lipid-04-s4-progress-helpers.R and test-lipid-01-qc-filtering-helpers.R."
+    },
+    {
+      "id": "manifest_compat_write_interactive_main",
+      "exception_key": "manifest_fidelity::manual_merge_expected::manifest::tools/refactor/manifest-wave1.yml::compat_write_interactive_main",
+      "curation_status": "accepted",
+      "disposition": "manual_merge_canonicalized",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because HANDOVER-wave1.md already records the canonical manual-merge decision to keep func_prot_da_volcano.R, and test-prot-07b-da-handlers-compat.R freezes the legacy de_* compatibility surface on the surviving writeInteractiveVolcanoPlotProteomicsMain implementation."
+    },
+    {
+      "id": "surface_lipid_s4_da_analysis_helper_method",
+      "exception_key": "surface_inventory::surface_definition_drift::setMethod::differentialAbundanceAnalysisHelper::LipidomicsAssayData",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-08-s4-da-analysis-methods.R directly exercises differentialAbundanceAnalysisHelper on the extracted lipid S4 implementation."
+    },
+    {
+      "id": "surface_lipid_s4_pearson_correlation_method",
+      "exception_key": "surface_inventory::surface_definition_drift::setMethod::pearsonCorForSamplePairs::LipidomicsAssayData",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-05-s4-correlation-helpers.R directly exercises pearsonCorForSamplePairs on the extracted lipid S4 implementation and verifies the active helper-source ownership."
+    },
+    {
+      "id": "surface_lipid_s4_resolve_duplicate_features_method",
+      "exception_key": "surface_inventory::surface_definition_drift::setMethod::resolveDuplicateFeatures::LipidomicsAssayData",
+      "curation_status": "accepted",
+      "disposition": "method_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-03-s4-duplicate-helpers.R directly exercises resolveDuplicateFeatures on the extracted lipid S4 implementation and preserves the duplicate-resolution helper seam behavior."
+    },
+    {
+      "id": "surface_log2_transformation",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::log2Transformation",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-05a-log2-transformation-characterization.R directly freezes the public pseudo-count and log2-scaling contract retained in func_pept_norm.R."
+    },
+    {
+      "id": "surface_mod_lipid_qc_duplicates_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_lipid_qc_duplicates_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-01c-qc-duplicate-module-seams.R directly exercises the extracted QC-duplicates server seam, and test-lipid-01b-qc-module-contracts.R covers the parent lipid QC orchestration contract."
+    },
+    {
+      "id": "surface_mod_lipid_qc_intensity_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_lipid_qc_intensity_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-01d-qc-intensity-module-seams.R directly exercises the extracted QC-intensity server seam, and test-lipid-01b-qc-module-contracts.R covers the parent lipid QC orchestration contract."
+    },
+    {
+      "id": "surface_mod_lipid_qc_itsd_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_lipid_qc_itsd_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-01e-qc-itsd-module-seams.R directly exercises the extracted QC-ITSD server seam, and test-lipid-01b-qc-module-contracts.R covers the parent lipid QC orchestration contract."
+    },
+    {
+      "id": "surface_mod_lipid_qc_s4_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_lipid_qc_s4_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-01f-qc-s4-module-seams.R directly exercises the extracted QC-S4 server seam, and test-lipid-01b-qc-module-contracts.R covers the parent lipid QC orchestration contract."
+    },
+    {
+      "id": "surface_mod_lipid_qc_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_lipid_qc_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-01b-qc-module-contracts.R directly exercises mod_lipid_qc_server, including the empty-state alert and submodule bootstrapping contract."
+    },
+    {
+      "id": "surface_mod_lipid_summary_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_lipid_summary_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-15-summary-module-seams.R directly characterizes the extracted lipid summary server seam."
+    },
+    {
+      "id": "surface_mod_metab_design_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_metab_design_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-04-design-module-characterization.R directly exercises mod_metab_design_server across the extracted design-module wrapper behaviors."
+    },
+    {
+      "id": "surface_mod_metab_qc_intensity_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_metab_qc_intensity_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-01q-qc-intensity-module-characterization.R directly exercises mod_metab_qc_intensity_server across the extracted QC-intensity wrapper behaviors."
+    },
+    {
+      "id": "surface_mod_metab_qc_s4_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_metab_qc_s4_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-01s-qc-s4-module-characterization.R directly exercises mod_metab_qc_s4_server across the extracted QC-S4 wrapper behaviors."
+    },
+    {
+      "id": "surface_mod_metab_qc_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_metab_qc_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-01o-qc-module-characterization.R directly exercises mod_metab_qc_server and the extracted submodule routing contract."
+    },
+    {
+      "id": "surface_mod_metab_summary_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_metab_summary_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-metab-05-summary-module-characterization.R directly exercises mod_metab_summary_server across the extracted summary-module wrapper behaviors."
+    },
+    {
+      "id": "surface_mod_prot_design_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_design_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-04-design.R directly characterizes mod_prot_design_server, including wrapper seam ordering, callback handoff, and moduleServer routing."
+    },
+    {
+      "id": "surface_mod_prot_qc_peptide_impute_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_peptide_impute_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02b-qc-peptide-module-contracts.R directly exercises mod_prot_qc_peptide_impute_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_peptide_intensity_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_peptide_intensity_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02b-qc-peptide-module-contracts.R directly exercises mod_prot_qc_peptide_intensity_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_peptide_protein_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_peptide_protein_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02b-qc-peptide-module-contracts.R directly exercises mod_prot_qc_peptide_protein_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_peptide_qvalue_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_peptide_qvalue_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02b-qc-peptide-module-contracts.R directly exercises mod_prot_qc_peptide_qvalue_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_peptide_replicate_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_peptide_replicate_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02b-qc-peptide-module-contracts.R directly exercises mod_prot_qc_peptide_replicate_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_peptide_rollup_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_peptide_rollup_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02b-qc-peptide-module-contracts.R directly exercises mod_prot_qc_peptide_rollup_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_peptide_sample_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_peptide_sample_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02b-qc-peptide-module-contracts.R directly exercises mod_prot_qc_peptide_sample_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_peptide_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_peptide_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02b-qc-peptide-module-contracts.R directly exercises mod_prot_qc_peptide_server and its DIA submodule orchestration contract."
+    },
+    {
+      "id": "surface_mod_prot_qc_peptide_ui",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_peptide_ui",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02b-qc-peptide-module-contracts.R directly renders mod_prot_qc_peptide_ui and freezes the public peptide-QC tab contract."
+    },
+    {
+      "id": "surface_mod_prot_qc_protein_cleanup_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_protein_cleanup_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02c-qc-protein-module-contracts.R directly exercises mod_prot_qc_protein_cleanup_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_protein_dedup_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_protein_dedup_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02c-qc-protein-module-contracts.R directly exercises mod_prot_qc_protein_dedup_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_protein_intensity_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_protein_intensity_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02c-qc-protein-module-contracts.R directly exercises mod_prot_qc_protein_intensity_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_protein_replicate_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_protein_replicate_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02c-qc-protein-module-contracts.R directly exercises mod_prot_qc_protein_replicate_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_protein_rollup_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_protein_rollup_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02c-qc-protein-module-contracts.R directly exercises mod_prot_qc_protein_rollup_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_protein_s4_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_protein_s4_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02c-qc-protein-module-contracts.R directly exercises mod_prot_qc_protein_s4_server through the extracted helper seams."
+    },
+    {
+      "id": "surface_mod_prot_qc_protein_server",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_protein_server",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02c-qc-protein-module-contracts.R directly exercises mod_prot_qc_protein_server and its protein-QC submodule orchestration contract."
+    },
+    {
+      "id": "surface_mod_prot_qc_protein_ui",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::mod_prot_qc_protein_ui",
+      "curation_status": "accepted",
+      "disposition": "entrypoint_shell_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-prot-02c-qc-protein-module-contracts.R directly renders mod_prot_qc_protein_ui and freezes the public protein-QC tab contract."
+    },
+    {
+      "id": "surface_setup_directories",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::setupDirectories",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-general-filemgmt-path-contracts.R directly exercises setupDirectories across labeled path creation, reuse_existing behavior, and setupAndShowDirectories global assignment."
+    },
+    {
+      "id": "surface_update_lipid_filtering",
+      "exception_key": "surface_inventory::surface_definition_drift::symbol::updateLipidFiltering",
+      "curation_status": "accepted",
+      "disposition": "helper_equivalent_under_tests",
+      "owner": "refactor-fidelity-audit",
+      "review_note": "Accepted because test-lipid-01a-qc-update-filtering-characterization.R directly freezes the public progress-update and plot-save contract, while test-lipid-01-qc-filtering-helpers.R covers the extracted helper pipeline underneath updateLipidFiltering."
+    }
+  ]
+}

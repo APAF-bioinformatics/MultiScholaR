@@ -346,6 +346,7 @@ Collate:
     'zzz.R'
 Suggests:
     testthat (>= 3.0.0),
+    covr,
     dynamicTreeCut,
     GlimmaV2,
     UpSetR,

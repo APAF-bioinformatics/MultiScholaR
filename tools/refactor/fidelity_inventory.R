@@ -83,14 +83,20 @@ extract_method_signature <- function(expr) {
 }
 
 extract_call_match <- function(expr) {
-  call_name <- normalize_call_name(expr)
+  candidate <- expr
+  if ((is_top_level_assignment(expr) || is_top_level_equals_assignment(expr)) &&
+      is.call(expr[[3]])) {
+    candidate <- expr[[3]]
+  }
+
+  call_name <- normalize_call_name(candidate)
 
   if (is.null(call_name) || !call_name %in% c("setMethod", "setGeneric", "setClass")) {
     return(list(kind = NULL, value = NULL, signature = NULL))
   }
 
-  value <- if (length(expr) >= 2) normalize_selector_value(expr[[2]]) else NULL
-  signature <- if (identical(call_name, "setMethod")) extract_method_signature(expr) else NULL
+  value <- if (length(candidate) >= 2) normalize_selector_value(candidate[[2]]) else NULL
+  signature <- if (identical(call_name, "setMethod")) extract_method_signature(candidate) else NULL
   list(kind = call_name, value = value, signature = signature)
 }
 

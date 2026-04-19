@@ -21,6 +21,11 @@ entries:
       start: "^# Renamed from plotPca to avoid S4 generic conflict$"
       end: "^# Set up S4 class definitions for ggplot objects$"
       end_inclusive: false
+    target_selector:
+      kind: anchor_range
+      start: "^# Renamed from plotPca to avoid S4 generic conflict$"
+      end: "^# PCA plot for PeptideQuantitativeData$"
+      end_inclusive: false
     target: R/func_pept_s4_qc_methods.R
     group: proteomics.peptide.s4.qc_methods
     note: Fourth staged peptide S4 wave moves the legacy peptide plotPca dispatch block plus its exact legacy PeptideQuantitativeData method into the existing peptide QC helper without rewriting live sources.

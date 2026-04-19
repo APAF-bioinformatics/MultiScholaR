@@ -126,7 +126,7 @@ setGeneric("processThing", function(x) {
   standardGeneric("processThing")
 })
 `);
-  writeFile(path.join(root, 'R', 'b.R'), `setClass("DemoData", representation(value = "numeric"))
+  writeFile(path.join(root, 'R', 'b.R'), `DemoData <- setClass("DemoData", representation(value = "numeric"))
 
 setMethod("processThing", "DemoData", function(x) {
   x
@@ -247,6 +247,78 @@ bar <- function(z) {
   z
 }
 `);
+
+  return { baselineRoot, targetRoot };
+}
+
+function makeSurfaceParityPair() {
+  const baselineRoot = makeSandbox('fidelity-surface-parity-baseline-');
+  const targetRoot = makeSandbox('fidelity-surface-parity-target-');
+
+  const description = `Package: DemoPkg
+Title: Demo
+Version: 0.0.1
+Description: Surface parity fixture.
+License: MIT
+Encoding: UTF-8
+Collate:
+    'a.R'
+    'b.R'
+`;
+  const namespace = `export(foo)
+`;
+  const sharedA = `foo <- function(x) {
+  x + 1
+}
+`;
+  const sharedB = `dup <- function(y) {
+  y
+}
+
+dup <- function(y) {
+  y
+}
+`;
+
+  for (const root of [baselineRoot, targetRoot]) {
+    writeFile(path.join(root, 'DESCRIPTION'), description);
+    writeFile(path.join(root, 'NAMESPACE'), namespace);
+    writeFile(path.join(root, 'R', 'a.R'), sharedA);
+    writeFile(path.join(root, 'R', 'b.R'), sharedB);
+  }
+
+  return { baselineRoot, targetRoot };
+}
+
+function makeSurfaceDedupSafePair() {
+  const baselineRoot = makeSandbox('fidelity-surface-dedup-baseline-');
+  const targetRoot = makeSandbox('fidelity-surface-dedup-target-');
+
+  const description = `Package: DemoPkg
+Title: Demo
+Version: 0.0.1
+Description: Surface duplicate consolidation fixture.
+License: MIT
+Encoding: UTF-8
+Collate:
+    'a.R'
+    'b.R'
+    'c.R'
+`;
+  const namespace = `export(foo)
+`;
+
+  for (const root of [baselineRoot, targetRoot]) {
+    writeFile(path.join(root, 'DESCRIPTION'), description);
+    writeFile(path.join(root, 'NAMESPACE'), namespace);
+    writeFile(path.join(root, 'R', 'a.R'), `foo <- function(x) {\n  x + 1\n}\n`);
+  }
+
+  writeFile(path.join(baselineRoot, 'R', 'b.R'), `dup <- function(y) {\n  y\n}\n`);
+  writeFile(path.join(baselineRoot, 'R', 'c.R'), `dup <- function(y) {\n  y\n}\n\nkeeper <- function(z) {\n  z\n}\n`);
+
+  writeFile(path.join(targetRoot, 'R', 'b.R'), `dup <- function(y) {\n  y\n}\n`);
+  writeFile(path.join(targetRoot, 'R', 'c.R'), `keeper <- function(z) {\n  z\n}\n`);
 
   return { baselineRoot, targetRoot };
 }
@@ -393,6 +465,77 @@ entries:
     selector: { kind: symbol, value: gapHelper }
     target: R/target_gap.R
     group: fidelity.source_gap
+`);
+
+  return { baselineRoot, targetRoot };
+}
+
+function makeManifestRepoSelectorTargetPair() {
+  const baselineRoot = makeSandbox('fidelity-manifest-repo-target-baseline-');
+  const targetRoot = makeSandbox('fidelity-manifest-repo-target-target-');
+
+  writeFile(path.join(baselineRoot, 'R', 'source_symbol.R'), `foo <- function(x) {
+  x + 1
+}
+`);
+  writeFile(path.join(targetRoot, 'R', 'target_symbol.R'), `# breadcrumb placeholder for later split
+`);
+  writeFile(path.join(targetRoot, 'R', 'target_symbol_final.R'), `foo <- function(x) {
+  x + 1
+}
+`);
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'manifest-repo-selector.yml'), `version: 1
+entries:
+  - id: symbol_repo_selector
+    source: R/source_symbol.R
+    selector: { kind: symbol, value: foo }
+    target: R/target_symbol.R
+    group: fidelity.repo_target
+`);
+
+  return { baselineRoot, targetRoot };
+}
+
+function makeManifestTargetSelectorPair() {
+  const baselineRoot = makeSandbox('fidelity-manifest-target-selector-baseline-');
+  const targetRoot = makeSandbox('fidelity-manifest-target-selector-target-');
+
+  writeFile(path.join(baselineRoot, 'R', 'source_anchor.R'), `# LEGACY START
+legacyDispatch <- function(x) {
+  x + 1
+}
+
+legacyMethod <- function(y) {
+  y + 2
+}
+# LEGACY END
+`);
+  writeFile(path.join(targetRoot, 'R', 'target_anchor.R'), `# LEGACY START
+legacyDispatch <- function(x) {
+  x + 1
+}
+
+legacyMethod <- function(y) {
+  y + 2
+}
+# NEXT SECTION
+`);
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'manifest-target-selector.yml'), `version: 1
+entries:
+  - id: anchor_target_selector
+    source: R/source_anchor.R
+    selector:
+      kind: anchor_range
+      start: "^# LEGACY START$"
+      end: "^# LEGACY END$"
+      end_inclusive: false
+    target_selector:
+      kind: anchor_range
+      start: "^# LEGACY START$"
+      end: "^# NEXT SECTION$"
+      end_inclusive: false
+    target: R/target_anchor.R
+    group: fidelity.target_selector
 `);
 
   return { baselineRoot, targetRoot };
@@ -677,6 +820,524 @@ test_that("rollup helper returns expected grouping", {
   return { baselineRoot, mainlineRoot, targetRoot };
 }
 
+function makeCloseoutOverlapTriplet() {
+  const baselineRoot = makeSandbox('fidelity-closeout-overlap-baseline-');
+  const mainlineRoot = makeSandbox('fidelity-closeout-overlap-mainline-');
+  const targetRoot = makeSandbox('fidelity-closeout-overlap-target-');
+
+  const description = `Package: DemoPkg
+Title: Demo
+Version: 0.0.1
+Description: Closeout overlap fixture package.
+License: MIT
+Encoding: UTF-8
+Collate:
+    'core.R'
+`;
+  const namespace = `export(overlapHelper)
+export(exactValue)
+`;
+  const baselineCore = `overlapHelper <- function(x) {
+  x + 1L
+}
+
+exactValue <- function(x) {
+  x + 1L
+}
+`;
+  const targetCore = `overlapHelper <- function(x) {
+  x + 2L
+}
+
+exactValue <- function(x) {
+  x + 1L
+}
+`;
+
+  for (const root of [baselineRoot, mainlineRoot, targetRoot]) {
+    writeFile(path.join(root, 'DESCRIPTION'), description);
+    writeFile(path.join(root, 'NAMESPACE'), namespace);
+  }
+  writeFile(path.join(baselineRoot, 'R', 'core.R'), baselineCore);
+  writeFile(path.join(mainlineRoot, 'R', 'core.R'), targetCore);
+  writeFile(path.join(targetRoot, 'R', 'core.R'), targetCore);
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'manifest-closeout-overlap.yml'), `version: 1
+entries:
+  - id: overlap_helper
+    source: R/core.R
+    selector: { kind: symbol, value: overlapHelper }
+    target: R/core.R
+    group: fidelity.overlap
+`);
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'behavior-cases-closeout-overlap.json'), JSON.stringify({
+    cases: [
+      {
+        id: 'exact_value',
+        family: 'pure_helper',
+        entity_key: 'symbol::exactValue',
+        fixture_kind: 'inline_setup',
+        normalizer_key: 'scalar_integer',
+        risk_level: 'low',
+        files: ['R/core.R'],
+        setup_code: ['x <- 2L'],
+        call_expr: 'exactValue(x)',
+        normalize_expr: 'as.integer(result)'
+      }
+    ]
+  }, null, 2));
+
+  writeFile(path.join(targetRoot, 'tests', 'testthat', 'test-prot-03-rollup.R'), `library(testthat)
+
+test_that("rollup helper returns expected grouping", {
+  expect_true(TRUE)
+})
+`);
+
+  return { baselineRoot, mainlineRoot, targetRoot };
+}
+
+function makeCloseoutCatalogCuratedTriplet() {
+  const baselineRoot = makeSandbox('fidelity-closeout-curation-baseline-');
+  const mainlineRoot = makeSandbox('fidelity-closeout-curation-mainline-');
+  const targetRoot = makeSandbox('fidelity-closeout-curation-target-');
+
+  const description = `Package: DemoPkg
+Title: Demo
+Version: 0.0.1
+Description: Closeout catalog-curation fixture package.
+License: MIT
+Encoding: UTF-8
+Collate:
+    'a.R'
+    'b.R'
+    'c.R'
+`;
+  const namespace = `export(exactValue)
+`;
+  const baselineA = `exactValue <- function(x) {
+  x + 1L
+}
+`;
+  const baselineB = `dupHelper <- function(x) {
+  x
+}
+`;
+  const baselineC = `dupHelper <- function(x) {
+  x + 1L
+}
+
+keeper <- function(y) {
+  y
+}
+`;
+  const targetA = baselineA;
+  const targetB = `dupHelper <- function(x) {
+  x
+}
+`;
+  const targetC = `keeper <- function(y) {
+  y
+}
+`;
+
+  for (const root of [baselineRoot, mainlineRoot, targetRoot]) {
+    writeFile(path.join(root, 'DESCRIPTION'), description);
+    writeFile(path.join(root, 'NAMESPACE'), namespace);
+  }
+
+  writeFile(path.join(baselineRoot, 'R', 'a.R'), baselineA);
+  writeFile(path.join(baselineRoot, 'R', 'b.R'), baselineB);
+  writeFile(path.join(baselineRoot, 'R', 'c.R'), baselineC);
+
+  for (const root of [mainlineRoot, targetRoot]) {
+    writeFile(path.join(root, 'R', 'a.R'), targetA);
+    writeFile(path.join(root, 'R', 'b.R'), targetB);
+    writeFile(path.join(root, 'R', 'c.R'), targetC);
+  }
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'manifest-closeout-curation.yml'), `version: 1
+entries:
+  - id: exact_value
+    source: R/a.R
+    selector: { kind: symbol, value: exactValue }
+    target: R/a.R
+    group: fidelity.exact
+`);
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'behavior-cases-closeout-curation.json'), JSON.stringify({
+    cases: [
+      {
+        id: 'exact_value',
+        family: 'pure_helper',
+        entity_key: 'symbol::exactValue',
+        fixture_kind: 'inline_setup',
+        normalizer_key: 'scalar_integer',
+        risk_level: 'low',
+        files: ['R/a.R'],
+        setup_code: ['x <- 2L'],
+        call_expr: 'exactValue(x)',
+        normalize_expr: 'as.integer(result)'
+      }
+    ]
+  }, null, 2));
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'fidelity-curations.json'), JSON.stringify({
+    curations: [
+      {
+        id: 'dup_helper_canonicalized',
+        exception_key: 'surface_inventory::surface_duplicate_definition::symbol::dupHelper',
+        curation_status: 'accepted',
+        disposition: 'canonical_duplicate_retired',
+        owner: 'fixture',
+        review_note: 'Fixture curation accepts the canonical duplicate reduction.'
+      }
+    ]
+  }, null, 2));
+
+  writeFile(path.join(targetRoot, 'tests', 'testthat', 'test-prot-03-rollup.R'), `library(testthat)
+
+test_that("rollup helper returns expected grouping", {
+  expect_true(TRUE)
+})
+`);
+
+  return { baselineRoot, mainlineRoot, targetRoot };
+}
+
+function makeCloseoutCatalogOverlapTriplet() {
+  const baselineRoot = makeSandbox('fidelity-closeout-catalog-overlap-baseline-');
+  const mainlineRoot = makeSandbox('fidelity-closeout-catalog-overlap-mainline-');
+  const targetRoot = makeSandbox('fidelity-closeout-catalog-overlap-target-');
+
+  const description = `Package: DemoPkg
+Title: Demo
+Version: 0.0.1
+Description: Closeout catalog-overlap fixture package.
+License: MIT
+Encoding: UTF-8
+Collate:
+    'core.R'
+`;
+  const namespace = `export(overlapHelper)
+export(exactValue)
+`;
+  const baselineCore = `overlapHelper <- function(x) {
+  x + 1L
+}
+
+exactValue <- function(x) {
+  x + 1L
+}
+`;
+  const targetCore = `overlapHelper <- function(x) {
+  x + 2L
+}
+
+exactValue <- function(x) {
+  x + 1L
+}
+`;
+
+  for (const root of [baselineRoot, mainlineRoot, targetRoot]) {
+    writeFile(path.join(root, 'DESCRIPTION'), description);
+    writeFile(path.join(root, 'NAMESPACE'), namespace);
+  }
+  writeFile(path.join(baselineRoot, 'R', 'core.R'), baselineCore);
+  writeFile(path.join(mainlineRoot, 'R', 'core.R'), targetCore);
+  writeFile(path.join(targetRoot, 'R', 'core.R'), targetCore);
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'manifest-closeout-catalog-overlap.yml'), `version: 1
+entries:
+  - id: overlap_helper
+    source: R/core.R
+    selector: { kind: symbol, value: overlapHelper }
+    target: R/core.R
+    group: fidelity.overlap
+`);
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'behavior-cases-closeout-catalog-overlap.json'), JSON.stringify({
+    cases: [
+      {
+        id: 'exact_value',
+        family: 'pure_helper',
+        entity_key: 'symbol::exactValue',
+        fixture_kind: 'inline_setup',
+        normalizer_key: 'scalar_integer',
+        risk_level: 'low',
+        files: ['R/core.R'],
+        setup_code: ['x <- 2L'],
+        call_expr: 'exactValue(x)',
+        normalize_expr: 'as.integer(result)'
+      }
+    ]
+  }, null, 2));
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'fidelity-curations.json'), JSON.stringify({
+    curations: [
+      {
+        id: 'overlap_helper_manifest_curated',
+        exception_key: 'manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-closeout-catalog-overlap.yml::overlap_helper',
+        curation_status: 'accepted',
+        disposition: 'entrypoint_shell_equivalent_under_tests',
+        owner: 'fixture',
+        review_note: 'Fixture curation accepts the manifest semantic mismatch so the paired surface drift should collapse as redundant.'
+      }
+    ]
+  }, null, 2));
+
+  writeFile(path.join(targetRoot, 'tests', 'testthat', 'test-prot-03-rollup.R'), `library(testthat)
+
+test_that("rollup helper returns expected grouping", {
+  expect_true(TRUE)
+})
+`);
+
+  return { baselineRoot, mainlineRoot, targetRoot };
+}
+
+function makeCoverageRepo() {
+  const root = makeSandbox('fidelity-coverage-');
+  writeFile(path.join(root, 'DESCRIPTION'), `Package: CoverageDemo
+Title: Coverage Demo
+Version: 0.0.1
+Description: Demo package for fidelity coverage tests.
+License: MIT
+Encoding: UTF-8
+Suggests:
+    testthat
+`);
+  writeFile(path.join(root, 'NAMESPACE'), `export(foo)
+`);
+  writeFile(path.join(root, 'R', 'a.R'), `foo <- function(x) {
+  if (x > 0) x + 1 else x - 1
+}
+`);
+  writeFile(path.join(root, 'tests', 'testthat', 'test-coverage-demo.R'), `library(testthat)
+
+test_that("foo adjusts positive values", {
+  expect_equal(foo(1), 2)
+})
+`);
+  writeFile(path.join(root, 'tools', 'refactor', 'coverage-bundles-fixture.json'), JSON.stringify({
+    bundles: [
+      {
+        bundle_id: 'foo_bundle',
+        bundle_type: 'helper',
+        source_file: 'R/a.R',
+        shared_test_files: ['tests/testthat/test-coverage-demo.R'],
+        target_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/a.R',
+            line_start: 1,
+            line_end: 3
+          }
+        ]
+      }
+    ]
+  }, null, 2));
+  return root;
+}
+
+function makeCoverageCompareTriplet() {
+  const baselineRoot = makeSandbox('fidelity-coverage-compare-baseline-');
+  const targetRoot = makeSandbox('fidelity-coverage-compare-target-');
+  const description = `Package: CoverageCompareDemo
+Title: Coverage Compare Demo
+Version: 0.0.1
+Description: Demo package for comparative fidelity coverage tests.
+License: MIT
+Encoding: UTF-8
+Suggests:
+    testthat
+`;
+  const namespace = `export(foo)
+`;
+
+  for (const root of [baselineRoot, targetRoot]) {
+    writeFile(path.join(root, 'DESCRIPTION'), description);
+    writeFile(path.join(root, 'NAMESPACE'), namespace);
+  }
+
+  writeFile(path.join(baselineRoot, 'R', 'a.R'), `foo <- function(x) {
+  if (x > 0) x + 1 else x - 1
+}
+`);
+  writeFile(path.join(targetRoot, 'R', 'b.R'), `foo <- function(x) {
+  if (x > 0) x + 1 else x - 1
+}
+`);
+  writeFile(path.join(targetRoot, 'tests', 'testthat', 'test-coverage-demo.R'), `library(testthat)
+
+test_that("foo adjusts positive values", {
+  expect_equal(foo(1), 2)
+})
+`);
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'coverage-compare-bundles.json'), JSON.stringify({
+    bundles: [
+      {
+        bundle_id: 'foo_compare_bundle',
+        bundle_type: 'helper_surface',
+        shared_test_files: ['tests/testthat/test-coverage-demo.R'],
+        baseline_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/a.R',
+            line_start: 1,
+            line_end: 3
+          }
+        ],
+        target_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/b.R',
+            line_start: 1,
+            line_end: 3
+          }
+        ]
+      }
+    ]
+  }, null, 2));
+  return { baselineRoot, targetRoot };
+}
+
+function makeBundleMapTriplet() {
+  const baselineRoot = makeSandbox('fidelity-bundle-map-baseline-');
+  const mainlineRoot = makeSandbox('fidelity-bundle-map-mainline-');
+  const targetRoot = makeSandbox('fidelity-bundle-map-target-');
+
+  const description = `Package: DemoPkg
+Title: Demo
+Version: 0.0.1
+Description: Bundle-map fixture package.
+License: MIT
+Encoding: UTF-8
+Collate:
+    'core.R'
+    'source_gap.R'
+    'source_gap_target.R'
+`;
+  const namespace = `export(overlapHelper)
+export(exactValue)
+`;
+  for (const root of [baselineRoot, mainlineRoot, targetRoot]) {
+    writeFile(path.join(root, 'DESCRIPTION'), description);
+    writeFile(path.join(root, 'NAMESPACE'), namespace);
+  }
+
+  writeFile(path.join(baselineRoot, 'R', 'core.R'), `overlapHelper <- function(x) {
+  x + 1L
+}
+
+exactValue <- function(x) {
+  x + 1L
+}
+`);
+  writeFile(path.join(mainlineRoot, 'R', 'core.R'), `overlapHelper <- function(x) {
+  x + 2L
+}
+
+exactValue <- function(x) {
+  x + 1L
+}
+`);
+  writeFile(path.join(targetRoot, 'R', 'core.R'), `overlapHelper <- function(x) {
+  x + 2L
+}
+
+exactValue <- function(x) {
+  x + 1L
+}
+`);
+
+  writeFile(path.join(baselineRoot, 'R', 'source_gap.R'), `otherHelper <- function(x) {
+  x
+}
+`);
+  writeFile(path.join(mainlineRoot, 'R', 'source_gap.R'), `otherHelper <- function(x) {
+  x
+}
+`);
+  writeFile(path.join(targetRoot, 'R', 'source_gap.R'), `otherHelper <- function(x) {
+  x
+}
+`);
+  writeFile(path.join(baselineRoot, 'R', 'source_gap_target.R'), `# target placeholder before extraction
+`);
+  writeFile(path.join(mainlineRoot, 'R', 'source_gap_target.R'), `# target placeholder before extraction
+`);
+  writeFile(path.join(targetRoot, 'R', 'source_gap_target.R'), `gapHelper <- function(x) {
+  x
+}
+
+gapObserverRegister <- function(x) {
+  x + 1L
+}
+`);
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'manifest-closeout-bundle-map.yml'), `version: 1
+entries:
+  - id: overlap_helper
+    source: R/core.R
+    selector: { kind: symbol, value: overlapHelper }
+    target: R/core.R
+    group: fidelity.overlap
+
+  - id: source_gap
+    source: R/source_gap.R
+    selector: { kind: symbol, value: gapHelper }
+    target: R/source_gap_target.R
+    group: fidelity.lineage
+
+  - id: source_gap_observer_register
+    source: R/source_gap.R
+    selector: { kind: symbol, value: gapObserverRegister }
+    target: R/source_gap_target.R
+    group: fidelity.lineage
+`);
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'behavior-cases-closeout-bundle-map.json'), JSON.stringify({
+    cases: [
+      {
+        id: 'exact_value',
+        family: 'pure_helper',
+        entity_key: 'symbol::exactValue',
+        fixture_kind: 'inline_setup',
+        normalizer_key: 'scalar_integer',
+        risk_level: 'low',
+        files: ['R/core.R'],
+        setup_code: ['x <- 2L'],
+        call_expr: 'exactValue(x)',
+        normalize_expr: 'as.integer(result)'
+      }
+    ]
+  }, null, 2));
+
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'fidelity-curations.json'), JSON.stringify({
+    curations: [
+      {
+        id: 'bundle_map_overlap_helper_curated',
+        exception_key: 'manifest_fidelity::semantic_mismatch::manifest::tools/refactor/manifest-closeout-bundle-map.yml::overlap_helper',
+        curation_status: 'accepted',
+        disposition: 'helper_equivalent_under_tests',
+        owner: 'fixture',
+        review_note: 'Fixture curation accepts overlapHelper as helper-equivalent under tests.'
+      }
+    ]
+  }, null, 2));
+
+  writeFile(path.join(targetRoot, 'tests', 'testthat', 'test-overlap-helper-characterization.R'), `library(testthat)
+
+test_that("overlapHelper retains curated semantics", {
+  expect_true(TRUE)
+})
+`);
+
+  return { baselineRoot, mainlineRoot, targetRoot };
+}
+
 serialTest('inventory snapshot captures symbols, S4 entities, exports, and collate order', () => {
   const repoRoot = makeFixtureRepo();
   const snapshot = runJson('Rscript', [INVENTORY_SCRIPT, '--repo-root', repoRoot]);
@@ -712,6 +1373,8 @@ serialTest('audit bootstrap and inventory import create durable state and persis
   assert.equal(fs.existsSync(path.join(repoRoot, '.refactor-fidelity-audit', 'events.jsonl')), true);
   assert.equal(fs.existsSync(path.join(repoRoot, '.refactor-fidelity-audit', 'reports', 'latest-summary.json')), true);
   assert.equal(fs.existsSync(path.join(repoRoot, '.refactor-fidelity-audit', 'reports', 'latest-exceptions.json')), true);
+  assert.equal(fs.existsSync(path.join(repoRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage.json')), true);
+  assert.equal(fs.existsSync(path.join(repoRoot, '.refactor-fidelity-audit', 'reports', 'latest-bundles.json')), true);
 
   const tables = querySqlite(
     path.join(repoRoot, '.refactor-fidelity-audit', 'audit.db'),
@@ -724,6 +1387,13 @@ serialTest('audit bootstrap and inventory import create durable state and persis
     'contract_results',
     'contract_test_cases',
     'contract_test_files',
+    'coverage_bundle_members',
+    'coverage_bundle_results',
+    'coverage_bundles',
+    'coverage_exception_links',
+    'coverage_files',
+    'coverage_runs',
+    'coverage_test_links',
     'exceptions',
     'inventory_diffs',
     'inventory_entities',
@@ -752,7 +1422,7 @@ serialTest('audit bootstrap and inventory import create durable state and persis
   const runCount = querySqlite(auditDb, 'select count(*) from audit_runs')[0][0];
   const entityCount = querySqlite(auditDb, 'select count(*) from inventory_entities')[0][0];
   assert.equal(runCount, 1);
-  assert.equal(entityCount, 5);
+  assert.equal(entityCount, 6);
 
   const events = fs
     .readFileSync(path.join(repoRoot, '.refactor-fidelity-audit', 'events.jsonl'), 'utf8')
@@ -770,6 +1440,996 @@ serialTest('audit bootstrap and inventory import create durable state and persis
   );
   assert.match(summaryMarkdown, /R files: `2`/);
   assert.match(summaryMarkdown, /Exported methods: `1`/);
+});
+
+serialTest('coverage command records a deterministic tool-unavailable result', () => {
+  const repoRoot = makeCoverageRepo();
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage',
+    '--repo-root',
+    repoRoot,
+    '--side',
+    'target',
+    '--source-path',
+    repoRoot,
+    '--test-file',
+    'tests/testthat/test-coverage-demo.R'
+  ], {
+    env: {
+      ...process.env,
+      FIDELITY_COVERAGE_FORCE_UNAVAILABLE: '1'
+    }
+  });
+
+  assert.equal(summary.mode, 'coverage');
+  assert.equal(summary.status, 'tool_unavailable');
+  assert.equal(summary.tool_status, 'forced_unavailable');
+  assert.equal(summary.test_file_count, 1);
+  assert.equal(summary.bundle_count, 0);
+  assert.equal(summary.file_count, 0);
+  assert.equal(summary.line_percent, null);
+
+  const auditDb = path.join(repoRoot, '.refactor-fidelity-audit', 'audit.db');
+  const coverageRunRows = querySqlite(
+    auditDb,
+    'select side, status, tool_status, test_file_count, bundle_count, file_count from coverage_runs'
+  );
+  assert.deepEqual(coverageRunRows, [
+    ['target', 'tool_unavailable', 'forced_unavailable', 1, 0, 0]
+  ]);
+
+  const coverageFileCount = querySqlite(auditDb, 'select count(*) from coverage_files')[0][0];
+  const bundleCount = querySqlite(auditDb, 'select count(*) from coverage_bundles')[0][0];
+  assert.equal(coverageFileCount, 0);
+  assert.equal(bundleCount, 0);
+
+  const summaryMarkdown = fs.readFileSync(
+    path.join(repoRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage.md'),
+    'utf8'
+  );
+  assert.match(summaryMarkdown, /Tool status: `forced_unavailable`/);
+  assert.match(summaryMarkdown, /Line coverage: `n\/a`/);
+});
+
+serialTest('coverage command persists bundle and file coverage from fixture payload', () => {
+  const repoRoot = makeCoverageRepo();
+  const fixturePath = path.join(repoRoot, 'coverage-fixture.json');
+  writeFile(fixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: repoRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    files: [
+      {
+        file_path: 'R/a.R',
+        line_percent: 66.6667,
+        lines_total: 3,
+        lines_covered: 2,
+        covered_lines: [1, 2],
+        uncovered_lines: [3]
+      }
+    ],
+    line_percent: 66.6667,
+    lines_total: 3,
+    lines_covered: 2,
+    notes: ['fixture payload']
+  }, null, 2));
+
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage',
+    '--repo-root',
+    repoRoot,
+    '--side',
+    'target',
+    '--source-path',
+    repoRoot,
+    '--bundle-manifest',
+    'tools/refactor/coverage-bundles-fixture.json'
+  ], {
+    env: {
+      ...process.env,
+      FIDELITY_COVERAGE_FIXTURE_JSON: fixturePath
+    }
+  });
+
+  assert.equal(summary.mode, 'coverage');
+  assert.equal(summary.status, 'completed');
+  assert.equal(summary.tool_status, 'ok');
+  assert.equal(summary.test_file_count, 1);
+  assert.equal(summary.bundle_count, 1);
+  assert.equal(summary.file_count, 1);
+  assert.equal(summary.lines_total, 3);
+  assert.equal(summary.lines_covered, 2);
+  assert.equal(summary.bundle_status_counts.completed, 1);
+  assert.equal(summary.sample_bundle_results[0].bundle_id, 'foo_bundle');
+  assert.equal(summary.sample_bundle_results[0].lines_total, 3);
+  assert.equal(summary.sample_bundle_results[0].lines_covered, 2);
+
+  const auditDb = path.join(repoRoot, '.refactor-fidelity-audit', 'audit.db');
+  const runModes = querySqlite(auditDb, 'select mode, count(*) from audit_runs group by mode order by mode');
+  assert.deepEqual(runModes, [['coverage', 1]]);
+
+  const coverageRunRows = querySqlite(
+    auditDb,
+    'select status, tool_status, test_file_count, bundle_count, file_count, round(line_percent, 1), lines_total, lines_covered from coverage_runs'
+  );
+  assert.deepEqual(coverageRunRows, [
+    ['completed', 'ok', 1, 1, 1, 66.7, 3, 2]
+  ]);
+
+  const coverageFileRows = querySqlite(
+    auditDb,
+    'select file_path, round(line_percent, 1), lines_total, lines_covered from coverage_files'
+  );
+  assert.deepEqual(coverageFileRows, [['R/a.R', 66.7, 3, 2]]);
+
+  const bundleRows = querySqlite(
+    auditDb,
+    'select bundle_id, bundle_type, source_file_path from coverage_bundles'
+  );
+  assert.deepEqual(bundleRows, [['foo_bundle', 'helper', 'R/a.R']]);
+
+  const memberRows = querySqlite(
+    auditDb,
+    'select entity_key, file_path, line_start, line_end from coverage_bundle_members'
+  );
+  assert.deepEqual(memberRows, [['symbol::foo', 'R/a.R', 1, 3]]);
+
+  const bundleResultRows = querySqlite(
+    auditDb,
+    'select status, round(line_percent, 1), lines_total, lines_covered from coverage_bundle_results'
+  );
+  assert.deepEqual(bundleResultRows, [['completed', 66.7, 3, 2]]);
+
+  const testLinkRows = querySqlite(
+    auditDb,
+    'select coverage_bundle_id is not null, test_file_path, source from coverage_test_links order by source, test_file_path'
+  );
+  assert.deepEqual(testLinkRows, [
+    [1, 'tests/testthat/test-coverage-demo.R', 'bundle_manifest']
+  ]);
+
+  const latestCoverage = JSON.parse(fs.readFileSync(
+    path.join(repoRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage.json'),
+    'utf8'
+  ));
+  assert.equal(latestCoverage.status, 'completed');
+  assert.equal(latestCoverage.bundle_count, 1);
+
+  const summaryMarkdown = fs.readFileSync(
+    path.join(repoRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage.md'),
+    'utf8'
+  );
+  assert.match(summaryMarkdown, /Bundle manifest: `tools\/refactor\/coverage-bundles-fixture\.json`/);
+  assert.match(summaryMarkdown, /Line coverage: `66\.7%`/);
+});
+
+serialTest('coverage-compare command persists baseline and target bundle deltas from shared tests', () => {
+  const { baselineRoot, targetRoot } = makeCoverageCompareTriplet();
+  const baselineFixturePath = path.join(targetRoot, 'baseline-coverage-fixture.json');
+  const targetFixturePath = path.join(targetRoot, 'target-coverage-fixture.json');
+  writeFile(baselineFixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: baselineRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    files: [
+      {
+        file_path: 'R/a.R',
+        line_percent: 33.3333,
+        lines_total: 3,
+        lines_covered: 1,
+        covered_lines: [1],
+        uncovered_lines: [2, 3]
+      }
+    ],
+    line_percent: 33.3333,
+    lines_total: 3,
+    lines_covered: 1,
+    notes: ['baseline fixture payload']
+  }, null, 2));
+  writeFile(targetFixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: targetRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    files: [
+      {
+        file_path: 'R/b.R',
+        line_percent: 100,
+        lines_total: 3,
+        lines_covered: 3,
+        covered_lines: [1, 2, 3],
+        uncovered_lines: []
+      }
+    ],
+    line_percent: 100,
+    lines_total: 3,
+    lines_covered: 3,
+    notes: ['target fixture payload']
+  }, null, 2));
+
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage-compare',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot,
+    '--bundle-manifest',
+    'tools/refactor/coverage-compare-bundles.json'
+  ], {
+    env: {
+      ...process.env,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_BASELINE: baselineFixturePath,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_TARGET: targetFixturePath
+    }
+  });
+
+  assert.equal(summary.mode, 'coverage_compare');
+  assert.equal(summary.status, 'completed');
+  assert.equal(summary.bundle_count, 1);
+  assert.equal(summary.test_file_count, 1);
+  assert.equal(summary.baseline.line_percent_display, '33.3%');
+  assert.equal(summary.target.line_percent_display, '100.0%');
+  assert.equal(summary.bundle_status_counts.completed, 1);
+  assert.equal(summary.delta_counts.improved, 1);
+  assert.equal(summary.bundle_results[0].bundle_id, 'foo_compare_bundle');
+  assert.equal(summary.bundle_results[0].baseline_line_percent.toFixed(1), '33.3');
+  assert.equal(summary.bundle_results[0].target_line_percent.toFixed(1), '100.0');
+  assert.equal(summary.bundle_results[0].line_percent_delta.toFixed(1), '66.7');
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const runModes = querySqlite(auditDb, 'select mode, count(*) from audit_runs group by mode order by mode');
+  assert.deepEqual(runModes, [['coverage_compare', 1]]);
+
+  const coverageRunRows = querySqlite(
+    auditDb,
+    'select side, status, tool_status, bundle_count, file_count from coverage_runs order by side'
+  );
+  assert.deepEqual(coverageRunRows, [
+    ['baseline', 'completed', 'ok', 1, 1],
+    ['target', 'completed', 'ok', 1, 1]
+  ]);
+
+  const memberRows = querySqlite(
+    auditDb,
+    `select coverage_bundles.side, coverage_bundle_members.file_path
+       from coverage_bundle_members
+       join coverage_bundles on coverage_bundles.coverage_bundle_id = coverage_bundle_members.coverage_bundle_id
+      where coverage_bundles.run_id = (select run_id from audit_runs where mode = "coverage_compare")
+      order by coverage_bundles.side`
+  );
+  assert.deepEqual(memberRows, [
+    ['baseline', 'R/a.R'],
+    ['target', 'R/b.R']
+  ]);
+
+  const comparisonRow = querySqlite(
+    auditDb,
+    `select coverage_bundle_results.status, round(coverage_bundle_results.line_percent, 1), coverage_bundle_results.result_json
+       from coverage_bundle_results
+       join coverage_bundles on coverage_bundles.coverage_bundle_id = coverage_bundle_results.coverage_bundle_id
+      where coverage_bundles.run_id = (select run_id from audit_runs where mode = "coverage_compare")
+        and coverage_bundles.side = "comparison"`
+  )[0];
+  assert.equal(comparisonRow[0], 'completed');
+  assert.equal(comparisonRow[1], 100.0);
+  const comparisonPayload = JSON.parse(comparisonRow[2]);
+  assert.equal(comparisonPayload.baseline.line_percent.toFixed(1), '33.3');
+  assert.equal(comparisonPayload.target.line_percent.toFixed(1), '100.0');
+  assert.equal(comparisonPayload.line_percent_delta.toFixed(1), '66.7');
+
+  const latestCoverageCompare = JSON.parse(fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage-compare.json'),
+    'utf8'
+  ));
+  assert.equal(latestCoverageCompare.status, 'completed');
+  assert.equal(latestCoverageCompare.delta_counts.improved, 1);
+
+  const summaryMarkdown = fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage-compare.md'),
+    'utf8'
+  );
+  assert.match(summaryMarkdown, /Refactor Fidelity Coverage Compare/);
+  assert.match(summaryMarkdown, /Delta Counts/);
+});
+
+serialTest('coverage-compare explicit-tests-only narrows the family test subset', () => {
+  const { baselineRoot, targetRoot } = makeCoverageCompareTriplet();
+  writeFile(path.join(targetRoot, 'tests', 'testthat', 'test-extra-coverage-demo.R'), `library(testthat)
+
+test_that("extra coverage fixture test", {
+  expect_true(TRUE)
+})
+`);
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'coverage-compare-bundles-explicit.json'), JSON.stringify({
+    bundles: [
+      {
+        bundle_id: 'foo_compare_bundle',
+        bundle_type: 'helper_surface',
+        shared_test_files: [
+          'tests/testthat/test-coverage-demo.R',
+          'tests/testthat/test-extra-coverage-demo.R'
+        ],
+        baseline_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/a.R',
+            line_start: 1,
+            line_end: 3
+          }
+        ],
+        target_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/b.R',
+            line_start: 1,
+            line_end: 3
+          }
+        ]
+      }
+    ]
+  }, null, 2));
+
+  const baselineFixturePath = path.join(targetRoot, 'baseline-coverage-explicit-fixture.json');
+  const targetFixturePath = path.join(targetRoot, 'target-coverage-explicit-fixture.json');
+  writeFile(baselineFixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: baselineRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    files: [
+      {
+        file_path: 'R/a.R',
+        line_percent: 33.3333,
+        lines_total: 3,
+        lines_covered: 1,
+        covered_lines: [1],
+        uncovered_lines: [2, 3]
+      }
+    ],
+    line_percent: 33.3333,
+    lines_total: 3,
+    lines_covered: 1,
+    notes: ['baseline explicit fixture']
+  }, null, 2));
+  writeFile(targetFixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: targetRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    files: [
+      {
+        file_path: 'R/b.R',
+        line_percent: 100,
+        lines_total: 3,
+        lines_covered: 3,
+        covered_lines: [1, 2, 3],
+        uncovered_lines: []
+      }
+    ],
+    line_percent: 100,
+    lines_total: 3,
+    lines_covered: 3,
+    notes: ['target explicit fixture']
+  }, null, 2));
+
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage-compare',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot,
+    '--bundle-manifest',
+    'tools/refactor/coverage-compare-bundles-explicit.json',
+    '--explicit-tests-only',
+    '--test-file',
+    'tests/testthat/test-coverage-demo.R'
+  ], {
+    env: {
+      ...process.env,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_BASELINE: baselineFixturePath,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_TARGET: targetFixturePath
+    }
+  });
+
+  assert.equal(summary.mode, 'coverage_compare');
+  assert.equal(summary.test_file_count, 1);
+  assert.deepEqual(summary.selected_test_files, ['tests/testthat/test-coverage-demo.R']);
+});
+
+serialTest('coverage-evidence treats baseline test failures under target-selected tests as comparison gaps', () => {
+  const { baselineRoot, targetRoot } = makeCoverageCompareTriplet();
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'coverage-evidence-bundles-baseline-failures.json'), JSON.stringify({
+    bundles: [
+      {
+        bundle_id: 'foo_compare_bundle',
+        bundle_type: 'helper_surface',
+        shared_test_files: ['tests/testthat/test-coverage-demo.R'],
+        baseline_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/a.R',
+            line_start: 1,
+            line_end: 20
+          }
+        ],
+        target_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/b.R',
+            line_start: 1,
+            line_end: 20
+          }
+        ]
+      }
+    ]
+  }, null, 2));
+
+  const baselineFixturePath = path.join(targetRoot, 'baseline-coverage-evidence-failures-fixture.json');
+  const targetFixturePath = path.join(targetRoot, 'target-coverage-evidence-failures-fixture.json');
+  writeFile(baselineFixturePath, JSON.stringify({
+    status: 'test_failures',
+    tool_status: 'testthat_failures',
+    project_root: baselineRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    test_count: 1,
+    failure_count: 1,
+    skip_count: 0,
+    failed_tests: ['shared compatibility test'],
+    files: [
+      {
+        file_path: 'R/a.R',
+        line_percent: 0,
+        lines_total: 20,
+        lines_covered: 0,
+        covered_lines: [],
+        uncovered_lines: Array.from({ length: 20 }, (_, idx) => idx + 1)
+      }
+    ],
+    line_percent: 0,
+    lines_total: 20,
+    lines_covered: 0,
+    notes: ['baseline selected tests fail']
+  }, null, 2));
+  writeFile(targetFixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: targetRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    test_count: 1,
+    failure_count: 0,
+    skip_count: 0,
+    failed_tests: [],
+    files: [
+      {
+        file_path: 'R/b.R',
+        line_percent: 95,
+        lines_total: 20,
+        lines_covered: 19,
+        covered_lines: Array.from({ length: 19 }, (_, idx) => idx + 1),
+        uncovered_lines: [20]
+      }
+    ],
+    line_percent: 95,
+    lines_total: 20,
+    lines_covered: 19,
+    notes: ['target selected tests pass']
+  }, null, 2));
+
+  const compareSummary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage-compare',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot,
+    '--bundle-manifest',
+    'tools/refactor/coverage-evidence-bundles-baseline-failures.json'
+  ], {
+    env: {
+      ...process.env,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_BASELINE: baselineFixturePath,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_TARGET: targetFixturePath
+    }
+  });
+
+  assert.equal(compareSummary.status, 'completed_with_incomplete_sides');
+  assert.equal(compareSummary.baseline.status, 'test_failures');
+  assert.equal(compareSummary.baseline.failure_count, 1);
+  assert.equal(compareSummary.target.status, 'completed');
+  assert.equal(compareSummary.target.failure_count, 0);
+
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage-evidence',
+    '--repo-root',
+    targetRoot,
+    '--bundle-manifest',
+    'tools/refactor/coverage-evidence-bundles-baseline-failures.json',
+    '--coverage-compare-run-id',
+    compareSummary.run_id
+  ]);
+
+  assert.equal(summary.status, 'completed_with_gaps');
+  assert.equal(summary.low_coverage_bundle_count, 0);
+  assert.equal(summary.comparison_gap_bundle_count, 1);
+  assert.equal(summary.exception_count, 1);
+  assert.equal(summary.sample_bundles[0].coverage_gate_status, 'comparison_gap');
+  assert.equal(summary.bundles[0].baseline_status, 'test_failures');
+  assert.equal(summary.bundles[0].target_status, 'completed');
+
+  const latestCompareMarkdown = fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage-compare.md'),
+    'utf8'
+  );
+  assert.match(latestCompareMarkdown, /Failing tests: `1`/);
+  assert.match(latestCompareMarkdown, /shared compatibility test/);
+});
+
+serialTest('coverage-evidence command materializes low-coverage bundle evidence and exceptions', () => {
+  const { baselineRoot, targetRoot } = makeCoverageCompareTriplet();
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'coverage-evidence-bundles.json'), JSON.stringify({
+    bundles: [
+      {
+        bundle_id: 'foo_compare_bundle',
+        bundle_type: 'helper_surface',
+        shared_test_files: ['tests/testthat/test-coverage-demo.R'],
+        baseline_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/a.R',
+            line_start: 1,
+            line_end: 20
+          }
+        ],
+        target_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/b.R',
+            line_start: 1,
+            line_end: 20
+          }
+        ]
+      }
+    ]
+  }, null, 2));
+  const baselineFixturePath = path.join(targetRoot, 'baseline-coverage-evidence-fixture.json');
+  const targetFixturePath = path.join(targetRoot, 'target-coverage-evidence-fixture.json');
+  writeFile(baselineFixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: baselineRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    files: [
+      {
+        file_path: 'R/a.R',
+        line_percent: 95,
+        lines_total: 20,
+        lines_covered: 19,
+        covered_lines: Array.from({ length: 19 }, (_, idx) => idx + 1),
+        uncovered_lines: [20]
+      }
+    ],
+    line_percent: 95,
+    lines_total: 20,
+    lines_covered: 19,
+    notes: ['baseline evidence fixture']
+  }, null, 2));
+  writeFile(targetFixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: targetRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    files: [
+      {
+        file_path: 'R/b.R',
+        line_percent: 60,
+        lines_total: 20,
+        lines_covered: 12,
+        covered_lines: Array.from({ length: 12 }, (_, idx) => idx + 1),
+        uncovered_lines: Array.from({ length: 8 }, (_, idx) => idx + 13)
+      }
+    ],
+    line_percent: 60,
+    lines_total: 20,
+    lines_covered: 12,
+    notes: ['target evidence fixture']
+  }, null, 2));
+
+  runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage-compare',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot,
+    '--bundle-manifest',
+    'tools/refactor/coverage-evidence-bundles.json'
+  ], {
+    env: {
+      ...process.env,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_BASELINE: baselineFixturePath,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_TARGET: targetFixturePath
+    }
+  });
+
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage-evidence',
+    '--repo-root',
+    targetRoot,
+    '--bundle-manifest',
+    'tools/refactor/coverage-evidence-bundles.json'
+  ]);
+
+  assert.equal(summary.mode, 'coverage_evidence');
+  assert.equal(summary.status, 'completed_with_gaps');
+  assert.equal(summary.bundle_count, 1);
+  assert.equal(summary.low_coverage_bundle_count, 1);
+  assert.equal(summary.regression_bundle_count, 1);
+  assert.equal(summary.justified_bundle_count, 1);
+  assert.equal(summary.package_coverage.target_line_percent_display, '60.0%');
+  assert.equal(summary.package_coverage.gate_status, 'below_target');
+  assert.equal(summary.gate_counts.below_target, 1);
+  assert.equal(summary.delta_counts.regressed, 1);
+  assert.equal(summary.exception_count, 2);
+  assert.equal(summary.below_target_bundles[0].bundle_id, 'foo_compare_bundle');
+  assert.equal(summary.below_target_bundles[0].threshold_display, '90.0%');
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const runModes = querySqlite(auditDb, 'select mode, count(*) from audit_runs group by mode order by mode');
+  assert.deepEqual(runModes, [
+    ['coverage_compare', 1],
+    ['coverage_evidence', 1]
+  ]);
+
+  const exceptionRows = querySqlite(
+    auditDb,
+    'select audit_layer, exception_type, severity from exceptions order by exception_type'
+  );
+  assert.deepEqual(exceptionRows, [
+    ['coverage_evidence', 'coverage_target_below_threshold', 'medium'],
+    ['coverage_evidence', 'package_coverage_below_threshold', 'medium']
+  ]);
+
+  const evidenceBundleRows = querySqlite(
+    auditDb,
+    `select side, coverage_gate_status
+       from coverage_bundles
+      where run_id = (select run_id from audit_runs where mode = "coverage_evidence")`
+  );
+  assert.deepEqual(evidenceBundleRows, [['evidence', 'below_target']]);
+
+  const evidenceResultRow = querySqlite(
+    auditDb,
+    `select status, round(line_percent, 1), result_json
+       from coverage_bundle_results
+      where run_id = (select run_id from audit_runs where mode = "coverage_evidence")`
+  )[0];
+  assert.equal(evidenceResultRow[0], 'below_target');
+  assert.equal(evidenceResultRow[1], 60.0);
+  const evidencePayload = JSON.parse(evidenceResultRow[2]);
+  assert.equal(evidencePayload.threshold_pct.toFixed(1), '90.0');
+  assert.equal(evidencePayload.regressed_vs_baseline, true);
+
+  const latestCoverageEvidence = JSON.parse(fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage-evidence.json'),
+    'utf8'
+  ));
+  assert.equal(latestCoverageEvidence.status, 'completed_with_gaps');
+  assert.equal(latestCoverageEvidence.low_coverage_bundle_count, 1);
+
+  const summaryMarkdown = fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage-evidence.md'),
+    'utf8'
+  );
+  assert.match(summaryMarkdown, /Below Target Bundles/);
+  assert.match(summaryMarkdown, /Regressed Bundles/);
+});
+
+serialTest('coverage-evidence flags baseline-target comparison gaps and suppresses package gate on subset runs', () => {
+  const { baselineRoot, targetRoot } = makeCoverageCompareTriplet();
+  writeFile(path.join(targetRoot, 'tools', 'refactor', 'coverage-evidence-comparison-bundles.json'), JSON.stringify({
+    bundles: [
+      {
+        bundle_id: 'foo_compare_gap',
+        bundle_type: 'wrapper_entrypoint',
+        shared_test_files: ['tests/testthat/test-coverage-demo.R'],
+        baseline_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/a.R',
+            line_start: 1,
+            line_end: 20
+          }
+        ],
+        target_members: [
+          {
+            entity_key: 'symbol::foo',
+            file_path: 'R/b.R',
+            line_start: 1,
+            line_end: 20
+          }
+        ]
+      },
+      {
+        bundle_id: 'unused_compare_gap',
+        bundle_type: 'wrapper_entrypoint',
+        shared_test_files: ['tests/testthat/test-coverage-demo-extra.R'],
+        baseline_members: [
+          {
+            entity_key: 'symbol::bar',
+            file_path: 'R/a.R',
+            line_start: 21,
+            line_end: 25
+          }
+        ],
+        target_members: [
+          {
+            entity_key: 'symbol::bar',
+            file_path: 'R/b.R',
+            line_start: 21,
+            line_end: 25
+          }
+        ]
+      }
+    ]
+  }, null, 2));
+  const baselineFixturePath = path.join(targetRoot, 'baseline-coverage-comparison-gap-fixture.json');
+  const targetFixturePath = path.join(targetRoot, 'target-coverage-comparison-gap-fixture.json');
+  writeFile(baselineFixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: baselineRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    files: [
+      {
+        file_path: 'R/a.R',
+        line_percent: 0,
+        lines_total: 20,
+        lines_covered: 0,
+        covered_lines: [],
+        uncovered_lines: Array.from({ length: 20 }, (_, idx) => idx + 1)
+      }
+    ],
+    line_percent: 0,
+    lines_total: 20,
+    lines_covered: 0,
+    notes: ['baseline comparison-gap fixture']
+  }, null, 2));
+  writeFile(targetFixturePath, JSON.stringify({
+    status: 'completed',
+    tool_status: 'ok',
+    project_root: targetRoot,
+    test_files: ['tests/testthat/test-coverage-demo.R'],
+    files: [
+      {
+        file_path: 'R/b.R',
+        line_percent: 95,
+        lines_total: 20,
+        lines_covered: 19,
+        covered_lines: Array.from({ length: 19 }, (_, idx) => idx + 1),
+        uncovered_lines: [20]
+      }
+    ],
+    line_percent: 95,
+    lines_total: 20,
+    lines_covered: 19,
+    notes: ['target comparison-gap fixture']
+  }, null, 2));
+
+  const compareSummary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage-compare',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot,
+    '--bundle-manifest',
+    'tools/refactor/coverage-evidence-comparison-bundles.json',
+    '--bundle-id',
+    'foo_compare_gap'
+  ], {
+    env: {
+      ...process.env,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_BASELINE: baselineFixturePath,
+      FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_TARGET: targetFixturePath
+    }
+  });
+
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'coverage-evidence',
+    '--repo-root',
+    targetRoot,
+    '--bundle-manifest',
+    'tools/refactor/coverage-evidence-comparison-bundles.json',
+    '--coverage-compare-run-id',
+    compareSummary.run_id,
+    '--bundle-id',
+    'foo_compare_gap'
+  ]);
+
+  assert.equal(summary.mode, 'coverage_evidence');
+  assert.equal(summary.status, 'completed_with_gaps');
+  assert.equal(summary.bundle_count, 1);
+  assert.equal(summary.low_coverage_bundle_count, 0);
+  assert.equal(summary.comparison_gap_bundle_count, 1);
+  assert.equal(summary.regression_bundle_count, 0);
+  assert.equal(summary.exception_count, 1);
+  assert.equal(summary.package_coverage.gate_status, 'not_applicable_subset');
+  assert.equal(summary.gate_counts.comparison_gap, 1);
+  assert.equal(summary.comparison_gap_bundles[0].bundle_id, 'foo_compare_gap');
+  assert.equal(summary.comparison_gap_bundles[0].target_line_percent_display, '95.0%');
+  assert.equal(summary.comparison_gap_bundles[0].baseline_line_percent_display, '0.0%');
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const exceptionRows = querySqlite(
+    auditDb,
+    'select audit_layer, exception_type, severity from exceptions order by exception_type'
+  );
+  assert.deepEqual(exceptionRows, [
+    ['coverage_evidence', 'coverage_comparison_gap', 'medium']
+  ]);
+
+  const evidenceResultRow = querySqlite(
+    auditDb,
+    `select status, round(line_percent, 1), result_json
+       from coverage_bundle_results
+      where run_id = (select run_id from audit_runs where mode = "coverage_evidence")`
+  )[0];
+  assert.equal(evidenceResultRow[0], 'comparison_gap');
+  assert.equal(evidenceResultRow[1], 95.0);
+  const evidencePayload = JSON.parse(evidenceResultRow[2]);
+  assert.equal(evidencePayload.threshold_pct.toFixed(1), '80.0');
+  assert.equal(evidencePayload.baseline_line_percent.toFixed(1), '0.0');
+  assert.equal(evidencePayload.target_line_percent.toFixed(1), '95.0');
+
+  const latestCoverageEvidence = JSON.parse(fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage-evidence.json'),
+    'utf8'
+  ));
+  assert.equal(latestCoverageEvidence.package_coverage.gate_status, 'not_applicable_subset');
+  assert.equal(latestCoverageEvidence.comparison_gap_bundle_count, 1);
+
+  const summaryMarkdown = fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-coverage-evidence.md'),
+    'utf8'
+  );
+  assert.match(summaryMarkdown, /Comparison Gap Bundles/);
+});
+
+serialTest('bundle-map command collapses curated parity evidence into ranked coverage bundles', () => {
+  const { baselineRoot, mainlineRoot, targetRoot } = makeBundleMapTriplet();
+  const closeout = runJson('python3', [
+    AUDIT_SCRIPT,
+    'closeout',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--mainline-path',
+    mainlineRoot,
+    '--target-path',
+    targetRoot,
+    '--manifest-path',
+    'tools/refactor/manifest-closeout-bundle-map.yml',
+    '--case-path',
+    'tools/refactor/behavior-cases-closeout-bundle-map.json',
+    '--test-file',
+    'tests/testthat/test-overlap-helper-characterization.R',
+    '--contracts-execute'
+  ]);
+
+  assert.equal(closeout.status, 'ready_for_coverage_campaign');
+
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'bundle-map',
+    '--repo-root',
+    targetRoot
+  ]);
+
+  assert.equal(summary.mode, 'bundle_map');
+  assert.equal(summary.status, 'completed');
+  assert.equal(summary.bundle_count, 3);
+  assert.equal(summary.linked_exception_count, 4);
+  assert.equal(summary.bundle_type_counts.helper_surface, 1);
+  assert.equal(summary.bundle_type_counts.lineage_family, 2);
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const bundleRows = querySqlite(
+    auditDb,
+    'select bundle_type, linked_exception_count, priority_rank from coverage_bundles where run_id = (select run_id from audit_runs where mode = \"bundle_map\") order by priority_rank'
+  );
+  assert.deepEqual(bundleRows, [
+    ['helper_surface', 2, 1],
+    ['lineage_family', 1, 2],
+    ['lineage_family', 1, 3]
+  ]);
+
+  const exceptionLinkRows = querySqlite(
+    auditDb,
+    'select count(*) from coverage_exception_links where run_id = (select run_id from audit_runs where mode = \"bundle_map\")'
+  );
+  assert.equal(exceptionLinkRows[0][0], 4);
+
+  const testLinkRows = querySqlite(
+    auditDb,
+    'select test_file_path from coverage_test_links where run_id = (select run_id from audit_runs where mode = \"bundle_map\") order by test_file_path'
+  );
+  assert.deepEqual(testLinkRows, [['tests/testthat/test-overlap-helper-characterization.R']]);
+
+  const bundleManifest = JSON.parse(fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-bundles.json'),
+    'utf8'
+  ));
+  assert.equal(bundleManifest.bundle_count, 3);
+  assert.equal(bundleManifest.bundles[0].linked_exception_count, 2);
+  assert.equal(bundleManifest.bundles[0].shared_test_files[0], 'tests/testthat/test-overlap-helper-characterization.R');
+  const lineageBundles = bundleManifest.bundles.filter((bundle) => bundle.bundle_type === 'lineage_family');
+  lineageBundles.sort((left, right) => {
+    const leftStart = left.target_members[0]?.line_start ?? 0;
+    const rightStart = right.target_members[0]?.line_start ?? 0;
+    return leftStart - rightStart;
+  });
+  assert.equal(lineageBundles.length, 2);
+  assert.deepEqual(lineageBundles.map((bundle) => bundle.baseline_paths), [['R/source_gap.R'], ['R/source_gap.R']]);
+  assert.deepEqual(lineageBundles.map((bundle) => bundle.target_paths), [['R/source_gap_target.R'], ['R/source_gap_target.R']]);
+  assert.deepEqual(
+    lineageBundles.map((bundle) => bundle.target_members),
+    [
+      [
+        {
+          entity_key: 'symbol::gapHelper',
+          file_path: 'R/source_gap_target.R',
+          line_start: 1,
+          line_end: 3,
+          metadata: {
+            side: 'target',
+            selector_kind: 'symbol',
+            comparison_status: 'source_missing_target_resolved'
+          }
+        }
+      ],
+      [
+        {
+          entity_key: 'symbol::gapObserverRegister',
+          file_path: 'R/source_gap_target.R',
+          line_start: 5,
+          line_end: 7,
+          metadata: {
+            side: 'target',
+            selector_kind: 'symbol',
+            comparison_status: 'source_missing_target_resolved'
+          }
+        }
+      ]
+    ]
+  );
+  assert.deepEqual(lineageBundles.map((bundle) => bundle.baseline_members), [[], []]);
+
+  const summaryMarkdown = fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-bundles.md'),
+    'utf8'
+  );
+  assert.match(summaryMarkdown, /Priority Bundles/);
+  assert.match(summaryMarkdown, /helper_surface/);
 });
 
 serialTest('surface command persists file and export surfaces and reports drift classes', () => {
@@ -795,8 +2455,8 @@ serialTest('surface command persists file and export surfaces and reports drift 
   assert.equal(summary.diff_counts.extra_export, 1);
   assert.equal(summary.diff_counts.missing_file, 1);
   assert.equal(summary.diff_counts.extra_file, 2);
-  assert.equal(summary.diff_counts.collate_drift, 1);
-  assert.equal(summary.exception_count, 9);
+  assert.equal(summary.diff_counts.collate_drift || 0, 0);
+  assert.equal(summary.exception_count, 5);
 
   const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
   const fileSurfaceCount = querySqlite(auditDb, 'select count(*) from inventory_files')[0][0];
@@ -805,15 +2465,14 @@ serialTest('surface command persists file and export surfaces and reports drift 
   const exceptionCount = querySqlite(auditDb, 'select count(*) from exceptions')[0][0];
   assert.equal(fileSurfaceCount, 5);
   assert.equal(exportSurfaceCount, 6);
-  assert.equal(diffCount, 12);
-  assert.equal(exceptionCount, 9);
+  assert.equal(diffCount, 11);
+  assert.equal(exceptionCount, 5);
 
   const diffClasses = querySqlite(
     auditDb,
     'select diff_class, entity_key from inventory_diffs order by diff_class, entity_key'
   );
   assert.deepEqual(diffClasses, [
-    ['collate_drift', 'R/b.R'],
     ['duplicate_definition', 'symbol::bar'],
     ['extra_definition', 'symbol::bar'],
     ['extra_export', 'functions::bar'],
@@ -831,10 +2490,46 @@ serialTest('surface command persists file and export surfaces and reports drift 
     path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-summary.md'),
     'utf8'
   );
-  assert.match(summaryMarkdown, /Total diffs: `12`/);
-  assert.match(summaryMarkdown, /Exception candidates: `9`/);
+  assert.match(summaryMarkdown, /Total diffs: `11`/);
+  assert.match(summaryMarkdown, /Exception candidates: `5`/);
   assert.match(summaryMarkdown, /`missing_definition`: `1`/);
   assert.match(summaryMarkdown, /`moved_definition`: `3`/);
+});
+
+serialTest('surface command ignores symmetric duplicate definitions when both sides share the same duplicate shape', () => {
+  const { baselineRoot, targetRoot } = makeSurfaceParityPair();
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'surface',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot
+  ]);
+
+  assert.equal(summary.total_diffs, 0);
+  assert.equal(summary.open_diff_count, 0);
+  assert.equal(summary.exception_count, 0);
+});
+
+serialTest('surface command ignores duplicate-shape reductions when semantic fingerprints are preserved', () => {
+  const { baselineRoot, targetRoot } = makeSurfaceDedupSafePair();
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'surface',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot
+  ]);
+
+  assert.equal(summary.total_diffs, 0);
+  assert.equal(summary.open_diff_count, 0);
+  assert.equal(summary.exception_count, 0);
 });
 
 serialTest('manifest command catalogs entries, classifies fidelity tiers, and emits exception candidates', () => {
@@ -862,9 +2557,9 @@ serialTest('manifest command catalogs entries, classifies fidelity tiers, and em
   assert.equal(summary.status_counts.ast_only, 1);
   assert.equal(summary.status_counts.content_missing, 1);
   assert.equal(summary.status_counts.manual_merge_expected, 1);
-  assert.equal(summary.resolver_counts.selector, 3);
+  assert.equal(summary.resolver_counts.selector, 4);
   assert.equal(summary.resolver_counts.raw_text_search, 1);
-  assert.equal(summary.resolver_counts.file_normalized_text_search, 1);
+  assert.equal(summary.resolver_counts.file_normalized_text_search || 0, 0);
   assert.equal(summary.resolver_counts.content_missing, 1);
   assert.equal(summary.resolver_counts.missing_target_file, 1);
 
@@ -881,7 +2576,7 @@ serialTest('manifest command catalogs entries, classifies fidelity tiers, and em
     'select entry_id, status, target_resolver from manifest_entries join manifest_comparisons using (manifest_entry_id) order by entry_id'
   );
   assert.deepEqual(comparisons, [
-    ['anchor_normalized', 'normalized_only', 'file_normalized_text_search'],
+    ['anchor_normalized', 'normalized_only', 'selector'],
     ['expr_exact', 'raw_exact', 'raw_text_search'],
     ['manual_expected', 'manual_merge_expected', 'missing_target_file'],
     ['method_exact', 'raw_exact', 'selector'],
@@ -937,8 +2632,8 @@ serialTest('manifest command records source lineage gaps instead of aborting whe
   assert.equal(summary.status, 'completed');
   assert.equal(summary.entry_count, 1);
   assert.equal(summary.exception_count, 1);
-  assert.equal(summary.status_counts.source_missing, 1);
-  assert.equal(summary.resolver_counts.source_missing, 1);
+  assert.equal(summary.status_counts.source_missing_target_resolved, 1);
+  assert.equal(summary.resolver_counts.selector, 1);
 
   const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
   const comparisonRows = querySqlite(
@@ -947,8 +2642,8 @@ serialTest('manifest command records source lineage gaps instead of aborting whe
   );
   assert.deepEqual(comparisonRows, [[
     'source_gap',
-    'source_missing',
-    'source_missing'
+    'source_missing_target_resolved',
+    'selector'
   ]]);
 
   const exceptionRows = querySqlite(
@@ -956,9 +2651,9 @@ serialTest('manifest command records source lineage gaps instead of aborting whe
     'select exception_type, severity, reason from exceptions order by exception_type'
   );
   assert.deepEqual(exceptionRows, [[
-    'source_lineage_gap',
-    'high',
-    'Baseline/source block could not be resolved via `selector:symbol`: Selector did not match any block for entry source_gap'
+    'source_lineage_gap_target_resolved',
+    'low',
+    'Baseline/source block could not be resolved via `selector:symbol`, but the target block resolved via `selector`: baseline/source selector no longer resolves directly; target block resolved via selector'
   ]]);
 
   const latestExceptions = JSON.parse(fs.readFileSync(
@@ -966,7 +2661,83 @@ serialTest('manifest command records source lineage gaps instead of aborting whe
     'utf8'
   ));
   assert.equal(latestExceptions.summary.open_count, 1);
-  assert.equal(latestExceptions.exceptions[0].exception_type, 'source_lineage_gap');
+  assert.equal(latestExceptions.exceptions[0].exception_type, 'source_lineage_gap_target_resolved');
+});
+
+serialTest('manifest command resolves stale target paths through repo-wide selector fallback', () => {
+  const { baselineRoot, targetRoot } = makeManifestRepoSelectorTargetPair();
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'manifest',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot,
+    '--manifest-path',
+    'tools/refactor/manifest-repo-selector.yml'
+  ]);
+
+  assert.equal(summary.mode, 'manifest');
+  assert.equal(summary.status, 'completed');
+  assert.equal(summary.entry_count, 1);
+  assert.equal(summary.exception_count, 1);
+  assert.equal(summary.status_counts.raw_exact, 1);
+  assert.equal(summary.resolver_counts.repo_selector_search, 1);
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const comparisonRows = querySqlite(
+    auditDb,
+    'select entry_id, status, target_resolver from manifest_entries join manifest_comparisons using (manifest_entry_id)'
+  );
+  assert.deepEqual(comparisonRows, [[
+    'symbol_repo_selector',
+    'raw_exact',
+    'repo_selector_search'
+  ]]);
+
+  const exceptionRows = querySqlite(
+    auditDb,
+    'select exception_type, severity from exceptions order by exception_type'
+  );
+  assert.deepEqual(exceptionRows, [[
+    'target_resolution_asymmetry',
+    'low'
+  ]]);
+});
+
+serialTest('manifest command supports asymmetric target selectors for moved anchor ranges', () => {
+  const { baselineRoot, targetRoot } = makeManifestTargetSelectorPair();
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'manifest',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot,
+    '--manifest-path',
+    'tools/refactor/manifest-target-selector.yml'
+  ]);
+
+  assert.equal(summary.mode, 'manifest');
+  assert.equal(summary.status, 'completed');
+  assert.equal(summary.entry_count, 1);
+  assert.equal(summary.exception_count, 0);
+  assert.equal(summary.status_counts.raw_exact, 1);
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const comparisonRows = querySqlite(
+    auditDb,
+    'select entry_id, status, target_resolver from manifest_entries join manifest_comparisons using (manifest_entry_id)'
+  );
+  assert.deepEqual(comparisonRows, [[
+    'anchor_target_selector',
+    'raw_exact',
+    'selector'
+  ]]);
 });
 
 serialTest('behavior command catalogs replay cases, records parity tiers, and emits behavior exceptions', () => {
@@ -1293,6 +3064,132 @@ serialTest('closeout command orchestrates integrated audits and emits a readines
   );
   assert.match(closeoutMarkdown, /Coverage-campaign ready: `true`/);
   assert.match(closeoutMarkdown, /Proven parity: `true`/);
+});
+
+serialTest('closeout auto-curates redundant surface drifts when manifest semantic review already covers the same entity', () => {
+  const { baselineRoot, mainlineRoot, targetRoot } = makeCloseoutOverlapTriplet();
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'closeout',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--mainline-path',
+    mainlineRoot,
+    '--target-path',
+    targetRoot,
+    '--manifest-path',
+    'tools/refactor/manifest-closeout-overlap.yml',
+    '--case-path',
+    'tools/refactor/behavior-cases-closeout-overlap.json',
+    '--test-file',
+    'tests/testthat/test-prot-03-rollup.R',
+    '--contracts-execute'
+  ]);
+
+  assert.equal(summary.status, 'blocked');
+  assert.equal(summary.auto_curated_count, 1);
+  assert.equal(summary.readiness.open_exception_count, 1);
+  assert.equal(summary.readiness.high_open_exception_count, 1);
+  assert.equal(summary.readiness.surface_gate, true);
+  assert.equal(summary.readiness.manifest_gate, false);
+  assert.equal(summary.readiness.open_exception_layer_counts.manifest_fidelity, 1);
+  assert.equal(summary.readiness.open_exception_layer_counts.surface_inventory || 0, 0);
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const exceptionRows = querySqlite(
+    auditDb,
+    "select exception_type, curation_status, disposition, curation_rule from exceptions order by exception_type"
+  );
+  assert.deepEqual(exceptionRows, [
+    ['semantic_mismatch', 'candidate', null, null],
+    ['surface_definition_drift', 'auto_curated', 'covered_by_manifest_semantic_review', 'auto:surface_definition_drift_manifest_overlap']
+  ]);
+});
+
+serialTest('closeout applies persistent curation catalog entries by exception key', () => {
+  const { baselineRoot, mainlineRoot, targetRoot } = makeCloseoutCatalogCuratedTriplet();
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'closeout',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--mainline-path',
+    mainlineRoot,
+    '--target-path',
+    targetRoot,
+    '--manifest-path',
+    'tools/refactor/manifest-closeout-curation.yml',
+    '--case-path',
+    'tools/refactor/behavior-cases-closeout-curation.json',
+    '--test-file',
+    'tests/testthat/test-prot-03-rollup.R',
+    '--contracts-execute'
+  ]);
+
+  assert.equal(summary.status, 'ready_for_coverage_campaign');
+  assert.equal(summary.proven_parity, true);
+  assert.equal(summary.catalog_curated_count, 1);
+  assert.equal(summary.readiness.open_exception_count, 0);
+  assert.equal(summary.readiness.high_open_exception_count, 0);
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const exceptionRows = querySqlite(
+    auditDb,
+    "select exception_type, curation_status, disposition, owner, curation_rule from exceptions order by exception_type"
+  );
+  assert.deepEqual(exceptionRows, [
+    ['surface_duplicate_definition', 'accepted', 'canonical_duplicate_retired', 'fixture', 'catalog:tools/refactor/fidelity-curations.json:dup_helper_canonicalized']
+  ]);
+
+  const latestCloseout = JSON.parse(fs.readFileSync(
+    path.join(targetRoot, '.refactor-fidelity-audit', 'reports', 'latest-closeout.json'),
+    'utf8'
+  ));
+  assert.equal(latestCloseout.catalog_curated_count, 1);
+});
+
+serialTest('closeout clears redundant surface drift after catalog-curating the covering manifest mismatch', () => {
+  const { baselineRoot, mainlineRoot, targetRoot } = makeCloseoutCatalogOverlapTriplet();
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'closeout',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--mainline-path',
+    mainlineRoot,
+    '--target-path',
+    targetRoot,
+    '--manifest-path',
+    'tools/refactor/manifest-closeout-catalog-overlap.yml',
+    '--case-path',
+    'tools/refactor/behavior-cases-closeout-catalog-overlap.json',
+    '--test-file',
+    'tests/testthat/test-prot-03-rollup.R',
+    '--contracts-execute'
+  ]);
+
+  assert.equal(summary.status, 'ready_for_coverage_campaign');
+  assert.equal(summary.proven_parity, true);
+  assert.equal(summary.catalog_curated_count, 1);
+  assert.equal(summary.auto_curated_count, 1);
+  assert.equal(summary.readiness.open_exception_count, 0);
+  assert.equal(summary.readiness.high_open_exception_count, 0);
+
+  const auditDb = path.join(targetRoot, '.refactor-fidelity-audit', 'audit.db');
+  const exceptionRows = querySqlite(
+    auditDb,
+    "select exception_type, curation_status, disposition, owner, curation_rule from exceptions order by exception_type"
+  );
+  assert.deepEqual(exceptionRows, [
+    ['semantic_mismatch', 'accepted', 'entrypoint_shell_equivalent_under_tests', 'fixture', 'catalog:tools/refactor/fidelity-curations.json:overlap_helper_manifest_curated'],
+    ['surface_definition_drift', 'auto_curated', 'covered_by_manifest_semantic_review', null, 'auto:surface_definition_drift_manifest_overlap']
+  ]);
 });
 
 serialTest('shared manifest selector library drives verify_refactor and extract_blocks across selector kinds', () => {

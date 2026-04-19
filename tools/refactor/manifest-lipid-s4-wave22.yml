@@ -16,13 +16,13 @@ collate_targets:
 entries:
   - id: lipid_s4_plot_density_assay_method
     source: R/func_lipid_s4_objects.R
-    selector: { kind: expr_index, value: 2 }
+    selector: { kind: setMethod, value: plotDensity, signature: LipidomicsAssayData }
     target: R/func_lipid_s4_plotting_methods.R
     group: lipidomics.s4.plotting_methods
     note: Twenty-second staged lipid-S4 wave lifts the LipidomicsAssayData density plotting method into the dedicated plotting helper target for review before any live apply.
   - id: lipid_s4_plot_density_list_method
     source: R/func_lipid_s4_objects.R
-    selector: { kind: expr_index, value: 3 }
+    selector: { kind: setMethod, value: plotDensity, signature: 'c(theObject = "list")' }
     target: R/func_lipid_s4_plotting_methods.R
     group: lipidomics.s4.plotting_methods
     note: Twenty-second staged lipid-S4 wave also lifts the list-backed density plotting method so canonical plotting ownership stays together in the helper target.

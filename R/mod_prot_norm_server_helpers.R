@@ -954,3 +954,151 @@ registerProtNormServerObservers <- function(
 
   invisible(TRUE)
 }
+
+runProtNormModuleServerShell <- function(
+  input,
+  output,
+  session,
+  id,
+  workflowData,
+  experimentPaths,
+  omicType,
+  experimentLabel,
+  selectedTab = NULL,
+  messageFn = message,
+  createReactiveStateFn = createProtNormReactiveState,
+  getPlotAestheticsFn = getProtNormPlotAesthetics,
+  getRuvGroupingVariableFn = getProtNormRuvGroupingVariable,
+  generatePreNormalizationQcArtifactsFn = generateProtNormPreNormalizationQcArtifacts,
+  generatePostNormalizationQcArtifactsFn = generateProtNormPostNormalizationQcArtifacts,
+  generateRuvCorrectedQcArtifactsFn = generateProtNormRuvCorrectedQcArtifacts,
+  registerServerObserversFn = registerProtNormServerObservers,
+  registerQcImageOutputsFn = registerProtNormQcImageOutputs,
+  registerRenderOutputsFn = registerProtNormRenderOutputs,
+  checkMemoryUsageFn = checkProtNormMemoryUsage
+) {
+  messageFn("=== NORMALIZATION MODULE SERVER STARTED ===")
+  messageFn(sprintf("Module ID: %s", id))
+  messageFn(sprintf("workflow_data is NULL: %s", is.null(workflowData)))
+  if (!is.null(workflowData$state_manager)) {
+    messageFn(sprintf("Current state at module start: %s", workflowData$state_manager$current_state))
+  }
+
+  normData <- createReactiveStateFn()
+
+  getPlotAesthetics <- function() {
+    getPlotAestheticsFn(input$color_variable, input$shape_variable)
+  }
+
+  getRuvGroupingVariable <- function() {
+    getRuvGroupingVariableFn(input$ruv_grouping_variable)
+  }
+
+  generatePreNormalizationQc <- function() {
+    normData$qc_plot_paths <- generatePreNormalizationQcArtifactsFn(
+      stateManager = workflowData$state_manager,
+      qcDir = experimentPaths$protein_qc_dir,
+      aesthetics = getPlotAesthetics(),
+      qcPlotPaths = normData$qc_plot_paths
+    )
+  }
+
+  generatePostNormalizationQc <- function(normalizedS4) {
+    normData$qc_plot_paths <- generatePostNormalizationQcArtifactsFn(
+      normalizedS4 = normalizedS4,
+      qcDir = experimentPaths$protein_qc_dir,
+      aesthetics = getPlotAesthetics(),
+      qcPlotPaths = normData$qc_plot_paths
+    )
+
+    normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1
+  }
+
+  generateRuvCorrectedQc <- function(ruvCorrectedS4) {
+    normData$qc_plot_paths <- generateRuvCorrectedQcArtifactsFn(
+      ruvCorrectedS4 = ruvCorrectedS4,
+      qcDir = experimentPaths$protein_qc_dir,
+      aesthetics = getPlotAesthetics(),
+      qcPlotPaths = normData$qc_plot_paths
+    )
+
+    normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1
+  }
+
+  registerServerObserversFn(
+    input = input,
+    output = output,
+    session = session,
+    selectedTab = selectedTab,
+    workflowData = workflowData,
+    normData = normData,
+    experimentPaths = experimentPaths,
+    omicType = omicType,
+    experimentLabel = experimentLabel,
+    generatePreNormalizationQcFn = generatePreNormalizationQc,
+    generatePostNormalizationQcFn = generatePostNormalizationQc,
+    generateRuvCorrectedQcFn = generateRuvCorrectedQc,
+    getPlotAestheticsFn = getPlotAesthetics,
+    getRuvGroupingVariableFn = getRuvGroupingVariable,
+    checkMemoryUsageFn = checkMemoryUsageFn
+  )
+
+  registerQcImageOutputsFn(
+    output = output,
+    normData = normData,
+    proteinQcDir = experimentPaths$protein_qc_dir
+  )
+
+  registerRenderOutputsFn(
+    output = output,
+    normData = normData,
+    ruvMode = input$ruv_mode,
+    groupingVariable = getRuvGroupingVariable()
+  )
+
+  invisible(normData)
+}
+
+runProtNormModuleServerEntryShell <- function(
+  id,
+  workflowData,
+  experimentPaths,
+  omicType,
+  experimentLabel,
+  selectedTab = NULL,
+  moduleServerFn = shiny::moduleServer,
+  runModuleServerShellFn = runProtNormModuleServerShell
+) {
+  moduleServerFn(id, function(input, output, session) {
+    runModuleServerShellFn(
+      input = input,
+      output = output,
+      session = session,
+      id = id,
+      workflowData = workflowData,
+      experimentPaths = experimentPaths,
+      omicType = omicType,
+      experimentLabel = experimentLabel,
+      selectedTab = selectedTab
+    )
+  })
+}
+
+runProtNormModuleServerPublicWrapper <- function(
+  id,
+  workflow_data,
+  experiment_paths,
+  omic_type,
+  experiment_label,
+  selected_tab = NULL,
+  runModuleServerEntryShellFn = runProtNormModuleServerEntryShell
+) {
+  runModuleServerEntryShellFn(
+    id = id,
+    workflowData = workflow_data,
+    experimentPaths = experiment_paths,
+    omicType = omic_type,
+    experimentLabel = experiment_label,
+    selectedTab = selected_tab
+  )
+}

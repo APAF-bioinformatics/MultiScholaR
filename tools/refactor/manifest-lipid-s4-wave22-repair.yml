@@ -16,25 +16,25 @@ collate_targets:
 entries:
   - id: lipid_s4_plot_pca_method_repair
     source: tools/refactor/staging/wave20_lipidomics_s4_plot_pca_method/R/func_lipid_s4_plotting_methods.R
-    selector: { kind: expr_index, value: 1 }
+    selector: { kind: setMethod, value: plotPca, signature: LipidomicsAssayData }
     target: R/func_lipid_s4_plotting_methods.R
     group: lipidomics.s4.plotting_methods
     note: Reconstitute the existing PCA plotting method into the live lipid-S4 plotting helper from the exact staged wave-20 source.
   - id: lipid_s4_plot_rle_method_repair
     source: tools/refactor/staging/wave21_lipidomics_s4_plot_rle_method/R/func_lipid_s4_plotting_methods.R
-    selector: { kind: expr_index, value: 1 }
+    selector: { kind: setMethod, value: plotRle, signature: LipidomicsAssayData }
     target: R/func_lipid_s4_plotting_methods.R
     group: lipidomics.s4.plotting_methods
     note: Reconstitute the existing RLE plotting method into the live lipid-S4 plotting helper from the exact staged wave-21 source.
   - id: lipid_s4_plot_density_assay_method_repair
     source: tools/refactor/staging/wave22_lipidomics_s4_plot_density_methods/R/func_lipid_s4_plotting_methods.R
-    selector: { kind: expr_index, value: 1 }
+    selector: { kind: setMethod, value: plotDensity, signature: LipidomicsAssayData }
     target: R/func_lipid_s4_plotting_methods.R
     group: lipidomics.s4.plotting_methods
     note: Reconstitute the LipidomicsAssayData density plotting method into the live helper from the exact staged wave-22 source.
   - id: lipid_s4_plot_density_list_method_repair
-    source: tools/refactor/staging/wave22_lipidomics_s4_plot_density_methods/R/func_lipid_s4_plotting_methods.R
-    selector: { kind: expr_index, value: 2 }
+    source: R/func_lipid_s4_objects.R
+    selector: { kind: setMethod, value: plotDensity, signature: 'c(theObject = "list")' }
     target: R/func_lipid_s4_plotting_methods.R
     group: lipidomics.s4.plotting_methods
-    note: Reconstitute the list-backed density plotting method into the live helper from the exact staged wave-22 source so the helper retains the full plotting method family after apply.
+    note: Reconstitute the list-backed density plotting method into the live helper from the canonical lipid-S4 source so the helper retains the full plotting method family after apply.

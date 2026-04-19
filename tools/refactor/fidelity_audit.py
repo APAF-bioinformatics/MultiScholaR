@@ -8,6 +8,7 @@ import json
 import os
 import pathlib
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -18,7 +19,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 8
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 DEFAULT_AUDIT_DIR = ".refactor-fidelity-audit"
 DEFAULT_EVENTS_PATH = "events.jsonl"
@@ -30,31 +31,38 @@ DEFAULT_EXCEPTIONS_JSON = "latest-exceptions.json"
 DEFAULT_EXCEPTIONS_MD = "latest-exceptions.md"
 DEFAULT_CLOSEOUT_JSON = "latest-closeout.json"
 DEFAULT_CLOSEOUT_MD = "latest-closeout.md"
+DEFAULT_COVERAGE_JSON = "latest-coverage.json"
+DEFAULT_COVERAGE_MD = "latest-coverage.md"
+DEFAULT_COVERAGE_COMPARE_JSON = "latest-coverage-compare.json"
+DEFAULT_COVERAGE_COMPARE_MD = "latest-coverage-compare.md"
+DEFAULT_COVERAGE_EVIDENCE_JSON = "latest-coverage-evidence.json"
+DEFAULT_COVERAGE_EVIDENCE_MD = "latest-coverage-evidence.md"
+DEFAULT_BUNDLES_JSON = "latest-bundles.json"
+DEFAULT_BUNDLES_MD = "latest-bundles.md"
 DEFAULT_BEHAVIOR_CASE_GLOB = "behavior-cases*.json"
+DEFAULT_CURATION_GLOB = "fidelity-curations*.json"
 DEFAULT_TEST_FILE_GLOB = "test-*.R"
 
 SURFACE_OPEN_DIFFS = {
     "missing_definition",
-    "extra_definition",
     "duplicate_definition",
     "definition_drift",
     "missing_export",
     "extra_export",
     "missing_file",
-    "extra_file",
     "collate_drift",
 }
 
 DIFF_SEVERITY = {
     "missing_definition": "high",
-    "extra_definition": "medium",
+    "extra_definition": "low",
     "duplicate_definition": "high",
     "definition_drift": "medium",
     "moved_definition": "info",
     "missing_export": "high",
     "extra_export": "medium",
     "missing_file": "medium",
-    "extra_file": "low",
+    "extra_file": "info",
     "collate_drift": "medium",
 }
 
@@ -142,6 +150,51 @@ AUTO_CURATION_RULES = {
         "note": "Auto-curated because content matched exactly after fallback target resolution.",
         "rule_name": "auto:target_resolution_asymmetry",
     },
+    "source_lineage_gap_target_resolved": {
+        "curation_status": "auto_curated",
+        "disposition": "equivalent_target_resolved_without_baseline_ancestor",
+        "note": "Auto-curated because the target block resolved cleanly even though the manifest source no longer maps directly onto the pinned baseline.",
+        "rule_name": "auto:source_lineage_gap_target_resolved",
+    },
+}
+
+REDUNDANT_SURFACE_MANIFEST_RULE = {
+    "curation_status": "auto_curated",
+    "disposition": "covered_by_manifest_semantic_review",
+    "note": "Auto-curated because the same entity is already blocked by an open manifest semantic mismatch in this closeout batch.",
+    "rule_name": "auto:surface_definition_drift_manifest_overlap",
+}
+
+BUNDLE_TYPE_PRIORITY = {
+    "lineage_family": 6,
+    "wrapper_entrypoint": 5,
+    "manual_merge_canonical": 4,
+    "duplicate_canonical": 4,
+    "s4_method_surface": 3,
+    "helper_surface": 2,
+    "normalized_exact_surface": 1,
+}
+
+DISPOSITION_EVIDENCE_DEPTH = {
+    "equivalent_target_resolved_without_baseline_ancestor": "T2_structural",
+    "equivalent_target_resolution_asymmetry": "T2_structural",
+    "equivalent_whitespace_only": "T3_normalized_exact",
+    "equivalent_comment_only": "T3_ast_exact",
+    "covered_by_manifest_semantic_review": "T4_manifest_covered",
+    "helper_equivalent_under_tests": "T4_behavior_replayed",
+    "method_equivalent_under_tests": "T4_behavior_replayed",
+    "manual_merge_canonicalized": "T4_behavior_replayed",
+    "canonical_duplicate_retired": "T4_behavior_replayed",
+    "entrypoint_shell_equivalent_under_tests": "T5_contract_replayed",
+}
+
+EVIDENCE_DEPTH_PRIORITY = {
+    "T2_structural": 1,
+    "T3_normalized_exact": 2,
+    "T3_ast_exact": 2,
+    "T4_manifest_covered": 3,
+    "T4_behavior_replayed": 4,
+    "T5_contract_replayed": 5,
 }
 
 
@@ -331,6 +384,133 @@ def create_schema(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_behavior_results_run
             ON behavior_results(run_id);
 
+        CREATE TABLE IF NOT EXISTS coverage_runs (
+            coverage_run_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            side TEXT NOT NULL,
+            source_label TEXT NOT NULL,
+            bundle_manifest_path TEXT,
+            status TEXT NOT NULL,
+            tool_status TEXT NOT NULL,
+            test_file_count INTEGER NOT NULL,
+            bundle_count INTEGER NOT NULL,
+            file_count INTEGER NOT NULL,
+            line_percent REAL,
+            lines_total INTEGER,
+            lines_covered INTEGER,
+            summary_json TEXT,
+            FOREIGN KEY(run_id) REFERENCES audit_runs(run_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_coverage_runs_run
+            ON coverage_runs(run_id);
+
+        CREATE TABLE IF NOT EXISTS coverage_files (
+            coverage_file_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            coverage_run_id TEXT NOT NULL,
+            file_path TEXT NOT NULL,
+            line_percent REAL,
+            lines_total INTEGER,
+            lines_covered INTEGER,
+            covered_lines_json TEXT,
+            uncovered_lines_json TEXT,
+            result_json TEXT,
+            FOREIGN KEY(run_id) REFERENCES audit_runs(run_id),
+            FOREIGN KEY(coverage_run_id) REFERENCES coverage_runs(coverage_run_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_coverage_files_run
+            ON coverage_files(run_id);
+
+        CREATE TABLE IF NOT EXISTS coverage_bundles (
+            coverage_bundle_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            bundle_id TEXT NOT NULL,
+            bundle_type TEXT NOT NULL,
+            source_file_path TEXT,
+            primary_entity_key TEXT,
+            baseline_ref TEXT,
+            target_ref TEXT,
+            linked_exception_count INTEGER,
+            scenario_class TEXT,
+            differential_replay_status TEXT,
+            coverage_gate_status TEXT,
+            review_note TEXT,
+            priority_rank INTEGER,
+            priority_score REAL,
+            metadata_json TEXT,
+            FOREIGN KEY(run_id) REFERENCES audit_runs(run_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_coverage_bundles_run
+            ON coverage_bundles(run_id);
+
+        CREATE TABLE IF NOT EXISTS coverage_bundle_members (
+            coverage_bundle_member_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            coverage_bundle_id TEXT NOT NULL,
+            entity_key TEXT,
+            file_path TEXT NOT NULL,
+            line_start INTEGER,
+            line_end INTEGER,
+            metadata_json TEXT,
+            FOREIGN KEY(run_id) REFERENCES audit_runs(run_id),
+            FOREIGN KEY(coverage_bundle_id) REFERENCES coverage_bundles(coverage_bundle_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_coverage_bundle_members_run
+            ON coverage_bundle_members(run_id);
+
+        CREATE TABLE IF NOT EXISTS coverage_test_links (
+            coverage_test_link_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            coverage_bundle_id TEXT,
+            test_file_path TEXT NOT NULL,
+            source TEXT NOT NULL,
+            metadata_json TEXT,
+            FOREIGN KEY(run_id) REFERENCES audit_runs(run_id),
+            FOREIGN KEY(coverage_bundle_id) REFERENCES coverage_bundles(coverage_bundle_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_coverage_test_links_run
+            ON coverage_test_links(run_id);
+
+        CREATE TABLE IF NOT EXISTS coverage_bundle_results (
+            coverage_bundle_result_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            coverage_bundle_id TEXT NOT NULL,
+            status TEXT NOT NULL,
+            line_percent REAL,
+            lines_total INTEGER,
+            lines_covered INTEGER,
+            result_json TEXT,
+            FOREIGN KEY(run_id) REFERENCES audit_runs(run_id),
+            FOREIGN KEY(coverage_bundle_id) REFERENCES coverage_bundles(coverage_bundle_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_coverage_bundle_results_run
+            ON coverage_bundle_results(run_id);
+
+        CREATE TABLE IF NOT EXISTS coverage_exception_links (
+            coverage_exception_link_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            coverage_bundle_id TEXT NOT NULL,
+            exception_id TEXT NOT NULL,
+            exception_key TEXT,
+            audit_layer TEXT NOT NULL,
+            entity_key TEXT NOT NULL,
+            curation_status TEXT NOT NULL,
+            disposition TEXT,
+            metadata_json TEXT,
+            FOREIGN KEY(run_id) REFERENCES audit_runs(run_id),
+            FOREIGN KEY(coverage_bundle_id) REFERENCES coverage_bundles(coverage_bundle_id),
+            FOREIGN KEY(exception_id) REFERENCES exceptions(exception_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_coverage_exception_links_run
+            ON coverage_exception_links(run_id);
+
         CREATE TABLE IF NOT EXISTS testing_matrix_entries (
             testing_matrix_entry_id TEXT PRIMARY KEY,
             surface TEXT NOT NULL,
@@ -421,6 +601,17 @@ def create_schema(conn: sqlite3.Connection) -> None:
     ensure_column(conn, "behavior_cases", "catalog_path", "TEXT")
     ensure_column(conn, "behavior_cases", "case_json", "TEXT")
     ensure_column(conn, "behavior_results", "message_equal", "INTEGER")
+    ensure_column(conn, "coverage_bundles", "primary_entity_key", "TEXT")
+    ensure_column(conn, "coverage_bundles", "baseline_ref", "TEXT")
+    ensure_column(conn, "coverage_bundles", "target_ref", "TEXT")
+    ensure_column(conn, "coverage_bundles", "linked_exception_count", "INTEGER")
+    ensure_column(conn, "coverage_bundles", "scenario_class", "TEXT")
+    ensure_column(conn, "coverage_bundles", "differential_replay_status", "TEXT")
+    ensure_column(conn, "coverage_bundles", "coverage_gate_status", "TEXT")
+    ensure_column(conn, "coverage_bundles", "review_note", "TEXT")
+    ensure_column(conn, "coverage_bundles", "priority_rank", "INTEGER")
+    ensure_column(conn, "coverage_bundles", "priority_score", "REAL")
+    ensure_column(conn, "coverage_bundles", "side", "TEXT")
     ensure_column(conn, "contract_test_files", "certainty_target", "TEXT")
     ensure_column(conn, "exceptions", "exception_key", "TEXT")
     ensure_column(conn, "exceptions", "baseline_ref", "TEXT")
@@ -433,6 +624,9 @@ def create_schema(conn: sqlite3.Connection) -> None:
     )
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_exceptions_status ON exceptions(curation_status)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_coverage_exception_links_exception_key ON coverage_exception_links(exception_key)"
     )
     conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
     conn.commit()
@@ -452,6 +646,14 @@ def resolve_paths(repo_root: pathlib.Path, audit_dir: str) -> dict[str, pathlib.
         "exceptions_md": reports_dir / DEFAULT_EXCEPTIONS_MD,
         "closeout_json": reports_dir / DEFAULT_CLOSEOUT_JSON,
         "closeout_md": reports_dir / DEFAULT_CLOSEOUT_MD,
+        "coverage_json": reports_dir / DEFAULT_COVERAGE_JSON,
+        "coverage_md": reports_dir / DEFAULT_COVERAGE_MD,
+        "coverage_compare_json": reports_dir / DEFAULT_COVERAGE_COMPARE_JSON,
+        "coverage_compare_md": reports_dir / DEFAULT_COVERAGE_COMPARE_MD,
+        "coverage_evidence_json": reports_dir / DEFAULT_COVERAGE_EVIDENCE_JSON,
+        "coverage_evidence_md": reports_dir / DEFAULT_COVERAGE_EVIDENCE_MD,
+        "bundles_json": reports_dir / DEFAULT_BUNDLES_JSON,
+        "bundles_md": reports_dir / DEFAULT_BUNDLES_MD,
     }
 
 
@@ -499,6 +701,62 @@ def bootstrap_store(repo_root: pathlib.Path, audit_dir: str, *, emit_event: bool
         write_text(
             paths["closeout_md"],
             "# Refactor Fidelity Closeout\n\nBootstrap complete. No closeout run recorded yet.\n",
+        )
+    if not paths["coverage_json"].exists():
+        write_json(
+            paths["coverage_json"],
+            {
+                "status": "bootstrap_ready",
+                "mode": "coverage",
+                "repo_root": str(repo_root),
+            },
+        )
+    if not paths["coverage_md"].exists():
+        write_text(
+            paths["coverage_md"],
+            "# Refactor Fidelity Coverage\n\nBootstrap complete. No coverage run recorded yet.\n",
+        )
+    if not paths["coverage_compare_json"].exists():
+        write_json(
+            paths["coverage_compare_json"],
+            {
+                "status": "bootstrap_ready",
+                "mode": "coverage_compare",
+                "repo_root": str(repo_root),
+            },
+        )
+    if not paths["coverage_compare_md"].exists():
+        write_text(
+            paths["coverage_compare_md"],
+            "# Refactor Fidelity Coverage Compare\n\nBootstrap complete. No comparative coverage run recorded yet.\n",
+        )
+    if not paths["coverage_evidence_json"].exists():
+        write_json(
+            paths["coverage_evidence_json"],
+            {
+                "status": "bootstrap_ready",
+                "mode": "coverage_evidence",
+                "repo_root": str(repo_root),
+            },
+        )
+    if not paths["coverage_evidence_md"].exists():
+        write_text(
+            paths["coverage_evidence_md"],
+            "# Refactor Fidelity Coverage Evidence\n\nBootstrap complete. No coverage evidence run recorded yet.\n",
+        )
+    if not paths["bundles_json"].exists():
+        write_json(
+            paths["bundles_json"],
+            {
+                "status": "bootstrap_ready",
+                "mode": "bundle_map",
+                "repo_root": str(repo_root),
+            },
+        )
+    if not paths["bundles_md"].exists():
+        write_text(
+            paths["bundles_md"],
+            "# Refactor Fidelity Bundles\n\nBootstrap complete. No bundle map recorded yet.\n",
         )
 
     if emit_event:
@@ -711,6 +969,221 @@ def render_contract_summary_markdown(summary: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def render_coverage_summary_markdown(summary: dict) -> str:
+    lines = [
+        "# Refactor Fidelity Coverage",
+        "",
+        f"Run: `{summary['run_id']}`",
+        "",
+        f"- Mode: `{summary['mode']}`",
+        f"- Repo root: `{summary['repo_root']}`",
+        f"- Side: `{summary['side']}`",
+        f"- Source: `{summary['source']}`",
+        f"- Status: `{summary['status']}`",
+        f"- Tool status: `{summary['tool_status']}`",
+        f"- Test files: `{summary['test_file_count']}`",
+        f"- Executed tests: `{summary.get('test_count', 0)}`",
+        f"- Failing tests: `{summary.get('failure_count', 0)}`",
+        f"- Skipped tests: `{summary.get('skip_count', 0)}`",
+        f"- Bundles: `{summary['bundle_count']}`",
+        f"- Covered files: `{summary['file_count']}`",
+        f"- Lines covered: `{summary['lines_covered']}` / `{summary['lines_total']}`",
+        f"- Line coverage: `{summary['line_percent_display']}`",
+    ]
+    if summary.get("bundle_manifest_path"):
+        lines.append(f"- Bundle manifest: `{summary['bundle_manifest_path']}`")
+    status_counts = summary.get("bundle_status_counts", {})
+    if status_counts:
+        lines.extend(["", "## Bundle Status Counts", ""])
+        for status_name in sorted(status_counts):
+            lines.append(f"- `{status_name}`: `{status_counts[status_name]}`")
+    if summary.get("sample_bundle_results"):
+        lines.extend(["", "## Sample Bundle Results", ""])
+        for item in summary["sample_bundle_results"]:
+            lines.append(
+                f"- `{item['status']}` `{item['bundle_id']}` coverage `{item['line_percent_display']}`"
+            )
+    if summary.get("sample_files"):
+        lines.extend(["", "## Sample File Coverage", ""])
+        for item in summary["sample_files"]:
+            lines.append(
+                f"- `{item['file_path']}` `{item['lines_covered']}/{item['lines_total']}` `{item['line_percent_display']}`"
+            )
+    if summary.get("notes"):
+        lines.extend(["", "## Notes", ""])
+        for note in summary["notes"]:
+            lines.append(f"- {note}")
+    return "\n".join(lines) + "\n"
+
+
+def render_coverage_compare_summary_markdown(summary: dict) -> str:
+    lines = [
+        "# Refactor Fidelity Coverage Compare",
+        "",
+        f"Run: `{summary['run_id']}`",
+        "",
+        f"- Mode: `{summary['mode']}`",
+        f"- Repo root: `{summary['repo_root']}`",
+        f"- Test source: `{summary['test_source']}`",
+        f"- Status: `{summary['status']}`",
+        f"- Test files: `{summary['test_file_count']}`",
+        f"- Bundles: `{summary['bundle_count']}`",
+    ]
+    if summary.get("bundle_manifest_path"):
+        lines.append(f"- Bundle manifest: `{summary['bundle_manifest_path']}`")
+    for title, side_key in (("Baseline", "baseline"), ("Target", "target")):
+        side = summary[side_key]
+        lines.extend(
+            [
+                "",
+                f"## {title}",
+                "",
+                f"- Source: `{side['source']}`",
+                f"- Status: `{side['status']}`",
+                f"- Tool status: `{side['tool_status']}`",
+                f"- Executed tests: `{side.get('test_count', 0)}`",
+                f"- Failing tests: `{side.get('failure_count', 0)}`",
+                f"- Skipped tests: `{side.get('skip_count', 0)}`",
+                f"- Covered files: `{side['file_count']}`",
+                f"- Lines covered: `{side['lines_covered']}` / `{side['lines_total']}`",
+                f"- Line coverage: `{side['line_percent_display']}`",
+            ]
+        )
+        if side.get("failed_tests"):
+            lines.append(f"- Failed tests: `{', '.join(side['failed_tests'][:10])}`")
+    for title, key in (("Bundle Status Counts", "bundle_status_counts"), ("Delta Counts", "delta_counts")):
+        values = summary.get(key, {})
+        if not values:
+            continue
+        lines.extend(["", f"## {title}", ""])
+        for name in sorted(values):
+            lines.append(f"- `{name}`: `{values[name]}`")
+    if summary.get("sample_bundle_results"):
+        lines.extend(["", "## Sample Bundle Results", ""])
+        for item in summary["sample_bundle_results"]:
+            lines.append(
+                f"- `{item['status']}` `{item['bundle_id']}` baseline `{format_percent(item.get('baseline_line_percent'))}` target `{format_percent(item.get('target_line_percent'))}` delta `{format_percent(item.get('line_percent_delta'))}` `{item['delta_category']}`"
+            )
+    if summary.get("notes"):
+        lines.extend(["", "## Notes", ""])
+        for note in summary["notes"]:
+            lines.append(f"- {note}")
+    return "\n".join(lines) + "\n"
+
+
+def render_coverage_evidence_markdown(summary: dict) -> str:
+    package = summary["package_coverage"]
+    lines = [
+        "# Refactor Fidelity Coverage Evidence",
+        "",
+        f"Run: `{summary['run_id']}`",
+        "",
+        f"- Mode: `{summary['mode']}`",
+        f"- Repo root: `{summary['repo_root']}`",
+        f"- Status: `{summary['status']}`",
+        f"- Bundle manifest: `{summary['bundle_manifest_path']}`",
+        f"- Coverage compare run: `{summary['coverage_compare_run_id']}`",
+        f"- Bundles: `{summary['bundle_count']}`",
+        f"- Justified by tests: `{summary['justified_bundle_count']}`",
+        f"- Low-coverage bundles: `{summary['low_coverage_bundle_count']}`",
+        f"- Comparison-gap bundles: `{summary.get('comparison_gap_bundle_count', 0)}`",
+        f"- Regressed bundles: `{summary['regression_bundle_count']}`",
+        f"- Exceptions emitted: `{summary['exception_count']}`",
+        "",
+        "## Package Coverage",
+        "",
+        f"- Baseline: `{package['baseline_line_percent_display']}`",
+        f"- Target: `{package['target_line_percent_display']}`",
+        f"- Delta: `{package['line_percent_delta_display']}`",
+        f"- Target threshold: `{package['threshold_display']}`",
+        f"- Package gate: `{package['gate_status']}`",
+    ]
+    for title, key in (
+        ("Gate Counts", "gate_counts"),
+        ("Delta Counts", "delta_counts"),
+        ("Threshold Counts", "threshold_counts"),
+    ):
+        values = summary.get(key, {})
+        if not values:
+            continue
+        lines.extend(["", f"## {title}", ""])
+        for name in sorted(values):
+            lines.append(f"- `{name}`: `{values[name]}`")
+    if summary.get("below_target_bundles"):
+        lines.extend(["", "## Below Target Bundles", ""])
+        for item in summary["below_target_bundles"][:25]:
+            lines.append(
+                f"- `{item['bundle_id']}` `{item['bundle_type']}` target `{item['target_line_percent_display']}` threshold `{item['threshold_display']}` tests `{item['shared_test_file_count']}`"
+            )
+    if summary.get("comparison_gap_bundles"):
+        lines.extend(["", "## Comparison Gap Bundles", ""])
+        for item in summary["comparison_gap_bundles"][:25]:
+            lines.append(
+                f"- `{item['bundle_id']}` `{item['bundle_type']}` baseline `{item['baseline_line_percent_display']}` target `{item['target_line_percent_display']}` threshold `{item['threshold_display']}` tests `{item['shared_test_file_count']}`"
+            )
+    if summary.get("regressed_bundles"):
+        lines.extend(["", "## Regressed Bundles", ""])
+        for item in summary["regressed_bundles"][:25]:
+            lines.append(
+                f"- `{item['bundle_id']}` baseline `{item['baseline_line_percent_display']}` target `{item['target_line_percent_display']}` delta `{item['line_percent_delta_display']}`"
+            )
+    if summary.get("sample_bundles"):
+        lines.extend(["", "## Sample Bundle Evidence", ""])
+        for item in summary["sample_bundles"][:25]:
+            lines.append(
+                f"- `{item['coverage_gate_status']}` `{item['bundle_id']}` target `{item['target_line_percent_display']}` threshold `{item['threshold_display']}` tests `{item['shared_test_file_count']}`"
+            )
+    if summary.get("notes"):
+        lines.extend(["", "## Notes", ""])
+        for note in summary["notes"]:
+            lines.append(f"- {note}")
+    return "\n".join(lines) + "\n"
+
+
+def render_bundle_map_summary_markdown(summary: dict) -> str:
+    lines = [
+        "# Refactor Fidelity Bundles",
+        "",
+        f"Run: `{summary['run_id']}`",
+        "",
+        f"- Mode: `{summary['mode']}`",
+        f"- Repo root: `{summary['repo_root']}`",
+        f"- Closeout run: `{summary['closeout_run_id']}`",
+        f"- Baseline: `{summary['baseline']}`",
+        f"- Target: `{summary['target']}`",
+        f"- Status: `{summary['status']}`",
+        f"- Bundles: `{summary['bundle_count']}`",
+        f"- Linked exceptions: `{summary['linked_exception_count']}`",
+        f"- Priority families: `{summary['priority_family_count']}`",
+        f"- Manifest path: `{summary['bundle_manifest_path']}`",
+    ]
+    for title, key in (
+        ("Bundle Type Counts", "bundle_type_counts"),
+        ("Disposition Counts", "disposition_counts"),
+        ("Scenario Class Counts", "scenario_class_counts"),
+        ("Evidence Depth Counts", "evidence_depth_counts"),
+    ):
+        values = summary.get(key, {})
+        if not values:
+            continue
+        lines.extend(["", f"## {title}", ""])
+        for name in sorted(values):
+            lines.append(f"- `{name}`: `{values[name]}`")
+    if summary.get("priority_bundles"):
+        lines.extend(["", "## Priority Bundles", ""])
+        for item in summary["priority_bundles"][:25]:
+            lines.append(
+                f"- `#{item['priority_rank']}` `{item['bundle_id']}` `{item['bundle_type']}` exceptions `{item['linked_exception_count']}` tests `{item['shared_test_file_count']}`"
+            )
+    if summary.get("priority_families"):
+        lines.extend(["", "## Priority Families", ""])
+        for item in summary["priority_families"][:25]:
+            lines.append(
+                f"- `{item['family_path']}` bundles `{item['bundle_count']}` exceptions `{item['linked_exception_count']}`"
+            )
+    return "\n".join(lines) + "\n"
+
+
 def render_closeout_summary_markdown(summary: dict) -> str:
     readiness = summary["readiness"]
     lines = [
@@ -728,6 +1201,7 @@ def render_closeout_summary_markdown(summary: dict) -> str:
         f"- Open exceptions: `{readiness['open_exception_count']}`",
         f"- High-severity open exceptions: `{readiness['high_open_exception_count']}`",
         f"- Auto-curated exceptions: `{summary['auto_curated_count']}`",
+        f"- Catalog-curated exceptions: `{summary.get('catalog_curated_count', 0)}`",
     ]
 
     gate_order = (
@@ -843,7 +1317,7 @@ def render_exceptions_markdown(exceptions: list[dict]) -> str:
 def load_json_payload(text: str) -> dict:
     stripped = text.strip()
     if not stripped:
-        raise RuntimeError("inventory snapshot emitted no JSON")
+        raise RuntimeError("audit helper emitted no JSON")
 
     try:
         return json.loads(stripped)
@@ -862,7 +1336,7 @@ def load_json_payload(text: str) -> dict:
             continue
         return payload
 
-    raise RuntimeError("inventory snapshot emitted non-JSON output")
+    raise RuntimeError("audit helper emitted non-JSON output")
 
 
 def run_inventory_snapshot(repo_root: pathlib.Path) -> dict:
@@ -938,6 +1412,10 @@ def list_behavior_case_paths(repo_root: pathlib.Path, explicit_paths: list[str] 
     return sorted((repo_root / "tools" / "refactor").glob(DEFAULT_BEHAVIOR_CASE_GLOB))
 
 
+def list_curation_paths(repo_root: pathlib.Path) -> list[pathlib.Path]:
+    return sorted((repo_root / "tools" / "refactor").glob(DEFAULT_CURATION_GLOB))
+
+
 def stable_json(value) -> str:
     return json.dumps(value, sort_keys=True)
 
@@ -950,6 +1428,22 @@ def exception_auto_rule(exception_type: str) -> dict | None:
     return AUTO_CURATION_RULES.get(exception_type)
 
 
+def manifest_entity_key(manifest_path: str, entry_id: str) -> str:
+    return f"manifest::{manifest_path}::{entry_id}"
+
+
+def parse_manifest_exception_entity_key(entity_key: str) -> tuple[str, str] | None:
+    if not entity_key.startswith("manifest::"):
+        return None
+    payload = entity_key[len("manifest::") :]
+    if "::" not in payload:
+        return None
+    manifest_path, entry_id = payload.rsplit("::", 1)
+    if not manifest_path or not entry_id:
+        return None
+    return manifest_path, entry_id
+
+
 def suggested_disposition_for_exception(exception_type: str) -> str | None:
     rule = exception_auto_rule(exception_type)
     if rule:
@@ -960,6 +1454,10 @@ def suggested_disposition_for_exception(exception_type: str) -> str | None:
         "missing_target_block": "needs_manifest_lineage_review",
         "selector_ambiguous": "unsupported_audit_shape",
         "semantic_mismatch": "fix_required",
+        "coverage_target_below_threshold": "add_tests_or_expand_coverage",
+        "coverage_target_unmeasured": "fix_bundle_mapping_or_add_tests",
+        "coverage_comparison_gap": "add_shared_compat_or_characterization_tests",
+        "package_coverage_below_threshold": "expand_package_coverage",
         "behavior_runner_failure": "unsupported_audit_shape",
         "behavior_status_mismatch": "fix_required",
         "behavior_error_mismatch": "fix_required",
@@ -1773,6 +2271,44 @@ def file_lookup(snapshot: dict) -> dict[str, int | None]:
     }
 
 
+def shared_collate_sequence(snapshot: dict, allowed_files: set[str]) -> list[str]:
+    return [
+        entry["file_path"]
+        for entry in ensure_list(snapshot.get("collate"))
+        if entry["file_path"] in allowed_files
+    ]
+
+
+def entity_fingerprint(entry: dict) -> str | None:
+    return entry.get("hash_ast") or entry.get("hash_normalized") or entry.get("hash_raw")
+
+
+def duplicate_shape_semantically_preserved(
+    baseline_entries: list[dict],
+    target_entries: list[dict],
+) -> bool:
+    if not baseline_entries or not target_entries:
+        return False
+    if len(target_entries) > len(baseline_entries):
+        return False
+
+    baseline_fingerprints = {
+        fingerprint
+        for entry in baseline_entries
+        if (fingerprint := entity_fingerprint(entry))
+    }
+    target_fingerprints = {
+        fingerprint
+        for entry in target_entries
+        if (fingerprint := entity_fingerprint(entry))
+    }
+
+    if not baseline_fingerprints or not target_fingerprints:
+        return False
+
+    return baseline_fingerprints == target_fingerprints
+
+
 def compare_entity_surfaces(
     baseline_snapshot: dict,
     target_snapshot: dict,
@@ -1790,23 +2326,27 @@ def compare_entity_surfaces(
         entity_kind = sample["entity_kind"]
         baseline_ids = baseline_refs["entities"].get(entity_key, [])
         target_ids = target_refs["entities"].get(entity_key, [])
+        baseline_files = sorted({entry["file_path"] for entry in baseline_entries})
+        target_files = sorted({entry["file_path"] for entry in target_entries})
 
-        if len(baseline_entries) > 1 or len(target_entries) > 1:
-            diffs.append(
-                make_diff(
-                    entity_kind=entity_kind,
-                    entity_key=entity_key,
-                    diff_class="duplicate_definition",
-                    baseline_id=baseline_ids[0] if baseline_ids else None,
-                    target_id=target_ids[0] if target_ids else None,
-                    evidence={
-                        "baseline_count": len(baseline_entries),
-                        "target_count": len(target_entries),
-                        "baseline_files": sorted({entry["file_path"] for entry in baseline_entries}),
-                        "target_files": sorted({entry["file_path"] for entry in target_entries}),
-                    },
+        duplicate_shape_changed = len(baseline_entries) != len(target_entries)
+        if (len(baseline_entries) > 1 or len(target_entries) > 1) and duplicate_shape_changed:
+            if not duplicate_shape_semantically_preserved(baseline_entries, target_entries):
+                diffs.append(
+                    make_diff(
+                        entity_kind=entity_kind,
+                        entity_key=entity_key,
+                        diff_class="duplicate_definition",
+                        baseline_id=baseline_ids[0] if baseline_ids else None,
+                        target_id=target_ids[0] if target_ids else None,
+                        evidence={
+                            "baseline_count": len(baseline_entries),
+                            "target_count": len(target_entries),
+                            "baseline_files": baseline_files,
+                            "target_files": target_files,
+                        },
+                    )
                 )
-            )
 
         if not baseline_entries:
             diffs.append(
@@ -1818,7 +2358,7 @@ def compare_entity_surfaces(
                     target_id=target_ids[0] if target_ids else None,
                     evidence={
                         "target_count": len(target_entries),
-                        "target_files": sorted({entry["file_path"] for entry in target_entries}),
+                        "target_files": target_files,
                     },
                 )
             )
@@ -1834,7 +2374,7 @@ def compare_entity_surfaces(
                     target_id=None,
                     evidence={
                         "baseline_count": len(baseline_entries),
-                        "baseline_files": sorted({entry["file_path"] for entry in baseline_entries}),
+                        "baseline_files": baseline_files,
                     },
                 )
             )
@@ -1916,17 +2456,30 @@ def compare_file_surfaces(
                 )
             )
             continue
-        if baseline_files[file_path] != target_files[file_path]:
+
+    shared_files = set(baseline_files) & set(target_files)
+    baseline_sequence = shared_collate_sequence(baseline_snapshot, shared_files)
+    target_sequence = shared_collate_sequence(target_snapshot, shared_files)
+    if baseline_sequence != target_sequence:
+        baseline_positions = {file_path: index for index, file_path in enumerate(baseline_sequence, start=1)}
+        target_positions = {file_path: index for index, file_path in enumerate(target_sequence, start=1)}
+        for file_path in sorted(shared_files):
+            if baseline_positions[file_path] == target_positions[file_path]:
+                continue
             diffs.append(
                 make_diff(
                     entity_kind="r_file",
                     entity_key=file_path,
                     diff_class="collate_drift",
-                    baseline_id=baseline_id,
-                    target_id=target_id,
+                    baseline_id=baseline_refs["files"].get(file_path),
+                    target_id=target_refs["files"].get(file_path),
                     evidence={
                         "baseline_collate_index": baseline_files[file_path],
                         "target_collate_index": target_files[file_path],
+                        "baseline_shared_index": baseline_positions[file_path],
+                        "target_shared_index": target_positions[file_path],
+                        "baseline_shared_sequence": baseline_sequence,
+                        "target_shared_sequence": target_sequence,
                     },
                 )
             )
@@ -2091,6 +2644,7 @@ def manifest_exception_severity(exception_type: str) -> str:
         "selector_ambiguous": "high",
         "semantic_mismatch": "high",
         "source_lineage_gap": "high",
+        "source_lineage_gap_target_resolved": "low",
         "source_selector_ambiguous": "high",
         "source_resolution_failure": "high",
         "manual_merge_expected": "medium",
@@ -2106,6 +2660,16 @@ def manifest_exception_reason(comparison: dict) -> str:
     baseline_resolver = comparison.get("baseline_source_resolver") or "unresolved"
     target_resolver = comparison.get("target_resolver") or "unresolved"
     note = comparison.get("note")
+    if status == "source_missing_target_resolved":
+        return (
+            f"Baseline/source block could not be resolved via `{baseline_resolver}`, "
+            f"but the target block resolved via `{target_resolver}`."
+            if not note
+            else (
+                f"Baseline/source block could not be resolved via `{baseline_resolver}`, "
+                f"but the target block resolved via `{target_resolver}`: {note}"
+            )
+        )
     if status == "source_missing":
         return (
             f"Baseline/source block could not be resolved via `{baseline_resolver}`."
@@ -2771,12 +3335,2346 @@ def build_contract_summary(
     }
 
 
+def format_percent(value: float | int | None) -> str:
+    if value is None:
+        return "n/a"
+    return f"{float(value):.1f}%"
+
+
+def coerce_int(value) -> int | None:
+    if value in (None, ""):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def coerce_float(value) -> float | None:
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def normalize_int_list(values) -> list[int]:
+    normalized: list[int] = []
+    for value in ensure_list(values):
+        coerced = coerce_int(value)
+        if coerced is None:
+            continue
+        normalized.append(coerced)
+    return sorted(set(normalized))
+
+
+def resolve_repo_path(repo_root: pathlib.Path, value: str) -> pathlib.Path:
+    candidate = pathlib.Path(value)
+    if not candidate.is_absolute():
+        candidate = repo_root / candidate
+    return candidate.resolve()
+
+
+def normalize_coverage_bundle_members(
+    bundle_id: str,
+    raw_members,
+    *,
+    source_file_path: str | None,
+) -> list[dict]:
+    members: list[dict] = []
+    for member_index, raw_member in enumerate(ensure_list(raw_members), start=1):
+        if not isinstance(raw_member, dict):
+            continue
+        file_path = raw_member.get("file_path") or raw_member.get("source_file") or source_file_path
+        if not file_path:
+            continue
+        members.append(
+            {
+                "member_id": str(raw_member.get("member_id") or f"{bundle_id}:member:{member_index}"),
+                "entity_key": raw_member.get("entity_key"),
+                "file_path": str(file_path),
+                "line_start": coerce_int(raw_member.get("line_start")),
+                "line_end": coerce_int(raw_member.get("line_end")),
+                "metadata": {
+                    key: value
+                    for key, value in raw_member.items()
+                    if key not in {"member_id", "entity_key", "file_path", "source_file", "line_start", "line_end"}
+                },
+            }
+        )
+    return members
+
+
+def load_coverage_bundle_manifest(
+    repo_root: pathlib.Path,
+    manifest_path: str | None,
+) -> tuple[str | None, list[dict]]:
+    if not manifest_path:
+        return None, []
+
+    bundle_path = resolve_repo_path(repo_root, manifest_path)
+    payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    raw_bundles = ensure_list(payload.get("bundles"))
+    bundles: list[dict] = []
+    for index, raw_bundle in enumerate(raw_bundles, start=1):
+        if not isinstance(raw_bundle, dict):
+            continue
+        bundle_id = str(raw_bundle.get("bundle_id") or raw_bundle.get("id") or f"bundle_{index}")
+        bundle_type = str(raw_bundle.get("bundle_type") or "unspecified")
+        source_file_path = raw_bundle.get("source_file")
+        members_payload = ensure_list(raw_bundle.get("members"))
+        if not members_payload and source_file_path:
+            members_payload = [{"file_path": source_file_path}]
+        members = normalize_coverage_bundle_members(
+            bundle_id,
+            members_payload,
+            source_file_path=str(source_file_path) if source_file_path else None,
+        )
+        baseline_members = normalize_coverage_bundle_members(
+            f"{bundle_id}:baseline",
+            raw_bundle.get("baseline_members"),
+            source_file_path=None,
+        )
+        target_members = normalize_coverage_bundle_members(
+            f"{bundle_id}:target",
+            raw_bundle.get("target_members"),
+            source_file_path=None,
+        )
+        shared_test_files = sorted(
+            {
+                str(value)
+                for value in ensure_list(raw_bundle.get("shared_test_files"))
+                if value
+            }
+        )
+        test_files = sorted(
+            {
+                str(value)
+                for value in ensure_list(raw_bundle.get("test_files"))
+                if value
+            }
+        )
+
+        bundles.append(
+            {
+                "bundle_id": bundle_id,
+                "bundle_type": bundle_type,
+                "source_file_path": str(source_file_path) if source_file_path else None,
+                "primary_entity_key": raw_bundle.get("primary_entity_key"),
+                "baseline_ref": raw_bundle.get("baseline_ref"),
+                "target_ref": raw_bundle.get("target_ref"),
+                "baseline_paths": [str(value) for value in ensure_list(raw_bundle.get("baseline_paths")) if value],
+                "target_paths": [str(value) for value in ensure_list(raw_bundle.get("target_paths")) if value],
+                "linked_exception_count": coerce_int(raw_bundle.get("linked_exception_count")) or 0,
+                "scenario_class": raw_bundle.get("scenario_class"),
+                "differential_replay_status": raw_bundle.get("differential_replay_status"),
+                "coverage_gate_status": raw_bundle.get("coverage_gate_status"),
+                "review_note": raw_bundle.get("review_note"),
+                "priority_rank": coerce_int(raw_bundle.get("priority_rank")),
+                "priority_score": coerce_float(raw_bundle.get("priority_score")),
+                "evidence_depth": raw_bundle.get("evidence_depth"),
+                "test_files": test_files,
+                "shared_test_files": shared_test_files,
+                "members": members,
+                "baseline_members": baseline_members,
+                "target_members": target_members,
+                "metadata": {
+                    key: value
+                    for key, value in raw_bundle.items()
+                    if key not in {
+                        "bundle_id",
+                        "id",
+                        "bundle_type",
+                        "source_file",
+                        "test_files",
+                        "shared_test_files",
+                        "members",
+                        "baseline_members",
+                        "target_members",
+                    }
+                },
+            }
+        )
+    return relative_label(bundle_path, repo_root), bundles
+
+
+def collect_bundle_test_files(bundles: list[dict]) -> list[str]:
+    selected: list[str] = []
+    for bundle in bundles:
+        selected.extend(str(value) for value in ensure_list(bundle.get("test_files")) if value)
+        selected.extend(str(value) for value in ensure_list(bundle.get("shared_test_files")) if value)
+    return dedupe_paths(selected)
+
+
+def coverage_bundle_members_for_side(bundle: dict, side: str) -> list[dict]:
+    side_members = ensure_list(bundle.get(f"{side}_members"))
+    if side_members:
+        return side_members
+    return ensure_list(bundle.get("members"))
+
+
+def prepare_coverage_bundles_for_side(bundles: list[dict], side: str) -> list[dict]:
+    prepared: list[dict] = []
+    for bundle in bundles:
+        prepared.append(
+            {
+                **bundle,
+                "members": coverage_bundle_members_for_side(bundle, side),
+                "member_source": (
+                    f"{side}_members"
+                    if ensure_list(bundle.get(f"{side}_members"))
+                    else "members"
+                ),
+            }
+        )
+    return prepared
+
+
+def normalize_coverage_file_record(record: dict, project_root: pathlib.Path) -> dict | None:
+    file_path = record.get("file_path") or record.get("filename")
+    if not file_path:
+        return None
+
+    candidate = pathlib.Path(str(file_path))
+    normalized_path = (
+        relative_label(candidate, project_root)
+        if candidate.is_absolute()
+        else str(candidate).replace("\\", "/")
+    )
+    covered_lines = normalize_int_list(record.get("covered_lines"))
+    uncovered_lines = normalize_int_list(record.get("uncovered_lines"))
+    observed_lines = sorted(set(covered_lines) | set(uncovered_lines))
+
+    lines_total = coerce_int(record.get("lines_total"))
+    if lines_total is None:
+        lines_total = len(observed_lines)
+    lines_covered = coerce_int(record.get("lines_covered"))
+    if lines_covered is None:
+        lines_covered = len(covered_lines)
+    line_percent = coerce_float(record.get("line_percent"))
+    if line_percent is None and lines_total:
+        line_percent = (lines_covered / lines_total) * 100.0
+
+    return {
+        "file_path": normalized_path,
+        "line_percent": line_percent,
+        "lines_total": lines_total or 0,
+        "lines_covered": lines_covered or 0,
+        "covered_lines": covered_lines,
+        "uncovered_lines": uncovered_lines,
+        "result_payload": {key: value for key, value in record.items()},
+    }
+
+
+def run_coverage_capture(
+    project_root: pathlib.Path,
+    *,
+    test_files: list[pathlib.Path],
+    library_paths: list[str] | None = None,
+    env_overrides: dict[str, str] | None = None,
+) -> dict:
+    script_path = SCRIPT_DIR / "fidelity_coverage_capture.R"
+    command = [
+        "Rscript",
+        "--vanilla",
+        str(script_path),
+        "--project-root",
+        str(project_root),
+    ]
+    for test_file in test_files:
+        command.extend(["--test-file", str(test_file)])
+
+    env = os.environ.copy()
+    if library_paths:
+        merged_paths = merge_env_paths(
+            library_paths,
+            env.get("R_LIBS"),
+            env.get("R_LIBS_USER"),
+            env.get("R_LIBS_SITE"),
+        )
+        env["R_LIBS"] = merged_paths
+        env["R_LIBS_USER"] = merged_paths
+    if env_overrides:
+        env.update({key: value for key, value in env_overrides.items() if value is not None})
+
+    completed = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    if completed.returncode != 0:
+        message = completed.stderr.strip() or completed.stdout.strip() or "coverage runner failed"
+        return {
+            "status": "runner_error",
+            "tool_status": "runner_error",
+            "project_root": str(project_root),
+            "test_files": [relative_label(test_file, project_root) for test_file in test_files],
+            "files": [],
+            "line_percent": None,
+            "lines_total": 0,
+            "lines_covered": 0,
+            "notes": [message],
+            "error": {"message": message, "class": ["coverage_runner_error"]},
+        }
+
+    try:
+        payload = load_json_payload(completed.stdout)
+    except RuntimeError as exc:
+        return {
+            "status": "runner_error",
+            "tool_status": "runner_output_error",
+            "project_root": str(project_root),
+            "test_files": [relative_label(test_file, project_root) for test_file in test_files],
+            "files": [],
+            "line_percent": None,
+            "lines_total": 0,
+            "lines_covered": 0,
+            "notes": [str(exc)],
+            "error": {"message": str(exc), "class": ["coverage_runner_output_error"]},
+        }
+
+    normalized_files = [
+        item
+        for item in (
+            normalize_coverage_file_record(record, project_root)
+            for record in ensure_list(payload.get("files"))
+            if isinstance(record, dict)
+        )
+        if item is not None
+    ]
+    payload["files"] = normalized_files
+    payload["status"] = str(payload.get("status") or "completed")
+    payload["tool_status"] = str(
+        payload.get("tool_status")
+        or ("ok" if payload["status"] == "completed" else payload["status"])
+    )
+    payload["project_root"] = str(project_root)
+    payload["test_files"] = [
+        relative_label(pathlib.Path(str(value)), project_root)
+        if pathlib.Path(str(value)).is_absolute()
+        else str(value).replace("\\", "/")
+        for value in ensure_list(payload.get("test_files"))
+        if value
+    ]
+    payload["notes"] = [str(note) for note in ensure_list(payload.get("notes")) if str(note).strip()]
+    payload["test_count"] = coerce_int(payload.get("test_count"))
+    payload["failure_count"] = coerce_int(payload.get("failure_count"))
+    payload["skip_count"] = coerce_int(payload.get("skip_count"))
+    payload["failed_tests"] = [str(value) for value in ensure_list(payload.get("failed_tests")) if value]
+    payload["lines_total"] = coerce_int(payload.get("lines_total"))
+    payload["lines_covered"] = coerce_int(payload.get("lines_covered"))
+    payload["line_percent"] = coerce_float(payload.get("line_percent"))
+    if payload["lines_total"] is None:
+        payload["lines_total"] = sum(record["lines_total"] for record in normalized_files)
+    if payload["lines_covered"] is None:
+        payload["lines_covered"] = sum(record["lines_covered"] for record in normalized_files)
+    if payload["line_percent"] is None and payload["lines_total"]:
+        payload["line_percent"] = (payload["lines_covered"] / payload["lines_total"]) * 100.0
+    return payload
+
+
+def materialize_coverage_workspace(
+    source_root: pathlib.Path,
+    *,
+    test_source_root: pathlib.Path,
+) -> tempfile.TemporaryDirectory:
+    tmpdir = tempfile.TemporaryDirectory(prefix="fidelity-coverage-")
+    workspace_root = pathlib.Path(tmpdir.name)
+    copy_names = ("DESCRIPTION", "NAMESPACE", "R", "inst", "data", "tests")
+    for name in copy_names:
+        source_path = source_root / name
+        target_path = workspace_root / name
+        if not source_path.exists():
+            continue
+        if source_path.is_dir():
+            shutil.copytree(source_path, target_path, dirs_exist_ok=True)
+        else:
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_path, target_path)
+
+    if test_source_root != source_root:
+        tests_source = test_source_root / "tests"
+        if tests_source.exists():
+            shutil.copytree(tests_source, workspace_root / "tests", dirs_exist_ok=True)
+
+    return tmpdir
+
+
+def coverage_lines_for_member(file_record: dict, member: dict) -> tuple[set[int], set[int], bool]:
+    covered_lines = set(file_record.get("covered_lines", []))
+    uncovered_lines = set(file_record.get("uncovered_lines", []))
+    observed_lines = covered_lines | uncovered_lines
+    line_start = member.get("line_start")
+    line_end = member.get("line_end")
+
+    if line_start is not None or line_end is not None:
+        if not observed_lines:
+            return set(), set(), True
+        start = line_start if line_start is not None else min(observed_lines)
+        end = line_end if line_end is not None else max(observed_lines)
+        total_lines = {line for line in observed_lines if start <= line <= end}
+        return total_lines, covered_lines & total_lines, False
+
+    if observed_lines:
+        return observed_lines, covered_lines, False
+
+    lines_total = int(file_record.get("lines_total") or 0)
+    lines_covered = int(file_record.get("lines_covered") or 0)
+    if lines_total <= 0:
+        return set(), set(), False
+
+    synthetic_total = set(range(1, lines_total + 1))
+    synthetic_covered = set(range(1, min(lines_covered, lines_total) + 1))
+    return synthetic_total, synthetic_covered, False
+
+
+def build_coverage_bundle_results(bundles: list[dict], coverage_files: list[dict]) -> list[dict]:
+    files_by_path = {record["file_path"]: record for record in coverage_files}
+    results: list[dict] = []
+    for bundle in bundles:
+        total_pairs: set[tuple[str, int]] = set()
+        covered_pairs: set[tuple[str, int]] = set()
+        missing_files: set[str] = set()
+        line_detail_missing = False
+
+        for member in bundle.get("members", []):
+            file_path = member["file_path"]
+            file_record = files_by_path.get(file_path)
+            if file_record is None:
+                missing_files.add(file_path)
+                continue
+            member_total, member_covered, member_line_gap = coverage_lines_for_member(file_record, member)
+            line_detail_missing = line_detail_missing or member_line_gap
+            total_pairs.update((file_path, line) for line in member_total)
+            covered_pairs.update((file_path, line) for line in member_covered)
+
+        if total_pairs:
+            status = "completed"
+        elif line_detail_missing:
+            status = "line_detail_missing"
+        elif missing_files:
+            status = "not_observed"
+        elif not bundle.get("members"):
+            status = "no_members"
+        else:
+            status = "not_observed"
+
+        lines_total = len(total_pairs)
+        lines_covered = len(covered_pairs)
+        line_percent = ((lines_covered / lines_total) * 100.0) if lines_total else None
+        results.append(
+            {
+                "bundle_id": bundle["bundle_id"],
+                "status": status,
+                "line_percent": line_percent,
+                "lines_total": lines_total,
+                "lines_covered": lines_covered,
+                "line_percent_display": format_percent(line_percent),
+                "result_payload": {
+                    "missing_files": sorted(missing_files),
+                    "member_count": len(bundle.get("members", [])),
+                    "line_detail_missing": line_detail_missing,
+                    "observed_file_count": len(
+                        {file_path for file_path, _ in total_pairs}
+                    ),
+                },
+            }
+        )
+    return results
+
+
+def insert_coverage_results(
+    conn: sqlite3.Connection,
+    *,
+    run_id: str,
+    side: str,
+    scope: str,
+    source_label: str,
+    bundle_manifest_path: str | None,
+    coverage_payload: dict,
+    bundles: list[dict],
+    bundle_results: list[dict],
+    selected_test_files: list[str],
+    command_test_files: list[str],
+) -> None:
+    coverage_run_id = f"{run_id}:coverage:{scope}"
+    conn.execute(
+        """
+        INSERT INTO coverage_runs (
+            coverage_run_id, run_id, side, source_label, bundle_manifest_path, status, tool_status,
+            test_file_count, bundle_count, file_count, line_percent, lines_total, lines_covered, summary_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            coverage_run_id,
+            run_id,
+            side,
+            source_label,
+            bundle_manifest_path,
+            coverage_payload["status"],
+            coverage_payload["tool_status"],
+            len(selected_test_files),
+            len(bundles),
+            len(coverage_payload["files"]),
+            coverage_payload.get("line_percent"),
+            coverage_payload.get("lines_total"),
+            coverage_payload.get("lines_covered"),
+            stable_json(coverage_payload),
+        ),
+    )
+
+    for index, file_record in enumerate(coverage_payload["files"], start=1):
+        conn.execute(
+            """
+            INSERT INTO coverage_files (
+                coverage_file_id, run_id, coverage_run_id, file_path, line_percent, lines_total,
+                lines_covered, covered_lines_json, uncovered_lines_json, result_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                f"{run_id}:coverage_file:{scope}:{index}",
+                run_id,
+                coverage_run_id,
+                file_record["file_path"],
+                file_record.get("line_percent"),
+                file_record.get("lines_total"),
+                file_record.get("lines_covered"),
+                stable_json(file_record.get("covered_lines", [])),
+                stable_json(file_record.get("uncovered_lines", [])),
+                stable_json(file_record.get("result_payload", {})),
+            ),
+        )
+
+    bundle_ids: dict[str, str] = {}
+    for index, bundle in enumerate(bundles, start=1):
+        coverage_bundle_id = f"{run_id}:coverage_bundle:{scope}:{index}"
+        bundle_ids[bundle["bundle_id"]] = coverage_bundle_id
+        conn.execute(
+            """
+            INSERT INTO coverage_bundles (
+                coverage_bundle_id, run_id, bundle_id, bundle_type, source_file_path, side, metadata_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                coverage_bundle_id,
+                run_id,
+                bundle["bundle_id"],
+                bundle["bundle_type"],
+                bundle.get("source_file_path"),
+                side,
+                stable_json(
+                    {
+                        "test_files": bundle.get("test_files", []),
+                        "shared_test_files": bundle.get("shared_test_files", []),
+                        "member_source": bundle.get("member_source"),
+                        "metadata": bundle.get("metadata", {}),
+                    }
+                ),
+            ),
+        )
+        for member_index, member in enumerate(bundle.get("members", []), start=1):
+            conn.execute(
+                """
+                INSERT INTO coverage_bundle_members (
+                    coverage_bundle_member_id, run_id, coverage_bundle_id, entity_key,
+                    file_path, line_start, line_end, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{run_id}:coverage_bundle_member:{scope}:{index}:{member_index}",
+                    run_id,
+                    coverage_bundle_id,
+                    member.get("entity_key"),
+                    member["file_path"],
+                    member.get("line_start"),
+                    member.get("line_end"),
+                    stable_json(member.get("metadata", {})),
+                ),
+            )
+
+    link_index = 1
+    for test_file_path in command_test_files:
+        conn.execute(
+            """
+                INSERT INTO coverage_test_links (
+                    coverage_test_link_id, run_id, coverage_bundle_id, test_file_path, source, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{run_id}:coverage_test_link:{scope}:{link_index}",
+                    run_id,
+                    None,
+                    test_file_path,
+                "command",
+                stable_json({}),
+            ),
+        )
+        link_index += 1
+
+    for bundle in bundles:
+        coverage_bundle_id = bundle_ids[bundle["bundle_id"]]
+        bundle_test_files = dedupe_paths(
+            [str(value) for value in ensure_list(bundle.get("test_files")) if value] +
+            [str(value) for value in ensure_list(bundle.get("shared_test_files")) if value]
+        )
+        for test_file_path in bundle_test_files:
+            conn.execute(
+                """
+                INSERT INTO coverage_test_links (
+                    coverage_test_link_id, run_id, coverage_bundle_id, test_file_path, source, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{run_id}:coverage_test_link:{scope}:{link_index}",
+                    run_id,
+                    coverage_bundle_id,
+                    test_file_path,
+                    "bundle_manifest",
+                    stable_json({}),
+                ),
+            )
+            link_index += 1
+
+    for index, result in enumerate(bundle_results, start=1):
+        conn.execute(
+            """
+                INSERT INTO coverage_bundle_results (
+                    coverage_bundle_result_id, run_id, coverage_bundle_id, status,
+                    line_percent, lines_total, lines_covered, result_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                f"{run_id}:coverage_bundle_result:{scope}:{index}",
+                run_id,
+                bundle_ids[result["bundle_id"]],
+                result["status"],
+                result.get("line_percent"),
+                result.get("lines_total"),
+                result.get("lines_covered"),
+                stable_json(result.get("result_payload", {})),
+            ),
+        )
+
+
+def insert_coverage_compare_results(
+    conn: sqlite3.Connection,
+    *,
+    run_id: str,
+    bundles: list[dict],
+    compare_bundle_results: list[dict],
+) -> None:
+    bundle_ids: dict[str, str] = {}
+    for index, bundle in enumerate(bundles, start=1):
+        coverage_bundle_id = f"{run_id}:coverage_bundle:comparison:{index}"
+        bundle_ids[bundle["bundle_id"]] = coverage_bundle_id
+        conn.execute(
+            """
+            INSERT INTO coverage_bundles (
+                coverage_bundle_id, run_id, bundle_id, bundle_type, source_file_path, side, metadata_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                coverage_bundle_id,
+                run_id,
+                bundle["bundle_id"],
+                bundle["bundle_type"],
+                bundle.get("source_file_path"),
+                "comparison",
+                stable_json(
+                    {
+                        "test_files": bundle.get("test_files", []),
+                        "shared_test_files": bundle.get("shared_test_files", []),
+                        "metadata": bundle.get("metadata", {}),
+                        "baseline_members": bundle.get("baseline_members", []),
+                        "target_members": bundle.get("target_members", []),
+                    }
+                ),
+            ),
+        )
+
+    for index, result in enumerate(compare_bundle_results, start=1):
+        conn.execute(
+            """
+            INSERT INTO coverage_bundle_results (
+                coverage_bundle_result_id, run_id, coverage_bundle_id, status,
+                line_percent, lines_total, lines_covered, result_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                f"{run_id}:coverage_bundle_result:comparison:{index}",
+                run_id,
+                bundle_ids[result["bundle_id"]],
+                result["status"],
+                result.get("target_line_percent"),
+                coerce_int((result.get("result_payload") or {}).get("target", {}).get("lines_total")),
+                coerce_int((result.get("result_payload") or {}).get("target", {}).get("lines_covered")),
+                stable_json(result.get("result_payload", {})),
+            ),
+        )
+
+
+def build_coverage_summary(
+    *,
+    run_id: str,
+    repo_root: pathlib.Path,
+    side: str,
+    source_label: str,
+    bundle_manifest_path: str | None,
+    selected_test_files: list[str],
+    coverage_payload: dict,
+    bundle_results: list[dict],
+) -> dict:
+    bundle_status_counts = Counter(result["status"] for result in bundle_results)
+    summary = {
+        "run_id": run_id,
+        "mode": "coverage",
+        "repo_root": str(repo_root),
+        "side": side,
+        "source": source_label,
+        "status": coverage_payload["status"],
+        "tool_status": coverage_payload["tool_status"],
+        "bundle_manifest_path": bundle_manifest_path,
+        "test_file_count": len(selected_test_files),
+        "bundle_count": len(bundle_results),
+        "file_count": len(coverage_payload["files"]),
+        "test_count": coverage_payload.get("test_count"),
+        "failure_count": coverage_payload.get("failure_count"),
+        "skip_count": coverage_payload.get("skip_count"),
+        "failed_tests": coverage_payload.get("failed_tests", []),
+        "line_percent": coverage_payload.get("line_percent"),
+        "line_percent_display": format_percent(coverage_payload.get("line_percent")),
+        "lines_total": int(coverage_payload.get("lines_total") or 0),
+        "lines_covered": int(coverage_payload.get("lines_covered") or 0),
+        "bundle_status_counts": dict(sorted(bundle_status_counts.items())),
+        "sample_bundle_results": [
+            {
+                "bundle_id": result["bundle_id"],
+                "status": result["status"],
+                "line_percent": result.get("line_percent"),
+                "line_percent_display": result["line_percent_display"],
+                "lines_total": result.get("lines_total"),
+                "lines_covered": result.get("lines_covered"),
+            }
+            for result in bundle_results[:25]
+        ],
+        "sample_files": [
+            {
+                "file_path": record["file_path"],
+                "line_percent": record.get("line_percent"),
+                "line_percent_display": format_percent(record.get("line_percent")),
+                "lines_total": record.get("lines_total"),
+                "lines_covered": record.get("lines_covered"),
+            }
+            for record in coverage_payload["files"][:25]
+        ],
+        "notes": coverage_payload.get("notes", []),
+    }
+    return summary
+
+
+def categorize_coverage_delta(value: float | None) -> str:
+    if value is None:
+        return "unavailable"
+    if value > 0.05:
+        return "improved"
+    if value < -0.05:
+        return "regressed"
+    return "flat"
+
+
+def build_coverage_compare_bundle_results(
+    bundles: list[dict],
+    *,
+    baseline_bundle_results: list[dict],
+    target_bundle_results: list[dict],
+    baseline_capture_status: str = "completed",
+    target_capture_status: str = "completed",
+) -> list[dict]:
+    baseline_index = {result["bundle_id"]: result for result in baseline_bundle_results}
+    target_index = {result["bundle_id"]: result for result in target_bundle_results}
+    results: list[dict] = []
+    for bundle in bundles:
+        bundle_id = bundle["bundle_id"]
+        baseline_result = baseline_index.get(bundle_id)
+        target_result = target_index.get(bundle_id)
+        baseline_status = str((baseline_result or {}).get("status") or "missing")
+        target_status = str((target_result or {}).get("status") or "missing")
+        if baseline_capture_status != "completed":
+            baseline_status = baseline_capture_status
+        if target_capture_status != "completed":
+            target_status = target_capture_status
+        baseline_line_percent = coerce_float((baseline_result or {}).get("line_percent"))
+        target_line_percent = coerce_float((target_result or {}).get("line_percent"))
+        line_percent_delta = None
+        if baseline_line_percent is not None and target_line_percent is not None:
+            line_percent_delta = target_line_percent - baseline_line_percent
+
+        if baseline_status == "completed" and target_status == "completed":
+            status = "completed"
+        elif baseline_status == "tool_unavailable" or target_status == "tool_unavailable":
+            status = "tool_unavailable"
+        elif baseline_status != "completed" and target_status != "completed":
+            status = "both_incomplete"
+        elif baseline_status != "completed":
+            status = "baseline_incomplete"
+        else:
+            status = "target_incomplete"
+
+        results.append(
+            {
+                "bundle_id": bundle_id,
+                "status": status,
+                "line_percent": target_line_percent,
+                "lines_total": coerce_int((target_result or {}).get("lines_total")),
+                "lines_covered": coerce_int((target_result or {}).get("lines_covered")),
+                "line_percent_display": format_percent(target_line_percent),
+                "baseline_status": baseline_status,
+                "target_status": target_status,
+                "baseline_line_percent": baseline_line_percent,
+                "target_line_percent": target_line_percent,
+                "line_percent_delta": line_percent_delta,
+                "delta_category": categorize_coverage_delta(line_percent_delta),
+                "result_payload": {
+                    "bundle_type": bundle.get("bundle_type"),
+                    "baseline": {
+                        "status": baseline_status,
+                        "line_percent": baseline_line_percent,
+                        "lines_total": coerce_int((baseline_result or {}).get("lines_total")),
+                        "lines_covered": coerce_int((baseline_result or {}).get("lines_covered")),
+                        "payload": (baseline_result or {}).get("result_payload", {}),
+                    },
+                    "target": {
+                        "status": target_status,
+                        "line_percent": target_line_percent,
+                        "lines_total": coerce_int((target_result or {}).get("lines_total")),
+                        "lines_covered": coerce_int((target_result or {}).get("lines_covered")),
+                        "payload": (target_result or {}).get("result_payload", {}),
+                    },
+                    "line_percent_delta": line_percent_delta,
+                    "delta_category": categorize_coverage_delta(line_percent_delta),
+                    "shared_test_files": bundle.get("shared_test_files", []),
+                    "test_files": bundle.get("test_files", []),
+                    "baseline_member_count": len(bundle.get("baseline_members", [])),
+                    "target_member_count": len(bundle.get("target_members", [])),
+                },
+            }
+        )
+    return results
+
+
+def build_coverage_compare_summary(
+    *,
+    run_id: str,
+    repo_root: pathlib.Path,
+    baseline_source_label: str,
+    target_source_label: str,
+    test_source_label: str,
+    bundle_manifest_path: str | None,
+    selected_test_files: list[str],
+    baseline_payload: dict,
+    target_payload: dict,
+    compare_bundle_results: list[dict],
+) -> dict:
+    status_counts = Counter(result["status"] for result in compare_bundle_results)
+    delta_counts = Counter(result["delta_category"] for result in compare_bundle_results)
+    summary_status = "completed"
+    if baseline_payload["status"] != "completed" or target_payload["status"] != "completed":
+        if baseline_payload["status"] == "tool_unavailable" or target_payload["status"] == "tool_unavailable":
+            summary_status = "tool_unavailable"
+        else:
+            summary_status = "completed_with_incomplete_sides"
+    elif any(result["status"] != "completed" for result in compare_bundle_results):
+        summary_status = "completed_with_incomplete_bundles"
+
+    summary = {
+        "run_id": run_id,
+        "mode": "coverage_compare",
+        "repo_root": str(repo_root),
+        "baseline": {
+            "source": baseline_source_label,
+            "status": baseline_payload["status"],
+            "tool_status": baseline_payload["tool_status"],
+            "test_count": baseline_payload.get("test_count"),
+            "failure_count": baseline_payload.get("failure_count"),
+            "skip_count": baseline_payload.get("skip_count"),
+            "failed_tests": baseline_payload.get("failed_tests", []),
+            "file_count": len(baseline_payload["files"]),
+            "line_percent": baseline_payload.get("line_percent"),
+            "line_percent_display": format_percent(baseline_payload.get("line_percent")),
+            "lines_total": int(baseline_payload.get("lines_total") or 0),
+            "lines_covered": int(baseline_payload.get("lines_covered") or 0),
+        },
+        "target": {
+            "source": target_source_label,
+            "status": target_payload["status"],
+            "tool_status": target_payload["tool_status"],
+            "test_count": target_payload.get("test_count"),
+            "failure_count": target_payload.get("failure_count"),
+            "skip_count": target_payload.get("skip_count"),
+            "failed_tests": target_payload.get("failed_tests", []),
+            "file_count": len(target_payload["files"]),
+            "line_percent": target_payload.get("line_percent"),
+            "line_percent_display": format_percent(target_payload.get("line_percent")),
+            "lines_total": int(target_payload.get("lines_total") or 0),
+            "lines_covered": int(target_payload.get("lines_covered") or 0),
+        },
+        "test_source": test_source_label,
+        "status": summary_status,
+        "bundle_manifest_path": bundle_manifest_path,
+        "test_file_count": len(selected_test_files),
+        "bundle_count": len(compare_bundle_results),
+        "bundle_status_counts": dict(sorted(status_counts.items())),
+        "delta_counts": dict(sorted(delta_counts.items())),
+        "bundle_results": compare_bundle_results,
+        "sample_bundle_results": [
+            {
+                "bundle_id": result["bundle_id"],
+                "status": result["status"],
+                "baseline_status": result["baseline_status"],
+                "target_status": result["target_status"],
+                "baseline_line_percent": result.get("baseline_line_percent"),
+                "target_line_percent": result.get("target_line_percent"),
+                "line_percent_delta": result.get("line_percent_delta"),
+                "delta_category": result["delta_category"],
+            }
+            for result in compare_bundle_results[:25]
+        ],
+        "selected_test_files": selected_test_files,
+        "notes": dedupe_paths(
+            [str(note) for note in ensure_list(baseline_payload.get("notes")) if str(note).strip()] +
+            [str(note) for note in ensure_list(target_payload.get("notes")) if str(note).strip()]
+        ),
+    }
+    return summary
+
+
+def select_coverage_bundles(
+    bundles: list[dict],
+    *,
+    bundle_ids: list[str] | None = None,
+    limit: int | None = None,
+) -> list[dict]:
+    selected = bundles
+    if bundle_ids:
+        allowed = set(bundle_ids)
+        selected = [bundle for bundle in selected if bundle["bundle_id"] in allowed]
+    if limit is not None and limit >= 0:
+        selected = selected[:limit]
+    return selected
+
+
+def build_coverage_evidence_exception(
+    run_id: str,
+    bundle: dict,
+) -> dict | None:
+    gate_status = str(bundle.get("coverage_gate_status") or "")
+    if gate_status == "below_target":
+        exception_type = "coverage_target_below_threshold"
+        severity = "medium"
+        reason = (
+            f"Target coverage for `{bundle['bundle_id']}` is `{format_percent(bundle.get('target_line_percent'))}`, "
+            f"below the required `{format_percent(bundle.get('threshold_pct'))}`."
+        )
+    elif gate_status == "target_unmeasured":
+        exception_type = "coverage_target_unmeasured"
+        severity = "high"
+        reason = (
+            f"Target coverage for `{bundle['bundle_id']}` could not be measured from the selected shared test subset."
+        )
+    elif gate_status == "comparison_gap":
+        exception_type = "coverage_comparison_gap"
+        severity = "medium"
+        reason = (
+            f"Selected shared tests cover target `{bundle['bundle_id']}` at `{format_percent(bundle.get('target_line_percent'))}`, "
+            f"but baseline coverage remains `{format_percent(bundle.get('baseline_line_percent'))}`. "
+            "Add shared compat or characterization tests that exercise both sides."
+        )
+    else:
+        return None
+
+    entity_key = f"coverage_bundle::{bundle['bundle_id']}"
+    return {
+        "exception_id": f"{run_id}:coverage_exception:{bundle['bundle_id']}",
+        "exception_key": make_exception_key("coverage_evidence", exception_type, entity_key),
+        "run_id": run_id,
+        "audit_layer": "coverage_evidence",
+        "entity_key": entity_key,
+        "severity": severity,
+        "exception_type": exception_type,
+        "reason": reason,
+        "baseline_ref": bundle.get("baseline_ref"),
+        "target_ref": bundle.get("target_ref"),
+        "evidence_json": stable_json(
+            {
+                "bundle_id": bundle["bundle_id"],
+                "bundle_type": bundle.get("bundle_type"),
+                "target_line_percent": bundle.get("target_line_percent"),
+                "baseline_line_percent": bundle.get("baseline_line_percent"),
+                "line_percent_delta": bundle.get("line_percent_delta"),
+                "threshold_pct": bundle.get("threshold_pct"),
+                "shared_test_files": bundle.get("shared_test_files", []),
+                "review_note": bundle.get("review_note"),
+            }
+        ),
+        "curation_status": "candidate",
+        "disposition": None,
+        "owner": None,
+        "review_note": None,
+        "updated_at": now_iso(),
+        "curation_rule": None,
+        "resolved_at": None,
+    }
+
+
+def build_package_coverage_exception(
+    run_id: str,
+    *,
+    baseline_ref: str | None,
+    target_ref: str | None,
+    target_line_percent: float | None,
+    threshold_pct: float,
+    enforce_gate: bool = True,
+) -> dict | None:
+    if not enforce_gate:
+        return None
+    if target_line_percent is None or target_line_percent + 1e-9 >= threshold_pct:
+        return None
+    return {
+        "exception_id": f"{run_id}:coverage_exception:package",
+        "exception_key": make_exception_key("coverage_evidence", "package_coverage_below_threshold", "coverage_package::target"),
+        "run_id": run_id,
+        "audit_layer": "coverage_evidence",
+        "entity_key": "coverage_package::target",
+        "severity": "medium",
+        "exception_type": "package_coverage_below_threshold",
+        "reason": (
+            f"Target package coverage is `{format_percent(target_line_percent)}`, below the required `{format_percent(threshold_pct)}`."
+        ),
+        "baseline_ref": baseline_ref,
+        "target_ref": target_ref,
+        "evidence_json": stable_json(
+            {
+                "target_line_percent": target_line_percent,
+                "threshold_pct": threshold_pct,
+            }
+        ),
+        "curation_status": "candidate",
+        "disposition": None,
+        "owner": None,
+        "review_note": None,
+        "updated_at": now_iso(),
+        "curation_rule": None,
+        "resolved_at": None,
+    }
+
+
+def insert_coverage_evidence_results(
+    conn: sqlite3.Connection,
+    *,
+    run_id: str,
+    bundles: list[dict],
+    exceptions: list[dict],
+) -> None:
+    bundle_ids: dict[str, str] = {}
+    for index, bundle in enumerate(bundles, start=1):
+        coverage_bundle_id = f"{run_id}:coverage_bundle:evidence:{index}"
+        bundle_ids[bundle["bundle_id"]] = coverage_bundle_id
+        conn.execute(
+            """
+            INSERT INTO coverage_bundles (
+                coverage_bundle_id, run_id, bundle_id, bundle_type, source_file_path,
+                primary_entity_key, baseline_ref, target_ref, linked_exception_count,
+                scenario_class, differential_replay_status, coverage_gate_status,
+                review_note, priority_rank, priority_score, side, metadata_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                coverage_bundle_id,
+                run_id,
+                bundle["bundle_id"],
+                bundle.get("bundle_type"),
+                bundle.get("source_file_path"),
+                bundle.get("primary_entity_key"),
+                bundle.get("baseline_ref"),
+                bundle.get("target_ref"),
+                bundle.get("linked_exception_count"),
+                bundle.get("scenario_class"),
+                bundle.get("differential_replay_status"),
+                bundle.get("coverage_gate_status"),
+                bundle.get("review_note"),
+                bundle.get("priority_rank"),
+                bundle.get("priority_score"),
+                "evidence",
+                stable_json(
+                    {
+                        "baseline_paths": bundle.get("baseline_paths", []),
+                        "target_paths": bundle.get("target_paths", []),
+                        "shared_test_files": bundle.get("shared_test_files", []),
+                        "threshold_pct": bundle.get("threshold_pct"),
+                        "baseline_status": bundle.get("baseline_status"),
+                        "target_status": bundle.get("target_status"),
+                        "baseline_line_percent": bundle.get("baseline_line_percent"),
+                        "target_line_percent": bundle.get("target_line_percent"),
+                        "line_percent_delta": bundle.get("line_percent_delta"),
+                        "delta_category": bundle.get("delta_category"),
+                        "regressed_vs_baseline": bundle.get("regressed_vs_baseline"),
+                        "evidence_depth": bundle.get("evidence_depth"),
+                    }
+                ),
+            ),
+        )
+        for member_index, member in enumerate(ensure_list(bundle.get("baseline_members")), start=1):
+            conn.execute(
+                """
+                INSERT INTO coverage_bundle_members (
+                    coverage_bundle_member_id, run_id, coverage_bundle_id, entity_key,
+                    file_path, line_start, line_end, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{run_id}:coverage_bundle_member:evidence:baseline:{index}:{member_index}",
+                    run_id,
+                    coverage_bundle_id,
+                    member.get("entity_key"),
+                    member["file_path"],
+                    member.get("line_start"),
+                    member.get("line_end"),
+                    stable_json({"side": "baseline"}),
+                ),
+            )
+        for member_index, member in enumerate(ensure_list(bundle.get("target_members")), start=1):
+            conn.execute(
+                """
+                INSERT INTO coverage_bundle_members (
+                    coverage_bundle_member_id, run_id, coverage_bundle_id, entity_key,
+                    file_path, line_start, line_end, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{run_id}:coverage_bundle_member:evidence:target:{index}:{member_index}",
+                    run_id,
+                    coverage_bundle_id,
+                    member.get("entity_key"),
+                    member["file_path"],
+                    member.get("line_start"),
+                    member.get("line_end"),
+                    stable_json({"side": "target"}),
+                ),
+            )
+        for link_index, test_file_path in enumerate(bundle.get("shared_test_files", []), start=1):
+            conn.execute(
+                """
+                INSERT INTO coverage_test_links (
+                    coverage_test_link_id, run_id, coverage_bundle_id, test_file_path, source, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{run_id}:coverage_test_link:evidence:{index}:{link_index}",
+                    run_id,
+                    coverage_bundle_id,
+                    test_file_path,
+                    "coverage_evidence",
+                    stable_json({}),
+                ),
+            )
+        conn.execute(
+            """
+            INSERT INTO coverage_bundle_results (
+                coverage_bundle_result_id, run_id, coverage_bundle_id, status,
+                line_percent, lines_total, lines_covered, result_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                f"{run_id}:coverage_bundle_result:evidence:{index}",
+                run_id,
+                coverage_bundle_id,
+                bundle.get("coverage_gate_status"),
+                bundle.get("target_line_percent"),
+                coerce_int((bundle.get("bundle_result_payload") or {}).get("target", {}).get("lines_total")),
+                coerce_int((bundle.get("bundle_result_payload") or {}).get("target", {}).get("lines_covered")),
+                stable_json(
+                    {
+                        "threshold_pct": bundle.get("threshold_pct"),
+                        "baseline_status": bundle.get("baseline_status"),
+                        "target_status": bundle.get("target_status"),
+                        "baseline_line_percent": bundle.get("baseline_line_percent"),
+                        "target_line_percent": bundle.get("target_line_percent"),
+                        "line_percent_delta": bundle.get("line_percent_delta"),
+                        "delta_category": bundle.get("delta_category"),
+                        "regressed_vs_baseline": bundle.get("regressed_vs_baseline"),
+                        "justified_by_tests": bundle.get("justified_by_tests"),
+                        "bundle_result_payload": bundle.get("bundle_result_payload", {}),
+                    }
+                ),
+            ),
+        )
+
+    insert_exceptions(conn, exceptions)
+    link_index = 1
+    exceptions_by_entity_key = {record["entity_key"]: record for record in exceptions}
+    for bundle in bundles:
+        exception = exceptions_by_entity_key.get(f"coverage_bundle::{bundle['bundle_id']}")
+        if exception is None:
+            continue
+        conn.execute(
+            """
+            INSERT INTO coverage_exception_links (
+                coverage_exception_link_id, run_id, coverage_bundle_id, exception_id,
+                exception_key, audit_layer, entity_key, curation_status, disposition, metadata_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                f"{run_id}:coverage_exception_link:evidence:{link_index}",
+                run_id,
+                bundle_ids[bundle["bundle_id"]],
+                exception["exception_id"],
+                exception.get("exception_key"),
+                exception["audit_layer"],
+                exception["entity_key"],
+                exception["curation_status"],
+                exception.get("disposition"),
+                stable_json({"severity": exception["severity"], "exception_type": exception["exception_type"]}),
+            ),
+        )
+        link_index += 1
+
+
+def build_coverage_evidence_summary(
+    *,
+    run_id: str,
+    repo_root: pathlib.Path,
+    bundle_manifest_path: str | None,
+    coverage_compare_summary: dict,
+    acceptance_policy: dict,
+    evaluated_bundles: list[dict],
+    exceptions: list[dict],
+    package_gate_applies: bool,
+) -> dict:
+    gate_counts = Counter(bundle["coverage_gate_status"] for bundle in evaluated_bundles)
+    delta_counts = Counter(bundle["delta_category"] for bundle in evaluated_bundles)
+    threshold_counts = Counter(
+        format_percent(bundle["threshold_pct"]) for bundle in evaluated_bundles if bundle.get("threshold_pct") is not None
+    )
+    baseline_line_percent = coerce_float((coverage_compare_summary.get("baseline") or {}).get("line_percent"))
+    target_line_percent = coerce_float((coverage_compare_summary.get("target") or {}).get("line_percent"))
+    package_delta = None
+    if baseline_line_percent is not None and target_line_percent is not None:
+        package_delta = target_line_percent - baseline_line_percent
+    package_threshold = float(acceptance_policy["package_line_coverage_target_pct"])
+    if not package_gate_applies:
+        package_gate = "not_applicable_subset"
+    elif (coverage_compare_summary.get("target") or {}).get("status") == "tool_unavailable":
+        package_gate = "tool_unavailable"
+    elif target_line_percent is None:
+        package_gate = "target_unmeasured"
+    elif target_line_percent + 1e-9 < package_threshold:
+        package_gate = "below_target"
+    else:
+        package_gate = "pass"
+
+    low_coverage_bundles = [
+        bundle for bundle in evaluated_bundles
+        if bundle["coverage_gate_status"] in {"below_target", "target_unmeasured"}
+    ]
+    comparison_gap_bundles = [
+        bundle for bundle in evaluated_bundles
+        if bundle["coverage_gate_status"] == "comparison_gap"
+    ]
+    regressed_bundles = [bundle for bundle in evaluated_bundles if bundle["regressed_vs_baseline"]]
+    status = "completed"
+    if (coverage_compare_summary.get("target") or {}).get("status") == "tool_unavailable":
+        status = "tool_unavailable"
+    elif low_coverage_bundles or comparison_gap_bundles or package_gate == "below_target":
+        status = "completed_with_gaps"
+
+    def bundle_brief(bundle: dict) -> dict:
+        return {
+            "bundle_id": bundle["bundle_id"],
+            "bundle_type": bundle.get("bundle_type"),
+            "coverage_gate_status": bundle.get("coverage_gate_status"),
+            "threshold_pct": bundle.get("threshold_pct"),
+            "threshold_display": format_percent(bundle.get("threshold_pct")),
+            "baseline_line_percent": bundle.get("baseline_line_percent"),
+            "baseline_line_percent_display": format_percent(bundle.get("baseline_line_percent")),
+            "target_line_percent": bundle.get("target_line_percent"),
+            "target_line_percent_display": format_percent(bundle.get("target_line_percent")),
+            "line_percent_delta": bundle.get("line_percent_delta"),
+            "line_percent_delta_display": format_percent(bundle.get("line_percent_delta")),
+            "shared_test_file_count": len(bundle.get("shared_test_files", [])),
+            "shared_test_files": bundle.get("shared_test_files", []),
+            "priority_rank": bundle.get("priority_rank"),
+            "review_note": bundle.get("review_note"),
+        }
+
+    return {
+        "run_id": run_id,
+        "mode": "coverage_evidence",
+        "repo_root": str(repo_root),
+        "status": status,
+        "bundle_manifest_path": bundle_manifest_path,
+        "coverage_compare_run_id": coverage_compare_summary.get("run_id"),
+        "bundle_count": len(evaluated_bundles),
+        "justified_bundle_count": sum(1 for bundle in evaluated_bundles if bundle["justified_by_tests"]),
+        "low_coverage_bundle_count": len(low_coverage_bundles),
+        "comparison_gap_bundle_count": len(comparison_gap_bundles),
+        "regression_bundle_count": len(regressed_bundles),
+        "exception_count": len(exceptions),
+        "gate_counts": dict(sorted(gate_counts.items())),
+        "delta_counts": dict(sorted(delta_counts.items())),
+        "threshold_counts": dict(sorted(threshold_counts.items())),
+        "acceptance": acceptance_policy,
+        "package_coverage": {
+            "baseline_line_percent": baseline_line_percent,
+            "baseline_line_percent_display": format_percent(baseline_line_percent),
+            "target_line_percent": target_line_percent,
+            "target_line_percent_display": format_percent(target_line_percent),
+            "line_percent_delta": package_delta,
+            "line_percent_delta_display": format_percent(package_delta),
+            "threshold_pct": package_threshold,
+            "threshold_display": format_percent(package_threshold),
+            "gate_status": package_gate,
+            "applies": package_gate_applies,
+        },
+        "below_target_bundles": [bundle_brief(bundle) for bundle in low_coverage_bundles[:50]],
+        "comparison_gap_bundles": [bundle_brief(bundle) for bundle in comparison_gap_bundles[:50]],
+        "regressed_bundles": [bundle_brief(bundle) for bundle in regressed_bundles[:50]],
+        "sample_bundles": [bundle_brief(bundle) for bundle in evaluated_bundles[:50]],
+        "bundles": evaluated_bundles,
+        "notes": dedupe_paths(
+            [str(note) for note in ensure_list(coverage_compare_summary.get("notes")) if str(note).strip()] +
+            [str(acceptance_policy.get("wrapper_policy") or "").strip()]
+        ),
+    }
+
+
 def parse_json_field(value):
     if value in (None, ""):
         return None
     if isinstance(value, (dict, list)):
         return value
     return json.loads(value)
+
+
+def load_run_summary_by_mode(
+    repo_root: pathlib.Path,
+    *,
+    mode: str,
+    run_id: str | None = None,
+    audit_dir: str = DEFAULT_AUDIT_DIR,
+) -> dict:
+    paths = resolve_paths(repo_root, audit_dir)
+    if run_id:
+        conn = connect_db(paths["db_path"])
+        try:
+            row = conn.execute(
+                "SELECT summary_json FROM audit_runs WHERE run_id = ? AND mode = ?",
+                (run_id, mode),
+            ).fetchone()
+        finally:
+            conn.close()
+        if row is None:
+            raise RuntimeError(f"Unknown {mode} run id: {run_id}")
+        return parse_json_field(row["summary_json"]) or {}
+
+    summary_path_by_mode = {
+        "closeout": paths["closeout_json"],
+        "coverage_compare": paths["coverage_compare_json"],
+        "coverage_evidence": paths["coverage_evidence_json"],
+    }
+    summary_path = summary_path_by_mode.get(mode)
+    if summary_path is None:
+        raise RuntimeError(f"Unsupported summary mode: {mode}")
+    if not summary_path.exists():
+        raise RuntimeError(f"{mode} summary does not exist yet")
+    return json.loads(summary_path.read_text(encoding="utf-8"))
+
+
+def load_closeout_summary(
+    repo_root: pathlib.Path,
+    closeout_run_id: str | None = None,
+    *,
+    audit_dir: str = DEFAULT_AUDIT_DIR,
+) -> dict:
+    return load_run_summary_by_mode(
+        repo_root,
+        mode="closeout",
+        run_id=closeout_run_id,
+        audit_dir=audit_dir,
+    )
+
+
+def load_coverage_compare_summary(
+    repo_root: pathlib.Path,
+    coverage_compare_run_id: str | None = None,
+    *,
+    audit_dir: str = DEFAULT_AUDIT_DIR,
+    compare_path: str | None = None,
+) -> dict:
+    if compare_path:
+        compare_summary_path = resolve_repo_path(repo_root, compare_path)
+        return json.loads(compare_summary_path.read_text(encoding="utf-8"))
+    return load_run_summary_by_mode(
+        repo_root,
+        mode="coverage_compare",
+        run_id=coverage_compare_run_id,
+        audit_dir=audit_dir,
+    )
+
+
+def load_coverage_acceptance_policy(repo_root: pathlib.Path) -> dict:
+    plan_path = repo_root / "tools" / "refactor" / "fidelity-audit-plan.json"
+    if not plan_path.exists():
+        return {
+            "package_line_coverage_target_pct": 80,
+            "auto_curated_bundle_target_pct": 80,
+            "helper_bundle_target_pct": 90,
+            "preserved_or_s4_bundle_target_pct": 85,
+            "wrapper_policy": "Wrapper/module bundles still require contract and scenario completeness; line coverage alone is not sufficient.",
+            "comparison_policy": "Baseline and target coverage must be measured using the same test subsets and recorded side by side.",
+        }
+    payload = json.loads(plan_path.read_text(encoding="utf-8"))
+    coverage_program = payload.get("coverage_backed_auto_curation") or {}
+    acceptance = coverage_program.get("acceptance") or {}
+    return {
+        "package_line_coverage_target_pct": coerce_float(acceptance.get("package_line_coverage_target_pct")) or 80.0,
+        "auto_curated_bundle_target_pct": coerce_float(acceptance.get("auto_curated_bundle_target_pct")) or 80.0,
+        "helper_bundle_target_pct": coerce_float(acceptance.get("helper_bundle_target_pct")) or 90.0,
+        "preserved_or_s4_bundle_target_pct": coerce_float(acceptance.get("preserved_or_s4_bundle_target_pct")) or 85.0,
+        "wrapper_policy": str(
+            acceptance.get("wrapper_policy")
+            or "Wrapper/module bundles still require contract and scenario completeness; line coverage alone is not sufficient."
+        ),
+        "comparison_policy": str(
+            acceptance.get("comparison_policy")
+            or "Baseline and target coverage must be measured using the same test subsets and recorded side by side."
+        ),
+    }
+
+
+def coverage_threshold_for_bundle(bundle: dict, policy: dict) -> float:
+    bundle_type = str(bundle.get("bundle_type") or "")
+    if bundle_type in {"helper_surface", "normalized_exact_surface"}:
+        return float(policy["helper_bundle_target_pct"])
+    if bundle_type == "s4_method_surface":
+        return float(policy["preserved_or_s4_bundle_target_pct"])
+    return float(policy["auto_curated_bundle_target_pct"])
+
+
+def coverage_gate_status_for_bundle(
+    *,
+    baseline_capture_status: str,
+    baseline_bundle_status: str,
+    baseline_line_percent: float | None,
+    target_capture_status: str,
+    target_bundle_status: str,
+    target_line_percent: float | None,
+    threshold_pct: float,
+    justified_by_tests: bool,
+) -> str:
+    if target_capture_status == "tool_unavailable":
+        return "tool_unavailable"
+    if (
+        justified_by_tests
+        and baseline_capture_status == "test_failures"
+        and target_capture_status == "completed"
+        and target_bundle_status == "completed"
+        and target_line_percent is not None
+        and target_line_percent > 0.0 + 1e-9
+    ):
+        return "comparison_gap"
+    if target_capture_status != "completed":
+        return "target_unmeasured"
+    if target_bundle_status != "completed" or target_line_percent is None:
+        return "target_unmeasured"
+    if target_line_percent + 1e-9 < threshold_pct:
+        return "below_target"
+    if (
+        justified_by_tests
+        and baseline_capture_status == "completed"
+        and baseline_bundle_status == "completed"
+        and baseline_line_percent is not None
+        and baseline_line_percent <= 0.0 + 1e-9
+        and target_line_percent > 0.0 + 1e-9
+    ):
+        return "comparison_gap"
+    return "pass"
+
+
+def build_coverage_evidence_bundles(
+    bundles: list[dict],
+    *,
+    coverage_compare_summary: dict,
+    acceptance_policy: dict,
+) -> list[dict]:
+    compare_results_by_id = {
+        result["bundle_id"]: result
+        for result in ensure_list(coverage_compare_summary.get("bundle_results"))
+        if isinstance(result, dict) and result.get("bundle_id")
+    }
+    evaluated: list[dict] = []
+    target_capture_status = str((coverage_compare_summary.get("target") or {}).get("status") or "missing")
+    baseline_capture_status = str((coverage_compare_summary.get("baseline") or {}).get("status") or "missing")
+    for bundle in bundles:
+        compare_result = compare_results_by_id.get(bundle["bundle_id"], {})
+        threshold_pct = coverage_threshold_for_bundle(bundle, acceptance_policy)
+        baseline_line_percent = coerce_float(compare_result.get("baseline_line_percent"))
+        target_line_percent = coerce_float(compare_result.get("target_line_percent"))
+        line_percent_delta = coerce_float(compare_result.get("line_percent_delta"))
+        delta_category = str(compare_result.get("delta_category") or categorize_coverage_delta(line_percent_delta))
+        baseline_bundle_status = str(compare_result.get("baseline_status") or baseline_capture_status)
+        target_bundle_status = str(compare_result.get("target_status") or target_capture_status)
+        shared_test_files = dedupe_paths(
+            [str(value) for value in ensure_list(bundle.get("shared_test_files")) if value] +
+            [str(value) for value in ensure_list(bundle.get("test_files")) if value]
+        )
+        gate_status = coverage_gate_status_for_bundle(
+            baseline_capture_status=baseline_capture_status,
+            baseline_bundle_status=baseline_bundle_status,
+            baseline_line_percent=baseline_line_percent,
+            target_capture_status=target_capture_status,
+            target_bundle_status=target_bundle_status,
+            target_line_percent=target_line_percent,
+            threshold_pct=threshold_pct,
+            justified_by_tests=bool(shared_test_files),
+        )
+        regressed_vs_baseline = (
+            baseline_line_percent is not None
+            and target_line_percent is not None
+            and target_line_percent + 0.05 < baseline_line_percent
+        )
+        evaluated.append(
+            {
+                "bundle_id": bundle["bundle_id"],
+                "bundle_type": bundle.get("bundle_type"),
+                "primary_entity_key": bundle.get("primary_entity_key"),
+                "source_file_path": bundle.get("source_file_path"),
+                "baseline_ref": bundle.get("baseline_ref"),
+                "target_ref": bundle.get("target_ref"),
+                "baseline_paths": bundle.get("baseline_paths", []),
+                "target_paths": bundle.get("target_paths", []),
+                "baseline_members": ensure_list(bundle.get("baseline_members")),
+                "target_members": ensure_list(bundle.get("target_members")),
+                "priority_rank": bundle.get("priority_rank"),
+                "priority_score": bundle.get("priority_score"),
+                "linked_exception_count": bundle.get("linked_exception_count", 0),
+                "scenario_class": bundle.get("scenario_class"),
+                "differential_replay_status": bundle.get("differential_replay_status"),
+                "review_note": bundle.get("review_note"),
+                "evidence_depth": bundle.get("evidence_depth"),
+                "shared_test_files": shared_test_files,
+                "justified_by_tests": bool(shared_test_files),
+                "threshold_pct": threshold_pct,
+                "coverage_gate_status": gate_status,
+                "baseline_status": baseline_bundle_status,
+                "target_status": target_bundle_status,
+                "baseline_line_percent": baseline_line_percent,
+                "target_line_percent": target_line_percent,
+                "line_percent_delta": line_percent_delta,
+                "delta_category": delta_category,
+                "regressed_vs_baseline": regressed_vs_baseline,
+                "bundle_result_payload": compare_result.get("result_payload", {}),
+            }
+        )
+    evaluated.sort(
+        key=lambda item: (
+            0 if item["coverage_gate_status"] in {"below_target", "target_unmeasured", "comparison_gap"} else 1,
+            0 if item["regressed_vs_baseline"] else 1,
+            item["priority_rank"] if item.get("priority_rank") is not None else 999999,
+            item["bundle_id"],
+        )
+    )
+    return evaluated
+
+
+def split_identifier_tokens(value: str) -> list[str]:
+    normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", value)
+    normalized = re.sub(r"[^A-Za-z0-9]+", "_", normalized)
+    tokens = [token.lower() for token in normalized.split("_") if token]
+    return dedupe_paths(tokens)
+
+
+def extract_surface_entity_name(entity_key: str | None) -> str | None:
+    if not entity_key:
+        return None
+    parts = str(entity_key).split("::")
+    if len(parts) < 2:
+        return None
+    if parts[0] == "setMethod":
+        return "::".join(parts[1:])
+    return parts[1]
+
+
+def selector_kind_to_bundle_type(selector_surface_key: str | None) -> str:
+    if not selector_surface_key:
+        return "normalized_exact_surface"
+    if selector_surface_key.startswith("setMethod::"):
+        return "s4_method_surface"
+    return "helper_surface"
+
+
+def bundle_type_from_disposition(disposition: str | None, selector_surface_key: str | None) -> str:
+    disposition = str(disposition or "")
+    if disposition == "equivalent_target_resolved_without_baseline_ancestor":
+        return "lineage_family"
+    if disposition == "entrypoint_shell_equivalent_under_tests":
+        return "wrapper_entrypoint"
+    if disposition == "helper_equivalent_under_tests":
+        return "helper_surface"
+    if disposition == "method_equivalent_under_tests":
+        return "s4_method_surface"
+    if disposition == "canonical_duplicate_retired":
+        return "duplicate_canonical"
+    if disposition == "manual_merge_canonicalized":
+        return "manual_merge_canonical"
+    if disposition in {"equivalent_target_resolution_asymmetry", "equivalent_whitespace_only", "equivalent_comment_only"}:
+        return selector_kind_to_bundle_type(selector_surface_key)
+    if disposition == "covered_by_manifest_semantic_review":
+        return selector_kind_to_bundle_type(selector_surface_key)
+    return selector_kind_to_bundle_type(selector_surface_key)
+
+
+def scenario_class_for_bundle_type(bundle_type: str) -> str:
+    return {
+        "lineage_family": "legacy_lineage_family",
+        "wrapper_entrypoint": "wrapper_contract",
+        "manual_merge_canonical": "manual_merge",
+        "duplicate_canonical": "compatibility_duplicate",
+        "s4_method_surface": "s4_method",
+        "helper_surface": "helper_unit",
+        "normalized_exact_surface": "normalized_exact",
+    }.get(bundle_type, "unspecified")
+
+
+def differential_replay_status_for_disposition(disposition: str | None) -> str:
+    disposition = str(disposition or "")
+    if disposition == "entrypoint_shell_equivalent_under_tests":
+        return "contract_curated"
+    if disposition in {"helper_equivalent_under_tests", "method_equivalent_under_tests"}:
+        return "behavior_curated"
+    if disposition in {"manual_merge_canonicalized", "canonical_duplicate_retired"}:
+        return "canonicalized_under_tests"
+    if disposition == "covered_by_manifest_semantic_review":
+        return "manifest_semantic_overlap"
+    if disposition in {
+        "equivalent_target_resolved_without_baseline_ancestor",
+        "equivalent_target_resolution_asymmetry",
+        "equivalent_whitespace_only",
+        "equivalent_comment_only",
+    }:
+        return "structural_equivalence_only"
+    return "unknown"
+
+
+def normalize_exception_file_paths(record: dict) -> tuple[list[str], list[str]]:
+    evidence = record.get("evidence") or {}
+    source_paths: list[str] = []
+    target_paths: list[str] = []
+    if record.get("audit_layer") == "manifest_fidelity":
+        if evidence.get("source_path"):
+            source_paths.append(str(evidence["source_path"]))
+        if evidence.get("target_path"):
+            target_paths.append(str(evidence["target_path"]))
+    elif record.get("audit_layer") == "surface_inventory":
+        nested = evidence.get("evidence") or {}
+        for key in ("baseline_file",):
+            if nested.get(key):
+                source_paths.append(str(nested[key]))
+        for key in ("target_file",):
+            if nested.get(key):
+                target_paths.append(str(nested[key]))
+        for key in ("baseline_files",):
+            source_paths.extend(str(value) for value in ensure_list(nested.get(key)) if value)
+        for key in ("target_files",):
+            target_paths.extend(str(value) for value in ensure_list(nested.get(key)) if value)
+    return sorted(set(source_paths)), sorted(set(target_paths))
+
+
+def infer_module_family(text: str) -> str | None:
+    lowered = text.lower()
+    for family in (
+        "import",
+        "norm",
+        "qc",
+        "summary",
+        "design_builder",
+        "design",
+        "da",
+        "enrich",
+        "annotation",
+        "rollup",
+        "plotting",
+        "filemgmt",
+    ):
+        family_token = family.replace("_", "")
+        if family_token in lowered.replace("_", ""):
+            return family
+    return None
+
+
+def infer_lineage_cluster_name(*values: str | None) -> str:
+    tokens: set[str] = set()
+    for value in values:
+        if value:
+            tokens.update(split_identifier_tokens(str(value)))
+
+    if not tokens:
+        return "misc"
+    if "observer" in tokens and "setup" in tokens:
+        return "observer_setup"
+    if "observer" in tokens and ("register" in tokens or "registration" in tokens):
+        return "observer_register"
+    if "observer" in tokens and tokens.intersection(
+        {"preflight", "handoff", "finalize", "failure", "completion", "working", "shell", "run"}
+    ):
+        return "observer_runtime"
+    if ("run" in tokens and "analysis" in tokens and "body" in tokens) or tokens.intersection(
+        {"error", "failure", "notify", "message", "report", "log"}
+    ):
+        return "observer_runtime"
+    if "renderer" in tokens or "render" in tokens:
+        return "output_renderer"
+    if ("output" in tokens or "results" in tokens or "summary" in tokens) and "setup" in tokens:
+        return "output_setup"
+    if ("output" in tokens or "results" in tokens or "summary" in tokens) and (
+        "register" in tokens or "registration" in tokens
+    ):
+        return "output_register"
+    if "formatter" in tokens or (
+        "text" in tokens and tokens.intersection({"status", "summary", "analysis", "contrast", "contrasts"})
+    ):
+        return "formatter"
+    if tokens.intersection({"download", "archive", "filename", "zip"}):
+        return "download_io"
+    if tokens.intersection(
+        {"builder", "preparer", "propagator", "payload", "capturer", "resolver", "persister", "finalizer", "completer", "updater"}
+    ):
+        return "builder_resolver"
+    if tokens.intersection({"reactive", "supported", "organisms", "analysis", "method", "taxon", "species", "contrast"}):
+        return "reactive_state"
+    if "setup" in tokens:
+        return "bootstrap_setup"
+    if tokens.intersection({"plot", "plotly"}):
+        return "plotting"
+    return "misc"
+
+
+def build_range_member(
+    *,
+    entity_key: str | None,
+    file_path: str | None,
+    line_start: int | None,
+    line_end: int | None,
+    side: str,
+    selector_kind: str | None = None,
+    comparison_status: str | None = None,
+) -> dict | None:
+    if not file_path:
+        return None
+    if line_start is None and line_end is None:
+        return None
+    return {
+        "entity_key": entity_key,
+        "file_path": str(file_path),
+        "line_start": line_start,
+        "line_end": line_end,
+        "metadata": {
+            "side": side,
+            "selector_kind": selector_kind,
+            "comparison_status": comparison_status,
+        },
+    }
+
+
+def append_unique_member(target: list[dict], member: dict | None) -> None:
+    if member is None:
+        return
+    signature = (
+        member.get("entity_key"),
+        member.get("file_path"),
+        member.get("line_start"),
+        member.get("line_end"),
+    )
+    for existing in target:
+        existing_signature = (
+            existing.get("entity_key"),
+            existing.get("file_path"),
+            existing.get("line_start"),
+            existing.get("line_end"),
+        )
+        if existing_signature == signature:
+            return
+    target.append(member)
+
+
+def build_manifest_selector_index(conn: sqlite3.Connection, run_ids: list[str]) -> dict[tuple[str, str, str], dict]:
+    if not run_ids:
+        return {}
+    rows = conn.execute(
+        f"""
+        SELECT
+            me.run_id,
+            me.manifest_path,
+            me.entry_id,
+            me.selector_kind,
+            me.selector_payload_json,
+            me.source_path,
+            me.target_path,
+            mc.status AS comparison_status,
+            mc.evidence_json
+        FROM manifest_entries me
+        LEFT JOIN manifest_comparisons mc
+          ON mc.manifest_entry_id = me.manifest_entry_id
+         AND mc.run_id = me.run_id
+        WHERE me.run_id IN ({", ".join("?" for _ in run_ids)})
+        """,
+        run_ids,
+    ).fetchall()
+    index: dict[tuple[str, str, str], dict] = {}
+    for row in rows:
+        selector_payload = parse_json_field(row["selector_payload_json"]) or {}
+        evidence = parse_json_field(row["evidence_json"]) or {}
+        surface_entity_key = selector_payload_to_surface_entity_key(str(row["selector_kind"]), selector_payload)
+        index[(str(row["run_id"]), str(row["manifest_path"]), str(row["entry_id"]))] = {
+            "selector_kind": str(row["selector_kind"]),
+            "selector_payload": selector_payload,
+            "surface_entity_key": surface_entity_key,
+            "source_path": str(row["source_path"]),
+            "target_path": row["target_path"],
+            "comparison_status": str(row["comparison_status"] or ""),
+            "source_start_line": coerce_int(evidence.get("source_start_line")),
+            "source_end_line": coerce_int(evidence.get("source_end_line")),
+            "target_start_line": coerce_int(evidence.get("target_start_line")),
+            "target_end_line": coerce_int(evidence.get("target_end_line")),
+        }
+    return index
+
+
+def build_contract_search_index(target_root: pathlib.Path) -> list[dict]:
+    records = []
+    for record in catalog_contract_files(target_root, None):
+        case_text = " ".join(
+            [
+                case["test_name"]
+                + " "
+                + str(case.get("entity_hint") or "")
+                + " "
+                + " ".join(case.get("scenario_tags", []))
+                for case in record["cases"]
+            ]
+        ).lower()
+        entity_hints = {
+            str(case.get("entity_hint"))
+            for case in record["cases"]
+            if case.get("entity_hint")
+        }
+        path_tokens = split_identifier_tokens(pathlib.Path(record["file_path"]).stem)
+        records.append(
+            {
+                "file_path": record["file_path"],
+                "family": record["family"],
+                "module_family": record["module_family"],
+                "surface": record["surface"],
+                "entity_hints": {hint.lower() for hint in entity_hints},
+                "search_text": case_text + " " + " ".join(path_tokens),
+            }
+        )
+    return records
+
+
+def gather_bundle_tokens(bundle: dict) -> set[str]:
+    tokens: set[str] = set()
+    for value in ensure_list(bundle.get("entity_tokens")):
+        if value:
+            tokens.add(str(value).lower())
+    for path_value in ensure_list(bundle.get("baseline_paths")) + ensure_list(bundle.get("target_paths")):
+        path_tokens = split_identifier_tokens(pathlib.Path(str(path_value)).stem)
+        tokens.update(token for token in path_tokens if len(token) >= 3)
+    return tokens
+
+
+def score_test_record_for_bundle(bundle: dict, test_record: dict) -> int:
+    score = 0
+    entity_name = str(bundle.get("entity_name") or "").lower()
+    primary_entity_key = str(bundle.get("primary_entity_key") or "").lower()
+    module_family = bundle.get("module_family")
+    bundle_type = str(bundle.get("bundle_type") or "")
+    tokens = gather_bundle_tokens(bundle)
+
+    if entity_name and entity_name.lower() in test_record["entity_hints"]:
+        score += 24
+    if primary_entity_key and primary_entity_key.lower() in test_record["search_text"]:
+        score += 12
+    for token in sorted(tokens):
+        if len(token) < 4:
+            continue
+        if token in test_record["entity_hints"]:
+            score += 10
+        elif token in test_record["search_text"]:
+            score += 4
+    if module_family and module_family == test_record["module_family"]:
+        score += 8
+    if bundle_type == "wrapper_entrypoint" and test_record["family"] == "module_contract":
+        score += 4
+    if bundle_type in {"helper_surface", "normalized_exact_surface"} and test_record["family"] in {"general_unit", "characterization"}:
+        score += 2
+    if bundle_type == "s4_method_surface" and test_record["family"] in {"characterization", "compat", "general_unit"}:
+        score += 2
+    return score
+
+
+def count_lines_if_exists(repo_root: pathlib.Path, file_path: str) -> int:
+    candidate = repo_root / file_path
+    if not candidate.exists():
+        return 0
+    try:
+        return len(candidate.read_text(encoding="utf-8").splitlines())
+    except OSError:
+        return 0
+
+
+def bundle_note_for_disposition(disposition: str | None) -> str:
+    return {
+        "equivalent_target_resolved_without_baseline_ancestor": "Grouped lineage family where manifest source ancestry no longer resolves directly, but extracted target helpers resolve cleanly.",
+        "equivalent_target_resolution_asymmetry": "Grouped exact-fidelity bundle that required fallback target resolution.",
+        "equivalent_whitespace_only": "Grouped normalized-only fidelity bundle with whitespace-only source drift.",
+        "equivalent_comment_only": "Grouped AST-only fidelity bundle with comment or roxygen drift.",
+        "covered_by_manifest_semantic_review": "Grouped redundant surface drift under the accepted manifest semantic bundle.",
+        "helper_equivalent_under_tests": "Grouped helper surface accepted as equivalent under direct tests.",
+        "method_equivalent_under_tests": "Grouped S4 method surface accepted as equivalent under direct tests.",
+        "entrypoint_shell_equivalent_under_tests": "Grouped wrapper entrypoint accepted as equivalent under contract tests.",
+        "canonical_duplicate_retired": "Grouped canonical duplicate retirement bundle.",
+        "manual_merge_canonicalized": "Grouped manual merge bundle that retains one canonical implementation.",
+    }.get(str(disposition or ""), "Grouped parity evidence bundle.")
+
+
+def build_bundle_groups(
+    *,
+    repo_root: pathlib.Path,
+    baseline_ref: str,
+    target_ref: str,
+    exception_records: list[dict],
+    manifest_selector_index: dict[tuple[str, str, str], dict],
+    contract_index: list[dict],
+) -> list[dict]:
+    groups: dict[str, dict] = {}
+    for record in exception_records:
+        disposition = str(record.get("disposition") or "")
+        source_paths, target_paths = normalize_exception_file_paths(record)
+        selector_surface_key = None
+        selector_meta = None
+        manifest_key = parse_manifest_exception_entity_key(str(record["entity_key"]))
+        if manifest_key is not None:
+            selector_meta = manifest_selector_index.get((str(record["run_id"]), manifest_key[0], manifest_key[1]))
+            if selector_meta is not None:
+                selector_surface_key = selector_meta.get("surface_entity_key")
+                if not source_paths and selector_meta.get("source_path"):
+                    source_paths = [str(selector_meta["source_path"])]
+                if not target_paths and selector_meta.get("target_path"):
+                    target_paths = [str(selector_meta["target_path"])]
+
+        canonical_entity_key = selector_surface_key or str(record["entity_key"])
+        bundle_type = bundle_type_from_disposition(disposition, selector_surface_key or canonical_entity_key)
+        if disposition == "equivalent_target_resolved_without_baseline_ancestor" and source_paths:
+            lineage_cluster = infer_lineage_cluster_name(
+                manifest_key[1] if manifest_key is not None else None,
+                selector_surface_key,
+                record.get("exception_key"),
+                record.get("entity_key"),
+            )
+            group_key = f"lineage::{source_paths[0]}::{lineage_cluster}"
+            primary_entity_key = f"lineage::{source_paths[0]}::{lineage_cluster}"
+        else:
+            group_key = f"surface::{canonical_entity_key}"
+            primary_entity_key = canonical_entity_key
+
+        bundle = groups.get(group_key)
+        if bundle is None:
+            bundle = {
+                "group_key": group_key,
+                "bundle_id": re.sub(r"[^A-Za-z0-9_.:-]+", "_", group_key),
+                "bundle_type": bundle_type,
+                "primary_entity_key": primary_entity_key,
+                "entity_name": extract_surface_entity_name(selector_surface_key or canonical_entity_key),
+                "baseline_ref": baseline_ref,
+                "target_ref": target_ref,
+                "baseline_paths": [],
+                "target_paths": [],
+                "linked_exception_keys": [],
+                "linked_exception_ids": [],
+                "linked_exceptions": [],
+                "entity_tokens": [],
+                "module_family": None,
+                "baseline_members": [],
+                "target_members": [],
+                "scenario_class": scenario_class_for_bundle_type(bundle_type),
+                "differential_replay_status": differential_replay_status_for_disposition(disposition),
+                "coverage_gate_status": "pending_coverage_capture",
+                "review_note": bundle_note_for_disposition(disposition),
+            }
+            groups[group_key] = bundle
+
+        bundle["baseline_paths"] = sorted(set(bundle["baseline_paths"]) | set(source_paths))
+        bundle["target_paths"] = sorted(set(bundle["target_paths"]) | set(target_paths))
+        bundle["linked_exception_keys"].append(str(record.get("exception_key") or ""))
+        bundle["linked_exception_ids"].append(str(record["exception_id"]))
+        bundle["linked_exceptions"].append(record)
+        if record.get("exception_key"):
+            bundle["entity_tokens"].extend(split_identifier_tokens(str(record["exception_key"])))
+        if primary_entity_key:
+            bundle["entity_tokens"].extend(split_identifier_tokens(primary_entity_key))
+        if not bundle.get("module_family"):
+            for candidate in [primary_entity_key, *source_paths, *target_paths]:
+                family = infer_module_family(str(candidate))
+                if family:
+                    bundle["module_family"] = family
+                    break
+        if selector_meta is not None:
+            append_unique_member(
+                bundle["baseline_members"],
+                build_range_member(
+                    entity_key=selector_surface_key or canonical_entity_key,
+                    file_path=selector_meta.get("source_path"),
+                    line_start=selector_meta.get("source_start_line"),
+                    line_end=selector_meta.get("source_end_line"),
+                    side="baseline",
+                    selector_kind=selector_meta.get("selector_kind"),
+                    comparison_status=selector_meta.get("comparison_status"),
+                ),
+            )
+            append_unique_member(
+                bundle["target_members"],
+                build_range_member(
+                    entity_key=selector_surface_key or canonical_entity_key,
+                    file_path=selector_meta.get("target_path"),
+                    line_start=selector_meta.get("target_start_line"),
+                    line_end=selector_meta.get("target_end_line"),
+                    side="target",
+                    selector_kind=selector_meta.get("selector_kind"),
+                    comparison_status=selector_meta.get("comparison_status"),
+                ),
+            )
+
+    bundles: list[dict] = []
+    for bundle in groups.values():
+        primary_path = (
+            (bundle["target_paths"][0] if bundle["target_paths"] else None)
+            or (bundle["baseline_paths"][0] if bundle["baseline_paths"] else None)
+        )
+        line_counts = [
+            count_lines_if_exists(repo_root, path_value)
+            for path_value in sorted(set(bundle["baseline_paths"] + bundle["target_paths"]))
+        ]
+        bundle["source_file_path"] = primary_path
+        bundle["linked_exception_count"] = len(bundle["linked_exceptions"])
+        dispositions = Counter(str(item.get("disposition") or "unset") for item in bundle["linked_exceptions"])
+        bundle["disposition_counts"] = dict(sorted(dispositions.items()))
+        dominant_disposition = dispositions.most_common(1)[0][0] if dispositions else "unset"
+        evidence_depth = DISPOSITION_EVIDENCE_DEPTH.get(dominant_disposition, "T2_structural")
+        bundle["evidence_depth"] = evidence_depth
+        bundle["evidence_depth_rank"] = EVIDENCE_DEPTH_PRIORITY.get(evidence_depth, 1)
+        bundle["max_file_lines"] = max(line_counts) if line_counts else 0
+        bundle["total_file_lines"] = sum(line_counts)
+        shared_tests: list[tuple[int, str]] = []
+        for test_record in contract_index:
+            score = score_test_record_for_bundle(bundle, test_record)
+            if score <= 0:
+                continue
+            shared_tests.append((score, test_record["file_path"]))
+        shared_tests.sort(key=lambda item: (-item[0], item[1]))
+        bundle["shared_test_files"] = [item[1] for item in shared_tests[:12]]
+        bundle["shared_test_file_count"] = len(bundle["shared_test_files"])
+        if not bundle["baseline_members"] and bundle["bundle_type"] != "lineage_family":
+            bundle["baseline_members"] = [
+                {
+                    "entity_key": bundle["primary_entity_key"],
+                    "file_path": path_value,
+                    "metadata": {"side": "baseline"},
+                }
+                for path_value in bundle["baseline_paths"]
+            ]
+        if not bundle["target_members"]:
+            bundle["target_members"] = [
+                {
+                    "entity_key": bundle["primary_entity_key"],
+                    "file_path": path_value,
+                    "metadata": {"side": "target"},
+                }
+                for path_value in bundle["target_paths"]
+            ]
+        bundle["members"] = (
+            list(bundle["target_members"])
+            or list(bundle["baseline_members"])
+        )
+        bundles.append(bundle)
+
+    bundles.sort(
+        key=lambda item: (
+            -item["linked_exception_count"],
+            -BUNDLE_TYPE_PRIORITY.get(item["bundle_type"], 0),
+            -item["max_file_lines"],
+            item["evidence_depth_rank"],
+            item["bundle_id"],
+        )
+    )
+    for index, bundle in enumerate(bundles, start=1):
+        bundle["priority_rank"] = index
+        bundle["priority_score"] = float(
+            item_score(bundle)
+        )
+    return bundles
+
+
+def item_score(bundle: dict) -> int:
+    return (
+        int(bundle.get("linked_exception_count") or 0) * 100000
+        + BUNDLE_TYPE_PRIORITY.get(str(bundle.get("bundle_type") or ""), 0) * 10000
+        + int(bundle.get("max_file_lines") or 0) * 10
+        + (10 - int(bundle.get("evidence_depth_rank") or 0))
+    )
+
+
+def build_priority_families(bundles: list[dict]) -> list[dict]:
+    families: dict[str, dict] = {}
+    for bundle in bundles:
+        family_path = (
+            (bundle["baseline_paths"][0] if bundle["baseline_paths"] else None)
+            or (bundle["target_paths"][0] if bundle["target_paths"] else None)
+            or str(bundle["bundle_id"])
+        )
+        record = families.setdefault(
+            family_path,
+            {
+                "family_path": family_path,
+                "bundle_count": 0,
+                "linked_exception_count": 0,
+                "max_file_lines": 0,
+                "bundle_ids": [],
+            },
+        )
+        record["bundle_count"] += 1
+        record["linked_exception_count"] += int(bundle.get("linked_exception_count") or 0)
+        record["max_file_lines"] = max(record["max_file_lines"], int(bundle.get("max_file_lines") or 0))
+        record["bundle_ids"].append(bundle["bundle_id"])
+    ranked = sorted(
+        families.values(),
+        key=lambda item: (
+            -item["linked_exception_count"],
+            -item["bundle_count"],
+            -item["max_file_lines"],
+            item["family_path"],
+        ),
+    )
+    for index, item in enumerate(ranked, start=1):
+        item["priority_rank"] = index
+    return ranked
+
+
+def insert_bundle_map_results(
+    conn: sqlite3.Connection,
+    *,
+    run_id: str,
+    bundles: list[dict],
+) -> None:
+    for bundle_index, bundle in enumerate(bundles, start=1):
+        coverage_bundle_id = f"{run_id}:bundle:{bundle_index}"
+        conn.execute(
+            """
+            INSERT INTO coverage_bundles (
+                coverage_bundle_id, run_id, bundle_id, bundle_type, source_file_path,
+                primary_entity_key, baseline_ref, target_ref, linked_exception_count,
+                scenario_class, differential_replay_status, coverage_gate_status,
+                review_note, priority_rank, priority_score, metadata_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                coverage_bundle_id,
+                run_id,
+                bundle["bundle_id"],
+                bundle["bundle_type"],
+                bundle.get("source_file_path"),
+                bundle.get("primary_entity_key"),
+                bundle.get("baseline_ref"),
+                bundle.get("target_ref"),
+                bundle.get("linked_exception_count"),
+                bundle.get("scenario_class"),
+                bundle.get("differential_replay_status"),
+                bundle.get("coverage_gate_status"),
+                bundle.get("review_note"),
+                bundle.get("priority_rank"),
+                bundle.get("priority_score"),
+                stable_json(
+                    {
+                        "baseline_paths": bundle.get("baseline_paths", []),
+                        "target_paths": bundle.get("target_paths", []),
+                        "linked_exception_keys": bundle.get("linked_exception_keys", []),
+                        "shared_test_files": bundle.get("shared_test_files", []),
+                        "evidence_depth": bundle.get("evidence_depth"),
+                        "disposition_counts": bundle.get("disposition_counts", {}),
+                        "max_file_lines": bundle.get("max_file_lines"),
+                        "total_file_lines": bundle.get("total_file_lines"),
+                    }
+                ),
+            ),
+        )
+        for member_index, member in enumerate(bundle.get("members", []), start=1):
+            conn.execute(
+                """
+                INSERT INTO coverage_bundle_members (
+                    coverage_bundle_member_id, run_id, coverage_bundle_id, entity_key,
+                    file_path, line_start, line_end, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{run_id}:bundle_member:{bundle_index}:{member_index}",
+                    run_id,
+                    coverage_bundle_id,
+                    member.get("entity_key"),
+                    member["file_path"],
+                    member.get("line_start"),
+                    member.get("line_end"),
+                    stable_json(member.get("metadata", {})),
+                ),
+            )
+        for link_index, test_file_path in enumerate(bundle.get("shared_test_files", []), start=1):
+            conn.execute(
+                """
+                INSERT INTO coverage_test_links (
+                    coverage_test_link_id, run_id, coverage_bundle_id, test_file_path, source, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{run_id}:bundle_test_link:{bundle_index}:{link_index}",
+                    run_id,
+                    coverage_bundle_id,
+                    test_file_path,
+                    "bundle_map_heuristic",
+                    stable_json({}),
+                ),
+            )
+        for link_index, exception_record in enumerate(bundle.get("linked_exceptions", []), start=1):
+            conn.execute(
+                """
+                INSERT INTO coverage_exception_links (
+                    coverage_exception_link_id, run_id, coverage_bundle_id, exception_id,
+                    exception_key, audit_layer, entity_key, curation_status, disposition, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{run_id}:bundle_exception_link:{bundle_index}:{link_index}",
+                    run_id,
+                    coverage_bundle_id,
+                    exception_record["exception_id"],
+                    exception_record.get("exception_key"),
+                    exception_record["audit_layer"],
+                    exception_record["entity_key"],
+                    exception_record["curation_status"],
+                    exception_record.get("disposition"),
+                    stable_json(
+                        {
+                            "severity": exception_record.get("severity"),
+                            "exception_type": exception_record.get("exception_type"),
+                            "reason": exception_record.get("reason"),
+                        }
+                    ),
+                ),
+            )
+
+
+def build_bundle_manifest(
+    *,
+    run_id: str,
+    repo_root: pathlib.Path,
+    closeout_summary: dict,
+    bundles: list[dict],
+    priority_families: list[dict],
+) -> dict:
+    return {
+        "run_id": run_id,
+        "mode": "bundle_map",
+        "repo_root": str(repo_root),
+        "status": "completed",
+        "closeout_run_id": closeout_summary["run_id"],
+        "baseline": closeout_summary["baseline"],
+        "target": closeout_summary["target"],
+        "bundle_count": len(bundles),
+        "linked_exception_count": sum(bundle["linked_exception_count"] for bundle in bundles),
+        "priority_family_count": len(priority_families),
+        "bundles": [
+            {
+                "bundle_id": bundle["bundle_id"],
+                "bundle_type": bundle["bundle_type"],
+                "primary_entity_key": bundle["primary_entity_key"],
+                "baseline_ref": bundle["baseline_ref"],
+                "target_ref": bundle["target_ref"],
+                "baseline_paths": bundle["baseline_paths"],
+                "target_paths": bundle["target_paths"],
+                "linked_exception_keys": bundle["linked_exception_keys"],
+                "shared_test_files": bundle["shared_test_files"],
+                "shared_test_file_count": bundle["shared_test_file_count"],
+                "scenario_class": bundle["scenario_class"],
+                "differential_replay_status": bundle["differential_replay_status"],
+                "coverage_gate_status": bundle["coverage_gate_status"],
+                "review_note": bundle["review_note"],
+                "priority_rank": bundle["priority_rank"],
+                "priority_score": bundle["priority_score"],
+                "linked_exception_count": bundle["linked_exception_count"],
+                "evidence_depth": bundle["evidence_depth"],
+                "source_file": bundle.get("source_file_path"),
+                "members": bundle["members"],
+                "baseline_members": bundle.get("baseline_members", []),
+                "target_members": bundle.get("target_members", []),
+            }
+            for bundle in bundles
+        ],
+        "priority_families": priority_families,
+    }
+
+
+def build_bundle_map_summary(
+    *,
+    run_id: str,
+    repo_root: pathlib.Path,
+    closeout_summary: dict,
+    bundle_manifest_path: str,
+    bundles: list[dict],
+    priority_families: list[dict],
+) -> dict:
+    disposition_counts: Counter[str] = Counter()
+    for bundle in bundles:
+        for disposition, count in (bundle.get("disposition_counts") or {}).items():
+            disposition_counts[str(disposition)] += int(count)
+    return {
+        "run_id": run_id,
+        "mode": "bundle_map",
+        "repo_root": str(repo_root),
+        "closeout_run_id": closeout_summary["run_id"],
+        "baseline": closeout_summary["baseline"],
+        "target": closeout_summary["target"],
+        "status": "completed",
+        "bundle_count": len(bundles),
+        "linked_exception_count": sum(bundle["linked_exception_count"] for bundle in bundles),
+        "priority_family_count": len(priority_families),
+        "bundle_manifest_path": bundle_manifest_path,
+        "bundle_type_counts": dict(sorted(Counter(bundle["bundle_type"] for bundle in bundles).items())),
+        "disposition_counts": dict(sorted(disposition_counts.items())),
+        "scenario_class_counts": dict(sorted(Counter(bundle["scenario_class"] for bundle in bundles).items())),
+        "evidence_depth_counts": dict(sorted(Counter(bundle["evidence_depth"] for bundle in bundles).items())),
+        "priority_bundles": [
+            {
+                "bundle_id": bundle["bundle_id"],
+                "bundle_type": bundle["bundle_type"],
+                "priority_rank": bundle["priority_rank"],
+                "linked_exception_count": bundle["linked_exception_count"],
+                "shared_test_file_count": bundle["shared_test_file_count"],
+                "source_file_path": bundle.get("source_file_path"),
+            }
+            for bundle in bundles[:25]
+        ],
+        "priority_families": priority_families[:25],
+    }
 
 
 def fetch_exception_records(
@@ -2926,6 +5824,29 @@ def materialize_exception_reports(
     return report
 
 
+def load_curation_catalog(repo_root: pathlib.Path) -> list[dict]:
+    entries: list[dict] = []
+    for catalog_path in list_curation_paths(repo_root):
+        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+        raw_curations = ensure_list(payload.get("curations"))
+        for index, record in enumerate(raw_curations, start=1):
+            exception_key = record.get("exception_key")
+            if not exception_key:
+                raise RuntimeError(f"Curation entry {index} in {catalog_path} is missing `exception_key`")
+            entries.append(
+                {
+                    "catalog_path": relative_label(catalog_path, repo_root),
+                    "catalog_id": record.get("id") or f"curation_{index}",
+                    "exception_key": str(exception_key),
+                    "curation_status": str(record.get("curation_status") or "accepted"),
+                    "disposition": record.get("disposition"),
+                    "owner": record.get("owner"),
+                    "review_note": record.get("review_note"),
+                }
+            )
+    return entries
+
+
 def update_exception_record(
     conn: sqlite3.Connection,
     *,
@@ -2970,7 +5891,7 @@ def update_exception_record(
             resolved_at,
             exception_id,
         ),
-    )
+        )
 
 
 def auto_curate_exceptions(
@@ -3001,6 +5922,167 @@ def auto_curate_exceptions(
                 "disposition": rule["disposition"],
             }
         )
+    return updates
+
+
+def selector_payload_to_surface_entity_key(selector_kind: str, payload: dict) -> str | None:
+    value = payload.get("value")
+    if selector_kind == "symbol" and value:
+        return f"symbol::{value}"
+    if selector_kind == "setMethod" and value and payload.get("signature"):
+        return f"setMethod::{value}::{payload['signature']}"
+    if selector_kind == "setClass" and value:
+        return f"setClass::{value}"
+    if selector_kind == "setGeneric" and value:
+        return f"setGeneric::{value}"
+    return None
+
+
+def manifest_semantic_overlap_targets(
+    conn: sqlite3.Connection,
+    *,
+    run_ids: list[str],
+    include_resolved_manifest: bool = False,
+) -> set[str]:
+    if not run_ids:
+        return set()
+
+    records = fetch_exception_records(
+        conn,
+        run_ids=run_ids,
+        open_only=not include_resolved_manifest,
+    )
+    manifest_candidates = [
+        record
+        for record in records
+        if record["exception_type"] == "semantic_mismatch"
+        and (
+            not include_resolved_manifest
+            or str(record.get("curation_status") or "") != "rejected"
+        )
+    ]
+    if not manifest_candidates:
+        return set()
+
+    entry_keys_by_run: dict[str, set[tuple[str, str]]] = defaultdict(set)
+    for record in manifest_candidates:
+        parsed = parse_manifest_exception_entity_key(str(record["entity_key"]))
+        if parsed is None:
+            continue
+        entry_keys_by_run[str(record["run_id"])].add(parsed)
+
+    if not entry_keys_by_run:
+        return set()
+
+    overlap_targets: set[str] = set()
+    for run_id, entry_keys in entry_keys_by_run.items():
+        rows = conn.execute(
+            """
+            SELECT manifest_path, entry_id, selector_kind, selector_payload_json
+            FROM manifest_entries
+            WHERE run_id = ?
+            """,
+            (run_id,),
+        ).fetchall()
+        for row in rows:
+            key = (str(row["manifest_path"]), str(row["entry_id"]))
+            if key not in entry_keys:
+                continue
+            payload = parse_json_field(row["selector_payload_json"]) or {}
+            surface_key = selector_payload_to_surface_entity_key(str(row["selector_kind"]), payload)
+            if surface_key:
+                overlap_targets.add(surface_key)
+    return overlap_targets
+
+
+def auto_curate_redundant_surface_manifest_overlaps(
+    conn: sqlite3.Connection,
+    *,
+    run_ids: list[str],
+    include_resolved_manifest: bool = False,
+) -> list[dict]:
+    overlap_targets = manifest_semantic_overlap_targets(
+        conn,
+        run_ids=run_ids,
+        include_resolved_manifest=include_resolved_manifest,
+    )
+    if not overlap_targets:
+        return []
+
+    surface_records = [
+        record
+        for record in fetch_exception_records(
+            conn,
+            run_ids=run_ids,
+            curation_statuses=["candidate"],
+        )
+        if record["exception_type"] == "surface_definition_drift"
+        and record["entity_key"] in overlap_targets
+    ]
+
+    updates: list[dict] = []
+    for record in surface_records:
+        update_exception_record(
+            conn,
+            exception_id=str(record["exception_id"]),
+            curation_status=REDUNDANT_SURFACE_MANIFEST_RULE["curation_status"],
+            disposition=REDUNDANT_SURFACE_MANIFEST_RULE["disposition"],
+            review_note=REDUNDANT_SURFACE_MANIFEST_RULE["note"],
+            curation_rule=REDUNDANT_SURFACE_MANIFEST_RULE["rule_name"],
+        )
+        updates.append(
+            {
+                "exception_id": record["exception_id"],
+                "exception_key": record.get("exception_key"),
+                "rule_name": REDUNDANT_SURFACE_MANIFEST_RULE["rule_name"],
+                "curation_status": REDUNDANT_SURFACE_MANIFEST_RULE["curation_status"],
+                "disposition": REDUNDANT_SURFACE_MANIFEST_RULE["disposition"],
+            }
+        )
+    return updates
+
+
+def apply_curation_catalog(
+    conn: sqlite3.Connection,
+    *,
+    repo_root: pathlib.Path,
+    run_ids: list[str],
+) -> list[dict]:
+    catalog_entries = load_curation_catalog(repo_root)
+    if not catalog_entries:
+        return []
+
+    open_records = fetch_exception_records(conn, run_ids=run_ids, open_only=True)
+    records_by_key: dict[str, list[dict]] = defaultdict(list)
+    for record in open_records:
+        if record.get("exception_key"):
+            records_by_key[str(record["exception_key"])].append(record)
+
+    updates: list[dict] = []
+    for entry in catalog_entries:
+        matching_records = records_by_key.get(entry["exception_key"], [])
+        if not matching_records:
+            continue
+        curation_rule = f"catalog:{entry['catalog_path']}:{entry['catalog_id']}"
+        for record in matching_records:
+            update_exception_record(
+                conn,
+                exception_id=str(record["exception_id"]),
+                curation_status=str(entry["curation_status"]),
+                disposition=entry.get("disposition"),
+                owner=entry.get("owner"),
+                review_note=entry.get("review_note"),
+                curation_rule=curation_rule,
+            )
+            updates.append(
+                {
+                    "exception_id": record["exception_id"],
+                    "exception_key": record.get("exception_key"),
+                    "curation_rule": curation_rule,
+                    "curation_status": entry["curation_status"],
+                    "disposition": entry.get("disposition"),
+                }
+            )
     return updates
 
 
@@ -3683,6 +6765,592 @@ def contracts_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def coverage_command(args: argparse.Namespace) -> int:
+    repo_root = pathlib.Path(args.repo_root).resolve()
+    paths = bootstrap_store(repo_root, args.audit_dir, emit_event=False)
+    run_id = args.run_id or f"coverage-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
+
+    side = args.side
+    default_ref = "main" if side == "baseline" else "WORKTREE"
+    source = resolve_side_source(
+        repo_root,
+        side=side,
+        ref=args.source_ref,
+        path=args.source_path,
+        default_ref=default_ref,
+        allow_worktree=True,
+        archive_paths=None,
+    )
+
+    bundle_manifest_path, bundles = load_coverage_bundle_manifest(repo_root, args.bundle_manifest)
+    bundles = select_coverage_bundles(
+        bundles,
+        bundle_ids=ensure_list(getattr(args, "bundle_id", None)),
+        limit=getattr(args, "limit", None),
+    )
+    explicit_test_files = dedupe_paths(ensure_list(args.test_file))
+    bundle_test_files = [] if getattr(args, "explicit_tests_only", False) else collect_bundle_test_files(bundles)
+    requested_test_files = dedupe_paths(explicit_test_files + bundle_test_files)
+
+    append_jsonl(
+        paths["events_path"],
+        {
+            "timestamp": now_iso(),
+            "phase": "coverage",
+            "status": "started",
+            "run_id": run_id,
+            "repo_root": str(repo_root),
+            "side": side,
+            "source": source["label"],
+            "bundle_manifest_path": bundle_manifest_path,
+            "requested_test_file_count": len(requested_test_files),
+            "bundle_count": len(bundles),
+        },
+    )
+
+    workspace = None
+    try:
+        test_source_root = repo_root if any(bundle.get("shared_test_files") for bundle in bundles) else source["path"]
+        active_root = source["path"]
+        if test_source_root != source["path"]:
+            workspace = materialize_coverage_workspace(
+                source["path"],
+                test_source_root=test_source_root,
+            )
+            active_root = pathlib.Path(workspace.name)
+
+        test_paths = list_test_file_paths(active_root, requested_test_files or None)
+        if not test_paths:
+            raise RuntimeError("No testthat files found for coverage capture")
+        selected_test_files = [relative_label(test_path, active_root) for test_path in test_paths]
+        explicit_test_paths = (
+            list_test_file_paths(active_root, explicit_test_files)
+            if explicit_test_files
+            else []
+        )
+        command_test_files = [relative_label(test_path, active_root) for test_path in explicit_test_paths]
+        library_paths = dedupe_paths(
+            discover_project_library_paths(repo_root) +
+            discover_project_library_paths(source["path"])
+        )
+        coverage_payload = run_coverage_capture(
+            active_root,
+            test_files=test_paths,
+            library_paths=library_paths,
+        )
+        bundle_results = build_coverage_bundle_results(
+            prepare_coverage_bundles_for_side(bundles, side),
+            coverage_payload["files"],
+        )
+    finally:
+        if workspace is not None:
+            workspace.cleanup()
+        source["cleanup"]()
+
+    conn = connect_db(paths["db_path"])
+    try:
+        insert_audit_run(
+            conn,
+            run_id=run_id,
+            repo_root=repo_root,
+            baseline_ref=source["label"] if side == "baseline" else None,
+            target_ref=source["label"] if side == "target" else None,
+            mode="coverage",
+            status="running",
+            summary={
+                "run_id": run_id,
+                "mode": "coverage",
+                "repo_root": str(repo_root),
+                "status": "running",
+            },
+        )
+        insert_coverage_results(
+            conn,
+            run_id=run_id,
+            side=side,
+            scope=side,
+            source_label=source["label"],
+            bundle_manifest_path=bundle_manifest_path,
+            coverage_payload=coverage_payload,
+            bundles=prepare_coverage_bundles_for_side(bundles, side),
+            bundle_results=bundle_results,
+            selected_test_files=selected_test_files,
+            command_test_files=command_test_files,
+        )
+        summary = build_coverage_summary(
+            run_id=run_id,
+            repo_root=repo_root,
+            side=side,
+            source_label=source["label"],
+            bundle_manifest_path=bundle_manifest_path,
+            selected_test_files=selected_test_files,
+            coverage_payload=coverage_payload,
+            bundle_results=bundle_results,
+        )
+        update_audit_run(conn, run_id=run_id, status=summary["status"], summary=summary)
+        conn.commit()
+        materialize_exception_reports(conn, repo_root=repo_root, paths=paths)
+    finally:
+        conn.close()
+
+    write_json(paths["summary_json"], summary)
+    write_text(paths["summary_md"], render_coverage_summary_markdown(summary))
+    write_json(paths["coverage_json"], summary)
+    write_text(paths["coverage_md"], render_coverage_summary_markdown(summary))
+    append_jsonl(
+        paths["events_path"],
+        {
+            "timestamp": now_iso(),
+            "phase": "coverage",
+            "status": summary["status"],
+            "run_id": run_id,
+            "side": side,
+            "source": summary["source"],
+            "tool_status": summary["tool_status"],
+            "test_file_count": summary["test_file_count"],
+            "bundle_count": summary["bundle_count"],
+            "file_count": summary["file_count"],
+            "line_percent": summary["line_percent"],
+        },
+    )
+    print(json.dumps(summary))
+    return 0
+
+
+def coverage_compare_command(args: argparse.Namespace) -> int:
+    repo_root = pathlib.Path(args.repo_root).resolve()
+    paths = bootstrap_store(repo_root, args.audit_dir, emit_event=False)
+    run_id = args.run_id or f"coverage-compare-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
+
+    baseline_source = resolve_side_source(
+        repo_root,
+        side="baseline",
+        ref=args.baseline_ref,
+        path=args.baseline_path,
+        default_ref="main",
+        allow_worktree=True,
+        archive_paths=None,
+    )
+    target_source = resolve_side_source(
+        repo_root,
+        side="target",
+        ref=args.target_ref,
+        path=args.target_path,
+        default_ref="WORKTREE",
+        allow_worktree=True,
+        archive_paths=None,
+    )
+
+    bundle_manifest_path, bundles = load_coverage_bundle_manifest(repo_root, args.bundle_manifest)
+    bundles = select_coverage_bundles(
+        bundles,
+        bundle_ids=ensure_list(args.bundle_id),
+        limit=args.limit,
+    )
+    explicit_test_files = dedupe_paths(ensure_list(args.test_file))
+    bundle_test_files = [] if getattr(args, "explicit_tests_only", False) else collect_bundle_test_files(bundles)
+    requested_test_files = dedupe_paths(explicit_test_files + bundle_test_files)
+
+    append_jsonl(
+        paths["events_path"],
+        {
+            "timestamp": now_iso(),
+            "phase": "coverage_compare",
+            "status": "started",
+            "run_id": run_id,
+            "repo_root": str(repo_root),
+            "baseline": baseline_source["label"],
+            "target": target_source["label"],
+            "bundle_manifest_path": bundle_manifest_path,
+            "requested_test_file_count": len(requested_test_files),
+            "bundle_count": len(bundles),
+        },
+    )
+
+    baseline_workspace = None
+    target_workspace = None
+    try:
+        target_workspace = materialize_coverage_workspace(
+            target_source["path"],
+            test_source_root=target_source["path"],
+        )
+        baseline_workspace = materialize_coverage_workspace(
+            baseline_source["path"],
+            test_source_root=target_source["path"],
+        )
+        target_workspace_root = pathlib.Path(target_workspace.name)
+        baseline_workspace_root = pathlib.Path(baseline_workspace.name)
+
+        target_test_paths = list_test_file_paths(target_workspace_root, requested_test_files or None)
+        if not target_test_paths:
+            raise RuntimeError("No testthat files found for comparative coverage capture")
+        baseline_test_paths = list_test_file_paths(baseline_workspace_root, requested_test_files or None)
+        if not baseline_test_paths:
+            raise RuntimeError("No baseline testthat files found for comparative coverage capture")
+
+        selected_test_files = [relative_label(test_path, target_workspace_root) for test_path in target_test_paths]
+        explicit_target_test_paths = (
+            list_test_file_paths(target_workspace_root, explicit_test_files)
+            if explicit_test_files
+            else []
+        )
+        command_test_files = [
+            relative_label(test_path, target_workspace_root)
+            for test_path in explicit_target_test_paths
+        ]
+        library_paths = dedupe_paths(
+            discover_project_library_paths(repo_root) +
+            discover_project_library_paths(baseline_source["path"]) +
+            discover_project_library_paths(target_source["path"])
+        )
+        baseline_env_overrides = {}
+        target_env_overrides = {}
+        baseline_fixture = os.getenv("FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_BASELINE", "")
+        target_fixture = os.getenv("FIDELITY_COVERAGE_COMPARE_FIXTURE_JSON_TARGET", "")
+        if baseline_fixture:
+            baseline_env_overrides["FIDELITY_COVERAGE_FIXTURE_JSON"] = baseline_fixture
+        if target_fixture:
+            target_env_overrides["FIDELITY_COVERAGE_FIXTURE_JSON"] = target_fixture
+
+        baseline_payload = run_coverage_capture(
+            baseline_workspace_root,
+            test_files=baseline_test_paths,
+            library_paths=library_paths,
+            env_overrides=baseline_env_overrides or None,
+        )
+        target_payload = run_coverage_capture(
+            target_workspace_root,
+            test_files=target_test_paths,
+            library_paths=library_paths,
+            env_overrides=target_env_overrides or None,
+        )
+
+        baseline_bundles = prepare_coverage_bundles_for_side(bundles, "baseline")
+        target_bundles = prepare_coverage_bundles_for_side(bundles, "target")
+        baseline_bundle_results = build_coverage_bundle_results(baseline_bundles, baseline_payload["files"])
+        target_bundle_results = build_coverage_bundle_results(target_bundles, target_payload["files"])
+        compare_bundle_results = build_coverage_compare_bundle_results(
+            bundles,
+            baseline_bundle_results=baseline_bundle_results,
+            target_bundle_results=target_bundle_results,
+            baseline_capture_status=baseline_payload["status"],
+            target_capture_status=target_payload["status"],
+        )
+    finally:
+        if baseline_workspace is not None:
+            baseline_workspace.cleanup()
+        if target_workspace is not None:
+            target_workspace.cleanup()
+        baseline_source["cleanup"]()
+        target_source["cleanup"]()
+
+    conn = connect_db(paths["db_path"])
+    try:
+        insert_audit_run(
+            conn,
+            run_id=run_id,
+            repo_root=repo_root,
+            baseline_ref=baseline_source["label"],
+            target_ref=target_source["label"],
+            mode="coverage_compare",
+            status="running",
+            summary={
+                "run_id": run_id,
+                "mode": "coverage_compare",
+                "repo_root": str(repo_root),
+                "status": "running",
+            },
+        )
+        insert_coverage_results(
+            conn,
+            run_id=run_id,
+            side="baseline",
+            scope="baseline",
+            source_label=baseline_source["label"],
+            bundle_manifest_path=bundle_manifest_path,
+            coverage_payload=baseline_payload,
+            bundles=baseline_bundles,
+            bundle_results=baseline_bundle_results,
+            selected_test_files=selected_test_files,
+            command_test_files=command_test_files,
+        )
+        insert_coverage_results(
+            conn,
+            run_id=run_id,
+            side="target",
+            scope="target",
+            source_label=target_source["label"],
+            bundle_manifest_path=bundle_manifest_path,
+            coverage_payload=target_payload,
+            bundles=target_bundles,
+            bundle_results=target_bundle_results,
+            selected_test_files=selected_test_files,
+            command_test_files=command_test_files,
+        )
+        insert_coverage_compare_results(
+            conn,
+            run_id=run_id,
+            bundles=bundles,
+            compare_bundle_results=compare_bundle_results,
+        )
+        summary = build_coverage_compare_summary(
+            run_id=run_id,
+            repo_root=repo_root,
+            baseline_source_label=baseline_source["label"],
+            target_source_label=target_source["label"],
+            test_source_label=target_source["label"],
+            bundle_manifest_path=bundle_manifest_path,
+            selected_test_files=selected_test_files,
+            baseline_payload=baseline_payload,
+            target_payload=target_payload,
+            compare_bundle_results=compare_bundle_results,
+        )
+        update_audit_run(conn, run_id=run_id, status=summary["status"], summary=summary)
+        conn.commit()
+        materialize_exception_reports(conn, repo_root=repo_root, paths=paths)
+    finally:
+        conn.close()
+
+    write_json(paths["summary_json"], summary)
+    write_text(paths["summary_md"], render_coverage_compare_summary_markdown(summary))
+    write_json(paths["coverage_compare_json"], summary)
+    write_text(paths["coverage_compare_md"], render_coverage_compare_summary_markdown(summary))
+    append_jsonl(
+        paths["events_path"],
+        {
+            "timestamp": now_iso(),
+            "phase": "coverage_compare",
+            "status": summary["status"],
+            "run_id": run_id,
+            "baseline": baseline_source["label"],
+            "target": target_source["label"],
+            "test_file_count": summary["test_file_count"],
+            "bundle_count": summary["bundle_count"],
+            "baseline_line_percent": summary["baseline"]["line_percent"],
+            "target_line_percent": summary["target"]["line_percent"],
+        },
+    )
+    print(json.dumps(summary))
+    return 0
+
+
+def coverage_evidence_command(args: argparse.Namespace) -> int:
+    repo_root = pathlib.Path(args.repo_root).resolve()
+    paths = bootstrap_store(repo_root, args.audit_dir, emit_event=False)
+    run_id = args.run_id or f"coverage-evidence-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
+
+    bundle_manifest_arg = args.bundle_manifest or relative_label(paths["bundles_json"], repo_root)
+    bundle_manifest_path, bundles = load_coverage_bundle_manifest(repo_root, bundle_manifest_arg)
+    manifest_bundle_count = len(bundles)
+    bundles = select_coverage_bundles(
+        bundles,
+        bundle_ids=ensure_list(args.bundle_id),
+        limit=args.limit,
+    )
+    package_gate_applies = len(bundles) == manifest_bundle_count
+    coverage_compare_summary = load_coverage_compare_summary(
+        repo_root,
+        coverage_compare_run_id=args.coverage_compare_run_id,
+        audit_dir=args.audit_dir,
+        compare_path=args.coverage_compare_path,
+    )
+    acceptance_policy = load_coverage_acceptance_policy(repo_root)
+    evaluated_bundles = build_coverage_evidence_bundles(
+        bundles,
+        coverage_compare_summary=coverage_compare_summary,
+        acceptance_policy=acceptance_policy,
+    )
+
+    compare_target_status = str((coverage_compare_summary.get("target") or {}).get("status") or "missing")
+    exceptions: list[dict] = []
+    if compare_target_status == "completed":
+        for bundle in evaluated_bundles:
+            record = build_coverage_evidence_exception(run_id, bundle)
+            if record is not None:
+                exceptions.append(record)
+        package_record = build_package_coverage_exception(
+            run_id,
+            baseline_ref=(coverage_compare_summary.get("baseline") or {}).get("source"),
+            target_ref=(coverage_compare_summary.get("target") or {}).get("source"),
+            target_line_percent=coerce_float((coverage_compare_summary.get("target") or {}).get("line_percent")),
+            threshold_pct=float(acceptance_policy["package_line_coverage_target_pct"]),
+            enforce_gate=package_gate_applies,
+        )
+        if package_record is not None:
+            exceptions.append(package_record)
+
+    append_jsonl(
+        paths["events_path"],
+        {
+            "timestamp": now_iso(),
+            "phase": "coverage_evidence",
+            "status": "started",
+            "run_id": run_id,
+            "repo_root": str(repo_root),
+            "bundle_manifest_path": bundle_manifest_path,
+            "coverage_compare_run_id": coverage_compare_summary.get("run_id"),
+            "bundle_count": len(evaluated_bundles),
+        },
+    )
+
+    conn = connect_db(paths["db_path"])
+    try:
+        insert_audit_run(
+            conn,
+            run_id=run_id,
+            repo_root=repo_root,
+            baseline_ref=(coverage_compare_summary.get("baseline") or {}).get("source"),
+            target_ref=(coverage_compare_summary.get("target") or {}).get("source"),
+            mode="coverage_evidence",
+            status="running",
+            summary={
+                "run_id": run_id,
+                "mode": "coverage_evidence",
+                "repo_root": str(repo_root),
+                "status": "running",
+            },
+        )
+        insert_coverage_evidence_results(
+            conn,
+            run_id=run_id,
+            bundles=evaluated_bundles,
+            exceptions=exceptions,
+        )
+        summary = build_coverage_evidence_summary(
+            run_id=run_id,
+            repo_root=repo_root,
+            bundle_manifest_path=bundle_manifest_path,
+            coverage_compare_summary=coverage_compare_summary,
+            acceptance_policy=acceptance_policy,
+            evaluated_bundles=evaluated_bundles,
+            exceptions=exceptions,
+            package_gate_applies=package_gate_applies,
+        )
+        update_audit_run(conn, run_id=run_id, status=summary["status"], summary=summary)
+        conn.commit()
+        materialize_exception_reports(conn, repo_root=repo_root, paths=paths)
+    finally:
+        conn.close()
+
+    write_json(paths["summary_json"], summary)
+    write_text(paths["summary_md"], render_coverage_evidence_markdown(summary))
+    write_json(paths["coverage_evidence_json"], summary)
+    write_text(paths["coverage_evidence_md"], render_coverage_evidence_markdown(summary))
+    append_jsonl(
+        paths["events_path"],
+        {
+            "timestamp": now_iso(),
+            "phase": "coverage_evidence",
+            "status": summary["status"],
+            "run_id": run_id,
+            "bundle_count": summary["bundle_count"],
+            "low_coverage_bundle_count": summary["low_coverage_bundle_count"],
+            "regression_bundle_count": summary["regression_bundle_count"],
+            "exception_count": summary["exception_count"],
+        },
+    )
+    print(json.dumps(summary))
+    return 0
+
+
+def bundle_map_command(args: argparse.Namespace) -> int:
+    repo_root = pathlib.Path(args.repo_root).resolve()
+    paths = bootstrap_store(repo_root, args.audit_dir, emit_event=False)
+    run_id = args.run_id or f"bundle-map-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
+    closeout_summary = load_closeout_summary(repo_root, args.closeout_run_id, audit_dir=args.audit_dir)
+    component_run_ids = sorted(set(closeout_summary.get("component_runs", {}).values()))
+    if not component_run_ids:
+        raise RuntimeError("Closeout summary does not contain component runs")
+
+    append_jsonl(
+        paths["events_path"],
+        {
+            "timestamp": now_iso(),
+            "phase": "bundle_map",
+            "status": "started",
+            "run_id": run_id,
+            "repo_root": str(repo_root),
+            "closeout_run_id": closeout_summary["run_id"],
+            "component_run_count": len(component_run_ids),
+        },
+    )
+
+    conn = connect_db(paths["db_path"])
+    try:
+        manifest_selector_index = build_manifest_selector_index(conn, component_run_ids)
+        exception_records = fetch_exception_records(
+            conn,
+            run_ids=component_run_ids,
+            curation_statuses=["auto_curated", "accepted"],
+        )
+        contract_index = build_contract_search_index(repo_root)
+        bundles = build_bundle_groups(
+            repo_root=repo_root,
+            baseline_ref=str(closeout_summary["baseline"]),
+            target_ref=str(closeout_summary["target"]),
+            exception_records=exception_records,
+            manifest_selector_index=manifest_selector_index,
+            contract_index=contract_index,
+        )
+        priority_families = build_priority_families(bundles)
+        bundle_manifest_path = relative_label(paths["bundles_json"], repo_root)
+        bundle_manifest = build_bundle_manifest(
+            run_id=run_id,
+            repo_root=repo_root,
+            closeout_summary=closeout_summary,
+            bundles=bundles,
+            priority_families=priority_families,
+        )
+        summary = build_bundle_map_summary(
+            run_id=run_id,
+            repo_root=repo_root,
+            closeout_summary=closeout_summary,
+            bundle_manifest_path=bundle_manifest_path,
+            bundles=bundles,
+            priority_families=priority_families,
+        )
+        insert_audit_run(
+            conn,
+            run_id=run_id,
+            repo_root=repo_root,
+            baseline_ref=str(closeout_summary["baseline"]),
+            target_ref=str(closeout_summary["target"]),
+            mode="bundle_map",
+            status="running",
+            summary={
+                "run_id": run_id,
+                "mode": "bundle_map",
+                "repo_root": str(repo_root),
+                "status": "running",
+            },
+        )
+        insert_bundle_map_results(conn, run_id=run_id, bundles=bundles)
+        update_audit_run(conn, run_id=run_id, status=summary["status"], summary=summary)
+        conn.commit()
+    finally:
+        conn.close()
+
+    write_json(paths["summary_json"], summary)
+    write_text(paths["summary_md"], render_bundle_map_summary_markdown(summary))
+    write_json(paths["bundles_json"], bundle_manifest)
+    write_text(paths["bundles_md"], render_bundle_map_summary_markdown(summary))
+    append_jsonl(
+        paths["events_path"],
+        {
+            "timestamp": now_iso(),
+            "phase": "bundle_map",
+            "status": summary["status"],
+            "run_id": run_id,
+            "closeout_run_id": closeout_summary["run_id"],
+            "bundle_count": summary["bundle_count"],
+            "linked_exception_count": summary["linked_exception_count"],
+            "priority_family_count": summary["priority_family_count"],
+        },
+    )
+    print(json.dumps(summary))
+    return 0
+
+
 def exceptions_command(args: argparse.Namespace) -> int:
     repo_root = pathlib.Path(args.repo_root).resolve()
     paths = bootstrap_store(repo_root, args.audit_dir, emit_event=False)
@@ -3930,6 +7598,21 @@ def closeout_command(args: argparse.Namespace) -> int:
         auto_curated_updates: list[dict] = []
         for component_run_id in component_run_ids:
             auto_curated_updates.extend(auto_curate_exceptions(conn, run_id=component_run_id))
+        auto_curated_updates.extend(
+            auto_curate_redundant_surface_manifest_overlaps(conn, run_ids=component_run_ids)
+        )
+        catalog_curation_updates = apply_curation_catalog(
+            conn,
+            repo_root=repo_root,
+            run_ids=component_run_ids,
+        )
+        auto_curated_updates.extend(
+            auto_curate_redundant_surface_manifest_overlaps(
+                conn,
+                run_ids=component_run_ids,
+                include_resolved_manifest=True,
+            )
+        )
         conn.commit()
 
         full_exception_report = build_exception_report(
@@ -3990,6 +7673,7 @@ def closeout_command(args: argparse.Namespace) -> int:
             pinned_baseline_explicit=baseline_explicit,
             contracts_executed=bool(args.contracts_execute),
         )
+        closeout_summary["catalog_curated_count"] = len(catalog_curation_updates)
         update_audit_run(conn, run_id=run_id, status=closeout_summary["status"], summary=closeout_summary)
         conn.commit()
     finally:
@@ -4066,6 +7750,53 @@ def build_parser() -> argparse.ArgumentParser:
     behavior_parser.add_argument("--case-path", action="append")
     behavior_parser.add_argument("--run-id")
     behavior_parser.set_defaults(func=behavior_command)
+
+    coverage_parser = subparsers.add_parser("coverage", help="Capture line coverage for a source tree and optional bundle manifest")
+    coverage_parser.add_argument("--repo-root", default=".")
+    coverage_parser.add_argument("--audit-dir", default=DEFAULT_AUDIT_DIR)
+    coverage_parser.add_argument("--side", default="target", choices=["baseline", "target"])
+    coverage_parser.add_argument("--source-ref")
+    coverage_parser.add_argument("--source-path")
+    coverage_parser.add_argument("--test-file", action="append")
+    coverage_parser.add_argument("--explicit-tests-only", action="store_true")
+    coverage_parser.add_argument("--bundle-manifest")
+    coverage_parser.add_argument("--bundle-id", action="append")
+    coverage_parser.add_argument("--limit", type=int)
+    coverage_parser.add_argument("--run-id")
+    coverage_parser.set_defaults(func=coverage_command)
+
+    coverage_compare_parser = subparsers.add_parser("coverage-compare", help="Capture comparative bundle coverage against baseline and target using the same test subset")
+    coverage_compare_parser.add_argument("--repo-root", default=".")
+    coverage_compare_parser.add_argument("--audit-dir", default=DEFAULT_AUDIT_DIR)
+    coverage_compare_parser.add_argument("--baseline-ref")
+    coverage_compare_parser.add_argument("--baseline-path")
+    coverage_compare_parser.add_argument("--target-ref")
+    coverage_compare_parser.add_argument("--target-path")
+    coverage_compare_parser.add_argument("--test-file", action="append")
+    coverage_compare_parser.add_argument("--explicit-tests-only", action="store_true")
+    coverage_compare_parser.add_argument("--bundle-manifest")
+    coverage_compare_parser.add_argument("--bundle-id", action="append")
+    coverage_compare_parser.add_argument("--limit", type=int)
+    coverage_compare_parser.add_argument("--run-id")
+    coverage_compare_parser.set_defaults(func=coverage_compare_command)
+
+    coverage_evidence_parser = subparsers.add_parser("coverage-evidence", help="Materialize bundle coverage evidence, deltas, and low-coverage exceptions")
+    coverage_evidence_parser.add_argument("--repo-root", default=".")
+    coverage_evidence_parser.add_argument("--audit-dir", default=DEFAULT_AUDIT_DIR)
+    coverage_evidence_parser.add_argument("--bundle-manifest")
+    coverage_evidence_parser.add_argument("--coverage-compare-run-id")
+    coverage_evidence_parser.add_argument("--coverage-compare-path")
+    coverage_evidence_parser.add_argument("--bundle-id", action="append")
+    coverage_evidence_parser.add_argument("--limit", type=int)
+    coverage_evidence_parser.add_argument("--run-id")
+    coverage_evidence_parser.set_defaults(func=coverage_evidence_command)
+
+    bundle_map_parser = subparsers.add_parser("bundle-map", help="Map curated parity evidence onto stable coverage bundles")
+    bundle_map_parser.add_argument("--repo-root", default=".")
+    bundle_map_parser.add_argument("--audit-dir", default=DEFAULT_AUDIT_DIR)
+    bundle_map_parser.add_argument("--closeout-run-id")
+    bundle_map_parser.add_argument("--run-id")
+    bundle_map_parser.set_defaults(func=bundle_map_command)
 
     contracts_parser = subparsers.add_parser("contracts", help="Catalog and optionally execute testthat contract families")
     contracts_parser.add_argument("--repo-root", default=".")

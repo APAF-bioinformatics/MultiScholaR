@@ -18,6 +18,14 @@ read_manifest <- function(path) {
   normalize_manifest(yaml::read_yaml(path))
 }
 
+selector_for_context <- function(entry, context = c("source", "target")) {
+  context <- match.arg(context)
+  if (identical(context, "target") && !is.null(entry$target_selector)) {
+    return(entry$target_selector)
+  }
+  entry$selector
+}
+
 find_leading_comment_start <- function(lines, expr_line1) {
   i <- expr_line1 - 1L
   if (i < 1L) {
@@ -142,29 +150,62 @@ resolve_anchor_range <- function(entry, selector, lines) {
 
 resolve_entry <- function(entry, repo_root, cache) {
   source_path <- file.path(repo_root, entry$source)
-  if (!file.exists(source_path)) {
-    abort("Source file does not exist: ", entry$source)
-  }
+  local_error <- NULL
+  selector <- selector_for_context(entry, "source")
+  if (file.exists(source_path)) {
+    if (is.null(cache[[entry$source]])) {
+      cache[[entry$source]] <- list(
+        lines = read_source_lines(source_path),
+        inventory = build_inventory(source_path)
+      )
+    }
 
-  if (is.null(cache[[entry$source]])) {
-    cache[[entry$source]] <- list(
-      lines = read_source_lines(source_path),
-      inventory = build_inventory(source_path)
+    if (is.null(selector$kind)) {
+      abort("Entry is missing selector.kind: ", entry$id)
+    }
+
+    local_result <- tryCatch(
+      {
+        if (identical(selector$kind, "anchor_range")) {
+          resolve_anchor_range(entry, selector, cache[[entry$source]]$lines)
+        } else {
+          resolve_expr_selector(entry, selector, cache[[entry$source]]$lines, cache[[entry$source]]$inventory)
+        }
+      },
+      error = function(e) e
     )
-  }
-
-  selector <- entry$selector
-  if (is.null(selector$kind)) {
-    abort("Entry is missing selector.kind: ", entry$id)
-  }
-
-  if (identical(selector$kind, "anchor_range")) {
-    block <- resolve_anchor_range(entry, selector, cache[[entry$source]]$lines)
+    if (!inherits(local_result, "error")) {
+      return(list(
+        block = local_result,
+        cache = cache,
+        resolver = paste0("selector:", selector$kind)
+      ))
+    }
+    local_error <- conditionMessage(local_result)
   } else {
-    block <- resolve_expr_selector(entry, selector, cache[[entry$source]]$lines, cache[[entry$source]]$inventory)
+    local_error <- paste0("Source file does not exist: ", entry$source)
   }
 
-  list(block = block, cache = cache)
+  repo_selector <- resolve_repo_selector_blocks(
+    entry,
+    repo_root,
+    cache,
+    selector = selector,
+    target_path = entry$source
+  )
+  cache <- repo_selector$cache
+  if (identical(repo_selector$status, "resolved")) {
+    return(list(
+      block = repo_selector$blocks[[1]],
+      cache = cache,
+      resolver = paste0("repo_selector:", selector$kind)
+    ))
+  }
+  if (identical(repo_selector$status, "selector_ambiguous")) {
+    abort(repo_selector$note)
+  }
+
+  abort(local_error %||% repo_selector$note %||% "source resolution failed")
 }
 
 validate_selector <- function(entry, inventory, lines) {
@@ -294,28 +335,143 @@ resolve_target_cache <- function(target_root, target_path, cache) {
   list(cache = cache, state = cache[[target_path]])
 }
 
+manifest_repo_cache_key <- function(repo_root) {
+  paste0(".__repo_index__:", normalizePath(repo_root, winslash = "/", mustWork = FALSE))
+}
+
+resolve_repo_inventory_cache <- function(repo_root, cache) {
+  cache_key <- manifest_repo_cache_key(repo_root)
+  if (is.null(cache[[cache_key]])) {
+    relative_files <- list_r_files(repo_root)
+    file_states <- lapply(relative_files, function(relative_path) {
+      absolute_path <- file.path(repo_root, relative_path)
+      inventory_result <- tryCatch(
+        build_inventory(absolute_path),
+        error = function(e) e
+      )
+      list(
+        file_path = relative_path,
+        lines = read_source_lines(absolute_path),
+        inventory = if (inherits(inventory_result, "error")) NULL else inventory_result,
+        inventory_error = if (inherits(inventory_result, "error")) conditionMessage(inventory_result) else NULL
+      )
+    })
+    cache[[cache_key]] <- file_states
+  }
+
+  list(cache = cache, state = cache[[cache_key]])
+}
+
+repo_selector_kinds <- function() {
+  c("symbol", "setMethod", "setGeneric", "setClass")
+}
+
+resolve_repo_selector_blocks <- function(entry, repo_root, cache, selector = selector_for_context(entry, "source"), target_path = entry$target %||% NA_character_) {
+  if (!(selector$kind %in% repo_selector_kinds())) {
+    return(list(
+      cache = cache,
+      status = "unsupported",
+      target_resolver = "repo_selector_unsupported",
+      note = "repo-wide selector search is unsupported for this selector kind",
+      blocks = list()
+    ))
+  }
+
+  cached <- resolve_repo_inventory_cache(repo_root, cache)
+  cache <- cached$cache
+  repo_state <- cached$state
+  blocks <- list()
+  selector_errors <- character()
+
+  for (state in repo_state) {
+    inventory <- state$inventory
+    if (is.null(inventory) || !length(inventory)) {
+      if (!is.null(state$inventory_error) && nzchar(state$inventory_error)) {
+        selector_errors <- c(selector_errors, sprintf("%s: %s", state$file_path, state$inventory_error))
+      }
+      next
+    }
+
+    matches <- tryCatch(
+      match_selector_records(selector, inventory, entry$id),
+      error = function(e) e
+    )
+    if (inherits(matches, "error")) {
+      selector_errors <- c(selector_errors, sprintf("%s: %s", state$file_path, conditionMessage(matches)))
+      next
+    }
+
+    if (!length(matches)) {
+      next
+    }
+
+    for (rec in matches) {
+      block <- build_block_from_record(
+        entry,
+        selector,
+        state$lines,
+        rec,
+        state$file_path,
+        state$file_path
+      )
+      blocks[[length(blocks) + 1L]] <- augment_block_fidelity(block)
+    }
+  }
+
+  if (length(blocks) == 1L) {
+    return(list(
+      cache = cache,
+      status = "resolved",
+      target_resolver = "repo_selector_search",
+      note = NULL,
+      blocks = blocks
+    ))
+  }
+
+  if (length(blocks) > 1L) {
+    return(list(
+      cache = cache,
+      status = "selector_ambiguous",
+      target_resolver = "repo_selector_ambiguous",
+      note = sprintf("repo-wide selector matched %d target blocks", length(blocks)),
+      blocks = blocks
+    ))
+  }
+
+  note <- if (length(selector_errors)) selector_errors[[1]] else "repo-wide selector matched 0 blocks"
+  list(
+    cache = cache,
+    status = "content_missing",
+    target_resolver = "repo_selector_missing",
+    note = note,
+    blocks = list()
+  )
+}
+
 build_target_candidates <- function(entry, target_path, lines, inventory) {
   if (is.null(inventory) || !length(inventory)) {
     return(list())
   }
 
+  selector <- selector_for_context(entry, "target")
   lapply(seq_along(inventory), function(i) {
     rec <- inventory[[i]]
-    candidate <- build_block_from_record(entry, entry$selector, lines, rec, target_path, target_path)
+    candidate <- build_block_from_record(entry, selector, lines, rec, target_path, target_path)
     candidate$candidate_index <- i
     augment_block_fidelity(candidate)
   })
 }
 
 build_file_block <- function(entry, target_path, lines) {
+  selector <- selector_for_context(entry, "target")
   block <- list(
     id = entry$id,
     action = entry$action %||% "extract",
     source = entry$source,
     target = target_path,
     group = entry$group %||% NA_character_,
-    selector_kind = entry$selector$kind,
-    selector_value = entry$selector$value %||% NA_character_,
+    selector_kind = selector$kind,
+    selector_value = selector$value %||% NA_character_,
     start_line = if (length(lines)) 1L else NA_integer_,
     end_line = if (length(lines)) length(lines) else NA_integer_,
     text = if (length(lines)) paste0(paste(lines, collapse = "\n"), "\n") else ""
@@ -323,9 +479,23 @@ build_file_block <- function(entry, target_path, lines) {
   augment_block_fidelity(block)
 }
 
-resolve_target_block <- function(entry, source_block, target_root, cache) {
+probe_target_block <- function(entry, target_root, cache) {
   target_path <- entry$target %||% ""
+  selector <- selector_for_context(entry, "target")
+
   if (!nzchar(target_path)) {
+    repo_selector <- resolve_repo_selector_blocks(entry, target_root, cache, selector = selector)
+    cache <- repo_selector$cache
+    if (identical(repo_selector$status, "resolved")) {
+      return(list(
+        cache = cache,
+        status = "resolved",
+        target_resolver = repo_selector$target_resolver,
+        note = NULL,
+        block = repo_selector$blocks[[1]]
+      ))
+    }
+
     return(list(
       cache = cache,
       status = "content_missing",
@@ -339,6 +509,60 @@ resolve_target_block <- function(entry, source_block, target_root, cache) {
   cache <- cached$cache
   target_state <- cached$state
 
+  if (!is.null(target_state) && isTRUE(target_state$exists)) {
+    selector_block <- tryCatch(
+      {
+        if (identical(selector$kind, "anchor_range")) {
+          resolve_anchor_range(entry, selector, target_state$lines)
+        } else {
+          resolve_expr_selector(entry, selector, target_state$lines, target_state$inventory)
+        }
+      },
+      error = function(e) e
+    )
+    if (!inherits(selector_block, "error")) {
+      selector_block$source <- target_path
+      selector_block$target <- target_path
+      return(list(
+        cache = cache,
+        status = "resolved",
+        target_resolver = "selector",
+        note = NULL,
+        block = augment_block_fidelity(selector_block)
+      ))
+    }
+    if (grepl("matched [0-9]+ blocks", conditionMessage(selector_block))) {
+      return(list(
+        cache = cache,
+        status = "selector_ambiguous",
+        target_resolver = "selector_ambiguous",
+        note = "selector matched multiple target blocks",
+        block = NULL
+      ))
+    }
+  }
+
+  repo_selector <- resolve_repo_selector_blocks(entry, target_root, cache, selector = selector)
+  cache <- repo_selector$cache
+  if (identical(repo_selector$status, "resolved")) {
+    return(list(
+      cache = cache,
+      status = "resolved",
+      target_resolver = repo_selector$target_resolver,
+      note = NULL,
+      block = repo_selector$blocks[[1]]
+    ))
+  }
+  if (identical(repo_selector$status, "selector_ambiguous")) {
+    return(list(
+      cache = cache,
+      status = "selector_ambiguous",
+      target_resolver = repo_selector$target_resolver,
+      note = repo_selector$note,
+      block = NULL
+    ))
+  }
+
   if (is.null(target_state) || !isTRUE(target_state$exists)) {
     return(list(
       cache = cache,
@@ -349,35 +573,65 @@ resolve_target_block <- function(entry, source_block, target_root, cache) {
     ))
   }
 
+  note <- target_state$inventory_error
+  if (is.null(note)) {
+    note <- repo_selector$note %||% "no matching target block found"
+  }
+
+  list(
+    cache = cache,
+    status = "content_missing",
+    target_resolver = "content_missing",
+    note = note,
+    block = NULL
+  )
+}
+
+resolve_target_block <- function(entry, source_block, target_root, cache) {
+  target_path <- entry$target %||% ""
+  selector <- selector_for_context(entry, "target")
+  if (!nzchar(target_path)) {
+    return(probe_target_block(entry, target_root, cache))
+  }
+
+  cached <- resolve_target_cache(target_root, target_path, cache)
+  cache <- cached$cache
+  target_state <- cached$state
+
+  if (is.null(target_state) || !isTRUE(target_state$exists)) {
+    return(probe_target_block(entry, target_root, cache))
+  }
+
   lines <- target_state$lines
   inventory <- target_state$inventory
   candidates <- build_target_candidates(entry, target_path, lines, inventory)
   file_block <- build_file_block(entry, target_path, lines)
-  selector <- entry$selector
   selector_status <- NULL
 
-  if (!is.null(inventory) && selector$kind %in% c("symbol", "setMethod", "setGeneric", "setClass")) {
-    selector_matches <- tryCatch(
-      match_selector_records(selector, inventory, entry$id),
-      error = function(e) e
-    )
-    if (!inherits(selector_matches, "error")) {
-      if (length(selector_matches) == 1L) {
-        block <- build_block_from_record(entry, selector, lines, selector_matches[[1]], target_path, target_path)
-        return(list(
-          cache = cache,
-          status = "resolved",
-          target_resolver = "selector",
-          note = NULL,
-          block = augment_block_fidelity(block)
-        ))
+  selector_block <- tryCatch(
+    {
+      if (identical(selector$kind, "anchor_range")) {
+        resolve_anchor_range(entry, selector, lines)
+      } else {
+        resolve_expr_selector(entry, selector, lines, inventory)
       }
-      if (length(selector_matches) > 1L) {
-        selector_status <- "selector_ambiguous"
-      }
-    } else {
-      selector_status <- conditionMessage(selector_matches)
-    }
+    },
+    error = function(e) e
+  )
+  if (!inherits(selector_block, "error")) {
+    selector_block$source <- target_path
+    selector_block$target <- target_path
+    return(list(
+      cache = cache,
+      status = "resolved",
+      target_resolver = "selector",
+      note = NULL,
+      block = augment_block_fidelity(selector_block)
+    ))
+  }
+  selector_status <- conditionMessage(selector_block)
+  if (grepl("matched [0-9]+ blocks", selector_status)) {
+    selector_status <- "selector_ambiguous"
   }
 
   raw_matches <- Filter(function(candidate) identical(candidate$hash_raw, source_block$hash_raw), candidates)
@@ -457,9 +711,33 @@ resolve_target_block <- function(entry, source_block, target_root, cache) {
     ))
   }
 
+  repo_selector <- resolve_repo_selector_blocks(entry, target_root, cache, selector = selector)
+  cache <- repo_selector$cache
+  if (identical(repo_selector$status, "resolved")) {
+    return(list(
+      cache = cache,
+      status = "resolved",
+      target_resolver = repo_selector$target_resolver,
+      note = NULL,
+      block = repo_selector$blocks[[1]]
+    ))
+  }
+  if (identical(repo_selector$status, "selector_ambiguous")) {
+    return(list(
+      cache = cache,
+      status = "selector_ambiguous",
+      target_resolver = repo_selector$target_resolver,
+      note = repo_selector$note,
+      block = NULL
+    ))
+  }
+
   note <- target_state$inventory_error
   if (is.null(note) && is.character(selector_status) && nzchar(selector_status)) {
     note <- selector_status
+  }
+  if (is.null(note)) {
+    note <- repo_selector$note
   }
   if (is.null(note)) {
     note <- "no matching target block found"
@@ -577,51 +855,76 @@ classify_source_resolution_failure <- function(note) {
   )
 }
 
-build_source_failure_comparison <- function(entry, note, baseline_source_resolver) {
+build_source_failure_comparison <- function(entry, note, baseline_source_resolver, target_probe = NULL) {
   failure <- classify_source_resolution_failure(note)
+  target_block <- target_probe$block %||% NULL
+  target_resolver <- failure$target_resolver
+  target_note <- note %||% "source resolution failed"
+  exception_candidate <- failure$exception_candidate
+  status <- failure$status
+
+  if (!is.null(target_probe)) {
+    target_resolver <- target_probe$target_resolver %||% target_resolver
+    if (!is.null(target_probe$note) && nzchar(target_probe$note)) {
+      target_note <- target_probe$note
+    }
+    if (identical(failure$status, "source_missing") &&
+        identical(target_probe$status, "resolved") &&
+        !is.null(target_block)) {
+      exception_candidate <- "source_lineage_gap_target_resolved"
+      status <- "source_missing_target_resolved"
+      target_note <- sprintf(
+        "baseline/source selector no longer resolves directly; target block resolved via %s",
+        target_probe$target_resolver %||% "unknown"
+      )
+    }
+  }
+
   c(
     manifest_entry_catalog(entry),
     list(
       baseline_source_resolver = baseline_source_resolver %||% NA_character_,
-      target_resolver = failure$target_resolver,
+      target_resolver = target_resolver,
       raw_exact = FALSE,
       normalized_text_exact = FALSE,
       ast_exact = FALSE,
       hash_raw_baseline = NA_character_,
-      hash_raw_target = NA_character_,
+      hash_raw_target = if (!is.null(target_block)) target_block$hash_raw %||% NA_character_ else NA_character_,
       hash_normalized_baseline = NA_character_,
-      hash_normalized_target = NA_character_,
+      hash_normalized_target = if (!is.null(target_block)) target_block$hash_normalized %||% NA_character_ else NA_character_,
       hash_ast_baseline = NA_character_,
-      hash_ast_target = NA_character_,
-      status = failure$status,
-      exception_candidate = failure$exception_candidate,
-      note = note %||% "source resolution failed",
+      hash_ast_target = if (!is.null(target_block)) target_block$hash_ast %||% NA_character_ else NA_character_,
+      status = status,
+      exception_candidate = exception_candidate,
+      note = target_note,
       source_start_line = NA_integer_,
       source_end_line = NA_integer_,
-      target_start_line = NA_integer_,
-      target_end_line = NA_integer_
+      target_start_line = if (!is.null(target_block)) target_block$start_line %||% NA_integer_ else NA_integer_,
+      target_end_line = if (!is.null(target_block)) target_block$end_line %||% NA_integer_ else NA_integer_
     )
   )
 }
 
 compare_manifest_entry <- function(entry, baseline_root, target_root, baseline_cache, target_cache) {
-  baseline_source_resolver <- paste0("selector:", entry$selector$kind %||% "unknown")
   source_result <- tryCatch(
     resolve_entry(entry, baseline_root, baseline_cache),
     error = function(e) e
   )
   if (inherits(source_result, "error")) {
+    target_probe <- probe_target_block(entry, target_root, target_cache)
     return(list(
       baseline_cache = baseline_cache,
-      target_cache = target_cache,
+      target_cache = target_probe$cache,
       comparison = build_source_failure_comparison(
         entry,
         conditionMessage(source_result),
-        baseline_source_resolver
+        paste0("selector:", entry$selector$kind %||% "unknown"),
+        target_probe
       )
     ))
   }
   baseline_cache <- source_result$cache
+  baseline_source_resolver <- source_result$resolver %||% paste0("selector:", entry$selector$kind %||% "unknown")
   source_block <- augment_block_fidelity(source_result$block)
   target_result <- resolve_target_block(entry, source_block, target_root, target_cache)
   target_cache <- target_result$cache

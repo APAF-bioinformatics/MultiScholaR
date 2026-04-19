@@ -1,7 +1,7 @@
 {
   "name": "refactor-fidelity-audit",
-  "updated_at": "2026-04-17",
-  "status": "fa_p6_completed",
+  "updated_at": "2026-04-19",
+  "status": "post_fa_p6_triage_planned",
   "artifacts": {
     "human_plan": "tools/refactor/FIDELITY_AUDIT_IMPLEMENTATION_PLAN.md",
     "progress_manifest": "tools/refactor/fidelity-audit-plan.json",
@@ -638,13 +638,315 @@
       ]
     }
   ],
+  "post_closeout_triage": {
+    "authoritative_run_id": "integrated-closeout-20260419d",
+    "status": "completed",
+    "open_exception_count": 0,
+    "high_open_exception_count": 0,
+    "open_layer_counts": {},
+    "passing_layers": {
+      "manifest_fidelity": 0,
+      "surface_inventory": 0,
+      "behavior": 0,
+      "contracts": 0
+    },
+    "resolution_summary": {
+      "proven_parity": true,
+      "coverage_campaign_ready": true,
+      "auto_curated_count": 868,
+      "catalog_curated_count": 74
+    }
+  },
+  "coverage_backed_auto_curation": {
+    "status": "planned",
+    "authoritative_run_id": "integrated-closeout-20260419d",
+    "goal": "Raise test coverage for all deduplicated parity bundles implicated by auto-curated and catalog-curated parity evidence, with baseline-vs-target comparative measurement and persistent documentation.",
+    "scope_model": {
+      "unit": "coverage_bundle",
+      "reason_not_exception_row": "The 868 auto-curated rows are mostly lineage and selector bookkeeping rather than unique behaviors; coverage must target deduplicated source-parity bundles, not raw exception rows.",
+      "auto_curated_breakdown": {
+        "source_lineage_gap_target_resolved": 788,
+        "target_resolution_asymmetry": 27,
+        "whitespace_only_drift": 22,
+        "comment_only_drift": 6,
+        "surface_definition_drift_manifest_overlap": 25
+      },
+      "deduplicated_footprint": {
+        "unique_files": 138,
+        "legacy_source_files_in_lineage_bucket": 24,
+        "extracted_target_files_in_lineage_bucket": 66
+      }
+    },
+    "repo_scale": {
+      "r_file_count": 317,
+      "r_total_lines": 116412,
+      "test_file_count": 115,
+      "test_total_lines": 90311
+    },
+    "feasibility": {
+      "is_feasible": true,
+      "estimated_duration_weeks": "2-3",
+      "largest_cost_center": "writing and extending tests for the priority parity bundles",
+      "tooling_gap": {
+        "covr_listed_in_suggests": false,
+        "covr_available_in_runtime": false
+      }
+    },
+    "schema_additions": [
+      "coverage_runs",
+      "coverage_files",
+      "coverage_bundles",
+      "coverage_bundle_members",
+      "coverage_test_links",
+      "coverage_bundle_results"
+    ],
+    "documentation_outputs": [
+      "coverage JSON summary",
+      "coverage Markdown summary",
+      "bundle-to-test mapping",
+      "baseline-vs-target coverage comparison report",
+      "low-coverage parity bundle ledger"
+    ],
+    "checkpoints": [
+      {
+        "id": "FA-C0",
+        "title": "Coverage Instrumentation Bootstrap",
+        "status": "completed",
+        "deliverables": [
+          "covr bootstrap",
+          "repo-local coverage runner",
+          "coverage tables in audit.db"
+        ],
+        "implemented": {
+          "completed_on": "2026-04-19",
+          "artifacts": [
+            "tools/refactor/fidelity_audit.py::coverage",
+            "tools/refactor/fidelity_coverage_capture.R",
+            ".refactor-fidelity-audit/reports/latest-coverage.json",
+            ".refactor-fidelity-audit/reports/latest-coverage.md"
+          ],
+          "validation": [
+            "schema bootstrap regression",
+            "tool_unavailable regression",
+            "fixture-backed bundle persistence regression"
+          ]
+        }
+      },
+      {
+        "id": "FA-C1",
+        "title": "Auto-Curate Bundle Mapping",
+        "status": "completed",
+        "deliverables": [
+          "bundle manifest",
+          "exception-to-bundle links",
+          "priority family ranking"
+        ],
+        "implemented": {
+          "completed_on": "2026-04-19",
+          "run_id": "bundle-map-20260419T121735Z-3a4c2239",
+          "source_closeout_run_id": "integrated-closeout-20260419d",
+          "bundle_count": 149,
+          "linked_exception_count": 942,
+          "priority_family_count": 56,
+          "bundle_type_counts": {
+            "lineage_family": 24,
+            "wrapper_entrypoint": 46,
+            "helper_surface": 63,
+            "s4_method_surface": 13,
+            "duplicate_canonical": 2,
+            "manual_merge_canonical": 1
+          },
+          "artifacts": [
+            "tools/refactor/fidelity_audit.py::bundle-map",
+            ".refactor-fidelity-audit/reports/latest-bundles.json",
+            ".refactor-fidelity-audit/reports/latest-bundles.md"
+          ]
+        }
+      },
+      {
+        "id": "FA-C2",
+        "title": "Comparative Coverage Runner",
+        "status": "completed",
+        "deliverables": [
+          "baseline coverage capture",
+          "target coverage capture",
+          "per-bundle delta reporting"
+        ],
+        "artifacts": [
+          "tools/refactor/fidelity_audit.py::coverage-compare",
+          ".refactor-fidelity-audit/reports/latest-coverage-compare.json",
+          ".refactor-fidelity-audit/reports/latest-coverage-compare.md"
+        ],
+        "validation": [
+          "python3 -m py_compile tools/refactor/fidelity_audit.py",
+          "fixture-backed coverage-compare CLI smoke with side-specific coverage fixtures",
+          "coverage bundle rows persisted for baseline, target, and comparison scopes"
+        ]
+      },
+      {
+        "id": "FA-C3",
+        "title": "Coverage Evidence Materialization",
+        "status": "completed",
+        "deliverables": [
+          "coverage reports",
+          "bundle evidence summaries",
+          "low-coverage exception emission"
+        ],
+        "artifacts": [
+          "tools/refactor/fidelity_audit.py::coverage-evidence",
+          ".refactor-fidelity-audit/reports/latest-coverage-evidence.json",
+          ".refactor-fidelity-audit/reports/latest-coverage-evidence.md"
+        ],
+        "validation": [
+          "python3 -m py_compile tools/refactor/fidelity_audit.py",
+          "fixture-backed coverage-evidence CLI smoke with below-target helper bundle",
+          "live repo coverage-evidence smoke with covr_missing -> tool_unavailable and zero emitted coverage exceptions"
+        ]
+      },
+      {
+        "id": "FA-C4",
+        "title": "Family-By-Family Coverage Fill Campaign",
+        "status": "in_progress",
+        "deliverables": [
+          "expanded tests for priority parity bundles",
+          "updated bundle notes",
+          "rerun coverage evidence"
+        ],
+        "artifacts": [
+          "tools/refactor/fidelity_coverage_capture.R",
+          "tools/refactor/fidelity_audit.py::range-aware lineage bundle mapping",
+          "tests/testthat/test-prot-11a-enrichment-module-characterization.R",
+          "tests/testthat/test-prot-05d-norm-module-characterization.R",
+          ".refactor-fidelity-audit/reports/latest-coverage-evidence.json",
+          ".refactor-fidelity-audit/reports/latest-coverage-evidence.md"
+        ],
+        "validation": [
+          "python3 -m py_compile tools/refactor/fidelity_audit.py",
+          "timeout 240s node tools/refactor/tests/fidelity-audit.test.cjs",
+          "live repo bundle-map rerun bundle-map-20260419T155100Z-292c1303",
+          "contracts --execute for tests/testthat/test-prot-11a-enrichment-module-characterization.R via contracts-20260419T172307Z-dc533935",
+          "pkgload::load_all plus testthat::test_file passes for tests/testthat/test-prot-11a-enrichment-module-characterization.R",
+          "stable live repo coverage-compare run coverage-compare-20260419T172330Z-85152be9",
+          "stable live repo coverage-evidence run coverage-evidence-20260419T172538Z-1ec043b6",
+          "contracts --execute for tests/testthat/test-prot-05d-norm-module-characterization.R via contracts-prot-norm-characterization-2",
+          "pkgload::load_all plus testthat::test_file passes for tests/testthat/test-prot-05d-norm-module-characterization.R",
+          "stable live repo coverage-compare run coverage-compare-prot-norm-characterization",
+          "stable live repo coverage-evidence run coverage-evidence-prot-norm-characterization"
+        ],
+        "current_findings": [
+          "The covr runner now executes real selected testthat files through pkgload::load_all plus namespace tracing.",
+          "Targeted family runs no longer emit package-wide below-threshold exceptions.",
+          "Lineage-family bundles are now split by semantic cluster and use manifest-resolved target line ranges instead of whole extracted helper files.",
+          "The mod_prot_enrich family now decomposes into 14 bundles instead of one coarse lineage bucket.",
+          "A stable shared enrichment characterization file now covers workflow-driven observer hydration plus run-observer success and failure paths using lower-level seams that exist in both baseline and target.",
+          "The target worktree now reaches 100.0 percent on lineage::R_mod_prot_enrich.R::observer_register and lineage::R_mod_prot_enrich.R::observer_runtime under coverage-compare-20260419T172330Z-85152be9.",
+          "Baseline main now also completes the shared characterization file, and coverage-evidence-20260419T172538Z-1ec043b6 records pass for both enrichment lineage bundles.",
+          "The reusable FA-C4 pattern is now range-aware lineage clustering plus shared public module scenarios plus cross-version lower-level mocks for still-monolithic baseline code.",
+          "A stable shared norm characterization file now covers apply-correlation, skip-correlation, export prereq and success, reset success, invalid-tab warning, and public error-handling paths that execute cleanly on both baseline and target.",
+          "The mod_prot_norm wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-prot-norm-characterization.",
+          "The mod_prot_norm observer-runtime lineage family now reaches 89.9 percent target coverage under coverage-compare-prot-norm-characterization, and coverage-evidence-prot-norm-characterization records pass for both norm bundles.",
+          "The old mod_prot_norm compare failure mode is removed because the shared characterization file no longer depends on target-only extracted helper surfaces."
+        ]
+      },
+      {
+        "id": "FA-C5",
+        "title": "Coverage-Backed Parity Closeout",
+        "status": "pending",
+        "deliverables": [
+          "final coverage-backed parity report",
+          "package-wide >=80 percent verification",
+          "bundle-level evidence package"
+        ]
+      }
+    ],
+    "priority_families": [
+      "R/mod_prot_enrich.R",
+      "R/mod_prot_norm.R",
+      "R/mod_metab_norm.R",
+      "R/mod_prot_design_builder.R",
+      "R/mod_metab_da.R",
+      "R/mod_lipid_design_builder.R",
+      "R/mod_lipid_norm.R",
+      "R/mod_prot_import.R",
+      "R/mod_lipid_da.R",
+      "R/mod_metab_import.R",
+      "R/mod_prot_summary.R",
+      "R/func_general_filemgmt.R",
+      "R/func_lipid_qc.R",
+      "R/func_prot_annotation.R"
+    ],
+    "acceptance": {
+      "package_line_coverage_target_pct": 80,
+      "auto_curated_bundle_target_pct": 80,
+      "helper_bundle_target_pct": 90,
+      "preserved_or_s4_bundle_target_pct": 85,
+      "wrapper_policy": "Wrapper/module bundles still require contract and scenario completeness; line coverage alone is not sufficient.",
+      "comparison_policy": "Baseline and target coverage must be measured using the same test subsets and recorded side by side."
+    },
+    "execution_order": [
+      {
+        "phase_id": "FA-C0",
+        "title": "Coverage Instrumentation Bootstrap",
+        "first_tasks": [
+          "Add covr to Suggests",
+          "Create a repo-local coverage runner under tools/refactor",
+          "Create the new coverage tables in audit.db"
+        ]
+      },
+      {
+        "phase_id": "FA-C1",
+        "title": "Bundle Mapping",
+        "first_tasks": [
+          "Map all auto-curated rows to bundle_id values",
+          "Map all catalog-curated rows to the same bundle model",
+          "Materialize the priority family list"
+        ]
+      },
+      {
+        "phase_id": "FA-C2",
+        "title": "Comparative Coverage Capture",
+        "first_tasks": [
+          "Run the same tests against baseline and target",
+          "Store bundle-level baseline and target coverage",
+          "Emit per-bundle coverage deltas"
+        ]
+      },
+      {
+        "phase_id": "FA-C3",
+        "title": "Coverage Reporting",
+        "first_tasks": [
+          "Generate machine-readable bundle coverage manifests",
+          "Generate human-readable coverage summaries",
+          "Emit low-coverage bundle exceptions"
+        ]
+      },
+      {
+        "phase_id": "FA-C4",
+        "title": "Coverage Fill",
+        "first_tasks": [
+          "Work one priority family at a time",
+          "Add missing direct tests",
+          "Rerun coverage after each family"
+        ]
+      },
+      {
+        "phase_id": "FA-C5",
+        "title": "Coverage-Backed Closeout",
+        "first_tasks": [
+          "Rerun full coverage collection",
+          "Publish final parity-plus-coverage reports",
+          "Record any remaining low-coverage bundle as an explicit exception"
+        ]
+      }
+    ]
+  },
   "next_checkpoint": {
-    "id": "POST-FA-P6",
-    "title": "Gap Resolution Before Coverage",
+    "id": "FA-C4",
+    "title": "Family-By-Family Coverage Fill Campaign",
     "first_tasks": [
-      "Resolve the remaining surface and manifest fidelity blockers surfaced by the closeout report",
-      "Re-run closeout with contract execution once the branch is structurally and behaviorally ready",
-      "Start the >=80 percent coverage campaign only after closeout reports coverage_campaign_ready = true"
+      "Work one priority family at a time",
+      "Carry the shared public-module characterization pattern into mod_metab_norm or mod_metab_import",
+      "Rerun coverage after each family"
     ]
   }
 }

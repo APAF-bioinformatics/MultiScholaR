@@ -231,32 +231,32 @@ entries:
 
   - id: func_prot_da_method_main
     source: R/func_prot_da.R
-    selector: { kind: setMethod, value: differentialAbundanceAnalysis }
-    target: R/func_prot_da_model.R
+    selector: { kind: setMethod, value: differentialAbundanceAnalysis, signature: ProteinQuantitativeData }
+    target: R/func_prot_da_model_methods.R
     group: proteomics.da.methods
 
   - id: func_prot_da_method_helper
     source: R/func_prot_da.R
-    selector: { kind: setMethod, value: differentialAbundanceAnalysisHelper }
-    target: R/func_prot_da_model.R
+    selector: { kind: setMethod, value: differentialAbundanceAnalysisHelper, signature: ProteinQuantitativeData }
+    target: R/func_prot_da_model_methods.R
     group: proteomics.da.methods
 
   - id: func_prot_da_method_all_contrasts
     source: R/func_prot_da.R
-    selector: { kind: setMethod, value: outputDaResultsAllContrasts }
-    target: R/func_prot_da_results.R
+    selector: { kind: setMethod, value: outputDaResultsAllContrasts, signature: ProteinQuantitativeData }
+    target: R/func_prot_da_results_methods.R
     group: proteomics.da.methods
 
   - id: func_prot_da_method_long
     source: R/func_prot_da.R
-    selector: { kind: setMethod, value: getDaResultsLongFormat }
-    target: R/func_prot_da_results.R
+    selector: { kind: setMethod, value: getDaResultsLongFormat, signature: list }
+    target: R/func_prot_da_results_methods.R
     group: proteomics.da.methods
 
   - id: func_prot_da_method_wide
     source: R/func_prot_da.R
-    selector: { kind: setMethod, value: getDaResultsWideFormat }
-    target: R/func_prot_da_results.R
+    selector: { kind: setMethod, value: getDaResultsWideFormat, signature: list }
+    target: R/func_prot_da_results_methods.R
     group: proteomics.da.methods
 
   - id: func_prot_da_glimma_start

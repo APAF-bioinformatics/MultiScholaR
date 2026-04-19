@@ -16,7 +16,7 @@ collate_targets:
 entries:
   - id: pept_s4_qc_method_plot_density_ggplot
     source: R/func_pept_s4_objects.R
-    selector: { kind: setMethod, value: plotDensity }
+    selector: { kind: setMethod, value: plotDensity, signature: ggplot2::ggplot }
     target: R/func_pept_s4_qc_methods.R
     group: proteomics.peptide.s4.qc.methods
     note: Fourteenth staged peptide S4 wave moves the exact ggplot2::ggplot plotDensity method block into the existing peptide QC helper without rewriting live sources.

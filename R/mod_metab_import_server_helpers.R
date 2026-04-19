@@ -189,3 +189,171 @@ setupMetabImportProcessingObserver <- function(
   invisible(NULL)
 }
 
+runMetabImportModuleServerShell <- function(
+    input,
+    output,
+    session,
+    id,
+    workflowData,
+    experimentPaths,
+    volumes = NULL,
+    requireNamespaceFn = requireNamespace,
+    createReactiveValuesFn = shiny::reactiveValues,
+    setupAssaySelectionCallbackFn = setupMetabImportAssaySelectionCallback,
+    setupShinyFilesFn = setupMetabImportShinyFiles,
+    setupColumnAccessorsFn = setupMetabImportColumnAccessors,
+    setupFileLoadedOutputFn = setupMetabImportFileLoadedOutput,
+    setupFormatDetectionStatusOutputFn = setupMetabImportFormatDetectionStatusOutput,
+    setupMetaboliteIdStatusOutputFn = setupMetabImportMetaboliteIdStatusOutput,
+    setupAnnotationStatusOutputFn = setupMetabImportAnnotationStatusOutput,
+    setupSampleColumnsDisplayOutputFn = setupMetabImportSampleColumnsDisplayOutput,
+    setupAvailableColumnsDisplayOutputFn = setupMetabImportAvailableColumnsDisplayOutput,
+    setupCustomMetaboliteIdStatusOutputFn = setupMetabImportCustomMetaboliteIdStatusOutput,
+    setupCustomAnnotationStatusOutputFn = setupMetabImportCustomAnnotationStatusOutput,
+    setupValidationSummaryOutputFn = setupMetabImportValidationSummaryOutput,
+    setupProcessingObserverFn = setupMetabImportProcessingObserver,
+    setupStatusOutputFn = setupMetabImportStatusOutput,
+    logMessageFn = message
+) {
+  logMessageFn("   mod_metab_import_server: Inside moduleServer function")
+
+  useShinyFiles <- requireNamespaceFn("shinyFiles", quietly = TRUE)
+  logMessageFn(sprintf("   mod_metab_import_server: shinyFiles available = %s", useShinyFiles))
+
+  localData <- createReactiveValuesFn(
+    assay1_file = NULL,
+    assay1_data = NULL,
+    assay1_import_result = NULL,
+    assay2_file = NULL,
+    assay2_data = NULL,
+    assay2_import_result = NULL,
+    detected_format = NULL,
+    format_confidence = NULL,
+    all_headers = NULL
+  )
+
+  importData <- setupAssaySelectionCallbackFn(
+    localData = localData,
+    session = session
+  )
+
+  if (useShinyFiles) {
+    volumes <- setupShinyFilesFn(
+      input = input,
+      output = output,
+      session = session,
+      volumes = volumes,
+      localData = localData,
+      importDataFn = importData
+    )
+  }
+
+  columnAccessors <- setupColumnAccessorsFn(
+    input = input,
+    localData = localData
+  )
+
+  setupFileLoadedOutputFn(
+    output = output,
+    localData = localData
+  )
+
+  setupFormatDetectionStatusOutputFn(
+    output = output,
+    localData = localData
+  )
+
+  setupMetaboliteIdStatusOutputFn(
+    output = output,
+    input = input,
+    localData = localData
+  )
+
+  setupAnnotationStatusOutputFn(
+    output = output,
+    input = input,
+    localData = localData
+  )
+
+  setupSampleColumnsDisplayOutputFn(
+    output = output,
+    localData = localData
+  )
+
+  setupAvailableColumnsDisplayOutputFn(
+    output = output,
+    localData = localData
+  )
+
+  setupCustomMetaboliteIdStatusOutputFn(
+    output = output,
+    input = input,
+    localData = localData
+  )
+
+  setupCustomAnnotationStatusOutputFn(
+    output = output,
+    input = input,
+    localData = localData
+  )
+
+  setupValidationSummaryOutputFn(
+    output = output,
+    localData = localData,
+    columnAccessors = columnAccessors
+  )
+
+  setupProcessingObserverFn(
+    input = input,
+    localData = localData,
+    columnAccessors = columnAccessors,
+    workflowData = workflowData
+  )
+
+  setupStatusOutputFn(
+    output = output,
+    workflowData = workflowData
+  )
+
+  invisible(localData)
+}
+
+runMetabImportModuleServerEntryShell <- function(
+    id,
+    workflowData,
+    experimentPaths,
+    volumes = NULL,
+    moduleServerFn = shiny::moduleServer,
+    runModuleServerShellFn = runMetabImportModuleServerShell,
+    logMessageFn = message
+) {
+  logMessageFn("--- Entering mod_metab_import_server ---")
+  logMessageFn(sprintf("   mod_metab_import_server: volumes param is NULL = %s", is.null(volumes)))
+
+  moduleServerFn(id, function(input, output, session) {
+    runModuleServerShellFn(
+      input = input,
+      output = output,
+      session = session,
+      id = id,
+      workflowData = workflowData,
+      experimentPaths = experimentPaths,
+      volumes = volumes
+    )
+  })
+}
+
+runMetabImportModuleServerPublicWrapper <- function(
+    id,
+    workflow_data,
+    experiment_paths,
+    volumes = NULL,
+    runModuleServerEntryShellFn = runMetabImportModuleServerEntryShell
+) {
+  runModuleServerEntryShellFn(
+    id = id,
+    workflowData = workflow_data,
+    experimentPaths = experiment_paths,
+    volumes = volumes
+  )
+}
