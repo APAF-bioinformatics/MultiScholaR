@@ -883,7 +883,11 @@
           "A stable shared lipidomics DA characterization file now covers filtered-session load success, preflight failures, DA success and error handling, and Glimma plus heatmap-save runtime behavior on both baseline and target.",
           "The mod_lipid_da wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-lipid-da-characterization-20260420c.",
           "The mod_lipid_da reactive-state lineage family reaches 92.3 percent target coverage, the output-renderer lineage family reaches 86.4 percent, and the observer-runtime lineage family reaches 100.0 percent under coverage-compare-lipid-da-characterization-20260420c.",
-          "coverage-evidence-lipid-da-characterization-20260420 records pass for the wrapper, reactive-state, output-renderer, and observer-runtime lipid DA bundles, and the baseline compatibility alias removes the old generateMetabVolcanoPlotGlimma cross-version failure."
+          "coverage-evidence-lipid-da-characterization-20260420 records pass for the wrapper, reactive-state, output-renderer, and observer-runtime lipid DA bundles, and the baseline compatibility alias removes the old generateMetabVolcanoPlotGlimma cross-version failure.",
+          "A stable shared lipidomics design-builder characterization file now covers empty save-results public behavior, initial-state hydration, summary and adjacent output registration, save-results warning and success paths, full reset-state behavior, rename propagation, sample-column detection, contrast registration, sample removal, and save-results helper formatting on both baseline and target.",
+          "The mod_lipid_design_builder wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-lipid-design-characterization-20260420d.",
+          "The mod_lipid_design_builder builder-resolver lineage family reaches 84.2 percent target coverage, the output-register lineage family reaches 100.0 percent, and the formatter lineage family reaches 100.0 percent under coverage-compare-lipid-design-characterization-20260420d.",
+          "coverage-evidence-lipid-design-characterization-20260420 records pass for the wrapper, builder-resolver, output-register, and formatter lipid design-builder bundles, and the shared helper checks now lift the broad builder lineage above the 80 percent threshold."
         ]
       },
       {
@@ -904,6 +908,7 @@
       "R/mod_prot_design_builder.R",
       "R/mod_metab_da.R",
       "R/mod_lipid_design_builder.R",
+      "R/mod_lipid_import.R",
       "R/mod_lipid_norm.R",
       "R/mod_prot_import.R",
       "R/mod_lipid_da.R",
@@ -963,7 +968,7 @@
         "title": "Coverage Fill",
         "first_tasks": [
           "Work one priority family at a time",
-          "Carry the shared public-module characterization pattern into mod_lipid_design_builder",
+          "Carry the shared public-module characterization pattern into mod_lipid_import",
           "Rerun coverage after each family"
         ]
       },
@@ -983,7 +988,7 @@
     "title": "Family-By-Family Coverage Fill Campaign",
     "first_tasks": [
       "Work one priority family at a time",
-      "Carry the shared public-module characterization pattern into mod_lipid_design_builder",
+      "Carry the shared public-module characterization pattern into mod_lipid_import",
       "Rerun coverage after each family"
     ]
   }

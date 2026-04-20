@@ -2411,10 +2411,70 @@ Interpretation update:
   - the coverage evidence model accepts this lineage form when baseline still
     owns the behavior in the monolith
 
+Current lipidomics design-builder checkpoint:
+
+- shared public lipidomics design-builder characterization file:
+  - `tests/testthat/test-lipid-13a-design-module-characterization.R`
+  - stable contract check:
+    `contracts-lipid-design-characterization-20260420c`
+  - stable compare run:
+    `coverage-compare-lipid-design-characterization-20260420d`
+  - stable evidence run:
+    `coverage-evidence-lipid-design-characterization-20260420`
+- result of the current stable shared suite on the lipidomics design-builder
+  family slice:
+  - wrapper entrypoint:
+    - `surface::symbol::mod_lipid_design_builder_server` baseline `100.0%`
+    - `surface::symbol::mod_lipid_design_builder_server` target `100.0%`
+    - evidence gate: `pass`
+  - builder-resolver lineage family:
+    - `lineage::R_mod_lipid_design_builder.R::builder_resolver` target
+      `84.2%`
+    - evidence gate: `pass`
+  - output-register lineage family:
+    - `lineage::R_mod_lipid_design_builder.R::output_register` target
+      `100.0%`
+    - evidence gate: `pass`
+  - formatter lineage family:
+    - `lineage::R_mod_lipid_design_builder.R::formatter` target `100.0%`
+    - evidence gate: `pass`
+- the shared lipidomics design-builder characterization file now covers stable
+  public and helper cases for:
+  - empty save-results public behavior
+  - fresh and imported initial-state hydration
+  - initial-state shell hydration
+  - summary and adjacent output registration
+  - save-results warning and success paths
+  - full reset-state and reset-confirmation behavior
+  - sample rename propagation and bulk rename transforms
+  - sample-column detection, contrast registration, sample removal, and
+    save-results helper formatting
+- baseline `main` now also passes the same shared file cleanly; helper tests
+  skip on the monolith where extracted helper files do not exist, while the
+  shared public module scenarios still prove wrapper parity directly
+
+Interpretation update:
+
+- the lipidomics design-builder family slice is now resolved for FA-C4
+- the lipidomics design-builder wrapper entrypoint is now proven by shared
+  comparative coverage
+- the lipidomics design-builder builder-resolver lineage family now reaches
+  `84.2%` target coverage under the shared characterization suite
+- the lipidomics design-builder output-register lineage family now reaches
+  `100.0%` target coverage under the shared characterization suite
+- the lipidomics design-builder formatter lineage family now reaches `100.0%`
+  target coverage under the shared characterization suite
+- baseline helper line ranges remain `not_observed` for the extracted lineage
+  families, but the gate records `pass` because:
+  - the same shared public wrapper scenarios pass on baseline and target
+  - the target extracted helper sets are covered above the bundle threshold
+  - the coverage evidence model accepts this lineage form when baseline still
+    owns the behavior in the monolith
+
 Next action inside `FA-C4`:
 
 - move to the next unresolved priority family:
-  - `mod_lipid_design_builder`
+  - `mod_lipid_import`
 - keep the same sequence:
   - shared cross-version public characterization
   - focused bundle compare against `latest-bundles.json`
