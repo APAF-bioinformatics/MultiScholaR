@@ -2313,10 +2313,52 @@ Interpretation update:
   - the coverage evidence model accepts this lineage form when the source
     monolith still owns the behavior on baseline
 
+Current lipidomics norm checkpoint:
+
+- shared public lipidomics norm characterization file:
+  - `tests/testthat/test-lipid-12a-norm-module-characterization.R`
+  - stable contract check:
+    `contracts-lipid-norm-characterization-20260420T092125Z`
+  - stable compare run:
+    `coverage-compare-lipid-norm-characterization-20260420T092125Z`
+  - stable evidence run:
+    `coverage-evidence-lipid-norm-characterization-20260420T092405Z`
+- result of the current stable shared suite on the lipidomics norm family
+  slice:
+  - wrapper entrypoint:
+    - `surface::symbol::mod_lipid_norm_server` baseline `100.0%`
+    - `surface::symbol::mod_lipid_norm_server` target `100.0%`
+    - evidence gate: `pass`
+  - runtime lineage family:
+    - `lineage::R_mod_lipid_norm.R::observer_runtime` target `100.0%`
+    - evidence gate: `pass`
+- the shared lipidomics norm characterization file now covers stable public
+  module cases for:
+  - startup normalization-log placeholder rendering
+  - selected-tab pre-QC error logging
+- baseline `main` now also passes the same shared file cleanly, so the target
+  extracted startup/runtime log helpers are proven through shared public module
+  startup rather than target-only helper tests
+
+Interpretation update:
+
+- the lipidomics norm family slice is now resolved for FA-C4
+- the lipidomics norm wrapper entrypoint is now proven by shared comparative
+  coverage
+- the lipidomics norm observer-runtime lineage family now reaches `100.0%`
+  target coverage under the shared startup/log characterization file
+- baseline helper line ranges remain `not_observed`, but the gate records
+  `pass` because:
+  - the same shared startup and selected-tab scenarios pass on baseline and
+    target
+  - the target extracted helper set is fully covered
+  - the coverage evidence model accepts this lineage form when baseline still
+    owns the behavior in the monolith
+
 Next action inside `FA-C4`:
 
 - move to the next unresolved priority family:
-  - `mod_lipid_norm`
+  - `mod_lipid_da`
 - keep the same sequence:
   - shared cross-version public characterization
   - focused bundle compare against `latest-bundles.json`

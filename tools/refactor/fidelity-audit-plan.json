@@ -875,7 +875,11 @@
           "A stable shared proteomics import characterization file now covers successful import side effects and unsupported-format cleanup on both baseline and target.",
           "The mod_prot_import wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-prot-import-characterization-20260420T083020Z.",
           "The mod_prot_import observer-runtime lineage family now reaches 100.0 percent target coverage under coverage-compare-prot-import-characterization-20260420T083020Z, and coverage-evidence-prot-import-characterization-20260420T083208Z records pass for both proteomics import bundles.",
-          "The proteomics import shared characterization now proves the extracted runtime helpers through shared public import flows rather than target-only helper tests."
+          "The proteomics import shared characterization now proves the extracted runtime helpers through shared public import flows rather than target-only helper tests.",
+          "A stable shared lipidomics norm characterization file now covers startup normalization-log rendering and selected-tab pre-QC error logging on both baseline and target.",
+          "The mod_lipid_norm wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-lipid-norm-characterization-20260420T092125Z.",
+          "The mod_lipid_norm observer-runtime lineage family now reaches 100.0 percent target coverage under coverage-compare-lipid-norm-characterization-20260420T092125Z, and coverage-evidence-lipid-norm-characterization-20260420T092405Z records pass for both lipidomics norm bundles.",
+          "The lipidomics norm shared characterization now proves the extracted startup/runtime log helpers through shared public module startup and selected-tab flows."
         ]
       },
       {
@@ -955,7 +959,7 @@
         "title": "Coverage Fill",
         "first_tasks": [
           "Work one priority family at a time",
-          "Carry the shared public-module characterization pattern into mod_lipid_norm",
+          "Carry the shared public-module characterization pattern into mod_lipid_da",
           "Rerun coverage after each family"
         ]
       },
@@ -975,7 +979,7 @@
     "title": "Family-By-Family Coverage Fill Campaign",
     "first_tasks": [
       "Work one priority family at a time",
-      "Carry the shared public-module characterization pattern into mod_lipid_norm",
+      "Carry the shared public-module characterization pattern into mod_lipid_da",
       "Rerun coverage after each family"
     ]
   }
