@@ -2143,6 +2143,58 @@ Next action inside `FA-C4`:
   - focused bundle compare against `latest-bundles.json`
   - focused coverage evidence materialization
 
+Fourth live family pass:
+
+- shared public metabolomics import characterization file:
+  - `tests/testthat/test-metab-00d-import-module-characterization.R`
+  - stable contract check:
+    `contracts-metab-import-characterization-20260420a`
+  - stable compare run:
+    `coverage-compare-metab-import-characterization-20260420b`
+  - stable evidence run:
+    `coverage-evidence-metab-import-characterization-20260420b`
+- result of the current stable shared suite on the metabolomics import family
+  slice:
+  - wrapper entrypoint:
+    - `surface::symbol::mod_metab_import_server` baseline `100.0%`
+    - `surface::symbol::mod_metab_import_server` target `100.0%`
+    - evidence gate: `pass`
+  - runtime lineage family:
+    - `lineage::R_mod_metab_import.R::observer_runtime` target `100.0%`
+    - evidence gate: `pass`
+- the shared metabolomics import characterization file now covers stable public
+  module cases for:
+  - assay-selection hydration through `shinyFiles`
+  - process-import success
+  - assay-selection error handling
+  - process-import error handling for optional second-assay import
+- baseline `main` now also passes the same shared file cleanly, including the
+  assay-selection failure path that maps to the extracted target error-finalizer
+
+Interpretation update:
+
+- the metabolomics import family slice is now resolved for FA-C4
+- the metabolomics import wrapper entrypoint is now proven by shared
+  comparative coverage, not just seam or helper tests
+- the metabolomics import observer-runtime lineage family now has direct shared
+  coverage on the extracted target error-finalizer path, eliminating the prior
+  `0.0%` false-start compare result
+- as with the prior lineage families, baseline helper line ranges remain
+  `not_observed`, but the gate records `pass` because:
+  - the same shared public scenarios pass on baseline and target
+  - target extracted helpers are above threshold
+  - the coverage evidence model accepts that lineage form when the public suite
+    is shared and stable
+
+Next action inside `FA-C4`:
+
+- move to the next unresolved priority family:
+  - `mod_metab_da`
+- keep the same sequence:
+  - shared cross-version public characterization
+  - focused bundle compare against `latest-bundles.json`
+  - focused coverage evidence materialization
+
 #### `FA-C5`: Coverage-Backed Parity Closeout
 
 Goal:
