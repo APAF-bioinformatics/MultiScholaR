@@ -863,7 +863,11 @@
           "A stable shared metabolomics import characterization file now covers assay-selection hydration, process-import success, assay-selection failure, and process-import failure with optional second-assay import on both baseline and target.",
           "The mod_metab_import wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-metab-import-characterization-20260420b.",
           "The mod_metab_import observer-runtime lineage family now reaches 100.0 percent target coverage under coverage-compare-metab-import-characterization-20260420b, and coverage-evidence-metab-import-characterization-20260420b records pass for both metabolomics import bundles.",
-          "The old mod_metab_import compare false-start is removed because the shared characterization file now includes the assay-selection error path that maps to the extracted target error-finalizer."
+          "The old mod_metab_import compare false-start is removed because the shared characterization file now includes the assay-selection error path that maps to the extracted target error-finalizer.",
+          "A stable shared metabolomics DA characterization file now covers filtered-session load success and corrupt-session failure, DA analysis success and failure, and Glimma plus heatmap-save public runtime behavior on both baseline and target.",
+          "The mod_metab_da wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-metab-da-characterization-20260420a.",
+          "The mod_metab_da observer-runtime lineage family now reaches 90.4 percent target coverage under coverage-compare-metab-da-characterization-20260420a, and coverage-evidence-metab-da-characterization-20260420a records pass for both metabolomics DA bundles.",
+          "The old mod_metab_da compare failure mode is removed because the new shared characterization file replaces the broad display-filter suite with stable public module scenarios and common lower-level backends."
         ]
       },
       {
@@ -943,7 +947,7 @@
         "title": "Coverage Fill",
         "first_tasks": [
           "Work one priority family at a time",
-          "Carry the metabolomics import shared characterization pattern into mod_metab_da",
+          "Carry the shared public-module characterization pattern into mod_prot_design_builder",
           "Rerun coverage after each family"
         ]
       },
@@ -963,7 +967,7 @@
     "title": "Family-By-Family Coverage Fill Campaign",
     "first_tasks": [
       "Work one priority family at a time",
-      "Carry the shared public-module characterization pattern into mod_metab_da",
+      "Carry the shared public-module characterization pattern into mod_prot_design_builder",
       "Rerun coverage after each family"
     ]
   }

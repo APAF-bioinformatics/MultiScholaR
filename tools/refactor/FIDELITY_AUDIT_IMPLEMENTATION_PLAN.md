@@ -2186,10 +2186,53 @@ Interpretation update:
   - the coverage evidence model accepts that lineage form when the public suite
     is shared and stable
 
+Current metabolomics DA checkpoint:
+
+- shared public metabolomics DA characterization file:
+  - `tests/testthat/test-metab-02ab-da-module-characterization.R`
+  - stable contract check:
+    `contracts-metab-da-characterization-20260420a`
+  - stable compare run:
+    `coverage-compare-metab-da-characterization-20260420a`
+  - stable evidence run:
+    `coverage-evidence-metab-da-characterization-20260420a`
+- result of the current stable shared suite on the metabolomics DA family
+  slice:
+  - wrapper entrypoint:
+    - `surface::symbol::mod_metab_da_server` baseline `100.0%`
+    - `surface::symbol::mod_metab_da_server` target `100.0%`
+    - evidence gate: `pass`
+  - runtime lineage family:
+    - `lineage::R_mod_metab_da.R::observer_runtime` target `90.4%`
+    - evidence gate: `pass`
+- the shared metabolomics DA characterization file now covers stable public
+  module cases for:
+  - filtered-session load success
+  - filtered-session load failure on corrupt session payload
+  - DA analysis success
+  - DA analysis error
+  - Glimma error-banner rendering plus heatmap save observer runtime
+- baseline `main` now also passes the same shared file cleanly, including the
+  corrupt-session branch and the public heatmap-save path
+
+Interpretation update:
+
+- the metabolomics DA family slice is now resolved for FA-C4
+- the metabolomics DA wrapper entrypoint is now proven by shared comparative
+  coverage instead of large seam-only characterization files
+- the metabolomics DA observer-runtime lineage family now exceeds target at
+  `90.4%` target coverage under the shared public module suite
+- as with the prior lineage families, baseline helper line ranges remain
+  `not_observed`, but the gate records `pass` because:
+  - the same shared public scenarios pass on baseline and target
+  - the extracted target helper set is above threshold
+  - the coverage evidence model accepts this lineage form when the public suite
+    is shared and stable
+
 Next action inside `FA-C4`:
 
 - move to the next unresolved priority family:
-  - `mod_metab_da`
+  - `mod_prot_design_builder`
 - keep the same sequence:
   - shared cross-version public characterization
   - focused bundle compare against `latest-bundles.json`
