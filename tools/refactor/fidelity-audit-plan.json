@@ -871,7 +871,11 @@
           "A stable shared proteomics design-builder characterization file now covers the public empty save-results behavior plus the extracted save-results and reset-confirmation runtime shells.",
           "The mod_prot_design_builder wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-prot-design-characterization-20260420a.",
           "The mod_prot_design_builder observer-runtime lineage family now reaches 100.0 percent target coverage under coverage-compare-prot-design-characterization-20260420a, and coverage-evidence-prot-design-characterization-20260420a records pass for both proteomics design-builder bundles.",
-          "The old mod_prot_design_builder compare gap is removed because the new characterization file uses one genuinely shared wrapper scenario and lets the extracted helper checks skip cleanly on monolithic baseline main."
+          "The old mod_prot_design_builder compare gap is removed because the new characterization file uses one genuinely shared wrapper scenario and lets the extracted helper checks skip cleanly on monolithic baseline main.",
+          "A stable shared proteomics import characterization file now covers successful import side effects and unsupported-format cleanup on both baseline and target.",
+          "The mod_prot_import wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-prot-import-characterization-20260420T083020Z.",
+          "The mod_prot_import observer-runtime lineage family now reaches 100.0 percent target coverage under coverage-compare-prot-import-characterization-20260420T083020Z, and coverage-evidence-prot-import-characterization-20260420T083208Z records pass for both proteomics import bundles.",
+          "The proteomics import shared characterization now proves the extracted runtime helpers through shared public import flows rather than target-only helper tests."
         ]
       },
       {
@@ -951,7 +955,7 @@
         "title": "Coverage Fill",
         "first_tasks": [
           "Work one priority family at a time",
-          "Carry the shared public-module characterization pattern into mod_lipid_design_builder",
+          "Carry the shared public-module characterization pattern into mod_lipid_norm",
           "Rerun coverage after each family"
         ]
       },
@@ -971,7 +975,7 @@
     "title": "Family-By-Family Coverage Fill Campaign",
     "first_tasks": [
       "Work one priority family at a time",
-      "Carry the shared public-module characterization pattern into mod_lipid_design_builder",
+      "Carry the shared public-module characterization pattern into mod_lipid_norm",
       "Rerun coverage after each family"
     ]
   }

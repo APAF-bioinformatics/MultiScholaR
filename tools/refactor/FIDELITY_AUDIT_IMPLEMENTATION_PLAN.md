@@ -2272,10 +2272,51 @@ Interpretation update:
   - the coverage evidence model accepts this lineage form when the extracted
     helper tests are target-only and the public wrapper scenario is shared
 
+Current proteomics import checkpoint:
+
+- shared public proteomics import characterization file:
+  - `tests/testthat/test-prot-01d-import-module-characterization.R`
+  - stable contract check:
+    `contracts-prot-import-characterization-20260420T083020Z`
+  - stable compare run:
+    `coverage-compare-prot-import-characterization-20260420T083020Z`
+  - stable evidence run:
+    `coverage-evidence-prot-import-characterization-20260420T083208Z`
+- result of the current stable shared suite on the proteomics import family
+  slice:
+  - wrapper entrypoint:
+    - `surface::symbol::mod_prot_import_server` baseline `100.0%`
+    - `surface::symbol::mod_prot_import_server` target `100.0%`
+    - evidence gate: `pass`
+  - runtime lineage family:
+    - `lineage::R_mod_prot_import.R::observer_runtime` target `100.0%`
+    - evidence gate: `pass`
+- the shared proteomics import characterization file now covers stable public
+  module cases for:
+  - successful import side effects
+  - unsupported-format cleanup and workflow reset
+- baseline `main` now also passes the same shared file cleanly, so the target
+  extracted runtime helpers are covered by genuinely shared public flows rather
+  than target-only helper checks
+
+Interpretation update:
+
+- the proteomics import family slice is now resolved for FA-C4
+- the proteomics import wrapper entrypoint is now proven by shared
+  comparative coverage
+- the proteomics import observer-runtime lineage family now reaches `100.0%`
+  target coverage under the shared characterization file
+- baseline helper line ranges remain `not_observed`, but the gate records
+  `pass` because:
+  - the same shared public import scenarios pass on baseline and target
+  - the target extracted helper set is fully covered
+  - the coverage evidence model accepts this lineage form when the source
+    monolith still owns the behavior on baseline
+
 Next action inside `FA-C4`:
 
 - move to the next unresolved priority family:
-  - `mod_lipid_design_builder`
+  - `mod_lipid_norm`
 - keep the same sequence:
   - shared cross-version public characterization
   - focused bundle compare against `latest-bundles.json`
