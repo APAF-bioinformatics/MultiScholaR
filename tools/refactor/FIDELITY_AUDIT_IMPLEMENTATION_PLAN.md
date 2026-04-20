@@ -2355,10 +2355,66 @@ Interpretation update:
   - the coverage evidence model accepts this lineage form when baseline still
     owns the behavior in the monolith
 
+Current lipidomics DA checkpoint:
+
+- shared public lipidomics DA characterization file:
+  - `tests/testthat/test-lipid-02ab-da-module-characterization.R`
+  - stable contract check:
+    `contracts-lipid-da-characterization-20260420b`
+  - stable compare run:
+    `coverage-compare-lipid-da-characterization-20260420c`
+  - stable evidence run:
+    `coverage-evidence-lipid-da-characterization-20260420`
+- result of the current stable shared suite on the lipidomics DA family
+  slice:
+  - wrapper entrypoint:
+    - `surface::symbol::mod_lipid_da_server` baseline `100.0%`
+    - `surface::symbol::mod_lipid_da_server` target `100.0%`
+    - evidence gate: `pass`
+  - reactive-state lineage family:
+    - `lineage::R_mod_lipid_da.R::reactive_state` target `92.3%`
+    - evidence gate: `pass`
+  - output-renderer lineage family:
+    - `lineage::R_mod_lipid_da.R::output_renderer` target `86.4%`
+    - evidence gate: `pass`
+  - observer-runtime lineage family:
+    - `lineage::R_mod_lipid_da.R::observer_runtime` target `100.0%`
+    - evidence gate: `pass`
+- the shared lipidomics DA characterization file now covers stable public
+  module cases for:
+  - filtered-session load success
+  - missing source-directory preflight
+  - missing filtered-session file preflight
+  - corrupt-session fatal load failure
+  - DA analysis success
+  - DA analysis error finalization
+  - Glimma render failure and heatmap-save runtime behavior
+- baseline `main` now also passes the same shared file cleanly because the
+  characterization server injects a compatibility alias for the legacy
+  `generateMetabVolcanoPlotGlimma` call while preserving the real module body
+
+Interpretation update:
+
+- the lipidomics DA family slice is now resolved for FA-C4
+- the lipidomics DA wrapper entrypoint is now proven by shared comparative
+  coverage
+- the lipidomics DA reactive-state lineage family now reaches `92.3%`
+  target coverage under shared public module scenarios
+- the lipidomics DA output-renderer lineage family now reaches `86.4%`
+  target coverage under shared public render scenarios
+- the lipidomics DA observer-runtime lineage family now reaches `100.0%`
+  target coverage under shared public error and runtime scenarios
+- baseline helper line ranges remain `not_observed` for the extracted lineage
+  families, but the gate records `pass` because:
+  - the same shared DA scenarios pass on baseline and target
+  - the target extracted helper sets are covered above the bundle threshold
+  - the coverage evidence model accepts this lineage form when baseline still
+    owns the behavior in the monolith
+
 Next action inside `FA-C4`:
 
 - move to the next unresolved priority family:
-  - `mod_lipid_da`
+  - `mod_lipid_design_builder`
 - keep the same sequence:
   - shared cross-version public characterization
   - focused bundle compare against `latest-bundles.json`
