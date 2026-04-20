@@ -2229,10 +2229,53 @@ Interpretation update:
   - the coverage evidence model accepts this lineage form when the public suite
     is shared and stable
 
+Current proteomics design-builder checkpoint:
+
+- shared public proteomics design-builder characterization file:
+  - `tests/testthat/test-prot-04a-design-module-characterization.R`
+  - stable contract check:
+    `contracts-prot-design-characterization-20260420a`
+  - stable compare run:
+    `coverage-compare-prot-design-characterization-20260420a`
+  - stable evidence run:
+    `coverage-evidence-prot-design-characterization-20260420a`
+- result of the current stable shared suite on the proteomics design-builder
+  family slice:
+  - wrapper entrypoint:
+    - `surface::symbol::mod_prot_design_builder_server` baseline `100.0%`
+    - `surface::symbol::mod_prot_design_builder_server` target `100.0%`
+    - evidence gate: `pass`
+  - runtime lineage family:
+    - `lineage::R_mod_prot_design_builder.R::observer_runtime` target `100.0%`
+    - evidence gate: `pass`
+- the shared proteomics design-builder characterization file now covers stable
+  public or helper-level cases for:
+  - public module empty save-results behavior
+  - save-results warning branch
+  - save-results success branch
+  - reset-confirmation flow
+- baseline `main` now also passes the same shared file cleanly; the wrapper
+  case executes on both branches and the extracted helper tests skip on
+  baseline where the monolith has not yet been decomposed into those symbols
+
+Interpretation update:
+
+- the proteomics design-builder family slice is now resolved for FA-C4
+- the proteomics design-builder wrapper entrypoint is now proven by shared
+  comparative coverage
+- the proteomics design-builder observer-runtime lineage family now reaches
+  `100.0%` target coverage under the shared characterization file
+- as with the prior lineage families, baseline helper line ranges remain
+  `not_observed`, but the gate records `pass` because:
+  - the shared wrapper/public scenario passes on baseline and target
+  - the extracted target helper set is fully covered
+  - the coverage evidence model accepts this lineage form when the extracted
+    helper tests are target-only and the public wrapper scenario is shared
+
 Next action inside `FA-C4`:
 
 - move to the next unresolved priority family:
-  - `mod_prot_design_builder`
+  - `mod_lipid_design_builder`
 - keep the same sequence:
   - shared cross-version public characterization
   - focused bundle compare against `latest-bundles.json`
