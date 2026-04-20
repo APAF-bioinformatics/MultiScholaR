@@ -2089,6 +2089,60 @@ Next action inside `FA-C4`:
   - bundle-target compare runs
   - coverage evidence closeout
 
+Third live family pass:
+
+- shared public metabolomics norm characterization file:
+  - `tests/testthat/test-metab-03d-norm-module-characterization.R`
+  - stable contract check:
+    `contracts-metab-norm-characterization-20260420a`
+  - stable compare run:
+    `coverage-compare-metab-norm-characterization-20260420b`
+  - stable evidence run:
+    `coverage-evidence-metab-norm-characterization-20260420b`
+- result of the current stable shared suite on the metabolomics norm family
+  slice:
+  - wrapper entrypoint:
+    - `surface::symbol::mod_metab_norm_server` baseline `100.0%`
+    - `surface::symbol::mod_metab_norm_server` target `100.0%`
+    - evidence gate: `pass`
+  - runtime lineage family:
+    - `lineage::R_mod_metab_norm.R::observer_runtime` target `93.1%`
+    - evidence gate: `pass`
+- the shared metabolomics norm characterization file now covers stable public
+  module cases for:
+  - selected-tab driven pre-QC hydration
+  - normalization success
+  - normalization error handling
+  - apply-correlation success
+  - skip-correlation success
+  - export prereq and export success
+  - reset success
+  - reset save failure handling
+- baseline `main` now also passes the same shared file cleanly, so the old
+  metabolomics norm compare failure mode is removed
+
+Interpretation update:
+
+- the metabolomics norm family slice is now resolved for FA-C4
+- the metabolomics norm wrapper entrypoint is now proven by shared comparative
+  coverage, not just target-side contracts
+- the metabolomics norm observer-runtime lineage family meets target threshold
+  under the shared public suite even though baseline helper line ranges remain
+  `not_observed`; this is acceptable under the current lineage-family evidence
+  model because:
+  - the same shared public scenarios pass on baseline and target
+  - target extracted helpers are above threshold
+  - the gate records `pass` rather than `comparison_gap`
+
+Next action inside `FA-C4`:
+
+- move to the next unresolved wrapper-heavy family:
+  - `mod_metab_import`
+- reuse the same proven sequence:
+  - shared cross-version public characterization
+  - focused bundle compare against `latest-bundles.json`
+  - focused coverage evidence materialization
+
 #### `FA-C5`: Coverage-Backed Parity Closeout
 
 Goal:

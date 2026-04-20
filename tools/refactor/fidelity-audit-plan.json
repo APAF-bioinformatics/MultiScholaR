@@ -1,6 +1,6 @@
 {
   "name": "refactor-fidelity-audit",
-  "updated_at": "2026-04-19",
+  "updated_at": "2026-04-20T04:18:54Z",
   "status": "post_fa_p6_triage_planned",
   "artifacts": {
     "human_plan": "tools/refactor/FIDELITY_AUDIT_IMPLEMENTATION_PLAN.md",
@@ -817,6 +817,7 @@
           "tools/refactor/fidelity_audit.py::range-aware lineage bundle mapping",
           "tests/testthat/test-prot-11a-enrichment-module-characterization.R",
           "tests/testthat/test-prot-05d-norm-module-characterization.R",
+          "tests/testthat/test-metab-03d-norm-module-characterization.R",
           ".refactor-fidelity-audit/reports/latest-coverage-evidence.json",
           ".refactor-fidelity-audit/reports/latest-coverage-evidence.md"
         ],
@@ -831,7 +832,11 @@
           "contracts --execute for tests/testthat/test-prot-05d-norm-module-characterization.R via contracts-prot-norm-characterization-2",
           "pkgload::load_all plus testthat::test_file passes for tests/testthat/test-prot-05d-norm-module-characterization.R",
           "stable live repo coverage-compare run coverage-compare-prot-norm-characterization",
-          "stable live repo coverage-evidence run coverage-evidence-prot-norm-characterization"
+          "stable live repo coverage-evidence run coverage-evidence-prot-norm-characterization",
+          "contracts --execute for tests/testthat/test-metab-03d-norm-module-characterization.R via contracts-metab-norm-characterization-20260420a",
+          "pkgload::load_all plus testthat::test_file passes on both WORKTREE and main overlay for tests/testthat/test-metab-03d-norm-module-characterization.R",
+          "stable live repo coverage-compare run coverage-compare-metab-norm-characterization-20260420b",
+          "stable live repo coverage-evidence run coverage-evidence-metab-norm-characterization-20260420b"
         ],
         "current_findings": [
           "The covr runner now executes real selected testthat files through pkgload::load_all plus namespace tracing.",
@@ -845,7 +850,11 @@
           "A stable shared norm characterization file now covers apply-correlation, skip-correlation, export prereq and success, reset success, invalid-tab warning, and public error-handling paths that execute cleanly on both baseline and target.",
           "The mod_prot_norm wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-prot-norm-characterization.",
           "The mod_prot_norm observer-runtime lineage family now reaches 89.9 percent target coverage under coverage-compare-prot-norm-characterization, and coverage-evidence-prot-norm-characterization records pass for both norm bundles.",
-          "The old mod_prot_norm compare failure mode is removed because the shared characterization file no longer depends on target-only extracted helper surfaces."
+          "The old mod_prot_norm compare failure mode is removed because the shared characterization file no longer depends on target-only extracted helper surfaces.",
+          "A stable shared metabolomics norm characterization file now covers selected-tab pre-QC hydration, normalization success and failure, apply and skip correlation, export prereq and success, reset success, and reset save failure on both baseline and target.",
+          "The mod_metab_norm wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-metab-norm-characterization-20260420b.",
+          "The mod_metab_norm observer-runtime lineage family now reaches 93.1 percent target coverage under coverage-compare-metab-norm-characterization-20260420b, and coverage-evidence-metab-norm-characterization-20260420b records pass for both metabolomics norm bundles.",
+          "The old mod_metab_norm compare failure mode is removed because the shared characterization file now relies only on public behavior and common lower-level seams."
         ]
       },
       {
@@ -925,7 +934,7 @@
         "title": "Coverage Fill",
         "first_tasks": [
           "Work one priority family at a time",
-          "Add missing direct tests",
+          "Carry the metabolomics norm shared characterization pattern into mod_metab_import",
           "Rerun coverage after each family"
         ]
       },
@@ -945,7 +954,7 @@
     "title": "Family-By-Family Coverage Fill Campaign",
     "first_tasks": [
       "Work one priority family at a time",
-      "Carry the shared public-module characterization pattern into mod_metab_norm or mod_metab_import",
+      "Carry the shared public-module characterization pattern into mod_metab_import",
       "Rerun coverage after each family"
     ]
   }
