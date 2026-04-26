@@ -1,19 +1,93 @@
 # ----------------------------------------------------------------------------
+# .extractCancorCurveData
+# ----------------------------------------------------------------------------
+#' @keywords internal
+.extractCancorCurveData <- function(cancorplot) {
+  plot_data <- if (inherits(cancorplot, "ggplot")) {
+    cancorplot$data
+  } else if (is.list(cancorplot) && !is.null(cancorplot$data)) {
+    cancorplot$data
+  } else {
+    return(NULL)
+  }
+
+  required_cols <- c("featureset", "K", "cc")
+  if (is.null(plot_data) || !all(required_cols %in% colnames(plot_data))) {
+    return(NULL)
+  }
+
+  dup_check <- plot_data |>
+    dplyr::group_by(featureset, K) |>
+    dplyr::summarise(n = dplyr::n(), .groups = "drop") |>
+    dplyr::filter(n > 1)
+  if (nrow(dup_check) > 0) {
+    return(NULL)
+  }
+
+  curve <- plot_data |>
+    dplyr::select(featureset, K, cc) |>
+    tidyr::pivot_wider(names_from = featureset, values_from = cc) |>
+    dplyr::arrange(K)
+
+  if (!all(c("All", "Control", "K") %in% colnames(curve))) {
+    return(NULL)
+  }
+
+  curve |>
+    dplyr::mutate(delta = All - Control)
+}
+
+# ----------------------------------------------------------------------------
 # findBestK
 # ----------------------------------------------------------------------------
-## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#'@export
-findBestK <- function( cancorplot_r1) {
-  message("--- DEBUG66: Entering findBestK ---")
-  controls_idx <- which(cancorplot_r1$data$featureset == "Control")
-  all_idx <- which( cancorplot_r1$data$featureset == "All")
-  difference_between_all_ctrl <- cancorplot_r1$data$cc[all_idx] - cancorplot_r1$data$cc[controls_idx]
-  max_difference <- max(difference_between_all_ctrl, na.rm=TRUE)
-  message(sprintf("   DEBUG66: max_difference = %.4f", max_difference))
-  best_idx <- which( difference_between_all_ctrl == max_difference)
-  best_k <- (cancorplot_r1$data$K[controls_idx] )[best_idx]
-  message(sprintf("   DEBUG66: best_k (internal) = %s", as.character(best_k)))
-  return( best_k)
+#' @export
+findBestK <- function(cancorplot_r1) {
+  .Deprecated("findBestKElbow")
+  findBestKElbow(cancorplot_r1)
+}
+
+# ----------------------------------------------------------------------------
+# findBestKElbow
+# ----------------------------------------------------------------------------
+#' Find Best K Using First-Plateau Detection
+#'
+#' Selects the smallest K whose All-vs-Control separation is within epsilon of
+#' the maximum observed separation. Malformed inputs return NA. Valid weak-effect
+#' curves return 1L.
+#'
+#' @param cancorplot A ggplot object or list with `$data`.
+#' @param epsilon Numeric tolerance below the maximum delta. Default 0.05.
+#' @param min_effect Minimum meaningful max(delta). Default 0.05.
+#'
+#' @return A scalar integer K, or NA_integer_ for invalid input.
+#' @export
+findBestKElbow <- function(cancorplot, epsilon = 0.05, min_effect = 0.05) {
+  curve <- .extractCancorCurveData(cancorplot)
+  if (is.null(curve)) {
+    return(NA_integer_)
+  }
+
+  valid_rows <- curve[is.finite(curve$delta) & is.finite(curve$K), , drop = FALSE]
+  if (nrow(valid_rows) == 0) {
+    return(NA_integer_)
+  }
+
+  max_delta <- max(valid_rows$delta, na.rm = TRUE)
+  if (!is.finite(max_delta)) {
+    return(NA_integer_)
+  }
+
+  if (max_delta < min_effect) {
+    return(1L)
+  }
+
+  target <- max_delta * (1 - epsilon)
+  candidates <- valid_rows$K[valid_rows$delta >= target]
+  if (length(candidates) == 0) {
+    return(NA_integer_)
+  }
+
+  as.integer(min(candidates))
 }
 
 # ----------------------------------------------------------------------------
@@ -63,28 +137,10 @@ findBestKForAssayList <- function(cancor_plots_list) {
             return(NA_integer_)
         }
 
-        # Call the original findBestK function
-        best_k_assay <- tryCatch({
-            k <- findBestK(current_plot)
-            # Add a check for Inf or non-numeric result which might cause issues later
-            if (is.infinite(k) || !is.numeric(k) || length(k) != 1) {
-                 log_warn("Assay '{assay_name}': findBestK returned an invalid value ({k}). Returning NA.", .logr = TRUE)
-                 NA_integer_
-            } else {
-                 # Ensure it's an integer
-                 as.integer(k)
-            }
-        }, warning = function(w) {
-            # Catch the specific warning from findBestK if max returns -Inf
-            if (grepl("no non-missing arguments to max", w$message, ignore.case = TRUE)) {
-                log_warn("Assay '{assay_name}': Warning in findBestK (likely no valid data in plot): {w$message}. Returning NA.", .logr = TRUE)
-            } else {
-                # Log other warnings but still try to return NA
-                log_warn("Assay '{assay_name}': Warning during findBestK: {w$message}. Returning NA.", .logr = TRUE)
-            }
-            NA_integer_
+            best_k_assay <- tryCatch({
+            findBestKElbow(current_plot)
         }, error = function(e) {
-            log_warn("Assay '{assay_name}': Error calling findBestK: {e$message}. Returning NA.", .logr = TRUE)
+            log_warn(paste("Assay", assay_name, ": Error calling findBestKElbow:", e$message, ". Returning NA."))
             NA_integer_
         })
 
@@ -112,71 +168,32 @@ findBestKForAssayList <- function(cancor_plots_list) {
 #'
 #' @keywords internal
 calculateSeparationScore <- function(cancorplot, metric = "max_difference") {
-  message(sprintf("--- DEBUG66: Entering calculateSeparationScore (metric=%s) ---", metric))
-  
-  # Extract data from the plot
-  if (!inherits(cancorplot, "ggplot") || is.null(cancorplot$data)) {
-    message("   DEBUG66: Invalid cancorplot")
+  curve <- .extractCancorCurveData(cancorplot)
+  if (is.null(curve)) {
     return(NA_real_)
   }
-  
-  plot_data <- cancorplot$data
-  
-  # Check required columns exist
-  if (!all(c("featureset", "cc", "K") %in% colnames(plot_data))) {
-    message("   DEBUG66: Missing columns in plot_data")
+
+  valid_rows <- curve[is.finite(curve$delta), , drop = FALSE]
+  if (nrow(valid_rows) == 0) {
     return(NA_real_)
   }
-  
-  # Get indices for Control and All groups
-  controls_idx <- which(plot_data$featureset == "Control")
-  all_idx <- which(plot_data$featureset == "All")
-  
-  if (length(controls_idx) == 0 || length(all_idx) == 0) {
-    message("   DEBUG66: No Control or All groups found")
-    return(NA_real_)
-  }
-  
-  # Calculate differences between All and Control
-  difference_between_all_ctrl <- plot_data$cc[all_idx] - plot_data$cc[controls_idx]
-  
-  # Remove any NA or infinite values
-  valid_diffs <- difference_between_all_ctrl[is.finite(difference_between_all_ctrl)]
-  
-  if (length(valid_diffs) == 0) {
-    return(NA_real_)
-  }
-  
-  # Calculate score based on specified metric
+
   score <- switch(metric,
-    "max_difference" = max(valid_diffs, na.rm = TRUE),
-    "mean_difference" = mean(valid_diffs, na.rm = TRUE),
+    "max_difference" = max(valid_rows$delta),
+    "mean_difference" = mean(valid_rows$delta),
     "auc" = {
-      # Area under the curve (trapezoidal rule approximation)
-      k_values <- plot_data$K[all_idx][is.finite(difference_between_all_ctrl)]
-      if (length(k_values) < 2) return(NA_real_)
-      
-      # Sort by K value
-      sorted_idx <- order(k_values)
-      k_sorted <- k_values[sorted_idx]
-      diff_sorted <- valid_diffs[sorted_idx]
-      
-      # Calculate AUC using trapezoidal rule
-      sum(diff(k_sorted) * (head(diff_sorted, -1) + tail(diff_sorted, -1)) / 2)
+      if (nrow(valid_rows) < 2) return(NA_real_)
+      sorted <- valid_rows[order(valid_rows$K), ]
+      sum(diff(sorted$K) * (head(sorted$delta, -1) + tail(sorted$delta, -1)) / 2)
     },
     "weighted_difference" = {
-      # Weight differences by their K value (higher K gets more weight)
-      k_values <- plot_data$K[all_idx][is.finite(difference_between_all_ctrl)]
-      if (length(k_values) == 0) return(NA_real_)
-      
-      weights <- k_values / max(k_values, na.rm = TRUE)
-      sum(valid_diffs * weights, na.rm = TRUE) / sum(weights, na.rm = TRUE)
+      weights <- valid_rows$K / max(valid_rows$K)
+      sum(valid_rows$delta * weights) / sum(weights)
     },
     NA_real_
   )
-  
-  message(sprintf("   DEBUG66: Calculated score = %.4f", score))
-  return(as.numeric(score))
+
+  as.numeric(score)
 }
 
 # ----------------------------------------------------------------------------
@@ -198,42 +215,30 @@ calculateSeparationScore <- function(cancorplot, metric = "max_difference") {
 #'
 #' @keywords internal
 calculateCompositeScore <- function(separation_score, best_k, k_penalty_weight, max_acceptable_k) {
-  message(sprintf("--- DEBUG66: Entering calculateCompositeScore (sep=%.4f, k=%s) ---", separation_score, as.character(best_k)))
-  
-  # Handle NA cases
-  if (is.na(separation_score) || is.na(best_k)) {
+  if (!is.finite(separation_score) || !is.finite(best_k)) {
     return(NA_real_)
   }
-  
-  # Ensure positive values
+
+  if (!is.finite(max_acceptable_k) || max_acceptable_k < 1) {
+    return(NA_real_)
+  }
+
   if (separation_score <= 0) {
     return(0)
   }
-  
-  # Calculate k penalty
-  if (best_k <= max_acceptable_k) {
-    # Linear penalty within acceptable range: penalty = 0 at k=1, penalty = k_penalty_weight at k=max_acceptable_k
+
+  if (max_acceptable_k == 1) {
+    k_penalty <- if (best_k <= 1) 0 else 1
+  } else if (best_k <= max_acceptable_k) {
     k_penalty <- k_penalty_weight * (best_k - 1) / (max_acceptable_k - 1)
   } else {
-    # Heavy penalty for k values above max_acceptable_k
-    # Exponential penalty: starts at k_penalty_weight and increases rapidly
     excess_k <- best_k - max_acceptable_k
     k_penalty <- k_penalty_weight + (1 - k_penalty_weight) * (1 - exp(-excess_k))
   }
-  
-  # Ensure k_penalty is between 0 and 1
+
   k_penalty <- pmax(0, pmin(1, k_penalty))
-  message(sprintf("   DEBUG66: k_penalty = %.4f", k_penalty))
-  
-  # Calculate composite score: separation_score * (1 - k_penalty)
-  # This means:
-  # - k=1: no penalty (multiply by 1)
-  # - k=max_acceptable_k: penalty = k_penalty_weight (multiply by 1-k_penalty_weight)
-  # - k>max_acceptable_k: heavy penalty (multiply by value approaching 0)
-  composite_score <- separation_score * (1 - k_penalty)
-  message(sprintf("   DEBUG66: composite_score = %.4f", composite_score))
-  
-  return(as.numeric(composite_score))
+
+  as.numeric(separation_score * (1 - k_penalty))
 }
 
 # ----------------------------------------------------------------------------
@@ -698,16 +703,14 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
       separation_score <- calculateSeparationScore(cancorplot, separation_metric)
       message(sprintf("      DEBUG66: separation_score = %.4f", separation_score))
       
-      # Calculate the best k using the existing findBestK function
       best_k <- tryCatch({
-        findBestK(cancorplot)
+        findBestKElbow(cancorplot)
       }, error = function(e) {
         if (verbose) {
-          log_warn("Percentage {current_percentage}%: Error calculating best k: {e$message}")
+          log_warn(paste("Percentage", current_percentage, "% : Error calculating best k:", e$message))
         }
-        return(NA_real_)
+        return(NA_integer_)
       })
-      message(sprintf("      DEBUG66: best_k = %s", as.character(best_k)))
       
       # Calculate composite score that considers both separation and k value
       composite_score <- calculateCompositeScore(

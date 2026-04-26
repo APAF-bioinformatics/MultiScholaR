@@ -332,14 +332,13 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
       # Calculate separation score
       separation_score <- .peptide_calculateSeparationScore(cancorplot, separation_metric)
 
-      # Calculate the best k using the existing findBestK function
       best_k <- tryCatch({
-        findBestK(cancorplot)
+        findBestKElbow(cancorplot)
       }, error = function(e) {
         if (verbose) {
-          log_warn("Percentage {current_percentage}%: Error calculating best k: {e$message}")
+          log_warn(paste("Percentage", current_percentage, "% : Error calculating best k:", e$message))
         }
-        return(NA_real_)
+        return(NA_integer_)
       })
 
       # Calculate composite score that considers both separation and k value
@@ -448,66 +447,32 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
 #'
 #' @keywords internal
 .peptide_calculateSeparationScore <- function(cancorplot, metric = "max_difference") {
-
-  # Extract data from the plot
-  if (!inherits(cancorplot, "ggplot") || is.null(cancorplot$data)) {
+  curve <- .extractCancorCurveData(cancorplot)
+  if (is.null(curve)) {
     return(NA_real_)
   }
 
-  plot_data <- cancorplot$data
-
-  # Check required columns exist
-  if (!all(c("featureset", "cc", "K") %in% colnames(plot_data))) {
+  valid_rows <- curve[is.finite(curve$delta), , drop = FALSE]
+  if (nrow(valid_rows) == 0) {
     return(NA_real_)
   }
 
-  # Get indices for Control and All groups
-  controls_idx <- which(plot_data$featureset == "Control")
-  all_idx <- which(plot_data$featureset == "All")
-
-  if (length(controls_idx) == 0 || length(all_idx) == 0) {
-    return(NA_real_)
-  }
-
-  # Calculate differences between All and Control
-  difference_between_all_ctrl <- plot_data$cc[all_idx] - plot_data$cc[controls_idx]
-
-  # Remove any NA or infinite values
-  valid_diffs <- difference_between_all_ctrl[is.finite(difference_between_all_ctrl)]
-
-  if (length(valid_diffs) == 0) {
-    return(NA_real_)
-  }
-
-  # Calculate score based on specified metric
   score <- switch(metric,
-    "max_difference" = max(valid_diffs, na.rm = TRUE),
-    "mean_difference" = mean(valid_diffs, na.rm = TRUE),
+    "max_difference" = max(valid_rows$delta),
+    "mean_difference" = mean(valid_rows$delta),
     "auc" = {
-      # Area under the curve (trapezoidal rule approximation)
-      k_values <- plot_data$K[all_idx][is.finite(difference_between_all_ctrl)]
-      if (length(k_values) < 2) return(NA_real_)
-
-      # Sort by K value
-      sorted_idx <- order(k_values)
-      k_sorted <- k_values[sorted_idx]
-      diff_sorted <- valid_diffs[sorted_idx]
-
-      # Calculate AUC using trapezoidal rule
-      sum(diff(k_sorted) * (head(diff_sorted, -1) + tail(diff_sorted, -1)) / 2)
+      if (nrow(valid_rows) < 2) return(NA_real_)
+      sorted <- valid_rows[order(valid_rows$K), ]
+      sum(diff(sorted$K) * (head(sorted$delta, -1) + tail(sorted$delta, -1)) / 2)
     },
     "weighted_difference" = {
-      # Weight differences by their K value (higher K gets more weight)
-      k_values <- plot_data$K[all_idx][is.finite(difference_between_all_ctrl)]
-      if (length(k_values) == 0) return(NA_real_)
-
-      weights <- k_values / max(k_values, na.rm = TRUE)
-      sum(valid_diffs * weights, na.rm = TRUE) / sum(weights, na.rm = TRUE)
+      weights <- valid_rows$K / max(valid_rows$K)
+      sum(valid_rows$delta * weights) / sum(weights)
     },
     NA_real_
   )
 
-  return(as.numeric(score))
+  as.numeric(score)
 }
 
 #' Calculate Composite Score for Percentage Optimization (Peptide version)
@@ -526,39 +491,30 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
 #'
 #' @keywords internal
 .peptide_calculateCompositeScore <- function(separation_score, best_k, k_penalty_weight, max_acceptable_k) {
-
-  # Handle NA cases
-  if (is.na(separation_score) || is.na(best_k)) {
+  if (!is.finite(separation_score) || !is.finite(best_k)) {
     return(NA_real_)
   }
 
-  # Ensure positive values
+  if (!is.finite(max_acceptable_k) || max_acceptable_k < 1) {
+    return(NA_real_)
+  }
+
   if (separation_score <= 0) {
     return(0)
   }
 
-  # Calculate k penalty
-  if (best_k <= max_acceptable_k) {
-    # Linear penalty within acceptable range: penalty = 0 at k=1, penalty = k_penalty_weight at k=max_acceptable_k
+  if (max_acceptable_k == 1) {
+    k_penalty <- if (best_k <= 1) 0 else 1
+  } else if (best_k <= max_acceptable_k) {
     k_penalty <- k_penalty_weight * (best_k - 1) / (max_acceptable_k - 1)
   } else {
-    # Heavy penalty for k values above max_acceptable_k
-    # Exponential penalty: starts at k_penalty_weight and increases rapidly
     excess_k <- best_k - max_acceptable_k
     k_penalty <- k_penalty_weight + (1 - k_penalty_weight) * (1 - exp(-excess_k))
   }
 
-  # Ensure k_penalty is between 0 and 1
   k_penalty <- pmax(0, pmin(1, k_penalty))
 
-  # Calculate composite score: separation_score * (1 - k_penalty)
-  # This means:
-  # - k=1: no penalty (multiply by 1)
-  # - k=max_acceptable_k: penalty = k_penalty_weight (multiply by 1-k_penalty_weight)
-  # - k>max_acceptable_k: heavy penalty (multiply by value approaching 0)
-  composite_score <- separation_score * (1 - k_penalty)
-
-  return(as.numeric(composite_score))
+  as.numeric(separation_score * (1 - k_penalty))
 }
 
 #' Calculate Adaptive Maximum Acceptable K Based on Sample Size (Peptide version)

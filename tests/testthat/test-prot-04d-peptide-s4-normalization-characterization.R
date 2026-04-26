@@ -460,8 +460,8 @@ test_that("PeptideQuantitativeData negative-control optimization returns per-per
                                          ruv_fdr_method) {
       setNames(rep(TRUE, nrow(data_matrix)), rownames(data_matrix))
     },
-    findBestK = function(cancorplot) {
-      2
+    findBestKElbow = function(cancorplot, epsilon = 0.05, min_effect = 0.05) {
+      2L
     },
     .env = method_env
   )
@@ -481,7 +481,7 @@ test_that("PeptideQuantitativeData negative-control optimization returns per-per
   )
 
   expect_true(results$best_percentage %in% c(10, 20))
-  expect_identical(results$best_k, 2)
+  expect_identical(results$best_k, 2L)
   expect_identical(results$separation_metric_used, "max_difference")
   expect_identical(results$adaptive_k_penalty_used, FALSE)
   expect_equal(results$optimization_results$percentage, c(10, 20))
@@ -554,7 +554,7 @@ test_that("PeptideQuantitativeData negative-control optimization covers validati
                                          ruv_fdr_method) {
       setNames(rep(TRUE, nrow(data_matrix)), rownames(data_matrix))
     },
-    findBestK = function(cancorplot) {
+    findBestKElbow = function(cancorplot, epsilon = 0.05, min_effect = 0.05) {
       stop("best-k unavailable")
     },
     .env = method_env
@@ -582,8 +582,8 @@ test_that("PeptideQuantitativeData negative-control optimization covers validati
                                          ruv_fdr_method) {
       setNames(rep(TRUE, nrow(data_matrix)), rownames(data_matrix))
     },
-    findBestK = function(cancorplot) {
-      1
+    findBestKElbow = function(cancorplot, epsilon = 0.05, min_effect = 0.05) {
+      1L
     },
     .env = method_env
   )

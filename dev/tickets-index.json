@@ -1,0 +1,135 @@
+{
+  "project": "MultiScholaR",
+  "schema": "dev/ticket-schema.md",
+  "tickets": [
+    {
+      "id": "LIP-001",
+      "title": "Lipidomics S4 objects and helpers",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [],
+      "file": "TICKET-001_S4_Objects.md"
+    },
+    {
+      "id": "LIP-002",
+      "title": "Core data acquisition modules",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "LIP-001"
+      ],
+      "file": "TICKET-002_Core_Modules.md"
+    },
+    {
+      "id": "LIP-003",
+      "title": "Quality control and normalization modules",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "LIP-001",
+        "LIP-002"
+      ],
+      "file": "TICKET-003_QC_Norm.md"
+    },
+    {
+      "id": "LIP-004",
+      "title": "Differential expression",
+      "status": "completed",
+      "priority": "P1",
+      "dependencies": [
+        "LIP-003"
+      ],
+      "file": "TICKET-004_DE.md"
+    },
+    {
+      "id": "LIP-005",
+      "title": "Orchestrator and summary",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "LIP-001",
+        "LIP-002",
+        "LIP-003",
+        "LIP-004"
+      ],
+      "file": "TICKET-005_Orchestrator.md"
+    },
+    {
+      "id": "RUV-001",
+      "title": "Shared K-selection and scoring hardening",
+      "status": "in_progress",
+      "priority": "P0",
+      "dependencies": [],
+      "file": "audit/RUV/tickets/RUV-001-shared-k-selection-and-scoring-hardening.md"
+    },
+    {
+      "id": "RUV-002",
+      "title": "Proteomics automatic optimizer hardening",
+      "status": "pending",
+      "priority": "P0",
+      "dependencies": [
+        "RUV-001"
+      ],
+      "file": "audit/RUV/tickets/RUV-002-proteomics-automatic-optimizer-hardening.md"
+    },
+    {
+      "id": "RUV-003",
+      "title": "Metabolomics automatic search rewrite",
+      "status": "pending",
+      "priority": "P0",
+      "dependencies": [
+        "RUV-001"
+      ],
+      "file": "audit/RUV/tickets/RUV-003-metabolomics-automatic-search-rewrite.md"
+    },
+    {
+      "id": "RUV-004",
+      "title": "Lipidomics automatic search rewrite",
+      "status": "pending",
+      "priority": "P0",
+      "dependencies": [
+        "RUV-001"
+      ],
+      "file": "audit/RUV/tickets/RUV-004-lipidomics-automatic-search-rewrite.md"
+    },
+    {
+      "id": "RUV-005",
+      "title": "Peptide optimizer reconciliation",
+      "status": "pending",
+      "priority": "P0",
+      "dependencies": [
+        "RUV-001"
+      ],
+      "file": "audit/RUV/tickets/RUV-005-peptide-optimizer-reconciliation.md"
+    },
+    {
+      "id": "RUV-006",
+      "title": "Docs, UI deprecations, and release notes",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "RUV-001",
+        "RUV-002",
+        "RUV-003",
+        "RUV-004",
+        "RUV-005"
+      ],
+      "file": "audit/RUV/tickets/RUV-006-docs-ui-deprecations-and-release-notes.md"
+    },
+    {
+      "id": "RUV-007",
+      "title": "Regression matrix and release gate",
+      "status": "pending",
+      "priority": "P0",
+      "dependencies": [
+        "RUV-001",
+        "RUV-002",
+        "RUV-003",
+        "RUV-004",
+        "RUV-005",
+        "RUV-006"
+      ],
+      "file": "audit/RUV/tickets/RUV-007-regression-matrix-and-release-gate.md"
+    }
+  ]
+}

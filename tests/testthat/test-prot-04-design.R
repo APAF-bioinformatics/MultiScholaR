@@ -586,11 +586,11 @@ test_that("peptide negative-control optimization keeps the best percentage and a
     .peptide_calculateSeparationScore = function(cancorplot, metric) {
       cancorplot$current_percentage / 10
     },
-    findBestK = function(cancorplot) {
+    findBestKElbow = function(cancorplot, epsilon = 0.05, min_effect = 0.05) {
       if (identical(cancorplot$current_percentage, 10)) {
-        2
+        2L
       } else {
-        5
+        5L
       }
     },
     .peptide_calculateCompositeScore = function(separation_score,

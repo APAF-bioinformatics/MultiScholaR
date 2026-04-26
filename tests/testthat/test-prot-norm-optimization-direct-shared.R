@@ -70,7 +70,7 @@ makeProteinRuvObject <- function() {
 test_that("protein RUV helper functions preserve K and scoring calculations", {
   plot <- makeCancorPlot()
 
-  expect_identical(findBestK(plot), 2L)
+  expect_identical(suppressWarnings(findBestK(plot)), 2L)
 
   scored_list <- suppressWarnings(findBestKForAssayList(list(Assay1 = plot, Assay2 = 42)))
   unnamed_list <- suppressWarnings(findBestKForAssayList(list(plot)))
@@ -190,7 +190,7 @@ test_that("protein RUV percentage optimization preserves ranking and validation 
   localBinding(helper_env, "calculateSeparationScore", function(cancorplot, metric = "max_difference") {
     cancorplot$percentage / 10
   })
-  localBinding(helper_env, "findBestK", function(cancorplot) {
+  localBinding(helper_env, "findBestKElbow", function(cancorplot, epsilon = 0.05, min_effect = 0.05) {
     if (identical(cancorplot$percentage, 5)) 2L else 3L
   })
 
