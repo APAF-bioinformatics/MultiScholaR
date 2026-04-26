@@ -57,7 +57,7 @@
     {
       "id": "RUV-001",
       "title": "Shared K-selection and scoring hardening",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "P0",
       "dependencies": [],
       "file": "audit/RUV/tickets/RUV-001-shared-k-selection-and-scoring-hardening.md"
@@ -65,7 +65,7 @@
     {
       "id": "RUV-002",
       "title": "Proteomics automatic optimizer hardening",
-      "status": "pending",
+      "status": "in_progress",
       "priority": "P0",
       "dependencies": [
         "RUV-001"
