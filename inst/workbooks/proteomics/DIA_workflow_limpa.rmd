@@ -1582,7 +1582,7 @@ savePlot(
 - [Determining Optimal k Parameter](https://medium.com/analytics-vidhya/how-to-determine-the-optimal-k-for-k-means-708505d204eb) - Methods for selecting the number of factors to remove
 - [Cross-Validation Approaches](https://medium.com/@fraidoonomarzai99/hyperparameters-tunning-and-cross-validation-in-depth-d0918b62d986) - Cross-validation for parameter optimization
 
-This section implements the RUV-III (Remove Unwanted Variation) method with canonical correlation analysis to further normalize your data by removing unwanted technical variation while preserving biological signal. The approach uses proteins least likely to be differentially expressed (identified by ANOVA) as "negative controls" to estimate and remove sources of unwanted variation. The canonical correlation plot helps determine the optimal number of factors (k) to remove - too few factors may leave unwanted variation, while too many might remove biological signal. The plot shows correlations between canonical variables derived from the data and the experimental design, with the inflection point or "elbow" in the plot suggesting the optimal k value. This data-driven approach to selecting k ensures that normalization is appropriately tuned to your specific dataset.
+This section implements the RUV-III (Remove Unwanted Variation) method with canonical correlation analysis to further normalize your data by removing unwanted technical variation while preserving biological signal. The approach uses proteins least likely to be differentially expressed (identified by ANOVA) as "negative controls" to estimate and remove sources of unwanted variation. The canonical correlation plot helps determine the optimal number of factors (k) to remove — too few factors may leave unwanted variation, while too many might remove biological signal. The automatic optimizer computes the separation between "All" and "Control" features at each K and selects the smallest K whose separation is within 5% of the maximum observed. This conservative first-plateau rule favors the earliest K at which additional correction provides diminishing returns. This data-driven approach to selecting k ensures that normalization is appropriately tuned to your specific dataset.
 
 ```{r 26 RUVIII-C Canonical Correlation Plot}
 # Choose the % of proteins in your dataset you wish to use as a negative control
@@ -1599,8 +1599,8 @@ cancorplot_r1 <- ruvCancor(
   ruv_grouping_variable = "group"
 )
 
-# Find the best k
-best_k <- findBestK(cancorplot_r1)
+# Find the best k (uses first-plateau detection; findBestK() is deprecated)
+best_k <- findBestKElbow(cancorplot_r1)
 
 # Add vertical line for best_k
 cancorplot_r1 <- cancorplot_r1 +

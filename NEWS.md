@@ -1,5 +1,43 @@
 # MultiScholaR NEWS
 
+## Version 0.5.0
+
+### Automatic RUV Parameter Optimization — Behavior Changes
+
+This release completes a correctness overhaul of the automatic RUV-III-C parameter
+optimization across all omics types. **Automatic-mode results may differ from previous
+versions for every dataset.** Manual mode semantics are unchanged.
+
+-- Automatic K Selection (`findBestKElbow`)
+ * K selection now uses a first-plateau detection rule instead of argmax.
+   The optimizer selects the smallest K whose separation score is within 5% of
+   the maximum observed across all tested K values. This conservative rule favors
+   the earliest K at which additional correction provides diminishing returns.
+ * `findBestK()` is deprecated — use `findBestKElbow()` instead. The old function
+   delegates to the new one and emits a deprecation warning.
+
+-- Metabolomics and Lipidomics Automatic Mode
+ * Automatic mode now truly searches the full requested percentage range, evaluating
+   each candidate percentage as a whole-object optimization step. Previously, the
+   automatic path always used `percentage_max` without iteration.
+
+-- Peptide Automatic Mode
+ * Peptide automatic optimization now uses the full `ruvCancor()` objective to
+   evaluate each percentage. Previously it used the `ruvCancorFast()` surrogate,
+   which could select different parameters than the full objective would.
+ * `ruvCancorFast()` is deprecated — use `ruvCancor()` instead.
+
+-- Deprecations
+ * `weighted_difference` separation metric is deprecated. It up-weights high-K
+   values while the composite score penalizes high K, creating contradictory
+   optimization pressure. Use `max_difference` (default) or `mean_difference`.
+   A deprecation warning fires once per public optimizer call when this metric
+   is selected. The UI labels now show "(deprecated)" for this option.
+
+-- Manual Mode
+ * Manual mode input contracts are unchanged across all omics types.
+   Only automatic optimization behavior changes in this release.
+
 ## Version 0.4.1.2
 
 -- All Modules & Infrastructure

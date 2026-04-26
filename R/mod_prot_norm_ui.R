@@ -116,7 +116,7 @@ mod_prot_norm_ui <- function(id) {
               "Maximum Difference (recommended)" = "max_difference",
               "Mean Difference" = "mean_difference", 
               "Area Under Curve" = "auc",
-              "Weighted Difference" = "weighted_difference"
+              "Weighted Difference (deprecated)" = "weighted_difference"
             ),
             selected = "max_difference",
             width = "100%"

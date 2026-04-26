@@ -1191,9 +1191,9 @@ savePlot(
 
 This section implements the RUV-III (Remove Unwanted Variation) method with canonical correlation analysis to further normalize your data by removing unwanted technical variation while preserving biological signal. The approach uses proteins least likely to be differentially expressed (identified by ANOVA) as "negative controls" to estimate and remove sources of unwanted variation. 
 
-**NEW: Automated Optimization**: Instead of manually selecting the percentage of proteins to use as negative controls, this workflow now includes an automated optimization function (`findBestNegCtrlPercentage`) that tests different percentages (1% to 20%) and finds the one that gives the best separation between "All" and "Control" groups in the canonical correlation plot. This removes the subjectivity from parameter selection and ensures optimal results for your specific dataset.
+**Automated Optimization**: Instead of manually selecting the percentage of proteins to use as negative controls, this workflow includes an automated optimization function (`findBestNegCtrlPercentage`) that searches the full requested percentage range and selects the percentage that gives the best separation between "All" and "Control" groups in the canonical correlation plot. This removes the subjectivity from parameter selection and ensures optimal results for your specific dataset.
 
-The canonical correlation plot helps determine the optimal number of factors (k) to remove - too few factors may leave unwanted variation, while too many might remove biological signal. The plot shows correlations between canonical variables derived from the data and the experimental design, with the inflection point or "elbow" in the plot suggesting the optimal k value. This data-driven approach to selecting both the percentage of negative controls and k ensures that normalization is appropriately tuned to your specific dataset.
+The automatic optimizer computes the separation between "All" and "Control" features at each K and selects the smallest K whose separation is within 5% of the maximum observed. This conservative first-plateau rule favors the earliest K at which additional correction provides diminishing returns. This data-driven approach to selecting both the percentage of negative controls and K ensures that normalization is appropriately tuned to your specific dataset.
 
 ```{r 26A Automated Optimization of Negative Control Percentage}
 # AUTOMATED APPROACH: Find the optimal percentage of proteins to use as negative controls
@@ -1223,7 +1223,7 @@ optimization_result <- findBestNegCtrlPercentage(
 percentage_as_neg_ctrl <- optimization_result$best_percentage
 control_genes_index <- optimization_result$best_control_genes_index
 cancorplot_r1 <- optimization_result$best_cancor_plot
-best_k <- optimization_result$best_k  # No need to call findBestK() again!
+best_k <- optimization_result$best_k  # No need to call findBestKElbow() again!
 
 # Update config with optimal percentage
 config_list$ruvParameters$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
@@ -1303,7 +1303,7 @@ cancorplot_r1
 # )
 # 
 # # Find the best k
-# best_k <- findBestK(cancorplot_r1)
+# best_k <- findBestKElbow(cancorplot_r1)
 # 
 # # Add vertical line for best_k
 # cancorplot_r1 <- cancorplot_r1 +

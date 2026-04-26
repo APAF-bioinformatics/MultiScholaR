@@ -95,7 +95,7 @@
     {
       "id": "RUV-005",
       "title": "Peptide optimizer reconciliation",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "P0",
       "dependencies": [
         "RUV-001"
@@ -105,7 +105,7 @@
     {
       "id": "RUV-006",
       "title": "Docs, UI deprecations, and release notes",
-      "status": "pending",
+      "status": "in_progress",
       "priority": "P1",
       "dependencies": [
         "RUV-001",

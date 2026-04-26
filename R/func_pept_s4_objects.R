@@ -56,7 +56,8 @@
 #'   Default is 0.05
 #' @param ruv_fdr_method The FDR calculation method. Default is "qvalue"
 #' @param separation_metric The metric to use for evaluating separation quality.
-#'   Options: "max_difference" (default), "mean_difference", "auc", "weighted_difference"
+#'   Options: "max_difference" (default), "mean_difference", "auc".
+#'   "weighted_difference" is deprecated; use "max_difference" or "mean_difference" instead.
 #' @param k_penalty_weight Weight for penalizing high k values in composite score.
 #'   Default is 0.5. Higher values penalize high k more strongly
 #' @param max_acceptable_k Maximum acceptable k value. k values above this get heavy penalty.
@@ -69,7 +70,7 @@
 #' @return A list containing:
 #'   \itemize{
 #'     \item best_percentage: The optimal percentage as a numeric value
-#'     \item best_k: The optimal k value from findBestK() for the best percentage
+#'     \item best_k: The optimal k value from findBestKElbow() for the best percentage
 #'     \item best_control_genes_index: The control genes index for the best percentage
 #'     \item best_separation_score: The separation score for the best percentage
 #'     \item best_composite_score: The composite score (separation penalized by k value)
