@@ -460,6 +460,13 @@ test_that("PeptideQuantitativeData negative-control optimization returns per-per
                                          ruv_fdr_method) {
       setNames(rep(TRUE, nrow(data_matrix)), rownames(data_matrix))
     },
+    .call_ruvCancor = function(obj, ctrl, num_comp, grp_var) {
+      structure(list(data = data.frame(
+        featureset = rep(c("All", "Control"), each = 3),
+        K = rep(1:3, 2),
+        cc = c(0.5, 0.7, 0.8, 0.3, 0.4, 0.4)
+      )), class = c("gg", "ggplot"))
+    },
     findBestKElbow = function(cancorplot, epsilon = 0.05, min_effect = 0.05) {
       2L
     },
@@ -554,6 +561,13 @@ test_that("PeptideQuantitativeData negative-control optimization covers validati
                                          ruv_fdr_method) {
       setNames(rep(TRUE, nrow(data_matrix)), rownames(data_matrix))
     },
+    .call_ruvCancor = function(obj, ctrl, num_comp, grp_var) {
+      structure(list(data = data.frame(
+        featureset = rep(c("All", "Control"), each = 3),
+        K = rep(1:3, 2),
+        cc = c(0.5, 0.7, 0.8, 0.3, 0.4, 0.4)
+      )), class = c("gg", "ggplot"))
+    },
     findBestKElbow = function(cancorplot, epsilon = 0.05, min_effect = 0.05) {
       stop("best-k unavailable")
     },
@@ -581,6 +595,13 @@ test_that("PeptideQuantitativeData negative-control optimization covers validati
                                          ruv_qval_cutoff,
                                          ruv_fdr_method) {
       setNames(rep(TRUE, nrow(data_matrix)), rownames(data_matrix))
+    },
+    .call_ruvCancor = function(obj, ctrl, num_comp, grp_var) {
+      structure(list(data = data.frame(
+        featureset = rep(c("All", "Control"), each = 3),
+        K = rep(1:3, 2),
+        cc = c(0.5, 0.7, 0.8, 0.3, 0.4, 0.4)
+      )), class = c("gg", "ggplot"))
     },
     findBestKElbow = function(cancorplot, epsilon = 0.05, min_effect = 0.05) {
       1L

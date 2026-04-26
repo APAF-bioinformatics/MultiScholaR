@@ -567,18 +567,13 @@ test_that("peptide negative-control optimization keeps the best percentage and a
 
       setNames(rep(TRUE, 5), paste0("pct", percentage_as_neg_ctrl, "_", seq_len(5)))
     },
-    ruvCancorFast = function(theObject,
-                             ctrl,
-                             num_components_to_impute,
-                             ruv_grouping_variable,
-                             simple_imputation_method) {
+    .call_ruvCancor = function(obj, ctrl, num_comp, grp_var) {
       current_percentage <- as.numeric(sub("^pct([0-9]+)_.*$", "\\1", names(ctrl)[[1]]))
 
       cancor_calls[[length(cancor_calls) + 1]] <<- list(
         current_percentage = current_percentage,
-        num_components_to_impute = num_components_to_impute,
-        grouping_variable = ruv_grouping_variable,
-        simple_imputation_method = simple_imputation_method
+        num_components_to_impute = num_comp,
+        grouping_variable = grp_var
       )
 
       structure(list(current_percentage = current_percentage), class = "mock_cancorplot")
@@ -613,16 +608,25 @@ test_that("peptide negative-control optimization keeps the best percentage and a
     .env = method_env
   )
 
-  results <- findBestNegCtrlPercentagePeptides(
-    pqd,
-    percentage_range = c(10, 20),
-    num_components_to_impute = 3,
-    ruv_grouping_variable = "batch",
-    ruv_qval_cutoff = 0.2,
-    ruv_fdr_method = "BH",
-    separation_metric = "weighted_difference",
-    adaptive_k_penalty = TRUE,
-    verbose = FALSE
+  n_wd_warnings <- 0L
+  results <- withCallingHandlers(
+    findBestNegCtrlPercentagePeptides(
+      pqd,
+      percentage_range = c(10, 20),
+      num_components_to_impute = 3,
+      ruv_grouping_variable = "batch",
+      ruv_qval_cutoff = 0.2,
+      ruv_fdr_method = "BH",
+      separation_metric = "weighted_difference",
+      adaptive_k_penalty = TRUE,
+      verbose = FALSE
+    ),
+    warning = function(w) {
+      if (grepl("weighted_difference", conditionMessage(w))) {
+        n_wd_warnings <<- n_wd_warnings + 1L
+        invokeRestart("muffleWarning")
+      }
+    }
   )
 
   expect_identical(adaptive_calls, 2L)
@@ -635,11 +639,10 @@ test_that("peptide negative-control optimization keeps the best percentage and a
   expect_identical(vapply(cancor_calls, `[[`, numeric(1), "current_percentage"), c(10, 20))
   expect_identical(vapply(cancor_calls, `[[`, numeric(1), "num_components_to_impute"), c(3, 3))
   expect_identical(vapply(cancor_calls, `[[`, character(1), "grouping_variable"), c("batch", "batch"))
-  expect_identical(vapply(cancor_calls, `[[`, character(1), "simple_imputation_method"), c("mean", "mean"))
   expect_length(composite_calls, 2)
   expect_identical(vapply(composite_calls, `[[`, numeric(1), "max_acceptable_k"), c(2, 2))
   expect_identical(results$best_percentage, 20)
-  expect_identical(results$best_k, 5)
+  expect_identical(results$best_k, 5L)
   expect_equal(results$sample_size, 2)
   expect_identical(results$separation_metric_used, "weighted_difference")
   expect_identical(results$adaptive_k_penalty_used, TRUE)

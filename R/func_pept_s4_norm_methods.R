@@ -1,3 +1,9 @@
+# Internal wrapper for ruvCancor S4 dispatch (mockable in tests without corrupting S4 method table)
+#' @keywords internal
+.call_ruvCancor <- function(obj, ctrl, num_comp, grp_var) {
+  ruvCancor(obj, ctrl = ctrl, num_components_to_impute = num_comp, ruv_grouping_variable = grp_var)
+}
+
 ## normalise between Arrays
 #'@export
 #'@param theObject Object of class PeptideQuantitativeData
@@ -186,10 +192,16 @@ setMethod(f="getNegCtrlProtAnovaPeptides"
             theObject <- updateParamInObject(theObject, "ruv_qval_cutoff")
             theObject <- updateParamInObject(theObject, "ruv_fdr_method")
 
+            design_for_anova <- design_matrix |>
+              tibble::column_to_rownames(sample_id_column)
+
+            if (group_id != ruv_grouping_variable) {
+              design_for_anova <- design_for_anova |>
+                dplyr::select(-dplyr::all_of(group_id))
+            }
+
             control_genes_index <- getNegCtrlProtAnovaHelper( normalised_frozen_peptide_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id_column)) ]
-                                                              , design_matrix = design_matrix |>
-                                                                column_to_rownames(sample_id_column) |>
-                                                                dplyr::select( -!!sym(group_id))
+                                                              , design_matrix = design_for_anova
                                                               , grouping_variable = ruv_grouping_variable
                                                               , percentage_as_neg_ctrl = percentage_as_neg_ctrl
                                                               , num_neg_ctrl = num_neg_ctrl
@@ -214,6 +226,18 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
                                 adaptive_k_penalty = TRUE,
                                 verbose = TRUE,
                                 ensure_matrix = TRUE) {
+
+  # Emit weighted_difference deprecation warning once per public call
+  if (identical(separation_metric, "weighted_difference")) {
+    warning(
+      paste0(
+        "'weighted_difference' is deprecated because it up-weights high-K values ",
+        "while the composite score penalizes high K. ",
+        "Use 'max_difference' or 'mean_difference' instead."
+      ),
+      call. = FALSE
+    )
+  }
 
   # Input validation
   if (!inherits(theObject, "PeptideQuantitativeData")) {
@@ -248,12 +272,12 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
     stop("max_acceptable_k must be at least 3 when adaptive_k_penalty is TRUE")
   }
 
+  # Pre-compute quantities constant across all percentages
+  candidate_feature_count <- nrow(theObject@peptide_matrix)
+  sample_size <- ncol(theObject@peptide_matrix)
+
   # Calculate adaptive max_acceptable_k if requested
   if (adaptive_k_penalty) {
-    # Get sample size from the peptide matrix
-    sample_size <- ncol(theObject@peptide_matrix)
-
-    # Calculate adaptive max_acceptable_k based on sample size
     adaptive_max_k <- .peptide_calculateAdaptiveMaxK(sample_size)
 
     if (verbose) {
@@ -263,8 +287,7 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
     max_acceptable_k <- adaptive_max_k
   }
 
-  # Detect small datasets and warn/adjust percentage range if needed
-  sample_size <- ncol(theObject@peptide_matrix)
+  # Detect small datasets and warn if needed
   if (sample_size < 15 && max(percentage_range) < 30) {
     if (verbose) {
       log_warn("Small dataset detected (n={sample_size}). Consider testing higher percentages (up to 30-50%) for better negative control identification.")
@@ -279,137 +302,210 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
     if (adaptive_k_penalty) {
       log_info("Using adaptive k penalty based on sample size")
     }
-  }
-
-  # Process all percentages using functional programming
-  if (verbose) {
     log_info("Processing {length(percentage_range)} percentages using vectorized operations...")
   }
 
-  # Create a function to process a single percentage
+  # Helper: build a trace row for a failed or skipped percentage
+  .make_failed_row <- function(current_percentage, status, error_reason = "",
+                                realized_num_controls = NA_integer_,
+                                realized_percentage = NA_real_,
+                                separation_score = NA_real_,
+                                best_k = NA_integer_,
+                                composite_score = NA_real_,
+                                control_genes_index = NULL,
+                                cancor_plot = NULL) {
+    list(
+      percentage_requested    = current_percentage,
+      candidate_feature_count = candidate_feature_count,
+      realized_num_controls   = realized_num_controls,
+      realized_percentage     = realized_percentage,
+      sample_size             = sample_size,
+      best_k                  = best_k,
+      separation_score        = separation_score,
+      composite_score         = composite_score,
+      status                  = status,
+      error_reason            = error_reason,
+      control_genes_index     = control_genes_index,
+      cancor_plot             = cancor_plot
+    )
+  }
+
+  # Process a single percentage, returning a fully annotated trace record
   process_percentage <- function(current_percentage, index) {
     if (verbose && index %% 5 == 0) {
       log_info("Testing percentage {index}/{length(percentage_range)}: {current_percentage}%")
     }
 
-    tryCatch({
-      # Get negative control peptides for current percentage
-      control_genes_index <- getNegCtrlProtAnovaPeptides(
+    # Step 1: Select negative controls
+    ctrl_error <- NULL
+    control_genes_index <- tryCatch({
+      getNegCtrlProtAnovaPeptides(
         theObject,
         ruv_grouping_variable = ruv_grouping_variable,
         percentage_as_neg_ctrl = current_percentage,
         ruv_qval_cutoff = ruv_qval_cutoff,
         ruv_fdr_method = ruv_fdr_method
       )
+    }, error = function(e) {
+      ctrl_error <<- e$message
+      NULL
+    })
 
-      # Check if we have enough control peptides
-      num_controls <- sum(control_genes_index, na.rm = TRUE)
-      if (num_controls < 5) {
-        if (verbose) {
-          log_warn("Percentage {current_percentage}%: Only {num_controls} control peptides found (minimum 5 required). Skipping.")
-        }
-        return(list(
-          percentage = current_percentage,
-          separation_score = NA_real_,
-          best_k = NA_real_,
-          composite_score = NA_real_,
-          num_controls = num_controls,
-          valid_plot = FALSE,
-          control_genes_index = NULL,
-          cancor_plot = NULL
-        ))
+    if (is.null(control_genes_index)) {
+      if (verbose) {
+        log_warn(paste("Percentage", current_percentage, "% : Error in getNegCtrlProtAnovaPeptides:", ctrl_error))
       }
+      return(.make_failed_row(current_percentage, "error_neg_ctrl_selection",
+        error_reason = if (is.null(ctrl_error)) "" else ctrl_error))
+    }
 
-      # Generate canonical correlation plot using FAST version (skips expensive DPC imputation)
-      cancorplot <- ruvCancorFast(
+    # Step 2: Check minimum control count
+    realized_num_controls <- sum(control_genes_index, na.rm = TRUE)
+    realized_percentage <- if (candidate_feature_count > 0L) {
+      100 * realized_num_controls / candidate_feature_count
+    } else {
+      NA_real_
+    }
+
+    if (realized_num_controls < 5L) {
+      if (verbose) {
+        log_warn("Percentage {current_percentage}%: Only {realized_num_controls} control peptides found (minimum 5 required). Skipping.")
+      }
+      return(.make_failed_row(current_percentage, "skipped_insufficient_controls",
+        realized_num_controls = realized_num_controls,
+        realized_percentage = realized_percentage))
+    }
+
+    # Step 3: Canonical correlation (full objective, not surrogate)
+    cancor_error <- NULL
+    cancorplot <- tryCatch({
+      .call_ruvCancor(
         theObject,
         ctrl = control_genes_index,
-        num_components_to_impute = num_components_to_impute,
-        ruv_grouping_variable = ruv_grouping_variable,
-        simple_imputation_method = "mean"  # Use simple mean imputation for speed
+        num_comp = num_components_to_impute,
+        grp_var = ruv_grouping_variable
       )
+    }, error = function(e) {
+      cancor_error <<- e$message
+      NULL
+    })
 
-      # Calculate separation score
-      separation_score <- .peptide_calculateSeparationScore(cancorplot, separation_metric)
+    if (is.null(cancorplot)) {
+      if (verbose) {
+        log_warn(paste("Percentage", current_percentage, "% : Error in ruvCancor:", cancor_error))
+      }
+      return(.make_failed_row(current_percentage, "error_cancor",
+        realized_num_controls = realized_num_controls,
+        realized_percentage = realized_percentage,
+        error_reason = if (is.null(cancor_error)) "" else cancor_error,
+        control_genes_index = control_genes_index))
+    }
 
-      best_k <- tryCatch({
-        findBestKElbow(cancorplot)
-      }, error = function(e) {
-        if (verbose) {
-          log_warn(paste("Percentage", current_percentage, "% : Error calculating best k:", e$message))
-        }
-        return(NA_integer_)
-      })
+    # Step 4: Score the result
+    separation_score <- .peptide_calculateSeparationScore(cancorplot, separation_metric)
 
-      # Calculate composite score that considers both separation and k value
-      composite_score <- .peptide_calculateCompositeScore(
-        separation_score,
-        best_k,
-        k_penalty_weight,
-        max_acceptable_k
-      )
+    best_k <- tryCatch(
+      findBestKElbow(cancorplot),
+      error = function(e) NA_integer_
+    )
 
-      return(list(
-        percentage = current_percentage,
+    if (is.na(best_k)) {
+      return(.make_failed_row(current_percentage, "invalid_cancor_plot",
+        realized_num_controls = realized_num_controls,
+        realized_percentage = realized_percentage,
+        separation_score = separation_score,
+        error_reason = "findBestKElbow returned NA",
+        control_genes_index = control_genes_index,
+        cancor_plot = cancorplot))
+    }
+
+    best_k <- as.integer(best_k)
+    composite_score <- .peptide_calculateCompositeScore(
+      separation_score,
+      best_k,
+      k_penalty_weight,
+      max_acceptable_k
+    )
+
+    if (!is.finite(composite_score)) {
+      return(.make_failed_row(current_percentage, "error_scoring",
+        realized_num_controls = realized_num_controls,
+        realized_percentage = realized_percentage,
         separation_score = separation_score,
         best_k = best_k,
         composite_score = composite_score,
-        num_controls = num_controls,
-        valid_plot = TRUE,
+        error_reason = "composite score is non-finite",
         control_genes_index = control_genes_index,
-        cancor_plot = cancorplot
-      ))
+        cancor_plot = cancorplot))
+    }
 
-    }, error = function(e) {
-      if (verbose) {
-        log_warn("Percentage {current_percentage}%: Error occurred - {e$message}")
-      }
-      return(list(
-        percentage = current_percentage,
-        separation_score = NA_real_,
-        best_k = NA_real_,
-        composite_score = NA_real_,
-        num_controls = NA_integer_,
-        valid_plot = FALSE,
-        control_genes_index = NULL,
-        cancor_plot = NULL
-      ))
-    })
+    list(
+      percentage_requested    = current_percentage,
+      candidate_feature_count = candidate_feature_count,
+      realized_num_controls   = realized_num_controls,
+      realized_percentage     = realized_percentage,
+      sample_size             = sample_size,
+      best_k                  = best_k,
+      separation_score        = separation_score,
+      composite_score         = composite_score,
+      status                  = "ok",
+      error_reason            = "",
+      control_genes_index     = control_genes_index,
+      cancor_plot             = cancorplot
+    )
   }
 
-  # Use purrr::imap() for functional processing
   all_results <- percentage_range |>
     purrr::imap(process_percentage)
 
-  # Extract results into proper data frame
+  # Build optimization trace: one row per tested percentage
+  # New schema primary; deprecated aliases (percentage, num_controls, valid_plot) kept for one release cycle
   results <- all_results |>
     purrr::map_dfr(~ data.frame(
-      percentage = .x$percentage,
-      separation_score = .x$separation_score,
-      best_k = .x$best_k,
-      composite_score = .x$composite_score,
-      num_controls = .x$num_controls,
-      valid_plot = .x$valid_plot
+      percentage_requested    = .x$percentage_requested,
+      candidate_feature_count = .x$candidate_feature_count,
+      realized_num_controls   = .x$realized_num_controls,
+      realized_percentage     = .x$realized_percentage,
+      sample_size             = .x$sample_size,
+      best_k                  = .x$best_k,
+      separation_score        = .x$separation_score,
+      composite_score         = .x$composite_score,
+      status                  = .x$status,
+      error_reason            = .x$error_reason,
+      percentage              = .x$percentage_requested,
+      num_controls            = .x$realized_num_controls,
+      valid_plot              = identical(.x$status, "ok"),
+      stringsAsFactors = FALSE
     ))
 
-  # Find the best result using composite score (considers both separation and k value)
-  valid_results <- all_results[!is.na(purrr::map_dbl(all_results, "composite_score"))]
+  # Deterministic winner selection — stable ordering replaces which.max()
+  valid_df <- results |>
+    dplyr::filter(is.finite(composite_score)) |>
+    dplyr::arrange(
+      dplyr::desc(composite_score),
+      best_k,
+      dplyr::desc(separation_score),
+      percentage_requested
+    )
 
-  if (length(valid_results) == 0) {
+  if (nrow(valid_df) == 0L) {
     stop("No valid percentage found. Please check your data and parameters.")
   }
 
-  best_index <- which.max(purrr::map_dbl(valid_results, "composite_score"))
-  best_result <- valid_results[[best_index]]
+  best_percentage <- valid_df$percentage_requested[[1L]]
 
-  best_percentage <- best_result$percentage
+  # Retrieve the full record (with control_genes_index and cancor_plot) for the winner
+  winner_idx <- which(
+    vapply(all_results, function(r) r$percentage_requested == best_percentage, logical(1L))
+  )[[1L]]
+  best_result <- all_results[[winner_idx]]
+
+  best_k                   <- as.integer(best_result$best_k)
   best_control_genes_index <- best_result$control_genes_index
-  best_cancor_plot <- best_result$cancor_plot
-  best_separation_score <- best_result$separation_score
-  best_composite_score <- best_result$composite_score
-  best_k <- best_result$best_k
+  best_cancor_plot         <- best_result$cancor_plot
+  best_separation_score    <- best_result$separation_score
+  best_composite_score     <- best_result$composite_score
 
-  # Final validation and logging
   if (verbose) {
     log_info("Optimization complete!")
     log_info("Best percentage: {best_percentage}% (composite score: {round(best_composite_score, 4)})")
@@ -418,21 +514,20 @@ setMethod(f="findBestNegCtrlPercentagePeptides"
     log_info("  - Number of control peptides: {sum(best_control_genes_index, na.rm = TRUE)}")
   }
 
-  # Return comprehensive results
-  return(list(
-    best_percentage = best_percentage,
-    best_k = best_k,
+  list(
+    best_percentage          = best_percentage,
+    best_k                   = best_k,
     best_control_genes_index = best_control_genes_index,
-    best_separation_score = best_separation_score,
-    best_composite_score = best_composite_score,
-    optimization_results = results,
-    best_cancor_plot = best_cancor_plot,
-    separation_metric_used = separation_metric,
-    k_penalty_weight = k_penalty_weight,
-    max_acceptable_k = max_acceptable_k,
-    adaptive_k_penalty_used = adaptive_k_penalty,
-    sample_size = if(adaptive_k_penalty) ncol(theObject@peptide_matrix) else NA
-  ))
+    best_separation_score    = best_separation_score,
+    best_composite_score     = best_composite_score,
+    optimization_results     = results,
+    best_cancor_plot         = best_cancor_plot,
+    separation_metric_used   = separation_metric,
+    k_penalty_weight         = k_penalty_weight,
+    max_acceptable_k         = max_acceptable_k,
+    adaptive_k_penalty_used  = adaptive_k_penalty,
+    sample_size              = sample_size
+  )
 })
 
 #' Calculate Separation Score for Canonical Correlation Plot (Peptide version)
@@ -575,6 +670,8 @@ setMethod( f = "ruvCancorFast"
            , signature="PeptideQuantitativeData"
            , definition=function( theObject, ctrl= NULL, num_components_to_impute=NULL,
                                   ruv_grouping_variable = NULL, simple_imputation_method = "none") {
+
+             .Deprecated("ruvCancor")
 
              peptide_matrix <- theObject@peptide_matrix
              protein_id_column <- theObject@protein_id_column
