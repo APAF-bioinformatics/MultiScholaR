@@ -1,5 +1,7 @@
 library(testthat)
 
+# fidelity-coverage-compare: shared
+
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
 loadSelectedExpressions <- function(paths, matcher, env) {
@@ -86,13 +88,15 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
-loadSelectedExpressions(
-  paths = target_paths,
-  matcher = function(expr) {
-    isTargetSetMethod(expr, "logTransformAssays")
-  },
-  env = environment()
-)
+if (!methods::hasMethod("logTransformAssays", "MetaboliteAssayData")) {
+  loadSelectedExpressions(
+    paths = target_paths,
+    matcher = function(expr) {
+      isTargetSetMethod(expr, "logTransformAssays")
+    },
+    env = environment()
+  )
+}
 
 newMetabLogTransformObject <- function() {
   methods::new(

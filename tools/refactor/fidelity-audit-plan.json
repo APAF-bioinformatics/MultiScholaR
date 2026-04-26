@@ -1,7 +1,7 @@
 {
   "name": "refactor-fidelity-audit",
-  "updated_at": "2026-04-20T06:49:00Z",
-  "status": "post_fa_p6_triage_planned",
+  "updated_at": "2026-04-23T19:01:05Z",
+  "status": "fa_c4_complete_fa_c5_package_gate_open",
   "artifacts": {
     "human_plan": "tools/refactor/FIDELITY_AUDIT_IMPLEMENTATION_PLAN.md",
     "progress_manifest": "tools/refactor/fidelity-audit-plan.json",
@@ -806,7 +806,7 @@
       {
         "id": "FA-C4",
         "title": "Family-By-Family Coverage Fill Campaign",
-        "status": "in_progress",
+        "status": "completed",
         "deliverables": [
           "expanded tests for priority parity bundles",
           "updated bundle notes",
@@ -887,13 +887,76 @@
           "A stable shared lipidomics design-builder characterization file now covers empty save-results public behavior, initial-state hydration, summary and adjacent output registration, save-results warning and success paths, full reset-state behavior, rename propagation, sample-column detection, contrast registration, sample removal, and save-results helper formatting on both baseline and target.",
           "The mod_lipid_design_builder wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-lipid-design-characterization-20260420d.",
           "The mod_lipid_design_builder builder-resolver lineage family reaches 84.2 percent target coverage, the output-register lineage family reaches 100.0 percent, and the formatter lineage family reaches 100.0 percent under coverage-compare-lipid-design-characterization-20260420d.",
-          "coverage-evidence-lipid-design-characterization-20260420 records pass for the wrapper, builder-resolver, output-register, and formatter lipid design-builder bundles, and the shared helper checks now lift the broad builder lineage above the 80 percent threshold."
+          "coverage-evidence-lipid-design-characterization-20260420 records pass for the wrapper, builder-resolver, output-register, and formatter lipid design-builder bundles, and the shared helper checks now lift the broad builder lineage above the 80 percent threshold.",
+          "A stable shared lipidomics import characterization file now covers wrapper UI shell shape, wrapper server startup, assay-input and layout shell wiring, format and column helper behavior, workflow commit and finalization, sample-name sanitation, import processing success and failure cleanup, preview-load format branching, summary and status display branches, file-selection event handling, process-request forwarding, and output-render helper forwarding on both baseline and target.",
+          "The mod_lipid_import wrapper entrypoints now reach 100.0 percent on both baseline and target under coverage-compare-lipid-import-characterization-20260420c.",
+          "The mod_lipid_import misc lineage family reaches 93.0 percent target coverage, the output-renderer lineage family reaches 100.0 percent, and the bootstrap-setup lineage family reaches 100.0 percent under coverage-compare-lipid-import-characterization-20260420c.",
+          "coverage-evidence-lipid-import-characterization-20260420 records pass for the wrapper, misc, output-renderer, and bootstrap-setup lipid import bundles, and the new preview plus event-handler scenarios lift the broad import lineage well above the 80 percent threshold.",
+          "A stable shared proteomics summary characterization file now covers module startup and default outputs, state and template helper selection, report-template resolution and retrieval, rendered-report activation, report generation and progress orchestration, workflow-args save success and fallback handling, session export success and failure, and publication-copy plus GitHub helper execution on both baseline and target.",
+          "The mod_prot_summary wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-prot-summary-characterization-20260420b.",
+          "The mod_prot_summary misc lineage family reaches 96.0 percent target coverage, the observer-runtime lineage family reaches 95.7 percent, and the output-register lineage family reaches 100.0 percent under coverage-compare-prot-summary-characterization-20260420b.",
+          "coverage-evidence-prot-summary-characterization-20260420 records pass for the wrapper, misc, observer-runtime, and output-register proteomics summary bundles, and the new shared summary file replaces the baseline-failing contract surface with a clean cross-version compare surface.",
+          "A stable shared metabolomics QC S4 characterization file now covers the public finalize-QC module path plus extracted summary, history, render, finalize, reporting, plotting, and server-body helper seams on both baseline and target.",
+          "The mod_metab_qc_s4 wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-metab-qc-s4-characterization-20260420d.",
+          "The mod_metab_qc_s4 misc lineage family reaches 95.4 percent target coverage, the output-renderer lineage family reaches 85.7 percent, the observer-runtime lineage family reaches 100.0 percent, and the plotting lineage family reaches 100.0 percent under coverage-compare-metab-qc-s4-characterization-20260420d.",
+          "coverage-evidence-metab-qc-s4-characterization-20260420 records pass for the wrapper, misc, output-renderer, observer-runtime, and plotting metabolomics QC S4 bundles, and the bundle-map engine now enriches wrapper bundles with precise inventory line ranges instead of stale whole-file fallbacks.",
+          "A stable shared lipidomics QC duplicates characterization file now covers the public detect-resolve-revert module flow plus extracted builder, output, detection, resolution, revert, observer, binding, and server-shell helper seams on both baseline and target.",
+          "The mod_lipid_qc_duplicates wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-lipid-qc-duplicates-characterization-20260420a.",
+          "The mod_lipid_qc_duplicates misc lineage family reaches 96.6 percent target coverage, the observer-register lineage family reaches 100.0 percent, and the output-register lineage family reaches 100.0 percent under coverage-compare-lipid-qc-duplicates-characterization-20260420a.",
+          "coverage-evidence-lipid-qc-duplicates-characterization-20260420a records pass for the wrapper, misc, observer-register, and output-register lipid QC duplicates bundles, and the new shared duplicate workflow replaces the baseline-failing seam file with a clean cross-version compare surface.",
+          "A stable shared metabolomics QC duplicates characterization file now covers the public detect-resolve-revert module flow plus extracted duplicate workflow helper seams on both baseline and target.",
+          "The mod_metab_qc_duplicates wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-metab-qc-duplicates-characterization-20260420a.",
+          "The mod_metab_qc_duplicates misc lineage family reaches 96.4 percent target coverage, the observer-runtime lineage family reaches 100.0 percent, and the output-renderer lineage family reaches 100.0 percent under coverage-compare-metab-qc-duplicates-characterization-20260420a.",
+          "coverage-evidence-metab-qc-duplicates-characterization-20260420a records pass for the wrapper, misc, observer-runtime, and output-renderer metabolomics QC duplicates bundles.",
+          "A stable shared metabolomics design characterization file now covers public wrapper initialization plus extracted import and observer registration helper seams on both baseline and target.",
+          "The mod_metab_design wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-metab-design-characterization-20260420d.",
+          "The mod_metab_design misc lineage family reaches 96.7 percent target coverage and the observer-register lineage family reaches 100.0 percent under coverage-compare-metab-design-characterization-20260420d.",
+          "coverage-evidence-metab-design-characterization-20260420a records pass for the wrapper, misc, and observer-register metabolomics design bundles.",
+          "A stable shared metabolomics summary characterization file now covers public wrapper initialization plus extracted bootstrap, output registration, and observer runtime helper seams on both baseline and target.",
+          "The mod_metab_summary wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-metab-summary-characterization-20260422a.",
+          "The mod_metab_summary observer-runtime, output-setup, and output-register lineage families each reach 100.0 percent target coverage under coverage-compare-metab-summary-characterization-20260422a.",
+          "coverage-evidence-metab-summary-characterization-20260422a records pass for the wrapper, observer-runtime, output-setup, and output-register metabolomics summary bundles, recovering the interrupted compare run that crashed after coverage-compare-metab-summary-characterization-20260420c started.",
+          "A stable shared lipidomics summary characterization file now covers public wrapper initialization plus extracted template, bootstrap, workflow-save, publication-copy, report-generation, GitHub, export, and observer registration helper seams on both baseline and target.",
+          "The mod_lipid_summary wrapper entrypoint now reaches 100.0 percent on both baseline and target under coverage-compare-lipid-summary-characterization-20260422a.",
+          "The mod_lipid_summary misc lineage family reaches 99.4 percent target coverage, and the observer-register, output-register, and observer-runtime lineage families each reach 100.0 percent target coverage under coverage-compare-lipid-summary-characterization-20260422a.",
+          "coverage-evidence-lipid-summary-characterization-20260422a records pass for the wrapper, misc, observer-register, output-register, and observer-runtime lipidomics summary bundles.",
+          "The post-lipid-summary repo-wide shared refresh coverage-compare-20260422Tglobal-fa-c4-refresh-a ran 18 explicitly marked shared files, 204 tests, and zero failures on both baseline and target.",
+          "coverage-evidence-20260422Tglobal-fa-c4-refresh-a records 105 passing bundle gates, 93 below-target gates, 35 target-unmeasured gates, 128 low-coverage bundles, 129 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "A stable shared proteomics design characterization file now covers import-artifact resolution, sidecar hydration, config bootstrap, workflow-state inference, state checkpointing, builder persistence, observer shells, preview outputs, import modal wiring, and import confirmation flow on both baseline and target.",
+          "The mod_prot_design focused evidence coverage-evidence-prot-design-characterization-20260422b records pass for lineage::R_mod_prot_design.R::misc, builder_resolver, observer_register, and observer_runtime.",
+          "The post-proteomics-design repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-d records 115 passing bundle gates, 83 below-target gates, 35 target-unmeasured gates, 118 low-coverage bundles, 119 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "A stable shared general file-management path contract file now covers setup-directory parsing, omic config lookup, path-list alias construction, existing-directory decisions, and materialization reuse/script-copy branches.",
+          "The func_general_filemgmt bootstrap setup focused evidence coverage-evidence-general-filemgmt-bootstrap-20260422b records pass for lineage::R_func_general_filemgmt.R::bootstrap_setup at 100.0 percent target coverage.",
+          "The post-general-filemgmt-bootstrap repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-e records 118 passing bundle gates, 80 below-target gates, 35 target-unmeasured gates, 115 low-coverage bundles, 116 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "A stable shared lipidomics design characterization file now covers import bootstrap, modal and preview wiring, import confirmation success and failure paths, builder observer shells, result persistence, state-manager reuse, S4 creation failure, tab-status/QC handoff, and updateLipidFiltering failure isolation on both baseline and target.",
+          "The mod_lipid_design focused evidence coverage-evidence-lipid-design-module-characterization-20260422a records pass for lineage::R_mod_lipid_design.R::misc, observer_register, builder_resolver, observer_runtime, and formatter.",
+          "The post-lipidomics-design repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-f records 123 passing bundle gates, 75 below-target gates, 35 target-unmeasured gates, 110 low-coverage bundles, 111 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "The lipidomics QC filtering helper characterization file is now baseline-aware; target-only extracted helper tests skip on monolithic baseline and pass on target.",
+          "The func_lipid_qc focused evidence coverage-evidence-lipid-qc-helper-characterization-20260422b records pass for lineage::R_func_lipid_qc.R::misc at 86.4 percent and lineage::R_func_lipid_qc.R::plotting at 88.1 percent target coverage.",
+          "The post-lipid-qc-helper repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-g records 125 passing bundle gates, 73 below-target gates, 35 target-unmeasured gates, 108 low-coverage bundles, 109 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "The lipidomics S4 plotting characterization now covers plotPca and plotRle across baseline and target, with coverage-evidence-lipid-s4-plotting-methods-20260422a recording pass for surface::setMethod::plotPca::LipidomicsAssayData, surface::setMethod::plotRle::LipidomicsAssayData, and the matching manifest wave bundles.",
+          "The general PCA helper characterization now calls the package-level plotPcaHelper fallback on target while skipping the no-mixOmics branch on monolithic baseline, and coverage-evidence-general-plot-pca-helper-20260422a records pass for surface::symbol::plotPcaHelper at 94.4 percent target coverage.",
+          "The post-PCA-helper repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-k records 131 passing bundle gates, 69 below-target gates, 33 target-unmeasured gates, 102 low-coverage bundles, 103 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "The metabolomics DA download helper characterization now executes the target filename and content callbacks while skipping cleanly on monolithic baseline, and coverage-evidence-metab-da-download-20260422a records pass for lineage::R_mod_metab_da.R::download_io at 100.0 percent target coverage.",
+          "The post-metabolomics-DA-download repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-l records 132 passing bundle gates, 68 below-target gates, 33 target-unmeasured gates, 101 low-coverage bundles, 102 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "The lipidomics QC intensity registration characterization now executes the target output and observer registration helpers through package-level namespace calls while skipping cleanly on monolithic baseline, and coverage-evidence-lipid-qc-intensity-registration-20260422a records pass for lineage::R_mod_lipid_qc_intensity.R::observer_register and lineage::R_mod_lipid_qc_intensity.R::output_register at 100.0 percent target coverage.",
+          "The post-lipidomics-QC-intensity-registration repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-m records 134 passing bundle gates, 66 below-target gates, 33 target-unmeasured gates, 99 low-coverage bundles, 100 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "The metabolomics QC ITSD wrapper characterization now executes the package-level wrapper handoff with a mocked shiny::moduleServer and target body seam while staying baseline-clean, and coverage-evidence-metab-qc-itsd-wrapper-20260422a records pass for surface::symbol::mod_metab_qc_itsd_server at 100.0 percent target and baseline wrapper coverage.",
+          "The post-metabolomics-QC-ITSD-wrapper repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-n records 135 passing bundle gates, 65 below-target gates, 33 target-unmeasured gates, 98 low-coverage bundles, 99 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "The lipidomics design wrapper characterization now isolates the package-level wrapper handoff in tests/testthat/test-lipid-13b-design-wrapper-characterization.R, and coverage-evidence-lipid-design-wrapper-20260422a records pass for surface::symbol::mod_lipid_design_server at 100.0 percent target and baseline wrapper coverage.",
+          "The post-lipidomics-design-wrapper repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-o records 136 passing bundle gates, 64 below-target gates, 33 target-unmeasured gates, 97 low-coverage bundles, 98 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "The general file-management config contracts are now shared-baseline-compatible, and coverage-evidence-general-filemgmt-read-config-20260422a records pass for surface::symbol::readConfigFile at 96.7 percent target and baseline coverage.",
+          "The post-readConfigFile repo-wide shared refresh coverage-evidence-20260422Tglobal-fa-c4-refresh-p records 137 passing bundle gates, 63 below-target gates, 33 target-unmeasured gates, 96 low-coverage bundles, 97 emitted coverage exceptions, and no comparison gaps or regressions.",
+          "The current worktree replay for generateProtDAVolcanoStatic now reaches 98.6 percent on both baseline and target under coverage-compare-prot-da-volcano-static-20260423a, confirming the stale final-queue gap came from running before the latest shared volcano tests were present.",
+          "The coverage-evidence layer now accepts manifest *_legacy helper bundles through a matching *_active sibling when the same shared suite proves the active block, and coverage-evidence-pept-s4-plot-pca-pair-20260423a records pass for both proteomics peptide plotPca wave-4 bundles.",
+          "The refreshed repo-wide shared compare coverage-compare-20260423Tglobal-fa-c4-refresh-bp now executes 68 shared files with 465 tests per side and zero failures, reaching 47.5 percent baseline package line coverage and 49.2 percent target package line coverage.",
+          "coverage-evidence-20260423Tglobal-fa-c4-refresh-bp records 233 passing bundle gates, zero below-target bundles, zero target-unmeasured bundles, zero comparison gaps, zero regressions, and one remaining emitted exception for the package-level 80 percent coverage gate."
         ]
       },
       {
         "id": "FA-C5",
         "title": "Coverage-Backed Parity Closeout",
-        "status": "pending",
+        "status": "in_progress",
         "deliverables": [
           "final coverage-backed parity report",
           "package-wide >=80 percent verification",
@@ -968,7 +1031,7 @@
         "title": "Coverage Fill",
         "first_tasks": [
           "Work one priority family at a time",
-          "Carry the shared public-module characterization pattern into mod_lipid_import",
+          "Carry the shared public-module characterization pattern into mod_metab_norm",
           "Rerun coverage after each family"
         ]
       },
@@ -983,13 +1046,75 @@
       }
     ]
   },
+  "coverage_progress": {
+    "shared_compare_selector_mode": "explicit_marker_required",
+    "shared_compare_marker": "# fidelity-coverage-compare: shared",
+    "current_bundle_map_run_id": "bundle-map-20260423Tfinal-queue-refresh-c",
+    "current_repo_compare_run_id": "coverage-compare-20260423Tglobal-fa-c4-refresh-bp",
+    "current_repo_evidence_run_id": "coverage-evidence-20260423Tglobal-fa-c4-refresh-bp",
+    "current_repo_summary": {
+      "shared_test_file_count": 68,
+      "baseline_package_line_pct": 47.4768,
+      "target_package_line_pct": 49.2266,
+      "gate_counts": {
+        "pass": 233
+      },
+      "low_coverage_bundle_count": 0,
+      "comparison_gap_bundle_count": 0,
+      "regression_bundle_count": 0,
+      "exception_count": 1,
+      "justified_bundle_count": 227
+    },
+    "latest_resolved_family": {
+      "family": "final FA-C4 helper cleanup queue",
+      "test_file": "tests/testthat/test-prot-08-volcano.R",
+      "additional_test_files": [
+        "tests/testthat/test-prot-04d-peptide-s4-normalization-characterization.R",
+        "tests/testthat/test-prot-04c-peptide-plot-density-ggplot-shared.R",
+        "tests/testthat/test-prot-02c-qc-peptide-intensity-shared.R",
+        "tests/testthat/test-prot-02g-qc-peptide-qvalue-shared.R",
+        "tests/testthat/test-prot-02i-qc-peptide-sample-shared.R",
+        "tests/testthat/test-prot-02j-qc-peptide-protein-shared.R",
+        "tests/testthat/test-prot-02k-qc-peptide-impute-shared.R",
+        "tests/testthat/test-prot-02m-qc-peptide-replicate-shared.R"
+      ],
+      "bundle_ids": [
+        "surface::symbol::generateProtDAVolcanoStatic",
+        "surface::manifest::tools_refactor_manifest-pept-s4-wave4.yml::pept_s4_qc_method_plot_pca_active",
+        "surface::manifest::tools_refactor_manifest-pept-s4-wave4.yml::pept_s4_qc_method_plot_pca_legacy"
+      ],
+      "compare_run_id": "coverage-compare-prot-da-volcano-static-20260423a",
+      "evidence_run_id": "coverage-evidence-pept-s4-plot-pca-pair-20260423a",
+      "additional_compare_run_ids": [
+        "coverage-compare-pept-s4-plot-pca-pair-20260423a",
+        "coverage-compare-20260423Tglobal-fa-c4-refresh-bp"
+      ],
+      "additional_evidence_run_ids": [
+        "coverage-evidence-20260423Tglobal-fa-c4-refresh-bp"
+      ],
+      "focused_gate_counts": {
+        "pass": 3
+      },
+      "notes": [
+        "The current worktree replay lifts generateProtDAVolcanoStatic to 98.6 percent on both baseline and target under coverage-compare-prot-da-volcano-static-20260423a.",
+        "The coverage-evidence layer now proxies inactive manifest *_legacy helper bundles through a matching *_active sibling when the same shared suite proves the active block.",
+        "coverage-evidence-pept-s4-plot-pca-pair-20260423a records pass for both pept_s4_qc_method_plot_pca_active and pept_s4_qc_method_plot_pca_legacy.",
+        "The refreshed repo-wide compare/evidence pair coverage-compare-20260423Tglobal-fa-c4-refresh-bp and coverage-evidence-20260423Tglobal-fa-c4-refresh-bp now leave no bundle-level parity coverage gaps."
+      ],
+      "focused_target_line_pct": {
+        "generateProtDAVolcanoStatic": 98.5714,
+        "pept_s4_qc_method_plot_pca_active": 100.0,
+        "pept_s4_qc_method_plot_pca_legacy": 100.0
+      }
+    }
+  },
   "next_checkpoint": {
-    "id": "FA-C4",
-    "title": "Family-By-Family Coverage Fill Campaign",
+    "id": "FA-C5",
+    "title": "Coverage-Backed Parity Closeout",
     "first_tasks": [
-      "Work one priority family at a time",
-      "Carry the shared public-module characterization pattern into mod_lipid_import",
-      "Rerun coverage after each family"
+      "Raise package-level target coverage from 49.2 percent toward the 80 percent closeout gate",
+      "Decide whether the package-wide 80 percent threshold will be met in-branch or carried as an explicit closeout exception",
+      "Publish the final parity-plus-coverage report once the package gate disposition is settled"
     ]
   }
 }

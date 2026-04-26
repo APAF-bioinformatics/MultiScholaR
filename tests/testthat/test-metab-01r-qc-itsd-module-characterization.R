@@ -73,6 +73,11 @@ test_that("metabolomics ITSD analysis seam preserves pattern fallback, column se
     metabolite_id_column = "feature_id",
     annotation_id_column = "annotation_id",
     sample_id = "sample_id",
+    design_matrix = data.frame(
+      sample_id = c("Sample1", "Sample2"),
+      group = c("A", "B"),
+      stringsAsFactors = FALSE
+    ),
     metabolite_data = list(
       Plasma = data.frame(
         feature_id = c("IS_A", "M1"),

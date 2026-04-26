@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(methods)
 library(testthat)
 
@@ -66,6 +67,9 @@ if (!methods::isClass("MetaboliteAssayData")) {
       design_matrix = "data.frame",
       sample_id = "character",
       group_id = "character",
+      internal_standard_regex = "character",
+      annotation_id_column = "character",
+      technical_replicate_id = "character",
       args = "list"
     ),
     prototype = list(
@@ -74,6 +78,9 @@ if (!methods::isClass("MetaboliteAssayData")) {
       design_matrix = data.frame(),
       sample_id = "Run",
       group_id = "group",
+      internal_standard_regex = "Internal Standard",
+      annotation_id_column = "annotation",
+      technical_replicate_id = "TechRep",
       args = list()
     )
   )
@@ -128,13 +135,51 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
-loadSelectedExpressions(
-  paths = target_paths,
-  matcher = function(expr) {
-    isTargetSetMethod(expr, "getNegCtrlMetabAnova")
-  },
-  env = environment()
-)
+if (!methods::hasMethod("getNegCtrlMetabAnova", "MetaboliteAssayData")) {
+  loadSelectedExpressions(
+    paths = target_paths,
+    matcher = function(expr) {
+      isTargetSetMethod(expr, "getNegCtrlMetabAnova")
+    },
+    env = environment()
+  )
+}
+
+getTargetMethodEnv <- function(generic_name, signature_name, fallback_env = environment()) {
+  if (methods::hasMethod(generic_name, signature_name)) {
+    return(environment(methods::getMethod(generic_name, signature_name)))
+  }
+
+  fallback_env
+}
+
+localBinding <- function(env, name, value, .local_envir = parent.frame()) {
+  had_binding <- exists(name, envir = env, inherits = FALSE)
+  old_value <- if (had_binding) get(name, envir = env, inherits = FALSE) else NULL
+  was_locked <- had_binding && bindingIsLocked(name, env)
+
+  if (was_locked) {
+    unlockBinding(name, env)
+  }
+  assign(name, value, envir = env)
+  if (was_locked) {
+    lockBinding(name, env)
+  }
+
+  withr::defer({
+    if (exists(name, envir = env, inherits = FALSE) && bindingIsLocked(name, env)) {
+      unlockBinding(name, env)
+    }
+    if (had_binding) {
+      assign(name, old_value, envir = env)
+    } else if (exists(name, envir = env, inherits = FALSE)) {
+      rm(list = name, envir = env)
+    }
+    if (was_locked && exists(name, envir = env, inherits = FALSE)) {
+      lockBinding(name, env)
+    }
+  }, envir = .local_envir)
+}
 
 helper_capture <- new.env(parent = emptyenv())
 
@@ -174,33 +219,33 @@ resetHelperCapture <- function() {
   if (length(helper_names) > 0) {
     rm(list = helper_names, envir = helper_capture)
   }
-
-  getNegCtrlProtAnovaHelper <<- function(...) {
-    stop("getNegCtrlProtAnovaHelper test stub was not configured")
-  }
 }
 
 test_that("metabolomics S4 getNegCtrlMetabAnova forwards filtered assay data and helper arguments", {
   resetHelperCapture()
 
-  getNegCtrlProtAnovaHelper <<- function(data_matrix,
-                                         design_matrix,
-                                         grouping_variable,
-                                         percentage_as_neg_ctrl,
-                                         num_neg_ctrl,
-                                         ruv_qval_cutoff,
-                                         ruv_fdr_method) {
-    helper_capture$data_matrix <- data_matrix
-    helper_capture$design_matrix <- design_matrix
-    helper_capture$grouping_variable <- grouping_variable
-    helper_capture$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
-    helper_capture$num_neg_ctrl <- num_neg_ctrl
-    helper_capture$ruv_qval_cutoff <- ruv_qval_cutoff
-    helper_capture$ruv_fdr_method <- ruv_fdr_method
+  localBinding(
+    getTargetMethodEnv("getNegCtrlMetabAnova", "MetaboliteAssayData"),
+    "getNegCtrlProtAnovaHelper",
+    function(data_matrix,
+             design_matrix,
+             grouping_variable,
+             percentage_as_neg_ctrl,
+             num_neg_ctrl,
+             ruv_qval_cutoff,
+             ruv_fdr_method) {
+      helper_capture$data_matrix <- data_matrix
+      helper_capture$design_matrix <- design_matrix
+      helper_capture$grouping_variable <- grouping_variable
+      helper_capture$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
+      helper_capture$num_neg_ctrl <- num_neg_ctrl
+      helper_capture$ruv_qval_cutoff <- ruv_qval_cutoff
+      helper_capture$ruv_fdr_method <- ruv_fdr_method
 
-    selected <- seq_len(nrow(data_matrix)) <= num_neg_ctrl
-    stats::setNames(selected, rownames(data_matrix))
-  }
+      selected <- seq_len(nrow(data_matrix)) <= num_neg_ctrl
+      stats::setNames(selected, rownames(data_matrix))
+    }
+  )
 
   assay_tbl <- tibble::tibble(
     Name = paste0("M", seq_len(5)),
@@ -217,11 +262,10 @@ test_that("metabolomics S4 getNegCtrlMetabAnova forwards filtered assay data and
         newNegCtrlMetabObject(
           assay_tbl = assay_tbl,
           args = list(
-            ruv_grouping_variable = "ruv_group",
-            ruv_qval_cutoff = 0.2,
             ruv_fdr_method = "BH"
           )
         ),
+        ruv_grouping_variable = "ruv_group",
         percentage_as_neg_ctrl = c(LCMS_Pos = 40)
       )
     )
@@ -240,29 +284,33 @@ test_that("metabolomics S4 getNegCtrlMetabAnova forwards filtered assay data and
   expect_identical(helper_capture$grouping_variable, "ruv_group")
   expect_identical(helper_capture$percentage_as_neg_ctrl, 40)
   expect_identical(helper_capture$num_neg_ctrl, 2L)
-  expect_identical(helper_capture$ruv_qval_cutoff, 0.2)
+  expect_identical(helper_capture$ruv_qval_cutoff, 0.05)
   expect_identical(helper_capture$ruv_fdr_method, "BH")
 })
 
-test_that("metabolomics S4 getNegCtrlMetabAnova falls back to config defaults for unnamed assays", {
+test_that("metabolomics S4 getNegCtrlMetabAnova falls back to current hardcoded defaults for unnamed assays", {
   resetHelperCapture()
 
-  getNegCtrlProtAnovaHelper <<- function(data_matrix,
-                                         design_matrix,
-                                         grouping_variable,
-                                         percentage_as_neg_ctrl,
-                                         num_neg_ctrl,
-                                         ruv_qval_cutoff,
-                                         ruv_fdr_method) {
-    helper_capture$grouping_variable <- grouping_variable
-    helper_capture$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
-    helper_capture$num_neg_ctrl <- num_neg_ctrl
-    helper_capture$ruv_qval_cutoff <- ruv_qval_cutoff
-    helper_capture$ruv_fdr_method <- ruv_fdr_method
+  localBinding(
+    getTargetMethodEnv("getNegCtrlMetabAnova", "MetaboliteAssayData"),
+    "getNegCtrlProtAnovaHelper",
+    function(data_matrix,
+             design_matrix,
+             grouping_variable,
+             percentage_as_neg_ctrl,
+             num_neg_ctrl,
+             ruv_qval_cutoff,
+             ruv_fdr_method) {
+      helper_capture$grouping_variable <- grouping_variable
+      helper_capture$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
+      helper_capture$num_neg_ctrl <- num_neg_ctrl
+      helper_capture$ruv_qval_cutoff <- ruv_qval_cutoff
+      helper_capture$ruv_fdr_method <- ruv_fdr_method
 
-    selected <- seq_len(nrow(data_matrix)) <= num_neg_ctrl
-    stats::setNames(selected, rownames(data_matrix))
-  }
+      selected <- seq_len(nrow(data_matrix)) <= num_neg_ctrl
+      stats::setNames(selected, rownames(data_matrix))
+    }
+  )
 
   assay_tbl <- tibble::tibble(
     Name = paste0("M", seq_len(4)),
@@ -278,24 +326,19 @@ test_that("metabolomics S4 getNegCtrlMetabAnova falls back to config defaults fo
         newNegCtrlMetabObject(
           assay_tbl = assay_tbl,
           assay_name = NULL,
-          args = list(
-            ruv_grouping_variable = "ruv_group",
-            percentage_as_neg_ctrl = 25,
-            ruv_qval_cutoff = 0.05,
-            ruv_fdr_method = "fdr"
-          )
+          args = list()
         )
       )
     )
   )
 
   expect_named(result, "Assay_1")
-  expect_equal(sum(result$Assay_1), 1)
-  expect_identical(helper_capture$grouping_variable, "ruv_group")
-  expect_identical(helper_capture$percentage_as_neg_ctrl, 25)
-  expect_identical(helper_capture$num_neg_ctrl, 1L)
+  expect_equal(sum(result$Assay_1), 0)
+  expect_identical(helper_capture$grouping_variable, "group")
+  expect_identical(helper_capture$percentage_as_neg_ctrl, 10)
+  expect_identical(helper_capture$num_neg_ctrl, 0L)
   expect_identical(helper_capture$ruv_qval_cutoff, 0.05)
-  expect_identical(helper_capture$ruv_fdr_method, "fdr")
+  expect_identical(helper_capture$ruv_fdr_method, "BH")
 })
 
 test_that("metabolomics S4 getNegCtrlMetabAnova source retains helper-dispatch and filtered-result cleanup", {

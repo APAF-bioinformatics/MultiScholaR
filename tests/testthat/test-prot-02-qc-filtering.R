@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 # testthat for Proteomics QC Filtering
 # Phase 4 of Proteomics GUI Test Strategy
 

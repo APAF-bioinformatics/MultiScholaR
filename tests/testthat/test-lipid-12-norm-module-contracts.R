@@ -1,6 +1,30 @@
 library(testthat)
 suppressPackageStartupMessages(library(shiny))
 
+repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
+
+skipIfMissingLipidNormTargetFiles <- function() {
+  required_paths <- c(
+    "R/mod_lipid_norm_support_helpers.R",
+    "R/mod_lipid_norm_observer_helpers.R",
+    "R/mod_lipid_norm_workflow_helpers.R",
+    "R/mod_lipid_norm_runtime_helpers.R",
+    "R/mod_lipid_norm_server_helpers.R",
+    "R/mod_lipid_norm_ui_helpers.R"
+  )
+  missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only lipid norm helper file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingLipidNormTargetFiles()
+
 source(test_path("..", "..", "R", "mod_lipid_norm_support_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_norm_observer_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_norm_workflow_helpers.R"), local = environment())

@@ -1,5 +1,31 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 library(shiny)
+
+source("helpers-scoped-mocked-bindings.R")
+
+register_binding_teardown(
+  asNamespace("shiny"),
+  c(
+    "updateSelectInput",
+    "updateTextAreaInput",
+    "showNotification",
+    "removeNotification"
+  ),
+  .local_envir = environment()
+)
+register_binding_teardown(
+  asNamespace("MultiScholaR"),
+  c(
+    "runLipidsDA",
+    "generateLipidDAVolcanoPlotGlimma",
+    "generateLipidDAHeatmap",
+    "outputLipidDaResultsAllContrasts",
+    "save_heatmap_products",
+    "generateLipidDAVolcanoStatic"
+  ),
+  .local_envir = environment()
+)
 
 if (!methods::isClass("LipidomicsAssayData")) {
   methods::setClass(
@@ -224,9 +250,10 @@ installLipidDaModuleMocks <- function(
   save_heatmap_fn = function(...) {
     harness$capture$heatmap_saves[[length(harness$capture$heatmap_saves) + 1L]] <<- list(...)
     invisible(NULL)
-  }
+  },
+  .local_envir = parent.frame()
 ) {
-  local_mocked_bindings(
+  scoped_mocked_bindings(
     updateSelectInput = function(session, inputId, choices = NULL, selected = NULL) {
       harness$capture$update_select_calls[[length(harness$capture$update_select_calls) + 1L]] <<- list(
         session = session,
@@ -259,7 +286,8 @@ installLipidDaModuleMocks <- function(
       harness$capture$removed_notifications <<- c(harness$capture$removed_notifications, id)
       invisible(NULL)
     },
-    .env = asNamespace("shiny")
+    .env = asNamespace("shiny"),
+    .local_envir = .local_envir
   )
 
   package_bindings <- list(
@@ -272,8 +300,14 @@ installLipidDaModuleMocks <- function(
   )
 
   do.call(
-    local_mocked_bindings,
-    c(package_bindings, list(.env = asNamespace("MultiScholaR")))
+    scoped_mocked_bindings,
+    c(
+      package_bindings,
+      list(
+        .env = asNamespace("MultiScholaR"),
+        .local_envir = .local_envir
+      )
+    )
   )
 }
 

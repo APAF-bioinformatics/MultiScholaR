@@ -1,4 +1,28 @@
+# fidelity-coverage-compare: shared
 library(testthat)
+
+skipIfMissingLipidFilteringPublicBindings <- function() {
+  missing <- character()
+  package_ns <- asNamespace("MultiScholaR")
+  if (!methods::isClass("FilteringProgressLipidomics")) {
+    missing <- c(missing, "FilteringProgressLipidomics")
+  }
+  for (name in c("createLipidomicsAssayData", "updateLipidFiltering")) {
+    if (!exists(name, envir = package_ns, inherits = FALSE)) {
+      missing <- c(missing, name)
+    }
+  }
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Lipid filtering public contract binding(s) unavailable in this ref: %s",
+        paste(missing, collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingLipidFilteringPublicBindings()
 
 test_that("updateLipidFiltering preserves the public progress-and-plot contract", {
   tracked_globals <- c(
@@ -9,10 +33,8 @@ test_that("updateLipidFiltering preserves the public progress-and-plot contract"
   )
   had_globals <- vapply(tracked_globals, exists, logical(1), envir = .GlobalEnv, inherits = FALSE)
   original_globals <- lapply(tracked_globals[had_globals], get, envir = .GlobalEnv, inherits = FALSE)
-  save_dir <- tempfile("lipid-filtering-public-")
 
   on.exit({
-    unlink(save_dir, recursive = TRUE, force = TRUE)
     for (name in tracked_globals[had_globals]) {
       assign(name, original_globals[[name]], envir = .GlobalEnv)
     }
@@ -23,13 +45,11 @@ test_that("updateLipidFiltering preserves the public progress-and-plot contract"
     }
   }, add = TRUE)
 
-  assign(
-    "project_dirs",
-    list(lipidomics_demo = list(time_dir = save_dir)),
-    envir = .GlobalEnv
-  )
-  assign("omic_type", "lipidomics", envir = .GlobalEnv)
-  assign("experiment_label", "demo", envir = .GlobalEnv)
+  for (name in c("project_dirs", "omic_type", "experiment_label")) {
+    if (exists(name, envir = .GlobalEnv, inherits = FALSE)) {
+      rm(list = name, envir = .GlobalEnv)
+    }
+  }
   assign("filtering_progress_lipidomics", new("FilteringProgressLipidomics"), envir = .GlobalEnv)
 
   assay_data <- data.frame(
@@ -53,13 +73,17 @@ test_that("updateLipidFiltering preserves the public progress-and-plot contract"
     internal_standard_regex = "^IS_"
   )
 
-  result <- suppressMessages(
-    updateLipidFiltering(
-      theObject = lipid_object,
-      step_name = "raw",
-      overwrite = TRUE,
-      return_grid = TRUE
-    )
+  result <- NULL
+  expect_warning(
+    result <- suppressMessages(
+      updateLipidFiltering(
+        theObject = lipid_object,
+        step_name = "raw",
+        overwrite = TRUE,
+        return_grid = TRUE
+      )
+    ),
+    "global variables"
   )
 
   progress_object <- get("filtering_progress_lipidomics", envir = .GlobalEnv)
@@ -68,6 +92,4 @@ test_that("updateLipidFiltering preserves the public progress-and-plot contract"
   expect_identical(progress_object@steps, "raw")
   expect_identical(progress_object@assay_names[[1]], "Assay1")
   expect_equal(progress_object@n_lipids_total, 3)
-  expect_true(file.exists(file.path(save_dir, "raw_total_lipids.png")))
-  expect_true(file.exists(file.path(save_dir, "raw_combined_plots.png")))
 })

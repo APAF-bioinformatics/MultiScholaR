@@ -1,4 +1,18 @@
+# fidelity-coverage-compare: shared
 # testthat for Proteomics Normalisation module helper contracts
+
+skipIfMissingMultiScholaRBindings <- function(...) {
+  missing <- setdiff(c(...), ls(envir = asNamespace("MultiScholaR")))
+  if (length(missing) > 0) {
+    testthat::skip(sprintf("Target-only extracted helper(s) not present: %s", paste(missing, collapse = ", ")))
+  }
+}
+
+skipIfMissingMultiScholaRBindings(
+  "buildProtNormQcImagePayload",
+  "renderProtNormQcImage",
+  "runProtNormNormalizationWorkflow"
+)
 
 test_that("buildProtNormQcImagePayload returns image payload when file exists", {
   img_path <- tempfile(fileext = ".png")

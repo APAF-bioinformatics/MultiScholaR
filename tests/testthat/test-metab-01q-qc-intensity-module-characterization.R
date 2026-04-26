@@ -1,4 +1,33 @@
+# fidelity-coverage-compare: shared
 library(testthat)
+
+source("helpers-scoped-mocked-bindings.R")
+
+register_binding_teardown(
+  asNamespace("shiny"),
+  c(
+    "moduleServer",
+    "reactiveVal",
+    "observeEvent",
+    "renderText",
+    "renderUI",
+    "renderPlot",
+    "req",
+    "showNotification",
+    "removeNotification"
+  ),
+  .local_envir = environment()
+)
+register_binding_teardown(
+  asNamespace("logger"),
+  c("log_info", "log_error", "log_warn"),
+  .local_envir = environment()
+)
+register_binding_teardown(
+  asNamespace("MultiScholaR"),
+  c("metaboliteIntensityFiltering", "updateMetaboliteFiltering"),
+  .local_envir = environment()
+)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
@@ -56,7 +85,384 @@ if (!methods::isClass("MetaboliteAssayData")) {
   )
 }
 
+.metab_intensity_test_env <- environment()
+
+makeMetabIntensityAssayData <- function(metabolite_data, metabolite_id_column = "metabolite_id") {
+  sample_columns <- unique(unlist(lapply(
+    metabolite_data,
+    function(assay) setdiff(names(assay), metabolite_id_column)
+  )))
+  sample_columns <- sort(sample_columns)
+
+  args <- list(
+    Class = "MetaboliteAssayData",
+    metabolite_data = metabolite_data,
+    metabolite_id_column = metabolite_id_column
+  )
+
+  slots <- methods::slotNames("MetaboliteAssayData")
+  if ("annotation_id_column" %in% slots) {
+    args$annotation_id_column <- "annotation_id"
+  }
+  if ("database_identifier_type" %in% slots) {
+    args$database_identifier_type <- "test_id"
+  }
+  if ("internal_standard_regex" %in% slots) {
+    args$internal_standard_regex <- NA_character_
+  }
+  if ("design_matrix" %in% slots) {
+    args$design_matrix <- data.frame(
+      Sample_ID = sample_columns,
+      group = "A",
+      stringsAsFactors = FALSE
+    )
+  }
+  if ("sample_id" %in% slots) {
+    args$sample_id <- "Sample_ID"
+  }
+  if ("group_id" %in% slots) {
+    args$group_id <- "group"
+  }
+  if ("technical_replicate_id" %in% slots) {
+    args$technical_replicate_id <- NA_character_
+  }
+  if ("args" %in% slots) {
+    args$args <- list()
+  }
+
+  do.call(methods::new, args)
+}
+
+metabIntensityHasExtractedSeams <- function() {
+  all(vapply(
+    c(
+      "buildMetabIntensityAssayTabsUi",
+      "renderMetabIntensityFilterPlot",
+      "buildMetabIntensityFilterStats",
+      "updateMetabIntensityFilterQcPlot",
+      "saveMetabIntensityFilterState",
+      "buildMetabIntensityFilterSummary",
+      "reportMetabIntensityFilterSuccess",
+      "reportMetabIntensityFilterRevertSuccess"
+    ),
+    exists,
+    logical(1),
+    envir = .metab_intensity_test_env,
+    inherits = FALSE
+  ))
+}
+
+test_that("metabolomics intensity module preserves apply filter public behavior", {
+  captured <- new.env(parent = emptyenv())
+  captured$notifications <- list()
+  package_ns <- asNamespace("MultiScholaR")
+  server_fn <- if (exists(
+    "mod_metab_qc_intensity_server",
+    envir = package_ns,
+    inherits = FALSE
+  )) {
+    get("mod_metab_qc_intensity_server", envir = package_ns, inherits = FALSE)
+  } else {
+    mod_metab_qc_intensity_server
+  }
+  server_env <- environment(server_fn)
+
+  current_s4 <- makeMetabIntensityAssayData(
+    metabolite_data = list(
+      Plasma = data.frame(
+        metabolite_id = c("m1", "m2"),
+        Sample1 = c(10, 20),
+        Sample2 = c(5, 25),
+        stringsAsFactors = FALSE
+      ),
+      Serum = data.frame(
+        metabolite_id = "m3",
+        Sample1 = 7,
+        Sample2 = 9,
+        stringsAsFactors = FALSE
+      )
+    )
+  )
+  filtered_s4 <- makeMetabIntensityAssayData(
+    metabolite_data = list(
+      Plasma = data.frame(
+        metabolite_id = "m2",
+        Sample1 = 20,
+        Sample2 = 25,
+        stringsAsFactors = FALSE
+      ),
+      Serum = data.frame(
+        metabolite_id = "m3",
+        Sample1 = 7,
+        Sample2 = 9,
+        stringsAsFactors = FALSE
+      )
+    )
+  )
+
+  scoped_mocked_bindings(
+    metaboliteIntensityFiltering = function(
+      theObject,
+      metabolites_intensity_cutoff_percentile,
+      metabolites_proportion_of_samples_below_cutoff
+    ) {
+      captured$filter_call <- list(
+        the_object = theObject,
+        intensity_cutoff_percentile = metabolites_intensity_cutoff_percentile,
+        proportion_below_cutoff = metabolites_proportion_of_samples_below_cutoff
+      )
+      filtered_s4
+    },
+    updateMetaboliteFiltering = function(theObject, step_name, omics_type, return_grid, overwrite) {
+      captured$qc_update <- list(
+        the_object = theObject,
+        step_name = step_name,
+        omics_type = omics_type,
+        return_grid = return_grid,
+        overwrite = overwrite
+      )
+      "plot-token"
+    },
+    .env = server_env
+  )
+
+  state_manager <- list(
+    getState = function() current_s4,
+    saveState = function(...) {
+      captured$save_state_call <- list(...)
+      invisible(NULL)
+    },
+    getHistory = function() "baseline",
+    revertToState = function(state_name) invisible(state_name)
+  )
+
+  scoped_mocked_bindings(
+    moduleServer = function(id, module) {
+      output <- new.env(parent = emptyenv())
+      module(
+        list(
+          apply_filter = TRUE,
+          revert_filter = FALSE,
+          intensity_cutoff_percentile = 10,
+          proportion_below_cutoff = 0.5
+        ),
+        output,
+        list(ns = function(value) paste(id, value, sep = "-"))
+      )
+      captured$output <- output
+      invisible(NULL)
+    },
+    reactiveVal = function(value = NULL) {
+      stored <- value
+      function(new_value) {
+        if (missing(new_value)) {
+          stored
+        } else {
+          stored <<- new_value
+          invisible(NULL)
+        }
+      }
+    },
+    observeEvent = function(eventExpr, handlerExpr, ...) {
+      if (isTRUE(eval(substitute(eventExpr), parent.frame()))) {
+        eval(substitute(handlerExpr), parent.frame())
+      }
+      invisible(NULL)
+    },
+    renderText = function(expr) {
+      eval(substitute(expr), parent.frame())
+    },
+    renderUI = function(expr) {
+      eval(substitute(expr), parent.frame())
+    },
+    renderPlot = function(expr) {
+      eval(substitute(expr), parent.frame())
+    },
+    req = function(...) list(...)[[1]],
+    showNotification = function(message, ...) {
+      captured$notifications[[length(captured$notifications) + 1L]] <- c(
+        list(message = message),
+        list(...)
+      )
+      invisible(NULL)
+    },
+    removeNotification = function(id, ...) {
+      captured$removed_notification <- id
+      invisible(NULL)
+    },
+    .env = asNamespace("shiny")
+  )
+  scoped_mocked_bindings(
+    log_info = function(message) {
+      captured$log_message <- message
+      invisible(NULL)
+    },
+    log_error = function(message) {
+      captured$error_log_message <- message
+      invisible(NULL)
+    },
+    log_warn = function(message) {
+      captured$warning_log_message <- message
+      invisible(NULL)
+    },
+    .env = asNamespace("logger")
+  )
+
+  server_fn(
+    id = "intensity",
+    workflow_data = list(
+      state_manager = state_manager,
+      config_list = list(config = "value")
+    ),
+    omic_type = "metabolomics",
+    experiment_label = "Experiment A"
+  )
+
+  expect_identical(captured$filter_call$the_object, current_s4)
+  expect_identical(captured$filter_call$intensity_cutoff_percentile, 10)
+  expect_identical(captured$filter_call$proportion_below_cutoff, 0.5)
+  expect_identical(captured$qc_update$the_object, filtered_s4)
+  expect_identical(captured$qc_update$step_name, "2_Intensity_Filtered")
+  expect_identical(captured$qc_update$omics_type, "metabolomics")
+  expect_true(isTRUE(captured$qc_update$return_grid))
+  expect_true(isTRUE(captured$qc_update$overwrite))
+  expect_identical(captured$save_state_call$state_name, "metab_intensity_filtered")
+  expect_identical(captured$save_state_call$s4_data_object, filtered_s4)
+  expect_identical(captured$save_state_call$config_object, list(config = "value"))
+  expect_match(captured$output$filter_results, "Metabolite Intensity Filter Applied Successfully", fixed = TRUE)
+  expect_match(captured$output$filter_results, "Plasma: 2 -> 1", fixed = TRUE)
+  expect_false(is.null(captured$output$assay_results_tabs))
+  expect_identical(captured$removed_notification, "metab_intensity_filter_working")
+  expect_true(any(vapply(
+    captured$notifications,
+    function(notification) identical(notification$type, "message"),
+    logical(1)
+  )))
+  expect_false(exists("error_log_message", envir = captured, inherits = FALSE))
+})
+
+test_that("metabolomics intensity module preserves revert public behavior", {
+  captured <- new.env(parent = emptyenv())
+  captured$notifications <- list()
+  package_ns <- asNamespace("MultiScholaR")
+  server_fn <- if (exists(
+    "mod_metab_qc_intensity_server",
+    envir = package_ns,
+    inherits = FALSE
+  )) {
+    get("mod_metab_qc_intensity_server", envir = package_ns, inherits = FALSE)
+  } else {
+    mod_metab_qc_intensity_server
+  }
+
+  scoped_mocked_bindings(
+    moduleServer = function(id, module) {
+      output <- new.env(parent = emptyenv())
+      module(
+        list(
+          apply_filter = FALSE,
+          revert_filter = TRUE,
+          intensity_cutoff_percentile = 10,
+          proportion_below_cutoff = 0.5
+        ),
+        output,
+        list(ns = function(value) paste(id, value, sep = "-"))
+      )
+      captured$output <- output
+      invisible(NULL)
+    },
+    reactiveVal = function(value = NULL) {
+      stored <- value
+      function(new_value) {
+        if (missing(new_value)) {
+          stored
+        } else {
+          stored <<- new_value
+          invisible(NULL)
+        }
+      }
+    },
+    observeEvent = function(eventExpr, handlerExpr, ...) {
+      if (isTRUE(eval(substitute(eventExpr), parent.frame()))) {
+        eval(substitute(handlerExpr), parent.frame())
+      }
+      invisible(NULL)
+    },
+    renderText = function(expr) {
+      eval(substitute(expr), parent.frame())
+    },
+    renderUI = function(expr) {
+      eval(substitute(expr), parent.frame())
+    },
+    renderPlot = function(expr) {
+      eval(substitute(expr), parent.frame())
+    },
+    req = function(...) list(...)[[1]],
+    showNotification = function(message, ...) {
+      captured$notifications[[length(captured$notifications) + 1L]] <- c(
+        list(message = message),
+        list(...)
+      )
+      invisible(NULL)
+    },
+    removeNotification = function(id, ...) {
+      captured$removed_notification <- id
+      invisible(NULL)
+    },
+    .env = asNamespace("shiny")
+  )
+  scoped_mocked_bindings(
+    log_info = function(message) {
+      captured$log_message <- message
+      invisible(NULL)
+    },
+    log_error = function(message) {
+      captured$error_log_message <- message
+      invisible(NULL)
+    },
+    .env = asNamespace("logger")
+  )
+
+  state_manager <- list(
+    getState = function() NULL,
+    saveState = function(...) invisible(NULL),
+    getHistory = function() c("baseline_metab_state", "filtered_metab_state"),
+    revertToState = function(state_name) {
+      captured$reverted_state_name <- state_name
+      invisible(state_name)
+    }
+  )
+
+  server_fn(
+    id = "intensity",
+    workflow_data = list(
+      state_manager = state_manager,
+      config_list = list(config = "value")
+    ),
+    omic_type = "metabolomics",
+    experiment_label = "Experiment A"
+  )
+
+  expect_identical(captured$reverted_state_name, "baseline_metab_state")
+  expect_match(
+    captured$output$filter_results,
+    "Reverted to previous state: baseline_metab_state",
+    fixed = TRUE
+  )
+  expect_true(any(vapply(
+    captured$notifications,
+    function(notification) identical(notification$type, "message"),
+    logical(1)
+  )))
+  expect_false(exists("error_log_message", envir = captured, inherits = FALSE))
+})
+
 test_that("metabolomics intensity assay tabs seam returns null for empty stats and builds namespaced assay tabs", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   expect_null(
     buildMetabIntensityAssayTabsUi(
       stats = NULL,
@@ -123,6 +529,11 @@ test_that("metabolomics intensity assay tabs seam returns null for empty stats a
 })
 
 test_that("metabolomics intensity module server delegates the assay tabs render path through the seam", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
   server_env <- environment(mod_metab_qc_intensity_server)
@@ -162,7 +573,7 @@ test_that("metabolomics intensity module server delegates the assay tabs render 
     envir = server_env
   )
 
-  testthat::local_mocked_bindings(
+  scoped_mocked_bindings(
     moduleServer = function(id, module) {
       captured$module_id <- id
       module(
@@ -196,12 +607,12 @@ test_that("metabolomics intensity module server delegates the assay tabs render 
     req = function(...) {
       invisible(NULL)
     },
-    .package = "shiny"
+    .env = asNamespace("shiny")
   )
-  testthat::local_mocked_bindings(
+  scoped_mocked_bindings(
     log_info = function(...) invisible(NULL),
     log_error = function(...) invisible(NULL),
-    .package = "logger"
+    .env = asNamespace("logger")
   )
 
   mod_metab_qc_intensity_server(
@@ -218,6 +629,11 @@ test_that("metabolomics intensity module server delegates the assay tabs render 
 })
 
 test_that("metabolomics intensity filter-plot seam dispatches grid and ggplot payloads", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
   captured$req_values <- list()
   grob_object <- structure(list(label = "grid"), class = c("gtable", "grob"))
@@ -273,8 +689,12 @@ test_that("metabolomics intensity filter-plot seam dispatches grid and ggplot pa
 })
 
 test_that("metabolomics intensity stats seam counts per-assay metabolites and retention", {
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
+  current_s4 <- makeMetabIntensityAssayData(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = c("m1", "m1", "m2"),
@@ -282,15 +702,13 @@ test_that("metabolomics intensity stats seam counts per-assay metabolites and re
         stringsAsFactors = FALSE
       ),
       Serum = data.frame(
-        feature_label = c("s1", "s2"),
+        metabolite_id = c("s1", "s2"),
         Sample1 = c(7, 9),
         stringsAsFactors = FALSE
       )
-    ),
-    metabolite_id_column = "metabolite_id"
+    )
   )
-  filtered_s4 <- methods::new(
-    "MetaboliteAssayData",
+  filtered_s4 <- makeMetabIntensityAssayData(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "m2",
@@ -298,12 +716,11 @@ test_that("metabolomics intensity stats seam counts per-assay metabolites and re
         stringsAsFactors = FALSE
       ),
       Serum = data.frame(
-        feature_label = "s2",
+        metabolite_id = "s2",
         Sample1 = 9,
         stringsAsFactors = FALSE
       )
-    ),
-    metabolite_id_column = "metabolite_id"
+    )
   )
 
   stats <- buildMetabIntensityFilterStats(
@@ -325,19 +742,22 @@ test_that("metabolomics intensity stats seam counts per-assay metabolites and re
 })
 
 test_that("metabolomics intensity QC plot seam refreshes the plot and stores it", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
   captured$plot_updates <- list()
   captured$warnings <- character()
-  filtered_s4 <- methods::new(
-    "MetaboliteAssayData",
+  filtered_s4 <- makeMetabIntensityAssayData(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "m2",
         Sample1 = 20,
         stringsAsFactors = FALSE
       )
-    ),
-    metabolite_id_column = "metabolite_id"
+    )
   )
 
   visible <- withVisible(
@@ -377,19 +797,22 @@ test_that("metabolomics intensity QC plot seam refreshes the plot and stores it"
 })
 
 test_that("metabolomics intensity QC plot seam falls back to a null plot on refresh errors", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
   captured$plot_updates <- list()
   captured$warnings <- character()
-  filtered_s4 <- methods::new(
-    "MetaboliteAssayData",
+  filtered_s4 <- makeMetabIntensityAssayData(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "m2",
         Sample1 = 20,
         stringsAsFactors = FALSE
       )
-    ),
-    metabolite_id_column = "metabolite_id"
+    )
   )
 
   visible <- withVisible(
@@ -421,17 +844,20 @@ test_that("metabolomics intensity QC plot seam falls back to a null plot on refr
 })
 
 test_that("metabolomics intensity state-save seam persists filtered state and returns the saved state name", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
-  filtered_s4 <- methods::new(
-    "MetaboliteAssayData",
+  filtered_s4 <- makeMetabIntensityAssayData(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "m2",
         Sample1 = 20,
         stringsAsFactors = FALSE
       )
-    ),
-    metabolite_id_column = "metabolite_id"
+    )
   )
   state_manager <- list(
     saveState = function(...) {
@@ -463,6 +889,11 @@ test_that("metabolomics intensity state-save seam persists filtered state and re
 })
 
 test_that("metabolomics intensity summary seam assembles totals and result text", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   stats <- data.frame(
     Assay = c("Plasma", "Serum"),
     Original = c(10, 6),
@@ -505,6 +936,11 @@ test_that("metabolomics intensity summary seam assembles totals and result text"
 })
 
 test_that("metabolomics intensity success-reporting seam renders results and reports completion", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
   stats <- data.frame(
@@ -581,6 +1017,11 @@ test_that("metabolomics intensity success-reporting seam renders results and rep
 })
 
 test_that("metabolomics intensity revert-reporting seam resets outputs and reports completion", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
 
@@ -640,6 +1081,11 @@ test_that("metabolomics intensity revert-reporting seam resets outputs and repor
 })
 
 test_that("metabolomics intensity module server delegates the filter-plot render path through the seam", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
   server_env <- environment(mod_metab_qc_intensity_server)
   binding_name <- "renderMetabIntensityFilterPlot"
@@ -668,7 +1114,7 @@ test_that("metabolomics intensity module server delegates the filter-plot render
     envir = server_env
   )
 
-  testthat::local_mocked_bindings(
+  scoped_mocked_bindings(
     moduleServer = function(id, module) {
       captured$module_id <- id
       output <- new.env(parent = emptyenv())
@@ -696,12 +1142,12 @@ test_that("metabolomics intensity module server delegates the filter-plot render
     renderText = function(expr) substitute(expr),
     renderPlot = function(expr) eval(substitute(expr), parent.frame()),
     req = function(...) list(...)[[1]],
-    .package = "shiny"
+    .env = asNamespace("shiny")
   )
-  testthat::local_mocked_bindings(
+  scoped_mocked_bindings(
     log_info = function(...) invisible(NULL),
     log_error = function(...) invisible(NULL),
-    .package = "logger"
+    .env = asNamespace("logger")
   )
 
   mod_metab_qc_intensity_server(
@@ -725,6 +1171,11 @@ test_that("metabolomics intensity module server delegates the filter-plot render
 })
 
 test_that("metabolomics intensity module apply observer delegates QC plot refresh, state save, and success reporting through seams", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
   captured$notifications <- list()
   captured$reactive_values <- list()
@@ -763,8 +1214,7 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
     }
   }, add = TRUE)
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabIntensityAssayData(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = c("m1", "m2"),
@@ -778,11 +1228,9 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
         Sample2 = 9,
         stringsAsFactors = FALSE
       )
-    ),
-    metabolite_id_column = "metabolite_id"
+    )
   )
-  filtered_s4 <- methods::new(
-    "MetaboliteAssayData",
+  filtered_s4 <- makeMetabIntensityAssayData(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "m2",
@@ -796,8 +1244,7 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
         Sample2 = 9,
         stringsAsFactors = FALSE
       )
-    ),
-    metabolite_id_column = "metabolite_id"
+    )
   )
   expected_stats <- data.frame(
     Assay = c("Plasma", "Serum"),
@@ -892,7 +1339,7 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
     envir = server_env
   )
 
-  testthat::local_mocked_bindings(
+  scoped_mocked_bindings(
     moduleServer = function(id, module) {
       captured$module_id <- id
       output <- new.env(parent = emptyenv())
@@ -948,9 +1395,9 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
       captured$removed_notification <- id
       invisible(NULL)
     },
-    .package = "shiny"
+    .env = asNamespace("shiny")
   )
-  testthat::local_mocked_bindings(
+  scoped_mocked_bindings(
     log_info = function(message) invisible(NULL),
     log_error = function(message) {
       captured$error_log_message <- message
@@ -960,7 +1407,7 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
       captured$warn_log_message <- message
       invisible(NULL)
     },
-    .package = "logger"
+    .env = asNamespace("logger")
   )
 
   workflow_data <- list(
@@ -1023,6 +1470,11 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
 })
 
 test_that("metabolomics intensity module revert observer delegates reset and reporting through the seam", {
+  skip_if_not(
+    metabIntensityHasExtractedSeams(),
+    "Extracted metabolomics intensity seams are target-only."
+  )
+
   captured <- new.env(parent = emptyenv())
   captured$reactive_values <- list()
   server_env <- environment(mod_metab_qc_intensity_server)
@@ -1058,7 +1510,7 @@ test_that("metabolomics intensity module revert observer delegates reset and rep
     envir = server_env
   )
 
-  testthat::local_mocked_bindings(
+  scoped_mocked_bindings(
     moduleServer = function(id, module) {
       captured$module_id <- id
       output <- new.env(parent = emptyenv())
@@ -1114,9 +1566,9 @@ test_that("metabolomics intensity module revert observer delegates reset and rep
       captured$removed_notification <- id
       invisible(NULL)
     },
-    .package = "shiny"
+    .env = asNamespace("shiny")
   )
-  testthat::local_mocked_bindings(
+  scoped_mocked_bindings(
     log_info = function(message) {
       captured$log_message <- message
       invisible(NULL)
@@ -1125,7 +1577,7 @@ test_that("metabolomics intensity module revert observer delegates reset and rep
       captured$error_log_message <- message
       invisible(NULL)
     },
-    .package = "logger"
+    .env = asNamespace("logger")
   )
 
   workflow_data <- list(

@@ -1,5 +1,7 @@
 library(testthat)
 
+# fidelity-coverage-compare: shared
+
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
 loadSelectedExpressions <- function(paths, matcher, env) {
@@ -62,6 +64,8 @@ if (!methods::isClass("MetaboliteAssayData")) {
       sample_id = "character",
       internal_standard_regex = "character",
       annotation_id_column = "character",
+      group_id = "character",
+      technical_replicate_id = "character",
       args = "list"
     ),
     prototype = list(
@@ -71,6 +75,8 @@ if (!methods::isClass("MetaboliteAssayData")) {
       sample_id = "Run",
       internal_standard_regex = "Internal Standard",
       annotation_id_column = "annotation",
+      group_id = "group",
+      technical_replicate_id = "TechRep",
       args = list()
     )
   )
@@ -98,13 +104,15 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
-loadSelectedExpressions(
-  paths = target_paths,
-  matcher = function(expr) {
-    isTargetSetMethod(expr, "normaliseUntransformedData")
-  },
-  env = environment()
-)
+if (!methods::hasMethod("normaliseUntransformedData", c("MetaboliteAssayData", "character"))) {
+  loadSelectedExpressions(
+    paths = target_paths,
+    matcher = function(expr) {
+      isTargetSetMethod(expr, "normaliseUntransformedData")
+    },
+    env = environment()
+  )
+}
 
 newMetabItsdObject <- function() {
   methods::new(

@@ -1,6 +1,32 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 library(shiny)
 library(htmltools)
+
+source("helpers-scoped-mocked-bindings.R")
+
+register_binding_teardown(
+  asNamespace("shiny"),
+  c(
+    "updateSelectInput",
+    "updateTextAreaInput",
+    "showNotification",
+    "removeNotification"
+  ),
+  .local_envir = environment()
+)
+register_binding_teardown(
+  asNamespace("MultiScholaR"),
+  c(
+    "runMetabolitesDA",
+    "generateMetabDAVolcanoPlotGlimma",
+    "generateMetabDAHeatmap",
+    "outputMetabDaResultsAllContrasts",
+    "save_heatmap_products",
+    "generateMetabDAVolcanoStatic"
+  ),
+  .local_envir = environment()
+)
 
 if (!methods::isClass("MetaboliteAssayData")) {
   methods::setClass(
@@ -80,6 +106,28 @@ makeMetabDaSessionData <- function(current_s4 = makeMetabDaCurrentS4()) {
       stringsAsFactors = FALSE
     ),
     assay_names = c("LCMS_Pos", "LCMS_Neg")
+  )
+}
+
+metabDaInternal <- function(name) {
+  get(name, envir = asNamespace("MultiScholaR"), inherits = FALSE)
+}
+
+metabDaHasDownloadHelpers <- function() {
+  all(vapply(
+    c("buildMetabDaResultsDownloadHandler", "writeMetabDaResultsDownloadCsv"),
+    exists,
+    logical(1),
+    envir = asNamespace("MultiScholaR"),
+    inherits = FALSE
+  ))
+}
+
+metabDaHasAnalysisInputResolver <- function() {
+  exists(
+    "resolveMetabDaAnalysisInputs",
+    envir = asNamespace("MultiScholaR"),
+    inherits = FALSE
   )
 }
 
@@ -190,9 +238,10 @@ installMetabDaModuleMocks <- function(
   save_heatmap_fn = function(...) {
     harness$capture$heatmap_saves[[length(harness$capture$heatmap_saves) + 1L]] <<- list(...)
     invisible(NULL)
-  }
+  },
+  .local_envir = parent.frame()
 ) {
-  local_mocked_bindings(
+  scoped_mocked_bindings(
     updateSelectInput = function(session, inputId, choices = NULL, selected = NULL) {
       harness$capture$update_select_calls[[length(harness$capture$update_select_calls) + 1L]] <<- list(
         session = session,
@@ -225,17 +274,19 @@ installMetabDaModuleMocks <- function(
       harness$capture$removed_notifications <<- c(harness$capture$removed_notifications, id)
       invisible(NULL)
     },
-    .env = asNamespace("shiny")
+    .env = asNamespace("shiny"),
+    .local_envir = .local_envir
   )
 
-  local_mocked_bindings(
+  scoped_mocked_bindings(
     runMetabolitesDA = run_analysis_fn,
     generateMetabDAVolcanoPlotGlimma = glimma_fn,
     generateMetabDAHeatmap = heatmap_fn,
     outputMetabDaResultsAllContrasts = output_results_fn,
     save_heatmap_products = save_heatmap_fn,
     generateMetabDAVolcanoStatic = function(...) ggplot2::ggplot(),
-    .env = asNamespace("MultiScholaR")
+    .env = asNamespace("MultiScholaR"),
+    .local_envir = .local_envir
   )
 }
 
@@ -367,4 +418,101 @@ test_that("mod_metab_da_server preserves Glimma error and heatmap-save public be
   expect_identical(harness$capture$heatmap_saves[[1]]$params_list$top_n, 25)
   expect_identical(harness$capture$heatmap_saves[[1]]$params_list$cluster_cols, TRUE)
   expect_identical(harness$capture$heatmap_saves[[1]]$params_list$cluster_rows, FALSE)
+})
+
+test_that("metabolomics DA analysis input resolver preserves state and guard behavior", {
+  skip_if_not(
+    metabDaHasAnalysisInputResolver(),
+    "Extracted metabolomics DA analysis input resolver is target-only."
+  )
+
+  resolve_inputs <- metabDaInternal("resolveMetabDaAnalysisInputs")
+  current_s4 <- makeMetabDaCurrentS4()
+  workflow_data <- new.env(parent = emptyenv())
+  workflow_data$contrasts_tbl <- data.frame(
+    friendly_names = "B vs A",
+    contrasts = "groupB-groupA",
+    stringsAsFactors = FALSE
+  )
+
+  direct <- resolve_inputs(
+    currentS4Object = current_s4,
+    workflowData = workflow_data
+  )
+  expect_true(direct$ok)
+  expect_identical(direct$currentS4, current_s4)
+  expect_identical(direct$contrastsTbl, workflow_data$contrasts_tbl)
+  expect_null(direct$errorMessage)
+
+  fallback <- resolve_inputs(
+    currentS4Object = NULL,
+    workflowData = workflow_data,
+    getState = function() current_s4
+  )
+  expect_true(fallback$ok)
+  expect_identical(fallback$currentS4, current_s4)
+
+  missing_data <- resolve_inputs(
+    currentS4Object = NULL,
+    workflowData = workflow_data,
+    getState = function() NULL
+  )
+  expect_false(missing_data$ok)
+  expect_null(missing_data$contrastsTbl)
+  expect_match(missing_data$errorMessage, "No metabolomics data loaded", fixed = TRUE)
+
+  invalid_data <- resolve_inputs(
+    currentS4Object = list(not = "an assay"),
+    workflowData = workflow_data
+  )
+  expect_false(invalid_data$ok)
+  expect_identical(invalid_data$currentS4, list(not = "an assay"))
+
+  workflow_data$contrasts_tbl <- workflow_data$contrasts_tbl[0, ]
+  missing_contrasts <- resolve_inputs(
+    currentS4Object = current_s4,
+    workflowData = workflow_data
+  )
+  expect_false(missing_contrasts$ok)
+  expect_identical(nrow(missing_contrasts$contrastsTbl), 0L)
+  expect_match(missing_contrasts$errorMessage, "No contrasts defined", fixed = TRUE)
+
+  workflow_data$contrasts_tbl <- NULL
+  null_contrasts <- resolve_inputs(
+    currentS4Object = current_s4,
+    workflowData = workflow_data
+  )
+  expect_false(null_contrasts$ok)
+  expect_null(null_contrasts$contrastsTbl)
+})
+
+test_that("metabolomics DA download helpers write full result CSV payloads", {
+  skip_if_not(
+    metabDaHasDownloadHelpers(),
+    "Extracted metabolomics DA download helpers are target-only."
+  )
+
+  da_data <- new.env(parent = emptyenv())
+  da_data$da_results_list <- list(da_metabolites_long = makeMetabDaResults())
+
+  build_handler <- metabDaInternal("buildMetabDaResultsDownloadHandler")
+  handler <- build_handler(
+    daData = da_data,
+    downloadHandler = function(filename, content) {
+      list(filename = filename, content = content)
+    }
+  )
+
+  expect_match(
+    handler$filename(),
+    "^metabolomics_da_results_[0-9]{4}-[0-9]{2}-[0-9]{2}[.]csv$"
+  )
+
+  output_file <- tempfile(fileext = ".csv")
+  handler$content(output_file)
+
+  written <- utils::read.csv(output_file, stringsAsFactors = FALSE)
+  expect_identical(written$metabolite_id, makeMetabDaResults()$metabolite_id)
+  expect_identical(written$friendly_name, makeMetabDaResults()$friendly_name)
+  expect_identical(written$significant, makeMetabDaResults()$significant)
 })

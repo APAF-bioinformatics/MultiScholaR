@@ -62,11 +62,13 @@ if (!methods::isClass("MetaboliteAssayData")) {
     "MetaboliteAssayData",
     slots = c(
       metabolite_data = "list",
+      metabolite_id_column = "character",
       design_matrix = "data.frame",
       sample_id = "character"
     ),
     prototype = list(
       metabolite_data = list(),
+      metabolite_id_column = "feature",
       design_matrix = data.frame(),
       sample_id = "Run"
     )
@@ -112,6 +114,7 @@ newCorrelationFilterObject <- function() {
         stringsAsFactors = FALSE
       )
     ),
+    metabolite_id_column = "feature",
     design_matrix = data.frame(
       Run = c("Sample_1", "Sample_2", "Sample_3", "Sample_4"),
       Batch = c("A", "A", "B", "B"),

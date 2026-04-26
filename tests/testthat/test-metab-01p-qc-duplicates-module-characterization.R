@@ -2,6 +2,25 @@ library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
+skipIfMissingMetabQcDuplicatesTargetFiles <- function() {
+  required_paths <- c(
+    "R/mod_metab_qc_duplicates_ui_helpers.R",
+    "R/mod_metab_qc_duplicates_render_helpers.R",
+    "R/mod_metab_qc_duplicates_server_helpers.R"
+  )
+  missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only metab QC duplicate helper file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingMetabQcDuplicatesTargetFiles()
+
 loadSelectedFunctions <- function(paths, symbols, env) {
   for (path in paths[file.exists(paths)]) {
     exprs <- parse(file = path, keep.source = TRUE)

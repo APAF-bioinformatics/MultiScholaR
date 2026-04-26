@@ -1,5 +1,37 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 library(shiny)
+
+skipIfMissingProtQcProteinRefactorHelpers <- function() {
+  package_namespace <- asNamespace("MultiScholaR")
+  required_symbols <- c(
+    "getProtQcProteinRollupModuleSpec",
+    "getProtQcProteinCommonModuleSpecs",
+    "getProtQcProteinModuleSpecs",
+    "buildProtQcProteinTab",
+    "runProtQcProteinSubmodule"
+  )
+  missing <- required_symbols[
+    !vapply(
+      required_symbols,
+      exists,
+      logical(1),
+      where = package_namespace,
+      mode = "function",
+      inherits = FALSE
+    )
+  ]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only prot QC protein helper(s) not present: %s",
+        paste(missing, collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingProtQcProteinRefactorHelpers()
 
 makeFunctionWithOverrides <- function(fun, replacements) {
   funOverride <- fun

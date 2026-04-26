@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 
 test_that("getCountsTable resolves lipid assay counts through the canonical DA helper", {

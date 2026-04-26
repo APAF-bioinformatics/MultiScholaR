@@ -1,5 +1,79 @@
+# fidelity-coverage-compare: shared
 # testthat for Proteomics DA Analysis
 # Phase 4 of Proteomics GUI Test Strategy
+
+repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
+
+skipIfMissingProtDaSplitTargetFiles <- function() {
+  required_paths <- c(
+    "R/func_prot_da_model_methods.R",
+    "R/func_prot_da_results_methods.R",
+    "R/func_prot_da_heatmap.R"
+  )
+  missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only prot DA split file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingProtDaSplitTargetFiles()
+
+localSharedDaGraphicsState <- function(.local_envir = parent.frame()) {
+  old_device <- getOption("device")
+
+  while (grDevices::dev.cur() > 1) {
+    grDevices::dev.off()
+  }
+
+  options(device = grDevices::pdf)
+
+  withr::defer({
+    while (grDevices::dev.cur() > 1) {
+      grDevices::dev.off()
+    }
+    options(device = old_device)
+  }, envir = .local_envir)
+}
+
+localSharedDaMethodMocks <- function(.local_envir = parent.frame()) {
+  testthat::local_mocked_bindings(
+    plotPca = function(...) {
+      ggplot2::ggplot(data.frame(x = 1, y = 1), ggplot2::aes(x, y)) +
+        ggplot2::geom_point()
+    },
+    plotNumOfValuesNoLog = function(...) {
+      ggplot2::ggplot(data.frame(x = 1, y = 1), ggplot2::aes(x, y)) +
+        ggplot2::geom_col()
+    },
+    plotVolcano = function(...) {
+      ggplot2::ggplot(data.frame(x = 1, y = 1), ggplot2::aes(x, y)) +
+        ggplot2::geom_point()
+    },
+    printPValuesDistribution = function(...) {
+      ggplot2::ggplot(data.frame(x = 1, y = 1), ggplot2::aes(x, y)) +
+        ggplot2::geom_point()
+    },
+    printCountDaGenesTable = function(...) {
+      data.frame(
+        comparison = "G2_vs_G1",
+        status = "Significant and Up",
+        counts = 1L,
+        stringsAsFactors = FALSE
+      )
+    },
+    plotOneVolcanoNoVerticalLines = function(...) {
+      ggplot2::ggplot(data.frame(x = 1, y = 1), ggplot2::aes(x, y)) +
+        ggplot2::geom_point()
+    },
+    .package = "MultiScholaR",
+    .env = .local_envir
+  )
+}
 
 test_that("DA analysis snapshot is valid", {
   cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp07_da_results.rds")
@@ -20,17 +94,20 @@ test_that("DA analysis snapshot is valid", {
 })
 
 test_that("differentialAbundanceAnalysis works with mock data", {
+  localSharedDaGraphicsState()
+  localSharedDaMethodMocks()
+
   # Mock ProteinQuantitativeData
-  # Increase number of proteins to 20 to avoid PCA filtering issues
   n_prot <- 20
   pqd <- new("ProteinQuantitativeData",
     protein_quant_table = data.frame(
       Protein.Ids = paste0("P", 1:n_prot),
-      # Random abundances with some difference between groups
-      S1 = rnorm(n_prot, 10, 1),
-      S2 = rnorm(n_prot, 10, 1),
-      S3 = rnorm(n_prot, 15, 1),
-      S4 = rnorm(n_prot, 15, 1),
+      # Use deterministic group-shifted values so limma stays stable under the
+      # larger shared-suite load order.
+      S1 = seq(10, 10 + n_prot - 1),
+      S2 = seq(10.5, 10.5 + n_prot - 1),
+      S3 = seq(15, 15 + n_prot - 1),
+      S4 = seq(15.5, 15.5 + n_prot - 1),
       stringsAsFactors = FALSE
     ),
     design_matrix = data.frame(

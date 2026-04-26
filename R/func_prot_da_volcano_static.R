@@ -47,7 +47,7 @@ generateProtDAVolcanoStatic <- function(
   if (nrow(plot_data) == 0) {
     # Try fuzzy match if exact match fails
     available_comparisons <- unique(da_results_list$da_proteins_long$comparison)
-    matching_key <- which(stringr::str_detect(available_comparisons, fixed(comparison_to_search)))
+    matching_key <- which(stringr::str_detect(available_comparisons, stringr::fixed(comparison_to_search)))
     if (length(matching_key) > 0) {
       comparison_to_search <- available_comparisons[matching_key[1]]
       plot_data <- da_results_list$da_proteins_long |>

@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 
 restoreGlobalBinding <- function(name, had_value, old_value = NULL) {

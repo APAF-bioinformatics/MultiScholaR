@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)

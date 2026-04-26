@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 
 test_that("LipidomicsDifferentialAbundanceResults keeps its slot contract and defaults", {

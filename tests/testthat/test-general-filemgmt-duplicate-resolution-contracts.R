@@ -1,6 +1,57 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 
 repoRoot <- pkgload::pkg_path()
+
+skipIfMissingGeneralFilemgmtCanonicalTargetFiles <- function() {
+  required_paths <- c(
+    "R/func_prot_norm_optimization_helpers.R",
+    "R/func_prot_qc_peptide_support.R",
+    "R/func_prot_qc_reporting_helpers.R"
+  )
+  missing <- required_paths[!file.exists(file.path(repoRoot, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only general filemgmt canonical file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfLegacyGeneralFilemgmtDuplicatesPresent <- function() {
+  filemgmt_lines <- readLines(file.path(repoRoot, "R/func_general_filemgmt.R"), warn = FALSE)
+  legacy_symbols <- c(
+    "extract_experiment",
+    "updateMissingValueParameters",
+    "chooseBestProteinAccession_s3",
+    "updateRuvParameters",
+    "checkPeptideNAPercentages",
+    "validatePostImputationData",
+    "getProteinNARecommendations",
+    "checkProteinNAPercentages",
+    "validatePostImputationProteinData"
+  )
+  present <- legacy_symbols[
+    vapply(
+      legacy_symbols,
+      function(name) any(grepl(sprintf("^\\s*%s\\s*<-", name), filemgmt_lines)),
+      logical(1)
+    )
+  ]
+  if (length(present) > 0) {
+    testthat::skip(
+      sprintf(
+        "Legacy general filemgmt duplicate(s) still present: %s",
+        paste(present, collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingGeneralFilemgmtCanonicalTargetFiles()
+skipIfLegacyGeneralFilemgmtDuplicatesPresent()
 
 readTopLevelFunction <- function(path, name, parent = baseenv()) {
   exprs <- parse(file = file.path(repoRoot, path), keep.source = TRUE)

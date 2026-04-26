@@ -1,5 +1,18 @@
+# fidelity-coverage-compare: shared
 # testthat for Proteomics Annotation
 # Phase 4 of Proteomics GUI Test Strategy
+library(testthat)
+
+if (!methods::isClass("mockProtAnnotationProteinData")) {
+  methods::setClass(
+    "mockProtAnnotationProteinData",
+    slots = c(
+      protein_quant_table = "data.frame",
+      protein_id_table = "data.frame",
+      protein_id_column = "character"
+    )
+  )
+}
 
 test_that("cleanIsoformNumber removes suffix correctly", {
   expect_equal(cleanIsoformNumber("Q8K4R4-2"), "Q8K4R4")
@@ -86,6 +99,99 @@ test_that("matchAnnotations keeps unmatched proteins while using version-based f
   expect_equal(result$match_statistics$unmatched_proteins, 1)
   expect_equal(result$match_statistics$match_rate, 50)
   expect_identical(result$unmatched_proteins, "NOT_A_MATCH.1")
+})
+
+test_that("matchAnnotations reads non-enrichment S4 protein_quant_table IDs", {
+  da_obj <- methods::new(
+    "mockProtAnnotationProteinData",
+    protein_quant_table = data.frame(
+      Protein.Ids = c("P12345-2", "P99999;SECOND"),
+      Sample_1 = c(10, 20),
+      stringsAsFactors = FALSE
+    ),
+    protein_id_table = data.frame(),
+    protein_id_column = "Protein.Ids"
+  )
+
+  uniprot_ann <- data.frame(
+    Entry = c("P12345", "P99999"),
+    gene_names = c("", "GENE9;ALT"),
+    stringsAsFactors = FALSE
+  )
+
+  result <- matchAnnotations(
+    da_results_s4 = da_obj,
+    uniprot_annotations = uniprot_ann
+  )
+
+  expect_equal(result$match_statistics$total_proteins, 2)
+  expect_equal(result$match_statistics$matched_proteins, 2)
+  expect_equal(result$match_statistics$exact_matches, 2)
+  expect_equal(result$match_statistics$match_rate, 100)
+  expect_true(is.na(result$annotated_da_results$gene_name[[1]]))
+  expect_identical(result$annotated_da_results$gene_name[[2]], "GENE9")
+  expect_identical(result$unmatched_proteins, character(0))
+})
+
+test_that("matchAnnotations falls back to protein_id_table and validates inputs", {
+  da_obj <- methods::new(
+    "mockProtAnnotationProteinData",
+    protein_quant_table = data.frame(
+      OtherId = c("ignored-1", "ignored-2"),
+      Sample_1 = c(10, 20),
+      stringsAsFactors = FALSE
+    ),
+    protein_id_table = data.frame(
+      Accession = c("Q11111", "Q22222.1"),
+      stringsAsFactors = FALSE
+    ),
+    protein_id_column = "Accession"
+  )
+
+  result <- matchAnnotations(
+    da_results_s4 = da_obj,
+    uniprot_annotations = data.frame(
+      Entry = c("Q11111", "Q22222"),
+      stringsAsFactors = FALSE
+    ),
+    protein_id_column = "Accession"
+  )
+
+  expect_equal(result$match_statistics$total_proteins, 2)
+  expect_equal(result$match_statistics$matched_proteins, 2)
+  expect_equal(result$match_statistics$unmatched_proteins, 0)
+  expect_equal(result$match_statistics$fuzzy_matches, 1)
+  expect_false("gene_name" %in% names(result$annotated_da_results))
+  expect_identical(result$unmatched_proteins, character(0))
+
+  expect_error(
+    matchAnnotations(NULL, data.frame(Entry = "P1")),
+    "da_results_s4 cannot be NULL",
+    fixed = TRUE
+  )
+  expect_error(
+    matchAnnotations(da_obj, data.frame(), protein_id_column = "Accession"),
+    "uniprot_annotations cannot be NULL or empty",
+    fixed = TRUE
+  )
+  expect_error(
+    matchAnnotations(
+      da_obj,
+      data.frame(NotEntry = "Q11111"),
+      protein_id_column = "Accession"
+    ),
+    "UniProt ID column 'Entry' not found in annotations",
+    fixed = TRUE
+  )
+  expect_error(
+    matchAnnotations(
+      da_obj,
+      data.frame(Entry = "Q11111"),
+      protein_id_column = "MissingId"
+    ),
+    "Protein ID column 'MissingId' not found",
+    fixed = TRUE
+  )
 })
 
 # APAF Bioinformatics | test-prot-10-annotation.R | Approved | 2026-03-13

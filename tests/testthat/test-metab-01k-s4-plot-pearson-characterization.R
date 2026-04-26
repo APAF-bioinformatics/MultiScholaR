@@ -61,8 +61,20 @@ isTargetSetMethod <- function(expr, method_name) {
 if (!methods::isClass("MetaboliteAssayData")) {
   methods::setClass(
     "MetaboliteAssayData",
-    slots = c(args = "list"),
-    prototype = list(args = list())
+    slots = c(
+      args = "list",
+      metabolite_data = "list",
+      metabolite_id_column = "character",
+      design_matrix = "data.frame",
+      sample_id = "character"
+    ),
+    prototype = list(
+      args = list(),
+      metabolite_data = list(),
+      metabolite_id_column = "metabolite_id",
+      design_matrix = data.frame(),
+      sample_id = "Run"
+    )
   )
 }
 
@@ -114,7 +126,24 @@ loadSelectedExpressions(
 )
 
 newMetabPlotPearsonObject <- function() {
-  methods::new("MetaboliteAssayData", args = list())
+  methods::new(
+    "MetaboliteAssayData",
+    args = list(),
+    metabolite_data = list(
+      LCMS_Pos = data.frame(
+        metabolite_id = c("M1", "M2"),
+        Sample_1 = c(10, 20),
+        Sample_2 = c(11, 21),
+        stringsAsFactors = FALSE
+      )
+    ),
+    metabolite_id_column = "metabolite_id",
+    design_matrix = data.frame(
+      Sample_ID = c("Sample_1", "Sample_2"),
+      stringsAsFactors = FALSE
+    ),
+    sample_id = "Sample_ID"
+  )
 }
 
 test_that("metabolomics S4 plotPearson delegates correlation args and preserves plot labels", {

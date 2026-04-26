@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(methods)
 library(testthat)
 library(ggplot2)
@@ -90,13 +91,9 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
-loadSelectedExpressions(
-  paths = target_paths,
-  matcher = function(expr) {
-    isTargetSetMethod(expr, "plotDensity")
-  },
-  env = environment()
-)
+# Exercise the methods registered by pkgload::load_all(). Re-registering them
+# here would move the method bodies into the test environment and hide the
+# package source lines from covr.
 
 newMetabPlotObject <- function(named = TRUE) {
   assay_tbl <- tibble::tibble(

@@ -1,5 +1,27 @@
 library(testthat)
 
+repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
+
+skipIfMissingLipidImportTargetFiles <- function() {
+  required_paths <- c(
+    "R/mod_lipid_import_ui_helpers.R",
+    "R/mod_lipid_import_server_helpers.R",
+    "R/mod_lipid_import_ui.R",
+    "R/mod_lipid_import_server.R"
+  )
+  missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only lipid import helper file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingLipidImportTargetFiles()
+
 source(test_path("..", "..", "R", "mod_lipid_import_ui_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_import_server_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_import_ui.R"), local = environment())

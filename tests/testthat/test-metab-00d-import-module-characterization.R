@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 library(shiny)
 

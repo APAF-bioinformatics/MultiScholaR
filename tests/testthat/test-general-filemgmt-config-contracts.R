@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 
 makeFunctionWithOverrides <- function(fun, replacements) {
@@ -77,12 +78,16 @@ test_that("readConfigFile normalizes parsed config entries and forwards file_typ
     .env = environment(readConfigFile)
   )
 
-  config_list <- suppressMessages(readConfigFile(
-    file = "/tmp/mock-config.ini",
-    file_type = "cfg"
-  ))
+  supports_file_type <- "file_type" %in% names(formals(readConfigFile))
+  read_args <- list(file = "/tmp/mock-config.ini")
+  if (supports_file_type) {
+    read_args$file_type <- "cfg"
+  }
 
-  expect_identical(parser_call, list(file = "/tmp/mock-config.ini", file_type = "cfg"))
+  config_list <- suppressMessages(do.call(readConfigFile, read_args))
+
+  expected_file_type <- if (supports_file_type) "cfg" else "ini"
+  expect_identical(parser_call, list(file = "/tmp/mock-config.ini", file_type = expected_file_type))
   expect_identical(new_cluster_arg, "4")
   expect_identical(cluster_library_call$cluster, cluster_token)
   expect_identical(

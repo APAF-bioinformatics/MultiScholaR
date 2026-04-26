@@ -2,6 +2,27 @@ library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
+skipIfMissingMetabImportTargetFiles <- function() {
+  required_paths <- c(
+    "R/mod_metab_import_column_helpers.R",
+    "R/mod_metab_import_display_helpers.R",
+    "R/mod_metab_import_registration_helpers.R",
+    "R/mod_metab_import_processing_helpers.R",
+    "R/mod_metab_import_server_helpers.R"
+  )
+  missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only metab import helper file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingMetabImportTargetFiles()
+
 loadSelectedFunctions <- function(paths, symbols, env) {
   for (path in paths[file.exists(paths)]) {
     exprs <- parse(file = path, keep.source = TRUE)

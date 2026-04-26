@@ -2,6 +2,23 @@ library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
+skipIfMissingMetabQcS4TargetFiles <- function() {
+  required_paths <- c(
+    "R/mod_metab_qc_s4_server_helpers.R"
+  )
+  missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only metab QC S4 helper file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingMetabQcS4TargetFiles()
+
 loadSelectedFunctions <- function(paths, symbols, env) {
   for (path in paths[file.exists(paths)]) {
     exprs <- parse(file = path, keep.source = TRUE)

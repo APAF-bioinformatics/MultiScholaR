@@ -1,4 +1,18 @@
+# fidelity-coverage-compare: shared
 # testthat for Proteomics Enrichment helper contracts
+
+skipIfMissingMultiScholaRBindings <- function(...) {
+  missing <- setdiff(c(...), ls(envir = asNamespace("MultiScholaR")))
+  if (length(missing) > 0) {
+    testthat::skip(sprintf("Target-only extracted helper(s) not present: %s", paste(missing, collapse = ", ")))
+  }
+}
+
+skipIfMissingMultiScholaRBindings(
+  "resolveProtEnrichCurrentS4Object",
+  "buildProtEnrichContrastChoices",
+  "setupProtEnrichReactiveValues"
+)
 
 if (!methods::isClass("mockProtEnrichPlotContainer")) {
   methods::setClass("mockProtEnrichPlotContainer", slots = c(enrichment_plotly = "list"))

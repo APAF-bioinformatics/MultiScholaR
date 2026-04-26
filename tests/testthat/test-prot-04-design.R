@@ -1,6 +1,47 @@
 # testthat for Proteomics S4 Objects
 # Phase 4 of Proteomics GUI Test Strategy
 
+repoRoot <- pkgload::pkg_path()
+
+skipIfMissingProtDesignExtractedFiles <- function() {
+  required_paths <- c(
+    "R/mod_prot_design_builder_action_helpers.R",
+    "R/mod_prot_design_builder_display_helpers.R",
+    "R/mod_prot_design_builder_server_helpers.R",
+    "R/mod_prot_design_builder_state_helpers.R",
+    "R/mod_prot_design_import_helpers.R"
+  )
+  missing <- required_paths[!file.exists(file.path(repoRoot, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only prot design extracted file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingProtDesignBindings <- function(...) {
+  missing <- setdiff(c(...), ls(envir = asNamespace("MultiScholaR")))
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only extracted helper(s) not present: %s",
+        paste(missing, collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingProtDesignExtractedFiles()
+
+skipIfMissingProtDesignBindings(
+  "resolveProtDesignImportArtifacts",
+  "runProtDesignImportConfirmationFlow",
+  "runProtDesignBuilderServerEntryShell"
+)
+
 test_that("ProteinQuantitativeData constructor works", {
   # Check for captured checkpoint
   cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp04_design_matrix.rds")

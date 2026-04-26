@@ -1,0 +1,261 @@
+{
+  "report_id": "demonolithing-parity-audit-20260426",
+  "generated_on": "2026-04-26",
+  "branch": "janitor",
+  "repo_root": "/home/doktersmol/Documents/MultiScholaR",
+  "overall": {
+    "bundle_pass_count": 233,
+    "bundle_total_count": 233,
+    "low_coverage_bundle_count": 0,
+    "comparison_gap_bundle_count": 0,
+    "regressed_bundle_count": 0,
+    "package_lines_covered": 63105,
+    "package_lines_total": 70076,
+    "package_line_percent": 90.0522,
+    "package_threshold_percent": 90.0,
+    "threshold_margin_lines": 36,
+    "union_artifact_count": 39
+  },
+  "bundle_counts_by_category": {
+    "proteomics": 92,
+    "lipidomics": 64,
+    "metabolomics": 42,
+    "general_shared": 35,
+    "integration_multiomics": 0,
+    "transcriptomics": 0
+  },
+  "coverage_by_category": {
+    "proteomics": {
+      "covered_lines": 23866,
+      "total_lines": 26234,
+      "line_percent": 90.9735,
+      "file_count": 117
+    },
+    "metabolomics": {
+      "covered_lines": 14071,
+      "total_lines": 15120,
+      "line_percent": 93.0622,
+      "file_count": 56
+    },
+    "lipidomics": {
+      "covered_lines": 13430,
+      "total_lines": 15142,
+      "line_percent": 88.6937,
+      "file_count": 63
+    },
+    "integration_multiomics": {
+      "covered_lines": 1616,
+      "total_lines": 2044,
+      "line_percent": 79.0607,
+      "file_count": 2
+    },
+    "transcriptomics": {
+      "covered_lines": 0,
+      "total_lines": 0,
+      "line_percent": null,
+      "file_count": 0
+    },
+    "general_shared": {
+      "covered_lines": 10122,
+      "total_lines": 11536,
+      "line_percent": 87.7427,
+      "file_count": 40
+    }
+  },
+  "top_uncovered_by_category": {
+    "proteomics": [
+      {
+        "file_path": "R/func_prot_qc_peptide_methods.R",
+        "covered_lines": 26,
+        "total_lines": 196,
+        "uncovered_lines": 170
+      },
+      {
+        "file_path": "R/func_prot_da_model_methods.R",
+        "covered_lines": 308,
+        "total_lines": 418,
+        "uncovered_lines": 110
+      },
+      {
+        "file_path": "R/func_prot_da_heatmap.R",
+        "covered_lines": 98,
+        "total_lines": 185,
+        "uncovered_lines": 87
+      },
+      {
+        "file_path": "R/mod_prot_qc_protein_intensity.R",
+        "covered_lines": 218,
+        "total_lines": 301,
+        "uncovered_lines": 83
+      },
+      {
+        "file_path": "R/mod_prot_qc_peptide_intensity.R",
+        "covered_lines": 233,
+        "total_lines": 315,
+        "uncovered_lines": 82
+      }
+    ],
+    "metabolomics": [
+      {
+        "file_path": "R/mod_metab_norm_server_helpers.R",
+        "covered_lines": 1799,
+        "total_lines": 1977,
+        "uncovered_lines": 178
+      },
+      {
+        "file_path": "R/func_metab_s4_norm_methods.R",
+        "covered_lines": 1539,
+        "total_lines": 1644,
+        "uncovered_lines": 105
+      },
+      {
+        "file_path": "R/func_metab_s4_da_methods.R",
+        "covered_lines": 2,
+        "total_lines": 97,
+        "uncovered_lines": 95
+      },
+      {
+        "file_path": "R/func_metab_norm_support_helpers.R",
+        "covered_lines": 48,
+        "total_lines": 125,
+        "uncovered_lines": 77
+      },
+      {
+        "file_path": "R/mod_metab_qc_itsd.R",
+        "covered_lines": 219,
+        "total_lines": 287,
+        "uncovered_lines": 68
+      }
+    ],
+    "lipidomics": [
+      {
+        "file_path": "R/func_lipid_da_plotting.R",
+        "covered_lines": 151,
+        "total_lines": 432,
+        "uncovered_lines": 281
+      },
+      {
+        "file_path": "R/func_lipid_s4_plotting_methods.R",
+        "covered_lines": 327,
+        "total_lines": 504,
+        "uncovered_lines": 177
+      },
+      {
+        "file_path": "R/func_lipid_norm_support_helpers.R",
+        "covered_lines": 48,
+        "total_lines": 212,
+        "uncovered_lines": 164
+      },
+      {
+        "file_path": "R/mod_lipid_import_server_helpers.R",
+        "covered_lines": 585,
+        "total_lines": 745,
+        "uncovered_lines": 160
+      },
+      {
+        "file_path": "R/func_lipid_s4_da_plot_methods.R",
+        "covered_lines": 87,
+        "total_lines": 208,
+        "uncovered_lines": 121
+      }
+    ],
+    "integration_multiomics": [
+      {
+        "file_path": "R/func_multiomics_enrich.R",
+        "covered_lines": 1616,
+        "total_lines": 2012,
+        "uncovered_lines": 396
+      },
+      {
+        "file_path": "R/func_multiomics_mofa.R",
+        "covered_lines": 0,
+        "total_lines": 32,
+        "uncovered_lines": 32
+      }
+    ],
+    "general_shared": [
+      {
+        "file_path": "R/func_general_enrichment.R",
+        "covered_lines": 1948,
+        "total_lines": 2331,
+        "uncovered_lines": 383
+      },
+      {
+        "file_path": "R/func_peptide_qc_imputation.R",
+        "covered_lines": 322,
+        "total_lines": 509,
+        "uncovered_lines": 187
+      },
+      {
+        "file_path": "R/func_general_plotting_volcano_glimma_helpers.R",
+        "covered_lines": 210,
+        "total_lines": 372,
+        "uncovered_lines": 162
+      },
+      {
+        "file_path": "R/func_general_filemgmt_config_helpers.R",
+        "covered_lines": 1196,
+        "total_lines": 1318,
+        "uncovered_lines": 122
+      },
+      {
+        "file_path": "R/func_general_helpers.R",
+        "covered_lines": 535,
+        "total_lines": 642,
+        "uncovered_lines": 107
+      }
+    ]
+  },
+  "evidence": {
+    "bundle_parity_run_id": "coverage-evidence-20260423Tglobal-fa-c4-refresh-bp",
+    "bundle_parity_report": ".refactor-fidelity-audit/reports/latest-coverage-evidence.md",
+    "bundle_manifest": ".refactor-fidelity-audit/reports/latest-bundles.json",
+    "package_coverage_method": "exact_union",
+    "base_probe_run_id": "coverage-target-probe-plus-20260425c",
+    "follow_up_run_ids": [
+      "coverage-helper-wave-20260425a",
+      "coverage-annotation-heatmap-wave-20260425a",
+      "coverage-direct-wave-20260425b",
+      "coverage-prot-s4-qc-direct-20260425a",
+      "coverage-prot-da-render-direct-20260425a",
+      "coverage-metab-da-core-engine-direct-20260425a",
+      "coverage-prot-qc-coordinator-direct-20260425a",
+      "coverage-prot-fasta-processing-direct-20260425a",
+      "coverage-prot-annotation-ensembl-full-direct-20260426a",
+      "coverage-prot-annotation-processing-cleaning-direct-20260426a",
+      "coverage-metab-import-metrics-organisms-direct-20260426a",
+      "coverage-metab-s4-plotting-direct-20260426a",
+      "coverage-general-plotting-utils-direct-20260426a",
+      "coverage-prot-qc-correlation-direct-20260426a",
+      "coverage-prot-s4-norm-methods-direct-20260426a",
+      "coverage-prot-annotation-small-helpers-direct-20260426a",
+      "coverage-github-management-direct-20260426a",
+      "coverage-prot-qc-peptide-methods-direct-20260426a",
+      "coverage-prot-qc-support-direct-20260426a",
+      "coverage-general-filemgmt-config-direct-20260426a",
+      "coverage-prot-s4-missingness-direct-20260426b",
+      "coverage-prot-limpa-da-helpers-direct-20260426a",
+      "coverage-metab-da-volcano-static-direct-20260426a",
+      "coverage-prot-qc-peptide-replicate-filters-direct-20260426a",
+      "coverage-lipid-da-export-shared-20260426a",
+      "coverage-lipid-s4-plotting-methods-20260426a",
+      "coverage-lipid-s4-da-plot-methods-20260426a",
+      "coverage-lipid-norm-ruv-helpers-shared-20260426a",
+      "coverage-metab-s4-da-methods-direct-20260426a",
+      "coverage-prot-qc-peptide-support-direct-20260426a",
+      "coverage-general-pca-rle-direct-20260426a",
+      "coverage-prot-da-model-stats-shared-20260426a",
+      "coverage-general-filemgmt-update-missing-value-shared-20260426a",
+      "coverage-general-filemgmt-path-contracts-20260426a",
+      "coverage-multiomics-enrich-shared-20260426e",
+      "coverage-general-enrichment-shared-20260426e",
+      "coverage-general-filemgmt-report-helpers-shared-20260426c",
+      "coverage-general-filemgmt-load-dependencies-shared-20260426a"
+    ]
+  },
+  "notes": [
+    "Bundle parity is carried from the last completed FA-C4 refresh and is not inferred from coverage alone.",
+    "No transcriptomics-specific bundle family or dedicated transcriptomics extracted-file slice was a closeout driver in this audit wave.",
+    "The largest remaining package-level headroom reservoirs are func_multiomics_enrich, func_general_enrichment, lipid plotting helpers, and a long tail of lower-density proteomics helpers."
+  ]
+}

@@ -1,10 +1,33 @@
+# fidelity-coverage-compare: shared
 # testthat for Proteomics Heatmap
 # Phase 4 of Proteomics GUI Test Strategy
+
+repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
+
+skipIfMissingProtDaHeatmapSplitFile <- function() {
+  required_paths <- c("R/func_prot_da_heatmap.R")
+  missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only prot DA heatmap file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingProtDaHeatmapSplitFile()
 
 test_that("generateProtDAHeatmap works with captured snapshot", {
   cp_file <- test_path("..", "testdata", "sepsis", "proteomics", "cp09_heatmap_input.rds")
   
   if (file.exists(cp_file)) {
+    first_line <- tryCatch(readLines(cp_file, n = 1, warn = FALSE), error = function(e) "")
+    if (length(first_line) > 0 && identical(first_line[[1]], "version https://git-lfs.github.com/spec/v1")) {
+      skip("Snapshot cp09 is a Git LFS pointer and the binary artifact is not present")
+    }
+
     data <- readRDS(cp_file)
     
     # Run function

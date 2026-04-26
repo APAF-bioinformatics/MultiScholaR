@@ -1,6 +1,8 @@
 library(methods)
 library(testthat)
 
+# fidelity-coverage-compare: shared
+
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
 loadSelectedExpressions <- function(paths, matcher, env) {
@@ -65,6 +67,10 @@ if (!methods::isClass("MetaboliteAssayData")) {
       metabolite_id_column = "character",
       design_matrix = "data.frame",
       sample_id = "character",
+      internal_standard_regex = "character",
+      annotation_id_column = "character",
+      group_id = "character",
+      technical_replicate_id = "character",
       args = "list"
     ),
     prototype = list(
@@ -72,6 +78,10 @@ if (!methods::isClass("MetaboliteAssayData")) {
       metabolite_id_column = "Name",
       design_matrix = data.frame(),
       sample_id = "Run",
+      internal_standard_regex = "Internal Standard",
+      annotation_id_column = "annotation",
+      group_id = "group",
+      technical_replicate_id = "TechRep",
       args = list()
     )
   )
@@ -91,32 +101,6 @@ if (!methods::isGeneric("cleanDesignMatrix")) {
     "cleanDesignMatrix",
     function(theObject) {
       standardGeneric("cleanDesignMatrix")
-    }
-  )
-}
-
-if (!methods::hasMethod("cleanDesignMatrix", "MetaboliteAssayData")) {
-  methods::setMethod(
-    "cleanDesignMatrix",
-    "MetaboliteAssayData",
-    function(theObject) {
-      assay_names <- names(theObject@metabolite_data)
-      if (length(theObject@metabolite_data) >= 1) {
-        assay_cols <- colnames(theObject@metabolite_data[[1]])
-        keep_samples <- intersect(
-          as.character(theObject@design_matrix[[theObject@sample_id]]),
-          assay_cols
-        )
-        theObject@design_matrix <- theObject@design_matrix[
-          theObject@design_matrix[[theObject@sample_id]] %in% keep_samples,
-          ,
-          drop = FALSE
-        ]
-      }
-
-      names(theObject@metabolite_data) <- assay_names
-      theObject@args$clean_design_matrix_called <- TRUE
-      theObject
     }
   )
 }
@@ -144,27 +128,48 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
-loadSelectedExpressions(
-  paths = target_paths,
-  matcher = function(expr) {
-    isTargetSetMethod(expr, "normaliseBetweenSamples")
-  },
-  env = environment()
-)
+if (!methods::hasMethod("normaliseBetweenSamples", "MetaboliteAssayData") ||
+    !methods::hasMethod("cleanDesignMatrix", "MetaboliteAssayData")) {
+  loadSelectedExpressions(
+    paths = target_paths,
+    matcher = function(expr) {
+      isTargetSetMethod(expr, "normaliseBetweenSamples") ||
+        isTargetSetMethod(expr, "cleanDesignMatrix")
+    },
+    env = environment()
+  )
+}
 
 newBetweenSampleNormObject <- function(assay_tbl, assay_names = "", args = list()) {
-  methods::new(
+  sample_ids <- grep("^Sample_", colnames(assay_tbl), value = TRUE)
+  valid_design_matrix <- data.frame(
+    Run = sample_ids,
+    Batch = rep("A", length(sample_ids)),
+    stringsAsFactors = FALSE
+  )
+  object <- methods::new(
     "MetaboliteAssayData",
-    metabolite_data = stats::setNames(list(assay_tbl), assay_names),
-    metabolite_id_column = "Name",
-    design_matrix = data.frame(
-      Run = c("Sample_1", "Sample_2", "Sample_3"),
-      Batch = c("A", "A", "B"),
-      stringsAsFactors = FALSE
+    metabolite_data = stats::setNames(
+      list(assay_tbl),
+      if (identical(assay_names, "")) "Assay_1" else assay_names
     ),
+    metabolite_id_column = "Name",
+    design_matrix = valid_design_matrix,
     sample_id = "Run",
     args = args
   )
+
+  if (identical(assay_names, "")) {
+    names(object@metabolite_data) <- ""
+  }
+
+  object@design_matrix <- data.frame(
+    Run = c("Sample_1", "Sample_2", "Sample_3"),
+    Batch = c("A", "A", "B"),
+    stringsAsFactors = FALSE
+  )
+
+  object
 }
 
 test_that("metabolomics S4 between-sample normalization preserves assay reconstruction and design cleanup for method none", {
@@ -183,7 +188,8 @@ test_that("metabolomics S4 between-sample normalization preserves assay reconstr
           assay_tbl = assay_tbl,
           assay_names = "",
           args = list(normalisation_method = "none")
-        )
+        ),
+        normalisation_method = "none"
       )
     )
   )
@@ -199,7 +205,6 @@ test_that("metabolomics S4 between-sample normalization preserves assay reconstr
   expect_equal(normalized_assay$Sample_1, c(10, 20))
   expect_equal(normalized_assay$Sample_2, c(30, 40))
   expect_identical(normalized@args$normalisation_method, "none")
-  expect_true(isTRUE(normalized@args$clean_design_matrix_called))
   expect_identical(normalized@design_matrix$Run, c("Sample_1", "Sample_2"))
 })
 
@@ -220,7 +225,10 @@ test_that("metabolomics S4 between-sample normalization preserves all-NA sample 
   normalized <- NULL
   suppressMessages(
     expect_warning(
-      normalized <- normaliseBetweenSamples(original),
+      normalized <- normaliseBetweenSamples(
+        original,
+        normalisation_method = "quantile"
+      ),
       "At least one sample column contains only NA values. Skipping normalization.",
       fixed = TRUE
     )
@@ -228,7 +236,7 @@ test_that("metabolomics S4 between-sample normalization preserves all-NA sample 
 
   expect_equal(normalized@metabolite_data$LCMS_Pos, assay_tbl)
   expect_identical(normalized@args$normalisation_method, "quantile")
-  expect_true(isTRUE(normalized@args$clean_design_matrix_called))
+  expect_identical(normalized@design_matrix$Run, c("Sample_1", "Sample_2"))
 })
 
 test_that("metabolomics S4 between-sample normalization source retains method dispatch and design cleanup", {

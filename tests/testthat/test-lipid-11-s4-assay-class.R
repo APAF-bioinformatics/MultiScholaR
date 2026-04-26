@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 
 test_that("LipidomicsAssayData exposes the expected slot contract", {

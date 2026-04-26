@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 # testthat for Proteomics Import
 # Phase 1 of Proteomics GUI Test Strategy
 

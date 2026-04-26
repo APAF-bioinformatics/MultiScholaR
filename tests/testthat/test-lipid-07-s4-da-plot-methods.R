@@ -1,8 +1,37 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(rlang))
 suppressPackageStartupMessages(library(stringr))
 suppressPackageStartupMessages(library(tidyr))
+
+localLipidDaPlotBinding <- function(env, name, value, .local_envir = parent.frame()) {
+    had_binding <- exists(name, envir = env, inherits = FALSE)
+    old_value <- if (had_binding) get(name, envir = env, inherits = FALSE) else NULL
+    was_locked <- had_binding && bindingIsLocked(name, env)
+
+    if (was_locked) {
+        unlockBinding(name, env)
+    }
+    assign(name, value, envir = env)
+    if (was_locked) {
+        lockBinding(name, env)
+    }
+
+    withr::defer({
+        if (exists(name, envir = env, inherits = FALSE) && bindingIsLocked(name, env)) {
+            unlockBinding(name, env)
+        }
+        if (had_binding) {
+            assign(name, old_value, envir = env)
+        } else if (exists(name, envir = env, inherits = FALSE)) {
+            rm(list = name, envir = env)
+        }
+        if (was_locked && exists(name, envir = env, inherits = FALSE)) {
+            lockBinding(name, env)
+        }
+    }, envir = .local_envir)
+}
 
 test_that("plotNumSigDiffExpBarPlot stores the summary plot and table on each assay", {
     assay_data <- data.frame(
@@ -43,37 +72,29 @@ test_that("plotNumSigDiffExpBarPlot stores the summary plot and table on each as
         )
     )
 
-    had_counter <- exists("printCountDaGenesTable", envir = .GlobalEnv, inherits = FALSE)
-    old_counter <- if (had_counter) {
-        get("printCountDaGenesTable", envir = .GlobalEnv, inherits = FALSE)
-    } else {
-        NULL
-    }
-    on.exit({
-        if (had_counter) {
-            assign("printCountDaGenesTable", old_counter, envir = .GlobalEnv)
-        } else if (exists("printCountDaGenesTable", envir = .GlobalEnv, inherits = FALSE)) {
-            rm("printCountDaGenesTable", envir = .GlobalEnv)
-        }
-    }, add = TRUE)
-
     captured_descriptions <- NULL
-    assign(
-        "printCountDaGenesTable",
-        function(list_of_da_tables, list_of_descriptions, formula_string) {
-            captured_descriptions <<- list_of_descriptions
-            expect_type(list_of_da_tables, "list")
-            expect_identical(formula_string, NA)
-            list(
-                plot = list(summary_plot = "mock-bar-plot"),
-                table = data.frame(
-                    comparison = list_of_descriptions,
-                    significant = 2L,
-                    stringsAsFactors = FALSE
-                )
+    counter_mock <- function(list_of_da_tables, list_of_descriptions, formula_string) {
+        captured_descriptions <<- list_of_descriptions
+        expect_type(list_of_da_tables, "list")
+        expect_identical(formula_string, NA)
+        list(
+            plot = list(summary_plot = "mock-bar-plot"),
+            table = data.frame(
+                comparison = list_of_descriptions,
+                significant = 2L,
+                stringsAsFactors = FALSE
             )
-        },
-        envir = .GlobalEnv
+        )
+    }
+    localLipidDaPlotBinding(
+        .GlobalEnv,
+        "printCountDaGenesTable",
+        counter_mock
+    )
+    localLipidDaPlotBinding(
+        asNamespace("MultiScholaR"),
+        "printCountDaGenesTable",
+        counter_mock
     )
 
     plotted_results <- plotNumSigDiffExpBarPlot(list(Assay1 = da_results_object))
@@ -124,49 +145,26 @@ test_that("plotVolcanoS4 stores one named plot per contrast with classified poin
         )
     )
 
-    restore_name <- function(name, old_value, existed) {
-        if (existed) {
-            assign(name, old_value, envir = .GlobalEnv)
-        } else if (exists(name, envir = .GlobalEnv, inherits = FALSE)) {
-            rm(list = name, envir = .GlobalEnv)
-        }
-    }
-
-    had_volcano <- exists("plotOneVolcanoNoVerticalLines", envir = .GlobalEnv, inherits = FALSE)
-    old_volcano <- if (had_volcano) {
-        get("plotOneVolcanoNoVerticalLines", envir = .GlobalEnv, inherits = FALSE)
-    } else {
-        NULL
-    }
-    had_scale <- exists("scale_color_manual", envir = .GlobalEnv, inherits = FALSE)
-    old_scale <- if (had_scale) {
-        get("scale_color_manual", envir = .GlobalEnv, inherits = FALSE)
-    } else {
-        NULL
-    }
-    on.exit(restore_name("plotOneVolcanoNoVerticalLines", old_volcano, had_volcano), add = TRUE)
-    on.exit(restore_name("scale_color_manual", old_scale, had_scale), add = TRUE)
-
     volcano_calls <- list()
-    assign(
+    volcano_mock <- function(input_data, input_title, log_q_value_column, log_fc_column) {
+        volcano_calls <<- append(volcano_calls, list(list(
+            data = input_data,
+            title = input_title,
+            log_q_value_column = log_q_value_column,
+            log_fc_column = log_fc_column
+        )))
+        ggplot2::ggplot(input_data, ggplot2::aes(.data[[log_fc_column]], .data[[log_q_value_column]], colour = label)) +
+            ggplot2::geom_point()
+    }
+    localLipidDaPlotBinding(
+        .GlobalEnv,
         "plotOneVolcanoNoVerticalLines",
-        function(input_data, input_title, log_q_value_column, log_fc_column) {
-            volcano_calls <<- append(volcano_calls, list(list(
-                data = input_data,
-                title = input_title,
-                log_q_value_column = log_q_value_column,
-                log_fc_column = log_fc_column
-            )))
-            ggplot2::ggplot()
-        },
-        envir = .GlobalEnv
+        volcano_mock
     )
-    assign(
-        "scale_color_manual",
-        function(...) {
-            NULL
-        },
-        envir = .GlobalEnv
+    localLipidDaPlotBinding(
+        asNamespace("MultiScholaR"),
+        "plotOneVolcanoNoVerticalLines",
+        volcano_mock
     )
 
     plotted_results <- plotVolcanoS4(list(Assay1 = da_results_object))

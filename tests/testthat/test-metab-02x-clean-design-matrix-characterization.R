@@ -1,6 +1,8 @@
 library(methods)
 library(testthat)
 
+# fidelity-coverage-compare: shared
+
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
 loadSelectedExpressions <- function(paths, matcher, env) {
@@ -65,6 +67,10 @@ if (!methods::isClass("MetaboliteAssayData")) {
       metabolite_id_column = "character",
       design_matrix = "data.frame",
       sample_id = "character",
+      internal_standard_regex = "character",
+      annotation_id_column = "character",
+      group_id = "character",
+      technical_replicate_id = "character",
       args = "list"
     ),
     prototype = list(
@@ -72,6 +78,10 @@ if (!methods::isClass("MetaboliteAssayData")) {
       metabolite_id_column = "Name",
       design_matrix = data.frame(),
       sample_id = "Run",
+      internal_standard_regex = "Internal Standard",
+      annotation_id_column = "annotation",
+      group_id = "group",
+      technical_replicate_id = "TechRep",
       args = list()
     )
   )
@@ -91,23 +101,40 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
-loadSelectedExpressions(
-  paths = target_paths,
-  matcher = function(expr) {
-    isTargetSetMethod(expr, "cleanDesignMatrix")
-  },
-  env = environment()
-)
+if (!methods::hasMethod("cleanDesignMatrix", "MetaboliteAssayData")) {
+  loadSelectedExpressions(
+    paths = target_paths,
+    matcher = function(expr) {
+      isTargetSetMethod(expr, "cleanDesignMatrix")
+    },
+    env = environment()
+  )
+}
 
 newCleanDesignMatrixObject <- function(assay_tbl, design_matrix) {
-  methods::new(
+  sample_ids <- grep("^Sample_", colnames(assay_tbl), value = TRUE)
+  valid_design_matrix <- design_matrix[design_matrix$Run %in% sample_ids, , drop = FALSE]
+
+  if (nrow(valid_design_matrix) == 0) {
+    valid_design_matrix <- as.data.frame(
+      lapply(design_matrix, function(column) rep(NA, length(sample_ids))),
+      stringsAsFactors = FALSE
+    )
+    names(valid_design_matrix) <- names(design_matrix)
+    valid_design_matrix$Run <- sample_ids
+  }
+
+  object <- methods::new(
     "MetaboliteAssayData",
     metabolite_data = list(LCMS_Pos = assay_tbl),
     metabolite_id_column = "Name",
-    design_matrix = design_matrix,
+    design_matrix = valid_design_matrix,
     sample_id = "Run",
     args = list()
   )
+
+  object@design_matrix <- design_matrix
+  object
 }
 
 test_that("metabolomics S4 cleanDesignMatrix preserves assay sample ordering while dropping unmatched design rows", {

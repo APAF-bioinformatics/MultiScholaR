@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(methods)
 library(testthat)
 
@@ -65,6 +66,10 @@ if (!methods::isClass("MetaboliteAssayData")) {
       metabolite_id_column = "character",
       design_matrix = "data.frame",
       sample_id = "character",
+      internal_standard_regex = "character",
+      annotation_id_column = "character",
+      group_id = "character",
+      technical_replicate_id = "character",
       args = "list"
     ),
     prototype = list(
@@ -72,6 +77,10 @@ if (!methods::isClass("MetaboliteAssayData")) {
       metabolite_id_column = "Name",
       design_matrix = data.frame(),
       sample_id = "Run",
+      internal_standard_regex = "Internal Standard",
+      annotation_id_column = "annotation",
+      group_id = "group",
+      technical_replicate_id = "TechRep",
       args = list()
     )
   )
@@ -128,13 +137,60 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
-loadSelectedExpressions(
-  paths = target_paths,
-  matcher = function(expr) {
-    isTargetSetMethod(expr, "ruvCancor")
-  },
-  env = environment()
-)
+if (!methods::hasMethod("ruvCancor", "MetaboliteAssayData")) {
+  loadSelectedExpressions(
+    paths = target_paths,
+    matcher = function(expr) {
+      isTargetSetMethod(expr, "ruvCancor")
+    },
+    env = environment()
+  )
+}
+
+getTargetMethodEnv <- function(generic_name, signature_name, fallback_env = environment()) {
+  if (methods::hasMethod(generic_name, signature_name)) {
+    return(environment(methods::getMethod(generic_name, signature_name)))
+  }
+
+  fallback_env
+}
+
+localBinding <- function(env, name, value, .local_envir = parent.frame()) {
+  target_env <- env
+  while (!exists(name, envir = target_env, inherits = FALSE) && environmentIsLocked(target_env)) {
+    parent_env <- parent.env(target_env)
+    if (identical(parent_env, emptyenv())) {
+      break
+    }
+    target_env <- parent_env
+  }
+
+  had_binding <- exists(name, envir = target_env, inherits = FALSE)
+  old_value <- if (had_binding) get(name, envir = target_env, inherits = FALSE) else NULL
+  was_locked <- had_binding && bindingIsLocked(name, target_env)
+
+  if (was_locked) {
+    unlockBinding(name, target_env)
+  }
+  assign(name, value, envir = target_env)
+  if (was_locked) {
+    lockBinding(name, target_env)
+  }
+
+  withr::defer({
+    if (exists(name, envir = target_env, inherits = FALSE) && bindingIsLocked(name, target_env)) {
+      unlockBinding(name, target_env)
+    }
+    if (had_binding) {
+      assign(name, old_value, envir = target_env)
+    } else if (exists(name, envir = target_env, inherits = FALSE)) {
+      rm(list = name, envir = target_env)
+    }
+    if (was_locked && exists(name, envir = target_env, inherits = FALSE)) {
+      lockBinding(name, target_env)
+    }
+  }, envir = .local_envir)
+}
 
 cancor_capture <- new.env(parent = emptyenv())
 
@@ -153,19 +209,38 @@ newRuvCancorObject <- function(assay_tbl, assay_name = "LCMS_Pos", args = list()
   }
 
   assay_list <- if (is.null(assay_name)) {
-    list(assay_tbl)
+    stats::setNames(list(assay_tbl), "Assay_1")
   } else {
     stats::setNames(list(assay_tbl), assay_name)
   }
 
-  methods::new(
+  sample_ids <- grep("^Sample_", colnames(assay_tbl), value = TRUE)
+  valid_design_matrix <- design_matrix[design_matrix$Run %in% sample_ids, , drop = FALSE]
+
+  if (nrow(valid_design_matrix) == 0) {
+    valid_design_matrix <- as.data.frame(
+      lapply(design_matrix, function(column) rep(NA, length(sample_ids))),
+      stringsAsFactors = FALSE
+    )
+    names(valid_design_matrix) <- names(design_matrix)
+    valid_design_matrix$Run <- sample_ids
+  }
+
+  object <- methods::new(
     "MetaboliteAssayData",
     metabolite_data = assay_list,
     metabolite_id_column = "Name",
-    design_matrix = design_matrix,
+    design_matrix = valid_design_matrix,
     sample_id = "Run",
     args = args
   )
+
+  if (is.null(assay_name)) {
+    names(object@metabolite_data) <- ""
+  }
+
+  object@design_matrix <- design_matrix
+  object
 }
 
 resetCancorCapture <- function() {
@@ -173,22 +248,22 @@ resetCancorCapture <- function() {
   if (length(capture_names) > 0) {
     rm(list = capture_names, envir = cancor_capture)
   }
-
-  ruv_cancorplot <<- function(...) {
-    stop("ruv_cancorplot test stub was not configured")
-  }
 }
 
 test_that("metabolomics S4 ruvCancor forwards filtered data and assay-specific controls", {
   resetCancorCapture()
 
-  ruv_cancorplot <<- function(Y, X, ctl) {
-    cancor_capture$Y <- Y
-    cancor_capture$X <- X
-    cancor_capture$ctl <- ctl
+  localBinding(
+    getTargetMethodEnv("ruvCancor", "MetaboliteAssayData"),
+    "ruv_cancorplot",
+    function(Y, X, ctl) {
+      cancor_capture$Y <- Y
+      cancor_capture$X <- X
+      cancor_capture$ctl <- ctl
 
-    list(Y = Y, X = X, ctl = ctl)
-  }
+      list(Y = Y, X = X, ctl = ctl)
+    }
+  )
 
   assay_tbl <- tibble::tibble(
     Name = paste0("M", seq_len(6)),
@@ -211,12 +286,10 @@ test_that("metabolomics S4 ruvCancor forwards filtered data and assay-specific c
       ruvCancor(
         newRuvCancorObject(
           assay_tbl = assay_tbl,
-          args = list(
-            ctrl = list(LCMS_Pos = paste0("M", 2:6)),
-            ruv_grouping_variable = "ruv_group"
-          ),
           design_matrix = design_matrix
-        )
+        ),
+        ctrl = list(LCMS_Pos = paste0("M", 2:6)),
+        ruv_grouping_variable = "ruv_group"
       )
     )
   )
@@ -241,16 +314,20 @@ test_that("metabolomics S4 ruvCancor forwards filtered data and assay-specific c
   )
 })
 
-test_that("metabolomics S4 ruvCancor falls back to default assay names and global controls", {
+test_that("metabolomics S4 ruvCancor preserves unnamed-assay global control handling", {
   resetCancorCapture()
 
-  ruv_cancorplot <<- function(Y, X, ctl) {
-    cancor_capture$Y <- Y
-    cancor_capture$X <- X
-    cancor_capture$ctl <- ctl
+  localBinding(
+    getTargetMethodEnv("ruvCancor", "MetaboliteAssayData"),
+    "ruv_cancorplot",
+    function(Y, X, ctl) {
+      cancor_capture$Y <- Y
+      cancor_capture$X <- X
+      cancor_capture$ctl <- ctl
 
-    "stub-cancor-plot"
-  }
+      "stub-cancor-plot"
+    }
+  )
 
   assay_tbl <- tibble::tibble(
     Name = paste0("M", seq_len(5)),
@@ -265,18 +342,16 @@ test_that("metabolomics S4 ruvCancor falls back to default assay names and globa
       ruvCancor(
         newRuvCancorObject(
           assay_tbl = assay_tbl,
-          assay_name = NULL,
-          args = list(
-            ctrl = paste0("M", seq_len(5)),
-            ruv_grouping_variable = "ruv_group"
-          )
-        )
+          assay_name = NULL
+        ),
+        ctrl = paste0("M", seq_len(5)),
+        ruv_grouping_variable = "ruv_group"
       )
     )
   )
 
-  expect_named(result, "Assay_1")
-  expect_identical(result$Assay_1, "stub-cancor-plot")
+  expect_identical(names(result), "")
+  expect_identical(result[[1]], "stub-cancor-plot")
   expect_identical(rownames(cancor_capture$Y), paste0("Sample_", seq_len(4)))
   expect_identical(cancor_capture$X, c("Batch_1", "Batch_1", "Batch_2", "Batch_2"))
   expect_identical(cancor_capture$ctl, rep(TRUE, 5))

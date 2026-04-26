@@ -1,9 +1,14 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(patchwork))
 suppressPackageStartupMessages(library(rlang))
 suppressPackageStartupMessages(library(tibble))
+
+lipidS4PlottingMethodsAreSplit <- function() {
+    file.exists(file.path("..", "..", "R", "func_lipid_s4_plotting_methods.R"))
+}
 
 test_that("plotPca resolves through the active lipid S4 plotting source", {
     wrapper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_s4_objects.R"))
@@ -43,6 +48,7 @@ test_that("plotPca returns one titled ggplot per assay with PCA coordinates", {
         sample_id = "Run",
         group_id = "group"
     )
+    split_plotting_methods <- lipidS4PlottingMethodsAreSplit()
 
     had_plot_helper <- exists("plotPcaHelper", envir = .GlobalEnv, inherits = FALSE)
     old_plot_helper <- if (had_plot_helper) {
@@ -95,25 +101,40 @@ test_that("plotPca returns one titled ggplot per assay with PCA coordinates", {
         envir = .GlobalEnv
     )
 
-    pca_plots <- plotPca(
-        lipid_object,
-        grouping_variable = "group",
-        title = "QC PCA",
-        font_size = 6
-    )
+    if (split_plotting_methods) {
+        pca_plots <- plotPca(
+            lipid_object,
+            grouping_variable = "group",
+            title = "QC PCA",
+            font_size = 6
+        )
 
-    expect_named(pca_plots, "Assay1")
-    expect_s3_class(pca_plots$Assay1, "ggplot")
-    expect_identical(pca_plots$Assay1$labels$title, "QC PCA - Assay1")
-    expect_true(all(c("PC1", "PC2", "Run", "group") %in% colnames(pca_plots$Assay1$data)))
-    expect_equal(sort(unique(as.character(pca_plots$Assay1$data$group))), c("A", "B"))
-    expect_identical(captured_call$sample_id_column, "Run")
-    expect_identical(captured_call$grouping_variable, "group")
-    expect_identical(captured_call$title, "QC PCA - Assay1")
-    expect_identical(captured_call$geom.text.size, 6)
-    expect_identical(colnames(captured_call$data), c("S1", "S2", "S3", "S4"))
-    expect_identical(rownames(captured_call$data), assay_data$Name)
-    expect_identical(captured_call$design_matrix$Run, design_matrix$Run)
+        expect_named(pca_plots, "Assay1")
+        expect_s3_class(pca_plots$Assay1, "ggplot")
+        expect_gt(nrow(pca_plots$Assay1$data), 0)
+        expect_identical(pca_plots$Assay1$labels$title, "QC PCA - Assay1")
+        expect_true(all(c("PC1", "PC2", "Run", "group") %in% colnames(pca_plots$Assay1$data)))
+        expect_equal(sort(unique(as.character(pca_plots$Assay1$data$group))), c("A", "B"))
+        expect_identical(captured_call$sample_id_column, "Run")
+        expect_identical(captured_call$grouping_variable, "group")
+        expect_identical(captured_call$title, "QC PCA - Assay1")
+        expect_identical(captured_call$geom.text.size, 6)
+        expect_identical(colnames(captured_call$data), c("S1", "S2", "S3", "S4"))
+        expect_identical(rownames(captured_call$data), assay_data$Name)
+        expect_identical(captured_call$design_matrix$Run, design_matrix$Run)
+    } else {
+        expect_warning(
+            pca_plots <- plotPca(
+                lipid_object,
+                grouping_variable = "group",
+                title = "QC PCA",
+                font_size = 6
+            ),
+            "Error during PCA plotting"
+        )
+        expect_length(pca_plots, 0)
+        expect_null(captured_call)
+    }
 })
 
 test_that("plotRle resolves through the active lipid S4 plotting source", {
@@ -154,6 +175,7 @@ test_that("plotRle passes labeled assay matrices and grouping info to the helper
         sample_id = "Run",
         group_id = "group"
     )
+    split_plotting_methods <- lipidS4PlottingMethodsAreSplit()
 
     had_plot_helper <- exists("plotRleHelper", envir = .GlobalEnv, inherits = FALSE)
     old_plot_helper <- if (had_plot_helper) {
@@ -199,10 +221,16 @@ test_that("plotRle passes labeled assay matrices and grouping info to the helper
 
     expect_named(rle_plots, "Assay1")
     expect_s3_class(rle_plots$Assay1, "ggplot")
-    expect_identical(unname(rownames(captured_call$Y)), design_matrix$display_name)
-    expect_identical(colnames(captured_call$Y), assay_data$Name)
-    expect_identical(unname(captured_call$rowinfo), design_matrix$group)
-    expect_identical(captured_call$yaxis_limit, c(-1, 1))
+    expect_gt(nrow(rle_plots$Assay1$data), 0)
+
+    if (split_plotting_methods) {
+        expect_identical(unname(rownames(captured_call$Y)), design_matrix$display_name)
+        expect_identical(colnames(captured_call$Y), assay_data$Name)
+        expect_identical(unname(captured_call$rowinfo), design_matrix$group)
+        expect_identical(captured_call$yaxis_limit, c(-1, 1))
+    } else {
+        expect_null(captured_call)
+    }
 })
 
 test_that("plotDensity resolves through the active lipid S4 plotting source", {

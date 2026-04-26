@@ -51,11 +51,15 @@ if (!methods::isClass("MetaboliteAssayData")) {
     "MetaboliteAssayData",
     slots = c(
       metabolite_data = "list",
-      metabolite_id_column = "character"
+      metabolite_id_column = "character",
+      design_matrix = "data.frame",
+      sample_id = "character"
     ),
     prototype = list(
       metabolite_data = list(),
-      metabolite_id_column = "database_identifier"
+      metabolite_id_column = "database_identifier",
+      design_matrix = data.frame(),
+      sample_id = "Sample_ID"
     )
   )
 }
@@ -75,7 +79,12 @@ newMetabDuplicateIdsObject <- function(assay_list, feature_id_col = "database_id
   methods::new(
     "MetaboliteAssayData",
     metabolite_data = assay_list,
-    metabolite_id_column = feature_id_col
+    metabolite_id_column = feature_id_col,
+    design_matrix = data.frame(
+      Sample_ID = c("Sample_1", "Sample_2"),
+      stringsAsFactors = FALSE
+    ),
+    sample_id = "Sample_ID"
   )
 }
 

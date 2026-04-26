@@ -1,5 +1,19 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 library(shiny)
+
+skipIfMissingMultiScholaRBindings <- function(...) {
+  missing <- setdiff(c(...), ls(envir = asNamespace("MultiScholaR")))
+  if (length(missing) > 0) {
+    testthat::skip(sprintf("Target-only extracted helper(s) not present: %s", paste(missing, collapse = ", ")))
+  }
+}
+
+skipIfMissingMultiScholaRBindings(
+  "buildProtImportStatusUi",
+  "readProtImportHeaders",
+  "mod_prot_import_server"
+)
 
 makeFunctionWithOverrides <- function(fun, replacements) {
   funOverride <- fun

@@ -1,8 +1,29 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 suppressPackageStartupMessages(library(dplyr))
 
 assign("log_info", logger::log_info, envir = globalenv())
 assign("log_warn", logger::log_warn, envir = globalenv())
+
+expect_method_defined_in_current_layout <- function(method_name, wrapper_path, helper_path) {
+    wrapper_source_lines <- readLines(wrapper_path)
+    wrapper_has_method <- any(grepl(sprintf('f = "%s"', method_name), wrapper_source_lines, fixed = TRUE))
+    helper_has_method <- FALSE
+
+    if (file.exists(helper_path)) {
+        helper_source_lines <- readLines(helper_path)
+        helper_has_method <- any(grepl(sprintf('f = "%s"', method_name), helper_source_lines, fixed = TRUE))
+    }
+
+    expect_true(wrapper_has_method || helper_has_method)
+
+    if (file.exists(helper_path)) {
+        expect_false(wrapper_has_method)
+        expect_true(helper_has_method)
+    } else {
+        expect_true(wrapper_has_method)
+    }
+}
 
 test_that("normaliseUntransformedData records ITSD normalization outputs", {
     assay_data <- tibble::tibble(
@@ -46,11 +67,11 @@ test_that("normaliseUntransformedData records ITSD normalization outputs", {
 })
 
 test_that("lipidIntensityFiltering resolves through the live lipid S4 normalization helper", {
-    wrapper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_s4_objects.R"))
-    helper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_s4_normalization_methods.R"))
-
-    expect_false(any(grepl("f = \"lipidIntensityFiltering\"", wrapper_source_lines, fixed = TRUE)))
-    expect_true(any(grepl("f = \"lipidIntensityFiltering\"", helper_source_lines, fixed = TRUE)))
+    expect_method_defined_in_current_layout(
+        method_name = "lipidIntensityFiltering",
+        wrapper_path = file.path("..", "..", "R", "func_lipid_s4_objects.R"),
+        helper_path = file.path("..", "..", "R", "func_lipid_s4_normalization_methods.R")
+    )
 })
 
 test_that("lipidIntensityFiltering filters low-intensity lipids across assays", {
@@ -86,11 +107,11 @@ test_that("lipidIntensityFiltering filters low-intensity lipids across assays", 
 })
 
 test_that("getNegCtrlMetabAnova resolves through the live lipid RUV helper and short-circuits empty assays", {
-    wrapper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_s4_objects.R"))
-    helper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_norm_ruv_helpers.R"))
-
-    expect_false(any(grepl("f = \"getNegCtrlMetabAnova\"", wrapper_source_lines, fixed = TRUE)))
-    expect_true(any(grepl("f = \"getNegCtrlMetabAnova\"", helper_source_lines, fixed = TRUE)))
+    expect_method_defined_in_current_layout(
+        method_name = "getNegCtrlMetabAnova",
+        wrapper_path = file.path("..", "..", "R", "func_lipid_s4_objects.R"),
+        helper_path = file.path("..", "..", "R", "func_lipid_norm_ruv_helpers.R")
+    )
 
     empty_object <- createLipidomicsAssayData(
         lipid_data = list(),
@@ -109,11 +130,11 @@ test_that("getNegCtrlMetabAnova resolves through the live lipid RUV helper and s
 })
 
 test_that("ruvCancor resolves through the live lipid RUV helper and rejects missing controls early", {
-    wrapper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_s4_objects.R"))
-    helper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_norm_ruv_helpers.R"))
-
-    expect_false(any(grepl("f = \"ruvCancor\"", wrapper_source_lines, fixed = TRUE)))
-    expect_true(any(grepl("f = \"ruvCancor\"", helper_source_lines, fixed = TRUE)))
+    expect_method_defined_in_current_layout(
+        method_name = "ruvCancor",
+        wrapper_path = file.path("..", "..", "R", "func_lipid_s4_objects.R"),
+        helper_path = file.path("..", "..", "R", "func_lipid_norm_ruv_helpers.R")
+    )
 
     empty_object <- createLipidomicsAssayData(
         lipid_data = list(),
@@ -135,11 +156,11 @@ test_that("ruvCancor resolves through the live lipid RUV helper and rejects miss
 })
 
 test_that("ruvIII_C_Varying resolves through the live lipid RUV helper and rejects missing k early", {
-    wrapper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_s4_objects.R"))
-    helper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_norm_ruv_helpers.R"))
-
-    expect_false(any(grepl("f = \"ruvIII_C_Varying\"", wrapper_source_lines, fixed = TRUE)))
-    expect_true(any(grepl("f = \"ruvIII_C_Varying\"", helper_source_lines, fixed = TRUE)))
+    expect_method_defined_in_current_layout(
+        method_name = "ruvIII_C_Varying",
+        wrapper_path = file.path("..", "..", "R", "func_lipid_s4_objects.R"),
+        helper_path = file.path("..", "..", "R", "func_lipid_norm_ruv_helpers.R")
+    )
 
     empty_object <- createLipidomicsAssayData(
         lipid_data = list(),

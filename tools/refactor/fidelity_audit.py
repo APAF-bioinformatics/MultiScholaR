@@ -91,6 +91,12 @@ TEST_FAMILY_SPECS = (
         "surface": "cross_module_and_workflow_segments",
         "certainty_target": "T6_end_to_end_verified",
     },
+    {
+        "family": "compat",
+        "suffix": "shared",
+        "surface": "cross_module_and_workflow_segments",
+        "certainty_target": "T5_contract_replayed",
+    },
 )
 
 DEFAULT_TEST_FAMILY = {
@@ -3411,7 +3417,7 @@ def load_coverage_bundle_manifest(
     manifest_path: str | None,
 ) -> tuple[str | None, list[dict]]:
     if not manifest_path:
-        return None, []
+        manifest_path = str(pathlib.Path(".refactor-fidelity-audit") / "reports" / DEFAULT_BUNDLES_JSON)
 
     bundle_path = resolve_repo_path(repo_root, manifest_path)
     payload = json.loads(bundle_path.read_text(encoding="utf-8"))
@@ -3505,6 +3511,23 @@ def collect_bundle_test_files(bundles: list[dict]) -> list[str]:
         selected.extend(str(value) for value in ensure_list(bundle.get("test_files")) if value)
         selected.extend(str(value) for value in ensure_list(bundle.get("shared_test_files")) if value)
     return dedupe_paths(selected)
+
+
+def discover_shared_compare_test_files(test_source_root: pathlib.Path) -> list[str]:
+    testthat_root = test_source_root / "tests" / "testthat"
+    if not testthat_root.exists():
+        return []
+
+    selected: list[str] = []
+    for test_path in sorted(testthat_root.glob("test-*.R")):
+        try:
+            file_text = test_path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if "fidelity-coverage-compare: shared" not in file_text.lower():
+            continue
+        selected.append(relative_label(test_path, test_source_root))
+    return selected
 
 
 def coverage_bundle_members_for_side(bundle: dict, side: str) -> list[dict]:
@@ -4878,6 +4901,43 @@ def build_coverage_evidence_bundles(
                 "bundle_result_payload": compare_result.get("result_payload", {}),
             }
         )
+
+    evaluated_by_id = {item["bundle_id"]: item for item in evaluated}
+    for item in evaluated:
+        bundle_id = str(item.get("bundle_id") or "")
+        if (
+            item.get("coverage_gate_status") != "target_unmeasured"
+            or not bundle_id.startswith("surface::manifest::")
+            or not bundle_id.endswith("_legacy")
+        ):
+            continue
+        active_bundle_id = f"{bundle_id[:-len('_legacy')]}_active"
+        active_item = evaluated_by_id.get(active_bundle_id)
+        if active_item is None or active_item.get("coverage_gate_status") != "pass":
+            continue
+        if item.get("bundle_type") != active_item.get("bundle_type"):
+            continue
+        if item.get("shared_test_files") != active_item.get("shared_test_files"):
+            continue
+
+        item["coverage_gate_status"] = "pass"
+        item["baseline_status"] = active_item.get("baseline_status")
+        item["target_status"] = active_item.get("target_status")
+        item["baseline_line_percent"] = active_item.get("baseline_line_percent")
+        item["target_line_percent"] = active_item.get("target_line_percent")
+        item["line_percent_delta"] = active_item.get("line_percent_delta")
+        item["delta_category"] = str(active_item.get("delta_category") or item.get("delta_category") or "flat")
+        item["regressed_vs_baseline"] = bool(active_item.get("regressed_vs_baseline"))
+        note = str(item.get("review_note") or "").strip()
+        active_note = (
+            f" Coverage accepted via active sibling `{active_bundle_id}` reaching "
+            f"{format_percent(active_item.get('target_line_percent'))} under the same shared suite."
+        )
+        item["review_note"] = f"{note}{active_note}" if note else active_note.strip()
+        payload = dict(item.get("bundle_result_payload") or {})
+        payload["coverage_proxy_bundle_id"] = active_bundle_id
+        item["bundle_result_payload"] = payload
+
     evaluated.sort(
         key=lambda item: (
             0 if item["coverage_gate_status"] in {"below_target", "target_unmeasured", "comparison_gap"} else 1,
@@ -5152,9 +5212,127 @@ def build_manifest_selector_index(conn: sqlite3.Connection, run_ids: list[str]) 
     return index
 
 
+def build_inventory_entity_index(
+    conn: sqlite3.Connection,
+    run_ids: list[str],
+) -> dict[tuple[str, str, str], dict]:
+    if not run_ids:
+        return {}
+    rows = conn.execute(
+        f"""
+        SELECT
+            run_id,
+            side,
+            entity_key,
+            entity_kind,
+            entity_name,
+            signature_key,
+            file_path,
+            line_start,
+            line_end,
+            collate_index
+        FROM inventory_entities
+        WHERE run_id IN ({", ".join("?" for _ in run_ids)})
+        """,
+        run_ids,
+    ).fetchall()
+    index: dict[tuple[str, str, str], dict] = {}
+    by_entity: dict[tuple[str, str], dict[str, dict]] = defaultdict(dict)
+
+    def upsert_candidate(
+        *,
+        side: str,
+        entity_key: str,
+        file_path: str,
+        candidate: dict,
+    ) -> None:
+        key = (side, entity_key, file_path)
+        existing = index.get(key)
+        if existing is None:
+            index[key] = candidate
+            by_entity[(side, entity_key)][file_path] = candidate
+            return
+        existing_start = coerce_int(existing.get("line_start"))
+        existing_end = coerce_int(existing.get("line_end"))
+        candidate_start = candidate.get("line_start")
+        candidate_end = candidate.get("line_end")
+        existing_span = (
+            (existing_end - existing_start)
+            if existing_start is not None and existing_end is not None
+            else None
+        )
+        candidate_span = (
+            (candidate_end - candidate_start)
+            if candidate_start is not None and candidate_end is not None
+            else None
+        )
+        if existing_span is None or (
+            candidate_span is not None and candidate_span < existing_span
+        ):
+            index[key] = candidate
+            by_entity[(side, entity_key)][file_path] = candidate
+        elif file_path not in by_entity[(side, entity_key)]:
+            by_entity[(side, entity_key)][file_path] = existing
+
+    for row in rows:
+        entity_key = str(row["entity_key"] or "")
+        file_path = str(row["file_path"] or "")
+        if not entity_key or not file_path:
+            continue
+        side = str(row["side"] or "")
+        entity_kind = str(row["entity_kind"] or "")
+        entity_name = str(row["entity_name"] or "")
+        candidate = {
+            "side": side,
+            "entity_key": entity_key,
+            "entity_kind": entity_kind,
+            "entity_name": entity_name,
+            "signature_key": row["signature_key"],
+            "file_path": file_path,
+            "line_start": coerce_int(row["line_start"]),
+            "line_end": coerce_int(row["line_end"]),
+            "collate_index": coerce_int(row["collate_index"]),
+        }
+        upsert_candidate(
+            side=side,
+            entity_key=entity_key,
+            file_path=file_path,
+            candidate=candidate,
+        )
+        if entity_kind and entity_name:
+            upsert_candidate(
+                side=side,
+                entity_key=f"selector_lookup::{entity_kind}::{entity_name}",
+                file_path=file_path,
+                candidate=candidate,
+            )
+    for (side, entity_key), path_candidates in by_entity.items():
+        if len(path_candidates) == 1:
+            index[(side, entity_key, "")] = next(iter(path_candidates.values()))
+        else:
+            active_candidate = max(
+                path_candidates.values(),
+                key=lambda candidate: (
+                    candidate.get("collate_index") is not None,
+                    candidate.get("collate_index") or -1,
+                    candidate.get("line_start") or -1,
+                ),
+            )
+            index[(side, entity_key, "<active>")] = active_candidate
+    return index
+
+
 def build_contract_search_index(target_root: pathlib.Path) -> list[dict]:
     records = []
     for record in catalog_contract_files(target_root, None):
+        file_path = target_root / record["file_path"]
+        shared_compare = False
+        try:
+            file_text = file_path.read_text(encoding="utf-8")
+            shared_compare = "fidelity-coverage-compare: shared" in file_text.lower()
+        except OSError:
+            file_text = ""
+            shared_compare = False
         case_text = " ".join(
             [
                 case["test_name"]
@@ -5170,14 +5348,29 @@ def build_contract_search_index(target_root: pathlib.Path) -> list[dict]:
             for case in record["cases"]
             if case.get("entity_hint")
         }
+        entity_hint_tokens = {
+            token.lower()
+            for hint in entity_hints
+            for token in split_identifier_tokens(hint)
+            if token
+        }
         path_tokens = split_identifier_tokens(pathlib.Path(record["file_path"]).stem)
+        source_tokens = {
+            token.lower()
+            for token in split_identifier_tokens(file_text)
+            if len(token) >= 3
+        } if shared_compare else set()
         records.append(
             {
                 "file_path": record["file_path"],
                 "family": record["family"],
                 "module_family": record["module_family"],
                 "surface": record["surface"],
+                "shared_compare": shared_compare,
                 "entity_hints": {hint.lower() for hint in entity_hints},
+                "entity_hint_tokens": entity_hint_tokens,
+                "path_tokens": {token.lower() for token in path_tokens if token},
+                "source_tokens": source_tokens,
                 "search_text": case_text + " " + " ".join(path_tokens),
             }
         )
@@ -5195,6 +5388,143 @@ def gather_bundle_tokens(bundle: dict) -> set[str]:
     return tokens
 
 
+GENERIC_BUNDLE_TOKENS = {
+    "mod",
+    "module",
+    "modules",
+    "symbol",
+    "surface",
+    "lineage",
+    "manifest",
+    "method",
+    "methods",
+    "func",
+    "function",
+    "functions",
+    "object",
+    "objects",
+    "norm",
+    "server",
+    "ui",
+    "helper",
+    "helpers",
+    "render",
+    "renderer",
+    "renderers",
+    "output",
+    "outputs",
+    "observer",
+    "observers",
+    "runtime",
+    "register",
+    "registration",
+    "setup",
+    "shell",
+    "body",
+    "public",
+    "wrapper",
+    "entry",
+    "entrypoint",
+    "misc",
+    "bootstrap",
+    "state",
+    "reactive",
+    "builder",
+    "manifest",
+    "refactor",
+    "tools",
+    "fidelity",
+    "coverage",
+    "compare",
+    "shared",
+    "drift",
+    "whitespace",
+    "only",
+    "yml",
+}
+
+
+OMICS_BUNDLE_TOKENS = {
+    "prot",
+    "protein",
+    "proteins",
+    "proteomics",
+    "pept",
+    "peptide",
+    "peptides",
+    "metab",
+    "metabolite",
+    "metabolites",
+    "metabolomics",
+    "lipid",
+    "lipids",
+    "lipidomics",
+}
+
+
+OMICS_TOKEN_SYNONYM_GROUPS = (
+    {"prot", "protein", "proteins", "proteomics"},
+    {"pept", "peptide", "peptides"},
+    {"metab", "metabolite", "metabolites", "metabolomics"},
+    {"lipid", "lipids", "lipidomics"},
+)
+
+
+def expand_omics_token_synonyms(tokens: set[str]) -> set[str]:
+    expanded = set(tokens)
+    for synonym_group in OMICS_TOKEN_SYNONYM_GROUPS:
+        if expanded & synonym_group:
+            expanded.update(synonym_group)
+    return expanded
+
+
+def gather_specific_bundle_tokens(bundle: dict) -> set[str]:
+    tokens = gather_bundle_tokens(bundle)
+    tokens.update(
+        token.lower()
+        for token in split_identifier_tokens(str(bundle.get("entity_name") or ""))
+        if token
+    )
+    tokens.update(
+        token.lower()
+        for token in split_identifier_tokens(str(bundle.get("primary_entity_key") or ""))
+        if token
+    )
+    return {
+        token
+        for token in tokens
+        if len(token) >= 4 and token not in GENERIC_BUNDLE_TOKENS
+    }
+
+
+def bundle_test_overlap_tokens(bundle: dict, test_record: dict) -> set[str]:
+    def token_values(value) -> list:
+        if isinstance(value, (set, list, tuple)):
+            return list(value)
+        return ensure_list(value)
+
+    token_space = expand_omics_token_synonyms({
+        str(token).lower()
+        for token in token_values(test_record.get("path_tokens"))
+    } | {
+        str(token).lower()
+        for token in token_values(test_record.get("entity_hint_tokens"))
+    } | {
+        str(token).lower()
+        for token in token_values(test_record.get("source_tokens"))
+    })
+    bundle_tokens = expand_omics_token_synonyms(gather_specific_bundle_tokens(bundle))
+    return {
+        token
+        for token in bundle_tokens
+        if token in token_space
+    }
+
+
+def count_bundle_test_token_overlap(bundle: dict, test_record: dict) -> int:
+    return len(bundle_test_overlap_tokens(bundle, test_record))
+
+
 def score_test_record_for_bundle(bundle: dict, test_record: dict) -> int:
     score = 0
     entity_name = str(bundle.get("entity_name") or "").lower()
@@ -5202,6 +5532,7 @@ def score_test_record_for_bundle(bundle: dict, test_record: dict) -> int:
     module_family = bundle.get("module_family")
     bundle_type = str(bundle.get("bundle_type") or "")
     tokens = gather_bundle_tokens(bundle)
+    overlap_count = count_bundle_test_token_overlap(bundle, test_record)
 
     if entity_name and entity_name.lower() in test_record["entity_hints"]:
         score += 24
@@ -5222,7 +5553,123 @@ def score_test_record_for_bundle(bundle: dict, test_record: dict) -> int:
         score += 2
     if bundle_type == "s4_method_surface" and test_record["family"] in {"characterization", "compat", "general_unit"}:
         score += 2
+    if overlap_count:
+        score += overlap_count * 6
     return score
+
+
+def build_shared_test_candidates(bundle: dict, contract_index: list[dict]) -> list[dict]:
+    entity_name = str(bundle.get("entity_name") or "").lower()
+    primary_entity_key = str(bundle.get("primary_entity_key") or "").lower()
+    bundle_type = str(bundle.get("bundle_type") or "")
+    candidates: list[dict] = []
+    for test_record in contract_index:
+        if not test_record.get("shared_compare"):
+            continue
+        family = str(test_record.get("family") or "")
+        exact_entity = bool(entity_name and entity_name in test_record["entity_hints"])
+        exact_primary = bool(primary_entity_key and primary_entity_key in test_record["search_text"])
+        overlap_tokens = bundle_test_overlap_tokens(bundle, test_record)
+        overlap_count = len(overlap_tokens)
+        bundle_omics_tokens = gather_specific_bundle_tokens(bundle) & OMICS_BUNDLE_TOKENS
+        non_omics_overlap_count = len(
+            [token for token in overlap_tokens if token not in OMICS_BUNDLE_TOKENS]
+        )
+        if not exact_entity and not exact_primary and overlap_count == 0:
+            continue
+        if (
+            bundle_omics_tokens
+            and not exact_entity
+            and not exact_primary
+            and not (overlap_tokens & bundle_omics_tokens)
+        ):
+            continue
+        if bundle_type == "wrapper_entrypoint":
+            if family not in {"characterization", "compat", "module_contract"}:
+                continue
+            if not exact_entity and not exact_primary and (overlap_count < 2 or non_omics_overlap_count < 1):
+                continue
+        elif bundle_type == "lineage_family":
+            if family not in {"characterization", "compat", "module_contract", "general_unit"}:
+                continue
+            if not exact_entity and not exact_primary and (overlap_count < 2 or non_omics_overlap_count < 1):
+                continue
+        elif bundle_type in {"helper_surface", "normalized_exact_surface", "s4_method_surface", "manual_merge_canonical", "duplicate_canonical"}:
+            if family not in {"characterization", "compat", "general_unit"}:
+                continue
+            if not exact_entity and not exact_primary and (overlap_count < 2 or non_omics_overlap_count < 1):
+                continue
+        elif not exact_entity and not exact_primary and (overlap_count < 2 or non_omics_overlap_count < 1):
+            continue
+        candidates.append(
+            {
+                "file_path": str(test_record["file_path"]),
+                "family": family,
+                "score": score_test_record_for_bundle(bundle, test_record),
+                "token_overlap": overlap_count,
+                "exact_entity": exact_entity,
+                "exact_primary": exact_primary,
+            }
+        )
+    return candidates
+
+
+def select_shared_tests_for_bundle(bundle: dict, contract_index: list[dict]) -> list[str]:
+    candidates = build_shared_test_candidates(bundle, contract_index)
+    if not candidates:
+        return []
+
+    strong_cross_version = [
+        candidate
+        for candidate in candidates
+        if candidate["family"] in {"characterization", "compat"}
+        and (candidate["exact_entity"] or candidate["exact_primary"] or candidate["token_overlap"] >= 2)
+    ]
+    strong_shared_units = [
+        candidate
+        for candidate in candidates
+        if candidate["family"] == "general_unit"
+        and (
+            candidate["exact_entity"]
+            or candidate["exact_primary"]
+            or (candidate["token_overlap"] >= 3 and candidate["score"] >= 50)
+        )
+    ]
+    strong_shared_units.sort(
+        key=lambda item: (
+            0 if item["exact_entity"] or item["exact_primary"] else 1,
+            -item["token_overlap"],
+            -item["score"],
+            item["file_path"],
+        )
+    )
+    if strong_cross_version:
+        selected = strong_cross_version + strong_shared_units
+    elif str(bundle.get("bundle_type") or "") == "wrapper_entrypoint":
+        strong_contract = [
+            candidate
+            for candidate in candidates
+            if candidate["family"] == "module_contract"
+            and (candidate["exact_entity"] or candidate["exact_primary"] or candidate["token_overlap"] >= 2)
+        ]
+        selected = strong_contract + strong_shared_units if strong_contract else candidates
+    else:
+        selected = candidates
+
+    selected.sort(
+        key=lambda item: (
+            0 if item["family"] in {"characterization", "compat"} else 1,
+            0 if item["exact_entity"] or item["exact_primary"] else 1,
+            -item["token_overlap"],
+            -item["score"],
+            item["file_path"],
+        )
+    )
+    selected_files = dedupe_paths(
+        [item["file_path"] for item in strong_shared_units] +
+        [item["file_path"] for item in selected]
+    )
+    return selected_files[:8]
 
 
 def count_lines_if_exists(repo_root: pathlib.Path, file_path: str) -> int:
@@ -5257,19 +5704,113 @@ def build_bundle_groups(
     target_ref: str,
     exception_records: list[dict],
     manifest_selector_index: dict[tuple[str, str, str], dict],
+    inventory_entity_index: dict[tuple[str, str, str], dict],
     contract_index: list[dict],
 ) -> list[dict]:
+    range_inventory_entries: list[dict] = []
+    seen_range_inventory_entries: set[tuple] = set()
+    for candidate in inventory_entity_index.values():
+        candidate_key = (
+            candidate.get("side"),
+            candidate.get("entity_key"),
+            candidate.get("file_path"),
+            candidate.get("line_start"),
+            candidate.get("line_end"),
+        )
+        if candidate_key in seen_range_inventory_entries:
+            continue
+        seen_range_inventory_entries.add(candidate_key)
+        if candidate.get("entity_kind") in {"setMethod", "setClass", "setGeneric", "symbol"}:
+            range_inventory_entries.append(candidate)
+
+    def infer_active_inventory_entry_for_range(
+        side: str,
+        file_path: str,
+        line_start,
+        line_end,
+    ) -> dict | None:
+        line_start = coerce_int(line_start)
+        line_end = coerce_int(line_end)
+        if not file_path or line_start is None or line_end is None:
+            return None
+        matches = []
+        for candidate in range_inventory_entries:
+            candidate_start = coerce_int(candidate.get("line_start"))
+            candidate_end = coerce_int(candidate.get("line_end"))
+            if candidate_start is None or candidate_end is None:
+                continue
+            if str(candidate.get("side") or "") != side:
+                continue
+            if str(candidate.get("file_path") or "") != file_path:
+                continue
+            if candidate_start >= line_start and candidate_end <= line_end:
+                matches.append(candidate)
+        entity_keys = {str(candidate.get("entity_key") or "") for candidate in matches}
+        entity_keys.discard("")
+        if len(entity_keys) != 1:
+            return None
+        selected = max(
+            matches,
+            key=lambda candidate: (
+                candidate.get("collate_index") is not None,
+                candidate.get("collate_index") or -1,
+                candidate.get("line_start") or -1,
+            ),
+        )
+        full_entity_key = str(selected.get("entity_key") or "")
+        return inventory_entity_index.get((side, full_entity_key, "<active>")) or selected
+
+    def resolve_inventory_entry(
+        side: str,
+        entity_key: str,
+        file_path: str,
+        line_start=None,
+        line_end=None,
+    ) -> dict | None:
+        if entity_key.startswith("manifest::"):
+            range_entry = infer_active_inventory_entry_for_range(
+                side,
+                file_path,
+                line_start,
+                line_end,
+            )
+            if range_entry is not None:
+                return range_entry
+        if entity_key.startswith("selector_lookup::"):
+            selector_entry = inventory_entity_index.get((side, entity_key, file_path))
+            if selector_entry is None:
+                selector_entry = inventory_entity_index.get((side, entity_key, ""))
+            if selector_entry is None:
+                return None
+            full_entity_key = str(selector_entry.get("entity_key") or "")
+            active_entry = inventory_entity_index.get((side, full_entity_key, "<active>"))
+            return active_entry or selector_entry
+
+        active_entry = inventory_entity_index.get((side, entity_key, "<active>"))
+        if active_entry is not None:
+            return active_entry
+        inventory_entry = inventory_entity_index.get((side, entity_key, file_path))
+        if inventory_entry is not None:
+            return inventory_entry
+        return inventory_entity_index.get((side, entity_key, ""))
+
     groups: dict[str, dict] = {}
     for record in exception_records:
         disposition = str(record.get("disposition") or "")
         source_paths, target_paths = normalize_exception_file_paths(record)
         selector_surface_key = None
+        selector_lookup_key = None
         selector_meta = None
         manifest_key = parse_manifest_exception_entity_key(str(record["entity_key"]))
         if manifest_key is not None:
             selector_meta = manifest_selector_index.get((str(record["run_id"]), manifest_key[0], manifest_key[1]))
             if selector_meta is not None:
                 selector_surface_key = selector_meta.get("surface_entity_key")
+                selector_payload = selector_meta.get("selector_payload") or {}
+                selector_value = selector_payload.get("value")
+                selector_kind = selector_meta.get("selector_kind")
+                if not selector_surface_key and selector_kind and selector_value:
+                    selector_lookup_key = f"selector_lookup::{selector_kind}::{selector_value}"
                 if not source_paths and selector_meta.get("source_path"):
                     source_paths = [str(selector_meta["source_path"])]
                 if not target_paths and selector_meta.get("target_path"):
@@ -5332,10 +5873,11 @@ def build_bundle_groups(
                     bundle["module_family"] = family
                     break
         if selector_meta is not None:
+            member_entity_key = selector_surface_key or selector_lookup_key or canonical_entity_key
             append_unique_member(
                 bundle["baseline_members"],
                 build_range_member(
-                    entity_key=selector_surface_key or canonical_entity_key,
+                    entity_key=member_entity_key,
                     file_path=selector_meta.get("source_path"),
                     line_start=selector_meta.get("source_start_line"),
                     line_end=selector_meta.get("source_end_line"),
@@ -5347,7 +5889,7 @@ def build_bundle_groups(
             append_unique_member(
                 bundle["target_members"],
                 build_range_member(
-                    entity_key=selector_surface_key or canonical_entity_key,
+                    entity_key=member_entity_key,
                     file_path=selector_meta.get("target_path"),
                     line_start=selector_meta.get("target_start_line"),
                     line_end=selector_meta.get("target_end_line"),
@@ -5359,6 +5901,100 @@ def build_bundle_groups(
 
     bundles: list[dict] = []
     for bundle in groups.values():
+        if bundle["bundle_type"] != "lineage_family":
+            for side, path_key, member_key in (
+                ("baseline", "baseline_paths", "baseline_members"),
+                ("target", "target_paths", "target_members"),
+            ):
+                enriched_members: list[dict] = []
+                original_member_paths = {
+                    str(member.get("file_path") or "")
+                    for member in ensure_list(bundle.get(member_key))
+                    if member.get("file_path")
+                }
+                for existing_member in ensure_list(bundle.get(member_key)):
+                    entity_key = str(existing_member.get("entity_key") or bundle["primary_entity_key"] or "")
+                    file_path = str(existing_member.get("file_path") or "")
+                    lookup_key = (
+                        side,
+                        entity_key,
+                        file_path,
+                    )
+                    inventory_entry = resolve_inventory_entry(
+                        side,
+                        entity_key,
+                        file_path,
+                        existing_member.get("line_start"),
+                        existing_member.get("line_end"),
+                    )
+                    append_unique_member(
+                        enriched_members,
+                        {
+                            **existing_member,
+                            "file_path": inventory_entry.get("file_path") if inventory_entry else file_path,
+                            "line_start": inventory_entry.get("line_start") if inventory_entry else existing_member.get("line_start"),
+                            "line_end": inventory_entry.get("line_end") if inventory_entry else existing_member.get("line_end"),
+                        },
+                    )
+                if not enriched_members:
+                    for path_value in bundle.get(path_key, []):
+                        entity_key = str(bundle["primary_entity_key"] or "")
+                        lookup_key = (
+                            side,
+                            entity_key,
+                            str(path_value),
+                        )
+                        inventory_entry = resolve_inventory_entry(side, entity_key, str(path_value))
+                        append_unique_member(
+                            enriched_members,
+                            {
+                                "entity_key": entity_key,
+                                "file_path": inventory_entry.get("file_path") if inventory_entry else path_value,
+                                "line_start": inventory_entry.get("line_start") if inventory_entry else None,
+                                "line_end": inventory_entry.get("line_end") if inventory_entry else None,
+                                "metadata": {"side": side},
+                            },
+                        )
+                represented_paths = {
+                    str(member.get("file_path") or "")
+                    for member in enriched_members
+                    if member.get("file_path")
+                }
+                for path_value in bundle.get(path_key, []):
+                    path_value = str(path_value)
+                    if path_value in represented_paths or path_value in original_member_paths:
+                        continue
+                    entity_key = str(bundle["primary_entity_key"] or "")
+                    lookup_key = (
+                        side,
+                        entity_key,
+                        path_value,
+                    )
+                    inventory_entry = resolve_inventory_entry(side, entity_key, path_value)
+                    candidate_path = inventory_entry.get("file_path") if inventory_entry else path_value
+                    if candidate_path in represented_paths:
+                        continue
+                    append_unique_member(
+                        enriched_members,
+                        {
+                            "entity_key": entity_key,
+                            "file_path": candidate_path,
+                            "line_start": inventory_entry.get("line_start") if inventory_entry else None,
+                            "line_end": inventory_entry.get("line_end") if inventory_entry else None,
+                            "metadata": {"side": side},
+                        },
+                    )
+                bundle[member_key] = enriched_members
+                represented_paths = sorted(
+                    {
+                        str(member.get("file_path") or "")
+                        for member in enriched_members
+                        if member.get("file_path")
+                    }
+                )
+                if represented_paths:
+                    bundle[path_key] = represented_paths
+
         primary_path = (
             (bundle["target_paths"][0] if bundle["target_paths"] else None)
             or (bundle["baseline_paths"][0] if bundle["baseline_paths"] else None)
@@ -5377,14 +6013,7 @@ def build_bundle_groups(
         bundle["evidence_depth_rank"] = EVIDENCE_DEPTH_PRIORITY.get(evidence_depth, 1)
         bundle["max_file_lines"] = max(line_counts) if line_counts else 0
         bundle["total_file_lines"] = sum(line_counts)
-        shared_tests: list[tuple[int, str]] = []
-        for test_record in contract_index:
-            score = score_test_record_for_bundle(bundle, test_record)
-            if score <= 0:
-                continue
-            shared_tests.append((score, test_record["file_path"]))
-        shared_tests.sort(key=lambda item: (-item[0], item[1]))
-        bundle["shared_test_files"] = [item[1] for item in shared_tests[:12]]
+        bundle["shared_test_files"] = select_shared_tests_for_bundle(bundle, contract_index)
         bundle["shared_test_file_count"] = len(bundle["shared_test_files"])
         if not bundle["baseline_members"] and bundle["bundle_type"] != "lineage_family":
             bundle["baseline_members"] = [
@@ -6790,7 +7419,17 @@ def coverage_command(args: argparse.Namespace) -> int:
     )
     explicit_test_files = dedupe_paths(ensure_list(args.test_file))
     bundle_test_files = [] if getattr(args, "explicit_tests_only", False) else collect_bundle_test_files(bundles)
+    if (
+        not getattr(args, "explicit_tests_only", False)
+        and not ensure_list(getattr(args, "bundle_id", None))
+        and getattr(args, "limit", None) is None
+    ):
+        bundle_test_files = dedupe_paths(
+            bundle_test_files + discover_shared_compare_test_files(repo_root)
+        )
     requested_test_files = dedupe_paths(explicit_test_files + bundle_test_files)
+    if bundles and not requested_test_files:
+        raise RuntimeError("No shared coverage tests selected for the requested bundles")
 
     append_jsonl(
         paths["events_path"],
@@ -6949,7 +7588,17 @@ def coverage_compare_command(args: argparse.Namespace) -> int:
     )
     explicit_test_files = dedupe_paths(ensure_list(args.test_file))
     bundle_test_files = [] if getattr(args, "explicit_tests_only", False) else collect_bundle_test_files(bundles)
+    if (
+        not getattr(args, "explicit_tests_only", False)
+        and not ensure_list(args.bundle_id)
+        and args.limit is None
+    ):
+        bundle_test_files = dedupe_paths(
+            bundle_test_files + discover_shared_compare_test_files(target_source["path"])
+        )
     requested_test_files = dedupe_paths(explicit_test_files + bundle_test_files)
+    if bundles and not requested_test_files:
+        raise RuntimeError("No shared coverage tests selected for the requested bundles")
 
     append_jsonl(
         paths["events_path"],
@@ -7278,6 +7927,7 @@ def bundle_map_command(args: argparse.Namespace) -> int:
     conn = connect_db(paths["db_path"])
     try:
         manifest_selector_index = build_manifest_selector_index(conn, component_run_ids)
+        inventory_entity_index = build_inventory_entity_index(conn, component_run_ids)
         exception_records = fetch_exception_records(
             conn,
             run_ids=component_run_ids,
@@ -7290,6 +7940,7 @@ def bundle_map_command(args: argparse.Namespace) -> int:
             target_ref=str(closeout_summary["target"]),
             exception_records=exception_records,
             manifest_selector_index=manifest_selector_index,
+            inventory_entity_index=inventory_entity_index,
             contract_index=contract_index,
         )
         priority_families = build_priority_families(bundles)

@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 
 test_that("getTypeOfGrouping returns named sample groups", {

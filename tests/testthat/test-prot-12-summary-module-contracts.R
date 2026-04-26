@@ -1,5 +1,19 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 library(shiny)
+
+skipIfMissingMultiScholaRBindings <- function(...) {
+  missing <- setdiff(c(...), ls(envir = asNamespace("MultiScholaR")))
+  if (length(missing) > 0) {
+    testthat::skip(sprintf("Target-only extracted helper(s) not present: %s", paste(missing, collapse = ", ")))
+  }
+}
+
+skipIfMissingMultiScholaRBindings(
+  "resolveProtSummaryFinalS4State",
+  "buildProtSummaryTemplateStatus",
+  "observeProtSummaryReportGeneration"
+)
 
 makeFunctionWithOverrides <- function(fun, replacements) {
   funOverride <- fun
@@ -1366,6 +1380,10 @@ test_that("runProtSummaryPublicationCopy bootstraps copy execution and applies s
   delegatedDesign <- data.frame(sample = "S1", stringsAsFactors = FALSE)
 
   withCleanGlobalObjects("project_dirs", {
+    if (exists("project_dirs", envir = .GlobalEnv, inherits = FALSE)) {
+      rm(list = "project_dirs", envir = .GlobalEnv)
+    }
+
     recorded$copyArgs <- runProtSummaryPublicationCopy(
       output = output,
       values = values,

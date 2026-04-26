@@ -2,6 +2,24 @@ library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
+skipIfMissingProtNormSplitFiles <- function() {
+  required_paths <- c(
+    "R/mod_prot_norm_server_helpers.R",
+    "R/mod_prot_norm_server.R"
+  )
+  missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
+  if (length(missing) > 0) {
+    testthat::skip(
+      sprintf(
+        "Target-only prot norm split file(s) not present: %s",
+        paste(basename(missing), collapse = ", ")
+      )
+    )
+  }
+}
+
+skipIfMissingProtNormSplitFiles()
+
 loadProtNormModuleEnv <- function() {
   module_env <- new.env(parent = globalenv())
   sys.source(file.path(repo_root, "R", "mod_prot_norm_server_helpers.R"), envir = module_env)

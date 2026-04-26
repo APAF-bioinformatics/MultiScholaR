@@ -1,3 +1,4 @@
+# fidelity-coverage-compare: shared
 library(testthat)
 
 test_that("getFilteringProgressLipidomics initializes the global progress object once", {
