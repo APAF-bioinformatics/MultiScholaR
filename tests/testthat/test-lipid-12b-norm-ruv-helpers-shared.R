@@ -86,8 +86,8 @@ test_that("runLipidPerAssayRuvOptimization covers automatic mode and extractor h
         percentage = percentage_as_neg_ctrl
       )
       list(
-        `Positive Mode` = c(TRUE, FALSE, TRUE),
-        `Negative Mode` = c(FALSE, TRUE, TRUE)
+        `Positive Mode` = c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE),
+        `Negative Mode` = c(FALSE, TRUE, TRUE, TRUE, TRUE, TRUE)
       )
     }
   )
@@ -105,14 +105,24 @@ test_that("runLipidPerAssayRuvOptimization covers automatic mode and extractor h
       )
     }
   )
-  localSharedLipidNormBinding(package_ns, "findBestK", function(cancor_plot) cancor_plot$best_k)
   localSharedLipidNormBinding(
-    package_ns,
-    "calculateSeparationScore",
+    package_ns, "findBestKElbow",
+    function(cancor_plot) as.integer(cancor_plot$best_k)
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateSeparationScore",
     function(cancor_plot, metric) {
       expect_identical(metric, "max_difference")
       cancor_plot$score
     }
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateCompositeScore",
+    function(separation_score, best_k, k_penalty_weight, max_acceptable_k) separation_score
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateAdaptiveMaxK",
+    function(sample_size) 3L
   )
 
   results <- runLipidPerAssayRuvOptimization(
@@ -128,12 +138,30 @@ test_that("runLipidPerAssayRuvOptimization covers automatic mode and extractor h
   expect_true(all(vapply(results, function(x) isTRUE(x$success), logical(1))))
   expect_identical(results$`Positive Mode`$best_k, 2L)
   expect_identical(results$`Negative Mode`$best_k, 3L)
-  expect_identical(results$`Positive Mode`$best_percentage, 15)
-  expect_identical(results$`Negative Mode`$best_percentage, 15)
-  expect_identical(results$`Positive Mode`$control_genes_index, c(TRUE, FALSE, TRUE))
-  expect_identical(results$`Negative Mode`$control_genes_index, c(FALSE, TRUE, TRUE))
-  expect_identical(captured$ctrl_calls[[1]]$grouping, "group")
-  expect_identical(captured$cancor_calls[[1]]$grouping, "group")
+
+  # All percentages produce identical scores; deterministic tie-break selects
+  # the lowest percentage_requested (1 = default percentage_min).
+  expect_identical(results$`Positive Mode`$best_percentage, 1)
+  expect_identical(results$`Negative Mode`$best_percentage, 1)
+
+  expect_identical(
+    results$`Positive Mode`$control_genes_index
+    , c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+  )
+  expect_identical(
+    results$`Negative Mode`$control_genes_index
+    , c(FALSE, TRUE, TRUE, TRUE, TRUE, TRUE)
+  )
+
+  # Whole-object helpers called once per percentage, not once per assay
+  expect_length(captured$ctrl_calls, 15L)
+  expect_length(captured$cancor_calls, 15L)
+  expect_identical(captured$ctrl_calls[[1L]]$grouping, "group")
+  expect_identical(captured$cancor_calls[[1L]]$grouping, "group")
+
+  # optimization_results: one row per tested percentage, all ok
+  expect_identical(nrow(results$`Positive Mode`$optimization_results), 15L)
+  expect_true(all(results$`Positive Mode`$optimization_results$status == "ok"))
 
   best_k <- extractLipidBestKPerAssay(results)
   ctrl_idx <- extractLipidCtrlPerAssay(results)
@@ -141,10 +169,10 @@ test_that("runLipidPerAssayRuvOptimization covers automatic mode and extractor h
 
   expect_identical(best_k$`Positive Mode`, 2L)
   expect_identical(best_k$`Negative Mode`, 3L)
-  expect_identical(ctrl_idx$`Positive Mode`, c(TRUE, FALSE, TRUE))
-  expect_identical(ctrl_idx$`Negative Mode`, c(FALSE, TRUE, TRUE))
+  expect_identical(ctrl_idx$`Positive Mode`, c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE))
+  expect_identical(ctrl_idx$`Negative Mode`, c(FALSE, TRUE, TRUE, TRUE, TRUE, TRUE))
   expect_identical(combined$Status, c("Success", "Success"))
-  expect_identical(combined$Num_Controls, c(2L, 2L))
+  expect_identical(combined$Num_Controls, c(5L, 5L))
 })
 
 test_that("runLipidPerAssayRuvOptimization covers manual mode", {
@@ -196,9 +224,7 @@ test_that("runLipidPerAssayRuvOptimization records failures and table helpers su
   localSharedLipidNormBinding(
     package_ns,
     "getNegCtrlMetabAnova",
-    function(...) {
-      stop("mock automatic failure")
-    }
+    function(...) stop("mock automatic failure")
   )
 
   results <- runLipidPerAssayRuvOptimization(
@@ -207,12 +233,167 @@ test_that("runLipidPerAssayRuvOptimization records failures and table helpers su
     params = list(ruv_grouping_variable = "group")
   )
 
+  # All percentages failed → no valid winner
   expect_false(results$`Positive Mode`$success)
-  expect_match(results$`Positive Mode`$error, "mock automatic failure", fixed = TRUE)
+  expect_identical(results$`Positive Mode`$error, "No valid percentage found")
+
+  # optimization_results is preserved with one failed row per tested percentage
+  expect_false(is.null(results$`Positive Mode`$optimization_results))
+  expect_identical(nrow(results$`Positive Mode`$optimization_results), 20L)
+  expect_true(all(
+    results$`Positive Mode`$optimization_results$status == "error_neg_ctrl_selection"
+  ))
+
   expect_true(is.na(extractLipidBestKPerAssay(results)$`Positive Mode`))
   expect_null(extractLipidCtrlPerAssay(results)$`Positive Mode`)
 
   combined <- buildLipidCombinedRuvTable(results)
-  expect_match(combined$Status[[1]], "Failed: mock automatic failure", fixed = TRUE)
-  expect_true(is.na(combined$Best_K[[1]]))
+  expect_match(combined$Status[[1L]], "Failed: No valid percentage found", fixed = TRUE)
+  expect_true(is.na(combined$Best_K[[1L]]))
+})
+
+test_that("runLipidPerAssayRuvOptimization selects winner by deterministic ordering", {
+  lipid_object <- makeSharedLipidRuvObject(include_negative = FALSE)
+  package_ns <- asNamespace("MultiScholaR")
+  call_count <- 0L
+
+  localSharedLipidNormBinding(
+    package_ns, "getNegCtrlMetabAnova",
+    function(theObject, ruv_grouping_variable, percentage_as_neg_ctrl) {
+      list(`Positive Mode` = rep(TRUE, 5L))
+    }
+  )
+  localSharedLipidNormBinding(
+    package_ns, "ruvCancor",
+    function(theObject, ctrl, ruv_grouping_variable) {
+      call_count <<- call_count + 1L
+      # Score increases with each call (= each percentage), so highest percentage wins
+      list(`Positive Mode` = list(best_k = 2L, score = call_count / 10))
+    }
+  )
+  localSharedLipidNormBinding(
+    package_ns, "findBestKElbow",
+    function(cancor_plot) as.integer(cancor_plot$best_k)
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateSeparationScore",
+    function(cancor_plot, metric) cancor_plot$score
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateCompositeScore",
+    function(separation_score, best_k, k_penalty_weight, max_acceptable_k) separation_score
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateAdaptiveMaxK",
+    function(sample_size) 3L
+  )
+
+  results <- runLipidPerAssayRuvOptimization(
+    lipid_object,
+    ruv_mode = "automatic",
+    params = list(percentage_min = 1, percentage_max = 5, ruv_grouping_variable = "group")
+  )
+
+  # Highest composite_score is at pct=5 (call_count=5, score=0.5)
+  expect_true(isTRUE(results$`Positive Mode`$success))
+  expect_identical(results$`Positive Mode`$best_percentage, 5)
+  expect_identical(nrow(results$`Positive Mode`$optimization_results), 5L)
+  expect_true(all(results$`Positive Mode`$optimization_results$status == "ok"))
+})
+
+test_that("whole-object failure at one percentage records failed rows without aborting later percentages", {
+  lipid_object <- makeSharedLipidRuvObject(include_negative = FALSE)
+  package_ns <- asNamespace("MultiScholaR")
+  pct_counter <- 0L
+
+  localSharedLipidNormBinding(
+    package_ns, "getNegCtrlMetabAnova",
+    function(theObject, ruv_grouping_variable, percentage_as_neg_ctrl) {
+      pct_counter <<- pct_counter + 1L
+      if (pct_counter == 2L) stop("failure at pct 2")
+      list(`Positive Mode` = rep(TRUE, 5L))
+    }
+  )
+  localSharedLipidNormBinding(
+    package_ns, "ruvCancor",
+    function(theObject, ctrl, ruv_grouping_variable) {
+      list(`Positive Mode` = list(best_k = 2L, score = 0.5))
+    }
+  )
+  localSharedLipidNormBinding(
+    package_ns, "findBestKElbow",
+    function(cancor_plot) as.integer(cancor_plot$best_k)
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateSeparationScore",
+    function(cancor_plot, metric) cancor_plot$score
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateCompositeScore",
+    function(separation_score, best_k, k_penalty_weight, max_acceptable_k) separation_score
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateAdaptiveMaxK",
+    function(sample_size) 3L
+  )
+
+  results <- runLipidPerAssayRuvOptimization(
+    lipid_object,
+    ruv_mode = "automatic",
+    params = list(percentage_min = 1, percentage_max = 3, ruv_grouping_variable = "group")
+  )
+
+  # Optimization succeeds overall: pcts 1 and 3 are valid; pct 2 failed
+  expect_true(isTRUE(results$`Positive Mode`$success))
+
+  opt <- results$`Positive Mode`$optimization_results
+  expect_identical(nrow(opt), 3L)
+  expect_identical(
+    opt$status[opt$percentage_requested == 2]
+    , "error_neg_ctrl_selection"
+  )
+  expect_true(all(opt$status[opt$percentage_requested != 2] == "ok"))
+})
+
+test_that("sample size is derived from assay columns matched to design matrix", {
+  lipid_object <- makeSharedLipidRuvObject(include_negative = FALSE)
+  package_ns <- asNamespace("MultiScholaR")
+
+  localSharedLipidNormBinding(
+    package_ns, "getNegCtrlMetabAnova",
+    function(theObject, ruv_grouping_variable, percentage_as_neg_ctrl) {
+      list(`Positive Mode` = rep(TRUE, 5L))
+    }
+  )
+  localSharedLipidNormBinding(
+    package_ns, "ruvCancor",
+    function(theObject, ctrl, ruv_grouping_variable) {
+      list(`Positive Mode` = list(best_k = 2L, score = 0.5))
+    }
+  )
+  localSharedLipidNormBinding(
+    package_ns, "findBestKElbow",
+    function(cancor_plot) 2L
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateSeparationScore",
+    function(cancor_plot, metric) 0.5
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateCompositeScore",
+    function(separation_score, best_k, k_penalty_weight, max_acceptable_k) 0.5
+  )
+  localSharedLipidNormBinding(
+    package_ns, "calculateAdaptiveMaxK",
+    function(sample_size) 3L
+  )
+
+  results <- runLipidPerAssayRuvOptimization(
+    lipid_object,
+    ruv_mode = "automatic",
+    params = list(percentage_min = 5, percentage_max = 5, ruv_grouping_variable = "group")
+  )
+
+  # Design matrix Sample_ID = c("S1","S2"); assay columns include S1, S2 → size = 2
+  expect_identical(results$`Positive Mode`$optimization_results$sample_size, 2L)
 })
