@@ -126,62 +126,71 @@ test_that("metabolomics standalone RUV optimization helper preserves automatic, 
   object <- makeMetabNormObject(c("Plasma", "Urine"))
   helper_env <- environment(runPerAssayRuvOptimization)
 
+  # Both whole-object helpers return named-list results regardless of percentage.
+  # ruvCancor always succeeds so we control per-assay outcomes via findBestKElbow.
+  # Return >= 5 TRUEs so the minimum-controls check does not short-circuit the test.
   localBinding(helper_env, "getNegCtrlMetabAnova", function(...) {
     list(
-      Plasma = c(TRUE, FALSE),
-      Urine = c(FALSE, TRUE)
+      Plasma = rep(TRUE, 6L),
+      Urine  = rep(TRUE, 6L)
     )
   })
   localBinding(helper_env, "ruvCancor", function(...) {
     list(
       Plasma = list(tag = "Plasma"),
-      Urine = list(tag = "Urine")
+      Urine  = list(tag = "Urine")
     )
   })
 
-  localBinding(helper_env, "findBestK", function(cancor_plot) {
-    if (identical(cancor_plot$tag, "Urine")) {
-      stop("mock cancor failure")
-    }
-    3L
+  # Plasma: findBestKElbow returns 3L; Urine: returns NA (invalid_cancor_plot)
+  localBinding(helper_env, "findBestKElbow", function(cancor_plot, ...) {
+    if (is.list(cancor_plot) && identical(cancor_plot$tag, "Urine")) NA_integer_ else 3L
   })
-  localBinding(helper_env, "calculateSeparationScore", function(cancor_plot, metric = "max_difference") {
-    if (identical(cancor_plot$tag, "Plasma")) {
-      0.42
-    } else {
-      0.17
-    }
+  localBinding(helper_env, "calculateSeparationScore", function(cancor_plot, ...) {
+    if (is.list(cancor_plot) && identical(cancor_plot$tag, "Plasma")) 0.42 else 0.17
   })
+  localBinding(helper_env, "calculateCompositeScore", function(sep, k, pen, max_k, ...) 0.35)
 
   automatic <- runPerAssayRuvOptimization(
     theObject = object,
     ruv_mode = "automatic",
     params = list(
-      percentage_min = 2,
-      percentage_max = 12,
+      percentage_min      = 2,
+      percentage_max      = 12,
       ruv_grouping_variable = "missing_column",
-      separation_metric = "mean_difference",
-      k_penalty_weight = 0.75,
-      adaptive_k_penalty = FALSE
+      separation_metric   = "mean_difference",
+      k_penalty_weight    = 0.75,
+      adaptive_k_penalty  = FALSE
     )
   )
 
+  # Plasma: a valid winner is selected from the tested range
   expect_true(isTRUE(automatic$Plasma$success))
   expect_identical(automatic$Plasma$best_k, 3L)
-  expect_identical(automatic$Plasma$best_percentage, 12)
+  # best_percentage is the winning percentage from the range, not percentage_max hard-coded
+  expect_true(automatic$Plasma$best_percentage %in% seq(2, 12))
   expect_equal(automatic$Plasma$separation_score, 0.42)
-  expect_false(automatic$Urine$success)
-  expect_match(automatic$Urine$error, "mock cancor failure", fixed = TRUE)
 
-  localBinding(helper_env, "findBestK", function(cancor_plot) 2L)
+  # optimization_results has one row per tested percentage (11 percentages: 2..12)
+  expect_s3_class(automatic$Plasma$optimization_results, "data.frame")
+  expect_equal(nrow(automatic$Plasma$optimization_results), 11L)
+  expect_true(all(c("percentage_requested", "status", "error_reason") %in%
+    names(automatic$Plasma$optimization_results)))
+
+  # Urine: all rows are invalid_cancor_plot → no valid winner → failed assay
+  expect_false(automatic$Urine$success)
+  expect_match(automatic$Urine$error, "No valid percentage found", fixed = TRUE)
+  # Urine trace still has 11 rows despite all failing
+  expect_equal(nrow(automatic$Urine$optimization_results), 11L)
+  expect_true(all(automatic$Urine$optimization_results$status == "invalid_cancor_plot"))
 
   manual <- runPerAssayRuvOptimization(
     theObject = object,
     ruv_mode = "manual",
     params = list(
       ruv_grouping_variable = "batch",
-      manual_k = 5,
-      manual_percentage = 18
+      manual_k              = 5,
+      manual_percentage     = 18
     )
   )
 
