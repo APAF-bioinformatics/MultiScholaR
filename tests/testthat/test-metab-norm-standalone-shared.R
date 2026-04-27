@@ -200,3 +200,45 @@ test_that("metabolomics standalone RUV optimization helper preserves automatic, 
   expect_identical(manual$Plasma$best_percentage, 18)
   expect_true(is.null(manual$Plasma$optimization_results))
 })
+
+test_that("runPerAssayRuvOptimization emits weighted_difference warning exactly once per automatic call", {
+  object     <- makeMetabNormObject(c("Plasma", "Urine"))
+  helper_env <- environment(runPerAssayRuvOptimization)
+
+  localBinding(helper_env, "getNegCtrlMetabAnova", function(...) {
+    list(Plasma = rep(TRUE, 6L), Urine = rep(TRUE, 6L))
+  })
+  localBinding(helper_env, "ruvCancor", function(...) {
+    list(Plasma = list(tag = "Plasma"), Urine = list(tag = "Urine"))
+  })
+  localBinding(helper_env, "findBestKElbow",           function(...) 2L)
+  localBinding(helper_env, "calculateSeparationScore", function(...) 0.3)
+  localBinding(helper_env, "calculateCompositeScore",  function(...) 0.24)
+
+  params <- list(
+    percentage_min        = 1,
+    percentage_max        = 3,
+    ruv_grouping_variable = "group",
+    separation_metric     = "weighted_difference",
+    adaptive_k_penalty    = FALSE
+  )
+
+  expect_warning(
+    runPerAssayRuvOptimization(theObject = object, ruv_mode = "automatic", params = params),
+    "'weighted_difference' is deprecated",
+    fixed = TRUE
+  )
+
+  # Only one warning per call, not one per percentage or per assay
+  warn_count <- 0L
+  withCallingHandlers(
+    runPerAssayRuvOptimization(theObject = object, ruv_mode = "automatic", params = params),
+    warning = function(w) {
+      if (grepl("weighted_difference", conditionMessage(w), fixed = TRUE)) {
+        warn_count <<- warn_count + 1L
+        invokeRestart("muffleWarning")
+      }
+    }
+  )
+  expect_equal(warn_count, 1L)
+})

@@ -397,3 +397,50 @@ test_that("sample size is derived from assay columns matched to design matrix", 
   # Design matrix Sample_ID = c("S1","S2"); assay columns include S1, S2 → size = 2
   expect_identical(results$`Positive Mode`$optimization_results$sample_size, 2L)
 })
+
+test_that("runLipidPerAssayRuvOptimization emits weighted_difference warning exactly once per automatic call", {
+  lipid_object <- makeSharedLipidRuvObject(include_negative = FALSE)
+  package_ns   <- asNamespace("MultiScholaR")
+
+  localSharedLipidNormBinding(package_ns, "getNegCtrlMetabAnova", function(...) {
+    list(`Positive Mode` = rep(TRUE, 5L))
+  })
+  localSharedLipidNormBinding(package_ns, "ruvCancor", function(...) {
+    list(`Positive Mode` = list(best_k = 2L, score = 0.5))
+  })
+  localSharedLipidNormBinding(package_ns, "findBestKElbow",
+    function(cancor_plot) as.integer(cancor_plot$best_k))
+  localSharedLipidNormBinding(package_ns, "calculateSeparationScore",
+    function(cancor_plot, metric) cancor_plot$score)
+  localSharedLipidNormBinding(package_ns, "calculateCompositeScore",
+    function(separation_score, best_k, k_penalty_weight, max_acceptable_k) separation_score)
+  localSharedLipidNormBinding(package_ns, "calculateAdaptiveMaxK",
+    function(sample_size) 3L)
+
+  params <- list(
+    percentage_min        = 1,
+    percentage_max        = 3,
+    ruv_grouping_variable = "group",
+    separation_metric     = "weighted_difference",
+    adaptive_k_penalty    = FALSE
+  )
+
+  expect_warning(
+    runLipidPerAssayRuvOptimization(lipid_object, ruv_mode = "automatic", params = params),
+    "'weighted_difference' is deprecated",
+    fixed = TRUE
+  )
+
+  # Only one warning per call, not one per percentage
+  warn_count <- 0L
+  withCallingHandlers(
+    runLipidPerAssayRuvOptimization(lipid_object, ruv_mode = "automatic", params = params),
+    warning = function(w) {
+      if (grepl("weighted_difference", conditionMessage(w), fixed = TRUE)) {
+        warn_count <<- warn_count + 1L
+        invokeRestart("muffleWarning")
+      }
+    }
+  )
+  expect_equal(warn_count, 1L)
+})

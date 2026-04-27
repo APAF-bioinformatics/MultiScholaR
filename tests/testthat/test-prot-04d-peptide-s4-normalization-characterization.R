@@ -784,3 +784,14 @@ test_that("peptide percentage-scoring helpers preserve current score contracts",
   expect_equal(.peptide_calculateCompositeScore(10, 3, 0.5, 3), 5)
   expect_lt(.peptide_calculateCompositeScore(10, 5, 0.5, 3), 5)
 })
+
+test_that("ruvCancorFast emits a deprecation warning on any call", {
+  peptide_object <- newPeptideNormObject(peptide_count = 6, sample_ids = c("S1", "S2", "S3", "S4"))
+  # .Deprecated("ruvCancor") fires before any validation; tryCatch swallows the
+  # subsequent error so expect_warning sees only the deprecation warning.
+  expect_warning(
+    tryCatch(ruvCancorFast(peptide_object), error = function(e) NULL),
+    "ruvCancor",
+    fixed = TRUE
+  )
+})
