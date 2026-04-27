@@ -139,9 +139,7 @@ setMethod(f="log2TransformPeptideMatrix"
                                            !!sym(theObject@peptide_sequence_column),
                                            sep = "%")) |>
               left_join(log2_long, by = c("peptide_row_id", theObject@sample_id)) |>
-              mutate(!!sym(current_quant_column) := ifelse(!is.na(log2_value),
-                                                           log2_value,
-                                                           !!sym(current_quant_column))) |>
+              mutate(!!sym(current_quant_column) := log2_value) |>
               select(-peptide_row_id, -log2_value)
 
             theObject@peptide_data <- updated_peptide_data

@@ -392,6 +392,29 @@ test_that("PeptideQuantitativeData normalization preserves none mode and log2 tr
   )
 })
 
+test_that("PeptideQuantitativeData log2 transform keeps peptide_data aligned with matrix for non-positive values", {
+  peptide_object <- newPeptideNormObject(peptide_count = 2, sample_ids = c("S1", "S2"))
+
+  zero_row <- peptide_object@peptide_data$Protein.Ids == "P1" &
+    peptide_object@peptide_data$Stripped.Sequence == "PEP1" &
+    peptide_object@peptide_data$Run == "S1"
+  negative_row <- peptide_object@peptide_data$Protein.Ids == "P2" &
+    peptide_object@peptide_data$Stripped.Sequence == "PEP2" &
+    peptide_object@peptide_data$Run == "S1"
+
+  peptide_object@peptide_data$Precursor.Normalised[zero_row] <- 0
+  peptide_object@peptide_data$Precursor.Normalised[negative_row] <- -1
+  peptide_object@peptide_matrix["P1%PEP1", "S1"] <- 0
+  peptide_object@peptide_matrix["P2%PEP2", "S1"] <- -1
+
+  logged <- log2TransformPeptideMatrix(peptide_object)
+
+  expect_true(is.na(logged@peptide_matrix["P1%PEP1", "S1"]))
+  expect_true(is.na(logged@peptide_matrix["P2%PEP2", "S1"]))
+  expect_true(is.na(logged@peptide_data$Precursor.Normalised[zero_row]))
+  expect_true(is.na(logged@peptide_data$Precursor.Normalised[negative_row]))
+})
+
 test_that("PeptideQuantitativeData log2 transform skips already logged objects", {
   peptide_object <- newPeptideNormObject(peptide_count = 2, sample_ids = c("S1", "S2"))
   peptide_object@is_logged_data <- TRUE

@@ -56,8 +56,11 @@ data-raw/*.csv
 .Rdata
 .DS_Store
 /.codex
+/.goyoke/
 /.god-module-stabilization/
 /tmp/
 /tools/refactor/__pycache__/
 .renv-paths/
 .refactor-fidelity-audit/
+.bug-hunter/
+Rplots.pdf

@@ -119,7 +119,7 @@
     {
       "id": "RUV-007",
       "title": "Regression matrix and release gate",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "P0",
       "dependencies": [
         "RUV-001",
