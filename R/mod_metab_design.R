@@ -384,27 +384,59 @@ mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes
 
         # == Setup shinyFiles =======================================================
         resolved_volumes <- initializeMetabDesignImportBootstrap(
-            input = input,
-            session = session,
-            experimentPaths = experiment_paths,
-            volumes = volumes
+            input = input
+            , session = session
+            , experimentPaths = experiment_paths
+            , volumes = volumes
+            , dirChooseFn = if (is_test_mode()) {
+                function(...) invisible(NULL)
+            } else {
+                shinyFiles::shinyDirChoose
+            }
         )
 
         # == Modal Logic for Import =================================================
         registerMetabDesignImportModalShell(
-            input = input,
-            output = output,
-            session = session,
-            resolvedVolumes = resolved_volumes
+            input = input
+            , output = output
+            , session = session
+            , resolvedVolumes = resolved_volumes
+            , dirButtonFn = if (is_test_mode()) {
+                function(id, ...) testid(
+                    shiny::textInput(id, "Import Directory Path:", value = "")
+                    , "metab-design-import-dir"
+                )
+            } else {
+                shinyFiles::shinyDirButton
+            }
+            , parseDirPathFn = if (is_test_mode()) {
+                function(volumes, id) id
+            } else {
+                shinyFiles::parseDirPath
+            }
+            , actionButtonFn = function(...) {
+                testid(shiny::actionButton(...), "metab-design-import-confirm")
+            }
         )
 
         # == Handle Import Confirmation =============================================
         registerMetabDesignImportObserverShell(
-            input = input,
-            resolvedVolumes = resolved_volumes,
-            workflowData = workflow_data,
-            experimentPaths = experiment_paths,
-            qcTrigger = qc_trigger
+            input = input
+            , resolvedVolumes = resolved_volumes
+            , workflowData = workflow_data
+            , experimentPaths = experiment_paths
+            , qcTrigger = qc_trigger
+            , resolveImportPreflight = if (is_test_mode()) {
+                function(input, resolvedVolumes) {
+                    resolveMetabDesignImportPreflight(
+                        input = input
+                        , resolvedVolumes = resolvedVolumes
+                        , parseDirPathFn = function(volumes, id) id
+                    )
+                }
+            } else {
+                resolveMetabDesignImportPreflight
+            }
         )
 
         # == Reactivity Checks ======================================================

@@ -342,6 +342,7 @@ Collate:
     'func_applets.R'
     'run_app.R'
     'utils_shiny_logging.R'
+    'utils_test_mode.R'
     'utils_workflow_state.R'
     'zzz.R'
 Suggests:

@@ -50,8 +50,11 @@ mod_metab_summary_ui <- function(id) {
                                             value = "Full metabolomics analysis workflow with normalization and DA",
                                             rows = 3, resize = "vertical"),
                         shiny::br(),
-                        shiny::actionButton(ns("save_workflow_args"), "Save Workflow Arguments",
-                                           class = "btn-primary", icon = shiny::icon("save"))
+                        testid(
+                            shiny::actionButton(ns("save_workflow_args"), "Save Workflow Arguments",
+                                               class = "btn-primary", icon = shiny::icon("save")),
+                            "metab-summary-save-args"
+                        )
                     )
                 ),
 
@@ -75,13 +78,19 @@ mod_metab_summary_ui <- function(id) {
                         shiny::h4("Report Generation"),
                         shiny::textOutput(ns("template_status")),
                         shiny::br(),
-                        shiny::actionButton(ns("generate_report"), "Generate Report",
-                                           class = "btn-success", icon = shiny::icon("file-pdf")),
+                        testid(
+                            shiny::actionButton(ns("generate_report"), "Generate Report",
+                                               class = "btn-success", icon = shiny::icon("file-pdf")),
+                            "metab-summary-generate-report"
+                        ),
                         shiny::br(), shiny::br(),
                         shiny::conditionalPanel(
                             condition = paste0("output['", ns("report_ready"), "']"),
-                            shiny::downloadButton(ns("download_report"), "Download Report",
-                                                 class = "btn-success")
+                            testid(
+                                shiny::downloadButton(ns("download_report"), "Download Report",
+                                                     class = "btn-success"),
+                                "metab-summary-download-report"
+                            )
                         )
                     )
                 ),
@@ -111,8 +120,11 @@ mod_metab_summary_ui <- function(id) {
                         shiny::h4("Session Summary"),
                         shiny::verbatimTextOutput(ns("session_summary")),
                         shiny::br(),
-                        shiny::actionButton(ns("export_session_state"), "Export Session State (.RDS)",
-                                           class = "btn-secondary", icon = shiny::icon("download"))
+                        testid(
+                            shiny::actionButton(ns("export_session_state"), "Export Session State (.RDS)",
+                                               class = "btn-secondary", icon = shiny::icon("download")),
+                            "metab-summary-export-state"
+                        )
                     )
                 )
             )

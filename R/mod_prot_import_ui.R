@@ -11,8 +11,8 @@
 mod_prot_import_ui <- function(id) {
   ns <- shiny::NS(id)
   
-  # Check if shinyFiles is available
-  use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE)
+  # Check if shinyFiles is available and we are not in test mode
+  use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()
   
   shiny::tagList(
     shinyjs::useShinyjs(),  # Enable shinyjs for dynamic UI control
@@ -183,10 +183,13 @@ mod_prot_import_ui <- function(id) {
         # Process button and status
         shiny::fluidRow(
           shiny::column(12,
-            shiny::actionButton(ns("process_data"), 
-                        "Process Imported Data", 
-                        class = "btn-success",
-                        width = "100%"),
+            testid(
+              shiny::actionButton(ns("process_data"),
+                          "Process Imported Data",
+                          class = "btn-success",
+                          width = "100%")
+              , "prot-import-process"
+            ),
             shiny::br(),
             shiny::br(),
             shiny::uiOutput(ns("import_status")),

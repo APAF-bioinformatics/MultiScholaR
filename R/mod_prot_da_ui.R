@@ -14,11 +14,14 @@ mod_prot_da_ui <- function(id) {
         shiny::column(
           9,
           shiny::uiOutput(ns("heatmap_manual_save_warning")),
-          shiny::tabsetPanel(
-            id = ns("da_results_tabs"),
-            mod_prot_da_volcano_tab_ui(ns),
-            mod_prot_da_heatmap_tab_ui(ns),
-            mod_prot_da_table_tab_ui(ns)
+          testid(
+            shiny::tabsetPanel(
+              id = ns("da_results_tabs"),
+              mod_prot_da_volcano_tab_ui(ns),
+              mod_prot_da_heatmap_tab_ui(ns),
+              mod_prot_da_table_tab_ui(ns)
+            ),
+            "prot-da-results-tabs"
           )
         )
       )
@@ -67,33 +70,42 @@ mod_prot_da_sidebar_ui <- function(ns) {
     shiny::br(),
 
     # Load filtered session button
-    shiny::actionButton(
-      ns("load_filtered_session"),
-      "Load Filtered Session",
-      class = "btn-info",
-      width = "100%",
-      icon = shiny::icon("upload")
+    testid(
+      shiny::actionButton(
+        ns("load_filtered_session"),
+        "Load Filtered Session",
+        class = "btn-info",
+        width = "100%",
+        icon = shiny::icon("upload")
+      )
+      , "prot-da-load-session"
     ),
     shiny::helpText("Load previously exported filtered data for DA analysis"),
     shiny::br(),
 
     # Main action button
-    shiny::actionButton(
-      ns("run_da_analysis"),
-      "Run DA Analysis",
-      class = "btn-primary",
-      width = "100%",
-      icon = shiny::icon("play")
+    testid(
+      shiny::actionButton(
+        ns("run_da_analysis"),
+        "Run DA Analysis",
+        class = "btn-primary",
+        width = "100%",
+        icon = shiny::icon("play")
+      )
+      , "prot-da-run"
     ),
     shiny::br(),
     shiny::br(),
 
     # Download button
-    shiny::downloadButton(
-      ns("download_da_results"),
-      "Download All Results",
-      class = "btn-success",
-      width = "100%"
+    testid(
+      shiny::downloadButton(
+        ns("download_da_results"),
+        "Download All Results",
+        class = "btn-success",
+        width = "100%"
+      ),
+      "prot-da-download"
     ),
     shiny::br(),
     shiny::br(),

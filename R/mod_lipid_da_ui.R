@@ -53,34 +53,43 @@ mod_lipid_da_ui <- function(id) {
                     shiny::hr()
 
                     # Load Filtered Session
-                    , shiny::actionButton(
-                        ns("load_filtered_session"),
-                        "Load Filtered Session",
-                        class = "btn-info",
-                        width = "100%",
-                        icon = shiny::icon("upload")
+                    , testid(
+                        shiny::actionButton(
+                            ns("load_filtered_session"),
+                            "Load Filtered Session",
+                            class = "btn-info",
+                            width = "100%",
+                            icon = shiny::icon("upload")
+                        ),
+                        "lipid-da-load-session"
                     ),
                     shiny::helpText("Load previously exported filtered data for DA analysis"),
                     shiny::br(),
                     shiny::br()
 
                     # Run DA Analysis
-                    , shiny::actionButton(
-                        ns("run_da_analysis"),
-                        "Run DA Analysis",
-                        class = "btn-primary",
-                        width = "100%",
-                        icon = shiny::icon("play")
+                    , testid(
+                        shiny::actionButton(
+                            ns("run_da_analysis"),
+                            "Run DA Analysis",
+                            class = "btn-primary",
+                            width = "100%",
+                            icon = shiny::icon("play")
+                        ),
+                        "lipid-da-run"
                     ),
                     shiny::br(),
                     shiny::br()
 
                     # Download Results
-                    , shiny::downloadButton(
-                        ns("download_da_results"),
-                        "Download All Results",
-                        class = "btn-success",
-                        style = "width: 100%;"
+                    , testid(
+                        shiny::downloadButton(
+                            ns("download_da_results"),
+                            "Download All Results",
+                            class = "btn-success",
+                            style = "width: 100%;"
+                        ),
+                        "lipid-da-download"
                     ),
                     shiny::hr()
 
@@ -96,6 +105,7 @@ mod_lipid_da_ui <- function(id) {
             , shiny::column(
                 9,
                 shiny::uiOutput(ns("heatmap_manual_save_warning")),
+                testid(
                 shiny::tabsetPanel(
                     id = ns("da_results_tabs")
 
@@ -419,6 +429,8 @@ mod_lipid_da_ui <- function(id) {
                         # Results table
                         , DT::DTOutput(ns("da_results_table"))
                     )
+                ),
+                "lipid-da-results-tabs"
                 )
             )
         )

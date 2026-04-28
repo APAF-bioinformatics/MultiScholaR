@@ -44,12 +44,15 @@ app_ui <- function(request) {
         style = "text-align: center; padding: 10px;",
         shiny::tags$img(src = "www/MultiScholaR_v2.png", style = "width: 80%; height: auto;")
       ),
-      sidebarMenu(
-        id = "main_menu",
-        menuItem("Home", tabName = "home", icon = shiny::icon("home")),
+      testid(
+        sidebarMenu(
+          id = "main_menu",
+          menuItem("Home", tabName = "home", icon = shiny::icon("home")),
 
-        # Dynamic menu items will be added based on omics selection
-        uiOutput("dynamic_menu")
+          # Dynamic menu items will be added based on omics selection
+          uiOutput("dynamic_menu")
+        ),
+        "sidebar-menu"
       )
     ),
     dashboardBody(
@@ -407,53 +410,70 @@ app_ui <- function(request) {
           fluidRow(
             column(
               4,
-              shiny::div(
-                id = "proteomics_box",
-                class = "omic-selection-box",
-                onclick = "toggleOmicSelection('proteomics')",
-                h3(shiny::icon("dna"), "Proteomics"),
-                p("Analyze protein abundance data from DIA-NN or similar tools")
+              testid(
+                shiny::div(
+                  id = "proteomics_box",
+                  class = "omic-selection-box",
+                  onclick = "toggleOmicSelection('proteomics')",
+                  h3(shiny::icon("dna"), "Proteomics"),
+                  p("Analyze protein abundance data from DIA-NN or similar tools")
+                ),
+                "tile-proteomics"
               )
             ),
             column(
               4,
-              shiny::div(
-                id = "metabolomics_box",
-                class = "omic-selection-box",
-                onclick = "toggleOmicSelection('metabolomics')",
-                h3(shiny::icon("flask"), "Metabolomics"),
-                p("Process and analyze metabolite profiling data")
+              testid(
+                shiny::div(
+                  id = "metabolomics_box",
+                  class = "omic-selection-box",
+                  onclick = "toggleOmicSelection('metabolomics')",
+                  h3(shiny::icon("flask"), "Metabolomics"),
+                  p("Process and analyze metabolite profiling data")
+                ),
+                "tile-metabolomics"
               )
             ),
             column(
               4,
-              shiny::div(
-                id = "transcriptomics_box",
-                class = "omic-selection-box",
-                onclick = "toggleOmicSelection('transcriptomics')",
-                h3(shiny::icon("chart-line"), "Transcriptomics"),
-                p("Analyze gene expression data from RNA-seq")
+              # Placeholder selector — no backing workflow module exists yet (finding m-2)
+              testid(
+                shiny::div(
+                  id = "transcriptomics_box",
+                  class = "omic-selection-box",
+                  onclick = "toggleOmicSelection('transcriptomics')",
+                  h3(shiny::icon("chart-line"), "Transcriptomics"),
+                  p("Analyze gene expression data from RNA-seq")
+                ),
+                "tile-transcriptomics"
               )
             )
           ),
           fluidRow(
             column(
               4,
-              shiny::div(
-                id = "lipidomics_box",
-                class = "omic-selection-box",
-                onclick = "toggleOmicSelection('lipidomics')",
-                h3(shiny::icon("oil-can"), "Lipidomics"),
-                p("Comprehensive lipid profiling and analysis")
+              testid(
+                shiny::div(
+                  id = "lipidomics_box",
+                  class = "omic-selection-box",
+                  onclick = "toggleOmicSelection('lipidomics')",
+                  h3(shiny::icon("oil-can"), "Lipidomics"),
+                  p("Comprehensive lipid profiling and analysis")
+                ),
+                "tile-lipidomics"
               )
             ),
             column(
               4,
-              shiny::div(
-                id = "integration_box",
-                class = "omic-selection-box disabled",
-                h3(shiny::icon("project-diagram"), "Integration"),
-                p("Multi-omics integration (available when 2+ omics selected)")
+              # Placeholder selector — no backing workflow module exists yet (finding m-2)
+              testid(
+                shiny::div(
+                  id = "integration_box",
+                  class = "omic-selection-box disabled",
+                  h3(shiny::icon("project-diagram"), "Integration"),
+                  p("Multi-omics integration (available when 2+ omics selected)")
+                ),
+                "tile-integration"
               )
             )
           ),
@@ -461,12 +481,15 @@ app_ui <- function(request) {
           fluidRow(
             column(
               12,
-              actionButton(
-                "start_analysis",
-                "Start Analysis",
-                class = "btn-primary btn-lg",
-                width = "100%",
-                icon = shiny::icon("play")
+              testid(
+                actionButton(
+                  "start_analysis",
+                  "Start Analysis",
+                  class = "btn-primary btn-lg",
+                  width = "100%",
+                  icon = shiny::icon("play")
+                ),
+                "btn-start-analysis"
               )
             )
           ),
@@ -485,11 +508,14 @@ app_ui <- function(request) {
         ),
 
         # Dynamic tab items will be added here
-        uiOutput("dynamic_tabs")
+        testid(uiOutput("dynamic_tabs"), "dynamic-tabs-container")
       ),
 
       # Log Terminal UI
       shiny::uiOutput("log_terminal_ui"),
+
+      # App-level state digest for test automation; NULL uses identity NS (no module prefix)
+      test_mode_digest_ui(NULL),
 
       # JavaScript for handling omics selection - use shiny:: prefix
       shiny::tags$script(shiny::HTML("

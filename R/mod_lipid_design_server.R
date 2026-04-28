@@ -15,30 +15,64 @@ mod_lipid_design_server <- function(id, workflow_data, experiment_paths, volumes
 
         # == Setup shinyFiles =======================================================
         import_bootstrap <- initializeLipidDesignImportBootstrap(
-            input = input,
-            session = session,
-            experimentPaths = experiment_paths,
-            volumes = volumes
+            input = input
+            , session = session
+            , experimentPaths = experiment_paths
+            , volumes = volumes
+            , dirChooseFn = if (is_test_mode()) {
+                function(...) invisible(NULL)
+            } else {
+                shinyFiles::shinyDirChoose
+            }
         )
         resolved_volumes <- import_bootstrap$resolvedVolumes
 
         # == Modal Logic for Import =================================================
 
         registerLipidDesignImportModalShell(
-            input = input,
-            output = output,
-            session = session,
-            resolvedVolumes = resolved_volumes
+            input = input
+            , output = output
+            , session = session
+            , resolvedVolumes = resolved_volumes
+            , parseDirPathFn = if (is_test_mode()) {
+                function(volumes, id) id
+            } else {
+                shinyFiles::parseDirPath
+            }
+            , buildImportModal = if (is_test_mode()) {
+                function(ns) buildLipidDesignImportModal(
+                    ns = ns
+                    , dirButtonFn = function(id, ...) testid(
+                        shiny::textInput(id, "Import Directory Path:", value = "")
+                        , "lipid-design-import-dir"
+                    )
+                    , actionButtonFn = function(...) {
+                        testid(shiny::actionButton(...), "lipid-design-import-confirm")
+                    }
+                )
+            } else {
+                function(ns) buildLipidDesignImportModal(
+                    ns = ns
+                    , actionButtonFn = function(...) {
+                        testid(shiny::actionButton(...), "lipid-design-import-confirm")
+                    }
+                )
+            }
         )
 
         # == Handle Import Confirmation =============================================
 
         registerLipidDesignImportConfirmationObserver(
-            input = input,
-            resolvedVolumes = resolved_volumes,
-            workflowData = workflow_data,
-            experimentPaths = experiment_paths,
-            qcTrigger = qc_trigger
+            input = input
+            , resolvedVolumes = resolved_volumes
+            , workflowData = workflow_data
+            , experimentPaths = experiment_paths
+            , qcTrigger = qc_trigger
+            , parseDirPathFn = if (is_test_mode()) {
+                function(volumes, id) id
+            } else {
+                shinyFiles::parseDirPath
+            }
         )
 
         # == Reactivity Checks ======================================================

@@ -522,43 +522,69 @@ registerProtDesignImportModalShell <- function(
     importFastaPath(NULL)
 
     ns <- session$ns
+    dirWidget <- if (is_test_mode()) {
+      testid(
+        shiny::textInput(ns("import_dir_text"), "Import Directory Path:", value = "")
+        , "prot-design-import-dir"
+      )
+    } else {
+      shinyFiles::shinyDirButton(ns("import_dir"), "Select Folder", "Choose a directory")
+    }
+
+    fastaWidget <- if (is_test_mode()) {
+      shiny::p("(FASTA selection not available in test mode)")
+    } else {
+      testid(
+        shinyFiles::shinyFilesButton(
+          ns("import_fasta_file")
+          , "Select FASTA file (if not in import folder)"
+          , "Choose File"
+          , multiple = FALSE
+          , icon = shiny::icon("file")
+        )
+        , "prot-design-import-fasta"
+      )
+    }
+
     shiny::showModal(shiny::modalDialog(
       title = "Import Existing Design Matrix",
       shiny::p("Select the folder containing 'design_matrix.tab' and 'data_cln.tab' files."),
-      shinyFiles::shinyDirButton(ns("import_dir"), "Select Folder", "Choose a directory"),
+      dirWidget,
       shiny::verbatimTextOutput(ns("import_dir_path"), placeholder = TRUE),
       shiny::hr(),
       shiny::h5("FASTA File (Optional)"),
       shiny::p("Required for protein accession cleanup. Will be auto-detected from import folder if available."),
-      shinyFiles::shinyFilesButton(
-        ns("import_fasta_file"),
-        "Select FASTA file (if not in import folder)",
-        "Choose File",
-        multiple = FALSE,
-        icon = shiny::icon("file")
-      ),
+      fastaWidget,
       shiny::br(),
       shiny::verbatimTextOutput(ns("import_fasta_file_path"), placeholder = TRUE),
       shiny::textOutput(ns("fasta_detection_status")),
       shiny::hr(),
       shiny::h5("Organism Information"),
       shiny::p("Required for UniProt annotation lookups:"),
-      shiny::numericInput(ns("import_taxon_id"), "Taxonomy ID:", value = 9606, min = 1),
+      testid(shiny::numericInput(ns("import_taxon_id"), "Taxonomy ID:", value = 9606, min = 1), "prot-design-import-taxon"),
       shiny::helpText("e.g., 9606 for Homo sapiens, 10090 for Mus musculus"),
-      shiny::textInput(ns("import_organism_name"), "Organism Name:", value = "Homo sapiens"),
+      testid(shiny::textInput(ns("import_organism_name"), "Organism Name:", value = "Homo sapiens"), "prot-design-import-organism"),
       footer = shiny::tagList(
         shiny::modalButton("Cancel"),
-        shiny::actionButton(ns("confirm_import"), "Import", class = "btn-primary")
+        testid(shiny::actionButton(ns("confirm_import"), "Import", class = "btn-primary"), "prot-design-import-confirm")
       )
     ))
   })
 
-  output$import_dir_path <- shiny::renderText({
-    shiny::req(input$import_dir)
-    shinyFiles::parseDirPath(resolvedVolumes, input$import_dir)
-  })
+  if (is_test_mode()) {
+    output$import_dir_path <- shiny::renderText({
+      val <- input$import_dir_text
+      if (is.null(val)) "" else val
+    })
+  } else {
+    output$import_dir_path <- shiny::renderText({
+      shiny::req(input$import_dir)
+      shinyFiles::parseDirPath(resolvedVolumes, input$import_dir)
+    })
+  }
 
   output$fasta_detection_status <- shiny::renderText({
+    if (is_test_mode()) return("")
     shiny::req(input$import_dir)
     importPath <- shinyFiles::parseDirPath(resolvedVolumes, input$import_dir)
 
@@ -592,10 +618,15 @@ registerProtDesignImportConfirmationObserver <- function(
     runImportObserverShell = runProtDesignImportObserverShell
 ) {
   observeEventFn(input$confirm_import, {
-    reqFn(input$import_dir)
-
-    importPath <- parseDirPathFn(resolvedVolumes, input$import_dir)
-    reqFn(importPath)
+    importPath <- if (is_test_mode()) {
+      reqFn(input$import_dir_text)
+      input$import_dir_text
+    } else {
+      reqFn(input$import_dir)
+      val <- parseDirPathFn(resolvedVolumes, input$import_dir)
+      reqFn(val)
+      val
+    }
 
     removeModalFn()
 
@@ -645,14 +676,16 @@ initializeProtDesignImportBootstrap <- function(
     }
   })
 
-  dirChooseFn(input, "import_dir", roots = resolvedVolumes, session = session)
-  fileChooseFn(
-    input,
-    "import_fasta_file",
-    roots = resolvedVolumes,
-    session = session,
-    filetypes = c("fasta", "fa", "faa")
-  )
+  if (!is_test_mode()) {
+    dirChooseFn(input, "import_dir", roots = resolvedVolumes, session = session)
+    fileChooseFn(
+      input,
+      "import_fasta_file",
+      roots = resolvedVolumes,
+      session = session,
+      filetypes = c("fasta", "fa", "faa")
+    )
+  }
 
   list(
     resolvedVolumes = resolvedVolumes,

@@ -10,11 +10,21 @@ buildLipidImportAssayInputPanel <- function(
   pathOutputId,
   useShinyFiles,
   fileAccept = c(".tsv", ".tab", ".txt", ".csv", ".xlsx", ".parquet"),
+  nameTestId = NULL,
+  fileTestId = NULL,
   buildTextInput = shiny::textInput,
   buildShinyFilesButton = shinyFiles::shinyFilesButton,
   buildPathOutput = shiny::verbatimTextOutput,
   buildFileInput = shiny::fileInput
 ) {
+  name_input <- buildTextInput(
+    ns(assayNameInputId),
+    assayNameLabel,
+    value = assayNameValue,
+    placeholder = assayNamePlaceholder
+  )
+  if (!is.null(nameTestId)) name_input <- testid(name_input, nameTestId)
+
   file_input_ui <- if (useShinyFiles) {
     shiny::tagList(
       buildShinyFilesButton(
@@ -37,18 +47,16 @@ buildLipidImportAssayInputPanel <- function(
       accept = fileAccept
     )
   }
+  if (!is.null(fileTestId)) {
+    file_input_ui <- shiny::div("data-testid" = fileTestId, file_input_ui)
+  }
 
   shiny::wellPanel(
     style = "background-color: #f8f9fa;",
     shiny::fluidRow(
       shiny::column(
         4,
-        buildTextInput(
-          ns(assayNameInputId),
-          assayNameLabel,
-          value = assayNameValue,
-          placeholder = assayNamePlaceholder
-        )
+        name_input
       ),
       shiny::column(
         8,
@@ -66,19 +74,22 @@ buildLipidImportFileImportSection <- function(
 ) {
   shiny::tagList(
     shiny::h4("Step 1: Select Vendor Format"),
-    buildRadioButtons(
-      ns("vendor_format"),
-      NULL,
-      choices = c(
-        "MS-DIAL" = "msdial",
-        "Progenesis QI" = "progenesis",
-        "XCMS" = "xcms",
-        "Compound Discoverer" = "compound_discoverer",
-        "LipidSearch" = "lipidsearch",
-        "Other/Custom" = "custom"
+    testid(
+      buildRadioButtons(
+        ns("vendor_format"),
+        NULL,
+        choices = c(
+          "MS-DIAL" = "msdial",
+          "Progenesis QI" = "progenesis",
+          "XCMS" = "xcms",
+          "Compound Discoverer" = "compound_discoverer",
+          "LipidSearch" = "lipidsearch",
+          "Other/Custom" = "custom"
+        ),
+        selected = "msdial",
+        inline = TRUE
       ),
-      selected = "msdial",
-      inline = TRUE
+      "lipid-import-vendor-format"
     ),
     shiny::hr(),
     shiny::h4("Step 2: Import Data Files"),
@@ -91,7 +102,9 @@ buildLipidImportFileImportSection <- function(
       shinyFilesButtonId = "assay1_file",
       standardInputId = "assay1_file_std",
       pathOutputId = "assay1_path",
-      useShinyFiles = useShinyFiles
+      useShinyFiles = useShinyFiles,
+      nameTestId = "lipid-import-assay1-name",
+      fileTestId = "lipid-import-assay1-file"
     ),
     buildAssayInputPanel(
       ns = ns,
@@ -102,7 +115,9 @@ buildLipidImportFileImportSection <- function(
       shinyFilesButtonId = "assay2_file",
       standardInputId = "assay2_file_std",
       pathOutputId = "assay2_path",
-      useShinyFiles = useShinyFiles
+      useShinyFiles = useShinyFiles,
+      nameTestId = "lipid-import-assay2-name",
+      fileTestId = "lipid-import-assay2-file"
     )
   )
 }
@@ -141,10 +156,13 @@ buildLipidImportColumnMappingSection <- function(ns) {
           shiny::fluidRow(
             shiny::column(
               6,
-              shiny::selectInput(
-                ns("lipid_id_col"),
-                "Lipid ID Column",
-                choices = NULL
+              testid(
+                shiny::selectInput(
+                  ns("lipid_id_col"),
+                  "Lipid ID Column",
+                  choices = NULL
+                ),
+                "lipid-import-lipid-id-col"
               )
             ),
             shiny::column(
@@ -180,10 +198,13 @@ buildLipidImportColumnMappingSection <- function(ns) {
           shiny::fluidRow(
             shiny::column(
               6,
-              shiny::selectInput(
-                ns("annotation_col"),
-                "Annotation Column",
-                choices = NULL
+              testid(
+                shiny::selectInput(
+                  ns("annotation_col"),
+                  "Annotation Column",
+                  choices = NULL
+                ),
+                "lipid-import-annotation-col"
               )
             ),
             shiny::column(
@@ -234,19 +255,25 @@ buildLipidImportColumnMappingSection <- function(ns) {
         shiny::helpText("Excludes columns ending in _Norm, _Normalized, etc."),
 
         # Sanitization checkbox
-        shiny::checkboxInput(
-          ns("sanitize_names"),
-          "Sanitize Sample Names",
-          value = TRUE
+        testid(
+          shiny::checkboxInput(
+            ns("sanitize_names"),
+            "Sanitize Sample Names",
+            value = TRUE
+          ),
+          "lipid-import-sanitize"
         ),
         shiny::helpText("Clean sample IDs (e.g., '123-Sample!' -> 'x123_sample') for better compatibility with downstream analysis."),
 
         # Internal standard pattern
-        shiny::textInput(
-          ns("is_pattern"),
-          "Internal Standard Pattern (Regex)",
-          value = "",
-          placeholder = "e.g., ^IS_|_d[0-9]+$|ISTD"
+        testid(
+          shiny::textInput(
+            ns("is_pattern"),
+            "Internal Standard Pattern (Regex)",
+            value = "",
+            placeholder = "e.g., ^IS_|_d[0-9]+$|ISTD"
+          ),
+          "lipid-import-is-pattern"
         ),
         shiny::helpText("Regular expression to identify internal standards"),
         shiny::hr(),
@@ -289,12 +316,15 @@ buildLipidImportProcessFooterSection <- function(
   shiny::fluidRow(
     shiny::column(
       12,
-      buildActionButton(
-        ns("process_import"),
-        "Process Imported Data",
-        class = "btn-success",
-        width = "100%",
-        icon = shiny::icon("check")
+      testid(
+        buildActionButton(
+          ns("process_import"),
+          "Process Imported Data",
+          class = "btn-success",
+          width = "100%",
+          icon = shiny::icon("check")
+        ),
+        "lipid-import-process"
       ),
       shiny::br(),
       shiny::br(),
@@ -363,4 +393,3 @@ buildLipidImportUiShell <- function(
     )
   )
 }
-

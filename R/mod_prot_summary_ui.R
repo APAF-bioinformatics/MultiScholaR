@@ -19,8 +19,11 @@ mod_prot_summary_ui <- function(id) {
                        value = "Full protein analysis workflow with config parameters",
                        rows = 3, resize = "vertical"),
           shiny::br(),
-          shiny::actionButton(ns("save_workflow_args"), "Save Workflow Arguments", 
-                      class = "btn-primary", icon = shiny::icon("save"))
+          testid(
+            shiny::actionButton(ns("save_workflow_args"), "Save Workflow Arguments",
+                        class = "btn-primary", icon = shiny::icon("save")),
+            "prot-summary-save-args"
+          )
         )
       ),
       
@@ -44,13 +47,19 @@ mod_prot_summary_ui <- function(id) {
           shiny::h4("Report Generation"),
           shiny::textOutput(ns("template_status")),
           shiny::br(),
-          shiny::actionButton(ns("generate_report"), "Generate Report", 
-                      class = "btn-success", icon = shiny::icon("file-pdf")),
+          testid(
+            shiny::actionButton(ns("generate_report"), "Generate Report",
+                        class = "btn-success", icon = shiny::icon("file-pdf"))
+            , "prot-summary-generate-report"
+          ),
           shiny::br(), shiny::br(),
           shiny::conditionalPanel(
             condition = paste0("output['", ns("report_ready"), "']"),
-            shiny::downloadButton(ns("download_report"), "Download Report", 
-                          class = "btn-success")
+            testid(
+              shiny::downloadButton(ns("download_report"), "Download Report",
+                            class = "btn-success"),
+              "prot-summary-download-report"
+            )
           )
         )
       ),
@@ -80,8 +89,11 @@ mod_prot_summary_ui <- function(id) {
           shiny::h4("Session Summary"),
           shiny::verbatimTextOutput(ns("session_summary")),
           shiny::br(),
-          shiny::actionButton(ns("export_session_state"), "Export Session State (.RDS)", 
-                      class = "btn-secondary", icon = shiny::icon("download"))
+          testid(
+            shiny::actionButton(ns("export_session_state"), "Export Session State (.RDS)",
+                        class = "btn-secondary", icon = shiny::icon("download"))
+            , "prot-summary-export-state"
+          )
         )
       )
     )

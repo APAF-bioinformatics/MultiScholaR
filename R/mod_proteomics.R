@@ -100,72 +100,75 @@ mod_proteomics_ui <- function(id) {
     workflow_progress_section,
 
     # Main tabset for workflow steps
-    shiny::tabsetPanel(
-      id = ns("workflow_tabs"),
-      type = "pills",
+    testid(
+      shiny::tabsetPanel(
+        id = ns("workflow_tabs"),
+        type = "pills",
 
-      # Tab 1: Setup and Data Import
-      shiny::tabPanel(
-        "Setup & Import",
-        value = "setup",
-        icon = shiny::icon("upload"),
-        shiny::br(),
-        setup_import_content
+        # Tab 1: Setup and Data Import
+        shiny::tabPanel(
+          "Setup & Import",
+          value = "setup",
+          icon = shiny::icon("upload"),
+          shiny::br(),
+          shiny::div(`data-testid` = "prot-tab-setup", setup_import_content)
+        ),
+
+        # Tab 2: Design Matrix
+        shiny::tabPanel(
+          "Design Matrix",
+          value = "design",
+          icon = shiny::icon("table"),
+          shiny::br(),
+          shiny::div(`data-testid` = "prot-tab-design", design_matrix_content)
+        ),
+
+        # Tab 3: Quality Control
+        shiny::tabPanel(
+          "Quality Control",
+          value = "qc",
+          icon = shiny::icon("chart-line"),
+          shiny::br(),
+          shiny::div(`data-testid` = "prot-tab-qc", qc_content)
+        ),
+
+        # Tab 4: Normalization
+        shiny::tabPanel(
+          "Normalization",
+          value = "normalization",
+          icon = shiny::icon("balance-scale"),
+          shiny::br(),
+          shiny::div(`data-testid` = "prot-tab-normalization", norm_content)
+        ),
+
+        # Tab 5: Differential Expression
+        shiny::tabPanel(
+          "Differential Expression",
+          value = "da",
+          icon = shiny::icon("chart-bar"),
+          shiny::br(),
+          shiny::div(`data-testid` = "prot-tab-da", de_content)
+        ),
+
+        # Tab 6: Enrichment Analysis
+        shiny::tabPanel(
+          "Enrichment Analysis",
+          value = "enrichment",
+          icon = shiny::icon("network-wired"),
+          shiny::br(),
+          shiny::div(`data-testid` = "prot-tab-enrichment", enrich_content)
+        ),
+
+        # Tab 7: Session Summary & Report Generation
+        shiny::tabPanel(
+          "Session Summary & Report",
+          value = "session_summary",
+          icon = shiny::icon("file-export"),
+          shiny::br(),
+          shiny::div(`data-testid` = "prot-tab-session-summary", session_content)
+        )
       ),
-
-      # Tab 2: Design Matrix
-      shiny::tabPanel(
-        "Design Matrix",
-        value = "design",
-        icon = shiny::icon("table"),
-        shiny::br(),
-        design_matrix_content
-      ),
-
-      # Tab 3: Quality Control
-      shiny::tabPanel(
-        "Quality Control",
-        value = "qc",
-        icon = shiny::icon("chart-line"),
-        shiny::br(),
-        qc_content
-      ),
-
-      # Tab 4: Normalization
-      shiny::tabPanel(
-        "Normalization",
-        value = "normalization",
-        icon = shiny::icon("balance-scale"),
-        shiny::br(),
-        norm_content
-      ),
-
-      # Tab 5: Differential Expression
-      shiny::tabPanel(
-        "Differential Expression",
-        value = "da",
-        icon = shiny::icon("chart-bar"),
-        shiny::br(),
-        de_content
-      ),
-
-      # Tab 6: Enrichment Analysis
-      shiny::tabPanel(
-        "Enrichment Analysis",
-        value = "enrichment",
-        icon = shiny::icon("network-wired"),
-        shiny::br(),
-        enrich_content
-      ),
-
-      # Tab 7: Session Summary & Report Generation
-      shiny::tabPanel(
-        "Session Summary & Report",
-        value = "session_summary",
-        icon = shiny::icon("file-export"),
-        shiny::br(),
-        session_content
-      )
+      "prot-workflow-tabs"
     )
   )
 }
@@ -281,6 +284,9 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     selected_tab <- reactive({
       input$workflow_tabs
     })
+
+    # Expose active tab via workflow_data for state digest (task-008/011)
+    workflow_data$active_tab <- selected_tab
 
     # Tab 4: Normalization
     # Using mod_prot_norm_server

@@ -16,20 +16,27 @@
 
 #' Run the Shiny Application
 #'
-#' @param ... arguments to pass to golem_opts. 
+#' @param test_mode Logical. When TRUE, sets the \code{multischolar.test_mode}
+#'   option before launching, enabling test-only UI elements (stable selectors,
+#'   state digest output) and disabling native file dialogs.
+#' @param ... arguments to pass to golem_opts.
 #' See `?golem::get_golem_options` for more details.
 #' @inheritParams shiny::shinyApp
 #'
 #' @export
 #' @importFrom shiny shinyApp addResourcePath
-#' @importFrom golem with_golem_options 
+#' @importFrom golem with_golem_options
 run_app <- function(
   onStart = NULL,
-  options = list(), 
+  options = list(),
   enableBookmarking = NULL,
   uiPattern = "/",
+  test_mode = FALSE,
   ...
 ) {
+  if (isTRUE(test_mode)) {
+    options(multischolar.test_mode = TRUE)
+  }
   # Set up resource path for static files in inst/shiny/www before UI renders
   # Handle both development (pkgload) and installed package scenarios
   shiny_resource_path <- system.file("shiny/www", package = "MultiScholaR")

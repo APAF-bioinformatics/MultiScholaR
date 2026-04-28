@@ -50,69 +50,72 @@ mod_metabolomics_ui <- function(id) {
                 , shiny::uiOutput(ns("workflow_progress"))
 
                 # Main workflow tabs
-                , shiny::tabsetPanel(
-                    id = ns("metabolomics_tabs"),
-                    type = "pills"
+                , testid(
+                    shiny::tabsetPanel(
+                        id = ns("metabolomics_tabs"),
+                        type = "pills"
 
-                    # Tab 1: Setup & Import
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("file-import"),
-                            " Setup & Import"
-                        ),
-                        value = "import",
-                        mod_metab_import_ui(ns("import"))
-                    )
+                        # Tab 1: Setup & Import
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("file-import"),
+                                " Setup & Import"
+                            ),
+                            value = "import",
+                            shiny::div(`data-testid` = "metab-tab-import", mod_metab_import_ui(ns("import")))
+                        )
 
-                    # Tab 2: Design Matrix
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("th"),
-                            " Design Matrix"
-                        ),
-                        value = "design",
-                        mod_metab_design_ui(ns("design"))
-                    )
+                        # Tab 2: Design Matrix
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("th"),
+                                " Design Matrix"
+                            ),
+                            value = "design",
+                            shiny::div(`data-testid` = "metab-tab-design", mod_metab_design_ui(ns("design")))
+                        )
 
-                    # Tab 3: Quality Control
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("check-double"),
-                            " Quality Control"
-                        ),
-                        value = "qc",
-                        mod_metab_qc_ui(ns("qc"))
-                    )
+                        # Tab 3: Quality Control
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("check-double"),
+                                " Quality Control"
+                            ),
+                            value = "qc",
+                            shiny::div(`data-testid` = "metab-tab-qc", mod_metab_qc_ui(ns("qc")))
+                        )
 
-                    # Tab 4: Normalization
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("balance-scale"),
-                            " Normalization"
-                        ),
-                        value = "norm",
-                        mod_metab_norm_ui(ns("norm"))
-                    )
+                        # Tab 4: Normalization
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("balance-scale"),
+                                " Normalization"
+                            ),
+                            value = "norm",
+                            shiny::div(`data-testid` = "metab-tab-norm", mod_metab_norm_ui(ns("norm")))
+                        )
 
-                    # Tab 5: Differential Analysis
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("chart-line"),
-                            " Differential Analysis"
-                        ),
-                        value = "de",
-                        mod_metab_da_ui(ns("de"))
-                    )
+                        # Tab 5: Differential Analysis
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("chart-line"),
+                                " Differential Analysis"
+                            ),
+                            value = "de",
+                            shiny::div(`data-testid` = "metab-tab-de", mod_metab_da_ui(ns("de")))
+                        )
 
-                    # Tab 6: Summary & Export
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("download"),
-                            " Summary & Export"
-                        ),
-                        value = "summary",
-                        mod_metab_summary_ui(ns("summary"))
-                    )
+                        # Tab 6: Summary & Export
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("download"),
+                                " Summary & Export"
+                            ),
+                            value = "summary",
+                            shiny::div(`data-testid` = "metab-tab-summary", mod_metab_summary_ui(ns("summary")))
+                        )
+                    ),
+                    "metab-workflow-tabs"
                 )
             )
         )
@@ -217,6 +220,10 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
             qc_trigger
         )
 
+        # Expose active tab via workflow_data for state digest (task-008/011)
+        selected_tab <- shiny::reactive(input$metabolomics_tabs)
+        workflow_data$active_tab <- selected_tab
+
         # Normalization module
         mod_metab_norm_server(
             "norm",
@@ -224,7 +231,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
             experiment_paths,
             omic_type,
             experiment_label,
-            selected_tab = shiny::reactive(input$metabolomics_tabs)
+            selected_tab = selected_tab
         )
 
         # DE module

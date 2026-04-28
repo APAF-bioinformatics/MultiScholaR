@@ -50,69 +50,72 @@ mod_lipidomics_ui <- function(id) {
                 , shiny::uiOutput(ns("workflow_progress"))
 
                 # Main workflow tabs
-                , shiny::tabsetPanel(
-                    id = ns("lipidomics_tabs"),
-                    type = "pills"
+                , testid(
+                    shiny::tabsetPanel(
+                        id = ns("lipidomics_tabs"),
+                        type = "pills"
 
-                    # Tab 1: Setup & Import
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("file-import"),
-                            " Setup & Import"
-                        ),
-                        value = "import",
-                        mod_lipid_import_ui(ns("import"))
-                    )
+                        # Tab 1: Setup & Import
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("file-import"),
+                                " Setup & Import"
+                            ),
+                            value = "import",
+                            shiny::div(`data-testid` = "lipid-tab-import", mod_lipid_import_ui(ns("import")))
+                        )
 
-                    # Tab 2: Design Matrix
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("th"),
-                            " Design Matrix"
-                        ),
-                        value = "design",
-                        mod_lipid_design_ui(ns("design"))
-                    )
+                        # Tab 2: Design Matrix
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("th"),
+                                " Design Matrix"
+                            ),
+                            value = "design",
+                            shiny::div(`data-testid` = "lipid-tab-design", mod_lipid_design_ui(ns("design")))
+                        )
 
-                    # Tab 3: Quality Control
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("check-double"),
-                            " Quality Control"
-                        ),
-                        value = "qc",
-                        mod_lipid_qc_ui(ns("qc"))
-                    )
+                        # Tab 3: Quality Control
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("check-double"),
+                                " Quality Control"
+                            ),
+                            value = "qc",
+                            shiny::div(`data-testid` = "lipid-tab-qc", mod_lipid_qc_ui(ns("qc")))
+                        )
 
-                    # Tab 4: Normalization
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("balance-scale"),
-                            " Normalization"
-                        ),
-                        value = "norm",
-                        mod_lipid_norm_ui(ns("norm"))
-                    )
+                        # Tab 4: Normalization
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("balance-scale"),
+                                " Normalization"
+                            ),
+                            value = "norm",
+                            shiny::div(`data-testid` = "lipid-tab-norm", mod_lipid_norm_ui(ns("norm")))
+                        )
 
-                    # Tab 5: Differential Analysis
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("chart-line"),
-                            " Differential Analysis"
-                        ),
-                        value = "de",
-                        mod_lipid_da_ui(ns("de"))
-                    )
+                        # Tab 5: Differential Analysis
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("chart-line"),
+                                " Differential Analysis"
+                            ),
+                            value = "de",
+                            shiny::div(`data-testid` = "lipid-tab-de", mod_lipid_da_ui(ns("de")))
+                        )
 
-                    # Tab 6: Summary & Export
-                    , shiny::tabPanel(
-                        title = shiny::tagList(
-                            shiny::icon("download"),
-                            " Summary & Export"
-                        ),
-                        value = "summary",
-                        mod_lipid_summary_ui(ns("summary"))
-                    )
+                        # Tab 6: Summary & Export
+                        , shiny::tabPanel(
+                            title = shiny::tagList(
+                                shiny::icon("download"),
+                                " Summary & Export"
+                            ),
+                            value = "summary",
+                            shiny::div(`data-testid` = "lipid-tab-summary", mod_lipid_summary_ui(ns("summary")))
+                        )
+                    ),
+                    "lipid-workflow-tabs"
                 )
             )
         )
@@ -217,6 +220,10 @@ mod_lipidomics_server <- function(id, project_dirs, omic_type, experiment_label,
             qc_trigger
         )
 
+        # Expose active tab via workflow_data for state digest (task-008/011)
+        selected_tab <- shiny::reactive(input$lipidomics_tabs)
+        workflow_data$active_tab <- selected_tab
+
         # Normalization module
         mod_lipid_norm_server(
             "norm",
@@ -224,7 +231,7 @@ mod_lipidomics_server <- function(id, project_dirs, omic_type, experiment_label,
             experiment_paths,
             omic_type,
             experiment_label,
-            selected_tab = shiny::reactive(input$lipidomics_tabs)
+            selected_tab = selected_tab
         )
 
         # DE module

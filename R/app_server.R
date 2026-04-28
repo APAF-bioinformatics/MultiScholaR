@@ -133,11 +133,14 @@ app_server <- function(input, output, session) {
       shiny::fluidRow(
         shiny::column(
           12,
-          shiny::textInput("experiment_label",
-            "Experiment Label:",
-            value = paste0("analysis_", format(Sys.Date(), "%Y%m%d")),
-            placeholder = "e.g., workshop_data",
-            width = "100%"
+          testid(
+            shiny::textInput("experiment_label",
+              "Experiment Label:",
+              value = paste0("analysis_", format(Sys.Date(), "%Y%m%d")),
+              placeholder = "e.g., workshop_data",
+              width = "100%"
+            ),
+            "input-experiment-label"
           ),
           shiny::br(),
           shiny::h4("Project Output Directory"),
@@ -145,28 +148,37 @@ app_server <- function(input, output, session) {
           shiny::fluidRow(
             shiny::column(
               9,
-              shiny::textInput("project_dir",
-                "Directory Path:",
-                value = normalizePath("~", winslash = "/"),
-                placeholder = "Enter directory path",
-                width = "100%"
+              testid(
+                shiny::textInput("project_dir",
+                  "Directory Path:",
+                  value = normalizePath("~", winslash = "/"),
+                  placeholder = "Enter directory path",
+                  width = "100%"
+                ),
+                "input-project-dir"
               )
             ),
             shiny::column(
               3,
-              if (requireNamespace("shinyFiles", quietly = TRUE)) {
-                shinyFiles::shinyDirButton("browse_dir",
-                  "Browse...",
-                  "Select Project Output Directory",
-                  icon = shiny::icon("folder-open"),
-                  style = "width: 100%; margin-top: 25px;"
+              if (requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()) {
+                testid(
+                  shinyFiles::shinyDirButton("browse_dir",
+                    "Browse...",
+                    "Select Project Output Directory",
+                    icon = shiny::icon("folder-open"),
+                    style = "width: 100%; margin-top: 25px;"
+                  ),
+                  "btn-browse-dir"
                 )
               } else {
-                shiny::actionButton("browse_dir_fallback",
-                  "Browse...",
-                  icon = shiny::icon("folder-open"),
-                  width = "100%",
-                  style = "margin-top: 25px;"
+                testid(
+                  shiny::actionButton("browse_dir_fallback",
+                    "Browse...",
+                    icon = shiny::icon("folder-open"),
+                    width = "100%",
+                    style = "margin-top: 25px;"
+                  ),
+                  "btn-browse-dir"
                 )
               }
             )
@@ -180,14 +192,14 @@ app_server <- function(input, output, session) {
       ),
       footer = tagList(
         modalButton("Cancel"),
-        actionButton("confirm_setup", "Continue", class = "btn-primary")
+        testid(actionButton("confirm_setup", "Continue", class = "btn-primary"), "btn-confirm-setup")
       )
     ))
   })
 
 
-  # Set up shinyFiles directory browser if available
-  if (requireNamespace("shinyFiles", quietly = TRUE) && !is.null(volumes)) {
+  # Set up shinyFiles directory browser if available (skipped in test mode)
+  if (requireNamespace("shinyFiles", quietly = TRUE) && !is.null(volumes) && !is_test_mode()) {
     shinyFiles::shinyDirChoose(input, "browse_dir",
       roots = volumes,
       session = session
@@ -239,8 +251,8 @@ app_server <- function(input, output, session) {
         "What would you like to do?",
         footer = tagList(
           modalButton("Cancel"),
-          actionButton("reuse_project", "Use Existing Project"),
-          actionButton("overwrite_project", "Overwrite Project", class = "btn-danger")
+          testid(actionButton("reuse_project", "Use Existing Project"), "btn-reuse-project"),
+          testid(actionButton("overwrite_project", "Overwrite Project", class = "btn-danger"), "btn-overwrite-project")
         )
       ))
     } else {
@@ -253,6 +265,17 @@ app_server <- function(input, output, session) {
 
   # Reactive value to control the setup process
   setup_action <- reactiveVal(NULL)
+
+  # Expose state digest for automated test assertions when test mode is active
+  if (is_test_mode()) {
+    output$test_state_digest <- shiny::renderText({
+      digest <- collect_state_digest(
+        values = shiny::reactiveValuesToList(values),
+        workflow_states = shiny::isolate(values$workflow_state)
+      )
+      jsonlite::toJSON(digest, auto_unbox = TRUE, pretty = TRUE, null = "null")
+    })
+  }
 
   # Observer for "Use Existing"
   observeEvent(input$reuse_project, {

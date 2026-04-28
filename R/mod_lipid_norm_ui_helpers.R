@@ -68,33 +68,39 @@ buildLipidNormOptionsControlPanel <- function(ns) {
             # --- Normalization Method ---
             , shiny::hr()
             , shiny::h4("Between-Sample Normalization")
-            , shiny::selectInput(
-                ns("norm_method")
-                , "Normalization Method:"
-                , choices = list(
-                    "Cyclic Loess" = "cyclicloess"
-                    , "Quantile" = "quantile"
-                    , "Scale (Median Absolute Values)" = "scale"
-                    , "None" = "none"
+            , testid(
+                shiny::selectInput(
+                    ns("norm_method")
+                    , "Normalization Method:"
+                    , choices = list(
+                        "Cyclic Loess" = "cyclicloess"
+                        , "Quantile" = "quantile"
+                        , "Scale (Median Absolute Values)" = "scale"
+                        , "None" = "none"
+                    )
+                    , selected = "cyclicloess"
+                    , width = "100%"
                 )
-                , selected = "cyclicloess"
-                , width = "100%"
+                , "lipid-norm-method"
             )
             , shiny::helpText("Method for between-sample normalization")
 
             # --- RUV-III Options ---
             , shiny::hr()
             , shiny::h4("RUV-III Batch Correction")
-            , shiny::radioButtons(
-                ns("ruv_mode")
-                , "RUV Parameter Tuning:"
-                , choices = list(
-                    "Automatic (recommended)" = "automatic"
-                    , "Manual (advanced users)" = "manual"
-                    , "Skip RUV" = "skip"
+            , testid(
+                shiny::radioButtons(
+                    ns("ruv_mode")
+                    , "RUV Parameter Tuning:"
+                    , choices = list(
+                        "Automatic (recommended)" = "automatic"
+                        , "Manual (advanced users)" = "manual"
+                        , "Skip RUV" = "skip"
+                    )
+                    , selected = "automatic"
+                    , width = "100%"
                 )
-                , selected = "automatic"
-                , width = "100%"
+                , "lipid-norm-ruv-mode"
             )
 
             , shiny::selectInput(
@@ -217,12 +223,15 @@ buildLipidNormOptionsControlPanel <- function(ns) {
 
             # --- Action Buttons ---
             , shiny::hr()
-            , shiny::actionButton(
-                ns("run_normalization")
-                , "Run Normalization Pipeline"
-                , class = "btn-primary"
-                , width = "100%"
-                , icon = shiny::icon("play")
+            , testid(
+                shiny::actionButton(
+                    ns("run_normalization")
+                    , "Run Normalization Pipeline"
+                    , class = "btn-primary"
+                    , width = "100%"
+                    , icon = shiny::icon("play")
+                )
+                , "lipid-norm-run"
             )
 
             , shiny::br()
@@ -239,12 +248,15 @@ buildLipidNormOptionsControlPanel <- function(ns) {
             , shiny::br()
             , shiny::br()
 
-            , shiny::actionButton(
-                ns("export_session")
-                , "Export Normalized Data"
-                , class = "btn-success"
-                , width = "100%"
-                , icon = shiny::icon("download")
+            , testid(
+                shiny::actionButton(
+                    ns("export_session")
+                    , "Export Normalized Data"
+                    , class = "btn-success"
+                    , width = "100%"
+                    , icon = shiny::icon("download")
+                )
+                , "lipid-norm-export-session"
             )
             , shiny::helpText("Save normalized data for later analysis")
         )

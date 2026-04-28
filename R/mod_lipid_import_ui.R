@@ -5,12 +5,11 @@
 mod_lipid_import_ui <- function(id) {
   ns <- shiny::NS(id)
 
-  # Check if shinyFiles is available
-  use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE)
+  # Check if shinyFiles is available and we are not in test mode
+  use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()
 
   buildLipidImportUiShell(
     ns = ns,
     useShinyFiles = use_shiny_files
   )
 }
-
