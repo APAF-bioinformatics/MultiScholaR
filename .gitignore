@@ -62,4 +62,7 @@ data-raw/*.csv
 /tmp/
 /tools/refactor/__pycache__/
 .renv-paths/
+/renv/
+renv.lock
+/Workbooks/proteomics/
 /.refactor-fidelity-audit/
