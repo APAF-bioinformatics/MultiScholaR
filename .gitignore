@@ -7,6 +7,8 @@
 
 # User-specific files
 .Ruserdata
+.Rprofile
+.ticket-config.json
 /debug/
 
 # Obsidian vault
@@ -16,7 +18,7 @@
 *-Ex.R
 
 # Dev files
-/dev
+/dev/
 
 # Output files from R CMD build
 /*.tar.gz
@@ -60,4 +62,4 @@ data-raw/*.csv
 /tmp/
 /tools/refactor/__pycache__/
 .renv-paths/
-.refactor-fidelity-audit/
+/.refactor-fidelity-audit/
