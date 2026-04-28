@@ -1,42 +1,137 @@
 # MultiScholaR NEWS
 
-## Version 0.5.0
+## Version 0.5.0 (Release Candidate)
 
-### Automatic RUV Parameter Optimization — Behavior Changes
+This release candidate captures the large janitor-branch stabilization campaign:
+substantial de-monolithing of oversized GUI and helper modules, parity auditing
+against the pinned `main` baseline, coverage-backed verification across the refactor
+surface, and a correctness-focused audit of automatic RUV parameter selection.
 
-This release completes a correctness overhaul of the automatic RUV-III-C parameter
-optimization across all omics types. **Automatic-mode results may differ from previous
-versions for every dataset.** Manual mode semantics are unchanged.
+Final promotion from release candidate to stable release is intended to follow the
+remaining end-to-end GUI suite validation across the default proteomics,
+metabolomics, and lipidomics workflows.
 
--- Automatic K Selection (`findBestKElbow`)
- * K selection now uses a first-plateau detection rule instead of argmax.
-   The optimizer selects the smallest K whose separation score is within 5% of
-   the maximum observed across all tested K values. This conservative rule favors
-   the earliest K at which additional correction provides diminishing returns.
- * `findBestK()` is deprecated — use `findBestKElbow()` instead. The old function
-   delegates to the new one and emits a deprecation warning.
+### Architecture, De-Monolithing, and Helper Extraction
 
--- Metabolomics and Lipidomics Automatic Mode
- * Automatic mode now truly searches the full requested percentage range, evaluating
-   each candidate percentage as a whole-object optimization step. Previously, the
-   automatic path always used `percentage_max` without iteration.
+The codebase underwent a broad stabilization pass focused on reducing god modules,
+surfacing hidden logic, and making wrapper behavior auditable.
 
--- Peptide Automatic Mode
- * Peptide automatic optimization now uses the full `ruvCancor()` objective to
-   evaluate each percentage. Previously it used the `ruvCancorFast()` surrogate,
-   which could select different parameters than the full objective would.
- * `ruvCancorFast()` is deprecated — use `ruvCancor()` instead.
+-- Wrapper and module families stabilized
+ * Proteomics wrappers and workflows were stabilized across import, design, builder,
+   normalization, QC, enrichment, and summary flows.
+ * Metabolomics wrappers and workflows were stabilized across import, QC,
+   normalization, differential abundance, design, and summary flows.
+ * Lipidomics wrappers and workflows were stabilized across import, QC, design,
+   normalization, differential abundance, and summary flows.
+ * Shared infrastructure was stabilized in the general file-management and plotting
+   families, alongside S4 object surfaces in proteomics, peptide, metabolomics, and
+   lipidomics code paths.
 
--- Deprecations
- * `weighted_difference` separation metric is deprecated. It up-weights high-K
-   values while the composite score penalizes high K, creating contradictory
-   optimization pressure. Use `max_difference` (default) or `mean_difference`.
-   A deprecation warning fires once per public optimizer call when this metric
-   is selected. The UI labels now show "(deprecated)" for this option.
+-- Functions-within-functions reduced
+ * Refactor work lifted implicit nested logic into named helper surfaces where
+   possible, making behavior easier to test, replay, and compare against the
+   baseline branch.
+ * Legacy wrapper shells and helper families were reorganized into explicit bundle
+   seams so behavior could be reviewed at the contract, helper, and lineage level
+   rather than only as monolithic files.
 
--- Manual Mode
- * Manual mode input contracts are unchanged across all omics types.
-   Only automatic optimization behavior changes in this release.
+### Refactor Fidelity, Parity, and Coverage Campaign
+
+This branch was not treated as a cosmetic refactor. It was audited against a pinned
+`main` baseline and then driven through a dedicated fidelity workflow.
+
+-- Closeout and parity gates
+ * The integrated refactor closeout reported `proven parity: true` against pinned
+   baseline `main@326c049`.
+ * Surface, manifest, behavior, contract, and high-severity gates all passed in the
+   latest closeout run.
+ * Open exceptions closed to `0`, with `0` high-severity open exceptions at closeout.
+
+-- Bundle- and contract-level verification
+ * The fidelity bundle map covered `233` bundles spanning wrapper entrypoints, helper
+   surfaces, S4 method surfaces, and lineage families.
+ * The latest targeted coverage probe executed `1161` tests across `124` test files
+   and recorded `55983 / 70076` covered lines (`79.9%`) in the audited target set.
+ * Coverage evidence recorded `233` passing bundle gates, `227` bundles explicitly
+   justified by tests, `0` low-coverage bundles, and `0` regressed bundles.
+
+-- Per-omic coverage characterization added
+ * Coverage characterization was added for metabolomics normalization, import, and
+   differential abundance lineages.
+ * Coverage characterization was added for proteomics import and design-builder
+   lineages.
+ * Coverage characterization was added for lipidomics normalization, differential
+   abundance, and design-builder lineages.
+
+### Automatic RUV Parameter Optimization — Integrity Audit and Corrections
+
+This release candidate completes a correctness overhaul of automatic RUV-III-C
+parameter optimization across the omics pipelines. **Automatic-mode results may
+differ from previous versions for the same dataset.** Manual mode semantics are
+intended to remain unchanged.
+
+-- Audit scope and outcome
+ * Automatic RUV behavior was audited across proteomics, peptide, metabolomics, and
+   lipidomics implementations.
+ * The audit verified multiple correctness defects in shared K-selection logic,
+   objective alignment, percentage-search behavior, and peptide optimization flow.
+ * The branch includes the follow-through fix sequence plus a regression matrix and
+   release-gate pass dedicated to the RUV work.
+
+-- Automatic K selection (`findBestKElbow`)
+ * K selection now uses a first-plateau rule instead of argmax-style winner
+   selection. The optimizer chooses the smallest K whose separation score lies
+   within 5% of the best observed value, favoring the earliest stable correction
+   level over late, marginal gains.
+ * Shared K-selection, scoring, and curve-alignment logic were hardened so the
+   optimizer behaves deterministically and the selected K is consistent with the
+   actual comparison curve being evaluated.
+ * `findBestK()` is deprecated in favor of `findBestKElbow()`. The legacy entrypoint
+   delegates and emits a deprecation warning.
+
+-- Proteomics automatic mode
+ * Proteomics automatic optimization now uses deterministic tie-breaking and richer
+   optimization traces, improving reproducibility and post-run diagnostics.
+ * Shared scoring updates reduce ambiguity when multiple candidate settings produce
+   near-identical separation behavior.
+
+-- Metabolomics and lipidomics automatic mode
+ * Automatic mode now genuinely searches the user-requested percentage range. Each
+   candidate percentage is evaluated as a whole-object optimization step instead of
+   silently collapsing to `percentage_max`.
+ * This change aligns actual behavior with the documented automatic-mode contract and
+   removes the previous "single-point search disguised as optimization" behavior.
+
+-- Peptide automatic mode
+ * Peptide automatic optimization now evaluates candidates with the full
+   `ruvCancor()` objective rather than the `ruvCancorFast()` surrogate during winner
+   selection.
+ * This reconciles the optimizer with the objective used to interpret the final
+   result and reduces the chance of selecting controls on one scoring regime and
+   applying them under another.
+ * `ruvCancorFast()` is deprecated for optimizer selection use.
+
+-- Deprecations and user-facing behavior
+ * The `weighted_difference` separation metric is now deprecated because it pushes
+   high-K selection in the opposite direction from the composite score penalty.
+ * UI labels and documentation now identify deprecated RUV choices explicitly.
+ * Workbook and release documentation were updated to describe the corrected
+   automatic-mode behavior and its implications for result comparability.
+
+### Documentation and Release-Engineering Cleanup
+
+-- Documentation refresh
+ * Manual documentation was reorganized into `docs/manual/`, replacing the previous
+   root-level `HowTo/` placement.
+ * RUV release notes, workbook text, and deprecation language were refreshed to
+   match current optimizer behavior.
+
+-- Repository hygiene
+ * Local workflow artifacts, refactor audit outputs, development planning material,
+   `renv/`, `renv.lock`, and local workbook scratch content were moved out of Git
+   tracking and into ignore rules where appropriate.
+ * This keeps the repository focused on source, docs, and releasable assets rather
+   than machine-local refactor state.
 
 ## Version 0.4.1.2
 
@@ -90,7 +185,7 @@ versions for every dataset.** Manual mode semantics are unchanged.
 
 - **Automated Copying**: Updated `copyToResultsSummary` path management to ensure that manually saved heatmaps in `publication_graphs/Heatmap` are automatically included in the final "Publication Figures" export directory.
 
-## Version 0.4.1 (Current Release)
+## Version 0.4.1 (Previous Stable Release)
 
 ### Major Feature: Lipidomics & Metabolomics GUI Integration
 
