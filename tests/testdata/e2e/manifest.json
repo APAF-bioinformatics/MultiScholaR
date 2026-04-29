@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0.0",
+  "lanes": [
+    {
+      "lane_id": "prot_dia",
+      "omic_type": "proteomics",
+      "workflow_type": "DIA",
+      "import_tool": "diann",
+      "use_limpa": false,
+      "fixture_dir": "prot_dia",
+      "seed_file": "report.tsv",
+      "assays": [null],
+      "expected_contrasts": ["KO_vs_WT"],
+      "report_template": "DIANN_report.rmd",
+      "enrichment_backend": "gprofiler",
+      "expected_exports": [
+        "differential_abundance.xlsx",
+        "normalized_intensities.xlsx",
+        "summary_stats.xlsx"
+      ],
+      "sample_count": 6,
+      "group_count": 2,
+      "groups": ["WT", "KO"],
+      "cross_omic_packs": ["prot_metab", "prot_lipid", "triple_omic"]
+    },
+    {
+      "lane_id": "prot_dia_limpa",
+      "omic_type": "proteomics",
+      "workflow_type": "DIA",
+      "import_tool": "diann",
+      "use_limpa": true,
+      "fixture_dir": "prot_dia_limpa",
+      "seed_file": "report.tsv",
+      "assays": [null],
+      "expected_contrasts": ["KO_vs_WT"],
+      "report_template": "DIANN_report.rmd",
+      "enrichment_backend": "gprofiler",
+      "expected_exports": [
+        "differential_abundance.xlsx",
+        "normalized_intensities.xlsx",
+        "summary_stats.xlsx"
+      ],
+      "sample_count": 6,
+      "group_count": 2,
+      "groups": ["WT", "KO"],
+      "cross_omic_packs": []
+    },
+    {
+      "lane_id": "prot_tmt",
+      "omic_type": "proteomics",
+      "workflow_type": "TMT",
+      "import_tool": "pd_tmt",
+      "use_limpa": false,
+      "fixture_dir": "prot_tmt",
+      "seed_file": "pd_tmt_peptides.tsv",
+      "assays": [null],
+      "expected_contrasts": ["KO_vs_WT"],
+      "report_template": "TMT_report.rmd",
+      "enrichment_backend": "gprofiler",
+      "expected_exports": [
+        "differential_abundance.xlsx",
+        "normalized_intensities.xlsx",
+        "summary_stats.xlsx"
+      ],
+      "sample_count": 6,
+      "group_count": 2,
+      "groups": ["WT", "KO"],
+      "cross_omic_packs": []
+    },
+    {
+      "lane_id": "prot_lfq",
+      "omic_type": "proteomics",
+      "workflow_type": "LFQ",
+      "import_tool": "maxquant",
+      "use_limpa": false,
+      "fixture_dir": "prot_lfq",
+      "seed_file": "proteinGroups.txt",
+      "assays": [null],
+      "expected_contrasts": ["KO_vs_WT"],
+      "report_template": "LFQ_report.rmd",
+      "enrichment_backend": "gprofiler",
+      "expected_exports": [
+        "differential_abundance.xlsx",
+        "normalized_intensities.xlsx",
+        "summary_stats.xlsx"
+      ],
+      "sample_count": 6,
+      "group_count": 2,
+      "groups": ["WT", "KO"],
+      "cross_omic_packs": []
+    },
+    {
+      "lane_id": "metab_lc",
+      "omic_type": "metabolomics",
+      "workflow_type": null,
+      "import_tool": "msdial",
+      "use_limpa": false,
+      "fixture_dir": "metab_lc",
+      "seed_file": "lcms_features.tsv",
+      "assays": ["LCMS_Pos", "LCMS_Neg"],
+      "expected_contrasts": ["KO_vs_WT"],
+      "report_template": "metabolomics_report.rmd",
+      "enrichment_backend": "clusterprofiler",
+      "expected_exports": [
+        "feature_summary.xlsx",
+        "differential_abundance.xlsx"
+      ],
+      "sample_count": 6,
+      "group_count": 2,
+      "groups": ["WT", "KO"],
+      "cross_omic_packs": ["prot_metab", "triple_omic"]
+    },
+    {
+      "lane_id": "metab_gc",
+      "omic_type": "metabolomics",
+      "workflow_type": null,
+      "import_tool": "msdial",
+      "use_limpa": false,
+      "fixture_dir": "metab_gc",
+      "seed_file": "gcms_features.tsv",
+      "assays": ["GCMS"],
+      "expected_contrasts": ["KO_vs_WT"],
+      "report_template": "metabolomics_report.rmd",
+      "enrichment_backend": "clusterprofiler",
+      "expected_exports": [
+        "feature_summary.xlsx",
+        "differential_abundance.xlsx"
+      ],
+      "sample_count": 6,
+      "group_count": 2,
+      "groups": ["WT", "KO"],
+      "cross_omic_packs": []
+    },
+    {
+      "lane_id": "metab_combined",
+      "omic_type": "metabolomics",
+      "workflow_type": null,
+      "import_tool": "msdial",
+      "use_limpa": false,
+      "fixture_dir": "metab_combined",
+      "seed_file": "combined_features.tsv",
+      "assays": ["LCMS_Pos", "LCMS_Neg", "GCMS"],
+      "expected_contrasts": ["KO_vs_WT"],
+      "report_template": "metabolomics_report.rmd",
+      "enrichment_backend": "clusterprofiler",
+      "expected_exports": [
+        "feature_summary.xlsx",
+        "differential_abundance.xlsx"
+      ],
+      "sample_count": 6,
+      "group_count": 2,
+      "groups": ["WT", "KO"],
+      "cross_omic_packs": []
+    },
+    {
+      "lane_id": "lipid_canonical",
+      "omic_type": "lipidomics",
+      "workflow_type": null,
+      "import_tool": "lipidsearch",
+      "use_limpa": false,
+      "fixture_dir": "lipid_canonical",
+      "seed_file": "lipidsearch_results.txt",
+      "assays": [null],
+      "expected_contrasts": ["KO_vs_WT"],
+      "report_template": "lipidomics_report.rmd",
+      "enrichment_backend": "gprofiler",
+      "expected_exports": [
+        "lipid_summary.xlsx",
+        "differential_abundance.xlsx"
+      ],
+      "sample_count": 6,
+      "group_count": 2,
+      "groups": ["WT", "KO"],
+      "cross_omic_packs": ["prot_lipid", "triple_omic"]
+    }
+  ]
+}

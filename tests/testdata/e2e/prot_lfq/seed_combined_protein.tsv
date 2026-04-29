@@ -1,0 +1,6 @@
+Protein	Protein ID	Entry Name	Gene	Length	Organism	Protein Description	Protein Existence	Coverage	WT_1 MaxLFQ Intensity	WT_2 MaxLFQ Intensity	KO_1 MaxLFQ Intensity	KO_2 MaxLFQ Intensity
+sp|P00001|ALPHA_HUMAN	P00001	ALPHA_HUMAN	GENE1	350	Homo sapiens	Protein Alpha	1	42.5	1000.0	1020.0	2050.0	2100.0
+sp|P00002|BETA_HUMAN	P00002	BETA_HUMAN	GENE2	280	Homo sapiens	Protein Beta	1	38.2	1500.0	1490.0	3010.0	2970.0
+sp|P00003|GAMMA_HUMAN	P00003	GAMMA_HUMAN	GENE3	420	Homo sapiens	Protein Gamma	1	35.1	900.0	920.0	910.0	930.0
+sp|P00004|DELTA_HUMAN	P00004	DELTA_HUMAN	GENE4	195	Homo sapiens	Protein Delta	1	51.3	600.0	610.0	595.0	615.0
+sp|P00005|EPSIL_HUMAN	P00005	EPSIL_HUMAN	GENE5	510	Homo sapiens	Protein Epsilon	1	29.8	1200.0	1190.0	1160.0	1210.0

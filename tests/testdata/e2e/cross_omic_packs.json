@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "packs": [
+    {
+      "pack_id": "prot_metab",
+      "description": "Proteomics + Metabolomics (LC-MS) MOFA integration",
+      "lanes": ["prot_dia", "metab_lc"],
+      "integration_type": "mofa",
+      "expected_factors": 2,
+      "expected_views": ["proteomics", "metabolomics"]
+    },
+    {
+      "pack_id": "prot_lipid",
+      "description": "Proteomics + Lipidomics MOFA integration",
+      "lanes": ["prot_dia", "lipid_canonical"],
+      "integration_type": "mofa",
+      "expected_factors": 2,
+      "expected_views": ["proteomics", "lipidomics"]
+    },
+    {
+      "pack_id": "triple_omic",
+      "description": "Proteomics + Metabolomics (LC-MS) + Lipidomics MOFA integration",
+      "lanes": ["prot_dia", "metab_lc", "lipid_canonical"],
+      "integration_type": "mofa",
+      "expected_factors": 3,
+      "expected_views": ["proteomics", "metabolomics", "lipidomics"]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+Accession	Description	Protein FDR Confidence	Master	Exp. q-value	Sum PEP Score	Abundance: F1: 126, WT_1	Abundance: F1: 127N, WT_2	Abundance: F1: 128N, KO_1	Abundance: F1: 129N, KO_2
+P00001	Protein Alpha OS=Homo sapiens GN=GENE1	High	Master Protein	0.01	25.4	1000.0	1020.0	2050.0	2100.0
+P00002	Protein Beta OS=Homo sapiens GN=GENE2	High	Master Protein	0.01	22.1	1500.0	1490.0	3010.0	2970.0
+P00003	Protein Gamma OS=Homo sapiens GN=GENE3	High	Master Protein	0.01	18.7	900.0	920.0	910.0	930.0
+P00004	Protein Delta OS=Homo sapiens GN=GENE4	High	Master Protein	0.01	15.3	600.0	610.0	595.0	615.0
+P00005	Protein Epsilon OS=Homo sapiens GN=GENE5	High	Master Protein	0.01	20.9	1200.0	1190.0	1160.0	1210.0

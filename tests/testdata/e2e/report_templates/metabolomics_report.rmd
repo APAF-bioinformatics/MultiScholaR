@@ -1,0 +1,17 @@
+---
+title: "Metabolomics Report (E2E Stub)"
+output: html_document
+params:
+  omic_type: "metabolomics"
+  experiment_label: "test_experiment"
+  workflow_name: "LC-MS"
+  timestamp: ""
+---
+
+# `r params$experiment_label`
+
+**Omic Type:** `r params$omic_type`
+
+**Workflow:** `r params$workflow_name`
+
+**Generated:** `r if (nzchar(params$timestamp)) params$timestamp else Sys.time()`

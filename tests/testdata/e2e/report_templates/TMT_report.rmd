@@ -1,0 +1,17 @@
+---
+title: "TMT Proteomics Report (E2E Stub)"
+output: html_document
+params:
+  omic_type: "proteomics"
+  experiment_label: "test_experiment"
+  workflow_name: "TMT"
+  timestamp: ""
+---
+
+# `r params$experiment_label`
+
+**Omic Type:** `r params$omic_type`
+
+**Workflow:** `r params$workflow_name`
+
+**Generated:** `r if (nzchar(params$timestamp)) params$timestamp else Sys.time()`
