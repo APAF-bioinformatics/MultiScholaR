@@ -525,3 +525,47 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic proteomics --module summary_report --runtime unit-contract --reporter summary
 ```
+
+## Metabolomics Import Matrix
+
+MCI-012 adds `tests/testthat/test-module-ci-metab-import.R` plus
+`tests/testthat/helper-module-ci-metab-import.R`. This suite targets the
+metabolomics import boundary before design, QC, normalization, and DA can
+consume assay state.
+
+The matrix covers:
+
+- Custom imports with explicit `Feature.Name` identifiers, annotation-present
+  and annotation-absent payloads, alternate sample regex families, extra
+  metadata columns, and character-to-numeric sample coercion boundaries.
+- MS-DIAL-style imports with expected metadata columns, positive/negative mode
+  annotations, duplicate feature IDs, zero intensities, missing intensities, and
+  missing identifier rejection.
+- Multi-assay imports for `LCMS_Pos+LCMS_Neg`, `GCMS` only, `LCMS_Pos+GCMS`,
+  duplicate assay-name rejection, empty secondary assay behavior, and unusual
+  assay-name rejection before file artifacts are written.
+- Invalid schemas for missing ID columns, no sample columns, non-numeric sample
+  values, mismatched sample patterns, and malformed payloads that must fail
+  before workflow state advances.
+- Browser import controls for standard upload paths in test mode and
+  shinyFiles-compatible production control rendering.
+- Import artifact fidelity for `data_cln_<assay>.tab`,
+  `assay_manifest.txt`, `column_mapping.json`, source upload copies, import
+  summary rows, and state-digest import payloads.
+
+The metabolomics import matrix exposed production hardening changes:
+
+- Built workflow payloads are now validated before state mutation: assay names
+  must be non-empty, unique, path-safe, and paired with explicit metabolite and
+  sample-column mappings.
+- Sample intensity columns are accepted as numeric or losslessly
+  numeric-coercible strings, then coerced once validation has passed.
+- When an experiment source directory is available, import processing writes
+  deterministic cleaned-assay, manifest, mapping, summary, and copied-source
+  artifacts for downstream audit and report fidelity checks.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic metabolomics --module import --runtime unit-contract --reporter summary
+```

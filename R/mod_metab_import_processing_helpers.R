@@ -1,6 +1,12 @@
+metabImportFunctionAcceptsArg <- function(fn, arg) {
+  formalNames <- names(formals(fn))
+  arg %in% formalNames || "..." %in% formalNames
+}
+
 buildMetabImportWorkflowPayload <- function(
     assay1Name,
     assay1Data,
+    assay1File = NULL,
     assay2File = NULL,
     assay2Name = NULL,
     vendorFormat,
@@ -15,6 +21,14 @@ buildMetabImportWorkflowPayload <- function(
     mapAssaysFn = purrr::map,
     timestampFn = Sys.time
 ) {
+  assayNames <- c(assay1Name, if (!is.null(assay2File) && nzchar(assay2Name)) assay2Name else character(0))
+  if (length(assayNames) == 0 || any(!nzchar(assayNames))) {
+    stop("Metabolomics import requires non-empty assay names.")
+  }
+  if (anyDuplicated(assayNames)) {
+    stop("Duplicate metabolomics assay names are not allowed: ", paste(unique(assayNames[duplicated(assayNames)]), collapse = ", "))
+  }
+
   assayList <- list()
   assayList[[assay1Name]] <- assay1Data
 
@@ -70,7 +84,197 @@ buildMetabImportWorkflowPayload <- function(
         }
       }),
       n_samples = length(finalSampleCols)
+    ),
+    sourceFiles = list(
+      assay1 = assay1File,
+      assay2 = if (!is.null(assay2File) && nzchar(assay2Name)) assay2File else NULL
     )
+  )
+}
+
+metabImportValuesAreNumericLike <- function(values) {
+  if (is.numeric(values) || is.integer(values)) {
+    return(all(is.na(values) | is.finite(values)))
+  }
+
+  if (is.factor(values)) {
+    values <- as.character(values)
+  }
+
+  if (!is.character(values)) {
+    return(FALSE)
+  }
+
+  trimmed <- trimws(values)
+  missingLike <- is.na(trimmed) | !nzchar(trimmed)
+  coerced <- suppressWarnings(as.numeric(trimmed))
+  all(missingLike | (!is.na(coerced) & is.finite(coerced)))
+}
+
+validateMetabImportWorkflowPayload <- function(workflowPayload,
+                                               validateColumnMappingFn = validateMetabColumnMapping) {
+  if (is.null(workflowPayload$assayList)) {
+    return(list(valid = TRUE, errors = character(), warnings = "No assayList found; payload validation skipped."))
+  }
+
+  errors <- character()
+  warnings <- character()
+  assayList <- workflowPayload$assayList
+  assayNames <- names(assayList)
+  columnMapping <- workflowPayload$columnMapping
+  metaboliteCol <- columnMapping$metabolite_id_col
+  sampleCols <- columnMapping$sample_columns
+
+  if (length(assayList) == 0) {
+    errors <- c(errors, "No assay data provided.")
+  }
+  if (is.null(assayNames) || any(!nzchar(assayNames))) {
+    errors <- c(errors, "All assays must have non-empty names.")
+  }
+  if (anyDuplicated(assayNames)) {
+    errors <- c(errors, sprintf("Duplicate assay names are not allowed: %s", paste(unique(assayNames[duplicated(assayNames)]), collapse = ", ")))
+  }
+  if (any(grepl("[/\\\\\r\n\t]", assayNames))) {
+    errors <- c(errors, "Assay names must not contain path separators or control characters.")
+  }
+  if (is.null(metaboliteCol) || !nzchar(metaboliteCol)) {
+    errors <- c(errors, "Metabolite ID column is not specified.")
+  }
+  if (is.null(sampleCols) || length(sampleCols) == 0) {
+    errors <- c(errors, "No sample columns specified.")
+  }
+
+  assaySummaries <- lapply(assayNames, function(assayName) {
+    assayData <- assayList[[assayName]]
+    assayErrors <- character()
+    assayWarnings <- character()
+
+    if (!is.data.frame(assayData)) {
+      assayErrors <- c(assayErrors, sprintf("Assay '%s' is not a data frame.", assayName))
+    } else {
+      validation <- validateColumnMappingFn(
+        data = assayData,
+        metabolite_id_column = metaboliteCol,
+        sample_columns = sampleCols
+      )
+      assayErrors <- c(assayErrors, validation$errors)
+      assayWarnings <- c(assayWarnings, validation$warnings)
+
+      presentSamples <- intersect(sampleCols, names(assayData))
+      nonNumericSamples <- presentSamples[!vapply(assayData[presentSamples], metabImportValuesAreNumericLike, logical(1))]
+      if (length(nonNumericSamples) > 0) {
+        assayErrors <- c(
+          assayErrors,
+          sprintf(
+            "Assay '%s' has non-numeric sample column(s): %s",
+            assayName,
+            paste(nonNumericSamples, collapse = ", ")
+          )
+        )
+      }
+    }
+
+    list(
+      assay_name = assayName,
+      errors = assayErrors,
+      warnings = assayWarnings
+    )
+  })
+
+  for (summary in assaySummaries) {
+    errors <- c(errors, summary$errors)
+    warnings <- c(warnings, summary$warnings)
+  }
+
+  list(
+    valid = length(errors) == 0,
+    errors = unique(errors),
+    warnings = unique(warnings),
+    assay_summaries = assaySummaries
+  )
+}
+
+coerceMetabImportWorkflowPayloadSamples <- function(workflowPayload) {
+  if (is.null(workflowPayload$assayList) || is.null(workflowPayload$columnMapping$sample_columns)) {
+    return(workflowPayload)
+  }
+
+  sampleCols <- workflowPayload$columnMapping$sample_columns
+  workflowPayload$assayList <- lapply(workflowPayload$assayList, function(assayData) {
+    presentSamples <- intersect(sampleCols, names(assayData))
+    for (sampleCol in presentSamples) {
+      if (!is.numeric(assayData[[sampleCol]])) {
+        assayData[[sampleCol]] <- suppressWarnings(as.numeric(trimws(as.character(assayData[[sampleCol]]))))
+      }
+    }
+    assayData
+  })
+  workflowPayload
+}
+
+writeMetabImportSourceArtifacts <- function(workflowPayload,
+                                            experimentPaths = NULL,
+                                            writeTableFn = utils::write.table,
+                                            writeLinesFn = writeLines,
+                                            writeJsonFn = jsonlite::write_json,
+                                            fileCopyFn = file.copy,
+                                            dirCreateFn = dir.create,
+                                            dirExistsFn = dir.exists,
+                                            fileExistsFn = file.exists) {
+  sourceDir <- experimentPaths$source_dir
+  if (is.null(sourceDir) || !nzchar(sourceDir) || !dirExistsFn(sourceDir)) {
+    return(list(written = FALSE, reason = "source_dir unavailable"))
+  }
+
+  assayList <- workflowPayload$assayList
+  assayNames <- names(assayList)
+  artifactPaths <- list()
+
+  for (assayName in assayNames) {
+    assayPath <- file.path(sourceDir, paste0("data_cln_", assayName, ".tab"))
+    writeTableFn(assayList[[assayName]], file = assayPath, sep = "\t", row.names = FALSE, quote = FALSE)
+    artifactPaths[[paste0("data_cln_", assayName)]] <- assayPath
+  }
+
+  manifestPath <- file.path(sourceDir, "assay_manifest.txt")
+  writeLinesFn(assayNames, manifestPath)
+  artifactPaths$assay_manifest <- manifestPath
+
+  columnMappingPath <- file.path(sourceDir, "column_mapping.json")
+  writeJsonFn(workflowPayload$columnMapping, columnMappingPath, auto_unbox = TRUE, pretty = TRUE, null = "null")
+  artifactPaths$column_mapping <- columnMappingPath
+
+  sourceDirCopies <- file.path(sourceDir, "import_sources")
+  dirCreateFn(sourceDirCopies, recursive = TRUE, showWarnings = FALSE)
+  sourceFiles <- workflowPayload$sourceFiles
+  copiedSources <- character()
+  if (!is.null(sourceFiles)) {
+    sourceFiles <- sourceFiles[!vapply(sourceFiles, is.null, logical(1))]
+    for (sourceName in names(sourceFiles)) {
+      sourceFile <- sourceFiles[[sourceName]]
+      if (!is.null(sourceFile) && nzchar(sourceFile) && fileExistsFn(sourceFile)) {
+        destination <- file.path(sourceDirCopies, paste0(sourceName, "_", basename(sourceFile)))
+        fileCopyFn(sourceFile, destination, overwrite = TRUE)
+        copiedSources <- c(copiedSources, destination)
+      }
+    }
+  }
+
+  summaryRows <- data.frame(
+    assay_name = assayNames,
+    feature_count = vapply(assayList, nrow, integer(1)),
+    sample_count = length(workflowPayload$columnMapping$sample_columns),
+    sample_columns = paste(workflowPayload$columnMapping$sample_columns, collapse = ","),
+    stringsAsFactors = FALSE
+  )
+  summaryPath <- file.path(sourceDir, "metabolomics_import_summary.tsv")
+  writeTableFn(summaryRows, file = summaryPath, sep = "\t", row.names = FALSE, quote = FALSE)
+  artifactPaths$import_summary <- summaryPath
+
+  list(
+    written = TRUE,
+    paths = artifactPaths,
+    source_copies = copiedSources
   )
 }
 
@@ -313,6 +517,7 @@ runMetabImportAssaySelection <- function(
 runMetabImportProcessing <- function(
     assay1Data,
     assay1Name,
+    assay1File = NULL,
     assay2File,
     assay2Name,
     vendorFormat,
@@ -323,11 +528,15 @@ runMetabImportProcessing <- function(
     getAnnotationColFn,
     getSampleColumnsFn,
     workflowData,
+    experimentPaths = NULL,
     reqFn = shiny::req,
     isTRUEFn = isTRUE,
     showNotificationFn = shiny::showNotification,
     logInfoFn = logger::log_info,
     buildWorkflowPayloadFn = buildMetabImportWorkflowPayload,
+    validateWorkflowPayloadFn = validateMetabImportWorkflowPayload,
+    coerceWorkflowPayloadFn = coerceMetabImportWorkflowPayloadSamples,
+    writeImportArtifactsFn = writeMetabImportSourceArtifacts,
     applyWorkflowPayloadFn = applyMetabImportWorkflowPayload,
     finalizeFeedbackFn = finalizeMetabImportProcessingFeedback,
     sprintfFn = sprintf,
@@ -353,7 +562,7 @@ runMetabImportProcessing <- function(
         logInfoFn("Sanitizing sample names in metabolomics data...")
       }
 
-      workflowPayload <- buildWorkflowPayloadFn(
+      workflowPayloadArgs <- list(
         assay1Name = assay1Name,
         assay1Data = assay1Data,
         assay2File = assay2File,
@@ -366,6 +575,25 @@ runMetabImportProcessing <- function(
         sanitizeNames = isTRUEFn(sanitizeNames),
         isPattern = isPattern
       )
+      if (metabImportFunctionAcceptsArg(buildWorkflowPayloadFn, "assay1File")) {
+        workflowPayloadArgs$assay1File <- assay1File
+      }
+      workflowPayload <- do.call(buildWorkflowPayloadFn, workflowPayloadArgs)
+
+      validationResult <- validateWorkflowPayloadFn(workflowPayload)
+      if (!isTRUE(validationResult$valid)) {
+        stop(sprintf(
+          "Invalid metabolomics import: %s",
+          paste(validationResult$errors, collapse = "; ")
+        ))
+      }
+
+      workflowPayload <- coerceWorkflowPayloadFn(workflowPayload)
+      artifactResult <- writeImportArtifactsFn(
+        workflowPayload = workflowPayload,
+        experimentPaths = experimentPaths
+      )
+      workflowPayload$processingLog$artifacts <- artifactResult
 
       if (isTRUEFn(workflowPayload$sampleNamesSanitized)) {
         logInfoFn(sprintfFn(
@@ -387,6 +615,8 @@ runMetabImportProcessing <- function(
       invisible(list(
         status = "success",
         workflowPayload = workflowPayload,
+        validationResult = validationResult,
+        artifactResult = artifactResult,
         applyResult = applyResult,
         finalizeResult = finalizeResult
       ))
@@ -402,4 +632,3 @@ runMetabImportProcessing <- function(
     }
   )
 }
-

@@ -393,21 +393,45 @@
         "role": "assay_table"
       },
       "parameters": {
-        "sample_pattern": "^(WT|KO)_",
-        "feature_id_col": "Feature.Name"
+        "sample_patterns": ["^(WT|KO)_", "^(Sample|QC)-"],
+        "feature_id_col": "Feature.Name",
+        "vendor_formats": ["custom", "msdial"],
+        "assay_cases": ["LCMS_Pos+LCMS_Neg", "GCMS", "LCMS_Pos+GCMS", "unusual_assay_names"],
+        "invalid_cases": ["missing_id_column", "no_sample_columns", "non_numeric_samples", "mismatched_sample_pattern", "malformed_payload"],
+        "artifacts": ["data_cln", "assay_manifest", "column_mapping", "source_copies", "state_digest"]
       },
       "expected_state": {
         "sample_count": 4,
         "feature_count": 3,
-        "assay_names": ["LCMS_Pos"]
+        "assay_names": ["LCMS_Pos", "LCMS_Neg", "GCMS"],
+        "sub_steps": [
+          "custom_mapping_validated",
+          "msdial_detection_validated",
+          "multi_assay_import_validated",
+          "invalid_imports_rejected",
+          "browser_upload_controls_present",
+          "import_artifacts_written"
+        ]
       },
       "expected_artifacts": [
         {
           "path": "metabolomics_import_summary.tsv",
           "schema": "module_ci_table"
+        },
+        {
+          "path": "assay_manifest.txt",
+          "schema": "assay_manifest"
+        },
+        {
+          "path": "column_mapping.json",
+          "schema": "column_mapping"
+        },
+        {
+          "path": "data_cln_<assay>.tab",
+          "schema": "metabolomics_clean_assay"
         }
       ],
-      "required_tests": ["module-ci-manifest", "module-ci-oracles"]
+      "required_tests": ["module-ci-manifest", "module-ci-metab-import"]
     },
     {
       "scenario_id": "MCI-018.1-lipidomics-import-schema-smoke",

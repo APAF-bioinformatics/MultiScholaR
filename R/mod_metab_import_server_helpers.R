@@ -1,3 +1,8 @@
+metabImportServerFunctionAcceptsArg <- function(fn, arg) {
+  formalNames <- names(formals(fn))
+  arg %in% formalNames || "..." %in% formalNames
+}
+
 setupMetabImportShinyFiles <- function(
     input,
     output,
@@ -228,13 +233,15 @@ setupMetabImportProcessingObserver <- function(
     localData,
     columnAccessors,
     workflowData,
+    experimentPaths = NULL,
     observeEventFn = shiny::observeEvent,
     runProcessingFn = runMetabImportProcessing
 ) {
   observeEventFn(input$process_import, {
-    runProcessingFn(
+    processingArgs <- list(
       assay1Data = localData$assay1_data,
       assay1Name = input$assay1_name,
+      assay1File = localData$assay1_file,
       assay2File = localData$assay2_file,
       assay2Name = input$assay2_name,
       vendorFormat = input$vendor_format,
@@ -246,6 +253,10 @@ setupMetabImportProcessingObserver <- function(
       getSampleColumnsFn = columnAccessors$getSampleColumns,
       workflowData = workflowData
     )
+    if (metabImportServerFunctionAcceptsArg(runProcessingFn, "experimentPaths")) {
+      processingArgs$experimentPaths <- experimentPaths
+    }
+    do.call(runProcessingFn, processingArgs)
   })
 
   invisible(NULL)
@@ -374,12 +385,16 @@ runMetabImportModuleServerShell <- function(
     columnAccessors = columnAccessors
   )
 
-  setupProcessingObserverFn(
+  processingObserverArgs <- list(
     input = input,
     localData = localData,
     columnAccessors = columnAccessors,
     workflowData = workflowData
   )
+  if (metabImportServerFunctionAcceptsArg(setupProcessingObserverFn, "experimentPaths")) {
+    processingObserverArgs$experimentPaths <- experimentPaths
+  }
+  do.call(setupProcessingObserverFn, processingObserverArgs)
 
   setupStatusOutputFn(
     output = output,
