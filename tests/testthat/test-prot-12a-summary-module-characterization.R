@@ -156,9 +156,27 @@ test_that("proteomics summary report helpers preserve template retrieval and act
   )
   expect_identical(template_choice$templateFilename, "TMT_report.rmd")
 
-  default_choice <- resolve_report_template(
-    workflowData = list(state_manager = NULL),
-    catFn = function(...) invisible(NULL)
+  had_global_config <- exists("config_list", envir = .GlobalEnv, inherits = FALSE)
+  old_global_config <- if (had_global_config) {
+    get("config_list", envir = .GlobalEnv, inherits = FALSE)
+  } else {
+    NULL
+  }
+  if (had_global_config) {
+    rm("config_list", envir = .GlobalEnv)
+  }
+  default_choice <- tryCatch(
+    resolve_report_template(
+      workflowData = list(state_manager = NULL),
+      catFn = function(...) invisible(NULL)
+    ),
+    finally = {
+      if (had_global_config) {
+        assign("config_list", old_global_config, envir = .GlobalEnv)
+      } else if (exists("config_list", envir = .GlobalEnv, inherits = FALSE)) {
+        rm("config_list", envir = .GlobalEnv)
+      }
+    }
   )
   expect_identical(default_choice$templateFilename, "DIANN_report.rmd")
 

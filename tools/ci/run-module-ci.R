@@ -16,7 +16,7 @@ usage <- function() {
       "",
       "Options:",
       "  --omic <all|proteomics|metabolomics|lipidomics>",
-      "  --module <foundation|fixtures|import|design|qc_peptide|qc_protein|normalization|differential_abundance|enrichment|browser|e2e>",
+      "  --module <foundation|fixtures|import|design|qc_peptide|qc_protein|normalization|differential_abundance|enrichment|summary_report|browser|e2e>",
       "  --runtime <unit-contract|module-browser|module-artifact|workflow-e2e|release-full>",
       "  --scenario <scenario_id_or_pack_id>",
       "  --reporter <testthat_reporter>",
@@ -204,6 +204,13 @@ tests_for_selection <- function(scenarios) {
       identical(scenario$module, "enrichment") && identical(scenario$omic, "proteomics")
     }, logical(1)))) {
       tests <- c(tests, "module-ci-prot-enrich")
+    }
+  }
+  if ("summary_report" %in% modules) {
+    if (any(vapply(scenarios, function(scenario) {
+      identical(scenario$module, "summary_report") && identical(scenario$omic, "proteomics")
+    }, logical(1)))) {
+      tests <- c(tests, "module-ci-prot-summary")
     }
   }
   if ("fixtures" %in% modules) {

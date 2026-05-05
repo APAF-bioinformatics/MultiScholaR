@@ -331,6 +331,55 @@
       "required_tests": ["module-ci-manifest", "module-ci-prot-enrich"]
     },
     {
+      "scenario_id": "MCI-011.1-proteomics-summary-report-schema-smoke",
+      "ticket_id": "MCI-011",
+      "item_id": "MCI-011.1",
+      "omic": "proteomics",
+      "module_family": "summary_report",
+      "runtime": "unit-contract",
+      "ci_lane": "proteomics-unit",
+      "fixture": {
+        "path": "fixtures/proteomics/protein_intensity.tsv",
+        "format": "tsv",
+        "role": "protein_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "workflow_branches": ["DIA", "DIA_limpa", "TMT", "MaxQuant_LFQ", "FragPipe_LFQ"],
+        "ruv_modes": ["skip", "run"],
+        "enrichment_states": ["run", "not_run"],
+        "da_threshold_cases": [0.01, 0.05, 0.1, 0.2],
+        "report_templates": ["DIANN_report.rmd", "DIANN_limpa_report.rmd", "TMT_report.rmd", "LFQ_report.rmd"],
+        "artifacts": ["study_parameters", "publication_tables", "copied_figures", "rendered_report", "session_state"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "sub_steps": [
+          "workflow_parameters_roundtripped",
+          "publication_copy_validated",
+          "template_selection_validated",
+          "report_stub_rendered",
+          "session_state_exported",
+          "artifact_scorecard_complete"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "study_parameters.txt",
+          "schema": "proteomics_study_parameters"
+        },
+        {
+          "path": "Pathway_enrichment_results_proteomics.xlsx",
+          "schema": "proteomics_enrichment_publication_workbook"
+        },
+        {
+          "path": "session_state_<date>.RDS",
+          "schema": "proteomics_summary_session_state"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-prot-summary"]
+    },
+    {
       "scenario_id": "MCI-012.1-metabolomics-import-schema-smoke",
       "ticket_id": "MCI-012",
       "item_id": "MCI-012.1",

@@ -485,3 +485,43 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic proteomics --module enrichment --runtime unit-contract --reporter summary
 ```
+
+## Proteomics Summary Report Matrix
+
+MCI-011 adds `tests/testthat/test-module-ci-prot-summary.R` plus
+`tests/testthat/helper-module-ci-prot-summary.R`. This suite targets the
+release-facing summary/report boundary where workflow parameters, publication
+artifacts, template selection, rendered reports, and session-state exports must
+stay branch-correct.
+
+The matrix covers:
+
+- Workflow-parameter round trips for DIA, DIA+limpa, TMT, MaxQuant LFQ,
+  FragPipe LFQ, enrichment-run/no-enrichment branches, RUV skip/run states, and
+  altered DA thresholds.
+- Publication-copy behavior for DA tables, enrichment pathway TSVs, normalized
+  intensity files, QC plots, copied publication figure folders, and explicitly
+  missing optional artifacts.
+- Report-template selection for `DIANN_report.rmd`,
+  `DIANN_limpa_report.rmd`, `TMT_report.rmd`, and `LFQ_report.rmd`, including
+  stale-template rejection across branch changes.
+- Rendered-report smoke using deterministic render stubs in push-safe module CI.
+- Session-state export schema checks for omic type, workflow type, report
+  template, DA UI parameters, enrichment UI parameters, and RUV metadata.
+- Artifact scorecard coverage for study parameters, publication workbooks,
+  copied figures, report file, and session-state export.
+
+The summary matrix exposed production hardening changes:
+
+- Template status now reports DIA, DIA+limpa, TMT, and LFQ templates instead of
+  only DIA/TMT.
+- Summary report selection now ignores stale explicit templates that do not
+  match the current workflow branch.
+- Session-state export can serialize workflow/template metadata and parameter
+  payloads when workflow data is available.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic proteomics --module summary_report --runtime unit-contract --reporter summary
+```

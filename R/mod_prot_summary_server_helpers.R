@@ -138,11 +138,12 @@ observeProtSummarySessionStateExport <- function(input,
                                                  values,
                                                  projectDirs,
                                                  omicType = "proteomics",
+                                                 workflowData = NULL,
                                                  completeSessionStateExportFn = completeProtSummarySessionStateExport) {
   shiny::observeEvent(input$export_session_state, {
     shiny::req(input$experiment_label)
 
-    completeSessionStateExportFn(
+    exportArgs <- list(
       projectDirs = projectDirs,
       omicType = omicType,
       experimentLabel = input$experiment_label,
@@ -152,6 +153,10 @@ observeProtSummarySessionStateExport <- function(input,
       reportGenerated = values$report_generated,
       reportPath = values$report_path
     )
+    if ("workflowData" %in% names(formals(completeSessionStateExportFn))) {
+      exportArgs$workflowData <- workflowData
+    }
+    do.call(completeSessionStateExportFn, exportArgs)
   })
 }
 
@@ -239,4 +244,3 @@ registerProtSummaryTemplateStatusOutput <- function(output,
 
   invisible(TRUE)
 }
-

@@ -94,6 +94,7 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
       values = values,
       projectDirs = project_dirs,
       omicType = omic_type,
+      workflowData = workflow_data,
       completeSessionStateExportFn = completeProtSummarySessionStateExport
     )
     
@@ -101,4 +102,3 @@ mod_prot_summary_server <- function(id, project_dirs, omic_type = "proteomics", 
     
   })
 }
-

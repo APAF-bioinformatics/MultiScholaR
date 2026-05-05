@@ -66,22 +66,91 @@ buildProtSummaryTemplateStatus <- function(projectDirs,
     omicType
   )
 
-  diannTemplate <- file.path(templateDir, "DIANN_report.rmd")
-  tmtTemplate <- file.path(templateDir, "TMT_report.rmd")
+  templateMap <- c(
+    "DIA-NN" = "DIANN_report.rmd",
+    "DIA-NN limpa" = "DIANN_limpa_report.rmd",
+    "TMT" = "TMT_report.rmd",
+    "LFQ" = "LFQ_report.rmd"
+  )
+  templatesStatus <- vapply(names(templateMap), function(label) {
+    templatePath <- file.path(templateDir, templateMap[[label]])
+    if (file.exists(templatePath)) {
+      paste(label, "[OK]")
+    } else {
+      paste(label, "[missing]")
+    }
+  }, character(1))
 
-  templatesStatus <- character()
-  if (file.exists(diannTemplate)) {
-    templatesStatus <- c(templatesStatus, "DIA-NN [OK]")
-  }
-  if (file.exists(tmtTemplate)) {
-    templatesStatus <- c(templatesStatus, "TMT [OK]")
-  }
-
-  if (length(templatesStatus) > 0) {
+  if (any(grepl("\\[OK\\]", templatesStatus))) {
     paste("Templates:", paste(templatesStatus, collapse = ", "))
   } else {
     "[WARNING] Report templates will be downloaded when generating report"
   }
+}
+
+resolveProtSummaryExpectedTemplate <- function(workflowType,
+                                               limpaRequested = FALSE) {
+  if (is.null(workflowType) || !nzchar(as.character(workflowType))) {
+    workflowType <- "DIA"
+  }
+  workflowType <- tolower(as.character(workflowType))
+
+  if (isTRUE(limpaRequested)) {
+    return("DIANN_limpa_report.rmd")
+  }
+
+  if (workflowType %in% c("tmt", "tmt_pd")) {
+    return("TMT_report.rmd")
+  }
+
+  if (workflowType == "lfq") {
+    return("LFQ_report.rmd")
+  }
+
+  "DIANN_report.rmd"
+}
+
+resolveProtSummaryTemplateSelection <- function(workflowType,
+                                                requestedTemplate = NULL,
+                                                limpaRequested = FALSE) {
+  expectedTemplate <- resolveProtSummaryExpectedTemplate(
+    workflowType = workflowType,
+    limpaRequested = limpaRequested
+  )
+  requestedTemplate <- if (!is.null(requestedTemplate) && nzchar(requestedTemplate)) {
+    basename(requestedTemplate)
+  } else {
+    NULL
+  }
+
+  if (is.null(workflowType) || !nzchar(as.character(workflowType))) {
+    workflowType <- "DIA"
+  }
+  compatibleTemplates <- switch(tolower(as.character(workflowType)),
+    tmt = "TMT_report.rmd",
+    tmt_pd = "TMT_report.rmd",
+    lfq = "LFQ_report.rmd",
+    dia = if (isTRUE(limpaRequested)) "DIANN_limpa_report.rmd" else "DIANN_report.rmd",
+    expectedTemplate
+  )
+
+  if (!is.null(requestedTemplate) && requestedTemplate %in% compatibleTemplates) {
+    return(list(
+      templateFilename = requestedTemplate,
+      expectedTemplate = expectedTemplate,
+      requestedTemplate = requestedTemplate,
+      requestHonoured = TRUE,
+      staleTemplateIgnored = FALSE
+    ))
+  }
+
+  list(
+    templateFilename = expectedTemplate,
+    expectedTemplate = expectedTemplate,
+    requestedTemplate = requestedTemplate,
+    requestHonoured = FALSE,
+    staleTemplateIgnored = !is.null(requestedTemplate)
+  )
 }
 
 resolveProtSummaryReportTemplate <- function(workflowData,
@@ -100,7 +169,6 @@ resolveProtSummaryReportTemplate <- function(workflowData,
     limpaRequested <- isTRUE(workflowData$config_list$globalParameters$use_limpa)
     if (!is.null(reportTemplateRequested) && nzchar(reportTemplateRequested)) {
       reportTemplateRequested <- basename(reportTemplateRequested)
-      limpaRequested <- isTRUE(limpaRequested) || identical(reportTemplateRequested, "DIANN_limpa_report.rmd")
       catFn(sprintf(
         "   %s: Detected report_template from workflow_data: %s\n",
         logPrefix,
@@ -154,8 +222,7 @@ resolveProtSummaryReportTemplate <- function(workflowData,
       ))
     }
     limpaRequested <- isTRUE(limpaRequested) ||
-      isTRUE(useLimpaFromS4) ||
-      identical(reportTemplateRequested, "DIANN_limpa_report.rmd")
+      isTRUE(useLimpaFromS4)
 
     if (!is.null(workflowTypeFromS4) && nzchar(workflowTypeFromS4)) {
       workflowTypeDetected <- workflowTypeFromS4
@@ -186,8 +253,7 @@ resolveProtSummaryReportTemplate <- function(workflowData,
       ))
     }
     limpaRequested <- isTRUE(limpaRequested) ||
-      isTRUE(useLimpaFromGlobal) ||
-      identical(reportTemplateRequested, "DIANN_limpa_report.rmd")
+      isTRUE(useLimpaFromGlobal)
 
     if (!is.null(workflowTypeFromGlobal) && nzchar(workflowTypeFromGlobal)) {
       workflowTypeDetected <- workflowTypeFromGlobal
@@ -207,16 +273,21 @@ resolveProtSummaryReportTemplate <- function(workflowData,
     ))
   }
 
-  templateFilename <- if (!is.null(reportTemplateRequested) && nzchar(reportTemplateRequested)) {
-    reportTemplateRequested
-  } else if (isTRUE(limpaRequested)) {
-    "DIANN_limpa_report.rmd"
-  } else if (tolower(workflowTypeDetected) %in% c("tmt", "tmt_pd")) {
-    "TMT_report.rmd"
-  } else if (tolower(workflowTypeDetected) == "lfq") {
-    "LFQ_report.rmd"
-  } else {
-    "DIANN_report.rmd"
+  templateSelection <- resolveProtSummaryTemplateSelection(
+    workflowType = workflowTypeDetected,
+    requestedTemplate = reportTemplateRequested,
+    limpaRequested = limpaRequested
+  )
+  templateFilename <- templateSelection$templateFilename
+
+  if (isTRUE(templateSelection$staleTemplateIgnored)) {
+    catFn(sprintf(
+      "   %s: Ignoring stale report_template '%s' for workflow_type: %s; using %s\n",
+      logPrefix,
+      templateSelection$requestedTemplate,
+      workflowTypeDetected,
+      templateFilename
+    ))
   }
 
   catFn(sprintf(
@@ -229,7 +300,9 @@ resolveProtSummaryReportTemplate <- function(workflowData,
   list(
     workflowTypeDetected = workflowTypeDetected,
     templateFilename = templateFilename,
-    dataStateUsed = dataStateUsed
+    dataStateUsed = dataStateUsed,
+    requestedTemplate = templateSelection$requestedTemplate,
+    staleTemplateIgnored = templateSelection$staleTemplateIgnored
   )
 }
 
@@ -644,6 +717,41 @@ completeProtSummaryWorkflowArgsSave <- function(output,
   })
 }
 
+summariseProtSummaryWorkflowMetadata <- function(workflowData,
+                                                resolveReportTemplateFn = resolveProtSummaryReportTemplate) {
+  globalParameters <- tryCatch(
+    workflowData$config_list$globalParameters,
+    error = function(e) NULL
+  )
+  workflowType <- globalParameters$workflow_type
+  reportTemplate <- globalParameters$report_template
+
+  if (!is.null(workflowData)) {
+    templateInfo <- tryCatch(
+      resolveReportTemplateFn(
+        workflowData = workflowData,
+        catFn = function(...) invisible(NULL)
+      ),
+      error = function(e) NULL
+    )
+    if (!is.null(templateInfo)) {
+      workflowType <- templateInfo$workflowTypeDetected
+      reportTemplate <- templateInfo$templateFilename
+    }
+  }
+
+  list(
+    workflow_type = workflowType,
+    report_template = reportTemplate,
+    parameters = list(
+      globalParameters = globalParameters,
+      da_ui_params = tryCatch(workflowData$da_ui_params, error = function(e) NULL),
+      enrichment_ui_params = tryCatch(workflowData$enrichment_ui_params, error = function(e) NULL),
+      ruv_optimization_result = tryCatch(workflowData$ruv_optimization_result, error = function(e) NULL)
+    )
+  )
+}
+
 prepareProtSummarySessionStateExport <- function(projectDirs,
                                                  omicType = "proteomics",
                                                  experimentLabel,
@@ -652,12 +760,15 @@ prepareProtSummarySessionStateExport <- function(projectDirs,
                                                  filesCopied,
                                                  reportGenerated,
                                                  reportPath,
+                                                 workflowData = NULL,
                                                  exportDate = Sys.Date(),
-                                                 timestamp = Sys.time()) {
+                                                 timestamp = Sys.time(),
+                                                 summariseWorkflowMetadataFn = summariseProtSummaryWorkflowMetadata) {
   sessionExportPath <- file.path(
     projectDirs[[omicType]]$source_dir,
     paste0("session_state_", exportDate, ".RDS")
   )
+  workflowMetadata <- summariseWorkflowMetadataFn(workflowData)
 
   sessionState <- list(
     experiment_label = experimentLabel,
@@ -668,6 +779,9 @@ prepareProtSummarySessionStateExport <- function(projectDirs,
     files_copied = filesCopied,
     report_generated = reportGenerated,
     report_path = reportPath,
+    workflow_type = workflowMetadata$workflow_type,
+    report_template = workflowMetadata$report_template,
+    parameter_payload = workflowMetadata$parameters,
     project_dirs = projectDirs
   )
 
@@ -682,6 +796,7 @@ completeProtSummarySessionStateExport <- function(projectDirs,
                                                   filesCopied,
                                                   reportGenerated,
                                                   reportPath,
+                                                  workflowData = NULL,
                                                   prepareExportFn = prepareProtSummarySessionStateExport,
                                                   saveRDSFn = saveRDS,
                                                   showNotificationFn = shiny::showNotification,
@@ -692,7 +807,7 @@ completeProtSummarySessionStateExport <- function(projectDirs,
                                                     )
                                                   }) {
   tryCatch({
-    sessionStateExport <- prepareExportFn(
+    exportArgs <- list(
       projectDirs = projectDirs,
       omicType = omicType,
       experimentLabel = experimentLabel,
@@ -702,6 +817,10 @@ completeProtSummarySessionStateExport <- function(projectDirs,
       reportGenerated = reportGenerated,
       reportPath = reportPath
     )
+    if ("workflowData" %in% names(formals(prepareExportFn))) {
+      exportArgs$workflowData <- workflowData
+    }
+    sessionStateExport <- do.call(prepareExportFn, exportArgs)
 
     saveRDSFn(
       sessionStateExport$sessionState,

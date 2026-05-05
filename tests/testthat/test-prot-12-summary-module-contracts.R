@@ -161,7 +161,7 @@ test_that("buildProtSummaryTemplateStatus reports available report templates", {
     omicType = "proteomics"
   )
 
-  expect_identical(status, "Templates: DIA-NN [OK], TMT [OK]")
+  expect_identical(status, "Templates: DIA-NN [OK], DIA-NN limpa [missing], TMT [OK], LFQ [missing]")
 })
 
 test_that("buildProtSummaryTemplateStatus warns when project directories are unavailable", {
@@ -3396,12 +3396,14 @@ test_that("mod_prot_summary_server delegates export observer registration throug
                                                       values,
                                                       projectDirs,
                                                       omicType = "proteomics",
+                                                      workflowData = NULL,
                                                       completeSessionStateExportFn = completeProtSummarySessionStateExport) {
         recorded$args <- list(
           input = input,
           values = values,
           projectDirs = projectDirs,
           omicType = omicType,
+          workflowData = workflowData,
           completeSessionStateExportFn = completeSessionStateExportFn
         )
         invisible(NULL)
@@ -3423,6 +3425,7 @@ test_that("mod_prot_summary_server delegates export observer registration throug
   expect_identical(recorded$args$values, recorded$expectedValues)
   expect_identical(recorded$args$projectDirs, projectDirs)
   expect_identical(recorded$args$omicType, "proteomics")
+  expect_null(recorded$args$workflowData)
   expect_identical(
     recorded$args$completeSessionStateExportFn,
     completeProtSummarySessionStateExport
