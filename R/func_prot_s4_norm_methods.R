@@ -186,6 +186,7 @@ setMethod(
     ruv_grouping_variable <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", NULL)
     k <- checkParamsObjectFunctionSimplify(theObject, "ruv_number_k", NULL)
     ctrl <- checkParamsObjectFunctionSimplify(theObject, "ctrl", NULL)
+    k <- validateProtNormRuvK(k, "ruv_number_k")
 
     theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
     theObject <- updateParamInObject(theObject, "ruv_number_k")

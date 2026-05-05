@@ -352,3 +352,43 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic proteomics --module qc_protein --runtime unit-contract --reporter summary
 ```
+
+## Proteomics Normalization/RUV Matrix
+
+MCI-008 adds `tests/testthat/test-module-ci-prot-norm.R` plus
+`tests/testthat/helper-module-ci-prot-norm.R`. This suite targets the
+normalization, RUV, correlation-filtering, filtered-session export, and DA reload
+contract after protein QC and before differential abundance.
+
+The matrix covers:
+
+- Between-sample normalization for `none`, `cyclicloess`, `quantile`, and
+  `scale`, with explicit oracles for already-log values, zeros, negative values,
+  `NA`, `Inf`, and `NaN` sentinel handling.
+- RUV skip, manual, and automatic branches, including named negative-control
+  vectors, too-few-control rejection, invalid imputation-k rejection, optimizer
+  weak-effect and plateau boundaries, audit persistence, and R6 state updates.
+- RUV-III correction orientation and sample/feature alignment, verifying that
+  corrected matrices preserve the expected protein/sample shape and finite
+  numeric payload when inputs are finite.
+- Correlation filtering for pass-all, fail-one, fail-many, exact-threshold,
+  one-sample/no-pair, and missing-sample-correlation cases.
+- QC artifact generation for pre-normalization, post-normalization, and
+  RUV-corrected PCA, RLE, density, and correlation plots, plus composite layout
+  selection and RUV canonical-correlation plot persistence.
+- Degenerate constant-feature plot fallbacks for protein PCA, RLE, and density
+  so plot generation remains push-safe even when variance is zero.
+- Filtered-session export fidelity for R6 current state, complete state map,
+  state history, workflow type, report template, normalization method, RUV mode,
+  RUV k, correlation threshold, limpa metadata, protein/sample counts, and
+  stable filenames such as `filtered_session_data_latest.rds`.
+- DA reload smoke for exported skip, manual, and automatic+limpa variants
+  without running full DA, confirming that the DA module can restore the S4
+  object, R6 state manager, design, contrasts, config, UniProt annotations,
+  tab status, and RUV optimization payload.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic proteomics --module normalization --runtime unit-contract --reporter summary
+```

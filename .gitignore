@@ -72,3 +72,5 @@ renv.lock
 /.goyoke/
 /Rplots.pdf
 /qc-plots.pdf
+tests/testthat/Rplots.pdf
+tests/testthat/qc-plots.pdf

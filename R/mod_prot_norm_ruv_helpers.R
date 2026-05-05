@@ -23,6 +23,22 @@ buildProtNormManualRuvResult <- function(
   )
 }
 
+validateProtNormRuvK <- function(ruvK, paramLabel = "ruv_number_k") {
+  if (is.null(ruvK) ||
+      length(ruvK) != 1L ||
+      is.na(ruvK) ||
+      !is.numeric(ruvK) ||
+      ruvK < 1) {
+    stop(sprintf(
+      "The %s = %s value is invalid.",
+      paramLabel,
+      paste(ruvK, collapse = ",")
+    ), call. = FALSE)
+  }
+
+  as.integer(ruvK)
+}
+
 updateProtNormRuvAuditTrail <- function(
   ruvK,
   controlGenesIndex,
@@ -181,6 +197,7 @@ resolveProtNormRuvParameters <- function(
 
     percentage_as_neg_ctrl <- optimization_result$best_percentage
     ruv_k <- optimization_result$best_k
+    ruv_k <- validateProtNormRuvK(ruv_k, "ruv_k")
     control_genes_index <- optimization_result$best_control_genes_index
 
     messageFn(sprintf(
@@ -199,6 +216,7 @@ resolveProtNormRuvParameters <- function(
     messageFn("*** STEP 3a: Using manual RUV parameters ***")
     percentage_as_neg_ctrl <- input$ruv_percentage
     ruv_k <- if (is.null(input$ruv_k) || is.na(input$ruv_k)) 3 else input$ruv_k
+    ruv_k <- validateProtNormRuvK(ruv_k, "ruv_k")
 
     control_genes_index <- getNegCtrlProtAnovaFn(
       normalizedS4,
@@ -378,4 +396,3 @@ finalizeProtNormRuvCleanupStep <- function(
 
   ruv_corrected_s4_clean
 }
-

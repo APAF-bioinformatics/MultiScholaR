@@ -191,6 +191,48 @@
       "required_tests": ["module-ci-manifest", "module-ci-prot-protein-qc"]
     },
     {
+      "scenario_id": "MCI-008.1-proteomics-normalization-schema-smoke",
+      "ticket_id": "MCI-008",
+      "item_id": "MCI-008.1",
+      "omic": "proteomics",
+      "module_family": "normalization",
+      "runtime": "unit-contract",
+      "ci_lane": "proteomics-unit",
+      "fixture": {
+        "path": "fixtures/proteomics/protein_intensity.tsv",
+        "format": "tsv",
+        "role": "protein_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "protein_id_col": "Protein.Ids",
+        "normalization_methods": ["none", "cyclicloess", "quantile", "scale"],
+        "ruv_modes": ["skip", "manual", "automatic"],
+        "correlation_thresholds": [0, 0.75, 1]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "sub_steps": [
+          "normalized",
+          "ruv_corrected",
+          "correlation_filtered",
+          "filtered_session_exported",
+          "da_reload_ready"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "normalization_ruv_summary.tsv",
+          "schema": "module_ci_table"
+        },
+        {
+          "path": "filtered_session_data_latest.rds",
+          "schema": "proteomics_filtered_session"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-prot-norm"]
+    },
+    {
       "scenario_id": "MCI-012.1-metabolomics-import-schema-smoke",
       "ticket_id": "MCI-012",
       "item_id": "MCI-012.1",
