@@ -531,6 +531,52 @@ updateConfigParameter <- function(theObject,
     return(theObject)
 }
 
+formatStudyParameterContrasts <- function(contrasts_tbl) {
+    if (is.null(contrasts_tbl) ||
+        !(is.data.frame(contrasts_tbl) || tibble::is_tibble(contrasts_tbl)) ||
+        nrow(contrasts_tbl) == 0) {
+        return(character())
+    }
+
+    raw_col <- intersect(c("contrasts", "contrast_string", "contrast"), colnames(contrasts_tbl))
+    raw_values <- if (length(raw_col) > 0) {
+        as.character(contrasts_tbl[[raw_col[[1]]]])
+    } else {
+        rep(NA_character_, nrow(contrasts_tbl))
+    }
+
+    friendly_values <- if ("friendly_names" %in% colnames(contrasts_tbl)) {
+        as.character(contrasts_tbl[["friendly_names"]])
+    } else {
+        rep(NA_character_, nrow(contrasts_tbl))
+    }
+
+    full_values <- if ("full_format" %in% colnames(contrasts_tbl)) {
+        as.character(contrasts_tbl[["full_format"]])
+    } else {
+        rep(NA_character_, nrow(contrasts_tbl))
+    }
+
+    vapply(seq_len(nrow(contrasts_tbl)), function(i) {
+        full_value <- full_values[[i]]
+        raw_value <- raw_values[[i]]
+        friendly_value <- friendly_values[[i]]
+
+        if (!is.na(full_value) && nzchar(full_value)) {
+            return(paste("  ", full_value))
+        }
+
+        if (!is.na(raw_value) && nzchar(raw_value)) {
+            if (!is.na(friendly_value) && nzchar(friendly_value) && !identical(friendly_value, raw_value)) {
+                return(paste0("  ", friendly_value, " = ", raw_value))
+            }
+            return(paste("  ", raw_value))
+        }
+
+        "  [No contrast expression available]"
+    }, character(1))
+}
+
 #' Create Study Parameters File
 #'
 #' @description
@@ -698,20 +744,13 @@ createStudyParametersFile <- function(workflow_name,
             "----------"
         )
 
-        if ("contrasts" %in% colnames(contrasts_tbl)) {
-            contrasts_info <- tryCatch(
-                {
-                    contrasts_col <- contrasts_tbl[["contrasts"]]
-                    paste("  ", as.character(contrasts_col))
-                },
-                error = function(e) {
-                    paste("  [Error extracting contrasts:", e$message, "]")
-                }
-            )
-            contrasts_lines <- c(contrasts_lines, contrasts_info)
-        } else {
-            contrasts_lines <- c(contrasts_lines, "  [Column 'contrasts' not found in contrasts_tbl]")
-        }
+        contrasts_info <- tryCatch(
+            formatStudyParameterContrasts(contrasts_tbl),
+            error = function(e) {
+                paste("  [Error extracting contrasts:", e$message, "]")
+            }
+        )
+        contrasts_lines <- c(contrasts_lines, contrasts_info)
 
         output_lines <- c(output_lines, contrasts_lines)
     }
@@ -1982,20 +2021,13 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             "----------"
         )
 
-        if ("contrasts" %in% colnames(contrasts_tbl)) {
-            contrasts_info <- tryCatch(
-                {
-                    contrasts_col <- contrasts_tbl[["contrasts"]]
-                    paste("  ", as.character(contrasts_col))
-                },
-                error = function(e) {
-                    paste("  [Error extracting contrasts:", e$message, "]")
-                }
-            )
-            contrasts_lines <- c(contrasts_lines, contrasts_info)
-        } else {
-            contrasts_lines <- c(contrasts_lines, "  [Column 'contrasts' not found in contrasts_tbl]")
-        }
+        contrasts_info <- tryCatch(
+            formatStudyParameterContrasts(contrasts_tbl),
+            error = function(e) {
+                paste("  [Error extracting contrasts:", e$message, "]")
+            }
+        )
+        contrasts_lines <- c(contrasts_lines, contrasts_info)
 
         output_lines <- c(output_lines, contrasts_lines)
         cat("WORKFLOW ARGS: Contrasts added successfully\n")
@@ -2021,4 +2053,3 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         }
     )
 }
-

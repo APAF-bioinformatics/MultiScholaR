@@ -8,6 +8,7 @@
     fragpipe    = c("Protein", "Protein ID", "Gene"),
     maxquant    = c("Protein.IDs", "Gene.names"),
     msdial      = c("Feature.Name"),
+    custom      = c("Feature.Name"),
     lipidsearch = c("LipidMolec", "Class", "FattyAcid")
 )
 
@@ -24,6 +25,7 @@
         , fragpipe    = sum(grepl("\\s+MaxLFQ\\s+Intensity$", col_names))
         , maxquant    = sum(grepl("^LFQ\\.intensity\\.", col_names))
         , msdial      = sum(!col_names %in% .E2E_MSDIAL_META_COLS)
+        , custom      = sum(grepl("^(WT|KO)_", col_names))
         , lipidsearch = sum(grepl("\\.MeanArea$", col_names))
         , NA_integer_
     )
@@ -157,6 +159,14 @@
         } else if (file.info(fasta_path)$size <= 0) {
             errors <- c(errors, paste0("[", lane_id, "] fasta_file is empty: ", lane$fasta_file))
         }
+    }
+
+    if (!is.null(lane$assay2_file)) {
+        assay2_path <- file.path(lane_dir, lane$assay2_file)
+        assay2_errors <- .e2e_validate_seed_file(
+            assay2_path, lane_id, lane$import_tool, lane$sample_count
+        )
+        errors <- c(errors, assay2_errors)
     }
 
     design_path <- file.path(lane_dir, "design.tsv")

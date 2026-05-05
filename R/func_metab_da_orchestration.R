@@ -122,10 +122,23 @@ runMetabolitesDA <- function(
         expr_matrix <- as.matrix(assay_data[, sample_cols, drop = FALSE])
         rownames(expr_matrix) <- assay_data[[metabolite_id_col]]
 
-        # Get annotation info for later joining
+        # Get annotation info for later joining. Custom imports may not have a
+        # distinct annotation column; in that case keep DA output usable by
+        # falling back to the primary metabolite ID.
+        annotation_values <- if (
+            length(annotation_col) == 1L &&
+            !is.na(annotation_col) &&
+            nzchar(annotation_col) &&
+            annotation_col %in% colnames(assay_data)
+        ) {
+            assay_data[[annotation_col]]
+        } else {
+            assay_data[[metabolite_id_col]]
+        }
+
         annotation_info <- data.frame(
             metabolite_id = assay_data[[metabolite_id_col]],
-            metabolite_name = assay_data[[annotation_col]],
+            metabolite_name = annotation_values,
             stringsAsFactors = FALSE
         )
 
@@ -269,4 +282,3 @@ runMetabolitesDA <- function(
         treat_lfc_cutoff = treat_lfc_cutoff
     ))
 }
-

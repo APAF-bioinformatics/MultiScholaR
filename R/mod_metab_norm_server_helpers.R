@@ -440,6 +440,11 @@ runMetabNormSkipCorrelationObserverEntry <- function(
         showNotificationFn = showNotificationFn
     )
 
+    if (!is.null(dispatchState)) {
+        normData$correlation_filtering_complete <- TRUE
+        normData$correlation_filtered_obj <- currentS4
+    }
+
     invisible(dispatchState)
 }
 

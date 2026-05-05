@@ -88,7 +88,12 @@ test_that("config round-trip helpers keep updated values aligned across env and 
   study_file <- suppressMessages(suppressWarnings(createStudyParametersFile(
     workflow_name = "proteomics",
     source_dir_path = study_dir,
-    contrasts_tbl = data.frame(contrasts = "A-B", stringsAsFactors = FALSE),
+    contrasts_tbl = data.frame(
+      contrasts = "A-B",
+      friendly_names = "A_vs_B",
+      full_format = "A_vs_B=A-B",
+      stringsAsFactors = FALSE
+    ),
     config_list_name = "config_list",
     env = config_env
   )))
@@ -98,7 +103,7 @@ test_that("config round-trip helpers keep updated values aligned across env and 
   expect_true(any(grepl("^Configuration Parameters:$", study_lines)))
   expect_true(any(grepl("Peptides Proportion of Samples Below Cutoff: 0.7", study_lines, fixed = TRUE)))
   expect_true(any(grepl("Keep Me: yes", study_lines, fixed = TRUE)))
-  expect_true(any(grepl("A-B", study_lines, fixed = TRUE)))
+  expect_true(any(grepl("A_vs_B=A-B", study_lines, fixed = TRUE)))
   expect_false(any(grepl("internal_workflow_source_dir", study_lines, fixed = TRUE)))
 
   workflow_dir <- tempfile("general-filemgmt-workflow-")
@@ -107,7 +112,12 @@ test_that("config round-trip helpers keep updated values aligned across env and 
     workflow_name = "proteomics",
     source_dir_path = workflow_dir,
     final_s4_object = updated,
-    contrasts_tbl = data.frame(contrasts = "A-B", stringsAsFactors = FALSE)
+    contrasts_tbl = data.frame(
+      contrasts = "A-B",
+      friendly_names = "A_vs_B",
+      full_format = "A_vs_B=A-B",
+      stringsAsFactors = FALSE
+    )
   ))
   workflow_lines <- readLines(workflow_file)
 
@@ -117,6 +127,6 @@ test_that("config round-trip helpers keep updated values aligned across env and 
   expect_true(any(grepl("^\\[peptideIntensityFiltering\\]$", workflow_lines)))
   expect_true(any(grepl("peptides_proportion_of_samples_below_cutoff = 0.7", workflow_lines, fixed = TRUE)))
   expect_true(any(grepl("Peptides Proportion of Samples Below Cutoff: 0.7", workflow_lines, fixed = TRUE)))
-  expect_true(any(grepl("A-B", workflow_lines, fixed = TRUE)))
+  expect_true(any(grepl("A_vs_B=A-B", workflow_lines, fixed = TRUE)))
   expect_false(any(grepl("internal_workflow_source_dir", workflow_lines, fixed = TRUE)))
 })

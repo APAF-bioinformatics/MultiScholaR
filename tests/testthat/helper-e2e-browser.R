@@ -550,6 +550,21 @@ e2e_proteomics_project_paths <- function(project_dir, experiment_label) {
   )
 }
 
+e2e_metabolomics_project_paths <- function(project_dir, experiment_label) {
+  base_dir <- e2e_project_base_dir(project_dir, experiment_label)
+  list(
+    base_dir = base_dir,
+    source_dir = file.path(base_dir, "scripts", "metabolomics"),
+    data_dir = file.path(base_dir, "data", "metabolomics"),
+    results_dir = file.path(base_dir, "results", "metabolomics"),
+    results_summary_dir = file.path(base_dir, "results_summary", "metabolomics"),
+    da_output_dir = file.path(base_dir, "results", "metabolomics", "da_metabolites"),
+    publication_graphs_dir = file.path(base_dir, "results", "metabolomics", "publication_graphs"),
+    metabolite_qc_dir = file.path(base_dir, "results", "metabolomics", "metabolite_qc"),
+    pathway_dir = file.path(base_dir, "results", "metabolomics", "pathway_enrichment")
+  )
+}
+
 e2e_assert_project_dirs_exist <- function(
     paths,
     required = c(
@@ -602,6 +617,31 @@ e2e_assert_prot_filtered_session_artifacts <- function(project_base_dir) {
   invisible(list(latest = latest, summary = summary, session_data = session_data))
 }
 
+e2e_assert_metab_filtered_session_artifacts <- function(project_base_dir, expected_assays = NULL) {
+  source_dir <- file.path(project_base_dir, "scripts", "metabolomics")
+  latest <- file.path(source_dir, "metab_filtered_session_data_latest.rds")
+  summary <- file.path(source_dir, "metab_filtered_session_summary.txt")
+
+  e2e_assert_file_nonempty(latest)
+  e2e_assert_file_nonempty(summary)
+
+  session_data <- readRDS(latest)
+  testthat::expect_identical(session_data$omic_type, "metabolomics")
+  testthat::expect_true("r6_current_state_name" %in% names(session_data))
+  testthat::expect_true("current_s4_object" %in% names(session_data))
+  testthat::expect_true("assay_names" %in% names(session_data))
+  testthat::expect_true(isTRUE(session_data$normalization_complete))
+  testthat::expect_true(isTRUE(session_data$correlation_filtering_complete))
+  testthat::expect_identical(session_data$normalization_method, "none")
+  testthat::expect_identical(session_data$ruv_mode, "skip")
+  testthat::expect_false(isTRUE(session_data$itsd_applied))
+  if (!is.null(expected_assays)) {
+    testthat::expect_setequal(session_data$assay_names, unlist(expected_assays))
+  }
+
+  invisible(list(latest = latest, summary = summary, session_data = session_data))
+}
+
 e2e_upload_lane_inputs <- function(driver, lane) {
   seed_path <- e2e_lane_seed_path(lane)
   omic <- lane$omic_type
@@ -632,16 +672,45 @@ e2e_upload_lane_inputs <- function(driver, lane) {
   }
 
   if (identical(omic, "metabolomics")) {
-    e2e_upload_file(
+    metab_import <- function(input) e2e_input_id("metabolomics", "import", input)
+    assay_names <- unlist(lane$assays)
+    assay_names <- assay_names[!is.na(assay_names) & nzchar(assay_names)]
+
+    if (length(assay_names) > 0L) {
+      e2e_set_input_and_idle(driver, metab_import("assay1_name"), assay_names[[1]])
+    }
+    e2e_set_input_and_idle(
       driver,
-      e2e_input_id("metabolomics", "import", "assay1_file_std"),
-      seed_path
-    )
-    e2e_set_input(
-      driver,
-      e2e_input_id("metabolomics", "import", "vendor_format"),
+      metab_import("vendor_format"),
       lane$import_tool
     )
+    e2e_upload_file(
+      driver,
+      metab_import("assay1_file_std"),
+      seed_path
+    )
+
+    if (!is.null(lane$assay2_file) && length(assay_names) >= 2L) {
+      assay2_path <- normalizePath(
+        file.path(.e2e_fixture_root(), lane$fixture_dir, lane$assay2_file),
+        mustWork = TRUE
+      )
+      e2e_set_input_and_idle(driver, metab_import("assay2_name"), assay_names[[2]])
+      e2e_upload_file(
+        driver,
+        metab_import("assay2_file_std"),
+        assay2_path
+      )
+    }
+
+    if (identical(lane$import_tool, "custom")) {
+      e2e_set_input_and_idle(driver, metab_import("metabolite_id_col_custom"), "Feature.Name")
+      e2e_set_input_and_idle(driver, metab_import("annotation_col_custom"), "")
+      e2e_set_input_and_idle(driver, metab_import("sample_cols_pattern"), "^(WT|KO)_")
+      e2e_set_input_and_idle(driver, metab_import("is_pattern"), "^ITSD|_d[0-9]+$")
+      e2e_set_input_and_idle(driver, metab_import("sanitize_names"), FALSE)
+    }
+
     return(invisible(driver))
   }
 
@@ -769,7 +838,7 @@ e2e_click_norm_export <- function(driver, omic) {
   e2e_click_testid(driver, test_id)
 }
 
-e2e_click_da_load_session <- function(driver, omic) {
+e2e_click_da_load_session <- function(driver, omic, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
   test_id <- switch(
     omic,
     proteomics = "prot-da-load-session",
@@ -777,10 +846,18 @@ e2e_click_da_load_session <- function(driver, omic) {
     lipidomics = "lipid-da-load-session",
     stop(sprintf("Unsupported omic: %s", omic), call. = FALSE)
   )
-  e2e_click_testid(driver, test_id)
+  e2e_click_testid(driver, test_id, timeout = timeout)
 }
 
-e2e_click_da_run <- function(driver, omic) {
+e2e_click_da_run <- function(driver, omic, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+  if (identical(omic, "metabolomics")) {
+    return(e2e_trigger_action_input_id(
+      driver,
+      e2e_input_id("metabolomics", "da", "run_da_analysis"),
+      timeout = timeout
+    ))
+  }
+
   test_id <- switch(
     omic,
     proteomics = "prot-da-run",
@@ -788,7 +865,7 @@ e2e_click_da_run <- function(driver, omic) {
     lipidomics = "lipid-da-run",
     stop(sprintf("Unsupported omic: %s", omic), call. = FALSE)
   )
-  e2e_click_testid(driver, test_id)
+  e2e_click_testid(driver, test_id, timeout = timeout)
 }
 
 e2e_click_summary_action <- function(driver, omic, action) {
@@ -833,6 +910,70 @@ e2e_complete_prot_design_from_manifest <- function(
 
   e2e_switch_workflow_tab(driver, "proteomics", "design_matrix")
   e2e_wait_for_selector(driver, "prot-tab-design", timeout = timeout)
+
+  e2e_set_input_and_idle(driver, builder("main_tabs"), "Factors", timeout = timeout)
+  for (group in groups) {
+    e2e_set_input_and_idle(driver, builder("new_factor"), group, timeout = timeout)
+    e2e_click_input_id(driver, builder("add_factor"), timeout = timeout)
+  }
+
+  e2e_set_input_and_idle(driver, builder("main_tabs"), "Assign Metadata", timeout = timeout)
+  available_runs <- e2e_selectize_option_values(driver, builder("selected_runs"), timeout = timeout)
+  for (group in groups) {
+    group_design <- design[design$group == group, , drop = FALSE]
+    selected_runs <- e2e_match_available_values(group_design$sample, available_runs)
+    e2e_set_selectize_values(driver, builder("selected_runs"), selected_runs, timeout = timeout)
+    e2e_wait_for_input_id(driver, builder("replicate_start"), timeout = timeout)
+    e2e_set_selectize_values(
+      driver,
+      builder("factor1_select"),
+      group,
+      timeout = timeout,
+      multiple = FALSE
+    )
+    e2e_click_input_id(driver, builder("assign_metadata"), timeout = timeout)
+  }
+
+  contrast <- lane$expected_contrasts[[1]]
+  contrast_parts <- strsplit(contrast, "_vs_", fixed = TRUE)[[1]]
+  if (length(contrast_parts) != 2L) {
+    stop(sprintf("Unsupported expected_contrasts format: %s", contrast), call. = FALSE)
+  }
+
+  e2e_set_input_and_idle(driver, builder("main_tabs"), "Contrasts", timeout = timeout)
+  contrast_choices <- e2e_selectize_option_values(driver, builder("contrast_group1"), timeout = timeout)
+  contrast_group1 <- e2e_match_available_values(contrast_parts[[1]], contrast_choices)
+  contrast_group2 <- e2e_match_available_values(contrast_parts[[2]], contrast_choices)
+  e2e_set_selectize_values(
+    driver,
+    builder("contrast_group1"),
+    contrast_group1,
+    timeout = timeout,
+    multiple = FALSE
+  )
+  e2e_set_selectize_values(
+    driver,
+    builder("contrast_group2"),
+    contrast_group2,
+    timeout = timeout,
+    multiple = FALSE
+  )
+  e2e_click_input_id(driver, builder("add_contrast"), timeout = timeout)
+  e2e_click_input_id(driver, builder("save_results"), timeout = timeout)
+  invisible(driver)
+}
+
+e2e_complete_metab_design_from_manifest <- function(
+    driver,
+    lane,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
+  design <- e2e_read_lane_design(lane)
+  groups <- unique(design$group)
+  builder <- function(input) e2e_input_id("metabolomics", "design", paste0("builder-", input))
+
+  e2e_switch_workflow_tab(driver, "metabolomics", "design", timeout = timeout)
+  e2e_wait_for_selector(driver, "metab-tab-design", timeout = timeout)
 
   e2e_set_input_and_idle(driver, builder("main_tabs"), "Factors", timeout = timeout)
   for (group in groups) {
@@ -965,6 +1106,82 @@ e2e_run_prot_normalization_export <- function(
 }
 
 e2e_run_prot_dia_normalization_export <- e2e_run_prot_normalization_export
+
+e2e_run_metab_qc_finalize <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+  qc <- function(input) e2e_input_id("metabolomics", "qc", input)
+
+  e2e_switch_workflow_tab(driver, "metabolomics", "qc", timeout = timeout)
+  e2e_wait_for_selector(driver, "metab-tab-qc", timeout = timeout)
+  e2e_set_input_and_idle(driver, qc("metab_qc_tabs"), "Finalize QC", timeout = timeout)
+  e2e_click_input_id(driver, qc("s4_finalize-finalize_qc"), timeout = timeout)
+  invisible(driver)
+}
+
+e2e_run_metab_normalization_export <- function(
+    driver,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
+  norm <- function(input) e2e_input_id("metabolomics", "norm", input)
+
+  e2e_switch_workflow_tab(driver, "metabolomics", "norm", timeout = timeout)
+  e2e_wait_for_selector(driver, "metab-tab-norm", timeout = timeout)
+  e2e_set_input_and_idle(driver, norm("apply_itsd"), FALSE, timeout = timeout)
+  e2e_set_input_and_idle(driver, norm("norm_method"), "none", timeout = timeout)
+  e2e_set_input_and_idle(driver, norm("ruv_mode"), "skip", timeout = timeout)
+  e2e_click_testid(driver, "metab-norm-run", timeout = timeout)
+  e2e_set_input_and_idle(driver, norm("norm_qc_tabs"), "Correlation Filtering", timeout = timeout)
+  e2e_click_input_id(driver, norm("skip_correlation_filter"), timeout = timeout)
+  e2e_click_norm_export(driver, "metabolomics")
+  invisible(driver)
+}
+
+e2e_run_metab_da <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+  e2e_switch_workflow_tab(driver, "metabolomics", "de", timeout = timeout)
+  e2e_wait_for_selector(driver, "metab-tab-de", timeout = timeout)
+  e2e_click_da_load_session(driver, "metabolomics", timeout = timeout)
+  e2e_click_da_run(driver, "metabolomics", timeout = timeout)
+  invisible(driver)
+}
+
+e2e_run_metab_summary_report <- function(
+    driver,
+    lane,
+    project_base_dir,
+    experiment_label,
+    case_id,
+    description,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
+  e2e_switch_workflow_tab(driver, "metabolomics", "summary", timeout = timeout)
+  e2e_wait_for_selector(driver, "metab-tab-summary", timeout = timeout)
+  e2e_set_input_and_idle(
+    driver,
+    e2e_input_id("metabolomics", "summary", "experiment_label"),
+    experiment_label,
+    timeout = timeout
+  )
+  e2e_set_input_and_idle(
+    driver,
+    e2e_input_id("metabolomics", "summary", "description"),
+    description,
+    timeout = timeout
+  )
+  e2e_seed_report_template(lane, project_base_dir)
+  e2e_click_summary_action(driver, "metabolomics", "save_workflow_args")
+  e2e_click_summary_action(driver, "metabolomics", "copy_publication")
+  e2e_click_summary_action(driver, "metabolomics", "generate_report")
+  e2e_wait_for_selector(driver, "metab-summary-download-report", timeout = timeout)
+  report_download <- e2e_get_download(
+    driver,
+    e2e_input_id("metabolomics", "summary", "download_report"),
+    artifact_dir = e2e_case_artifact_dir(case_id),
+    filename = paste0("downloaded-", lane$report_template)
+  )
+  e2e_assert_file_nonempty(report_download)
+  e2e_click_summary_action(driver, "metabolomics", "export_session")
+
+  invisible(report_download)
+}
 
 e2e_run_prot_da <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
   e2e_switch_workflow_tab(driver, "proteomics", "differential_expression")

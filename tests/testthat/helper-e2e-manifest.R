@@ -71,6 +71,18 @@
             ))
         }
     }
+
+    if (!is.null(lane$assay2_file)) {
+        assay2_path <- file.path(lane_dir, lane$assay2_file)
+        if (!file.exists(assay2_path)) {
+            rlang::abort(paste0(
+                "Lane '"
+                , lane$lane_id
+                , "': assay2_file not found: "
+                , assay2_path
+            ))
+        }
+    }
 }
 
 #' Read and validate the E2E fixture manifest

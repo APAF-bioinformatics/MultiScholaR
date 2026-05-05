@@ -15,7 +15,7 @@ restoreGlobalBinding <- function(name, had_value, old_value = NULL) {
   }
 }
 
-test_that("createStudyParametersFile covers global fallbacks and missing contrast-column reporting", {
+test_that("createStudyParametersFile covers global fallbacks and missing contrast-expression reporting", {
   config_env <- new.env(parent = emptyenv())
   config_env$config_list <- list(
     nested = list(alpha = 1, beta = c("x", "y")),
@@ -60,7 +60,7 @@ test_that("createStudyParametersFile covers global fallbacks and missing contras
   expect_true(any(grepl("Taxon ID: 9606", study_lines, fixed = TRUE)))
   expect_true(any(grepl("^Configuration Parameters:$", study_lines)))
   expect_true(any(grepl("Alpha: 1", study_lines, fixed = TRUE)))
-  expect_true(any(grepl("\\[Column 'contrasts' not found in contrasts_tbl\\]", study_lines)))
+  expect_true(any(grepl("\\[No contrast expression available\\]", study_lines)))
   expect_false(any(grepl("internal_workflow_source_dir", study_lines, fixed = TRUE)))
 })
 

@@ -128,6 +128,75 @@ if (!methods::isClass("MetaboliteAssayData")) {
   )
 }
 
+makeMetabNormTestS4 <- function(metabolite_data = list(
+                                  Plasma = data.frame(
+                                    metabolite_id = "M1",
+                                    annotation_id = "A1",
+                                    stringsAsFactors = FALSE
+                                  )
+                                ),
+                                metabolite_id_column = "metabolite_id",
+                                annotation_id_column = "annotation_id",
+                                database_identifier_type = "Unknown",
+                                internal_standard_regex = NA_character_,
+                                design_matrix = data.frame(
+                                  Sample_ID = c("Sample_1", "Sample_2"),
+                                  group = c("A", "B"),
+                                  stringsAsFactors = FALSE
+                                ),
+                                sample_id = "Sample_ID",
+                                group_id = "group",
+                                technical_replicate_id = NA_character_,
+                                args = list()) {
+  id_columns <- c(
+    metabolite_id_column,
+    if (!is.na(annotation_id_column) && nzchar(annotation_id_column)) annotation_id_column else character()
+  )
+  sample_ids <- as.character(design_matrix[[sample_id]])
+  normalize_assay <- function(assay_data) {
+    if (is.null(assay_data) || !is.data.frame(assay_data)) {
+      assay_data <- data.frame(stringsAsFactors = FALSE)
+    }
+    if (!metabolite_id_column %in% names(assay_data)) {
+      assay_data[[metabolite_id_column]] <- if (nrow(assay_data) > 0) {
+        paste0("M", seq_len(nrow(assay_data)))
+      } else {
+        character()
+      }
+    }
+    if (!is.na(annotation_id_column) &&
+        nzchar(annotation_id_column) &&
+        !annotation_id_column %in% names(assay_data)) {
+      assay_data[[annotation_id_column]] <- assay_data[[metabolite_id_column]]
+    }
+    for (sample_id_value in sample_ids) {
+      if (!sample_id_value %in% names(assay_data)) {
+        assay_data[[sample_id_value]] <- if (nrow(assay_data) > 0) {
+          seq_len(nrow(assay_data))
+        } else {
+          numeric()
+        }
+      }
+    }
+    assay_data[, unique(c(id_columns, setdiff(names(assay_data), id_columns))), drop = FALSE]
+  }
+  normalized_metabolite_data <- lapply(metabolite_data, normalize_assay)
+
+  methods::new(
+    "MetaboliteAssayData",
+    metabolite_data = normalized_metabolite_data,
+    metabolite_id_column = metabolite_id_column,
+    annotation_id_column = annotation_id_column,
+    database_identifier_type = database_identifier_type,
+    internal_standard_regex = internal_standard_regex,
+    design_matrix = design_matrix,
+    sample_id = sample_id,
+    group_id = group_id,
+    technical_replicate_id = technical_replicate_id,
+    args = args
+  )
+}
+
 test_that("metabolomics normalization module plot aesthetics helper preserves defaults and explicit values", {
   expect_identical(
     getPlotAesthetics(colorVariable = NULL, shapeVariable = ""),
@@ -207,8 +276,7 @@ test_that("metabolomics normalization module assay-name initialization helper pr
   capture$info <- NULL
   capture$warn <- NULL
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "m1",
@@ -698,8 +766,7 @@ test_that("metabolomics normalization module manual ITSD helper returns NULL whe
   capture <- new.env(parent = emptyenv())
   capture$build_called <- FALSE
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "M1",
@@ -736,8 +803,7 @@ test_that("metabolomics normalization module manual ITSD helper preserves featur
   capture$build <- list()
   capture$log <- character()
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = c("M1", "M2", "M3"),
@@ -863,8 +929,7 @@ test_that("metabolomics normalization module auto pre-normalization QC seam pres
   capture$error <- character()
   capture$req <- list()
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "M1",
@@ -965,8 +1030,7 @@ test_that("metabolomics normalization module auto pre-normalization QC seam pres
   capture$warn <- character()
   capture$error <- character()
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "M1",
@@ -1031,8 +1095,7 @@ test_that("metabolomics normalization module auto pre-normalization QC observer 
   capture$info <- character()
   capture$req <- list()
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = "M1",
@@ -1275,8 +1338,7 @@ test_that("metabolomics normalization module ITSD selection table render seam pr
     stringsAsFactors = FALSE
   )
   assay_data <- data.frame(feature = c("raw-1", "raw-2"))
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list("LCMS Pos" = assay_data),
     metabolite_id_column = "feature_id",
     annotation_id_column = "annotation_id"
@@ -1332,7 +1394,7 @@ test_that("metabolomics normalization module ITSD selection table render seam pr
 
   expect_true(is.function(success_render))
   success_value <- success_render()
-  expect_identical(success_capture$build_args$assay_data, assay_data)
+  expect_identical(success_capture$build_args$assay_data, current_s4@metabolite_data[["LCMS Pos"]])
   expect_identical(success_capture$build_args$metabolite_id_col, "feature_id")
   expect_identical(success_capture$build_args$annotation_cols, "annotation_id")
   expect_identical(success_capture$datatable_args$data, selection_table)
@@ -1583,8 +1645,7 @@ test_that("metabolomics normalization module ITSD selection table observer shell
   capture$req <- list()
   capture$render_calls <- list()
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list(
       "LCMS Pos" = data.frame(feature = "F1"),
       "GC-MS/Neg" = data.frame(feature = "F2")
@@ -3858,8 +3919,7 @@ test_that("metabolomics normalization module feature-count helper preserves inva
 })
 
 test_that("metabolomics normalization module feature-count helper preserves per-assay counts", {
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = c("M1", "M1", "M2"),
@@ -3878,13 +3938,12 @@ test_that("metabolomics normalization module feature-count helper preserves per-
 
   expect_named(feature_counts, c("Plasma", "Urine"))
   expect_equal(feature_counts$Plasma, list(features = 2, samples = 2))
-  expect_equal(feature_counts$Urine, list(features = 0, samples = 0))
+  expect_equal(feature_counts$Urine, list(features = 0, samples = 2))
 })
 
 test_that("metabolomics normalization module export-session payload helper preserves state payload assembly", {
   capture <- new.env(parent = emptyenv())
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- makeMetabNormTestS4(
     metabolite_data = list(
       Plasma = data.frame(
         metabolite_id = c("M1", "M2"),
@@ -6149,14 +6208,16 @@ test_that("metabolomics normalization module skip-correlation observer entry pre
   capture$log <- character()
   capture$notifications <- list()
   current_s4 <- structure(list(stage = "ruv_corrected"), class = "MetabNormSkipObserverMock")
+  norm_data <- new.env(parent = emptyenv())
+  norm_data$ruv_corrected_obj <- "ruv-object"
+  norm_data$post_norm_obj <- "post-object"
+  norm_data$correlation_filtering_complete <- FALSE
+  norm_data$correlation_filtered_obj <- NULL
 
   visible <- withVisible(
     runMetabNormSkipCorrelationObserverEntry(
       workflowData = "workflow-state",
-      normData = list(
-        ruv_corrected_obj = "ruv-object",
-        post_norm_obj = "post-object"
-      ),
+      normData = norm_data,
       addLogFn = function(message) {
         capture$log <- c(capture$log, message)
       },
@@ -6187,6 +6248,8 @@ test_that("metabolomics normalization module skip-correlation observer entry pre
   )
 
   expect_false(visible$visible)
+  expect_true(norm_data$correlation_filtering_complete)
+  expect_identical(norm_data$correlation_filtered_obj, current_s4)
   expect_identical(
     capture$resolved,
     list(

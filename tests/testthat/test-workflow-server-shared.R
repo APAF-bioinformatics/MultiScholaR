@@ -71,6 +71,64 @@ renderSharedOutput <- function(value) {
   paste(capture.output(print(value)), collapse = "\n")
 }
 
+expectWorkflowGatesAreMonotonic <- function(workflow_data, session, differential_key) {
+  reset_status <- workflow_data$tab_status
+  reset_status$design_matrix <- "disabled"
+  reset_status$quality_control <- "complete"
+  reset_status$normalization <- "pending"
+  reset_status[[differential_key]] <- "disabled"
+  reset_status$session_summary <- "disabled"
+  workflow_data$tab_status <- reset_status
+  session$flushReact()
+
+  updated_tabs <- workflow_data$tab_status
+  updated_tabs$design_matrix <- "complete"
+  workflow_data$tab_status <- updated_tabs
+  session$flushReact()
+  expect_equal(workflow_data$tab_status$quality_control, "complete")
+
+  reset_status <- workflow_data$tab_status
+  reset_status$quality_control <- "pending"
+  reset_status$normalization <- "complete"
+  reset_status[[differential_key]] <- "pending"
+  reset_status$session_summary <- "disabled"
+  workflow_data$tab_status <- reset_status
+  session$flushReact()
+
+  updated_tabs <- workflow_data$tab_status
+  updated_tabs$quality_control <- "complete"
+  workflow_data$tab_status <- updated_tabs
+  session$flushReact()
+  expect_equal(workflow_data$tab_status$normalization, "complete")
+
+  reset_status <- workflow_data$tab_status
+  reset_status$quality_control <- "complete"
+  reset_status$normalization <- "pending"
+  reset_status[[differential_key]] <- "complete"
+  reset_status$session_summary <- "pending"
+  workflow_data$tab_status <- reset_status
+  session$flushReact()
+
+  updated_tabs <- workflow_data$tab_status
+  updated_tabs$normalization <- "complete"
+  workflow_data$tab_status <- updated_tabs
+  session$flushReact()
+  expect_equal(workflow_data$tab_status[[differential_key]], "complete")
+
+  reset_status <- workflow_data$tab_status
+  reset_status$normalization <- "complete"
+  reset_status[[differential_key]] <- "pending"
+  reset_status$session_summary <- "complete"
+  workflow_data$tab_status <- reset_status
+  session$flushReact()
+
+  updated_tabs <- workflow_data$tab_status
+  updated_tabs[[differential_key]] <- "complete"
+  workflow_data$tab_status <- updated_tabs
+  session$flushReact()
+  expect_equal(workflow_data$tab_status$session_summary, "complete")
+}
+
 test_that("proteomics workflow server wires modules and advances workflow state", {
   package_ns <- asNamespace("MultiScholaR")
   captured <- new.env(parent = emptyenv())
@@ -325,6 +383,12 @@ test_that("lipidomics workflow server wires modules, status progression, and lau
       workflow_data$tab_status <- updated_tabs
       session$flushReact()
       expect_equal(workflow_data$tab_status$session_summary, "pending")
+
+      expectWorkflowGatesAreMonotonic(
+        workflow_data = workflow_data,
+        session = session,
+        differential_key = "differential_analysis"
+      )
     }
   )
 
@@ -452,6 +516,12 @@ test_that("metabolomics workflow server wires modules, status progression, and l
       workflow_data$tab_status <- updated_tabs
       session$flushReact()
       expect_equal(workflow_data$tab_status$session_summary, "pending")
+
+      expectWorkflowGatesAreMonotonic(
+        workflow_data = workflow_data,
+        session = session,
+        differential_key = "differential_analysis"
+      )
     }
   )
 

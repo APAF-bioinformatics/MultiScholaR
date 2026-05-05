@@ -29,12 +29,12 @@ localBinding <- function(env, name, value, .local_envir = parent.frame()) {
   }, envir = .local_envir)
 }
 
-makeMetabDaObject <- function(assays) {
+makeMetabDaObject <- function(assays, annotation_id_column = "Name") {
   methods::new(
     "MetaboliteAssayData",
     metabolite_data = assays,
     metabolite_id_column = "database_identifier",
-    annotation_id_column = "Name",
+    annotation_id_column = annotation_id_column,
     database_identifier_type = "database_identifier",
     internal_standard_regex = "^IS_",
     design_matrix = data.frame(
@@ -167,6 +167,63 @@ test_that("metabolomics DA orchestration preserves assay aggregation and skip br
   expect_identical(result$significant_counts$LCMS_Pos$ns, 0L)
   expect_identical(result$da_q_val_thresh, 0.05)
   expect_identical(result$treat_lfc_cutoff, 0)
+})
+
+test_that("metabolomics DA orchestration falls back to metabolite IDs without annotation columns", {
+  helper_env <- environment(runMetabolitesDA)
+
+  localBinding(helper_env, "runTestsContrastsMetabDA", function(...) {
+    list(
+      results = list(
+        "groupB-groupA" = data.frame(
+          logFC = 1.5,
+          P.Value = 0.001,
+          fdr_qvalue = 0.01,
+          fdr_value_bh = 0.01,
+          raw_pvalue = 0.001,
+          row.names = "M1",
+          check.names = FALSE
+        )
+      ),
+      fit.eb = structure(list(marker = "fit"), class = "mock_fit"),
+      qvalue_warnings = list()
+    )
+  })
+
+  localBinding(helper_env, "createMetabDaResultsLongFormat", function(
+    lfc_qval_tbl,
+    expr_matrix,
+    design_matrix,
+    sample_id_col,
+    group_id_col,
+    metabolite_id_col
+  ) {
+    lfc_qval_tbl
+  })
+
+  result <- runMetabolitesDA(
+    theObject = makeMetabDaObject(
+      list(
+        LCMS_Pos = data.frame(
+          database_identifier = c("M1", "M2"),
+          S1 = c(10, 11),
+          S2 = c(20, 21),
+          check.names = FALSE,
+          stringsAsFactors = FALSE
+        )
+      ),
+      annotation_id_column = NA_character_
+    ),
+    contrasts_tbl = data.frame(
+      contrasts = "groupB-groupA",
+      friendly_names = "B vs A",
+      stringsAsFactors = FALSE
+    )
+  )
+
+  expect_equal(nrow(result$da_metabolites_long), 1)
+  expect_identical(result$da_metabolites_long$metabolite_id, "M1")
+  expect_identical(result$da_metabolites_long$metabolite_name, "M1")
 })
 
 test_that("metabolomics DA orchestration preserves assay error handling", {

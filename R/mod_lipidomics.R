@@ -280,7 +280,8 @@ mod_lipidomics_server <- function(id, project_dirs, omic_type, experiment_label,
         # Enable QC tab after design matrix is complete
         shiny::observeEvent(workflow_data$tab_status$design_matrix,
             {
-                if (workflow_data$tab_status$design_matrix == "complete") {
+                if (workflow_data$tab_status$design_matrix == "complete" &&
+                    identical(workflow_data$tab_status$quality_control, "disabled")) {
                     logger::log_info("Lipidomics: Design matrix complete, enabling QC tab")
                     update_tab_status("quality_control", "pending")
                 }
@@ -291,7 +292,8 @@ mod_lipidomics_server <- function(id, project_dirs, omic_type, experiment_label,
         # Enable normalization tab after QC is complete
         shiny::observeEvent(workflow_data$tab_status$quality_control,
             {
-                if (workflow_data$tab_status$quality_control == "complete") {
+                if (workflow_data$tab_status$quality_control == "complete" &&
+                    identical(workflow_data$tab_status$normalization, "disabled")) {
                     logger::log_info("Lipidomics: QC complete, enabling Normalization tab")
                     update_tab_status("normalization", "pending")
                 }
@@ -302,7 +304,8 @@ mod_lipidomics_server <- function(id, project_dirs, omic_type, experiment_label,
         # Enable DE tab after normalization is complete
         shiny::observeEvent(workflow_data$tab_status$normalization,
             {
-                if (workflow_data$tab_status$normalization == "complete") {
+                if (workflow_data$tab_status$normalization == "complete" &&
+                    identical(workflow_data$tab_status$differential_analysis, "disabled")) {
                     logger::log_info("Lipidomics: Normalization complete, enabling DE tab")
                     update_tab_status("differential_analysis", "pending")
                 }
@@ -313,7 +316,8 @@ mod_lipidomics_server <- function(id, project_dirs, omic_type, experiment_label,
         # Enable summary tab after DE is complete
         shiny::observeEvent(workflow_data$tab_status$differential_analysis,
             {
-                if (workflow_data$tab_status$differential_analysis == "complete") {
+                if (workflow_data$tab_status$differential_analysis == "complete" &&
+                    identical(workflow_data$tab_status$session_summary, "disabled")) {
                     logger::log_info("Lipidomics: DE complete, enabling Summary tab")
                     update_tab_status("session_summary", "pending")
                 }
