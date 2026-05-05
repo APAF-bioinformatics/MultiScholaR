@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_root": "tests/testthat/_module_ci_artifacts",
+  "runtime_classes": [
+    "unit-contract",
+    "module-browser",
+    "module-artifact",
+    "workflow-e2e",
+    "release-full"
+  ],
+  "ci_lanes": [
+    "foundation",
+    "proteomics-unit",
+    "metabolomics-unit",
+    "lipidomics-unit",
+    "browser-smoke",
+    "nightly",
+    "release"
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "MCI-001.1-foundation-manifest-smoke",
+      "ticket_id": "MCI-001",
+      "item_id": "MCI-001.1",
+      "omic": "all",
+      "module_family": "foundation",
+      "runtime": "unit-contract",
+      "ci_lane": "foundation",
+      "fixture": {
+        "path": "fixtures/foundation/sample_design.tsv",
+        "format": "tsv",
+        "role": "design"
+      },
+      "parameters": {
+        "sample_id_col": "sample",
+        "group_col": "group"
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "group_count": 2,
+        "groups": ["WT", "KO"]
+      },
+      "expected_artifacts": [
+        {
+          "path": "manifest.json",
+          "schema": "module_ci_manifest"
+        }
+      ],
+      "required_tests": ["module-ci-manifest"]
+    },
+    {
+      "scenario_id": "MCI-004.1-proteomics-import-schema-smoke",
+      "ticket_id": "MCI-004",
+      "item_id": "MCI-004.1",
+      "omic": "proteomics",
+      "module_family": "import",
+      "runtime": "unit-contract",
+      "ci_lane": "proteomics-unit",
+      "fixture": {
+        "path": "fixtures/proteomics/protein_intensity.tsv",
+        "format": "tsv",
+        "role": "protein_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "feature_id_col": "Protein"
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "feature_count": 3
+      },
+      "expected_artifacts": [
+        {
+          "path": "protein_import_summary.tsv",
+          "schema": "module_ci_table"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-oracles"]
+    },
+    {
+      "scenario_id": "MCI-005.1-proteomics-design-schema-smoke",
+      "ticket_id": "MCI-005",
+      "item_id": "MCI-005.1",
+      "omic": "proteomics",
+      "module_family": "design",
+      "runtime": "unit-contract",
+      "ci_lane": "proteomics-unit",
+      "fixture": {
+        "path": "fixtures/proteomics/proteomics-dia-happy-path_design.tsv",
+        "format": "tsv",
+        "role": "design_table"
+      },
+      "parameters": {
+        "sample_id_col": "sample",
+        "group_col": "group",
+        "formula_string": "~ 0 + group"
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "group_count": 2,
+        "contrast_count": 1
+      },
+      "expected_artifacts": [
+        {
+          "path": "design_matrix.tab",
+          "schema": "module_ci_table"
+        },
+        {
+          "path": "contrast_strings.tab",
+          "schema": "module_ci_text"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-prot-design"]
+    },
+    {
+      "scenario_id": "MCI-012.1-metabolomics-import-schema-smoke",
+      "ticket_id": "MCI-012",
+      "item_id": "MCI-012.1",
+      "omic": "metabolomics",
+      "module_family": "import",
+      "runtime": "unit-contract",
+      "ci_lane": "metabolomics-unit",
+      "fixture": {
+        "path": "fixtures/metabolomics/metabolite_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_pattern": "^(WT|KO)_",
+        "feature_id_col": "Feature.Name"
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "feature_count": 3,
+        "assay_names": ["LCMS_Pos"]
+      },
+      "expected_artifacts": [
+        {
+          "path": "metabolomics_import_summary.tsv",
+          "schema": "module_ci_table"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-oracles"]
+    },
+    {
+      "scenario_id": "MCI-018.1-lipidomics-import-schema-smoke",
+      "ticket_id": "MCI-018",
+      "item_id": "MCI-018.1",
+      "omic": "lipidomics",
+      "module_family": "import",
+      "runtime": "unit-contract",
+      "ci_lane": "lipidomics-unit",
+      "fixture": {
+        "path": "fixtures/lipidomics/lipid_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_pattern": "^(WT|KO)_",
+        "lipid_id_col": "LipidName",
+        "annotation_col": "LipidClass"
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "feature_count": 3,
+        "assay_names": ["LCMS_Pos"]
+      },
+      "expected_artifacts": [
+        {
+          "path": "lipidomics_import_summary.tsv",
+          "schema": "module_ci_table"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-oracles"]
+    }
+  ]
+}

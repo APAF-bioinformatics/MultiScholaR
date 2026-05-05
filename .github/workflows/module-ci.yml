@@ -1,0 +1,212 @@
+name: Module CI
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      gate:
+        description: "Gate to run: push, nightly, release, or all"
+        required: false
+        default: "push"
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+
+env:
+  NOT_CRAN: "true"
+  R_KEEP_PKG_SOURCE: "yes"
+
+jobs:
+  module-ci-unit:
+    name: module-ci unit (${{ matrix.name }})
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: foundation
+            omic: all
+            module: foundation
+            runtime: unit-contract
+            artifact_dir: tests/testthat/_module_ci_artifacts/foundation
+          - name: proteomics
+            omic: proteomics
+            module: fixtures
+            runtime: unit-contract
+            artifact_dir: tests/testthat/_module_ci_artifacts/proteomics
+          - name: metabolomics
+            omic: metabolomics
+            module: fixtures
+            runtime: unit-contract
+            artifact_dir: tests/testthat/_module_ci_artifacts/metabolomics
+          - name: lipidomics
+            omic: lipidomics
+            module: fixtures
+            runtime: unit-contract
+            artifact_dir: tests/testthat/_module_ci_artifacts/lipidomics
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+      - name: Run module-CI subset
+        run: >
+          Rscript tools/ci/run-module-ci.R
+          --omic ${{ matrix.omic }}
+          --module ${{ matrix.module }}
+          --runtime ${{ matrix.runtime }}
+          --reporter summary
+          --artifact-dir ${{ matrix.artifact_dir }}
+      - name: Build scorecard
+        if: always()
+        run: >
+          Rscript tools/ci/module-ci-scorecard.R
+          --artifact-dir ${{ matrix.artifact_dir }}
+      - name: Upload module-CI artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: module-ci-${{ matrix.name }}
+          retention-days: 14
+          path: |
+            ${{ matrix.artifact_dir }}/**
+
+  module-ci-browser-smoke:
+    name: module-ci browser smoke
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+            any::shinytest2
+      - name: Run browser harness smoke tests
+        run: >
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true");
+          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
+          testthat::test_dir("tests/testthat", filter = "^(module-ci-harness|e2e-browser-harness)$", reporter = "summary")'
+      - name: Upload browser smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: module-ci-browser-smoke
+          retention-days: 14
+          path: |
+            tests/testthat/_module_ci_artifacts/**
+            tests/testthat/_e2e_artifacts/**
+
+  e2e-smoke:
+    name: current E2E smoke
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+      - name: Run stable E2E smoke tests
+        run: >
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true");
+          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
+          testthat::test_dir("tests/testthat", filter = "^(e2e-manifest|e2e-fixture-integrity|e2e-browser-harness)$", reporter = "summary")'
+      - name: Upload E2E smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-smoke
+          retention-days: 14
+          path: |
+            tests/testthat/_e2e_artifacts/**
+            tests/testthat/_module_ci_artifacts/**
+
+  full-gates:
+    name: full gate (${{ matrix.name }})
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: all-module-unit-contracts
+            kind: module-ci
+            artifact_dir: tests/testthat/_module_ci_artifacts/nightly-unit
+          - name: all-current-e2e-workflows
+            kind: e2e
+            artifact_dir: tests/testthat/_module_ci_artifacts/nightly-e2e
+          - name: alternate-launch-browser-smoke
+            kind: browser
+            artifact_dir: tests/testthat/_module_ci_artifacts/nightly-browser
+          - name: report-export-fidelity
+            kind: report
+            artifact_dir: tests/testthat/_module_ci_artifacts/nightly-report
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+            any::shinytest2
+      - name: Run all unit-contract module scenarios
+        if: matrix.kind == 'module-ci'
+        run: >
+          Rscript tools/ci/run-module-ci.R
+          --runtime unit-contract
+          --reporter summary
+          --artifact-dir ${{ matrix.artifact_dir }}
+      - name: Run all current E2E workflows
+        if: matrix.kind == 'e2e'
+        run: >
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true", MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR = "${{ matrix.artifact_dir }}");
+          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
+          testthat::test_dir("tests/testthat", filter = "^e2e-", reporter = "summary")'
+      - name: Run alternate launch/browser smoke
+        if: matrix.kind == 'browser'
+        run: >
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true", MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR = "${{ matrix.artifact_dir }}");
+          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
+          testthat::test_dir("tests/testthat", filter = "^(launch-test-mode|e2e-test-mode-integration|e2e-browser-harness)$", reporter = "summary")'
+      - name: Run report/export fidelity smoke
+        if: matrix.kind == 'report'
+        run: >
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true", MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR = "${{ matrix.artifact_dir }}");
+          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
+          testthat::test_dir("tests/testthat", filter = "^(general-filemgmt-report-helpers-shared|general-filemgmt-export-contracts|e2e-proteomics-enrichment)$", reporter = "summary")'
+      - name: Build scorecard
+        if: always() && matrix.kind == 'module-ci'
+        run: >
+          Rscript tools/ci/module-ci-scorecard.R
+          --artifact-dir ${{ matrix.artifact_dir }}
+      - name: Upload full-gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-gate-${{ matrix.name }}
+          retention-days: 30
+          path: |
+            ${{ matrix.artifact_dir }}/**
+            tests/testthat/_module_ci_artifacts/**
+            tests/testthat/_e2e_artifacts/**

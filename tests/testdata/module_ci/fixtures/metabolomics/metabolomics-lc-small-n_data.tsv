@@ -1,0 +1,5 @@
+Feature.Name	Annotation	m.z	Retention.Time	Assay	WT_1	KO_1
+MLC_001	LC_compound_1	101.013	2.37	LCMS_Pos	1153	1170
+MLC_002	LC_compound_2	102.026	2.74	LCMS_Pos	1254	1271
+MLC_003	LC_compound_3	103.039	3.11	LCMS_Pos	1355	1372
+MLC_004	LC_compound_4	104.052	3.48	LCMS_Pos	1456	1473

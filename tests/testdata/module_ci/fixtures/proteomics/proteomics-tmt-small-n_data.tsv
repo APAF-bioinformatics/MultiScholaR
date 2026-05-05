@@ -1,0 +1,5 @@
+Annotated.Sequence	Master.Protein.Accessions	Gene	Assay	ReporterIon.QC	WT_1	KO_1
+PTMT_001	ACC1	GENE1	TMT	review	1139	1156
+PTMT_002	ACC2	GENE2	TMT	pass	1240	1257
+PTMT_003	ACC3	GENE3	TMT	review	1341	1358
+PTMT_004	ACC4	GENE4	TMT	pass	1442	1459

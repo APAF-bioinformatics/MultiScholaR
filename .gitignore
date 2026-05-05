@@ -43,6 +43,7 @@ vignettes/*.pdf
 # Testing files
 *test_checklist
 tests/testthat/_e2e_artifacts/
+tests/testthat/_module_ci_artifacts/
 
 # Simulated test data (can be regenerated from data-raw/simulate_metabolomics_testdata.R)
 tests/testthat/fixtures/simdata/

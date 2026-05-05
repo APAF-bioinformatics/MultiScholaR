@@ -1,0 +1,5 @@
+sample	group	batch	sex	site	age
+WT_1	WT	B1	F	site_a	41
+WT_2	WT	B2	M	site_b	44
+KO_1	KO	B1	F	site_a	47
+KO_2	KO	B2	M	site_b	50

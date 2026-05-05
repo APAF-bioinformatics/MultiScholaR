@@ -97,6 +97,18 @@ importProteomeDiscovererTMTData <- function(filepath) {
         sub("^Abundance\\.", "", x)
       )
     }
+
+    abundance_cols_raw <- names(data)[grepl("^Abundance: |^Abundance\\.", names(data))]
+    normalized_abundance_names <- normalize_pd_abundance_name(abundance_cols_raw)
+    duplicate_abundance_names <- unique(normalized_abundance_names[duplicated(normalized_abundance_names)])
+    if (length(duplicate_abundance_names) > 0L) {
+      stop(
+        "Duplicate TMT reporter channel/sample names after normalization: ",
+        paste(duplicate_abundance_names, collapse = ", "),
+        ". Rename colliding abundance columns before import.",
+        call. = FALSE
+      )
+    }
     
     # Rename columns to be unique BEFORE pivoting
     if (!is.null(batch_name)) {

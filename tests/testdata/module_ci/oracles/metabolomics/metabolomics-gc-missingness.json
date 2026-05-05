@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "MCI-002",
+  "fixture_class": "missingness",
+  "case_category": "malformed",
+  "omic": "metabolomics",
+  "import_format": "gc",
+  "ci_lane": "push",
+  "push_safe": true,
+  "data_path": "fixtures/metabolomics/metabolomics-gc-missingness_data.tsv",
+  "design_path": "fixtures/metabolomics/metabolomics-gc-missingness_design.tsv",
+  "schema": {
+    "feature_id_col": "Feature.Name",
+    "sample_columns": [
+      "WT_1",
+      "WT_2",
+      "KO_1",
+      "KO_2"
+    ],
+    "required_columns": [
+      "Feature.Name",
+      "Assay",
+      "WT_1",
+      "WT_2",
+      "KO_1",
+      "KO_2"
+    ]
+  },
+  "assay_names": [
+    "GCMS"
+  ],
+  "sample_order": [
+    "WT_1",
+    "WT_2",
+    "KO_1",
+    "KO_2"
+  ],
+  "feature_ids": [
+    "MGC_001",
+    "MGC_002",
+    "MGC_003",
+    "MGC_004",
+    "MGC_005",
+    "MGC_006"
+  ],
+  "duplicate_feature_ids": [],
+  "expected_dropped_rows": [
+    "MGC_006"
+  ],
+  "expected_warnings": [
+    "missing_values_detected",
+    "row_missingness_filter_candidate"
+  ],
+  "expected_validation_errors": [],
+  "expected_missingness_by_column": {
+    "WT_1": 2,
+    "WT_2": 1,
+    "KO_1": 0,
+    "KO_2": 0
+  },
+  "expected_nonfinite_columns": [],
+  "expected_exported_schema": {
+    "long_table_columns": [
+      "omic",
+      "import_format",
+      "assay",
+      "feature_id",
+      "sample",
+      "group",
+      "batch",
+      "intensity",
+      "qc_flag"
+    ],
+    "report_parameter_columns": [
+      "fixture_class",
+      "case_category",
+      "ci_lane",
+      "feature_id_col",
+      "sample_count",
+      "feature_count"
+    ]
+  },
+  "expected_transformed_columns": [
+    "feature_id",
+    "assay",
+    "sample",
+    "intensity",
+    "group",
+    "batch",
+    "source_fixture",
+    "import_format"
+  ],
+  "input_checksums": {
+    "data_columns": [
+      "Feature.Name",
+      "WT_1",
+      "WT_2",
+      "KO_1",
+      "KO_2"
+    ],
+    "data_selected_columns_md5": "4c6197096c08241fb22f9f5663056be1",
+    "design_columns": [
+      "sample",
+      "group",
+      "batch",
+      "sex"
+    ],
+    "design_selected_columns_md5": "c40cb5b674a1268b14abac786dcf2a62"
+  }
+}

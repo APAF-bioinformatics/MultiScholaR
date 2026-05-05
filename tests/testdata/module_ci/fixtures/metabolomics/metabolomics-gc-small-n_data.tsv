@@ -1,0 +1,5 @@
+Feature.Name	Annotation	m.z	Retention.Time	Assay	WT_1	KO_1
+MGC_001	GC_compound_1	101.013	2.37	GCMS	1160	1177
+MGC_002	GC_compound_2	102.026	2.74	GCMS	1261	1278
+MGC_003	GC_compound_3	103.039	3.11	GCMS	1362	1379
+MGC_004	GC_compound_4	104.052	3.48	GCMS	1463	1480

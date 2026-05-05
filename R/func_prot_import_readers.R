@@ -235,7 +235,7 @@ importFragPipeData <- function(filepath, use_maxlfq = TRUE) {
 #' @return List with data, data_type, and column_mapping
 #' @export
 importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = TRUE) {
-  data <- vroom::vroom(filepath, show_col_types = FALSE)
+  data <- vroom::vroom(filepath, delim = "\t", show_col_types = FALSE)
   
   # Filter contaminants and reverse hits if requested
   if (filter_contaminants) {

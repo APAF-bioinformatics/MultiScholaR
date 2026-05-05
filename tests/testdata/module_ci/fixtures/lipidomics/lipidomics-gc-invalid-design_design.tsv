@@ -1,0 +1,4 @@
+sample	group	batch	sex
+WT_1	WT	B1	F
+WT_2	WT	B2	M
+WT_1	KO	B1	F
