@@ -282,6 +282,55 @@
       "required_tests": ["module-ci-manifest", "module-ci-prot-da"]
     },
     {
+      "scenario_id": "MCI-010.1-proteomics-enrichment-schema-smoke",
+      "ticket_id": "MCI-010",
+      "item_id": "MCI-010.1",
+      "omic": "proteomics",
+      "module_family": "enrichment",
+      "runtime": "unit-contract",
+      "ci_lane": "proteomics-unit",
+      "fixture": {
+        "path": "fixtures/proteomics/protein_intensity.tsv",
+        "format": "tsv",
+        "role": "protein_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "protein_id_col": "uniprot_acc",
+        "backends": ["gprofiler2", "clusterprofiler"],
+        "taxon_cases": ["supported", "unsupported", "explicit_change", "invalid"],
+        "identifier_cases": ["uniprot", "gene_symbol", "ensembl_like", "duplicate_ids", "missing_annotation", "mixed_case", "no_mappable_ids"],
+        "threshold_cases": ["pvalue", "qvalue", "source_filter", "top_n", "empty_result"],
+        "exports": ["backend_tsv", "zip", "summary_text", "publication_workbook", "report_params"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "sub_steps": [
+          "backend_routing_validated",
+          "identifier_matching_validated",
+          "threshold_filters_validated",
+          "deterministic_doubles_consumable",
+          "backend_exports_written",
+          "preseeded_browser_smoke_ready"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "groupB-groupA_up_enrichment_results.tsv",
+          "schema": "proteomics_enrichment_backend_tsv"
+        },
+        {
+          "path": "Enrichment_results_B_vs_A.zip",
+          "schema": "proteomics_enrichment_zip"
+        },
+        {
+          "path": "Pathway_enrichment_results_proteomics.xlsx",
+          "schema": "proteomics_enrichment_publication_workbook"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-prot-enrich"]
+    },
+    {
       "scenario_id": "MCI-012.1-metabolomics-import-schema-smoke",
       "ticket_id": "MCI-012",
       "item_id": "MCI-012.1",

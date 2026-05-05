@@ -442,3 +442,46 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic proteomics --module differential_abundance --runtime unit-contract --reporter summary
 ```
+
+## Proteomics Enrichment Matrix
+
+MCI-010 adds `tests/testthat/test-module-ci-prot-enrich.R` plus
+`tests/testthat/helper-module-ci-prot-enrich.R`. This suite targets the
+proteomics enrichment boundary after DA, where backend selection, identifiers,
+thresholds, deterministic doubles, browser state, exports, publication workbooks,
+and report parameters must remain synchronized.
+
+The matrix covers:
+
+- Backend routing for supported model-organism taxa through `gprofiler2`,
+  unsupported numeric taxa through `clusterProfiler`, explicit taxon changes in
+  the reactive method state, and invalid taxon rejection before process
+  dispatch.
+- Identifier handling for UniProt accessions, gene symbols, Ensembl-like IDs,
+  duplicate IDs, missing annotations, mixed-case IDs, and no-mappable-ID
+  inputs.
+- Threshold and display behavior for q-value boundaries, p-value columns,
+  source filters, direction filters, top-N table limits, and valid empty-result
+  states.
+- Deterministic test-mode doubles for gprofiler-like list payloads and
+  clusterProfiler-like S4 payloads, including backend-specific pathway TSV
+  files and collated all-contrast result state.
+- Export fidelity for backend-specific ZIP contents, summary text, selected
+  contrast, organism/taxon, thresholds, backend TSV columns, publication
+  workbook indexing, and report-facing payload serialization.
+- Pre-seeded module smoke that initializes enrichment from existing DA output so
+  browser/module checks do not need to rerun full DA for every backend case.
+
+The enrichment matrix exposed production hardening changes:
+
+- Taxon IDs are normalized and validated as positive integer NCBI taxonomy IDs
+  before backend routing or process argument construction.
+- Enrichment process parameters now reject non-finite cutoffs, out-of-range
+  q-value thresholds, and empty correction methods before deterministic or real
+  backend execution.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic proteomics --module enrichment --runtime unit-contract --reporter summary
+```

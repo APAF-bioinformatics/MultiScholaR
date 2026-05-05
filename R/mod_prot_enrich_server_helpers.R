@@ -1418,6 +1418,66 @@ createProtEnrichReactiveValues <- function(reactiveValuesFn = shiny::reactiveVal
   )
 }
 
+normaliseProtEnrichTaxonId <- function(organismTaxid) {
+  if (is.null(organismTaxid) || length(organismTaxid) != 1L || is.na(organismTaxid)) {
+    stop("organism_taxid must be a single positive integer NCBI taxonomy ID.", call. = FALSE)
+  }
+
+  taxonId <- trimws(as.character(organismTaxid))
+  if (!nzchar(taxonId) || !grepl("^[0-9]+$", taxonId)) {
+    stop("organism_taxid must be a single positive integer NCBI taxonomy ID.", call. = FALSE)
+  }
+
+  taxonId <- sub("^0+", "", taxonId)
+  if (!nzchar(taxonId) || identical(taxonId, "0")) {
+    stop("organism_taxid must be a single positive integer NCBI taxonomy ID.", call. = FALSE)
+  }
+
+  taxonId
+}
+
+validateProtEnrichProcessParameters <- function(organismTaxid,
+                                                upCutoff,
+                                                downCutoff,
+                                                qCutoff,
+                                                correctionMethod = NULL) {
+  taxonId <- normaliseProtEnrichTaxonId(organismTaxid)
+  numericParams <- list(
+    up_cutoff = upCutoff,
+    down_cutoff = downCutoff,
+    q_cutoff = qCutoff
+  )
+  numericParams <- lapply(names(numericParams), function(name) {
+    value <- numericParams[[name]]
+    if (is.null(value) || length(value) != 1L || is.na(value)) {
+      stop(sprintf("%s must be a single finite numeric value.", name), call. = FALSE)
+    }
+    value <- suppressWarnings(as.numeric(value))
+    if (!is.finite(value)) {
+      stop(sprintf("%s must be a single finite numeric value.", name), call. = FALSE)
+    }
+    value
+  }) |>
+    stats::setNames(names(numericParams))
+
+  if (numericParams$q_cutoff < 0 || numericParams$q_cutoff > 1) {
+    stop("q_cutoff must be between 0 and 1.", call. = FALSE)
+  }
+
+  if (!is.null(correctionMethod) &&
+      (length(correctionMethod) != 1L || is.na(correctionMethod) || !nzchar(trimws(as.character(correctionMethod))))) {
+    stop("correction_method must be a single non-empty string.", call. = FALSE)
+  }
+
+  list(
+    organism_taxid = taxonId,
+    up_cutoff = numericParams$up_cutoff,
+    down_cutoff = numericParams$down_cutoff,
+    q_cutoff = numericParams$q_cutoff,
+    correction_method = if (is.null(correctionMethod)) NULL else trimws(as.character(correctionMethod))
+  )
+}
+
 if (!methods::isClass("ProtEnrichDeterministicResult")) {
   methods::setClass(
     "ProtEnrichDeterministicResult",
@@ -1624,6 +1684,7 @@ resolveProtEnrichProcessEnrichmentsFn <- function(processEnrichmentsFn = process
 }
 
 resolveProtEnrichAnalysisMethod <- function(organismTaxid, supportedOrganisms) {
+  organismTaxid <- normaliseProtEnrichTaxonId(organismTaxid)
   isSupported <- organismTaxid %in% supportedOrganisms$taxid
 
   if (isTRUE(isSupported)) {
@@ -2827,34 +2888,41 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
                                                   contrastNames,
                                                   correctionMethod,
                                                   excludeIea = FALSE) {
-  taxonId <- as.numeric(organismTaxid)
+  validatedParams <- validateProtEnrichProcessParameters(
+    organismTaxid = organismTaxid,
+    upCutoff = upCutoff,
+    downCutoff = downCutoff,
+    qCutoff = qCutoff,
+    correctionMethod = correctionMethod
+  )
+  taxonId <- as.numeric(validatedParams$organism_taxid)
 
   list(
     checkpointArgs = list(
       da_results_s4 = daResultsForEnrichment,
       taxon_id = taxonId,
-      up_cutoff = upCutoff,
-      down_cutoff = downCutoff,
-      q_cutoff = qCutoff,
+      up_cutoff = validatedParams$up_cutoff,
+      down_cutoff = validatedParams$down_cutoff,
+      q_cutoff = validatedParams$q_cutoff,
       pathway_dir = pathwayDir,
       go_annotations = goAnnotations,
       exclude_iea = excludeIea,
       protein_id_column = proteinIdColumn,
       contrast_names = contrastNames,
-      correction_method = correctionMethod
+      correction_method = validatedParams$correction_method
     ),
     processArgs = list(
       da_results = daResultsForEnrichment,
       taxon_id = taxonId,
-      up_cutoff = upCutoff,
-      down_cutoff = downCutoff,
-      q_cutoff = qCutoff,
+      up_cutoff = validatedParams$up_cutoff,
+      down_cutoff = validatedParams$down_cutoff,
+      q_cutoff = validatedParams$q_cutoff,
       pathway_dir = pathwayDir,
       go_annotations = goAnnotations,
       exclude_iea = excludeIea,
       protein_id_column = proteinIdColumn,
       contrast_names = contrastNames,
-      correction_method = correctionMethod
+      correction_method = validatedParams$correction_method
     )
   )
 }
