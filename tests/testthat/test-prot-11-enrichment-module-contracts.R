@@ -201,6 +201,84 @@ test_that("createProtEnrichReactiveValues seeds the wrapper state container", {
   expect_equal(shiny::isolate(enrichment_data$enrichment_plots), list())
 })
 
+test_that("deterministic enrichment test-mode process returns backend-specific artifacts", {
+  da_results <- methods::new(
+    "da_results_for_enrichment",
+    contrasts = tibble::tibble(contrasts = "KO_vs_WT=groupKO-groupWT"),
+    da_data = list(`KO_vs_WT=groupKO-groupWT` = data.frame(
+      uniprot_acc = c("P04637", "P10600"),
+      log2FC = c(2, -2),
+      fdr_qvalue = c(0.001, 0.001),
+      stringsAsFactors = FALSE
+    )),
+    design_matrix = data.frame(Run = c("S1", "S2"), group = c("WT", "KO"))
+  )
+  gprofiler_dir <- tempfile("prot-enrich-gprofiler-")
+  cluster_dir <- tempfile("prot-enrich-cluster-")
+
+  gprofiler_results <- runProtEnrichDeterministicProcessEnrichments(
+    da_results = da_results,
+    taxon_id = 9606,
+    pathway_dir = gprofiler_dir,
+    contrast_names = names(da_results@da_data)
+  )
+  gprofiler_all <- buildProtEnrichAllContrastResults(
+    enrichmentResults = gprofiler_results,
+    methodInfo = list(method = "gprofiler2"),
+    catFn = function(...) invisible(NULL)
+  )
+
+  expect_s4_class(gprofiler_results, "EnrichmentResults")
+  expect_true(file.exists(file.path(gprofiler_dir, "KO_vs_WT=groupKO-groupWT_up_enrichment_results.tsv")))
+  expect_equal(
+    unique(gprofiler_all[["KO_vs_WT=groupKO-groupWT"]]$gprofiler_results$analysis_method),
+    "gprofiler2"
+  )
+  expect_null(gprofiler_all[["KO_vs_WT=groupKO-groupWT"]]$clusterprofiler_results)
+
+  cluster_results <- runProtEnrichDeterministicProcessEnrichments(
+    da_results = da_results,
+    taxon_id = 999999,
+    pathway_dir = cluster_dir,
+    contrast_names = names(da_results@da_data)
+  )
+  cluster_all <- buildProtEnrichAllContrastResults(
+    enrichmentResults = cluster_results,
+    methodInfo = list(method = "clusterprofiler"),
+    catFn = function(...) invisible(NULL)
+  )
+
+  expect_s4_class(cluster_results, "EnrichmentResults")
+  expect_true(file.exists(file.path(cluster_dir, "KO_vs_WT=groupKO-groupWT_down_enrichment_results.tsv")))
+  expect_equal(
+    unique(cluster_all[["KO_vs_WT=groupKO-groupWT"]]$clusterprofiler_results$analysis_method),
+    "clusterprofiler"
+  )
+  expect_null(cluster_all[["KO_vs_WT=groupKO-groupWT"]]$gprofiler_results)
+})
+
+test_that("resolveProtEnrichProcessEnrichmentsFn uses deterministic doubles in test mode only", {
+  production_fn <- function(...) "production"
+  deterministic_fn <- function(...) "deterministic"
+
+  expect_identical(
+    resolveProtEnrichProcessEnrichmentsFn(
+      processEnrichmentsFn = production_fn,
+      deterministicProcessFn = deterministic_fn,
+      isTestModeFn = function() FALSE
+    ),
+    production_fn
+  )
+  expect_identical(
+    resolveProtEnrichProcessEnrichmentsFn(
+      processEnrichmentsFn = production_fn,
+      deterministicProcessFn = deterministic_fn,
+      isTestModeFn = function() TRUE
+    ),
+    deterministic_fn
+  )
+})
+
 test_that("setupProtEnrichReactiveValues delegates creation through the wrapper-local seam", {
   recorded <- new.env(parent = emptyenv())
   recorded$calls <- 0L

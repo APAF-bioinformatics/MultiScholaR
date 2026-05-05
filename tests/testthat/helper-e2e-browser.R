@@ -501,6 +501,12 @@ e2e_input_id <- function(omic, step, input) {
       metabolomics = "de",
       lipidomics = "de"
     ),
+    enrich = switch(
+      omic,
+      proteomics = "enrichment_analysis",
+      metabolomics = "enrichment",
+      lipidomics = "enrichment"
+    ),
     summary = switch(
       omic,
       proteomics = "session_summary",
@@ -539,11 +545,22 @@ e2e_proteomics_project_paths <- function(project_dir, experiment_label) {
     data_dir = file.path(base_dir, "data", "proteomics"),
     results_dir = file.path(base_dir, "results", "proteomics"),
     results_summary_dir = file.path(base_dir, "results_summary", "proteomics"),
-    da_output_dir = file.path(base_dir, "results", "proteomics", "da_proteins")
+    da_output_dir = file.path(base_dir, "results", "proteomics", "da_proteins"),
+    pathway_dir = file.path(base_dir, "results", "proteomics", "pathway_enrichment")
   )
 }
 
-e2e_assert_project_dirs_exist <- function(paths, required = names(paths)) {
+e2e_assert_project_dirs_exist <- function(
+    paths,
+    required = c(
+      "base_dir",
+      "source_dir",
+      "data_dir",
+      "results_dir",
+      "results_summary_dir",
+      "da_output_dir"
+    )
+) {
   for (name in required) {
     testthat::expect_true(
       dir.exists(paths[[name]]),
@@ -949,15 +966,7 @@ e2e_run_prot_normalization_export <- function(
 
 e2e_run_prot_dia_normalization_export <- e2e_run_prot_normalization_export
 
-e2e_run_prot_da_summary_report <- function(
-    driver,
-    lane,
-    project_base_dir,
-    experiment_label,
-    case_id = "E2E-004-proteomics-dia-report",
-    description = "E2E-004 canonical DIA GUI workflow",
-    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
-) {
+e2e_run_prot_da <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
   e2e_switch_workflow_tab(driver, "proteomics", "differential_expression")
   e2e_wait_for_selector(driver, "prot-tab-da", timeout = timeout)
   e2e_click_da_load_session(driver, "proteomics")
@@ -967,7 +976,95 @@ e2e_run_prot_da_summary_report <- function(
     e2e_input_id("proteomics", "da", "acknowledge_qvalue_warning"),
     timeout = timeout
   )
+  invisible(driver)
+}
 
+e2e_wait_for_output_text <- function(
+    driver,
+    output_id,
+    pattern,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT,
+    fixed = TRUE
+) {
+  deadline <- Sys.time() + (timeout / 1000)
+  last_value <- NULL
+
+  repeat {
+    e2e_wait_for_idle(driver, timeout = timeout)
+    last_value <- e2e_call_driver_method(
+      driver,
+      "get_value",
+      output = output_id,
+      required = FALSE
+    )
+    if (!is.null(last_value) && !is.list(last_value)) {
+      text <- paste(as.character(last_value), collapse = "\n")
+      if (grepl(pattern, text, fixed = fixed)) {
+        return(text)
+      }
+    }
+    if (Sys.time() >= deadline) {
+      break
+    }
+    Sys.sleep(0.25)
+  }
+
+  stop(
+    sprintf("Output %s did not match %s. Last value: %s", output_id, pattern, paste(last_value, collapse = "\n")),
+    call. = FALSE
+  )
+}
+
+e2e_run_prot_enrichment_backend <- function(
+    driver,
+    backend = c("gprofiler2", "clusterprofiler"),
+    organism_taxid = NULL,
+    expected_contrast = "KO_vs_WT",
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
+  backend <- match.arg(backend)
+  enrich <- function(input) e2e_input_id("proteomics", "enrich", input)
+  organism_taxid <- organism_taxid %||% if (identical(backend, "gprofiler2")) "9606" else "999999"
+
+  e2e_switch_workflow_tab(driver, "proteomics", "enrichment_analysis", timeout = timeout)
+  e2e_wait_for_selector(driver, "prot-tab-enrichment", timeout = timeout)
+  e2e_set_input_and_idle(driver, enrich("organism_taxid"), organism_taxid, timeout = timeout)
+  e2e_set_input_and_idle(driver, enrich("enrichment_method_tabs"), backend, timeout = timeout)
+  contrast_input_js <- jsonlite::toJSON(enrich("selected_contrast"), auto_unbox = TRUE)
+  contrast_value_js <- jsonlite::toJSON(expected_contrast, auto_unbox = TRUE)
+  e2e_wait_for_js(
+    driver,
+    script = sprintf(
+      "(function(){var el=document.getElementById(%s);return !!(el && Array.from(el.options || []).some(function(o){return o.value === %s;}));})()",
+      contrast_input_js,
+      contrast_value_js
+    ),
+    timeout = timeout
+  )
+  e2e_set_input_and_idle(driver, enrich("selected_contrast"), expected_contrast, timeout = timeout)
+  e2e_set_input_and_idle(driver, enrich("up_cutoff"), 0, timeout = timeout)
+  e2e_set_input_and_idle(driver, enrich("down_cutoff"), 0, timeout = timeout)
+  e2e_set_input_and_idle(driver, enrich("q_cutoff"), 0.05, timeout = timeout)
+  e2e_click_input_id(driver, enrich("run_enrichment_analysis"), timeout = timeout)
+  status_text <- e2e_wait_for_output_text(
+    driver,
+    enrich("enrichment_status"),
+    sprintf("Method: %s", backend),
+    timeout = timeout
+  )
+
+  invisible(list(status_text = status_text, backend = backend, organism_taxid = organism_taxid))
+}
+
+e2e_run_prot_summary_report <- function(
+    driver,
+    lane,
+    project_base_dir,
+    experiment_label,
+    case_id = "E2E-004-proteomics-dia-report",
+    description = "E2E-004 canonical DIA GUI workflow",
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
   e2e_switch_workflow_tab(driver, "proteomics", "session_summary")
   e2e_wait_for_selector(driver, "prot-tab-session-summary", timeout = timeout)
   e2e_set_input_and_idle(
@@ -997,6 +1094,27 @@ e2e_run_prot_da_summary_report <- function(
   e2e_click_summary_action(driver, "proteomics", "export_session")
 
   invisible(report_download)
+}
+
+e2e_run_prot_da_summary_report <- function(
+    driver,
+    lane,
+    project_base_dir,
+    experiment_label,
+    case_id = "E2E-004-proteomics-dia-report",
+    description = "E2E-004 canonical DIA GUI workflow",
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
+  e2e_run_prot_da(driver, timeout = timeout)
+  e2e_run_prot_summary_report(
+    driver = driver,
+    lane = lane,
+    project_base_dir = project_base_dir,
+    experiment_label = experiment_label,
+    case_id = case_id,
+    description = description,
+    timeout = timeout
+  )
 }
 
 e2e_state_digest <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
