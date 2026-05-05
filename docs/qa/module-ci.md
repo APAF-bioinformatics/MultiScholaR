@@ -569,3 +569,48 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic metabolomics --module import --runtime unit-contract --reporter summary
 ```
+
+## Metabolomics Design Matrix
+
+MCI-013 adds `tests/testthat/test-module-ci-metab-design.R` plus
+`tests/testthat/helper-module-ci-metab-design.R`. This suite targets the shared
+metabolomics design contract that sits between import and every downstream
+multi-assay step.
+
+The matrix covers:
+
+- Builder-created designs for two-group, three-group, unbalanced, batch-aware,
+  missing-group, and extra-metadata cases.
+- Multi-assay alignment for `LCMS_Pos+LCMS_Neg`, `GCMS`, `LCMS_Pos+GCMS`,
+  reordered assay columns, missing assay samples, extra sample-like columns, and
+  case-varied sample names.
+- Contrast serialization for raw limma terms, friendly names, full
+  `friendly=raw` formats, reversed contrasts, duplicate contrasts, invalid
+  model terms, and no-contrast preflight behavior.
+- Existing-design import from source directories containing
+  `design_matrix.tab`, `data_cln_<assay>.tab`, `assay_manifest.txt`,
+  `column_mapping.json`, `contrast_strings.tab`, and optional `config.ini`.
+- Browser-safe import modal controls for test-mode path input and import
+  confirmation.
+- Direct DA preflight that proves accepted designs can produce a model matrix
+  and that contrast terms are present before analysis dispatch.
+
+The design matrix exposed production hardening changes:
+
+- A shared metabolomics design validation layer now checks one design row per
+  expected sample, unique sample rows, assigned groups, replicate assignments,
+  unique assay names, mapped sample columns, and sample-like assay columns not
+  present in the mapping.
+- Contrast tables are normalized to preserve raw contrast expressions,
+  friendly labels, and full serialization strings while rejecting empty,
+  duplicate, or model-incompatible terms.
+- Builder save now runs a non-destructive preflight before mutating workflow
+  state or writing artifacts. This keeps corruptive designs from advancing into
+  QC/DA while preserving the existing ability to save a design before contrasts
+  are finalized.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic metabolomics --module design --runtime unit-contract --reporter summary
+```

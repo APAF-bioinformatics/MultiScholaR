@@ -219,6 +219,25 @@ registerMetabDesignBuilderResultsObserver <- function(
 
             logger::log_info("Received results from metabolomics design builder. Saving to workflow and disk.")
 
+            formula_string <- results$config_list[["deAnalysisParameters"]][["formula_string"]]
+            if (!metabDesignScalarString(formula_string)) {
+                formula_string <- "~ 0 + group"
+            }
+            design_preflight <- validateMetabDesignDaPreflight(
+                designMatrix = results$design_matrix,
+                assayList = results$data_cln,
+                contrastsTbl = results$contrasts_tbl,
+                formulaString = formula_string,
+                columnMapping = workflowData$column_mapping,
+                requireContrasts = FALSE
+            )
+            if (!isTRUE(design_preflight$valid)) {
+                stop(sprintf(
+                    "Invalid metabolomics design: %s",
+                    paste(design_preflight$errors, collapse = "; ")
+                ))
+            }
+
             workflowData$design_matrix <- results$design_matrix
             workflowData$data_cln <- results$data_cln
             workflowData$contrasts_tbl <- results$contrasts_tbl

@@ -434,6 +434,66 @@
       "required_tests": ["module-ci-manifest", "module-ci-metab-import"]
     },
     {
+      "scenario_id": "MCI-013.1-metabolomics-design-schema-smoke",
+      "ticket_id": "MCI-013",
+      "item_id": "MCI-013.1",
+      "omic": "metabolomics",
+      "module_family": "design",
+      "runtime": "unit-contract",
+      "ci_lane": "metabolomics-unit",
+      "fixture": {
+        "path": "fixtures/metabolomics/metabolite_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "group_col": "group",
+        "formula": "~ 0 + group",
+        "design_cases": ["two_group", "three_group", "unbalanced", "batch_aware", "missing_group", "extra_metadata"],
+        "assay_alignment_cases": ["LCMS_Pos+LCMS_Neg", "GCMS", "LCMS_Pos+GCMS", "reordered", "missing_sample", "extra_sample", "case_varied"],
+        "contrast_cases": ["raw_terms", "friendly_names", "reversed", "duplicate", "invalid_term", "no_contrasts"],
+        "artifacts": ["design_matrix", "contrast_strings", "assay_manifest", "column_mapping", "data_cln_per_assay", "state_digest"],
+        "preflight_checks": ["model_matrix", "contrast_terms", "assay_design_alignment"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "feature_count": 3,
+        "assay_names": ["LCMS_Pos", "LCMS_Neg", "GCMS"],
+        "sub_steps": [
+          "builder_design_matrix_validated",
+          "multi_assay_alignment_validated",
+          "contrast_serialization_validated",
+          "existing_design_import_validated",
+          "design_artifacts_validated",
+          "da_preflight_validated"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "design_matrix.tab",
+          "schema": "metabolomics_design_matrix"
+        },
+        {
+          "path": "contrast_strings.tab",
+          "schema": "metabolomics_contrast_strings"
+        },
+        {
+          "path": "assay_manifest.txt",
+          "schema": "assay_manifest"
+        },
+        {
+          "path": "column_mapping.json",
+          "schema": "column_mapping"
+        },
+        {
+          "path": "data_cln_<assay>.tab",
+          "schema": "metabolomics_clean_assay"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-metab-design"]
+    },
+    {
       "scenario_id": "MCI-018.1-lipidomics-import-schema-smoke",
       "ticket_id": "MCI-018",
       "item_id": "MCI-018.1",
