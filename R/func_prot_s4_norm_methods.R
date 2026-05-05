@@ -1,4 +1,46 @@
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+resolveProtLimmaNormalizer <- function(functionName, envir = parent.frame()) {
+  normalizer <- get0(functionName, envir = envir, mode = "function", inherits = TRUE)
+  if (is.function(normalizer)) {
+    return(normalizer)
+  }
+  getExportedValue("limma", functionName)
+}
+
+orientProtRuvCorrectedMatrix <- function(correctedMatrix, featureIds, sampleIds) {
+  if (!is.matrix(correctedMatrix)) {
+    stop("RUV correction returned a non-matrix result.")
+  }
+
+  rowNames <- rownames(correctedMatrix)
+  colNames <- colnames(correctedMatrix)
+
+  if (!is.null(rowNames) && !is.null(colNames)) {
+    if (all(featureIds %in% rowNames) && all(sampleIds %in% colNames)) {
+      return(correctedMatrix[featureIds, sampleIds, drop = FALSE])
+    }
+
+    if (all(sampleIds %in% rowNames) && all(featureIds %in% colNames)) {
+      return(t(correctedMatrix[sampleIds, featureIds, drop = FALSE]))
+    }
+  }
+
+  if (nrow(correctedMatrix) == length(featureIds) && ncol(correctedMatrix) == length(sampleIds)) {
+    rownames(correctedMatrix) <- featureIds
+    colnames(correctedMatrix) <- sampleIds
+    return(correctedMatrix)
+  }
+
+  if (nrow(correctedMatrix) == length(sampleIds) && ncol(correctedMatrix) == length(featureIds)) {
+    correctedMatrix <- t(correctedMatrix)
+    rownames(correctedMatrix) <- featureIds
+    colnames(correctedMatrix) <- sampleIds
+    return(correctedMatrix)
+  }
+
+  stop("RUV correction returned a matrix with incompatible dimensions.")
+}
+
 #' @title Normalise between Arrays
 #' @export
 #' @param theObject Object of class ProteinQuantitativeData
@@ -32,13 +74,13 @@ setMethod(
 
     switch(normalisation_method,
       cyclicloess = {
-        normalised_frozen_protein_matrix <- normalizeCyclicLoess(frozen_protein_matrix)
+        normalised_frozen_protein_matrix <- resolveProtLimmaNormalizer("normalizeCyclicLoess")(frozen_protein_matrix)
       },
       quantile = {
-        normalised_frozen_protein_matrix <- normalizeQuantiles(frozen_protein_matrix)
+        normalised_frozen_protein_matrix <- resolveProtLimmaNormalizer("normalizeQuantiles")(frozen_protein_matrix)
       },
       scale = {
-        normalised_frozen_protein_matrix <- normalizeMedianAbsValues(frozen_protein_matrix)
+        normalised_frozen_protein_matrix <- resolveProtLimmaNormalizer("normalizeMedianAbsValues")(frozen_protein_matrix)
       },
       none = {
         normalised_frozen_protein_matrix <- frozen_protein_matrix
@@ -153,7 +195,13 @@ setMethod(
       column_to_rownames(protein_id_column) |>
       as.matrix()
 
-    Y <- t(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))])
+    sample_ids <- design_matrix |>
+      dplyr::pull(!!sym(sample_id)) |>
+      as.character()
+
+    feature_ids <- rownames(normalised_frozen_protein_matrix_filt)
+
+    Y <- t(normalised_frozen_protein_matrix_filt[, sample_ids, drop = FALSE])
 
     M <- getRuvIIIReplicateMatrixHelper(
       design_matrix,
@@ -162,19 +210,20 @@ setMethod(
     )
 
     cln_mat <- RUVIII_C_Varying(
-      k = ruv_number_k,
+      k = k,
       Y = Y,
       M = M,
       toCorrect = colnames(Y),
       potentialControls = names(ctrl[which(ctrl)])
     )
 
-    # Remove samples with no values
-    cln_mat_2 <- cln_mat[rowSums(is.na(cln_mat) | is.nan(cln_mat)) != ncol(cln_mat), ]
-
-    # Remove proteins with no values
-    cln_mat_3 <- t(cln_mat_2)
-    cln_mat_4 <- cln_mat_3[rowSums(is.na(cln_mat_3) | is.nan(cln_mat_3)) != ncol(cln_mat_3), ]
+    cln_mat_4 <- orientProtRuvCorrectedMatrix(
+      correctedMatrix = cln_mat,
+      featureIds = feature_ids,
+      sampleIds = sample_ids
+    )
+    cln_mat_4 <- cln_mat_4[rowSums(is.finite(cln_mat_4)) > 0, , drop = FALSE]
+    cln_mat_4 <- cln_mat_4[, colSums(is.finite(cln_mat_4)) > 0, drop = FALSE]
 
     ruv_normalised_results_cln <- cln_mat_4 |>
       as.data.frame() |>

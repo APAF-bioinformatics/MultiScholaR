@@ -269,12 +269,22 @@ app_server <- function(input, output, session) {
   # Expose state digest for automated test assertions when test mode is active
   if (is_test_mode()) {
     output$test_state_digest <- shiny::renderText({
+      workflow_states <- values$workflow_state
+      invisible(lapply(workflow_states, function(workflow_state) {
+        tryCatch({
+          workflow_state$tab_status
+          workflow_state$state_manager
+          workflow_state$active_tab
+          workflow_state$processing_log
+        }, error = function(e) NULL)
+      }))
       digest <- collect_state_digest(
         values = shiny::reactiveValuesToList(values),
-        workflow_states = shiny::isolate(values$workflow_state)
+        workflow_states = workflow_states
       )
       jsonlite::toJSON(digest, auto_unbox = TRUE, pretty = TRUE, null = "null")
     })
+    shiny::outputOptions(output, "test_state_digest", suspendWhenHidden = FALSE)
   }
 
   # Observer for "Use Existing"

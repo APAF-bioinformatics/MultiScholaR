@@ -74,8 +74,11 @@ mod_prot_design_ui <- function(id) {
             shiny::h3("Design Matrix Builder")
           ),
           shiny::column(4,
-            shiny::actionButton(ns("show_import_modal"), "Import Existing Design", 
-                                icon = shiny::icon("folder-open"), class = "btn-info pull-right")
+            testid(
+              shiny::actionButton(ns("show_import_modal"), "Import Existing Design",
+                                  icon = shiny::icon("folder-open"), class = "btn-info pull-right"),
+              "prot-design-import-existing"
+            )
           )
         ),
         shiny::p("Use the tools below to define your experimental groups and the contrasts for differential analysis. Alternatively, import an existing design from a previous analysis."),

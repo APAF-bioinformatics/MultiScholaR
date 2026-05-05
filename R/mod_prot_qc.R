@@ -53,6 +53,25 @@ mod_prot_qc_ui <- function(id) {
 #' @importFrom shiny moduleServer reactive observeEvent req renderUI showNotification removeNotification
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+completeProtQcWorkflowStatus <- function(
+    workflowData,
+    logInfoFn = logger::log_info
+) {
+  updatedStatus <- workflowData$tab_status
+  if (is.null(updatedStatus)) {
+    updatedStatus <- list()
+  }
+
+  updatedStatus$quality_control <- "complete"
+  if (is.null(updatedStatus$normalization) || identical(updatedStatus$normalization, "disabled")) {
+    updatedStatus$normalization <- "pending"
+  }
+  workflowData$tab_status <- updatedStatus
+
+  logInfoFn("Quality Control complete. Normalization is ready.")
+  invisible(updatedStatus)
+}
+
 mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -180,10 +199,9 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
     shiny::observeEvent(workflow_data$state_manager$states$protein_replicate_filtered, {
       # This observer is triggered when the final protein state is reached.
       # It can be used to update the UI or perform final actions.
-      # For now, we'll just log it.
       logger::log_info("Final protein state reached. Quality Control module is ready.")
+      completeProtQcWorkflowStatus(workflow_data)
     })
     
   })
 }
-

@@ -414,6 +414,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           workflow_data$da_analysis_results_list <- da_results_list
           # Must replace entire list to trigger reactivity
           updated_status <- workflow_data$tab_status
+          updated_status$differential_expression <- "complete"
           updated_status$differential_abundance <- "complete"
           updated_status$enrichment_analysis <- "pending"
           workflow_data$tab_status <- updated_status
@@ -513,4 +514,3 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
     shiny::removeNotification("da_working")
   })
 }
-

@@ -343,15 +343,21 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
           log_info(paste("Workflow server: Design matrix complete. Workflow type:", workflow_type))
 
           if (workflow_type %in% c("TMT", "LFQ")) {
-            # For TMT and LFQ (protein-level workflows), bypass QC and go straight to Normalization
-            log_info(sprintf("%s workflow detected, bypassing QC tab.", workflow_type))
-            updated <- workflow_data$tab_status
-            updated$quality_control <- "complete"
-            updated$normalization <- "pending"
-            workflow_data$tab_status <- updated
+            if (!identical(workflow_data$tab_status$quality_control, "complete")) {
+              # For TMT and LFQ (protein-level workflows), bypass QC and go straight to Normalization
+              log_info(sprintf("%s workflow detected, bypassing QC tab.", workflow_type))
+              updated <- workflow_data$tab_status
+              updated$quality_control <- "complete"
+              if (identical(updated$normalization, "disabled")) {
+                updated$normalization <- "pending"
+              }
+              workflow_data$tab_status <- updated
+            }
           } else {
-            # For DIA (peptide-level workflow), proceed to QC tab as normal
-            update_tab_status("quality_control", "pending")
+            if (identical(workflow_data$tab_status$quality_control, "disabled")) {
+              # For DIA (peptide-level workflow), proceed to QC tab as normal
+              update_tab_status("quality_control", "pending")
+            }
           }
         }
       },
@@ -361,7 +367,8 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     observeEvent(workflow_data$tab_status$quality_control,
       {
         # Enable normalization tab after QC is complete
-        if (workflow_data$tab_status$quality_control == "complete") {
+        if (workflow_data$tab_status$quality_control == "complete" &&
+            identical(workflow_data$tab_status$normalization, "disabled")) {
           update_tab_status("normalization", "pending")
         }
       },
@@ -371,7 +378,8 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     observeEvent(workflow_data$tab_status$normalization,
       {
         # Enable DE tab after normalization is complete
-        if (workflow_data$tab_status$normalization == "complete") {
+        if (workflow_data$tab_status$normalization == "complete" &&
+            identical(workflow_data$tab_status$differential_expression, "disabled")) {
           update_tab_status("differential_expression", "pending")
         }
       },
@@ -381,7 +389,8 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     observeEvent(workflow_data$tab_status$differential_expression,
       {
         # Enable enrichment analysis tab after DE is complete
-        if (workflow_data$tab_status$differential_expression == "complete") {
+        if (workflow_data$tab_status$differential_expression == "complete" &&
+            identical(workflow_data$tab_status$enrichment_analysis, "disabled")) {
           update_tab_status("enrichment_analysis", "pending")
         }
       },
@@ -391,7 +400,8 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     observeEvent(workflow_data$tab_status$enrichment_analysis,
       {
         # Enable session summary after enrichment is complete
-        if (workflow_data$tab_status$enrichment_analysis == "complete") {
+        if (workflow_data$tab_status$enrichment_analysis == "complete" &&
+            identical(workflow_data$tab_status$session_summary, "disabled")) {
           update_tab_status("session_summary", "pending")
         }
       },

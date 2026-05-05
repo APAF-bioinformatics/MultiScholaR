@@ -110,6 +110,29 @@ test_that("general PCA/RLE helpers preserve fallback, list, ggpairs, and layout 
   expect_s3_class(labeled_plot, "ggplot")
   expect_true(all(c("PC1", "PC2", "Sample_ID", "group", "batch", "label") %in% names(labeled_plot$data)))
 
+  constant_data <- matrix(
+    c(
+      10, 10, 10, 10,
+      20, 20, 20, 20
+    ),
+    nrow = 2,
+    byrow = TRUE,
+    dimnames = list(c("constant_1", "constant_2"), colnames(inputs$data))
+  )
+  constant_plot <- pca_fallback(
+    data = constant_data,
+    design_matrix = inputs$design,
+    sample_id_column = "Sample_ID",
+    grouping_variable = "group",
+    shape_variable = "batch",
+    title = "Constant PCA",
+    ncomp = 2,
+    cv_percentile = 0
+  )
+  expect_s3_class(constant_plot, "ggplot")
+  expect_equal(constant_plot$data$PC1, rep(0, nrow(inputs$design)))
+  expect_equal(constant_plot$data$PC2, rep(0, nrow(inputs$design)))
+
   expect_error(
     pca_fallback(
       data = inputs$data,

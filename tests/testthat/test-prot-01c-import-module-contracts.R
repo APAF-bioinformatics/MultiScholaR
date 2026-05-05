@@ -1936,7 +1936,9 @@ test_that("completeProtImportSuccessState marks setup complete and closes the mo
   )
 
   expect_equal(workflowData$tab_status$setup_import, "complete")
+  expect_equal(workflowData$tab_status$design_matrix, "pending")
   expect_identical(result$setup_import, "complete")
+  expect_identical(result$design_matrix, "pending")
   expect_false(localData$processing)
   expect_true(modalRemoved)
   expect_identical(notifications[[1]]$message, "Data import successful!")

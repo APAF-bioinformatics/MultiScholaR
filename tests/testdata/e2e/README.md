@@ -34,6 +34,7 @@ tests/testdata/e2e/
 Each lane directory contains:
 - **seed file** — import-tool-specific TSV/TXT (e.g. `report.tsv`, `proteinGroups.txt`)
 - **`design.tsv`** — two-column sample-to-group mapping (`sample`, `group`)
+- **`proteins.fasta`** — required proteomics FASTA input for browser import workflows
 
 ---
 
@@ -83,6 +84,7 @@ Each lane object:
 | `use_limpa`          | boolean         | Whether the lane uses the LIMPA DA method |
 | `fixture_dir`        | string          | Subdirectory name under `e2e/` |
 | `seed_file`          | string          | Filename of the primary import seed file |
+| `fasta_file`         | string / null   | Optional FASTA filename for proteomics lanes |
 | `assays`             | array           | Platform assay names (`null` for single-assay lanes) |
 | `expected_contrasts` | array\<string\> | DA contrasts the E2E suite exercises |
 | `report_template`    | string          | Rmd stub filename in `report_templates/` |

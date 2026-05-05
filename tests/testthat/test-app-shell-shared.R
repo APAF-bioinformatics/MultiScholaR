@@ -45,6 +45,117 @@ renderSharedOutput <- function(value) {
   paste(capture.output(print(value)), collapse = "\n")
 }
 
+test_that("app server keeps hidden test_state_digest live in test mode", {
+  captured <- new.env(parent = emptyenv())
+  captured$output_options <- list()
+
+  local_mocked_bindings(
+    outputOptions = function(output, name, suspendWhenHidden = TRUE, ...) {
+      captured$output_options[[length(captured$output_options) + 1L]] <- list(
+        name = name,
+        suspendWhenHidden = suspendWhenHidden
+      )
+      invisible(NULL)
+    },
+    .package = "shiny"
+  )
+
+  withr::with_options(
+    list(multischolar.test_mode = TRUE),
+    testServer(
+      app_server,
+      {
+        session$flushReact()
+      }
+    )
+  )
+
+  expect_equal(length(captured$output_options), 1L)
+  expect_identical(captured$output_options[[1L]]$name, "test_state_digest")
+  expect_false(captured$output_options[[1L]]$suspendWhenHidden)
+})
+
+test_that("app server test_state_digest refreshes nested workflow state in test mode", {
+  package_ns <- asNamespace("MultiScholaR")
+  captured <- new.env(parent = emptyenv())
+  captured$workflow_data <- shiny::reactiveValues(
+    tab_status = list(setup_import = "pending"),
+    state_manager = list(workflow_type = "LFQ"),
+    active_tab = function() "setup",
+    processing_log = list()
+  )
+
+  base_dir <- tempfile("app-shell-digest-base-")
+  dir.create(base_dir, recursive = TRUE)
+  withr::defer(unlink(base_dir, recursive = TRUE, force = TRUE))
+
+  localNamespaceBindings(
+    package_ns,
+    list(
+      setup_shiny_logger = function() invisible(NULL),
+      setupDirectories = function(base_dir, omic_types, label = NULL, force = FALSE, reuse_existing = FALSE) {
+        list(
+          proteomics = list(
+            base_dir = file.path(base_dir, "proteomics"),
+            source_dir = file.path(base_dir, "scripts", "proteomics"),
+            results_dir = file.path(base_dir, "results", "proteomics")
+          )
+        )
+      },
+      mod_proteomics_ui = function(id) shiny::div(class = "dynamic-ui", `data-id` = id),
+      mod_proteomics_server = function(...) captured$workflow_data
+    )
+  )
+
+  local_mocked_bindings(
+    showModal = function(...) invisible(NULL),
+    removeModal = function(...) invisible(NULL),
+    showNotification = function(...) invisible(NULL),
+    .package = "shiny"
+  )
+
+  local_mocked_bindings(
+    log_info = function(...) invisible(NULL),
+    log_warn = function(...) invisible(NULL),
+    log_error = function(...) invisible(NULL),
+    .package = "logger"
+  )
+
+  withr::with_options(
+    list(multischolar.test_mode = TRUE),
+    testServer(
+      app_server,
+      {
+        session$setInputs(selected_omics = "proteomics")
+        session$setInputs(start_analysis = 1)
+        session$flushReact()
+
+        session$setInputs(experiment_label = "demo_project", project_dir = base_dir)
+        session$setInputs(confirm_setup = 1)
+        session$flushReact()
+
+        initial <- jsonlite::fromJSON(output$test_state_digest, simplifyVector = FALSE)
+        expect_identical(
+          initial$step_status_per_omic$proteomics$setup_import,
+          "pending"
+        )
+        expect_identical(initial$workflow_type_per_omic$proteomics, "LFQ")
+
+        values$workflow_state$proteomics$tab_status <- list(setup_import = "complete")
+        values$workflow_state$proteomics$state_manager <- list(workflow_type = "DIA")
+        session$flushReact()
+
+        updated <- jsonlite::fromJSON(output$test_state_digest, simplifyVector = FALSE)
+        expect_identical(
+          updated$step_status_per_omic$proteomics$setup_import,
+          "complete"
+        )
+        expect_identical(updated$workflow_type_per_omic$proteomics, "DIA")
+      }
+    )
+  )
+})
+
 test_that("app server preserves setup flow, dynamic tabs, and watchdog module wiring", {
   package_ns <- asNamespace("MultiScholaR")
   captured <- new.env(parent = emptyenv())

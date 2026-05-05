@@ -312,6 +312,7 @@ completeProtImportSuccessState <- function(
 ) {
   updated_status <- workflowData$tab_status
   updated_status$setup_import <- "complete"
+  updated_status$design_matrix <- "pending"
   workflowData$tab_status <- updated_status
 
   messageFn("========================================")
@@ -369,4 +370,3 @@ resetProtImportWorkflowStateOnError <- function(
 
   invisible(updated_status)
 }
-

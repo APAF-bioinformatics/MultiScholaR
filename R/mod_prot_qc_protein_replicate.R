@@ -86,6 +86,7 @@ runProteinReplicateFilterApplyStep <- function(workflowData,
                                                logInfoFn = logger::log_info,
                                                logWarnFn = logger::log_warn,
                                                newClusterFn = if (exists("new_cluster")) get("new_cluster") else NULL,
+                                               isTestModeFn = is_test_mode,
                                                nowFn = Sys.time) {
   shiny::req(workflowData$state_manager)
   currentS4 <- workflowData$state_manager$getState()
@@ -96,10 +97,11 @@ runProteinReplicateFilterApplyStep <- function(workflowData,
     parallelCores
   ))
 
-  coreUtilisation <- if (is.function(newClusterFn)) {
+  useLocalExecution <- isTRUE(isTestModeFn()) || parallelCores <= 1L
+  coreUtilisation <- if (!useLocalExecution && is.function(newClusterFn)) {
     newClusterFn(parallelCores)
   } else {
-    NULL
+    NA
   }
 
   filteredS4 <- removeProteinsWithOnlyOneReplicateFn(
@@ -213,10 +215,24 @@ runProteinReplicateFilterApplyObserver <- function(workflowData,
                                                    experimentLabel,
                                                    runApplyStepFn = runProteinReplicateFilterApplyStep,
                                                    updateOutputsFn = updateProteinReplicateFilterOutputs,
+                                                   completeQcStatusFn = completeProtQcWorkflowStatus,
                                                    showNotificationFn = shiny::showNotification,
                                                    removeNotificationFn = shiny::removeNotification,
                                                    logInfoFn = logger::log_info,
                                                    logErrorFn = logger::log_error) {
+  currentState <- tryCatch(workflowData$state_manager$current_state, error = function(e) NULL)
+  if (identical(currentState, "protein_replicate_filtered")) {
+    completeQcStatusFn(workflowData = workflowData)
+    return(invisible(list(status = "skipped", reason = "already_complete")))
+  }
+  if (isTRUE(workflowData$protein_replicate_filter_in_progress)) {
+    return(invisible(list(status = "skipped", reason = "in_progress")))
+  }
+  workflowData$protein_replicate_filter_in_progress <- TRUE
+  on.exit({
+    workflowData$protein_replicate_filter_in_progress <- FALSE
+  }, add = TRUE)
+
   showNotificationFn(
     "Applying protein replicate filter...",
     id = "protein_replicate_filter_working",
@@ -238,6 +254,8 @@ runProteinReplicateFilterApplyObserver <- function(workflowData,
       omicType = omicType,
       experimentLabel = experimentLabel
     )
+
+    completeQcStatusFn(workflowData = workflowData)
 
     logInfoFn("Protein replicate filter applied successfully")
     removeNotificationFn("protein_replicate_filter_working")
@@ -320,22 +338,46 @@ bindProteinReplicateFilterPlot <- function(output, proteinReplicateFilterPlot) {
 
 mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
+    logger::log_info(sprintf(
+      "Protein replicate filter server registered for input: %s",
+      session$ns("apply_protein_replicate_filter")
+    ))
     
     protein_replicate_filter_plot <- shiny::reactiveVal(NULL)
-    
-    # Step 5: Protein Replicate Filter (chunk 23)
-    shiny::observeEvent(input$apply_protein_replicate_filter, {
+
+    runApplyObserver <- function(groupingVariable, parallelCores) {
       runProteinReplicateFilterApplyObserver(
         workflowData = workflow_data,
         experimentPaths = experiment_paths,
-        groupingVariable = input$protein_grouping_variable,
-        parallelCores = input$parallel_cores,
+        groupingVariable = groupingVariable %||% "group",
+        parallelCores = parallelCores %||% 4,
         output = output,
         proteinReplicateFilterPlot = protein_replicate_filter_plot,
         omicType = omic_type,
         experimentLabel = experiment_label
       )
+    }
+
+    # Step 5: Protein Replicate Filter (chunk 23)
+    shiny::observeEvent(input$apply_protein_replicate_filter, {
+      logger::log_info("Protein replicate filter apply observed via module input")
+      runApplyObserver(
+        groupingVariable = input$protein_grouping_variable,
+        parallelCores = input$parallel_cores
+      )
     })
+
+    rootScopeFn <- session$rootScope
+    rootSession <- if (is.function(rootScopeFn)) rootScopeFn() else session
+    if (!identical(rootSession, session)) {
+      shiny::observeEvent(rootSession$input[[session$ns("apply_protein_replicate_filter")]], {
+        logger::log_info("Protein replicate filter apply observed via root input")
+        runApplyObserver(
+          groupingVariable = rootSession$input[[session$ns("protein_grouping_variable")]] %||% input$protein_grouping_variable,
+          parallelCores = rootSession$input[[session$ns("parallel_cores")]] %||% input$parallel_cores
+        )
+      }, ignoreNULL = TRUE)
+    }
     
     # Revert Protein Replicate Filter
     shiny::observeEvent(input$revert_protein_replicate_filter, {

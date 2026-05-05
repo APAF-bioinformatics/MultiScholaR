@@ -72,6 +72,25 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     invisible(path)
 }
 
+.write_proteomics_fasta <- function(path) {
+    lines <- c(
+        ">sp|P00001|E2E_PROT1 Protein Alpha OS=Homo sapiens OX=9606 GN=GENE1 PE=1 SV=1",
+        "MPEPAKLVRAAA",
+        ">sp|P00002|E2E_PROT2 Protein Beta OS=Homo sapiens OX=9606 GN=GENE2 PE=1 SV=1",
+        "MPEPBKLVRAAA",
+        ">sp|P00003|E2E_PROT3 Protein Gamma OS=Homo sapiens OX=9606 GN=GENE3 PE=1 SV=1",
+        "MPEPCKLVRAAA",
+        ">sp|P00004|E2E_PROT4 Protein Delta OS=Homo sapiens OX=9606 GN=GENE4 PE=1 SV=1",
+        "MPEPDKLVRAAA",
+        ">sp|P00005|E2E_PROT5 Protein Epsilon OS=Homo sapiens OX=9606 GN=GENE5 PE=1 SV=1",
+        "MPEPEKLVRAAA",
+        ">sp|P00006|E2E_PROT6 Protein Zeta OS=Homo sapiens OX=9606 GN=GENE6 PE=1 SV=1",
+        "MPEPFKLVRAAA"
+    )
+    writeLines(lines, path, useBytes = TRUE)
+    invisible(path)
+}
+
 # ---------------------------------------------------------------------------
 # Helper: build a design.tsv data.frame for a lane
 # ---------------------------------------------------------------------------
@@ -176,6 +195,11 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     design_path <- file.path(lane_dir, "design.tsv")
     .write_tsv(design, design_path)
     cat("  wrote design.tsv\n")
+
+    if (!is.null(lane$fasta_file)) {
+        .write_proteomics_fasta(file.path(lane_dir, lane$fasta_file))
+        cat("  wrote", lane$fasta_file, "\n")
+    }
 }
 
 .generate_prot_tmt <- function(lane, lane_dir) {
@@ -222,6 +246,11 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     design_path <- file.path(lane_dir, "design.tsv")
     .write_tsv(design, design_path)
     cat("  wrote design.tsv\n")
+
+    if (!is.null(lane$fasta_file)) {
+        .write_proteomics_fasta(file.path(lane_dir, lane$fasta_file))
+        cat("  wrote", lane$fasta_file, "\n")
+    }
 }
 
 .generate_prot_lfq <- function(lane, lane_dir) {
@@ -259,6 +288,11 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     design_path <- file.path(lane_dir, "design.tsv")
     .write_tsv(design, design_path)
     cat("  wrote design.tsv\n")
+
+    if (!is.null(lane$fasta_file)) {
+        .write_proteomics_fasta(file.path(lane_dir, lane$fasta_file))
+        cat("  wrote", lane$fasta_file, "\n")
+    }
 }
 
 .generate_metab_lc <- function(lane, lane_dir) {

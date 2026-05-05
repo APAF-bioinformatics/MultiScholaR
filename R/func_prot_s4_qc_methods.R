@@ -1,6 +1,11 @@
 #' @export
 setMethod(
   f = "removeProteinsWithOnlyOneReplicate",
+  signature = c(
+    theObject = "ProteinQuantitativeData",
+    core_utilisation = "ANY",
+    grouping_variable = "ANY"
+  ),
   definition = function(theObject, core_utilisation = NULL, grouping_variable = NULL) {
     protein_quant_table <- theObject@protein_quant_table
     samples_id_tbl <- theObject@design_matrix

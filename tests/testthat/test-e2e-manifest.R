@@ -68,6 +68,24 @@ test_that("read_e2e_manifest lanes have all required fields", {
     }
 })
 
+test_that("read_e2e_manifest validates optional proteomics FASTA fixtures", {
+    manifest <- read_e2e_manifest()
+    proteomics_lanes <- manifest[vapply(
+        manifest,
+        \(lane) identical(lane$omic_type, "proteomics"),
+        logical(1L)
+    )]
+
+    expect_gt(length(proteomics_lanes), 0L)
+    for (lane in proteomics_lanes) {
+        expect_false(is.null(lane$fasta_file), info = lane$lane_id)
+        expect_true(
+            file.exists(file.path(.e2e_fixture_root(), lane$fixture_dir, lane$fasta_file)),
+            info = lane$lane_id
+        )
+    }
+})
+
 test_that("read_e2e_manifest errors on missing fixture_dir", {
     fixture_root <- testthat::test_path("..", "testdata", "e2e")
     lane <- .make_minimal_lane(fixture_dir = "nonexistent_dir_xyz")
@@ -77,6 +95,19 @@ test_that("read_e2e_manifest errors on missing fixture_dir", {
     expect_error(
         read_e2e_manifest(manifest_path = tmp, fixture_root = fixture_root)
         , regexp = "fixture_dir not found"
+    )
+})
+
+test_that("read_e2e_manifest errors on missing optional fasta_file", {
+    fixture_root <- testthat::test_path("..", "testdata", "e2e")
+    lane <- .make_minimal_lane()
+    lane$fasta_file <- "nonexistent_fasta_xyz.fasta"
+    tmp <- .write_tmp_manifest(list(lane))
+    on.exit(unlink(tmp))
+
+    expect_error(
+        read_e2e_manifest(manifest_path = tmp, fixture_root = fixture_root)
+        , regexp = "fasta_file not found"
     )
 })
 

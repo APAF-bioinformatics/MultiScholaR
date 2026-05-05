@@ -2310,6 +2310,58 @@ test_that("runProteinReplicateFilterApplyStep saves the filtered state and QC pa
   expect_match(result$resultText, "Parallel cores used: 3", fixed = TRUE)
 })
 
+test_that("runProteinReplicateFilterApplyStep uses local execution in test mode", {
+  if (!methods::isClass("FakeProteinReplicateState")) {
+    methods::setClass(
+      "FakeProteinReplicateState",
+      slots = c(protein_quant_table = "data.frame")
+    )
+  }
+
+  workflow_data <- new.env(parent = emptyenv())
+  workflow_data$state_manager <- new.env(parent = emptyenv())
+  current_state <- methods::new(
+    "FakeProteinReplicateState",
+    protein_quant_table = data.frame(Protein.Ids = c("P0", "P1", "P2"))
+  )
+  filtered_state <- methods::new(
+    "FakeProteinReplicateState",
+    protein_quant_table = data.frame(Protein.Ids = c("P1", "P2"))
+  )
+  workflow_data$state_manager$getState <- function() current_state
+  workflow_data$state_manager$saveState <- function(...) invisible(list(...))
+
+  captured <- new.env(parent = emptyenv())
+  captured$cluster_called <- FALSE
+  captured$core_utilisation <- NULL
+
+  runProteinReplicateFilterApplyStep(
+    workflowData = workflow_data,
+    experimentPaths = list(
+      protein_qc_dir = tempdir(),
+      source_dir = tempdir()
+    ),
+    groupingVariable = "group",
+    parallelCores = 4,
+    removeProteinsWithOnlyOneReplicateFn = function(theObject,
+                                                    core_utilisation,
+                                                    grouping_variable) {
+      captured$core_utilisation <- core_utilisation
+      filtered_state
+    },
+    writeTsvFn = function(data, path) invisible(path),
+    saveRdsFn = function(object, path) invisible(path),
+    newClusterFn = function(cores) {
+      captured$cluster_called <- TRUE
+      paste("cluster", cores)
+    },
+    isTestModeFn = function() TRUE
+  )
+
+  expect_false(captured$cluster_called)
+  expect_true(is.na(captured$core_utilisation))
+})
+
 test_that("updateProteinReplicateFilterOutputs refreshes result text and plot grid", {
   if (!methods::isClass("FakeProteinReplicateState")) {
     methods::setClass(
@@ -2419,6 +2471,15 @@ test_that("runProteinReplicateFilterApplyObserver delegates the apply workflow a
       expect_identical(experimentLabel, "DIA Experiment")
       "plot_grid"
     },
+    completeQcStatusFn = function(workflowData) {
+      captured$calls <- c(captured$calls, "complete_qc")
+      expect_identical(workflowData, workflow_data_ref)
+      workflowData$tab_status <- list(
+        quality_control = "complete",
+        normalization = "pending"
+      )
+      invisible(workflowData$tab_status)
+    },
     showNotificationFn = function(...) {
       captured$calls <- c(captured$calls, "show")
       captured$notifications[[length(captured$notifications) + 1]] <- list(...)
@@ -2438,7 +2499,7 @@ test_that("runProteinReplicateFilterApplyObserver delegates the apply workflow a
 
   expect_identical(
     captured$calls,
-    c("show", "run", "update", "log_info", "remove", "show")
+    c("show", "run", "update", "complete_qc", "log_info", "remove", "show")
   )
   expect_identical(
     captured$notifications[[1]][[1]],
@@ -2453,9 +2514,44 @@ test_that("runProteinReplicateFilterApplyObserver delegates the apply workflow a
   expect_identical(captured$notifications[[2]]$type, "message")
   expect_identical(captured$removed, "protein_replicate_filter_working")
   expect_identical(captured$info, "Protein replicate filter applied successfully")
+  expect_identical(workflow_data$tab_status$quality_control, "complete")
+  expect_identical(workflow_data$tab_status$normalization, "pending")
   expect_identical(completed$status, "success")
   expect_identical(completed$replicateFilterResult$filteredS4, "filtered_s4")
   expect_identical(completed$plotGrid, "plot_grid")
+})
+
+test_that("runProteinReplicateFilterApplyObserver is idempotent after terminal QC state", {
+  workflow_data <- new.env(parent = emptyenv())
+  workflow_data$state_manager <- new.env(parent = emptyenv())
+  workflow_data$state_manager$current_state <- "protein_replicate_filtered"
+  captured <- new.env(parent = emptyenv())
+  captured$completed <- FALSE
+
+  result <- runProteinReplicateFilterApplyObserver(
+    workflowData = workflow_data,
+    experimentPaths = list(),
+    groupingVariable = "group",
+    parallelCores = 4,
+    output = new.env(parent = emptyenv()),
+    proteinReplicateFilterPlot = function(...) NULL,
+    omicType = "proteomics",
+    experimentLabel = "DIA Experiment",
+    runApplyStepFn = function(...) {
+      stop("terminal state should not re-run the protein replicate filter")
+    },
+    completeQcStatusFn = function(workflowData) {
+      captured$completed <- TRUE
+      invisible(NULL)
+    },
+    showNotificationFn = function(...) {
+      stop("terminal state should not show a working notification")
+    }
+  )
+
+  expect_true(captured$completed)
+  expect_identical(result$status, "skipped")
+  expect_identical(result$reason, "already_complete")
 })
 
 test_that("runProteinReplicateFilterApplyObserver reports apply errors and clears the working notification", {

@@ -484,7 +484,11 @@ test_that("da_server_run_analysis_handler processes full-format contrasts and qv
   state_manager <- make_mock_prot_da_state_manager(obj)
   workflow_data <- shiny::reactiveValues(
     state_manager = state_manager,
-    tab_status = list(differential_abundance = "pending", enrichment_analysis = "locked"),
+    tab_status = list(
+      differential_expression = "pending",
+      differential_abundance = "pending",
+      enrichment_analysis = "locked"
+    ),
     da_analysis_results_list = NULL,
     da_ui_params = NULL
   )
@@ -582,6 +586,7 @@ test_that("da_server_run_analysis_handler processes full-format contrasts and qv
               vapply(calls$analysis, `[[`, character(1), "contrast_string"),
               contrasts_tbl$full_format
             )
+            expect_equal(workflow_data$tab_status$differential_expression, "complete")
             expect_equal(workflow_data$tab_status$differential_abundance, "complete")
             expect_equal(workflow_data$tab_status$enrichment_analysis, "pending")
             expect_equal(workflow_data$da_ui_params$q_value_threshold, 0.05)

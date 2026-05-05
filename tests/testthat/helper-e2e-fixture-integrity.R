@@ -148,6 +148,15 @@
     )
     errors <- c(errors, seed_errors)
 
+    if (!is.null(lane$fasta_file)) {
+        fasta_path <- file.path(lane_dir, lane$fasta_file)
+        if (!file.exists(fasta_path)) {
+            errors <- c(errors, paste0("[", lane_id, "] fasta_file not found: ", lane$fasta_file))
+        } else if (file.info(fasta_path)$size <= 0) {
+            errors <- c(errors, paste0("[", lane_id, "] fasta_file is empty: ", lane$fasta_file))
+        }
+    }
+
     design_path <- file.path(lane_dir, "design.tsv")
     design_errors <- .e2e_validate_design_tsv(
         design_path, lane_id, lane$sample_count, lane$group_count, lane$groups

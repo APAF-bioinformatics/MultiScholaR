@@ -4,13 +4,14 @@
 
 | Property | Value |
 |---|---|
-| File | seed_report.tsv |
+| File | report.tsv |
 | Format | DIA-NN report.tsv (long format) with MNAR missing values |
 | Proteins | 6 (P00001–P00006) |
 | Samples | 6 (WT_1–3, KO_1–3) |
 | Precursors per protein | 2 |
 | Total rows | 72 |
 | Missing values (NA) | ~22 rows (~30%) |
+| FASTA | proteins.fasta (P00001–P00006 UniProt-style headers) |
 
 ## Groups
 

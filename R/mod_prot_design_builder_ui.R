@@ -99,23 +99,32 @@ mod_prot_design_builder_ui <- function(id) {
                         shiny::tabPanel(
                             "Factors",
                             shiny::h4("Add New Factor"),
-                            shiny::textInput(ns("new_factor"), "New Factor Name:"),
-                            shiny::actionButton(ns("add_factor"), "Add Factor")
+                            testid(
+                                shiny::textInput(ns("new_factor"), "New Factor Name:"),
+                                "prot-design-new-factor"
+                            ),
+                            testid(
+                                shiny::actionButton(ns("add_factor"), "Add Factor"),
+                                "prot-design-add-factor"
+                            )
                         ),
 
                         # Metadata assignment tab
                         shiny::tabPanel(
                             "Assign Metadata",
                             shiny::h4("Assign Metadata"),
-                            shiny::selectizeInput(ns("selected_runs"), "Select Runs:",
+                            testid(shiny::selectizeInput(ns("selected_runs"), "Select Runs:",
                                 choices = NULL, # Will be populated by server
                                 multiple = TRUE
-                            ),
-                            shiny::selectInput(ns("factor1_select"), "Select Factor 1:", choices = c("")),
-                            shiny::selectInput(ns("factor2_select"), "Select Factor 2:", choices = c("")),
-                            shiny::selectInput(ns("factor3_select"), "Select Factor 3:", choices = c("")),
+                            ), "prot-design-selected-runs"),
+                            testid(shiny::selectInput(ns("factor1_select"), "Select Factor 1:", choices = c("")), "prot-design-factor1"),
+                            testid(shiny::selectInput(ns("factor2_select"), "Select Factor 2:", choices = c("")), "prot-design-factor2"),
+                            testid(shiny::selectInput(ns("factor3_select"), "Select Factor 3:", choices = c("")), "prot-design-factor3"),
                             shiny::uiOutput(ns("replicate_inputs")),
-                            shiny::actionButton(ns("assign_metadata"), "Assign")
+                            testid(
+                                shiny::actionButton(ns("assign_metadata"), "Assign"),
+                                "prot-design-assign-metadata"
+                            )
                         ),
 
                         # Technical replicates tab
@@ -156,10 +165,13 @@ mod_prot_design_builder_ui <- function(id) {
                         shiny::tabPanel(
                             "Contrasts",
                             shiny::h4("Define Contrasts"),
-                            shiny::selectInput(ns("contrast_group1"), "Group 1:", choices = c("")),
-                            shiny::selectInput(ns("contrast_group2"), "Group 2:", choices = c("")),
+                            testid(shiny::selectInput(ns("contrast_group1"), "Group 1:", choices = c("")), "prot-design-contrast-group1"),
+                            testid(shiny::selectInput(ns("contrast_group2"), "Group 2:", choices = c("")), "prot-design-contrast-group2"),
                             shiny::verbatimTextOutput(ns("contrast_factors_info")),
-                            shiny::actionButton(ns("add_contrast"), "Add Contrast")
+                            testid(
+                                shiny::actionButton(ns("add_contrast"), "Add Contrast"),
+                                "prot-design-add-contrast"
+                            )
                         ),
 
                         # Formula tab
@@ -247,13 +259,12 @@ mod_prot_design_builder_ui <- function(id) {
                 ),
                 # The save button is now the primary action for the module to return data.
                 # The parent module will handle closing/hiding this UI.
-                shiny::actionButton(ns("save_results"), "Save Design",
+                testid(shiny::actionButton(ns("save_results"), "Save Design",
                     class = "btn-primary",
                     icon = shiny::icon("save"),
                     style = "float: right;"
-                )
+                ), "prot-design-save")
             )
         )
     )
 }
-

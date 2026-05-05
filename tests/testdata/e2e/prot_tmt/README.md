@@ -4,11 +4,12 @@
 
 | Property | Value |
 |---|---|
-| File | seed_proteins.tsv |
-| Format | Proteome Discoverer TMT protein export (wide format) |
+| File | pd_tmt_peptides.tsv |
+| Format | Proteome Discoverer TMT peptide export (wide format) |
 | Proteins | 5 (P00001–P00005) |
-| Samples | 4 (WT_1, WT_2, KO_1, KO_2) |
-| TMT Channels | 126=WT_1, 127N=WT_2, 128N=KO_1, 129N=KO_2 |
+| Samples | 6 (WT_1–3, KO_1–3) |
+| TMT Channels | 126=WT_1, 127N=WT_2, 127C=WT_3, 128N=KO_1, 128C=KO_2, 129N=KO_3 |
+| FASTA | proteins.fasta (P00001–P00006 UniProt-style headers) |
 
 ## Groups
 
@@ -16,17 +17,20 @@
 |---|---|---|---|
 | 126_WT_1 | WT_1 | WT | 126 |
 | 127N_WT_2 | WT_2 | WT | 127N |
+| 127C_WT_3 | WT_3 | WT | 127C |
 | 128N_KO_1 | KO_1 | KO | 128N |
+| 128C_KO_2 | KO_2 | KO | 128C |
+| 129N_KO_3 | KO_3 | KO | 129N |
 | 129N_KO_2 | KO_2 | KO | 129N |
 
 ## Column Format
 
 Abundance columns follow Proteome Discoverer export convention:
-`Abundance: F{fraction}: {channel}, {sample_name}`
+`Abundance.{channel}`
 
-The `importProteomeDiscovererTMTData()` function renames these to `{channel}_{sample_name}`
-(e.g. `Abundance: F1: 126, WT_1` → `126_WT_1`) then pivots to long format.
-The `design.tsv` sample column must use these post-import Run IDs.
+The `importProteomeDiscovererTMTData()` function reads peptide rows keyed by
+`Annotated.Sequence` and `Master.Protein.Accessions`, then pivots abundance
+channels to long-format run IDs.
 
 ## Expected Significant Proteins (KO_vs_WT)
 
@@ -41,4 +45,4 @@ P00003–P00005 are not expected to be significant (<0.1 log2FC between groups).
 
 `importProteomeDiscovererTMTData()` in `R/func_prot_import_tmt.R`
 
-Required columns: `Accession` (renamed to `Protein.Ids`), `Abundance: F[n]: [channel], [sample]` columns
+Required columns: `Annotated.Sequence`, `Master.Protein.Accessions`, `Abundance.*` columns

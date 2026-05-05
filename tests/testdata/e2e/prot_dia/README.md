@@ -4,19 +4,20 @@
 
 | Property | Value |
 |---|---|
-| File | seed_report.tsv |
+| File | report.tsv |
 | Format | DIA-NN report.tsv (long format) |
 | Proteins | 5 (P00001–P00005) |
-| Samples | 4 (WT_1, WT_2, KO_1, KO_2) |
+| Samples | 6 (WT_1–3, KO_1–3) |
 | Precursors per protein | 2 |
-| Total rows | 40 |
+| Total rows | 60 |
+| FASTA | proteins.fasta (P00001–P00006 UniProt-style headers) |
 
 ## Groups
 
 | Sample | Group |
 |---|---|
-| WT_1, WT_2 | WT (control) |
-| KO_1, KO_2 | KO (treatment) |
+| WT_1, WT_2, WT_3 | WT (control) |
+| KO_1, KO_2, KO_3 | KO (treatment) |
 
 ## Expected Significant Proteins (KO_vs_WT)
 

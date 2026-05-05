@@ -48,25 +48,21 @@ removeProteinsWithOnlyOneReplicateHelper <- function(
   quantity_column = Protein.Normalised,
   core_utilisation
 ) {
-  # Count the number of technical replicates per sample and peptide combination
-  num_tech_reps_per_sample_and_protein <- NA
-  if (length(which(is.na(core_utilisation))) == 0) {
-    num_tech_reps_per_sample_and_protein <- input_table |>
-      left_join(samples_id_tbl, by = join_by({{ input_table_sample_id_column }} == {{ sample_id_tbl_sample_id_column }})) |>
-      dplyr::filter(!is.na({{ quantity_column }})) |>
-      group_by({{ replicate_group_column }}, {{ protein_id_column }}) |>
-      # partition(core_utilisation) |>
-      summarise(counts = n()) |>
-      # collect() |>
-      ungroup()
-  } else {
-    num_tech_reps_per_sample_and_protein <- input_table |>
-      left_join(samples_id_tbl, by = join_by({{ input_table_sample_id_column }} == {{ sample_id_tbl_sample_id_column }})) |>
-      dplyr::filter(!is.na({{ quantity_column }})) |>
-      group_by({{ replicate_group_column }}, {{ protein_id_column }}) |>
+  # Count technical replicates locally unless a real multidplyr cluster is supplied.
+  prepared_table <- input_table |>
+    left_join(samples_id_tbl, by = join_by({{ input_table_sample_id_column }} == {{ sample_id_tbl_sample_id_column }})) |>
+    dplyr::filter(!is.na({{ quantity_column }})) |>
+    group_by({{ replicate_group_column }}, {{ protein_id_column }})
+
+  num_tech_reps_per_sample_and_protein <- if (inherits(core_utilisation, "multidplyr_cluster")) {
+    prepared_table |>
       partition(core_utilisation) |>
       summarise(counts = n()) |>
       collect() |>
+      ungroup()
+  } else {
+    prepared_table |>
+      summarise(counts = n()) |>
       ungroup()
   }
 
@@ -278,4 +274,3 @@ removeRowsWithMissingValuesPercentHelper <- function(
 
   return(filtered_tbl)
 }
-

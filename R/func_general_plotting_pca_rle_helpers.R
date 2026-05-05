@@ -127,17 +127,43 @@ plotPcaHelper <- function(data,
     pca.res <- mixOmics::pca(pca_input, ncomp = ncomp)
   } else {
     message("   DEBUG66 [plotPcaHelper] mixOmics not available; falling back to stats::prcomp()")
-    pca_fallback <- stats::prcomp(pca_input, center = TRUE, scale. = TRUE)
-    component_names <- paste0("PC", seq_len(min(ncomp, ncol(pca_fallback$x))))
-    pca_scores <- as.data.frame(pca_fallback$x[, component_names, drop = FALSE])
-    explained_variance <- (pca_fallback$sdev^2) / sum(pca_fallback$sdev^2)
+    component_names <- paste0("PC", seq_len(ncomp))
+    pca_input_complete <- pca_input[, colSums(is.finite(pca_input)) == nrow(pca_input), drop = FALSE]
+    if (ncol(pca_input_complete) > 0) {
+      feature_sds <- apply(pca_input_complete, 2, stats::sd)
+      pca_input_complete <- pca_input_complete[, is.finite(feature_sds) & feature_sds > sqrt(.Machine$double.eps), drop = FALSE]
+    }
+
+    if (nrow(pca_input_complete) < 2 || ncol(pca_input_complete) < 1) {
+      message("   DEBUG66 [plotPcaHelper] Fallback PCA has no variable complete features; returning zero-valued PCA scores")
+      pca_scores <- as.data.frame(matrix(
+        0,
+        nrow = nrow(pca_input),
+        ncol = length(component_names),
+        dimnames = list(rownames(pca_input), component_names)
+      ))
+      explained_variance <- stats::setNames(rep(0, length(component_names)), component_names)
+    } else {
+      pca_fallback <- stats::prcomp(pca_input_complete, center = TRUE, scale. = TRUE)
+      available_components <- min(ncomp, ncol(pca_fallback$x))
+      pca_scores <- as.data.frame(matrix(
+        0,
+        nrow = nrow(pca_fallback$x),
+        ncol = length(component_names),
+        dimnames = list(rownames(pca_fallback$x), component_names)
+      ))
+      pca_scores[, seq_len(available_components)] <- pca_fallback$x[, seq_len(available_components), drop = FALSE]
+
+      total_variance <- sum(pca_fallback$sdev^2)
+      explained_variance <- stats::setNames(rep(0, length(component_names)), component_names)
+      if (is.finite(total_variance) && total_variance > 0) {
+        explained_variance[seq_len(available_components)] <- (pca_fallback$sdev[seq_len(available_components)]^2) / total_variance
+      }
+    }
     pca.res <- list(
       variates = list(X = pca_scores),
       prop_expl_var = list(
-        X = stats::setNames(
-          explained_variance[seq_along(component_names)],
-          component_names
-        )
+        X = explained_variance
       )
     )
   }
@@ -231,8 +257,10 @@ plotPcaHelper <- function(data,
   # Calculate axis limits based on the full range of data
   pc1_range <- range(temp_tbl$PC1, na.rm = TRUE)
   pc2_range <- range(temp_tbl$PC2, na.rm = TRUE)
-  buffer_pc1 <- (pc1_range[2] - pc1_range[1]) * 0.05 # 5% buffer
-  buffer_pc2 <- (pc2_range[2] - pc2_range[1]) * 0.05 # 5% buffer
+  pc1_width <- pc1_range[2] - pc1_range[1]
+  pc2_width <- pc2_range[2] - pc2_range[1]
+  buffer_pc1 <- if (is.finite(pc1_width) && pc1_width > 0) pc1_width * 0.05 else 1
+  buffer_pc2 <- if (is.finite(pc2_width) && pc2_width > 0) pc2_width * 0.05 else 1
 
   output <- output + coord_cartesian(
     xlim = c(pc1_range[1] - buffer_pc1, pc1_range[2] + buffer_pc1),
@@ -545,4 +573,3 @@ rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
 
   rle_pca_plots_arranged
 }
-

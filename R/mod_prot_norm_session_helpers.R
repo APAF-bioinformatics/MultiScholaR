@@ -26,6 +26,20 @@ collectProtNormExportSessionData <- function(
 ) {
   current_state_name <- workflowData$state_manager$current_state
   current_s4_object <- workflowData$state_manager$getState(current_state_name)
+  r6_complete_states <- tryCatch(
+    workflowData$state_manager$states,
+    error = function(e) NULL
+  )
+  if (is.null(r6_complete_states)) {
+    r6_complete_states <- list()
+  }
+  r6_state_history <- tryCatch(
+    workflowData$state_manager$state_history,
+    error = function(e) NULL
+  )
+  if (is.null(r6_state_history)) {
+    r6_state_history <- current_state_name
+  }
 
   workflow_type <- if (!is.null(workflowData$config_list) &&
     !is.null(workflowData$config_list$globalParameters) &&
@@ -39,6 +53,8 @@ collectProtNormExportSessionData <- function(
 
   session_data <- list(
     r6_current_state_name = current_state_name,
+    r6_complete_states = r6_complete_states,
+    r6_state_history = r6_state_history,
     current_s4_object = current_s4_object,
     correlation_filtered_s4 = normData$correlation_filtered_obj,
     contrasts_tbl = workflowData$contrasts_tbl,
@@ -466,4 +482,3 @@ handleProtNormResetError <- function(
 
   invisible(NULL)
 }
-

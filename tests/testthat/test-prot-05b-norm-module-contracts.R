@@ -2236,6 +2236,11 @@ test_that("collectProtNormExportSessionData builds the export payload with count
   workflow_data$state_manager <- new.env(parent = emptyenv())
   workflow_data$state_manager$current_state <- "correlation_filtered"
   workflow_data$state_manager$getState <- function(state) current_s4
+  workflow_data$state_manager$states <- list(
+    protein_replicate_filtered = current_s4,
+    correlation_filtered = current_s4
+  )
+  workflow_data$state_manager$state_history <- c("protein_replicate_filtered", "correlation_filtered")
   workflow_data$contrasts_tbl <- data.frame(friendly_names = c("A vs B"), stringsAsFactors = FALSE)
   workflow_data$design_matrix <- data.frame(group = c("A", "B"), stringsAsFactors = FALSE)
   workflow_data$config_list <- list(globalParameters = list(workflow_type = "TMT"))
@@ -2259,6 +2264,8 @@ test_that("collectProtNormExportSessionData builds the export payload with count
   )
 
   expect_equal(session_data$r6_current_state_name, "correlation_filtered")
+  expect_identical(session_data$r6_complete_states$correlation_filtered, current_s4)
+  expect_identical(session_data$r6_state_history, c("protein_replicate_filtered", "correlation_filtered"))
   expect_identical(session_data$current_s4_object, current_s4)
   expect_equal(session_data$workflow_type, "TMT")
   expect_equal(session_data$normalization_method, "cyclicloess")

@@ -59,6 +59,18 @@
             , seed_path
         ))
     }
+
+    if (!is.null(lane$fasta_file)) {
+        fasta_path <- file.path(lane_dir, lane$fasta_file)
+        if (!file.exists(fasta_path)) {
+            rlang::abort(paste0(
+                "Lane '"
+                , lane$lane_id
+                , "': fasta_file not found: "
+                , fasta_path
+            ))
+        }
+    }
 }
 
 #' Read and validate the E2E fixture manifest

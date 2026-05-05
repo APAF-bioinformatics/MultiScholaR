@@ -1,10 +1,10 @@
 buildProtDesignReplicateInputs <- function(selectedRuns, nsFn = identity, numericInputFn = shiny::numericInput) {
-    numericInputFn(
+    testid(numericInputFn(
         nsFn("replicate_start"),
         paste("Starting replicate number for", length(selectedRuns), "selected runs:"),
         value = 1,
         min = 1
-    )
+    ), "prot-design-replicate-start")
 }
 
 formatProtDesignRangePreview <- function(
@@ -395,4 +395,3 @@ registerProtDesignRemoveSamplesObserver <- function(
         )
     })
 }
-

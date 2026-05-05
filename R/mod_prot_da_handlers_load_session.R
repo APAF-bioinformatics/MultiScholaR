@@ -33,13 +33,28 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
           shiny::incProgress(0.3, detail = "Restoring R6 state...")
 
           # Restore the complete R6 state structure
-          workflow_data$state_manager$states <- session_data$r6_complete_states
-          workflow_data$state_manager$state_history <- session_data$r6_state_history
+          r6_complete_states <- session_data$r6_complete_states
+          if (is.null(r6_complete_states)) {
+            r6_complete_states <- list()
+          }
+          if (!is.null(session_data$r6_current_state_name) &&
+              !is.null(session_data$current_s4_object) &&
+              is.null(r6_complete_states[[session_data$r6_current_state_name]])) {
+            r6_complete_states[[session_data$r6_current_state_name]] <- session_data$current_s4_object
+          }
+
+          r6_state_history <- session_data$r6_state_history
+          if (is.null(r6_state_history)) {
+            r6_state_history <- names(r6_complete_states)
+          }
+
+          workflow_data$state_manager$states <- r6_complete_states
+          workflow_data$state_manager$state_history <- r6_state_history
           workflow_data$state_manager$current_state <- session_data$r6_current_state_name
 
           cat("*** LOAD DA: R6 state manager completely restored ***\n")
-          cat(sprintf("*** LOAD DA: Restored %d states ***\n", length(session_data$r6_complete_states)))
-          cat(sprintf("*** LOAD DA: State history: %s ***\n", paste(unlist(session_data$r6_state_history), collapse = " -> ")))
+          cat(sprintf("*** LOAD DA: Restored %d states ***\n", length(r6_complete_states)))
+          cat(sprintf("*** LOAD DA: State history: %s ***\n", paste(unlist(r6_state_history), collapse = " -> ")))
           cat(sprintf("*** LOAD DA: Current state set to: %s ***\n", session_data$r6_current_state_name))
 
           # Step 3: Restore workflow data

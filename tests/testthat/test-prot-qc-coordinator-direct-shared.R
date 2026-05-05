@@ -7,6 +7,7 @@ msr <- function(name) {
 
 mod_prot_qc_ui <- msr("mod_prot_qc_ui")
 mod_prot_qc_server <- msr("mod_prot_qc_server")
+completeProtQcWorkflowStatus <- msr("completeProtQcWorkflowStatus")
 
 makeQcStateManager <- function(workflow_type, s4_obj = NULL, final_state = TRUE) {
   structure(
@@ -30,6 +31,10 @@ newQcWorkflowData <- function(workflow_type, s4_obj = NULL, final_state = TRUE) 
     workflow_type = workflow_type,
     s4_obj = s4_obj,
     final_state = final_state
+  )
+  workflow_data$tab_status <- list(
+    quality_control = "pending",
+    normalization = "disabled"
   )
   workflow_data
 }
@@ -150,6 +155,31 @@ test_that("proteomics QC coordinator preserves the TMT existing-S4 routing path"
   expect_identical(vapply(captured$calls, `[[`, character(1), "fn"), c("protein_server"))
   expect_true(any(grepl("Skipping S4 creation UI", captured$logs, fixed = TRUE)))
   expect_true(any(grepl("Final protein state reached", captured$logs, fixed = TRUE)))
+  expect_identical(workflow_data$tab_status$quality_control, "complete")
+  expect_identical(workflow_data$tab_status$normalization, "pending")
+})
+
+test_that("proteomics QC completion helper advances workflow status for normalization", {
+  captured <- new.env(parent = emptyenv())
+  captured$logs <- character()
+  workflow_data <- new.env(parent = emptyenv())
+  workflow_data$tab_status <- list(
+    quality_control = "pending",
+    normalization = "disabled"
+  )
+
+  status <- completeProtQcWorkflowStatus(
+    workflowData = workflow_data,
+    logInfoFn = function(message, ...) {
+      captured$logs <- c(captured$logs, message)
+      invisible(NULL)
+    }
+  )
+
+  expect_identical(status$quality_control, "complete")
+  expect_identical(status$normalization, "pending")
+  expect_identical(workflow_data$tab_status, status)
+  expect_true(any(grepl("Quality Control complete", captured$logs, fixed = TRUE)))
 })
 
 test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path", {

@@ -4,26 +4,27 @@
 
 | Property | Value |
 |---|---|
-| File | seed_combined_protein.tsv |
-| Format | FragPipe combined_protein.tsv (wide format) |
+| File | proteinGroups.txt |
+| Format | MaxQuant proteinGroups.txt (wide LFQ format) |
 | Proteins | 5 (P00001–P00005) |
-| Samples | 4 (WT_1, WT_2, KO_1, KO_2) |
+| Samples | 6 (WT_1–3, KO_1–3) |
 | Total rows | 5 |
+| FASTA | proteins.fasta (P00001–P00006 UniProt-style headers) |
 
 ## Groups
 
 | Sample | Group |
 |---|---|
-| WT_1, WT_2 | WT (control) |
-| KO_1, KO_2 | KO (treatment) |
+| WT_1, WT_2, WT_3 | WT (control) |
+| KO_1, KO_2, KO_3 | KO (treatment) |
 
 ## Column Format
 
-Intensity columns follow FragPipe combined_protein.tsv convention:
-`{sample_name} MaxLFQ Intensity`
+Intensity columns follow MaxQuant proteinGroups convention:
+`LFQ.intensity.{sample_name}`
 
-The `importFragPipeData()` function detects columns ending with `MaxLFQ Intensity`,
-strips the suffix to extract sample names, and pivots to long format.
+The `importMaxQuantData()` function detects `LFQ.intensity.*` columns,
+extracts sample names, filters contaminants/reverse hits, and pivots to long format.
 
 ## Expected Significant Proteins (KO_vs_WT)
 
@@ -36,6 +37,6 @@ P00003–P00005 are not expected to be significant (<0.1 log2FC between groups).
 
 ## Import Function
 
-`importFragPipeData()` in `R/func_prot_import_readers.R`
+`importMaxQuantData()` in `R/func_prot_import_readers.R`
 
-Required columns: `Protein ID` (used as protein identifier), `{sample} MaxLFQ Intensity` columns
+Required columns: `Protein.IDs`, `Gene.names`, `LFQ.intensity.*` columns

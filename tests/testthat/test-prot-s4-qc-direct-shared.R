@@ -7,6 +7,7 @@ msr <- function(name) {
 
 ProteinQuantitativeData <- msr("ProteinQuantitativeData")
 removeProteinsWithOnlyOneReplicate <- msr("removeProteinsWithOnlyOneReplicate")
+removeProteinsWithOnlyOneReplicateHelper <- msr("removeProteinsWithOnlyOneReplicateHelper")
 removeRowsWithMissingValuesPercent <- msr("removeRowsWithMissingValuesPercent")
 filterSamplesByProteinCorrelationThreshold <- msr("filterSamplesByProteinCorrelationThreshold")
 cleanDesignMatrix <- msr("cleanDesignMatrix")
@@ -99,58 +100,46 @@ newProtS4QcObject <- function(args = list(), protein_quant_table = NULL, design_
   )
 }
 
-test_that("protein S4 helper-entry methods preserve current registration and failure behavior", {
+test_that("protein S4 helper-entry methods dispatch through ProteinQuantitativeData", {
   object <- newProtS4QcObject()
 
-  if (methods::hasMethod("removeProteinsWithOnlyOneReplicate", "ProteinQuantitativeData")) {
-    expect_error(
-      removeProteinsWithOnlyOneReplicate(
-        object,
-        core_utilisation = 1,
-        grouping_variable = "group"
-      ),
-      "invalid argument type"
-    )
-  } else {
-    expect_false(methods::hasMethod("removeProteinsWithOnlyOneReplicate", "ProteinQuantitativeData"))
-  }
+  expect_true(methods::hasMethod("removeProteinsWithOnlyOneReplicate", "ProteinQuantitativeData"))
+  replicate_filtered <- removeProteinsWithOnlyOneReplicate(
+    object,
+    core_utilisation = 1,
+    grouping_variable = "group"
+  )
+  expect_s4_class(replicate_filtered, "ProteinQuantitativeData")
+  expect_lte(nrow(replicate_filtered@protein_quant_table), nrow(object@protein_quant_table))
 
-  if (methods::hasMethod("removeRowsWithMissingValuesPercent", "ProteinQuantitativeData")) {
-    expect_error(
-      suppressMessages(
-        removeRowsWithMissingValuesPercent(
-          object,
-          ruv_grouping_variable = "group",
-          groupwise_percentage_cutoff = 50,
-          max_groups_percentage_cutoff = 50,
-          proteins_intensity_cutoff_percentile = 0.5
-        )
-      ),
-      "invalid argument type"
+  expect_true(methods::hasMethod("removeRowsWithMissingValuesPercent", "ProteinQuantitativeData"))
+  missingness_filtered <- suppressMessages(
+    removeRowsWithMissingValuesPercent(
+      object,
+      ruv_grouping_variable = "group",
+      groupwise_percentage_cutoff = 50,
+      max_groups_percentage_cutoff = 50,
+      proteins_intensity_cutoff_percentile = 0.5
     )
-  } else {
-    expect_false(methods::hasMethod("removeRowsWithMissingValuesPercent", "ProteinQuantitativeData"))
-  }
+  )
+  expect_s4_class(missingness_filtered, "ProteinQuantitativeData")
+  expect_lte(nrow(missingness_filtered@protein_quant_table), nrow(object@protein_quant_table))
 
-  if (methods::hasMethod("filterSamplesByProteinCorrelationThreshold", "ProteinQuantitativeData")) {
-    expect_error(
-      suppressMessages(
-        filterSamplesByProteinCorrelationThreshold(
-          object,
-          pearson_correlation_per_pair = data.frame(
-            Run.x = "S1",
-            Run.y = "S2",
-            pearson_correlation = 0.99,
-            stringsAsFactors = FALSE
-          ),
-          min_pearson_correlation_threshold = 0.75
-        )
+  expect_true(methods::hasMethod("filterSamplesByProteinCorrelationThreshold", "ProteinQuantitativeData"))
+  correlation_filtered <- suppressMessages(
+    filterSamplesByProteinCorrelationThreshold(
+      object,
+      pearson_correlation_per_pair = data.frame(
+        Run.x = "S1",
+        Run.y = "S2",
+        pearson_correlation = 0.99,
+        stringsAsFactors = FALSE
       ),
-      "invalid argument type"
+      min_pearson_correlation_threshold = 0.75
     )
-  } else {
-    expect_false(methods::hasMethod("filterSamplesByProteinCorrelationThreshold", "ProteinQuantitativeData"))
-  }
+  )
+  expect_s4_class(correlation_filtered, "ProteinQuantitativeData")
+  expect_lte(ncol(correlation_filtered@protein_quant_table), ncol(object@protein_quant_table))
 
   if (methods::hasMethod("proteinIntensityFiltering", "ProteinQuantitativeData")) {
     expect_error(
@@ -165,6 +154,34 @@ test_that("protein S4 helper-entry methods preserve current registration and fai
   } else {
     expect_false(methods::hasMethod("proteinIntensityFiltering", "ProteinQuantitativeData"))
   }
+})
+
+test_that("removeProteinsWithOnlyOneReplicateHelper handles local NA core execution", {
+  input_table <- data.frame(
+    Run = c("S1", "S2", "S3", "S4", "S1", "S3", "S1", "S2", "S3", "S4"),
+    Protein.Ids = c("P1", "P1", "P1", "P1", "P2", "P2", "P3", "P3", "P3", "P3"),
+    log_values = c(10, 11, 12, 13, 20, 21, 30, NA, 32, 33),
+    stringsAsFactors = FALSE
+  )
+  samples_id_tbl <- data.frame(
+    Run = c("S1", "S2", "S3", "S4"),
+    group = c("WT", "WT", "KO", "KO"),
+    stringsAsFactors = FALSE
+  )
+
+  result <- removeProteinsWithOnlyOneReplicateHelper(
+    input_table = input_table,
+    samples_id_tbl = samples_id_tbl,
+    input_table_sample_id_column = Run,
+    sample_id_tbl_sample_id_column = Run,
+    replicate_group_column = group,
+    protein_id_column = Protein.Ids,
+    quantity_column = log_values,
+    core_utilisation = NA
+  )
+
+  expect_identical(sort(unique(result$Protein.Ids)), "P1")
+  expect_identical(nrow(result), 4L)
 })
 
 test_that("cleanDesignMatrix preserves sample ordering and current warning fallbacks", {

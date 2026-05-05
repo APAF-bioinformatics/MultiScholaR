@@ -713,6 +713,7 @@ test_that("prot import shared helpers preserve orchestration lifecycle behavior"
   )
 
   expect_identical(completed$setup_import, "complete")
+  expect_identical(completed$design_matrix, "pending")
 
   reset <- resetProtImportWorkflowStateOnError(
     workflowData = workflow_data,

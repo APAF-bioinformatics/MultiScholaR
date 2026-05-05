@@ -239,6 +239,19 @@ test_that("mod_prot_da_ui contains prot-da-load-session data-testid", {
   expect_match(html, 'data-testid="prot-da-load-session"', fixed = TRUE)
 })
 
+# ── mod_prot_design_ui / builder selectors ───────────────────────────────────
+
+test_that("proteomics design UI exposes canonical DIA builder controls for browser E2E", {
+  html <- ui_html(mod_prot_design_ui, "test")
+  expect_match(html, 'data-testid="prot-design-import-existing"', fixed = TRUE)
+  expect_match(html, 'data-testid="prot-design-new-factor"', fixed = TRUE)
+  expect_match(html, 'data-testid="prot-design-add-factor"', fixed = TRUE)
+  expect_match(html, 'data-testid="prot-design-selected-runs"', fixed = TRUE)
+  expect_match(html, 'data-testid="prot-design-assign-metadata"', fixed = TRUE)
+  expect_match(html, 'data-testid="prot-design-add-contrast"', fixed = TRUE)
+  expect_match(html, 'data-testid="prot-design-save"', fixed = TRUE)
+})
+
 # ── mod_prot_summary_ui ───────────────────────────────────────────────────────
 
 test_that("mod_prot_summary_ui contains prot-summary-generate-report data-testid", {

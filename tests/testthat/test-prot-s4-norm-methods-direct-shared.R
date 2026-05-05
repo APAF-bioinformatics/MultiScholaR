@@ -78,7 +78,7 @@ test_that("protein S4 normalisation methods preserve switch routing and RUV help
         ),
         nrow = 3,
         byrow = TRUE,
-        dimnames = list(colnames(Y), rownames(Y))
+        dimnames = list(rownames(Y), colnames(Y))
       )
     }
   )
