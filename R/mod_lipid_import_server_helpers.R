@@ -219,9 +219,10 @@ emitLipidImportModuleServerEntryDiagnostics <- function(
 
 probeLipidImportShinyFilesAvailability <- function(
   requireNamespaceFn = requireNamespace,
+  isTestModeFn = is_test_mode,
   emitMessage = message
 ) {
-  useShinyFiles <- requireNamespaceFn("shinyFiles", quietly = TRUE)
+  useShinyFiles <- requireNamespaceFn("shinyFiles", quietly = TRUE) && !isTRUE(isTestModeFn())
   emitMessage(sprintf(
     "   mod_lipid_import_server: shinyFiles available = %s",
     useShinyFiles
@@ -750,6 +751,92 @@ setupLipidImportShinyFileInputs <- function(
   )
 
   invisible(preparedVolumes)
+}
+
+handleLipidImportStandardFileSelection <- function(
+  fileInput,
+  assignSelectedPath,
+  setRenderedPath,
+  onSelected = NULL,
+  assignAssayPath = handleLipidImportSelectedAssayPathAssignment
+) {
+  if (is.null(fileInput) || is.null(fileInput$datapath) || length(fileInput$datapath) == 0) {
+    return(invisible(NULL))
+  }
+
+  selectedPath <- as.character(fileInput$datapath[1])
+  if (!nzchar(selectedPath)) {
+    return(invisible(NULL))
+  }
+
+  assignAssayPath(
+    selectedPath = selectedPath,
+    assignSelectedPath = assignSelectedPath,
+    setRenderedPath = setRenderedPath,
+    onSelected = onSelected
+  )
+}
+
+registerLipidImportStandardFileInputs <- function(
+  input,
+  output,
+  localData,
+  onAssay1Selected = NULL,
+  observeEvent = shiny::observeEvent,
+  handleStandardSelection = handleLipidImportStandardFileSelection
+) {
+  observeEvent(input$assay1_file_std, {
+    handleStandardSelection(
+      fileInput = input$assay1_file_std,
+      assignSelectedPath = function(value) {
+        localData$assay1_file <- value
+      },
+      setRenderedPath = function(renderedPath) {
+        output$assay1_path <- renderedPath
+      },
+      onSelected = onAssay1Selected
+    )
+  })
+
+  observeEvent(input$assay2_file_std, {
+    handleStandardSelection(
+      fileInput = input$assay2_file_std,
+      assignSelectedPath = function(value) {
+        localData$assay2_file <- value
+      },
+      setRenderedPath = function(renderedPath) {
+        output$assay2_path <- renderedPath
+      }
+    )
+  })
+
+  invisible(NULL)
+}
+
+setupLipidImportStandardFileInputs <- function(
+  useShinyFiles,
+  input,
+  output,
+  session,
+  localData,
+  buildAssay1Selected = buildLipidImportAssay1SelectedCallback,
+  registerInputs = registerLipidImportStandardFileInputs
+) {
+  if (isTRUE(useShinyFiles)) {
+    return(invisible(NULL))
+  }
+
+  registerInputs(
+    input = input,
+    output = output,
+    localData = localData,
+    onAssay1Selected = buildAssay1Selected(
+      session = session,
+      localData = localData
+    )
+  )
+
+  invisible(NULL)
 }
 
 registerLipidImportProcessObserver <- function(

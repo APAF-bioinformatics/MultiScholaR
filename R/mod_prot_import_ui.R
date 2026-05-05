@@ -25,23 +25,26 @@ mod_prot_import_ui <- function(id) {
         shiny::fluidRow(
           shiny::column(6,
             shiny::h4("Step 1: Import Searched Data File"),
-            if (use_shiny_files) {
-              shiny::tagList(
-                shinyFiles::shinyFilesButton(
-                  ns("search_results"), 
-                  "Select proteomics search results file",
-                  "Select File",
-                  multiple = FALSE,
-                  icon = shiny::icon("file")
-                ),
-                shiny::br(),
-                shiny::verbatimTextOutput(ns("search_results_path"), placeholder = TRUE)
-              )
-            } else {
-              shiny::fileInput(ns("search_results_standard"), 
-                       "Select proteomics search results file:",
-                       accept = c(".tsv", ".txt", ".tab", ".csv", ".xlsx", ".zip", ".parquet"))
-            },
+            shiny::div(
+              `data-testid` = "prot-import-search-results-file",
+              if (use_shiny_files) {
+                shiny::tagList(
+                  shinyFiles::shinyFilesButton(
+                    ns("search_results"),
+                    "Select proteomics search results file",
+                    "Select File",
+                    multiple = FALSE,
+                    icon = shiny::icon("file")
+                  ),
+                  shiny::br(),
+                  shiny::verbatimTextOutput(ns("search_results_path"), placeholder = TRUE)
+                )
+              } else {
+                shiny::fileInput(ns("search_results_standard"),
+                         "Select proteomics search results file:",
+                         accept = c(".tsv", ".txt", ".tab", ".csv", ".xlsx", ".zip", ".parquet"))
+              }
+            ),
             
             # Format detection output
             shiny::uiOutput(ns("format_detection")),
@@ -59,23 +62,26 @@ mod_prot_import_ui <- function(id) {
                         inline = TRUE),
             
             shiny::h4("Step 2: Import FASTA File"),
-            if (use_shiny_files) {
-              shiny::tagList(
-                shinyFiles::shinyFilesButton(
-                  ns("fasta_file"), 
-                  "Select FASTA file",
-                  "Select File",
-                  multiple = FALSE,
-                  icon = shiny::icon("file")
-                ),
-                shiny::br(),
-                shiny::verbatimTextOutput(ns("fasta_file_path"), placeholder = TRUE)
-              )
-            } else {
-              shiny::fileInput(ns("fasta_file_standard"), 
-                       "Select FASTA file:",
-                       accept = c(".fasta", ".fa", ".faa"))
-            },
+            shiny::div(
+              `data-testid` = "prot-import-fasta-file",
+              if (use_shiny_files) {
+                shiny::tagList(
+                  shinyFiles::shinyFilesButton(
+                    ns("fasta_file"),
+                    "Select FASTA file",
+                    "Select File",
+                    multiple = FALSE,
+                    icon = shiny::icon("file")
+                  ),
+                  shiny::br(),
+                  shiny::verbatimTextOutput(ns("fasta_file_path"), placeholder = TRUE)
+                )
+              } else {
+                shiny::fileInput(ns("fasta_file_standard"),
+                         "Select FASTA file:",
+                         accept = c(".fasta", ".fa", ".faa"))
+              }
+            ),
             
             # Sanitization and FASTA options
             shiny::wellPanel(
@@ -201,4 +207,3 @@ mod_prot_import_ui <- function(id) {
   )
   )
 }
-

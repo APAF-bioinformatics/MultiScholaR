@@ -29,6 +29,14 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
       volumes = volumes
     )
 
+    setupLipidImportStandardFileInputs(
+      useShinyFiles = use_shiny_files,
+      input = input,
+      output = output,
+      session = session,
+      localData = local_data
+    )
+
     column_selection_reactives <- buildLipidImportColumnSelectionReactives(
       input = input,
       localData = local_data
@@ -57,4 +65,3 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
     )
   })
 }
-

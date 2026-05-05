@@ -32,8 +32,11 @@ mod_prot_summary_ui <- function(id) {
         shiny::wellPanel(
           shiny::h4("File Management"),
           shiny::br(),
-          shiny::actionButton(ns("copy_to_publication"), "Copy to Publication Directory", 
-                      class = "btn-info", icon = shiny::icon("copy")),
+          testid(
+            shiny::actionButton(ns("copy_to_publication"), "Copy to Publication Directory",
+                        class = "btn-info", icon = shiny::icon("copy")),
+            "prot-summary-copy-publication"
+          ),
           shiny::br(), shiny::br(),
           shiny::verbatimTextOutput(ns("copy_status"))
         )
@@ -100,4 +103,3 @@ mod_prot_summary_ui <- function(id) {
   )
   )
 }
-

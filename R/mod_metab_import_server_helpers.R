@@ -99,6 +99,68 @@ setupMetabImportShinyFiles <- function(
   invisible(resolvedVolumes)
 }
 
+handleMetabImportStandardAssayFileSelection <- function(
+    fileInput,
+    localData,
+    localField,
+    output,
+    outputId,
+    onSelected = NULL,
+    renderTextFn = shiny::renderText
+) {
+  if (is.null(fileInput) || is.null(fileInput$datapath) || length(fileInput$datapath) == 0) {
+    return(invisible(NULL))
+  }
+
+  selectedPath <- as.character(fileInput$datapath[1])
+  if (!nzchar(selectedPath)) {
+    return(invisible(NULL))
+  }
+
+  localData[[localField]] <- selectedPath
+  output[[outputId]] <- renderTextFn(selectedPath)
+
+  if (is.function(onSelected)) {
+    onSelected(selectedPath)
+  }
+
+  invisible(selectedPath)
+}
+
+setupMetabImportStandardFileInputs <- function(
+    input,
+    output,
+    localData,
+    importDataFn,
+    observeEventFn = shiny::observeEvent,
+    handleStandardSelectionFn = handleMetabImportStandardAssayFileSelection
+) {
+  observeEventFn(input$assay1_file_std, {
+    handleStandardSelectionFn(
+      fileInput = input$assay1_file_std,
+      localData = localData,
+      localField = "assay1_file",
+      output = output,
+      outputId = "assay1_path",
+      onSelected = function(path) {
+        importDataFn()
+      }
+    )
+  })
+
+  observeEventFn(input$assay2_file_std, {
+    handleStandardSelectionFn(
+      fileInput = input$assay2_file_std,
+      localData = localData,
+      localField = "assay2_file",
+      output = output,
+      outputId = "assay2_path"
+    )
+  })
+
+  invisible(NULL)
+}
+
 setupMetabImportColumnAccessors <- function(
     input,
     localData,
@@ -201,6 +263,7 @@ runMetabImportModuleServerShell <- function(
     createReactiveValuesFn = shiny::reactiveValues,
     setupAssaySelectionCallbackFn = setupMetabImportAssaySelectionCallback,
     setupShinyFilesFn = setupMetabImportShinyFiles,
+    setupStandardFileInputsFn = setupMetabImportStandardFileInputs,
     setupColumnAccessorsFn = setupMetabImportColumnAccessors,
     setupFileLoadedOutputFn = setupMetabImportFileLoadedOutput,
     setupFormatDetectionStatusOutputFn = setupMetabImportFormatDetectionStatusOutput,
@@ -213,11 +276,12 @@ runMetabImportModuleServerShell <- function(
     setupValidationSummaryOutputFn = setupMetabImportValidationSummaryOutput,
     setupProcessingObserverFn = setupMetabImportProcessingObserver,
     setupStatusOutputFn = setupMetabImportStatusOutput,
-    logMessageFn = message
+    logMessageFn = message,
+    isTestModeFn = is_test_mode
 ) {
   logMessageFn("   mod_metab_import_server: Inside moduleServer function")
 
-  useShinyFiles <- requireNamespaceFn("shinyFiles", quietly = TRUE)
+  useShinyFiles <- requireNamespaceFn("shinyFiles", quietly = TRUE) && !isTRUE(isTestModeFn())
   logMessageFn(sprintf("   mod_metab_import_server: shinyFiles available = %s", useShinyFiles))
 
   localData <- createReactiveValuesFn(
@@ -243,6 +307,13 @@ runMetabImportModuleServerShell <- function(
       output = output,
       session = session,
       volumes = volumes,
+      localData = localData,
+      importDataFn = importData
+    )
+  } else {
+    setupStandardFileInputsFn(
+      input = input,
+      output = output,
       localData = localData,
       importDataFn = importData
     )

@@ -5,8 +5,8 @@
 mod_metab_import_ui <- function(id) {
   ns <- shiny::NS(id)
 
-  # Check if shinyFiles is available
-  use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE)
+  # Native file pickers are disabled in test mode so shinytest2 can upload files.
+  use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()
 
   shiny::tagList(
     shinyjs::useShinyjs(),
@@ -20,18 +20,21 @@ mod_metab_import_ui <- function(id) {
             shiny::column(
               6,
               shiny::h4("Step 1: Select Vendor Format"),
-              shiny::radioButtons(
-                ns("vendor_format"),
-                NULL,
-                choices = c(
-                  "MS-DIAL" = "msdial",
-                  "Progenesis QI" = "progenesis",
-                  "XCMS" = "xcms",
-                  "Compound Discoverer" = "compound_discoverer",
-                  "Other/Custom" = "custom"
+              testid(
+                shiny::radioButtons(
+                  ns("vendor_format"),
+                  NULL,
+                  choices = c(
+                    "MS-DIAL" = "msdial",
+                    "Progenesis QI" = "progenesis",
+                    "XCMS" = "xcms",
+                    "Compound Discoverer" = "compound_discoverer",
+                    "Other/Custom" = "custom"
+                  ),
+                  selected = "msdial",
+                  inline = TRUE
                 ),
-                selected = "msdial",
-                inline = TRUE
+                "metab-import-vendor-format"
               ),
               shiny::hr(),
               shiny::h4("Step 2: Import Data Files"),
@@ -43,16 +46,21 @@ mod_metab_import_ui <- function(id) {
                 shiny::fluidRow(
                   shiny::column(
                     4,
-                    shiny::textInput(
-                      ns("assay1_name"),
-                      "Assay Name",
-                      value = "LCMS_Pos"
+                    testid(
+                      shiny::textInput(
+                        ns("assay1_name"),
+                        "Assay Name",
+                        value = "LCMS_Pos"
+                      ),
+                      "metab-import-assay1-name"
                     )
                   ),
                   shiny::column(
                     8,
-                    if (use_shiny_files) {
-                      shiny::tagList(
+                    shiny::div(
+                      `data-testid` = "metab-import-assay1-file",
+                      if (use_shiny_files) {
+                        shiny::tagList(
                         shinyFiles::shinyFilesButton(
                           ns("assay1_file"),
                           "Select File",
@@ -60,16 +68,17 @@ mod_metab_import_ui <- function(id) {
                           multiple = FALSE,
                           icon = shiny::icon("file")
                         ),
-                        shiny::br(),
-                        shiny::verbatimTextOutput(ns("assay1_path"), placeholder = TRUE)
-                      )
-                    } else {
-                      shiny::fileInput(
-                        ns("assay1_file_std"),
-                        NULL,
-                        accept = c(".tsv", ".tab", ".txt", ".csv", ".xlsx", ".parquet")
-                      )
-                    }
+                          shiny::br(),
+                          shiny::verbatimTextOutput(ns("assay1_path"), placeholder = TRUE)
+                        )
+                      } else {
+                        shiny::fileInput(
+                          ns("assay1_file_std"),
+                          NULL,
+                          accept = c(".tsv", ".tab", ".txt", ".csv", ".xlsx", ".parquet")
+                        )
+                      }
+                    )
                   )
                 )
               )
@@ -80,17 +89,22 @@ mod_metab_import_ui <- function(id) {
                 shiny::fluidRow(
                   shiny::column(
                     4,
-                    shiny::textInput(
-                      ns("assay2_name"),
-                      "Assay Name (Optional)",
-                      value = "",
-                      placeholder = "e.g., LCMS_Neg"
+                    testid(
+                      shiny::textInput(
+                        ns("assay2_name"),
+                        "Assay Name (Optional)",
+                        value = "",
+                        placeholder = "e.g., LCMS_Neg"
+                      ),
+                      "metab-import-assay2-name"
                     )
                   ),
                   shiny::column(
                     8,
-                    if (use_shiny_files) {
-                      shiny::tagList(
+                    shiny::div(
+                      `data-testid` = "metab-import-assay2-file",
+                      if (use_shiny_files) {
+                        shiny::tagList(
                         shinyFiles::shinyFilesButton(
                           ns("assay2_file"),
                           "Select File",
@@ -98,16 +112,17 @@ mod_metab_import_ui <- function(id) {
                           multiple = FALSE,
                           icon = shiny::icon("file")
                         ),
-                        shiny::br(),
-                        shiny::verbatimTextOutput(ns("assay2_path"), placeholder = TRUE)
-                      )
-                    } else {
-                      shiny::fileInput(
-                        ns("assay2_file_std"),
-                        NULL,
-                        accept = c(".tsv", ".tab", ".txt", ".csv", ".xlsx", ".parquet")
-                      )
-                    }
+                          shiny::br(),
+                          shiny::verbatimTextOutput(ns("assay2_path"), placeholder = TRUE)
+                        )
+                      } else {
+                        shiny::fileInput(
+                          ns("assay2_file_std"),
+                          NULL,
+                          accept = c(".tsv", ".tab", ".txt", ".csv", ".xlsx", ".parquet")
+                        )
+                      }
+                    )
                   )
                 )
               )
@@ -283,12 +298,15 @@ mod_metab_import_ui <- function(id) {
           , shiny::fluidRow(
             shiny::column(
               12,
-              shiny::actionButton(
-                ns("process_import"),
-                "Process Imported Data",
-                class = "btn-success",
-                width = "100%",
-                icon = shiny::icon("check")
+              testid(
+                shiny::actionButton(
+                  ns("process_import"),
+                  "Process Imported Data",
+                  class = "btn-success",
+                  width = "100%",
+                  icon = shiny::icon("check")
+                ),
+                "metab-import-process"
               ),
               shiny::br(),
               shiny::br(),
@@ -300,4 +318,3 @@ mod_metab_import_ui <- function(id) {
     )
   )
 }
-

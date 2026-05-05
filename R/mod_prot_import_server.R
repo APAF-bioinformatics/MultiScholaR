@@ -23,7 +23,7 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
     message(sprintf("   mod_prot_import_server Step: Inside moduleServer function"))
 
     local_data <- createProtImportLocalData()
-    use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE)
+    use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()
 
     if (use_shiny_files) {
       volumes <- resolveProtImportShinyFileVolumes(volumes = volumes)

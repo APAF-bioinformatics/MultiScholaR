@@ -358,6 +358,7 @@ Suggests:
     reticulate,
     gprofiler2,
     webshot2,
+    shinytest2,
     seqinr,
     ggpubr
 Config/testthat/edition: 3
