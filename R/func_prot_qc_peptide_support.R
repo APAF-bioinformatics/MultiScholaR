@@ -58,7 +58,7 @@ checkPeptideNAPercentages <- function(peptide_obj, verbose = TRUE) {
   
   # Calculate per-group NA percentages
   per_group_na <- per_sample_na %>%
-    group_by(!!sym(group_id_col)) %>%
+    group_by(across(all_of(group_id_col))) %>%
     summarise(
       num_samples = n(),
       mean_na_percentage = mean(na_percentage, na.rm = TRUE),
@@ -196,27 +196,14 @@ removePeptidesOnlyInHek293 <- function( input_table
 #'@export
 compareTwoPeptideDataObjects <- function( object_a, object_b) {
 
-  object_a_peptides <- object_a@peptide_data |>
-    distinct(!!sym(object_a@protein_id_column), !!sym(object_a@peptide_sequence_column))
+  object_a_peptides <- unique(object_a@peptide_data[c(object_a@protein_id_column, object_a@peptide_sequence_column)])
+  object_b_peptides <- unique(object_b@peptide_data[c(object_b@protein_id_column, object_b@peptide_sequence_column)])
 
-  object_b_peptides <- object_b@peptide_data |>
-    distinct(!!sym(object_b@protein_id_column), !!sym(object_b@peptide_sequence_column))
+  object_a_proteins <- unique(object_a@peptide_data[[object_a@protein_id_column]])
+  object_b_proteins <- unique(object_b@peptide_data[[object_b@protein_id_column]])
 
-  object_a_proteins <- object_a@peptide_data |>
-    distinct(!!sym(object_a@protein_id_column)) |>
-    dplyr::pull(!!sym(object_a@protein_id_column))
-
-  object_b_proteins <- object_b@peptide_data |>
-    distinct(!!sym(object_b@protein_id_column)) |>
-    dplyr::pull(!!sym(object_b@protein_id_column))
-
-  object_a_samples <- object_a@design_matrix |>
-    distinct(!!sym(object_a@sample_id)) |>
-    dplyr::pull(!!sym(object_a@sample_id))
-
-  object_b_samples <- object_b@design_matrix |>
-    distinct(!!sym(object_b@sample_id)) |>
-    dplyr::pull(!!sym(object_b@sample_id))
+  object_a_samples <- unique(object_a@design_matrix[[object_a@sample_id]])
+  object_b_samples <- unique(object_b@design_matrix[[object_b@sample_id]])
 
 
   peptides_in_a_not_b <- nrow( dplyr::setdiff( object_a_peptides, object_b_peptides) )
@@ -259,16 +246,9 @@ compareTwoPeptideDataObjects <- function( object_a, object_b) {
 #'@export
 summarisePeptideObject <- function(theObject) {
 
-  num_peptides <- theObject@peptide_data |>
-    distinct(!!sym(theObject@protein_id_column), !!sym(theObject@peptide_sequence_column))
-
-  num_proteins <- theObject@peptide_data |>
-    distinct(!!sym(theObject@protein_id_column)) |>
-    dplyr::pull(!!sym(theObject@protein_id_column))
-
-  num_samples <- theObject@design_matrix |>
-    distinct(!!sym(theObject@sample_id)) |>
-    dplyr::pull(!!sym(theObject@sample_id))
+  num_peptides <- unique(theObject@peptide_data[c(theObject@protein_id_column, theObject@peptide_sequence_column)])
+  num_proteins <- unique(theObject@peptide_data[[theObject@protein_id_column]])
+  num_samples <- unique(theObject@design_matrix[[theObject@sample_id]])
 
   summary_list <- list( num_peptides = nrow(num_peptides)
                        , num_proteins = length(num_proteins)
@@ -320,4 +300,3 @@ calculatePeptidePearsonCorrelation <- function(temp_obj, tech_rep_remove_regex, 
   
   return(correlation_results)
 }
-

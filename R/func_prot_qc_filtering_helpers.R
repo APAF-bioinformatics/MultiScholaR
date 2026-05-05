@@ -195,7 +195,7 @@ removeRowsWithMissingValuesPercentHelper <- function(
     dplyr::mutate(
       !!rlang::sym(sample_id_str) := as.character(!!rlang::sym(sample_id_str)),
       !!rlang::sym(temporary_abundance_column) := dplyr::if_else(
-        is.nan(!!rlang::sym(temporary_abundance_column)),
+        !is.finite(!!rlang::sym(temporary_abundance_column)),
         NA_real_,
         !!rlang::sym(temporary_abundance_column)
       )

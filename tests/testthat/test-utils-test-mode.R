@@ -221,6 +221,7 @@ test_that("collect_state_digest() returns complete list with empty inputs", {
   expected_keys <- c(
     "selected_omics", "initialized_omics", "project_dir_keys"
     , "experiment_label", "workflow_type_per_omic", "step_status_per_omic"
+    , "r6_current_state_per_omic", "r6_state_history_per_omic"
     , "active_tab_per_omic", "export_paths", "report_fingerprints"
   )
   expect_true(all(expected_keys %in% names(result)))
@@ -256,6 +257,8 @@ test_that("collect_state_digest() handles partial workflow_states", {
   expect_identical(result$workflow_type_per_omic[["proteomics"]], "LFQ")
   expect_identical(result$active_tab_per_omic[["proteomics"]], "step2")
   expect_setequal(result$step_status_per_omic[["proteomics"]], c("step1", "step2"))
+  expect_identical(result$r6_current_state_per_omic[["proteomics"]], "step2")
+  expect_setequal(result$r6_state_history_per_omic[["proteomics"]], c("step1", "step2"))
 })
 
 test_that("collect_state_digest() returns NULL (not NA) for missing report files", {
@@ -306,6 +309,8 @@ test_that("collect_state_digest() reads workflow_type from state_manager field",
   )
   result <- collect_state_digest(workflow_states = ws)
   expect_identical(result$workflow_type_per_omic[["proteomics"]], "TMT")
+  expect_identical(result$r6_current_state_per_omic[["proteomics"]], "initial")
+  expect_identical(result$r6_state_history_per_omic[["proteomics"]], "initial")
 })
 
 test_that("collect_state_digest() reads tab_status as step_status_per_omic", {
@@ -371,6 +376,8 @@ test_that("collect_state_digest() returns empty lists when workflow_states is em
   result <- collect_state_digest(workflow_states = list())
   expect_identical(result$workflow_type_per_omic, list())
   expect_identical(result$step_status_per_omic, list())
+  expect_identical(result$r6_current_state_per_omic, list())
+  expect_identical(result$r6_state_history_per_omic, list())
   expect_identical(result$active_tab_per_omic, list())
   expect_identical(result$export_paths, list())
 })

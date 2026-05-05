@@ -128,6 +128,8 @@ withSharedPeptideQvaluePackageMocks <- function(server_env,
                                                 captured,
                                                 filtered_state,
                                                 filter_error = NULL) {
+  mock_frame <- parent.frame()
+
   localSharedPeptideQvalueBinding(
     server_env,
     "updateProteinFiltering",
@@ -142,7 +144,7 @@ withSharedPeptideQvaluePackageMocks <- function(server_env,
       )
       "plot-token"
     },
-    .local_envir = parent.frame()
+    .local_envir = mock_frame
   )
 
   testthat::local_mocked_bindings(
@@ -164,7 +166,7 @@ withSharedPeptideQvaluePackageMocks <- function(server_env,
       }
       filtered_state
     },
-    .env = server_env
+    .env = mock_frame
   )
 }
 

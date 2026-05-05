@@ -211,6 +211,32 @@ resolvePeptideQcColumnName <- function(column_expr, env = parent.frame()) {
   rlang::expr_text(column_expr)
 }
 
+#' @keywords internal
+resolvePeptideQcColumnArgument <- function(column_expr, column_value, candidates = character(), env = parent.frame()) {
+  if (is.character(column_expr) && length(column_expr) == 1) {
+    return(column_expr)
+  }
+
+  if (is.symbol(column_expr)) {
+    symbol_name <- as.character(column_expr)
+    if (symbol_name %in% candidates) {
+      return(symbol_name)
+    }
+  }
+
+  forced_value <- tryCatch(
+    force(column_value),
+    error = function(e) NULL
+  )
+  if (is.character(forced_value) && length(forced_value) == 1) {
+    return(forced_value)
+  }
+  if (is.symbol(forced_value)) {
+    return(as.character(forced_value))
+  }
+
+  resolvePeptideQcColumnName(column_expr, env = env)
+}
 
 
 

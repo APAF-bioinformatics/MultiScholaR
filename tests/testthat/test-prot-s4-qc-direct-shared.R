@@ -156,6 +156,46 @@ test_that("protein S4 helper-entry methods dispatch through ProteinQuantitativeD
   }
 })
 
+test_that("protein missingness filtering resolves object args when called through an injected alias", {
+  object <- newProtS4QcObject(
+    args = list(
+      removeRowsWithMissingValuesPercent = list(
+        groupwise_percentage_cutoff = 66.667,
+        max_groups_percentage_cutoff = 50,
+        proteins_intensity_cutoff_percentile = 0.1
+      ),
+      ruvIII_C_Varying = list(
+        ruv_grouping_variable = "group"
+      )
+    )
+  )
+
+  removeRowsWithMissingValuesPercentFn <- removeRowsWithMissingValuesPercent
+
+  filtered <- suppressMessages(
+    removeRowsWithMissingValuesPercentFn(object)
+  )
+
+  expect_s4_class(filtered, "ProteinQuantitativeData")
+  expect_identical(
+    filtered@args$removeRowsWithMissingValuesPercent$ruv_grouping_variable,
+    "group"
+  )
+  expect_equal(
+    filtered@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
+    66.667
+  )
+  expect_equal(
+    filtered@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
+    50
+  )
+  expect_equal(
+    filtered@args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile,
+    0.1
+  )
+  expect_lte(nrow(filtered@protein_quant_table), nrow(object@protein_quant_table))
+})
+
 test_that("removeProteinsWithOnlyOneReplicateHelper handles local NA core execution", {
   input_table <- data.frame(
     Run = c("S1", "S2", "S3", "S4", "S1", "S3", "S1", "S2", "S3", "S4"),

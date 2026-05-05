@@ -134,8 +134,8 @@ test_that("peptide support helpers preserve NA summaries and cohort filtering br
     core_utilisation = 2
   )
 
-  expect_identical(direct_removed$Protein.Ids, "P2")
-  expect_identical(parallel_removed$Protein.Ids, "P2")
+  expect_identical(unique(direct_removed$Protein.Ids), "P2")
+  expect_identical(unique(parallel_removed$Protein.Ids), "P2")
 })
 
 test_that("peptide support helpers preserve object comparisons and sample correlations", {

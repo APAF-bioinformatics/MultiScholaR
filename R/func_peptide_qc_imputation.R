@@ -214,6 +214,20 @@ peptideMissingValueImputationHelper <- function( input_table
                                            , proportion_missing_values = 0.50
                                            , core_utilisation ) {
 
+  quantity_column_name <- rlang::as_name(rlang::enquo(quantity_to_impute_column))
+  imputed_column_name <- rlang::as_name(rlang::enquo(imputed_value_column))
+
+  if (nrow(input_table) == 0L) {
+    empty_imputation <- input_table
+    if (!imputed_column_name %in% names(empty_imputation)) {
+      empty_imputation[[imputed_column_name]] <- empty_imputation[[quantity_column_name]]
+    }
+    if (!"is_imputed" %in% names(empty_imputation)) {
+      empty_imputation$is_imputed <- logical(0)
+    }
+    return(empty_imputation)
+  }
+
   # Max number of technical replicates per group
   num_tech_rep_per_sample <-  metadata_table  |>
     dplyr::filter( !str_detect( {{replicate_group_column}}, hek_string))  |>
@@ -225,7 +239,9 @@ peptideMissingValueImputationHelper <- function( input_table
   # Count the number of technical replicates per sample and peptide combination
   num_tech_reps_per_sample_and_peptide <- NA
 
-  if( length(which(is.na(core_utilisation))) > 0 ) {
+  use_cluster <- inherits(core_utilisation, "multidplyr_cluster")
+
+  if( !use_cluster ) {
     num_tech_reps_per_sample_and_peptide <- input_table |>
       left_join( metadata_table
                  , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
@@ -901,4 +917,3 @@ setMethod(f="proteinMissingValueImputationLimpa"
               stop(paste("limpa protein imputation failed:", e$message))
             })
           })
-

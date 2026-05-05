@@ -99,6 +99,8 @@ test_mode_digest_ui <- function(ns = NULL) {
 #'     \item{experiment_label}{Character scalar or NULL.}
 #'     \item{workflow_type_per_omic}{Named list of workflow type strings per omic, or NULL.}
 #'     \item{step_status_per_omic}{Named list of tab status objects per omic.}
+#'     \item{r6_current_state_per_omic}{Named list of current WorkflowState state names per omic.}
+#'     \item{r6_state_history_per_omic}{Named list of WorkflowState history vectors per omic.}
 #'     \item{active_tab_per_omic}{Named list of active tab strings per omic, or NULL.}
 #'     \item{export_paths}{Named list of processing logs per omic.}
 #'     \item{report_fingerprints}{Named list of MD5 hashes or NULL per report file.}
@@ -140,6 +142,42 @@ collect_state_digest <- function(values = list(), workflow_states = list()) {
       shiny::isolate({
         ts <- ws$tab_status
         if (!is.null(ts)) return(ts)
+        names(ws[["states"]] %||% list())
+      })
+      , error = function(e) NULL
+    )
+  })
+
+  r6_current_state_per_omic <- lapply(workflow_states, \(ws) {
+    tryCatch(
+      shiny::isolate({
+        sm <- ws$state_manager
+        if (!is.null(sm)) {
+          current_state <- tryCatch(sm$current_state, error = function(e) NULL)
+          if (!is.null(current_state)) return(current_state)
+        }
+        ws[["r6_current_state_name"]] %||% ws[["current_state"]]
+      })
+      , error = function(e) NULL
+    )
+  })
+
+  r6_state_history_per_omic <- lapply(workflow_states, \(ws) {
+    tryCatch(
+      shiny::isolate({
+        sm <- ws$state_manager
+        if (!is.null(sm)) {
+          history <- tryCatch(sm$getHistory(), error = function(e) NULL)
+          if (is.null(history)) {
+            history <- tryCatch(unlist(sm$state_history), error = function(e) NULL)
+          }
+          if (!is.null(history)) return(as.character(history))
+
+          state_names <- tryCatch(names(sm$states), error = function(e) NULL)
+          if (!is.null(state_names)) return(as.character(state_names))
+        }
+        history <- ws[["r6_state_history"]]
+        if (!is.null(history)) return(as.character(history))
         names(ws[["states"]] %||% list())
       })
       , error = function(e) NULL
@@ -188,6 +226,8 @@ collect_state_digest <- function(values = list(), workflow_states = list()) {
     , experiment_label = experiment_label
     , workflow_type_per_omic = workflow_type_per_omic
     , step_status_per_omic = step_status_per_omic
+    , r6_current_state_per_omic = r6_current_state_per_omic
+    , r6_state_history_per_omic = r6_state_history_per_omic
     , active_tab_per_omic = active_tab_per_omic
     , export_paths = export_paths
     , report_fingerprints = report_fingerprints

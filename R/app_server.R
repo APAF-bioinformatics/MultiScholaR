@@ -269,6 +269,7 @@ app_server <- function(input, output, session) {
   # Expose state digest for automated test assertions when test mode is active
   if (is_test_mode()) {
     output$test_state_digest <- shiny::renderText({
+      shiny::invalidateLater(250)
       workflow_states <- values$workflow_state
       invisible(lapply(workflow_states, function(workflow_state) {
         tryCatch({

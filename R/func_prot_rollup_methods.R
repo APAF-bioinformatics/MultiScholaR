@@ -14,7 +14,8 @@ rollUpPrecursorToPeptideHelper <- function( input_table
                                       , core_utilisation) {
 
   peptide_normalised_tbl <- NA
-  if( length(which(is.na(core_utilisation))) == 0 ) {
+  use_cluster <- inherits(core_utilisation, "multidplyr_cluster")
+  if (!use_cluster) {
 
     peptide_normalised_tbl <- input_table  |>
       group_by( {{sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{modified_peptide_sequence_column}} ) |>
@@ -92,4 +93,3 @@ setMethod(f="rollUpPrecursorToPeptide"
 
             return(theObject)
           })
-

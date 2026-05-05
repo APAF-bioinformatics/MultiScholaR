@@ -1,3 +1,52 @@
+# Resolve S4 QC method parameters without relying on call-stack names. Several
+# module apply-step tests inject S4 generics via function arguments, which makes
+# stack-introspective helpers see the injected argument name instead of the S4
+# method section in @args.
+.resolveProteinQcMethodParam <- function(theObject,
+                                         section_name,
+                                         param_name,
+                                         explicit_value = NULL,
+                                         default_value = NULL,
+                                         accept_null = FALSE,
+                                         check_fn = checkParamsObjectFunctionSimplify) {
+  if (!is.null(explicit_value)) {
+    return(explicit_value)
+  }
+
+  section <- theObject@args[[section_name]]
+  has_object_value <- is.list(section) && param_name %in% names(section)
+  object_value <- if (has_object_value) {
+    section[[param_name]]
+  } else {
+    NULL
+  }
+  if (has_object_value && (!is.null(object_value) || accept_null)) {
+    return(object_value)
+  }
+
+  checked_value <- tryCatch(
+    suppressWarnings(check_fn(theObject, param_name, default_value)),
+    error = function(e) NULL
+  )
+  if (!is.null(checked_value) || accept_null) {
+    return(checked_value)
+  }
+
+  default_value
+}
+
+.updateProteinQcMethodParam <- function(theObject,
+                                        section_name,
+                                        param_name,
+                                        value) {
+  if (is.null(theObject@args[[section_name]]) ||
+      !is.list(theObject@args[[section_name]])) {
+    theObject@args[[section_name]] <- list()
+  }
+  theObject@args[[section_name]][[param_name]] <- value
+  theObject
+}
+
 #' @export
 setMethod(
   f = "removeProteinsWithOnlyOneReplicate",
@@ -183,12 +232,15 @@ setMethod(
       flush.console()
     }
 
-    message("      DEBUG66: About to call checkParamsObjectFunctionSimplify for ruv_grouping_variable...")
+    message("      DEBUG66: About to resolve ruv_grouping_variable...")
     flush.console()
-    ruv_grouping_variable <- checkParamsObjectFunctionSimplify(
-      theObject,
-      "ruv_grouping_variable",
-      NULL
+    ruv_grouping_variable <- .resolveProteinQcMethodParam(
+      theObject = theObject,
+      section_name = "removeRowsWithMissingValuesPercent",
+      param_name = "ruv_grouping_variable",
+      explicit_value = ruv_grouping_variable,
+      default_value = NULL,
+      accept_null = TRUE
     )
     message(sprintf("      DEBUG66: ruv_grouping_variable resolved = %s", ifelse(is.null(ruv_grouping_variable), "NULL *** POTENTIAL PROBLEM ***", ruv_grouping_variable)))
     flush.console()
@@ -231,30 +283,36 @@ setMethod(
 
     message("   DEBUG66 STEP 4: Resolving groupwise_percentage_cutoff...")
     flush.console()
-    groupwise_percentage_cutoff <- checkParamsObjectFunctionSimplify(
-      theObject,
-      "groupwise_percentage_cutoff",
-      50
+    groupwise_percentage_cutoff <- .resolveProteinQcMethodParam(
+      theObject = theObject,
+      section_name = "removeRowsWithMissingValuesPercent",
+      param_name = "groupwise_percentage_cutoff",
+      explicit_value = groupwise_percentage_cutoff,
+      default_value = 50
     )
     message(sprintf("      DEBUG66: groupwise_percentage_cutoff resolved = %g", groupwise_percentage_cutoff))
     flush.console()
 
     message("   DEBUG66 STEP 5: Resolving max_groups_percentage_cutoff...")
     flush.console()
-    max_groups_percentage_cutoff <- checkParamsObjectFunctionSimplify(
-      theObject,
-      "max_groups_percentage_cutoff",
-      50
+    max_groups_percentage_cutoff <- .resolveProteinQcMethodParam(
+      theObject = theObject,
+      section_name = "removeRowsWithMissingValuesPercent",
+      param_name = "max_groups_percentage_cutoff",
+      explicit_value = max_groups_percentage_cutoff,
+      default_value = 50
     )
     message(sprintf("      DEBUG66: max_groups_percentage_cutoff resolved = %g", max_groups_percentage_cutoff))
     flush.console()
 
     message("   DEBUG66 STEP 6: Resolving proteins_intensity_cutoff_percentile...")
     flush.console()
-    proteins_intensity_cutoff_percentile <- checkParamsObjectFunctionSimplify(
-      theObject,
-      "proteins_intensity_cutoff_percentile",
-      1
+    proteins_intensity_cutoff_percentile <- .resolveProteinQcMethodParam(
+      theObject = theObject,
+      section_name = "removeRowsWithMissingValuesPercent",
+      param_name = "proteins_intensity_cutoff_percentile",
+      explicit_value = proteins_intensity_cutoff_percentile,
+      default_value = 1
     )
     message(sprintf("      DEBUG66: proteins_intensity_cutoff_percentile resolved = %g", proteins_intensity_cutoff_percentile))
     flush.console()
@@ -264,25 +322,45 @@ setMethod(
 
     message("      DEBUG66: Updating ruv_grouping_variable...")
     flush.console()
-    theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+    theObject <- .updateProteinQcMethodParam(
+      theObject,
+      "removeRowsWithMissingValuesPercent",
+      "ruv_grouping_variable",
+      ruv_grouping_variable
+    )
     message("      DEBUG66: ruv_grouping_variable updated")
     flush.console()
 
     message("      DEBUG66: Updating groupwise_percentage_cutoff...")
     flush.console()
-    theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff")
+    theObject <- .updateProteinQcMethodParam(
+      theObject,
+      "removeRowsWithMissingValuesPercent",
+      "groupwise_percentage_cutoff",
+      groupwise_percentage_cutoff
+    )
     message("      DEBUG66: groupwise_percentage_cutoff updated")
     flush.console()
 
     message("      DEBUG66: Updating max_groups_percentage_cutoff...")
     flush.console()
-    theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff")
+    theObject <- .updateProteinQcMethodParam(
+      theObject,
+      "removeRowsWithMissingValuesPercent",
+      "max_groups_percentage_cutoff",
+      max_groups_percentage_cutoff
+    )
     message("      DEBUG66: max_groups_percentage_cutoff updated")
     flush.console()
 
     message("      DEBUG66: Updating proteins_intensity_cutoff_percentile...")
     flush.console()
-    theObject <- updateParamInObject(theObject, "proteins_intensity_cutoff_percentile")
+    theObject <- .updateProteinQcMethodParam(
+      theObject,
+      "removeRowsWithMissingValuesPercent",
+      "proteins_intensity_cutoff_percentile",
+      proteins_intensity_cutoff_percentile
+    )
     message("      DEBUG66: proteins_intensity_cutoff_percentile updated")
     flush.console()
 
@@ -708,7 +786,10 @@ setMethod(
     frozen_protein_matrix_pca <- frozen_protein_matrix
     frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
 
-    if (is.na(label_column) || label_column == "") {
+    if (is.null(label_column) ||
+        length(label_column) == 0L ||
+        is.na(label_column) ||
+        label_column == "") {
       label_column <- ""
     }
 
@@ -758,7 +839,10 @@ setMethod(
     frozen_protein_matrix_pca <- frozen_protein_matrix
     frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
 
-    if (is.na(label_column) || label_column == "") {
+    if (is.null(label_column) ||
+        length(label_column) == 0L ||
+        is.na(label_column) ||
+        label_column == "") {
       label_column <- ""
     }
 
@@ -772,6 +856,27 @@ setMethod(
     )
 
     return(pca_plots_list)
+  }
+)
+
+#' @export
+setMethod(
+  f = "plotDensity",
+  signature = "ProteinQuantitativeData",
+  definition = function(theObject, grouping_variable, title = "", font_size = 8) {
+    pca_plot <- plotPca(
+      theObject,
+      grouping_variable = grouping_variable,
+      label_column = NULL,
+      title = title,
+      font_size = font_size
+    )
+    plotDensity(
+      pca_plot,
+      grouping_variable = grouping_variable,
+      title = title,
+      font_size = font_size
+    )
   }
 )
 

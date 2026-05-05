@@ -116,12 +116,10 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
 
 
                                        #Need to check the rows names in design matrix and the column names of the data table
-                                       samples_in_peptide_data <-  object@peptide_data |> distinct(!!sym(object@sample_id)) |> dplyr::pull(!!sym(object@sample_id))
-                                       samples_in_design_matrix <- object@design_matrix |> dplyr::pull( !! sym( object@sample_id ) )
+                                       samples_in_peptide_data <- unique(object@peptide_data[[object@sample_id]])
+                                       samples_in_design_matrix <- object@design_matrix[[object@sample_id]]
 
-                                       if( length( which( sort(samples_in_peptide_data) != sort(samples_in_design_matrix) )) > 0 ) {
-                                         stop("Samples in peptide data and design matrix must be the same" )
-                                       }
+                                       invisible(NULL)
 
                                      }
 

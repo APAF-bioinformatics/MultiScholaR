@@ -65,8 +65,6 @@ appendMethodCall <- function(log_env, key, value) {
 }
 
 localPeptideQcMethodBindings <- function(log_env, .local_envir = parent.frame()) {
-  method_env <- environment(methods::selectMethod("peptideIntensityFiltering", "PeptideQuantitativeData")@.Data)
-
   local_mocked_bindings(
     checkParamsObjectFunctionSimplify = function(theObject, function_param, default = NULL) {
       switch(
@@ -146,7 +144,7 @@ localPeptideQcMethodBindings <- function(log_env, .local_envir = parent.frame())
       appendMethodCall(log_env, "srl_calls", args)
       args$input_table[1, , drop = FALSE]
     },
-    .env = method_env
+    .env = .local_envir
   )
 }
 
@@ -180,6 +178,63 @@ test_that("peptide QC S4 methods preserve threshold resolution and invalid-value
   expect_equal(nrow(valid_intensity@peptide_data), 2)
   expect_equal(nrow(valid_missing@peptide_data), 1)
   expect_true(length(log_env$clean_calls) >= 4)
+})
+
+test_that("peptide intensity helpers resolve S4 slot column expressions", {
+  peptide_object <- newPeptideQcMethodsObject(
+    raw_values = c(10, 20, 30, 40),
+    norm_values = c(1, 2, 3, 4)
+  )
+
+  filtered <- peptideIntensityFilteringHelper(
+    input_table = peptide_object@peptide_data,
+    design_matrix = peptide_object@design_matrix,
+    min_peptide_intensity_threshold = 10,
+    sample_id_column = peptide_object@sample_id,
+    grouping_variable = peptide_object@group_id,
+    groupwise_percentage_cutoff = 100,
+    max_groups_percentage_cutoff = 100,
+    protein_id_column = peptide_object@protein_id_column,
+    peptide_sequence_column = peptide_object@peptide_sequence_column,
+    peptide_quantity_column = peptide_object@raw_quantity_column,
+    core_utilisation = NA
+  )
+
+  missing_filtered <- removePeptidesWithMissingValuesPercentHelper(
+    input_table = peptide_object@peptide_data,
+    design_matrix = peptide_object@design_matrix,
+    sample_id = peptide_object@sample_id,
+    protein_id_column = peptide_object@protein_id_column,
+    peptide_sequence_column = peptide_object@peptide_sequence_column,
+    grouping_variable = peptide_object@group_id,
+    groupwise_percentage_cutoff = 100,
+    max_groups_percentage_cutoff = 100,
+    abundance_threshold = 0,
+    abundance_column = peptide_object@norm_quantity_column
+  )
+
+  expect_equal(nrow(filtered), nrow(peptide_object@peptide_data))
+  expect_equal(nrow(missing_filtered), nrow(peptide_object@peptide_data))
+  expect_identical(names(filtered), names(peptide_object@peptide_data))
+  expect_identical(names(missing_filtered), names(peptide_object@peptide_data))
+})
+
+test_that("peptide sample filtering honors object args from module updates", {
+  peptide_object <- newPeptideQcMethodsObject(
+    raw_values = c(10, 20, 30, 40),
+    norm_values = c(1, 2, 3, 4)
+  )
+  peptide_object@args$filterMinNumPeptidesPerSample <- list(
+    peptides_per_sample_cutoff = 1,
+    inclusion_list = character(0),
+    core_utilisation = NA
+  )
+
+  filtered <- filterMinNumPeptidesPerSample(peptide_object)
+
+  expect_s4_class(filtered, "PeptideQuantitativeData")
+  expect_equal(nrow(filtered@peptide_data), nrow(peptide_object@peptide_data))
+  expect_identical(sort(unique(filtered@peptide_data$Run)), c("S1", "S2"))
 })
 
 test_that("peptide QC S4 filtering and DIA cleanup methods preserve helper delegation and slot updates", {
@@ -221,5 +276,21 @@ test_that("peptide QC S4 filtering and DIA cleanup methods preserve helper deleg
   expect_identical(log_env$srl_calls[[1]]$global_qvalue_threshold, 0.05)
   expect_identical(log_env$srl_calls[[1]]$qvalue_threshold, 0.01)
   expect_identical(log_env$srl_calls[[1]]$choose_only_proteotypic_peptide, 1)
-  expect_true(length(log_env$updated_params) >= 10)
+  expect_identical(
+    cleaned@args$srlQvalueProteotypicPeptideClean$qvalue_threshold,
+    0.01
+  )
+  expect_identical(
+    cleaned@args$srlQvalueProteotypicPeptideClean$global_qvalue_threshold,
+    0.05
+  )
+  expect_identical(
+    cleaned@args$srlQvalueProteotypicPeptideClean$choose_only_proteotypic_peptide,
+    1
+  )
+  expect_identical(
+    cleaned@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids,
+    c("Run", "CustomColumn")
+  )
+  expect_true(length(log_env$updated_params) >= 6)
 })

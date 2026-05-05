@@ -254,3 +254,101 @@ Runner example:
 Rscript tools/ci/run-module-ci.R --omic proteomics --module design --runtime unit-contract --reporter summary
 Rscript tools/ci/module-ci-scorecard.R --artifact-dir tests/testthat/_module_ci_artifacts
 ```
+
+## Proteomics Peptide QC Matrix
+
+MCI-006 adds `tests/testthat/test-module-ci-prot-peptide-qc.R` plus
+`tests/testthat/helper-module-ci-prot-peptide-qc.R`. This suite targets the DIA
+peptide-QC contract before peptide-to-protein rollup and downstream protein QC.
+
+The matrix covers:
+
+- Intensity filtering at zero, exact threshold boundary, above-max thresholds,
+  missing values, all-zero peptides, and non-finite intensities.
+- Q-value filtering for valid thresholds, inclusive `<= threshold` boundary
+  behavior, missing q-values, missing output/filter columns, all-pass, and
+  all-fail cases.
+- Sample and replicate filters for balanced inputs, unbalanced sample counts,
+  duplicate peptide/run observations, inclusion-list overrides, and missing
+  design rows.
+- Deterministic technical-replicate imputation, no-imputation settings,
+  all-missing peptides, and minimum-observation guards.
+- Plot and summary outputs for density, PCA, RLE, summary counts, and
+  degenerate low-variance fixtures.
+- State history for `qvalue_filtered`, `precursor_rollup`,
+  `intensity_filtered`, `protein_peptide_filtered`, `sample_filtered`,
+  `replicate_filtered`, and `imputed`, with a guard that protein QC cannot
+  proceed before the peptide `imputed` state exists.
+
+The peptide-QC matrix exposed production hardening changes:
+
+- Peptide intensity/missingness filters now coerce all non-finite values
+  (`Inf`, `-Inf`, and `NaN`) to missing before threshold tests.
+- Peptide q-value filtering now treats threshold equality as passing, matching
+  the UI wording and common FDR cutoff expectation.
+- Peptide intensity helpers now resolve S4 slot-backed column parameters before
+  tidy evaluation, so module apply steps do not pass literal expressions such as
+  `theObject@sample_id` into `dplyr`.
+- Peptide sample filtering now honors module-updated object args before legacy
+  stack introspection, preventing tiny valid DIA fixtures from being emptied by
+  the historical default sample cutoff.
+- The downstream protein intensity transition now resolves
+  `removeRowsWithMissingValuesPercent` parameters from explicit args or the
+  correct S4 `@args` section when the generic is injected through module
+  apply-step dependencies. Browser DIA and DIA+LIMPA lanes both advance through
+  `protein_intensity_filtered`.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic proteomics --module qc_peptide --runtime unit-contract --reporter summary
+```
+
+## Proteomics Protein QC Matrix
+
+MCI-007 adds `tests/testthat/test-module-ci-prot-protein-qc.R` plus
+`tests/testthat/helper-module-ci-prot-protein-qc.R`. This suite targets the
+protein-QC contract shared by protein-level TMT/LFQ imports and DIA peptide
+rollup outputs.
+
+The matrix covers:
+
+- Protein-level TMT and LFQ bypass into `protein_s4_initial`, including invalid
+  protein-ID column rejection before state advancement.
+- DIA rollup through IQ MaxLFQ and limpa DPC-Quant test-mode fallback,
+  including missing optional `limpa`, alias restoration, dropped-sample design
+  pruning, report-template metadata, ambiguous/shared peptides, and
+  peptide-count guards.
+- Accession cleanup for semicolon-delimited protein groups, contaminants,
+  canonical isoform choice, duplicate canonical IDs, missing gene names, FASTA
+  metadata present, and FASTA metadata absent.
+- Protein intensity filtering for missingness thresholds, percentile thresholds,
+  all-zero proteins, all-non-finite proteins, and downstream sample/design
+  alignment.
+- Duplicate protein resolution for mean/median/max-compatible numeric sample
+  columns, including sample IDs that do not contain digits.
+- Protein replicate filtering for balanced, unbalanced, single-replicate, and
+  disagreeing technical-replicate patterns.
+- State/artifact checks for `protein_s4_initial`, `protein_s4_created`,
+  `protein_accession_cleaned`, `protein_intensity_filtered`,
+  `duplicates_removed`, and `protein_replicate_filtered`, plus protein counts,
+  QC parameter persistence, exported replicate-filter TSVs, density, PCA, and
+  RLE plots.
+
+The protein-QC matrix exposed production hardening changes:
+
+- Protein missingness filtering now coerces every non-finite intensity
+  (`Inf`, `-Inf`, and `NaN`) to missing before threshold tests.
+- Duplicate protein removal now aggregates all numeric sample columns instead
+  of relying on digit-matching column names, preserving valid sample IDs such as
+  `Alpha` and `Beta`.
+- Protein-level density plotting now dispatches for `ProteinQuantitativeData`
+  by reusing the existing protein PCA path and ggplot density renderer.
+- Protein PCA now accepts `label_column = NULL`, matching module usage and the
+  peptide-QC plotting contract.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic proteomics --module qc_protein --runtime unit-contract --reporter summary
+```

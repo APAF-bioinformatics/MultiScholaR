@@ -128,6 +128,7 @@ runPeptideQvalueApplyStep <- function(workflowData,
     qvalueThreshold,
     globalQvalueThreshold
   ))
+  proteotypicOnly <- isTRUE(proteotypicOnly)
 
   currentS4 <- updateConfigParameterFn(
     theObject = currentS4,

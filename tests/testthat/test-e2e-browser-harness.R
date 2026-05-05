@@ -11,6 +11,8 @@ new_fake_e2e_driver <- function(digest = NULL, logs = list(), select_options = l
         project_dir_keys = c("proteomics", "scripts"),
         workflow_type_per_omic = list(proteomics = "DIA"),
         step_status_per_omic = list(proteomics = list(setup_import = "complete")),
+        r6_current_state_per_omic = list(proteomics = "initial"),
+        r6_state_history_per_omic = list(proteomics = c("initial")),
         active_tab_per_omic = list(proteomics = "setup"),
         export_paths = list(proteomics = list()),
         report_fingerprints = list()
@@ -274,6 +276,39 @@ test_that("project path and filtered-session artifact assertions validate DIA ha
   expect_no_error(e2e_assert_prot_filtered_session_artifacts(paths$base_dir))
 })
 
+test_that("browser harness waits for persisted R6 workflow states", {
+  driver <- new_fake_e2e_driver(
+    digest = jsonlite::toJSON(
+      list(
+        selected_omics = "proteomics",
+        initialized_omics = "proteomics",
+        project_dir_keys = character(),
+        workflow_type_per_omic = list(proteomics = "DIA"),
+        step_status_per_omic = list(proteomics = list(quality_control = "pending")),
+        r6_current_state_per_omic = list(proteomics = "protein_s4_created"),
+        r6_state_history_per_omic = list(proteomics = c("qvalue_filtered", "imputed", "protein_s4_created")),
+        active_tab_per_omic = list(proteomics = "quality_control"),
+        export_paths = list(proteomics = list()),
+        report_fingerprints = list()
+      ),
+      auto_unbox = TRUE
+    )
+  )
+
+  expect_no_error(e2e_wait_for_r6_state(
+    driver,
+    "proteomics",
+    "imputed",
+    timeout = 1000
+  ))
+  expect_no_error(e2e_wait_for_r6_state(
+    driver,
+    "proteomics",
+    "protein_s4_created",
+    timeout = 1000
+  ))
+})
+
 test_that("lipidomics project path and filtered-session assertions validate multi-assay handoff files", {
   project_root <- tempfile("e2e-lipid-project-")
   experiment_label <- "E2E-009"
@@ -358,7 +393,37 @@ test_that("lipidomics lane upload helper supplies assay names and both assay fil
 })
 
 test_that("proteomics DIA scenario helpers dispatch design, QC, normalization, and summary actions", {
-  driver <- new_fake_e2e_driver()
+  driver <- new_fake_e2e_driver(
+    digest = jsonlite::toJSON(
+      list(
+        selected_omics = "proteomics",
+        initialized_omics = "proteomics",
+        project_dir_keys = c("proteomics", "scripts"),
+        workflow_type_per_omic = list(proteomics = "DIA"),
+        step_status_per_omic = list(proteomics = list(setup_import = "complete", quality_control = "complete")),
+        r6_current_state_per_omic = list(proteomics = "protein_replicate_filtered"),
+        r6_state_history_per_omic = list(proteomics = c(
+          "initial",
+          "qvalue_filtered",
+          "precursor_rollup",
+          "intensity_filtered",
+          "protein_peptide_filtered",
+          "sample_filtered",
+          "replicate_filtered",
+          "imputed",
+          "protein_s4_created",
+          "protein_accession_cleaned",
+          "protein_intensity_filtered",
+          "duplicates_removed",
+          "protein_replicate_filtered"
+        )),
+        active_tab_per_omic = list(proteomics = "quality_control"),
+        export_paths = list(proteomics = list()),
+        report_fingerprints = list()
+      ),
+      auto_unbox = TRUE
+    )
+  )
   lane <- read_e2e_manifest()[["prot_dia"]]
   project_root <- tempfile("e2e-dia-project-")
   experiment_label <- "E2E-004"

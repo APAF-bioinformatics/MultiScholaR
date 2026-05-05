@@ -113,6 +113,84 @@
       "required_tests": ["module-ci-manifest", "module-ci-prot-design"]
     },
     {
+      "scenario_id": "MCI-006.1-proteomics-peptide-qc-schema-smoke",
+      "ticket_id": "MCI-006",
+      "item_id": "MCI-006.1",
+      "omic": "proteomics",
+      "module_family": "qc_peptide",
+      "runtime": "unit-contract",
+      "ci_lane": "proteomics-unit",
+      "fixture": {
+        "path": "fixtures/proteomics/proteomics-dia-happy-path_data.tsv",
+        "format": "tsv",
+        "role": "peptide_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "protein_id_col": "Protein.Ids",
+        "peptide_id_col": "Stripped.Sequence",
+        "q_value_threshold": 0.01,
+        "global_q_value_threshold": 0.01
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "sub_steps": [
+          "qvalue_filtered",
+          "precursor_rollup",
+          "intensity_filtered",
+          "protein_peptide_filtered",
+          "sample_filtered",
+          "replicate_filtered",
+          "imputed"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "peptide_qc_summary.tsv",
+          "schema": "module_ci_table"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-prot-peptide-qc"]
+    },
+    {
+      "scenario_id": "MCI-007.1-proteomics-protein-qc-schema-smoke",
+      "ticket_id": "MCI-007",
+      "item_id": "MCI-007.1",
+      "omic": "proteomics",
+      "module_family": "qc_protein",
+      "runtime": "unit-contract",
+      "ci_lane": "proteomics-unit",
+      "fixture": {
+        "path": "fixtures/proteomics/protein_intensity.tsv",
+        "format": "tsv",
+        "role": "protein_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "protein_id_col": "Protein.Ids",
+        "rollup_methods": ["iq_maxlfq", "limpa_dpc_quant"],
+        "duplicate_aggregation_methods": ["mean", "median", "max"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "sub_steps": [
+          "protein_s4_initial",
+          "protein_s4_created",
+          "protein_accession_cleaned",
+          "protein_intensity_filtered",
+          "duplicates_removed",
+          "protein_replicate_filtered"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "protein_qc_summary.tsv",
+          "schema": "module_ci_table"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-prot-protein-qc"]
+    },
+    {
       "scenario_id": "MCI-012.1-metabolomics-import-schema-smoke",
       "ticket_id": "MCI-012",
       "item_id": "MCI-012.1",

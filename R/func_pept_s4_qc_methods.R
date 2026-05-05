@@ -71,7 +71,7 @@ plotPcaDispatch <- function(theObject, grouping_variable, shape_variable = NULL,
   data_matrix_pca <- data_matrix
   data_matrix_pca[!is.finite(data_matrix_pca)] <- NA
 
-  if(is.na(label_column) || label_column == "") {
+  if (is.null(label_column) || is.na(label_column) || label_column == "") {
     label_column <- ""
   }
 
@@ -117,7 +117,7 @@ setMethod(f="plotPca"
             peptide_matrix_pca <- peptide_matrix
             peptide_matrix_pca[!is.finite(peptide_matrix_pca)] <- NA
 
-            if(is.na(label_column) || label_column == "") {
+            if (is.null(label_column) || is.na(label_column) || label_column == "") {
               label_column <- ""
             }
 
@@ -167,7 +167,7 @@ setMethod(
     working_matrix <- peptide_matrix
     working_matrix[!is.finite(working_matrix)] <- NA
 
-    if (is.na(label_column) || label_column == "") {
+    if (is.null(label_column) || is.na(label_column) || label_column == "") {
       label_column <- ""
     }
 

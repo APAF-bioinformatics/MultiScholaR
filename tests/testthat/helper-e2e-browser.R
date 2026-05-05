@@ -223,11 +223,7 @@ e2e_click_input_id <- function(
     timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
 ) {
   e2e_wait_for_input_id(driver, input_id, timeout = timeout)
-  script <- sprintf(
-    "document.getElementById(%s).click(); true",
-    jsonlite::toJSON(input_id, auto_unbox = TRUE)
-  )
-  e2e_call_driver_method(driver, "get_js", script = script)
+  e2e_call_driver_method(driver, "click", selector = e2e_input_selector(input_id))
   e2e_wait_for_idle(driver, timeout = timeout)
   invisible(driver)
 }
@@ -238,13 +234,14 @@ e2e_trigger_action_input_id <- function(
     timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
 ) {
   e2e_wait_for_input_id(driver, input_id, timeout = timeout)
+  e2e_call_driver_method(driver, "click", selector = e2e_input_selector(input_id))
+  e2e_wait_for_idle(driver, timeout = timeout)
   script <- sprintf(
     paste(
       "(function(){",
       "var inputId = %s;",
       "var node = document.getElementById(inputId);",
       "if (!node) { return false; }",
-      "node.click();",
       "if (window.Shiny && Shiny.setInputValue) {",
       "Shiny.setInputValue(inputId, Date.now() + Math.random(), { priority: 'event' });",
       "}",
@@ -254,6 +251,28 @@ e2e_trigger_action_input_id <- function(
     jsonlite::toJSON(input_id, auto_unbox = TRUE)
   )
   e2e_call_driver_method(driver, "get_js", script = script)
+  e2e_wait_for_idle(driver, timeout = timeout)
+  invisible(driver)
+}
+
+e2e_wait_for_output_ready <- function(
+    driver,
+    output_id,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
+  script <- sprintf(
+    paste(
+      "(function(){",
+      "var el = document.getElementById(%s);",
+      "if (!el) { return false; }",
+      "var text = (el.innerText || el.textContent || '').trim();",
+      "var recalculating = el.classList && el.classList.contains('recalculating');",
+      "return !recalculating && text.length > 0;",
+      "})()"
+    ),
+    jsonlite::toJSON(output_id, auto_unbox = TRUE)
+  )
+  e2e_wait_for_js(driver, script = script, timeout = timeout)
   e2e_wait_for_idle(driver, timeout = timeout)
   invisible(driver)
 }
@@ -1197,21 +1216,44 @@ e2e_run_prot_dia_qc <- function(
   qc <- function(input) e2e_input_id("proteomics", "qc", input)
 
   peptide_steps <- list(
-    list(tab = "Q-Value Filter", action = "peptide_qc-qvalue_filter-apply_qvalue_filter"),
-    list(tab = "Precursor Rollup", action = "peptide_qc-rollup-apply_rollup"),
-    list(tab = "Intensity Filter", action = "peptide_qc-intensity_filter-apply_intensity_filter"),
-    list(tab = "Protein Peptides", action = "peptide_qc-protein_peptide_filter-apply_protein_peptide_filter"),
-    list(tab = "Sample Quality", action = "peptide_qc-sample_filter-apply_sample_filter"),
-    list(tab = "Replicate Filter", action = "peptide_qc-replicate_filter-apply_replicate_filter"),
-    list(tab = "Imputation", action = "peptide_qc-imputation-apply_imputation")
+    list(tab = "Q-Value Filter", action = "peptide_qc-qvalue_filter-apply_qvalue_filter", state = "qvalue_filtered", configure = function() {
+      e2e_set_input_and_idle(driver, qc("peptide_qc-qvalue_filter-qvalue_threshold"), 0.1, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("peptide_qc-qvalue_filter-global_qvalue_threshold"), 0.1, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("peptide_qc-qvalue_filter-proteotypic_only"), FALSE, timeout = timeout)
+    }),
+    list(tab = "Precursor Rollup", action = "peptide_qc-rollup-apply_rollup", state = "precursor_rollup"),
+    list(tab = "Intensity Filter", action = "peptide_qc-intensity_filter-apply_intensity_filter", state = "intensity_filtered", configure = function() {
+      e2e_set_input_and_idle(driver, qc("peptide_qc-intensity_filter-use_strict_mode"), FALSE, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("peptide_qc-intensity_filter-min_reps_per_group"), 1, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("peptide_qc-intensity_filter-min_groups"), 1, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("peptide_qc-intensity_filter-intensity_cutoff_percentile"), 0.1, timeout = timeout)
+    }),
+    list(tab = "Protein Peptides", action = "peptide_qc-protein_peptide_filter-apply_protein_peptide_filter", state = "protein_peptide_filtered", configure = function() {
+      e2e_set_input_and_idle(driver, qc("peptide_qc-protein_peptide_filter-min_peptides_per_protein"), 1, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("peptide_qc-protein_peptide_filter-min_peptidoforms_per_protein"), 1, timeout = timeout)
+    }),
+    list(tab = "Sample Quality", action = "peptide_qc-sample_filter-apply_sample_filter", state = "sample_filtered", configure = function() {
+      e2e_set_input_and_idle(driver, qc("peptide_qc-sample_filter-min_peptides_per_sample"), 1, timeout = timeout)
+    }),
+    list(tab = "Replicate Filter", action = "peptide_qc-replicate_filter-apply_replicate_filter", state = "replicate_filtered"),
+    list(tab = "Imputation", action = "peptide_qc-imputation-apply_imputation", state = "imputed", configure = function() {
+      e2e_set_input_and_idle(driver, qc("peptide_qc-imputation-proportion_missing_values"), 1.0, timeout = timeout)
+    })
   )
 
   protein_steps <- list(
-    list(tab = "IQ Protein Rollup", action = "protein_qc-rollup-apply_iq_rollup"),
-    list(tab = "Accession Cleanup", action = "protein_qc-cleanup-apply_accession_cleanup"),
-    list(tab = "Protein Intensity Filter", action = "protein_qc-intensity_filter-apply_protein_intensity_filter"),
-    list(tab = "Duplicate Removal", action = "protein_qc-duplicate_removal-apply_duplicate_removal"),
-    list(tab = "Protein Replicate Filter", action = "protein_qc-replicate_filter-apply_protein_replicate_filter")
+    list(tab = "IQ Protein Rollup", action = "protein_qc-rollup-apply_iq_rollup", state = "protein_s4_created"),
+    list(tab = "Accession Cleanup", action = "protein_qc-cleanup-apply_accession_cleanup", state = "protein_accession_cleaned"),
+    list(tab = "Protein Intensity Filter", action = "protein_qc-intensity_filter-apply_protein_intensity_filter", state = "protein_intensity_filtered", configure = function() {
+      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-use_strict_mode"), FALSE, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-min_reps_per_group"), 1, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-min_groups"), 1, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-proteins_intensity_cutoff_percentile"), 0.1, timeout = timeout)
+    }),
+    list(tab = "Duplicate Removal", action = "protein_qc-duplicate_removal-apply_duplicate_removal", state = "duplicates_removed"),
+    list(tab = "Protein Replicate Filter", action = "protein_qc-replicate_filter-apply_protein_replicate_filter", state = "protein_replicate_filtered", configure = function() {
+      e2e_set_input_and_idle(driver, qc("protein_qc-replicate_filter-parallel_cores"), 1, timeout = timeout)
+    })
   )
 
   e2e_switch_workflow_tab(driver, "proteomics", "quality_control")
@@ -1219,7 +1261,11 @@ e2e_run_prot_dia_qc <- function(
   e2e_set_input_and_idle(driver, qc("qc_tabs_lfq"), "Peptide QC", timeout = timeout)
   for (step in peptide_steps) {
     e2e_set_input_and_idle(driver, qc("peptide_qc-peptide_filter_tabs"), step$tab, timeout = timeout)
+    if (is.function(step$configure)) {
+      step$configure()
+    }
     e2e_click_input_id(driver, qc(step$action), timeout = timeout)
+    e2e_wait_for_r6_state(driver, "proteomics", step$state, timeout = timeout)
   }
 
   e2e_set_input_and_idle(driver, qc("qc_tabs_lfq"), "Protein QC", timeout = timeout)
@@ -1233,12 +1279,16 @@ e2e_run_prot_dia_qc <- function(
         timeout = timeout
       )
     }
+    if (is.function(step$configure)) {
+      step$configure()
+    }
     click_fn <- if (identical(step$action, "protein_qc-replicate_filter-apply_protein_replicate_filter")) {
       e2e_trigger_action_input_id
     } else {
       e2e_click_input_id
     }
     click_fn(driver, qc(step$action), timeout = timeout)
+    e2e_wait_for_r6_state(driver, "proteomics", step$state, timeout = timeout)
   }
 
   invisible(driver)
@@ -1679,6 +1729,22 @@ e2e_digest_step_status <- function(digest, omic, step) {
   statuses[[step]]
 }
 
+e2e_digest_r6_current_state <- function(digest, omic) {
+  current_states <- digest$r6_current_state_per_omic
+  if (!is.null(current_states) && !is.null(current_states[[omic]])) {
+    return(current_states[[omic]])
+  }
+  digest$r6_current_state_name %||% NULL
+}
+
+e2e_digest_r6_state_history <- function(digest, omic) {
+  histories <- digest$r6_state_history_per_omic
+  if (!is.null(histories) && !is.null(histories[[omic]])) {
+    return(as.character(unlist(histories[[omic]], use.names = FALSE)))
+  }
+  as.character(unlist(digest$r6_state_history %||% character(), use.names = FALSE))
+}
+
 e2e_assert_step_statuses <- function(driver, omic, expected, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
   digest <- e2e_state_digest(driver, timeout = timeout)
   for (step in names(expected)) {
@@ -1689,6 +1755,41 @@ e2e_assert_step_statuses <- function(driver, omic, expected, timeout = .E2E_BROW
     )
   }
   invisible(digest)
+}
+
+e2e_wait_for_r6_state <- function(
+    driver,
+    omic,
+    state,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT,
+    interval = 0.25
+) {
+  deadline <- Sys.time() + (timeout / 1000)
+  last_current <- NULL
+  last_history <- character()
+
+  repeat {
+    digest <- tryCatch(e2e_state_digest(driver, timeout = timeout), error = function(e) NULL)
+    if (!is.null(digest)) {
+      last_current <- e2e_digest_r6_current_state(digest, omic)
+      last_history <- e2e_digest_r6_state_history(digest, omic)
+      if (identical(last_current, state) || state %in% last_history) {
+        return(invisible(digest))
+      }
+    }
+    if (Sys.time() >= deadline) {
+      break
+    }
+    Sys.sleep(interval)
+  }
+
+  testthat::fail(sprintf(
+    "Timed out waiting for %s R6 state %s; last current was %s; history was [%s]",
+    omic,
+    state,
+    last_current %||% "<NULL>",
+    paste(last_history, collapse = " -> ")
+  ))
 }
 
 e2e_wait_for_step_status <- function(

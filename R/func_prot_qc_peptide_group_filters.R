@@ -69,11 +69,38 @@ peptideIntensityFilteringHelper <- function(input_table = NULL
       peptide_quantity_column <- extra_args[["raw_quantity_column"]]
   }
 
-  sample_id_str <- resolvePeptideQcColumnName(substitute(sample_id_column), environment())
-  group_var_str <- resolvePeptideQcColumnName(substitute(grouping_variable), environment())
-  peptide_quant_str <- resolvePeptideQcColumnName(substitute(peptide_quantity_column), environment())
-  protein_id_str <- resolvePeptideQcColumnName(substitute(protein_id_column), environment())
-  peptide_seq_str <- resolvePeptideQcColumnName(substitute(peptide_sequence_column), environment())
+  input_cols <- colnames(input_table)
+  design_cols <- colnames(design_matrix)
+  sample_id_str <- resolvePeptideQcColumnArgument(
+    substitute(sample_id_column),
+    sample_id_column,
+    candidates = union(input_cols, design_cols),
+    environment()
+  )
+  group_var_str <- resolvePeptideQcColumnArgument(
+    substitute(grouping_variable),
+    grouping_variable,
+    candidates = design_cols,
+    environment()
+  )
+  peptide_quant_str <- resolvePeptideQcColumnArgument(
+    substitute(peptide_quantity_column),
+    peptide_quantity_column,
+    candidates = input_cols,
+    environment()
+  )
+  protein_id_str <- resolvePeptideQcColumnArgument(
+    substitute(protein_id_column),
+    protein_id_column,
+    candidates = input_cols,
+    environment()
+  )
+  peptide_seq_str <- resolvePeptideQcColumnArgument(
+    substitute(peptide_sequence_column),
+    peptide_sequence_column,
+    candidates = input_cols,
+    environment()
+  )
 
   message(sprintf("   DEBUG66: Resolved columns: SampleID=%s, Group=%s, Quant=%s, ProteinID=%s, PeptSeq=%s",
                   sample_id_str, group_var_str, peptide_quant_str, protein_id_str, peptide_seq_str))
@@ -121,9 +148,9 @@ peptideIntensityFilteringHelper <- function(input_table = NULL
       dplyr::mutate(
         !!rlang::sym(sample_id_str) := as.character(!!rlang::sym(sample_id_str)),
         !!rlang::sym(peptide_quant_str) := dplyr::if_else(
-          is.nan(!!rlang::sym(peptide_quant_str)), 
-          NA_real_, 
-          !!rlang::sym(peptide_quant_str)
+          is.finite(!!rlang::sym(peptide_quant_str)),
+          !!rlang::sym(peptide_quant_str),
+          NA_real_
         )
       ) |>
       dplyr::left_join(design_matrix_minimal, by = sample_id_str)
@@ -138,9 +165,9 @@ peptideIntensityFilteringHelper <- function(input_table = NULL
       dplyr::mutate(
         !!rlang::sym(sample_id_str) := as.character(!!rlang::sym(sample_id_str)),
         !!rlang::sym(peptide_quant_str) := dplyr::if_else(
-          is.nan(!!rlang::sym(peptide_quant_str)), 
-          NA_real_, 
-          !!rlang::sym(peptide_quant_str)
+          is.finite(!!rlang::sym(peptide_quant_str)),
+          !!rlang::sym(peptide_quant_str),
+          NA_real_
         )
       ) |>
       dplyr::left_join(design_matrix_minimal, by = sample_id_str)
@@ -244,11 +271,38 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
   message("|  DEBUG66: Entering removePeptidesWithMissingValuesPercentHelper (OPTIMIZED)|")
   message("+===========================================================================+")
 
-  sample_id_str <- resolvePeptideQcColumnName(substitute(sample_id), environment())
-  group_var_str <- resolvePeptideQcColumnName(substitute(grouping_variable), environment())
-  protein_id_str <- resolvePeptideQcColumnName(substitute(protein_id_column), environment())
-  peptide_seq_str <- resolvePeptideQcColumnName(substitute(peptide_sequence_column), environment())
-  abundance_col_str <- resolvePeptideQcColumnName(substitute(abundance_column), environment())
+  input_cols <- colnames(input_table)
+  design_cols <- colnames(design_matrix)
+  sample_id_str <- resolvePeptideQcColumnArgument(
+    substitute(sample_id),
+    sample_id,
+    candidates = union(input_cols, design_cols),
+    environment()
+  )
+  group_var_str <- resolvePeptideQcColumnArgument(
+    substitute(grouping_variable),
+    grouping_variable,
+    candidates = design_cols,
+    environment()
+  )
+  protein_id_str <- resolvePeptideQcColumnArgument(
+    substitute(protein_id_column),
+    protein_id_column,
+    candidates = input_cols,
+    environment()
+  )
+  peptide_seq_str <- resolvePeptideQcColumnArgument(
+    substitute(peptide_sequence_column),
+    peptide_sequence_column,
+    candidates = input_cols,
+    environment()
+  )
+  abundance_col_str <- resolvePeptideQcColumnArgument(
+    substitute(abundance_column),
+    abundance_column,
+    candidates = input_cols,
+    environment()
+  )
 
   message(sprintf("   DEBUG66: Args: threshold=%g, group_cutoff=%g%%, max_groups_fail=%g%%", 
                   abundance_threshold, groupwise_percentage_cutoff, max_groups_percentage_cutoff))
@@ -290,9 +344,9 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
       dplyr::mutate(
         !!rlang::sym(sample_id_str) := as.character(!!rlang::sym(sample_id_str)),
         !!rlang::sym(abundance_col_str) := dplyr::if_else(
-          is.nan(!!rlang::sym(abundance_col_str)), 
-          NA_real_, 
-          !!rlang::sym(abundance_col_str)
+          is.finite(!!rlang::sym(abundance_col_str)),
+          !!rlang::sym(abundance_col_str),
+          NA_real_
         )
       ) |>
       dplyr::left_join(design_matrix_minimal, by = sample_id_str)
@@ -307,9 +361,9 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
       dplyr::mutate(
         !!rlang::sym(sample_id_str) := as.character(!!rlang::sym(sample_id_str)),
         !!rlang::sym(abundance_col_str) := dplyr::if_else(
-          is.nan(!!rlang::sym(abundance_col_str)), 
-          NA_real_, 
-          !!rlang::sym(abundance_col_str)
+          is.finite(!!rlang::sym(abundance_col_str)),
+          !!rlang::sym(abundance_col_str),
+          NA_real_
         )
       ) |>
       dplyr::left_join(design_matrix_minimal, by = sample_id_str)
@@ -381,4 +435,3 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
   return(filtered_tbl)
 
 }
-

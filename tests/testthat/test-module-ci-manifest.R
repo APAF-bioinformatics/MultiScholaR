@@ -22,7 +22,9 @@ test_that("module CI manifest filters scenarios by omic, module, runtime, and ti
     module_ci_scenario_ids(prot),
     c(
       "MCI-004.1-proteomics-import-schema-smoke",
-      "MCI-005.1-proteomics-design-schema-smoke"
+      "MCI-005.1-proteomics-design-schema-smoke",
+      "MCI-006.1-proteomics-peptide-qc-schema-smoke",
+      "MCI-007.1-proteomics-protein-qc-schema-smoke"
     )
   )
 

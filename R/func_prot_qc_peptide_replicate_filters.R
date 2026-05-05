@@ -16,35 +16,45 @@ removePeptidesWithOnlyOneReplicateHelper <- function(input_table
                                                , peptide_sequence_column = Stripped.Sequence
                                                , core_utilisation ) {
 
+  input_sample_str <- resolvePeptideQcColumnArgument(substitute(input_table_sample_id_column), input_table_sample_id_column, names(input_table), environment())
+  sample_tbl_sample_str <- resolvePeptideQcColumnArgument(substitute(sample_id_tbl_sample_id_column), sample_id_tbl_sample_id_column, names(samples_id_tbl), environment())
+  replicate_group_str <- resolvePeptideQcColumnArgument(substitute(replicate_group_column), replicate_group_column, names(samples_id_tbl), environment())
+  protein_id_str <- resolvePeptideQcColumnArgument(substitute(protein_id_column), protein_id_column, names(input_table), environment())
+  peptide_seq_str <- resolvePeptideQcColumnArgument(substitute(peptide_sequence_column), peptide_sequence_column, names(input_table), environment())
+  join_cols <- stats::setNames(sample_tbl_sample_str, input_sample_str)
+
   # Count the number of technical replicates per sample and peptide combination
   num_tech_reps_per_sample_and_peptide <- NA
-  if( length(which(is.na(core_utilisation))) == 0 ) {
+  if (any(is.na(core_utilisation))) {
     num_tech_reps_per_sample_and_peptide <- input_table |>
-      left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
-      group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
+      dplyr::left_join(samples_id_tbl, by = join_cols) |>
+      dplyr::group_by(
+        dplyr::across(dplyr::all_of(c(replicate_group_str, protein_id_str, peptide_seq_str)))
+      ) |>
       #partition(core_utilisation) |>
-      summarise(counts = n() ) |>
+      dplyr::summarise(counts = dplyr::n(), .groups = "drop") |>
       #collect() |>
-      ungroup()
+      dplyr::ungroup()
   } else {
     num_tech_reps_per_sample_and_peptide <- input_table |>
-      left_join( samples_id_tbl, by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
-      group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
+      dplyr::left_join(samples_id_tbl, by = join_cols) |>
+      dplyr::group_by(
+        dplyr::across(dplyr::all_of(c(replicate_group_str, protein_id_str, peptide_seq_str)))
+      ) |>
       partition(core_utilisation) |>
-      summarise(counts = n() ) |>
+      dplyr::summarise(counts = dplyr::n(), .groups = "drop") |>
       collect() |>
-      ungroup()
+      dplyr::ungroup()
   }
 
   # Any peptides found in more than one replicates in any patient will be kept for analysis
   removed_peptides_with_only_one_replicate <- input_table |>
-    inner_join( num_tech_reps_per_sample_and_peptide |>
+    dplyr::inner_join( num_tech_reps_per_sample_and_peptide |>
                   dplyr::filter( counts >  1) |>
-                  dplyr::select(-counts, -{{replicate_group_column}}) |>
-                  distinct()
-                , by=join_by( {{protein_id_column}},
-                              {{peptide_sequence_column}}) )  |>
-    distinct()
+                  dplyr::select(-counts, -dplyr::all_of(replicate_group_str)) |>
+                  dplyr::distinct()
+                , by = c(protein_id_str, peptide_seq_str) )  |>
+    dplyr::distinct()
 
   removed_peptides_with_only_one_replicate
 }
@@ -66,16 +76,17 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
           , protein_id_column = Protein.Ids
           , core_utilisation) {
 
+  protein_id_str <- resolvePeptideQcColumnArgument(substitute(protein_id_column), protein_id_column, names(input_table), environment())
   num_peptides_per_protein <- NA
-  if( length(which(is.na(core_utilisation))) == 0 ) {
+  if (any(is.na(core_utilisation))) {
     num_peptides_per_protein <- input_table |>
-      group_by( {{protein_id_column}} ) |>
+      dplyr::group_by(.data[[protein_id_str]]) |>
       dplyr::summarise( peptides_for_protein_count = n()
                  , peptidoforms_for_protein_count = sum( peptidoform_count, na.rm=TRUE)) |>
       ungroup()
   } else {
     num_peptides_per_protein <- input_table |>
-      group_by( {{protein_id_column}} ) |>
+      dplyr::group_by(.data[[protein_id_str]]) |>
       partition(core_utilisation) |>
       dplyr::summarise( peptides_for_protein_count = n()
                  , peptidoforms_for_protein_count = sum( peptidoform_count, na.rm=TRUE)) |>
@@ -91,7 +102,7 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
 
     protein_peptide_cln <- input_table |>
       inner_join( num_peptides_per_protein
-                  , by = join_by({{protein_id_column}})) |>
+                  , by = protein_id_str) |>
       dplyr::filter(   peptidoforms_for_protein_count >= num_peptidoforms_per_protein_thresh
                       ,
                       peptides_for_protein_count >= num_peptides_per_protein_thresh
@@ -116,32 +127,33 @@ filterMinNumPeptidesPerSampleHelper <- function ( input_table
                                             , core_utilisation
                                             , inclusion_list = c()) {
 
+  sample_id_str <- resolvePeptideQcColumnArgument(substitute(sample_id_column), sample_id_column, names(input_table), environment())
   samples_passing_filter <- NA
-  if( length(which(is.na(core_utilisation))) == 0 ) {
+  if (any(is.na(core_utilisation))) {
     samples_passing_filter <- input_table |>
-      group_by( {{sample_id_column}} ) |>
+      dplyr::group_by(.data[[sample_id_str]]) |>
       #partition(core_utilisation) |>
       summarise( counts = n()) |>
       #collect() |>
       ungroup() |>
       dplyr::filter( counts >= peptides_per_sample_cutoff |
-                       ( {{sample_id_column}} %in% inclusion_list)  ) |>
+                       ( .data[[sample_id_str]] %in% inclusion_list)  ) |>
       dplyr::select(-counts)
 
   } else {
     samples_passing_filter <- input_table |>
-      group_by( {{sample_id_column}} ) |>
+      dplyr::group_by(.data[[sample_id_str]]) |>
       partition(core_utilisation) |>
       summarise( counts = n()) |>
       collect() |>
       ungroup() |>
       dplyr::filter( counts >= peptides_per_sample_cutoff |
-                       ( {{sample_id_column}} %in% inclusion_list)  ) |>
+                       ( .data[[sample_id_str]] %in% inclusion_list)  ) |>
       dplyr::select(-counts)
   }
 
   filtered_table <- input_table |>
-    inner_join( samples_passing_filter, by = join_by({{sample_id_column}}))
+    inner_join( samples_passing_filter, by = sample_id_str)
 
   filtered_table
 }
@@ -188,11 +200,18 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
   }
   
   # [OK] ALSO CHECK: Filter columns exist
-  q_val_name <- rlang::as_name(rlang::ensym(q_value_column))
-  global_q_val_name <- rlang::as_name(rlang::ensym(global_q_value_column))
-  proteotypic_name <- rlang::as_name(rlang::ensym(proteotypic_peptide_sequence_column))
+  q_val_name <- resolvePeptideQcColumnArgument(substitute(q_value_column), q_value_column, names(input_table), environment())
+  global_q_val_name <- resolvePeptideQcColumnArgument(substitute(global_q_value_column), global_q_value_column, names(input_table), environment())
+  proteotypic_name <- resolvePeptideQcColumnArgument(substitute(proteotypic_peptide_sequence_column), proteotypic_peptide_sequence_column, names(input_table), environment())
   
-  filter_cols <- c(q_val_name, global_q_val_name, proteotypic_name)
+  use_proteotypic_filter <- isTRUE(
+    suppressWarnings(as.numeric(choose_only_proteotypic_peptide)) == 1
+  )
+  filter_cols <- c(
+    q_val_name,
+    global_q_val_name,
+    if (use_proteotypic_filter) proteotypic_name else character()
+  )
   missing_filter_cols <- filter_cols[!filter_cols %in% names(input_table)]
   
   if (length(missing_filter_cols) > 0) {
@@ -205,13 +224,17 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
     stop(error_msg)
   }
 
+  qvalue_filter <- input_table[[q_val_name]] <= qvalue_threshold &
+    input_table[[global_q_val_name]] <= global_qvalue_threshold
+  if (use_proteotypic_filter) {
+    qvalue_filter <- qvalue_filter &
+      input_table[[proteotypic_name]] == choose_only_proteotypic_peptide
+  }
+
   search_srl_quant_cln <- input_table |>
-    dplyr::filter( {{q_value_column}} < qvalue_threshold &
-                     {{global_q_value_column}} < global_qvalue_threshold &
-                     {{proteotypic_peptide_sequence_column}} == choose_only_proteotypic_peptide ) |>
+    dplyr::filter(qvalue_filter) |>
     dplyr::select(all_of(unique(c(input_matrix_column_ids, filter_cols))))
 
   search_srl_quant_cln
 
 }
-

@@ -92,11 +92,30 @@ runProteinDuplicateRemovalStep <- function(workflowData,
     dplyr::pull(Protein.Ids)
 
   aggregationFn <- aggregationResolverFn(aggregationMethod)
+  proteinIdColumn <- if (isS4(currentS4) &&
+                         "protein_id_column" %in% methods::slotNames(currentS4)) {
+    currentS4@protein_id_column
+  } else {
+    "Protein.Ids"
+  }
+  if (is.null(proteinIdColumn) || !nzchar(proteinIdColumn)) {
+    proteinIdColumn <- "Protein.Ids"
+  }
+  quantColumns <- setdiff(colnames(currentS4@protein_quant_table), proteinIdColumn)
+  numericQuantColumns <- quantColumns[vapply(
+    currentS4@protein_quant_table[quantColumns],
+    is.numeric,
+    logical(1)
+  )]
+  if (length(numericQuantColumns) == 0L) {
+    stop("No numeric protein intensity columns available for duplicate removal.")
+  }
 
   currentS4@protein_quant_table <- currentS4@protein_quant_table |>
-    dplyr::group_by(Protein.Ids) |>
+    dplyr::group_by(!!rlang::sym(proteinIdColumn)) |>
     dplyr::summarise(
-      dplyr::across(dplyr::matches("\\d+"), ~ aggregationFn(.x, na.rm = TRUE))
+      dplyr::across(dplyr::all_of(numericQuantColumns), ~ aggregationFn(.x, na.rm = TRUE)),
+      .groups = "drop"
     ) |>
     dplyr::ungroup()
 

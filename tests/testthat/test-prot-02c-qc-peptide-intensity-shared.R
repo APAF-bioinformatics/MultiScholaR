@@ -111,6 +111,8 @@ localSharedPeptideIntensityBinding <- function(env, name, value, .local_envir = 
 }
 
 withSharedPeptideIntensityPackageMocks <- function(server_env, captured, filtered_state) {
+  mock_frame <- parent.frame()
+
   localSharedPeptideIntensityBinding(
     server_env,
     "updateProteinFiltering",
@@ -125,7 +127,7 @@ withSharedPeptideIntensityPackageMocks <- function(server_env, captured, filtere
       )
       "plot-token"
     },
-    .local_envir = parent.frame()
+    .local_envir = mock_frame
   )
 
   testthat::local_mocked_bindings(
@@ -162,7 +164,7 @@ withSharedPeptideIntensityPackageMocks <- function(server_env, captured, filtere
       captured$filter_input <- theObject
       filtered_state
     },
-    .env = server_env
+    .env = mock_frame
   )
 }
 
@@ -419,12 +421,13 @@ test_that("proteomics peptide intensity module preserves apply error behavior", 
     captured,
     filtered_state = makeSharedPeptideIntensityState()
   )
+  mock_frame <- environment()
   testthat::local_mocked_bindings(
     peptideIntensityFiltering = function(theObject) {
       captured$filter_input <- theObject
       stop("mock intensity failure")
     },
-    .env = server_env
+    .env = mock_frame
   )
   withSharedPeptideIntensityUiMocks(
     captured,
@@ -464,8 +467,14 @@ test_that("proteomics peptide intensity module preserves apply error behavior", 
 test_that("proteomics peptide intensity module preserves revert behavior", {
   captured <- newSharedPeptideIntensityCapture()
   server_fn <- getProtPeptideIntensityServer()
+  server_env <- environment(server_fn)
   current_state <- makeSharedPeptideIntensityState()
 
+  withSharedPeptideIntensityPackageMocks(
+    server_env,
+    captured,
+    filtered_state = makeSharedPeptideIntensityState()
+  )
   withSharedPeptideIntensityUiMocks(
     captured,
     input_values = list(
@@ -507,8 +516,14 @@ test_that("proteomics peptide intensity module preserves revert behavior", {
 test_that("proteomics peptide intensity module preserves revert error behavior", {
   captured <- newSharedPeptideIntensityCapture()
   server_fn <- getProtPeptideIntensityServer()
+  server_env <- environment(server_fn)
   current_state <- makeSharedPeptideIntensityState()
 
+  withSharedPeptideIntensityPackageMocks(
+    server_env,
+    captured,
+    filtered_state = makeSharedPeptideIntensityState()
+  )
   withSharedPeptideIntensityUiMocks(
     captured,
     input_values = list(
