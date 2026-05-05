@@ -87,6 +87,13 @@ test_that("lipidomics DA export writes tables, volcanoes, and summary artifacts"
     da_output_dir,
     "de_posmode_lipids_groupB-groupA_long_annot.tsv"
   )))
+  posmode_tsv <- read.delim(
+    file.path(da_output_dir, "de_posmode_lipids_groupB-groupA_long_annot.tsv"),
+    check.names = FALSE
+  )
+  expect_true("assay" %in% names(posmode_tsv))
+  expect_identical(unique(posmode_tsv$assay), "LCMS_Pos")
+
   expect_true(file.exists(file.path(
     da_output_dir,
     "de_negmode_lipids_groupC-groupA_long_annot.xlsx"

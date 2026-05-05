@@ -482,28 +482,64 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     n_wt <- length(wt_samples)
     n_ko <- length(ko_samples)
 
-    lipids <- data.frame(
-        LipidMolec  = c("PC(36:2)", "TG(54:3)", "CE(18:1)")
-        , Class     = c("PC", "TG", "CE")
-        , FattyAcid = c("18:1/18:1", "18:1/18:1/18:1", "18:1")
-        , Grade     = c("A", "A", "B")
-        , stringsAsFactors = FALSE
+    write_lipidsearch_assay <- function(path, assay_def, base_mean) {
+        n_lipids <- nrow(assay_def)
+        intensities <- .base_intensities(
+            n_lipids,
+            n_wt,
+            n_ko,
+            base_mean = base_mean,
+            noise_sd = base_mean * 0.04
+        )
+
+        df <- assay_def
+        for (i in seq_len(n_wt)) {
+            df[[wt_samples[i]]] <- intensities$wt[, i]
+        }
+        for (i in seq_len(n_ko)) {
+            df[[ko_samples[i]]] <- intensities$ko[, i]
+        }
+
+        .write_tsv(df, path)
+        cat("  wrote", basename(path), "(", nrow(df), "rows )\n")
+    }
+
+    pos_lipids <- data.frame(
+        LipidName = c("PC 34:1", "PC 36:2", "PE 36:2", "PE 38:3", "TG 52:3", "TG 54:3", "TG 56:6", "SM 34:1", "SM 36:1", "CE 18:1"),
+        LipidClass = c("PC", "PC", "PE", "PE", "TG", "TG", "TG", "SM", "SM", "CE"),
+        FattyAcid = c("16:0/18:1", "18:1/18:1", "18:0/18:2", "18:1/20:2", "16:0/18:1/18:2", "18:1/18:1/18:1", "18:2/18:2/20:2", "18:1/16:0", "18:1/18:0", "18:1"),
+        IonType = c("[M+H]+", "[M+H]+", "[M+H]+", "[M+H]+", "[M+NH4]+", "[M+NH4]+", "[M+NH4]+", "[M+H]+", "[M+H]+", "[M+NH4]+"),
+        BaseRt = c(5.23, 6.82, 3.45, 4.12, 12.34, 13.56, 14.23, 4.91, 5.67, 7.23),
+        CalcMz = c(760.585, 788.616, 744.554, 770.570, 874.785, 902.816, 924.801, 703.575, 731.607, 668.632),
+        Grade = c("A", "A", "B", "B", "A", "A", "B", "A", "B", "B"),
+        stringsAsFactors = FALSE
     )
-    n_lipids <- nrow(lipids)
-    intensities <- .base_intensities(n_lipids, n_wt, n_ko, base_mean = 40000.0, noise_sd = 2000.0)
+    neg_lipids <- data.frame(
+        LipidName = c("PI 36:2", "PI 38:4", "PS 36:1", "PS 38:4", "PG 34:1", "PG 36:2", "Cer 34:1", "Cer 42:2", "LPC 18:1", "LPE 18:0"),
+        LipidClass = c("PI", "PI", "PS", "PS", "PG", "PG", "Cer", "Cer", "LPC", "LPE"),
+        FattyAcid = c("18:0/18:2", "18:0/20:4", "18:0/18:1", "18:0/20:4", "16:0/18:1", "18:1/18:1", "d18:1/16:0", "d18:1/24:1", "18:1", "18:0"),
+        IonType = rep("[M-H]-", 10),
+        BaseRt = c(6.12, 6.94, 5.41, 5.78, 4.35, 4.89, 8.11, 9.32, 2.75, 2.98),
+        CalcMz = c(861.550, 885.550, 788.545, 810.530, 747.518, 773.534, 536.504, 648.628, 520.340, 480.309),
+        Grade = c("A", "A", "B", "B", "A", "A", "B", "B", "A", "B"),
+        stringsAsFactors = FALSE
+    )
+    gcms_lipids <- data.frame(
+        LipidName = c("FA 16:0", "FA 18:1", "FA 18:2", "MAG 18:1", "DAG 34:1", "DAG 36:2", "Cholesterol", "Campesterol", "Sitosterol", "Squalene"),
+        LipidClass = c("FA", "FA", "FA", "MAG", "DAG", "DAG", "ST", "ST", "ST", "HC"),
+        FattyAcid = c("16:0", "18:1", "18:2", "18:1", "16:0/18:1", "18:1/18:1", "27:1", "28:1", "29:1", "30:6"),
+        IonType = c("[M-H]-", "[M-H]-", "[M-H]-", "[M+NH4]+", "[M+NH4]+", "[M+NH4]+", "[M+H-H2O]+", "[M+H-H2O]+", "[M+H-H2O]+", "[M+H]+"),
+        BaseRt = c(2.11, 2.64, 2.91, 3.25, 8.35, 8.89, 10.11, 10.32, 10.75, 12.98),
+        CalcMz = c(255.233, 281.249, 279.233, 356.316, 612.556, 640.587, 369.352, 383.368, 397.383, 411.399),
+        Grade = c("A", "A", "B", "B", "A", "A", "B", "B", "A", "B"),
+        stringsAsFactors = FALSE
+    )
 
-    df <- lipids[, c("LipidMolec", "Class", "FattyAcid")]
-    for (i in seq_len(n_wt)) {
-        df[[paste0(wt_samples[i], ".MeanArea")]] <- intensities$wt[, i]
+    write_lipidsearch_assay(file.path(lane_dir, lane$seed_file), pos_lipids, base_mean = 50000.0)
+    if (!is.null(lane$assay2_file)) {
+        write_lipidsearch_assay(file.path(lane_dir, lane$assay2_file), neg_lipids, base_mean = 40000.0)
     }
-    for (i in seq_len(n_ko)) {
-        df[[paste0(ko_samples[i], ".MeanArea")]] <- intensities$ko[, i]
-    }
-    df$Grade <- lipids$Grade
-
-    seed_path <- file.path(lane_dir, lane$seed_file)
-    .write_tsv(df, seed_path)
-    cat("  wrote", basename(seed_path), "(", nrow(df), "rows )\n")
+    write_lipidsearch_assay(file.path(lane_dir, "lipidsearch_gcms.txt"), gcms_lipids, base_mean = 35000.0)
 
     design_path <- file.path(lane_dir, "design.tsv")
     .write_tsv(design, design_path)

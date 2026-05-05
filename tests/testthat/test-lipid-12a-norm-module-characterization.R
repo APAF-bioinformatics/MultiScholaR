@@ -759,6 +759,8 @@ test_that("lipid norm workflow helpers preserve normalization, export, reset, an
   )
   expect_true(skip_result)
   expect_identical(harness$workflow_data$tab_status$normalization, "complete")
+  expect_identical(norm_data$correlation_filtered_obj, harness$current_s4)
+  expect_true(norm_data$correlation_filtering_complete)
 
   reset_result <- reset_normalization(
     workflowData = harness$workflow_data,

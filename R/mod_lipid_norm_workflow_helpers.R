@@ -581,6 +581,9 @@ handleLipidNormSkipCorrelationFilter <- function(
         return(invisible(FALSE))
     }
 
+    normData$correlation_filtered_obj <- current_s4
+    normData$correlation_filtering_complete <- TRUE
+
     workflowData$state_manager$saveState(
         state_name = "lipid_norm_complete"
         , s4_data_object = current_s4
@@ -843,4 +846,3 @@ registerLipidNormSelectedTabPreNormalizationObserver <- function(
 
     invisible(selectedTab)
 }
-

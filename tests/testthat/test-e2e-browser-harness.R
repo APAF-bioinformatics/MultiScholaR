@@ -1,6 +1,6 @@
 library(testthat)
 
-new_fake_e2e_driver <- function(digest = NULL, logs = list()) {
+new_fake_e2e_driver <- function(digest = NULL, logs = list(), select_options = list()) {
   state <- new.env(parent = emptyenv())
   state$calls <- list()
   if (is.null(digest)) {
@@ -20,6 +20,7 @@ new_fake_e2e_driver <- function(digest = NULL, logs = list()) {
   }
   state$digest <- digest
   state$logs <- logs
+  state$select_options <- select_options
   state$stopped <- FALSE
 
   record <- function(method, args) {
@@ -58,6 +59,11 @@ new_fake_e2e_driver <- function(digest = NULL, logs = list()) {
     },
     get_js = function(script) {
       record("get_js", list(script = script))
+      for (input_id in names(state$select_options)) {
+        if (grepl(input_id, script, fixed = TRUE)) {
+          return(as.list(state$select_options[[input_id]]))
+        }
+      }
       list()
     },
     get_html = function(...) {
@@ -268,6 +274,40 @@ test_that("project path and filtered-session artifact assertions validate DIA ha
   expect_no_error(e2e_assert_prot_filtered_session_artifacts(paths$base_dir))
 })
 
+test_that("lipidomics project path and filtered-session assertions validate multi-assay handoff files", {
+  project_root <- tempfile("e2e-lipid-project-")
+  experiment_label <- "E2E-009"
+  dir.create(project_root, recursive = TRUE)
+  paths <- e2e_lipidomics_project_paths(project_root, experiment_label)
+  dir.create(paths$source_dir, recursive = TRUE)
+  dir.create(paths$data_dir, recursive = TRUE)
+  dir.create(paths$da_output_dir, recursive = TRUE)
+  dir.create(paths$results_summary_dir, recursive = TRUE)
+
+  expect_no_error(e2e_assert_project_dirs_exist(paths))
+
+  saveRDS(
+    list(
+      omic_type = "lipidomics",
+      r6_current_state_name = "lipid_norm_complete",
+      current_s4_object = structure(list(), class = "LipidomicsAssayData"),
+      assay_names = c("LCMS_Pos", "LCMS_Neg"),
+      normalization_complete = TRUE,
+      correlation_filtering_complete = TRUE,
+      normalization_method = "none",
+      ruv_mode = "skip",
+      itsd_applied = FALSE
+    ),
+    file.path(paths$source_dir, "lipid_filtered_session_data_latest.rds")
+  )
+  writeLines("Lipidomics Normalized Session Data Export Summary", file.path(paths$source_dir, "lipid_filtered_session_summary.txt"))
+
+  expect_no_error(e2e_assert_lipid_filtered_session_artifacts(
+    paths$base_dir,
+    expected_assays = c("LCMS_Pos", "LCMS_Neg")
+  ))
+})
+
 test_that("proteomics lane upload helper supplies search results and required FASTA", {
   driver <- new_fake_e2e_driver()
   lane <- read_e2e_manifest()[["prot_dia"]]
@@ -289,6 +329,34 @@ test_that("proteomics lane upload helper supplies search results and required FA
   )
 })
 
+test_that("lipidomics lane upload helper supplies assay names and both assay files", {
+  driver <- new_fake_e2e_driver()
+  lane <- read_e2e_manifest()[["lipid_canonical"]]
+
+  e2e_upload_lane_inputs(driver, lane)
+
+  upload_calls <- Filter(
+    function(call) identical(call$method, "upload_file"),
+    driver$.state$calls
+  )
+  expect_equal(length(upload_calls), 2L)
+  uploaded_ids <- vapply(upload_calls, function(call) names(call$args)[[1L]], character(1L))
+  expect_setequal(
+    uploaded_ids,
+    c(
+      e2e_input_id("lipidomics", "import", "assay1_file_std"),
+      e2e_input_id("lipidomics", "import", "assay2_file_std")
+    )
+  )
+
+  set_calls <- Filter(function(call) identical(call$method, "set_inputs"), driver$.state$calls)
+  set_names <- unlist(lapply(set_calls, function(call) names(call$args)), use.names = FALSE)
+  expect_true(e2e_input_id("lipidomics", "import", "assay1_name") %in% set_names)
+  expect_true(e2e_input_id("lipidomics", "import", "assay2_name") %in% set_names)
+  expect_true(e2e_input_id("lipidomics", "import", "vendor_format") %in% set_names)
+  expect_true(e2e_input_id("lipidomics", "import", "sanitize_names") %in% set_names)
+})
+
 test_that("proteomics DIA scenario helpers dispatch design, QC, normalization, and summary actions", {
   driver <- new_fake_e2e_driver()
   lane <- read_e2e_manifest()[["prot_dia"]]
@@ -308,6 +376,40 @@ test_that("proteomics DIA scenario helpers dispatch design, QC, normalization, a
     experiment_label = experiment_label,
     case_id = "E2E-004-browser-harness-report",
     description = "browser harness report path"
+  )
+
+  methods <- vapply(driver$.state$calls, `[[`, character(1), "method")
+  expect_true("set_inputs" %in% methods)
+  expect_true("get_js" %in% methods)
+  expect_true("get_download" %in% methods)
+  expect_true(file.exists(report_download))
+})
+
+test_that("lipidomics scenario helpers dispatch multi-assay design, QC, normalization, DA, and summary actions", {
+  lane <- read_e2e_manifest()[["lipid_canonical"]]
+  expected_assays <- unlist(lane$assays)
+  select_options <- list()
+  select_options[[e2e_input_id("lipidomics", "da", "volcano_assay")]] <- c("Combined", expected_assays)
+  select_options[[e2e_input_id("lipidomics", "da", "heatmap_assay")]] <- c("Combined", expected_assays)
+  select_options[[e2e_input_id("lipidomics", "da", "table_assay")]] <- c("All", expected_assays)
+  driver <- new_fake_e2e_driver(select_options = select_options)
+  project_root <- tempfile("e2e-lipid-project-")
+  experiment_label <- "E2E-009"
+  dir.create(project_root, recursive = TRUE)
+  paths <- e2e_lipidomics_project_paths(project_root, experiment_label)
+  dir.create(paths$source_dir, recursive = TRUE)
+
+  e2e_complete_lipid_design_from_manifest(driver, lane)
+  e2e_run_lipid_qc_finalize(driver)
+  e2e_run_lipid_normalization_export(driver)
+  e2e_run_lipid_da(driver, expected_assays = expected_assays)
+  report_download <- e2e_run_lipid_summary_report(
+    driver,
+    lane = lane,
+    project_base_dir = paths$base_dir,
+    experiment_label = experiment_label,
+    case_id = "E2E-009-browser-harness-report",
+    description = "browser harness lipid report path"
   )
 
   methods <- vapply(driver$.state$calls, `[[`, character(1), "method")

@@ -9,7 +9,7 @@
     maxquant    = c("Protein.IDs", "Gene.names"),
     msdial      = c("Feature.Name"),
     custom      = c("Feature.Name"),
-    lipidsearch = c("LipidMolec", "Class", "FattyAcid")
+    lipidsearch = c("LipidName", "LipidClass", "FattyAcid")
 )
 
 .E2E_MSDIAL_META_COLS <- c(
@@ -26,7 +26,7 @@
         , maxquant    = sum(grepl("^LFQ\\.intensity\\.", col_names))
         , msdial      = sum(!col_names %in% .E2E_MSDIAL_META_COLS)
         , custom      = sum(grepl("^(WT|KO)_", col_names))
-        , lipidsearch = sum(grepl("\\.MeanArea$", col_names))
+        , lipidsearch = sum(grepl("^(WT|KO)_|\\.MeanArea$", col_names))
         , NA_integer_
     )
 }

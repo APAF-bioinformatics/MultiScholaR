@@ -29,7 +29,7 @@ tests/testdata/e2e/
 ├── metab_lc/                 # LC-MS metabolomics (MS-DIAL format, Pos+Neg)
 ├── metab_gc/                 # GC-MS metabolomics (MS-DIAL format, GCMS)
 ├── metab_combined/           # Combined LC/GC metabolomics (multi-platform)
-└── lipid_canonical/          # Lipidomics (LipidSearch results)
+└── lipid_canonical/          # Lipidomics (multi-assay LipidSearch results)
 ```
 
 Each lane directory contains:
@@ -86,6 +86,7 @@ Each lane object:
 | `fixture_dir`        | string          | Subdirectory name under `e2e/` |
 | `seed_file`          | string          | Filename of the primary import seed file |
 | `fasta_file`         | string / null   | Optional FASTA filename for proteomics lanes |
+| `assay2_file`        | string / null   | Optional secondary assay upload for multi-assay metabolomics/lipidomics lanes |
 | `assays`             | array           | Platform assay names (`null` for single-assay lanes) |
 | `expected_contrasts` | array\<string\> | DA contrasts the E2E suite exercises |
 | `report_template`    | string          | Rmd stub filename in `report_templates/` |
@@ -109,6 +110,10 @@ Each lane has **2 DA-significant features** injected:
 
 Remaining features have near-null group differences. This ensures E2E tests can
 assert on the presence of known DA hits without hardcoding arbitrary values.
+
+The lipidomics canonical lane is intentionally multi-assay: `LCMS_Pos` and
+`LCMS_Neg` are uploaded in the full browser workflow, while `lipidsearch_gcms.txt`
+is available for the E2E-009 GCMS-named import smoke.
 
 ---
 

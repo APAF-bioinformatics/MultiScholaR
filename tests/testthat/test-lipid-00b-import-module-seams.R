@@ -2996,6 +2996,36 @@ test_that("assembleLipidImportAssayList appends the optional second assay throug
   )
 })
 
+test_that("assembleLipidImportAssayList routes LipidSearch second assays through the detected reader", {
+  assay1_data <- data.frame(
+    LipidName = c("PC 34:1", "TG 52:3"),
+    WT_1 = c(10, 11)
+  )
+  lipidsearch_reader <- function(filepath, lipid_id_column = NULL, annotation_column = NULL) {
+    expect_identical(filepath, "/tmp/lcms-neg-lipidsearch.tsv")
+    expect_identical(lipid_id_column, "LipidName")
+    expect_identical(annotation_column, "LipidClass")
+    list(data = data.frame(LipidName = c("PE 36:2", "SM 34:1"), WT_1 = c(20, 21)))
+  }
+
+  result <- assembleLipidImportAssayList(
+    assay1Name = "LCMS_Pos",
+    assay1Data = assay1_data,
+    assay2File = "/tmp/lcms-neg-lipidsearch.tsv",
+    assay2Name = "LCMS_Neg",
+    dataFormat = "lipidsearch",
+    lipidIdCol = "LipidName",
+    annotationCol = "LipidClass",
+    resolveSecondAssayReader = function(dataFormat) {
+      expect_identical(dataFormat, "lipidsearch")
+      lipidsearch_reader
+    }
+  )
+
+  expect_identical(names(result), c("LCMS_Pos", "LCMS_Neg"))
+  expect_identical(result$LCMS_Neg$LipidName, c("PE 36:2", "SM 34:1"))
+})
+
 test_that("runLipidImportProcessing preserves notification lifecycle and downstream seam inputs", {
   workflow_data <- new.env(parent = emptyenv())
   assay1_data <- data.frame(

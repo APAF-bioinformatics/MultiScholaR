@@ -137,7 +137,7 @@ outputLipidDaResultsAllContrasts <- function(
                 {
                     # Reorder columns: ID, name first, then stats, then intensity columns
                     priority_cols <- c(
-                        "lipid_id", "lipid_name",
+                        "lipid_id", "lipid_name", "assay",
                         "logFC", "raw_pvalue", "fdr_qvalue", "significant",
                         "comparison", "friendly_name", "numerator", "denominator"
                     )
@@ -146,10 +146,10 @@ outputLipidDaResultsAllContrasts <- function(
                     # Get sample intensity columns
                     intensity_cols <- grep("^intensity\\.", colnames(assay_contrast_data), value = TRUE)
 
-                    # Get any remaining columns (exclude assay since we're splitting by it)
+                    # Preserve assay provenance even in per-assay files for downstream audits.
                     other_cols <- setdiff(
                         colnames(assay_contrast_data),
-                        c(priority_cols, intensity_cols, "assay")
+                        c(priority_cols, intensity_cols)
                     )
 
                     # Final column order
@@ -412,4 +412,3 @@ outputLipidDaResultsAllContrasts <- function(
     logger::log_info("--- Exiting outputLipidDaResultsAllContrasts ---")
     return(TRUE)
 }
-

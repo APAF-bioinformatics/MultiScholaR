@@ -358,17 +358,62 @@ assembleLipidImportAssayList <- function(
   assay1Data,
   assay2File = NULL,
   assay2Name = NULL,
-  importSecondAssay = importLipidMSDIALData
+  dataFormat = "msdial",
+  lipidIdCol = NULL,
+  annotationCol = NULL,
+  importSecondAssay = NULL,
+  resolveSecondAssayReader = resolveLipidImportSecondAssayReader,
+  callSecondAssayReader = callLipidImportSecondAssayReader
 ) {
   assay_list <- list()
   assay_list[[assay1Name]] <- assay1Data
 
   if (!is.null(assay2File) && nzchar(assay2Name)) {
-    assay2_import <- importSecondAssay(assay2File)
+    if (is.null(importSecondAssay)) {
+      importSecondAssay <- resolveSecondAssayReader(dataFormat = dataFormat)
+    }
+    assay2_import <- callSecondAssayReader(
+      importSecondAssay = importSecondAssay,
+      assay2File = assay2File,
+      lipidIdCol = lipidIdCol,
+      annotationCol = annotationCol
+    )
     assay_list[[assay2Name]] <- assay2_import$data
   }
 
   assay_list
+}
+
+resolveLipidImportSecondAssayReader <- function(
+  dataFormat,
+  importMsdial = importLipidMSDIALData,
+  importLipidSearch = importLipidSearchData
+) {
+  switch(
+    tolower(dataFormat %||% "msdial"),
+    lipidsearch = importLipidSearch,
+    msdial = importMsdial,
+    importMsdial
+  )
+}
+
+callLipidImportSecondAssayReader <- function(
+  importSecondAssay,
+  assay2File,
+  lipidIdCol = NULL,
+  annotationCol = NULL
+) {
+  importer_formals <- tryCatch(names(formals(importSecondAssay)), error = function(e) character(0))
+  args <- list(assay2File)
+
+  if ("lipid_id_column" %in% importer_formals) {
+    args$lipid_id_column <- lipidIdCol
+  }
+  if ("annotation_column" %in% importer_formals) {
+    args$annotation_column <- annotationCol
+  }
+
+  do.call(importSecondAssay, args)
 }
 
 runLipidImportProcessing <- function(
@@ -404,7 +449,10 @@ runLipidImportProcessing <- function(
         assay1Name = assay1Name,
         assay1Data = assay1Data,
         assay2File = assay2File,
-        assay2Name = assay2Name
+        assay2Name = assay2Name,
+        dataFormat = if (identical(vendorFormat, "custom")) detectedFormat else detectedFormat %||% vendorFormat,
+        lipidIdCol = lipidIdCol,
+        annotationCol = annotationCol
       )
 
       sanitized_import <- sanitizeSampleNames(

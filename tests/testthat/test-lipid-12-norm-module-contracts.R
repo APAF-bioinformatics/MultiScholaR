@@ -35,6 +35,42 @@ source(test_path("..", "..", "R", "mod_lipid_norm_ui.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_norm_server.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_norm.R"), local = environment())
 
+makeValidLipidNormContractS4 <- function(
+    lipid_data,
+    lipidIdColumn = "lipid_id",
+    annotationIdColumn = "annotation"
+) {
+    lipidData <- lapply(lipid_data, function(assayData) {
+        assayData <- as.data.frame(assayData)
+        if (!lipidIdColumn %in% names(assayData)) {
+            assayData[[lipidIdColumn]] <- paste0("L", seq_len(nrow(assayData)))
+        }
+        if (!"Sample_1" %in% names(assayData)) {
+            assayData[["Sample_1"]] <- seq_len(nrow(assayData))
+        }
+        assayData
+    })
+
+    methods::new(
+        "LipidomicsAssayData",
+        lipid_data = lipidData,
+        lipid_id_column = lipidIdColumn,
+        annotation_id_column = annotationIdColumn,
+        database_identifier_type = "Unknown",
+        internal_standard_regex = NA_character_,
+        design_matrix = data.frame(
+            Sample_ID = "Sample_1",
+            group = "WT",
+            batch = "B1",
+            stringsAsFactors = FALSE
+        ),
+        sample_id = "Sample_ID",
+        group_id = "group",
+        technical_replicate_id = NA_character_,
+        args = list()
+    )
+}
+
 test_that("buildLipidNormOptionsControlPanel keeps the left control-panel contract stable", {
     rendered <- htmltools::renderTags(
         buildLipidNormOptionsControlPanel(
@@ -1217,12 +1253,13 @@ test_that("registerLipidNormAssayNameInitializationObserver keeps the assay-name
         )
     }
 
-    current_s4 <- methods::new(
-        "LipidomicsAssayData",
+    current_s4 <- makeValidLipidNormContractS4(
         lipid_data = list(
             `Positive Mode` = data.frame(feature = 1),
             `Negative Mode` = data.frame(feature = 2)
-        )
+        ),
+        lipidIdColumn = "feature",
+        annotationIdColumn = "feature"
     )
     norm_data <- new.env(parent = emptyenv())
     norm_data$assay_names <- NULL
@@ -1981,14 +2018,13 @@ test_that("registerLipidNormItsdTableOutputs keeps the per-assay ITSD table bind
     datatable_calls <- list()
     style_calls <- list()
     round_calls <- list()
-    current_s4 <- methods::new(
-        "LipidomicsAssayData",
+    current_s4 <- makeValidLipidNormContractS4(
         lipid_data = list(
             `Positive Mode` = data.frame(raw = 1:2),
             `Negative Mode` = data.frame(raw = 3:4)
         ),
-        lipid_id_column = "lipid_id",
-        annotation_id_column = "annotation"
+        lipidIdColumn = "lipid_id",
+        annotationIdColumn = "annotation"
     )
     selection_table <- data.frame(
         lipid_id = c("L1", "L2"),
@@ -2389,12 +2425,13 @@ test_that("handleLipidNormPreNormalizationQc keeps the pre-QC generation contrac
         )
     }
 
-    current_s4 <- methods::new(
-        "LipidomicsAssayData",
+    current_s4 <- makeValidLipidNormContractS4(
         lipid_data = list(
             `Positive Mode` = data.frame(feature = 1),
             `Negative Mode` = data.frame(feature = 2)
-        )
+        ),
+        lipidIdColumn = "feature",
+        annotationIdColumn = "feature"
     )
     norm_data <- new.env(parent = emptyenv())
     norm_data$assay_names <- NULL
@@ -2470,9 +2507,10 @@ test_that("handleLipidNormSelectedTabPreNormalizationTrigger keeps the auto-trig
         )
     }
 
-    current_s4 <- methods::new(
-        "LipidomicsAssayData",
-        lipid_data = list(`Positive Mode` = data.frame(feature = 1))
+    current_s4 <- makeValidLipidNormContractS4(
+        lipid_data = list(`Positive Mode` = data.frame(feature = 1)),
+        lipidIdColumn = "feature",
+        annotationIdColumn = "feature"
     )
     norm_data <- new.env(parent = emptyenv())
     norm_data$pre_norm_qc_generated <- FALSE
@@ -2591,15 +2629,17 @@ test_that("handleLipidNormSkipCorrelationFilter keeps the completion contract st
     )
     workflow_data$config_list <- list(mode = "test")
     workflow_data$tab_status <- list(quality_control = "pending", normalization = "pending")
+    norm_data <- new.env(parent = emptyenv())
+    norm_data$ruv_complete <- FALSE
+    norm_data$normalization_complete <- TRUE
+    norm_data$ruv_corrected_obj <- NULL
+    norm_data$post_norm_obj <- post_norm_obj
+    norm_data$correlation_filtered_obj <- NULL
+    norm_data$correlation_filtering_complete <- FALSE
 
     result <- handleLipidNormSkipCorrelationFilter(
         workflowData = workflow_data,
-        normData = list(
-            ruv_complete = FALSE,
-            normalization_complete = TRUE,
-            ruv_corrected_obj = NULL,
-            post_norm_obj = post_norm_obj
-        ),
+        normData = norm_data,
         addLog = function(message) {
             log_message <<- message
         },
@@ -2621,6 +2661,8 @@ test_that("handleLipidNormSkipCorrelationFilter keeps the completion contract st
     ))
     expect_identical(workflow_data$tab_status$quality_control, "complete")
     expect_identical(workflow_data$tab_status$normalization, "complete")
+    expect_identical(norm_data$correlation_filtered_obj, post_norm_obj)
+    expect_true(norm_data$correlation_filtering_complete)
     expect_identical(log_message, "Correlation filtering skipped - ready for DE analysis")
     expect_identical(notification, list(
         message = "Normalization complete! Proceeding to DE analysis.",
