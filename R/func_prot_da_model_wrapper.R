@@ -139,7 +139,7 @@ daAnalysisWrapperFunction <- function(
 
   if (!is.null(theObject@args$limpa_dpc_quant_results)) {
     dpc_quant_results <- theObject@args$limpa_dpc_quant_results
-    use_dpc_da <- TRUE
+    use_dpc_de <- TRUE
     cat("   DA ANALYSIS Step: Detected DPC-Quant results - using limpa dpcDA for uncertainty-weighted analysis\n")
     cat("   DA ANALYSIS Step: DPC parameters used:", paste(dpc_quant_results$dpc_parameters_used, collapse = ", "), "\n")
   } else {
@@ -190,7 +190,7 @@ daAnalysisWrapperFunction <- function(
     }
 
     # Create design matrix for dpcDA
-    design_matrix_for_dpcda <- model.matrix(as.formula(formula_string), theObject@design_matrix)
+    design_matrix_for_dpcde <- model.matrix(as.formula(formula_string), theObject@design_matrix)
 
     cat("   DA ANALYSIS Step: Calling limpa::dpcDE\n")
     cat("   DA ANALYSIS Step: Protein matrix dims:", nrow(y_elist_filtered$E), "x", ncol(y_elist_filtered$E), "\n")

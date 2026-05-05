@@ -37,6 +37,15 @@ mod_prot_qc_protein_rollup_ui <- function(id) {
           shiny::p("Aggregate peptide-level data to protein-level quantification using the IQ algorithm (MaxLFQ)."),
           shiny::hr(),
           shiny::p("This step uses the IQ tool to implement the MaxLFQ algorithm for protein quantification, then automatically creates a ProteinQuantitativeData S4 object."),
+          shiny::radioButtons(
+            ns("rollup_method"),
+            "Protein rollup method:",
+            choices = c(
+              "IQ MaxLFQ" = "iq",
+              "limpa DPC-Quant" = "limpa"
+            ),
+            selected = "iq"
+          ),
           shiny::hr(),
           shiny::div(
             shiny::actionButton(ns("apply_iq_rollup"), "Run IQ Rollup & Create S4 Object", 
@@ -54,6 +63,154 @@ mod_prot_qc_protein_rollup_ui <- function(id) {
         )
       )
     )
+  )
+}
+
+buildProtTestModeLimpaProteinObject <- function(peptideS4,
+                                                dpcSlope = 0.8,
+                                                createProteinDataFn = ProteinQuantitativeData) {
+  peptideData <- peptideS4@peptide_data
+  proteinCol <- peptideS4@protein_id_column
+  sampleCol <- peptideS4@sample_id
+  peptideCol <- peptideS4@peptide_sequence_column
+  quantityCol <- peptideS4@norm_quantity_column
+
+  if (is.null(proteinCol) || !proteinCol %in% names(peptideData)) {
+    proteinCandidates <- c("Protein.Ids", "Protein.Group", "Protein.IDs", "protein_id")
+    proteinCol <- proteinCandidates[proteinCandidates %in% names(peptideData)][1]
+  }
+  if (is.na(proteinCol) || is.null(proteinCol)) {
+    stop("No protein identifier column available for test-mode limpa quantification.")
+  }
+
+  if (is.null(sampleCol) || !sampleCol %in% names(peptideData)) {
+    sampleCandidates <- c("Run", "Sample", "sample_id")
+    sampleCol <- sampleCandidates[sampleCandidates %in% names(peptideData)][1]
+  }
+  if (is.na(sampleCol) || is.null(sampleCol)) {
+    stop("No sample identifier column available for test-mode limpa quantification.")
+  }
+
+  if (is.null(peptideCol) || !peptideCol %in% names(peptideData)) {
+    peptideCandidates <- c("Stripped.Sequence", "Modified.Sequence", "Precursor.Id", "Peptide.Sequence")
+    peptideCol <- peptideCandidates[peptideCandidates %in% names(peptideData)][1]
+  }
+  if (is.na(peptideCol) || is.null(peptideCol)) {
+    peptideCol <- proteinCol
+  }
+
+  if (is.null(quantityCol) || !quantityCol %in% names(peptideData)) {
+    quantityCandidates <- c("Peptide.Imputed", "Precursor.Quantity", "Precursor.Normalised")
+    quantityCol <- quantityCandidates[quantityCandidates %in% names(peptideData)][1]
+  }
+  if (is.na(quantityCol) || is.null(quantityCol)) {
+    stop("No peptide quantity column available for test-mode limpa quantification.")
+  }
+
+  proteinLong <- peptideData |>
+    dplyr::group_by(!!rlang::sym(proteinCol), !!rlang::sym(sampleCol)) |>
+    dplyr::summarise(
+      value = mean(as.numeric(!!rlang::sym(quantityCol)), na.rm = TRUE),
+      observations = sum(!is.na(!!rlang::sym(quantityCol))),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(value = ifelse(is.nan(value), NA_real_, value))
+
+  proteinWide <- proteinLong |>
+    dplyr::select(
+      !!rlang::sym(proteinCol),
+      !!rlang::sym(sampleCol),
+      value
+    ) |>
+    tidyr::pivot_wider(
+      names_from = !!rlang::sym(sampleCol),
+      values_from = value
+    )
+
+  sampleNames <- unique(as.character(peptideS4@design_matrix[[sampleCol]]))
+  if (length(sampleNames) == 0L || all(is.na(sampleNames))) {
+    sampleNames <- unique(as.character(peptideData[[sampleCol]]))
+  }
+  missingSamples <- setdiff(sampleNames, colnames(proteinWide))
+  for (sampleName in missingSamples) {
+    proteinWide[[sampleName]] <- NA_real_
+  }
+  proteinWide <- proteinWide[, c(proteinCol, sampleNames), drop = FALSE]
+
+  valueCols <- setdiff(colnames(proteinWide), proteinCol)
+  for (rowIdx in seq_len(nrow(proteinWide))) {
+    values <- as.numeric(proteinWide[rowIdx, valueCols, drop = TRUE])
+    replacement <- if (all(is.na(values))) 0 else mean(values, na.rm = TRUE)
+    values[is.na(values)] <- replacement
+    proteinWide[rowIdx, valueCols] <- as.list(values)
+  }
+
+  peptideSummary <- peptideData |>
+    dplyr::group_by(!!rlang::sym(proteinCol)) |>
+    dplyr::summarise(
+      peptide_count = dplyr::n_distinct(!!rlang::sym(peptideCol)),
+      peptidoform_count = dplyr::n(),
+      .groups = "drop"
+    )
+
+  proteinMatrix <- as.matrix(proteinWide[, valueCols, drop = FALSE])
+  rownames(proteinMatrix) <- proteinWide[[proteinCol]]
+  quantifiedElist <- list(
+    E = proteinMatrix,
+    genes = data.frame(
+      protein.id = proteinWide[[proteinCol]],
+      stringsAsFactors = FALSE
+    ),
+    other = list(
+      standard.error = matrix(0, nrow = nrow(proteinMatrix), ncol = ncol(proteinMatrix)),
+      n.observations = matrix(1, nrow = nrow(proteinMatrix), ncol = ncol(proteinMatrix))
+    )
+  )
+  class(quantifiedElist) <- "EList"
+
+  args <- peptideS4@args
+  if (is.null(args$globalParameters)) {
+    args$globalParameters <- list()
+  }
+  peptideMatrix <- tryCatch(peptideS4@peptide_matrix, error = function(e) NULL)
+  if (is.null(peptideMatrix)) {
+    peptideMatrix <- as.matrix(proteinWide[, valueCols, drop = FALSE])
+    rownames(peptideMatrix) <- proteinWide[[proteinCol]]
+  }
+  args$globalParameters$use_limpa <- TRUE
+  args$globalParameters$report_template <- "DIANN_limpa_report.rmd"
+  args$proteinMissingValueImputationLimpa <- list(
+    dpc_slope = dpcSlope,
+    verbose = FALSE,
+    quantified_protein_column = "Protein.Quantified.Limpa",
+    test_mode = TRUE
+  )
+  args$limpa_dpc_quant_results <- list(
+    dpc_parameters_used = c(NA_real_, dpcSlope),
+    dpc_object_used = NULL,
+    slope_interpretation = "test-mode deterministic fallback",
+    y_peptide_for_dpc = peptideMatrix,
+    quantified_elist = quantifiedElist,
+    standard_errors = quantifiedElist$other$standard.error,
+    n_observations = quantifiedElist$other$n.observations,
+    peptide_counts_per_protein = peptideSummary,
+    missing_percentage_peptides = round(100 * mean(is.na(peptideMatrix)), 1),
+    missing_percentage_proteins = 0,
+    quantification_method = "limpa_dpc_quant_test_mode",
+    total_proteins_quantified = nrow(proteinMatrix),
+    total_peptides_used = nrow(peptideMatrix),
+    dpc_method = "limpa_dpc_quant"
+  )
+
+  createProteinDataFn(
+    protein_quant_table = proteinWide,
+    protein_id_column = proteinCol,
+    protein_id_table = proteinWide |> dplyr::distinct(!!rlang::sym(proteinCol)),
+    design_matrix = peptideS4@design_matrix,
+    sample_id = sampleCol,
+    group_id = peptideS4@group_id,
+    technical_replicate_id = peptideS4@technical_replicate_id,
+    args = args
   )
 }
 
@@ -222,6 +379,75 @@ runProteinIqRollupApplyStep <- function(workflowData,
   )
 }
 
+runProteinLimpaRollupApplyStep <- function(workflowData,
+                                           experimentPaths,
+                                           proteinLimpaFn = proteinMissingValueImputationLimpa,
+                                           testModeFallbackFn = buildProtTestModeLimpaProteinObject,
+                                           requireNamespaceFn = requireNamespace,
+                                           isTestModeFn = is_test_mode,
+                                           captureCheckpointFn = .capture_checkpoint,
+                                           logInfoFn = logger::log_info) {
+  shiny::req(workflowData$state_manager)
+
+  currentState <- workflowData$state_manager$current_state
+  peptideS4 <- workflowData$state_manager$getState(currentState)
+  shiny::req(peptideS4)
+
+  logInfoFn("Protein Processing: Starting limpa DPC-Quant rollup from peptide state")
+
+  proteinObj <- if (isTRUE(requireNamespaceFn("limpa", quietly = TRUE))) {
+    proteinLimpaFn(peptideS4, verbose = TRUE)
+  } else if (isTRUE(isTestModeFn())) {
+    testModeFallbackFn(peptideS4)
+  } else {
+    stop("limpa package is required for limpa DPC-Quant rollup. Install it with BiocManager::install('limpa').")
+  }
+
+  if (is.null(workflowData$config_list)) {
+    workflowData$config_list <- list()
+  }
+  if (is.null(workflowData$config_list$globalParameters)) {
+    workflowData$config_list$globalParameters <- list()
+  }
+  workflowData$config_list$globalParameters$use_limpa <- TRUE
+  workflowData$config_list$globalParameters$report_template <- "DIANN_limpa_report.rmd"
+
+  workflowData$state_manager$saveState(
+    state_name = "protein_s4_created",
+    s4_data_object = proteinObj,
+    config_object = list(
+      rollup_method = "limpa_dpc_quant",
+      s4_class = "ProteinQuantitativeData",
+      protein_id_column = proteinObj@protein_id_column,
+      report_template = "DIANN_limpa_report.rmd"
+    ),
+    description = "limpa DPC-Quant protein rollup completed and ProteinQuantitativeData S4 object created"
+  )
+
+  captureCheckpointFn(proteinObj, "cp03", "rolled_up_protein_limpa")
+
+  proteinCount <- proteinObj@protein_quant_table |>
+    dplyr::distinct(!!rlang::sym(proteinObj@protein_id_column)) |>
+    nrow()
+
+  resultText <- paste(
+    "limpa DPC-Quant Protein Rollup Completed Successfully\n",
+    "=====================================================\n",
+    sprintf("Proteins quantified: %d\n", proteinCount),
+    sprintf("Samples: %d\n", ncol(proteinObj@protein_quant_table) - 1),
+    "Algorithm: limpa DPC-Quant\n",
+    sprintf("S4 Class: %s\n", class(proteinObj)[1]),
+    "Report template: DIANN_limpa_report.rmd\n",
+    "State saved as: 'protein_s4_created'\n",
+    "\nReady for protein accession cleanup."
+  )
+
+  list(
+    proteinObj = proteinObj,
+    resultText = resultText
+  )
+}
+
 updateProteinIqRollupOutputs <- function(output,
                                          iqRollupPlot,
                                          iqRollupResult,
@@ -370,15 +596,23 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
     
     iq_rollup_plot <- shiny::reactiveVal(NULL)
     
-    # Step 1: IQ Protein Rollup (chunk 17)
+    # Step 1: Protein Rollup (chunk 17)
     shiny::observeEvent(input$apply_iq_rollup, {
+      rollupMethod <- input$rollup_method %||% "iq"
+      applyStepFn <- if (identical(rollupMethod, "limpa")) {
+        runProteinLimpaRollupApplyStep
+      } else {
+        runProteinIqRollupApplyStep
+      }
+
       runProteinIqRollupApplyObserver(
         workflowData = workflow_data,
         experimentPaths = experiment_paths,
         output = output,
         iqRollupPlot = iq_rollup_plot,
         omicType = omic_type,
-        experimentLabel = experiment_label
+        experimentLabel = experiment_label,
+        runApplyStepFn = applyStepFn
       )
     })
     

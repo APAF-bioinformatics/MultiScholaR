@@ -132,6 +132,14 @@ test_that("mod_prot_qc_protein_ui omits DIA rollup for LFQ workflows", {
   expect_identical(observed_ids$mod_prot_qc_protein_replicate_ui, "protein-qc-replicate_filter")
 })
 
+test_that("mod_prot_qc_protein_rollup_ui exposes the limpa branch selector", {
+  html <- htmltools::renderTags(mod_prot_qc_protein_rollup_ui("protein-qc-rollup"))$html
+
+  expect_match(html, "protein-qc-rollup-rollup_method", fixed = TRUE)
+  expect_match(html, "IQ MaxLFQ", fixed = TRUE)
+  expect_match(html, "limpa DPC-Quant", fixed = TRUE)
+})
+
 test_that("mod_prot_qc_protein_ui keeps fallback labels when submodules are unavailable", {
   ui_fn_names <- vapply(getProtQcProteinModuleSpecs("DIA"), `[[`, character(1), "uiFn")
   overrides <- list(
@@ -3109,6 +3117,96 @@ test_that("runProteinIqRollupApplyStep saves the protein S4 state and restores s
   expect_match(result$resultText, "Output file: iq_output_file.txt", fixed = TRUE)
 })
 
+test_that("runProteinLimpaRollupApplyStep saves limpa state and report routing metadata", {
+  if (!methods::isClass("FakeProteinLimpaOutputState")) {
+    methods::setClass(
+      "FakeProteinLimpaOutputState",
+      slots = c(
+        protein_quant_table = "data.frame",
+        protein_id_column = "character",
+        args = "list"
+      )
+    )
+  }
+
+  peptide_state <- list(kind = "peptide_state")
+  protein_state <- methods::new(
+    "FakeProteinLimpaOutputState",
+    protein_quant_table = data.frame(
+      Protein.Ids = c("P1", "P2"),
+      sample_a = c(10, 20),
+      sample_b = c(11, 21),
+      check.names = FALSE
+    ),
+    protein_id_column = "Protein.Ids",
+    args = list(
+      globalParameters = list(
+        use_limpa = TRUE,
+        report_template = "DIANN_limpa_report.rmd"
+      ),
+      proteinMissingValueImputationLimpa = list(test_mode = TRUE),
+      limpa_dpc_quant_results = list(dpc_method = "limpa_dpc_quant")
+    )
+  )
+  captured <- new.env(parent = emptyenv())
+  captured$info <- character()
+
+  state_manager <- new.env(parent = emptyenv())
+  state_manager$current_state <- "imputed"
+  state_manager$getState <- function(stateName) {
+    expect_identical(stateName, "imputed")
+    peptide_state
+  }
+  state_manager$saveState <- function(state_name, s4_data_object, config_object, description) {
+    captured$saveState <- list(
+      state_name = state_name,
+      s4_data_object = s4_data_object,
+      config_object = config_object,
+      description = description
+    )
+    invisible(NULL)
+  }
+
+  workflow_data <- new.env(parent = emptyenv())
+  workflow_data$state_manager <- state_manager
+  workflow_data$config_list <- NULL
+
+  result <- runProteinLimpaRollupApplyStep(
+    workflowData = workflow_data,
+    experimentPaths = list(),
+    testModeFallbackFn = function(peptideS4) {
+      captured$fallback_input <- peptideS4
+      protein_state
+    },
+    requireNamespaceFn = function(...) FALSE,
+    isTestModeFn = function() TRUE,
+    captureCheckpointFn = function(object, checkpointId, checkpointLabel) {
+      captured$checkpoint <- list(
+        object = object,
+        checkpointId = checkpointId,
+        checkpointLabel = checkpointLabel
+      )
+      invisible(NULL)
+    },
+    logInfoFn = function(message) {
+      captured$info <- c(captured$info, message)
+    }
+  )
+
+  expect_identical(captured$fallback_input, peptide_state)
+  expect_identical(workflow_data$config_list$globalParameters$use_limpa, TRUE)
+  expect_identical(workflow_data$config_list$globalParameters$report_template, "DIANN_limpa_report.rmd")
+  expect_identical(captured$saveState$state_name, "protein_s4_created")
+  expect_identical(captured$saveState$s4_data_object, protein_state)
+  expect_identical(captured$saveState$config_object$rollup_method, "limpa_dpc_quant")
+  expect_identical(captured$saveState$config_object$report_template, "DIANN_limpa_report.rmd")
+  expect_identical(captured$checkpoint$object, protein_state)
+  expect_identical(captured$checkpoint$checkpointId, "cp03")
+  expect_identical(captured$checkpoint$checkpointLabel, "rolled_up_protein_limpa")
+  expect_match(result$resultText, "limpa DPC-Quant Protein Rollup Completed Successfully", fixed = TRUE)
+  expect_match(result$resultText, "Report template: DIANN_limpa_report.rmd", fixed = TRUE)
+})
+
 test_that("updateProteinIqRollupOutputs refreshes result text and plot grid", {
   if (!methods::isClass("FakeProteinIqOutputState")) {
     methods::setClass(
@@ -3321,14 +3419,16 @@ test_that("mod_prot_qc_protein_rollup_server wires the apply observer through th
                                                  output,
                                                  iqRollupPlot,
                                                  omicType,
-                                                 experimentLabel) {
+                                                 experimentLabel,
+                                                 runApplyStepFn = NULL) {
         captured$apply <<- list(
           workflowData = workflowData,
           experimentPaths = experimentPaths,
           output = output,
           iqRollupPlot = iqRollupPlot,
           omicType = omicType,
-          experimentLabel = experimentLabel
+          experimentLabel = experimentLabel,
+          runApplyStepFn = runApplyStepFn
         )
         invisible(NULL)
       }
@@ -3354,6 +3454,47 @@ test_that("mod_prot_qc_protein_rollup_server wires the apply observer through th
       expect_type(captured$apply$iqRollupPlot, "closure")
       expect_identical(captured$apply$omicType, "proteomics")
       expect_identical(captured$apply$experimentLabel, "DIA Experiment")
+      expect_identical(captured$apply$runApplyStepFn, runProteinIqRollupApplyStep)
+    }
+  )
+})
+
+test_that("mod_prot_qc_protein_rollup_server selects the limpa apply step when requested", {
+  workflow_data <- shiny::reactiveValues(state_manager = list(kind = "state_manager"))
+  experiment_paths <- list(peptide_qc_dir = tempdir(), protein_qc_dir = tempdir())
+  captured <- new.env(parent = emptyenv())
+  captured$apply <- NULL
+
+  server_under_test <- makeFunctionWithOverrides(
+    mod_prot_qc_protein_rollup_server,
+    list(
+      runProteinIqRollupApplyObserver = function(workflowData,
+                                                 experimentPaths,
+                                                 output,
+                                                 iqRollupPlot,
+                                                 omicType,
+                                                 experimentLabel,
+                                                 runApplyStepFn = NULL) {
+        captured$apply <<- list(runApplyStepFn = runApplyStepFn)
+        invisible(NULL)
+      }
+    )
+  )
+
+  testServer(
+    server_under_test,
+    args = list(
+      workflow_data = workflow_data,
+      experiment_paths = experiment_paths,
+      omic_type = "proteomics",
+      experiment_label = "DIA Experiment"
+    ),
+    {
+      session$setInputs(rollup_method = "limpa")
+      session$setInputs(apply_iq_rollup = 1)
+      session$flushReact()
+
+      expect_identical(captured$apply$runApplyStepFn, runProteinLimpaRollupApplyStep)
     }
   )
 })

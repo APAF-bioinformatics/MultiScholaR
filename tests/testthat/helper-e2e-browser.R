@@ -869,7 +869,11 @@ e2e_complete_prot_design_from_manifest <- function(
   invisible(driver)
 }
 
-e2e_run_prot_dia_qc <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+e2e_run_prot_dia_qc <- function(
+    driver,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT,
+    rollup_method = "iq"
+) {
   qc <- function(input) e2e_input_id("proteomics", "qc", input)
 
   peptide_steps <- list(
@@ -901,6 +905,14 @@ e2e_run_prot_dia_qc <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) 
   e2e_set_input_and_idle(driver, qc("qc_tabs_lfq"), "Protein QC", timeout = timeout)
   for (step in protein_steps) {
     e2e_set_input_and_idle(driver, qc("protein_qc-protein_filter_tabs"), step$tab, timeout = timeout)
+    if (identical(step$action, "protein_qc-rollup-apply_iq_rollup")) {
+      e2e_set_input_and_idle(
+        driver,
+        qc("protein_qc-rollup-rollup_method"),
+        rollup_method,
+        timeout = timeout
+      )
+    }
     click_fn <- if (identical(step$action, "protein_qc-replicate_filter-apply_protein_replicate_filter")) {
       e2e_trigger_action_input_id
     } else {
@@ -910,6 +922,10 @@ e2e_run_prot_dia_qc <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) 
   }
 
   invisible(driver)
+}
+
+e2e_run_prot_dia_limpa_qc <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+  e2e_run_prot_dia_qc(driver, timeout = timeout, rollup_method = "limpa")
 }
 
 e2e_run_prot_normalization_export <- function(

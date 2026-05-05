@@ -35,7 +35,7 @@
       "fasta_file": "proteins.fasta",
       "assays": [null],
       "expected_contrasts": ["KO_vs_WT"],
-      "report_template": "DIANN_report.rmd",
+      "report_template": "DIANN_limpa_report.rmd",
       "enrichment_backend": "gprofiler",
       "expected_exports": [
         "differential_abundance.xlsx",

@@ -2268,12 +2268,104 @@ test_that("collectProtNormExportSessionData builds the export payload with count
   expect_identical(session_data$r6_state_history, c("protein_replicate_filtered", "correlation_filtered"))
   expect_identical(session_data$current_s4_object, current_s4)
   expect_equal(session_data$workflow_type, "TMT")
+  expect_null(session_data$report_template)
+  expect_false(session_data$limpa_applied)
+  expect_false(session_data$use_limpa)
+  expect_null(session_data$limpa_parameters)
+  expect_null(session_data$limpa_dpc_quant_results)
   expect_equal(session_data$normalization_method, "cyclicloess")
   expect_true(session_data$ruv_applied)
   expect_equal(session_data$ruv_k, 3)
   expect_equal(session_data$correlation_threshold, 0.7)
   expect_equal(session_data$final_protein_count, 2)
   expect_equal(session_data$final_sample_count, 2)
+})
+
+test_that("collectProtNormExportSessionData carries limpa metadata into filtered-session exports", {
+  if (!methods::isClass("MockProtNormExportData")) {
+    methods::setClass(
+      "MockProtNormExportData",
+      slots = c(
+        protein_quant_table = "data.frame",
+        protein_id_column = "character",
+        args = "list"
+      )
+    )
+  }
+
+  limpa_parameters <- list(dpc_slope = 0.8, quantified_protein_column = "Protein.Quantified.Limpa")
+  limpa_results <- list(
+    dpc_method = "limpa_dpc_quant",
+    quantification_method = "limpa_dpc_quant_test_mode",
+    total_proteins_quantified = 2
+  )
+  current_s4 <- methods::new(
+    "MockProtNormExportData",
+    protein_quant_table = data.frame(Protein.Ids = c("p1", "p2"), S1 = c(1, 2), S2 = c(3, 4)),
+    protein_id_column = "Protein.Ids",
+    args = list(
+      globalParameters = list(
+        workflow_type = "DIA",
+        use_limpa = TRUE,
+        report_template = "DIANN_limpa_report.rmd"
+      ),
+      proteinMissingValueImputationLimpa = limpa_parameters,
+      limpa_dpc_quant_results = limpa_results
+    )
+  )
+  workflow_data <- new.env(parent = emptyenv())
+  workflow_data$state_manager <- new.env(parent = emptyenv())
+  workflow_data$state_manager$current_state <- "correlation_filtered"
+  workflow_data$state_manager$getState <- function(state) current_s4
+  workflow_data$state_manager$states <- list(correlation_filtered = current_s4)
+  workflow_data$state_manager$state_history <- c("protein_s4_created", "correlation_filtered")
+  workflow_data$contrasts_tbl <- data.frame(friendly_names = "KO vs WT", stringsAsFactors = FALSE)
+  workflow_data$design_matrix <- data.frame(group = c("WT", "KO"), stringsAsFactors = FALSE)
+  workflow_data$config_list <- list(globalParameters = list(
+    workflow_type = "DIA",
+    use_limpa = TRUE,
+    report_template = "DIANN_limpa_report.rmd"
+  ))
+  norm_data <- new.env(parent = emptyenv())
+  norm_data$correlation_filtered_obj <- current_s4
+  norm_data$best_k <- NULL
+  norm_data$correlation_threshold <- 1
+
+  session_data <- collectProtNormExportSessionData(
+    workflowData = workflow_data,
+    normData = norm_data,
+    input = list(norm_method = "cyclicloess", ruv_mode = "skip"),
+    timeFn = function() as.POSIXct("2026-04-11 12:00:00", tz = "UTC"),
+    messageFn = function(...) NULL
+  )
+
+  expect_identical(session_data$workflow_type, "DIA")
+  expect_identical(session_data$report_template, "DIANN_limpa_report.rmd")
+  expect_true(session_data$limpa_applied)
+  expect_true(session_data$use_limpa)
+  expect_identical(session_data$limpa_parameters, limpa_parameters)
+  expect_identical(session_data$limpa_dpc_quant_results, limpa_results)
+
+  summary_text <- buildProtNormExportSummaryContent(
+    sessionData = session_data,
+    sessionFilename = "filtered_session_data_latest.rds",
+    timeFn = function() as.POSIXct("2026-04-11 12:00:00", tz = "UTC")
+  )
+  expect_match(summary_text, "- Report Template: DIANN_limpa_report.rmd", fixed = TRUE)
+  expect_match(summary_text, "- limpa DPC-Quant: yes", fixed = TRUE)
+  expect_match(summary_text, "- limpa Quantification Method: limpa_dpc_quant_test_mode", fixed = TRUE)
+
+  export_dir <- tempfile("prot-norm-limpa-export-")
+  dir.create(export_dir)
+  saveProtNormExportMetadataFiles(
+    sessionData = session_data,
+    sourceDir = export_dir,
+    messageFn = function(...) NULL
+  )
+  expect_true(file.exists(file.path(export_dir, "limpa_parameters.RDS")))
+  expect_true(file.exists(file.path(export_dir, "limpa_dpc_quant_results.RDS")))
+  expect_identical(readRDS(file.path(export_dir, "limpa_parameters.RDS")), limpa_parameters)
+  expect_identical(readRDS(file.path(export_dir, "limpa_dpc_quant_results.RDS")), limpa_results)
 })
 
 test_that("buildProtNormExportSummaryContent and saveProtNormExportArtifacts create expected export outputs", {

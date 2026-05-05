@@ -17,6 +17,7 @@ tests/testdata/e2e/
 ├── generate_fixtures.R       # Regeneration script (developer tool)
 ├── report_templates/         # Stub Rmd templates for report rendering tests
 │   ├── DIANN_report.rmd
+│   ├── DIANN_limpa_report.rmd
 │   ├── TMT_report.rmd
 │   ├── LFQ_report.rmd
 │   ├── metabolomics_report.rmd

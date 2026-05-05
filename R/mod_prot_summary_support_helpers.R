@@ -89,11 +89,27 @@ resolveProtSummaryReportTemplate <- function(workflowData,
                                              catFn = cat) {
   workflowTypeDetected <- NULL
   dataStateUsed <- NULL
+  reportTemplateRequested <- NULL
+  limpaRequested <- FALSE
 
   if (!is.null(workflowData) &&
       !is.null(workflowData$config_list) &&
-      !is.null(workflowData$config_list$globalParameters$workflow_type)) {
+      !is.null(workflowData$config_list$globalParameters)) {
     workflowTypeDetected <- workflowData$config_list$globalParameters$workflow_type
+    reportTemplateRequested <- workflowData$config_list$globalParameters$report_template
+    limpaRequested <- isTRUE(workflowData$config_list$globalParameters$use_limpa)
+    if (!is.null(reportTemplateRequested) && nzchar(reportTemplateRequested)) {
+      reportTemplateRequested <- basename(reportTemplateRequested)
+      limpaRequested <- isTRUE(limpaRequested) || identical(reportTemplateRequested, "DIANN_limpa_report.rmd")
+      catFn(sprintf(
+        "   %s: Detected report_template from workflow_data: %s\n",
+        logPrefix,
+        reportTemplateRequested
+      ))
+    }
+  }
+
+  if (!is.null(workflowTypeDetected) && nzchar(workflowTypeDetected)) {
     catFn(sprintf(
       "   %s: Detected workflow_type from workflow_data: %s\n",
       logPrefix,
@@ -115,6 +131,31 @@ resolveProtSummaryReportTemplate <- function(workflowData,
       currentS4@args$globalParameters$workflow_type,
       error = function(e) NULL
     )
+    reportTemplateFromS4 <- tryCatch(
+      currentS4@args$globalParameters$report_template,
+      error = function(e) NULL
+    )
+    useLimpaFromS4 <- tryCatch(
+      isTRUE(currentS4@args$globalParameters$use_limpa) ||
+        !is.null(currentS4@args$limpa_dpc_quant_results) ||
+        !is.null(currentS4@args$proteinMissingValueImputationLimpa),
+      error = function(e) FALSE
+    )
+
+    if ((is.null(reportTemplateRequested) || !nzchar(reportTemplateRequested)) &&
+        !is.null(reportTemplateFromS4) &&
+        nzchar(reportTemplateFromS4)) {
+      reportTemplateRequested <- basename(reportTemplateFromS4)
+      catFn(sprintf(
+        "   %s: Detected report_template from S4 object (state: %s): %s\n",
+        logPrefix,
+        dataStateUsed,
+        reportTemplateRequested
+      ))
+    }
+    limpaRequested <- isTRUE(limpaRequested) ||
+      isTRUE(useLimpaFromS4) ||
+      identical(reportTemplateRequested, "DIANN_limpa_report.rmd")
 
     if (!is.null(workflowTypeFromS4) && nzchar(workflowTypeFromS4)) {
       workflowTypeDetected <- workflowTypeFromS4
@@ -131,6 +172,22 @@ resolveProtSummaryReportTemplate <- function(workflowData,
       exists("config_list", envir = .GlobalEnv)) {
     configList <- get("config_list", envir = .GlobalEnv)
     workflowTypeFromGlobal <- configList$globalParameters$workflow_type
+    reportTemplateFromGlobal <- configList$globalParameters$report_template
+    useLimpaFromGlobal <- isTRUE(configList$globalParameters$use_limpa)
+
+    if ((is.null(reportTemplateRequested) || !nzchar(reportTemplateRequested)) &&
+        !is.null(reportTemplateFromGlobal) &&
+        nzchar(reportTemplateFromGlobal)) {
+      reportTemplateRequested <- basename(reportTemplateFromGlobal)
+      catFn(sprintf(
+        "   %s: Detected report_template from global config_list: %s\n",
+        logPrefix,
+        reportTemplateRequested
+      ))
+    }
+    limpaRequested <- isTRUE(limpaRequested) ||
+      isTRUE(useLimpaFromGlobal) ||
+      identical(reportTemplateRequested, "DIANN_limpa_report.rmd")
 
     if (!is.null(workflowTypeFromGlobal) && nzchar(workflowTypeFromGlobal)) {
       workflowTypeDetected <- workflowTypeFromGlobal
@@ -150,7 +207,11 @@ resolveProtSummaryReportTemplate <- function(workflowData,
     ))
   }
 
-  templateFilename <- if (tolower(workflowTypeDetected) %in% c("tmt", "tmt_pd")) {
+  templateFilename <- if (!is.null(reportTemplateRequested) && nzchar(reportTemplateRequested)) {
+    reportTemplateRequested
+  } else if (isTRUE(limpaRequested)) {
+    "DIANN_limpa_report.rmd"
+  } else if (tolower(workflowTypeDetected) %in% c("tmt", "tmt_pd")) {
     "TMT_report.rmd"
   } else if (tolower(workflowTypeDetected) == "lfq") {
     "LFQ_report.rmd"
@@ -919,4 +980,3 @@ completeProtSummaryGithubPush <- function(output,
     FALSE
   })
 }
-

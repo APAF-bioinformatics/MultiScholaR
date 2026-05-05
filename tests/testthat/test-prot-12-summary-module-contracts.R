@@ -210,6 +210,40 @@ test_that("resolveProtSummaryReportTemplate prefers workflow_data over fallback 
   )))
 })
 
+test_that("resolveProtSummaryReportTemplate routes explicit limpa workflow metadata", {
+  messages <- captureProtSummaryMessages()
+  workflowData <- list(
+    config_list = list(globalParameters = list(
+      workflow_type = "DIA",
+      use_limpa = TRUE,
+      report_template = "DIANN_limpa_report.rmd"
+    )),
+    state_manager = list(
+      getHistory = function() stop("state manager should not be consulted"),
+      getState = function(stateName) stop(sprintf("unexpected state request: %s", stateName))
+    )
+  )
+
+  resolved <- resolveProtSummaryReportTemplate(
+    workflowData = workflowData,
+    catFn = messages$catFn
+  )
+
+  expect_identical(resolved$workflowTypeDetected, "DIA")
+  expect_identical(resolved$templateFilename, "DIANN_limpa_report.rmd")
+  expect_null(resolved$dataStateUsed)
+  expect_true(any(grepl(
+    "Detected report_template from workflow_data: DIANN_limpa_report.rmd",
+    messages$getMessages(),
+    fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "Selected template: DIANN_limpa_report.rmd for workflow_type: DIA",
+    messages$getMessages(),
+    fixed = TRUE
+  )))
+})
+
 test_that("resolveProtSummaryReportTemplate falls back to final S4 workflow type mapping", {
   stateObject <- methods::new(
     "mockProtSummaryArgsCarrier",
@@ -240,6 +274,44 @@ test_that("resolveProtSummaryReportTemplate falls back to final S4 workflow type
   )))
   expect_true(any(grepl(
     "Selected template: LFQ_report.rmd for workflow_type: LFQ",
+    messages$getMessages(),
+    fixed = TRUE
+  )))
+})
+
+test_that("resolveProtSummaryReportTemplate falls back to S4 limpa report metadata", {
+  stateObject <- methods::new(
+    "mockProtSummaryArgsCarrier",
+    args = list(
+      globalParameters = list(
+        workflow_type = "DIA",
+        use_limpa = TRUE,
+        report_template = "DIANN_limpa_report.rmd"
+      ),
+      proteinMissingValueImputationLimpa = list(test_mode = TRUE),
+      limpa_dpc_quant_results = list(dpc_method = "limpa_dpc_quant")
+    )
+  )
+  stateFixture <- makeProtSummaryStateManager(
+    history = c("correlation_filtered"),
+    objectsByState = list(correlation_filtered = stateObject)
+  )
+  messages <- captureProtSummaryMessages()
+
+  resolved <- resolveProtSummaryReportTemplate(
+    workflowData = list(
+      config_list = NULL,
+      state_manager = stateFixture$manager
+    ),
+    catFn = messages$catFn
+  )
+
+  expect_identical(resolved$workflowTypeDetected, "DIA")
+  expect_identical(resolved$templateFilename, "DIANN_limpa_report.rmd")
+  expect_identical(resolved$dataStateUsed, "correlation_filtered")
+  expect_identical(stateFixture$requestedStates(), "correlation_filtered")
+  expect_true(any(grepl(
+    "Detected report_template from S4 object (state: correlation_filtered): DIANN_limpa_report.rmd",
     messages$getMessages(),
     fixed = TRUE
   )))

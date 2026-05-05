@@ -51,6 +51,29 @@ collectProtNormExportSessionData <- function(
     "DIA"
   }
 
+  current_args <- tryCatch(current_s4_object@args, error = function(e) list())
+  current_global_params <- if (!is.null(current_args$globalParameters)) {
+    current_args$globalParameters
+  } else {
+    list()
+  }
+  config_global_params <- if (!is.null(workflowData$config_list) &&
+    !is.null(workflowData$config_list$globalParameters)) {
+    workflowData$config_list$globalParameters
+  } else {
+    list()
+  }
+  report_template <- config_global_params$report_template
+  if (is.null(report_template) || !nzchar(report_template)) {
+    report_template <- current_global_params$report_template
+  }
+  limpa_dpc_quant_results <- current_args$limpa_dpc_quant_results
+  limpa_parameters <- current_args$proteinMissingValueImputationLimpa
+  limpa_applied <- isTRUE(config_global_params$use_limpa) ||
+    isTRUE(current_global_params$use_limpa) ||
+    !is.null(limpa_dpc_quant_results) ||
+    !is.null(limpa_parameters)
+
   session_data <- list(
     r6_current_state_name = current_state_name,
     r6_complete_states = r6_complete_states,
@@ -67,6 +90,11 @@ collectProtNormExportSessionData <- function(
     ruv_k = normData$best_k,
     correlation_threshold = normData$correlation_threshold,
     workflow_type = workflow_type,
+    report_template = report_template,
+    use_limpa = limpa_applied,
+    limpa_applied = limpa_applied,
+    limpa_parameters = limpa_parameters,
+    limpa_dpc_quant_results = limpa_dpc_quant_results,
     fasta_metadata = workflowData$fasta_metadata,
     accession_cleanup_results = workflowData$accession_cleanup_results,
     ruv_optimization_result = workflowData$ruv_optimization_result,
@@ -113,6 +141,10 @@ buildProtNormExportSummaryContent <- function(
       "- RUV Mode: %s",
       "- RUV K: %s",
       "- Correlation Threshold: %s",
+      "- Workflow Type: %s",
+      "- Report Template: %s",
+      "- limpa DPC-Quant: %s",
+      "- limpa Quantification Method: %s",
       "",
       "Contrasts:",
       "%s",
@@ -130,6 +162,14 @@ buildProtNormExportSummaryContent <- function(
     sessionData$ruv_mode,
     ifelse(is.null(sessionData$ruv_k), "NA", sessionData$ruv_k),
     ifelse(is.null(sessionData$correlation_threshold), "NA", sessionData$correlation_threshold),
+    ifelse(is.null(sessionData$workflow_type), "NA", sessionData$workflow_type),
+    ifelse(is.null(sessionData$report_template), "NA", sessionData$report_template),
+    ifelse(isTRUE(sessionData$limpa_applied), "yes", "no"),
+    ifelse(
+      is.null(sessionData$limpa_dpc_quant_results$quantification_method),
+      "NA",
+      sessionData$limpa_dpc_quant_results$quantification_method
+    ),
     if (!is.null(sessionData$contrasts_tbl)) paste(sessionData$contrasts_tbl$friendly_names, collapse = "\n") else "None"
   )
 }
@@ -175,6 +215,16 @@ saveProtNormExportMetadataFiles <- function(
         "*** EXPORT: Saved mixed_species_analysis.RDS (enabled: %s) ***",
         isTRUE(sessionData$mixed_species_analysis$enabled)
       ))
+    }
+
+    if (!is.null(sessionData$limpa_parameters)) {
+      saveRdsFn(sessionData$limpa_parameters, file.path(sourceDir, "limpa_parameters.RDS"))
+      messageFn("*** EXPORT: Saved limpa_parameters.RDS ***")
+    }
+
+    if (!is.null(sessionData$limpa_dpc_quant_results)) {
+      saveRdsFn(sessionData$limpa_dpc_quant_results, file.path(sourceDir, "limpa_dpc_quant_results.RDS"))
+      messageFn("*** EXPORT: Saved limpa_dpc_quant_results.RDS ***")
     }
   }, error = function(e) {
     messageFn(sprintf("*** WARNING: Some metadata files could not be saved: %s ***", e$message))
