@@ -725,3 +725,54 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic metabolomics --module normalization --runtime unit-contract --reporter summary
 ```
+
+## Metabolomics DA Matrix
+
+MCI-016 adds `tests/testthat/test-module-ci-metab-da.R` plus
+`tests/testthat/helper-module-ci-metab-da.R`. This suite targets the
+metabolomics differential-abundance boundary after normalization/correlation
+filtering and before summary/report export. It is designed to catch wiring
+regressions in session reload, model validation, per-assay analysis,
+combined/per-assay rendering, export schemas, and report-facing artifacts.
+
+The matrix covers:
+
+- Filtered-session reload for LC-only, GC-only, and combined LC+GC payloads,
+  including state-manager restoration, formula restoration from S4 args,
+  contrast dropdowns, assay dropdowns, stale `source_dir` fallback to
+  `export_dir`, missing session files, malformed RDS files, and mismatched
+  `assay_names` versus S4 assay slots.
+- Formula and contrast preflight for two-group, multi-group, batch-aware,
+  reversed, duplicate, no-contrast, invalid-term, and invalid-formula cases.
+  Invalid DA inputs now fail before the analysis shell can run.
+- DA orchestration for significant, non-significant, all-significant,
+  no-variance, tied-p-value, and missing-feature-metadata cases while
+  preserving feature IDs, assay provenance, raw contrasts, friendly contrasts,
+  and per-sample intensity columns.
+- Render behavior for combined and per-assay static volcano paths, heatmap
+  parameter plumbing, results-table filters, threshold changes, empty outputs,
+  max-row truncation, and selector choices for contrast/assay controls.
+- Export behavior for TSV and XLSX outputs, stable `de_<mode>_metabolites_*`
+  file prefixes, `posmode` and sanitized assay fallbacks such as `gcms`, NumSig
+  summary files, contrast columns, friendly names, feature IDs, assay columns,
+  and intensity columns.
+- Summary/report consumer smoke that reads exported TSV schemas and exercises
+  the `copyToResultsSummary()` workbook path used to build
+  `DA_results_metabolomics.xlsx`.
+
+The DA matrix exposed three production hardening changes:
+
+- DA analysis input resolution now calls metabolomics design preflight when a
+  formula is supplied, so invalid model terms and invalid contrasts are rejected
+  before analysis starts.
+- Reloaded metabolomics DA sessions now reject non-empty `assay_names` that do
+  not match the S4 object's assay slots, preventing stale dropdown state from
+  silently diverging from the object being analyzed.
+- Metabolomics DA export tables now retain the `assay` column while preserving
+  existing filename prefixes and first-six statistical columns.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic metabolomics --module differential_abundance --runtime unit-contract --reporter summary
+```

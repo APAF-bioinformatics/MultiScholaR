@@ -283,7 +283,9 @@ resolveMetabDaAnalysisInputs <- function(
     currentS4Object = NULL,
     workflowData,
     assayDataClass = "MetaboliteAssayData",
-    getState = NULL
+    getState = NULL,
+    formulaString = NULL,
+    validatePreflight = validateMetabDesignDaPreflight
 ) {
     currentS4 <- currentS4Object
     if (is.null(currentS4) && is.function(getState)) {
@@ -309,10 +311,35 @@ resolveMetabDaAnalysisInputs <- function(
         ))
     }
 
+    if (!is.null(formulaString) && is.function(validatePreflight)) {
+        preflight <- validatePreflight(
+            designMatrix = currentS4@design_matrix,
+            assayList = currentS4@metabolite_data,
+            contrastsTbl = contrastsTbl,
+            formulaString = formulaString,
+            sampleIdCol = currentS4@sample_id,
+            groupCol = currentS4@group_id,
+            requireContrasts = TRUE
+        )
+
+        if (!isTRUE(preflight$valid)) {
+            return(list(
+                ok = FALSE,
+                currentS4 = currentS4,
+                contrastsTbl = contrastsTbl,
+                preflight = preflight,
+                errorMessage = paste(preflight$errors, collapse = "; ")
+            ))
+        }
+    } else {
+        preflight <- NULL
+    }
+
     list(
         ok = TRUE,
         currentS4 = currentS4,
         contrastsTbl = contrastsTbl,
+        preflight = preflight,
         errorMessage = NULL
     )
 }
@@ -330,7 +357,7 @@ runMetabDaAnalysisObserverEntry <- function(
     runAnalysisShell = runMetabDaAnalysisObserverShell,
     showNotification = shiny::showNotification
 ) {
-    analysisInputs <- resolveAnalysisInputs(
+    resolveArgs <- list(
         currentS4Object = currentS4Object,
         workflowData = workflowData,
         getState = if (!is.null(workflowData$state_manager)) {
@@ -339,6 +366,11 @@ runMetabDaAnalysisObserverEntry <- function(
             NULL
         }
     )
+    resolveFormals <- names(formals(resolveAnalysisInputs))
+    if ("formulaString" %in% resolveFormals || "..." %in% resolveFormals) {
+        resolveArgs$formulaString <- formulaString
+    }
+    analysisInputs <- do.call(resolveAnalysisInputs, resolveArgs)
 
     if (!isTRUE(analysisInputs$ok)) {
         showNotification(
@@ -678,6 +710,22 @@ restoreMetabDaLoadedSessionState <- function(
 
     if (!is.null(sessionData$current_s4_object)) {
         debugLog("  STEP 6a: S4 object class: ", class(sessionData$current_s4_object)[1])
+        if (
+            inherits(sessionData$current_s4_object, "MetaboliteAssayData") &&
+            !is.null(sessionData$assay_names)
+        ) {
+            objectAssays <- names(sessionData$current_s4_object@metabolite_data)
+            if (length(objectAssays) > 0L && !identical(as.character(sessionData$assay_names), objectAssays)) {
+                stop(
+                    sprintf(
+                        "Session assay_names do not match current_s4_object assays: session=%s; object=%s",
+                        paste(as.character(sessionData$assay_names), collapse = ", "),
+                        paste(objectAssays, collapse = ", ")
+                    ),
+                    call. = FALSE
+                )
+            }
+        }
         debugLog("  STEP 6b: Assigning to da_data$current_s4_object...")
         daData$current_s4_object <- sessionData$current_s4_object
 
@@ -793,4 +841,3 @@ restoreMetabDaLoadedSessionState <- function(
         formulaValue = formulaValue
     ))
 }
-

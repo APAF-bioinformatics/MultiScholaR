@@ -41,7 +41,7 @@ test_that("metabolomics static volcano helper preserves null exits and filtered 
 
   expect_s3_class(combined_plot, "ggplot")
   expect_true("GeomTextRepel" %in% vapply(combined_plot$layers, function(x) class(x$geom)[1], character(1)))
-  expect_true(inherits(combined_plot$facet, "FacetNull"))
+  expect_false(inherits(combined_plot$facet, "FacetNull"))
 
   faceted_plot <- generateMetabDAVolcanoStatic(
     da_results_list = list(da_metabolites_long = buildMetabVolcanoResultsDirect()),

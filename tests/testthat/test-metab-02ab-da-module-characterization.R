@@ -68,6 +68,7 @@ makeMetabDaCurrentS4 <- function(label = "metab_da_fixture") {
       Run = c("S1", "S2"),
       group = c("A", "B"),
       batch = c("B1", "B2"),
+      replicates = c("R1", "R2"),
       stringsAsFactors = FALSE
     ),
     sample_id = "Run",
@@ -105,7 +106,7 @@ makeMetabDaSessionData <- function(current_s4 = makeMetabDaCurrentS4()) {
       contrasts = "groupB-groupA",
       stringsAsFactors = FALSE
     ),
-    assay_names = c("LCMS_Pos", "LCMS_Neg")
+    assay_names = names(current_s4@metabolite_data)
   )
 }
 

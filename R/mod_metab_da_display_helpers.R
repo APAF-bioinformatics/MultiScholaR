@@ -26,7 +26,7 @@ filterMetabDaDisplayResults <- function(
         results <- results[comparisonMatches | friendlyNameMatches, , drop = FALSE]
     }
 
-    if (!is.null(selectedAssay) && selectedAssay != "All") {
+    if (!is.null(selectedAssay) && !selectedAssay %in% c("All", "Combined")) {
         results <- results[results$assay == selectedAssay, , drop = FALSE]
     }
 
@@ -555,4 +555,3 @@ buildMetabDaHeatmapRenderOutput <- function(
         daData = daData
     )
 }
-

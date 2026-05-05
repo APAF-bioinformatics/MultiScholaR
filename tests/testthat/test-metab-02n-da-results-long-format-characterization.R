@@ -81,13 +81,19 @@ loadSelectedExpressions(
 )
 
 newDaLongResultObject <- function(metabolite_data) {
+  the_object <- if (is.data.frame(metabolite_data)) {
+    makeMetabCharacterizationObjectWithBareCounts(metabolite_data)
+  } else {
+    makeMetabCharacterizationObject(
+      metabolite_data = metabolite_data,
+      sample_ids = inferMetabCharacterizationSamples(metabolite_data, "metabolite_id"),
+      metabolite_id_column = "metabolite_id"
+    )
+  }
+
   methods::new(
     "MetabolomicsDifferentialAbundanceResults",
-    theObject = methods::new(
-      "MetaboliteAssayData",
-      metabolite_data = metabolite_data,
-      metabolite_id_column = "metabolite_id"
-    ),
+    theObject = the_object,
     contrasts_results_table = list(
       "groupB-groupA = B vs A" = data.frame(
         metabolite_id = c("M1", "M2"),
@@ -152,15 +158,16 @@ test_that("metabolomics DA long-format method preserves joined counts for each c
   expect_equal(output$primary@results_table_long$annotation, c("alpha", "beta", "alpha", "beta"))
 })
 
-test_that("metabolomics DA long-format method currently errors on a bare-data-frame counts slot", {
+test_that("metabolomics DA long-format method supports a bare-data-frame counts slot", {
   counts_table <- data.frame(
     metabolite_id = c("M1", "M2"),
     intensity = c(100, 200),
     stringsAsFactors = FALSE
   )
 
-  expect_error(
-    getDaResultsLongFormat(list(primary = newDaLongResultObject(counts_table))),
-    "must share the same src"
-  )
+  output <- getDaResultsLongFormat(list(primary = newDaLongResultObject(counts_table)))
+
+  expect_identical(names(output), "primary")
+  expect_equal(output$primary@results_table_long$metabolite_id, c("M1", "M2", "M1", "M2"))
+  expect_equal(output$primary@results_table_long$intensity, c(100, 200, 100, 200))
 })

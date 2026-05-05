@@ -56,9 +56,9 @@ test_that("metabolomics DA counts-table helper preserves metabolite assay access
     )
   )
 
-  theObject <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = assay_list
+  theObject <- makeMetabCharacterizationObject(
+    metabolite_data = assay_list,
+    sample_ids = "Sample_1"
   )
 
   expect_identical(getCountsTable(theObject), assay_list)
@@ -73,7 +73,16 @@ test_that("metabolomics DA counts-table helper preserves protein fallback access
 
   theObject <- methods::new(
     "ProteinQuantitativeData",
-    protein_quant_table = protein_quant_table
+    protein_quant_table = protein_quant_table,
+    protein_id_column = "protein_id",
+    design_matrix = data.frame(
+      Sample_id = "Sample_1",
+      group = "groupA",
+      stringsAsFactors = FALSE
+    ),
+    sample_id = "Sample_id",
+    group_id = "group",
+    technical_replicate_id = "replicates"
   )
 
   expect_identical(getCountsTable(theObject), protein_quant_table)

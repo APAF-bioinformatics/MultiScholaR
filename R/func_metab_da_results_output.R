@@ -140,17 +140,18 @@ outputMetabDaResultsAllContrasts <- function(
                     priority_cols <- c(
                         "metabolite_id", "metabolite_name",
                         "logFC", "raw_pvalue", "fdr_qvalue", "significant",
-                        "comparison", "friendly_name", "numerator", "denominator"
+                        "assay", "comparison", "friendly_name", "numerator", "denominator"
                     )
                     priority_cols <- intersect(priority_cols, colnames(assay_contrast_data))
 
                     # Get sample intensity columns
                     intensity_cols <- grep("^intensity\\.", colnames(assay_contrast_data), value = TRUE)
 
-                    # Get any remaining columns (exclude assay since we're splitting by it)
+                    # Get any remaining columns. Keep assay provenance in the
+                    # table even though files are split by assay.
                     other_cols <- setdiff(
                         colnames(assay_contrast_data),
-                        c(priority_cols, intensity_cols, "assay")
+                        c(priority_cols, intensity_cols)
                     )
 
                     # Final column order
@@ -413,4 +414,3 @@ outputMetabDaResultsAllContrasts <- function(
     logger::log_info("--- Exiting outputMetabDaResultsAllContrasts ---")
     return(TRUE)
 }
-

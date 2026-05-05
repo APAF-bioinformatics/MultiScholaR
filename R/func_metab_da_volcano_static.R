@@ -41,7 +41,7 @@ generateMetabDAVolcanoStatic <- function(
     da_metabolites_long <- da_results_list$da_metabolites_long
 
     # Extract comparison name
-    comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
+    comparison_to_search <- stringr::str_trim(stringr::str_extract(selected_contrast, "^[^=]+"))
     if (is.na(comparison_to_search)) {
         comparison_to_search <- selected_contrast
     }
@@ -124,4 +124,3 @@ generateMetabDAVolcanoStatic <- function(
 
     return(p)
 }
-

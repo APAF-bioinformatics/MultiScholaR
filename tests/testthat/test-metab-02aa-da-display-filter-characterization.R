@@ -96,6 +96,47 @@ if (!methods::isClass("MetaboliteAssayData")) {
   methods::setClass("MetaboliteAssayData", slots = c(args = "list"))
 }
 
+makeMetabDaObserverS4 <- function(args = list()) {
+  if (all(c(
+    "metabolite_data", "design_matrix", "sample_id", "group_id",
+    "metabolite_id_column", "annotation_id_column"
+  ) %in% methods::slotNames("MetaboliteAssayData"))) {
+    return(methods::new(
+      "MetaboliteAssayData",
+      metabolite_data = list(
+        LCMS_Pos = data.frame(
+          database_identifier = "M1",
+          Name = "Met One",
+          S1 = 10,
+          stringsAsFactors = FALSE
+        ),
+        LCMS_Neg = data.frame(
+          database_identifier = "M2",
+          Name = "Met Two",
+          S1 = 20,
+          stringsAsFactors = FALSE
+        )
+      ),
+      metabolite_id_column = "database_identifier",
+      annotation_id_column = "Name",
+      database_identifier_type = "database_identifier",
+      internal_standard_regex = "^IS_",
+      design_matrix = data.frame(
+        Run = "S1",
+        group = "A",
+        replicates = "R1",
+        stringsAsFactors = FALSE
+      ),
+      sample_id = "Run",
+      group_id = "group",
+      technical_replicate_id = NA_character_,
+      args = args
+    ))
+  }
+
+  methods::new("MetaboliteAssayData", args = args)
+}
+
 buildMetabDaDisplayResults <- function() {
   data.frame(
     metabolite_id = c("M1", "M2", "M3", "M4"),
@@ -1821,7 +1862,7 @@ test_that("metabolomics DA heatmap save observer entry preserves shell handoff",
 
 test_that("metabolomics DA analysis-input seam preserves reactive and state-manager resolution", {
   get_state_called <- FALSE
-  current_s4 <- methods::new("MetaboliteAssayData", args = list())
+  current_s4 <- makeMetabDaObserverS4()
   contrasts_tbl <- data.frame(
     friendly_names = c("B vs A", "C vs A"),
     contrasts = c("groupB-groupA", "groupC-groupA"),
@@ -1843,7 +1884,7 @@ test_that("metabolomics DA analysis-input seam preserves reactive and state-mana
   expect_null(analysis_inputs$errorMessage)
   expect_false(get_state_called)
 
-  fallback_s4 <- methods::new("MetaboliteAssayData", args = list(source = "state-manager"))
+  fallback_s4 <- makeMetabDaObserverS4(args = list(source = "state-manager"))
   get_state_called <- FALSE
   analysis_inputs <- resolveMetabDaAnalysisInputs(
     currentS4Object = NULL,
@@ -1887,7 +1928,7 @@ test_that("metabolomics DA analysis-input seam preserves missing-data and missin
   )
 
   missing_contrasts <- resolveMetabDaAnalysisInputs(
-    currentS4Object = methods::new("MetaboliteAssayData", args = list()),
+    currentS4Object = makeMetabDaObserverS4(),
     workflowData = list(contrasts_tbl = data.frame(
       friendly_names = character(),
       contrasts = character(),
@@ -2027,7 +2068,7 @@ test_that("metabolomics DA run-analysis shell preserves success-path state, noti
   workflow_state$tab_status <- list(differential_analysis = "pending", other = "keep")
 
   da_state <- new.env(parent = emptyenv())
-  current_s4 <- methods::new("MetaboliteAssayData", args = list())
+  current_s4 <- makeMetabDaObserverS4()
   contrasts_tbl <- data.frame(
     friendly_names = c("B vs A"),
     contrasts = c("groupB-groupA"),
@@ -2134,7 +2175,7 @@ test_that("metabolomics DA run-analysis shell preserves error-path notification 
 
   da_state <- new.env(parent = emptyenv())
   da_state$analysis_complete <- FALSE
-  current_s4 <- methods::new("MetaboliteAssayData", args = list())
+  current_s4 <- makeMetabDaObserverS4()
   contrasts_tbl <- data.frame(
     friendly_names = c("B vs A"),
     contrasts = c("groupB-groupA"),
@@ -2355,7 +2396,7 @@ test_that("metabolomics DA load-session observer shell preserves success notific
   captured_logs <- character()
   captured_restore <- NULL
   session_data <- list(
-    current_s4_object = methods::new("MetaboliteAssayData", args = list()),
+    current_s4_object = makeMetabDaObserverS4(),
     contrasts_tbl = data.frame(),
     assay_names = character()
   )
@@ -2514,12 +2555,9 @@ test_that("metabolomics DA load-session restore seam preserves state, selectors,
   )
 
   da_state <- new.env(parent = emptyenv())
-  s4_object <- methods::new(
-    "MetaboliteAssayData",
-    args = list(
-      daAnalysisParameters = list(formula_string = "~ 0 + group")
-    )
-  )
+  s4_object <- makeMetabDaObserverS4(args = list(
+    daAnalysisParameters = list(formula_string = "~ 0 + group")
+  ))
   session_data <- list(
     current_s4_object = s4_object,
     r6_current_state_name = "filtered_ready",

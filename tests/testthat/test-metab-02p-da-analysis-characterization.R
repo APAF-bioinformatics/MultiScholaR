@@ -95,7 +95,7 @@ differentialAbundanceAnalysisHelper <- function(
   args_group_pattern = NULL
 ) {
   helper_calls[[length(helper_calls) + 1]] <<- list(
-    label = obj@label,
+    label = obj@args$label,
     contrasts_tbl = contrasts_tbl,
     formula_string = formula_string,
     group_id = group_id,
@@ -106,7 +106,7 @@ differentialAbundanceAnalysisHelper <- function(
     args_group_pattern = args_group_pattern
   )
 
-  list(label = obj@label, forwarded_group = group_id)
+  list(label = obj@args$label, forwarded_group = group_id)
 }
 
 target_paths <- c(
@@ -124,8 +124,8 @@ loadSelectedExpressions(
 
 test_that("metabolomics S4 DA analysis list method validates inputs and preserves names", {
   object_list <- list(
-    primary = methods::new("MetaboliteAssayData", label = "alpha"),
-    secondary = methods::new("MetaboliteAssayData", label = "beta")
+    primary = makeMetabCharacterizationObject(args = list(label = "alpha")),
+    secondary = makeMetabCharacterizationObject(args = list(label = "beta"))
   )
   helper_calls <<- list()
 
@@ -162,7 +162,7 @@ test_that("metabolomics S4 DA analysis list method validates inputs and preserve
 test_that("metabolomics S4 DA analysis list method rejects non-MetaboliteAssayData entries", {
   expect_error(
     differentialAbundanceAnalysis(
-      list(methods::new("MetaboliteAssayData", label = "alpha"), "bad-entry")
+      list(makeMetabCharacterizationObject(args = list(label = "alpha")), "bad-entry")
     ),
     "All objects in objectsList must be of class MetaboliteAssayData"
   )

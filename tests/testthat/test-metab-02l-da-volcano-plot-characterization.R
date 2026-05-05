@@ -140,11 +140,7 @@ test_that("metabolomics DA volcano list-method preserves grouped plot names and 
 
   result_object <- methods::new(
     "MetabolomicsDifferentialAbundanceResults",
-    theObject = methods::new(
-      "MetaboliteAssayData",
-      metabolite_data = list(),
-      metabolite_id_column = "metabolite_id"
-    ),
+    theObject = makeMetabCharacterizationObject(metabolite_id_column = "metabolite_id"),
     contrasts_results_table = contrasts_results_table
   )
 

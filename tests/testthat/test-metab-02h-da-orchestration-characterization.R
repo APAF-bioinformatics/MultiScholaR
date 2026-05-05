@@ -129,11 +129,9 @@ test_that("metabolomics DA orchestration preserves assay aggregation and warning
     stringsAsFactors = FALSE
   )
 
-  theObject <- methods::new(
-    "MetaboliteAssayData",
+  theObject <- makeMetabCharacterizationObject(
     metabolite_data = list(
-      LCMS_Pos = assay_with_matches,
-      LCMS_Neg = assay_without_matches
+      LCMS_Pos = assay_with_matches
     ),
     design_matrix = design_matrix,
     sample_id = "sample_id",
@@ -141,6 +139,7 @@ test_that("metabolomics DA orchestration preserves assay aggregation and warning
     metabolite_id_column = "metabolite_id",
     annotation_id_column = "metabolite_name"
   )
+  theObject@metabolite_data$LCMS_Neg <- assay_without_matches
 
   result <- runMetabolitesDA(
     theObject = theObject,

@@ -613,6 +613,63 @@
       "required_tests": ["module-ci-manifest", "module-ci-metab-norm"]
     },
     {
+      "scenario_id": "MCI-016.1-metabolomics-da-schema-smoke",
+      "ticket_id": "MCI-016",
+      "item_id": "MCI-016.1",
+      "omic": "metabolomics",
+      "module_family": "differential_abundance",
+      "runtime": "unit-contract",
+      "ci_lane": "metabolomics-unit",
+      "fixture": {
+        "path": "fixtures/metabolomics/metabolite_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "feature_id_col": "database_identifier",
+        "assay_cases": ["LCMS_Pos", "GCMS", "LCMS_Pos+GCMS"],
+        "session_cases": ["valid_lc", "valid_gc", "valid_combined", "missing_session", "stale_source_dir", "malformed_rds", "mismatched_assays"],
+        "formula_cases": ["two_group", "multi_group", "batch_aware", "invalid_formula"],
+        "contrast_cases": ["two_group", "multi_group", "batch_aware", "reversed", "duplicate", "no_contrasts", "invalid_term"],
+        "result_cases": ["significant", "non_significant", "all_significant", "no_variance", "tied_pvalues", "missing_feature_metadata"],
+        "renderers": ["combined_volcano", "per_assay_volcano", "heatmap", "results_table", "selector_updates"],
+        "exports": ["tsv", "xlsx", "num_sig_summary", "summary_report_consumer"]
+      },
+      "expected_state": {
+        "sample_count": 6,
+        "assay_names": ["LCMS_Pos", "GCMS"],
+        "state_keys": ["metab_correlation_filtered", "differential_analysis"],
+        "sub_steps": [
+          "filtered_session_loaded",
+          "model_contrasts_validated",
+          "limma_results_created",
+          "render_controls_updated",
+          "da_exports_written",
+          "summary_report_schema_consumed"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "de_posmode_metabolites_groupKO-groupWT_long_annot.tsv",
+          "schema": "metabolomics_da_long_annot"
+        },
+        {
+          "path": "de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx",
+          "schema": "metabolomics_da_workbook"
+        },
+        {
+          "path": "metabolites_num_sig_de_molecules.tab",
+          "schema": "metabolomics_num_sig_da"
+        },
+        {
+          "path": "DA_results_metabolomics.xlsx",
+          "schema": "metabolomics_summary_da_workbook"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-metab-da"]
+    },
+    {
       "scenario_id": "MCI-018.1-lipidomics-import-schema-smoke",
       "ticket_id": "MCI-018",
       "item_id": "MCI-018.1",

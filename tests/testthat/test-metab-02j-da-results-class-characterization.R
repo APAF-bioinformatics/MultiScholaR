@@ -61,7 +61,7 @@ test_that("metabolomics DA results S4 class preserves slot layout and defaults",
 
   result_object <- methods::new(
     "MetabolomicsDifferentialAbundanceResults",
-    theObject = methods::new("MetaboliteAssayData", metabolite_data = list())
+    theObject = makeMetabCharacterizationObject()
   )
 
   expect_s4_class(result_object, "MetabolomicsDifferentialAbundanceResults")
