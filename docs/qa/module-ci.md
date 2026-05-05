@@ -651,3 +651,77 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic metabolomics --module qc --runtime unit-contract --reporter summary
 ```
+
+## Metabolomics Normalization/RUV Matrix
+
+MCI-015 adds `tests/testthat/test-module-ci-metab-norm.R` plus
+`tests/testthat/helper-module-ci-metab-norm.R`. This suite targets the
+metabolomics normalization boundary after QC and before differential abundance,
+where multi-assay LC/GC state, normalization parameters, RUV correction,
+correlation filtering, and exported sessions must stay coherent.
+
+The matrix covers:
+
+- Log transformation with zeros, missing values, negative values, positive
+  offsets, and rejection of invalid offsets while preserving assay names and
+  sample/design alignment.
+- Between-sample normalization for `none`, `cyclicloess`, `quantile`, and
+  `scale`, including finite numeric sanity and explicit persistence of the
+  selected method.
+- ITSD normalization for regex-based global selection, manual assay-specific
+  selections, absent standards, invalid manual standards, invalid aggregation
+  methods, ITSD feature-count serialization, and state persistence to
+  `metab_itsd_norm`.
+- RUV-III control flow for skipped correction, manual optimization, automatic
+  optimization, named control vectors, assay-specific best-k payloads, failed
+  too-few-control assays, invalid-k rejection, and guarded
+  `metab_ruv_corrected` state advancement.
+- Correlation filtering for skipped filtering, pass-all, exact threshold
+  boundary, fail-one replicate pair, fail-many replicate pairs, small-n/no-pair
+  cases, invalid correlation payloads, and explicit handoff state.
+- Session export fidelity for `omic_type`, `current_s4_object`, `assay_names`,
+  `feature_counts`, normalization/RUV/correlation completion flags, RUV
+  optimization results, ITSD selections, QC params, summary text, latest RDS,
+  and metadata sidecars.
+- DA reload smoke for every accepted export variant: RUV skipped, manual RUV,
+  and automatic RUV. Reload verifies S4 restoration, state-manager persistence,
+  contrast dropdown payloads, assay dropdown payloads, and formula restoration
+  from S4 args.
+
+The normalization matrix is intentionally push-safe and unit-contract scoped.
+It avoids browser launch while still exercising the production helper seams used
+by the Shiny module:
+
+- `logTransformAssays()`
+- `normaliseUntransformedData()`
+- `normaliseBetweenSamples()`
+- `runMetabNormItsdProgressApplyShell()`
+- `runMetabNormBetweenSampleProgressApplyShell()`
+- `runMetabNormRuvProgressApplyShell()`
+- `runMetabNormRuvOptimizationStep()`
+- `runMetabNormRuvCorrectionStep()`
+- `dispatchMetabNormApplyCorrelation()`
+- `runMetabNormSkipCorrelationObserverEntry()`
+- `buildMetabNormExportSessionData()`
+- `saveMetabNormExportSessionRdsFiles()`
+- `saveMetabNormExportMetadataFiles()`
+- `saveMetabNormExportSummaryFile()`
+- `runMetabDaLoadSessionObserverShell()`
+- `restoreMetabDaLoadedSessionState()`
+
+The suite exposed no required production behavior changes. It codifies the
+current metabolomics normalization contract so future refactors preserve:
+
+- LC/GC assay names and sample columns through every normalization branch;
+- S4 args and session export fields for ITSD, RUV, normalization, and DA
+  formulas;
+- non-silent failure behavior for invalid RUV and invalid correlation inputs;
+- the `metab_filtered_session_data_latest.rds` payload consumed by DA and
+  reports;
+- summary and metadata sidecar filenames used by downstream audit/report flows.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic metabolomics --module normalization --runtime unit-contract --reporter summary
+```

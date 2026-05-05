@@ -545,6 +545,74 @@
       "required_tests": ["module-ci-manifest", "module-ci-metab-qc"]
     },
     {
+      "scenario_id": "MCI-015.1-metabolomics-normalization-schema-smoke",
+      "ticket_id": "MCI-015",
+      "item_id": "MCI-015.1",
+      "omic": "metabolomics",
+      "module_family": "normalization",
+      "runtime": "unit-contract",
+      "ci_lane": "metabolomics-unit",
+      "fixture": {
+        "path": "fixtures/metabolomics/metabolite_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "feature_id_col": "database_identifier",
+        "assay_cases": ["LCMS_Pos", "GCMS", "LCMS_Pos+GCMS"],
+        "normalization_methods": ["none", "cyclicloess", "quantile", "scale"],
+        "log_offsets": [1, 2],
+        "edge_values": ["zeros", "missing_values", "negative_values", "constant_features"],
+        "itsd_cases": ["regex_global", "manual_assay_specific", "absent", "invalid_manual", "invalid_aggregation"],
+        "itsd_aggregations": ["sum", "mean", "median"],
+        "ruv_modes": ["skip", "manual", "automatic"],
+        "ruv_cases": ["invalid_k", "too_few_controls", "named_controls", "assay_specific_k"],
+        "correlation_cases": ["skip", "pass_all", "boundary", "fail_one", "fail_many", "small_n", "invalid_payload"],
+        "export_variants": ["skip", "manual", "automatic"],
+        "reload_consumers": ["metabolomics_da"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "assay_names": ["LCMS_Pos", "GCMS"],
+        "state_keys": [
+          "metab_itsd_norm",
+          "metab_log2",
+          "metab_normalized",
+          "metab_ruv_corrected",
+          "metab_correlation_filtered",
+          "metab_norm_complete"
+        ],
+        "sub_steps": [
+          "normalization_methods_preserve_alignment",
+          "itsd_params_serialized",
+          "ruv_skip_manual_automatic_validated",
+          "correlation_handoff_validated",
+          "session_export_payload_validated",
+          "da_reload_variants_validated"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "metab_filtered_session_data_latest.rds",
+          "schema": "metabolomics_filtered_session"
+        },
+        {
+          "path": "metab_filtered_session_summary.txt",
+          "schema": "metabolomics_norm_summary"
+        },
+        {
+          "path": "metab_ruv_optimization_results.RDS",
+          "schema": "metabolomics_ruv_optimization"
+        },
+        {
+          "path": "metab_itsd_selections.RDS",
+          "schema": "metabolomics_itsd_selection"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-metab-norm"]
+    },
+    {
       "scenario_id": "MCI-018.1-lipidomics-import-schema-smoke",
       "ticket_id": "MCI-018",
       "item_id": "MCI-018.1",
