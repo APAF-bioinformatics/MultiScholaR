@@ -273,6 +273,7 @@ Collate:
     'mod_lipid_summary.R'
     'mod_lipidomics.R'
     'mod_prot_da_ui.R'
+    'mod_prot_da_validation.R'
     'mod_prot_da_handlers_init.R'
     'mod_prot_da_handlers_load_session.R'
     'mod_prot_da_handlers_run_analysis.R'

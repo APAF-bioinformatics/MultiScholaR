@@ -16,7 +16,7 @@ usage <- function() {
       "",
       "Options:",
       "  --omic <all|proteomics|metabolomics|lipidomics>",
-      "  --module <foundation|fixtures|import|design|qc_peptide|qc_protein|normalization|browser|e2e>",
+      "  --module <foundation|fixtures|import|design|qc_peptide|qc_protein|normalization|differential_abundance|browser|e2e>",
       "  --runtime <unit-contract|module-browser|module-artifact|workflow-e2e|release-full>",
       "  --scenario <scenario_id_or_pack_id>",
       "  --reporter <testthat_reporter>",
@@ -190,6 +190,13 @@ tests_for_selection <- function(scenarios) {
       identical(scenario$module, "normalization") && identical(scenario$omic, "proteomics")
     }, logical(1)))) {
       tests <- c(tests, "module-ci-prot-norm")
+    }
+  }
+  if ("differential_abundance" %in% modules) {
+    if (any(vapply(scenarios, function(scenario) {
+      identical(scenario$module, "differential_abundance") && identical(scenario$omic, "proteomics")
+    }, logical(1)))) {
+      tests <- c(tests, "module-ci-prot-da")
     }
   }
   if ("fixtures" %in% modules) {

@@ -3,7 +3,14 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
   shiny::observeEvent(input$run_da_analysis, {
     cat("=== STARTING DIFFERENTIAL EXPRESSION ANALYSIS ===\n")
 
-    shiny::req(da_data$current_s4_object, da_data$contrasts_available)
+    if (is.null(da_data$current_s4_object)) {
+      shiny::showNotification(
+        "Error in DA analysis: no filtered protein data is loaded.",
+        type = "error",
+        duration = 10
+      )
+      return(invisible(NULL))
+    }
 
     shiny::showNotification("Running differential abundance analysis...", id = "da_working", duration = NULL)
 
@@ -35,6 +42,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
             str(contrasts_tbl)
             print(contrasts_tbl)
           }
+          contrasts_tbl <- normaliseProtDaContrastsTable(contrasts_tbl)
 
           # CRITICAL FIX: Use the correct column for contrast strings
           # The downstream functions expect "comparison=expression" format (from full_format column)
@@ -68,6 +76,12 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           print(contrast_strings_to_use)
           cat("   DA ANALYSIS Step: Length of contrast_strings_to_use:\n")
           print(length(contrast_strings_to_use))
+
+          validateProtDaModelAndContrasts(
+            theObject = da_data$current_s4_object,
+            formula_string = input$formula_string,
+            contrasts_tbl = contrasts_tbl
+          )
 
           # Step 2: Run actual differential abundance analysis
           shiny::incProgress(0.4, detail = "Running limma analysis...")

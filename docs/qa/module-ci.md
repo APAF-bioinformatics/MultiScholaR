@@ -392,3 +392,53 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic proteomics --module normalization --runtime unit-contract --reporter summary
 ```
+
+## Proteomics Differential Abundance Matrix
+
+MCI-009 adds `tests/testthat/test-module-ci-prot-da.R` plus
+`tests/testthat/helper-module-ci-prot-da.R`. This suite targets the DA contract
+between filtered-session reload, model fitting, visual inspection, export, and
+downstream enrichment/report consumers.
+
+The matrix covers:
+
+- Filtered-session reload for DIA, DIA+limpa, TMT, LFQ MaxQuant, and LFQ
+  FragPipe payloads, including workflow type, report template, limpa flag,
+  R6 state, design, contrasts, UniProt annotations, RUV audit metadata, and tab
+  status restoration.
+- Invalid session rejection for missing session files, stale source
+  directories, and malformed RDS payloads before DA state or globals are
+  mutated.
+- Formula and contrast validation for two-group, multi-group, batch-adjusted,
+  reversed, raw-only, duplicate, empty, invalid-term, and invalid-formula
+  definitions.
+- A production validation seam that rejects invalid formulas/contrasts before
+  `differentialAbundanceAnalysis()` or result export can run.
+- Statistical output schemas for standard limma results, no significant
+  proteins, all significant proteins, tied p-values, missing/non-finite
+  p-values, and small-n q-value fallback.
+- Renderer behavior for result-table significance filters, q-value/logFC
+  threshold changes, empty result states, heatmap top-N and clustering options,
+  static volcano, and interactive volcano handoff.
+- Export fidelity for raw contrast filenames, friendly comparison labels,
+  TSV/XLSX long-annot schemas, sample intensity columns, gene annotations,
+  UI/report-facing DA parameters, and stable `da_proteins_*_long_annot.*`
+  filenames.
+- Downstream smoke checks proving accepted DA schemas can be loaded by
+  `createDAResultsForEnrichment()`, selected through enrichment-friendly
+  contrast labels, and discovered by summary/report DA workbook indexing.
+
+The DA matrix exposed production hardening changes:
+
+- DA filtered-session loading now validates that the payload contains a
+  `ProteinQuantitativeData` object, design matrix, contrasts table, and valid
+  protein/sample counts before mutating DA or workflow state.
+- DA run handling now normalizes contrast tables to raw, full-format, and
+  friendly labels, rejects duplicate/empty/malformed contrasts, and validates
+  formula terms against the model matrix before statistical execution.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic proteomics --module differential_abundance --runtime unit-contract --reporter summary
+```

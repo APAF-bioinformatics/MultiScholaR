@@ -233,6 +233,55 @@
       "required_tests": ["module-ci-manifest", "module-ci-prot-norm"]
     },
     {
+      "scenario_id": "MCI-009.1-proteomics-da-schema-smoke",
+      "ticket_id": "MCI-009",
+      "item_id": "MCI-009.1",
+      "omic": "proteomics",
+      "module_family": "differential_abundance",
+      "runtime": "unit-contract",
+      "ci_lane": "proteomics-unit",
+      "fixture": {
+        "path": "fixtures/proteomics/protein_intensity.tsv",
+        "format": "tsv",
+        "role": "protein_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "protein_id_col": "uniprot_acc",
+        "formulas": ["~ 0 + group", "~ 0 + group + batch"],
+        "contrast_cases": ["two_group", "multi_group", "batch_adjusted", "reversed", "duplicate", "empty", "invalid_term"],
+        "result_cases": ["standard", "no_significant", "all_significant", "tied_pvalues", "missing_values", "small_n"],
+        "renderers": ["volcano_static", "volcano_interactive", "heatmap", "results_table"],
+        "exports": ["tsv", "xlsx", "report_index", "enrichment_schema"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "sub_steps": [
+          "filtered_session_loaded",
+          "model_contrasts_validated",
+          "limma_results_created",
+          "render_controls_updated",
+          "da_exports_written",
+          "enrichment_summary_consumable"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "da_proteins_groupB-groupA_long_annot.tsv",
+          "schema": "proteomics_da_long_annot"
+        },
+        {
+          "path": "da_proteins_groupB-groupA_long_annot.xlsx",
+          "schema": "proteomics_da_workbook"
+        },
+        {
+          "path": "DA_results_proteomics.xlsx",
+          "schema": "proteomics_summary_da_workbook"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-prot-da"]
+    },
+    {
       "scenario_id": "MCI-012.1-metabolomics-import-schema-smoke",
       "ticket_id": "MCI-012",
       "item_id": "MCI-012.1",

@@ -22,6 +22,7 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
           # Step 1: Load session data
           shiny::incProgress(0.3, detail = "Reading session file...")
           session_data <- readRDS(latest_session_file)
+          validateProtDaFilteredSession(session_data, source_dir = source_dir)
 
           cat("*** LOAD: Session data loaded successfully ***\n")
           cat(sprintf("*** LOAD: Export timestamp: %s ***\n", session_data$export_timestamp))
