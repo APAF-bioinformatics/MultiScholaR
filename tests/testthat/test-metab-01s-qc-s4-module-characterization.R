@@ -93,6 +93,41 @@ if (!methods::isClass("MetaboliteAssayData")) {
   )
 }
 
+newMetabQcS4CharacterizationObject <- function(metabolite_data = list(),
+                                               metabolite_id_column = "feature_id",
+                                               groups = NULL) {
+  if (length(metabolite_data) == 0L) {
+    metabolite_data <- list(
+      Plasma = data.frame(
+        feature_id = "M1",
+        Sample1 = 1,
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+  sample_ids <- unique(unlist(lapply(metabolite_data, function(assay) {
+    names(assay)[vapply(assay, is.numeric, logical(1))]
+  }), use.names = FALSE))
+  if (is.null(sample_ids)) {
+    sample_ids <- character()
+  }
+  if (is.null(groups)) {
+    groups <- if (length(sample_ids) == 0L) character() else rep(c("A", "B"), length.out = length(sample_ids))
+  }
+  methods::new(
+    "MetaboliteAssayData",
+    metabolite_data = metabolite_data,
+    metabolite_id_column = metabolite_id_column,
+    design_matrix = data.frame(
+      sample_id = sample_ids,
+      group = rep(groups, length.out = length(sample_ids)),
+      stringsAsFactors = FALSE
+    ),
+    group_id = "group",
+    sample_id = "sample_id"
+  )
+}
+
 test_that("metabolomics QC S4 data-summary seam preserves placeholder and summary rows", {
   placeholder <- buildMetabQcS4DataSummaryUi(
     currentS4 = NULL,
@@ -112,8 +147,7 @@ test_that("metabolomics QC S4 data-summary seam preserves placeholder and summar
     fixed = TRUE
   )
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- newMetabQcS4CharacterizationObject(
     metabolite_data = list(
       Plasma = data.frame(
         feature_id = c("M1", "M1", "M2"),
@@ -128,13 +162,7 @@ test_that("metabolomics QC S4 data-summary seam preserves placeholder and summar
         stringsAsFactors = FALSE
       )
     ),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(
-      group = c("A", "B", "B"),
-      stringsAsFactors = FALSE
-    ),
-    group_id = "group",
-    sample_id = "sample_id"
+    metabolite_id_column = "feature_id"
   )
 
   summary_ui <- buildMetabQcS4DataSummaryUi(
@@ -199,9 +227,15 @@ test_that("metabolomics QC S4 data-summary fetch seam returns current state", {
   state_manager <- list(token = "state-manager")
   current_s4 <- methods::new(
     "MetaboliteAssayData",
-    metabolite_data = list(),
+    metabolite_data = list(
+      Plasma = data.frame(
+        feature_id = "M1",
+        Sample1 = 1,
+        stringsAsFactors = FALSE
+      )
+    ),
     metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = character(), stringsAsFactors = FALSE),
+    design_matrix = data.frame(sample_id = "Sample1", group = "A", stringsAsFactors = FALSE),
     group_id = "group",
     sample_id = "sample_id"
   )
@@ -238,14 +272,7 @@ test_that("metabolomics QC S4 data-summary fetch seam falls back to NULL on gett
 test_that("metabolomics QC S4 data-summary render-output seam threads the current-state fetch and UI helpers", {
   captured <- new.env(parent = emptyenv())
   state_manager <- list(token = "state-manager")
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = list(),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = character(), stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
-  )
+  current_s4 <- newMetabQcS4CharacterizationObject()
 
   visible <- withVisible(
     buildMetabQcS4DataSummaryRenderOutput(
@@ -270,14 +297,7 @@ test_that("metabolomics QC S4 data-summary render-output seam threads the curren
 test_that("metabolomics QC S4 assay-stats fetch seam returns current state", {
   captured <- new.env(parent = emptyenv())
   state_manager <- list(token = "state-manager")
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = list(),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = character(), stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
-  )
+  current_s4 <- newMetabQcS4CharacterizationObject()
 
   visible <- withVisible(
     getMetabQcS4AssayStatsState(
@@ -311,14 +331,7 @@ test_that("metabolomics QC S4 assay-stats fetch seam falls back to NULL on gette
 test_that("metabolomics QC S4 assay-stats render-output seam threads the current-state fetch and datatable helpers", {
   captured <- new.env(parent = emptyenv())
   state_manager <- list(token = "state-manager")
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = list(),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = character(), stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
-  )
+  current_s4 <- newMetabQcS4CharacterizationObject()
 
   visible <- withVisible(
     buildMetabQcS4AssayStatsRenderOutput(
@@ -469,8 +482,7 @@ test_that("metabolomics QC S4 state-history render-output seam threads the histo
 test_that("metabolomics QC S4 assay-stats seam preserves null exits and assay metrics", {
   expect_null(buildMetabQcS4AssayStatsDatatable(NULL))
 
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- newMetabQcS4CharacterizationObject(
     metabolite_data = list(
       Plasma = data.frame(
         feature_id = c("M1", "M1", "M2"),
@@ -486,10 +498,7 @@ test_that("metabolomics QC S4 assay-stats seam preserves null exits and assay me
         stringsAsFactors = FALSE
       )
     ),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = c("A", "B"), stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
+    metabolite_id_column = "feature_id"
   )
 
   table_widget <- buildMetabQcS4AssayStatsDatatable(
@@ -595,8 +604,7 @@ test_that("metabolomics QC S4 filter-plot render-output seam threads the render 
 })
 
 test_that("metabolomics QC S4 finalize-results seam preserves retained-count and history text", {
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- newMetabQcS4CharacterizationObject(
     metabolite_data = list(
       Plasma = data.frame(
         feature_id = c("M1", "M1", "M2"),
@@ -609,10 +617,7 @@ test_that("metabolomics QC S4 finalize-results seam preserves retained-count and
         stringsAsFactors = FALSE
       )
     ),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = c("A", "B"), stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
+    metabolite_id_column = "feature_id"
   )
 
   result_text <- buildMetabQcS4FinalizeResultsText(
@@ -639,14 +644,7 @@ test_that("metabolomics QC S4 finalize-results seam preserves retained-count and
 test_that("metabolomics QC S4 finalize-state seam fetches the current state through the state manager getter", {
   captured <- new.env(parent = emptyenv())
   state_manager <- list(token = "state-manager")
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = list(),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = character(), stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
-  )
+  current_s4 <- newMetabQcS4CharacterizationObject()
 
   visible <- withVisible(
     getMetabQcS4FinalizeState(
@@ -677,14 +675,7 @@ test_that("metabolomics QC S4 finalize-state seam bubbles getter errors", {
 
 test_that("metabolomics QC S4 finalize-state validation seam requires the current state and class", {
   captured <- new.env(parent = emptyenv())
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = list(),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = character(), stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
-  )
+  current_s4 <- newMetabQcS4CharacterizationObject()
 
   visible <- withVisible(
     validateMetabQcS4FinalizeState(
@@ -723,8 +714,7 @@ test_that("metabolomics QC S4 finalize-state validation seam rejects invalid sta
 
 test_that("metabolomics QC S4 completed-state seam persists the finalized state and returns the saved state name", {
   captured <- new.env(parent = emptyenv())
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- newMetabQcS4CharacterizationObject(
     metabolite_data = list(
       Plasma = data.frame(
         feature_id = c("M1", "M2"),
@@ -732,10 +722,7 @@ test_that("metabolomics QC S4 completed-state seam persists the finalized state 
         stringsAsFactors = FALSE
       )
     ),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = "A", stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
+    metabolite_id_column = "feature_id"
   )
   state_manager <- list(
     saveState = function(...) {
@@ -815,8 +802,7 @@ test_that("metabolomics QC S4 finalize-history seam fetches history through the 
 test_that("metabolomics QC S4 tracking-plot seam refreshes and stores the QC plot", {
   captured <- new.env(parent = emptyenv())
   captured$plot_updates <- list()
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- newMetabQcS4CharacterizationObject(
     metabolite_data = list(
       Plasma = data.frame(
         feature_id = c("M1", "M2"),
@@ -824,10 +810,7 @@ test_that("metabolomics QC S4 tracking-plot seam refreshes and stores the QC plo
         stringsAsFactors = FALSE
       )
     ),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = "A", stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
+    metabolite_id_column = "feature_id"
   )
 
   visible <- withVisible(
@@ -864,8 +847,7 @@ test_that("metabolomics QC S4 tracking-plot seam refreshes and stores the QC plo
 test_that("metabolomics QC S4 tracking-plot seam falls back to a null plot on refresh errors", {
   captured <- new.env(parent = emptyenv())
   captured$plot_updates <- list()
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- newMetabQcS4CharacterizationObject(
     metabolite_data = list(
       Plasma = data.frame(
         feature_id = c("M1", "M2"),
@@ -873,10 +855,7 @@ test_that("metabolomics QC S4 tracking-plot seam falls back to a null plot on re
         stringsAsFactors = FALSE
       )
     ),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = "A", stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
+    metabolite_id_column = "feature_id"
   )
 
   visible <- withVisible(
@@ -902,8 +881,7 @@ test_that("metabolomics QC S4 tracking-plot seam falls back to a null plot on re
 test_that("metabolomics QC S4 finalize-success seam renders results and reports completion", {
   captured <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- newMetabQcS4CharacterizationObject(
     metabolite_data = list(
       Plasma = data.frame(
         feature_id = c("M1", "M2"),
@@ -911,10 +889,7 @@ test_that("metabolomics QC S4 finalize-success seam renders results and reports 
         stringsAsFactors = FALSE
       )
     ),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = "A", stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
+    metabolite_id_column = "feature_id"
   )
   history <- c("raw_import", "qc_filtering", "metab_qc_complete")
 
@@ -1381,8 +1356,7 @@ test_that("metabolomics QC S4 server delegates the filter-plot render path throu
 test_that("metabolomics QC S4 finalize workflow seam orchestrates the downstream helper chain", {
   captured <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
+  current_s4 <- newMetabQcS4CharacterizationObject(
     metabolite_data = list(
       Plasma = data.frame(
         feature_id = c("M1", "M2"),
@@ -1390,10 +1364,7 @@ test_that("metabolomics QC S4 finalize workflow seam orchestrates the downstream
         stringsAsFactors = FALSE
       )
     ),
-    metabolite_id_column = "feature_id",
-    design_matrix = data.frame(group = "A", stringsAsFactors = FALSE),
-    group_id = "group",
-    sample_id = "sample_id"
+    metabolite_id_column = "feature_id"
   )
   history <- c("raw_import", "qc_filtering", "metab_qc_complete")
 

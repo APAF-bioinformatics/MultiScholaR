@@ -15,6 +15,11 @@ test_that("metabolomics ITSD QC server preserves module registration handoff", {
   captured <- new.env(parent = emptyenv())
 
   if (has_body_seam) {
+    original_body_seam <- get("runMetabQcItsdServerBody", envir = server_env, inherits = FALSE)
+    on.exit(
+      assign("runMetabQcItsdServerBody", original_body_seam, envir = server_env),
+      add = TRUE
+    )
     testthat::local_mocked_bindings(
       runMetabQcItsdServerBody = function(input, output, session, workflowData, omicType, experimentLabel, ...) {
         captured$body <- list(

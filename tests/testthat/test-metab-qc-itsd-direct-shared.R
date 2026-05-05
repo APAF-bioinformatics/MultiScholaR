@@ -183,7 +183,7 @@ test_that("metabolomics ITSD server body preserves notification and output wirin
   notifications <- list()
   output <- new.env(parent = emptyenv())
 
-  runMetabQcItsdServerBody(
+  get("runMetabQcItsdServerBody", envir = asNamespace("MultiScholaR"))(
     input = list(analyze_is = TRUE, is_pattern = "^IS_"),
     output = output,
     session = list(ns = function(id) paste0("itsd-", id)),
@@ -196,7 +196,7 @@ test_that("metabolomics ITSD server body preserves notification and output wirin
     experimentLabel = "shared-test",
     reactiveValFn = makeReactiveVal,
     observeEventFn = function(eventExpr, handlerExpr, ...) {
-      if (isTRUE(eval(substitute(eventExpr), parent.frame()))) {
+      if (isTRUE(eventExpr)) {
         eval(substitute(handlerExpr), parent.frame())
       }
       invisible(NULL)
@@ -232,6 +232,25 @@ test_that("metabolomics ITSD server body preserves notification and output wirin
     logErrorFn = function(...) invisible(NULL)
   )
 
+  if (is.null(output$is_results)) {
+    notification_text <- vapply(
+      notifications,
+      function(notification) {
+        if (!is.null(notification$message)) {
+          return(notification$message)
+        }
+        if (!is.null(notification$removed)) {
+          return(as.character(notification$removed))
+        }
+        "<no message>"
+      },
+      character(1)
+    )
+    testthat::fail(sprintf(
+      "ITSD server did not render results. Notifications: %s",
+      paste(notification_text, collapse = " | ")
+    ))
+  }
   expect_match(output$is_results, "Internal Standard Analysis Complete", fixed = TRUE)
   expect_match(renderDirectMetabItsdUi(output$is_summary), "LCMS_Pos", fixed = TRUE)
   expect_match(renderDirectMetabItsdUi(output$is_viz_tabs), "itsd-cv_plot", fixed = TRUE)

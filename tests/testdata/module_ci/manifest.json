@@ -494,6 +494,57 @@
       "required_tests": ["module-ci-manifest", "module-ci-metab-design"]
     },
     {
+      "scenario_id": "MCI-014.1-metabolomics-qc-schema-smoke",
+      "ticket_id": "MCI-014",
+      "item_id": "MCI-014.1",
+      "omic": "metabolomics",
+      "module_family": "qc",
+      "runtime": "unit-contract",
+      "ci_lane": "metabolomics-unit",
+      "fixture": {
+        "path": "fixtures/metabolomics/metabolite_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "assay_cases": ["LCMS_Pos+LCMS_Neg", "GCMS", "LCMS_Pos+GCMS"],
+        "intensity_cases": ["threshold_boundary", "zeros", "missing_values", "all_pass", "all_fail"],
+        "duplicate_cases": ["duplicate_feature_id", "duplicate_annotation", "identical_intensities", "conflicting_intensities", "highest_average_intensity"],
+        "itsd_cases": ["absent", "explicit_regex", "fallback_regex", "multiple_assays", "malformed_metadata"],
+        "plot_cases": ["pca", "pearson", "rle", "density", "small_n", "constant_features", "missing_group"],
+        "finalization_cases": ["valid_s4", "invalid_current_state", "missing_design", "normalization_handoff"],
+        "browser_tabs": ["orchestrator", "intensity", "duplicates", "itsd", "finalize"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "assay_names": ["LCMS_Pos", "LCMS_Neg", "GCMS"],
+        "state_keys": ["metab_qc_complete"],
+        "sub_steps": [
+          "intensity_filter_boundaries_validated",
+          "duplicate_resolution_validated",
+          "itsd_detection_validated",
+          "qc_plots_validated",
+          "finalization_handoff_validated",
+          "browser_controls_present"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "metabolomics_qc_summary.tsv",
+          "schema": "module_ci_table"
+        },
+        {
+          "path": "metab_qc_complete.rds",
+          "schema": "metabolomics_qc_state"
+        },
+        {
+          "path": "qc_progress_plot.png",
+          "schema": "module_ci_plot"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-metab-qc"]
+    },
+    {
       "scenario_id": "MCI-018.1-lipidomics-import-schema-smoke",
       "ticket_id": "MCI-018",
       "item_id": "MCI-018.1",

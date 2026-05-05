@@ -95,12 +95,14 @@ test_that("metabolomics S4 duplicate-id helper preserves assay-specific counts a
         assay_list = list(
           LCMS_Pos = data.frame(
             database_identifier = c("DB_1", "DB_1", "DB_2"),
-            intensity = c(10, 20, 30),
+            Sample_1 = c(10, 20, 30),
+            Sample_2 = c(11, 21, 31),
             check.names = FALSE
           ),
           LCMS_Neg = data.frame(
             database_identifier = c("DB_3", "DB_4"),
-            intensity = c(40, 50),
+            Sample_1 = c(40, 50),
+            Sample_2 = c(41, 51),
             check.names = FALSE
           )
         )
@@ -123,12 +125,14 @@ test_that("metabolomics S4 duplicate-id helper keeps unnamed-assay fallback name
           assay_list = unname(list(
             data.frame(
               database_identifier = c("DB_1", "DB_1"),
-              intensity = c(10, 20),
+              Sample_1 = c(10, 20),
+              Sample_2 = c(11, 21),
               check.names = FALSE
             ),
             data.frame(
               database_identifier = c("DB_2", "DB_3"),
-              intensity = c(30, 40),
+              Sample_1 = c(30, 40),
+              Sample_2 = c(31, 41),
               check.names = FALSE
             )
           ))
@@ -149,25 +153,27 @@ test_that("metabolomics S4 duplicate-id helper preserves missing-column warnings
     "Input must be a MetaboliteAssayData object."
   )
 
-  expect_warning(
-    duplicate_ids <- suppressMessages(
-      findMetabDuplicateFeatureIDs(
-        newMetabDuplicateIdsObject(
-          assay_list = list(
-            Broken = data.frame(
-              other_identifier = c("DB_1", "DB_1"),
-              intensity = c(10, 20),
-              check.names = FALSE
-            ),
-            Valid = data.frame(
-              database_identifier = c("DB_2", "DB_2"),
-              intensity = c(30, 40),
-              check.names = FALSE
-            )
-          )
-        )
+  broken_object <- newMetabDuplicateIdsObject(
+    assay_list = list(
+      Broken = data.frame(
+        database_identifier = c("DB_1", "DB_1"),
+        other_identifier = c("DB_1", "DB_1"),
+        Sample_1 = c(10, 20),
+        Sample_2 = c(11, 21),
+        check.names = FALSE
+      ),
+      Valid = data.frame(
+        database_identifier = c("DB_2", "DB_2"),
+        Sample_1 = c(30, 40),
+        Sample_2 = c(31, 41),
+        check.names = FALSE
       )
-    ),
+    )
+  )
+  broken_object@metabolite_data$Broken$database_identifier <- NULL
+
+  expect_warning(
+    duplicate_ids <- suppressMessages(findMetabDuplicateFeatureIDs(broken_object)),
     "Feature ID column 'database_identifier' not found"
   )
 

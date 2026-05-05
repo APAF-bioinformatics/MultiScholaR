@@ -614,3 +614,40 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic metabolomics --module design --runtime unit-contract --reporter summary
 ```
+
+## Metabolomics QC Matrix
+
+MCI-014 adds `tests/testthat/test-module-ci-metab-qc.R` plus
+`tests/testthat/helper-module-ci-metab-qc.R`. This suite targets the
+metabolomics QC boundary that mutates multi-assay S4 state before
+normalization.
+
+The matrix covers:
+
+- Intensity filtering for threshold boundaries, zeros, missing values,
+  all-pass/all-fail branches, and per-assay feature-count preservation.
+- Duplicate handling for repeated feature IDs, repeated annotations,
+  identical-intensity ties, conflicting intensities, and highest-average
+  retention across LC/GC assay lists.
+- ITSD detection for absent standards, explicit regex matches, fallback regex
+  detection, multi-assay standards, and malformed metadata/search-column
+  failures.
+- S4 plotting for PCA, Pearson correlations, RLE, density, small-n CV
+  fallbacks, constant-feature Pearson fallbacks, and missing-group rejection.
+- Finalization state for valid `MetaboliteAssayData`, invalid current state,
+  missing design rows, `metab_qc_complete` persistence, QC status completion,
+  and normalization handoff history.
+- Static browser smoke for the QC orchestrator, intensity, duplicates, ITSD,
+  and finalization tabs so control IDs remain wired for Shiny/browser tests.
+
+The QC matrix exposed one production hardening change:
+
+- QC finalization now rejects empty assay payloads and empty design matrices
+  before saving `metab_qc_complete`, preventing normalization from receiving a
+  syntactically valid but unusable metabolomics S4 object.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic metabolomics --module qc --runtime unit-contract --reporter summary
+```

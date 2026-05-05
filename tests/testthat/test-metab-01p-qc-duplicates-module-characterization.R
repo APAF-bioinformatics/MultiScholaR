@@ -79,12 +79,40 @@ if (!methods::isClass("MetaboliteAssayData")) {
     "MetaboliteAssayData",
     slots = c(
       metabolite_data = "list",
-      metabolite_id_column = "character"
+      metabolite_id_column = "character",
+      design_matrix = "data.frame",
+      sample_id = "character",
+      group_id = "character"
     ),
     prototype = list(
       metabolite_data = list(),
-      metabolite_id_column = "metabolite_id"
+      metabolite_id_column = "metabolite_id",
+      design_matrix = data.frame(
+        Sample_ID = character(),
+        group = character(),
+        stringsAsFactors = FALSE
+      ),
+      sample_id = "Sample_ID",
+      group_id = "group"
     )
+  )
+}
+
+newMetabDuplicateModuleObject <- function(metabolite_data, metabolite_id_column = "metabolite_id") {
+  sample_ids <- unique(unlist(lapply(metabolite_data, function(assay) {
+    names(assay)[vapply(assay, is.numeric, logical(1))]
+  }), use.names = FALSE))
+  methods::new(
+    "MetaboliteAssayData",
+    metabolite_data = metabolite_data,
+    metabolite_id_column = metabolite_id_column,
+    design_matrix = data.frame(
+      Sample_ID = sample_ids,
+      group = rep("A", length(sample_ids)),
+      stringsAsFactors = FALSE
+    ),
+    sample_id = "Sample_ID",
+    group_id = "group"
   )
 }
 
@@ -178,11 +206,7 @@ test_that("metabolomics duplicate resolution preflight seam validates state and 
       stringsAsFactors = FALSE
     )
   )
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = initial_assay_data,
-    metabolite_id_column = "metabolite_id"
-  )
+  current_s4 <- newMetabDuplicateModuleObject(initial_assay_data)
   resolved_assay_data <- list(
     Plasma = data.frame(
       metabolite_id = "m1",
@@ -249,11 +273,7 @@ test_that("metabolomics duplicate resolution apply seam updates reactive state, 
       stringsAsFactors = FALSE
     )
   )
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = resolved_assay_data,
-    metabolite_id_column = "metabolite_id"
-  )
+  current_s4 <- newMetabDuplicateModuleObject(resolved_assay_data)
   expected_stats <- list(
     Plasma = list(original = 2, resolved = 1, removed = 1)
   )
@@ -334,16 +354,14 @@ test_that("metabolomics duplicate resolution apply seam falls back to a null QC 
   captured$resolution_stats_updates <- list()
   captured$filter_plot_updates <- list()
   captured$warnings <- character()
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = list(
+  current_s4 <- newMetabDuplicateModuleObject(
+    list(
       Plasma = data.frame(
         metabolite_id = "m1",
         Sample1 = 2,
         stringsAsFactors = FALSE
       )
-    ),
-    metabolite_id_column = "metabolite_id"
+    )
   )
   expected_stats <- list(
     Plasma = list(original = 2, resolved = 1, removed = 1)
@@ -418,11 +436,7 @@ test_that("metabolomics duplicate resolution workflow seam composes preflight, a
       stringsAsFactors = FALSE
     )
   )
-  resolved_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = resolved_assay_data,
-    metabolite_id_column = "metabolite_id"
-  )
+  resolved_s4 <- newMetabDuplicateModuleObject(resolved_assay_data)
   expected_stats <- list(
     Plasma = list(original = 2, resolved = 1, removed = 1)
   )
@@ -667,16 +681,14 @@ test_that("metabolomics duplicate table renderer seam registers only populated a
 test_that("metabolomics duplicate detection seam validates state and counts duplicates", {
   captured <- new.env(parent = emptyenv())
   captured$req_values <- list()
-  current_s4 <- methods::new(
-    "MetaboliteAssayData",
-    metabolite_data = list(
+  current_s4 <- newMetabDuplicateModuleObject(
+    list(
       Plasma = data.frame(
         metabolite_id = c("m1", "m1"),
         Sample1 = c(1, 2),
         stringsAsFactors = FALSE
       )
-    ),
-    metabolite_id_column = "metabolite_id"
+    )
   )
 
   visible <- withVisible(

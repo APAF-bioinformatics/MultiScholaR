@@ -320,12 +320,26 @@ validateMetabQcS4FinalizeState <- function(
     reqFn = shiny::req,
     inheritsFn = inherits,
     expectedClass = "MetaboliteAssayData",
-    errorMessage = paste("Current state is not a", expectedClass, "object")
+    errorMessage = paste("Current state is not a", expectedClass, "object"),
+    requireAssays = TRUE,
+    requireDesign = TRUE
 ) {
     reqFn(currentS4)
 
     if (!inheritsFn(currentS4, expectedClass)) {
         stop(errorMessage)
+    }
+    currentSlots <- methods::slotNames(currentS4)
+    if (isTRUE(requireAssays) &&
+        (!"metabolite_data" %in% currentSlots ||
+            length(currentS4@metabolite_data) == 0L)) {
+        stop("Current MetaboliteAssayData object has no assay data to finalize.")
+    }
+    if (isTRUE(requireDesign) &&
+        (!"design_matrix" %in% currentSlots ||
+            !is.data.frame(currentS4@design_matrix) ||
+            nrow(currentS4@design_matrix) == 0L)) {
+        stop("Current MetaboliteAssayData object has no design matrix rows to finalize.")
     }
 
     currentS4
@@ -627,4 +641,3 @@ runMetabQcS4ServerBody <- function(
 
     invisible(NULL)
 }
-
