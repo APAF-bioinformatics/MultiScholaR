@@ -4,8 +4,8 @@
 
 | Property | Value |
 |---|---|
-| File | proteinGroups.txt |
-| Format | MaxQuant proteinGroups.txt (wide LFQ format) |
+| Files | proteinGroups.txt; seed_combined_protein.tsv |
+| Formats | MaxQuant proteinGroups.txt; FragPipe combined protein |
 | Proteins | 5 (P00001–P00005) |
 | Samples | 6 (WT_1–3, KO_1–3) |
 | Total rows | 5 |
@@ -20,8 +20,11 @@
 
 ## Column Format
 
-Intensity columns follow MaxQuant proteinGroups convention:
+MaxQuant intensity columns follow proteinGroups convention:
 `LFQ.intensity.{sample_name}`
+
+FragPipe intensity columns follow combined-protein convention:
+`{sample_name} MaxLFQ Intensity`
 
 The `importMaxQuantData()` function detects `LFQ.intensity.*` columns,
 extracts sample names, filters contaminants/reverse hits, and pivots to long format.
@@ -37,6 +40,7 @@ P00003–P00005 are not expected to be significant (<0.1 log2FC between groups).
 
 ## Import Function
 
-`importMaxQuantData()` in `R/func_prot_import_readers.R`
+`importMaxQuantData()` and `importFragPipeData()` in `R/func_prot_import_readers.R`
 
 Required columns: `Protein.IDs`, `Gene.names`, `LFQ.intensity.*` columns
+for MaxQuant; `Protein ID`, `Gene`, and `* MaxLFQ Intensity` columns for FragPipe.

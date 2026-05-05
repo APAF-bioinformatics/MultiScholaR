@@ -1,4 +1,4 @@
-Annotated.Sequence	Master.Protein.Accessions	Abundance.126	Abundance.127N	Abundance.127C	Abundance.128N	Abundance.128C	Abundance.129N
+Annotated.Sequence	Master.Protein.Accessions	Abundance: F1: 126, WT_1	Abundance: F2: 127N, WT_2	Abundance: F3: 127C, WT_3	Abundance: F4: 128N, KO_1	Abundance: F5: 128C, KO_2	Abundance: F6: 129N, KO_3
 PEP1K	P00001	1019.8	916.6	998.1	1914.7	2167.5	1924.1
 PEP2K	P00002	963.8	1051.5	954.4	524.3	543.1	522
 PEP3K	P00003	1017.5	1021.5	1014.6	1050.2	1043.5	1034.1

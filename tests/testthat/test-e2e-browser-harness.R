@@ -165,6 +165,14 @@ test_that("selectize helpers resolve imported run case without inventing fixture
     e2e_match_available_values("WT_1", character()),
     "WT_1"
   )
+
+  expect_identical(
+    e2e_match_available_values(
+      c("WT_1", "KO_1"),
+      c("x126_wt_1", "x127n_wt_2", "x128n_ko_1")
+    ),
+    c("x126_wt_1", "x128n_ko_1")
+  )
 })
 
 test_that("workflow tab helper maps proteomics step keys to UI tab values", {
@@ -292,12 +300,14 @@ test_that("proteomics DIA scenario helpers dispatch design, QC, normalization, a
 
   e2e_complete_prot_design_from_manifest(driver, lane)
   e2e_run_prot_dia_qc(driver)
-  e2e_run_prot_dia_normalization_export(driver)
+  e2e_run_prot_normalization_export(driver)
   report_download <- e2e_run_prot_da_summary_report(
     driver,
     lane = lane,
     project_base_dir = paths$base_dir,
-    experiment_label = experiment_label
+    experiment_label = experiment_label,
+    case_id = "E2E-004-browser-harness-report",
+    description = "browser harness report path"
   )
 
   methods <- vapply(driver$.state$calls, `[[`, character(1), "method")

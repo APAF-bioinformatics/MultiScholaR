@@ -44,6 +44,30 @@ test_that("importProteomeDiscovererTMTData reshapes a single delimited export", 
   )
 })
 
+test_that("importProteomeDiscovererTMTData accepts peptide-export accession and simplified abundance names", {
+  input_path <- tempfile(fileext = ".tsv")
+  writePdDelimited(
+    input_path,
+    data.frame(
+      Annotated.Sequence = c("PEP1K", "PEP2K"),
+      Master.Protein.Accessions = c("P1", "P2"),
+      Abundance.126 = c(10, 20),
+      Abundance.127N = c(11, 21),
+      check.names = FALSE
+    )
+  )
+
+  imported <- suppressMessages(suppressWarnings(importProteomeDiscovererTMTData(input_path)))
+
+  expect_identical(imported$data_type, "protein")
+  expect_identical(sort(unique(imported$data$Protein.Ids)), c("P1", "P2"))
+  expect_identical(sort(unique(imported$data$Run)), c("126", "127N"))
+  expect_equal(
+    imported$data$Abundance[imported$data$Protein.Ids == "P2" & imported$data$Run == "127N"],
+    21
+  )
+})
+
 test_that("importProteomeDiscovererTMTData covers ZIP batching and multi-file combine paths", {
   file_one <- tempfile(fileext = ".tsv")
   file_two <- tempfile(fileext = ".tsv")

@@ -305,6 +305,17 @@ test_that("buildProtImportFormatSpecificOptionsUi renders per-format controls", 
   expect_match(spectronautHtml, "Spectronaut Specific Options")
   expect_match(spectronautHtml, "import-spectronaut_quantity")
 
+  fragpipeHtml <- htmltools::renderTags(
+    buildProtImportFormatSpecificOptionsUi(
+      format = "fragpipe",
+      ns = shiny::NS("import")
+    )
+  )$html
+
+  expect_match(fragpipeHtml, "FragPipe LFQ Options")
+  expect_match(fragpipeHtml, "import-fragpipe_use_maxlfq")
+  expect_match(fragpipeHtml, "checked")
+
   fallbackHtml <- htmltools::renderTags(
     buildProtImportFormatSpecificOptionsUi(
       format = "unsupported",

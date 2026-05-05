@@ -8,7 +8,7 @@ All data is generated from `set.seed(20260428)` — no real experimental data is
 ## Fixture Architecture
 
 Fixtures are **manifest-driven**: `manifest.json` is the single source of truth for
-all 8 workflow lanes. Each lane defines its format, sample layout, and expected outputs.
+all 9 workflow lanes. Each lane defines its format, sample layout, and expected outputs.
 
 ```
 tests/testdata/e2e/
@@ -24,7 +24,7 @@ tests/testdata/e2e/
 ├── prot_dia/                 # DIA-NN proteomics (long format, no LIMPA)
 ├── prot_dia_limpa/           # DIA-NN proteomics (long format, with LIMPA)
 ├── prot_tmt/                 # TMT proteomics (Proteome Discoverer format)
-├── prot_lfq/                 # LFQ proteomics (MaxQuant proteinGroups.txt)
+├── prot_lfq/                 # LFQ proteomics (MaxQuant and FragPipe entries)
 ├── metab_lc/                 # LC-MS metabolomics (MS-DIAL format, Pos+Neg)
 ├── metab_gc/                 # GC-MS metabolomics (MS-DIAL format, GCMS)
 ├── metab_combined/           # Combined LC/GC metabolomics (multi-platform)
@@ -80,7 +80,7 @@ Each lane object:
 | `lane_id`            | string          | Unique identifier, used as directory key |
 | `omic_type`          | string          | `"proteomics"`, `"metabolomics"`, `"lipidomics"` |
 | `workflow_type`      | string / null   | `"DIA"`, `"TMT"`, `"LFQ"`, or `null` |
-| `import_tool`        | string          | `"diann"`, `"pd_tmt"`, `"maxquant"`, `"msdial"`, `"lipidsearch"` |
+| `import_tool`        | string          | `"diann"`, `"pd_tmt"`, `"maxquant"`, `"fragpipe"`, `"msdial"`, `"lipidsearch"` |
 | `use_limpa`          | boolean         | Whether the lane uses the LIMPA DA method |
 | `fixture_dir`        | string          | Subdirectory name under `e2e/` |
 | `seed_file`          | string          | Filename of the primary import seed file |

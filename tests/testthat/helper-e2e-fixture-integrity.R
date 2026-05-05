@@ -1,10 +1,11 @@
 # E2E fixture integrity validation.
-# Validates all structural requirements for the 8 E2E test lanes before
+# Validates all structural requirements for the 9 E2E test lanes before
 # the browser test suite runs.
 
 .E2E_REQUIRED_SEED_COLS <- list(
     diann       = c("Protein.Group", "Protein.Ids", "Protein.Names"),
     pd_tmt      = c("Annotated.Sequence", "Master.Protein.Accessions"),
+    fragpipe    = c("Protein", "Protein ID", "Gene"),
     maxquant    = c("Protein.IDs", "Gene.names"),
     msdial      = c("Feature.Name"),
     lipidsearch = c("LipidMolec", "Class", "FattyAcid")
@@ -19,7 +20,8 @@
     switch(
         import_tool
         , diann       = NA_integer_  # long format — checked via design.tsv only
-        , pd_tmt      = sum(grepl("^Abundance\\.", col_names))
+        , pd_tmt      = sum(grepl("^Abundance\\.|^Abundance: ", col_names))
+        , fragpipe    = sum(grepl("\\s+MaxLFQ\\s+Intensity$", col_names))
         , maxquant    = sum(grepl("^LFQ\\.intensity\\.", col_names))
         , msdial      = sum(!col_names %in% .E2E_MSDIAL_META_COLS)
         , lipidsearch = sum(grepl("\\.MeanArea$", col_names))
@@ -226,7 +228,7 @@
 
 #' Validate E2E fixture integrity
 #'
-#' Runs structural checks on all 8 E2E fixture lanes: fixture directories,
+#' Runs structural checks on all 9 E2E fixture lanes: fixture directories,
 #' seed file columns, design.tsv structure, cross-omic pack references, and
 #' report template stubs. No data processing is performed.
 #'

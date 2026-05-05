@@ -21,12 +21,11 @@
 | 128N_KO_1 | KO_1 | KO | 128N |
 | 128C_KO_2 | KO_2 | KO | 128C |
 | 129N_KO_3 | KO_3 | KO | 129N |
-| 129N_KO_2 | KO_2 | KO | 129N |
 
 ## Column Format
 
 Abundance columns follow Proteome Discoverer export convention:
-`Abundance.{channel}`
+`Abundance: F{fraction}: {channel}, {sample}`
 
 The `importProteomeDiscovererTMTData()` function reads peptide rows keyed by
 `Annotated.Sequence` and `Master.Protein.Accessions`, then pivots abundance

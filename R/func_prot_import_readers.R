@@ -240,10 +240,10 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
   # Filter contaminants and reverse hits if requested
   if (filter_contaminants) {
     if ("Potential.contaminant" %in% names(data)) {
-      data <- data[data$Potential.contaminant != "+", ]
+      data <- data[is.na(data$Potential.contaminant) | data$Potential.contaminant != "+", ]
     }
     if ("Reverse" %in% names(data)) {
-      data <- data[data$Reverse != "+", ]
+      data <- data[is.na(data$Reverse) | data$Reverse != "+", ]
     }
   }
   
@@ -256,17 +256,58 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
   } else {
     intensity_cols
   }
+
+  if (length(quantity_cols) == 0) {
+    stop("No MaxQuant intensity columns found. Expected LFQ.intensity.* or Intensity.* columns.")
+  }
+
+  protein_col_candidates <- c(
+    "Majority.protein.IDs",
+    "Protein.IDs",
+    "Protein.Ids",
+    "Protein IDs",
+    "Protein ID"
+  )
+  protein_col <- protein_col_candidates[protein_col_candidates %in% names(data)][1]
+  if (is.na(protein_col)) {
+    stop(
+      "Required MaxQuant protein identifier column not found. Expected one of: ",
+      paste(protein_col_candidates, collapse = ", ")
+    )
+  }
+
+  cols_to_keep <- unique(c(
+    protein_col,
+    intersect(c("Gene.names", "Protein.names"), names(data)),
+    quantity_cols
+  ))
+
+  long_data <- tryCatch({
+    data |>
+      dplyr::select(dplyr::all_of(cols_to_keep)) |>
+      tidyr::pivot_longer(
+        cols = dplyr::all_of(quantity_cols),
+        names_to = "Run",
+        values_to = "Intensity"
+      ) |>
+      dplyr::mutate(
+        Run = sub("^(LFQ\\.intensity\\.|Intensity\\.)", "", Run),
+        Intensity = as.numeric(Intensity)
+      ) |>
+      dplyr::rename(Protein.Ids = !!rlang::sym(protein_col))
+  }, error = function(e) {
+    stop("Failed to convert MaxQuant proteinGroups data to long format: ", e$message)
+  })
   
   return(list(
-    data = data,
+    data = long_data,
     data_type = "protein",  # MaxQuant proteinGroups is protein-level
     column_mapping = list(
-      protein_col = "Majority.protein.IDs",
+      protein_col = "Protein.Ids",
       peptide_col = NULL,
-      run_col = NULL,  # MaxQuant has wide format
-      quantity_cols = quantity_cols,  # Multiple columns for wide format
+      run_col = "Run",
+      quantity_col = "Intensity",
       qvalue_col = "Q.value"  # If Perseus was used
     )
   ))
 }
-

@@ -69,21 +69,34 @@ importProteomeDiscovererTMTData <- function(filepath) {
     message(sprintf("      Data State: Column names (first 10): %s", paste(head(names(data), 10), collapse = ", ")))
     log_info(sprintf("File contains %d rows and %d columns", nrow(data), ncol(data)))
     
-    # Check for required Accession column
-    if ("Accession" %in% names(data)) {
-      data <- data |> dplyr::rename(Protein.Ids = "Accession")
+    # Check for a protein accession column. Proteome Discoverer exports vary by
+    # table type; peptide exports often use Master.Protein.Accessions.
+    protein_col_candidates <- c("Accession", "Master.Protein.Accessions")
+    protein_col <- protein_col_candidates[protein_col_candidates %in% names(data)][1]
+    if (!is.na(protein_col)) {
+      data <- data |> dplyr::rename(Protein.Ids = !!rlang::sym(protein_col))
     } else {
-      stop("Required column 'Accession' not found in file: ", basename(file_path), 
-           ". Available columns: ", paste(head(names(data), 10), collapse = ", "), call. = FALSE)
+      stop("Required column 'Accession' not found in file: ", basename(file_path),
+           " (also checked Master.Protein.Accessions). Available columns: ",
+           paste(head(names(data), 10), collapse = ", "), call. = FALSE)
     }
     
     # Count abundance columns before renaming
-    abundance_cols_before <- sum(grepl("^Abundance: ", names(data)))
+    abundance_cols_before <- sum(grepl("^Abundance: |^Abundance\\.", names(data)))
     if (abundance_cols_before == 0) {
-      stop("No 'Abundance: ' columns found in file: ", basename(file_path), 
-           ". This does not appear to be a valid TMT export file.", call. = FALSE)
+      stop("No 'Abundance: ' columns found in file: ", basename(file_path),
+           " and no 'Abundance.' fallback columns found. This does not appear to be a valid TMT export file.",
+           call. = FALSE)
     }
-    log_info(sprintf("Found %d 'Abundance: ' columns before renaming", abundance_cols_before))
+    log_info(sprintf("Found %d abundance columns before renaming", abundance_cols_before))
+
+    normalize_pd_abundance_name <- function(x) {
+      ifelse(
+        grepl("^Abundance: ", x),
+        gsub("Abundance: F[0-9]+: ([0-9]+[A-Z]?), (.+)", "\\1_\\2", x),
+        sub("^Abundance\\.", "", x)
+      )
+    }
     
     # Rename columns to be unique BEFORE pivoting
     if (!is.null(batch_name)) {
@@ -91,17 +104,17 @@ importProteomeDiscovererTMTData <- function(filepath) {
         dplyr::rename_with(
           ~ paste(
               batch_name, 
-              gsub("Abundance: F[0-9]+: ([0-9]+[A-Z]?), (.+)", "\\1_\\2", .x), 
+              normalize_pd_abundance_name(.x),
               sep = "_"
             ),
-          .cols = dplyr::starts_with("Abundance: ")
+          .cols = tidyselect::matches("^Abundance: |^Abundance\\.")
         )
     } else {
         # Fallback for single file without a batch name
         data <- data |>
         dplyr::rename_with(
-          ~ gsub("Abundance: F[0-9]+: ([0-9]+[A-Z]?), (.+)", "\\1_\\2", .x),
-          .cols = dplyr::starts_with("Abundance: ")
+          normalize_pd_abundance_name,
+          .cols = tidyselect::matches("^Abundance: |^Abundance\\.")
         )
     }
 
@@ -112,7 +125,7 @@ importProteomeDiscovererTMTData <- function(filepath) {
       abundance_cols <- names(data)[grepl(paste0("^", batch_name, "_[0-9]+"), names(data))]
     } else {
       # For single files, columns should match the direct gsub pattern
-      abundance_cols <- names(data)[grepl("^[0-9]+[A-Z]?_", names(data))]
+      abundance_cols <- names(data)[grepl("^[0-9]+[A-Z]?(_|$)", names(data))]
     }
     
     if (length(abundance_cols) == 0) {
@@ -255,4 +268,3 @@ importProteomeDiscovererTMTData <- function(filepath) {
   
   return(result)
 }
-

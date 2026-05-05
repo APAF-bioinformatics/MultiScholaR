@@ -417,6 +417,11 @@ e2e_match_available_values <- function(values, available) {
       return(case_insensitive[[1L]])
     }
 
+    suffix_match <- available[endsWith(tolower(available), paste0("_", tolower(value)))]
+    if (length(suffix_match) > 0L) {
+      return(suffix_match[[1L]])
+    }
+
     value
   }, character(1), USE.NAMES = FALSE)
 }
@@ -907,7 +912,7 @@ e2e_run_prot_dia_qc <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) 
   invisible(driver)
 }
 
-e2e_run_prot_dia_normalization_export <- function(
+e2e_run_prot_normalization_export <- function(
     driver,
     timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
 ) {
@@ -926,11 +931,15 @@ e2e_run_prot_dia_normalization_export <- function(
   invisible(driver)
 }
 
+e2e_run_prot_dia_normalization_export <- e2e_run_prot_normalization_export
+
 e2e_run_prot_da_summary_report <- function(
     driver,
     lane,
     project_base_dir,
     experiment_label,
+    case_id = "E2E-004-proteomics-dia-report",
+    description = "E2E-004 canonical DIA GUI workflow",
     timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
 ) {
   e2e_switch_workflow_tab(driver, "proteomics", "differential_expression")
@@ -954,7 +963,7 @@ e2e_run_prot_da_summary_report <- function(
   e2e_set_input_and_idle(
     driver,
     e2e_input_id("proteomics", "summary", "description"),
-    "E2E-004 canonical DIA GUI workflow",
+    description,
     timeout = timeout
   )
   e2e_seed_report_template(lane, project_base_dir)
@@ -965,7 +974,7 @@ e2e_run_prot_da_summary_report <- function(
   report_download <- e2e_get_download(
     driver,
     e2e_input_id("proteomics", "summary", "download_report"),
-    artifact_dir = e2e_case_artifact_dir("E2E-004-proteomics-dia-report"),
+    artifact_dir = e2e_case_artifact_dir(case_id),
     filename = paste0("downloaded-", lane$report_template)
   )
   e2e_assert_file_nonempty(report_download)

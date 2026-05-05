@@ -94,6 +94,29 @@
       "cross_omic_packs": []
     },
     {
+      "lane_id": "prot_lfq_fragpipe",
+      "omic_type": "proteomics",
+      "workflow_type": "LFQ",
+      "import_tool": "fragpipe",
+      "use_limpa": false,
+      "fixture_dir": "prot_lfq",
+      "seed_file": "seed_combined_protein.tsv",
+      "fasta_file": "proteins.fasta",
+      "assays": [null],
+      "expected_contrasts": ["KO_vs_WT"],
+      "report_template": "LFQ_report.rmd",
+      "enrichment_backend": "gprofiler",
+      "expected_exports": [
+        "differential_abundance.xlsx",
+        "normalized_intensities.xlsx",
+        "summary_stats.xlsx"
+      ],
+      "sample_count": 6,
+      "group_count": 2,
+      "groups": ["WT", "KO"],
+      "cross_omic_packs": []
+    },
+    {
       "lane_id": "metab_lc",
       "omic_type": "metabolomics",
       "workflow_type": null,

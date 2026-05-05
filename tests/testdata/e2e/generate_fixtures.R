@@ -2,7 +2,7 @@
 #
 # DEVELOPER TOOL — not run in CI.
 #
-# Regenerates all 8 lane fixture seed files and design.tsv from scratch using
+# Regenerates all 9 lane fixture seed files and design.tsv from scratch using
 # deterministic synthetic data. Run this script whenever fixture formats change
 # or new lanes are added.
 #
@@ -221,7 +221,12 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     # TMT channel names (TMT10: 126, 127N, 127C, 128N, 128C, 129N for 6 samples)
     tmt_channels <- c("126", "127N", "127C", "128N", "128C", "129N")
     all_samples <- c(wt_samples, ko_samples)
-    abundance_cols <- paste0("Abundance.", tmt_channels[seq_along(all_samples)])
+    abundance_cols <- sprintf(
+        "Abundance: F%d: %s, %s",
+        seq_along(all_samples),
+        tmt_channels[seq_along(all_samples)],
+        all_samples
+    )
 
     # One peptide per protein (simplified — TMT uses protein-level abundances here)
     peptides <- paste0("PEP", seq_len(n_proteins), "K")
@@ -269,17 +274,40 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     intensities <- .base_intensities(n_proteins, n_wt, n_ko)
 
     all_samples <- c(wt_samples, ko_samples)
-    lfq_cols <- paste0("LFQ.intensity.", all_samples)
 
-    df <- proteins
+    if (identical(lane$import_tool, "fragpipe")) {
+        entry_names <- c("ALPHA_HUMAN", "BETA_HUMAN", "GAMMA_HUMAN", "DELTA_HUMAN", "EPSIL_HUMAN")
+        descriptions <- c("Protein Alpha", "Protein Beta", "Protein Gamma", "Protein Delta", "Protein Epsilon")
+        df <- data.frame(
+            Protein = paste0("sp|", proteins$Protein.IDs, "|", entry_names)
+            , `Protein ID` = proteins$Protein.IDs
+            , `Entry Name` = entry_names
+            , Gene = proteins$Gene.names
+            , Length = c(350L, 280L, 420L, 195L, 510L)
+            , Organism = "Homo sapiens"
+            , `Protein Description` = descriptions
+            , `Protein Existence` = 1L
+            , Coverage = c(42.5, 38.2, 35.1, 51.3, 29.8)
+            , check.names = FALSE
+            , stringsAsFactors = FALSE
+        )
+        lfq_cols <- paste0(all_samples, " MaxLFQ Intensity")
+    } else {
+        df <- proteins
+        lfq_cols <- paste0("LFQ.intensity.", all_samples)
+    }
+
     for (i in seq_along(all_samples)) {
         is_wt <- i <= n_wt
         grp_mat <- if (is_wt) intensities$wt else intensities$ko
         col_idx <- if (is_wt) i else i - n_wt
         df[[lfq_cols[i]]] <- grp_mat[, col_idx]
     }
-    df$Potential.contaminant <- ""
-    df$Reverse <- ""
+
+    if (!identical(lane$import_tool, "fragpipe")) {
+        df$Potential.contaminant <- ""
+        df$Reverse <- ""
+    }
 
     seed_path <- file.path(lane_dir, lane$seed_file)
     .write_tsv(df, seed_path)
@@ -490,6 +518,7 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     diann       = .generate_prot_diann
     , pd_tmt    = .generate_prot_tmt
     , maxquant  = .generate_prot_lfq
+    , fragpipe  = .generate_prot_lfq
     , msdial    = function(lane, lane_dir) {
         # Dispatch on lane_id for msdial variants
         if (lane$lane_id == "metab_gc") {

@@ -105,7 +105,7 @@ buildProtImportFormatSpecificOptionsUi <- function(format, ns) {
       shiny::h5("FragPipe LFQ Options"),
       shiny::checkboxInput(ns("fragpipe_use_maxlfq"),
         "Use MaxLFQ intensities",
-        value = FALSE
+        value = TRUE
       )
     ),
     "maxquant" = shiny::tagList(
@@ -125,4 +125,3 @@ buildProtImportFormatSpecificOptionsUi <- function(format, ns) {
     )
   )
 }
-

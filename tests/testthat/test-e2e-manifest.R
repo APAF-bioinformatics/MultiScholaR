@@ -29,16 +29,17 @@
     tmp
 }
 
-test_that("read_e2e_manifest returns named list of 8 lanes", {
+test_that("read_e2e_manifest returns named list of 9 lanes", {
     manifest <- read_e2e_manifest()
 
     expect_type(manifest, "list")
-    expect_equal(length(manifest), 8L)
+    expect_equal(length(manifest), 9L)
     expect_setequal(names(manifest), c(
         "prot_dia"
         , "prot_dia_limpa"
         , "prot_tmt"
         , "prot_lfq"
+        , "prot_lfq_fragpipe"
         , "metab_lc"
         , "metab_gc"
         , "metab_combined"
@@ -136,7 +137,7 @@ test_that("read_e2e_manifest errors on missing required field", {
     )
 })
 
-test_that("all 8 e2e fixture directories exist", {
+test_that("all e2e fixture directories exist", {
     fixture_root <- testthat::test_path("..", "testdata", "e2e")
     expected_dirs <- c(
         "prot_dia", "prot_dia_limpa", "prot_tmt", "prot_lfq"
@@ -147,7 +148,7 @@ test_that("all 8 e2e fixture directories exist", {
     }
 })
 
-test_that("all 8 e2e seed files exist", {
+test_that("all 9 e2e seed files exist", {
     manifest <- read_e2e_manifest()
     fixture_root <- testthat::test_path("..", "testdata", "e2e")
 
