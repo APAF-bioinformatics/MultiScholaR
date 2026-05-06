@@ -840,6 +840,58 @@
         }
       ],
       "required_tests": ["module-ci-manifest", "module-ci-lipid-design"]
+    },
+    {
+      "scenario_id": "MCI-020.1-lipidomics-qc-schema-smoke",
+      "ticket_id": "MCI-020",
+      "item_id": "MCI-020.1",
+      "omic": "lipidomics",
+      "module_family": "qc",
+      "runtime": "unit-contract",
+      "ci_lane": "lipidomics-unit",
+      "fixture": {
+        "path": "fixtures/lipidomics/lipid_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "feature_id_col": "LipidName",
+        "assay_cases": ["LCMS_Pos", "LCMS_Neg", "GCMS", "LCMS_Pos+GCMS"],
+        "intensity_cases": ["thresholds", "zeros", "missing_values", "nonfinite_values", "all_pass", "all_fail"],
+        "duplicate_cases": ["duplicate_ids", "duplicate_annotations", "duplicate_classes", "identical_intensities", "conflicting_intensities"],
+        "itsd_cases": ["global_regex", "assay_specific", "no_matches", "multiple_matches", "invalid_regex"],
+        "plot_cases": ["pca", "pearson", "rle", "density", "small_n", "constant_features", "missing_group"],
+        "finalization_cases": ["valid_s4", "invalid_state", "empty_design", "empty_assay", "normalization_unlock"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "assay_names": ["LCMS_Pos", "GCMS"],
+        "state_keys": ["lipid_intensity_filtered", "lipid_duplicates_resolved", "lipid_qc_complete"],
+        "sub_steps": [
+          "intensity_matrix_validated",
+          "duplicate_matrix_validated",
+          "itsd_matrix_validated",
+          "plot_fallbacks_validated",
+          "finalization_handoff_validated",
+          "browser_tab_controls_validated"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "lipidomics_qc_summary.tsv",
+          "schema": "module_ci_table"
+        },
+        {
+          "path": "lipid_qc_complete.rds",
+          "schema": "lipidomics_qc_state"
+        },
+        {
+          "path": "qc_progress_plot.png",
+          "schema": "module_ci_plot"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-lipid-qc"]
     }
   ]
 }

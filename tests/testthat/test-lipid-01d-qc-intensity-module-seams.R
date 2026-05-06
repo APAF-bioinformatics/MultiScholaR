@@ -160,12 +160,16 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter work
                 stringsAsFactors = FALSE
             ),
             AssayB = data.frame(
+                lipid_id = c("F1", "F2"),
                 feature = c("F1", "F2"),
                 intensity = c(4, 2),
                 stringsAsFactors = FALSE
             )
         ),
-        lipid_id_column = "lipid_id"
+        lipid_id_column = "lipid_id",
+        design_matrix = data.frame(Sample_ID = "intensity", group = "A"),
+        sample_id = "Sample_ID",
+        group_id = "group"
     )
     filtered_s4 <- methods::new(
         "LipidomicsAssayData",
@@ -176,12 +180,16 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter work
                 stringsAsFactors = FALSE
             ),
             AssayB = data.frame(
+                lipid_id = "F1",
                 feature = "F1",
                 intensity = 4,
                 stringsAsFactors = FALSE
             )
         ),
-        lipid_id_column = "lipid_id"
+        lipid_id_column = "lipid_id",
+        design_matrix = data.frame(Sample_ID = "intensity", group = "A"),
+        sample_id = "Sample_ID",
+        group_id = "group"
     )
     filter_stats_value <- NULL
     filter_plot_value <- "stale-plot"

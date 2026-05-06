@@ -302,6 +302,257 @@ registerLipidQcS4AssayStatsOutput <- function(
     output
 }
 
+buildLipidQcS4FinalizeResultsText <- function(currentS4, history) {
+    assay_list <- currentS4@lipid_data
+    total_lipids <- sum(vapply(assay_list, function(a) {
+        if (currentS4@lipid_id_column %in% names(a)) {
+            length(unique(a[[currentS4@lipid_id_column]]))
+        } else {
+            nrow(a)
+        }
+    }, numeric(1)))
+
+    paste(
+        "QC Finalization Complete"
+        , "========================"
+        , ""
+        , sprintf("Total lipids retained: %d", total_lipids)
+        , sprintf("Number of assays: %d", length(assay_list))
+        , sprintf("Processing steps completed: %d", length(history))
+        , ""
+        , "Processing History:"
+        , paste(sprintf("  %d. %s", seq_along(history), history), collapse = "\n")
+        , ""
+        , "State saved as: 'lipid_qc_complete'"
+        , ""
+        , "You can now proceed to the Normalization tab."
+        , sep = "\n"
+    )
+}
+
+getLipidQcS4FinalizeState <- function(
+    stateManager,
+    stateGetterFn = function(manager) manager$getState()
+) {
+    stateGetterFn(stateManager)
+}
+
+validateLipidQcS4FinalizeState <- function(
+    currentS4,
+    reqFn = shiny::req,
+    inheritsFn = inherits,
+    expectedClass = "LipidomicsAssayData",
+    errorMessage = paste("Current state is not a", expectedClass, "object"),
+    requireAssays = TRUE,
+    requireDesign = TRUE
+) {
+    reqFn(currentS4)
+
+    if (!inheritsFn(currentS4, expectedClass)) {
+        stop(errorMessage)
+    }
+    currentSlots <- methods::slotNames(currentS4)
+    if (isTRUE(requireAssays) &&
+        (!"lipid_data" %in% currentSlots ||
+            length(currentS4@lipid_data) == 0L ||
+            any(vapply(currentS4@lipid_data, nrow, integer(1)) == 0L))) {
+        stop("Current LipidomicsAssayData object has no assay data to finalize.")
+    }
+    if (isTRUE(requireDesign) &&
+        (!"design_matrix" %in% currentSlots ||
+            !is.data.frame(currentS4@design_matrix) ||
+            nrow(currentS4@design_matrix) == 0L)) {
+        stop("Current LipidomicsAssayData object has no design matrix rows to finalize.")
+    }
+
+    if (isTRUE(requireDesign) && isTRUE(requireAssays)) {
+        sample_id_col <- currentS4@sample_id
+        group_id_col <- currentS4@group_id
+        sample_columns <- if (sample_id_col %in% names(currentS4@design_matrix)) {
+            as.character(currentS4@design_matrix[[sample_id_col]])
+        } else {
+            character()
+        }
+        alignment <- validateLipidDesignAlignment(
+            designMatrix = currentS4@design_matrix,
+            assayList = currentS4@lipid_data,
+            columnMapping = list(
+                lipid_id_col = currentS4@lipid_id_column,
+                annotation_col = currentS4@annotation_id_column,
+                sample_columns = sample_columns
+            ),
+            sampleIdCol = sample_id_col,
+            groupCol = group_id_col,
+            requireReplicates = FALSE
+        )
+        if (!isTRUE(alignment$valid)) {
+            stop(sprintf(
+                "Current LipidomicsAssayData object has assay/design mismatch: %s",
+                paste(alignment$errors, collapse = "; ")
+            ))
+        }
+    }
+
+    currentS4
+}
+
+saveLipidQcS4CompletedState <- function(
+    stateManager,
+    currentS4,
+    configObject,
+    stateName = "lipid_qc_complete",
+    description = "QC processing complete - ready for normalization"
+) {
+    stateManager$saveState(
+        state_name = stateName
+        , s4_data_object = currentS4
+        , config_object = configObject
+        , description = description
+    )
+
+    invisible(stateName)
+}
+
+completeLipidQcS4TabStatus <- function(
+    workflowData,
+    tabName = "quality_control",
+    status = "complete",
+    normalizationTabName = "normalization",
+    normalizationReadyStatus = "pending"
+) {
+    updatedStatus <- workflowData$tab_status
+    updatedStatus[[tabName]] <- status
+    if (normalizationTabName %in% names(updatedStatus) &&
+        updatedStatus[[normalizationTabName]] %in% c("disabled", "locked")) {
+        updatedStatus[[normalizationTabName]] <- normalizationReadyStatus
+    }
+    workflowData$tab_status <- updatedStatus
+
+    invisible(updatedStatus)
+}
+
+getLipidQcS4FinalizeHistory <- function(
+    stateManager,
+    historyGetterFn = function(manager) manager$getHistory()
+) {
+    historyGetterFn(stateManager)
+}
+
+updateLipidQcS4TrackingPlot <- function(
+    currentS4,
+    omicType,
+    setFilterPlotFn,
+    stepName = "4_QC_Complete",
+    updateLipidFilteringFn = updateLipidFiltering
+) {
+    qcPlot <- tryCatch({
+        updateLipidFilteringFn(
+            theObject = currentS4
+            , step_name = stepName
+            , omics_type = omicType
+            , return_grid = TRUE
+            , overwrite = TRUE
+        )
+    }, error = function(e) {
+        NULL
+    })
+
+    setFilterPlotFn(qcPlot)
+
+    invisible(qcPlot)
+}
+
+reportLipidQcS4FinalizeSuccess <- function(
+    currentS4,
+    history,
+    output,
+    finalizeResultsOutputName = "finalize_results",
+    buildResultsTextFn = buildLipidQcS4FinalizeResultsText,
+    renderTextFn = shiny::renderText,
+    logInfoFn = logger::log_info,
+    showNotificationFn = shiny::showNotification
+) {
+    resultText <- buildResultsTextFn(
+        currentS4 = currentS4
+        , history = history
+    )
+
+    output[[finalizeResultsOutputName]] <- renderTextFn(resultText)
+
+    logInfoFn("Lipidomics QC finalized successfully")
+    showNotificationFn(
+        "QC complete! Proceed to Normalization."
+        , type = "message"
+        , duration = 5
+    )
+
+    invisible(resultText)
+}
+
+reportLipidQcS4FinalizeError <- function(
+    error,
+    messagePrefix = "Error finalizing QC:",
+    pasteFn = paste,
+    logErrorFn = logger::log_error,
+    showNotificationFn = shiny::showNotification,
+    notificationType = "error"
+) {
+    messageText <- pasteFn(messagePrefix, error$message)
+
+    logErrorFn(messageText)
+    showNotificationFn(messageText, type = notificationType)
+
+    invisible(messageText)
+}
+
+runLipidQcS4FinalizeWorkflow <- function(
+    workflowData,
+    omicType,
+    filterPlot,
+    output,
+    getFinalizeStateFn = getLipidQcS4FinalizeState,
+    validateFinalizeStateFn = validateLipidQcS4FinalizeState,
+    saveCompletedStateFn = saveLipidQcS4CompletedState,
+    updateTrackingPlotFn = updateLipidQcS4TrackingPlot,
+    completeTabStatusFn = completeLipidQcS4TabStatus,
+    getFinalizeHistoryFn = getLipidQcS4FinalizeHistory,
+    reportFinalizeSuccessFn = reportLipidQcS4FinalizeSuccess,
+    reportFinalizeErrorFn = reportLipidQcS4FinalizeError
+) {
+    tryCatch({
+        currentS4 <- getFinalizeStateFn(
+            stateManager = workflowData$state_manager
+        )
+        currentS4 <- validateFinalizeStateFn(currentS4 = currentS4)
+
+        saveCompletedStateFn(
+            stateManager = workflowData$state_manager
+            , currentS4 = currentS4
+            , configObject = workflowData$config_list
+        )
+
+        updateTrackingPlotFn(
+            currentS4 = currentS4
+            , omicType = omicType
+            , setFilterPlotFn = filterPlot
+        )
+
+        completeTabStatusFn(workflowData = workflowData)
+
+        history <- getFinalizeHistoryFn(
+            stateManager = workflowData$state_manager
+        )
+
+        reportFinalizeSuccessFn(
+            currentS4 = currentS4
+            , history = history
+            , output = output
+        )
+    }, error = function(e) {
+        reportFinalizeErrorFn(error = e)
+    })
+}
+
 #' @rdname mod_lipid_qc_s4
 #' @export
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification renderText renderUI observe tags renderPlot
@@ -332,91 +583,13 @@ mod_lipid_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
         # Finalize QC
         shiny::observeEvent(input$finalize_qc, {
             shiny::req(workflow_data$state_manager)
-            
-            tryCatch({
-                current_s4 <- workflow_data$state_manager$getState()
-                shiny::req(current_s4)
-                
-                if (!inherits(current_s4, "LipidomicsAssayData")) {
-                    stop("Current state is not a LipidomicsAssayData object")
-                }
-                
-                # Save final QC state
-                workflow_data$state_manager$saveState(
-                    state_name = "lipid_qc_complete"
-                    , s4_data_object = current_s4
-                    , config_object = workflow_data$config_list
-                    , description = "QC processing complete - ready for normalization"
-                )
 
-                # Update QC tracking visualization
-
-                qc_plot <- tryCatch({
-                    result <- updateLipidFiltering(
-                        theObject = current_s4
-                        , step_name = "4_QC_Complete"
-                        , omics_type = omic_type
-                        , return_grid = TRUE
-                        , overwrite = TRUE
-                    )
-                    if (!is.null(result)) {
-                    }
-                    result
-                }, error = function(e) {
-                    NULL
-                })
-
-                filter_plot(qc_plot)
-
-                # Update tab status - must replace entire list to trigger reactivity
-                updated_status <- workflow_data$tab_status
-                updated_status$quality_control <- "complete"
-                workflow_data$tab_status <- updated_status
-                
-                # Generate summary
-                assay_list <- current_s4@lipid_data
-                total_lipids <- sum(sapply(assay_list, function(a) {
-                    if (current_s4@lipid_id_column %in% names(a)) {
-                        length(unique(a[[current_s4@lipid_id_column]]))
-                    } else {
-                        nrow(a)
-                    }
-                }))
-                
-                history <- workflow_data$state_manager$getHistory()
-                
-                result_text <- paste(
-                    "QC Finalization Complete"
-                    , "========================"
-                    , ""
-                    , sprintf("Total lipids retained: %d", total_lipids)
-                    , sprintf("Number of assays: %d", length(assay_list))
-                    , sprintf("Processing steps completed: %d", length(history))
-                    , ""
-                    , "Processing History:"
-                    , paste(sprintf("  %d. %s", seq_along(history), history), collapse = "\n")
-                    , ""
-                    , "State saved as: 'lipid_qc_complete'"
-                    , ""
-                    , "You can now proceed to the Normalization tab."
-                    , sep = "\n"
-                )
-                
-                output$finalize_results <- shiny::renderText(result_text)
-                
-                logger::log_info("Lipidomics QC finalized successfully")
-                
-                shiny::showNotification(
-                    "QC complete! Proceed to Normalization."
-                    , type = "message"
-                    , duration = 5
-                )
-                
-            }, error = function(e) {
-                msg <- paste("Error finalizing QC:", e$message)
-                logger::log_error(msg)
-                shiny::showNotification(msg, type = "error")
-            })
+            runLipidQcS4FinalizeWorkflow(
+                workflowData = workflow_data
+                , omicType = omic_type
+                , filterPlot = filter_plot
+                , output = output
+            )
         })
 
         # Render QC progress plot

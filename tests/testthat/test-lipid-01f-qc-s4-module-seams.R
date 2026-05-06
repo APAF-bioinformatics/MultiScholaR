@@ -122,7 +122,7 @@ test_that("registerLipidQcS4DataSummaryOutput keeps the builder handoff stable",
     current_s4 <- methods::new(
         "LipidomicsAssayData",
         lipid_data = list(),
-        design_matrix = data.frame(),
+        design_matrix = data.frame(sample = "SampleA", condition = "Control"),
         group_id = "condition",
         lipid_id_column = "lipid_id",
         sample_id = "sample"
@@ -173,7 +173,11 @@ test_that("buildLipidQcS4AssayStatsTable keeps the assay-stats shell stable", {
                 stringsAsFactors = FALSE
             )
         ),
-        design_matrix = data.frame(),
+        design_matrix = data.frame(
+            sample = c("SampleA", "SampleB"),
+            condition = c("Control", "Treatment"),
+            stringsAsFactors = FALSE
+        ),
         group_id = "condition",
         lipid_id_column = "lipid_id",
         sample_id = "sample"
@@ -212,7 +216,7 @@ test_that("registerLipidQcS4AssayStatsOutput keeps the builder handoff stable", 
     current_s4 <- methods::new(
         "LipidomicsAssayData",
         lipid_data = list(),
-        design_matrix = data.frame(),
+        design_matrix = data.frame(sample = "SampleA", condition = "Control"),
         group_id = "condition",
         lipid_id_column = "lipid_id",
         sample_id = "sample"

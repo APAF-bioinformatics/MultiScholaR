@@ -906,3 +906,45 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic lipidomics --module design --runtime unit-contract --reporter summary
 ```
+
+## Lipidomics QC Matrix
+
+MCI-020 adds `tests/testthat/test-module-ci-lipid-qc.R` plus
+`tests/testthat/helper-module-ci-lipid-qc.R`. This suite targets the lipidomics
+QC boundary after design and before normalization, where intensity filtering,
+duplicate resolution, ITSD evaluation, plots, and final QC state must stay
+multi-assay safe.
+
+Coverage includes:
+
+- Intensity filtering for percentile/proportion thresholds, zeros, missing
+  values, non-finite values, all-pass/all-fail branches, and per-assay feature
+  count preservation.
+- Duplicate handling for repeated lipid IDs, repeated lipid annotations/classes,
+  tied intensities, conflicting intensities, and state-save statistics from the
+  duplicate-resolution module helper.
+- ITSD metrics for global regexes, assay-specific matching via annotation
+  columns, absent standards, fallback pattern matching, multiple matches, and
+  invalid regex input.
+- S4 plotting smoke for PCA, Pearson, RLE, density, small-n CV fallbacks,
+  constant-feature Pearson fallbacks, and missing-group rejection.
+- Finalization state for valid `LipidomicsAssayData`, invalid current state,
+  empty design, empty assay payloads, `lipid_qc_complete` persistence, QC status
+  completion, and normalization unlock.
+- Static browser smoke for the lipid QC orchestrator, intensity, duplicates,
+  ITSD, and finalization tabs so control IDs remain wired for Shiny/browser
+  tests.
+
+The QC matrix exposed two production hardening changes:
+
+- Lipid intensity filtering now rejects non-finite sample intensities before
+  threshold calculations, while still allowing ordinary missing values.
+- Lipid QC finalization now validates assay payloads, design rows, and
+  assay/design alignment before saving `lipid_qc_complete`; successful
+  finalization also unlocks the normalization tab when it was disabled/locked.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic lipidomics --module qc --runtime unit-contract --reporter summary
+```

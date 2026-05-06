@@ -211,6 +211,11 @@ tests_for_selection <- function(scenarios) {
     }, logical(1)))) {
       tests <- c(tests, "module-ci-metab-qc")
     }
+    if (any(vapply(scenarios, function(scenario) {
+      identical(scenario$module, "qc") && identical(scenario$omic, "lipidomics")
+    }, logical(1)))) {
+      tests <- c(tests, "module-ci-lipid-qc")
+    }
   }
   if ("normalization" %in% modules) {
     if (any(vapply(scenarios, function(scenario) {

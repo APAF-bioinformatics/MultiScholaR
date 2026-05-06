@@ -193,6 +193,11 @@ lipidIntensityFilteringHelper <- function(
         return(assay_table)
     }
 
+    sample_values <- as.matrix(assay_table[, sample_cols, drop = FALSE])
+    if (any(is.infinite(sample_values) | is.nan(sample_values))) {
+        stop("Lipid assay contains non-finite sample intensity values.")
+    }
+
     # Calculate the number of samples below threshold for each lipid
     lipids_below_threshold <- assay_table |>
         # Ensure id column is character for safe rowwise operations if needed

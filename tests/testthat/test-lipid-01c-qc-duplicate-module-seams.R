@@ -331,7 +331,10 @@ test_that("handleLipidDuplicateDetection keeps the detect-summary workflow stabl
     current_s4 <- methods::new(
         "LipidomicsAssayData",
         lipid_data = list(),
-        lipid_id_column = "lipid_id"
+        lipid_id_column = "lipid_id",
+        design_matrix = data.frame(Sample_ID = "sample_a", group = "A"),
+        sample_id = "Sample_ID",
+        group_id = "group"
     )
     info_messages <- character()
 
@@ -371,7 +374,10 @@ test_that("handleLipidDuplicateDetection keeps the zero-duplicate notification s
     current_s4 <- methods::new(
         "LipidomicsAssayData",
         lipid_data = list(),
-        lipid_id_column = "lipid_id"
+        lipid_id_column = "lipid_id",
+        design_matrix = data.frame(Sample_ID = "sample_a", group = "A"),
+        sample_id = "Sample_ID",
+        group_id = "group"
     )
 
     result <- handleLipidDuplicateDetection(
@@ -555,7 +561,10 @@ test_that("handleLipidDuplicateResolution keeps the resolve-save-summary workflo
                 stringsAsFactors = FALSE
             )
         ),
-        lipid_id_column = "lipid_id"
+        lipid_id_column = "lipid_id",
+        design_matrix = data.frame(Sample_ID = c("sample_a", "sample_b"), group = c("A", "B")),
+        sample_id = "Sample_ID",
+        group_id = "group"
     )
     saved_state <- NULL
     filtering_call <- NULL
@@ -629,7 +638,10 @@ test_that("handleLipidDuplicateResolution keeps the no-numeric fallback and QC-p
                 stringsAsFactors = FALSE
             )
         ),
-        lipid_id_column = "lipid_id"
+        lipid_id_column = "lipid_id",
+        design_matrix = data.frame(Sample_ID = "label", group = "A"),
+        sample_id = "Sample_ID",
+        group_id = "group"
     )
     saved_state <- NULL
     warn_messages <- character()
