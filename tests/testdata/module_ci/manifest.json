@@ -1102,6 +1102,81 @@
         }
       ],
       "required_tests": ["module-ci-manifest", "module-ci-lipid-summary"]
+    },
+    {
+      "scenario_id": "MCI-024.1-cross-module-integrity-sentinels",
+      "ticket_id": "MCI-024",
+      "item_id": "MCI-024.1",
+      "omic": "all",
+      "module_family": "cross_module_integrity",
+      "runtime": "unit-contract",
+      "ci_lane": "foundation",
+      "fixture": {
+        "path": "fixtures/foundation/sample_design.tsv",
+        "format": "tsv",
+        "role": "sentinel_seed"
+      },
+      "parameters": {
+        "sentinel_families": [
+          "sample_identity",
+          "feature_identity",
+          "assay_provenance",
+          "parameter_fidelity",
+          "shared_state_collision",
+          "artifact_schema"
+        ],
+        "omics": ["proteomics", "metabolomics", "lipidomics"],
+        "identity_policy": ["order_sensitive_samples", "declared_drops", "declared_renames"],
+        "feature_classes": ["proteins", "peptides", "metabolites", "lipids"],
+        "parameter_paths": [
+          "workflow_type",
+          "report_template",
+          "design_formula",
+          "normalization_method",
+          "ruv_mode",
+          "itsd_method",
+          "da_q_cutoff",
+          "enrichment_backend"
+        ],
+        "shared_state_names": ["project_dirs", "config_list", "selected_omic", "workflow_data"],
+        "artifact_types": ["tsv", "xlsx", "rds", "html"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "omic_count": 3,
+        "sentinel_count": 6,
+        "state_keys": [
+          "sample_digest",
+          "feature_digest",
+          "assay_digest",
+          "parameter_paths",
+          "shared_state_snapshot",
+          "artifact_schema"
+        ],
+        "sub_steps": [
+          "sample_identity_validated",
+          "feature_identity_validated",
+          "assay_provenance_validated",
+          "parameter_fidelity_validated",
+          "shared_state_collision_validated",
+          "artifact_schema_validated"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "module-ci-sentinel-digest.json",
+          "schema": "module_ci_sentinel_digest"
+        },
+        {
+          "path": "module-ci-sentinel-scorecard.json",
+          "schema": "module_ci_sentinel_scorecard"
+        },
+        {
+          "path": "module-ci-sentinel-artifact-schema.json",
+          "schema": "module_ci_artifact_schema"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-sentinels", "module-ci-fixture-integrity"]
     }
   ]
 }

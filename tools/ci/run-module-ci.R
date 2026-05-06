@@ -16,7 +16,7 @@ usage <- function() {
       "",
       "Options:",
       "  --omic <all|proteomics|metabolomics|lipidomics>",
-      "  --module <foundation|fixtures|import|design|qc|qc_peptide|qc_protein|normalization|differential_abundance|enrichment|summary_report|browser|e2e>",
+      "  --module <foundation|fixtures|import|design|qc|qc_peptide|qc_protein|normalization|differential_abundance|enrichment|summary_report|cross_module_integrity|browser|e2e>",
       "  --runtime <unit-contract|module-browser|module-artifact|workflow-e2e|release-full>",
       "  --scenario <scenario_id_or_pack_id>",
       "  --reporter <testthat_reporter>",
@@ -277,6 +277,9 @@ tests_for_selection <- function(scenarios) {
   }
   if ("fixtures" %in% modules) {
     tests <- c(tests, "module-ci-fixture-integrity", "module-ci-oracles")
+  }
+  if ("cross_module_integrity" %in% modules) {
+    tests <- c(tests, "module-ci-sentinels", "module-ci-fixture-integrity")
   }
 
   unique(tests)

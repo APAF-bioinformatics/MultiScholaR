@@ -1105,3 +1105,43 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic lipidomics --module summary_report --runtime unit-contract --reporter summary
 ```
+
+## Cross-Module Integrity Sentinels
+
+MCI-024 adds `tests/testthat/test-module-ci-sentinels.R` plus
+`tests/testthat/helper-module-ci-sentinels.R`. This suite provides reusable
+sentinels for every omic/module matrix so per-module-valid outputs cannot drift
+silently before the next module consumes them.
+
+Coverage includes:
+
+- Sample identity digests that preserve order by default and fail unexplained
+  drops, additions, reorders, or renames. Legitimate transformations must be
+  declared through `expected_dropped` or named `expected_renamed` policies.
+- Feature identity sentinels for proteomics, metabolomics, and lipidomics
+  fixture packs, with reusable extraction from tables and S4 objects. Expected
+  duplicate-resolution drops or ID renames can be declared explicitly.
+- Assay provenance sentinels for metabolomics and lipidomics S4 objects,
+  session exports, DA tables, and report parameter payloads, ensuring assay
+  names remain aligned through multi-assay workflows.
+- Parameter fidelity sentinels that compare live workflow state with serialized
+  payloads for workflow type, report template, design formula, normalization,
+  RUV, ITSD, DA thresholds, and enrichment backend choices.
+- Shared-state collision sentinels for one-session multi-omic runs, including
+  `project_dirs`, `config_list`, selected omic state, and path isolation across
+  proteomics, metabolomics, and lipidomics.
+- Artifact schema sentinels for TSV, XLSX, RDS, and HTML/report files. These
+  validate non-empty outputs, required columns, row counts, RDS classes, and
+  report text/template fingerprints.
+
+The sentinel layer is additive: it lives in test helpers and does not require
+production modules to expose new user-facing APIs. Future MCI tickets can adopt
+the helpers at each module boundary by creating a digest at module entry,
+asserting it at module exit, and declaring expected drops/renames in oracle
+sidecars when a transformation is intentional.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic all --module cross_module_integrity --runtime unit-contract --reporter summary
+```
