@@ -1177,6 +1177,70 @@
         }
       ],
       "required_tests": ["module-ci-manifest", "module-ci-sentinels", "module-ci-fixture-integrity"]
+    },
+    {
+      "scenario_id": "MCI-025.1-ci-release-gate-enforcement",
+      "ticket_id": "MCI-025",
+      "item_id": "MCI-025.1",
+      "omic": "all",
+      "module_family": "ci_release_gate",
+      "runtime": "unit-contract",
+      "ci_lane": "release",
+      "fixture": {
+        "path": "fixtures/foundation/sample_design.tsv",
+        "format": "tsv",
+        "role": "ci_gate_seed"
+      },
+      "parameters": {
+        "push_pr_unit_jobs": ["foundation", "cross-module-integrity", "proteomics", "metabolomics", "lipidomics"],
+        "browser_smoke_jobs": ["harness", "proteomics-import-module", "metabolomics-import-module", "lipidomics-import-module"],
+        "representative_e2e_jobs": ["proteomics-dia", "metabolomics-lc-gc", "lipidomics-canonical"],
+        "full_gate_jobs": [
+          "all-module-unit-contracts",
+          "all-current-e2e-workflows",
+          "alternate-launch-browser-smoke",
+          "report-export-fidelity",
+          "cross-omic-coexistence"
+        ],
+        "release_triggers": ["release/**", "v*", "workflow_dispatch:release", "workflow_dispatch:all"],
+        "ignored_paths_not_uploaded": ["renv/", ".Rprofile", ".ticket-config.json", "dev/", "Workbooks/"]
+      },
+      "expected_state": {
+        "required_push_jobs": 5,
+        "browser_smoke_jobs": 4,
+        "representative_e2e_jobs": 3,
+        "full_gate_jobs": 5,
+        "release_gate_job": "release-candidate-gate",
+        "scorecard_fields": [
+          "scenario_id",
+          "omic",
+          "module",
+          "runtime",
+          "status",
+          "result",
+          "ci_lane",
+          "artifact_paths"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "module-ci-run-manifest.json",
+          "schema": "module_ci_run_manifest"
+        },
+        {
+          "path": "module-ci-scorecard.json",
+          "schema": "module_ci_scorecard"
+        },
+        {
+          "path": "module-ci-scorecard.md",
+          "schema": "module_ci_scorecard_markdown"
+        },
+        {
+          "path": "release-gate-summary.md",
+          "schema": "module_ci_release_gate_summary"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-release-gate"]
     }
   ]
 }

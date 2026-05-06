@@ -1145,3 +1145,81 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic all --module cross_module_integrity --runtime unit-contract --reporter summary
 ```
+
+## CI Enforcement And Release Gates
+
+MCI-025 upgrades `.github/workflows/module-ci.yml` from an entrypoint smoke
+workflow into the enforced module-CI/release-gate corpus. The workflow remains
+additive until branch protection is configured, but the job names are stable so
+they can be made required checks when the branch policy is enabled.
+
+Push and pull-request checks:
+
+- `module-ci unit (foundation)` runs manifest/harness foundation checks.
+- `module-ci unit (cross-module-integrity)` runs the MCI-024 corruption
+  sentinels and fixture-integrity bridge.
+- `module-ci unit (proteomics)` runs all proteomics unit-contract module
+  scenarios: import, design, peptide QC, protein QC, normalization/RUV, DA,
+  enrichment, and summary/report.
+- `module-ci unit (metabolomics)` runs all metabolomics unit-contract module
+  scenarios: import, design, QC, normalization/RUV/ITSD, DA, and
+  summary/report.
+- `module-ci unit (lipidomics)` runs all lipidomics unit-contract module
+  scenarios: import, design, QC, normalization/RUV/ITSD, DA, and
+  summary/report.
+- `module-ci browser smoke (...)` runs the shared browser harness plus one
+  representative module surface for each current omic.
+- `representative E2E (...)` runs one full GUI workflow per omic:
+  proteomics DIA, metabolomics LC/GC, and lipidomics canonical LCMS.
+- `E2E fixture and harness smoke` keeps the manifest, fixture, and browser
+  harness contracts hot on every push/PR.
+
+Nightly and release checks:
+
+- `full gate (all-module-unit-contracts)` runs every unit-contract module-CI
+  scenario in the manifest.
+- `full gate (all-current-e2e-workflows)` runs every current `e2e-*` workflow.
+- `full gate (alternate-launch-browser-smoke)` covers `run_app`, app-dir, and
+  test-mode launch surfaces.
+- `full gate (report-export-fidelity)` checks report/export smoke paths and
+  enrichment report fidelity.
+- `full gate (cross-omic-coexistence)` runs cross-omic E2E/shared-state checks
+  and the MCI-024 sentinels together.
+- `release candidate promotion gate` runs for `release/**` branches, `v*` tags,
+  and manual `gate=release|all` dispatches. It fails unless the full gate matrix
+  succeeds and writes a promotion summary artifact.
+
+Artifacts are deliberately limited to CI output directories:
+
+- module-CI artifacts under `tests/testthat/_module_ci_artifacts/**`;
+- E2E/browser artifacts under `tests/testthat/_e2e_artifacts/**`;
+- `module-ci-run-manifest.json`;
+- `module-ci-scorecard.json`;
+- `module-ci-scorecard.md`;
+- `release-gate-summary.md`.
+
+The workflow does not upload root-level ignored or local-development paths such
+as `renv/`, `renv.lock`, `.Rprofile`, `.ticket-config.json`, `dev/`, or
+`Workbooks/`.
+
+Scorecards now expose both machine-readable and human-readable triage fields:
+scenario ID, ticket ID, omic, module, runtime, CI lane, status/result, failure
+reason, artifact count, and artifact paths. The Markdown scorecard is appended
+to the GitHub Actions step summary for quick triage; the JSON scorecard remains
+the stable machine artifact.
+
+Local release-gate reproduction:
+
+```bash
+Rscript tools/ci/run-module-ci.R --runtime unit-contract --reporter summary
+Rscript tools/ci/run-module-ci.R --omic proteomics --runtime unit-contract --reporter summary
+Rscript tools/ci/run-module-ci.R --omic metabolomics --runtime unit-contract --reporter summary
+Rscript tools/ci/run-module-ci.R --omic lipidomics --runtime unit-contract --reporter summary
+Rscript tools/ci/module-ci-scorecard.R --artifact-dir tests/testthat/_module_ci_artifacts
+```
+
+Failure triage should start with the scorecard row, then the run manifest, then
+the uploaded artifact directory named by that row. Promotion to a final release
+tag should wait for the release-candidate gate to pass on the release branch or
+manual release dispatch; any follow-up fix can be committed normally and the
+gate rerun before tagging.

@@ -176,6 +176,19 @@ test_that("module CI manifest filters scenarios by omic, module, runtime, and ti
     "MCI-024.1-cross-module-integrity-sentinels"
   )
   expect_true("module-ci-sentinels" %in% cross_module[[1]]$required_tests)
+
+  ci_release_gate <- module_ci_scenarios(
+    manifest,
+    omic = "all",
+    module_family = "ci_release_gate",
+    runtime = "unit-contract"
+  )
+  expect_identical(
+    module_ci_scenario_ids(ci_release_gate),
+    "MCI-025.1-ci-release-gate-enforcement"
+  )
+  expect_true("module-ci-release-gate" %in% ci_release_gate[[1]]$required_tests)
+  expect_identical(ci_release_gate[[1]]$ci_lane, "release")
 })
 
 test_that("module CI manifest rejects duplicate scenario IDs and missing fixtures", {

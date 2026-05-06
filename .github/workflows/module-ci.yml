@@ -13,6 +13,12 @@ on:
         description: "Gate to run: push, nightly, release, or all"
         required: false
         default: "push"
+        type: choice
+        options:
+          - push
+          - nightly
+          - release
+          - all
   schedule:
     - cron: "17 3 * * *"
 
@@ -26,7 +32,11 @@ env:
 jobs:
   module-ci-unit:
     name: module-ci unit (${{ matrix.name }})
-    if: github.event_name != 'schedule'
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' &&
+        (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all'))
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -36,22 +46,27 @@ jobs:
             omic: all
             module: foundation
             runtime: unit-contract
-            artifact_dir: tests/testthat/_module_ci_artifacts/foundation
+            artifact_dir: tests/testthat/_module_ci_artifacts/push/foundation
+          - name: cross-module-integrity
+            omic: all
+            module: cross_module_integrity
+            runtime: unit-contract
+            artifact_dir: tests/testthat/_module_ci_artifacts/push/cross-module-integrity
           - name: proteomics
             omic: proteomics
-            module: fixtures
+            module: all
             runtime: unit-contract
-            artifact_dir: tests/testthat/_module_ci_artifacts/proteomics
+            artifact_dir: tests/testthat/_module_ci_artifacts/push/proteomics
           - name: metabolomics
             omic: metabolomics
-            module: fixtures
+            module: all
             runtime: unit-contract
-            artifact_dir: tests/testthat/_module_ci_artifacts/metabolomics
+            artifact_dir: tests/testthat/_module_ci_artifacts/push/metabolomics
           - name: lipidomics
             omic: lipidomics
-            module: fixtures
+            module: all
             runtime: unit-contract
-            artifact_dir: tests/testthat/_module_ci_artifacts/lipidomics
+            artifact_dir: tests/testthat/_module_ci_artifacts/push/lipidomics
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
@@ -61,7 +76,7 @@ jobs:
             any::pkgload
             any::testthat
             any::jsonlite
-      - name: Run module-CI subset
+      - name: Run module-CI unit-contract matrix
         run: >
           Rscript tools/ci/run-module-ci.R
           --omic ${{ matrix.omic }}
@@ -74,6 +89,12 @@ jobs:
         run: >
           Rscript tools/ci/module-ci-scorecard.R
           --artifact-dir ${{ matrix.artifact_dir }}
+      - name: Append scorecard summary
+        if: always()
+        run: |
+          if [ -f "${{ matrix.artifact_dir }}/module-ci-scorecard.md" ]; then
+            cat "${{ matrix.artifact_dir }}/module-ci-scorecard.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Upload module-CI artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -84,9 +105,33 @@ jobs:
             ${{ matrix.artifact_dir }}/**
 
   module-ci-browser-smoke:
-    name: module-ci browser smoke
-    if: github.event_name != 'schedule'
+    name: module-ci browser smoke (${{ matrix.name }})
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' &&
+        (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all'))
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: harness
+            filter: "^(module-ci-harness|e2e-browser-harness)$"
+            artifact_dir: tests/testthat/_module_ci_artifacts/browser-smoke/harness
+            e2e_artifact_dir: tests/testthat/_e2e_artifacts/browser-smoke/harness
+          - name: proteomics-import-module
+            filter: "^module-ci-prot-import$"
+            artifact_dir: tests/testthat/_module_ci_artifacts/browser-smoke/proteomics-import
+            e2e_artifact_dir: tests/testthat/_e2e_artifacts/browser-smoke/proteomics-import
+          - name: metabolomics-import-module
+            filter: "^module-ci-metab-import$"
+            artifact_dir: tests/testthat/_module_ci_artifacts/browser-smoke/metabolomics-import
+            e2e_artifact_dir: tests/testthat/_e2e_artifacts/browser-smoke/metabolomics-import
+          - name: lipidomics-import-module
+            filter: "^module-ci-lipid-import$"
+            artifact_dir: tests/testthat/_module_ci_artifacts/browser-smoke/lipidomics-import
+            e2e_artifact_dir: tests/testthat/_e2e_artifacts/browser-smoke/lipidomics-import
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
@@ -97,24 +142,80 @@ jobs:
             any::testthat
             any::jsonlite
             any::shinytest2
-      - name: Run browser harness smoke tests
+            any::chromote
+      - name: Run representative module browser smoke
+        env:
+          MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.e2e_artifact_dir }}
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
-          testthat::test_dir("tests/testthat", filter = "^(module-ci-harness|e2e-browser-harness)$", reporter = "summary")'
+          testthat::test_dir("tests/testthat", filter = "${{ matrix.filter }}", reporter = "summary")'
       - name: Upload browser smoke artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: module-ci-browser-smoke
+          name: module-ci-browser-smoke-${{ matrix.name }}
           retention-days: 14
           path: |
-            tests/testthat/_module_ci_artifacts/**
-            tests/testthat/_e2e_artifacts/**
+            ${{ matrix.artifact_dir }}/**
+            ${{ matrix.e2e_artifact_dir }}/**
 
-  e2e-smoke:
-    name: current E2E smoke
-    if: github.event_name != 'schedule'
+  e2e-representative:
+    name: representative E2E (${{ matrix.name }})
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' &&
+        (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all'))
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: proteomics-dia
+            filter: "^e2e-proteomics-dia$"
+            artifact_dir: tests/testthat/_e2e_artifacts/representative/proteomics-dia
+          - name: metabolomics-lc-gc
+            filter: "^e2e-metabolomics-lc-gc$"
+            artifact_dir: tests/testthat/_e2e_artifacts/representative/metabolomics-lc-gc
+          - name: lipidomics-canonical
+            filter: "^e2e-lipidomics-canonical$"
+            artifact_dir: tests/testthat/_e2e_artifacts/representative/lipidomics-canonical
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+            any::shinytest2
+            any::chromote
+      - name: Run representative full workflow E2E
+        env:
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
+        run: >
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true");
+          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
+          testthat::test_dir("tests/testthat", filter = "${{ matrix.filter }}", reporter = "summary")'
+      - name: Upload representative E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: representative-e2e-${{ matrix.name }}
+          retention-days: 14
+          path: |
+            ${{ matrix.artifact_dir }}/**
+
+  e2e-fixture-smoke:
+    name: E2E fixture and harness smoke
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' &&
+        (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -125,7 +226,9 @@ jobs:
             any::pkgload
             any::testthat
             any::jsonlite
-      - name: Run stable E2E smoke tests
+      - name: Run stable E2E fixture/harness checks
+        env:
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: tests/testthat/_e2e_artifacts/fixture-smoke
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
@@ -134,15 +237,21 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-smoke
+          name: e2e-fixture-smoke
           retention-days: 14
           path: |
-            tests/testthat/_e2e_artifacts/**
-            tests/testthat/_module_ci_artifacts/**
+            tests/testthat/_e2e_artifacts/fixture-smoke/**
 
   full-gates:
     name: full gate (${{ matrix.name }})
-    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'schedule' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      startsWith(github.ref, 'refs/heads/release/') ||
+      (github.event_name == 'workflow_dispatch' &&
+        (github.event.inputs.gate == 'nightly' ||
+          github.event.inputs.gate == 'release' ||
+          github.event.inputs.gate == 'all'))
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -150,16 +259,19 @@ jobs:
         include:
           - name: all-module-unit-contracts
             kind: module-ci
-            artifact_dir: tests/testthat/_module_ci_artifacts/nightly-unit
+            artifact_dir: tests/testthat/_module_ci_artifacts/full/unit-contracts
           - name: all-current-e2e-workflows
             kind: e2e
-            artifact_dir: tests/testthat/_module_ci_artifacts/nightly-e2e
+            artifact_dir: tests/testthat/_e2e_artifacts/full/current-e2e
           - name: alternate-launch-browser-smoke
             kind: browser
-            artifact_dir: tests/testthat/_module_ci_artifacts/nightly-browser
+            artifact_dir: tests/testthat/_e2e_artifacts/full/alternate-launch
           - name: report-export-fidelity
             kind: report
-            artifact_dir: tests/testthat/_module_ci_artifacts/nightly-report
+            artifact_dir: tests/testthat/_e2e_artifacts/full/report-export
+          - name: cross-omic-coexistence
+            kind: cross-omic
+            artifact_dir: tests/testthat/_e2e_artifacts/full/cross-omic
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
@@ -170,6 +282,7 @@ jobs:
             any::testthat
             any::jsonlite
             any::shinytest2
+            any::chromote
       - name: Run all unit-contract module scenarios
         if: matrix.kind == 'module-ci'
         run: >
@@ -179,27 +292,47 @@ jobs:
           --artifact-dir ${{ matrix.artifact_dir }}
       - name: Run all current E2E workflows
         if: matrix.kind == 'e2e'
+        env:
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
         run: >
-          Rscript -e 'Sys.setenv(NOT_CRAN = "true", MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR = "${{ matrix.artifact_dir }}");
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
           testthat::test_dir("tests/testthat", filter = "^e2e-", reporter = "summary")'
       - name: Run alternate launch/browser smoke
         if: matrix.kind == 'browser'
+        env:
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
         run: >
-          Rscript -e 'Sys.setenv(NOT_CRAN = "true", MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR = "${{ matrix.artifact_dir }}");
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
           testthat::test_dir("tests/testthat", filter = "^(launch-test-mode|e2e-test-mode-integration|e2e-browser-harness)$", reporter = "summary")'
       - name: Run report/export fidelity smoke
         if: matrix.kind == 'report'
+        env:
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
         run: >
-          Rscript -e 'Sys.setenv(NOT_CRAN = "true", MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR = "${{ matrix.artifact_dir }}");
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
           testthat::test_dir("tests/testthat", filter = "^(general-filemgmt-report-helpers-shared|general-filemgmt-export-contracts|e2e-proteomics-enrichment)$", reporter = "summary")'
+      - name: Run cross-omic coexistence gate
+        if: matrix.kind == 'cross-omic'
+        env:
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
+        run: >
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true");
+          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
+          testthat::test_dir("tests/testthat", filter = "^(e2e-cross-omic|workflow-server-shared|module-ci-sentinels)$", reporter = "summary")'
       - name: Build scorecard
         if: always() && matrix.kind == 'module-ci'
         run: >
           Rscript tools/ci/module-ci-scorecard.R
           --artifact-dir ${{ matrix.artifact_dir }}
+      - name: Append scorecard summary
+        if: always() && matrix.kind == 'module-ci'
+        run: |
+          if [ -f "${{ matrix.artifact_dir }}/module-ci-scorecard.md" ]; then
+            cat "${{ matrix.artifact_dir }}/module-ci-scorecard.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Upload full-gate artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -208,5 +341,39 @@ jobs:
           retention-days: 30
           path: |
             ${{ matrix.artifact_dir }}/**
-            tests/testthat/_module_ci_artifacts/**
-            tests/testthat/_e2e_artifacts/**
+            tests/testthat/_module_ci_artifacts/full/**
+            tests/testthat/_e2e_artifacts/full/**
+
+  release-candidate-gate:
+    name: release candidate promotion gate
+    needs:
+      - full-gates
+    if: >-
+      always() &&
+      (startsWith(github.ref, 'refs/tags/v') ||
+        startsWith(github.ref, 'refs/heads/release/') ||
+        (github.event_name == 'workflow_dispatch' &&
+          (github.event.inputs.gate == 'release' || github.event.inputs.gate == 'all')))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate release gate
+        run: |
+          mkdir -p tests/testthat/_module_ci_artifacts/release-gate
+          {
+            echo "# Release Candidate Gate"
+            echo ""
+            echo "- Ref: \`${{ github.ref }}\`"
+            echo "- Event: \`${{ github.event_name }}\`"
+            echo "- Full gates: \`${{ needs.full-gates.result }}\`"
+            echo "- Policy: final release tagging is blocked unless full gates pass."
+          } > tests/testthat/_module_ci_artifacts/release-gate/release-gate-summary.md
+          cat tests/testthat/_module_ci_artifacts/release-gate/release-gate-summary.md >> "$GITHUB_STEP_SUMMARY"
+          test "${{ needs.full-gates.result }}" = "success"
+      - name: Upload release gate summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-gate
+          retention-days: 30
+          path: |
+            tests/testthat/_module_ci_artifacts/release-gate/**

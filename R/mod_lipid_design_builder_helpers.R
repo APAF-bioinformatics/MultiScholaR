@@ -28,7 +28,8 @@ runLipidDesignBuilderObserverShell <- function(
     results,
     workflowData,
     experimentPaths,
-    qcTrigger = NULL
+    qcTrigger = NULL,
+    createLipidomicsAssayDataFn = createLipidomicsAssayData
 ) {
     shiny::showModal(shiny::modalDialog(
         title = "Processing Design Matrix"
@@ -137,7 +138,7 @@ runLipidDesignBuilderObserverShell <- function(
             })
         }
 
-        s4_obj <- createLipidomicsAssayData(
+        s4_obj <- createLipidomicsAssayDataFn(
             lipid_data = results$data_cln
             , design_matrix = results$design_matrix
             , lipid_id_column = col_map$lipid_id_col
@@ -200,7 +201,8 @@ registerLipidDesignBuilderResultsObserver <- function(
     qcTrigger = NULL,
     observeEventFn = shiny::observeEvent,
     reqFn = shiny::req,
-    runBuilderObserverShell = runLipidDesignBuilderObserverShell
+    runBuilderObserverShell = runLipidDesignBuilderObserverShell,
+    createLipidomicsAssayDataFn = createLipidomicsAssayData
 ) {
     observeEventFn(builderResultsRv(), {
         results <- builderResultsRv()
@@ -210,7 +212,8 @@ registerLipidDesignBuilderResultsObserver <- function(
             results = results,
             workflowData = workflowData,
             experimentPaths = experimentPaths,
-            qcTrigger = qcTrigger
+            qcTrigger = qcTrigger,
+            createLipidomicsAssayDataFn = createLipidomicsAssayDataFn
         )
     }, ignoreNULL = TRUE)
 }

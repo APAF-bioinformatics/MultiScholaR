@@ -180,17 +180,13 @@ test_that("MCI-019.5 design artifacts preserve expected lipid filenames and seri
   s4_token <- structure(list(kind = "lipid-s4"), class = "mock_lipid_s4")
   qc_value <- FALSE
 
-  local_mocked_bindings(
-    createLipidomicsAssayData = function(...) s4_token,
-    .env = asNamespace("MultiScholaR")
-  )
-
   shiny::withReactiveDomain(shiny::MockShinySession$new(), {
     runLipidDesignBuilderObserverShell(
       results = payload,
       workflowData = workflow,
       experimentPaths = paths,
-      qcTrigger = function(value) qc_value <<- value
+      qcTrigger = function(value) qc_value <<- value,
+      createLipidomicsAssayDataFn = function(...) s4_token
     )
   })
 
@@ -274,16 +270,13 @@ test_that("MCI-019.6 DA preflight catches lipid formula, contrast, and assay/des
   paths <- module_ci_lipid_design_paths()
   invalid_results <- payload
   invalid_results$data_cln <- drifted_payload$data_cln
-  local_mocked_bindings(
-    createLipidomicsAssayData = function(...) stop("invalid design should not create S4 state"),
-    .env = asNamespace("MultiScholaR")
-  )
 
   shiny::withReactiveDomain(shiny::MockShinySession$new(), {
     expect_null(runLipidDesignBuilderObserverShell(
       results = invalid_results,
       workflowData = invalid_workflow,
-      experimentPaths = paths
+      experimentPaths = paths,
+      createLipidomicsAssayDataFn = function(...) stop("invalid design should not create S4 state")
     ))
   })
   expect_null(invalid_workflow$design_matrix)

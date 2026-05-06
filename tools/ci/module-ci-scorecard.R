@@ -97,6 +97,7 @@ scenario_failure_reason <- function(scenario, status, run_failure_reason) {
 scorecard_rows <- function(manifest) {
   lapply(manifest$scenarios, function(scenario) {
     status <- scenario_status(scenario, manifest$result)
+    artifact_paths <- unique(c(as_chr(scenario$artifacts), as_chr(scenario$run_artifacts)))
     list(
       scenario_id = scenario$scenario_id,
       ticket_id = scenario$ticket_id,
@@ -104,8 +105,11 @@ scorecard_rows <- function(manifest) {
       module = scenario$module,
       runtime = scenario$runtime,
       ci_lane = scenario$ci_lane,
+      status = status,
       result = status,
-      artifacts = as.list(unique(c(as_chr(scenario$artifacts), as_chr(scenario$run_artifacts)))),
+      artifacts = as.list(artifact_paths),
+      artifact_paths = as.list(artifact_paths),
+      artifact_count = length(artifact_paths),
       failure_reason = scenario_failure_reason(scenario, status, manifest$failure_reason)
     )
   })
@@ -136,6 +140,14 @@ markdown_escape <- function(x) {
   gsub("\n", " ", x, fixed = TRUE)
 }
 
+markdown_path_list <- function(x) {
+  paths <- as_chr(x)
+  if (length(paths) == 0L) {
+    return("")
+  }
+  paste(markdown_escape(paths), collapse = "<br>")
+}
+
 write_markdown <- function(path, scorecard) {
   rows <- scorecard$scenarios
   lines <- c(
@@ -148,18 +160,20 @@ write_markdown <- function(path, scorecard) {
     sprintf("- Skipped: `%s`", scorecard$counts$skipped),
     sprintf("- Unknown: `%s`", scorecard$counts$unknown),
     "",
-    "| Scenario | Omic | Module | Runtime | Result | Failure reason |",
-    "| --- | --- | --- | --- | --- | --- |"
+    "| Scenario | Omic | Module | Runtime | CI lane | Status | Artifact paths | Failure reason |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- |"
   )
 
   for (row in rows) {
     lines <- c(lines, sprintf(
-      "| `%s` | `%s` | `%s` | `%s` | `%s` | %s |",
+      "| `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | %s | %s |",
       markdown_escape(row$scenario_id),
       markdown_escape(row$omic),
       markdown_escape(row$module),
       markdown_escape(row$runtime),
-      markdown_escape(row$result),
+      markdown_escape(row$ci_lane),
+      markdown_escape(row$status),
+      markdown_path_list(row$artifact_paths),
       markdown_escape(row$failure_reason)
     ))
   }
