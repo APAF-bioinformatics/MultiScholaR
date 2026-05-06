@@ -12,62 +12,44 @@ expect_workflow_contains <- function(text, needle) {
   expect_true(grepl(needle, text, fixed = TRUE), info = sprintf("Missing workflow text: %s", needle))
 }
 
-test_that("MCI-025 push and pull-request jobs enforce all unit-contract module matrices", {
+test_that("MCI-025/MCI-031 push and pull-request jobs enforce impact-routed module matrices", {
   workflow <- module_ci_workflow_text()
 
   expect_workflow_contains(workflow, "push:")
   expect_workflow_contains(workflow, "pull_request:")
   expect_workflow_contains(workflow, "workflow_dispatch:")
   expect_workflow_contains(workflow, "schedule:")
-  expect_workflow_contains(workflow, "module-ci-unit:")
+  expect_workflow_contains(workflow, "detect-impact:")
+  expect_workflow_contains(workflow, "module-ci-impacted:")
   expect_workflow_contains(workflow, "github.event_name == 'push'")
   expect_workflow_contains(workflow, "github.event_name == 'pull_request'")
 
-  expected_unit_jobs <- list(
-    foundation = c("name: foundation", "omic: all", "module: foundation"),
-    cross_module = c("name: cross-module-integrity", "omic: all", "module: cross_module_integrity"),
-    proteomics = c("name: proteomics", "omic: proteomics", "module: all"),
-    metabolomics = c("name: metabolomics", "omic: metabolomics", "module: all"),
-    lipidomics = c("name: lipidomics", "omic: lipidomics", "module: all")
-  )
-
-  for (job in expected_unit_jobs) {
-    invisible(lapply(job, function(needle) expect_workflow_contains(workflow, needle)))
-  }
-
+  expect_workflow_contains(workflow, "Rscript tools/ci/detect-impact.R")
+  expect_workflow_contains(workflow, "module_matrix: ${{ steps.impact.outputs.module_matrix }}")
+  expect_workflow_contains(workflow, "matrix: ${{ fromJSON(needs.detect-impact.outputs.module_matrix) }}")
   expect_workflow_contains(workflow, "Rscript tools/ci/run-module-ci.R")
   expect_workflow_contains(workflow, "--runtime ${{ matrix.runtime }}")
   expect_workflow_contains(workflow, "Rscript tools/ci/module-ci-scorecard.R")
   expect_workflow_contains(workflow, "$GITHUB_STEP_SUMMARY")
+  expect_workflow_contains(workflow, "impact-routing-summary:")
 })
 
-test_that("MCI-025 browser and representative E2E smoke cover every current omic", {
+test_that("MCI-025/MCI-031 browser and representative E2E smoke are impact-routed", {
   workflow <- module_ci_workflow_text()
 
-  expected_browser_jobs <- list(
-    harness = c("name: harness", "filter: \"^(module-ci-harness|e2e-browser-harness)$\""),
-    proteomics = c("name: proteomics-import-module", "filter: \"^module-ci-prot-import$\""),
-    metabolomics = c("name: metabolomics-import-module", "filter: \"^module-ci-metab-import$\""),
-    lipidomics = c("name: lipidomics-import-module", "filter: \"^module-ci-lipid-import$\"")
-  )
-
-  for (job in expected_browser_jobs) {
-    invisible(lapply(job, function(needle) expect_workflow_contains(workflow, needle)))
-  }
-
-  expected_e2e_jobs <- list(
-    proteomics = c("name: proteomics-dia", "filter: \"^e2e-proteomics-dia$\""),
-    metabolomics = c("name: metabolomics-lc-gc", "filter: \"^e2e-metabolomics-lc-gc$\""),
-    lipidomics = c("name: lipidomics-canonical", "filter: \"^e2e-lipidomics-canonical$\"")
-  )
-
-  for (job in expected_e2e_jobs) {
-    invisible(lapply(job, function(needle) expect_workflow_contains(workflow, needle)))
-  }
+  expect_workflow_contains(workflow, "module-ci-browser-impacted:")
+  expect_workflow_contains(workflow, "matrix: ${{ fromJSON(needs.detect-impact.outputs.browser_matrix) }}")
+  expect_workflow_contains(workflow, "e2e-impacted:")
+  expect_workflow_contains(workflow, "matrix: ${{ fromJSON(needs.detect-impact.outputs.e2e_matrix) }}")
+  expect_workflow_contains(workflow, "Rscript tools/ci/run-e2e-ci.R")
+  expect_workflow_contains(workflow, "--lane ${{ matrix.lane }}")
+  expect_workflow_contains(workflow, "--filter ${{ matrix.filter }}")
 
   expect_workflow_contains(workflow, "any::shinytest2")
   expect_workflow_contains(workflow, "any::chromote")
   expect_workflow_contains(workflow, "MULTISCHOLAR_E2E_ARTIFACT_DIR")
+  expect_workflow_contains(workflow, "cross-omic-impacted:")
+  expect_workflow_contains(workflow, "report-export-impacted:")
 })
 
 test_that("MCI-025 nightly and release gates run the full corpus before promotion", {
@@ -105,12 +87,10 @@ test_that("MCI-025 artifact upload paths exclude ignored local files and expose 
   expect_false(any(vapply(forbidden_paths, grepl, logical(1), x = workflow, fixed = TRUE)))
 
   expected_artifact_paths <- c(
-    "tests/testthat/_module_ci_artifacts/push/",
-    "tests/testthat/_module_ci_artifacts/browser-smoke/",
+    "tests/testthat/_module_ci_artifacts/impact/",
     "tests/testthat/_module_ci_artifacts/full/",
     "tests/testthat/_module_ci_artifacts/release-gate/",
-    "tests/testthat/_e2e_artifacts/browser-smoke/",
-    "tests/testthat/_e2e_artifacts/representative/",
+    "tests/testthat/_e2e_artifacts/impact/",
     "tests/testthat/_e2e_artifacts/full/"
   )
   invisible(lapply(expected_artifact_paths, function(needle) expect_workflow_contains(workflow, needle)))

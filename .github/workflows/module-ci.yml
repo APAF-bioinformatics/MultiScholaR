@@ -30,43 +30,77 @@ env:
   R_KEEP_PKG_SOURCE: "yes"
 
 jobs:
-  module-ci-unit:
-    name: module-ci unit (${{ matrix.name }})
+  detect-impact:
+    name: detect impact
     if: >-
       github.event_name == 'push' ||
       github.event_name == 'pull_request' ||
       (github.event_name == 'workflow_dispatch' &&
         (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all'))
     runs-on: ubuntu-latest
+    outputs:
+      impact_level: ${{ steps.impact.outputs.impact_level }}
+      module_count: ${{ steps.impact.outputs.module_count }}
+      browser_count: ${{ steps.impact.outputs.browser_count }}
+      e2e_count: ${{ steps.impact.outputs.e2e_count }}
+      run_cross_omic: ${{ steps.impact.outputs.run_cross_omic }}
+      run_report_export: ${{ steps.impact.outputs.run_report_export }}
+      module_matrix: ${{ steps.impact.outputs.module_matrix }}
+      browser_matrix: ${{ steps.impact.outputs.browser_matrix }}
+      e2e_matrix: ${{ steps.impact.outputs.e2e_matrix }}
+      impact_summary: ${{ steps.impact.outputs.impact_summary }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::jsonlite
+      - name: Resolve changed-file impact
+        id: impact
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p tests/testthat/_module_ci_artifacts/impact/detect
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="$PR_BASE_SHA"
+            HEAD_REF="$PR_HEAD_SHA"
+          else
+            BASE_REF="$PUSH_BEFORE_SHA"
+            HEAD_REF="$PUSH_HEAD_SHA"
+          fi
+          Rscript tools/ci/detect-impact.R \
+            --base-ref "$BASE_REF" \
+            --head-ref "$HEAD_REF" \
+            --output tests/testthat/_module_ci_artifacts/impact/detect/impact.json \
+            --summary tests/testthat/_module_ci_artifacts/impact/detect/impact.md \
+            --github-output "$GITHUB_OUTPUT"
+          cat tests/testthat/_module_ci_artifacts/impact/detect/impact.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload impact artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: impact-routing
+          retention-days: 14
+          path: |
+            tests/testthat/_module_ci_artifacts/impact/detect/**
+
+  module-ci-impacted:
+    name: module-ci impacted (${{ matrix.name }})
+    needs:
+      - detect-impact
+    if: >-
+      needs.detect-impact.result == 'success' &&
+      fromJSON(needs.detect-impact.outputs.module_count) > 0
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: foundation
-            omic: all
-            module: foundation
-            runtime: unit-contract
-            artifact_dir: tests/testthat/_module_ci_artifacts/push/foundation
-          - name: cross-module-integrity
-            omic: all
-            module: cross_module_integrity
-            runtime: unit-contract
-            artifact_dir: tests/testthat/_module_ci_artifacts/push/cross-module-integrity
-          - name: proteomics
-            omic: proteomics
-            module: all
-            runtime: unit-contract
-            artifact_dir: tests/testthat/_module_ci_artifacts/push/proteomics
-          - name: metabolomics
-            omic: metabolomics
-            module: all
-            runtime: unit-contract
-            artifact_dir: tests/testthat/_module_ci_artifacts/push/metabolomics
-          - name: lipidomics
-            omic: lipidomics
-            module: all
-            runtime: unit-contract
-            artifact_dir: tests/testthat/_module_ci_artifacts/push/lipidomics
+      matrix: ${{ fromJSON(needs.detect-impact.outputs.module_matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
@@ -76,7 +110,7 @@ jobs:
             any::pkgload
             any::testthat
             any::jsonlite
-      - name: Run module-CI unit-contract matrix
+      - name: Run impacted module-CI matrix
         run: >
           Rscript tools/ci/run-module-ci.R
           --omic ${{ matrix.omic }}
@@ -95,43 +129,26 @@ jobs:
           if [ -f "${{ matrix.artifact_dir }}/module-ci-scorecard.md" ]; then
             cat "${{ matrix.artifact_dir }}/module-ci-scorecard.md" >> "$GITHUB_STEP_SUMMARY"
           fi
-      - name: Upload module-CI artifacts
+      - name: Upload impacted module-CI artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: module-ci-${{ matrix.name }}
+          name: module-ci-impact-${{ matrix.name }}
           retention-days: 14
           path: |
             ${{ matrix.artifact_dir }}/**
 
-  module-ci-browser-smoke:
-    name: module-ci browser smoke (${{ matrix.name }})
+  module-ci-browser-impacted:
+    name: module-ci browser impacted (${{ matrix.name }})
+    needs:
+      - detect-impact
     if: >-
-      github.event_name == 'push' ||
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'workflow_dispatch' &&
-        (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all'))
+      needs.detect-impact.result == 'success' &&
+      fromJSON(needs.detect-impact.outputs.browser_count) > 0
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: harness
-            filter: "^(module-ci-harness|e2e-browser-harness)$"
-            artifact_dir: tests/testthat/_module_ci_artifacts/browser-smoke/harness
-            e2e_artifact_dir: tests/testthat/_e2e_artifacts/browser-smoke/harness
-          - name: proteomics-import-module
-            filter: "^module-ci-prot-import$"
-            artifact_dir: tests/testthat/_module_ci_artifacts/browser-smoke/proteomics-import
-            e2e_artifact_dir: tests/testthat/_e2e_artifacts/browser-smoke/proteomics-import
-          - name: metabolomics-import-module
-            filter: "^module-ci-metab-import$"
-            artifact_dir: tests/testthat/_module_ci_artifacts/browser-smoke/metabolomics-import
-            e2e_artifact_dir: tests/testthat/_e2e_artifacts/browser-smoke/metabolomics-import
-          - name: lipidomics-import-module
-            filter: "^module-ci-lipid-import$"
-            artifact_dir: tests/testthat/_module_ci_artifacts/browser-smoke/lipidomics-import
-            e2e_artifact_dir: tests/testthat/_e2e_artifacts/browser-smoke/lipidomics-import
+      matrix: ${{ fromJSON(needs.detect-impact.outputs.browser_matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
@@ -143,45 +160,35 @@ jobs:
             any::jsonlite
             any::shinytest2
             any::chromote
-      - name: Run representative module browser smoke
+      - name: Run impacted module/browser smoke
         env:
           MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.e2e_artifact_dir }}
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: tests/testthat/_e2e_artifacts/impact/browser/${{ matrix.name }}
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
           testthat::test_dir("tests/testthat", filter = "${{ matrix.filter }}", reporter = "summary")'
-      - name: Upload browser smoke artifacts
+      - name: Upload impacted browser artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: module-ci-browser-smoke-${{ matrix.name }}
+          name: module-ci-browser-impact-${{ matrix.name }}
           retention-days: 14
           path: |
             ${{ matrix.artifact_dir }}/**
-            ${{ matrix.e2e_artifact_dir }}/**
+            tests/testthat/_e2e_artifacts/impact/browser/${{ matrix.name }}/**
 
-  e2e-representative:
-    name: representative E2E (${{ matrix.name }})
+  e2e-impacted:
+    name: e2e impacted (${{ matrix.name }})
+    needs:
+      - detect-impact
     if: >-
-      github.event_name == 'push' ||
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'workflow_dispatch' &&
-        (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all'))
+      needs.detect-impact.result == 'success' &&
+      fromJSON(needs.detect-impact.outputs.e2e_count) > 0
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: proteomics-dia
-            filter: "^e2e-proteomics-dia$"
-            artifact_dir: tests/testthat/_e2e_artifacts/representative/proteomics-dia
-          - name: metabolomics-lc-gc
-            filter: "^e2e-metabolomics-lc-gc$"
-            artifact_dir: tests/testthat/_e2e_artifacts/representative/metabolomics-lc-gc
-          - name: lipidomics-canonical
-            filter: "^e2e-lipidomics-canonical$"
-            artifact_dir: tests/testthat/_e2e_artifacts/representative/lipidomics-canonical
+      matrix: ${{ fromJSON(needs.detect-impact.outputs.e2e_matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
@@ -193,29 +200,29 @@ jobs:
             any::jsonlite
             any::shinytest2
             any::chromote
-      - name: Run representative full workflow E2E
-        env:
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
+      - name: Run impacted E2E lane
         run: >
-          Rscript -e 'Sys.setenv(NOT_CRAN = "true");
-          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
-          testthat::test_dir("tests/testthat", filter = "${{ matrix.filter }}", reporter = "summary")'
-      - name: Upload representative E2E artifacts
+          Rscript tools/ci/run-e2e-ci.R
+          --lane ${{ matrix.lane }}
+          --filter ${{ matrix.filter }}
+          --reporter summary
+          --artifact-dir ${{ matrix.artifact_dir }}
+      - name: Upload impacted E2E artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: representative-e2e-${{ matrix.name }}
+          name: e2e-impact-${{ matrix.name }}
           retention-days: 14
           path: |
             ${{ matrix.artifact_dir }}/**
 
-  e2e-fixture-smoke:
-    name: E2E fixture and harness smoke
+  cross-omic-impacted:
+    name: cross-omic impacted
+    needs:
+      - detect-impact
     if: >-
-      github.event_name == 'push' ||
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'workflow_dispatch' &&
-        (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all'))
+      needs.detect-impact.result == 'success' &&
+      needs.detect-impact.outputs.run_cross_omic == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -226,21 +233,101 @@ jobs:
             any::pkgload
             any::testthat
             any::jsonlite
-      - name: Run stable E2E fixture/harness checks
+            any::shinytest2
+            any::chromote
+      - name: Run impacted cross-omic coexistence checks
         env:
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: tests/testthat/_e2e_artifacts/fixture-smoke
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: tests/testthat/_e2e_artifacts/impact/cross-omic
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
-          testthat::test_dir("tests/testthat", filter = "^(e2e-manifest|e2e-fixture-integrity|e2e-browser-harness)$", reporter = "summary")'
-      - name: Upload E2E smoke artifacts
+          testthat::test_dir("tests/testthat", filter = "^(e2e-cross-omic|workflow-server-shared|module-ci-sentinels)$", reporter = "summary")'
+      - name: Upload impacted cross-omic artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-fixture-smoke
+          name: e2e-impact-cross-omic
           retention-days: 14
           path: |
-            tests/testthat/_e2e_artifacts/fixture-smoke/**
+            tests/testthat/_e2e_artifacts/impact/cross-omic/**
+
+  report-export-impacted:
+    name: report/export impacted
+    needs:
+      - detect-impact
+    if: >-
+      needs.detect-impact.result == 'success' &&
+      needs.detect-impact.outputs.run_report_export == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+            any::shinytest2
+            any::chromote
+      - name: Run impacted report/export checks
+        env:
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: tests/testthat/_e2e_artifacts/impact/report-export
+        run: >
+          Rscript -e 'Sys.setenv(NOT_CRAN = "true");
+          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
+          testthat::test_dir("tests/testthat", filter = "^(general-filemgmt-report-helpers-shared|general-filemgmt-export-contracts|e2e-proteomics-enrichment)$", reporter = "summary")'
+      - name: Upload impacted report/export artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-impact-report-export
+          retention-days: 14
+          path: |
+            tests/testthat/_e2e_artifacts/impact/report-export/**
+
+  impact-routing-summary:
+    name: impact routing summary
+    needs:
+      - detect-impact
+      - module-ci-impacted
+      - module-ci-browser-impacted
+      - e2e-impacted
+      - cross-omic-impacted
+      - report-export-impacted
+    if: >-
+      always() &&
+      (github.event_name == 'push' ||
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'workflow_dispatch' &&
+          (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all')))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate impacted CI result
+        run: |
+          {
+            echo "# Impact Routing Gate"
+            echo ""
+            echo "- Impact: \`${{ needs.detect-impact.outputs.impact_level }}\`"
+            echo "- Summary: \`${{ needs.detect-impact.outputs.impact_summary }}\`"
+            echo "- Detect impact: \`${{ needs.detect-impact.result }}\`"
+            echo "- Module CI: \`${{ needs.module-ci-impacted.result }}\`"
+            echo "- Browser: \`${{ needs.module-ci-browser-impacted.result }}\`"
+            echo "- E2E: \`${{ needs.e2e-impacted.result }}\`"
+            echo "- Cross-omic: \`${{ needs.cross-omic-impacted.result }}\`"
+            echo "- Report/export: \`${{ needs.report-export-impacted.result }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "${{ needs.detect-impact.result }}" = "success"
+          for result in \
+            "${{ needs.module-ci-impacted.result }}" \
+            "${{ needs.module-ci-browser-impacted.result }}" \
+            "${{ needs.e2e-impacted.result }}" \
+            "${{ needs.cross-omic-impacted.result }}" \
+            "${{ needs.report-export-impacted.result }}"; do
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              exit 1
+            fi
+          done
 
   full-gates:
     name: full gate (${{ matrix.name }})

@@ -20,12 +20,17 @@
         , group_count = 2L
         , groups = list("WT", "KO")
         , cross_omic_packs = list()
+        , test_filter = "^e2e-proteomics-dia$"
+        , module_families = list("import", "design", "qc", "normalization", "differential_abundance", "enrichment", "summary_report")
+        , touchpoints = list("browser", "import", "design", "qc", "normalization", "da", "enrichment", "summary_report", "report_export")
+        , critical_shared = TRUE
+        , report_export = TRUE
     )
 }
 
 .write_tmp_manifest <- function(lanes) {
     tmp <- tempfile(fileext = ".json")
-    jsonlite::write_json(list(lanes = lanes), tmp, auto_unbox = FALSE)
+    jsonlite::write_json(list(lanes = lanes), tmp, auto_unbox = TRUE)
     tmp
 }
 
@@ -56,6 +61,8 @@ test_that("read_e2e_manifest lanes have all required fields", {
         , "fixture_dir", "seed_file", "assays", "expected_contrasts"
         , "report_template", "enrichment_backend", "expected_exports"
         , "sample_count", "group_count", "groups"
+        , "test_filter", "module_families", "touchpoints"
+        , "critical_shared", "report_export"
     )
     manifest <- read_e2e_manifest()
 
@@ -66,6 +73,33 @@ test_that("read_e2e_manifest lanes have all required fields", {
             , 0L
             , info = paste("Lane", lane[["lane_id"]], "missing:", paste(missing_fields, collapse = ", "))
         )
+    }
+})
+
+test_that("read_e2e_manifest lanes expose impact routing metadata", {
+    manifest <- read_e2e_manifest()
+
+    expected_filters <- c(
+        prot_dia = "^e2e-proteomics-dia$",
+        prot_dia_limpa = "^e2e-proteomics-dia-limpa$",
+        prot_tmt = "^e2e-proteomics-tmt-lfq$",
+        prot_lfq = "^e2e-proteomics-tmt-lfq$",
+        prot_lfq_fragpipe = "^e2e-proteomics-tmt-lfq$",
+        metab_lc = "^e2e-metabolomics-lc-gc$",
+        metab_gc = "^e2e-metabolomics-lc-gc$",
+        metab_combined = "^e2e-metabolomics-lc-gc$",
+        lipid_canonical = "^e2e-lipidomics-canonical$"
+    )
+
+    expect_setequal(names(manifest), names(expected_filters))
+    for (lane_id in names(expected_filters)) {
+        lane <- manifest[[lane_id]]
+        expect_identical(lane$test_filter, unname(expected_filters[[lane_id]]))
+        expect_true(length(lane$module_families) > 0L, info = lane_id)
+        expect_true("import" %in% unlist(lane$module_families), info = lane_id)
+        expect_true("report_export" %in% unlist(lane$touchpoints), info = lane_id)
+        expect_type(lane$critical_shared, "logical")
+        expect_type(lane$report_export, "logical")
     }
 })
 

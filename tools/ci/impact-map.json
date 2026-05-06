@@ -1,0 +1,372 @@
+{
+  "schema_version": "1.0.0",
+  "resolver_min_version": "1.0.0",
+  "impact_levels": ["none", "targeted", "omic", "broad", "full"],
+  "module_families": [
+    "foundation",
+    "fixtures",
+    "import",
+    "design",
+    "qc",
+    "qc_peptide",
+    "qc_protein",
+    "normalization",
+    "differential_abundance",
+    "enrichment",
+    "summary_report",
+    "cross_module_integrity",
+    "ci_release_gate"
+  ],
+  "rules": [
+    {
+      "id": "docs-noop",
+      "owner": "qa",
+      "paths": ["^docs/.*", "^README\\.md$", "^NEWS\\.md$"],
+      "impact_level": "none",
+      "no_op": true,
+      "reason": "Documentation-only changes do not need heavy R CI unless mixed with code or CI changes."
+    },
+    {
+      "id": "ci-self-protection",
+      "owner": "qa",
+      "paths": [
+        "^\\.github/workflows/.*",
+        "^tools/ci/.*",
+        "^tests/testthat/test-(ci-impact|module-ci-release-gate).*\\.R$",
+        "^tests/testthat/helper-(ci-impact|module-ci|e2e).*\\.R$",
+        "^tests/testdata/module_ci/(manifest|fixture_packs)\\.json$",
+        "^tests/testdata/e2e/(manifest|cross_omic_packs)\\.json$"
+      ],
+      "impact_level": "broad",
+      "module_ci": [
+        {"name": "foundation", "omic": "all", "module": "foundation", "runtime": "unit-contract"},
+        {"name": "cross-module-integrity", "omic": "all", "module": "cross_module_integrity", "runtime": "unit-contract"},
+        {"name": "ci-release-gate", "omic": "all", "module": "ci_release_gate", "runtime": "unit-contract"},
+        {"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"}
+      ],
+      "e2e": [
+        {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
+        {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}
+      ],
+      "browser": [
+        {"name": "harness", "filter": "^(module-ci-harness|e2e-browser-harness)$"}
+      ],
+      "run_cross_omic": true,
+      "run_report_export": true,
+      "reason": "Changes to CI, routing, manifests, or harness helpers must protect the gate that selects CI."
+    },
+    {
+      "id": "shared-state-and-workflow",
+      "owner": "qa",
+      "paths": [
+        "^R/(utils_workflow_state|workflow_.*|app.*|mod_(proteomics|metabolomics|lipidomics))\\.R$",
+        "^R/.*(state|session|workflow|orchestrator).*\\.R$"
+      ],
+      "impact_level": "broad",
+      "module_ci": [
+        {"name": "foundation", "omic": "all", "module": "foundation", "runtime": "unit-contract"},
+        {"name": "cross-module-integrity", "omic": "all", "module": "cross_module_integrity", "runtime": "unit-contract"},
+        {"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"}
+      ],
+      "e2e": [
+        {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
+        {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}
+      ],
+      "run_cross_omic": true,
+      "reason": "Workflow state/session changes can corrupt cross-omic R6/S4 state and must run broad checks."
+    },
+    {
+      "id": "shared-report-export-filemgmt",
+      "owner": "qa",
+      "paths": [
+        "^R/func_general_filemgmt.*\\.R$",
+        "^R/func_general_.*(report|plot|qc|heatmap|volcano|design|config).*\\.R$",
+        "^R/func_multiomics_enrich\\.R$"
+      ],
+      "impact_level": "broad",
+      "module_ci": [
+        {"name": "proteomics-summary", "omic": "proteomics", "module": "summary_report", "runtime": "unit-contract"},
+        {"name": "metabolomics-summary", "omic": "metabolomics", "module": "summary_report", "runtime": "unit-contract"},
+        {"name": "lipidomics-summary", "omic": "lipidomics", "module": "summary_report", "runtime": "unit-contract"},
+        {"name": "cross-module-integrity", "omic": "all", "module": "cross_module_integrity", "runtime": "unit-contract"}
+      ],
+      "e2e": [
+        {"name": "proteomics-enrichment", "lane": "prot_dia", "filter": "^e2e-proteomics-enrichment$"},
+        {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
+        {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}
+      ],
+      "run_report_export": true,
+      "run_cross_omic": true,
+      "reason": "Shared report/export/file-management changes affect every omic's publication and report fidelity."
+    },
+    {
+      "id": "proteomics-import",
+      "owner": "proteomics",
+      "paths": ["^R/(mod|func)_prot_.*import.*\\.R$", "^R/func_prot_import.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "proteomics-import", "omic": "proteomics", "module": "import", "runtime": "unit-contract"}],
+      "e2e": [
+        {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
+        {"name": "proteomics-tmt-lfq", "lane": "prot_tmt,prot_lfq,prot_lfq_fragpipe", "filter": "^e2e-proteomics-tmt-lfq$"}
+      ],
+      "browser": [{"name": "proteomics-import-module", "filter": "^module-ci-prot-import$"}],
+      "reason": "Proteomics import changes affect DIA, TMT, LFQ, and FragPipe entry points."
+    },
+    {
+      "id": "proteomics-design",
+      "owner": "proteomics",
+      "paths": ["^R/(mod|func)_prot_.*design.*\\.R$", "^R/func_general_design\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "proteomics-design", "omic": "proteomics", "module": "design", "runtime": "unit-contract"}],
+      "e2e": [{"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"}],
+      "reason": "Proteomics design changes affect sample/design/contrast setup before QC."
+    },
+    {
+      "id": "proteomics-qc",
+      "owner": "proteomics",
+      "paths": ["^R/(mod|func)_prot_.*qc.*\\.R$", "^R/func_peptide_qc_.*\\.R$", "^R/func_pept_.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [
+        {"name": "proteomics-peptide-qc", "omic": "proteomics", "module": "qc_peptide", "runtime": "unit-contract"},
+        {"name": "proteomics-protein-qc", "omic": "proteomics", "module": "qc_protein", "runtime": "unit-contract"}
+      ],
+      "e2e": [
+        {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
+        {"name": "proteomics-dia-limpa", "lane": "prot_dia_limpa", "filter": "^e2e-proteomics-dia-limpa$"}
+      ],
+      "reason": "Proteomics QC changes affect peptide/protein filtering, rollup, and downstream normalization."
+    },
+    {
+      "id": "proteomics-normalization-limpa",
+      "owner": "proteomics",
+      "paths": ["^R/(mod|func)_prot_.*norm.*\\.R$", "^R/func_prot_limpa.*\\.R$", "^R/func_prot_s4_.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "proteomics-normalization", "omic": "proteomics", "module": "normalization", "runtime": "unit-contract"}],
+      "e2e": [
+        {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
+        {"name": "proteomics-dia-limpa", "lane": "prot_dia_limpa", "filter": "^e2e-proteomics-dia-limpa$"}
+      ],
+      "run_cross_omic": true,
+      "reason": "Proteomics normalization, RUV, S4, and LIMPA changes affect exported sessions and DA reload."
+    },
+    {
+      "id": "proteomics-da",
+      "owner": "proteomics",
+      "paths": ["^R/(mod|func)_prot_.*da.*\\.R$", "^R/da_analysis_function_wrapper\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "proteomics-da", "omic": "proteomics", "module": "differential_abundance", "runtime": "unit-contract"}],
+      "e2e": [{"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"}],
+      "run_report_export": true,
+      "reason": "Proteomics DA changes affect contrasts, tables, volcanoes, heatmaps, and reports."
+    },
+    {
+      "id": "proteomics-enrichment",
+      "owner": "proteomics",
+      "paths": ["^R/(mod|func)_prot_.*enrich.*\\.R$", "^R/func_general_enrichment\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "proteomics-enrichment", "omic": "proteomics", "module": "enrichment", "runtime": "unit-contract"}],
+      "e2e": [{"name": "proteomics-enrichment", "lane": "prot_dia", "filter": "^e2e-proteomics-enrichment$"}],
+      "run_report_export": true,
+      "reason": "Enrichment changes affect gprofiler/clusterProfiler doubles and report exports."
+    },
+    {
+      "id": "proteomics-summary",
+      "owner": "proteomics",
+      "paths": ["^R/(mod|func)_prot_.*summary.*\\.R$", "^R/func_prot_annotation.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "proteomics-summary", "omic": "proteomics", "module": "summary_report", "runtime": "unit-contract"}],
+      "e2e": [{"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"}],
+      "run_report_export": true,
+      "reason": "Proteomics summary/annotation changes affect final reports and publication artifacts."
+    },
+    {
+      "id": "proteomics-catchall",
+      "owner": "proteomics",
+      "paths": ["^R/.*(prot|pept|protein).*\\.R$"],
+      "impact_level": "omic",
+      "module_ci": [{"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"}],
+      "e2e": [{"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"}],
+      "reason": "Unclassified proteomics source changes run the full proteomics module matrix."
+    },
+    {
+      "id": "metabolomics-import",
+      "owner": "metabolomics",
+      "paths": ["^R/(mod|func)_metab_.*import.*\\.R$", "^R/func_metab_import.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "metabolomics-import", "omic": "metabolomics", "module": "import", "runtime": "unit-contract"}],
+      "e2e": [{"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"}],
+      "browser": [{"name": "metabolomics-import-module", "filter": "^module-ci-metab-import$"}],
+      "reason": "Metabolomics import changes affect LC, GC, and combined assay entry points."
+    },
+    {
+      "id": "metabolomics-design",
+      "owner": "metabolomics",
+      "paths": ["^R/(mod|func)_metab_.*design.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "metabolomics-design", "omic": "metabolomics", "module": "design", "runtime": "unit-contract"}],
+      "e2e": [{"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"}],
+      "reason": "Metabolomics design changes affect multi-assay sample alignment and contrasts."
+    },
+    {
+      "id": "metabolomics-qc",
+      "owner": "metabolomics",
+      "paths": ["^R/(mod|func)_metab_.*(qc|s4|duplicate|itsd).*\\.R$", "^R/func_metab_qc.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "metabolomics-qc", "omic": "metabolomics", "module": "qc", "runtime": "unit-contract"}],
+      "e2e": [{"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"}],
+      "reason": "Metabolomics QC/S4/ITSD changes affect filtering, duplicates, plotting, and finalization."
+    },
+    {
+      "id": "metabolomics-normalization",
+      "owner": "metabolomics",
+      "paths": ["^R/(mod|func)_metab_.*norm.*\\.R$", "^R/func_metab_norm.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "metabolomics-normalization", "omic": "metabolomics", "module": "normalization", "runtime": "unit-contract"}],
+      "e2e": [{"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"}],
+      "run_cross_omic": true,
+      "reason": "Metabolomics normalization/RUV changes affect session state and DA reload."
+    },
+    {
+      "id": "metabolomics-da",
+      "owner": "metabolomics",
+      "paths": ["^R/(mod|func)_metab_.*da.*\\.R$", "^R/func_metab_da.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "metabolomics-da", "omic": "metabolomics", "module": "differential_abundance", "runtime": "unit-contract"}],
+      "e2e": [{"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"}],
+      "run_report_export": true,
+      "reason": "Metabolomics DA changes affect tables, plotting, exports, and summary consumers."
+    },
+    {
+      "id": "metabolomics-summary",
+      "owner": "metabolomics",
+      "paths": ["^R/(mod|func)_metab_.*summary.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "metabolomics-summary", "omic": "metabolomics", "module": "summary_report", "runtime": "unit-contract"}],
+      "e2e": [{"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"}],
+      "run_report_export": true,
+      "reason": "Metabolomics summary changes affect final reports and publication copies."
+    },
+    {
+      "id": "metabolomics-catchall",
+      "owner": "metabolomics",
+      "paths": ["^R/.*metab.*\\.R$"],
+      "impact_level": "omic",
+      "module_ci": [{"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"}],
+      "e2e": [{"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"}],
+      "reason": "Unclassified metabolomics source changes run the full metabolomics module matrix."
+    },
+    {
+      "id": "lipidomics-import",
+      "owner": "lipidomics",
+      "paths": ["^R/(mod|func)_lipid_.*import.*\\.R$", "^R/func_lipid_import.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "lipidomics-import", "omic": "lipidomics", "module": "import", "runtime": "unit-contract"}],
+      "e2e": [{"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}],
+      "browser": [{"name": "lipidomics-import-module", "filter": "^module-ci-lipid-import$"}],
+      "reason": "Lipidomics import changes affect LipidSearch/MS-DIAL and multi-assay routing."
+    },
+    {
+      "id": "lipidomics-design",
+      "owner": "lipidomics",
+      "paths": ["^R/(mod|func)_lipid_.*design.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "lipidomics-design", "omic": "lipidomics", "module": "design", "runtime": "unit-contract"}],
+      "e2e": [{"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}],
+      "reason": "Lipidomics design changes affect assay manifests, sample alignment, and contrast setup."
+    },
+    {
+      "id": "lipidomics-qc",
+      "owner": "lipidomics",
+      "paths": ["^R/(mod|func)_lipid_.*(qc|s4|duplicate|itsd).*\\.R$", "^R/func_lipid_qc.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "lipidomics-qc", "omic": "lipidomics", "module": "qc", "runtime": "unit-contract"}],
+      "e2e": [{"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}],
+      "reason": "Lipidomics QC/S4/ITSD changes affect filtering, duplicates, plotting, and finalization."
+    },
+    {
+      "id": "lipidomics-normalization",
+      "owner": "lipidomics",
+      "paths": ["^R/(mod|func)_lipid_.*norm.*\\.R$", "^R/func_lipid_norm.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "lipidomics-normalization", "omic": "lipidomics", "module": "normalization", "runtime": "unit-contract"}],
+      "e2e": [{"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}],
+      "run_cross_omic": true,
+      "reason": "Lipidomics normalization/RUV changes affect session state and DA reload."
+    },
+    {
+      "id": "lipidomics-da",
+      "owner": "lipidomics",
+      "paths": ["^R/(mod|func)_lipid_.*da.*\\.R$", "^R/func_lipid_da.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "lipidomics-da", "omic": "lipidomics", "module": "differential_abundance", "runtime": "unit-contract"}],
+      "e2e": [{"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}],
+      "run_report_export": true,
+      "reason": "Lipidomics DA changes affect tables, plotting, exports, and summary consumers."
+    },
+    {
+      "id": "lipidomics-summary",
+      "owner": "lipidomics",
+      "paths": ["^R/(mod|func)_lipid_.*summary.*\\.R$"],
+      "impact_level": "targeted",
+      "module_ci": [{"name": "lipidomics-summary", "omic": "lipidomics", "module": "summary_report", "runtime": "unit-contract"}],
+      "e2e": [{"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}],
+      "run_report_export": true,
+      "reason": "Lipidomics summary changes affect final reports and publication copies."
+    },
+    {
+      "id": "lipidomics-catchall",
+      "owner": "lipidomics",
+      "paths": ["^R/.*lipid.*\\.R$"],
+      "impact_level": "omic",
+      "module_ci": [{"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"}],
+      "e2e": [{"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}],
+      "reason": "Unclassified lipidomics source changes run the full lipidomics module matrix."
+    },
+    {
+      "id": "tests-broad-fallback",
+      "owner": "qa",
+      "paths": ["^tests/testthat/.*\\.R$", "^tests/testdata/.*"],
+      "impact_level": "broad",
+      "module_ci": [
+        {"name": "foundation", "omic": "all", "module": "foundation", "runtime": "unit-contract"},
+        {"name": "cross-module-integrity", "omic": "all", "module": "cross_module_integrity", "runtime": "unit-contract"},
+        {"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"}
+      ],
+      "e2e": [
+        {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
+        {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}
+      ],
+      "run_cross_omic": true,
+      "reason": "Test and fixture changes can invalidate CI evidence and must run broad verification."
+    },
+    {
+      "id": "unknown-r-source-broad",
+      "owner": "qa",
+      "paths": ["^R/.*\\.R$"],
+      "impact_level": "broad",
+      "module_ci": [
+        {"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "cross-module-integrity", "omic": "all", "module": "cross_module_integrity", "runtime": "unit-contract"}
+      ],
+      "e2e": [
+        {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
+        {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}
+      ],
+      "run_cross_omic": true,
+      "reason": "Unknown R source changes fail closed to broad module and representative E2E coverage."
+    }
+  ]
+}

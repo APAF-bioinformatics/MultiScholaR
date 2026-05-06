@@ -22,7 +22,12 @@
       "sample_count": 6,
       "group_count": 2,
       "groups": ["WT", "KO"],
-      "cross_omic_packs": ["prot_metab", "prot_lipid", "triple_omic"]
+      "cross_omic_packs": ["prot_metab", "prot_lipid", "triple_omic"],
+      "test_filter": "^e2e-proteomics-dia$",
+      "module_families": ["import", "design", "qc_peptide", "qc_protein", "normalization", "differential_abundance", "enrichment", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "enrichment", "summary_report", "report_export"],
+      "critical_shared": true,
+      "report_export": true
     },
     {
       "lane_id": "prot_dia_limpa",
@@ -45,7 +50,12 @@
       "sample_count": 6,
       "group_count": 2,
       "groups": ["WT", "KO"],
-      "cross_omic_packs": []
+      "cross_omic_packs": [],
+      "test_filter": "^e2e-proteomics-dia-limpa$",
+      "module_families": ["import", "design", "qc_peptide", "qc_protein", "normalization", "differential_abundance", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "limpa_imputation", "normalization", "session_export", "da", "summary_report", "report_export"],
+      "critical_shared": false,
+      "report_export": true
     },
     {
       "lane_id": "prot_tmt",
@@ -68,7 +78,12 @@
       "sample_count": 6,
       "group_count": 2,
       "groups": ["WT", "KO"],
-      "cross_omic_packs": []
+      "cross_omic_packs": [],
+      "test_filter": "^e2e-proteomics-tmt-lfq$",
+      "module_families": ["import", "design", "qc_peptide", "qc_protein", "normalization", "differential_abundance", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
+      "critical_shared": false,
+      "report_export": true
     },
     {
       "lane_id": "prot_lfq",
@@ -91,7 +106,12 @@
       "sample_count": 6,
       "group_count": 2,
       "groups": ["WT", "KO"],
-      "cross_omic_packs": []
+      "cross_omic_packs": [],
+      "test_filter": "^e2e-proteomics-tmt-lfq$",
+      "module_families": ["import", "design", "qc_protein", "normalization", "differential_abundance", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
+      "critical_shared": false,
+      "report_export": true
     },
     {
       "lane_id": "prot_lfq_fragpipe",
@@ -114,7 +134,12 @@
       "sample_count": 6,
       "group_count": 2,
       "groups": ["WT", "KO"],
-      "cross_omic_packs": []
+      "cross_omic_packs": [],
+      "test_filter": "^e2e-proteomics-tmt-lfq$",
+      "module_families": ["import", "design", "qc_protein", "normalization", "differential_abundance", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
+      "critical_shared": false,
+      "report_export": true
     },
     {
       "lane_id": "metab_lc",
@@ -136,7 +161,12 @@
       "sample_count": 6,
       "group_count": 2,
       "groups": ["WT", "KO"],
-      "cross_omic_packs": ["prot_metab", "triple_omic"]
+      "cross_omic_packs": ["prot_metab", "triple_omic"],
+      "test_filter": "^e2e-metabolomics-lc-gc$",
+      "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
+      "critical_shared": true,
+      "report_export": true
     },
     {
       "lane_id": "metab_gc",
@@ -157,7 +187,12 @@
       "sample_count": 6,
       "group_count": 2,
       "groups": ["WT", "KO"],
-      "cross_omic_packs": []
+      "cross_omic_packs": [],
+      "test_filter": "^e2e-metabolomics-lc-gc$",
+      "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
+      "critical_shared": false,
+      "report_export": true
     },
     {
       "lane_id": "metab_combined",
@@ -179,7 +214,12 @@
       "sample_count": 6,
       "group_count": 2,
       "groups": ["WT", "KO"],
-      "cross_omic_packs": []
+      "cross_omic_packs": [],
+      "test_filter": "^e2e-metabolomics-lc-gc$",
+      "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
+      "critical_shared": false,
+      "report_export": true
     },
     {
       "lane_id": "lipid_canonical",
@@ -201,7 +241,12 @@
       "sample_count": 6,
       "group_count": 2,
       "groups": ["WT", "KO"],
-      "cross_omic_packs": ["prot_lipid", "triple_omic"]
+      "cross_omic_packs": ["prot_lipid", "triple_omic"],
+      "test_filter": "^e2e-lipidomics-canonical$",
+      "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
+      "critical_shared": true,
+      "report_export": true
     }
   ]
 }

@@ -17,6 +17,37 @@
     , "sample_count"
     , "group_count"
     , "groups"
+    , "test_filter"
+    , "module_families"
+    , "touchpoints"
+    , "critical_shared"
+    , "report_export"
+)
+
+.E2E_VALID_MODULE_FAMILIES <- c(
+    "import"
+    , "design"
+    , "qc"
+    , "qc_peptide"
+    , "qc_protein"
+    , "normalization"
+    , "differential_abundance"
+    , "enrichment"
+    , "summary_report"
+)
+
+.E2E_VALID_TOUCHPOINTS <- c(
+    "browser"
+    , "import"
+    , "design"
+    , "qc"
+    , "limpa_imputation"
+    , "normalization"
+    , "session_export"
+    , "da"
+    , "enrichment"
+    , "summary_report"
+    , "report_export"
 )
 
 .e2e_manifest_path <- function() {
@@ -36,6 +67,41 @@
             , "' is missing required fields: "
             , paste(missing_fields, collapse = ", ")
         ))
+    }
+
+    if (!is.character(lane$test_filter) || !nzchar(lane$test_filter)) {
+        rlang::abort(paste0("Lane '", lane$lane_id, "' has invalid test_filter"))
+    }
+    tryCatch(grepl(lane$test_filter, "e2e-probe"), error = function(err) {
+        rlang::abort(paste0(
+            "Lane '", lane$lane_id, "' has invalid test_filter regex: ",
+            conditionMessage(err)
+        ))
+    })
+
+    module_families <- unlist(lane$module_families, use.names = FALSE)
+    unknown_modules <- setdiff(module_families, .E2E_VALID_MODULE_FAMILIES)
+    if (length(module_families) == 0L || length(unknown_modules) > 0L) {
+        rlang::abort(paste0(
+            "Lane '", lane$lane_id, "' has unsupported module_families: ",
+            paste(unknown_modules, collapse = ", ")
+        ))
+    }
+
+    touchpoints <- unlist(lane$touchpoints, use.names = FALSE)
+    unknown_touchpoints <- setdiff(touchpoints, .E2E_VALID_TOUCHPOINTS)
+    if (length(touchpoints) == 0L || length(unknown_touchpoints) > 0L) {
+        rlang::abort(paste0(
+            "Lane '", lane$lane_id, "' has unsupported touchpoints: ",
+            paste(unknown_touchpoints, collapse = ", ")
+        ))
+    }
+
+    if (!is.logical(lane$critical_shared) || length(lane$critical_shared) != 1L) {
+        rlang::abort(paste0("Lane '", lane$lane_id, "' has invalid critical_shared"))
+    }
+    if (!is.logical(lane$report_export) || length(lane$report_export) != 1L) {
+        rlang::abort(paste0("Lane '", lane$lane_id, "' has invalid report_export"))
     }
 }
 

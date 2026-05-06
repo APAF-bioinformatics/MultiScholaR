@@ -1223,3 +1223,156 @@ the uploaded artifact directory named by that row. Promotion to a final release
 tag should wait for the release-candidate gate to pass on the release branch or
 manual release dispatch; any follow-up fix can be committed normally and the
 gate rerun before tagging.
+
+## Impact-Aware CI Routing
+
+MCI-026 through MCI-033 replace the fixed push/PR module matrix with a
+fail-closed impact router. The release/nightly/full gates remain complete
+corpus runs; only routine push and pull-request checks are dynamically narrowed
+when the changed paths are safely understood.
+
+The routing contract has three owned pieces:
+
+- `tools/ci/impact-map.json` is the versioned source ownership map. Each rule
+  has a stable ID, path regexes, owner metadata, a reason string, an impact
+  level, module-CI rows, optional browser rows, optional E2E lanes, and
+  escalation flags for cross-omic or report/export checks.
+- `tools/ci/detect-impact.R` resolves explicit `--changed-files` input or
+  `--base-ref/--head-ref` git diffs into stable JSON plus a Markdown summary.
+  It validates rule shape before trusting the map and fails closed to broad
+  impact on resolver errors, malformed regexes, all-zero push bases, unknown
+  risky sources, unknown CI/test files, and invalid maps.
+- `.github/workflows/module-ci.yml` runs `detect-impact` on push, pull request,
+  and manual `gate=push|all`, then fans out impacted module, browser, E2E,
+  cross-omic, and report/export jobs from the resolver matrices.
+
+The resolver JSON is intentionally suitable for GitHub Actions without a
+translation layer. Required fields include `schema_version`, `resolver_version`,
+`map_schema_version`, `impact_level`, `changed_files`, `matched_rules`,
+`no_op_files`, `suppressed_no_op_files`, `unmatched_files`, `module_matrix`,
+`browser_matrix`, `e2e_matrix`, `run_cross_omic`, `run_report_export`,
+`impact_summary`, and `errors`. Matrix rows include artifact directories so the
+impact scorecard can be joined to module-CI and E2E run manifests.
+
+Impact levels are conservative:
+
+- `none` means only safe no-op paths matched, such as docs-only changes with no
+  risky file in the same change set.
+- `targeted` means module-owned source changes selected only the relevant omic,
+  module family, and E2E lanes.
+- `omic` is reserved for omic-wide changes that are broader than one module but
+  do not require all omics.
+- `broad` means shared state, file management, report/export, CI, tests,
+  fixtures, unknown source paths, resolver errors, or mixed risky changes
+  selected all representative safety gates.
+- `full` is available for future always-full release-sensitive surfaces; full
+  release/nightly coverage is still driven by the existing full-gate workflow
+  triggers.
+
+Current source ownership policy:
+
+- `R/mod_lipid_*.R` and `R/func_lipid_*.R` route to lipidomics module families
+  and the lipidomics canonical E2E lane.
+- `R/mod_metab_*.R` and `R/func_metab_*.R` route to metabolomics module
+  families and the LC/GC/combined metabolomics E2E lane set.
+- `R/mod_prot_*.R` and `R/func_prot_*.R` route to proteomics module families
+  and the appropriate DIA, DIA+LIMPA, TMT/LFQ/FragPipe, enrichment, or report
+  E2E lane.
+- Shared workflow state, R6/S4 state, file management, config, general design,
+  reporting, enrichment dispatch, plotting, QC helpers, fixtures, tests, and CI
+  code escalate broad so all omics and representative E2Es remain protected.
+- Unknown tracked `R/*.R`, unknown test files, unknown CI files, delete/rename
+  ambiguity, or resolver failures cannot produce `impact_level=none`.
+
+Local routing examples:
+
+```bash
+Rscript tools/ci/detect-impact.R --changed-files R/mod_lipid_norm_server.R --output /tmp/mci-impact-targeted-lipid.json --summary /tmp/mci-impact-targeted-lipid.md
+Rscript tools/ci/detect-impact.R --changed-files R/mod_metab_da_server.R --output /tmp/mci-impact-targeted-metab.json --summary /tmp/mci-impact-targeted-metab.md
+Rscript tools/ci/detect-impact.R --changed-files R/func_prot_limpa.R --output /tmp/mci-impact-targeted-prot-limpa.json --summary /tmp/mci-impact-targeted-prot-limpa.md
+Rscript tools/ci/detect-impact.R --changed-files R/utils_workflow_state.R --output /tmp/mci-impact-broad-state.json --summary /tmp/mci-impact-broad-state.md
+Rscript tools/ci/detect-impact.R --changed-files docs/qa/module-ci.md --output /tmp/mci-impact-docs.json --summary /tmp/mci-impact-docs.md
+Rscript tools/ci/detect-impact.R --changed-files R/new_unmapped_surface.R --output /tmp/mci-impact-unknown-source.json --summary /tmp/mci-impact-unknown-source.md
+```
+
+Local impacted job reproduction:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic lipidomics --module normalization --runtime unit-contract --reporter summary --artifact-dir tests/testthat/_module_ci_artifacts/impact/module/lipidomics-normalization
+Rscript tools/ci/run-e2e-ci.R --lane lipid_canonical --filter '^e2e-lipidomics-canonical$' --reporter summary --artifact-dir tests/testthat/_e2e_artifacts/impact/lipidomics-canonical
+Rscript tools/ci/run-module-ci.R --runtime unit-contract --reporter summary
+Rscript tools/ci/module-ci-scorecard.R --artifact-dir tests/testthat/_module_ci_artifacts
+```
+
+The E2E manifest at `tests/testdata/e2e/manifest.json` now declares routing
+metadata for every current lane: `test_filter`, `module_families`,
+`touchpoints`, `critical_shared`, `report_export`, and `cross_omic_packs`.
+`tools/ci/run-e2e-ci.R` accepts one or more `--lane` values, one or more
+`--filter` values, writes `e2e-run-manifest.json`, and respects the existing
+direct `testthat` invocation model for full `filter = "^e2e-"` nightly runs.
+The runner also supports `--dry-run true` for router self-tests only; CI does
+not set dry-run for impacted E2E jobs.
+
+Impact scorecards and summaries should be read in this order:
+
+- Start with `impact-routing` artifacts and `impact.md`. Confirm the impact
+  level, changed files, matched rules, no-op files, suppressed no-op files,
+  unmatched files, selected module rows, selected browser rows, selected E2Es,
+  resolver errors, and local reproduction commands.
+- For each selected module row, inspect the corresponding
+  `module-ci-impact-*` artifact, `module-ci-run-manifest.json`, and
+  `module-ci-scorecard.md`.
+- For each selected E2E row, inspect the `e2e-impact-*` artifact and
+  `e2e-run-manifest.json`.
+- If cross-omic or report/export flags are true, inspect the dedicated
+  `e2e-impact-cross-omic` or `e2e-impact-report-export` artifacts.
+
+Failure triage rules:
+
+- False narrow routing: add or broaden an impact-map rule before trusting the
+  push result. Reproduce with `detect-impact.R`, verify selected matrices, then
+  add a focused `ci-impact-*` test.
+- False broad routing: keep the broad result until a narrower rule is justified
+  by source ownership and E2E touchpoints. Broad is noisy but safe; narrow can
+  hide regressions.
+- Resolver error: treat as broad until the error is fixed. The summary should
+  include the resolver error and broad fallback reason.
+- Missing map ownership: any new source family must add a rule, reason, owner,
+  module consequences, E2E consequences, and source-map coverage test in the
+  same change.
+- Downstream module/E2E failure: debug from the module or E2E scorecard first;
+  only change the router if the lane was incorrectly selected.
+
+Maintenance rules:
+
+- New modules must add module-CI manifest scenarios, impact-map source rules,
+  resolver tests, and docs in the same change.
+- New omics must define module families, fixture packs, E2E lanes, cross-omic
+  state expectations, and branch-protection guidance before enabling targeted
+  routing.
+- New E2E lanes must declare `test_filter`, module families, touchpoints,
+  report/export coverage, cross-omic packs, and fixture paths in the E2E
+  manifest.
+- New shared helpers should default to broad impact until ownership is proven
+  narrower by tests and reviewer consensus.
+- Routing docs, impact maps, CI scripts, helper tests, workflow YAML, fixtures,
+  and manifests are self-protecting paths and should trigger broad checks.
+
+Branch protection guidance:
+
+- Require `detect impact` and `impact routing summary` for push/PR protection
+  once dynamic routing is enabled on GitHub.
+- Treat `module-ci impacted (*)`, `module-ci browser impacted (*)`, and
+  `e2e impacted (*)` as matrix jobs whose concrete names may vary by change;
+  the stable summary job is the branch-protection anchor.
+- Keep `release candidate promotion gate` required for release branches and
+  version tags. It remains blocked on full gates, not targeted routing.
+- Use manual `workflow_dispatch gate=all` when touching unfamiliar shared
+  infrastructure, moving source files across omics, changing fixture schemas, or
+  preparing a final release.
+
+Residual risk is path-based ownership. The router cannot infer semantic
+coupling from code at runtime; it depends on maintained regex ownership,
+complete E2E touchpoint metadata, and fail-closed defaults. When modules move or
+helpers become shared, update the map first and accept a temporary broad route
+until targeted coverage is proven.
