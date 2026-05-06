@@ -185,6 +185,11 @@ tests_for_selection <- function(scenarios) {
     }, logical(1)))) {
       tests <- c(tests, "module-ci-metab-design")
     }
+    if (any(vapply(scenarios, function(scenario) {
+      identical(scenario$module, "design") && identical(scenario$omic, "lipidomics")
+    }, logical(1)))) {
+      tests <- c(tests, "module-ci-lipid-design")
+    }
   }
   if ("qc_peptide" %in% modules) {
     if (any(vapply(scenarios, function(scenario) {

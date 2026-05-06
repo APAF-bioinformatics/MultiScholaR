@@ -45,6 +45,33 @@ runLipidDesignBuilderObserverShell <- function(
 
     logger::log_info("Received results from lipidomics design builder. Saving to workflow and disk.")
 
+    source_dir <- experimentPaths$source_dir
+    if (is.null(source_dir) || !dir.exists(source_dir)) {
+        msg <- "Could not find source directory to save files."
+        logger::log_error(msg)
+        shiny::showNotification(msg, type = "error", duration = 15)
+        shiny::removeModal()
+        return(invisible(NULL))
+    }
+
+    col_map <- workflowData$column_mapping
+    formula_string <- lipidDesignResolveFormulaString(results$config_list)
+    preflight <- validateLipidDesignDaPreflight(
+        designMatrix = results$design_matrix,
+        assayList = results$data_cln,
+        contrastsTbl = results$contrasts_tbl,
+        formulaString = formula_string,
+        columnMapping = col_map,
+        requireContrasts = FALSE
+    )
+    if (!isTRUE(preflight$valid)) {
+        msg <- paste("Invalid lipidomics design:", paste(preflight$errors, collapse = "; "))
+        logger::log_error(msg)
+        shiny::showNotification(msg, type = "error", duration = 15)
+        shiny::removeModal()
+        return(invisible(NULL))
+    }
+
     workflowData$design_matrix <- results$design_matrix
     workflowData$data_cln <- results$data_cln
     workflowData$contrasts_tbl <- results$contrasts_tbl
@@ -57,15 +84,6 @@ runLipidDesignBuilderObserverShell <- function(
 
     assign("config_list", workflowData$config_list, envir = .GlobalEnv)
     logger::log_info("Updated global config_list.")
-
-    source_dir <- experimentPaths$source_dir
-    if (is.null(source_dir) || !dir.exists(source_dir)) {
-        msg <- "Could not find source directory to save files."
-        logger::log_error(msg)
-        shiny::showNotification(msg, type = "error", duration = 15)
-        shiny::removeModal()
-        return(invisible(NULL))
-    }
 
     tryCatch({
         design_matrix_path <- file.path(source_dir, "design_matrix.tab")
@@ -92,7 +110,6 @@ runLipidDesignBuilderObserverShell <- function(
         logger::log_info(sprintf("Saved assay manifest with %d assays: %s",
             length(assay_names), paste(assay_names, collapse = ", ")))
 
-        col_map <- workflowData$column_mapping
         if (!is.null(col_map)) {
             col_map_path <- file.path(source_dir, "column_mapping.json")
             jsonlite::write_json(col_map, col_map_path, auto_unbox = TRUE)
@@ -197,4 +214,3 @@ registerLipidDesignBuilderResultsObserver <- function(
         )
     }, ignoreNULL = TRUE)
 }
-

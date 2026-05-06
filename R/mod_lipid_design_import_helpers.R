@@ -127,6 +127,8 @@ runLipidDesignImportConfirmationShell <- function(
     showNotificationFn("Importing design files...", id = "importing_design", duration = NULL)
 
     tryCatch({
+        imported_config <- NULL
+
         # DEBUG66: Entry point
         message("DEBUG66: ========================================")
         message("DEBUG66: STARTING IMPORT EXISTING DESIGN")
@@ -140,21 +142,18 @@ runLipidDesignImportConfirmationShell <- function(
         if (fileExistsFn(config_file)) {
             logger::log_info("Loading config.ini from import directory.")
             message("DEBUG66: About to call readConfigFile()...")
-            workflowData$config_list <- readConfigFileFn(file = config_file)
+            imported_config <- readConfigFileFn(file = config_file)
             message("DEBUG66: readConfigFile() completed successfully")
-            message(sprintf("DEBUG66: config_list names: %s", paste(names(workflowData$config_list), collapse = ", ")))
-            assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
-            message("DEBUG66: config assigned to global env")
-            logger::log_info("Loaded config.ini and assigned to global environment.")
+            message(sprintf("DEBUG66: config_list names: %s", paste(names(imported_config), collapse = ", ")))
+            logger::log_info("Loaded config.ini.")
         } else {
             default_config <- file.path(experimentPaths$source_dir, "config.ini")
             if (fileExistsFn(default_config)) {
-                workflowData$config_list <- readConfigFileFn(file = default_config)
-                assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
+                imported_config <- readConfigFileFn(file = default_config)
                 logger::log_info("Loaded config.ini from source_dir.")
             } else {
                 logger::log_warn("No config.ini found. Using empty config.")
-                workflowData$config_list <- list()
+                imported_config <- list()
             }
         }
 
@@ -205,7 +204,6 @@ runLipidDesignImportConfirmationShell <- function(
         if (fileExistsFn(col_map_file)) {
             logger::log_info("Loading column_mapping.json")
             col_map <- readJsonFn(col_map_file, simplifyVector = TRUE)
-            workflowData$column_mapping <- col_map
 
             # DEBUG66: Log column mapping from file
             message(sprintf("DEBUG66: Loaded column_mapping from JSON"))
@@ -247,7 +245,6 @@ runLipidDesignImportConfirmationShell <- function(
                 sample_columns = sample_cols,
                 is_pattern = NA_character_
             )
-            workflowData$column_mapping <- col_map
             logger::log_info(sprintf("Inferred column mapping: lipid_id=%s, annotation=%s, %d samples",
                 lipid_id_col, annotation_col, length(sample_cols)))
         }
@@ -293,11 +290,37 @@ runLipidDesignImportConfirmationShell <- function(
             message("DEBUG66: No contrasts loaded (imported_contrasts is NULL)")
         }
 
+        formula_string <- lipidDesignResolveFormulaString(imported_config)
+        preflight <- validateLipidDesignDaPreflight(
+            designMatrix = imported_design,
+            assayList = assay_list,
+            contrastsTbl = imported_contrasts,
+            formulaString = formula_string,
+            columnMapping = col_map,
+            requireContrasts = FALSE
+        )
+        if (!isTRUE(preflight$valid)) {
+            stop(sprintf(
+                "Invalid lipidomics design import: %s",
+                paste(preflight$errors, collapse = "; ")
+            ), call. = FALSE)
+        }
+        if (!is.null(preflight$contrast_validation$contrasts_tbl) &&
+            nrow(preflight$contrast_validation$contrasts_tbl) > 0L) {
+            imported_contrasts <- preflight$contrast_validation$contrasts_tbl
+        }
+
         # --- 6. Update workflow_data ---
+        workflowData$config_list <- imported_config
+        workflowData$column_mapping <- col_map
         workflowData$design_matrix <- imported_design
         workflowData$contrasts_tbl <- imported_contrasts
         workflowData$data_tbl <- assay_list
         workflowData$data_cln <- assay_list
+
+        assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
+        message("DEBUG66: config assigned to global env")
+        logger::log_info("Assigned imported config to global environment.")
 
         if (!is.null(imported_contrasts)) {
             assignFn("contrasts_tbl", imported_contrasts, envir = .GlobalEnv)
@@ -432,4 +455,3 @@ registerLipidDesignImportConfirmationObserver <- function(
         )
     })
 }
-

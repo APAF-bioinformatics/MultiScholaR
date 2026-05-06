@@ -784,6 +784,62 @@
         }
       ],
       "required_tests": ["module-ci-manifest", "module-ci-oracles", "module-ci-lipid-import"]
+    },
+    {
+      "scenario_id": "MCI-019.1-lipidomics-design-schema-smoke",
+      "ticket_id": "MCI-019",
+      "item_id": "MCI-019.1",
+      "omic": "lipidomics",
+      "module_family": "design",
+      "runtime": "unit-contract",
+      "ci_lane": "lipidomics-unit",
+      "fixture": {
+        "path": "fixtures/lipidomics/lipid_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "feature_id_col": "LipidName",
+        "assay_cases": ["LCMS_Pos", "LCMS_Neg", "GCMS", "LCMS_Pos+LCMS_Neg"],
+        "design_cases": ["two_group", "unbalanced", "multi_group", "batch_aware", "missing_group"],
+        "alignment_cases": ["identical", "reordered", "missing_sample", "extra_sample", "case_varied"],
+        "contrast_cases": ["valid", "reversed", "duplicate", "invalid_term", "empty", "friendly_raw_preservation"],
+        "import_cases": ["source_dir", "browser_safe_controls", "missing_manifest", "missing_assay_file"],
+        "formula_cases": ["~ 0 + group", "~ 0 + group + batch", "~ 0 + missing_factor"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "assay_names": ["LCMS_Pos", "LCMS_Neg"],
+        "state_keys": ["design_matrix", "contrasts_tbl", "data_cln", "lipid_raw_data_s4"],
+        "sub_steps": [
+          "builder_design_shapes_validated",
+          "multi_assay_alignment_validated",
+          "contrast_serialization_validated",
+          "existing_design_import_validated",
+          "design_artifacts_validated",
+          "da_preflight_validated"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "design_matrix.tab",
+          "schema": "module_ci_table"
+        },
+        {
+          "path": "contrast_strings.tab",
+          "schema": "module_ci_text"
+        },
+        {
+          "path": "assay_manifest.txt",
+          "schema": "module_ci_text"
+        },
+        {
+          "path": "column_mapping.json",
+          "schema": "module_ci_json"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-lipid-design"]
     }
   ]
 }

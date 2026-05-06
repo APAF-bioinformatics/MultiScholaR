@@ -866,3 +866,43 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic lipidomics --module import --runtime unit-contract --reporter summary
 ```
+
+## Lipidomics Design Matrix
+
+MCI-019 adds `tests/testthat/test-module-ci-lipid-design.R` plus
+`tests/testthat/helper-module-ci-lipid-design.R`. This suite targets the
+lipidomics design boundary between import and QC/DA for every loaded lipid
+assay.
+
+Coverage includes:
+
+- Builder payloads for balanced two-group, unbalanced, three-group, batch-aware,
+  metadata-rich, and missing-group designs.
+- Multi-assay alignment across LCMS_Pos, LCMS_Neg, GCMS, and combined assay
+  layouts, including reordered, missing, extra, and case-varied sample columns.
+- Contrast serialization for raw, friendly, reversed, duplicate, invalid, empty,
+  and design-save-without-final-contrast cases while preserving
+  `*_vs_*` friendly names and `groupA-groupB` contrast expressions.
+- Existing-design import from source directories with `design_matrix.tab`,
+  `assay_manifest.txt`, `data_cln_*.tab`, `contrast_strings.tab`,
+  `column_mapping.json`, and browser-safe import controls.
+- Artifact fidelity for design, contrast, assay manifest, column mapping,
+  manifest, config, and per-assay cleaned data files.
+- DA preflight checks that reject invalid formulas, invalid contrast terms, and
+  sample/design drift before QC triggers, S4 state persistence, or tab status
+  advancement.
+
+The design matrix exposed two production hardening changes:
+
+- Lipid design builder saves now validate design/sample alignment and DA contrast
+  feasibility before mutating workflow data, writing artifacts, creating
+  `lipid_raw_data_s4`, or advancing QC.
+- Existing lipid design imports now validate the imported design, assay manifest,
+  column mapping, contrast table, and formula locally before committing workflow
+  state or assigning globals.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic lipidomics --module design --runtime unit-contract --reporter summary
+```
