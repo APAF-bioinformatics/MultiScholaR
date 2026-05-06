@@ -52,6 +52,18 @@ restoreLipidDaAssaysFromSession <- function(
         return(NULL)
     }
 
+    currentS4 <- sessionData$current_s4_object
+    if (identical(sessionData$omic_type, "lipidomics") && inherits(currentS4, "LipidomicsAssayData")) {
+        actualAssayNames <- names(currentS4@lipid_data)
+        if (length(assayNames) > 0L && !setequal(as.character(assayNames), as.character(actualAssayNames))) {
+            stop(sprintf(
+                "Loaded lipid session assay_names do not match S4 lipid_data assays: session [%s], S4 [%s]",
+                paste(assayNames, collapse = ", "),
+                paste(actualAssayNames, collapse = ", ")
+            ))
+        }
+    }
+
     daData$assays_available <- assayNames
 
     assayChoices <- c("Combined", assayNames)
@@ -634,4 +646,3 @@ handleLipidDaLoadFilteredSession <- function(
         loadResult = loadResult
     )
 }
-

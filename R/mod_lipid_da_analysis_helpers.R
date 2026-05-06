@@ -78,6 +78,39 @@ prepareLipidDaRunAnalysisContext <- function(
     )
 }
 
+validateLipidDaAnalysisPreflight <- function(
+    currentS4,
+    contrastsTbl,
+    formulaString = "~ 0 + group",
+    validateAlignmentFn = validateLipidDesignAlignment,
+    validateContrastsFn = validateLipidDesignContrasts
+) {
+    alignment <- validateAlignmentFn(
+        designMatrix = currentS4@design_matrix,
+        assayList = currentS4@lipid_data,
+        sampleIdCol = currentS4@sample_id,
+        groupCol = currentS4@group_id,
+        requireReplicates = FALSE
+    )
+    contrastValidation <- validateContrastsFn(
+        designMatrix = currentS4@design_matrix,
+        contrastsTbl = contrastsTbl,
+        formulaString = formulaString,
+        allowEmpty = FALSE
+    )
+    errors <- c(alignment$errors, contrastValidation$errors)
+    warnings <- c(alignment$warnings, contrastValidation$warnings)
+
+    list(
+        valid = length(errors) == 0L,
+        errors = unique(errors),
+        warnings = unique(warnings),
+        alignment = alignment,
+        contrast_validation = contrastValidation,
+        model_terms = contrastValidation$model_terms
+    )
+}
+
 handleLipidDaRunAnalysisPreflight <- function(
     analysisContext,
     formulaString,
@@ -87,6 +120,9 @@ handleLipidDaRunAnalysisPreflight <- function(
     workflowData,
     session,
     experimentPaths,
+    validatePreflightFn = validateLipidDaAnalysisPreflight,
+    removeNotificationFn = shiny::removeNotification,
+    notify = shiny::showNotification,
     executeRunAnalysisFn = executeLipidDaRunAnalysis
 ) {
     if (is.null(analysisContext)) {
@@ -95,6 +131,26 @@ handleLipidDaRunAnalysisPreflight <- function(
 
     currentS4 <- analysisContext$currentS4
     contrastsTbl <- analysisContext$contrastsTbl
+
+    if (inherits(currentS4, "LipidomicsAssayData") && is.function(validatePreflightFn)) {
+        preflight <- validatePreflightFn(
+            currentS4 = currentS4,
+            contrastsTbl = contrastsTbl,
+            formulaString = formulaString
+        )
+
+        if (!isTRUE(preflight$valid)) {
+            errorMessage <- paste(preflight$errors, collapse = "; ")
+            removeNotificationFn("da_running")
+            notify(errorMessage, type = "error", duration = 5)
+            return(list(
+                status = "error",
+                stage = "preflight",
+                preflight = preflight,
+                errorMessage = errorMessage
+            ))
+        }
+    }
 
     executeRunAnalysisFn(
         currentS4 = currentS4,
@@ -243,30 +299,30 @@ finalizeLipidDaRunAnalysisSuccess <- function(
 
             if (is.null(daOutputDir) || is.null(publicationGraphsDir)) {
                 logWarn("   Output directories not configured, skipping file output")
-                return(list(status = "skipped", success = FALSE))
-            }
-
-            success <- writeResultsFn(
-                da_results_list = results,
-                da_output_dir = daOutputDir,
-                publication_graphs_dir = publicationGraphsDir,
-                da_q_val_thresh = daQValThresh,
-                lfc_threshold = treatLfcCutoff,
-                heatmap_top_n = 50,
-                heatmap_clustering = "both",
-                heatmap_color_scheme = "RdBu"
-            )
-
-            if (success) {
-                logInfo("   All DA results written to disk successfully")
-                notify(
-                    "DA results saved to disk (tables, volcano plots, heatmaps)",
-                    type = "message",
-                    duration = 5
+                list(status = "skipped", success = FALSE)
+            } else {
+                success <- writeResultsFn(
+                    da_results_list = results,
+                    da_output_dir = daOutputDir,
+                    publication_graphs_dir = publicationGraphsDir,
+                    da_q_val_thresh = daQValThresh,
+                    lfc_threshold = treatLfcCutoff,
+                    heatmap_top_n = 50,
+                    heatmap_clustering = "both",
+                    heatmap_color_scheme = "RdBu"
                 )
-            }
 
-            list(status = "completed", success = success)
+                if (success) {
+                    logInfo("   All DA results written to disk successfully")
+                    notify(
+                        "DA results saved to disk (tables, volcano plots, heatmaps)",
+                        type = "message",
+                        duration = 5
+                    )
+                }
+
+                list(status = "completed", success = success)
+            }
         },
         error = function(e) {
             logWarn(paste("   Could not write DA results to disk:", e$message))
@@ -314,4 +370,3 @@ finalizeLipidDaRunAnalysisError <- function(
 
     contract
 }
-

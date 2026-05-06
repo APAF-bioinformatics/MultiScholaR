@@ -992,3 +992,57 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic lipidomics --module normalization --runtime unit-contract --reporter summary
 ```
+
+## Lipidomics DA Matrix
+
+MCI-022 adds `tests/testthat/test-module-ci-lipid-da.R` plus
+`tests/testthat/helper-module-ci-lipid-da.R`. This suite targets the lipidomics
+DA boundary after normalized-session export and before summary/report
+consumption, where filtered sessions, design formulas, contrasts, multi-assay
+results, visualizations, and publication artifacts must remain wired together.
+
+Coverage includes:
+
+- Filtered-session reload for single-assay, dual-assay, and LCMS-plus-GCMS
+  layouts, including stale source fallback, missing file notifications,
+  malformed RDS rejection, state-manager restoration, formula restoration,
+  contrast dropdowns, assay dropdowns, and explicit assay-name/S4 mismatch
+  rejection for lipidomics sessions.
+- Formula and contrast preflight for two-group, multi-group, batch-aware,
+  reversed, duplicate-friendly-name, empty, invalid-term, and invalid-formula
+  cases. Invalid inputs are rejected before the DA engine mutates state or marks
+  analysis complete.
+- DA orchestration across LCMS_Pos, LCMS_Neg, and GCMS with deterministic edge
+  cases for mixed significance, no significant features, all significant
+  features, no variance, tied p-values, and missing annotation metadata.
+- Long-table schema fidelity for lipid IDs, lipid names, assay provenance,
+  raw contrasts, friendly contrasts, numerator/denominator labels, q-values,
+  significance calls, and per-sample intensity columns.
+- Render contracts for combined and per-assay volcano inputs, heatmap state and
+  cluster storage, summary text, significance filters, empty result tables, max
+  row handling, and all DA selector updates.
+- Export/report fidelity for per-assay TSV/XLSX files, publication volcano
+  outputs, heatmap no-significant fallbacks, NumSigDE tables, mode-specific file
+  prefixes, and report-consumer schema smoke.
+
+The DA matrix exposed production hardening changes:
+
+- Lipid DA now runs a reusable preflight before analysis, validating
+  assay/design alignment, formula terms, and non-empty contrast tables before
+  invoking the DA engine.
+- Lipid filtered-session reload now rejects lipidomics sessions whose serialized
+  `assay_names` disagree with the loaded S4 object's `lipid_data` assays.
+- Lipid DA results now fall back to the lipid ID as `lipid_name` when an assay
+  has no annotation column, preserving export/report schemas for metadata-poor
+  imports.
+- Lipid DA table rendering now returns an empty state after filters remove all
+  rows, instead of rendering a blank DataTable.
+- Lipid DA success finalization now preserves selector state and disk-write
+  status when output directories are intentionally absent, instead of returning
+  early from the disk-write branch.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic lipidomics --module differential_abundance --runtime unit-contract --reporter summary
+```

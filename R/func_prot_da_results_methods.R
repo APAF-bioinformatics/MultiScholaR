@@ -400,23 +400,53 @@ setMethod(
 # getDaResultsLongFormat
 # ----------------------------------------------------------------------------
 # Get the differential abundance results in wide format
+.resolveDaAccessorSource <- function(object, assay_name = NULL) {
+  source_object <- object@theObject
+  source_slots <- methods::slotNames(source_object)
+
+  if ("lipid_data" %in% source_slots && "lipid_id_column" %in% source_slots) {
+    counts_data_slot <- source_object@lipid_data
+    id_col_name <- source_object@lipid_id_column
+  } else if ("metabolite_data" %in% source_slots && "metabolite_id_column" %in% source_slots) {
+    counts_data_slot <- source_object@metabolite_data
+    id_col_name <- source_object@metabolite_id_column
+  } else {
+    stop(
+      sprintf(
+        "Unsupported DA result source object class for result accessors: %s",
+        paste(class(source_object), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+
+  counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
+    slot_names <- names(counts_data_slot)
+    if (!is.null(assay_name) && nzchar(assay_name) &&
+        !is.null(slot_names) && assay_name %in% slot_names) {
+      counts_data_slot[[assay_name]]
+    } else {
+      counts_data_slot[[1]]
+    }
+  } else {
+    counts_data_slot
+  }
+
+  list(
+    counts_table = counts_table_to_use,
+    id_col_name = id_col_name
+  )
+}
+
 #' @export
 setMethod(
   f = "getDaResultsLongFormat",
   signature = "list",
   definition = function(objectsList) {
-    return_object_list <- purrr::map(objectsList, function(object) {
-      # Correctly access the metabolite data from the nested 'theObject' slot.
-      # This defensively handles cases where the slot might hold a list of
-      # data frames (correct) or a single data frame (incorrect but handled).
-      counts_data_slot <- object@theObject@metabolite_data
-      counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
-        counts_data_slot[[1]]
-      } else {
-        counts_data_slot
-      }
-
-      id_col_name <- object@theObject@metabolite_id_column
+    return_object_list <- purrr::imap(objectsList, function(object, assay_name) {
+      accessor_source <- .resolveDaAccessorSource(object, assay_name)
+      counts_table_to_use <- accessor_source$counts_table
+      id_col_name <- accessor_source$id_col_name
 
       # Bind the list of data frames into a single tidy data frame
       tidy_results <- object@contrasts_results_table |>
@@ -453,18 +483,10 @@ setMethod(
     raw_pvalue_column = "raw_pvalue",
     log2fc_column = "logFC"
   ) {
-    return_object_list <- purrr::map(objectsList, function(object) {
-      # Correctly access the metabolite data from the nested 'theObject' slot.
-      # This defensively handles cases where the slot might hold a list of
-      # data frames (correct) or a single data frame (incorrect but handled).
-      counts_data_slot <- object@theObject@metabolite_data
-      counts_table_to_use <- if (is.list(counts_data_slot) && !is.data.frame(counts_data_slot)) {
-        counts_data_slot[[1]]
-      } else {
-        counts_data_slot
-      }
-
-      id_col_name <- object@theObject@metabolite_id_column
+    return_object_list <- purrr::imap(objectsList, function(object, assay_name) {
+      accessor_source <- .resolveDaAccessorSource(object, assay_name)
+      counts_table_to_use <- accessor_source$counts_table
+      id_col_name <- accessor_source$id_col_name
 
       # Bind the list of data frames into a single tidy data frame
       tidy_results <- object@contrasts_results_table |>
@@ -492,4 +514,3 @@ setMethod(
     return(return_object_list)
   }
 )
-

@@ -118,6 +118,10 @@ buildLipidDaResultsTableWidget <- function(
             results$logFC < -lfcThreshold, ]
     }
 
+    if (nrow(results) == 0) {
+        return(NULL)
+    }
+
     if (nrow(results) > tableMaxRows) {
         results <- results[seq_len(tableMaxRows), ]
     }
@@ -186,4 +190,3 @@ buildLipidDaResultsDownloadOutputHandler <- function(
         }
     )
 }
-

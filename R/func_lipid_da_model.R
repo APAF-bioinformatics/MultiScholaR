@@ -291,6 +291,15 @@ runLipidsDA <- function(
     d66_log("    assay_list names = ", paste(names(assay_list), collapse = ", "))
     # [D66:END] ---------------------------
 
+    preflight <- validateLipidDaAnalysisPreflight(
+        currentS4 = theObject,
+        contrastsTbl = contrasts_tbl,
+        formulaString = formula_string
+    )
+    if (!isTRUE(preflight$valid)) {
+        stop(paste(preflight$errors, collapse = "; "))
+    }
+
     # Extract contrast strings
     if ("contrasts" %in% colnames(contrasts_tbl)) {
         contrast_strings <- as.character(contrasts_tbl$contrasts)
@@ -344,9 +353,14 @@ runLipidsDA <- function(
         rownames(expr_matrix) <- assay_data[[lipid_id_col]]
 
         # Get annotation info for later joining
+        lipid_names <- if (annotation_col %in% colnames(assay_data)) {
+            assay_data[[annotation_col]]
+        } else {
+            assay_data[[lipid_id_col]]
+        }
         annotation_info <- data.frame(
             lipid_id = assay_data[[lipid_id_col]],
-            lipid_name = assay_data[[annotation_col]],
+            lipid_name = lipid_names,
             stringsAsFactors = FALSE
         )
 
@@ -468,4 +482,3 @@ runLipidsDA <- function(
         treat_lfc_cutoff = treat_lfc_cutoff
     ))
 }
-

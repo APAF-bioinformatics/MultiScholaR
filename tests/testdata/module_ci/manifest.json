@@ -960,6 +960,63 @@
         }
       ],
       "required_tests": ["module-ci-manifest", "module-ci-lipid-norm"]
+    },
+    {
+      "scenario_id": "MCI-022.1-lipidomics-da-schema-smoke",
+      "ticket_id": "MCI-022",
+      "item_id": "MCI-022.1",
+      "omic": "lipidomics",
+      "module_family": "differential_abundance",
+      "runtime": "unit-contract",
+      "ci_lane": "lipidomics-unit",
+      "fixture": {
+        "path": "fixtures/lipidomics/lipid_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "feature_id_col": "LipidName",
+        "assay_cases": ["LCMS_Pos", "LCMS_Neg", "GCMS", "LCMS_Pos+LCMS_Neg+GCMS"],
+        "session_cases": ["valid", "stale_source_fallback", "missing_file", "malformed_rds", "mismatched_assay_names"],
+        "formula_cases": ["~ 0 + group", "~ 0 + group + batch", "invalid_formula"],
+        "contrast_cases": ["two_group", "multi_group", "batch_aware", "reversed", "duplicate", "empty", "invalid_term", "contrast_string_column"],
+        "result_cases": ["mixed", "no_significant", "all_significant", "no_variance", "tied_pvalues", "missing_metadata"],
+        "renderers": ["combined_volcano", "per_assay_volcano", "heatmap", "summary_text", "results_table", "selector_updates"],
+        "exports": ["tsv", "xlsx", "publication_volcano", "publication_heatmap", "num_sig_table", "report_schema"]
+      },
+      "expected_state": {
+        "sample_count": 6,
+        "assay_names": ["LCMS_Pos", "LCMS_Neg", "GCMS"],
+        "state_keys": ["lipid_correlation_filtered", "da_results_list", "analysis_complete"],
+        "sub_steps": [
+          "filtered_session_reload_validated",
+          "formula_contrast_preflight_validated",
+          "da_engine_schema_validated",
+          "render_controls_validated",
+          "export_schema_validated",
+          "summary_report_consumer_smoke_validated"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "de_posmode_lipids_groupKO-groupWT_long_annot.tsv",
+          "schema": "lipidomics_da_long_table"
+        },
+        {
+          "path": "de_negmode_lipids_groupKO-groupWT_long_annot.tsv",
+          "schema": "lipidomics_da_long_table"
+        },
+        {
+          "path": "de_gcms_lipids_groupKO-groupWT_long_annot.tsv",
+          "schema": "lipidomics_da_long_table"
+        },
+        {
+          "path": "lipids_num_sig_de_molecules.tab",
+          "schema": "lipidomics_da_num_sig"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-lipid-da"]
     }
   ]
 }
