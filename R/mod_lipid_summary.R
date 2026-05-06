@@ -195,7 +195,8 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
             input = input,
             values = values,
             projectDirs = project_dirs,
-            omicType = omic_type
+            omicType = omic_type,
+            workflowData = workflow_data
         )
 
         # Initialize wrapper outputs

@@ -1046,3 +1046,62 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic lipidomics --module differential_abundance --runtime unit-contract --reporter summary
 ```
+
+## Lipidomics Summary/Report Matrix
+
+MCI-023 adds `tests/testthat/test-module-ci-lipid-summary.R` plus
+`tests/testthat/helper-module-ci-lipid-summary.R`. This suite targets the final
+lipidomics user-visible fidelity surface: summary parameter capture,
+publication copying, report rendering, session export, and artifact scorecards
+after DA has generated assay-specific outputs.
+
+Coverage includes:
+
+- Parameter roundtrip for single LCMS_Pos, LCMS_Pos+LCMS_Neg, and
+  LCMS_Pos+GCMS layouts, with `none`, `scale`, and `quantile` normalization,
+  RUV skip/manual/automatic branches, ITSD skip/manual/regex branches, q-value
+  thresholds, raw contrast expressions, and friendly contrast names.
+- Study-parameter fidelity for assay names, lipid counts per assay, sample
+  count, lipid metadata columns, ITSD settings, log-transform settings,
+  between-sample normalization, RUV-III status, per-assay RUV `k`/control
+  counts, DA thresholds, and saved integration S4 `@args`.
+- Publication-copy fidelity for combined DA workbooks, per-assay DA inputs,
+  RUV/normalized TSV/RDS outputs, composite QC figures, stage-specific QC
+  plots, ITSD figures, legacy volcano/heatmap directories, lipid heatmaps,
+  lipid NumSigDE tables, Study_report design/contrast/study-parameter copies,
+  and copied normalized table schemas.
+- Missing-artifact behavior for optional report assets versus required study
+  artifacts. Optional plot/directory gaps now surface as warning-status copies,
+  while missing contrasts, design matrix, or study parameters fail explicitly
+  before the summary state marks files as copied.
+- Report rendering with deterministic push-safe stubs, preservation of
+  `lipidomics_report.rmd`, download-handler filename fidelity, successful
+  non-empty HTML output, and missing-render-output failure classification.
+- Session-state export for reloadable RDS payloads containing omic type,
+  workflow type, report template, assay names, feature counts, sample count,
+  contrast count, parameter payloads, UI parameters, RUV optimization payloads,
+  and saved S4 args.
+- Scorecard coverage for study parameters, DA workbook, RUV-normalized TSV/RDS,
+  QC figures, NumSigDE table, session state, and rendered report.
+
+The summary/report matrix exposed production hardening changes:
+
+- Lipid summary export now enriches session-state RDS files with workflow
+  metadata, assay names, feature counts, sample counts, contrast counts,
+  parameter payloads, RUV optimization results, and S4 args instead of exporting
+  only basic UI state.
+- Lipid publication copying now classifies required and optional copy failures:
+  required study artifacts stop the workflow explicitly, while optional plot or
+  directory gaps remain visible as warnings without blocking report generation.
+- Lipidomics-specific publication copying now preserves stage QC plots, ITSD
+  figures, heatmap folders, NumSigDE tables, and normalized/RUV assay outputs
+  under the existing results-summary directory conventions.
+- Push-safe observer shells now exercise save, publication copy, report render,
+  and session export behavior without a live browser session, making the
+  summary/report workflow runnable from module CI on every push.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic lipidomics --module summary_report --runtime unit-contract --reporter summary
+```

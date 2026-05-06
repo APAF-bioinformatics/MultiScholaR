@@ -269,6 +269,11 @@ tests_for_selection <- function(scenarios) {
     }, logical(1)))) {
       tests <- c(tests, "module-ci-metab-summary")
     }
+    if (any(vapply(scenarios, function(scenario) {
+      identical(scenario$module, "summary_report") && identical(scenario$omic, "lipidomics")
+    }, logical(1)))) {
+      tests <- c(tests, "module-ci-lipid-summary")
+    }
   }
   if ("fixtures" %in% modules) {
     tests <- c(tests, "module-ci-fixture-integrity", "module-ci-oracles")

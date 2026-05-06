@@ -474,6 +474,102 @@ copyToResultsSummary <- function(omic_type,
         } else {
             cat("COPY: Warning - no normalized RDS files found for metabolomics\n")
         }
+    } else if (omic_type == "lipidomics") {
+        cat("COPY: Adding lipidomics-specific files\n")
+
+        stage_qc_files <- list.files(
+            current_paths$feature_qc_dir,
+            pattern = "_(pre_norm|post_norm|ruv_corrected)_(pca|density|rle|correlation)\\.png$",
+            full.names = TRUE
+        )
+        if (length(stage_qc_files) > 0) {
+            for (qc_file in stage_qc_files) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = qc_file, dest = "QC_figures", is_dir = FALSE, display_name = sprintf("Lipid QC: %s", basename(qc_file)))
+                ))
+            }
+            cat(sprintf("COPY: Added %d lipidomics stage-based QC files\n", length(stage_qc_files)))
+        }
+
+        lipid_qc_files <- list.files(
+            current_paths$feature_qc_dir,
+            pattern = "(assay_metrics|combined_plots|correlation_filtered|composite_QC_figure)\\.(png|pdf)$",
+            full.names = TRUE
+        )
+        lipid_qc_files <- setdiff(lipid_qc_files, stage_qc_files)
+        if (length(lipid_qc_files) > 0) {
+            for (qc_file in lipid_qc_files) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = qc_file, dest = "QC_figures", is_dir = FALSE, display_name = sprintf("Lipid QC: %s", basename(qc_file)))
+                ))
+            }
+            cat(sprintf("COPY: Added %d lipidomics QC files\n", length(lipid_qc_files)))
+        }
+
+        itsd_files <- list.files(current_paths$feature_qc_dir, pattern = "itsd.*\\.png$", full.names = TRUE)
+        if (length(itsd_files) > 0) {
+            for (itsd_file in itsd_files) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = itsd_file, dest = "QC_figures", is_dir = FALSE, display_name = sprintf("Lipid ITSD: %s", basename(itsd_file)))
+                ))
+            }
+            cat(sprintf("COPY: Added %d lipidomics ITSD figures\n", length(itsd_files)))
+        }
+
+        heatmap_dir <- file.path(current_paths$publication_graphs_dir, "Heatmaps")
+        if (dir.exists(heatmap_dir)) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = heatmap_dir, dest = "Publication_figures/Heatmaps", is_dir = TRUE, display_name = "DA Heatmaps")
+            ))
+            cat("COPY: Added lipidomics Heatmaps directory\n")
+        }
+
+        num_sig_de_dir <- file.path(current_paths$publication_graphs_dir, "NumSigDeMolecules")
+        if (dir.exists(num_sig_de_dir)) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = num_sig_de_dir, dest = "Publication_figures/NumSigDeMolecules", is_dir = TRUE, display_name = "Num Sig DE Molecules")
+            ))
+
+            sig_files <- list.files(
+                num_sig_de_dir,
+                pattern = "(_num_sig_da_molecules|_num_sig_de_molecules|_num_significant_differentially_abundant_all)\\.tab$",
+                full.names = TRUE
+            )
+            if (length(sig_files) > 0) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = sig_files[1], dest = "Publication_tables", is_dir = FALSE, display_name = "Num Sig DE Molecules Tab", new_name = paste0("da_", omic_type, "_num_sig_de_molecules.tab"))
+                ))
+            }
+        }
+
+        ruv_tsv_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results.tsv")
+        norm_tsv_path <- file.path(current_paths$feature_qc_dir, "normalised_results.tsv")
+        ruv_rds_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results.RDS")
+        norm_rds_path <- file.path(current_paths$feature_qc_dir, "normalised_results.RDS")
+
+        if (file.exists(ruv_rds_path)) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = ruv_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results RDS (Lipid)", new_name = "ruv_normalised_results.RDS")
+            ))
+            if (file.exists(ruv_tsv_path)) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = ruv_tsv_path, dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results TSV (Lipid)", new_name = "RUV_normalised_results.tsv")
+                ))
+            }
+            cat("COPY: Using RUV-normalized file for lipidomics\n")
+        } else if (file.exists(norm_rds_path)) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = norm_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results RDS (Lipid)", new_name = "normalised_results.RDS")
+            ))
+            if (file.exists(norm_tsv_path)) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = norm_tsv_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results TSV (Lipid)", new_name = "normalised_results.tsv")
+                ))
+            }
+            cat("COPY: Using normalized file for lipidomics (RUV skipped)\n")
+        } else {
+            cat("COPY: Warning - no normalized RDS files found for lipidomics\n")
+        }
     }
 
     # Excel files paths

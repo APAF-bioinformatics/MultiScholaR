@@ -1017,6 +1017,91 @@
         }
       ],
       "required_tests": ["module-ci-manifest", "module-ci-lipid-da"]
+    },
+    {
+      "scenario_id": "MCI-023.1-lipidomics-summary-report-schema-smoke",
+      "ticket_id": "MCI-023",
+      "item_id": "MCI-023.1",
+      "omic": "lipidomics",
+      "module_family": "summary_report",
+      "runtime": "unit-contract",
+      "ci_lane": "lipidomics-unit",
+      "fixture": {
+        "path": "fixtures/lipidomics/lipid_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "feature_id_col": "LipidName",
+        "assay_cases": ["LCMS_Pos", "LCMS_Neg", "GCMS", "LCMS_Pos+LCMS_Neg", "LCMS_Pos+GCMS", "single_assay"],
+        "normalization_methods": ["none", "cyclicloess", "quantile", "scale"],
+        "ruv_modes": ["skip", "manual", "automatic"],
+        "itsd_cases": ["regex_global", "manual_assay_specific", "skip"],
+        "da_thresholds": [0.01, 0.05, 0.1],
+        "contrast_cases": ["friendly_names", "raw_terms", "multi_group"],
+        "publication_inputs": [
+          "da_workbooks",
+          "qc_plots",
+          "itsd_figures",
+          "normalization_outputs",
+          "ruv_outputs",
+          "heatmaps",
+          "volcano_folders",
+          "num_sig_de_tables",
+          "missing_optional",
+          "missing_required"
+        ],
+        "report_modes": ["deterministic_stub", "template_existing", "missing_output"],
+        "report_template": "lipidomics_report.rmd",
+        "session_exports": ["workflow_metadata", "parameter_payload", "reloadable_rds"],
+        "scorecard_artifacts": ["report", "study_parameters", "publication_tables", "copied_figures", "session_state"]
+      },
+      "expected_state": {
+        "sample_count": 6,
+        "assay_names": ["LCMS_Pos", "LCMS_Neg", "GCMS"],
+        "state_keys": [
+          "lipid_qc_complete",
+          "lipid_normalized",
+          "lipid_correlation_filtered",
+          "workflow_args_saved",
+          "files_copied",
+          "report_generated"
+        ],
+        "sub_steps": [
+          "parameter_roundtrip_asserted",
+          "publication_copy_validated",
+          "optional_missing_reported",
+          "required_missing_failed",
+          "report_rendered",
+          "study_parameters_asserted",
+          "session_state_exported",
+          "scorecard_written"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "study_parameters.txt",
+          "schema": "lipidomics_study_parameters"
+        },
+        {
+          "path": "DA_results_lipidomics.xlsx",
+          "schema": "lipidomics_summary_da_workbook"
+        },
+        {
+          "path": "da_lipidomics_num_sig_de_molecules.tab",
+          "schema": "lipidomics_da_num_sig"
+        },
+        {
+          "path": "session_state_<date>.RDS",
+          "schema": "lipidomics_summary_session_state"
+        },
+        {
+          "path": "lipidomics_report.html",
+          "schema": "lipidomics_summary_report"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-lipid-summary"]
     }
   ]
 }
