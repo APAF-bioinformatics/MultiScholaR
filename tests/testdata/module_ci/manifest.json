@@ -892,6 +892,74 @@
         }
       ],
       "required_tests": ["module-ci-manifest", "module-ci-lipid-qc"]
+    },
+    {
+      "scenario_id": "MCI-021.1-lipidomics-normalization-schema-smoke",
+      "ticket_id": "MCI-021",
+      "item_id": "MCI-021.1",
+      "omic": "lipidomics",
+      "module_family": "normalization",
+      "runtime": "unit-contract",
+      "ci_lane": "lipidomics-unit",
+      "fixture": {
+        "path": "fixtures/lipidomics/lipid_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "sample_id_col": "Run",
+        "feature_id_col": "LipidName",
+        "assay_cases": ["LCMS_Pos", "GCMS", "LCMS_Pos+GCMS"],
+        "normalization_methods": ["none", "cyclicloess", "quantile", "scale"],
+        "log_offsets": [1, 2],
+        "edge_values": ["zeros", "missing_values", "negative_values", "constant_features", "extra_metadata"],
+        "itsd_cases": ["regex_global", "manual_assay_specific", "absent", "invalid_manual", "invalid_aggregation"],
+        "itsd_aggregations": ["sum", "mean", "median"],
+        "ruv_modes": ["skip", "manual", "automatic"],
+        "ruv_cases": ["invalid_k", "too_few_controls", "named_controls", "assay_specific_k", "optimizer_trace"],
+        "correlation_cases": ["skip", "pass_all", "boundary", "fail_one", "fail_many", "small_n", "invalid_payload"],
+        "export_variants": ["skip", "manual", "automatic"],
+        "reload_consumers": ["lipidomics_da"]
+      },
+      "expected_state": {
+        "sample_count": 4,
+        "assay_names": ["LCMS_Pos", "GCMS"],
+        "state_keys": [
+          "lipid_itsd_norm",
+          "lipid_log2",
+          "lipid_normalized",
+          "lipid_ruv_corrected",
+          "lipid_correlation_filtered",
+          "lipid_norm_complete"
+        ],
+        "sub_steps": [
+          "normalization_methods_preserve_alignment",
+          "itsd_params_serialized",
+          "ruv_skip_manual_automatic_validated",
+          "correlation_handoff_validated",
+          "session_export_payload_validated",
+          "da_reload_variants_validated"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "lipid_filtered_session_data_latest.rds",
+          "schema": "lipidomics_filtered_session"
+        },
+        {
+          "path": "lipid_filtered_session_summary.txt",
+          "schema": "lipidomics_norm_summary"
+        },
+        {
+          "path": "lipid_ruv_optimization_results.RDS",
+          "schema": "lipidomics_ruv_optimization"
+        },
+        {
+          "path": "lipid_itsd_selections.RDS",
+          "schema": "lipidomics_itsd_selection"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-lipid-norm"]
     }
   ]
 }

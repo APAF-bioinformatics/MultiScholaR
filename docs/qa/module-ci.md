@@ -948,3 +948,47 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic lipidomics --module qc --runtime unit-contract --reporter summary
 ```
+
+## Lipidomics Normalization/RUV Matrix
+
+MCI-021 adds `tests/testthat/test-module-ci-lipid-norm.R` plus
+`tests/testthat/helper-module-ci-lipid-norm.R`. This suite targets the
+lipidomics normalization boundary after QC and before DA, where ITSD
+normalization, log transforms, between-sample normalization, RUV, correlation
+filtering, export, and DA reload all have to preserve multi-assay provenance.
+
+Coverage includes:
+
+- Normalization methods `none`, `cyclicloess`, `quantile`, and `scale`, plus
+  log offsets, zeros, negative values, missing values, constant features,
+  per-assay shifts, and sample/design alignment.
+- ITSD normalization for regex-selected standards, manual per-assay standards,
+  absent standards, invalid manual IDs, invalid aggregation, ITSD removal, and
+  serialized per-assay ITSD feature/count metadata.
+- RUV skip, manual, and automatic branches, including named control vectors,
+  per-assay `k` payloads, optimizer traces, failed assay optimization,
+  invalid-k correction failure, and no `lipid_ruv_corrected` state save on RUV
+  failure.
+- Correlation filtering for skipped filtering, pass-all, exact threshold
+  boundary, fail-one, fail-many, small-n/empty correlation payloads, invalid
+  payloads, tab-status completion, and explicit filtered-state handoff.
+- Session export for skip/manual/automatic variants, validating `omic_type`,
+  current S4 class, assay names, feature counts, normalization flags, RUV
+  payloads, ITSD payloads, metadata sidecars, summary text, and
+  `lipid_filtered_session_data_latest.rds` compatibility.
+- Lipid DA reload smoke for every accepted normalized session variant, including
+  state-manager restoration, formula restoration, contrast dropdowns, assay
+  dropdowns, and table assay choices.
+
+The normalization matrix exposed one production hardening change:
+
+- Lipid normalized-session export now counts samples by intersecting assay
+  columns with the design matrix sample IDs, instead of subtracting two metadata
+  columns from the assay width. This preserves correct sample counts when lipid
+  assays include additional metadata such as `LipidClass`.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic lipidomics --module normalization --runtime unit-contract --reporter summary
+```

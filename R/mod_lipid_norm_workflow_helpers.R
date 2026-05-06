@@ -376,11 +376,12 @@ handleLipidNormExportSession <- function(
             # Calculate feature counts per assay
             feature_counts_per_assay <- NULL
             if (!is.null(current_s4) && inherits(current_s4, "LipidomicsAssayData")) {
+                design_samples <- as.character(current_s4@design_matrix[[current_s4@sample_id]])
                 feature_counts_per_assay <- purrr::map(names(current_s4@lipid_data), \(assay_name) {
                     assay_data <- current_s4@lipid_data[[assay_name]]
                     if (!is.null(assay_data)) {
                         n_features <- length(unique(assay_data[[current_s4@lipid_id_column]]))
-                        n_samples <- ncol(assay_data) - length(c(current_s4@lipid_id_column, current_s4@annotation_id_column))
+                        n_samples <- length(intersect(colnames(assay_data), design_samples))
                         list(features = n_features, samples = n_samples)
                     } else {
                         list(features = 0, samples = 0)

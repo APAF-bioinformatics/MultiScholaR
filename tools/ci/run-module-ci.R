@@ -228,6 +228,11 @@ tests_for_selection <- function(scenarios) {
     }, logical(1)))) {
       tests <- c(tests, "module-ci-metab-norm")
     }
+    if (any(vapply(scenarios, function(scenario) {
+      identical(scenario$module, "normalization") && identical(scenario$omic, "lipidomics")
+    }, logical(1)))) {
+      tests <- c(tests, "module-ci-lipid-norm")
+    }
   }
   if ("differential_abundance" %in% modules) {
     if (any(vapply(scenarios, function(scenario) {

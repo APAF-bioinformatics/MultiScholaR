@@ -128,6 +128,18 @@ test_that("module CI manifest filters scenarios by omic, module, runtime, and ti
     "MCI-020.1-lipidomics-qc-schema-smoke"
   )
   expect_true("module-ci-lipid-qc" %in% lipid_qc[[1]]$required_tests)
+
+  lipid_norm <- module_ci_scenarios(
+    manifest,
+    omic = "lipidomics",
+    module_family = "normalization",
+    runtime = "unit-contract"
+  )
+  expect_identical(
+    module_ci_scenario_ids(lipid_norm),
+    "MCI-021.1-lipidomics-normalization-schema-smoke"
+  )
+  expect_true("module-ci-lipid-norm" %in% lipid_norm[[1]]$required_tests)
 })
 
 test_that("module CI manifest rejects duplicate scenario IDs and missing fixtures", {
