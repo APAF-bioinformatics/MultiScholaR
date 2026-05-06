@@ -61,7 +61,8 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
       localData = local_data,
       getLipidIdCol = get_lipid_id_col,
       getAnnotationCol = get_annotation_col,
-      getSampleColumns = get_sample_columns
+      getSampleColumns = get_sample_columns,
+      experimentPaths = experiment_paths
     )
   })
 }

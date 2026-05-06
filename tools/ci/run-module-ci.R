@@ -168,6 +168,11 @@ tests_for_selection <- function(scenarios) {
     }, logical(1)))) {
       tests <- c(tests, "module-ci-metab-import")
     }
+    if (any(vapply(scenarios, function(scenario) {
+      identical(scenario$module, "import") && identical(scenario$omic, "lipidomics")
+    }, logical(1)))) {
+      tests <- c(tests, "module-ci-lipid-import")
+    }
   }
   if ("design" %in% modules) {
     if (any(vapply(scenarios, function(scenario) {

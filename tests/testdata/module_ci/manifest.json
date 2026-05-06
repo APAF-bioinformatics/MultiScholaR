@@ -741,6 +741,12 @@
         "role": "assay_table"
       },
       "parameters": {
+        "formats": ["lipidsearch", "msdial", "custom"],
+        "assay_cases": ["LCMS_Pos", "LCMS_Neg", "GCMS", "LCMS_Pos+LCMS_Neg", "unusual_names"],
+        "lipidsearch_boundaries": ["missing_LipidName", "missing_LipidClass", "duplicate_lipid_ids", "extra_metadata", "zeros", "non_numeric_samples"],
+        "msdial_boundaries": ["missing_annotation", "mode_names", "duplicate_features", "zero_missing_intensity"],
+        "vendor_overrides": ["custom_mapping", "unsupported_format_fallback", "detected_selected_mismatch"],
+        "invalid_inputs": ["missing_id_column", "missing_sample_columns", "malformed_file", "no_numeric_data", "mismatched_sample_names"],
         "sample_pattern": "^(WT|KO)_",
         "lipid_id_col": "LipidName",
         "annotation_col": "LipidClass"
@@ -748,15 +754,36 @@
       "expected_state": {
         "sample_count": 4,
         "feature_count": 3,
-        "assay_names": ["LCMS_Pos"]
+        "assay_names": ["LCMS_Pos", "LCMS_Neg"],
+        "state_keys": ["setup_import", "design_matrix", "column_mapping", "processing_log"],
+        "sub_steps": [
+          "lipidsearch_matrix_validated",
+          "msdial_matrix_validated",
+          "vendor_override_matrix_validated",
+          "multi_assay_routing_validated",
+          "invalid_inputs_blocked",
+          "source_artifacts_written"
+        ]
       },
       "expected_artifacts": [
+        {
+          "path": "data_cln_LCMS_Pos.tab",
+          "schema": "module_ci_table"
+        },
+        {
+          "path": "assay_manifest.txt",
+          "schema": "module_ci_text"
+        },
+        {
+          "path": "column_mapping.json",
+          "schema": "module_ci_json"
+        },
         {
           "path": "lipidomics_import_summary.tsv",
           "schema": "module_ci_table"
         }
       ],
-      "required_tests": ["module-ci-manifest", "module-ci-oracles"]
+      "required_tests": ["module-ci-manifest", "module-ci-oracles", "module-ci-lipid-import"]
     }
   ]
 }

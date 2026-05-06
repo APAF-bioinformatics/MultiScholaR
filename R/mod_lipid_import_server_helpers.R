@@ -260,11 +260,11 @@ applyLipidImportResultToWorkflow <- function(
   workflowData$data_tbl <- assayList
   workflowData$data_format <- dataFormat
   workflowData$data_type <- "lipid"
-  workflowData$column_mapping <- list(
-    lipid_id_col = lipidIdCol,
-    annotation_col = if (!is.null(annotationCol) && nzchar(annotationCol)) annotationCol else NULL,
-    sample_columns = sampleColumns,
-    is_pattern = if (!is.null(isPattern) && nzchar(isPattern)) isPattern else NA_character_
+  workflowData$column_mapping <- buildLipidImportColumnMapping(
+    lipidIdCol = lipidIdCol,
+    annotationCol = annotationCol,
+    sampleColumns = sampleColumns,
+    isPattern = isPattern
   )
 
   if (!is.null(workflowData$state_manager)) {
@@ -281,6 +281,7 @@ finalizeLipidImportSetupState <- function(
   detectedFormat,
   lipidIdCol,
   sampleColumns,
+  artifactResult = NULL,
   now = Sys.time,
   logInfo = logger::log_info
 ) {
@@ -296,11 +297,15 @@ finalizeLipidImportSetupState <- function(
         nrow(assayData)
       }
     }),
-    n_samples = length(sampleColumns)
+    n_samples = length(sampleColumns),
+    artifacts = artifactResult
   )
 
   updated_status <- workflowData$tab_status
   updated_status$setup_import <- "complete"
+  if (identical(updated_status$design_matrix, "disabled")) {
+    updated_status$design_matrix <- "pending"
+  }
   workflowData$tab_status <- updated_status
 
   logInfo(sprintf(
@@ -416,10 +421,201 @@ callLipidImportSecondAssayReader <- function(
   do.call(importSecondAssay, args)
 }
 
+lipidImportFunctionAcceptsArg <- function(fn, arg) {
+  formal_names <- names(formals(fn))
+  arg %in% formal_names || "..." %in% formal_names
+}
+
+lipidImportScalarString <- function(value) {
+  is.character(value) && length(value) == 1L && !is.na(value) && nzchar(value)
+}
+
+lipidImportScalarValue <- function(value) {
+  if (is.null(value) || length(value) == 0L) {
+    return("")
+  }
+  as.character(value[[1]])
+}
+
+validateLipidImportAssayNames <- function(assay1Name, assay2Name = NULL, assay2File = NULL) {
+  assay1Name <- lipidImportScalarValue(assay1Name)
+  assay2Name <- lipidImportScalarValue(assay2Name)
+  assay2File <- lipidImportScalarValue(assay2File)
+  has_assay2_file <- lipidImportScalarString(assay2File)
+  has_assay2_name <- lipidImportScalarString(assay2Name)
+
+  if (!lipidImportScalarString(assay1Name)) {
+    stop("Primary lipidomics assay name is required", call. = FALSE)
+  }
+
+  assay_names <- c(assay1Name, if (has_assay2_name) assay2Name else character())
+  if (any(grepl("[/\\\\]", assay_names))) {
+    stop("Assay names must not contain path separators", call. = FALSE)
+  }
+
+  if (has_assay2_file != has_assay2_name) {
+    stop("Second lipidomics assay requires both a file and an assay name", call. = FALSE)
+  }
+
+  if (has_assay2_file && identical(assay1Name, assay2Name)) {
+    stop("Duplicate lipidomics assay names are not allowed", call. = FALSE)
+  }
+
+  invisible(TRUE)
+}
+
+buildLipidImportColumnMapping <- function(lipidIdCol, annotationCol, sampleColumns, isPattern) {
+  list(
+    lipid_id_col = lipidIdCol,
+    annotation_col = if (lipidImportScalarString(annotationCol)) annotationCol else NULL,
+    sample_columns = sampleColumns,
+    is_pattern = if (lipidImportScalarString(isPattern)) isPattern else NA_character_
+  )
+}
+
+validateLipidImportProcessingState <- function(
+  assayList,
+  lipidIdCol,
+  sampleColumns,
+  validateMapping = validateLipidColumnMapping
+) {
+  errors <- character()
+  warnings <- character()
+  summaries <- list()
+
+  if (!is.list(assayList) || length(assayList) == 0L) {
+    errors <- c(errors, "No lipidomics assays were assembled")
+  }
+  if (is.null(names(assayList)) || any(!nzchar(names(assayList)))) {
+    errors <- c(errors, "All lipidomics assays must have non-empty names")
+  }
+  if (anyDuplicated(names(assayList)) > 0L) {
+    errors <- c(errors, "Duplicate lipidomics assay names are not allowed")
+  }
+  if (is.null(sampleColumns) || length(sampleColumns) == 0L) {
+    errors <- c(errors, "No sample columns specified")
+  }
+
+  for (assay_name in names(assayList)) {
+    assay_data <- assayList[[assay_name]]
+    if (!is.data.frame(assay_data)) {
+      errors <- c(errors, sprintf("Assay '%s' is not a data frame", assay_name))
+      next
+    }
+
+    mapping_result <- validateMapping(
+      data = assay_data,
+      lipid_id_column = lipidIdCol,
+      sample_columns = sampleColumns
+    )
+    if (!isTRUE(mapping_result$valid)) {
+      errors <- c(errors, sprintf(
+        "Assay '%s': %s",
+        assay_name,
+        paste(mapping_result$errors, collapse = "; ")
+      ))
+    }
+    if (length(mapping_result$warnings) > 0L) {
+      warnings <- c(warnings, sprintf(
+        "Assay '%s': %s",
+        assay_name,
+        mapping_result$warnings
+      ))
+    }
+    summaries[[assay_name]] <- mapping_result$summary
+
+    present_samples <- intersect(sampleColumns, names(assay_data))
+    non_numeric <- present_samples[!vapply(assay_data[present_samples], is.numeric, logical(1))]
+    if (length(non_numeric) > 0L) {
+      errors <- c(errors, sprintf(
+        "Assay '%s' has non-numeric sample columns: %s",
+        assay_name,
+        paste(non_numeric, collapse = ", ")
+      ))
+    }
+  }
+
+  list(
+    valid = length(errors) == 0L,
+    errors = errors,
+    warnings = warnings,
+    summary = summaries
+  )
+}
+
+writeLipidImportSourceArtifacts <- function(
+  assayList,
+  columnMapping,
+  experimentPaths = NULL,
+  sourceFiles = NULL,
+  writeTableFn = utils::write.table,
+  writeLinesFn = writeLines,
+  writeJsonFn = jsonlite::write_json,
+  fileCopyFn = file.copy,
+  dirCreateFn = dir.create,
+  dirExistsFn = dir.exists,
+  fileExistsFn = file.exists
+) {
+  source_dir <- experimentPaths$source_dir
+  if (is.null(source_dir) || !nzchar(source_dir) || !dirExistsFn(source_dir)) {
+    return(list(written = FALSE, reason = "source_dir unavailable"))
+  }
+
+  assay_names <- names(assayList)
+  artifact_paths <- list()
+
+  for (assay_name in assay_names) {
+    assay_path <- file.path(source_dir, paste0("data_cln_", assay_name, ".tab"))
+    writeTableFn(assayList[[assay_name]], file = assay_path, sep = "\t", row.names = FALSE, quote = FALSE)
+    artifact_paths[[paste0("data_cln_", assay_name)]] <- assay_path
+  }
+
+  manifest_path <- file.path(source_dir, "assay_manifest.txt")
+  writeLinesFn(assay_names, manifest_path)
+  artifact_paths$assay_manifest <- manifest_path
+
+  column_mapping_path <- file.path(source_dir, "column_mapping.json")
+  writeJsonFn(columnMapping, column_mapping_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+  artifact_paths$column_mapping <- column_mapping_path
+
+  source_copy_dir <- file.path(source_dir, "import_sources")
+  dirCreateFn(source_copy_dir, recursive = TRUE, showWarnings = FALSE)
+  copied_sources <- character()
+  if (!is.null(sourceFiles)) {
+    sourceFiles <- sourceFiles[!vapply(sourceFiles, is.null, logical(1))]
+    for (source_name in names(sourceFiles)) {
+      source_file <- sourceFiles[[source_name]]
+      if (lipidImportScalarString(source_file) && fileExistsFn(source_file)) {
+        destination <- file.path(source_copy_dir, paste0(source_name, "_", basename(source_file)))
+        fileCopyFn(source_file, destination, overwrite = TRUE)
+        copied_sources <- c(copied_sources, destination)
+      }
+    }
+  }
+
+  summary_rows <- data.frame(
+    assay_name = assay_names,
+    feature_count = vapply(assayList, nrow, integer(1)),
+    sample_count = length(columnMapping$sample_columns),
+    sample_columns = paste(columnMapping$sample_columns, collapse = ","),
+    stringsAsFactors = FALSE
+  )
+  summary_path <- file.path(source_dir, "lipidomics_import_summary.tsv")
+  writeTableFn(summary_rows, file = summary_path, sep = "\t", row.names = FALSE, quote = FALSE)
+  artifact_paths$import_summary <- summary_path
+
+  list(
+    written = TRUE,
+    paths = artifact_paths,
+    source_copies = copied_sources
+  )
+}
+
 runLipidImportProcessing <- function(
   workflowData,
   assay1Name,
   assay1Data,
+  assay1File = NULL,
   assay2File = NULL,
   assay2Name = NULL,
   vendorFormat,
@@ -429,8 +625,12 @@ runLipidImportProcessing <- function(
   sampleColumns,
   isPattern,
   sanitizeNames,
+  experimentPaths = NULL,
   assembleAssayList = assembleLipidImportAssayList,
   sanitizeSampleNames = sanitizeLipidImportSampleNames,
+  validateAssayNames = validateLipidImportAssayNames,
+  validateImportState = validateLipidImportProcessingState,
+  writeImportArtifacts = writeLipidImportSourceArtifacts,
   applyResultToWorkflow = applyLipidImportResultToWorkflow,
   finalizeSetupState = finalizeLipidImportSetupState,
   notify = shiny::showNotification,
@@ -445,6 +645,12 @@ runLipidImportProcessing <- function(
 
   tryCatch(
     {
+      validateAssayNames(
+        assay1Name = assay1Name,
+        assay2Name = assay2Name,
+        assay2File = assay2File
+      )
+
       assay_list <- assembleAssayList(
         assay1Name = assay1Name,
         assay1Data = assay1Data,
@@ -463,6 +669,31 @@ runLipidImportProcessing <- function(
       assay_list <- sanitized_import$assayList
       sampleColumns <- sanitized_import$sampleColumns
 
+      validation_result <- validateImportState(
+        assayList = assay_list,
+        lipidIdCol = lipidIdCol,
+        sampleColumns = sampleColumns
+      )
+      if (!isTRUE(validation_result$valid)) {
+        stop(sprintf(
+          "Invalid lipidomics import: %s",
+          paste(validation_result$errors, collapse = "; ")
+        ), call. = FALSE)
+      }
+
+      column_mapping <- buildLipidImportColumnMapping(
+        lipidIdCol = lipidIdCol,
+        annotationCol = annotationCol,
+        sampleColumns = sampleColumns,
+        isPattern = isPattern
+      )
+      artifact_result <- writeImportArtifacts(
+        assayList = assay_list,
+        columnMapping = column_mapping,
+        experimentPaths = experimentPaths,
+        sourceFiles = c(assay1 = assay1File, assay2 = assay2File)
+      )
+
       applyResultToWorkflow(
         workflowData = workflowData,
         assayList = assay_list,
@@ -478,15 +709,19 @@ runLipidImportProcessing <- function(
         assayList = assay_list,
         detectedFormat = workflowData$data_format,
         lipidIdCol = lipidIdCol,
-        sampleColumns = sampleColumns
+        sampleColumns = sampleColumns,
+        artifactResult = artifact_result
       )
 
       removeNotify("lipid_import_working")
       notify("Data imported successfully!", type = "message")
 
       invisible(list(
+        status = "success",
         assayList = assay_list,
-        sampleColumns = sampleColumns
+        sampleColumns = sampleColumns,
+        validationResult = validation_result,
+        artifactResult = artifact_result
       ))
     },
     error = function(e) {
@@ -894,6 +1129,7 @@ registerLipidImportProcessObserver <- function(
   getLipidIdCol,
   getAnnotationCol,
   getSampleColumns,
+  experimentPaths = NULL,
   handleProcessRequest = handleLipidImportProcessRequest,
   observeEvent = shiny::observeEvent
 ) {
@@ -902,6 +1138,7 @@ registerLipidImportProcessObserver <- function(
       workflowData = workflowData,
       assay1Name = input$assay1_name,
       assay1Data = localData$assay1_data,
+      assay1File = localData$assay1_file,
       assay2File = localData$assay2_file,
       assay2Name = input$assay2_name,
       vendorFormat = input$vendor_format,
@@ -910,7 +1147,8 @@ registerLipidImportProcessObserver <- function(
       annotationCol = getAnnotationCol(),
       sampleColumns = getSampleColumns(),
       isPattern = input$is_pattern,
-      sanitizeNames = input$sanitize_names
+      sanitizeNames = input$sanitize_names,
+      experimentPaths = experimentPaths
     )
   })
 }
@@ -919,6 +1157,7 @@ handleLipidImportProcessRequest <- function(
   workflowData,
   assay1Name,
   assay1Data,
+  assay1File = NULL,
   assay2File = NULL,
   assay2Name = NULL,
   vendorFormat,
@@ -928,12 +1167,13 @@ handleLipidImportProcessRequest <- function(
   sampleColumns,
   isPattern,
   sanitizeNames,
+  experimentPaths = NULL,
   processImport = runLipidImportProcessing
 ) {
   shiny::req(assay1Data)
   shiny::req(lipidIdCol)
 
-  processImport(
+  process_args <- list(
     workflowData = workflowData,
     assay1Name = assay1Name,
     assay1Data = assay1Data,
@@ -947,6 +1187,14 @@ handleLipidImportProcessRequest <- function(
     isPattern = isPattern,
     sanitizeNames = sanitizeNames
   )
+  if (lipidImportFunctionAcceptsArg(processImport, "assay1File")) {
+    process_args$assay1File <- assay1File
+  }
+  if (lipidImportFunctionAcceptsArg(processImport, "experimentPaths")) {
+    process_args$experimentPaths <- experimentPaths
+  }
+
+  do.call(processImport, process_args)
 }
 
 handleLipidImportValidationSummaryRender <- function(

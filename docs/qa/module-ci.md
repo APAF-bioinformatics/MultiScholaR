@@ -821,3 +821,48 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic metabolomics --module summary_report --runtime unit-contract --reporter summary
 ```
+
+## Lipidomics Import Matrix
+
+MCI-018 adds `tests/testthat/test-module-ci-lipid-import.R` plus
+`tests/testthat/helper-module-ci-lipid-import.R`. This suite targets the
+lipidomics import module as a format-sensitive, multi-assay contract instead of
+only checking the canonical E2E upload lane.
+
+Coverage includes:
+
+- LipidSearch import for LCMS_Pos, LCMS_Neg, GCMS-named, missing `LipidName`,
+  missing `LipidClass`, duplicate lipid IDs, extra metadata, zero intensities,
+  and non-numeric sample payloads.
+- MS-DIAL import for expected columns, missing annotation, ion-mode metadata,
+  duplicate features, zero/missing intensities, and exclusion of numeric
+  annotation columns such as total scores from sample-column selection.
+- Custom/vendor override behavior for explicit mappings, case-insensitive
+  custom lookup, unsupported detected formats falling back through the default
+  reader, and mismatch between selected and detected formats.
+- Multi-assay routing for absent assay2, empty assay2, duplicate assay names,
+  unusual assay names, and assay2 reader parity with the active format.
+- Invalid input short-circuiting for missing ID columns, missing sample columns,
+  malformed/insufficient files, no numeric sample data, and mismatched sample
+  naming before `workflow_data` or downstream tab state advances.
+- Source artifact and state digest fidelity for `data_cln_*.tab`,
+  `assay_manifest.txt`, `column_mapping.json`,
+  `lipidomics_import_summary.tsv`, import source copies, workflow type, and
+  design unlock.
+
+The import matrix exposed three production hardening changes:
+
+- Lipid import processing now validates assay names, ID columns, sample-column
+  presence, and numeric sample payloads before committing `workflow_data`.
+- Successful imports now write source artifacts directly from the import module,
+  matching the downstream design import contract and recording the artifact
+  digest in `processing_log$setup_import`.
+- The Shiny process observer now passes `experiment_paths` and source file paths
+  through to the processing shell, so browser and unit-contract paths exercise
+  the same artifact-writing route.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic lipidomics --module import --runtime unit-contract --reporter summary
+```
