@@ -446,6 +446,8 @@ copyToResultsSummary <- function(omic_type,
         }
 
         # Normalized results (check for RUV vs non-RUV like proteomics)
+        ruv_tsv_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results.tsv")
+        norm_tsv_path <- file.path(current_paths$feature_qc_dir, "normalised_results.tsv")
         ruv_rds_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results.RDS")
         norm_rds_path <- file.path(current_paths$feature_qc_dir, "normalised_results.RDS")
 
@@ -453,11 +455,21 @@ copyToResultsSummary <- function(omic_type,
             files_to_copy <- c(files_to_copy, list(
                 list(source = ruv_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results RDS (Metab)", new_name = "ruv_normalised_results.RDS")
             ))
+            if (file.exists(ruv_tsv_path)) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = ruv_tsv_path, dest = "Publication_tables", is_dir = FALSE, display_name = "RUV Normalized Results TSV (Metab)", new_name = "RUV_normalised_results.tsv")
+                ))
+            }
             cat("COPY: Using RUV-normalized file for metabolomics\n")
         } else if (file.exists(norm_rds_path)) {
             files_to_copy <- c(files_to_copy, list(
                 list(source = norm_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results RDS (Metab)", new_name = "normalised_results.RDS")
             ))
+            if (file.exists(norm_tsv_path)) {
+                files_to_copy <- c(files_to_copy, list(
+                    list(source = norm_tsv_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results TSV (Metab)", new_name = "normalised_results.tsv")
+                ))
+            }
             cat("COPY: Using normalized file for metabolomics (RUV skipped)\n")
         } else {
             cat("COPY: Warning - no normalized RDS files found for metabolomics\n")
@@ -543,8 +555,7 @@ copyToResultsSummary <- function(omic_type,
     cat("\nCopying individual files/folders to Results Summary for ", omic_label, "...\n")
     cat("==============================================================\n\n")
 
-    files_to_copy |>
-        lapply(\(file_spec) {
+    for (file_spec in files_to_copy) {
             dest_dir_final <- gsub("//", "/", file.path(current_paths$results_summary_dir, file_spec$dest))
             file_spec$source <- gsub("//", "/", file_spec$source)
             source_display <- file_spec$source # For display purposes
@@ -699,7 +710,7 @@ copyToResultsSummary <- function(omic_type,
             }
             cat(sprintf("%-35s [%s -> %s] %s\n", file_spec$display_name, if (source_exists) "[OK]" else "[FAIL]", if (copy_success && source_exists) "[OK]" else "[FAIL]", if (!is.null(file_spec$type) && file_spec$type == "object") "Object" else if (file_spec$is_dir) "Directory" else "File"))
             if (!is.null(error_msg)) cat(sprintf("%35s Error: %s\n", "", error_msg))
-        })
+    }
 
     cat("\nLegend: [OK] = exists/success, [FAIL] = missing/failed\n")
     cat("Arrow (->) shows source -> destination status\n")
@@ -1122,4 +1133,3 @@ save_plot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), wid
 write_results <- function(data, filename) {
     vroom::vroom_write(data, file.path(results_dir, "protein_qc", filename))
 }
-

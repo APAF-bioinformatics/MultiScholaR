@@ -81,6 +81,17 @@ test_that("module CI manifest filters scenarios by omic, module, runtime, and ti
     module_ci_scenario_ids(metab_da),
     "MCI-016.1-metabolomics-da-schema-smoke"
   )
+
+  metab_summary <- module_ci_scenarios(
+    manifest,
+    omic = "metabolomics",
+    module_family = "summary_report",
+    runtime = "unit-contract"
+  )
+  expect_identical(
+    module_ci_scenario_ids(metab_summary),
+    "MCI-017.1-metabolomics-summary-report-schema-smoke"
+  )
 })
 
 test_that("module CI manifest rejects duplicate scenario IDs and missing fixtures", {

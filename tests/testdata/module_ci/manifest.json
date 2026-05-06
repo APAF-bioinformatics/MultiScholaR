@@ -670,6 +670,64 @@
       "required_tests": ["module-ci-manifest", "module-ci-metab-da"]
     },
     {
+      "scenario_id": "MCI-017.1-metabolomics-summary-report-schema-smoke",
+      "ticket_id": "MCI-017",
+      "item_id": "MCI-017.1",
+      "omic": "metabolomics",
+      "module_family": "summary_report",
+      "runtime": "unit-contract",
+      "ci_lane": "metabolomics-unit",
+      "fixture": {
+        "path": "fixtures/metabolomics/metabolite_assay.tsv",
+        "format": "tsv",
+        "role": "assay_table"
+      },
+      "parameters": {
+        "assay_cases": ["LCMS_Pos", "GCMS", "LCMS_Pos+GCMS"],
+        "normalization_methods": ["none", "cyclicloess", "quantile", "scale"],
+        "ruv_modes": ["skip", "manual", "automatic"],
+        "itsd_cases": ["regex_global", "manual_assay_specific", "absent"],
+        "da_thresholds": [0.01, 0.05, 0.1],
+        "contrast_cases": ["friendly_names", "raw_terms", "multi_group"],
+        "publication_inputs": ["da_tables", "qc_plots", "normalization_outputs", "missing_optional", "mixed_assay_artifacts"],
+        "report_modes": ["deterministic_stub", "template_existing"],
+        "session_exports": ["workflow_metadata", "parameter_payload", "reloadable_rds"],
+        "scorecard_artifacts": ["report", "study_parameters", "publication_tables", "copied_figures", "session_state"]
+      },
+      "expected_state": {
+        "sample_count": 6,
+        "assay_names": ["LCMS_Pos", "GCMS"],
+        "state_keys": ["metab_qc_complete", "metab_normalized", "metab_correlation_filtered"],
+        "sub_steps": [
+          "parameters_roundtripped",
+          "publication_copy_validated",
+          "report_stub_rendered",
+          "study_parameters_asserted",
+          "session_state_exported",
+          "artifact_scorecard_complete"
+        ]
+      },
+      "expected_artifacts": [
+        {
+          "path": "study_parameters.txt",
+          "schema": "metabolomics_study_parameters"
+        },
+        {
+          "path": "DA_results_metabolomics.xlsx",
+          "schema": "metabolomics_summary_da_workbook"
+        },
+        {
+          "path": "Pathway_enrichment_results_metabolomics.xlsx",
+          "schema": "metabolomics_enrichment_publication_workbook"
+        },
+        {
+          "path": "session_state_<date>.RDS",
+          "schema": "metabolomics_summary_session_state"
+        }
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-metab-summary"]
+    },
+    {
       "scenario_id": "MCI-018.1-lipidomics-import-schema-smoke",
       "ticket_id": "MCI-018",
       "item_id": "MCI-018.1",

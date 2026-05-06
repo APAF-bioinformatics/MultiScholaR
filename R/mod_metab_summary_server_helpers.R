@@ -136,11 +136,11 @@ registerMetabSummaryServerObservers <- function(
                 ),
                 projectDirs = projectDirs,
                 omicType = omicType,
-                values = values
+                values = values,
+                workflowData = workflowData
             )
         })
     )
 
     invisible(registrations)
 }
-

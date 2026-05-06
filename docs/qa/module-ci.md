@@ -776,3 +776,48 @@ Runner example:
 ```bash
 Rscript tools/ci/run-module-ci.R --omic metabolomics --module differential_abundance --runtime unit-contract --reporter summary
 ```
+
+## Metabolomics Summary/Report Matrix
+
+MCI-017 adds `tests/testthat/test-module-ci-metab-summary.R` plus
+`tests/testthat/helper-module-ci-metab-summary.R`. This suite targets the
+release-facing metabolomics summary/report boundary where workflow parameters,
+publication artifacts, deterministic report rendering, and session-state
+exports must preserve LC, GC, and mixed LC+GC provenance.
+
+The matrix covers:
+
+- Parameter roundtrip for LC-only, GC-only, and combined LC+GC workflows,
+  including normalization method, ITSD settings, RUV mode/result payloads, DA
+  q-value/logFC thresholds, formula strings, report template, and assay layout.
+- Publication-copy behavior for DA workbooks, enrichment workbooks, QC figures,
+  DA figure directories, NumSig tables, normalized/RUV TSV and RDS outputs, and
+  mixed-assay DA artifacts.
+- Required versus optional artifact handling: missing design, contrast, or
+  study-parameter artifacts now fail explicitly, while missing optional plots
+  are reported as warnings without blocking copy completion.
+- Deterministic report rendering using push-safe render stubs for
+  `metabolomics_report.rmd`, plus missing-output behavior.
+- Study/session parameter payload assertions for assay names, feature counts,
+  sample counts, friendly and raw contrasts, selected normalization/RUV/ITSD/DA
+  parameters, workflow type, and report template.
+- Reloadable summary session-state exports and scorecard entries for study
+  parameters, DA/enrichment publication workbooks, normalized outputs, copied
+  figures, rendered report, and session RDS.
+
+The summary/report matrix exposed three production hardening changes:
+
+- Metabolomics session-state export now includes workflow/report metadata and a
+  parameter payload when workflow data is available, while preserving the prior
+  minimal export shape when workflow data is absent.
+- Publication copy now classifies required copy failures before setting the
+  summary module to copied, so missing design/contrast/study-parameter artifacts
+  cannot be silently treated as success.
+- Metabolomics normalized TSV outputs are copied to `Publication_tables`
+  alongside the existing normalized/RUV RDS outputs when present.
+
+Runner example:
+
+```bash
+Rscript tools/ci/run-module-ci.R --omic metabolomics --module summary_report --runtime unit-contract --reporter summary
+```

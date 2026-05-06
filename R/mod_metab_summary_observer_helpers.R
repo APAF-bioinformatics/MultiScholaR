@@ -1,8 +1,161 @@
+metabSummaryFirstNonNull <- function(...) {
+    values <- list(...)
+    for (value in values) {
+        if (!is.null(value)) {
+            return(value)
+        }
+    }
+    NULL
+}
+
+getMetabSummaryWorkflowValue <- function(workflowData, name) {
+    if (is.null(workflowData)) {
+        return(NULL)
+    }
+
+    tryCatch(workflowData[[name]], error = function(e) NULL)
+}
+
+getMetabSummaryStateObject <- function(workflowData) {
+    state_manager <- getMetabSummaryWorkflowValue(workflowData, "state_manager")
+    if (is.null(state_manager)) {
+        return(NULL)
+    }
+
+    data_states <- c(
+        "metab_correlation_filtered", "metab_norm_complete",
+        "metab_ruv_corrected", "metab_normalized", "loaded_for_de",
+        "metab_qc_complete"
+    )
+
+    history <- tryCatch(state_manager$getHistory(), error = function(e) character())
+    matching_states <- data_states[data_states %in% history]
+    state_name <- if (length(matching_states) > 0L) matching_states[[1]] else NULL
+    if (is.null(state_name) || is.na(state_name)) {
+        state_name <- tryCatch(state_manager$current_state, error = function(e) NULL)
+    }
+    if (is.null(state_name) || is.na(state_name)) {
+        return(NULL)
+    }
+
+    tryCatch(state_manager$getState(state_name), error = function(e) NULL)
+}
+
+getMetabSummaryObjectArgs <- function(object) {
+    if (is.null(object) || !isS4(object) || !"args" %in% methods::slotNames(object)) {
+        return(NULL)
+    }
+
+    tryCatch(object@args, error = function(e) NULL)
+}
+
+buildMetabSummaryParameterPayload <- function(workflowData, finalS4Object = NULL) {
+    payload <- list(
+        config_list = getMetabSummaryWorkflowValue(workflowData, "config_list"),
+        contrasts_tbl = getMetabSummaryWorkflowValue(workflowData, "contrasts_tbl"),
+        da_ui_params = getMetabSummaryWorkflowValue(workflowData, "da_ui_params"),
+        normalization_ui_params = getMetabSummaryWorkflowValue(workflowData, "normalization_ui_params"),
+        itsd_ui_params = getMetabSummaryWorkflowValue(workflowData, "itsd_ui_params"),
+        ruv_optimization_result = getMetabSummaryWorkflowValue(workflowData, "ruv_optimization_result"),
+        enrichment_ui_params = getMetabSummaryWorkflowValue(workflowData, "enrichment_ui_params"),
+        s4_args = getMetabSummaryObjectArgs(finalS4Object)
+    )
+
+    payload[!vapply(payload, is.null, logical(1))]
+}
+
+prepareMetabSummarySessionState <- function(
+    inputValues,
+    projectDirs,
+    omicType,
+    values,
+    timestamp,
+    workflowData = NULL
+) {
+    session_state <- list(
+        experiment_label = inputValues$experiment_label,
+        description = inputValues$description,
+        timestamp = timestamp,
+        omic_type = omicType,
+        workflow_args_saved = values$workflow_args_saved,
+        files_copied = values$files_copied,
+        report_generated = values$report_generated,
+        report_path = values$report_path,
+        project_dirs = projectDirs
+    )
+
+    if (is.null(workflowData)) {
+        return(session_state)
+    }
+
+    final_s4_object <- getMetabSummaryStateObject(workflowData)
+    parameter_payload <- buildMetabSummaryParameterPayload(workflowData, final_s4_object)
+    global_parameters <- metabSummaryFirstNonNull(
+        parameter_payload$config_list$globalParameters,
+        parameter_payload$s4_args$globalParameters,
+        list()
+    )
+
+    session_state$workflow_type <- metabSummaryFirstNonNull(
+        global_parameters$workflow_type,
+        "metabolomics"
+    )
+    session_state$report_template <- metabSummaryFirstNonNull(
+        global_parameters$report_template,
+        "metabolomics_report.rmd"
+    )
+    session_state$parameter_payload <- parameter_payload
+
+    if (!is.null(final_s4_object) && isS4(final_s4_object)) {
+        slot_names <- methods::slotNames(final_s4_object)
+        if ("metabolite_data" %in% slot_names) {
+            assay_data <- tryCatch(final_s4_object@metabolite_data, error = function(e) NULL)
+            if (is.list(assay_data)) {
+                session_state$assay_names <- names(assay_data)
+                session_state$feature_counts <- vapply(assay_data, nrow, integer(1))
+            }
+        }
+        if (all(c("design_matrix", "sample_id") %in% slot_names)) {
+            design_matrix <- tryCatch(final_s4_object@design_matrix, error = function(e) NULL)
+            sample_id_col <- tryCatch(final_s4_object@sample_id, error = function(e) NULL)
+            if (is.data.frame(design_matrix) && length(sample_id_col) == 1L && sample_id_col %in% names(design_matrix)) {
+                session_state$sample_count <- length(unique(design_matrix[[sample_id_col]]))
+            }
+        }
+    }
+
+    contrasts_tbl <- getMetabSummaryWorkflowValue(workflowData, "contrasts_tbl")
+    if (is.data.frame(contrasts_tbl)) {
+        session_state$contrast_count <- nrow(contrasts_tbl)
+    }
+
+    session_state
+}
+
+classifyMetabSummaryCopyFailures <- function(
+    copyFailures,
+    requiredDisplayNames = c("Contrasts Table", "Design Matrix", "Study Parameters")
+) {
+    if (is.null(copyFailures) || length(copyFailures) == 0L) {
+        return(list(required = list(), optional = list()))
+    }
+
+    is_required <- vapply(copyFailures, function(failure) {
+        !is.null(failure$display_name) && failure$display_name %in% requiredDisplayNames
+    }, logical(1))
+
+    list(
+        required = copyFailures[is_required],
+        optional = copyFailures[!is_required]
+    )
+}
+
 runMetabSummaryExportSessionObserverShell <- function(
     inputValues,
     projectDirs,
     omicType,
     values,
+    workflowData = NULL,
     reqFn = shiny::req,
     saveRdsFn = saveRDS,
     sysDateFn = Sys.Date,
@@ -20,16 +173,13 @@ runMetabSummaryExportSessionObserverShell <- function(
             paste0("session_state_", sysDateFn(), ".RDS")
         )
 
-        session_state <- list(
-            experiment_label = inputValues$experiment_label,
-            description = inputValues$description,
+        session_state <- prepareMetabSummarySessionState(
+            inputValues = inputValues,
+            projectDirs = projectDirs,
+            omicType = omicType,
+            values = values,
             timestamp = sysTimeFn(),
-            omic_type = omicType,
-            workflow_args_saved = values$workflow_args_saved,
-            files_copied = values$files_copied,
-            report_generated = values$report_generated,
-            report_path = values$report_path,
-            project_dirs = projectDirs
+            workflowData = workflowData
         )
 
         saveRdsFn(session_state, session_export_path)
@@ -412,7 +562,7 @@ runMetabSummaryCopyToPublicationObserverShell <- function(
                 project_dirs_assigned <- TRUE
             }
 
-            copyToResultsSummaryFn(
+            copy_failures <- copyToResultsSummaryFn(
                 omic_type = omic_type,
                 experiment_label = input$experiment_label,
                 contrasts_tbl = contrasts_tbl,
@@ -420,12 +570,34 @@ runMetabSummaryCopyToPublicationObserverShell <- function(
                 force = TRUE
             )
 
+            classified_failures <- classifyMetabSummaryCopyFailures(copy_failures)
+            if (length(classified_failures$required) > 0L) {
+                required_names <- vapply(classified_failures$required, function(failure) {
+                    failure$display_name
+                }, character(1))
+                stop(sprintf(
+                    "Required publication artifacts missing: %s",
+                    paste(required_names, collapse = ", ")
+                ))
+            }
+
             values$files_copied <- TRUE
 
             output$copy_status <- renderTextFn(
-                "Files copied to publication directory successfully [OK]"
+                if (length(classified_failures$optional) > 0L) {
+                    "Files copied to publication directory with optional missing artifacts [WARNING]"
+                } else {
+                    "Files copied to publication directory successfully [OK]"
+                }
             )
-            showNotificationFn("Publication files copied", type = "message")
+            showNotificationFn(
+                if (length(classified_failures$optional) > 0L) {
+                    "Publication files copied with optional missing artifacts"
+                } else {
+                    "Publication files copied"
+                },
+                type = if (length(classified_failures$optional) > 0L) "warning" else "message"
+            )
 
             output$session_summary <- renderTextFn({
                 paste(
@@ -436,7 +608,7 @@ runMetabSummaryCopyToPublicationObserverShell <- function(
                 )
             })
 
-            list(
+            result <- list(
                 status = "success",
                 basicParamsFile = basic_params_file,
                 fallbackCreated = fallback_created,
@@ -444,6 +616,10 @@ runMetabSummaryCopyToPublicationObserverShell <- function(
                 contrastsTbl = contrasts_tbl,
                 designMatrix = design_matrix
             )
+            if (length(classified_failures$optional) > 0L) {
+                result$optionalMissing <- classified_failures$optional
+            }
+            result
         }, error = function(e) {
             error_message <- if (inherits(e, "condition")) {
                 conditionMessage(e)
@@ -799,4 +975,3 @@ runMetabSummaryGithubPushObserverShell <- function(
         })
     }))
 }
-

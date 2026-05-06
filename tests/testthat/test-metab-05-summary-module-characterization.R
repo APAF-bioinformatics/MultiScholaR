@@ -1730,6 +1730,7 @@ test_that("metabolomics summary observer-registration seam preserves observer wi
   expect_identical(captured$export$projectDirs, project_dirs)
   expect_identical(captured$export$omicType, "metabolomics")
   expect_identical(captured$export$values, values)
+  expect_identical(captured$export$workflowData, workflow_data)
 })
 
 test_that("metabolomics summary server delegates template-status registration through the seam", {
