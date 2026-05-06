@@ -317,20 +317,31 @@ copyToResultsSummary <- function(omic_type,
         }
     })
 
-    # Define files to copy - make paths relative to current_paths elements
+    # Define common report files first; omic-specific artifact packs are added
+    # below so metabolomics/lipidomics are not forced through proteomics paths.
     files_to_copy <- list(
-        list(source = file.path(current_paths$time_dir, "12_correlation_filtered_combined_plots.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Correlation Filtered Plots"),
-        list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.pdf"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PDF)", new_name = paste0(omic_type, "_composite_QC_figure.pdf")),
-        list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = paste0(omic_type, "_composite_QC_figure.png")),
-        list(source = file.path(current_paths$publication_graphs_dir, "Interactive_Volcano_Plots"), dest = "Publication_figures/Interactive_Volcano_Plots", is_dir = TRUE, display_name = "Interactive Volcano Plots"),
-        list(source = file.path(current_paths$publication_graphs_dir, "NumSigDaMolecules"), dest = "Publication_figures/NumSigDaMolecules", is_dir = TRUE, display_name = "Num Sig DA Molecules"),
-        list(source = file.path(current_paths$publication_graphs_dir, "Volcano_Plots"), dest = "Publication_figures/Volcano_Plots", is_dir = TRUE, display_name = "Volcano Plots"),
-        list(source = file.path(current_paths$publication_graphs_dir, "Heatmap"), dest = "Publication_figures/Heatmap", is_dir = TRUE, display_name = "Interactive Heatmaps"),
-        list(source = current_paths$pathway_dir, dest = "Publication_figures/Enrichment_Plots", is_dir = TRUE, display_name = "Pathway Enrichment Plots"),
         list(source = "contrasts_tbl", dest = "Study_report", type = "object", save_as = "contrasts_tbl.tab", display_name = "Contrasts Table"),
         list(source = "design_matrix", dest = "Study_report", type = "object", save_as = "design_matrix.tab", display_name = "Design Matrix"),
         list(source = file.path(current_paths$source_dir, "study_parameters.txt"), dest = "Study_report", is_dir = FALSE, display_name = "Study Parameters")
     )
+
+    if (omic_type == "proteomics") {
+        files_to_copy <- c(files_to_copy, list(
+            list(source = file.path(current_paths$time_dir, "12_correlation_filtered_combined_plots.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Correlation Filtered Plots"),
+            list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.pdf"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PDF)", new_name = paste0(omic_type, "_composite_QC_figure.pdf")),
+            list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = paste0(omic_type, "_composite_QC_figure.png")),
+            list(source = file.path(current_paths$publication_graphs_dir, "Interactive_Volcano_Plots"), dest = "Publication_figures/Interactive_Volcano_Plots", is_dir = TRUE, display_name = "Interactive Volcano Plots"),
+            list(source = file.path(current_paths$publication_graphs_dir, "NumSigDaMolecules"), dest = "Publication_figures/NumSigDaMolecules", is_dir = TRUE, display_name = "Num Sig DA Molecules"),
+            list(source = file.path(current_paths$publication_graphs_dir, "Volcano_Plots"), dest = "Publication_figures/Volcano_Plots", is_dir = TRUE, display_name = "Volcano Plots"),
+            list(source = file.path(current_paths$publication_graphs_dir, "Heatmap"), dest = "Publication_figures/Heatmap", is_dir = TRUE, display_name = "Interactive Heatmaps"),
+            list(source = current_paths$pathway_dir, dest = "Publication_figures/Enrichment_Plots", is_dir = TRUE, display_name = "Pathway Enrichment Plots")
+        ))
+    } else if (dir.exists(current_paths$pathway_dir) &&
+        length(list.files(current_paths$pathway_dir, recursive = TRUE, all.files = TRUE, no.. = TRUE)) > 0) {
+        files_to_copy <- c(files_to_copy, list(
+            list(source = current_paths$pathway_dir, dest = "Publication_figures/Enrichment_Plots", is_dir = TRUE, display_name = "Pathway Enrichment Plots")
+        ))
+    }
 
     # Logic to find and copy the num_sig_da_molecules tab file to Publication_tables
     num_sig_dir <- file.path(current_paths$publication_graphs_dir, "NumSigDaMolecules")
@@ -386,6 +397,9 @@ copyToResultsSummary <- function(omic_type,
             ))
             cat("COPY: Added metabolomics composite QC figure\n")
         } else {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = composite_file, dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = "metabolomics_composite_QC_figure.png")
+            ))
             cat("COPY: Warning - Composite QC figure not found at", composite_file, "\n")
         }
 
@@ -443,6 +457,10 @@ copyToResultsSummary <- function(omic_type,
                 list(source = heatmap_dir, dest = "Publication_figures/Heatmaps", is_dir = TRUE, display_name = "DA Heatmaps")
             ))
             cat("COPY: Added Heatmaps directory\n")
+        } else {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = heatmap_dir, dest = "Publication_figures/Heatmaps", is_dir = TRUE, display_name = "DA Heatmaps")
+            ))
         }
 
         # Normalized results (check for RUV vs non-RUV like proteomics)
@@ -497,6 +515,12 @@ copyToResultsSummary <- function(omic_type,
             full.names = TRUE
         )
         lipid_qc_files <- setdiff(lipid_qc_files, stage_qc_files)
+        lipid_composite_png <- file.path(current_paths$feature_qc_dir, "composite_QC_figure.png")
+        if (!file.exists(lipid_composite_png)) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = lipid_composite_png, dest = "QC_figures", is_dir = FALSE, display_name = "Lipid QC: composite_QC_figure.png")
+            ))
+        }
         if (length(lipid_qc_files) > 0) {
             for (qc_file in lipid_qc_files) {
                 files_to_copy <- c(files_to_copy, list(
@@ -522,6 +546,10 @@ copyToResultsSummary <- function(omic_type,
                 list(source = heatmap_dir, dest = "Publication_figures/Heatmaps", is_dir = TRUE, display_name = "DA Heatmaps")
             ))
             cat("COPY: Added lipidomics Heatmaps directory\n")
+        } else {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = heatmap_dir, dest = "Publication_figures/Heatmaps", is_dir = TRUE, display_name = "DA Heatmaps")
+            ))
         }
 
         num_sig_de_dir <- file.path(current_paths$publication_graphs_dir, "NumSigDeMolecules")
@@ -540,6 +568,10 @@ copyToResultsSummary <- function(omic_type,
                     list(source = sig_files[1], dest = "Publication_tables", is_dir = FALSE, display_name = "Num Sig DE Molecules Tab", new_name = paste0("da_", omic_type, "_num_sig_de_molecules.tab"))
                 ))
             }
+        } else {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = num_sig_de_dir, dest = "Publication_figures/NumSigDeMolecules", is_dir = TRUE, display_name = "Num Sig DE Molecules")
+            ))
         }
 
         ruv_tsv_path <- file.path(current_paths$feature_qc_dir, "ruv_normalised_results.tsv")

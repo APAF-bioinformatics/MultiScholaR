@@ -249,9 +249,20 @@ test_that("copyToResultsSummary loads fallback source tables and reports copy fa
   dir.create(paths$pathway_dir, recursive = TRUE, showWarnings = FALSE)
   dir.create(paths$source_dir, recursive = TRUE, showWarnings = FALSE)
   dir.create(paths$feature_qc_dir, recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path(paths$publication_graphs_dir, "Interactive_Volcano_Plots"), recursive = TRUE)
+  dir.create(file.path(paths$publication_graphs_dir, "NumSigDaMolecules"), recursive = TRUE)
+  dir.create(file.path(paths$publication_graphs_dir, "Volcano_Plots"), recursive = TRUE)
+  dir.create(file.path(paths$publication_graphs_dir, "Heatmap"), recursive = TRUE)
 
   writeLines("lhs\trhs\nA\tB", file.path(paths$source_dir, "contrast_strings.tab"))
   writeLines("Sample_ID\tgroup\nS1\tA\nS2\tB", file.path(paths$source_dir, "design_matrix.tab"))
+  writeLines(
+    c("Workflow Name: Fallback Workflow", "Timestamp: 2026-05-06 10:00:00"),
+    file.path(paths$source_dir, "study_parameters.txt")
+  )
+  writeMockBinary(file.path(paths$time_dir, "12_correlation_filtered_combined_plots.png"))
+  writeMockBinary(file.path(paths$feature_qc_dir, "composite_QC_figure.pdf"))
+  writeMockBinary(file.path(paths$feature_qc_dir, "composite_QC_figure.png"))
   writeLines(
     "protein\tvalue\nA\t10",
     file.path(paths$feature_qc_dir, "normalised_results_cln_with_replicates.tsv")
@@ -455,6 +466,10 @@ test_that("copyToResultsSummary preserves metabolomics-specific result exports",
   writeMockBinary(file.path(paths$feature_qc_dir, "batch_assay_metrics.png"))
   writeMockBinary(file.path(paths$feature_qc_dir, "itsd_normalization_plot.png"))
   writeMockBinary(file.path(paths$feature_qc_dir, "plate_correlation_plot.png"))
+  writeLines(
+    c("Workflow Name: Metabolomics Workflow", "Timestamp: 2026-05-06 10:00:00"),
+    file.path(paths$source_dir, "study_parameters.txt")
+  )
   saveRDS(data.frame(metab = "M1", value = 1), file.path(paths$feature_qc_dir, "normalised_results.RDS"))
   writeMockBinary(file.path(paths$publication_graphs_dir, "Heatmaps", "heatmap.png"))
 
