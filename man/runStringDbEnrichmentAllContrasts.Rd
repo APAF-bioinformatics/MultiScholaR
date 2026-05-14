@@ -5,7 +5,7 @@
 \title{Run STRING DB Enrichment for All Contrasts}
 \usage{
 runStringDbEnrichmentAllContrasts(
-  da_analysis_results_list,
+  da_analysis_results_list = NULL,
   project_dirs,
   omic_type,
   experiment_label,
@@ -16,7 +16,8 @@ runStringDbEnrichmentAllContrasts(
   polling_interval_seconds = 10,
   max_polling_attempts = 30,
   force_refresh = FALSE,
-  comparison_name_transform = NULL
+  comparison_name_transform = NULL,
+  de_analysis_results_list = NULL
 )
 }
 \arguments{

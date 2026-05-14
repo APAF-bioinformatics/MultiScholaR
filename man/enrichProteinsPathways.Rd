@@ -5,7 +5,7 @@
 \title{Perform protein pathway enrichment analysis across multiple contrasts}
 \usage{
 enrichProteinsPathways(
-  da_analysis_results_list,
+  da_analysis_results_list = NULL,
   taxon_id,
   protein_id_delimiter = ":",
   protein_p_val_thresh = 0.05,
@@ -14,7 +14,8 @@ enrichProteinsPathways(
   p_val_thresh = 0.05,
   cache_dir = "cache",
   cache_file = "uniprot_annotations.RDS",
-  use_cached = TRUE
+  use_cached = TRUE,
+  de_analysis_results_list = NULL
 )
 }
 \arguments{
