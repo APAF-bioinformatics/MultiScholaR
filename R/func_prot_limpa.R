@@ -36,7 +36,6 @@
 # Functions will be extracted here by the extraction tool from:
 # - limpa_functions.R
 
-
 # ----------------------------------------------------------------------------
 # generateLimpaQCPlots
 # ----------------------------------------------------------------------------
@@ -82,17 +81,23 @@
 #' @importFrom dplyr filter select mutate distinct left_join rename summarise group_by n n_distinct
 #' @importFrom tidyr pivot_longer
 #' @export
-generateLimpaQCPlots <- function(after_object,
-                                 before_object = NULL,
-                                 save_plots = TRUE,
-                                 save_dir = "peptide_qc",
-                                 plot_prefix = "limpa",
-                                 verbose = TRUE) {
+generateLimpaQCPlots <- function(
+  after_object,
+  before_object = NULL,
+  save_plots = TRUE,
+  save_dir = "peptide_qc",
+  plot_prefix = "limpa",
+  verbose = TRUE
+) {
   message("--- Entering generateLimpaQCPlots ---")
   message(sprintf(
     "   Arguments: after_object type=%s, before_object=%s, save_plots=%s, save_dir=%s, plot_prefix=%s, verbose=%s",
-    class(after_object), ifelse(is.null(before_object), "NULL", class(before_object)),
-    save_plots, save_dir, plot_prefix, verbose
+    class(after_object),
+    ifelse(is.null(before_object), "NULL", class(before_object)),
+    save_plots,
+    save_dir,
+    plot_prefix,
+    verbose
   ))
 
   # Load required packages
@@ -122,17 +127,27 @@ generateLimpaQCPlots <- function(after_object,
   }
 
   # Check for protein-level limpa results
-  if (is.null(dpc_results) && !is.null(after_object@args$limpa_dpc_quant_results)) {
+  if (
+    is.null(dpc_results) && !is.null(after_object@args$limpa_dpc_quant_results)
+  ) {
     dpc_results <- after_object@args$limpa_dpc_quant_results
     analysis_type <- "protein_quantification"
-    if (verbose) cat("Detected protein-level limpa DPC quantification results\n")
+    if (verbose) {
+      cat("Detected protein-level limpa DPC quantification results\n")
+    }
   }
 
   # Exit if no limpa results found
   if (is.null(dpc_results)) {
-    stop("No limpa DPC results found in the provided object. Please run limpa imputation/quantification first.")
+    stop(
+      "No limpa DPC results found in the provided object. Please run limpa imputation/quantification first."
+    )
   }
-  message(sprintf("   Results: analysis_type=%s, dpc_results structure=%s", analysis_type, capture.output(str(dpc_results))))
+  message(sprintf(
+    "   Results: analysis_type=%s, dpc_results structure=%s",
+    analysis_type,
+    capture.output(str(dpc_results))
+  ))
 
   # Try to get the correct save directory from project_dirs GLOBAL OBJECT
   message("   Step: Determining save directory")
@@ -147,14 +162,24 @@ generateLimpaQCPlots <- function(after_object,
           for (experiment_name in names(project_dirs)) {
             if (!is.null(project_dirs[[experiment_name]]$peptide_qc_dir)) {
               save_dir <- project_dirs[[experiment_name]]$peptide_qc_dir
-              if (verbose) cat("[info] Using peptide_qc_dir from global project_dirs:", save_dir, "\n")
+              if (verbose) {
+                cat(
+                  "[info] Using peptide_qc_dir from global project_dirs:",
+                  save_dir,
+                  "\n"
+                )
+              }
               break
             }
           }
         }
       },
       error = function(e) {
-        if (verbose) cat("Could not access project_dirs from global environment, using default\n")
+        if (verbose) {
+          cat(
+            "Could not access project_dirs from global environment, using default\n"
+          )
+        }
       }
     )
   }
@@ -172,14 +197,30 @@ generateLimpaQCPlots <- function(after_object,
   if (verbose) {
     cat("\n=== limpa DPC Analysis Results ===\n")
     cat("Analysis Type:", analysis_type, "\n")
-    cat("DPC Method:", ifelse(is.null(dpc_results$dpc_method), "limpa_dpc", dpc_results$dpc_method), "\n")
+    cat(
+      "DPC Method:",
+      ifelse(
+        is.null(dpc_results$dpc_method),
+        "limpa_dpc",
+        dpc_results$dpc_method
+      ),
+      "\n"
+    )
 
     # Debug: show what DPC data is available
     cat("Available DPC data:\n")
     cat("  - y_peptide_for_dpc:", !is.null(dpc_results$y_peptide_for_dpc), "\n")
     cat("  - dpc_object_used:", !is.null(dpc_results$dpc_object_used), "\n")
     cat("  - dpc_object:", !is.null(dpc_results$dpc_object), "\n")
-    cat("  - slope_interpretation:", ifelse(is.null(dpc_results$slope_interpretation), "NULL", dpc_results$slope_interpretation), "\n")
+    cat(
+      "  - slope_interpretation:",
+      ifelse(
+        is.null(dpc_results$slope_interpretation),
+        "NULL",
+        dpc_results$slope_interpretation
+      ),
+      "\n"
+    )
 
     if (!is.null(dpc_params) && length(dpc_params) >= 2) {
       cat("Beta0 (intercept):", round(dpc_params[1], 4), "\n")
@@ -188,7 +229,11 @@ generateLimpaQCPlots <- function(after_object,
     }
 
     if (!is.null(dpc_results$missing_percentage_before)) {
-      cat("Missing percentage before:", dpc_results$missing_percentage_before, "%\n")
+      cat(
+        "Missing percentage before:",
+        dpc_results$missing_percentage_before,
+        "%\n"
+      )
     }
     cat("=====================================\n")
   }
@@ -200,42 +245,76 @@ generateLimpaQCPlots <- function(after_object,
   plot_list$dpc_curve <- tryCatch(
     {
       message("--- Entering DPC curve plot generation ---")
-      if (verbose) cat("Generating DPC curve plot...\n")
+      if (verbose) {
+        cat("Generating DPC curve plot...\n")
+      }
 
       # Validate dpc_params first
       message("   Step: Validating DPC parameters...")
       message(sprintf("      dpc_params: %s", capture.output(str(dpc_params))))
-      if (is.null(dpc_params) || !is.numeric(dpc_params) || length(dpc_params) < 2) {
+      if (
+        is.null(dpc_params) || !is.numeric(dpc_params) || length(dpc_params) < 2
+      ) {
         message("   Warning: Invalid DPC parameters detected, using defaults")
-        if (verbose) cat("Warning: Invalid DPC parameters, using defaults\n")
+        if (verbose) {
+          cat("Warning: Invalid DPC parameters, using defaults\n")
+        }
         dpc_params <- c(-1.335, 0.074) # Use the known values from your data
       }
-      message(sprintf("      Final dpc_params: %s", capture.output(str(dpc_params))))
+      message(sprintf(
+        "      Final dpc_params: %s",
+        capture.output(str(dpc_params))
+      ))
 
       message("   Step: Extracting stored DPC object")
       # Extract stored DPC object based on analysis type
       stored_dpc <- NULL
       message(sprintf("      analysis_type: %s", analysis_type))
-      message(sprintf("      dpc_results structure: %s", capture.output(str(names(dpc_results)))))
+      message(sprintf(
+        "      dpc_results structure: %s",
+        capture.output(str(names(dpc_results)))
+      ))
 
-      if (analysis_type == "protein_quantification" && !is.null(dpc_results$dpc_object_used)) {
+      if (
+        analysis_type == "protein_quantification" &&
+          !is.null(dpc_results$dpc_object_used)
+      ) {
         stored_dpc <- dpc_results$dpc_object_used
         message("     Using dpc_object_used for protein quantification")
         message(sprintf("      stored_dpc class: %s", class(stored_dpc)))
-        message(sprintf("      stored_dpc structure: %s", capture.output(str(stored_dpc))))
-      } else if (analysis_type == "peptide_imputation" && !is.null(dpc_results$dpc_object)) {
+        message(sprintf(
+          "      stored_dpc structure: %s",
+          capture.output(str(stored_dpc))
+        ))
+      } else if (
+        analysis_type == "peptide_imputation" &&
+          !is.null(dpc_results$dpc_object)
+      ) {
         stored_dpc <- dpc_results$dpc_object
         message("     Using dpc_object for peptide imputation")
         message(sprintf("      stored_dpc class: %s", class(stored_dpc)))
-        message(sprintf("      stored_dpc structure: %s", capture.output(str(stored_dpc))))
+        message(sprintf(
+          "      stored_dpc structure: %s",
+          capture.output(str(stored_dpc))
+        ))
       } else if (!is.null(dpc_results$y_peptide_for_dpc)) {
         message("     Recreating DPC from stored y_peptide_for_dpc")
-        message(sprintf("      y_peptide_for_dpc dims: %d x %d", nrow(dpc_results$y_peptide_for_dpc), ncol(dpc_results$y_peptide_for_dpc)))
+        message(sprintf(
+          "      y_peptide_for_dpc dims: %d x %d",
+          nrow(dpc_results$y_peptide_for_dpc),
+          ncol(dpc_results$y_peptide_for_dpc)
+        ))
         stored_dpc <- limpa::dpc(dpc_results$y_peptide_for_dpc)
-        message(sprintf("      Created stored_dpc class: %s", class(stored_dpc)))
+        message(sprintf(
+          "      Created stored_dpc class: %s",
+          class(stored_dpc)
+        ))
       }
 
-      message(sprintf("   Results: stored_dpc is null? %s", is.null(stored_dpc)))
+      message(sprintf(
+        "   Results: stored_dpc is null? %s",
+        is.null(stored_dpc)
+      ))
 
       # Generate plot using plotDPC if we have the object
       if (!is.null(stored_dpc)) {
@@ -257,12 +336,21 @@ generateLimpaQCPlots <- function(after_object,
             } else {
               message("        Calling plotDPC and converting with ggplotify")
               # Call plotDPC and immediately convert to ggplot
-              ggplotify_plot <- ggplotify::as.ggplot(function() limpa::plotDPC(stored_dpc))
-              message(sprintf("        ggplotify conversion successful, class: %s", class(ggplotify_plot)))
+              ggplotify_plot <- ggplotify::as.ggplot(function() {
+                graphics::par(mar = c(6, 4.5, 2, 1.5))
+                limpa::plotDPC(stored_dpc, main = "")
+              })
+              message(sprintf(
+                "        ggplotify conversion successful, class: %s",
+                class(ggplotify_plot)
+              ))
             }
           },
           error = function(e) {
-            message(sprintf("        ggplotify conversion FAILED: %s", e$message))
+            message(sprintf(
+              "        ggplotify conversion FAILED: %s",
+              e$message
+            ))
             ggplotify_plot <<- NULL
           }
         )
@@ -279,14 +367,18 @@ generateLimpaQCPlots <- function(after_object,
               message("        Using cowplot to capture base plot")
               # Create the plot and capture as grob
               captured_grob <- grid::grid.grabExpr({
-                limpa::plotDPC(stored_dpc)
+                graphics::par(mar = c(6, 4.5, 2, 1.5))
+                limpa::plotDPC(stored_dpc, main = "")
               })
 
               # Convert using cowplot
               cowplot_plot <- cowplot::ggdraw() +
                 cowplot::draw_grob(captured_grob)
 
-              message(sprintf("        cowplot conversion successful, class: %s", class(cowplot_plot)))
+              message(sprintf(
+                "        cowplot conversion successful, class: %s",
+                class(cowplot_plot)
+              ))
             }
           },
           error = function(e) {
@@ -301,9 +393,16 @@ generateLimpaQCPlots <- function(after_object,
         tryCatch(
           {
             message("        About to call plotDPC directly")
-            direct_plot <- limpa::plotDPC(stored_dpc)
-            message(sprintf("        Direct plotDPC returned: %s", capture.output(str(direct_plot))))
-            message(sprintf("        Direct plotDPC class: %s", class(direct_plot)))
+            graphics::par(mar = c(6, 4.5, 2, 1.5))
+            direct_plot <- limpa::plotDPC(stored_dpc, main = "")
+            message(sprintf(
+              "        Direct plotDPC returned: %s",
+              capture.output(str(direct_plot))
+            ))
+            message(sprintf(
+              "        Direct plotDPC class: %s",
+              class(direct_plot)
+            ))
           },
           error = function(e) {
             message(sprintf("        Direct plotDPC FAILED: %s", e$message))
@@ -321,7 +420,8 @@ generateLimpaQCPlots <- function(after_object,
             png(temp_file, width = 800, height = 600, res = 150)
 
             message("        Calling plotDPC to temp file")
-            limpa::plotDPC(stored_dpc)
+            graphics::par(mar = c(6, 4.5, 2, 1.5))
+            limpa::plotDPC(stored_dpc, main = "")
             dev.off()
 
             message("        Reading temp file back as ggplot")
@@ -333,7 +433,13 @@ generateLimpaQCPlots <- function(after_object,
                 # Read with png package and create ggplot
                 img <- png::readPNG(temp_file)
                 temp_plot <- ggplot2::ggplot() +
-                  ggplot2::annotation_raster(img, xmin = 0, xmax = 1, ymin = 0, ymax = 1) +
+                  ggplot2::annotation_raster(
+                    img,
+                    xmin = 0,
+                    xmax = 1,
+                    ymin = 0,
+                    ymax = 1
+                  ) +
                   ggplot2::scale_x_continuous(expand = c(0, 0)) +
                   ggplot2::scale_y_continuous(expand = c(0, 0)) +
                   ggplot2::theme_void()
@@ -342,7 +448,13 @@ generateLimpaQCPlots <- function(after_object,
               # Use magick to read and convert
               img <- magick::image_read(temp_file)
               temp_plot <- ggplot2::ggplot() +
-                ggplot2::annotation_raster(as.raster(img), xmin = 0, xmax = 1, ymin = 0, ymax = 1) +
+                ggplot2::annotation_raster(
+                  as.raster(img),
+                  xmin = 0,
+                  xmax = 1,
+                  ymin = 0,
+                  ymax = 1
+                ) +
                 ggplot2::scale_x_continuous(expand = c(0, 0)) +
                 ggplot2::scale_y_continuous(expand = c(0, 0)) +
                 ggplot2::theme_void()
@@ -351,7 +463,10 @@ generateLimpaQCPlots <- function(after_object,
             message("        Removing temporary file")
             unlink(temp_file)
 
-            message(sprintf("        temp file approach result: %s", capture.output(str(temp_plot))))
+            message(sprintf(
+              "        temp file approach result: %s",
+              capture.output(str(temp_plot))
+            ))
           },
           error = function(e) {
             message(sprintf("        temp file approach FAILED: %s", e$message))
@@ -364,64 +479,104 @@ generateLimpaQCPlots <- function(after_object,
         dpc_final_plot <- NULL
         if (!is.null(ggplotify_plot)) {
           message("   Option 1 SUCCESS: Adding title to ggplotify plot")
-          slope_text <- ifelse(is.null(dpc_results$slope_interpretation) || dpc_results$slope_interpretation == "",
-            "nearly random missing", dpc_results$slope_interpretation
+          slope_text <- ifelse(
+            is.null(dpc_results$slope_interpretation) ||
+              dpc_results$slope_interpretation == "",
+            "nearly random missing",
+            dpc_results$slope_interpretation
           )
 
           # Add title using ggplot2
           dpc_final_plot <- ggplotify_plot +
-            ggplot2::labs(title = paste(
-              "Detection Probability Curve\n",
-              "Slope:", round(as.numeric(dpc_params[2]), 3),
-              "- Mechanism:", slope_text
-            )) +
-            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+            ggplot2::labs(
+              title = paste(
+                "Detection Probability Curve\n",
+                "Slope:",
+                round(as.numeric(dpc_params[2]), 3),
+                "- Mechanism:",
+                slope_text
+              )
+            ) +
+            ggplot2::theme(
+              plot.title = ggplot2::element_text(hjust = 0.5),
+              plot.margin = ggplot2::margin(t = 5, r = 5, b = 15, l = 5)
+            )
 
           message("     ggplotify plot with title created successfully")
         } else if (!is.null(cowplot_plot)) {
           message("   Option 2 SUCCESS: Adding title to cowplot plot")
-          slope_text <- ifelse(is.null(dpc_results$slope_interpretation) || dpc_results$slope_interpretation == "",
-            "nearly random missing", dpc_results$slope_interpretation
+          slope_text <- ifelse(
+            is.null(dpc_results$slope_interpretation) ||
+              dpc_results$slope_interpretation == "",
+            "nearly random missing",
+            dpc_results$slope_interpretation
           )
 
           # Add title using ggplot2
           dpc_final_plot <- cowplot_plot +
-            ggplot2::labs(title = paste(
-              "Detection Probability Curve\n",
-              "Slope:", round(as.numeric(dpc_params[2]), 3),
-              "- Mechanism:", slope_text
-            )) +
-            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+            ggplot2::labs(
+              title = paste(
+                "Detection Probability Curve\n",
+                "Slope:",
+                round(as.numeric(dpc_params[2]), 3),
+                "- Mechanism:",
+                slope_text
+              )
+            ) +
+            ggplot2::theme(
+              plot.title = ggplot2::element_text(hjust = 0.5),
+              plot.margin = ggplot2::margin(t = 5, r = 5, b = 15, l = 5)
+            )
 
           message("     cowplot plot with title created successfully")
         } else if (!is.null(direct_plot) && inherits(direct_plot, "ggplot")) {
           message("   Option 3 SUCCESS: Using direct ggplot")
-          slope_text <- ifelse(is.null(dpc_results$slope_interpretation) || dpc_results$slope_interpretation == "",
-            "nearly random missing", dpc_results$slope_interpretation
+          slope_text <- ifelse(
+            is.null(dpc_results$slope_interpretation) ||
+              dpc_results$slope_interpretation == "",
+            "nearly random missing",
+            dpc_results$slope_interpretation
           )
 
           dpc_final_plot <- direct_plot +
-            ggplot2::labs(title = paste(
-              "Detection Probability Curve\n",
-              "Slope:", round(as.numeric(dpc_params[2]), 3),
-              "- Mechanism:", slope_text
-            )) +
-            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+            ggplot2::labs(
+              title = paste(
+                "Detection Probability Curve\n",
+                "Slope:",
+                round(as.numeric(dpc_params[2]), 3),
+                "- Mechanism:",
+                slope_text
+              )
+            ) +
+            ggplot2::theme(
+              plot.title = ggplot2::element_text(hjust = 0.5),
+              plot.margin = ggplot2::margin(t = 5, r = 5, b = 15, l = 5)
+            )
 
           message("     direct ggplot with title created successfully")
         } else if (!is.null(temp_plot)) {
           message("   Option 4 SUCCESS: Using temp file plot")
-          slope_text <- ifelse(is.null(dpc_results$slope_interpretation) || dpc_results$slope_interpretation == "",
-            "nearly random missing", dpc_results$slope_interpretation
+          slope_text <- ifelse(
+            is.null(dpc_results$slope_interpretation) ||
+              dpc_results$slope_interpretation == "",
+            "nearly random missing",
+            dpc_results$slope_interpretation
           )
 
           dpc_final_plot <- temp_plot +
-            ggplot2::labs(title = paste(
-              "Detection Probability Curve\n",
-              "Slope:", round(as.numeric(dpc_params[2]), 3),
-              "- Mechanism:", slope_text
-            )) +
-            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+            ggplot2::labs(
+              title = paste(
+                "Detection Probability Curve\n",
+                "Slope:",
+                round(as.numeric(dpc_params[2]), 3),
+                "- Mechanism:",
+                slope_text
+              )
+            ) +
+            ggplot2::theme(
+              plot.title = ggplot2::element_text(hjust = 0.5),
+              plot.margin = ggplot2::margin(t = 5, r = 5, b = 15, l = 5)
+            )
 
           message("     temp file plot with title created successfully")
         }
@@ -432,26 +587,41 @@ generateLimpaQCPlots <- function(after_object,
 
       # Use the successful plot or create fallback
       if (!is.null(dpc_final_plot)) {
-        if (verbose) cat("[OK] DPC curve plot generated successfully\n")
+        if (verbose) {
+          cat("[OK] DPC curve plot generated successfully\n")
+        }
         dpc_final_plot
       } else {
         message("   Fallback: Creating parameters summary plot")
-        if (verbose) cat("Creating DPC parameters summary plot...\n")
+        if (verbose) {
+          cat("Creating DPC parameters summary plot...\n")
+        }
 
-        slope_text <- ifelse(is.null(dpc_results$slope_interpretation) || dpc_results$slope_interpretation == "",
-          "nearly random missing", dpc_results$slope_interpretation
+        slope_text <- ifelse(
+          is.null(dpc_results$slope_interpretation) ||
+            dpc_results$slope_interpretation == "",
+          "nearly random missing",
+          dpc_results$slope_interpretation
         )
 
         ggplot2::ggplot() +
-          ggplot2::annotate("text",
-            x = 0.5, y = 0.5,
+          ggplot2::annotate(
+            "text",
+            x = 0.5,
+            y = 0.5,
             label = paste(
               "DPC Parameters Summary\n",
-              "beta0 (intercept):", round(as.numeric(dpc_params[1]), 3), "\n",
-              "beta1 (slope):", round(as.numeric(dpc_params[2]), 3), "\n",
-              "Mechanism:", slope_text
+              "beta0 (intercept):",
+              round(as.numeric(dpc_params[1]), 3),
+              "\n",
+              "beta1 (slope):",
+              round(as.numeric(dpc_params[2]), 3),
+              "\n",
+              "Mechanism:",
+              slope_text
             ),
-            size = 4, hjust = 0.5
+            size = 4,
+            hjust = 0.5
           ) +
           ggplot2::theme_void() +
           ggplot2::ggtitle("DPC Parameters")
@@ -462,7 +632,12 @@ generateLimpaQCPlots <- function(after_object,
       message(sprintf("   Error class: %s", class(e)))
       message(sprintf("   Call stack: %s", capture.output(traceback())))
       ggplot2::ggplot() +
-        ggplot2::annotate("text", x = 0.5, y = 0.5, label = paste("DPC plot error:", e$message)) +
+        ggplot2::annotate(
+          "text",
+          x = 0.5,
+          y = 0.5,
+          label = paste("DPC plot error:", e$message)
+        ) +
         ggplot2::theme_void() +
         ggplot2::ggtitle("DPC Curve")
     }
@@ -471,12 +646,18 @@ generateLimpaQCPlots <- function(after_object,
   # 2. Missing Value Pattern Comparison
   plot_list$missing_comparison <- tryCatch(
     {
-      if (verbose) cat("Generating missing value comparison plot...\n")
+      if (verbose) {
+        cat("Generating missing value comparison plot...\n")
+      }
 
       # Get matrices for comparison
       if (analysis_type == "peptide_imputation") {
         after_matrix <- after_object@peptide_matrix
-        before_matrix <- if (!is.null(before_object)) before_object@peptide_matrix else NULL
+        before_matrix <- if (!is.null(before_object)) {
+          before_object@peptide_matrix
+        } else {
+          NULL
+        }
         data_type <- "Peptides"
       } else {
         # For protein quantification, show peptide input vs protein output
@@ -487,7 +668,10 @@ generateLimpaQCPlots <- function(after_object,
         if (!is.null(dpc_results$y_peptide_for_dpc)) {
           before_matrix <- dpc_results$y_peptide_for_dpc # Use stored peptide data
           data_type <- "Peptides -> Proteins"
-        } else if (!is.null(before_object) && "peptide_matrix" %in% slotNames(before_object)) {
+        } else if (
+          !is.null(before_object) &&
+            "peptide_matrix" %in% slotNames(before_object)
+        ) {
           before_matrix <- before_object@peptide_matrix
           data_type <- "Peptides -> Proteins"
         } else {
@@ -501,7 +685,10 @@ generateLimpaQCPlots <- function(after_object,
         if (analysis_type == "protein_quantification") {
           # For protein quantification: compare peptide input vs protein output
           # Get common samples only (dimensions will be different)
-          common_samples <- intersect(colnames(before_matrix), colnames(after_matrix))
+          common_samples <- intersect(
+            colnames(before_matrix),
+            colnames(after_matrix)
+          )
 
           if (length(common_samples) > 0) {
             before_subset <- before_matrix[, common_samples, drop = FALSE]
@@ -512,13 +699,24 @@ generateLimpaQCPlots <- function(after_object,
             missing_after <- colSums(is.na(after_subset))
 
             # Create labels that reflect the data transformation
-            before_label <- paste("Before DPC-Quant\n(", nrow(before_subset), " peptides)")
-            after_label <- paste("After DPC-Quant\n(", nrow(after_subset), " proteins)")
+            before_label <- paste(
+              "Before DPC-Quant\n(",
+              nrow(before_subset),
+              " peptides)"
+            )
+            after_label <- paste(
+              "After DPC-Quant\n(",
+              nrow(after_subset),
+              " proteins)"
+            )
 
             missing_data <- data.frame(
               Sample = rep(names(missing_before), 2),
               Missing_Count = c(missing_before, missing_after),
-              Stage = rep(c(before_label, after_label), each = length(missing_before))
+              Stage = rep(
+                c(before_label, after_label),
+                each = length(missing_before)
+              )
             )
           } else {
             stop("No common samples between peptide and protein data")
@@ -526,8 +724,14 @@ generateLimpaQCPlots <- function(after_object,
         } else {
           # For peptide imputation: ensure matrices are compatible for comparison
           if (!identical(dim(before_matrix), dim(after_matrix))) {
-            common_samples <- intersect(colnames(before_matrix), colnames(after_matrix))
-            common_features <- intersect(rownames(before_matrix), rownames(after_matrix))
+            common_samples <- intersect(
+              colnames(before_matrix),
+              colnames(after_matrix)
+            )
+            common_features <- intersect(
+              rownames(before_matrix),
+              rownames(after_matrix)
+            )
             if (length(common_samples) > 0 && length(common_features) > 0) {
               before_matrix <- before_matrix[common_features, common_samples]
               after_matrix <- after_matrix[common_features, common_samples]
@@ -543,41 +747,63 @@ generateLimpaQCPlots <- function(after_object,
           missing_data <- data.frame(
             Sample = rep(names(missing_before), 2),
             Missing_Count = c(missing_before, missing_after),
-            Stage = rep(c("Before limpa", "After limpa"), each = length(missing_before))
+            Stage = rep(
+              c("Before limpa", "After limpa"),
+              each = length(missing_before)
+            )
           )
         }
 
         missing_plot <- missing_data |>
-          ggplot2::ggplot(ggplot2::aes(x = Sample, y = Missing_Count, fill = Stage)) +
+          ggplot2::ggplot(ggplot2::aes(
+            x = Sample,
+            y = Missing_Count,
+            fill = Stage
+          )) +
           ggplot2::geom_col(position = "dodge") +
           ggplot2::theme_bw() +
-          ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
+          ggplot2::theme(
+            axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
+          ) +
           ggplot2::labs(
             title = paste("Missing Values per Sample:", data_type),
             y = paste("Number of Missing", data_type),
             x = "Sample"
           ) +
-          ggplot2::scale_fill_manual(values = c(
-            "Before limpa" = "#E74C3C",
-            "After limpa" = "#3498DB"
-          ))
+          ggplot2::scale_fill_manual(
+            values = c(
+              "Before limpa" = "#E74C3C",
+              "After limpa" = "#3498DB"
+            )
+          )
       } else {
         missing_plot <- ggplot2::ggplot() +
-          ggplot2::annotate("text",
-            x = 0.5, y = 0.5,
+          ggplot2::annotate(
+            "text",
+            x = 0.5,
+            y = 0.5,
             label = "Missing value comparison\nrequires before/after objects"
           ) +
           ggplot2::theme_void() +
           ggplot2::ggtitle("Missing Values Comparison")
       }
 
-      if (verbose) cat("[OK] Missing value comparison plot generated\n")
+      if (verbose) {
+        cat("[OK] Missing value comparison plot generated\n")
+      }
       missing_plot
     },
     error = function(e) {
-      if (verbose) message("Could not generate missing value comparison: ", e$message)
+      if (verbose) {
+        message("Could not generate missing value comparison: ", e$message)
+      }
       ggplot2::ggplot() +
-        ggplot2::annotate("text", x = 0.5, y = 0.5, label = "Missing value comparison unavailable") +
+        ggplot2::annotate(
+          "text",
+          x = 0.5,
+          y = 0.5,
+          label = "Missing value comparison unavailable"
+        ) +
         ggplot2::theme_void() +
         ggplot2::ggtitle("Missing Values Comparison")
     }
@@ -586,12 +812,18 @@ generateLimpaQCPlots <- function(after_object,
   # 3. Intensity Distribution Comparison
   plot_list$intensity_distribution <- tryCatch(
     {
-      if (verbose) cat("Generating intensity distribution plot...\n")
+      if (verbose) {
+        cat("Generating intensity distribution plot...\n")
+      }
 
       # Get data for intensity comparison (same matrices as above)
       if (analysis_type == "peptide_imputation") {
         after_matrix <- after_object@peptide_matrix
-        before_matrix <- if (!is.null(before_object)) before_object@peptide_matrix else NULL
+        before_matrix <- if (!is.null(before_object)) {
+          before_object@peptide_matrix
+        } else {
+          NULL
+        }
         data_type <- "Peptide"
       } else {
         after_matrix <- as.matrix(after_object@protein_quant_table[, -1])
@@ -600,7 +832,10 @@ generateLimpaQCPlots <- function(after_object,
         if (!is.null(dpc_results$y_peptide_for_dpc)) {
           before_matrix <- dpc_results$y_peptide_for_dpc
           data_type <- "Peptide -> Protein"
-        } else if (!is.null(before_object) && "peptide_matrix" %in% slotNames(before_object)) {
+        } else if (
+          !is.null(before_object) &&
+            "peptide_matrix" %in% slotNames(before_object)
+        ) {
           before_matrix <- before_object@peptide_matrix
           data_type <- "Peptide -> Protein"
         } else {
@@ -612,8 +847,14 @@ generateLimpaQCPlots <- function(after_object,
       if (!is.null(before_matrix) && !is.null(after_matrix)) {
         # Ensure compatibility
         if (!identical(dim(before_matrix), dim(after_matrix))) {
-          common_samples <- intersect(colnames(before_matrix), colnames(after_matrix))
-          common_features <- intersect(rownames(before_matrix), rownames(after_matrix))
+          common_samples <- intersect(
+            colnames(before_matrix),
+            colnames(after_matrix)
+          )
+          common_features <- intersect(
+            rownames(before_matrix),
+            rownames(after_matrix)
+          )
           if (length(common_samples) > 0 && length(common_features) > 0) {
             before_matrix <- before_matrix[common_features, common_samples]
             after_matrix <- after_matrix[common_features, common_samples]
@@ -654,35 +895,53 @@ generateLimpaQCPlots <- function(after_object,
               x = "log2 Intensity",
               y = "Density"
             ) +
-            ggplot2::scale_fill_manual(values = c(
-              "Input Peptides" = "#E74C3C",
-              "DPC-Quant Proteins" = "#3498DB",
-              "Before limpa" = "#E74C3C",
-              "After limpa" = "#3498DB"
-            ))
+            ggplot2::scale_fill_manual(
+              values = c(
+                "Input Peptides" = "#E74C3C",
+                "DPC-Quant Proteins" = "#3498DB",
+                "Before limpa" = "#E74C3C",
+                "After limpa" = "#3498DB"
+              )
+            )
         } else {
           intensity_plot <- ggplot2::ggplot() +
-            ggplot2::annotate("text", x = 0.5, y = 0.5, label = "Insufficient data for\nintensity distribution") +
+            ggplot2::annotate(
+              "text",
+              x = 0.5,
+              y = 0.5,
+              label = "Insufficient data for\nintensity distribution"
+            ) +
             ggplot2::theme_void() +
             ggplot2::ggtitle("Intensity Distribution")
         }
       } else {
         intensity_plot <- ggplot2::ggplot() +
-          ggplot2::annotate("text",
-            x = 0.5, y = 0.5,
+          ggplot2::annotate(
+            "text",
+            x = 0.5,
+            y = 0.5,
             label = "Intensity distribution\nrequires before/after objects"
           ) +
           ggplot2::theme_void() +
           ggplot2::ggtitle("Intensity Distribution")
       }
 
-      if (verbose) cat("[OK] Intensity distribution plot generated\n")
+      if (verbose) {
+        cat("[OK] Intensity distribution plot generated\n")
+      }
       intensity_plot
     },
     error = function(e) {
-      if (verbose) message("Could not generate intensity distribution: ", e$message)
+      if (verbose) {
+        message("Could not generate intensity distribution: ", e$message)
+      }
       ggplot2::ggplot() +
-        ggplot2::annotate("text", x = 0.5, y = 0.5, label = "Intensity distribution unavailable") +
+        ggplot2::annotate(
+          "text",
+          x = 0.5,
+          y = 0.5,
+          label = "Intensity distribution unavailable"
+        ) +
         ggplot2::theme_void() +
         ggplot2::ggtitle("Intensity Distribution")
     }
@@ -691,7 +950,9 @@ generateLimpaQCPlots <- function(after_object,
   # 4. Summary Statistics Plot
   plot_list$summary <- tryCatch(
     {
-      if (verbose) cat("Generating summary plot...\n")
+      if (verbose) {
+        cat("Generating summary plot...\n")
+      }
 
       # Calculate current missing percentage
       if (analysis_type == "peptide_imputation") {
@@ -703,61 +964,117 @@ generateLimpaQCPlots <- function(after_object,
       current_missing_pct <- round(100 * mean(is.na(current_matrix)), 1)
 
       # Create summary text
-      slope_text <- ifelse(is.null(dpc_results$slope_interpretation) || dpc_results$slope_interpretation == "",
-        "nearly random missing", dpc_results$slope_interpretation
+      slope_text <- ifelse(
+        is.null(dpc_results$slope_interpretation) ||
+          dpc_results$slope_interpretation == "",
+        "nearly random missing",
+        dpc_results$slope_interpretation
       )
 
       summary_text <- paste(
         "limpa DPC Analysis Summary\n",
-        "Type:", stringr::str_to_title(gsub("_", " ", analysis_type)), "\n",
-        "Method:", ifelse(is.null(dpc_results$dpc_method), "limpa_dpc", dpc_results$dpc_method), "\n",
-        "DPC Slope (beta1):", round(as.numeric(dpc_params[2]), 3), "\n",
-        "DPC Intercept (beta0):", round(as.numeric(dpc_params[1]), 3), "\n",
-        "Missing Mechanism:", slope_text, "\n",
+        "Type:",
+        stringr::str_to_title(gsub("_", " ", analysis_type)),
+        "\n",
+        "Method:",
+        ifelse(
+          is.null(dpc_results$dpc_method),
+          "limpa_dpc",
+          dpc_results$dpc_method
+        ),
+        "\n",
+        "DPC Slope (beta1):",
+        round(as.numeric(dpc_params[2]), 3),
+        "\n",
+        "DPC Intercept (beta0):",
+        round(as.numeric(dpc_params[1]), 3),
+        "\n",
+        "Missing Mechanism:",
+        slope_text,
+        "\n",
         if (!is.null(dpc_results$missing_percentage_before)) {
-          paste("Missing % Before:", dpc_results$missing_percentage_before, "%\n")
+          paste(
+            "Missing % Before:",
+            dpc_results$missing_percentage_before,
+            "%\n"
+          )
         } else {
           ""
         },
-        "Missing % Current:", current_missing_pct, "%"
+        "Missing % Current:",
+        current_missing_pct,
+        "%"
       )
 
       summary_plot <- ggplot2::ggplot() +
-        ggplot2::annotate("text",
-          x = 0.5, y = 0.5,
+        ggplot2::annotate(
+          "text",
+          x = 0.5,
+          y = 0.5,
           label = summary_text,
-          size = 4, hjust = 0.5, vjust = 0.5
+          size = 4,
+          hjust = 0.5,
+          vjust = 0.5
         ) +
         ggplot2::theme_void() +
         ggplot2::ggtitle("limpa Analysis Summary") +
-        ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, size = 14, face = "bold"))
+        ggplot2::theme(
+          plot.title = ggplot2::element_text(
+            hjust = 0.5,
+            size = 14,
+            face = "bold"
+          )
+        )
 
-      if (verbose) cat("[OK] Summary plot generated\n")
+      if (verbose) {
+        cat("[OK] Summary plot generated\n")
+      }
       summary_plot
     },
     error = function(e) {
-      if (verbose) message("Could not generate summary plot: ", e$message)
+      if (verbose) {
+        message("Could not generate summary plot: ", e$message)
+      }
       ggplot2::ggplot() +
-        ggplot2::annotate("text", x = 0.5, y = 0.5, label = "Summary unavailable") +
+        ggplot2::annotate(
+          "text",
+          x = 0.5,
+          y = 0.5,
+          label = "Summary unavailable"
+        ) +
         ggplot2::theme_void() +
         ggplot2::ggtitle("Summary")
     }
   )
 
   # Create composite plot using patchwork
-  if (verbose) cat("Creating composite plot...\n")
+  if (verbose) {
+    cat("Creating composite plot...\n")
+  }
 
   composite_plot <- tryCatch(
     {
       (plot_list$dpc_curve + plot_list$missing_comparison) /
         (plot_list$intensity_distribution + plot_list$summary) +
         patchwork::plot_annotation(
-          title = paste("limpa DPC", stringr::str_to_title(gsub("_", " ", analysis_type)), "Quality Control"),
-          theme = ggplot2::theme(plot.title = ggplot2::element_text(size = 16, face = "bold", hjust = 0.5))
+          title = paste(
+            "limpa DPC",
+            stringr::str_to_title(gsub("_", " ", analysis_type)),
+            "Quality Control"
+          ),
+          theme = ggplot2::theme(
+            plot.title = ggplot2::element_text(
+              size = 16,
+              face = "bold",
+              hjust = 0.5
+            )
+          )
         )
     },
     error = function(e) {
-      if (verbose) message("Could not create composite plot with patchwork: ", e$message)
+      if (verbose) {
+        message("Could not create composite plot with patchwork: ", e$message)
+      }
       # Fallback: return first available plot
       for (plot in plot_list) {
         if (!is.null(plot)) {
@@ -765,18 +1082,28 @@ generateLimpaQCPlots <- function(after_object,
         }
       }
       ggplot2::ggplot() +
-        ggplot2::annotate("text", x = 0.5, y = 0.5, label = "Composite plot failed")
+        ggplot2::annotate(
+          "text",
+          x = 0.5,
+          y = 0.5,
+          label = "Composite plot failed"
+        )
     }
   )
 
   # Save individual plots if requested
   if (save_plots && !is.null(save_dir)) {
     message(sprintf("   Step: Saving plots to directory: %s", save_dir))
-    if (verbose) cat("Saving individual plots...\n")
+    if (verbose) {
+      cat("Saving individual plots...\n")
+    }
 
     tryCatch(
       {
-        message(sprintf("      Checking if directory exists: %s", dir.exists(save_dir)))
+        message(sprintf(
+          "      Checking if directory exists: %s",
+          dir.exists(save_dir)
+        ))
         if (!dir.exists(save_dir)) {
           message("      Creating directory...")
           dir.create(save_dir, recursive = TRUE)
@@ -784,21 +1111,48 @@ generateLimpaQCPlots <- function(after_object,
         }
 
         # Save individual plots
-        message(sprintf("      Saving %d individual plots...", length(plot_list)))
+        message(sprintf(
+          "      Saving %d individual plots...",
+          length(plot_list)
+        ))
         for (plot_name in names(plot_list)) {
           if (!is.null(plot_list[[plot_name]])) {
-            filename <- file.path(save_dir, paste0(plot_prefix, "_", plot_name, ".png"))
+            filename <- file.path(
+              save_dir,
+              paste0(plot_prefix, "_", plot_name, ".png")
+            )
             message(sprintf("        Saving plot: %s", filename))
-            ggplot2::ggsave(filename, plot_list[[plot_name]], width = 8, height = 6, dpi = 300)
-            message(sprintf("        Plot saved successfully: %s", file.exists(filename)))
+            ggplot2::ggsave(
+              filename,
+              plot_list[[plot_name]],
+              width = 8,
+              height = 6,
+              dpi = 300
+            )
+            message(sprintf(
+              "        Plot saved successfully: %s",
+              file.exists(filename)
+            ))
           }
         }
 
         # Save composite plot
-        composite_filename <- file.path(save_dir, paste0(plot_prefix, "_composite.png"))
+        composite_filename <- file.path(
+          save_dir,
+          paste0(plot_prefix, "_composite.png")
+        )
         message(sprintf("      Saving composite plot: %s", composite_filename))
-        ggplot2::ggsave(composite_filename, composite_plot, width = 12, height = 10, dpi = 300)
-        message(sprintf("      Composite plot saved: %s", file.exists(composite_filename)))
+        ggplot2::ggsave(
+          composite_filename,
+          composite_plot,
+          width = 12,
+          height = 10,
+          dpi = 300
+        )
+        message(sprintf(
+          "      Composite plot saved: %s",
+          file.exists(composite_filename)
+        ))
 
         if (verbose) cat("[OK] Plots saved to:", save_dir, "\n")
       },
@@ -808,10 +1162,16 @@ generateLimpaQCPlots <- function(after_object,
       }
     )
   } else {
-    message(sprintf("   Not saving plots: save_plots=%s, save_dir=%s", save_plots, ifelse(is.null(save_dir), "NULL", save_dir)))
+    message(sprintf(
+      "   Not saving plots: save_plots=%s, save_dir=%s",
+      save_plots,
+      ifelse(is.null(save_dir), "NULL", save_dir)
+    ))
   }
 
-  if (verbose) cat("[OK] limpa QC plot generation completed!\n")
+  if (verbose) {
+    cat("[OK] limpa QC plot generation completed!\n")
+  }
 
   # Return the list of individual plots instead of the composite
   return(plot_list)
@@ -834,17 +1194,25 @@ generateLimpaQCPlots <- function(after_object,
 #'
 #' @return List with same structure as runTestsContrasts output
 #' @export
-convertDpcDAToStandardFormat <- function(dpc_fit,
-                                         contrast_strings,
-                                         design_matrix,
-                                         eBayes_trend = TRUE,
-                                         eBayes_robust = TRUE) {
+convertDpcDAToStandardFormat <- function(
+  dpc_fit,
+  contrast_strings,
+  design_matrix,
+  eBayes_trend = TRUE,
+  eBayes_robust = TRUE
+) {
   if (!requireNamespace("limma", quietly = TRUE)) {
     stop("limma package is required for convertDpcDAToStandardFormat")
   }
 
-  cat("   convertDpcDAToStandardFormat: Converting dpcDE results to standard format\n")
-  cat("   convertDpcDAToStandardFormat: Processing", length(contrast_strings), "contrasts\n")
+  cat(
+    "   convertDpcDAToStandardFormat: Converting dpcDE results to standard format\n"
+  )
+  cat(
+    "   convertDpcDAToStandardFormat: Processing",
+    length(contrast_strings),
+    "contrasts\n"
+  )
 
   # Create contrast matrix from contrast strings
   # Extract just the contrast expressions (after the "=" sign)
@@ -863,13 +1231,23 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
     levels = colnames(design_matrix)
   )
 
-  cat("   convertDpcDAToStandardFormat: Contrast matrix dims:", nrow(contrast_matrix), "x", ncol(contrast_matrix), "\n")
+  cat(
+    "   convertDpcDAToStandardFormat: Contrast matrix dims:",
+    nrow(contrast_matrix),
+    "x",
+    ncol(contrast_matrix),
+    "\n"
+  )
 
   # Apply contrasts to the dpcDE fit
   contrast_fit <- limma::contrasts.fit(dpc_fit, contrast_matrix)
 
   # Apply empirical Bayes
-  eb_fit <- limma::eBayes(contrast_fit, trend = eBayes_trend, robust = eBayes_robust)
+  eb_fit <- limma::eBayes(
+    contrast_fit,
+    trend = eBayes_trend,
+    robust = eBayes_robust
+  )
 
   # Extract results for each contrast
   results_list <- list()
@@ -932,7 +1310,13 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
     full_contrast_string <- contrast_strings[i]
     results_list[[full_contrast_string]] <- contrast_results
 
-    cat("   convertDpcDAToStandardFormat: Processed contrast", contrast_name, "with", nrow(contrast_results), "proteins\n")
+    cat(
+      "   convertDpcDAToStandardFormat: Processed contrast",
+      contrast_name,
+      "with",
+      nrow(contrast_results),
+      "proteins\n"
+    )
   }
 
   # Return in same format as runTestsContrasts, which is a list of tables
@@ -977,15 +1361,19 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
 setMethod(
   f = "proteinMissingValueImputationLimpa",
   signature = "ProteinQuantitativeData",
-  definition = function(theObject,
-                        dpc_results = NULL,
-                        dpc_slope = 0.8,
-                        quantified_protein_column = NULL,
-                        verbose = TRUE,
-                        chunk = 1000) {
+  definition = function(
+    theObject,
+    dpc_results = NULL,
+    dpc_slope = 0.8,
+    quantified_protein_column = NULL,
+    verbose = TRUE,
+    chunk = 1000
+  ) {
     # Load required packages
     if (!requireNamespace("limpa", quietly = TRUE)) {
-      stop("limpa package is required but not installed. Please install it using: BiocManager::install('limpa')")
+      stop(
+        "limpa package is required but not installed. Please install it using: BiocManager::install('limpa')"
+      )
     }
 
     # Parameter validation and defaults
@@ -1010,8 +1398,12 @@ setMethod(
     sample_columns <- setdiff(
       colnames(protein_quant_table),
       c(
-        protein_id_column, "description", "gene_name",
-        "protein_name", "organism", "length"
+        protein_id_column,
+        "description",
+        "gene_name",
+        "protein_name",
+        "organism",
+        "length"
       )
     )
 
@@ -1027,8 +1419,12 @@ setMethod(
       as.matrix()
 
     if (verbose) {
-      log_info("Protein matrix dimensions: {nrow(protein_matrix)} proteins x {ncol(protein_matrix)} samples")
-      log_info("Missing value percentage: {round(100 * mean(is.na(protein_matrix)), 1)}%")
+      log_info(
+        "Protein matrix dimensions: {nrow(protein_matrix)} proteins x {ncol(protein_matrix)} samples"
+      )
+      log_info(
+        "Missing value percentage: {round(100 * mean(is.na(protein_matrix)), 1)}%"
+      )
     }
 
     # Check if we need log2 transformation
@@ -1038,17 +1434,23 @@ setMethod(
 
     if (needs_log_transform) {
       if (verbose) {
-        log_info("Converting to log2 scale for limpa (max value: {round(max_val, 2)})...")
+        log_info(
+          "Converting to log2 scale for limpa (max value: {round(max_val, 2)})..."
+        )
       }
       protein_matrix <- log2(protein_matrix + 1)
     } else {
       if (verbose) {
-        log_info("Data appears to be log2-scale already (max value: {round(max_val, 2)})")
+        log_info(
+          "Data appears to be log2-scale already (max value: {round(max_val, 2)})"
+        )
       }
     }
 
     # Handle infinite or NaN values
-    if (any(is.infinite(protein_matrix) | is.nan(protein_matrix), na.rm = TRUE)) {
+    if (
+      any(is.infinite(protein_matrix) | is.nan(protein_matrix), na.rm = TRUE)
+    ) {
       if (verbose) {
         log_warn("Infinite or NaN values detected. Replacing with NA...")
       }
@@ -1094,14 +1496,26 @@ setMethod(
       {
         # Apply dpcImpute to protein matrix
         if (!is.null(dpc_params)) {
-          imputed_result <- limpa::dpcImpute(protein_matrix, dpc = dpc_params, verbose = verbose, chunk = chunk)
+          imputed_result <- limpa::dpcImpute(
+            protein_matrix,
+            dpc = dpc_params,
+            verbose = verbose,
+            chunk = chunk
+          )
         } else {
-          imputed_result <- limpa::dpcImpute(protein_matrix, dpc.slope = dpc_slope, verbose = verbose, chunk = chunk)
+          imputed_result <- limpa::dpcImpute(
+            protein_matrix,
+            dpc.slope = dpc_slope,
+            verbose = verbose,
+            chunk = chunk
+          )
         }
 
         if (verbose) {
           log_info("Protein-level imputation completed successfully")
-          log_info("No missing values remaining: {!any(is.na(imputed_result$E))}")
+          log_info(
+            "No missing values remaining: {!any(is.na(imputed_result$E))}"
+          )
         }
 
         # Extract imputed matrix
@@ -1133,7 +1547,10 @@ setMethod(
 
         # Merge with original protein data
         updated_protein_data <- protein_quant_table |>
-          dplyr::left_join(imputed_long, by = c(protein_id_column, sample_id_column))
+          dplyr::left_join(
+            imputed_long,
+            by = c(protein_id_column, sample_id_column)
+          )
 
         # Update the object
         theObject@protein_quant_table <- updated_protein_data
@@ -1155,9 +1572,18 @@ setMethod(
           } else {
             c(NA, dpc_slope)
           },
-          dpc_object_used = if (is.list(dpc_params) && !is.null(dpc_params$dpc)) dpc_params else NULL,
+          dpc_object_used = if (
+            is.list(dpc_params) && !is.null(dpc_params$dpc)
+          ) {
+            dpc_params
+          } else {
+            NULL
+          },
           quantified_protein_column = quantified_protein_column,
-          missing_percentage_before = round(100 * mean(is.na(protein_matrix)), 1),
+          missing_percentage_before = round(
+            100 * mean(is.na(protein_matrix)),
+            1
+          ),
           missing_percentage_after = 0, # DPC imputation produces complete data
           imputation_method = "limpa_dpc_protein_imputation",
           total_proteins_imputed = nrow(imputed_matrix)
@@ -1166,7 +1592,9 @@ setMethod(
         if (verbose) {
           log_info("limpa protein-level imputation completed successfully!")
           log_info("New imputed column: {quantified_protein_column}")
-          log_info("DPC results stored in object@args$limpa_protein_imputation_results")
+          log_info(
+            "DPC results stored in object@args$limpa_protein_imputation_results"
+          )
         }
 
         return(theObject)
@@ -1220,15 +1648,19 @@ setMethod(
 setMethod(
   f = "proteinMissingValueImputationLimpa",
   signature = "PeptideQuantitativeData",
-  definition = function(theObject,
-                        dpc_results = NULL,
-                        dpc_slope = 0.8,
-                        quantified_protein_column = NULL,
-                        verbose = TRUE,
-                        chunk = 1000) {
+  definition = function(
+    theObject,
+    dpc_results = NULL,
+    dpc_slope = 0.8,
+    quantified_protein_column = NULL,
+    verbose = TRUE,
+    chunk = 1000
+  ) {
     # Load required packages
     if (!requireNamespace("limpa", quietly = TRUE)) {
-      stop("limpa package is required but not installed. Please install it using: BiocManager::install('limpa')")
+      stop(
+        "limpa package is required but not installed. Please install it using: BiocManager::install('limpa')"
+      )
     }
 
     # Parameter validation and defaults
@@ -1238,7 +1670,11 @@ setMethod(
       quantified_protein_column
     }
 
-    dpc_slope <- checkParamsObjectFunctionSimplify(theObject, "dpc_slope", dpc_slope)
+    dpc_slope <- checkParamsObjectFunctionSimplify(
+      theObject,
+      "dpc_slope",
+      dpc_slope
+    )
     verbose <- checkParamsObjectFunctionSimplify(theObject, "verbose", verbose)
     chunk <- checkParamsObjectFunctionSimplify(theObject, "chunk", chunk)
 
@@ -1252,8 +1688,12 @@ setMethod(
 
     if (verbose) {
       log_info("Starting limpa DPC-Quant protein quantification...")
-      log_info("Peptide data dimensions: {nrow(peptide_matrix)} peptides x {ncol(peptide_matrix)} samples")
-      log_info("Missing value percentage in peptides: {round(100 * mean(is.na(peptide_matrix)), 1)}%")
+      log_info(
+        "Peptide data dimensions: {nrow(peptide_matrix)} peptides x {ncol(peptide_matrix)} samples"
+      )
+      log_info(
+        "Missing value percentage in peptides: {round(100 * mean(is.na(peptide_matrix)), 1)}%"
+      )
     }
 
     # Check if peptide matrix exists and is properly formatted
@@ -1289,7 +1729,9 @@ setMethod(
     if (any(all_na_rows)) {
       num_removed <- sum(all_na_rows)
       if (verbose) {
-        log_warn("Found and removed {num_removed} peptides with no observations across all samples.")
+        log_warn(
+          "Found and removed {num_removed} peptides with no observations across all samples."
+        )
       }
       y_peptide <- y_peptide[!all_na_rows, ]
     }
@@ -1337,7 +1779,9 @@ setMethod(
     } else {
       # Estimate DPC parameters on-the-fly if not available
       if (verbose) {
-        log_info("No DPC results found. Estimating DPC parameters from peptide data...")
+        log_info(
+          "No DPC results found. Estimating DPC parameters from peptide data..."
+        )
       }
       tryCatch(
         {
@@ -1365,7 +1809,9 @@ setMethod(
         },
         error = function(e) {
           if (verbose) {
-            log_warn("DPC estimation failed: {e$message}. Using default slope: {dpc_slope}")
+            log_warn(
+              "DPC estimation failed: {e$message}. Using default slope: {dpc_slope}"
+            )
           }
           dpc_params <<- NULL # Will let dpcQuant estimate with default slope
           slope_interpretation <<- "unable to determine (DPC estimation failed)"
@@ -1390,7 +1836,9 @@ setMethod(
 
     if (verbose) {
       unique_proteins <- nrow(peptide_summary)
-      log_info("Found {unique_proteins} unique proteins from {nrow(y_peptide)} peptidoforms")
+      log_info(
+        "Found {unique_proteins} unique proteins from {nrow(y_peptide)} peptidoforms"
+      )
 
       peptide_count_summary <- peptide_summary |>
         dplyr::summarise(
@@ -1402,9 +1850,15 @@ setMethod(
           median_peptidoforms = median(peptidoform_count),
           proteins_with_2plus_peptides = sum(peptide_count >= 2)
         )
-      log_info("Unique peptide counts per protein - min: {peptide_count_summary$min_peptides}, max: {peptide_count_summary$max_peptides}, median: {round(peptide_count_summary$median_peptides, 1)}")
-      log_info("Total peptidoform counts per protein - min: {peptide_count_summary$min_peptidoforms}, max: {peptide_count_summary$max_peptidoforms}, median: {round(peptide_count_summary$median_peptidoforms, 1)}")
-      log_info("Proteins with >=2 unique peptides: {peptide_count_summary$proteins_with_2plus_peptides} / {unique_proteins}")
+      log_info(
+        "Unique peptide counts per protein - min: {peptide_count_summary$min_peptides}, max: {peptide_count_summary$max_peptides}, median: {round(peptide_count_summary$median_peptides, 1)}"
+      )
+      log_info(
+        "Total peptidoform counts per protein - min: {peptide_count_summary$min_peptidoforms}, max: {peptide_count_summary$max_peptidoforms}, median: {round(peptide_count_summary$median_peptidoforms, 1)}"
+      )
+      log_info(
+        "Proteins with >=2 unique peptides: {peptide_count_summary$proteins_with_2plus_peptides} / {unique_proteins}"
+      )
     }
 
     # Apply DPC-Quant for protein quantification
@@ -1448,7 +1902,9 @@ setMethod(
           log_info("DPC-Quant completed successfully")
           log_info("Quantified proteins: {nrow(protein_quant_result$E)}")
           log_info("Samples: {ncol(protein_quant_result$E)}")
-          log_info("No missing values in protein quantification: {!any(is.na(protein_quant_result$E))}")
+          log_info(
+            "No missing values in protein quantification: {!any(is.na(protein_quant_result$E))}"
+          )
         }
 
         # Extract quantified protein matrix
@@ -1487,7 +1943,9 @@ setMethod(
           dplyr::filter(!!sym(protein_id_column) %in% final_protein_ids)
 
         if (verbose) {
-          log_info("Synchronized peptide summary table with quantified proteins. Kept {nrow(peptide_summary_synced)} of {nrow(peptide_summary)} entries.")
+          log_info(
+            "Synchronized peptide summary table with quantified proteins. Kept {nrow(peptide_summary_synced)} of {nrow(peptide_summary)} entries."
+          )
         }
         # --- END NEW ---
 
@@ -1499,7 +1957,8 @@ setMethod(
         protein_obj <- ProteinQuantitativeData(
           protein_quant_table = protein_wide,
           protein_id_column = protein_id_column,
-          protein_id_table = protein_wide |> dplyr::distinct(!!sym(protein_id_column)),
+          protein_id_table = protein_wide |>
+            dplyr::distinct(!!sym(protein_id_column)),
           design_matrix = design_matrix,
           sample_id = sample_id_column,
           group_id = theObject@group_id,
@@ -1524,7 +1983,13 @@ setMethod(
           } else {
             c(NA, dpc_slope)
           },
-          dpc_object_used = if (is.list(dpc_params) && !is.null(dpc_params$dpc)) dpc_params else NULL,
+          dpc_object_used = if (
+            is.list(dpc_params) && !is.null(dpc_params$dpc)
+          ) {
+            dpc_params
+          } else {
+            NULL
+          },
           slope_interpretation = slope_interpretation, # Store slope interpretation for QC plots
           y_peptide_for_dpc = y_peptide, # Store peptide data for DPC plotting
           quantified_elist = protein_quant_result, # Store the entire EList object
@@ -1540,10 +2005,16 @@ setMethod(
         )
 
         if (verbose) {
-          log_info("limpa DPC-Quant protein quantification completed successfully!")
-          log_info("Protein data stored in wide format with {ncol(protein_matrix)} sample columns")
+          log_info(
+            "limpa DPC-Quant protein quantification completed successfully!"
+          )
+          log_info(
+            "Protein data stored in wide format with {ncol(protein_matrix)} sample columns"
+          )
           log_info("Proteins quantified: {nrow(protein_matrix)}")
-          log_info("DPC-Quant results stored in object@args$limpa_dpc_quant_results")
+          log_info(
+            "DPC-Quant results stored in object@args$limpa_dpc_quant_results"
+          )
         }
 
         return(protein_obj)

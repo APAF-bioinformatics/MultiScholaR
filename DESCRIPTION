@@ -25,7 +25,6 @@ License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Collate: 
     'allGenerics.R'
     'func_general_s4_objects.R'
@@ -231,3 +230,4 @@ Imports:
 Remotes:
     cran/RUVIIIC,
     APAF-bioinformatics/GlimmaV2
+Config/roxygen2/version: 8.0.0
