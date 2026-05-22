@@ -3674,7 +3674,7 @@ setMethod(
 
         matrix_data <- as.matrix(theObject@metabolite_data[[1]][, -1]) # Exclude Name column
         colnames(matrix_data) <- colnames(theObject@metabolite_data[[1]])[-1]
-        rownames(matrix_data) <- theObject@metabolite_data[[1]]$Name
+        rownames(matrix_data) <- theObject@metabolite_data[[1]][[theObject@metabolite_id_column]]
         data_matrix <- matrix_data
         message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
         contrasts_results <- runTestsContrasts(

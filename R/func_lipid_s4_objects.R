@@ -3666,7 +3666,7 @@ setMethod(
 
         matrix_data <- as.matrix(theObject@lipid_data[[1]][, -1]) # Exclude Name column
         colnames(matrix_data) <- colnames(theObject@lipid_data[[1]])[-1]
-        rownames(matrix_data) <- theObject@lipid_data[[1]]$Name
+        rownames(matrix_data) <- theObject@lipid_data[[1]][[theObject@lipid_id_column]]
         data_matrix <- matrix_data
         message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
         contrasts_results <- runTestsContrasts(
