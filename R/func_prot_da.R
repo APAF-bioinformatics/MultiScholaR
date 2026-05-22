@@ -3089,11 +3089,9 @@ countStatDaGenesHelper <- function(
   message("   countStatDaGenesHelper: da_table names:")
   print(names(da_table))
 
-  # CRITICAL FIX 1: If da_table is a list of tables from limma, we need to process each one
   da_table_updated <- if (is.list(da_table) && !is.data.frame(da_table)) {
     purrr::imap(da_table, \(x, n) {
       if (is.data.frame(x)) {
-        # Ensure comparison column is set if missing
         if (!"comparison" %in% colnames(x)) {
           x <- x |> dplyr::mutate(comparison = n)
         }
@@ -3105,11 +3103,19 @@ countStatDaGenesHelper <- function(
                        q_value_column = {{ q_value_column }})
     })
   } else {
-    list(countStatDaGenes(da_table,
-                          lfc_thresh = lfc_thresh,
-                       q_val_thresh = q_val_thresh,
-                       log_fc_column = {{ log_fc_column }},
-                       q_value_column = {{ q_value_column }}))
+    res <- countStatDaGenes(da_table,
+                           lfc_thresh = lfc_thresh,
+                           q_val_thresh = q_val_thresh,
+                           log_fc_column = {{ log_fc_column }},
+                           q_value_column = {{ q_value_column }})
+    element_name <- if ("comparison" %in% colnames(da_table)) {
+      unique(da_table$comparison)[1]
+    } else {
+      description
+    }
+    da_table_updated <- list(res)
+    names(da_table_updated) <- element_name
+    da_table_updated
   }
 
   message("   countStatDaGenesHelper: da_table_updated created")

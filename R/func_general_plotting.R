@@ -1436,7 +1436,7 @@ plotPcaHelper <- function(data,
     # 1. Filter by presence in samples
     # Keep features that have values in at least 5% of the samples.
     num_samples <- ncol(data)
-    min_samples_present <- floor(0.05 * num_samples)
+    min_samples_present <- max(1, floor(0.05 * num_samples))
     data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, ]
 
     # 2. Filter by Coefficient of Variation (CV) on the already filtered data
@@ -1472,6 +1472,16 @@ plotPcaHelper <- function(data,
 
   checkMem("After CV filtering")
   message(sprintf("   DEBUG66 [plotPcaHelper] data_filtered dims: %d x %d", nrow(data_filtered), ncol(data_filtered)))
+
+  # Remove any rows (features) or columns (samples) that are completely NA/NaN
+  # to prevent mixOmics::pca from throwing: "some rows or columns are entirely missing"
+  keep_rows <- rowSums(!is.na(data_filtered)) > 0
+  keep_cols <- colSums(!is.na(data_filtered)) > 0
+  data_filtered <- data_filtered[keep_rows, keep_cols, drop = FALSE]
+
+  if (nrow(data_filtered) < ncomp || ncol(data_filtered) < ncomp) {
+    stop("some rows or columns are entirely missing. Remove those before running pca.")
+  }
 
   checkMem("Before mixOmics::pca")
   message("   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca()...")
@@ -1611,7 +1621,7 @@ plotPcaListHelper <- function(data,
     # 1. Filter by presence in samples
     # Keep features that have values in at least 5% of the samples.
     num_samples <- ncol(data)
-    min_samples_present <- floor(0.05 * num_samples)
+    min_samples_present <- max(1, floor(0.05 * num_samples))
     data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, ]
 
     # 2. Filter by Coefficient of Variation (CV) on the already filtered data
@@ -1645,6 +1655,16 @@ plotPcaListHelper <- function(data,
   }
   # --- END of modification ---
 
+
+  # Remove any rows (features) or columns (samples) that are completely NA/NaN
+  # to prevent mixOmics::pca from throwing: "some rows or columns are entirely missing"
+  keep_rows <- rowSums(!is.na(data_filtered)) > 0
+  keep_cols <- colSums(!is.na(data_filtered)) > 0
+  data_filtered <- data_filtered[keep_rows, keep_cols, drop = FALSE]
+
+  if (nrow(data_filtered) < ncomp || ncol(data_filtered) < ncomp) {
+    stop("some rows or columns are entirely missing. Remove those before running pca.")
+  }
 
   pca.res <- mixOmics::pca(t(as.matrix(data_filtered)), ncomp = ncomp)
   proportion_explained <- pca.res$prop_expl_var
@@ -1701,7 +1721,17 @@ plotPcaGgpairs <- function(
   sample_id_column,
   ncomp = 2
 ) {
-  pca.res <- mixOmics::pca(t(as.matrix(data_matrix)), ncomp = ncomp)
+  # Remove any rows (features) or columns (samples) that are completely NA/NaN
+  # to prevent mixOmics::pca from throwing: "some rows or columns are entirely missing"
+  keep_rows <- rowSums(!is.na(data_matrix)) > 0
+  keep_cols <- colSums(!is.na(data_matrix)) > 0
+  data_matrix_clean <- data_matrix[keep_rows, keep_cols, drop = FALSE]
+
+  if (nrow(data_matrix_clean) < ncomp || ncol(data_matrix_clean) < ncomp) {
+    stop("some rows or columns are entirely missing. Remove those before running pca.")
+  }
+
+  pca.res <- mixOmics::pca(t(as.matrix(data_matrix_clean)), ncomp = ncomp)
 
 
   pca_prop_explained_helper <- function(pca_obj, comp_idx) {

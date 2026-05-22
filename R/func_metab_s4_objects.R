@@ -3486,7 +3486,7 @@ setClass("MetabolomicsDifferentialAbundanceResults",
         theObject = "MetaboliteAssayData",
         fit.eb = "ANY",
         contrasts_results_table = "list",
-        num_sig_diff_exp_bar_plot = "list",
+        num_sig_diff_exp_bar_plot = "ANY",
         num_sig_diff_table = "data.frame",
         volcano_plot = "list",
         interactive_volcano_plot = "list",
@@ -3498,7 +3498,7 @@ setClass("MetabolomicsDifferentialAbundanceResults",
         theObject = NULL,
         fit.eb = NULL,
         contrasts_results_table = list(),
-        num_sig_diff_exp_bar_plot = list(),
+        num_sig_diff_exp_bar_plot = NULL,
         num_sig_diff_table = data.frame(),
         volcano_plot = list(),
         interactive_volcano_plot = list(),
@@ -5052,3 +5052,123 @@ setMethod(
         return(theObject)
     }
 )
+
+#' @export
+setMethod(
+    f = "removeRowsWithMissingValuesPercent",
+    signature = "MetaboliteAssayData",
+    definition = function(
+        theObject,
+        ruv_grouping_variable = NULL,
+        groupwise_percentage_cutoff = NULL,
+        max_groups_percentage_cutoff = NULL,
+        proteins_intensity_cutoff_percentile = NULL
+    ) {
+        message("+===========================================================================+")
+        message("|  DEBUG66: Entering removeRowsWithMissingValuesPercent S4 Method (Metab)   |")
+        message("+===========================================================================+")
+
+        # --- Parameter Resolution ---
+        ruv_grouping_variable <- checkParamsObjectFunctionSimplify(
+            theObject,
+            "ruv_grouping_variable",
+            ruv_grouping_variable
+        )
+        if (is.null(ruv_grouping_variable)) {
+            ruv_grouping_variable <- theObject@group_id
+        }
+
+        raw_gw <- checkParamsObjectFunctionSimplify(
+            theObject,
+            "groupwise_percentage_cutoff",
+            groupwise_percentage_cutoff
+        )
+        if (!is.null(raw_gw)) {
+            groupwise_percentage_cutoff <- as.numeric(trimws(sub("#.*$", "", raw_gw)))
+        }
+        if (is.null(groupwise_percentage_cutoff) || is.na(groupwise_percentage_cutoff)) {
+            groupwise_percentage_cutoff <- 50
+        }
+
+        raw_mg <- checkParamsObjectFunctionSimplify(
+            theObject,
+            "max_groups_percentage_cutoff",
+            max_groups_percentage_cutoff
+        )
+        if (!is.null(raw_mg)) {
+            max_groups_percentage_cutoff <- as.numeric(trimws(sub("#.*$", "", raw_mg)))
+        }
+        if (is.null(max_groups_percentage_cutoff) || is.na(max_groups_percentage_cutoff)) {
+            max_groups_percentage_cutoff <- 50
+        }
+
+        raw_pct <- checkParamsObjectFunctionSimplify(
+            theObject,
+            "proteins_intensity_cutoff_percentile",
+            proteins_intensity_cutoff_percentile
+        )
+        if (is.null(raw_pct)) {
+            raw_pct <- checkParamsObjectFunctionSimplify(
+                theObject,
+                "metabolites_intensity_cutoff_percentile",
+                NULL
+            )
+        }
+        if (!is.null(raw_pct)) {
+            proteins_intensity_cutoff_percentile <- as.numeric(trimws(sub("#.*$", "", raw_pct)))
+        }
+        if (is.null(proteins_intensity_cutoff_percentile) || is.na(proteins_intensity_cutoff_percentile)) {
+            proteins_intensity_cutoff_percentile <- 1
+        }
+
+        # --- Update Object Parameters ---
+        theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
+        theObject <- updateParamInObject(theObject, "groupwise_percentage_cutoff")
+        theObject <- updateParamInObject(theObject, "max_groups_percentage_cutoff")
+        theObject <- updateParamInObject(theObject, "proteins_intensity_cutoff_percentile")
+
+        # --- Process Each Assay ---
+        metabolite_id_col <- theObject@metabolite_id_column
+        original_assay_list <- theObject@metabolite_data
+        design_matrix <- theObject@design_matrix
+        sample_id_col <- theObject@sample_id
+
+        if (length(original_assay_list) == 0) {
+            warning("MetaboliteAssayData object has no assays. No filtering performed.")
+            return(theObject)
+        }
+
+        filtered_assay_list <- lapply(seq_along(original_assay_list), function(i) {
+            assay_table <- original_assay_list[[i]]
+            assay_name <- names(original_assay_list)[i]
+
+            message(sprintf("Filtering assay: %s", assay_name))
+
+            filtered_table <- removeRowsWithMissingValuesPercentHelper(
+                input_table = assay_table,
+                cols = metabolite_id_col,
+                design_matrix = design_matrix,
+                sample_id = !!sym(sample_id_col),
+                row_id = !!sym(metabolite_id_col),
+                grouping_variable = !!sym(ruv_grouping_variable),
+                groupwise_percentage_cutoff = groupwise_percentage_cutoff,
+                max_groups_percentage_cutoff = max_groups_percentage_cutoff,
+                proteins_intensity_cutoff_percentile = proteins_intensity_cutoff_percentile,
+                temporary_abundance_column = "Log_Abundance"
+            )
+
+            message(sprintf("Original rows: %d, Filtered rows: %d", nrow(assay_table), nrow(filtered_table)))
+            return(filtered_table)
+        })
+
+        names(filtered_assay_list) <- names(original_assay_list)
+        theObject@metabolite_data <- filtered_assay_list
+
+        # Clean design matrix
+        theObject <- cleanDesignMatrix(theObject)
+
+        message("+===========================================================================+")
+        return(theObject)
+    }
+)
+
