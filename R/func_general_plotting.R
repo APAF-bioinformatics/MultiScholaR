@@ -2011,27 +2011,57 @@ plotOneVolcanoNoVerticalLines <- function(input_data, input_title,
                                           points_type_label = label,
                                           points_color = colour,
                                           q_val_thresh = 0.05) {
+  # Helper to dynamically resolve bare symbols, string literals, and variables containing column names
+  resolve_column <- function(quo, input_data) {
+    expr <- rlang::quo_get_expr(quo)
+    
+    val <- tryCatch({
+      rlang::eval_tidy(quo)
+    }, error = function(e) {
+      NULL
+    })
+    
+    if (is.character(val) && length(val) == 1 && val %in% colnames(input_data)) {
+      return(rlang::sym(val))
+    }
+    
+    if (is.character(expr) && length(expr) == 1 && expr %in% colnames(input_data)) {
+      return(rlang::sym(expr))
+    }
+    
+    if (is.symbol(expr)) {
+      return(expr)
+    }
+    
+    return(expr)
+  }
+
+  y_col <- resolve_column(rlang::enquo(log_q_value_column), input_data)
+  x_col <- resolve_column(rlang::enquo(log_fc_column), input_data)
+  pts_lbl <- resolve_column(rlang::enquo(points_type_label), input_data)
+  pts_col <- resolve_column(rlang::enquo(points_color), input_data)
+
   colour_tbl <- input_data |>
-    distinct({{ points_type_label }}, {{ points_color }})
+    distinct(!!pts_lbl, !!pts_col)
 
   colour_map <- colour_tbl |>
-    dplyr::pull({{ points_color }}) |>
+    dplyr::pull(!!pts_col) |>
     as.vector()
 
   names(colour_map) <- colour_tbl |>
-    dplyr::pull({{ points_type_label }})
+    dplyr::pull(!!pts_lbl)
 
   avail_labels <- input_data |>
-    distinct({{ points_type_label }}) |>
-    dplyr::pull({{ points_type_label }})
+    distinct(!!pts_lbl) |>
+    dplyr::pull(!!pts_lbl)
 
   avail_colours <- colour_map[avail_labels]
 
   volcano_plot <- input_data |>
     ggplot(aes(
-      y = {{ log_q_value_column }},
-      x = {{ log_fc_column }},
-      col = {{ points_type_label }}
+      y = !!y_col,
+      x = !!x_col,
+      col = !!pts_lbl
     )) +
     geom_point()
 
