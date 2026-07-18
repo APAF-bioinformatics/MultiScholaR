@@ -2175,7 +2175,9 @@ runTestsContrasts <- function(data,
                               weights = NA,
                               treat_lfc_cutoff = NA,
                               eBayes_trend = FALSE,
-                              eBayes_robust = FALSE) {
+                              eBayes_robust = FALSE,
+                              block = NULL,
+                              correlation = NULL) {
   message("--- Entering runTestsContrasts ---")
   message(sprintf("   runTestsContrasts: data dims = %d x %d, %d contrasts", nrow(data), ncol(data), length(contrast_strings)))
   message(sprintf("   runTestsContrasts: contrasts = %s", paste(contrast_strings, collapse = ", ")))
@@ -2212,31 +2214,42 @@ runTestsContrasts <- function(data,
   # Run limma analysis
   message("   runTestsContrasts: Running lmFit...")
   samples_in_model <- rownames(design_m)
-  has_replicates <- "replicates" %in% colnames(design_matrix)
-  fit <- NULL
-  if (has_replicates) {
-      design_matrix_subset <- design_matrix[samples_in_model, ]
-      block <- paste(design_matrix_subset$group, design_matrix_subset$replicates, sep = "_")
-      if (any(duplicated(block))) {
-          message("   runTestsContrasts: Detected technical replicates. Calculating duplicateCorrelation...")
-          message(sprintf("   runTestsContrasts: Block defined by group_replicates. %d unique blocks for %d samples.", 
-              length(unique(block)), length(block)))
-          dup_cor <- suppressWarnings(duplicateCorrelation(data_subset, design = design_m, block = block))
-          
-          if (is.na(dup_cor$consensus.correlation) || is.nan(dup_cor$consensus.correlation)) {
-              message("   runTestsContrasts: WARNING: duplicateCorrelation returned NaN/NA. Defaulting to 0 to prevent crash.")
-              dup_cor$consensus.correlation <- 0
-          }
-          
-          message(sprintf("   runTestsContrasts: Consensus correlation = %.4f", dup_cor$consensus.correlation))
-          message("   runTestsContrasts: Running lmFit with duplicateCorrelation...")
-          fit <- lmFit(data_subset, design = design_m, block = block, correlation = dup_cor$consensus.correlation)
+  # Determine block vector
+  block_val <- NULL
+  if (!is.null(block)) {
+    if (is.character(block) && length(block) == 1 && block %in% colnames(design_matrix)) {
+      block_val <- paste(design_matrix$group, design_matrix[[block]], sep = "_")
+      names(block_val) <- rownames(design_matrix)
+      block_val <- block_val[samples_in_model]
+    } else {
+      if (!is.null(names(block))) {
+        block_val <- block[samples_in_model]
       } else {
-          message("   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...")
-          fit <- lmFit(data_subset, design = design_m)
+        block_val <- block[match(samples_in_model, rownames(design_matrix))]
       }
+    }
+  } else if ("replicates" %in% colnames(design_matrix)) {
+    design_matrix_subset <- design_matrix[samples_in_model, ]
+    block_val <- paste(design_matrix_subset$group, design_matrix_subset$replicates, sep = "_")
+  }
+  
+  fit <- NULL
+  if (!is.null(block_val) && any(duplicated(block_val))) {
+      message("   runTestsContrasts: Detected technical replicates. Calculating duplicateCorrelation...")
+      message(sprintf("   runTestsContrasts: Block defined. %d unique blocks for %d samples.", 
+          length(unique(block_val)), length(block_val)))
+      dup_cor <- suppressWarnings(duplicateCorrelation(data_subset, design = design_m, block = block_val))
+      
+      if (is.na(dup_cor$consensus.correlation) || is.nan(dup_cor$consensus.correlation)) {
+          message("   runTestsContrasts: WARNING: duplicateCorrelation returned NaN/NA. Defaulting to 0 to prevent crash.")
+          dup_cor$consensus.correlation <- 0
+      }
+      
+      message(sprintf("   runTestsContrasts: Consensus correlation = %.4f", dup_cor$consensus.correlation))
+      message("   runTestsContrasts: Running lmFit with duplicateCorrelation...")
+      fit <- lmFit(data_subset, design = design_m, block = block_val, correlation = dup_cor$consensus.correlation)
   } else {
-      message("   runTestsContrasts: 'replicates' column not found. Running standard lmFit...")
+      message("   runTestsContrasts: No technical replicates or block specified. Running standard lmFit...")
       fit <- lmFit(data_subset, design = design_m)
   }
 

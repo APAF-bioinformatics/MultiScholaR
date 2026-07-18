@@ -534,7 +534,7 @@ calulatePearsonCorrelationForSamplePairsHelper <- function( samples_id_tbl
                                                  , run_id_column = run_id_column
                                                  , replicate_group_column = replicate_group_column)
 
-  plan(multisession, workers = num_of_cores)
+  future::plan(future::multisession, workers = num_of_cores)
 
   pearson_correlation_per_pair <- pairs_for_comparison |>
     mutate( pearson_correlation = furrr::future_map2_dbl( !!rlang::sym( paste0( run_id_column, ".x"))
@@ -2021,7 +2021,7 @@ calculateMissingValuesPerProteinFishersTest <- function( contrasts_table, missin
     fisher.test( matrix( c( a1, b1, a2, b2), 2, 2, byrow = TRUE))$p.value
   }
 
-  plan(multisession, workers = 8)
+  future::plan(future::multisession, workers = 8)
 
 
   contasts_missing_counts_tbl <- contrasts_table_separated |>

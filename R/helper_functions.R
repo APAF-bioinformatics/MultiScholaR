@@ -858,8 +858,8 @@ readConfigFile <- function(file = file.path(source_dir, "config.ini")) {
                 "Read globalParameters: number_of_cpus = ",
                 config_list$globalParameters$number_of_cpus
             ))
-            core_utilisation <- new_cluster(config_list$globalParameters$number_of_cpus)
-            cluster_library(core_utilisation, c("tidyverse", "glue", "rlang", "lazyeval"))
+            core_utilisation <- multidplyr::new_cluster(config_list$globalParameters$number_of_cpus)
+            multidplyr::cluster_library(core_utilisation, c("tidyverse", "glue", "rlang", "lazyeval"))
 
             list_of_multithreaded_functions <- c(
                 "rollUpPrecursorToPeptide",

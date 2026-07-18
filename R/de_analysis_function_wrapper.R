@@ -12,7 +12,8 @@ deAnalysisWrapperFunction <- function(
   args_row_id = NULL,
   qvalue_column = "fdr_qvalue",
   raw_pvalue_colum = "raw_pvalue",
-  technical_replicate_id = "replicates"
+  technical_replicate_id = "replicates",
+  block = NULL
 ) {
   contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
   formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", " ~ 0 + group")
@@ -248,7 +249,8 @@ deAnalysisWrapperFunction <- function(
       weights = NA,
       treat_lfc_cutoff = as.double(treat_lfc_cutoff),
       eBayes_trend = as.logical(eBayes_trend),
-      eBayes_robust = as.logical(eBayes_robust)
+      eBayes_robust = as.logical(eBayes_robust),
+      block = block
     )
   }
 
@@ -455,6 +457,14 @@ deAnalysisWrapperFunction <- function(
       with_title <- ungrouped_data %>%
         mutate(title = paste(comparison))
       cat("DEBUG_66: Added titles successfully\n")
+
+      # Initialize uniprot_dat_cln from theObject's protein_id_table slot or .GlobalEnv fallback
+      uniprot_dat_cln <- theObject@protein_id_table
+      if (is.null(uniprot_dat_cln) || nrow(uniprot_dat_cln) == 0 || !"gene_names" %in% colnames(uniprot_dat_cln)) {
+        if (exists("uniprot_dat_cln", envir = .GlobalEnv)) {
+          uniprot_dat_cln <- get("uniprot_dat_cln", envir = .GlobalEnv)
+        }
+      }
 
       # Step 5: Add plots with detailed error handling
       with_plots <- with_title %>%
