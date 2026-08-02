@@ -70,6 +70,14 @@ registerProtImportShinyFileChooser <- function(
     , filetypes
     , chooseFile = shinyFiles::shinyFileChoose
 ) {
+  # shinyFiles evaluates filetypes later, when its observer services a browser
+  # request. Force the values here so callers registering several choosers in a
+  # loop do not leave promises that all resolve to the final loop iteration.
+  force(inputId)
+  force(volumes)
+  force(session)
+  force(filetypes)
+
   chooseFile(
     input
     , inputId
@@ -122,4 +130,3 @@ handleProtImportShinyFileSelection <- function(
     }
   )
 }
-

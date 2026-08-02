@@ -666,6 +666,32 @@ test_that("registerProtImportShinyFileChooser delegates shinyFiles registration"
   expect_identical(chooserCalls[[1]]$filetypes, c("tsv", "txt"))
 })
 
+test_that("registerProtImportShinyFileChooser freezes loop-specific file filters", {
+  delayedFilters <- list()
+  specs <- list(
+    list(id = "search_results", filetypes = c("tsv", "txt")),
+    list(id = "fasta_file", filetypes = c("fasta", "fa", "faa")),
+    list(id = "config_file", filetypes = c("ini", "cfg"))
+  )
+
+  for (spec in specs) {
+    registerProtImportShinyFileChooser(
+      input = "input-proxy",
+      inputId = spec$id,
+      volumes = list(home = "/tmp/home"),
+      session = "session-proxy",
+      filetypes = spec$filetypes,
+      chooseFile = function(input, inputId, roots, session, filetypes) {
+        delayedFilters[[inputId]] <<- function() filetypes
+      }
+    )
+  }
+
+  expect_identical(delayedFilters$search_results(), c("tsv", "txt"))
+  expect_identical(delayedFilters$fasta_file(), c("fasta", "fa", "faa"))
+  expect_identical(delayedFilters$config_file(), c("ini", "cfg"))
+})
+
 test_that("handleProtImportShinyFileSelection binds selected paths and catches parse errors", {
   localData <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
