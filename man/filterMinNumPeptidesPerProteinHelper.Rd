@@ -2,13 +2,16 @@
 % Please edit documentation in R/func_prot_qc_peptide.R
 \name{filterMinNumPeptidesPerProteinHelper}
 \alias{filterMinNumPeptidesPerProteinHelper}
-\title{Filter Proteins by Minimum Number of Peptides}
+\title{Filter Proteins by Minimum Distinct Peptide Evidence}
 \usage{
 filterMinNumPeptidesPerProteinHelper(
   input_table,
   num_peptides_per_protein_thresh = 1,
   num_peptidoforms_per_protein_thresh = 2,
   protein_id_column = Protein.Ids,
+  peptide_sequence_column = Stripped.Sequence,
+  modified_peptide_sequence_column = Modified.Sequence,
+  peptidoform_ids_column = "peptidoform_ids",
   core_utilisation
 )
 }
@@ -21,8 +24,20 @@ filterMinNumPeptidesPerProteinHelper(
 
 \item{protein_id_column}{Protein ID column name as string}
 
+\item{peptide_sequence_column}{Peptide sequence column name}
+
+\item{modified_peptide_sequence_column}{Modified peptide sequence column name}
+
+\item{peptidoform_ids_column}{List-column containing the modified peptide
+identities retained by an older precursor-to-peptide rollup. This is kept
+only for compatibility with already-created in-memory objects.}
+
 \item{core_utilisation}{core_utilisation to use for parallel processing}
 }
 \description{
-Keep the proteins only if they have two or more peptides.
+Keep protein groups only when they meet the configured numbers
+of distinct stripped peptide sequences and distinct modified peptidoforms.
+Frozen identification counts created at the q-value filtering stage are
+preferred so later quantitative filtering cannot change identification
+support.
 }

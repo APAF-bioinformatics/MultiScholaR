@@ -32,6 +32,12 @@ getProtQcPeptideModuleSpecs <- function() {
       serverFn = "mod_prot_qc_peptide_qvalue_server"
     ),
     list(
+      id = "protein_peptide_filter",
+      title = "Protein Evidence",
+      uiFn = "mod_prot_qc_peptide_protein_ui",
+      serverFn = "mod_prot_qc_peptide_protein_server"
+    ),
+    list(
       id = "rollup",
       title = "Precursor Rollup",
       uiFn = "mod_prot_qc_peptide_rollup_ui",
@@ -42,12 +48,6 @@ getProtQcPeptideModuleSpecs <- function() {
       title = "Intensity Filter",
       uiFn = "mod_prot_qc_peptide_intensity_ui",
       serverFn = "mod_prot_qc_peptide_intensity_server"
-    ),
-    list(
-      id = "protein_peptide_filter",
-      title = "Protein Peptides",
-      uiFn = "mod_prot_qc_peptide_protein_ui",
-      serverFn = "mod_prot_qc_peptide_protein_server"
     ),
     list(
       id = "sample_filter",

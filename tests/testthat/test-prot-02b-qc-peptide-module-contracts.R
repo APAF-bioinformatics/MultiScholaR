@@ -115,7 +115,7 @@ test_that("mod_prot_qc_peptide_ui keeps fallback labels when submodules are unav
   expect_match(html, "Q-Value Filter", fixed = TRUE)
   expect_match(html, "Precursor Rollup", fixed = TRUE)
   expect_match(html, "Intensity Filter", fixed = TRUE)
-  expect_match(html, "Protein Peptides", fixed = TRUE)
+  expect_match(html, "Protein Evidence", fixed = TRUE)
   expect_match(html, "Sample Quality", fixed = TRUE)
   expect_match(html, "Replicate Filter", fixed = TRUE)
   expect_match(html, "Imputation", fixed = TRUE)
@@ -694,7 +694,7 @@ test_that("updatePeptideIntensityOutputs refreshes result text and plot grid", {
   expect_identical(plot_grid, "plot_grid")
   expect_identical(captured$plot, "plot_grid")
   expect_identical(captured$args$data, intensity_state@peptide_data)
-  expect_identical(captured$args$step_name, "4_intensity_filtered")
+  expect_identical(captured$args$step_name, "5_intensity_filtered")
   expect_identical(captured$args$omic_type, "proteomics")
   expect_identical(captured$args$experiment_label, "DIA Experiment")
   expect_true(captured$args$return_grid)
@@ -2062,8 +2062,14 @@ test_that("runProteinPeptideApplyStep applies both cutoffs and saves the filtere
         peptide_data = theObject@peptide_data
       )
     },
-    filterMinNumPeptidesPerProteinFn = function(theObject) {
+    filterMinNumPeptidesPerProteinFn = function(theObject,
+                                                num_peptides_per_protein_thresh,
+                                                num_peptidoforms_per_protein_thresh) {
       captured$filterInput <<- theObject
+      captured$filterThresholds <<- c(
+        peptides = num_peptides_per_protein_thresh,
+        peptidoforms = num_peptidoforms_per_protein_thresh
+      )
       filtered_s4
     },
     logInfoFn = function(message) {
@@ -2095,6 +2101,10 @@ test_that("runProteinPeptideApplyStep applies both cutoffs and saves the filtere
     captured$filterInput@args$filterMinNumPeptidesPerProtein$peptidoforms_per_protein_cutoff,
     2
   )
+  expect_identical(
+    captured$filterThresholds,
+    c(peptides = 3, peptidoforms = 2)
+  )
   expect_identical(workflow_data$qc_params$peptide_qc$protein_peptide_filter$min_peptides_per_protein, 3)
   expect_identical(workflow_data$qc_params$peptide_qc$protein_peptide_filter$min_peptidoforms_per_protein, 2)
   expect_identical(workflow_data$qc_params$peptide_qc$protein_peptide_filter$timestamp, timestamp)
@@ -2108,8 +2118,85 @@ test_that("runProteinPeptideApplyStep applies both cutoffs and saves the filtere
   )
   expect_identical(result$filteredS4, filtered_s4)
   expect_match(result$resultText, "Proteins remaining: 2", fixed = TRUE)
-  expect_match(result$resultText, "Min peptides per protein: 3", fixed = TRUE)
-  expect_match(result$resultText, "Min peptidoforms per protein: 2", fixed = TRUE)
+  expect_match(result$resultText, "Min distinct peptides per protein: 3", fixed = TRUE)
+  expect_match(result$resultText, "Min distinct peptidoforms per protein: 2", fixed = TRUE)
+})
+
+test_that("protein peptide module and real S4 method enforce distinct evidence", {
+  peptide_data <- data.frame(
+    Run = c("S1", "S2", "S1", "S2", "S1", "S2"),
+    Protein.Ids = c("P_REPEAT", "P_REPEAT", rep("P_TWO", 4)),
+    Stripped.Sequence = c(
+      "ONLY_ONE", "ONLY_ONE",
+      "PEPTIDE_A", "PEPTIDE_A", "PEPTIDE_B", "PEPTIDE_B"
+    ),
+    Q.Value = 0.001,
+    Peptide.RawQuantity = seq(100, 600, by = 100),
+    Peptide.Normalised = seq(10, 60, by = 10),
+    peptidoform_count = 1L,
+    identification_peptide_count = c(1L, 1L, rep(2L, 4)),
+    identification_peptidoform_count = c(1L, 1L, rep(2L, 4)),
+    stringsAsFactors = FALSE
+  )
+  peptide_data$peptidoform_ids <- I(lapply(
+    peptide_data$Stripped.Sequence,
+    function(sequence) sequence
+  ))
+
+  peptide_object <- methods::new(
+    "PeptideQuantitativeData",
+    peptide_data = peptide_data,
+    protein_id_column = "Protein.Ids",
+    peptide_sequence_column = "Stripped.Sequence",
+    q_value_column = "Q.Value",
+    raw_quantity_column = "Peptide.RawQuantity",
+    norm_quantity_column = "Peptide.Normalised",
+    design_matrix = data.frame(
+      Run = c("S1", "S2"),
+      group = c("A", "A"),
+      stringsAsFactors = FALSE
+    ),
+    sample_id = "Run",
+    group_id = "group",
+    args = list(
+      filterMinNumPeptidesPerProtein = list(
+        peptides_per_protein_cutoff = 1,
+        peptidoforms_per_protein_cutoff = 1
+      ),
+      filterMinNumPeptidesPerProteinFn = list(
+        num_peptides_per_protein_thresh = 1,
+        num_peptidoforms_per_protein_thresh = 1,
+        core_utilisation = NA
+      )
+    )
+  )
+
+  workflow_data <- new.env(parent = emptyenv())
+  workflow_data$state_manager <- new.env(parent = emptyenv())
+  workflow_data$state_manager$getState <- function() peptide_object
+  workflow_data$state_manager$saveState <- function(...) invisible(NULL)
+
+  result <- runProteinPeptideApplyStep(
+    workflowData = workflow_data,
+    minPeptidesPerProtein = 2,
+    minPeptidoformsPerProtein = 2,
+    updateConfigParameterFn = function(theObject,
+                                       function_name,
+                                       parameter_name,
+                                       new_value) {
+      theObject@args[[function_name]][[parameter_name]] <- new_value
+      theObject
+    },
+    logInfoFn = function(...) invisible(NULL)
+  )
+
+  expect_identical(unique(result$filteredS4@peptide_data$Protein.Ids), "P_TWO")
+  expect_true(all(result$filteredS4@peptide_data$peptides_for_protein_count == 2L))
+  expect_true(all(result$filteredS4@peptide_data$peptidoforms_for_protein_count == 2L))
+  expect_identical(
+    result$filteredS4@args$filterMinNumPeptidesPerProtein$num_peptides_per_protein_thresh,
+    2
+  )
 })
 
 test_that("updateProteinPeptideOutputs refreshes result text and plot grid", {
@@ -2161,7 +2248,7 @@ test_that("updateProteinPeptideOutputs refreshes result text and plot grid", {
   expect_identical(plot_grid, "plot_grid")
   expect_identical(captured$plot, "plot_grid")
   expect_identical(captured$args$data, protein_state@peptide_data)
-  expect_identical(captured$args$step_name, "5_protein_peptide_filtered")
+  expect_identical(captured$args$step_name, "3_protein_peptide_filtered")
   expect_identical(captured$args$omic_type, "proteomics")
   expect_identical(captured$args$experiment_label, "DIA Experiment")
   expect_true(captured$args$return_grid)
@@ -3148,7 +3235,7 @@ test_that("updatePeptideRollupOutputs refreshes result text and plot grid", {
   expect_identical(plot_grid, "plot_grid")
   expect_identical(captured$plot, "plot_grid")
   expect_identical(captured$args$data, rollup_state@peptide_data)
-  expect_identical(captured$args$step_name, "3_precursor_rollup")
+  expect_identical(captured$args$step_name, "4_precursor_rollup")
   expect_identical(captured$args$omic_type, "proteomics")
   expect_identical(captured$args$experiment_label, "DIA Experiment")
   expect_true(captured$args$return_grid)

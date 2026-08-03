@@ -1,6 +1,23 @@
 # fidelity-coverage-compare: shared
 library(testthat)
 
+test_that("protein evidence UI defaults to one peptide and two peptidoforms", {
+  html <- htmltools::renderTags(
+    mod_prot_qc_peptide_protein_ui("protein-evidence")
+  )$html
+
+  expect_match(
+    html,
+    'id="protein-evidence-min_peptides_per_protein"[^>]+value="1"',
+    perl = TRUE
+  )
+  expect_match(
+    html,
+    'id="protein-evidence-min_peptidoforms_per_protein"[^>]+value="2"',
+    perl = TRUE
+  )
+})
+
 if (!methods::isClass("FakeSharedProteinPeptideState")) {
   methods::setClass(
     "FakeSharedProteinPeptideState",
@@ -149,8 +166,14 @@ withSharedProteinPeptidePackageMocks <- function(server_env,
       updated_args[[function_name]][[parameter_name]] <- new_value
       copySharedProteinPeptideState(theObject, args = updated_args)
       },
-      filterMinNumPeptidesPerProtein = function(theObject) {
+      filterMinNumPeptidesPerProtein = function(theObject,
+                                                num_peptides_per_protein_thresh,
+                                                num_peptidoforms_per_protein_thresh) {
       captured$filter_input <- theObject
+      captured$filter_thresholds <- c(
+        peptides = num_peptides_per_protein_thresh,
+        peptidoforms = num_peptidoforms_per_protein_thresh
+      )
       if (!is.null(filter_error)) {
         stop(filter_error)
       }
@@ -308,6 +331,10 @@ test_that("proteomics peptide protein module preserves successful apply behavior
     captured$filter_input@args$filterMinNumPeptidesPerProtein$peptidoforms_per_protein_cutoff,
     2
   )
+  expect_identical(
+    captured$filter_thresholds,
+    c(peptides = 3, peptidoforms = 2)
+  )
   expect_identical(captured$save_state$state_name, "protein_peptide_filtered")
   expect_identical(captured$save_state$s4_data_object, filtered_state)
   expect_identical(captured$save_state$config_object$min_peptides_per_protein, 3)
@@ -319,14 +346,14 @@ test_that("proteomics peptide protein module preserves successful apply behavior
   expect_identical(workflow_data$qc_params$peptide_qc$protein_peptide_filter$min_peptides_per_protein, 3)
   expect_identical(workflow_data$qc_params$peptide_qc$protein_peptide_filter$min_peptidoforms_per_protein, 2)
   expect_s3_class(workflow_data$qc_params$peptide_qc$protein_peptide_filter$timestamp, "POSIXct")
-  expect_identical(captured$plot_update$step_name, "5_protein_peptide_filtered")
+  expect_identical(captured$plot_update$step_name, "3_protein_peptide_filtered")
   expect_identical(captured$plot_update$omic_type, "proteomics")
   expect_identical(captured$plot_update$experiment_label, "DIA Experiment")
   expect_true(captured$plot_update$return_grid)
   expect_true(captured$plot_update$overwrite)
   expect_match(captured$output$protein_peptida_results, "Proteins remaining: 2", fixed = TRUE)
-  expect_match(captured$output$protein_peptida_results, "Min peptides per protein: 3", fixed = TRUE)
-  expect_match(captured$output$protein_peptida_results, "Min peptidoforms per protein: 2", fixed = TRUE)
+  expect_match(captured$output$protein_peptida_results, "Min distinct peptides per protein: 3", fixed = TRUE)
+  expect_match(captured$output$protein_peptida_results, "Min distinct peptidoforms per protein: 2", fixed = TRUE)
   expect_identical(captured$output$protein_peptide_plot, "rendered-plot")
   expect_identical(captured$drawn_plot, "plot-token")
   expect_identical(captured$removed_notifications, "protein_peptide_working")

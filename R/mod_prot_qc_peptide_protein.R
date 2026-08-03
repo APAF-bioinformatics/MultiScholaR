@@ -28,28 +28,28 @@ mod_prot_qc_peptide_protein_ui <- function(id) {
   ns <- shiny::NS(id)
   
   shiny::tabPanel(
-    "Protein Peptides",
+    "Protein Evidence",
     shiny::br(),
     shiny::fluidRow(
       shiny::column(4,
         shiny::wellPanel(
-          shiny::h4("Minimum Peptides per Protein"),
-          shiny::p("Keep proteins only if they have sufficient peptide evidence (two-peptide rule)."),
+          shiny::h4("Minimum Identification Evidence"),
+          shiny::p("Keep protein groups with enough distinct q-valid peptide and peptidoform identities across the experiment."),
           shiny::hr(),
           
           shiny::numericInput(ns("min_peptides_per_protein"), 
             "Min Peptides per Protein", 
-            value = 2, min = 1, max = 5, step = 1,
+            value = 1, min = 1, max = 5, step = 1,
             width = "100%"
           ),
-          shiny::helpText("Higher = requires more unique peptides per protein (default: 2)"),
+          shiny::helpText("Distinct stripped sequences; repeated runs do not increase this count (default: 1)"),
           
           shiny::numericInput(ns("min_peptidoforms_per_protein"), 
             "Min Peptidoforms per Protein", 
             value = 2, min = 1, max = 5, step = 1,
             width = "100%"
           ),
-          shiny::helpText("Higher = requires more peptide forms per protein (default: 2)"),
+          shiny::helpText("Distinct modified-sequence identities; charge states and repeated runs do not increase this count (default: 2)"),
           
           shiny::hr(),
           shiny::div(
@@ -106,7 +106,11 @@ runProteinPeptideApplyStep <- function(workflowData,
     new_value = minPeptidoformsPerProtein
   )
 
-  filteredS4 <- filterMinNumPeptidesPerProteinFn(theObject = currentS4)
+  filteredS4 <- filterMinNumPeptidesPerProteinFn(
+    theObject = currentS4,
+    num_peptides_per_protein_thresh = minPeptidesPerProtein,
+    num_peptidoforms_per_protein_thresh = minPeptidoformsPerProtein
+  )
 
   if (is.null(workflowData$qc_params)) {
     workflowData$qc_params <- list()
@@ -131,16 +135,14 @@ runProteinPeptideApplyStep <- function(workflowData,
     description = "Applied minimum peptides per protein filter"
   )
 
-  proteinCount <- filteredS4@peptide_data |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  proteinCount <- .countPeptideProteinGroups(filteredS4)
 
   resultText <- paste(
-    "Protein Peptide Count Filter Applied Successfully\n",
-    "===============================================\n",
+    "Protein Identification Evidence Filter Applied Successfully\n",
+    "========================================================\n",
     sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Min peptides per protein: %d\n", minPeptidesPerProtein),
-    sprintf("Min peptidoforms per protein: %d\n", minPeptidoformsPerProtein),
+    sprintf("Min distinct peptides per protein: %d\n", minPeptidesPerProtein),
+    sprintf("Min distinct peptidoforms per protein: %d\n", minPeptidoformsPerProtein),
     "State saved as: 'protein_peptide_filtered'\n"
   )
 
@@ -161,7 +163,7 @@ updateProteinPeptideOutputs <- function(output,
 
   plotGrid <- updateProteinFilteringFn(
     data = proteinPeptideResult$filteredS4@peptide_data,
-    step_name = "5_protein_peptide_filtered",
+    step_name = "3_protein_peptide_filtered",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,

@@ -154,9 +154,7 @@ runPeptideReplicateApplyStep <- function(workflowData,
     description = "Applied replicate filter (removed single-replicate peptides)"
   )
 
-  proteinCount <- filteredS4@peptide_data |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  proteinCount <- .countPeptideProteinGroups(filteredS4)
 
   resultText <- paste(
     "Replicate Filter Applied Successfully\n",

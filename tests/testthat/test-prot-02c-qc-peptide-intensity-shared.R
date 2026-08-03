@@ -328,7 +328,7 @@ test_that("proteomics peptide intensity module preserves flexible apply behavior
   expect_false(captured$save_state$config_object$strict_mode)
   expect_equal(captured$save_state$config_object$intensity_cutoff_percentile, 1.5)
   expect_identical(captured$save_state$description, "Applied FLEXIBLE peptide intensity filter")
-  expect_identical(captured$plot_update$step_name, "4_intensity_filtered")
+  expect_identical(captured$plot_update$step_name, "5_intensity_filtered")
   expect_identical(captured$plot_update$omic_type, "proteomics")
   expect_identical(captured$plot_update$experiment_label, "DIA Experiment")
   expect_true(captured$plot_update$return_grid)

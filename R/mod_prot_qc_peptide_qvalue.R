@@ -178,9 +178,7 @@ runPeptideQvalueApplyStep <- function(workflowData,
     description = "Applied Q-value and proteotypic peptide filter"
   )
 
-  proteinCount <- filteredS4@peptide_data |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  proteinCount <- .countPeptideProteinGroups(filteredS4)
 
   resultText <- paste(
     "Q-Value Filter Applied Successfully\n",

@@ -266,9 +266,7 @@ runPeptideIntensityApplyStep <- function(workflowData,
     }
   )
 
-  proteinCount <- filteredS4@peptide_data |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  proteinCount <- .countPeptideProteinGroups(filteredS4)
 
   resultText <- paste(
     "Intensity Filter Applied Successfully\n",
@@ -304,7 +302,7 @@ updatePeptideIntensityOutputs <- function(output,
 
   plotGrid <- updateProteinFilteringFn(
     data = intensityResult$filteredS4@peptide_data,
-    step_name = "4_intensity_filtered",
+    step_name = "5_intensity_filtered",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,

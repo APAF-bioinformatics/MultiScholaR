@@ -13,11 +13,38 @@ srlQvalueProteotypicPeptideCleanHelper(
     "Modified.Sequence", "Precursor.Charge", "Precursor.Quantity",
     "Precursor.Normalised"),
   protein_id_column = Protein.Ids,
+  peptide_sequence_column = Stripped.Sequence,
+  modified_peptide_sequence_column = Modified.Sequence,
   q_value_column = Q.Value,
   global_q_value_column = Global.Q.Value,
   proteotypic_peptide_sequence_column = Proteotypic
 )
 }
+\arguments{
+\item{input_table}{Peptide quantities table in long format.}
+
+\item{qvalue_threshold}{Maximum precursor q-value.}
+
+\item{global_qvalue_threshold}{Maximum global q-value.}
+
+\item{choose_only_proteotypic_peptide}{Whether to retain only proteotypic identifications.}
+
+\item{input_matrix_column_ids}{Columns retained in the filtered table.}
+
+\item{protein_id_column}{Protein-group identity column.}
+
+\item{peptide_sequence_column}{Stripped peptide identity column.}
+
+\item{modified_peptide_sequence_column}{Modified peptidoform identity column.}
+
+\item{q_value_column}{Precursor q-value column.}
+
+\item{global_q_value_column}{Global q-value column.}
+
+\item{proteotypic_peptide_sequence_column}{Proteotypic indicator column.}
+}
 \description{
-Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
+Keep spectrum-peptide matches that are within the q-value thresholds and
+proteotypic, then freeze experiment-wide peptide and peptidoform identity
+counts for each protein group.
 }

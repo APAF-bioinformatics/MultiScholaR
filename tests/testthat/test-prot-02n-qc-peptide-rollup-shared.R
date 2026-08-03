@@ -253,7 +253,7 @@ test_that("mod_prot_qc_peptide_rollup_server preserves successful apply behavior
     captured$save_state$description,
     "Applied precursor to peptide rollup"
   )
-  expect_identical(captured$plot_update$step_name, "3_precursor_rollup")
+  expect_identical(captured$plot_update$step_name, "4_precursor_rollup")
   expect_identical(captured$plot_update$omic_type, "proteomics")
   expect_identical(captured$plot_update$experiment_label, "DIA Experiment")
   expect_true(captured$plot_update$return_grid)

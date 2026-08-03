@@ -16,5 +16,6 @@
 \item{core_utilisation}{core_utilisation to use for parallel processing}
 }
 \description{
-Keep the proteins only if they have two or more peptides.
+Keep protein groups with at least one distinct stripped peptide and at least
+two distinct peptidoforms by default.
 }

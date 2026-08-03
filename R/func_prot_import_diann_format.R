@@ -144,13 +144,22 @@ PeptideQuantitativeDataDiann <- function( peptide_data
                                           , technical_replicate_id = "replicates"
                                           , args = NA) {
 
-
+  protein_id_column <- if ("Protein.Group" %in% names(peptide_data)) {
+    "Protein.Group"
+  } else if ("Protein.Ids" %in% names(peptide_data)) {
+    "Protein.Ids"
+  } else {
+    stop(
+      "PeptideQuantitativeDataDiann: Protein.Group or Protein.Ids is required.",
+      call. = FALSE
+    )
+  }
 
   peptide_data <- new( "PeptideQuantitativeData"
 
     # Protein vs Sample quantitative data
     , peptide_data = peptide_data
-    , protein_id_column = "Protein.Ids"
+    , protein_id_column = protein_id_column
     , peptide_sequence_column = "Stripped.Sequence"
     , q_value_column = "Q.Value"
     , global_q_value_column = "Global.Q.Value"
@@ -170,4 +179,3 @@ PeptideQuantitativeDataDiann <- function( peptide_data
   peptide_data
 
 }
-

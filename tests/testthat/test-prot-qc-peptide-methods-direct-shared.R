@@ -271,7 +271,13 @@ test_that("peptide QC S4 filtering and DIA cleanup methods preserve helper deleg
   expect_identical(log_env$sample_calls[[1]]$inclusion_list, "S1")
   expect_equal(
     log_env$srl_calls[[1]]$input_matrix_column_ids,
-    c("Run", "CustomColumn", "Protein.Ids", "Stripped.Sequence")
+    c(
+      "Run",
+      "CustomColumn",
+      "Protein.Ids",
+      "Stripped.Sequence",
+      "Modified.Sequence"
+    )
   )
   expect_identical(log_env$srl_calls[[1]]$global_qvalue_threshold, 0.05)
   expect_identical(log_env$srl_calls[[1]]$qvalue_threshold, 0.01)
@@ -292,5 +298,13 @@ test_that("peptide QC S4 filtering and DIA cleanup methods preserve helper deleg
     cleaned@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids,
     c("Run", "CustomColumn")
   )
-  expect_true(length(log_env$updated_params) >= 6)
+  expect_identical(
+    protein_filtered@args$filterMinNumPeptidesPerProtein$num_peptides_per_protein_thresh,
+    2
+  )
+  expect_identical(
+    protein_filtered@args$filterMinNumPeptidesPerProtein$num_peptidoforms_per_protein_thresh,
+    3
+  )
+  expect_true(length(log_env$updated_params) >= 3)
 })

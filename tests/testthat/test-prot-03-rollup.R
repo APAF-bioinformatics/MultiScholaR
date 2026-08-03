@@ -56,6 +56,8 @@ test_that("rollUpPrecursorToPeptideHelper sums quantities correctly", {
     Run = c("S1", "S2", "S1", "S2"),
     Precursor.Quantity = c(10, 20, 30, 40),
     Precursor.Normalised = c(10, 20, 30, 40),
+    identification_peptide_count = 1L,
+    identification_peptidoform_count = 2L,
     stringsAsFactors = FALSE
   )
   
@@ -75,6 +77,9 @@ test_that("rollUpPrecursorToPeptideHelper sums quantities correctly", {
   expect_s3_class(result, "data.frame")
   expect_equal(result$Peptide.RawQuantity[result$Run == "S1"], 40)
   expect_equal(result$Peptide.RawQuantity[result$Run == "S2"], 60)
+  expect_identical(unique(result$identification_peptide_count), 1L)
+  expect_identical(unique(result$identification_peptidoform_count), 2L)
+  expect_false("peptidoform_ids" %in% names(result))
 })
 
 # APAF Bioinformatics | test-prot-03-rollup.R | Approved | 2026-03-13

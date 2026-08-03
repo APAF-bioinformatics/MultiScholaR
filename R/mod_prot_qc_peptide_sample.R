@@ -139,9 +139,7 @@ runPeptideSampleApplyStep <- function(workflowData,
     description = "Applied minimum peptides per sample filter"
   )
 
-  proteinCount <- filteredS4@peptide_data |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  proteinCount <- .countPeptideProteinGroups(filteredS4)
   runCount <- filteredS4@peptide_data |>
     dplyr::distinct(Run) |>
     nrow()

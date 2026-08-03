@@ -93,9 +93,7 @@ runPeptideRollupApplyStep <- function(workflowData,
     description = "Applied precursor to peptide rollup"
   )
 
-  proteinCount <- rolledUpS4@peptide_data |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  proteinCount <- .countPeptideProteinGroups(rolledUpS4)
 
   resultText <- paste(
     "Precursor Rollup Applied Successfully\n",
@@ -121,7 +119,7 @@ updatePeptideRollupOutputs <- function(output,
 
   plotGrid <- updateProteinFilteringFn(
     data = rollupResult$rolledUpS4@peptide_data,
-    step_name = "3_precursor_rollup",
+    step_name = "4_precursor_rollup",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,

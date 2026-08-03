@@ -16,5 +16,6 @@ rollUpPrecursorToPeptideHelper(
 )
 }
 \description{
-Peptides of with charges and modifications are rolled up (summed) together
+Charge states and modified forms are summed to stripped-peptide
+quantities while preserving frozen experiment-wide identification counts.
 }

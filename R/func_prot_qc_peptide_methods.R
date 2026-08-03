@@ -191,7 +191,8 @@ setMethod( f="removePeptidesWithOnlyOneReplicate"
 # filterMinNumPeptidesPerProtein
 # ----------------------------------------------------------------------------
 #'@title Filter the proteins based on the number of peptides and peptidoforms
-#'@description Keep the proteins only if they have two or more peptides.
+#'@description Keep protein groups with at least one distinct stripped peptide
+#'  and at least two distinct peptidoforms by default.
 #'@param theObject Object of class PeptideQuantitativeData
 #'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
 #'@param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
@@ -209,25 +210,60 @@ setMethod( f="filterMinNumPeptidesPerProtein"
              peptide_data <- theObject@peptide_data
              protein_id_column <- theObject@protein_id_column
 
-             num_peptides_per_protein_thresh <- checkParamsObjectFunctionSimplify( theObject
-                                                                                   , "num_peptides_per_protein_thresh"
-                                                                                   , 1)
+             parameter_section <- theObject@args$filterMinNumPeptidesPerProtein
 
-             num_peptidoforms_per_protein_thresh <- checkParamsObjectFunctionSimplify( theObject
-                                                                                       , "num_peptidoforms_per_protein_thresh"
-                                                                                       , 2)
+             if (is.null(num_peptides_per_protein_thresh) && is.list(parameter_section)) {
+               num_peptides_per_protein_thresh <- parameter_section$num_peptides_per_protein_thresh
+               if (is.null(num_peptides_per_protein_thresh)) {
+                 num_peptides_per_protein_thresh <- parameter_section$peptides_per_protein_cutoff
+               }
+             }
 
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject, "core_utilisation", NA)
+             if (is.null(num_peptidoforms_per_protein_thresh) && is.list(parameter_section)) {
+               num_peptidoforms_per_protein_thresh <- parameter_section$num_peptidoforms_per_protein_thresh
+               if (is.null(num_peptidoforms_per_protein_thresh)) {
+                 num_peptidoforms_per_protein_thresh <- parameter_section$peptidoforms_per_protein_cutoff
+               }
+             }
+
+             num_peptides_per_protein_thresh <- .resolvePeptideQcMethodParam(
+               theObject = theObject,
+               section_name = "filterMinNumPeptidesPerProtein",
+               param_name = "num_peptides_per_protein_thresh",
+               explicit_value = num_peptides_per_protein_thresh,
+               default_value = 1
+             )
+
+             num_peptidoforms_per_protein_thresh <- .resolvePeptideQcMethodParam(
+               theObject = theObject,
+               section_name = "filterMinNumPeptidesPerProtein",
+               param_name = "num_peptidoforms_per_protein_thresh",
+               explicit_value = num_peptidoforms_per_protein_thresh,
+               default_value = 2
+             )
+
+             core_utilisation <- .resolvePeptideQcMethodParam(
+               theObject = theObject,
+               section_name = "filterMinNumPeptidesPerProtein",
+               param_name = "core_utilisation",
+               explicit_value = core_utilisation,
+               default_value = NA
+             )
 
 
-             theObject <- updateParamInObject(theObject, "num_peptides_per_protein_thresh")
-             theObject <- updateParamInObject(theObject, "num_peptidoforms_per_protein_thresh")
-             theObject <- updateParamInObject(theObject, "core_utilisation")
+             if (is.null(theObject@args$filterMinNumPeptidesPerProtein)) {
+               theObject@args$filterMinNumPeptidesPerProtein <- list()
+             }
+             theObject@args$filterMinNumPeptidesPerProtein$num_peptides_per_protein_thresh <- num_peptides_per_protein_thresh
+             theObject@args$filterMinNumPeptidesPerProtein$num_peptidoforms_per_protein_thresh <- num_peptidoforms_per_protein_thresh
+             theObject@args$filterMinNumPeptidesPerProtein$core_utilisation <- core_utilisation
 
              theObject@peptide_data <- filterMinNumPeptidesPerProteinHelper ( input_table = peptide_data
                                                                         , num_peptides_per_protein_thresh = num_peptides_per_protein_thresh
                                                                         , num_peptidoforms_per_protein_thresh = num_peptidoforms_per_protein_thresh
                                                                         , protein_id_column = protein_id_column
+                                                                        , peptide_sequence_column = theObject@peptide_sequence_column
+                                                                        , modified_peptide_sequence_column = "Modified.Sequence"
                                                                         , core_utilisation = core_utilisation)
 
              theObject <- cleanDesignMatrixPeptide(theObject)
@@ -379,6 +415,7 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
 
              dia_nn_default_columns <- c("Protein.Ids"
                                         , "Stripped.Sequence"
+                                        , "Modified.Sequence"
                                         , "Q.Value"
                                         , "Global.Q.Value"
                                         , "Precursor.Quantity"
@@ -441,8 +478,10 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
                                                                        , input_matrix_column_ids = unique(c(input_matrix_column_ids
                                                                                                       , protein_id_column
                                                                                                       , peptide_sequence_column
-                                                                                                      , peptide_sequence_column))
+                                                                                                      , "Modified.Sequence"))
                                                                        , protein_id_column = protein_id_column
+                                                                       , peptide_sequence_column = peptide_sequence_column
+                                                                       , modified_peptide_sequence_column = "Modified.Sequence"
                                                                        , q_value_column = q_value_column
                                                                        , global_q_value_column = global_q_value_column
                                                                        , proteotypic_peptide_sequence_column = proteotypic_peptide_sequence_column

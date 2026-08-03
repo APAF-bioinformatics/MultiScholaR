@@ -198,9 +198,9 @@ test_that("proteomics peptide QC orchestrator preserves DIA server fan-out", {
     vapply(captured$server_calls, `[[`, character(1), "name"),
     c(
       "qvalue_filter",
+      "protein_peptide_filter",
       "rollup",
       "intensity_filter",
-      "protein_peptide_filter",
       "sample_filter",
       "replicate_filter",
       "imputation"
@@ -210,9 +210,9 @@ test_that("proteomics peptide QC orchestrator preserves DIA server fan-out", {
     vapply(captured$server_calls, `[[`, character(1), "id"),
     c(
       "qvalue_filter",
+      "protein_peptide_filter",
       "rollup",
       "intensity_filter",
-      "protein_peptide_filter",
       "sample_filter",
       "replicate_filter",
       "imputation"
@@ -265,9 +265,9 @@ test_that("proteomics peptide QC UI preserves tab wiring", {
     captured$ui_ids,
     c(
       "qvalue_filter:peptide-qc-qvalue_filter",
+      "protein_peptide_filter:peptide-qc-protein_peptide_filter",
       "rollup:peptide-qc-rollup",
       "intensity_filter:peptide-qc-intensity_filter",
-      "protein_peptide_filter:peptide-qc-protein_peptide_filter",
       "sample_filter:peptide-qc-sample_filter",
       "replicate_filter:peptide-qc-replicate_filter",
       "imputation:peptide-qc-imputation"

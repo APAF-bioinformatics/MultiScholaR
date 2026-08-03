@@ -2,7 +2,8 @@
 # rollUpPrecursorToPeptideHelper
 # ----------------------------------------------------------------------------
 #' @title Rollup Precursors to Peptides
-#' @description  Peptides of with charges and modifications are rolled up (summed) together
+#' @description Charge states and modified forms are summed to stripped-peptide
+#'   quantities while preserving frozen experiment-wide identification counts.
 #' @export
 rollUpPrecursorToPeptideHelper <- function( input_table
                                       , sample_id_column = Run
@@ -46,6 +47,61 @@ rollUpPrecursorToPeptideHelper <- function( input_table
       collect() |>
       ungroup()
 
+  }
+
+  protein_id_str <- rlang::as_name(rlang::enquo(protein_id_column))
+  evidence_columns <- intersect(
+    c(
+      "identification_peptide_count",
+      "identification_peptidoform_count",
+      "peptides_for_protein_count",
+      "peptidoforms_for_protein_count"
+    ),
+    names(input_table)
+  )
+
+  if (length(evidence_columns) > 0L) {
+    frozen_evidence <- input_table |>
+      dplyr::select(
+        dplyr::all_of(protein_id_str),
+        dplyr::all_of(evidence_columns)
+      ) |>
+      dplyr::distinct()
+
+    conflicting_evidence <- frozen_evidence |>
+      dplyr::count(.data[[protein_id_str]], name = ".evidence_rows") |>
+      dplyr::filter(.data$.evidence_rows != 1L)
+
+    if (nrow(conflicting_evidence) > 0L) {
+      stop(
+        "rollUpPrecursorToPeptideHelper: conflicting frozen identification evidence for one or more protein groups.",
+        call. = FALSE
+      )
+    }
+
+    peptide_normalised_tbl <- peptide_normalised_tbl |>
+      dplyr::left_join(frozen_evidence, by = protein_id_str)
+  }
+
+  # DIA-NN Protein.Group is the quantitative key, while Protein.Ids remains
+  # useful accession provenance for annotation and existing reporting code.
+  if (protein_id_str != "Protein.Ids" && "Protein.Ids" %in% names(input_table)) {
+    collapse_protein_ids <- function(values) {
+      tokens <- unlist(strsplit(as.character(values), ";", fixed = TRUE))
+      tokens <- trimws(tokens)
+      tokens <- tokens[!is.na(tokens) & nzchar(tokens)]
+      paste(sort(unique(tokens)), collapse = ";")
+    }
+
+    protein_id_annotations <- input_table |>
+      dplyr::group_by(.data[[protein_id_str]]) |>
+      dplyr::summarise(
+        Protein.Ids = collapse_protein_ids(.data$Protein.Ids),
+        .groups = "drop"
+      )
+
+    peptide_normalised_tbl <- peptide_normalised_tbl |>
+      dplyr::left_join(protein_id_annotations, by = protein_id_str)
   }
 
   peptide_normalised_tbl

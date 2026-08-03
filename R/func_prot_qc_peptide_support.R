@@ -300,3 +300,34 @@ calculatePeptidePearsonCorrelation <- function(temp_obj, tech_rep_remove_regex, 
   
   return(correlation_results)
 }
+# Resolve the active protein-group column for peptide QC displays and logging.
+# Real PeptideQuantitativeData objects carry this in a slot; lightweight test
+# and compatibility objects may only expose the data frame.
+.peptideProteinIdColumn <- function(theObject) {
+  if (methods::is(theObject, "S4") &&
+      "protein_id_column" %in% methods::slotNames(theObject)) {
+    protein_id_column <- methods::slot(theObject, "protein_id_column")
+    if (length(protein_id_column) == 1L &&
+        protein_id_column %in% names(theObject@peptide_data)) {
+      return(protein_id_column)
+    }
+  }
+
+  data_columns <- names(theObject@peptide_data)
+  if ("Protein.Group" %in% data_columns) {
+    return("Protein.Group")
+  }
+  if ("Protein.Ids" %in% data_columns) {
+    return("Protein.Ids")
+  }
+
+  stop(
+    "Cannot count peptide-level protein groups: no protein identifier column is available.",
+    call. = FALSE
+  )
+}
+
+.countPeptideProteinGroups <- function(theObject) {
+  protein_id_column <- .peptideProteinIdColumn(theObject)
+  dplyr::n_distinct(theObject@peptide_data[[protein_id_column]])
+}

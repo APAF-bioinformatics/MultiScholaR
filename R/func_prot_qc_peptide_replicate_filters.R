@@ -62,45 +62,263 @@ removePeptidesWithOnlyOneReplicateHelper <- function(input_table
 # ----------------------------------------------------------------------------
 # filterMinNumPeptidesPerProteinHelper
 # ----------------------------------------------------------------------------
+# Identification evidence must be calculated while the original stripped and
+# modified sequence identities are still available.  In particular, neither a
+# row count nor a sum of per-run peptidoform counts is an experiment-wide
+# identity count.
+.proteinIdentificationEvidenceColumns <- c(
+  "identification_peptide_count",
+  "identification_peptidoform_count"
+)
+
+.calculateProteinIdentificationEvidence <- function(
+    input_table,
+    protein_id_column = Protein.Group,
+    peptide_sequence_column = Stripped.Sequence,
+    modified_peptide_sequence_column = Modified.Sequence) {
+  input_columns <- names(input_table)
+  protein_id_str <- resolvePeptideQcColumnArgument(
+    substitute(protein_id_column),
+    protein_id_column,
+    input_columns,
+    environment()
+  )
+  peptide_sequence_str <- resolvePeptideQcColumnArgument(
+    substitute(peptide_sequence_column),
+    peptide_sequence_column,
+    input_columns,
+    environment()
+  )
+  modified_sequence_str <- resolvePeptideQcColumnArgument(
+    substitute(modified_peptide_sequence_column),
+    modified_peptide_sequence_column,
+    input_columns,
+    environment()
+  )
+
+  input_table |>
+    dplyr::filter(
+      !is.na(.data[[protein_id_str]]),
+      trimws(as.character(.data[[protein_id_str]])) != ""
+    ) |>
+    dplyr::mutate(
+      .identification_peptide_identity = trimws(
+        as.character(.data[[peptide_sequence_str]])
+      ),
+      .identification_peptidoform_identity = trimws(
+        as.character(.data[[modified_sequence_str]])
+      )
+    ) |>
+    dplyr::group_by(.data[[protein_id_str]]) |>
+    dplyr::summarise(
+      identification_peptide_count = dplyr::n_distinct(
+        .data$.identification_peptide_identity[
+          !is.na(.data$.identification_peptide_identity) &
+            nzchar(.data$.identification_peptide_identity)
+        ]
+      ),
+      identification_peptidoform_count = dplyr::n_distinct(
+        .data$.identification_peptidoform_identity[
+          !is.na(.data$.identification_peptidoform_identity) &
+            nzchar(.data$.identification_peptidoform_identity)
+        ]
+      ),
+      .groups = "drop"
+    )
+}
+
+.annotateProteinIdentificationEvidence <- function(
+    input_table,
+    protein_id_column = Protein.Group,
+    peptide_sequence_column = Stripped.Sequence,
+    modified_peptide_sequence_column = Modified.Sequence) {
+  protein_id_str <- resolvePeptideQcColumnArgument(
+    substitute(protein_id_column),
+    protein_id_column,
+    names(input_table),
+    environment()
+  )
+  peptide_sequence_str <- resolvePeptideQcColumnArgument(
+    substitute(peptide_sequence_column),
+    peptide_sequence_column,
+    names(input_table),
+    environment()
+  )
+  modified_sequence_str <- resolvePeptideQcColumnArgument(
+    substitute(modified_peptide_sequence_column),
+    modified_peptide_sequence_column,
+    names(input_table),
+    environment()
+  )
+
+  evidence <- .calculateProteinIdentificationEvidence(
+    input_table = input_table,
+    protein_id_column = protein_id_str,
+    peptide_sequence_column = peptide_sequence_str,
+    modified_peptide_sequence_column = modified_sequence_str
+  )
+
+  input_table |>
+    dplyr::select(-dplyr::any_of(.proteinIdentificationEvidenceColumns)) |>
+    dplyr::left_join(evidence, by = protein_id_str)
+}
+
 #' @export
-#' @title Filter Proteins by Minimum Number of Peptides
-#' @description Keep the proteins only if they have two or more peptides.
+#' @title Filter Proteins by Minimum Distinct Peptide Evidence
+#' @description Keep protein groups only when they meet the configured numbers
+#'   of distinct stripped peptide sequences and distinct modified peptidoforms.
+#'   Frozen identification counts created at the q-value filtering stage are
+#'   preferred so later quantitative filtering cannot change identification
+#'   support.
 #' @param input_table Peptide quantities table in long format
 #' @param num_peptides_per_protein_thresh Minimum number of peptides per protein
 #' @param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
 #' @param protein_id_column Protein ID column name as string
+#' @param peptide_sequence_column Peptide sequence column name
+#' @param modified_peptide_sequence_column Modified peptide sequence column name
+#' @param peptidoform_ids_column List-column containing the modified peptide
+#'   identities retained by an older precursor-to-peptide rollup. This is kept
+#'   only for compatibility with already-created in-memory objects.
 #' @param core_utilisation core_utilisation to use for parallel processing
 filterMinNumPeptidesPerProteinHelper <- function( input_table
           , num_peptides_per_protein_thresh = 1
           , num_peptidoforms_per_protein_thresh = 2
           , protein_id_column = Protein.Ids
+          , peptide_sequence_column = Stripped.Sequence
+          , modified_peptide_sequence_column = Modified.Sequence
+          , peptidoform_ids_column = "peptidoform_ids"
           , core_utilisation) {
 
   protein_id_str <- resolvePeptideQcColumnArgument(substitute(protein_id_column), protein_id_column, names(input_table), environment())
-  num_peptides_per_protein <- NA
-  if (any(is.na(core_utilisation))) {
-    num_peptides_per_protein <- input_table |>
-      dplyr::group_by(.data[[protein_id_str]]) |>
-      dplyr::summarise( peptides_for_protein_count = n()
-                 , peptidoforms_for_protein_count = sum( peptidoform_count, na.rm=TRUE)) |>
-      ungroup()
-  } else {
-    num_peptides_per_protein <- input_table |>
-      dplyr::group_by(.data[[protein_id_str]]) |>
-      partition(core_utilisation) |>
-      dplyr::summarise( peptides_for_protein_count = n()
-                 , peptidoforms_for_protein_count = sum( peptidoform_count, na.rm=TRUE)) |>
-      collect() |>
-      ungroup()
+  peptide_sequence_str <- resolvePeptideQcColumnArgument(substitute(peptide_sequence_column), peptide_sequence_column, names(input_table), environment())
+  modified_sequence_str <- resolvePeptideQcColumnArgument(substitute(modified_peptide_sequence_column), modified_peptide_sequence_column, names(input_table), environment())
+
+  frozen_columns_present <- .proteinIdentificationEvidenceColumns %in% names(input_table)
+  if (any(frozen_columns_present) && !all(frozen_columns_present)) {
+    stop(
+      "filterMinNumPeptidesPerProtein: frozen identification evidence is incomplete.",
+      call. = FALSE
+    )
   }
 
+  if (all(frozen_columns_present)) {
+    frozen_evidence <- input_table |>
+      dplyr::select(
+        dplyr::all_of(protein_id_str),
+        dplyr::all_of(.proteinIdentificationEvidenceColumns)
+      ) |>
+      dplyr::distinct()
+
+    conflicting_evidence <- frozen_evidence |>
+      dplyr::count(.data[[protein_id_str]], name = ".evidence_rows") |>
+      dplyr::filter(.data$.evidence_rows != 1L)
+
+    if (nrow(conflicting_evidence) > 0L) {
+      stop(
+        "filterMinNumPeptidesPerProtein: conflicting frozen identification evidence for one or more protein groups.",
+        call. = FALSE
+      )
+    }
+
+    num_peptides_per_protein <- frozen_evidence |>
+      dplyr::transmute(
+        !!protein_id_str := .data[[protein_id_str]],
+        peptides_for_protein_count = as.integer(
+          .data$identification_peptide_count
+        ),
+        peptidoforms_for_protein_count = as.integer(
+          .data$identification_peptidoform_count
+        )
+      )
+  } else if (modified_sequence_str %in% names(input_table)) {
+    exact_evidence <- .calculateProteinIdentificationEvidence(
+      input_table = input_table,
+      protein_id_column = protein_id_str,
+      peptide_sequence_column = peptide_sequence_str,
+      modified_peptide_sequence_column = modified_sequence_str
+    )
+
+    num_peptides_per_protein <- exact_evidence |>
+      dplyr::transmute(
+        !!protein_id_str := .data[[protein_id_str]],
+        peptides_for_protein_count = as.integer(
+          .data$identification_peptide_count
+        ),
+        peptidoforms_for_protein_count = as.integer(
+          .data$identification_peptidoform_count
+        )
+      )
+  } else if (peptidoform_ids_column %in% names(input_table)) {
+    warning(
+      "Using legacy peptidoform_ids provenance. Re-run q-value filtering to create frozen identification evidence.",
+      call. = FALSE
+    )
+    peptide_counts <- input_table |>
+      dplyr::distinct(.data[[protein_id_str]], .data[[peptide_sequence_str]]) |>
+      dplyr::count(
+        .data[[protein_id_str]],
+        name = "peptides_for_protein_count"
+      )
+
+    peptidoform_counts <- input_table |>
+      dplyr::select(
+        dplyr::all_of(protein_id_str),
+        dplyr::all_of(peptidoform_ids_column)
+      ) |>
+      tidyr::unnest_longer(
+        dplyr::all_of(peptidoform_ids_column),
+        values_to = ".peptidoform_id",
+        keep_empty = FALSE
+      ) |>
+      dplyr::filter(
+        !is.na(.data$.peptidoform_id),
+        trimws(as.character(.data$.peptidoform_id)) != ""
+      ) |>
+      dplyr::distinct(.data[[protein_id_str]], .data$.peptidoform_id) |>
+      dplyr::count(
+        .data[[protein_id_str]],
+        name = "peptidoforms_for_protein_count"
+      )
+
+    num_peptides_per_protein <- peptide_counts |>
+      dplyr::left_join(peptidoform_counts, by = protein_id_str)
+  } else {
+    stop(
+      paste0(
+        "filterMinNumPeptidesPerProtein: exact experiment-wide peptide evidence is unavailable. ",
+        "Run q-value filtering before precursor rollup, or supply Modified.Sequence."
+      ),
+      call. = FALSE
+    )
+  }
+
+  num_peptides_per_protein <- num_peptides_per_protein |>
+    dplyr::mutate(
+      peptidoforms_for_protein_count = dplyr::coalesce(
+        .data$peptidoforms_for_protein_count,
+        0L
+      )
+    )
+
+  input_table_for_join <- input_table |>
+    dplyr::select(
+      -dplyr::any_of(c(
+        "peptides_for_protein_count",
+        "peptidoforms_for_protein_count"
+      ))
+    )
+
   protein_peptide_cln <- NA
-  if ( !is.na(num_peptides_per_protein_thresh) &
-       !is.na(num_peptidoforms_per_protein_thresh )  ) {
+  valid_thresholds <- length(num_peptides_per_protein_thresh) == 1L &&
+    length(num_peptidoforms_per_protein_thresh) == 1L &&
+    is.finite(num_peptides_per_protein_thresh) &&
+    is.finite(num_peptidoforms_per_protein_thresh) &&
+    num_peptides_per_protein_thresh >= 1 &&
+    num_peptidoforms_per_protein_thresh >= 1
 
-    print(num_peptides_per_protein)
+  if (valid_thresholds) {
 
-    protein_peptide_cln <- input_table |>
+    protein_peptide_cln <- input_table_for_join |>
       inner_join( num_peptides_per_protein
                   , by = protein_id_str) |>
       dplyr::filter(   peptidoforms_for_protein_count >= num_peptidoforms_per_protein_thresh
@@ -108,7 +326,12 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
                       peptides_for_protein_count >= num_peptides_per_protein_thresh
                      )
   } else {
-    stop("filterMinNumPeptidesPerProtein: num_peptides_per_protein_thresh and num_peptidoforms_per_protein_thresh must be provided.")
+    stop(
+      paste0(
+        "filterMinNumPeptidesPerProtein: num_peptides_per_protein_thresh and ",
+        "num_peptidoforms_per_protein_thresh must be provided as finite values >= 1."
+      )
+    )
   }
 
   protein_peptide_cln
@@ -162,7 +385,21 @@ filterMinNumPeptidesPerSampleHelper <- function ( input_table
 # srlQvalueProteotypicPeptideCleanHelper
 # ----------------------------------------------------------------------------
 #' @title Filter Peptides by Q-Value and Proteotypic Status
-#' @description Keep spectrum-peptide matches that is within q-value threshold and are proteotypic
+#' @description Keep spectrum-peptide matches that are within the q-value
+#'   thresholds and proteotypic, then freeze experiment-wide peptide and
+#'   peptidoform identity counts for each protein group.
+#' @param input_table Peptide quantities table in long format
+#' @param qvalue_threshold Maximum precursor q-value
+#' @param global_qvalue_threshold Maximum global q-value
+#' @param choose_only_proteotypic_peptide Whether to retain only proteotypic
+#'   identifications
+#' @param input_matrix_column_ids Columns retained in the filtered table
+#' @param protein_id_column Protein-group identity column
+#' @param peptide_sequence_column Stripped peptide identity column
+#' @param modified_peptide_sequence_column Modified peptidoform identity column
+#' @param q_value_column Precursor q-value column
+#' @param global_q_value_column Global q-value column
+#' @param proteotypic_peptide_sequence_column Proteotypic indicator column
 #' @export
 srlQvalueProteotypicPeptideCleanHelper <- function(input_table
                                              , qvalue_threshold = 0.01
@@ -177,9 +414,30 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
                                                                        , "Precursor.Quantity"
                                                                        , "Precursor.Normalised")
                                              , protein_id_column = Protein.Ids
+                                             , peptide_sequence_column = Stripped.Sequence
+                                             , modified_peptide_sequence_column = Modified.Sequence
                                              , q_value_column = Q.Value
                                              , global_q_value_column = Global.Q.Value
                                              , proteotypic_peptide_sequence_column = Proteotypic) {
+
+  protein_id_name <- resolvePeptideQcColumnArgument(
+    substitute(protein_id_column),
+    protein_id_column,
+    names(input_table),
+    environment()
+  )
+  peptide_sequence_name <- resolvePeptideQcColumnArgument(
+    substitute(peptide_sequence_column),
+    peptide_sequence_column,
+    names(input_table),
+    environment()
+  )
+  modified_sequence_name <- resolvePeptideQcColumnArgument(
+    substitute(modified_peptide_sequence_column),
+    modified_peptide_sequence_column,
+    names(input_table),
+    environment()
+  )
 
   # [OK] DIAGNOSTIC + DEFENSIVE: Check output column availability
   missing_cols <- input_matrix_column_ids[!input_matrix_column_ids %in% names(input_table)]
@@ -234,6 +492,13 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
   search_srl_quant_cln <- input_table |>
     dplyr::filter(qvalue_filter) |>
     dplyr::select(all_of(unique(c(input_matrix_column_ids, filter_cols))))
+
+  search_srl_quant_cln <- .annotateProteinIdentificationEvidence(
+    input_table = search_srl_quant_cln,
+    protein_id_column = protein_id_name,
+    peptide_sequence_column = peptide_sequence_name,
+    modified_peptide_sequence_column = modified_sequence_name
+  )
 
   search_srl_quant_cln
 

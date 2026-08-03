@@ -91,7 +91,7 @@ test_that("peptide replicate filter helpers preserve direct and partitioned bran
     core_utilisation = 2
   )
 
-  expect_setequal(unique(direct_protein$Protein.Ids), c("P1", "P2"))
+  expect_identical(unique(direct_protein$Protein.Ids), "P1")
   expect_equal(nrow(direct_protein), nrow(parallel_protein))
   expect_error(
     filterMinNumPeptidesPerProteinHelper(
@@ -122,6 +122,53 @@ test_that("peptide replicate filter helpers preserve direct and partitioned bran
 
   expect_setequal(unique(direct_sample$Run), c("S1", "S2", "S3", "S4"))
   expect_equal(nrow(direct_sample), nrow(parallel_sample))
+})
+
+test_that("protein peptide evidence counts identities rather than repeated run rows", {
+  runs <- paste0("S", seq_len(12))
+  repeated_single_peptide <- data.frame(
+    Run = runs,
+    Protein.Ids = "P_REPEAT",
+    Stripped.Sequence = "ONLY_ONE",
+    peptidoform_count = 1L,
+    peptidoform_ids = I(rep(list("ONLY_ONE"), length(runs))),
+    stringsAsFactors = FALSE
+  )
+  two_unique_peptides <- data.frame(
+    Run = rep(runs, each = 2L),
+    Protein.Ids = "P_TWO",
+    Stripped.Sequence = rep(c("PEPTIDE_A", "PEPTIDE_B"), times = length(runs)),
+    peptidoform_count = 1L,
+    peptidoform_ids = I(rep(list("PEPTIDE_A", "PEPTIDE_B"), times = length(runs))),
+    stringsAsFactors = FALSE
+  )
+
+  expect_warning(
+    filtered <- filterMinNumPeptidesPerProteinHelper(
+      input_table = rbind(repeated_single_peptide, two_unique_peptides),
+      num_peptides_per_protein_thresh = 2,
+      num_peptidoforms_per_protein_thresh = 2,
+      protein_id_column = Protein.Ids,
+      peptide_sequence_column = Stripped.Sequence,
+      core_utilisation = NA
+    ),
+    "legacy peptidoform_ids",
+    fixed = TRUE
+  )
+
+  expect_identical(unique(filtered$Protein.Ids), "P_TWO")
+  expect_true(all(filtered$peptides_for_protein_count == 2L))
+  expect_true(all(filtered$peptidoforms_for_protein_count == 2L))
+
+  refiltered <- suppressWarnings(filterMinNumPeptidesPerProteinHelper(
+    input_table = filtered,
+    num_peptides_per_protein_thresh = 2,
+    num_peptidoforms_per_protein_thresh = 2,
+    protein_id_column = Protein.Ids,
+    peptide_sequence_column = Stripped.Sequence,
+    core_utilisation = NA
+  ))
+  expect_equal(refiltered, filtered)
 })
 
 test_that("peptide q-value cleanup helper preserves validation and filtered output", {

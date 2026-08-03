@@ -122,9 +122,7 @@ runPeptideImputationStep <- function(workflow_data, proportionMissingValues) {
   .capture_checkpoint(imputed_s4, "cp02", "qc_filtered_peptide")
   # --- END CP02 ---
 
-  protein_count <- imputed_s4@peptide_data |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  protein_count <- .countPeptideProteinGroups(imputed_s4)
 
   result_text <- paste(
     "Missing Value Imputation Applied Successfully\n",
