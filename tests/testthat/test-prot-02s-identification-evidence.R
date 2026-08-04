@@ -38,6 +38,7 @@ makeIdentificationEvidenceFixture <- function() {
     Precursor.Normalised = seq(10, 90, by = 10),
     Q.Value = c(rep(0.001, 8), 0.02),
     Global.Q.Value = c(rep(0.001, 8), 0.02),
+    Global.PG.Q.Value = c(rep(0.001, 8), 0.02),
     Proteotypic = 1,
     stringsAsFactors = FALSE
   )
@@ -226,5 +227,37 @@ test_that("DIA-NN objects use Protein.Group while retaining Protein.Ids provenan
       rolled@peptide_data$Protein.Group == "P_TWO_PEPTIDES"
     ]),
     2L
+  )
+})
+
+test_that("config-only historical protein evidence aliases execute exactly", {
+  input <- makeIdentificationEvidenceFixture()
+  design <- data.frame(
+    Run = unique(input$Run),
+    group = "A",
+    replicates = seq_along(unique(input$Run)),
+    stringsAsFactors = FALSE
+  )
+  object <- PeptideQuantitativeDataDiann(input, design, args = list())
+  object <- srlQvalueProteotypicPeptideClean(
+    object,
+    input_matrix_column_ids = identificationEvidenceColumns()
+  )
+  object@args$filterMinNumPeptidesPerProtein <- list(
+    peptides_per_protein_cutoff = 2,
+    peptidoforms_per_protein_cutoff = 2,
+    core_utilisation = NA
+  )
+
+  filtered <- filterMinNumPeptidesPerProtein(object)
+
+  expect_identical(unique(filtered@peptide_data$Protein.Group), "P_TWO_PEPTIDES")
+  expect_identical(
+    filtered@args$filterMinNumPeptidesPerProtein$num_peptides_per_protein_thresh,
+    2
+  )
+  expect_identical(
+    filtered@args$filterMinNumPeptidesPerProtein$num_peptidoforms_per_protein_thresh,
+    2
   )
 })

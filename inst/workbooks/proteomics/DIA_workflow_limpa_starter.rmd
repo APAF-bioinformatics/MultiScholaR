@@ -383,7 +383,7 @@ peptide_data <- new(
   # Protein vs Sample quantitative data
   ,
   peptide_data = data_cln,
-  protein_id_column = "Protein.Ids",
+  protein_id_column = if ("Protein.Group" %in% names(data_cln)) "Protein.Group" else "Protein.Ids",
   peptide_sequence_column = "Stripped.Sequence",
   q_value_column = "Q.Value",
   global_q_value_column = "Global.Q.Value",
@@ -452,30 +452,13 @@ This step filters your dataset based on the statistical confidence of peptide id
 ```{r 8 Filter Peptides on q Value and Proteotypic Peptide Match}
 search_srl_quant_cln <- srlQvalueProteotypicPeptideClean(theObject = peptide_data)
 qval_protein_count <- search_srl_quant_cln@peptide_data |>
-  distinct(Protein.Ids) |>
+  distinct(!!sym(search_srl_quant_cln@protein_id_column)) |>
   nrow()
 message(paste("Number of distinct proteins remaining after q-value and proteotypic filtering:", qval_protein_count))
 
-# Example: Interactively change q-value thresholds and re-run this chunk
-# peptide_data <- updateConfigParameter(
-#   theObject      = peptide_data, # Use the input object from the previous step
-#   function_name  = "srlQvalueProteotypicPeptideClean",
-#   parameter_name = "qvalue_threshold",               # Effect: Lower = stricter peptide ID confidence
-#   new_value      = NEW_VALUE_HERE
-# )
-# peptide_data <- updateConfigParameter(
-#   theObject      = peptide_data,
-#   function_name  = "srlQvalueProteotypicPeptideClean",
-#   parameter_name = "global_qvalue_threshold",        # Effect: Lower = stricter protein group ID confidence
-#   new_value      = NEW_VALUE_HERE
-# )
-# peptide_data <- updateConfigParameter(
-#   theObject      = peptide_data,
-#   function_name  = "srlQvalueProteotypicPeptideClean",
-#   parameter_name = "choose_only_proteotypic_peptide",# Effect: 1 = Keep only unique peptides, 0 = Keep shared peptides
-#   new_value      = NEW_VALUE_HERE
-# )
-# search_srl_quant_cln <- srlQvalueProteotypicPeptideClean(theObject = peptide_data) # Re-run after update
+# Fixed DIA-NN contract: Q.Value, Global.Q.Value, and Global.PG.Q.Value
+# must each be <= 0.01, with Proteotypic == 1. Legacy upstream-prefiltered
+# data must use confidence_provenance_mode = "upstream_prefiltered" explicitly.
 
 updateProteinFiltering(
   data = search_srl_quant_cln@peptide_data,
@@ -507,7 +490,7 @@ This step aggregates intensity measurements from multiple precursor ions (differ
 ```{r 9 Roll-up Precursor to Peptide}
 peptide_normalised_tbl <- rollUpPrecursorToPeptide(search_srl_quant_cln)
 rollup_protein_count <- peptide_normalised_tbl@peptide_data |>
-  distinct(Protein.Ids) |>
+  distinct(!!sym(peptide_normalised_tbl@protein_id_column)) |>
   nrow()
 message(paste("Number of distinct proteins after precursor roll-up to peptide level:", rollup_protein_count))
 
@@ -858,7 +841,7 @@ if (!is.null(aa_seq_tbl_final)) {
 
   # Log the number of proteins after cleanup
   annotclean_protein_count <- peptide_annot_cln_obj@peptide_data |>
-    distinct(Protein.Ids) |>
+    distinct(!!sym(peptide_annot_cln_obj@protein_id_column)) |>
     nrow()
   message(paste("Number of distinct proteins after choosing best protein accession:", annotclean_protein_count))
 
@@ -1000,7 +983,7 @@ This step filters proteins based on the number of unique peptides identified for
 
 # First, get the count of proteins BEFORE filtering for the log message
 original_protein_count <- protein_ruv_normalised_imputed_obj@protein_quant_table |>
-  distinct(Protein.Ids) |>
+  distinct(!!sym(protein_ruv_normalised_imputed_obj@protein_id_column)) |>
   nrow()
 
 # Filter proteins with less than 1 unique peptide AND less than 2 total peptidoforms
@@ -1014,7 +997,7 @@ removed_proteins_with_insufficient_evidence <- filterMinNumPeptidesPerProtein(
 
 # Count proteins remaining after filtering
 filtered_protein_count <- removed_proteins_with_insufficient_evidence@protein_quant_table |>
-  distinct(Protein.Ids) |>
+  distinct(!!sym(removed_proteins_with_insufficient_evidence@protein_id_column)) |>
   nrow()
 
 # Print a clear summary of the filtering results

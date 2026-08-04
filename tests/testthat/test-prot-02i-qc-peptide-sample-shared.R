@@ -137,8 +137,9 @@ withSharedPeptideSamplePackageMocks <- function(server_env,
       )
       theObject
     },
-    filterMinNumPeptidesPerSample = function(theObject) {
+    filterMinNumPeptidesPerSample = function(theObject, ...) {
       captured$filter_input <- theObject
+      captured$filter_args <- list(...)
       if (!is.null(filter_error)) {
         stop(filter_error)
       }
@@ -264,6 +265,7 @@ test_that("proteomics peptide sample module preserves successful apply behavior"
   expect_identical(captured$config_update$parameter_name, "peptides_per_sample_cutoff")
   expect_identical(captured$config_update$new_value, 500)
   expect_identical(captured$filter_input, current_state)
+  expect_identical(captured$filter_args$peptides_per_sample_cutoff, 500)
   expect_identical(
     captured$save_state$state_name,
     "sample_filtered"
@@ -305,7 +307,11 @@ test_that("proteomics peptide sample module preserves successful apply behavior"
   expect_match(captured$output$sample_results, "Proteins remaining: 2", fixed = TRUE)
   expect_match(captured$output$sample_results, "Samples remaining: 2", fixed = TRUE)
   expect_match(captured$output$sample_results, "Samples removed: 1", fixed = TRUE)
-  expect_match(captured$output$sample_results, "Min peptides per sample: 500", fixed = TRUE)
+  expect_match(
+    captured$output$sample_results,
+    "Min distinct protein-group/stripped-peptide identities per sample: 500",
+    fixed = TRUE
+  )
   expect_match(captured$output$sample_results, "Removed samples:\nS2", fixed = TRUE)
   expect_identical(captured$output$sample_plot, "rendered-plot")
   expect_identical(captured$drawn_plot, "plot-token")

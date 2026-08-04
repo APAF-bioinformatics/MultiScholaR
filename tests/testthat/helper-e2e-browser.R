@@ -1216,11 +1216,7 @@ e2e_run_prot_dia_qc <- function(
   qc <- function(input) e2e_input_id("proteomics", "qc", input)
 
   peptide_steps <- list(
-    list(tab = "Q-Value Filter", action = "peptide_qc-qvalue_filter-apply_qvalue_filter", state = "qvalue_filtered", configure = function() {
-      e2e_set_input_and_idle(driver, qc("peptide_qc-qvalue_filter-qvalue_threshold"), 0.1, timeout = timeout)
-      e2e_set_input_and_idle(driver, qc("peptide_qc-qvalue_filter-global_qvalue_threshold"), 0.1, timeout = timeout)
-      e2e_set_input_and_idle(driver, qc("peptide_qc-qvalue_filter-proteotypic_only"), FALSE, timeout = timeout)
-    }),
+    list(tab = "Q-Value Filter", action = "peptide_qc-qvalue_filter-apply_qvalue_filter", state = "qvalue_filtered"),
     list(tab = "Precursor Rollup", action = "peptide_qc-rollup-apply_rollup", state = "precursor_rollup"),
     list(tab = "Intensity Filter", action = "peptide_qc-intensity_filter-apply_intensity_filter", state = "intensity_filtered", configure = function() {
       e2e_set_input_and_idle(driver, qc("peptide_qc-intensity_filter-use_strict_mode"), FALSE, timeout = timeout)

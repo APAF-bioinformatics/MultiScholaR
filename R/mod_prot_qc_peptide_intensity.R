@@ -68,10 +68,10 @@ mod_prot_qc_peptide_intensity_ui <- function(id) {
             
             shiny::hr(),
             
-            # Calculated percentages (read-only display)
-            shiny::h5("Calculated Thresholds"),
+            # Executed direct-count rules (read-only display)
+            shiny::h5("Executed Count Rules"),
             shiny::p(style = "background-color: #f0f0f0; padding: 10px; border-radius: 5px; color: #333;",
-              shiny::strong("These values are automatically calculated from your replicate settings above:"),
+              shiny::strong("The filter applies these counts directly to distinct design runs:"),
               shiny::br(),
               shiny::textOutput(ns("calculated_groupwise_percent"), inline = TRUE),
               shiny::br(),
@@ -122,25 +122,35 @@ buildPeptideIntensityThresholdPreview <- function(workflowData,
   shiny::req(workflowData$state_manager)
   currentS4 <- workflowData$state_manager$getState()
   shiny::req(currentS4)
-
-  previewS4 <- updateMissingValueParametersFn(
-    theObject = currentS4,
-    min_reps_per_group = minRepsPerGroup,
-    min_groups = minGroups,
-    function_name = "peptideIntensityFiltering",
-    grouping_variable = "group"
-  )
+  validate_preview_count <- function(value, name) {
+    numeric_value <- suppressWarnings(as.numeric(value))
+    if (length(numeric_value) != 1L || is.na(numeric_value) ||
+        !is.finite(numeric_value) || numeric_value < 1L ||
+        numeric_value != floor(numeric_value)) {
+      stop(sprintf("%s must be a positive integer.", name), call. = FALSE)
+    }
+    as.integer(numeric_value)
+  }
+  minRepsPerGroup <- validate_preview_count(minRepsPerGroup, "Min replicates per group")
+  minGroups <- validate_preview_count(minGroups, "Min groups")
 
   list(
     groupwiseText = sprintf(
-      "Groupwise %% cutoff: %.3f%%",
-      previewS4@args$peptideIntensityFiltering$groupwise_percentage_cutoff
+      "Group passes: >= %d distinct observed runs",
+      minRepsPerGroup
     ),
     maxGroupsText = sprintf(
-      "Max groups %% cutoff: %.3f%%",
-      previewS4@args$peptideIntensityFiltering$max_groups_percentage_cutoff
+      "Peptide passes: >= %d biological groups",
+      minGroups
     )
   )
+}
+
+.peptideIntensitySummaryFromObject <- function(object) {
+  if (!base::isS4(object) || !"args" %in% methods::slotNames(object)) {
+    return(NULL)
+  }
+  object@args$peptideIntensityFiltering$filter_summary
 }
 
 runPeptideIntensityRevertStep <- function(workflowData) {
@@ -203,39 +213,34 @@ runPeptideIntensityApplyStep <- function(workflowData,
 
   if (useStrictMode) {
     logInfoFn("Peptide Processing: Using STRICT MODE")
-
-    currentS4 <- updateConfigParameterFn(
-      theObject = currentS4,
-      function_name = "peptideIntensityFiltering",
-      parameter_name = "groupwise_percentage_cutoff",
-      new_value = 0
-    )
-    currentS4 <- updateConfigParameterFn(
-      theObject = currentS4,
-      function_name = "peptideIntensityFiltering",
-      parameter_name = "max_groups_percentage_cutoff",
-      new_value = 0
-    )
   } else {
     logInfoFn("Peptide Processing: Using FLEXIBLE MODE")
+  }
 
-    currentS4 <- updateMissingValueParametersFn(
+  parameter_values <- list(
+    strict_mode = useStrictMode,
+    min_reps_per_group = minRepsPerGroup,
+    min_groups = minGroups,
+    peptides_intensity_cutoff_percentile = intensityCutoffPercentile
+  )
+  for (parameter_name in names(parameter_values)) {
+    currentS4 <- updateConfigParameterFn(
       theObject = currentS4,
-      min_reps_per_group = minRepsPerGroup,
-      min_groups = minGroups,
       function_name = "peptideIntensityFiltering",
-      grouping_variable = "group"
+      parameter_name = parameter_name,
+      new_value = parameter_values[[parameter_name]]
     )
   }
 
-  currentS4 <- updateConfigParameterFn(
+  filteredS4 <- peptideIntensityFilteringFn(
     theObject = currentS4,
-    function_name = "peptideIntensityFiltering",
-    parameter_name = "peptides_intensity_cutoff_percentile",
-    new_value = intensityCutoffPercentile
+    grouping_variable = "group",
+    min_reps_per_group = minRepsPerGroup,
+    min_groups = minGroups,
+    strict_mode = useStrictMode,
+    peptides_intensity_cutoff_percentile = intensityCutoffPercentile
   )
-
-  filteredS4 <- peptideIntensityFilteringFn(theObject = currentS4)
+  filterSummary <- .peptideIntensitySummaryFromObject(filteredS4)
 
   if (is.null(workflowData$qc_params)) {
     workflowData$qc_params <- list()
@@ -249,21 +254,30 @@ runPeptideIntensityApplyStep <- function(workflowData,
     min_reps_per_group = if (!useStrictMode) minRepsPerGroup else NA,
     min_groups = if (!useStrictMode) minGroups else NA,
     intensity_cutoff_percentile = intensityCutoffPercentile,
+    filter_summary = filterSummary,
     timestamp = nowFn()
   )
 
-  workflowData$state_manager$saveState(
+  intensityConfig <- list(
+    strict_mode = useStrictMode,
+    min_reps_per_group = minRepsPerGroup,
+    min_groups = minGroups,
+    intensity_cutoff_percentile = intensityCutoffPercentile,
+    filter_summary = filterSummary
+  )
+  filteredS4 <- .savePeptideQcState(
+    state_manager = workflowData$state_manager,
+    before = currentS4,
+    after = filteredS4,
+    stage_id = "intensity_filter",
     state_name = "intensity_filtered",
-    s4_data_object = filteredS4,
-    config_object = list(
-      strict_mode = useStrictMode,
-      intensity_cutoff_percentile = intensityCutoffPercentile
-    ),
+    config_object = intensityConfig,
     description = if (useStrictMode) {
       "Applied STRICT peptide intensity filter"
     } else {
       "Applied FLEXIBLE peptide intensity filter"
-    }
+    },
+    now = nowFn()
   )
 
   proteinCount <- .countPeptideProteinGroups(filteredS4)
@@ -274,13 +288,21 @@ runPeptideIntensityApplyStep <- function(workflowData,
     sprintf("Mode: %s\n", if (useStrictMode) "STRICT" else "FLEXIBLE"),
     sprintf("Proteins remaining: %d\n", proteinCount),
     sprintf("Intensity cutoff percentile: %.1f%%\n", intensityCutoffPercentile),
-    sprintf(
-      "Groupwise %% cutoff: %.3f%%\n",
-      currentS4@args$peptideIntensityFiltering$groupwise_percentage_cutoff
+    if (useStrictMode) {
+      "Rule: every design run must be finite and at/above threshold\n"
+    } else {
+      sprintf("Group rule: >= %d distinct observed runs\n", minRepsPerGroup)
+    },
+    if (useStrictMode) "" else sprintf("Peptide rule: >= %d passing groups\n", minGroups),
+    if (is.null(filterSummary)) "" else sprintf(
+      "Executed threshold: %g from %s\n",
+      filterSummary$intensity_threshold,
+      filterSummary$intensity_quantity_column
     ),
-    sprintf(
-      "Max groups %% cutoff: %.3f%%\n",
-      currentS4@args$peptideIntensityFiltering$max_groups_percentage_cutoff
+    if (is.null(filterSummary)) "" else sprintf(
+      "Peptide identities retained/removed: %d / %d\n",
+      filterSummary$retained_feature_count,
+      filterSummary$removed_feature_count
     ),
     "State saved as: 'intensity_filtered'\n"
   )

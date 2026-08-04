@@ -293,10 +293,10 @@ setGeneric(name="calcPeptideMatrix",
 
 
 setGeneric(name="srlQvalueProteotypicPeptideClean"
-           , def=function( theObject, qvalue_threshold = NULL, global_qvalue_threshold = NULL, choose_only_proteotypic_peptide = NULL, input_matrix_column_ids = NULL) {
+           , def=function( theObject, qvalue_threshold = NULL, global_qvalue_threshold = NULL, choose_only_proteotypic_peptide = NULL, input_matrix_column_ids = NULL, global_pg_qvalue_threshold = NULL, confidence_provenance_mode = NULL, exclude_decoys = NULL, exclude_contaminants = NULL, contaminant_manifest = NULL) {
              standardGeneric("srlQvalueProteotypicPeptideClean")
            }
-           , signature = c("theObject", "qvalue_threshold", "global_qvalue_threshold", "choose_only_proteotypic_peptide", "input_matrix_column_ids") )
+           , signature = c("theObject", "qvalue_threshold", "global_qvalue_threshold", "choose_only_proteotypic_peptide", "input_matrix_column_ids", "global_pg_qvalue_threshold", "confidence_provenance_mode", "exclude_decoys", "exclude_contaminants", "contaminant_manifest") )
 
 setGeneric(name="rollUpPrecursorToPeptide"
            , def=function( theObject, core_utilisation = NULL) {
@@ -310,7 +310,11 @@ setGeneric(name="peptideIntensityFiltering"
                            groupwise_percentage_cutoff = NULL,
                            max_groups_percentage_cutoff = NULL,
                            peptides_intensity_cutoff_percentile = NULL,
-                           core_utilisation = NULL) {
+                           core_utilisation = NULL,
+                           min_reps_per_group = NULL,
+                           min_groups = NULL,
+                           strict_mode = NULL,
+                           peptide_quantity_column = NULL) {
              standardGeneric("peptideIntensityFiltering")
            }
            , signature=c("theObject"))
@@ -354,7 +358,8 @@ setGeneric( name="plotPeptidesProteinsCountsPerSample"
             , signature=c("theObject" ))
 
 setGeneric( name="peptideMissingValueImputation"
-            , def=function( theObject,  imputed_value_column = NULL, proportion_missing_values = NULL, core_utilisation = NULL) {
+            , def=function( theObject, imputed_value_column = NULL, proportion_missing_values = NULL,
+                            core_utilisation = NULL, exclusion_column = NULL, hek_string = NULL) {
               standardGeneric("peptideMissingValueImputation")
             }
             , signature=c("theObject", "imputed_value_column", "proportion_missing_values", "core_utilisation" ))

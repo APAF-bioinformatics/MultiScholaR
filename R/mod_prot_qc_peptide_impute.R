@@ -23,7 +23,7 @@ NULL
 
 #' @rdname mod_prot_qc_peptide_impute
 #' @export
-#' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr numericInput helpText div actionButton verbatimTextOutput plotOutput
+#' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr numericInput textInput helpText div actionButton verbatimTextOutput plotOutput
 mod_prot_qc_peptide_impute_ui <- function(id) {
   ns <- shiny::NS(id)
   
@@ -42,7 +42,14 @@ mod_prot_qc_peptide_impute_ui <- function(id) {
             value = 0.5, min = 0.1, max = 1.0, step = 0.1,
             width = "100%"
           ),
-          shiny::helpText("Lower = more stringent (less imputation), higher = less stringent (more imputation) (default: 0.5)"),
+          shiny::helpText("A peptide is eligible when its missing fraction is less than or equal to this value (default: 0.5)."),
+          shiny::textInput(
+            ns("exclusion_column"),
+            "Design exclusion flag column (optional)",
+            value = "",
+            width = "100%"
+          ),
+          shiny::helpText("Optional design column containing explicit TRUE/FALSE flags. Sample names are never excluded by pattern by default."),
           
           shiny::hr(),
           shiny::div(
@@ -69,23 +76,97 @@ mod_prot_qc_peptide_impute_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
-runPeptideImputationStep <- function(workflow_data, proportionMissingValues) {
+.peptideImputationAuditSummary <- function(imputed_s4,
+                                           proportion_missing_values,
+                                           exclusion_column = NULL) {
+  section <- tryCatch(
+    imputed_s4@args$peptideMissingValueImputation,
+    error = function(error) NULL
+  )
+  if (!is.list(section)) {
+    section <- list()
+  }
+  summary <- section$imputation_summary
+  if (!is.list(summary)) {
+    summary <- list()
+  }
+  value_or <- function(value, fallback) {
+    if (is.null(value) || length(value) == 0L) fallback else value
+  }
+  imputed_count <- if ("is_imputed" %in% names(imputed_s4@peptide_data)) {
+    sum(imputed_s4@peptide_data$is_imputed %in% TRUE)
+  } else {
+    NA_integer_
+  }
+
+  list(
+    status = value_or(summary$status, "applied"),
+    skip_reason = value_or(summary$skip_reason, NULL),
+    quantity_column = value_or(summary$quantity_column, value_or(section$quantity_column, NA_character_)),
+    imputed_value_column = value_or(summary$imputed_value_column, value_or(section$imputed_value_column, NA_character_)),
+    eligibility_denominator = value_or(
+      summary$eligibility_denominator,
+      "distinct_design_runs_in_technical_replicate_group"
+    ),
+    eligibility_operator = value_or(summary$eligibility_operator, "<="),
+    maximum_missing_fraction = value_or(summary$maximum_missing_fraction, proportion_missing_values),
+    exclusion_source = value_or(
+      summary$exclusion_source,
+      if (is.null(exclusion_column)) "none" else paste0("design_column:", exclusion_column)
+    ),
+    excluded_runs = value_or(summary$excluded_runs, character(0)),
+    observed_rows = value_or(summary$observed_rows, NA_integer_),
+    missing_not_imputed_rows = value_or(summary$missing_not_imputed_rows, NA_integer_),
+    imputed_rows = value_or(summary$imputed_rows, as.integer(imputed_count)),
+    input_rows = value_or(summary$input_rows, NA_integer_),
+    output_rows = value_or(summary$output_rows, nrow(imputed_s4@peptide_data))
+  )
+}
+
+runPeptideImputationStep <- function(workflow_data,
+                                     proportionMissingValues,
+                                     exclusionColumn = NULL,
+                                     updateConfigParameterFn = updateConfigParameter) {
   current_s4 <- workflow_data$state_manager$getState()
   shiny::req(current_s4)
+
+  if (length(exclusionColumn) == 0L || is.na(exclusionColumn[[1L]]) ||
+      !nzchar(trimws(as.character(exclusionColumn[[1L]])))) {
+    exclusionColumn <- NULL
+  } else {
+    exclusionColumn <- trimws(as.character(exclusionColumn[[1L]]))
+  }
 
   logger::log_info(sprintf(
     "QC Step: Applying missing value imputation (proportion: %s)",
     proportionMissingValues
   ))
 
-  current_s4 <- updateConfigParameter(
+  current_s4 <- updateConfigParameterFn(
     theObject = current_s4,
     function_name = "peptideMissingValueImputation",
     parameter_name = "proportion_missing_values",
     new_value = proportionMissingValues
   )
+  if (!is.null(exclusionColumn)) {
+    current_s4 <- updateConfigParameterFn(
+      theObject = current_s4,
+      function_name = "peptideMissingValueImputation",
+      parameter_name = "exclusion_column",
+      new_value = exclusionColumn
+    )
+  }
 
-  imputed_s4 <- peptideMissingValueImputation(theObject = current_s4)
+  imputed_s4 <- peptideMissingValueImputation(
+    theObject = current_s4,
+    proportion_missing_values = proportionMissingValues,
+    exclusion_column = exclusionColumn
+  )
+  imputation_audit <- .peptideImputationAuditSummary(
+    imputed_s4,
+    proportion_missing_values = proportionMissingValues,
+    exclusion_column = exclusionColumn
+  )
 
   if (is.null(workflow_data$qc_params)) {
     workflow_data$qc_params <- list()
@@ -96,6 +177,8 @@ runPeptideImputationStep <- function(workflow_data, proportionMissingValues) {
 
   workflow_data$qc_params$peptide_qc$imputation <- list(
     proportion_missing_values = proportionMissingValues,
+    exclusion_column = exclusionColumn,
+    imputation_summary = imputation_audit,
     timestamp = Sys.time()
   )
 
@@ -109,13 +192,26 @@ runPeptideImputationStep <- function(workflow_data, proportionMissingValues) {
     logger::log_warn(sprintf("Could not save QC parameters file: %s", e$message))
   })
 
-  workflow_data$state_manager$saveState(
+  imputationConfig <- list(
+    proportion_missing_values = proportionMissingValues,
+    exclusion_column = exclusionColumn,
+    imputation_summary = imputation_audit
+  )
+  imputed_s4 <- .savePeptideQcState(
+    state_manager = workflow_data$state_manager,
+    before = current_s4,
+    after = imputed_s4,
+    stage_id = "imputation",
     state_name = "imputed",
-    s4_data_object = imputed_s4,
-    config_object = list(
-      proportion_missing_values = proportionMissingValues
-    ),
-    description = "Applied missing value imputation using technical replicates"
+    config_object = imputationConfig,
+    description = if (identical(imputation_audit$status, "skipped")) {
+      paste("Skipped technical-replicate imputation:", imputation_audit$skip_reason)
+    } else {
+      "Applied missing value imputation using technical replicates"
+    },
+    status = if (identical(imputation_audit$status, "skipped")) "skipped" else "applied",
+    decision_reason = imputation_audit$skip_reason %||% NA_character_,
+    transformation_type = "imputation"
   )
 
   # --- TESTTHAT CHECKPOINT CP02 (see test-prot-02-qc-filtering.R) ---
@@ -124,11 +220,30 @@ runPeptideImputationStep <- function(workflow_data, proportionMissingValues) {
 
   protein_count <- .countPeptideProteinGroups(imputed_s4)
 
+  status_heading <- if (identical(imputation_audit$status, "skipped")) {
+    "Missing Value Imputation Skipped\n"
+  } else {
+    "Missing Value Imputation Applied Successfully\n"
+  }
+  audit_lines <- c(
+    sprintf("Eligibility: missing fraction %s %.1f\n", imputation_audit$eligibility_operator, proportionMissingValues),
+    sprintf("Denominator: %s\n", imputation_audit$eligibility_denominator),
+    sprintf("Quantity column: %s\n", imputation_audit$quantity_column),
+    sprintf("Exclusion source: %s\n", imputation_audit$exclusion_source)
+  )
+  if (!is.na(imputation_audit$imputed_rows)) {
+    audit_lines <- c(audit_lines, sprintf("Rows imputed: %d\n", imputation_audit$imputed_rows))
+  }
+  if (identical(imputation_audit$status, "skipped")) {
+    audit_lines <- c(audit_lines, sprintf("Skip reason: %s\n", imputation_audit$skip_reason))
+  }
+
   result_text <- paste(
-    "Missing Value Imputation Applied Successfully\n",
+    status_heading,
     "============================================\n",
     sprintf("Proteins remaining: %d\n", protein_count),
     sprintf("Max proportion missing: %.1f\n", proportionMissingValues),
+    paste(audit_lines, collapse = ""),
     "State saved as: 'imputed'\n",
     "\nReady for peptide-to-protein rollup step."
   )
@@ -178,6 +293,7 @@ runPeptideImputationApplyObserver <- function(workflow_data,
                                               imputationPlot,
                                               omicType,
                                               experimentLabel,
+                                              exclusionColumn = NULL,
                                               runImputationStepFn = runPeptideImputationStep,
                                               updateOutputsFn = updatePeptideImputationOutputs,
                                               showNotificationFn = shiny::showNotification,
@@ -191,10 +307,15 @@ runPeptideImputationApplyObserver <- function(workflow_data,
   )
 
   tryCatch({
-    imputationResult <- runImputationStepFn(
+    run_arguments <- list(
       workflow_data = workflow_data,
       proportionMissingValues = proportionMissingValues
     )
+    if (!is.null(exclusionColumn) && length(exclusionColumn) > 0L &&
+        !is.na(exclusionColumn[[1L]]) && nzchar(trimws(as.character(exclusionColumn[[1L]])))) {
+      run_arguments$exclusionColumn <- exclusionColumn
+    }
+    imputationResult <- do.call(runImputationStepFn, run_arguments)
 
     plotGrid <- updateOutputsFn(
       output = output,
@@ -272,7 +393,7 @@ mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, expe
     shiny::observeEvent(input$apply_imputation, {
       shiny::req(workflow_data$state_manager)
 
-      runPeptideImputationApplyObserver(
+      apply_arguments <- list(
         workflow_data = workflow_data,
         proportionMissingValues = input$proportion_missing_values,
         output = output,
@@ -280,6 +401,12 @@ mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, expe
         omicType = omic_type,
         experimentLabel = experiment_label
       )
+      if (!is.null(input$exclusion_column) && length(input$exclusion_column) > 0L &&
+          !is.na(input$exclusion_column[[1L]]) &&
+          nzchar(trimws(as.character(input$exclusion_column[[1L]])))) {
+        apply_arguments$exclusionColumn <- input$exclusion_column
+      }
+      do.call(runPeptideImputationApplyObserver, apply_arguments)
     })
     
     # Revert Imputation

@@ -32,9 +32,9 @@ mod_prot_qc_peptide_sample_ui <- function(id) {
     shiny::br(),
     shiny::fluidRow(
       shiny::column(4,
-        shiny::wellPanel(
+          shiny::wellPanel(
           shiny::h4("Minimum Peptides per Sample"),
-          shiny::p("Remove samples with insufficient peptide counts (poor sample performance)."),
+          shiny::p("Remove samples with fewer than the required distinct protein-group/stripped-peptide identities."),
           shiny::hr(),
           
           shiny::numericInput(ns("min_peptides_per_sample"), 
@@ -42,7 +42,7 @@ mod_prot_qc_peptide_sample_ui <- function(id) {
             value = 500, min = 100, max = 5000, step = 100,
             width = "100%"
           ),
-          shiny::helpText("Higher = stricter sample quality filter (default: 500)"),
+          shiny::helpText("Repeated rows do not add evidence. Higher = stricter (packaged default: 500)."),
           
           shiny::hr(),
           shiny::div(
@@ -95,7 +95,11 @@ runPeptideSampleApplyStep <- function(workflowData,
     dplyr::distinct(!!rlang::sym(currentS4@sample_id)) |>
     dplyr::pull(!!rlang::sym(currentS4@sample_id))
 
-  filteredS4 <- filterMinNumPeptidesPerSampleFn(theObject = currentS4)
+  filteredS4 <- filterMinNumPeptidesPerSampleFn(
+    theObject = currentS4,
+    peptides_per_sample_cutoff = minPeptidesPerSample
+  )
+  filterSummary <- filteredS4@args$filterMinNumPeptidesPerSample$filter_summary
 
   samplesAfter <- filteredS4@peptide_data |>
     dplyr::distinct(!!rlang::sym(filteredS4@sample_id)) |>
@@ -125,23 +129,29 @@ runPeptideSampleApplyStep <- function(workflowData,
     samples_removed_count = samplesRemovedCount,
     samples_before_count = length(samplesBefore),
     samples_after_count = length(samplesAfter),
+    filter_summary = filterSummary,
     timestamp = nowFn()
   )
 
-  workflowData$state_manager$saveState(
+  filteredS4 <- .savePeptideQcState(
+    state_manager = workflowData$state_manager,
+    before = currentS4,
+    after = filteredS4,
+    stage_id = "sample_filter",
     state_name = "sample_filtered",
-    s4_data_object = filteredS4,
     config_object = list(
       min_peptides_per_sample = minPeptidesPerSample,
       samples_removed = samplesRemoved,
-      samples_removed_count = samplesRemovedCount
+      samples_removed_count = samplesRemovedCount,
+      filter_summary = filterSummary
     ),
-    description = "Applied minimum peptides per sample filter"
+    description = "Applied minimum peptides per sample filter",
+    now = nowFn()
   )
 
   proteinCount <- .countPeptideProteinGroups(filteredS4)
   runCount <- filteredS4@peptide_data |>
-    dplyr::distinct(Run) |>
+    dplyr::distinct(.data[[filteredS4@sample_id]]) |>
     nrow()
 
   resultText <- paste(
@@ -150,7 +160,7 @@ runPeptideSampleApplyStep <- function(workflowData,
     sprintf("Proteins remaining: %d\n", proteinCount),
     sprintf("Samples remaining: %d\n", runCount),
     sprintf("Samples removed: %d\n", samplesRemovedCount),
-    sprintf("Min peptides per sample: %d\n", minPeptidesPerSample),
+    sprintf("Min distinct protein-group/stripped-peptide identities per sample: %d\n", minPeptidesPerSample),
     "State saved as: 'sample_filtered'\n"
   )
 

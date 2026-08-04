@@ -148,8 +148,9 @@ withSharedPeptideImputationPackageMocks <- function(server_env,
       updated_args[[function_name]][[parameter_name]] <- new_value
       copySharedPeptideImputationState(theObject, args = updated_args)
       },
-      peptideMissingValueImputation = function(theObject) {
+      peptideMissingValueImputation = function(theObject, ...) {
       captured$imputation_input <- theObject
+      captured$imputation_args <- list(...)
       if (!is.null(imputation_error)) {
         stop(imputation_error)
       }
@@ -310,7 +311,13 @@ test_that("proteomics peptide imputation module preserves successful apply behav
     captured$imputation_input@args$peptideMissingValueImputation$proportion_missing_values,
     0.4
   )
+  expect_identical(captured$imputation_args$proportion_missing_values, 0.4)
+  expect_null(captured$imputation_args$exclusion_column)
   expect_identical(workflow_data$qc_params$peptide_qc$imputation$proportion_missing_values, 0.4)
+  expect_identical(
+    workflow_data$qc_params$peptide_qc$imputation$imputation_summary$eligibility_operator,
+    "<="
+  )
   expect_s3_class(workflow_data$qc_params$peptide_qc$imputation$timestamp, "POSIXct")
   expect_identical(captured$save_state$state_name, "imputed")
   expect_identical(captured$save_state$s4_data_object, imputed_state)
@@ -329,6 +336,8 @@ test_that("proteomics peptide imputation module preserves successful apply behav
   expect_true(captured$plot_update$overwrite)
   expect_match(captured$output$imputation_results, "Proteins remaining: 2", fixed = TRUE)
   expect_match(captured$output$imputation_results, "Max proportion missing: 0.4", fixed = TRUE)
+  expect_match(captured$output$imputation_results, "Eligibility: missing fraction <= 0.4", fixed = TRUE)
+  expect_match(captured$output$imputation_results, "Exclusion source: none", fixed = TRUE)
   expect_match(captured$output$imputation_results, "State saved as: 'imputed'", fixed = TRUE)
   expect_identical(captured$output$imputation_plot, "rendered-plot")
   expect_identical(captured$drawn_plot, "plot-token")
@@ -340,6 +349,41 @@ test_that("proteomics peptide imputation module preserves successful apply behav
     function(notification) identical(notification$type, "message"),
     logical(1)
   )))
+})
+
+test_that("proteomics peptide imputation module forwards and audits explicit design exclusions", {
+  captured <- newSharedPeptideImputationCapture()
+  server_env <- environment(runPeptideImputationStep)
+  imputed_state <- makeSharedPeptideImputationState()
+  withSharedPeptideImputationPackageMocks(server_env, captured, imputed_state)
+
+  workflow_data <- makeSharedPeptideImputationWorkflow(
+    makeSharedPeptideImputationState(),
+    captured
+  )
+  result <- runPeptideImputationStep(
+    workflow_data = workflow_data,
+    proportionMissingValues = 0.5,
+    exclusionColumn = "exclude_imputation"
+  )
+
+  expect_identical(captured$config_update$parameter_name, "exclusion_column")
+  expect_identical(captured$config_update$new_value, "exclude_imputation")
+  expect_identical(
+    captured$imputation_input@args$peptideMissingValueImputation$exclusion_column,
+    "exclude_imputation"
+  )
+  expect_identical(captured$imputation_args$proportion_missing_values, 0.5)
+  expect_identical(captured$imputation_args$exclusion_column, "exclude_imputation")
+  expect_identical(
+    workflow_data$qc_params$peptide_qc$imputation$exclusion_column,
+    "exclude_imputation"
+  )
+  expect_identical(
+    captured$save_state$config_object$imputation_summary$exclusion_source,
+    "design_column:exclude_imputation"
+  )
+  expect_match(result$resultText, "Exclusion source: design_column:exclude_imputation", fixed = TRUE)
 })
 
 test_that("proteomics peptide imputation module preserves apply error behavior", {

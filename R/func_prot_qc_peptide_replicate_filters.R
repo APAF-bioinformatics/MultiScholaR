@@ -1,62 +1,264 @@
 # ----------------------------------------------------------------------------
 # removePeptidesWithOnlyOneReplicateHelper
 # ----------------------------------------------------------------------------
+.validatePeptideRunDesign <- function(input_table,
+                                      design_matrix,
+                                      input_sample_column,
+                                      design_sample_column,
+                                      design_group_column = NULL,
+                                      caller = "peptide QC") {
+  input_runs <- as.character(input_table[[input_sample_column]])
+  design_runs <- as.character(design_matrix[[design_sample_column]])
+  missing_input <- is.na(input_runs) | !nzchar(trimws(input_runs))
+  missing_design <- is.na(design_runs) | !nzchar(trimws(design_runs))
+  if (any(missing_input)) {
+    stop(
+      sprintf(
+        "%s: input run identity is missing at row(s) %s.",
+        caller,
+        paste(utils::head(which(missing_input), 5L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+  if (any(missing_design)) {
+    stop(
+      sprintf(
+        "%s: design run identity is missing at row(s) %s.",
+        caller,
+        paste(utils::head(which(missing_design), 5L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+
+  duplicate_design_runs <- unique(design_runs[
+    duplicated(design_runs) | duplicated(design_runs, fromLast = TRUE)
+  ])
+  if (length(duplicate_design_runs) > 0L) {
+    stop(
+      sprintf(
+        "%s: design must contain exactly one row per run; duplicate run ID(s): %s.",
+        caller,
+        paste(utils::head(duplicate_design_runs, 10L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+
+  unmatched_input <- setdiff(unique(input_runs), design_runs)
+  if (length(unmatched_input) > 0L) {
+    stop(
+      paste0(
+        caller, ": input/design run identities do not match. ",
+        "Unmapped input run(s): ",
+        paste(utils::head(unmatched_input, 10L), collapse = ", "),
+        "."
+      ),
+      call. = FALSE
+    )
+  }
+
+  mapping <- data.frame(
+    .qc_run = design_runs,
+    stringsAsFactors = FALSE
+  )
+  if (!is.null(design_group_column)) {
+    design_groups <- as.character(design_matrix[[design_group_column]])
+    missing_group <- is.na(design_groups) | !nzchar(trimws(design_groups))
+    if (any(missing_group)) {
+      stop(
+        sprintf(
+          "%s: design replicate-group identity is missing at row(s) %s.",
+          caller,
+          paste(utils::head(which(missing_group), 5L), collapse = ", ")
+        ),
+        call. = FALSE
+      )
+    }
+    mapping$.qc_replicate_group <- design_groups
+  }
+  mapping
+}
+
 #---------------------------------------------------------------------------------------
 #' @title Remove Peptides with Single Replicate
-#' @description Remove peptides that only have data for one technical replicate for all sample.
-#' This can be repurposed for removing peptides that only have one biological replicates for all experimental groups.
-#' This function can be repurposed for filtering on proteins as well (we just have to create a dummy variable for peptide_sequence_column)
+#' @description Retain peptide identities supported by at least two distinct
+#'   runs in any declared replicate group. Per-group support is completed
+#'   against the validated design, while singleton observations in other groups
+#'   remain in the globally retained feature.
 #' @export
-removePeptidesWithOnlyOneReplicateHelper <- function(input_table
-                                               , samples_id_tbl
-                                               , input_table_sample_id_column = Run
-                                               , sample_id_tbl_sample_id_column  =  ms_filename
-                                               , replicate_group_column = general_sample_info
-                                               , protein_id_column = Protein.Ids
-                                               , peptide_sequence_column = Stripped.Sequence
-                                               , core_utilisation ) {
+removePeptidesWithOnlyOneReplicateHelper <- function(input_table,
+                                                      samples_id_tbl,
+                                                      input_table_sample_id_column = Run,
+                                                      sample_id_tbl_sample_id_column = ms_filename,
+                                                      replicate_group_column = general_sample_info,
+                                                      protein_id_column = Protein.Ids,
+                                                      peptide_sequence_column = Stripped.Sequence,
+                                                      core_utilisation,
+                                                      minimum_distinct_runs = 2L,
+                                                      retention_policy = "supported_in_any_group",
+                                                      return_filter_result = FALSE) {
 
   input_sample_str <- resolvePeptideQcColumnArgument(substitute(input_table_sample_id_column), input_table_sample_id_column, names(input_table), environment())
   sample_tbl_sample_str <- resolvePeptideQcColumnArgument(substitute(sample_id_tbl_sample_id_column), sample_id_tbl_sample_id_column, names(samples_id_tbl), environment())
   replicate_group_str <- resolvePeptideQcColumnArgument(substitute(replicate_group_column), replicate_group_column, names(samples_id_tbl), environment())
   protein_id_str <- resolvePeptideQcColumnArgument(substitute(protein_id_column), protein_id_column, names(input_table), environment())
   peptide_seq_str <- resolvePeptideQcColumnArgument(substitute(peptide_sequence_column), peptide_sequence_column, names(input_table), environment())
-  join_cols <- stats::setNames(sample_tbl_sample_str, input_sample_str)
-
-  # Count the number of technical replicates per sample and peptide combination
-  num_tech_reps_per_sample_and_peptide <- NA
-  if (any(is.na(core_utilisation))) {
-    num_tech_reps_per_sample_and_peptide <- input_table |>
-      dplyr::left_join(samples_id_tbl, by = join_cols) |>
-      dplyr::group_by(
-        dplyr::across(dplyr::all_of(c(replicate_group_str, protein_id_str, peptide_seq_str)))
-      ) |>
-      #partition(core_utilisation) |>
-      dplyr::summarise(counts = dplyr::n(), .groups = "drop") |>
-      #collect() |>
-      dplyr::ungroup()
-  } else {
-    num_tech_reps_per_sample_and_peptide <- input_table |>
-      dplyr::left_join(samples_id_tbl, by = join_cols) |>
-      dplyr::group_by(
-        dplyr::across(dplyr::all_of(c(replicate_group_str, protein_id_str, peptide_seq_str)))
-      ) |>
-      partition(core_utilisation) |>
-      dplyr::summarise(counts = dplyr::n(), .groups = "drop") |>
-      collect() |>
-      dplyr::ungroup()
+  required_columns <- c(input_sample_str, protein_id_str, peptide_seq_str)
+  missing_input_columns <- setdiff(required_columns, names(input_table))
+  missing_design_columns <- setdiff(
+    c(sample_tbl_sample_str, replicate_group_str),
+    names(samples_id_tbl)
+  )
+  if (length(missing_input_columns) > 0L || length(missing_design_columns) > 0L) {
+    stop(
+      paste0(
+        "removePeptidesWithOnlyOneReplicateHelper: missing required column(s): ",
+        paste(c(missing_input_columns, missing_design_columns), collapse = ", "),
+        "."
+      ),
+      call. = FALSE
+    )
+  }
+  minimum_distinct_runs <- suppressWarnings(as.numeric(minimum_distinct_runs))
+  if (length(minimum_distinct_runs) != 1L || is.na(minimum_distinct_runs) ||
+      !is.finite(minimum_distinct_runs) || minimum_distinct_runs < 2L ||
+      minimum_distinct_runs != floor(minimum_distinct_runs)) {
+    stop(
+      "removePeptidesWithOnlyOneReplicateHelper: `minimum_distinct_runs` must be an integer >= 2.",
+      call. = FALSE
+    )
+  }
+  minimum_distinct_runs <- as.integer(minimum_distinct_runs)
+  if (!identical(retention_policy, "supported_in_any_group")) {
+    stop(
+      "removePeptidesWithOnlyOneReplicateHelper: only `supported_in_any_group` is currently supported.",
+      call. = FALSE
+    )
+  }
+  if (inherits(core_utilisation, "multidplyr_cluster")) {
+    warning(
+      paste0(
+        "removePeptidesWithOnlyOneReplicateHelper: distinct-run support is ",
+        "calculated deterministically in-process; the supplied cluster is not used."
+      ),
+      call. = FALSE
+    )
   }
 
-  # Any peptides found in more than one replicates in any patient will be kept for analysis
-  removed_peptides_with_only_one_replicate <- input_table |>
-    dplyr::inner_join( num_tech_reps_per_sample_and_peptide |>
-                  dplyr::filter( counts >  1) |>
-                  dplyr::select(-counts, -dplyr::all_of(replicate_group_str)) |>
-                  dplyr::distinct()
-                , by = c(protein_id_str, peptide_seq_str) )  |>
-    dplyr::distinct()
+  mapping <- .validatePeptideRunDesign(
+    input_table = input_table,
+    design_matrix = samples_id_tbl,
+    input_sample_column = input_sample_str,
+    design_sample_column = sample_tbl_sample_str,
+    design_group_column = replicate_group_str,
+    caller = "removePeptidesWithOnlyOneReplicateHelper"
+  )
+  missing_feature <- is.na(input_table[[protein_id_str]]) |
+    !nzchar(trimws(as.character(input_table[[protein_id_str]]))) |
+    is.na(input_table[[peptide_seq_str]]) |
+    !nzchar(trimws(as.character(input_table[[peptide_seq_str]])))
+  if (any(missing_feature)) {
+    stop(
+      sprintf(
+        "removePeptidesWithOnlyOneReplicateHelper: protein/peptide identity is missing at row(s) %s.",
+        paste(utils::head(which(missing_feature), 5L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
 
-  removed_peptides_with_only_one_replicate
+  observations <- input_table |>
+    dplyr::transmute(
+      .qc_run = as.character(.data[[input_sample_str]]),
+      .qc_protein = as.character(.data[[protein_id_str]]),
+      .qc_peptide = as.character(.data[[peptide_seq_str]])
+    ) |>
+    dplyr::distinct() |>
+    dplyr::left_join(mapping, by = ".qc_run")
+  features <- observations |>
+    dplyr::distinct(.data$.qc_protein, .data$.qc_peptide)
+  replicate_groups <- mapping |>
+    dplyr::distinct(.data$.qc_replicate_group)
+  observed_support <- observations |>
+    dplyr::group_by(
+      .data$.qc_replicate_group,
+      .data$.qc_protein,
+      .data$.qc_peptide
+    ) |>
+    dplyr::summarise(
+      distinct_run_count = dplyr::n_distinct(.data$.qc_run),
+      .groups = "drop"
+    )
+
+  support_table <- tidyr::expand_grid(features, replicate_groups) |>
+    dplyr::left_join(
+      observed_support,
+      by = c(".qc_protein", ".qc_peptide", ".qc_replicate_group")
+    ) |>
+    dplyr::mutate(
+      distinct_run_count = dplyr::coalesce(.data$distinct_run_count, 0L),
+      required_distinct_runs = minimum_distinct_runs,
+      group_supports_feature = .data$distinct_run_count >= minimum_distinct_runs
+    ) |>
+    dplyr::arrange(
+      .data$.qc_protein,
+      .data$.qc_peptide,
+      .data$.qc_replicate_group
+    )
+  feature_decisions <- support_table |>
+    dplyr::group_by(.data$.qc_protein, .data$.qc_peptide) |>
+    dplyr::summarise(
+      supporting_group_count = sum(.data$group_supports_feature),
+      feature_retained = any(.data$group_supports_feature),
+      .groups = "drop"
+    )
+  retained_features <- feature_decisions |>
+    dplyr::filter(.data$feature_retained) |>
+    dplyr::transmute(
+      !!protein_id_str := .data$.qc_protein,
+      !!peptide_seq_str := .data$.qc_peptide
+    )
+  filtered_data <- input_table |>
+    dplyr::inner_join(
+      retained_features,
+      by = c(protein_id_str, peptide_seq_str)
+    )
+  removal_ledger <- feature_decisions |>
+    dplyr::filter(!.data$feature_retained) |>
+    dplyr::transmute(
+      !!protein_id_str := .data$.qc_protein,
+      !!peptide_seq_str := .data$.qc_peptide,
+      failure_reason = "no_group_with_minimum_distinct_runs",
+      supporting_group_count = .data$supporting_group_count,
+      required_distinct_runs = minimum_distinct_runs
+    )
+
+  names(support_table)[names(support_table) == ".qc_protein"] <- protein_id_str
+  names(support_table)[names(support_table) == ".qc_peptide"] <- peptide_seq_str
+  names(support_table)[names(support_table) == ".qc_replicate_group"] <- replicate_group_str
+  summary <- list(
+    identity_definition = paste(protein_id_str, peptide_seq_str, sep = " + "),
+    run_count_definition = "distinct_run_ids",
+    retention_policy = retention_policy,
+    replicate_group_column = replicate_group_str,
+    minimum_distinct_runs = minimum_distinct_runs,
+    input_feature_count = nrow(features),
+    retained_feature_count = sum(feature_decisions$feature_retained),
+    removed_feature_count = sum(!feature_decisions$feature_retained),
+    replicate_group_count = nrow(replicate_groups)
+  )
+
+  if (isTRUE(return_filter_result)) {
+    return(list(
+      data = filtered_data,
+      support_table = support_table,
+      removal_ledger = removal_ledger,
+      summary = summary
+    ))
+  }
+  filtered_data
 }
 
 # ----------------------------------------------------------------------------
@@ -342,48 +544,216 @@ filterMinNumPeptidesPerProteinHelper <- function( input_table
 # ----------------------------------------------------------------------------
 #' @export
 #' @title Filter Samples by Minimum Number of Peptides
-#' @description Remove sample if it has less than a certain number of peptides identified
-#' @param List of samples to keep regardless of how many peptides it has because it is am important sample
-filterMinNumPeptidesPerSampleHelper <- function ( input_table
-                                            , peptides_per_sample_cutoff = 5000
-                                            , sample_id_column = Run
-                                            , core_utilisation
-                                            , inclusion_list = c()) {
-
-  sample_id_str <- resolvePeptideQcColumnArgument(substitute(sample_id_column), sample_id_column, names(input_table), environment())
-  samples_passing_filter <- NA
-  if (any(is.na(core_utilisation))) {
-    samples_passing_filter <- input_table |>
-      dplyr::group_by(.data[[sample_id_str]]) |>
-      #partition(core_utilisation) |>
-      summarise( counts = n()) |>
-      #collect() |>
-      ungroup() |>
-      dplyr::filter( counts >= peptides_per_sample_cutoff |
-                       ( .data[[sample_id_str]] %in% inclusion_list)  ) |>
-      dplyr::select(-counts)
-
-  } else {
-    samples_passing_filter <- input_table |>
-      dplyr::group_by(.data[[sample_id_str]]) |>
-      partition(core_utilisation) |>
-      summarise( counts = n()) |>
-      collect() |>
-      ungroup() |>
-      dplyr::filter( counts >= peptides_per_sample_cutoff |
-                       ( .data[[sample_id_str]] %in% inclusion_list)  ) |>
-      dplyr::select(-counts)
+#' @description Retain samples containing at least the configured number of
+#'   distinct `(protein group, stripped peptide)` identities. Repeated rows do
+#'   not add evidence, and inclusion-list entries never manufacture samples.
+#' @param inclusion_list Samples to retain regardless of their observed
+#'   distinct peptide-identity count.
+filterMinNumPeptidesPerSampleHelper <- function(input_table,
+                                                 peptides_per_sample_cutoff = 500,
+                                                 sample_id_column = Run,
+                                                 core_utilisation,
+                                                 inclusion_list = c(),
+                                                 protein_id_column = Protein.Ids,
+                                                 peptide_sequence_column = Stripped.Sequence,
+                                                 design_matrix = NULL,
+                                                 design_sample_id_column = sample_id_column,
+                                                 return_filter_result = FALSE) {
+  input_names <- names(input_table)
+  sample_id_str <- resolvePeptideQcColumnArgument(
+    substitute(sample_id_column), sample_id_column, input_names, environment()
+  )
+  protein_id_str <- resolvePeptideQcColumnArgument(
+    substitute(protein_id_column), protein_id_column, input_names, environment()
+  )
+  peptide_sequence_str <- resolvePeptideQcColumnArgument(
+    substitute(peptide_sequence_column), peptide_sequence_column,
+    input_names, environment()
+  )
+  missing_columns <- setdiff(
+    c(sample_id_str, protein_id_str, peptide_sequence_str),
+    input_names
+  )
+  if (length(missing_columns) > 0L) {
+    stop(
+      sprintf(
+        "filterMinNumPeptidesPerSampleHelper: missing required column(s): %s.",
+        paste(missing_columns, collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+  threshold <- suppressWarnings(as.numeric(peptides_per_sample_cutoff))
+  if (length(threshold) != 1L || is.na(threshold) || !is.finite(threshold) ||
+      threshold < 1L || threshold != floor(threshold)) {
+    stop(
+      "filterMinNumPeptidesPerSampleHelper: `peptides_per_sample_cutoff` must be a positive integer.",
+      call. = FALSE
+    )
+  }
+  threshold <- as.integer(threshold)
+  inclusion_list <- unique(trimws(as.character(inclusion_list)))
+  inclusion_list <- inclusion_list[!is.na(inclusion_list) & nzchar(inclusion_list)]
+  if (inherits(core_utilisation, "multidplyr_cluster")) {
+    warning(
+      paste0(
+        "filterMinNumPeptidesPerSampleHelper: distinct peptide identities are ",
+        "counted deterministically in-process; the supplied cluster is not used."
+      ),
+      call. = FALSE
+    )
   }
 
-  filtered_table <- input_table |>
-    inner_join( samples_passing_filter, by = sample_id_str)
+  missing_identity <- is.na(input_table[[sample_id_str]]) |
+    !nzchar(trimws(as.character(input_table[[sample_id_str]]))) |
+    is.na(input_table[[protein_id_str]]) |
+    !nzchar(trimws(as.character(input_table[[protein_id_str]]))) |
+    is.na(input_table[[peptide_sequence_str]]) |
+    !nzchar(trimws(as.character(input_table[[peptide_sequence_str]])))
+  if (any(missing_identity)) {
+    stop(
+      sprintf(
+        "filterMinNumPeptidesPerSampleHelper: sample/protein/peptide identity is missing at row(s) %s.",
+        paste(utils::head(which(missing_identity), 5L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
 
+  design_status <- "not_supplied_legacy"
+  if (!is.null(design_matrix)) {
+    design_sample_str <- resolvePeptideQcColumnArgument(
+      substitute(design_sample_id_column), design_sample_id_column,
+      names(design_matrix), environment()
+    )
+    if (!design_sample_str %in% names(design_matrix)) {
+      stop(
+        sprintf(
+          "filterMinNumPeptidesPerSampleHelper: design sample column `%s` is missing.",
+          design_sample_str
+        ),
+        call. = FALSE
+      )
+    }
+    .validatePeptideRunDesign(
+      input_table = input_table,
+      design_matrix = design_matrix,
+      input_sample_column = sample_id_str,
+      design_sample_column = design_sample_str,
+      caller = "filterMinNumPeptidesPerSampleHelper"
+    )
+    design_status <- "validated_one_row_per_run"
+  }
+
+  sample_support <- input_table |>
+    dplyr::transmute(
+      .qc_sample = as.character(.data[[sample_id_str]]),
+      .qc_protein = as.character(.data[[protein_id_str]]),
+      .qc_peptide = as.character(.data[[peptide_sequence_str]])
+    ) |>
+    dplyr::distinct() |>
+    dplyr::count(.data$.qc_sample, name = "distinct_peptide_identity_count") |>
+    dplyr::mutate(
+      inclusion_override = .data$.qc_sample %in% inclusion_list,
+      sample_passes = .data$distinct_peptide_identity_count >= threshold |
+        .data$inclusion_override,
+      decision_reason = dplyr::case_when(
+        .data$distinct_peptide_identity_count >= threshold ~ "meets_distinct_identity_threshold",
+        .data$inclusion_override ~ "explicit_inclusion_override",
+        TRUE ~ "below_distinct_identity_threshold"
+      )
+    ) |>
+    dplyr::arrange(.data$.qc_sample)
+  passing_samples <- sample_support |>
+    dplyr::filter(.data$sample_passes) |>
+    dplyr::transmute(!!sample_id_str := .data$.qc_sample)
+  filtered_table <- input_table |>
+    dplyr::inner_join(passing_samples, by = sample_id_str)
+  removal_ledger <- sample_support |>
+    dplyr::filter(!.data$sample_passes) |>
+    dplyr::transmute(
+      !!sample_id_str := .data$.qc_sample,
+      distinct_peptide_identity_count = .data$distinct_peptide_identity_count,
+      required_distinct_peptide_identities = threshold,
+      failure_reason = .data$decision_reason
+    )
+  names(sample_support)[names(sample_support) == ".qc_sample"] <- sample_id_str
+  input_samples <- unique(as.character(input_table[[sample_id_str]]))
+  summary <- list(
+    identity_definition = paste(protein_id_str, peptide_sequence_str, sep = " + "),
+    count_definition = "distinct_protein_group_stripped_peptide_pairs_per_run",
+    peptides_per_sample_cutoff = threshold,
+    design_validation = design_status,
+    input_sample_count = length(input_samples),
+    retained_sample_count = sum(sample_support$sample_passes),
+    removed_sample_count = sum(!sample_support$sample_passes),
+    inclusion_list = inclusion_list,
+    inclusion_entries_absent_from_data = setdiff(inclusion_list, input_samples)
+  )
+
+  if (isTRUE(return_filter_result)) {
+    return(list(
+      data = filtered_table,
+      support_table = sample_support,
+      removal_ledger = removal_ledger,
+      summary = summary
+    ))
+  }
   filtered_table
 }
 
 # ----------------------------------------------------------------------------
 # srlQvalueProteotypicPeptideCleanHelper
 # ----------------------------------------------------------------------------
+.diaNnIdentificationQvalueCutoff <- 0.01
+
+.validateDiaNnIdentificationContract <- function(
+    qvalue_threshold,
+    global_qvalue_threshold,
+    global_pg_qvalue_threshold,
+    choose_only_proteotypic_peptide) {
+  threshold_values <- suppressWarnings(as.numeric(c(
+    qvalue_threshold,
+    global_qvalue_threshold,
+    global_pg_qvalue_threshold
+  )))
+  scalar_inputs <- all(vapply(
+    list(
+      qvalue_threshold,
+      global_qvalue_threshold,
+      global_pg_qvalue_threshold
+    ),
+    length,
+    integer(1)
+  ) == 1L)
+  fixed_thresholds <- scalar_inputs &&
+    length(threshold_values) == 3L &&
+    all(is.finite(threshold_values)) &&
+    all(abs(threshold_values - .diaNnIdentificationQvalueCutoff) < .Machine$double.eps^0.5)
+
+  if (!fixed_thresholds) {
+    stop(
+      paste0(
+        "DIA-NN identification q-value thresholds are fixed at 0.01 for ",
+        "Q.Value, Global.Q.Value, and Global.PG.Q.Value."
+      ),
+      call. = FALSE
+    )
+  }
+
+  proteotypic_value <- suppressWarnings(as.numeric(choose_only_proteotypic_peptide))
+  if (length(proteotypic_value) != 1L ||
+      !is.finite(proteotypic_value) ||
+      proteotypic_value != 1) {
+    stop(
+      "DIA-NN identification evidence requires Proteotypic == 1.",
+      call. = FALSE
+    )
+  }
+
+  invisible(TRUE)
+}
+
 #' @title Filter Peptides by Q-Value and Proteotypic Status
 #' @description Keep spectrum-peptide matches that are within the q-value
 #'   thresholds and proteotypic, then freeze experiment-wide peptide and
@@ -391,15 +761,28 @@ filterMinNumPeptidesPerSampleHelper <- function ( input_table
 #' @param input_table Peptide quantities table in long format
 #' @param qvalue_threshold Maximum precursor q-value
 #' @param global_qvalue_threshold Maximum global q-value
+#' @param global_pg_qvalue_threshold Maximum global protein-group q-value
 #' @param choose_only_proteotypic_peptide Whether to retain only proteotypic
 #'   identifications
+#' @param confidence_provenance_mode Either `diann_main_report`, which requires
+#'   all confidence fields, or the explicit `upstream_prefiltered` compatibility
+#'   mode, which records any unavailable fields as unverified.
 #' @param input_matrix_column_ids Columns retained in the filtered table
 #' @param protein_id_column Protein-group identity column
 #' @param peptide_sequence_column Stripped peptide identity column
 #' @param modified_peptide_sequence_column Modified peptidoform identity column
 #' @param q_value_column Precursor q-value column
-#' @param global_q_value_column Global q-value column
+#' @param global_q_value_column Global precursor q-value column
+#' @param global_pg_q_value_column Global protein-group q-value column
 #' @param proteotypic_peptide_sequence_column Proteotypic indicator column
+#' @param exclude_decoys Exclude confidently classified decoys from the
+#'   biological analysis view.
+#' @param exclude_contaminants Exclude confidently classified contaminants from
+#'   the biological analysis view.
+#' @param contaminant_manifest Optional user-supplied contaminant accessions.
+#' @param protein_ids_column Accession-provenance column used for classification.
+#' @param return_exclusion_result Return classification/ledger metadata together
+#'   with the filtered data. The default preserves the historical data-frame API.
 #' @export
 srlQvalueProteotypicPeptideCleanHelper <- function(input_table
                                              , qvalue_threshold = 0.01
@@ -418,7 +801,30 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
                                              , modified_peptide_sequence_column = Modified.Sequence
                                              , q_value_column = Q.Value
                                              , global_q_value_column = Global.Q.Value
-                                             , proteotypic_peptide_sequence_column = Proteotypic) {
+                                             , proteotypic_peptide_sequence_column = Proteotypic
+                                             , global_pg_qvalue_threshold = 0.01
+                                             , confidence_provenance_mode = "diann_main_report"
+                                             , global_pg_q_value_column = Global.PG.Q.Value
+                                             , exclude_decoys = TRUE
+                                             , exclude_contaminants = TRUE
+                                             , contaminant_manifest = NULL
+                                             , protein_ids_column = "Protein.Ids"
+                                             , return_exclusion_result = FALSE) {
+
+  confidence_provenance_mode <- match.arg(
+    confidence_provenance_mode,
+    c("diann_main_report", "upstream_prefiltered")
+  )
+  .validateDiaNnIdentificationContract(
+    qvalue_threshold = qvalue_threshold,
+    global_qvalue_threshold = global_qvalue_threshold,
+    global_pg_qvalue_threshold = global_pg_qvalue_threshold,
+    choose_only_proteotypic_peptide = choose_only_proteotypic_peptide
+  )
+
+  qvalue_threshold <- .diaNnIdentificationQvalueCutoff
+  global_qvalue_threshold <- .diaNnIdentificationQvalueCutoff
+  global_pg_qvalue_threshold <- .diaNnIdentificationQvalueCutoff
 
   protein_id_name <- resolvePeptideQcColumnArgument(
     substitute(protein_id_column),
@@ -439,8 +845,42 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
     environment()
   )
 
+  q_val_name <- resolvePeptideQcColumnArgument(
+    substitute(q_value_column),
+    q_value_column,
+    names(input_table),
+    environment()
+  )
+  global_q_val_name <- resolvePeptideQcColumnArgument(
+    substitute(global_q_value_column),
+    global_q_value_column,
+    names(input_table),
+    environment()
+  )
+  global_pg_q_val_name <- resolvePeptideQcColumnArgument(
+    substitute(global_pg_q_value_column),
+    global_pg_q_value_column,
+    names(input_table),
+    environment()
+  )
+  proteotypic_name <- resolvePeptideQcColumnArgument(
+    substitute(proteotypic_peptide_sequence_column),
+    proteotypic_peptide_sequence_column,
+    names(input_table),
+    environment()
+  )
+  confidence_columns <- c(
+    q_value = q_val_name,
+    global_q_value = global_q_val_name,
+    global_pg_q_value = global_pg_q_val_name,
+    proteotypic = proteotypic_name
+  )
+
   # [OK] DIAGNOSTIC + DEFENSIVE: Check output column availability
   missing_cols <- input_matrix_column_ids[!input_matrix_column_ids %in% names(input_table)]
+  if (identical(confidence_provenance_mode, "upstream_prefiltered")) {
+    missing_cols <- setdiff(missing_cols, unname(confidence_columns))
+  }
   
   if (length(missing_cols) > 0) {
     error_msg <- paste0(
@@ -458,21 +898,11 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
   }
   
   # [OK] ALSO CHECK: Filter columns exist
-  q_val_name <- resolvePeptideQcColumnArgument(substitute(q_value_column), q_value_column, names(input_table), environment())
-  global_q_val_name <- resolvePeptideQcColumnArgument(substitute(global_q_value_column), global_q_value_column, names(input_table), environment())
-  proteotypic_name <- resolvePeptideQcColumnArgument(substitute(proteotypic_peptide_sequence_column), proteotypic_peptide_sequence_column, names(input_table), environment())
-  
-  use_proteotypic_filter <- isTRUE(
-    suppressWarnings(as.numeric(choose_only_proteotypic_peptide)) == 1
-  )
-  filter_cols <- c(
-    q_val_name,
-    global_q_val_name,
-    if (use_proteotypic_filter) proteotypic_name else character()
-  )
+  filter_cols <- unname(confidence_columns)
   missing_filter_cols <- filter_cols[!filter_cols %in% names(input_table)]
-  
-  if (length(missing_filter_cols) > 0) {
+
+  if (identical(confidence_provenance_mode, "diann_main_report") &&
+      length(missing_filter_cols) > 0) {
     error_msg <- paste0(
       "Q-value filter error: Required filter columns not found in data.\n",
       "Missing filter columns: ", paste(missing_filter_cols, collapse = ", "), "\n",
@@ -482,23 +912,73 @@ srlQvalueProteotypicPeptideCleanHelper <- function(input_table
     stop(error_msg)
   }
 
-  qvalue_filter <- input_table[[q_val_name]] <= qvalue_threshold &
-    input_table[[global_q_val_name]] <= global_qvalue_threshold
-  if (use_proteotypic_filter) {
-    qvalue_filter <- qvalue_filter &
-      input_table[[proteotypic_name]] == choose_only_proteotypic_peptide
+  if (identical(confidence_provenance_mode, "upstream_prefiltered") &&
+      length(missing_filter_cols) > 0) {
+    warning(
+      paste0(
+        "Explicit upstream_prefiltered mode: the following confidence fields ",
+        "are unavailable and were not verified: ",
+        paste(missing_filter_cols, collapse = ", "),
+        "."
+      ),
+      call. = FALSE
+    )
   }
 
-  search_srl_quant_cln <- input_table |>
+  qvalue_filter <- rep(TRUE, nrow(input_table))
+  confidence_thresholds <- c(
+    q_value = qvalue_threshold,
+    global_q_value = global_qvalue_threshold,
+    global_pg_q_value = global_pg_qvalue_threshold
+  )
+  for (metric_name in names(confidence_thresholds)) {
+    metric_column <- confidence_columns[[metric_name]]
+    if (metric_column %in% names(input_table)) {
+      qvalue_filter <- qvalue_filter &
+        input_table[[metric_column]] <= confidence_thresholds[[metric_name]]
+    }
+  }
+  if (proteotypic_name %in% names(input_table)) {
+    qvalue_filter <- qvalue_filter & input_table[[proteotypic_name]] == 1
+  }
+
+  q_valid_rows <- input_table |>
+    dplyr::mutate(.source_row_id = dplyr::row_number()) |>
     dplyr::filter(qvalue_filter) |>
-    dplyr::select(all_of(unique(c(input_matrix_column_ids, filter_cols))))
+    dplyr::select(dplyr::all_of(unique(c(
+      ".source_row_id",
+      input_matrix_column_ids[input_matrix_column_ids %in% names(input_table)],
+      filter_cols[filter_cols %in% names(input_table)]
+    ))))
+
+  exclusion_result <- classifyPeptideBiologicalExclusions(
+    input_table = q_valid_rows,
+    protein_id_column = protein_id_name,
+    protein_ids_column = protein_ids_column,
+    contaminant_manifest = contaminant_manifest,
+    exclude_decoys = .asPeptideExclusionFlag(exclude_decoys, "exclude_decoys"),
+    exclude_contaminants = .asPeptideExclusionFlag(
+      exclude_contaminants,
+      "exclude_contaminants"
+    )
+  )
 
   search_srl_quant_cln <- .annotateProteinIdentificationEvidence(
-    input_table = search_srl_quant_cln,
+    input_table = exclusion_result$analysis_data,
     protein_id_column = protein_id_name,
     peptide_sequence_column = peptide_sequence_name,
     modified_peptide_sequence_column = modified_sequence_name
   )
+
+  if (isTRUE(return_exclusion_result)) {
+    return(list(
+      data = search_srl_quant_cln,
+      q_valid_classified_data = exclusion_result$classified_data,
+      exclusion_ledger = exclusion_result$exclusion_ledger,
+      exclusion_summary = exclusion_result$summary,
+      contaminant_manifest = exclusion_result$manifest
+    ))
+  }
 
   search_srl_quant_cln
 

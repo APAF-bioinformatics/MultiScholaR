@@ -189,139 +189,467 @@ validatePostImputationData <- function(peptide_obj, expected_na_percent = 0, tol
 # peptideMissingValueImputationHelper
 # ----------------------------------------------------------------------------
 #' peptideMissingValueImputationHelper
-#' @description Perform peptide level missing value imputation
-#'@param input_table A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
-#'@param metadata_table A data table with the following columns: 1. the sample file name or run name (as per parameter sample_id_tbl_sample_id_column), 2. The replicate group ID (as per parameter replicate_group_column)
-#'@param input_table_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the input_table parameter (default: Run)
-#'@param sample_id_tbl_sample_id_column The name of the column in the input_table that contained the run information or sample file name as per the metadata_table parameter (default: ms_filename)
-#'@param replicate_group_column (default: general_sample_info)
-#'@param protein_id_column Protein accession column, tidyverse format (default = Protein.Ids).
-#'@param peptide_sequence_column Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).
-#'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)
-#'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
-#'@param proportion_missing_values The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)
-#'@export
-peptideMissingValueImputationHelper <- function( input_table
-                                           , metadata_table
-                                           , input_table_sample_id_column = Run
-                                           , sample_id_tbl_sample_id_column  =  ms_filename
-                                           , replicate_group_column = general_sample_info
-                                           , protein_id_column = Protein.Ids
-                                           , peptide_sequence_column = Stripped.Sequence
-                                           , quantity_to_impute_column = Peptide.Normalised
-                                           , imputed_value_column = Peptide.Imputed
-                                           , hek_string = "HEK"
-                                           , proportion_missing_values = 0.50
-                                           , core_utilisation ) {
+#' @description Impute an eligible missing peptide measurement with the mean of
+#'   the observed raw quantities from the same declared technical-replicate
+#'   group. Replicate availability is counted by distinct run identity.
+#' @param input_table Long-format peptide measurements.
+#' @param metadata_table Experimental design containing one row per run.
+#' @param input_table_sample_id_column Run column in `input_table`.
+#' @param sample_id_tbl_sample_id_column Run column in `metadata_table`.
+#' @param replicate_group_column Technical-replicate group column in the design.
+#' @param protein_id_column Active protein-group identity column.
+#' @param peptide_sequence_column Stripped peptide sequence column.
+#' @param quantity_to_impute_column Raw peptide quantity used for the mean.
+#' @param imputed_value_column Output quantity column.
+#' @param hek_string Deprecated opt-in regular expression. When supplied, runs
+#'   whose run ID or replicate-group ID matches are excluded from imputation.
+#'   The default is `NULL`; names containing `HEK` are not implicitly excluded.
+#' @param proportion_missing_values Maximum eligible missing fraction, inclusive.
+#' @param core_utilisation Optional historical parallel backend. Validation and
+#'   imputation are performed deterministically in-process.
+#' @param exclusion_column Optional design column containing an explicit logical
+#'   (or unambiguous 0/1, true/false) run-exclusion flag.
+#' @param return_imputation_result Return data plus support and audit metadata
+#'   when `TRUE`; retain the historical data-frame return when `FALSE`.
+#' @export
+peptideMissingValueImputationHelper <- function(input_table,
+                                                 metadata_table,
+                                                 input_table_sample_id_column = Run,
+                                                 sample_id_tbl_sample_id_column = ms_filename,
+                                                 replicate_group_column = general_sample_info,
+                                                 protein_id_column = Protein.Ids,
+                                                 peptide_sequence_column = Stripped.Sequence,
+                                                 quantity_to_impute_column = Peptide.Normalised,
+                                                 imputed_value_column = Peptide.Imputed,
+                                                 hek_string = NULL,
+                                                 proportion_missing_values = 0.50,
+                                                 core_utilisation = NA,
+                                                 exclusion_column = NULL,
+                                                 return_imputation_result = FALSE) {
+  input_sample_column <- rlang::as_name(rlang::enquo(input_table_sample_id_column))
+  design_sample_column <- rlang::as_name(rlang::enquo(sample_id_tbl_sample_id_column))
+  replicate_column <- rlang::as_name(rlang::enquo(replicate_group_column))
+  protein_column <- rlang::as_name(rlang::enquo(protein_id_column))
+  peptide_column <- rlang::as_name(rlang::enquo(peptide_sequence_column))
+  quantity_column <- rlang::as_name(rlang::enquo(quantity_to_impute_column))
+  imputed_column <- rlang::as_name(rlang::enquo(imputed_value_column))
 
-  quantity_column_name <- rlang::as_name(rlang::enquo(quantity_to_impute_column))
-  imputed_column_name <- rlang::as_name(rlang::enquo(imputed_value_column))
+  if (!is.data.frame(input_table) || !is.data.frame(metadata_table)) {
+    stop("peptideMissingValueImputationHelper: input and metadata must be data frames.", call. = FALSE)
+  }
+  required_input <- c(input_sample_column, protein_column, peptide_column, quantity_column)
+  required_design <- c(design_sample_column, replicate_column)
+  missing_input <- setdiff(required_input, names(input_table))
+  missing_design <- setdiff(required_design, names(metadata_table))
+  if (length(missing_input) > 0L || length(missing_design) > 0L) {
+    stop(
+      paste0(
+        "peptideMissingValueImputationHelper: missing required column(s): ",
+        paste(c(missing_input, missing_design), collapse = ", "),
+        "."
+      ),
+      call. = FALSE
+    )
+  }
+  if (identical(quantity_column, imputed_column)) {
+    stop(
+      "peptideMissingValueImputationHelper: raw and imputed quantity columns must be different.",
+      call. = FALSE
+    )
+  }
+  maximum_missing <- suppressWarnings(as.numeric(proportion_missing_values))
+  if (length(maximum_missing) != 1L || is.na(maximum_missing) ||
+      !is.finite(maximum_missing) || maximum_missing < 0 || maximum_missing > 1) {
+    stop(
+      "peptideMissingValueImputationHelper: `proportion_missing_values` must be between 0 and 1.",
+      call. = FALSE
+    )
+  }
+  if (!is.numeric(input_table[[quantity_column]])) {
+    stop(
+      sprintf("peptideMissingValueImputationHelper: quantity column `%s` must be numeric.", quantity_column),
+      call. = FALSE
+    )
+  }
+  non_finite_rows <- which(!is.na(input_table[[quantity_column]]) &
+                             !is.finite(input_table[[quantity_column]]))
+  if (length(non_finite_rows) > 0L) {
+    stop(
+      sprintf(
+        "peptideMissingValueImputationHelper: quantity column `%s` contains non-finite observed values at row(s) %s.",
+        quantity_column,
+        paste(utils::head(non_finite_rows, 10L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+
+  internal_columns <- c(
+    ".impute_run", ".impute_group", ".impute_protein", ".impute_peptide",
+    ".impute_quantity", ".impute_source_order", ".impute_design_order",
+    ".impute_excluded", ".impute_group_size"
+  )
+  collisions <- intersect(internal_columns, union(names(input_table), names(metadata_table)))
+  if (length(collisions) > 0L) {
+    stop(
+      paste0(
+        "peptideMissingValueImputationHelper: reserved internal column(s) present: ",
+        paste(collisions, collapse = ", "),
+        "."
+      ),
+      call. = FALSE
+    )
+  }
+
+  finish_result <- function(data, support_table, summary) {
+    result <- list(data = data, support_table = support_table, summary = summary)
+    if (isTRUE(return_imputation_result)) result else data
+  }
+
+  annotate_without_imputation <- function(data) {
+    data[[imputed_column]] <- data[[quantity_column]]
+    data$is_imputed <- rep(FALSE, nrow(data))
+    data
+  }
 
   if (nrow(input_table) == 0L) {
-    empty_imputation <- input_table
-    if (!imputed_column_name %in% names(empty_imputation)) {
-      empty_imputation[[imputed_column_name]] <- empty_imputation[[quantity_column_name]]
-    }
-    if (!"is_imputed" %in% names(empty_imputation)) {
-      empty_imputation$is_imputed <- logical(0)
-    }
-    return(empty_imputation)
+    empty_imputation <- annotate_without_imputation(input_table)
+    return(finish_result(
+      empty_imputation,
+      data.frame(),
+      list(
+        status = "skipped",
+        skip_reason = "empty_input",
+        quantity_column = quantity_column,
+        imputed_value_column = imputed_column,
+        eligibility_denominator = "distinct_design_runs_in_technical_replicate_group",
+        maximum_missing_fraction = maximum_missing,
+        eligibility_operator = "<=",
+        exclusion_source = "none",
+        input_rows = 0L,
+        output_rows = 0L,
+        imputed_rows = 0L
+      )
+    ))
   }
 
-  # Max number of technical replicates per group
-  num_tech_rep_per_sample <-  metadata_table  |>
-    dplyr::filter( !str_detect( {{replicate_group_column}}, hek_string))  |>
-    distinct( {{sample_id_tbl_sample_id_column}}, {{replicate_group_column}}) |>
-    group_by( {{replicate_group_column}}) |>
-    summarise(total_num_tech_rep = n()) |>
-    ungroup()
+  input_runs <- as.character(input_table[[input_sample_column]])
+  design_runs <- as.character(metadata_table[[design_sample_column]])
+  design_groups <- as.character(metadata_table[[replicate_column]])
+  missing_run_rows <- which(is.na(input_runs) | !nzchar(trimws(input_runs)))
+  missing_design_run_rows <- which(is.na(design_runs) | !nzchar(trimws(design_runs)))
+  missing_group_rows <- which(is.na(design_groups) | !nzchar(trimws(design_groups)))
+  if (length(missing_run_rows) > 0L || length(missing_design_run_rows) > 0L ||
+      length(missing_group_rows) > 0L) {
+    stop(
+      paste0(
+        "peptideMissingValueImputationHelper: missing run/group identity at row(s): input=",
+        paste(utils::head(missing_run_rows, 10L), collapse = ","),
+        "; design_run=", paste(utils::head(missing_design_run_rows, 10L), collapse = ","),
+        "; design_group=", paste(utils::head(missing_group_rows, 10L), collapse = ","),
+        "."
+      ),
+      call. = FALSE
+    )
+  }
+  duplicate_design_runs <- unique(design_runs[
+    duplicated(design_runs) | duplicated(design_runs, fromLast = TRUE)
+  ])
+  if (length(duplicate_design_runs) > 0L) {
+    stop(
+      sprintf(
+        "peptideMissingValueImputationHelper: design must contain one row per run; duplicate run ID(s): %s.",
+        paste(utils::head(duplicate_design_runs, 10L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+  unmatched_runs <- setdiff(unique(input_runs), design_runs)
+  if (length(unmatched_runs) > 0L) {
+    stop(
+      sprintf(
+        "peptideMissingValueImputationHelper: unmapped input run ID(s): %s.",
+        paste(utils::head(unmatched_runs, 10L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
 
-  # Count the number of technical replicates per sample and peptide combination
-  num_tech_reps_per_sample_and_peptide <- NA
+  missing_feature_rows <- which(
+    is.na(input_table[[protein_column]]) |
+      !nzchar(trimws(as.character(input_table[[protein_column]]))) |
+      is.na(input_table[[peptide_column]]) |
+      !nzchar(trimws(as.character(input_table[[peptide_column]])))
+  )
+  if (length(missing_feature_rows) > 0L) {
+    stop(
+      sprintf(
+        "peptideMissingValueImputationHelper: protein/peptide identity is missing at row(s) %s.",
+        paste(utils::head(missing_feature_rows, 10L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+  input_keys <- data.frame(
+    run = input_runs,
+    protein = as.character(input_table[[protein_column]]),
+    peptide = as.character(input_table[[peptide_column]]),
+    stringsAsFactors = FALSE
+  )
+  duplicate_keys <- duplicated(input_keys) | duplicated(input_keys, fromLast = TRUE)
+  if (any(duplicate_keys)) {
+    offending <- unique(input_keys[duplicate_keys, , drop = FALSE])
+    offending_labels <- paste(offending$run, offending$protein, offending$peptide, sep = "/")
+    stop(
+      sprintf(
+        paste0(
+          "peptideMissingValueImputationHelper: duplicate run-feature observation(s) ",
+          "must be resolved before imputation: %s."
+        ),
+        paste(utils::head(offending_labels, 10L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
 
-  use_cluster <- inherits(core_utilisation, "multidplyr_cluster")
+  coerce_exclusion_flag <- function(values, column_name) {
+    if (is.logical(values)) {
+      parsed <- values
+    } else if (is.numeric(values)) {
+      parsed <- ifelse(values %in% c(0, 1), as.logical(values), NA)
+    } else {
+      normalised <- tolower(trimws(as.character(values)))
+      parsed <- rep(NA, length(normalised))
+      parsed[normalised %in% c("true", "t", "yes", "y", "1")] <- TRUE
+      parsed[normalised %in% c("false", "f", "no", "n", "0")] <- FALSE
+    }
+    if (any(is.na(parsed))) {
+      stop(
+        sprintf(
+          "peptideMissingValueImputationHelper: exclusion column `%s` must contain only explicit true/false values.",
+          column_name
+        ),
+        call. = FALSE
+      )
+    }
+    as.logical(parsed)
+  }
 
-  if( !use_cluster ) {
-    num_tech_reps_per_sample_and_peptide <- input_table |>
-      left_join( metadata_table
-                 , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
-      dplyr::filter( !str_detect( {{replicate_group_column}}, hek_string))  |>
-      dplyr::filter( !is.na({{quantity_to_impute_column}}) ) |>
-      distinct( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{quantity_to_impute_column}}) |>
-      group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      #partition(core_utilisation) |>
-      summarise( num_tech_rep = n()
-                 , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE )) |>
-      #collect() |>
-      ungroup()
+  exclusion_sources <- character(0)
+  excluded <- rep(FALSE, nrow(metadata_table))
+  if (!is.null(exclusion_column) && length(exclusion_column) > 0L &&
+      !is.na(exclusion_column[[1L]]) && nzchar(trimws(as.character(exclusion_column[[1L]])))) {
+    exclusion_column <- trimws(as.character(exclusion_column[[1L]]))
+    if (!exclusion_column %in% names(metadata_table)) {
+      stop(
+        sprintf("peptideMissingValueImputationHelper: exclusion column `%s` is absent from the design.", exclusion_column),
+        call. = FALSE
+      )
+    }
+    excluded <- excluded | coerce_exclusion_flag(metadata_table[[exclusion_column]], exclusion_column)
+    exclusion_sources <- c(exclusion_sources, paste0("design_column:", exclusion_column))
   } else {
-    num_tech_reps_per_sample_and_peptide <- input_table |>
-      left_join( metadata_table
-                 , by=join_by( {{input_table_sample_id_column}} == {{sample_id_tbl_sample_id_column}} ) ) |>
-      dplyr::filter( !str_detect( {{replicate_group_column}}, hek_string))  |>
-      dplyr::filter( !is.na({{quantity_to_impute_column}}) ) |>
-      distinct( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}, {{quantity_to_impute_column}}) |>
-      group_by( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}}) |>
-      partition(core_utilisation) |>
-      summarise( num_tech_rep = n()
-                 , average_value = mean({{quantity_to_impute_column}}, na.rm=TRUE)) |>
-      collect() |>
-      ungroup()
-
+    exclusion_column <- NULL
+  }
+  if (!is.null(hek_string) && length(hek_string) > 0L &&
+      !is.na(hek_string[[1L]]) && nzchar(as.character(hek_string[[1L]]))) {
+    legacy_pattern <- as.character(hek_string[[1L]])
+    warning(
+      paste0(
+        "`hek_string` is deprecated; use an explicit design `exclusion_column`. ",
+        "The supplied pattern is being applied to run and replicate-group IDs."
+      ),
+      call. = FALSE
+    )
+    legacy_excluded <- tryCatch(
+      grepl(legacy_pattern, design_runs) | grepl(legacy_pattern, design_groups),
+      error = function(error) {
+        stop(
+          paste0("peptideMissingValueImputationHelper: invalid `hek_string` regex: ", error$message),
+          call. = FALSE
+        )
+      }
+    )
+    excluded <- excluded | legacy_excluded
+    exclusion_sources <- c(exclusion_sources, "deprecated_hek_string")
+  }
+  exclusion_source <- if (length(exclusion_sources) == 0L) {
+    "none"
+  } else {
+    paste(exclusion_sources, collapse = "+")
   }
 
-  ## Calculate proportion of replicates in a group that is missing
-  rows_needing_imputation_temp <-  num_tech_reps_per_sample_and_peptide |>
-    left_join( num_tech_rep_per_sample
-               , by = join_by( {{replicate_group_column}} ) )
+  design_map <- data.frame(
+    .impute_run = design_runs,
+    .impute_group = design_groups,
+    .impute_excluded = excluded,
+    .impute_design_order = seq_len(nrow(metadata_table)),
+    stringsAsFactors = FALSE
+  )
+  included_design <- design_map[!design_map$.impute_excluded, , drop = FALSE]
+  included_design <- included_design |>
+    dplyr::group_by(.impute_group) |>
+    dplyr::mutate(.impute_group_size = dplyr::n_distinct(.impute_run)) |>
+    dplyr::ungroup()
 
+  working <- input_table
+  working$.impute_run <- input_runs
+  working$.impute_protein <- input_keys$protein
+  working$.impute_peptide <- input_keys$peptide
+  working$.impute_quantity <- working[[quantity_column]]
+  working$.impute_source_order <- seq_len(nrow(working))
 
-  print(rows_needing_imputation_temp)
+  if (nrow(included_design) == 0L || !any(included_design$.impute_group_size >= 2L)) {
+    skipped_data <- annotate_without_imputation(input_table)
+    return(finish_result(
+      skipped_data,
+      data.frame(),
+      list(
+        status = "skipped",
+        skip_reason = "no_eligible_technical_replicate_groups",
+        quantity_column = quantity_column,
+        imputed_value_column = imputed_column,
+        protein_identity_column = protein_column,
+        peptide_identity_column = peptide_column,
+        sample_id_column = input_sample_column,
+        replicate_group_column = replicate_column,
+        eligibility_denominator = "distinct_design_runs_in_technical_replicate_group",
+        maximum_missing_fraction = maximum_missing,
+        eligibility_operator = "<=",
+        exclusion_source = exclusion_source,
+        excluded_runs = design_map$.impute_run[design_map$.impute_excluded],
+        input_rows = nrow(input_table),
+        output_rows = nrow(skipped_data),
+        imputed_rows = 0L,
+        technical_replicate_groups = 0L
+      )
+    ))
+  }
 
-  rows_needing_imputation <-   rows_needing_imputation_temp |>
-    dplyr::filter(    (1 - num_tech_rep / total_num_tech_rep ) < proportion_missing_values )
+  if (inherits(core_utilisation, "multidplyr_cluster")) {
+    warning(
+      paste0(
+        "peptideMissingValueImputationHelper: validated run-feature imputation ",
+        "is evaluated in-process for deterministic duplicate and provenance semantics."
+      ),
+      call. = FALSE
+    )
+  }
 
-  get_combinations_part_1 <- metadata_table |>
-    distinct( {{sample_id_tbl_sample_id_column}}, {{replicate_group_column}}) |>
-    left_join(  input_table |>
-                  distinct( {{input_table_sample_id_column}}, {{protein_id_column}}, {{peptide_sequence_column}})
-                , by =join_by( {{sample_id_tbl_sample_id_column}} == {{input_table_sample_id_column}}))
+  mapped_input <- dplyr::inner_join(
+    working,
+    included_design,
+    by = ".impute_run"
+  )
+  feature_groups <- mapped_input |>
+    dplyr::distinct(.impute_group, .impute_protein, .impute_peptide)
+  support_grid <- feature_groups |>
+    dplyr::inner_join(
+      included_design,
+      by = ".impute_group",
+      relationship = "many-to-many"
+    ) |>
+    dplyr::left_join(
+      working,
+      by = c(".impute_run", ".impute_protein", ".impute_peptide")
+    )
 
-  all_peptides_combination <- metadata_table |>
-    distinct( {{sample_id_tbl_sample_id_column}}, {{replicate_group_column}}) |>
-    group_by({{replicate_group_column}} ) |>
-    nest( data = c({{sample_id_tbl_sample_id_column}}) ) |>
-    left_join( get_combinations_part_1 |>
-                 dplyr::select( -{{sample_id_tbl_sample_id_column}}) |>
-                 dplyr::distinct( {{replicate_group_column}}, {{protein_id_column}}, {{peptide_sequence_column}})
-               , by = join_by( {{replicate_group_column}}))  |>
-    unnest( data ) |>
-    ungroup({{replicate_group_column}})
+  support_internal <- support_grid |>
+    dplyr::group_by(.impute_group, .impute_protein, .impute_peptide) |>
+    dplyr::summarise(
+      total_distinct_runs = dplyr::n_distinct(.impute_run),
+      observed_distinct_runs = dplyr::n_distinct(.impute_run[!is.na(.impute_quantity)]),
+      missing_distinct_runs = total_distinct_runs - observed_distinct_runs,
+      missing_fraction = missing_distinct_runs / total_distinct_runs,
+      mean_observed_raw_quantity = if (observed_distinct_runs > 0L) {
+        mean(.impute_quantity, na.rm = TRUE)
+      } else {
+        NA_real_
+      },
+      group_has_technical_replicates = total_distinct_runs >= 2L,
+      eligible_for_imputation = group_has_technical_replicates &
+        observed_distinct_runs > 0L & missing_distinct_runs > 0L &
+        missing_fraction <= maximum_missing,
+      .groups = "drop"
+    )
 
+  completed_rows <- support_grid |>
+    dplyr::filter(.impute_group_size >= 2L) |>
+    dplyr::left_join(
+      support_internal,
+      by = c(".impute_group", ".impute_protein", ".impute_peptide")
+    )
+  completed_rows[[input_sample_column]] <- completed_rows$.impute_run
+  completed_rows[[protein_column]] <- completed_rows$.impute_protein
+  completed_rows[[peptide_column]] <- completed_rows$.impute_peptide
+  completed_rows$is_imputed <- is.na(completed_rows$.impute_quantity) &
+    completed_rows$eligible_for_imputation
+  completed_rows[[imputed_column]] <- completed_rows$.impute_quantity
+  completed_rows[[imputed_column]][completed_rows$is_imputed] <-
+    completed_rows$mean_observed_raw_quantity[completed_rows$is_imputed]
 
-  make_imputation <- all_peptides_combination |>
-    left_join( input_table
-               , by = join_by( {{sample_id_tbl_sample_id_column}} == {{input_table_sample_id_column}}
-                               , {{protein_id_column}} == {{protein_id_column}}
-                               , {{peptide_sequence_column}} == {{peptide_sequence_column}} ) ) |>
-    left_join(rows_needing_imputation
-              , by = join_by( {{replicate_group_column}}
-                              , {{protein_id_column}}
-                              , {{peptide_sequence_column}}  ))  |>
-    dplyr::filter(!is.na({{protein_id_column}}) & !is.na( {{peptide_sequence_column}} )) |>
-    mutate( is_imputed = case_when (is.na({{quantity_to_impute_column}})
-                                    & !is.na(average_value)  ~ TRUE
-                                    , TRUE ~ FALSE) ) |>
-    mutate ( {{imputed_value_column}} := case_when (is.na({{quantity_to_impute_column}})
-                                                    & !is.na(average_value)  ~ average_value
-                                                    , TRUE ~ {{quantity_to_impute_column}} ) ) |>
-    dplyr::select( -num_tech_rep
-                   , - average_value
-                   , - total_num_tech_rep
-                   , - {{replicate_group_column}} ) |>
-    dplyr::rename( {{input_table_sample_id_column}} := {{sample_id_tbl_sample_id_column}})
+  technical_run_ids <- included_design$.impute_run[included_design$.impute_group_size >= 2L]
+  passthrough_rows <- dplyr::inner_join(working, design_map, by = ".impute_run") |>
+    dplyr::filter(.impute_excluded | !.impute_run %in% technical_run_ids)
+  passthrough_rows[[imputed_column]] <- passthrough_rows$.impute_quantity
+  passthrough_rows$is_imputed <- rep(FALSE, nrow(passthrough_rows))
 
-  make_imputation
+  output_columns <- unique(c(names(input_table), imputed_column, "is_imputed"))
+  ordering_columns <- c(".impute_source_order", ".impute_design_order")
+  completed_output <- completed_rows[, c(ordering_columns, output_columns), drop = FALSE]
+  passthrough_output <- passthrough_rows[, c(ordering_columns, output_columns), drop = FALSE]
+  existing_output <- dplyr::bind_rows(
+    completed_output[!is.na(completed_output$.impute_source_order), , drop = FALSE],
+    passthrough_output
+  ) |>
+    dplyr::arrange(.impute_source_order)
+  generated_output <- completed_output[is.na(completed_output$.impute_source_order), , drop = FALSE] |>
+    dplyr::arrange(.impute_design_order)
+  output <- dplyr::bind_rows(existing_output, generated_output) |>
+    dplyr::select(-dplyr::all_of(ordering_columns))
+
+  support_table <- support_internal |>
+    dplyr::transmute(
+      technical_replicate_group = .impute_group,
+      protein_identity = .impute_protein,
+      peptide_identity = .impute_peptide,
+      total_distinct_runs,
+      observed_distinct_runs,
+      missing_distinct_runs,
+      missing_fraction,
+      mean_observed_raw_quantity,
+      group_has_technical_replicates,
+      eligible_for_imputation
+    )
+  imputed_rows <- sum(output$is_imputed)
+  summary <- list(
+    status = "applied",
+    skip_reason = NULL,
+    quantity_column = quantity_column,
+    imputed_value_column = imputed_column,
+    protein_identity_column = protein_column,
+    peptide_identity_column = peptide_column,
+    sample_id_column = input_sample_column,
+    replicate_group_column = replicate_column,
+    eligibility_denominator = "distinct_design_runs_in_technical_replicate_group",
+    maximum_missing_fraction = maximum_missing,
+    eligibility_operator = "<=",
+    exclusion_source = exclusion_source,
+    exclusion_column = exclusion_column,
+    excluded_runs = design_map$.impute_run[design_map$.impute_excluded],
+    input_rows = nrow(input_table),
+    output_rows = nrow(output),
+    observed_rows = sum(!is.na(output[[quantity_column]])),
+    missing_not_imputed_rows = sum(is.na(output[[imputed_column]])),
+    generated_rows = nrow(output) - nrow(input_table),
+    imputed_rows = as.integer(imputed_rows),
+    technical_replicate_groups = dplyr::n_distinct(
+      included_design$.impute_group[included_design$.impute_group_size >= 2L]
+    ),
+    eligible_group_features = sum(support_table$eligible_for_imputation)
+  )
+
+  finish_result(output, support_table, summary)
 }
 
 
@@ -445,44 +773,110 @@ proteinMissingValueImputation <- function( input_table
 #'@export
 setMethod( f="peptideMissingValueImputation"
            , signature="PeptideQuantitativeData"
-           , definition = function( theObject,  imputed_value_column = NULL, proportion_missing_values = NULL, core_utilisation = NULL) {
-             peptide_data <- theObject@peptide_data
-             raw_quantity_column <- theObject@raw_quantity_column
-             sample_id_column <- theObject@sample_id
+           , definition = function(theObject,
+                                   imputed_value_column = NULL,
+                                   proportion_missing_values = NULL,
+                                   core_utilisation = NULL,
+                                   exclusion_column = NULL,
+                                   hek_string = NULL) {
+             section <- theObject@args$peptideMissingValueImputation
+             if (!is.list(section)) {
+               section <- list()
+             }
+             resolve_section_value <- function(explicit_value, parameter_name, default_value = NULL) {
+               if (!is.null(explicit_value)) {
+                 return(explicit_value)
+               }
+               if (parameter_name %in% names(section) && !is.null(section[[parameter_name]])) {
+                 return(section[[parameter_name]])
+               }
+               default_value
+             }
+
+             imputed_value_column <- resolve_section_value(
+               imputed_value_column,
+               "imputed_value_column",
+               "Peptide.Imputed"
+             )
+             proportion_missing_values <- resolve_section_value(
+               proportion_missing_values,
+               "proportion_missing_values",
+               0.50
+             )
+             core_utilisation <- resolve_section_value(core_utilisation, "core_utilisation", NA)
+             exclusion_column <- resolve_section_value(exclusion_column, "exclusion_column", NULL)
+             hek_string <- resolve_section_value(hek_string, "hek_string", NULL)
+             if (length(exclusion_column) == 0L || is.na(exclusion_column[[1L]]) ||
+                 !nzchar(trimws(as.character(exclusion_column[[1L]])))) {
+               exclusion_column <- NULL
+             } else {
+               exclusion_column <- trimws(as.character(exclusion_column[[1L]]))
+             }
+
              replicate_group_column <- theObject@technical_replicate_id
-             design_matrix <- theObject@design_matrix
+             has_declared_replicates <- length(replicate_group_column) == 1L &&
+               !is.na(replicate_group_column) && nzchar(trimws(replicate_group_column)) &&
+               replicate_group_column %in% names(theObject@design_matrix)
 
+             if (!has_declared_replicates) {
+               peptide_values_imputed <- theObject@peptide_data
+               peptide_values_imputed[[imputed_value_column]] <-
+                 peptide_values_imputed[[theObject@raw_quantity_column]]
+               peptide_values_imputed$is_imputed <- rep(FALSE, nrow(peptide_values_imputed))
+               filter_result <- list(
+                 data = peptide_values_imputed,
+                 support_table = data.frame(),
+                 summary = list(
+                   status = "skipped",
+                   skip_reason = "technical_replicate_column_not_declared",
+                   quantity_column = theObject@raw_quantity_column,
+                   imputed_value_column = imputed_value_column,
+                   eligibility_denominator = "distinct_design_runs_in_technical_replicate_group",
+                   maximum_missing_fraction = as.numeric(proportion_missing_values),
+                   eligibility_operator = "<=",
+                   exclusion_source = if (is.null(exclusion_column)) "none" else paste0("design_column:", exclusion_column),
+                   input_rows = nrow(theObject@peptide_data),
+                   output_rows = nrow(peptide_values_imputed),
+                   imputed_rows = 0L
+                 )
+               )
+             } else {
+               filter_result <- peptideMissingValueImputationHelper(
+                 input_table = theObject@peptide_data,
+                 metadata_table = theObject@design_matrix,
+                 quantity_to_impute_column = !!rlang::sym(theObject@raw_quantity_column),
+                 imputed_value_column = !!rlang::sym(imputed_value_column),
+                 core_utilisation = core_utilisation,
+                 input_table_sample_id_column = !!rlang::sym(theObject@sample_id),
+                 sample_id_tbl_sample_id_column = !!rlang::sym(theObject@sample_id),
+                 replicate_group_column = !!rlang::sym(replicate_group_column),
+                 protein_id_column = !!rlang::sym(theObject@protein_id_column),
+                 peptide_sequence_column = !!rlang::sym(theObject@peptide_sequence_column),
+                 hek_string = hek_string,
+                 proportion_missing_values = proportion_missing_values,
+                 exclusion_column = exclusion_column,
+                 return_imputation_result = TRUE
+               )
+               if (is.data.frame(filter_result)) {
+                 filter_result <- list(
+                   data = filter_result,
+                   support_table = NULL,
+                   summary = list(status = "applied", skip_reason = NULL)
+                 )
+               }
+             }
 
-             imputed_value_column <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
-                                                           , "imputed_value_column"
-                                                           , NULL)
-
-             proportion_missing_values <- checkParamsObjectFunctionSimplifyAcceptNull( theObject
-                                                           , "proportion_missing_values"
-                                                           , NULL)
-
-             core_utilisation <- checkParamsObjectFunctionSimplify( theObject
-                                                           , "core_utilisation"
-                                                           , NA)
-
-             theObject <- updateParamInObject(theObject, "imputed_value_column")
-             theObject <- updateParamInObject(theObject, "proportion_missing_values")
-             theObject <- updateParamInObject(theObject, "core_utilisation")
-
-             peptide_values_imputed <- peptideMissingValueImputationHelper( input_table = peptide_data
-                                                                      , metadata_table = design_matrix
-                                                                      , quantity_to_impute_column = !!sym( raw_quantity_column )
-                                                                      , imputed_value_column = !!sym(imputed_value_column)
-                                                                      , core_utilisation = core_utilisation
-                                                                      , input_table_sample_id_column = !!sym( sample_id_column)
-                                                                      , sample_id_tbl_sample_id_column = !!sym( sample_id_column)
-                                                                      , replicate_group_column = !!sym( replicate_group_column)
-                                                                      , proportion_missing_values = proportion_missing_values )
-
-             theObject@peptide_data <- peptide_values_imputed
-
+             section$imputed_value_column <- imputed_value_column
+             section$proportion_missing_values <- as.numeric(proportion_missing_values)
+             section$core_utilisation <- core_utilisation
+             section$exclusion_column <- exclusion_column
+             section$hek_string <- hek_string
+             section$quantity_column <- theObject@raw_quantity_column
+             section$support_table <- filter_result$support_table
+             section$imputation_summary <- filter_result$summary
+             theObject@args$peptideMissingValueImputation <- section
+             theObject@peptide_data <- filter_result$data
              theObject <- cleanDesignMatrixPeptide(theObject)
-
              theObject
            })
 
@@ -590,22 +984,21 @@ setMethod(f="peptideMissingValueImputationLimpa"
             
             tryCatch({
               dpcfit <- limpa::dpc(y_peptide)
+
+              slope_interpretation <- if (dpcfit$dpc[2] < 0.3) {
+                "nearly random missing"
+              } else if (dpcfit$dpc[2] < 0.7) {
+                "moderate intensity-dependent missing"
+              } else if (dpcfit$dpc[2] < 1.2) {
+                "strong intensity-dependent missing"
+              } else {
+                "very strong intensity-dependent missing (approaching left-censoring)"
+              }
               
               if (verbose) {
                 log_info("DPC parameters estimated:")
                 log_info("  beta0 (intercept): {round(dpcfit$dpc[1], 4)}")
                 log_info("  beta1 (slope): {round(dpcfit$dpc[2], 4)}")
-                
-                # Interpret the slope
-                slope_interpretation <- if (dpcfit$dpc[2] < 0.3) {
-                  "nearly random missing"
-                } else if (dpcfit$dpc[2] < 0.7) {
-                  "moderate intensity-dependent missing"
-                } else if (dpcfit$dpc[2] < 1.2) {
-                  "strong intensity-dependent missing"
-                } else {
-                  "very strong intensity-dependent missing (approaching left-censoring)"
-                }
                 log_info("  Interpretation: {slope_interpretation}")
               }
               
@@ -639,19 +1032,15 @@ setMethod(f="peptideMissingValueImputationLimpa"
                 log_info("Converting imputed data back to original format...")
               }
               
-              # Create peptide IDs that match the matrix rownames
-              peptide_ids <- rownames(imputed_matrix)
-              
-              # Convert imputed matrix to long format
-              imputed_long <- imputed_matrix |>
-                as.data.frame() |>
-                tibble::rownames_to_column("peptide_id") |>
-                tidyr::pivot_longer(cols = -peptide_id, 
-                                   names_to = sample_id_column, 
-                                   values_to = imputed_value_column) |>
-                tidyr::separate(peptide_id, 
-                               into = c(theObject@protein_id_column, theObject@peptide_sequence_column), 
-                               sep = "%")
+              # Convert with the authoritative feature map; matrix row labels
+              # are never parsed as biological identifiers.
+              imputed_identity <- .peptideMatrixToIdentityLong(
+                theObject,
+                imputed_matrix,
+                imputed_value_column
+              )
+              theObject <- imputed_identity$theObject
+              imputed_long <- imputed_identity$data
               
               # Merge with original peptide data
               updated_peptide_data <- peptide_data |>
@@ -697,223 +1086,5 @@ setMethod(f="peptideMissingValueImputationLimpa"
             }, error = function(e) {
               log_error("Error during limpa imputation: {e$message}")
               stop(paste("limpa imputation failed:", e$message))
-            })
-          })
-
-
-# ----------------------------------------------------------------------------
-# proteinMissingValueImputationLimpa
-# ----------------------------------------------------------------------------
-#' Protein-Level Missing Value Imputation using limpa Package
-#'
-#' This function applies limpa's DPC-based missing value imputation directly to 
-#' protein-level quantification data. This is useful when you already have protein
-#' quantification data with missing values that need to be handled.
-#'
-#' @param theObject A ProteinQuantitativeData object with protein-level data
-#' @param dpc_results DPC results to use. If NULL, will estimate using dpc_slope
-#' @param dpc_slope Default DPC slope to use if no DPC results available (default: 0.8)
-#' @param quantified_protein_column Name for the column containing quantified protein values
-#' @param verbose Whether to print progress messages. Default is TRUE
-#' @param chunk When verbose=TRUE, how often to output progress information (default: 1000)
-#'
-#' @details
-#' This method treats each protein as a separate "feature" and applies DPC-based
-#' imputation using limpa's dpcImpute function. This is appropriate when you have
-#' protein-level data with missing values that follow intensity-dependent patterns.
-#'
-#' @return Updated ProteinQuantitativeData object with imputed protein values
-#'
-#' @export
-setMethod(f="proteinMissingValueImputationLimpa"
-          , signature="ProteinQuantitativeData"
-          , definition = function(theObject, 
-                                  dpc_results = NULL,
-                                  dpc_slope = 0.8,
-                                  quantified_protein_column = NULL,
-                                  verbose = TRUE,
-                                  chunk = 1000) {
-            
-            # Load required packages
-            if (!requireNamespace("limpa", quietly = TRUE)) {
-              stop("limpa package is required but not installed. Please install it using: BiocManager::install('limpa')")
-            }
-            
-            # Parameter validation and defaults
-            quantified_protein_column <- if (is.null(quantified_protein_column)) {
-              "Protein.Imputed.Limpa"
-            } else {
-              quantified_protein_column
-            }
-            
-            # Extract data from protein object
-            protein_quant_table <- theObject@protein_quant_table
-            protein_id_column <- theObject@protein_id_column
-            sample_id_column <- theObject@sample_id
-            design_matrix <- theObject@design_matrix
-            
-            if (verbose) {
-              log_info("Starting limpa-based protein-level missing value imputation...")
-            }
-            
-            # Convert to matrix format (proteins as rows, samples as columns)
-            # First, identify sample columns (exclude protein ID and other metadata)
-            sample_columns <- setdiff(colnames(protein_quant_table), 
-                                     c(protein_id_column, "description", "gene_name", 
-                                       "protein_name", "organism", "length"))
-            
-            if (verbose) {
-              log_info("Converting protein data to matrix format...")
-              log_info("Found {length(sample_columns)} sample columns")
-            }
-            
-            # Create protein matrix
-            protein_matrix <- protein_quant_table |>
-              dplyr::select(all_of(c(protein_id_column, sample_columns))) |>
-              tibble::column_to_rownames(protein_id_column) |>
-              as.matrix()
-            
-            if (verbose) {
-              log_info("Protein matrix dimensions: {nrow(protein_matrix)} proteins x {ncol(protein_matrix)} samples")
-              log_info("Missing value percentage: {round(100 * mean(is.na(protein_matrix)), 1)}%")
-            }
-            
-            # Check if we need log2 transformation
-            # Assume if max value > 50, data is not log2 transformed
-            max_val <- max(protein_matrix, na.rm = TRUE)
-            needs_log_transform <- max_val > 50
-            
-            if (needs_log_transform) {
-              if (verbose) {
-                log_info("Converting to log2 scale for limpa (max value: {round(max_val, 2)})...")
-              }
-              protein_matrix <- log2(protein_matrix + 1)
-            } else {
-              if (verbose) {
-                log_info("Data appears to be log2-scale already (max value: {round(max_val, 2)})")
-              }
-            }
-            
-            # Handle infinite or NaN values
-            if (any(is.infinite(protein_matrix) | is.nan(protein_matrix), na.rm = TRUE)) {
-              if (verbose) {
-                log_warn("Infinite or NaN values detected. Replacing with NA...")
-              }
-              protein_matrix[is.infinite(protein_matrix) | is.nan(protein_matrix)] <- NA
-            }
-            
-            # Get or estimate DPC parameters
-            dpc_params <- NULL
-            if (!is.null(dpc_results)) {
-              dpc_params <- dpc_results
-              if (verbose) {
-                log_info("Using provided DPC results")
-              }
-            } else {
-              if (verbose) {
-                log_info("Estimating DPC from protein data...")
-              }
-              tryCatch({
-                dpcfit <- limpa::dpc(protein_matrix)
-                dpc_params <- dpcfit
-                if (verbose) {
-                  log_info("DPC parameters estimated:")
-                  log_info("  beta0 (intercept): {round(dpcfit$dpc[1], 4)}")
-                  log_info("  beta1 (slope): {round(dpcfit$dpc[2], 4)}")
-                }
-              }, error = function(e) {
-                if (verbose) {
-                  log_warn("DPC estimation failed, using default slope: {dpc_slope}")
-                }
-                dpc_params <- NULL
-              })
-            }
-            
-            # Apply missing value imputation
-            if (verbose) {
-              log_info("Applying protein-level missing value imputation...")
-            }
-            
-            tryCatch({
-              # Apply dpcImpute to protein matrix
-              if (!is.null(dpc_params)) {
-                imputed_result <- limpa::dpcImpute(protein_matrix, dpc = dpc_params, verbose = verbose, chunk = chunk)
-              } else {
-                imputed_result <- limpa::dpcImpute(protein_matrix, dpc.slope = dpc_slope, verbose = verbose, chunk = chunk)
-              }
-              
-              if (verbose) {
-                log_info("Protein-level imputation completed successfully")
-                log_info("No missing values remaining: {!any(is.na(imputed_result$E))}")
-              }
-              
-              # Extract imputed matrix
-              imputed_matrix <- imputed_result$E
-              
-              # Transform back to original scale if necessary
-              if (needs_log_transform) {
-                if (verbose) {
-                  log_info("Converting back from log2 scale...")
-                }
-                imputed_matrix <- 2^imputed_matrix - 1
-                # Ensure no negative values
-                imputed_matrix[imputed_matrix < 0] <- 0
-              }
-              
-              # Convert back to long format
-              if (verbose) {
-                log_info("Converting imputed data back to original format...")
-              }
-              
-              imputed_long <- imputed_matrix |>
-                as.data.frame() |>
-                tibble::rownames_to_column(protein_id_column) |>
-                tidyr::pivot_longer(cols = -all_of(protein_id_column), 
-                                   names_to = sample_id_column, 
-                                   values_to = quantified_protein_column)
-              
-              # Merge with original protein data
-              updated_protein_data <- protein_quant_table |>
-                dplyr::left_join(imputed_long, by = c(protein_id_column, sample_id_column))
-              
-              # Update the object
-              theObject@protein_quant_table <- updated_protein_data
-              
-              # Store DPC results for future reference
-              if (is.null(theObject@args)) {
-                theObject@args <- list()
-              }
-              
-              theObject@args$limpa_protein_imputation_results <- list(
-                dpc_parameters_used = if (!is.null(dpc_params)) {
-                  if (is.list(dpc_params) && !is.null(dpc_params$dpc)) {
-                    dpc_params$dpc  # Extract parameters from DPC object
-                  } else if (is.numeric(dpc_params)) {
-                    dpc_params  # Already numeric parameters  
-                  } else {
-                    c(NA, dpc_slope)
-                  }
-                } else {
-                  c(NA, dpc_slope)
-                },
-                dpc_object_used = if (is.list(dpc_params) && !is.null(dpc_params$dpc)) dpc_params else NULL,
-                quantified_protein_column = quantified_protein_column,
-                missing_percentage_before = round(100 * mean(is.na(protein_matrix)), 1),
-                missing_percentage_after = 0,  # DPC imputation produces complete data
-                imputation_method = "limpa_dpc_protein_imputation",
-                total_proteins_imputed = nrow(imputed_matrix)
-              )
-              
-              if (verbose) {
-                log_info("limpa protein-level imputation completed successfully!")
-                log_info("New imputed column: {quantified_protein_column}")
-                log_info("DPC results stored in object@args$limpa_protein_imputation_results")
-              }
-              
-              return(theObject)
-              
-            }, error = function(e) {
-              log_error(paste("Error during limpa protein imputation:", e$message))
-              stop(paste("limpa protein imputation failed:", e$message))
             })
           })

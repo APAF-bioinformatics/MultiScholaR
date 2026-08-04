@@ -39,19 +39,32 @@ WorkflowState <- R6::R6Class("WorkflowState",
     #' @field state_history A character vector that logs the sequence of saved states.
     state_history = list(),
 
+    #' @field audit_records Immutable audit records keyed by record ID. Reverting
+    #'   changes the active lineage but deliberately does not delete these records.
+    audit_records = list(),
+
+    #' @field audit_enabled Logical; peptide-QC audit capture is additive and can
+    #'   be disabled without changing any scientific transformation.
+    audit_enabled = TRUE,
+
     #' @field workflow_type A character string indicating the type of workflow (e.g., "LFQ", "TMT").
     workflow_type = "LFQ",
 
     #' @description
     #' Initialize the WorkflowState object.
     #' Sets up the initial state.
-    initialize = function() {
+    initialize = function(audit_enabled = TRUE) {
+      self$states <- list()
+      self$state_history <- list()
+      self$audit_records <- list()
+      self$audit_enabled <- isTRUE(audit_enabled)
       self$current_state <- "initial"
       self$states[["initial"]] <- list(
         timestamp = Sys.time(),
         data = NULL,
         config = NULL,
-        description = "Initial empty state"
+        description = "Initial empty state",
+        audit_metadata = list(provenance_status = "legacy_or_not_applicable")
       )
       self$state_history <- append(self$state_history, "initial")
     },
@@ -62,7 +75,28 @@ WorkflowState <- R6::R6Class("WorkflowState",
     #' @param s4_data_object The S4 data object to save. A copy will be made.
     #' @param config_object A list containing the configuration parameters used to generate this state.
     #' @param description A character string describing the state.
-    saveState = function(state_name, s4_data_object, config_object, description) {
+    #' @param audit_metadata Optional additive audit record. Existing callers do
+    #'   not need to supply it; peptide objects carrying audit lineage are
+    #'   detected automatically.
+    saveState = function(state_name, s4_data_object, config_object, description,
+                         audit_metadata = NULL) {
+      if (isTRUE(self$audit_enabled) && is.null(audit_metadata) &&
+          base::isS4(s4_data_object) &&
+          "args" %in% methods::slotNames(s4_data_object) &&
+          is.list(s4_data_object@args$peptide_qc_audit)) {
+        audit_lineage <- s4_data_object@args$peptide_qc_audit
+        record_id <- audit_lineage$current_record_id
+        if (!is.null(record_id) && length(record_id) == 1L) {
+          matching <- Filter(
+            function(record) identical(record$record_id, record_id),
+            audit_lineage$records
+          )
+          if (length(matching) > 0L) audit_metadata <- matching[[1L]]
+        }
+      }
+      if (is.null(audit_metadata)) {
+        audit_metadata <- list(provenance_status = "legacy_or_not_applicable")
+      }
       # Due to R's copy-on-modify semantics for S4, assigning the object
       # to the list creates an independent copy.
       self$states[[state_name]] <- list(
@@ -71,8 +105,12 @@ WorkflowState <- R6::R6Class("WorkflowState",
         config = config_object,
         description = description,
         previous_state = self$current_state,
-        s4_class = class(s4_data_object)[1]
+        s4_class = class(s4_data_object)[1],
+        audit_metadata = audit_metadata
       )
+      if (is.list(audit_metadata) && !is.null(audit_metadata$record_id)) {
+        self$audit_records[[audit_metadata$record_id]] <- audit_metadata
+      }
       # Add to history only if it's a new state
       if (!state_name %in% self$state_history) {
           self$state_history <- append(self$state_history, state_name)
@@ -112,6 +150,23 @@ WorkflowState <- R6::R6Class("WorkflowState",
     getHistory = function() {
       return(unlist(self$state_history))
     },
+
+    #' @description Return the audit metadata associated with a state.
+    #' @param state_name State to inspect; defaults to the active state.
+    getStateAudit = function(state_name = NULL) {
+      if (is.null(state_name)) state_name <- self$current_state
+      metadata <- self$states[[state_name]]$audit_metadata
+      if (is.null(metadata)) {
+        return(list(provenance_status = "legacy_untracked_state"))
+      }
+      metadata
+    },
+
+    #' @description Return all immutable audit records, including records from
+    #'   branches that are no longer active after a revert.
+    getAuditRecords = function() {
+      self$audit_records
+    },
     
     #' @description
     #' Set the workflow type for the session.
@@ -137,4 +192,3 @@ WorkflowState <- R6::R6Class("WorkflowState",
     }
   )
 )
-

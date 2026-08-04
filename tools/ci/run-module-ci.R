@@ -3,6 +3,7 @@
 default_args <- list(
   omic = NULL,
   module = NULL,
+  modules = NULL,
   runtime = "unit-contract",
   scenario = NULL,
   reporter = "summary",
@@ -17,6 +18,7 @@ usage <- function() {
       "Options:",
       "  --omic <all|proteomics|metabolomics|lipidomics>",
       "  --module <all|foundation|fixtures|import|design|qc|qc_peptide|qc_protein|normalization|differential_abundance|enrichment|summary_report|cross_module_integrity|ci_release_gate|browser|e2e>",
+      "  --modules <proteomics-peptide-qc>  Compatibility alias for a named module lane",
       "  --runtime <unit-contract|module-browser|module-artifact|workflow-e2e|release-full>",
       "  --scenario <scenario_id_or_pack_id>",
       "  --reporter <testthat_reporter>",
@@ -60,6 +62,13 @@ parse_args <- function(argv) {
       args[[key]] <- argv[[idx]]
     }
     idx <- idx + 1L
+  }
+  if (!is.null(args$modules)) {
+    if (!identical(args$modules, "proteomics-peptide-qc")) {
+      stop(sprintf("Unknown named module lane: %s", args$modules), call. = FALSE)
+    }
+    args$omic <- "proteomics"
+    args$module <- "qc_peptide"
   }
   args
 }
@@ -195,7 +204,11 @@ tests_for_selection <- function(scenarios) {
     if (any(vapply(scenarios, function(scenario) {
       identical(scenario$module, "qc_peptide") && identical(scenario$omic, "proteomics")
     }, logical(1)))) {
-      tests <- c(tests, "module-ci-prot-peptide-qc")
+      tests <- c(
+        tests,
+        "module-ci-prot-peptide-qc",
+        "prot-02h-peptide-audit-shared"
+      )
     }
   }
   if ("qc_protein" %in% modules) {

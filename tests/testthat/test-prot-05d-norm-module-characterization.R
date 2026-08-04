@@ -241,6 +241,70 @@ test_that("ProteinQuantitativeData chooseBestProteinAccession covers accession c
   expect_true("Protein.Ids_list" %in% names(cleaned@protein_id_table))
 })
 
+test_that("protein accession cleanup preserves DIA Protein.Group quantification", {
+  protein_object <- methods::new(
+    "ProteinQuantitativeData",
+    protein_quant_table = data.frame(
+      Protein.Group = c("GROUP_ONE", "GROUP_TWO"),
+      S1 = c(10, 20),
+      S2 = c(11, 21),
+      stringsAsFactors = FALSE
+    ),
+    design_matrix = data.frame(
+      Run = c("S1", "S2"),
+      group = c("A", "B"),
+      stringsAsFactors = FALSE
+    ),
+    sample_id = "Run",
+    group_id = "group",
+    protein_id_column = "Protein.Group",
+    protein_id_table = data.frame(
+      Protein.Group = c("GROUP_ONE", "GROUP_ONE", "GROUP_TWO"),
+      Protein.Ids = c("P_SHARED", "P_ALPHA", "P_SHARED"),
+      stringsAsFactors = FALSE
+    ),
+    args = list(chooseBestProteinAccession = list())
+  )
+
+  method_env <- environment(methods::selectMethod("chooseBestProteinAccession", "ProteinQuantitativeData")@.Data)
+  local_mocked_bindings(
+    chooseBestProteinAccessionHelper = function(input_tbl,
+                                                acc_detail_tab,
+                                                accessions_column,
+                                                row_id_column,
+                                                group_id,
+                                                delim) {
+      data.frame(
+        Protein.Group = c("GROUP_ONE", "GROUP_TWO"),
+        uniprot_acc = c("P_ALPHA", "P_SHARED"),
+        stringsAsFactors = FALSE
+      )
+    },
+    .env = method_env
+  )
+
+  original_quant <- protein_object@protein_quant_table
+  accession_method <- methods::selectMethod("chooseBestProteinAccession", "ProteinQuantitativeData")
+  cleaned <- accession_method(
+    protein_object,
+    delim = ";",
+    seqinr_obj = data.frame(uniprot_acc = c("P_SHARED", "P_ALPHA")),
+    seqinr_accession_column = "uniprot_acc",
+    replace_zero_with_na = FALSE,
+    aggregation_method = "mean"
+  )
+
+  expect_identical(cleaned@protein_id_column, "Protein.Group")
+  expect_identical(cleaned@protein_quant_table, original_quant)
+  expect_identical(names(cleaned@protein_id_table)[1], "Protein.Group")
+  expect_equal(nrow(cleaned@protein_id_table), 3L)
+  expect_setequal(cleaned@protein_id_table$Protein.Ids, c("P_SHARED", "P_ALPHA"))
+  expect_identical(
+    cleaned@args$protein_accession_cleanup$quantitative_groups_merged,
+    FALSE
+  )
+})
+
 test_that("createGridQC GridPlotData method assembles plot sections and save path", {
   grid <- methods::new(
     "GridPlotData",

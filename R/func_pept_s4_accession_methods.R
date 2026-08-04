@@ -8,6 +8,14 @@ setMethod(f = "chooseBestProteinAccession"
 
             peptide_data <- theObject@peptide_data
             protein_id_column <- theObject@protein_id_column
+            accession_column <- if (
+              !identical(protein_id_column, "Protein.Ids") &&
+                "Protein.Ids" %in% names(peptide_data)
+            ) {
+              "Protein.Ids"
+            } else {
+              protein_id_column
+            }
             is_logged <- theObject@is_logged_data
             verbose <- TRUE # Assuming verbose is desired, can be made a parameter
 
@@ -45,17 +53,24 @@ setMethod(f = "chooseBestProteinAccession"
             # --- Map Old to New IDs ---
             accession_mapping <- chooseBestProteinAccessionHelper(input_tbl = peptide_data,
                                                                   acc_detail_tab = seqinr_obj,
-                                                                  accessions_column = !!sym(protein_id_column),
+                                                                  accessions_column = !!sym(accession_column),
                                                                   row_id_column = seqinr_accession_column,
                                                                   group_id = !!sym(protein_id_column),
                                                                   delim = delim)
 
-            # --- Update Protein IDs ---
+            # --- Update accession annotation without replacing a DIA-NN group key ---
+            mapping_columns <- accession_mapping |>
+              dplyr::select(
+                !!sym(protein_id_column),
+                !!sym(seqinr_accession_column)
+              )
             updated_peptide_data <- peptide_data |>
-              dplyr::left_join(accession_mapping |> dplyr::select(!!sym(protein_id_column), !!sym(seqinr_accession_column)),
-                               by = setNames(protein_id_column, protein_id_column)) |>
-              dplyr::select(-!!sym(protein_id_column)) |>
-              dplyr::rename(!!sym(protein_id_column) := !!sym(seqinr_accession_column))
+              dplyr::left_join(
+                mapping_columns,
+                by = setNames(protein_id_column, protein_id_column)
+              ) |>
+              dplyr::select(-!!sym(accession_column)) |>
+              dplyr::rename(!!sym(accession_column) := !!sym(seqinr_accession_column))
 
             # --- Aggregate Duplicates ---
             if (verbose) {

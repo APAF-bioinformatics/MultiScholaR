@@ -24,14 +24,22 @@ getProtPeptideIntensityServer <- function() {
 makeSharedPeptideIntensityState <- function(groupwise = 1,
                                             max_groups = 2,
                                             cutoff = 0.5,
-                                            proteins = "P0") {
+                                            proteins = "P0",
+                                            min_reps = 2L,
+                                            min_groups = 2L,
+                                            strict_mode = FALSE,
+                                            filter_summary = NULL) {
   methods::new(
     "FakeSharedPeptideIntensityState",
     args = list(
       peptideIntensityFiltering = list(
         groupwise_percentage_cutoff = groupwise,
         max_groups_percentage_cutoff = max_groups,
-        peptides_intensity_cutoff_percentile = cutoff
+        peptides_intensity_cutoff_percentile = cutoff,
+        min_reps_per_group = min_reps,
+        min_groups = min_groups,
+        strict_mode = strict_mode,
+        filter_summary = filter_summary
       )
     ),
     peptide_data = data.frame(
@@ -160,8 +168,9 @@ withSharedPeptideIntensityPackageMocks <- function(server_env, captured, filtere
       updated_args[[function_name]][[parameter_name]] <- new_value
       copySharedPeptideIntensityState(theObject, args = updated_args)
     },
-    peptideIntensityFiltering = function(theObject) {
+    peptideIntensityFiltering = function(theObject, ...) {
       captured$filter_input <- theObject
+      captured$filter_args <- list(...)
       filtered_state
     },
     .env = mock_frame
@@ -272,7 +281,15 @@ test_that("proteomics peptide intensity module preserves flexible apply behavior
     groupwise = 12.345,
     max_groups = 67.89,
     cutoff = 1.5,
-    proteins = c("P1", "P1", "P2")
+    proteins = c("P1", "P1", "P2"),
+    min_reps = 2L,
+    min_groups = 3L,
+    filter_summary = list(
+      intensity_threshold = 42,
+      intensity_quantity_column = "Peptide.Normalised",
+      retained_feature_count = 7L,
+      removed_feature_count = 2L
+    )
   )
 
   withSharedPeptideIntensityPackageMocks(server_env, captured, filtered_state)
@@ -296,29 +313,32 @@ test_that("proteomics peptide intensity module preserves flexible apply behavior
     experiment_label = "DIA Experiment"
   )
 
-  expect_length(captured$missing_updates, 3L)
-  expect_identical(captured$missing_updates[[1L]]$function_name, "peptideIntensityFiltering")
-  expect_identical(captured$missing_updates[[1L]]$grouping_variable, "group")
-  expect_identical(captured$missing_updates[[1L]]$min_reps_per_group, 2)
-  expect_identical(captured$missing_updates[[1L]]$min_groups, 3)
-  expect_length(captured$config_updates, 1L)
+  expect_length(captured$missing_updates, 0L)
+  expect_length(captured$config_updates, 4L)
   expect_identical(
-    captured$config_updates[[1L]]$parameter_name,
-    "peptides_intensity_cutoff_percentile"
+    vapply(captured$config_updates, `[[`, character(1), "parameter_name"),
+    c("strict_mode", "min_reps_per_group", "min_groups", "peptides_intensity_cutoff_percentile")
   )
-  expect_equal(captured$config_updates[[1L]]$new_value, 1.5)
-  expect_identical(
-    captured$filter_input@args$peptideIntensityFiltering$groupwise_percentage_cutoff,
-    12.345
+  expect_equal(
+    vapply(captured$config_updates, `[[`, numeric(1), "new_value"),
+    c(0, 2, 3, 1.5)
   )
   expect_identical(
-    captured$filter_input@args$peptideIntensityFiltering$max_groups_percentage_cutoff,
-    67.89
+    captured$filter_input@args$peptideIntensityFiltering$min_reps_per_group,
+    2
+  )
+  expect_identical(
+    captured$filter_input@args$peptideIntensityFiltering$min_groups,
+    3
   )
   expect_equal(
     captured$filter_input@args$peptideIntensityFiltering$peptides_intensity_cutoff_percentile,
     1.5
   )
+  expect_identical(captured$filter_args$grouping_variable, "group")
+  expect_identical(captured$filter_args$min_reps_per_group, 2)
+  expect_identical(captured$filter_args$min_groups, 3)
+  expect_false(captured$filter_args$strict_mode)
   expect_false(workflow_data$qc_params$peptide_qc$intensity_filter$strict_mode)
   expect_identical(workflow_data$qc_params$peptide_qc$intensity_filter$min_reps_per_group, 2)
   expect_identical(workflow_data$qc_params$peptide_qc$intensity_filter$min_groups, 3)
@@ -326,6 +346,8 @@ test_that("proteomics peptide intensity module preserves flexible apply behavior
   expect_identical(captured$save_state$state_name, "intensity_filtered")
   expect_identical(captured$save_state$s4_data_object, filtered_state)
   expect_false(captured$save_state$config_object$strict_mode)
+  expect_identical(captured$save_state$config_object$min_reps_per_group, 2)
+  expect_identical(captured$save_state$config_object$min_groups, 3)
   expect_equal(captured$save_state$config_object$intensity_cutoff_percentile, 1.5)
   expect_identical(captured$save_state$description, "Applied FLEXIBLE peptide intensity filter")
   expect_identical(captured$plot_update$step_name, "5_intensity_filtered")
@@ -333,10 +355,11 @@ test_that("proteomics peptide intensity module preserves flexible apply behavior
   expect_identical(captured$plot_update$experiment_label, "DIA Experiment")
   expect_true(captured$plot_update$return_grid)
   expect_true(captured$plot_update$overwrite)
-  expect_identical(captured$output$calculated_groupwise_percent, "Groupwise % cutoff: 12.345%")
-  expect_identical(captured$output$calculated_max_groups_percent, "Max groups % cutoff: 67.890%")
+  expect_identical(captured$output$calculated_groupwise_percent, "Group passes: >= 2 distinct observed runs")
+  expect_identical(captured$output$calculated_max_groups_percent, "Peptide passes: >= 3 biological groups")
   expect_match(captured$output$intensity_results, "Mode: FLEXIBLE", fixed = TRUE)
   expect_match(captured$output$intensity_results, "Proteins remaining: 2", fixed = TRUE)
+  expect_match(captured$output$intensity_results, "Executed threshold: 42 from Peptide.Normalised", fixed = TRUE)
   expect_identical(captured$output$intensity_plot, "rendered-plot")
   expect_identical(captured$drawn_plot, "plot-token")
   expect_identical(captured$removed_notifications, "intensity_working")
@@ -356,7 +379,10 @@ test_that("proteomics peptide intensity module preserves strict apply behavior",
     groupwise = 0,
     max_groups = 0,
     cutoff = 2.5,
-    proteins = c("P1", "P2", "P3")
+    proteins = c("P1", "P2", "P3"),
+    min_reps = 4L,
+    min_groups = 5L,
+    strict_mode = TRUE
   )
 
   withSharedPeptideIntensityPackageMocks(server_env, captured, filtered_state)
@@ -384,23 +410,25 @@ test_that("proteomics peptide intensity module preserves strict apply behavior",
   expect_identical(
     vapply(captured$config_updates, `[[`, character(1), "parameter_name"),
     c(
-      "groupwise_percentage_cutoff",
-      "max_groups_percentage_cutoff",
+      "strict_mode",
+      "min_reps_per_group",
+      "min_groups",
       "peptides_intensity_cutoff_percentile"
     )
   )
   expect_equal(
     vapply(captured$config_updates, `[[`, numeric(1), "new_value"),
-    c(0, 0, 2.5)
+    c(1, 4, 5, 2.5)
   )
   expect_identical(
-    captured$filter_input@args$peptideIntensityFiltering$groupwise_percentage_cutoff,
-    0
+    captured$filter_input@args$peptideIntensityFiltering$strict_mode,
+    TRUE
   )
   expect_identical(
-    captured$filter_input@args$peptideIntensityFiltering$max_groups_percentage_cutoff,
-    0
+    captured$filter_input@args$peptideIntensityFiltering$min_reps_per_group,
+    4
   )
+  expect_true(captured$filter_args$strict_mode)
   expect_true(workflow_data$qc_params$peptide_qc$intensity_filter$strict_mode)
   expect_true(is.na(workflow_data$qc_params$peptide_qc$intensity_filter$min_reps_per_group))
   expect_true(is.na(workflow_data$qc_params$peptide_qc$intensity_filter$min_groups))
@@ -423,7 +451,7 @@ test_that("proteomics peptide intensity module preserves apply error behavior", 
   )
   mock_frame <- environment()
   testthat::local_mocked_bindings(
-    peptideIntensityFiltering = function(theObject) {
+    peptideIntensityFiltering = function(theObject, ...) {
       captured$filter_input <- theObject
       stop("mock intensity failure")
     },

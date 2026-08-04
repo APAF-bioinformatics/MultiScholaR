@@ -83,6 +83,11 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData",
       stop("Protein ID column must be in the protein data table")
     }
 
+    if (ncol(object@protein_id_table) > 0L &&
+        !object@protein_id_column %in% colnames(object@protein_id_table)) {
+      stop("Protein ID column must be in the protein ID/provenance table")
+    }
+
 
     if (!object@sample_id %in% colnames(object@design_matrix)) {
       stop("Sample ID column must be in the design matrix")
@@ -96,11 +101,48 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData",
     samples_in_design_matrix <- object@design_matrix |> dplyr::pull(!!sym(object@sample_id))
 
 
-    if (length(which(sort(samples_in_protein_quant_table) != sort(samples_in_design_matrix))) > 0) {
+    if (!setequal(
+      as.character(samples_in_protein_quant_table),
+      as.character(samples_in_design_matrix)
+    )) {
       stop("Samples in protein data and design matrix must be the same")
     }
   }
 )
+
+.proteinIdTableFromPeptideLineage <- function(peptideS4, quantifiedProteinIds) {
+  proteinColumn <- peptideS4@protein_id_column
+  quantifiedIds <- data.frame(
+    value = as.character(quantifiedProteinIds),
+    stringsAsFactors = FALSE
+  )
+  names(quantifiedIds) <- proteinColumn
+  quantifiedIds <- quantifiedIds[!duplicated(quantifiedIds), , drop = FALSE]
+
+  provenance <- NULL
+  if (is.list(peptideS4@args)) {
+    provenance <- peptideS4@args$protein_accession_provenance
+  }
+  requiredProvenance <- unique(c(proteinColumn, "Protein.Ids"))
+  if (!is.data.frame(provenance) ||
+      !all(requiredProvenance %in% names(provenance))) {
+    availableProvenance <- requiredProvenance[
+      requiredProvenance %in% names(peptideS4@peptide_data)
+    ]
+    provenance <- peptideS4@peptide_data[, availableProvenance, drop = FALSE]
+  } else {
+    provenance <- provenance[, requiredProvenance, drop = FALSE]
+  }
+
+  if (!proteinColumn %in% names(provenance)) {
+    return(quantifiedIds)
+  }
+  for (column in names(provenance)) {
+    provenance[[column]] <- as.character(provenance[[column]])
+  }
+  provenance <- provenance[!duplicated(provenance), , drop = FALSE]
+  dplyr::left_join(quantifiedIds, provenance, by = proteinColumn)
+}
 
 setMethod(
   "initialize", "ProteinQuantitativeData",

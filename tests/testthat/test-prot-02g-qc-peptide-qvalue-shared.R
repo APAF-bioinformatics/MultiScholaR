@@ -86,6 +86,18 @@ newSharedPeptideQvalueCapture <- function() {
   captured
 }
 
+test_that("DIA-NN confidence UI presents fixed named criteria", {
+  html <- as.character(mod_prot_qc_peptide_qvalue_ui("qvalue-test"))
+
+  expect_match(html, "Run-specific precursor Q.Value", fixed = TRUE)
+  expect_match(html, "Global precursor Global.Q.Value", fixed = TRUE)
+  expect_match(html, "Global protein-group Global.PG.Q.Value", fixed = TRUE)
+  expect_match(html, "≤ 0.01 (fixed)", fixed = TRUE)
+  expect_false(grepl("qvalue-test-qvalue_threshold", html, fixed = TRUE))
+  expect_false(grepl("qvalue-test-global_qvalue_threshold", html, fixed = TRUE))
+  expect_false(grepl("qvalue-test-proteotypic_only", html, fixed = TRUE))
+})
+
 localSharedPeptideQvalueBinding <- function(env, name, value, .local_envir = parent.frame()) {
   target_env <- env
   while (!identical(target_env, emptyenv()) &&
@@ -264,7 +276,7 @@ test_that("proteomics peptide qvalue module preserves successful apply behavior"
   filtered_state <- makeSharedPeptideQvalueState(
     ids = c("Run", "Precursor.Id", "Intensity"),
     qvalue = 0.01,
-    global_qvalue = 0.02,
+    global_qvalue = 0.01,
     proteotypic = 1,
     proteins = c("P1", "P1", "P2")
   )
@@ -304,33 +316,42 @@ test_that("proteomics peptide qvalue module preserves successful apply behavior"
     c(
       "qvalue_threshold",
       "global_qvalue_threshold",
-      "choose_only_proteotypic_peptide"
+      "global_pg_qvalue_threshold",
+      "choose_only_proteotypic_peptide",
+      "confidence_provenance_mode"
     )
   )
-  expect_equal(
-    vapply(captured$config_updates, `[[`, numeric(1), "new_value"),
-    c(0.01, 0.02, 1)
-  )
+  expect_identical(captured$config_updates[[1]]$new_value, 0.01)
+  expect_identical(captured$config_updates[[2]]$new_value, 0.01)
+  expect_identical(captured$config_updates[[3]]$new_value, 0.01)
+  expect_identical(captured$config_updates[[4]]$new_value, 1)
+  expect_identical(captured$config_updates[[5]]$new_value, "diann_main_report")
   expect_identical(
     captured$filter_input@args$srlQvalueProteotypicPeptideClean$qvalue_threshold,
     0.01
   )
   expect_identical(
     captured$filter_input@args$srlQvalueProteotypicPeptideClean$global_qvalue_threshold,
-    0.02
+    0.01
+  )
+  expect_identical(
+    captured$filter_input@args$srlQvalueProteotypicPeptideClean$global_pg_qvalue_threshold,
+    0.01
   )
   expect_identical(
     captured$filter_input@args$srlQvalueProteotypicPeptideClean$choose_only_proteotypic_peptide,
     1
   )
   expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$qvalue_threshold, 0.01)
-  expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$global_qvalue_threshold, 0.02)
+  expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$global_qvalue_threshold, 0.01)
+  expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$global_pg_qvalue_threshold, 0.01)
   expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$proteotypic_only, TRUE)
   expect_s3_class(workflow_data$qc_params$peptide_qc$qvalue_filter$timestamp, "POSIXct")
   expect_identical(captured$save_state$state_name, "qvalue_filtered")
   expect_identical(captured$save_state$s4_data_object, filtered_state)
   expect_identical(captured$save_state$config_object$qvalue_threshold, 0.01)
-  expect_identical(captured$save_state$config_object$global_qvalue_threshold, 0.02)
+  expect_identical(captured$save_state$config_object$global_qvalue_threshold, 0.01)
+  expect_identical(captured$save_state$config_object$global_pg_qvalue_threshold, 0.01)
   expect_identical(captured$save_state$config_object$proteotypic_only, TRUE)
   expect_identical(
     captured$save_state$description,
@@ -342,9 +363,10 @@ test_that("proteomics peptide qvalue module preserves successful apply behavior"
   expect_true(captured$plot_update$return_grid)
   expect_true(captured$plot_update$overwrite)
   expect_match(captured$output$qvalue_results, "Proteins remaining: 2", fixed = TRUE)
-  expect_match(captured$output$qvalue_results, "Q-value threshold: 0.01", fixed = TRUE)
-  expect_match(captured$output$qvalue_results, "Global Q-value threshold: 0.02", fixed = TRUE)
-  expect_match(captured$output$qvalue_results, "Proteotypic only: TRUE", fixed = TRUE)
+  expect_match(captured$output$qvalue_results, "Run-specific precursor Q.Value threshold: 0.01", fixed = TRUE)
+  expect_match(captured$output$qvalue_results, "Global precursor Global.Q.Value threshold: 0.01", fixed = TRUE)
+  expect_match(captured$output$qvalue_results, "Global protein-group Global.PG.Q.Value threshold: 0.01", fixed = TRUE)
+  expect_match(captured$output$qvalue_results, "Proteotypic == 1: TRUE", fixed = TRUE)
   expect_identical(captured$output$qvalue_plot, "rendered-plot")
   expect_identical(captured$drawn_plot, "plot-token")
   expect_identical(captured$removed_notifications, "qvalue_working")

@@ -4,7 +4,8 @@ library(testthat)
 if (!methods::isClass("FakeSharedPeptideRollupState")) {
   methods::setClass(
     "FakeSharedPeptideRollupState",
-    slots = c(peptide_data = "data.frame")
+    slots = c(peptide_data = "data.frame", args = "list"),
+    prototype = list(args = list())
   )
 }
 
@@ -22,7 +23,12 @@ getProtPeptideRollupServer <- function() {
 }
 
 makeSharedPeptideRollupState <- function(proteins = c("P0", "P0"),
-                                         peptides = c("PEP_A", "PEP_B")) {
+                                         peptides = c("PEP_A", "PEP_B"),
+                                         rollup_summary = NULL) {
+  state_args <- list()
+  if (!is.null(rollup_summary)) {
+    state_args$rollUpPrecursorToPeptide$rollup_summary <- rollup_summary
+  }
   methods::new(
     "FakeSharedPeptideRollupState",
     peptide_data = data.frame(
@@ -30,7 +36,25 @@ makeSharedPeptideRollupState <- function(proteins = c("P0", "P0"),
       Stripped.Sequence = peptides,
       Intensity = seq_along(proteins) * 10,
       stringsAsFactors = FALSE
-    )
+    ),
+    args = state_args
+  )
+}
+
+makeSharedPeptideRollupSummary <- function() {
+  list(
+    aggregation_rule = "linear_sum_modified_unmodified_and_charge_states",
+    active_protein_key = "Protein.Group",
+    precursor_identity_mode = "declared_precursor_id",
+    input_precursor_rows = 8L,
+    unique_precursor_identities = 8L,
+    output_stripped_peptide_identities = 3L,
+    raw_partial_missing_outputs = 1L,
+    raw_all_missing_outputs = 0L,
+    normalised_partial_missing_outputs = 0L,
+    normalised_all_missing_outputs = 1L,
+    frozen_identification_evidence = "preserved",
+    protein_ids_provenance = "preserved"
   )
 }
 
@@ -221,9 +245,11 @@ test_that("mod_prot_qc_peptide_rollup_server preserves successful apply behavior
   server_fn <- getProtPeptideRollupServer()
   server_env <- environment(server_fn)
   current_state <- makeSharedPeptideRollupState()
+  rollup_summary <- makeSharedPeptideRollupSummary()
   rolled_up_state <- makeSharedPeptideRollupState(
     proteins = c("P1", "P1", "P2"),
-    peptides = c("PEP_A", "PEP_B", "PEP_C")
+    peptides = c("PEP_A", "PEP_B", "PEP_C"),
+    rollup_summary = rollup_summary
   )
 
   withSharedPeptideRollupPackageMocks(server_env, captured, rolled_up_state)
@@ -248,7 +274,8 @@ test_that("mod_prot_qc_peptide_rollup_server preserves successful apply behavior
   expect_s3_class(workflow_data$qc_params$peptide_qc$precursor_rollup$timestamp, "POSIXct")
   expect_identical(captured$save_state$state_name, "precursor_rollup")
   expect_identical(captured$save_state$s4_data_object, rolled_up_state)
-  expect_identical(captured$save_state$config_object, list())
+  expect_identical(captured$save_state$config_object, list(rollup_summary = rollup_summary))
+  expect_identical(workflow_data$qc_params$peptide_qc$precursor_rollup$summary, rollup_summary)
   expect_identical(
     captured$save_state$description,
     "Applied precursor to peptide rollup"
@@ -259,6 +286,8 @@ test_that("mod_prot_qc_peptide_rollup_server preserves successful apply behavior
   expect_true(captured$plot_update$return_grid)
   expect_true(captured$plot_update$overwrite)
   expect_match(captured$output$rollup_results, "Proteins remaining: 2", fixed = TRUE)
+  expect_match(captured$output$rollup_results, "Input precursor rows: 8", fixed = TRUE)
+  expect_match(captured$output$rollup_results, "Raw partial/all-missing outputs: 1 / 0", fixed = TRUE)
   expect_match(captured$output$rollup_results, "State saved as: 'precursor_rollup'", fixed = TRUE)
   expect_identical(captured$output$rollup_plot, "rendered-plot")
   expect_identical(captured$drawn_plot, "plot-token")

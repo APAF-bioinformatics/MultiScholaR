@@ -34,7 +34,11 @@ test_that("readConfigFile normalizes parsed config entries and forwards file_typ
         ),
         peptideIntensityFiltering = list(
           peptides_intensity_cutoff_percentile = "0.2",
-          peptides_proportion_of_samples_below_cutoff = "0.6"
+          peptides_proportion_of_samples_below_cutoff = "0.6",
+          min_reps_per_group = "2",
+          min_groups = "3",
+          strict_mode = "0",
+          peptide_quantity_column = "Precursor.Normalised"
         ),
         filterMinNumPeptidesPerProtein = list(
           peptides_per_protein_cutoff = "2",
@@ -45,7 +49,8 @@ test_that("readConfigFile normalizes parsed config entries and forwards file_typ
           inclusion_list = "control,treated"
         ),
         peptideMissingValueImputation = list(
-          proportion_missing_values = "0.15"
+          proportion_missing_values = "0.15",
+          exclusion_column = "exclude_imputation"
         ),
         removeRowsWithMissingValuesPercent = list(
           groupwise_percentage_cutoff = "0.25",
@@ -110,9 +115,17 @@ test_that("readConfigFile normalizes parsed config entries and forwards file_typ
   )
   expect_equal(config_list$srlQvalueProteotypicPeptideClean$qvalue_threshold, 0.01)
   expect_equal(config_list$srlQvalueProteotypicPeptideClean$global_qvalue_threshold, 0.05)
+  expect_equal(config_list$srlQvalueProteotypicPeptideClean$global_pg_qvalue_threshold, 0.01)
   expect_equal(config_list$srlQvalueProteotypicPeptideClean$choose_only_proteotypic_peptide, 1)
   expect_equal(config_list$peptideIntensityFiltering$peptides_intensity_cutoff_percentile, 0.2)
   expect_equal(config_list$peptideIntensityFiltering$peptides_proportion_of_samples_below_cutoff, 0.6)
+  expect_equal(config_list$peptideIntensityFiltering$min_reps_per_group, 2)
+  expect_equal(config_list$peptideIntensityFiltering$min_groups, 3)
+  expect_false(config_list$peptideIntensityFiltering$strict_mode)
+  expect_identical(
+    config_list$peptideIntensityFiltering$peptide_quantity_column,
+    "Precursor.Normalised"
+  )
   expect_equal(config_list$filterMinNumPeptidesPerProtein$peptides_per_protein_cutoff, 2)
   expect_equal(config_list$filterMinNumPeptidesPerProtein$peptidoforms_per_protein_cutoff, 3)
   expect_equal(config_list$filterMinNumPeptidesPerSample$peptides_per_sample_cutoff, 3)
@@ -121,6 +134,10 @@ test_that("readConfigFile normalizes parsed config entries and forwards file_typ
     c("control", "treated")
   )
   expect_equal(config_list$peptideMissingValueImputation$proportion_missing_values, 0.15)
+  expect_identical(
+    config_list$peptideMissingValueImputation$exclusion_column,
+    "exclude_imputation"
+  )
   expect_equal(config_list$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff, 0.25)
   expect_equal(config_list$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff, 0.5)
   expect_equal(config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile, 0.1)

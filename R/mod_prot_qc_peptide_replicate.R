@@ -32,9 +32,9 @@ mod_prot_qc_peptide_replicate_ui <- function(id) {
     shiny::br(),
     shiny::fluidRow(
       shiny::column(4,
-        shiny::wellPanel(
+          shiny::wellPanel(
           shiny::h4("Remove Single-Replicate Peptides"),
-          shiny::p("Remove peptides that appear in only one replicate across all groups."),
+          shiny::p("Retain a protein-group/stripped-peptide identity when any declared replicate group contains at least two distinct observed runs."),
           shiny::hr(),
           
           shiny::textInput(ns("replicate_group_column"), 
@@ -42,7 +42,7 @@ mod_prot_qc_peptide_replicate_ui <- function(id) {
             value = "replicates",
             width = "100%"
           ),
-          shiny::helpText("Column name for grouping replicates (default: 'replicates')"),
+          shiny::helpText("Singleton observations in other groups remain when the feature is supported in at least one group (default column: 'replicates')."),
           
           shiny::hr(),
           shiny::div(
@@ -114,6 +114,13 @@ runPeptideReplicateRevertObserver <- function(workflowData,
   })
 }
 
+.peptideReplicateSummaryFromObject <- function(object) {
+  if (!base::isS4(object) || !"args" %in% methods::slotNames(object)) {
+    return(NULL)
+  }
+  object@args$removePeptidesWithOnlyOneReplicate$filter_summary
+}
+
 runPeptideReplicateApplyStep <- function(workflowData,
                                          replicateGroupColumn,
                                          removePeptidesWithOnlyOneReplicateFn = removePeptidesWithOnlyOneReplicate,
@@ -132,6 +139,7 @@ runPeptideReplicateApplyStep <- function(workflowData,
     currentS4,
     replicate_group_column = replicateGroupColumn
   )
+  filterSummary <- .peptideReplicateSummaryFromObject(filteredS4)
 
   if (is.null(workflowData$qc_params)) {
     workflowData$qc_params <- list()
@@ -142,16 +150,26 @@ runPeptideReplicateApplyStep <- function(workflowData,
 
   workflowData$qc_params$peptide_qc$replicate_filter <- list(
     replicate_group_column = replicateGroupColumn,
+    minimum_distinct_runs = 2L,
+    retention_policy = "supported_in_any_group",
+    filter_summary = filterSummary,
     timestamp = nowFn()
   )
 
-  workflowData$state_manager$saveState(
+  filteredS4 <- .savePeptideQcState(
+    state_manager = workflowData$state_manager,
+    before = currentS4,
+    after = filteredS4,
+    stage_id = "replicate_filter",
     state_name = "replicate_filtered",
-    s4_data_object = filteredS4,
     config_object = list(
-      replicate_group_column = replicateGroupColumn
+      replicate_group_column = replicateGroupColumn,
+      minimum_distinct_runs = 2L,
+      retention_policy = "supported_in_any_group",
+      filter_summary = filterSummary
     ),
-    description = "Applied replicate filter (removed single-replicate peptides)"
+    description = "Applied distinct-run replicate support filter (supported in any group)",
+    now = nowFn()
   )
 
   proteinCount <- .countPeptideProteinGroups(filteredS4)
@@ -161,6 +179,13 @@ runPeptideReplicateApplyStep <- function(workflowData,
     "====================================\n",
     sprintf("Proteins remaining: %d\n", proteinCount),
     sprintf("Replicate group column: %s\n", replicateGroupColumn),
+    "Rule: >= 2 distinct runs in any replicate group\n",
+    "Retention: globally keep supported features, including singleton observations in other groups\n",
+    if (is.null(filterSummary)) "" else sprintf(
+      "Peptide identities retained/removed: %d / %d\n",
+      filterSummary$retained_feature_count,
+      filterSummary$removed_feature_count
+    ),
     "State saved as: 'replicate_filtered'\n"
   )
 

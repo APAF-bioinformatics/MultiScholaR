@@ -238,7 +238,7 @@ test_that("mod_prot_qc_peptide_server skips peptide submodules for non-DIA workf
   expect_identical(call_log, character())
 })
 
-test_that("buildPeptideIntensityThresholdPreview formats both preview strings from one temporary state update", {
+test_that("buildPeptideIntensityThresholdPreview reports the executed count contract without mutating state", {
   if (!methods::isClass("FakePeptideIntensityPreview")) {
     methods::setClass("FakePeptideIntensityPreview", slots = c(args = "list"))
   }
@@ -282,13 +282,9 @@ test_that("buildPeptideIntensityThresholdPreview formats both preview strings fr
     }
   )
 
-  expect_identical(captured$args$theObject, current_state)
-  expect_identical(captured$args$min_reps_per_group, 2)
-  expect_identical(captured$args$min_groups, 3)
-  expect_identical(captured$args$function_name, "peptideIntensityFiltering")
-  expect_identical(captured$args$grouping_variable, "group")
-  expect_identical(preview$groupwiseText, "Groupwise % cutoff: 12.345%")
-  expect_identical(preview$maxGroupsText, "Max groups % cutoff: 67.890%")
+  expect_null(captured$args)
+  expect_identical(preview$groupwiseText, "Group passes: >= 2 distinct observed runs")
+  expect_identical(preview$maxGroupsText, "Peptide passes: >= 3 biological groups")
 })
 
 test_that("runPeptideIntensityRevertStep reverts to the previous state in history", {
@@ -496,7 +492,7 @@ test_that("runPeptideIntensityApplyStep applies flexible-mode updates and saves 
         peptide_data = theObject@peptide_data
       )
     },
-    peptideIntensityFilteringFn = function(theObject) {
+    peptideIntensityFilteringFn = function(theObject, ...) {
       captured$filterInput <<- theObject
       filtered_s4
     },
@@ -507,18 +503,18 @@ test_that("runPeptideIntensityApplyStep applies flexible-mode updates and saves 
   )
 
   expect_identical(captured$info, "Peptide Processing: Using FLEXIBLE MODE")
-  expect_identical(captured$missingUpdate$min_reps_per_group, 2)
-  expect_identical(captured$missingUpdate$min_groups, 3)
-  expect_identical(captured$missingUpdate$function_name, "peptideIntensityFiltering")
-  expect_identical(captured$missingUpdate$grouping_variable, "group")
-  expect_length(captured$configUpdates, 1)
+  expect_null(captured$missingUpdate)
+  expect_length(captured$configUpdates, 4)
   expect_identical(
-    captured$configUpdates[[1]]$parameter_name,
-    "peptides_intensity_cutoff_percentile"
+    vapply(captured$configUpdates, `[[`, character(1), "parameter_name"),
+    c("strict_mode", "min_reps_per_group", "min_groups", "peptides_intensity_cutoff_percentile")
   )
-  expect_equal(captured$configUpdates[[1]]$new_value, 1.5)
-  expect_identical(captured$filterInput@args$peptideIntensityFiltering$groupwise_percentage_cutoff, 12.345)
-  expect_identical(captured$filterInput@args$peptideIntensityFiltering$max_groups_percentage_cutoff, 67.89)
+  expect_false(captured$configUpdates[[1]]$new_value)
+  expect_identical(captured$configUpdates[[2]]$new_value, 2)
+  expect_identical(captured$configUpdates[[3]]$new_value, 3)
+  expect_equal(captured$configUpdates[[4]]$new_value, 1.5)
+  expect_identical(captured$filterInput@args$peptideIntensityFiltering$min_reps_per_group, 2)
+  expect_identical(captured$filterInput@args$peptideIntensityFiltering$min_groups, 3)
   expect_equal(captured$filterInput@args$peptideIntensityFiltering$peptides_intensity_cutoff_percentile, 1.5)
   expect_false(workflow_data$qc_params$peptide_qc$intensity_filter$strict_mode)
   expect_identical(workflow_data$qc_params$peptide_qc$intensity_filter$min_reps_per_group, 2)
@@ -534,8 +530,8 @@ test_that("runPeptideIntensityApplyStep applies flexible-mode updates and saves 
   expect_match(result$resultText, "Mode: FLEXIBLE", fixed = TRUE)
   expect_match(result$resultText, "Proteins remaining: 2", fixed = TRUE)
   expect_match(result$resultText, "Intensity cutoff percentile: 1.5%", fixed = TRUE)
-  expect_match(result$resultText, "Groupwise % cutoff: 12.345%", fixed = TRUE)
-  expect_match(result$resultText, "Max groups % cutoff: 67.890%", fixed = TRUE)
+  expect_match(result$resultText, "Group rule: >= 2 distinct observed runs", fixed = TRUE)
+  expect_match(result$resultText, "Peptide rule: >= 3 passing groups", fixed = TRUE)
 })
 
 test_that("runPeptideIntensityApplyStep applies strict-mode zero cutoffs before filtering", {
@@ -605,7 +601,7 @@ test_that("runPeptideIntensityApplyStep applies strict-mode zero cutoffs before 
     updateMissingValueParametersFn = function(...) {
       stop("flexible missing-value updates should not run in strict mode")
     },
-    peptideIntensityFilteringFn = function(theObject) {
+    peptideIntensityFilteringFn = function(theObject, ...) {
       captured$filterInput <<- theObject
       filtered_s4
     },
@@ -619,17 +615,18 @@ test_that("runPeptideIntensityApplyStep applies strict-mode zero cutoffs before 
   expect_identical(
     vapply(captured$configUpdates, `[[`, character(1), "parameter_name"),
     c(
-      "groupwise_percentage_cutoff",
-      "max_groups_percentage_cutoff",
+      "strict_mode",
+      "min_reps_per_group",
+      "min_groups",
       "peptides_intensity_cutoff_percentile"
     )
   )
-  expect_equal(
-    vapply(captured$configUpdates, `[[`, numeric(1), "new_value"),
-    c(0, 0, 2.5)
-  )
-  expect_identical(captured$filterInput@args$peptideIntensityFiltering$groupwise_percentage_cutoff, 0)
-  expect_identical(captured$filterInput@args$peptideIntensityFiltering$max_groups_percentage_cutoff, 0)
+  expect_true(captured$configUpdates[[1]]$new_value)
+  expect_identical(captured$configUpdates[[2]]$new_value, 4)
+  expect_identical(captured$configUpdates[[3]]$new_value, 5)
+  expect_equal(captured$configUpdates[[4]]$new_value, 2.5)
+  expect_identical(captured$filterInput@args$peptideIntensityFiltering$min_reps_per_group, 4)
+  expect_identical(captured$filterInput@args$peptideIntensityFiltering$min_groups, 5)
   expect_equal(captured$filterInput@args$peptideIntensityFiltering$peptides_intensity_cutoff_percentile, 2.5)
   expect_true(workflow_data$qc_params$peptide_qc$intensity_filter$strict_mode)
   expect_true(is.na(workflow_data$qc_params$peptide_qc$intensity_filter$min_reps_per_group))
@@ -641,8 +638,7 @@ test_that("runPeptideIntensityApplyStep applies strict-mode zero cutoffs before 
   expect_identical(result$filteredS4, filtered_s4)
   expect_match(result$resultText, "Mode: STRICT", fixed = TRUE)
   expect_match(result$resultText, "Proteins remaining: 3", fixed = TRUE)
-  expect_match(result$resultText, "Groupwise % cutoff: 0.000%", fixed = TRUE)
-  expect_match(result$resultText, "Max groups % cutoff: 0.000%", fixed = TRUE)
+  expect_match(result$resultText, "every design run must be finite and at/above threshold", fixed = TRUE)
 })
 
 test_that("updatePeptideIntensityOutputs refreshes result text and plot grid", {
@@ -889,7 +885,7 @@ test_that("runPeptideQvalueApplyStep applies thresholds, records diagnostics, an
   result <- runPeptideQvalueApplyStep(
     workflowData = workflow_data,
     qvalueThreshold = 0.01,
-    globalQvalueThreshold = 0.02,
+    globalQvalueThreshold = 0.01,
     proteotypicOnly = TRUE,
     updateConfigParameterFn = function(theObject, function_name, parameter_name, new_value) {
       captured$configUpdates[[length(captured$configUpdates) + 1]] <<- list(
@@ -920,7 +916,7 @@ test_that("runPeptideQvalueApplyStep applies thresholds, records diagnostics, an
 
   expect_true(any(grepl("S4 class = FakePeptideQvalueState", captured$info, fixed = TRUE)))
   expect_true(any(grepl("input_matrix_column_ids length = 3", captured$info, fixed = TRUE)))
-  expect_true(any(grepl("thresholds 0.01, 0.02", captured$info, fixed = TRUE)))
+  expect_true(any(grepl("Q.Value, Global.Q.Value, and Global.PG.Q.Value", captured$info, fixed = TRUE)))
   expect_identical(
     captured$warn,
     c(
@@ -928,33 +924,43 @@ test_that("runPeptideQvalueApplyStep applies thresholds, records diagnostics, an
       "Q-value filter: input_matrix_column_ids contains empty strings!"
     )
   )
-  expect_length(captured$configUpdates, 3)
+  expect_length(captured$configUpdates, 5)
   expect_identical(captured$configUpdates[[1]]$parameter_name, "qvalue_threshold")
   expect_identical(captured$configUpdates[[1]]$new_value, 0.01)
   expect_identical(captured$configUpdates[[2]]$parameter_name, "global_qvalue_threshold")
-  expect_identical(captured$configUpdates[[2]]$new_value, 0.02)
-  expect_identical(captured$configUpdates[[3]]$parameter_name, "choose_only_proteotypic_peptide")
-  expect_identical(captured$configUpdates[[3]]$new_value, 1)
+  expect_identical(captured$configUpdates[[2]]$new_value, 0.01)
+  expect_identical(captured$configUpdates[[3]]$parameter_name, "global_pg_qvalue_threshold")
+  expect_identical(captured$configUpdates[[3]]$new_value, 0.01)
+  expect_identical(captured$configUpdates[[4]]$parameter_name, "choose_only_proteotypic_peptide")
+  expect_identical(captured$configUpdates[[4]]$new_value, 1)
+  expect_identical(captured$configUpdates[[5]]$parameter_name, "confidence_provenance_mode")
+  expect_identical(captured$configUpdates[[5]]$new_value, "diann_main_report")
   expect_identical(
     captured$filterInput@args$srlQvalueProteotypicPeptideClean$qvalue_threshold,
     0.01
   )
   expect_identical(
     captured$filterInput@args$srlQvalueProteotypicPeptideClean$global_qvalue_threshold,
-    0.02
+    0.01
+  )
+  expect_identical(
+    captured$filterInput@args$srlQvalueProteotypicPeptideClean$global_pg_qvalue_threshold,
+    0.01
   )
   expect_identical(
     captured$filterInput@args$srlQvalueProteotypicPeptideClean$choose_only_proteotypic_peptide,
     1
   )
   expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$qvalue_threshold, 0.01)
-  expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$global_qvalue_threshold, 0.02)
+  expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$global_qvalue_threshold, 0.01)
+  expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$global_pg_qvalue_threshold, 0.01)
   expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$proteotypic_only, TRUE)
   expect_identical(workflow_data$qc_params$peptide_qc$qvalue_filter$timestamp, timestamp)
   expect_identical(captured$saveState$state_name, "qvalue_filtered")
   expect_identical(captured$saveState$s4_data_object, filtered_s4)
   expect_identical(captured$saveState$config_object$qvalue_threshold, 0.01)
-  expect_identical(captured$saveState$config_object$global_qvalue_threshold, 0.02)
+  expect_identical(captured$saveState$config_object$global_qvalue_threshold, 0.01)
+  expect_identical(captured$saveState$config_object$global_pg_qvalue_threshold, 0.01)
   expect_identical(captured$saveState$config_object$proteotypic_only, TRUE)
   expect_identical(
     captured$saveState$description,
@@ -962,9 +968,10 @@ test_that("runPeptideQvalueApplyStep applies thresholds, records diagnostics, an
   )
   expect_identical(result$filteredS4, filtered_s4)
   expect_match(result$resultText, "Proteins remaining: 2", fixed = TRUE)
-  expect_match(result$resultText, "Q-value threshold: 0.01", fixed = TRUE)
-  expect_match(result$resultText, "Global Q-value threshold: 0.02", fixed = TRUE)
-  expect_match(result$resultText, "Proteotypic only: TRUE", fixed = TRUE)
+  expect_match(result$resultText, "Run-specific precursor Q.Value threshold: 0.01", fixed = TRUE)
+  expect_match(result$resultText, "Global precursor Global.Q.Value threshold: 0.01", fixed = TRUE)
+  expect_match(result$resultText, "Global protein-group Global.PG.Q.Value threshold: 0.01", fixed = TRUE)
+  expect_match(result$resultText, "Proteotypic == 1: TRUE", fixed = TRUE)
 })
 
 test_that("updatePeptideQvalueOutputs refreshes result text and plot grid", {
@@ -1037,7 +1044,7 @@ test_that("runPeptideQvalueApplyObserver delegates the apply workflow and notifi
   completed <- runPeptideQvalueApplyObserver(
     workflowData = workflow_data,
     qvalueThreshold = 0.01,
-    globalQvalueThreshold = 0.02,
+    globalQvalueThreshold = 0.01,
     proteotypicOnly = TRUE,
     output = output,
     qvaluePlot = qvalue_plot,
@@ -1047,7 +1054,7 @@ test_that("runPeptideQvalueApplyObserver delegates the apply workflow and notifi
       captured$calls <- c(captured$calls, "run")
       expect_identical(workflowData, workflow_data_ref)
       expect_identical(qvalueThreshold, 0.01)
-      expect_identical(globalQvalueThreshold, 0.02)
+      expect_identical(globalQvalueThreshold, 0.01)
       expect_identical(proteotypicOnly, TRUE)
       list(
         filteredS4 = "filtered_s4",
@@ -1112,7 +1119,7 @@ test_that("runPeptideQvalueApplyObserver reports apply errors and clears the wor
   completed <- runPeptideQvalueApplyObserver(
     workflowData = workflow_data,
     qvalueThreshold = 0.01,
-    globalQvalueThreshold = 0.02,
+    globalQvalueThreshold = 0.01,
     proteotypicOnly = TRUE,
     output = output,
     qvaluePlot = qvalue_plot,
@@ -1329,17 +1336,13 @@ test_that("mod_prot_qc_peptide_qvalue_server wires the apply observer through th
       experiment_label = "DIA Experiment"
     ),
     {
-      session$setInputs(qvalue_threshold = 0.01)
-      session$setInputs(global_qvalue_threshold = 0.02)
-      session$setInputs(proteotypic_only = TRUE)
-      session$flushReact()
       session$setInputs(apply_qvalue_filter = 1)
       session$flushReact()
 
       expect_false(is.null(captured$apply))
       expect_identical(captured$apply$workflowData, workflow_data)
       expect_identical(captured$apply$qvalueThreshold, 0.01)
-      expect_identical(captured$apply$globalQvalueThreshold, 0.02)
+      expect_identical(captured$apply$globalQvalueThreshold, 0.01)
       expect_identical(captured$apply$proteotypicOnly, TRUE)
       expect_identical(captured$apply$output, output)
       expect_identical(captured$apply$omicType, "proteomics")
@@ -2542,7 +2545,7 @@ test_that("runPeptideReplicateApplyStep saves the filtered state and QC paramete
   )
   expect_identical(
     captured$saveState$description,
-    "Applied replicate filter (removed single-replicate peptides)"
+    "Applied distinct-run replicate support filter (supported in any group)"
   )
   expect_identical(result$filteredS4, filtered_s4)
   expect_match(result$resultText, "Proteins remaining: 2", fixed = TRUE)
@@ -3180,7 +3183,7 @@ test_that("runPeptideRollupApplyStep saves the rolled-up state and QC parameters
   expect_identical(workflow_data$qc_params$peptide_qc$precursor_rollup$timestamp, timestamp)
   expect_identical(captured$saveState$state_name, "precursor_rollup")
   expect_identical(captured$saveState$s4_data_object, rolled_up_state)
-  expect_identical(captured$saveState$config_object, list())
+  expect_identical(captured$saveState$config_object, list(rollup_summary = NULL))
   expect_identical(
     captured$saveState$description,
     "Applied precursor to peptide rollup"
@@ -3593,7 +3596,7 @@ test_that("runPeptideSampleApplyStep saves the filtered state, removed samples, 
       )
       theObject
     },
-    filterMinNumPeptidesPerSampleFn = function(theObject) {
+    filterMinNumPeptidesPerSampleFn = function(theObject, ...) {
       captured$filterInput <<- theObject
       filtered_s4
     },
@@ -3670,7 +3673,7 @@ test_that("runPeptideSampleApplyStep saves the filtered state, removed samples, 
   expect_match(result$resultText, "Proteins remaining: 2", fixed = TRUE)
   expect_match(result$resultText, "Samples remaining: 2", fixed = TRUE)
   expect_match(result$resultText, "Samples removed: 1", fixed = TRUE)
-  expect_match(result$resultText, "Min peptides per sample: 500", fixed = TRUE)
+  expect_match(result$resultText, "Min distinct protein-group/stripped-peptide identities per sample: 500", fixed = TRUE)
   expect_match(result$resultText, "Removed samples:\nS2", fixed = TRUE)
 })
 

@@ -14,32 +14,49 @@ peptideMissingValueImputationHelper(
   peptide_sequence_column = Stripped.Sequence,
   quantity_to_impute_column = Peptide.Normalised,
   imputed_value_column = Peptide.Imputed,
-  hek_string = "HEK",
+  hek_string = NULL,
   proportion_missing_values = 0.5,
-  core_utilisation
+  core_utilisation = NA,
+  exclusion_column = NULL,
+  return_imputation_result = FALSE
 )
 }
 \arguments{
-\item{input_table}{A data frame with the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances}
+\item{input_table}{Long-format peptide measurements.}
 
-\item{metadata_table}{A data table with the following columns: 1. the sample file name or run name (as per parameter sample_id_tbl_sample_id_column), 2. The replicate group ID (as per parameter replicate_group_column)}
+\item{metadata_table}{Experimental design containing one row per run.}
 
-\item{input_table_sample_id_column}{The name of the column in the input_table that contained the run information or sample file name as per the input_table parameter (default: Run)}
+\item{input_table_sample_id_column}{Run column in \code{input_table}.}
 
-\item{sample_id_tbl_sample_id_column}{The name of the column in the input_table that contained the run information or sample file name as per the metadata_table parameter (default: ms_filename)}
+\item{sample_id_tbl_sample_id_column}{Run column in \code{metadata_table}.}
 
-\item{replicate_group_column}{(default: general_sample_info)}
+\item{replicate_group_column}{Technical-replicate group column in the design.}
 
-\item{protein_id_column}{Protein accession column, tidyverse format (default = Protein.Ids).}
+\item{protein_id_column}{Active protein-group identity column.}
 
-\item{peptide_sequence_column}{Peptide sequence column, tidyverse fromat (default =  Stripped.Sequence).}
+\item{peptide_sequence_column}{Stripped peptide sequence column.}
 
-\item{quantity_to_impute_column}{Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)}
+\item{quantity_to_impute_column}{Raw peptide quantity used for the mean.}
 
-\item{hek_string}{The string denoting samples that are controls using HEK cells (default: "HEK")}
+\item{imputed_value_column}{Output quantity column.}
 
-\item{proportion_missing_values}{The proportion of sample replicates in a group that is missing below which the peptide intensity will be imputed (default: 0.50)}
+\item{hek_string}{Deprecated opt-in regular expression. When supplied, runs
+whose run ID or replicate-group ID matches are excluded from imputation.
+The default is \code{NULL}; names containing \code{HEK} are not implicitly excluded.}
+
+\item{proportion_missing_values}{Maximum eligible missing fraction, inclusive.}
+
+\item{core_utilisation}{Optional historical parallel backend. Validation and
+imputation are performed deterministically in-process.}
+
+\item{exclusion_column}{Optional design column containing an explicit logical
+(or unambiguous 0/1, true/false) run-exclusion flag.}
+
+\item{return_imputation_result}{Return data plus support and audit metadata
+when \code{TRUE}; retain the historical data-frame return when \code{FALSE}.}
 }
 \description{
-Perform peptide level missing value imputation
+Impute an eligible missing peptide measurement with the mean of
+the observed raw quantities from the same declared technical-replicate
+group. Replicate availability is counted by distinct run identity.
 }

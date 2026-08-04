@@ -125,14 +125,29 @@ runProteinPeptideApplyStep <- function(workflowData,
     timestamp = nowFn()
   )
 
-  workflowData$state_manager$saveState(
+  proteinEvidenceConfig <- list(
+    min_peptides_per_protein = minPeptidesPerProtein,
+    min_peptidoforms_per_protein = minPeptidoformsPerProtein,
+    peptides_per_protein_cutoff = minPeptidesPerProtein,
+    peptidoforms_per_protein_cutoff = minPeptidoformsPerProtein,
+    num_peptides_per_protein_thresh = minPeptidesPerProtein,
+    num_peptidoforms_per_protein_thresh = minPeptidoformsPerProtein,
+    parameter_alias_resolution = list(
+      displayed = c(peptides = minPeptidesPerProtein, peptidoforms = minPeptidoformsPerProtein),
+      configured = c(peptides = minPeptidesPerProtein, peptidoforms = minPeptidoformsPerProtein),
+      resolved = c(peptides = minPeptidesPerProtein, peptidoforms = minPeptidoformsPerProtein),
+      executed = c(peptides = minPeptidesPerProtein, peptidoforms = minPeptidoformsPerProtein)
+    )
+  )
+  filteredS4 <- .savePeptideQcState(
+    state_manager = workflowData$state_manager,
+    before = currentS4,
+    after = filteredS4,
+    stage_id = "protein_evidence_filter",
     state_name = "protein_peptide_filtered",
-    s4_data_object = filteredS4,
-    config_object = list(
-      min_peptides_per_protein = minPeptidesPerProtein,
-      min_peptidoforms_per_protein = minPeptidoformsPerProtein
-    ),
-    description = "Applied minimum peptides per protein filter"
+    config_object = proteinEvidenceConfig,
+    description = "Applied minimum peptides per protein filter",
+    now = nowFn()
   )
 
   proteinCount <- .countPeptideProteinGroups(filteredS4)

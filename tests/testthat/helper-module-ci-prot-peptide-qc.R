@@ -53,6 +53,7 @@ module_ci_prot_peptide_table <- function(values = NULL, q_values = NULL, global_
 
   rows$Q.Value <- q_values[rows$peptide_index]
   rows$Global.Q.Value <- global_q_values[rows$peptide_index]
+  rows$Global.PG.Q.Value <- global_q_values[rows$peptide_index]
   rows$Proteotypic <- proteotypic[rows$peptide_index]
   rows[c(
     "Run",
@@ -65,6 +66,7 @@ module_ci_prot_peptide_table <- function(values = NULL, q_values = NULL, global_
     "Precursor.Normalised",
     "Q.Value",
     "Global.Q.Value",
+    "Global.PG.Q.Value",
     "Proteotypic"
   )]
 }
@@ -107,6 +109,7 @@ module_ci_prot_peptide_object <- function(peptide_data = module_ci_prot_peptide_
         ),
         qvalue_threshold = 0.01,
         global_qvalue_threshold = 0.01,
+        global_pg_qvalue_threshold = 0.01,
         choose_only_proteotypic_peptide = 1
       )
     )
@@ -140,7 +143,7 @@ module_ci_prot_intensity_filter <- function(tbl = module_ci_prot_peptide_table()
                                             threshold = 10,
                                             group_cutoff = 50,
                                             max_groups_cutoff = 50) {
-  suppressMessages(peptideIntensityFilteringHelper(
+  suppressWarnings(suppressMessages(peptideIntensityFilteringHelper(
     input_table = tbl,
     design_matrix = design,
     min_peptide_intensity_threshold = threshold,
@@ -152,7 +155,7 @@ module_ci_prot_intensity_filter <- function(tbl = module_ci_prot_peptide_table()
     peptide_sequence_column = Stripped.Sequence,
     peptide_quantity_column = Precursor.Quantity,
     core_utilisation = NA
-  ))
+  )))
 }
 
 module_ci_prot_qvalue_filter <- function(tbl = module_ci_prot_peptide_table(),
@@ -212,7 +215,6 @@ module_ci_prot_impute <- function(fixture = module_ci_prot_peptide_imputation_fi
     peptide_sequence_column = Stripped.Sequence,
     quantity_to_impute_column = Peptide.Normalised,
     imputed_value_column = Peptide.Imputed,
-    hek_string = "HEK",
     proportion_missing_values = proportion_missing_values,
     core_utilisation = core_utilisation
   ))

@@ -205,7 +205,10 @@ buildProtTestModeLimpaProteinObject <- function(peptideS4,
   createProteinDataFn(
     protein_quant_table = proteinWide,
     protein_id_column = proteinCol,
-    protein_id_table = proteinWide |> dplyr::distinct(!!rlang::sym(proteinCol)),
+    protein_id_table = .proteinIdTableFromPeptideLineage(
+      peptideS4,
+      proteinWide[[proteinCol]]
+    ),
     design_matrix = peptideS4@design_matrix,
     sample_id = sampleCol,
     group_id = peptideS4@group_id,
@@ -241,26 +244,53 @@ runProteinIqRollupApplyStep <- function(workflowData,
 
   logInfoFn("Protein Processing: Starting IQ rollup from peptide state")
 
+  proteinColumn <- peptideS4@protein_id_column
+  peptideColumn <- peptideS4@peptide_sequence_column
+  sampleColumn <- peptideS4@sample_id
+  groupColumn <- peptideS4@group_id
+  replicateColumn <- peptideS4@technical_replicate_id
+  intensityColumn <- "Peptide.Imputed"
+  requiredPeptideColumns <- c(
+    proteinColumn,
+    peptideColumn,
+    sampleColumn,
+    intensityColumn
+  )
+  missingPeptideColumns <- setdiff(
+    requiredPeptideColumns,
+    names(peptideS4@peptide_data)
+  )
+  if (length(missingPeptideColumns) > 0L) {
+    stop(
+      "IQ rollup input is missing required column(s): ",
+      paste(missingPeptideColumns, collapse = ", "),
+      call. = FALSE
+    )
+  }
+  if (!sampleColumn %in% names(peptideS4@design_matrix)) {
+    stop("The declared sample column is absent from the design matrix.", call. = FALSE)
+  }
+
   peptideValuesImputedFile <- file.path(
     experimentPaths$peptide_qc_dir,
     "peptide_values_imputed.tsv"
   )
 
-  originalSamples <- unique(peptideS4@design_matrix$Run)
+  originalSamples <- unique(as.character(peptideS4@design_matrix[[sampleColumn]]))
   sampleMapping <- tibble::tibble(
     Original = originalSamples,
     Alias = paste0("S_", sprintf("%03d", seq_along(originalSamples)))
   )
 
-  peptideDataForIq <- peptideS4@peptide_data |>
-    dplyr::mutate(
-      Q.Value = 0.0009,
-      PG.Q.Value = 0.009,
-      Peptide.Imputed = ifelse(is.na(Peptide.Imputed), 0, Peptide.Imputed)
-    ) |>
-    dplyr::left_join(sampleMapping, by = c("Run" = "Original")) |>
-    dplyr::mutate(Run = Alias) |>
-    dplyr::select(-Alias)
+  peptideDataForIq <- peptideS4@peptide_data
+  peptideDataForIq$Q.Value <- 0.0009
+  peptideDataForIq$PG.Q.Value <- 0.009
+  peptideDataForIq[[intensityColumn]][is.na(peptideDataForIq[[intensityColumn]])] <- 0
+  sampleIndex <- match(as.character(peptideDataForIq[[sampleColumn]]), sampleMapping$Original)
+  if (anyNA(sampleIndex)) {
+    stop("Peptide data contains runs absent from the design matrix.", call. = FALSE)
+  }
+  peptideDataForIq[[sampleColumn]] <- sampleMapping$Alias[sampleIndex]
 
   writeTsvFn(peptideDataForIq, peptideValuesImputedFile)
 
@@ -269,10 +299,10 @@ runProteinIqRollupApplyStep <- function(workflowData,
   processLongFormatFn(
     peptideValuesImputedFile,
     output_filename = iqOutputFile,
-    sample_id = "Run",
-    primary_id = "Protein.Ids",
-    secondary_id = "Stripped.Sequence",
-    intensity_col = "Peptide.Imputed",
+    sample_id = sampleColumn,
+    primary_id = proteinColumn,
+    secondary_id = peptideColumn,
+    intensity_col = intensityColumn,
     filter_double_less = c("Q.Value" = "0.01", "PG.Q.Value" = "0.01"),
     normalization = "none"
   )
@@ -290,7 +320,7 @@ runProteinIqRollupApplyStep <- function(workflowData,
   proteinLog2QuantAliased <- readTsvFn(iqOutputFile, .name_repair = "minimal")
   currentCols <- colnames(proteinLog2QuantAliased)
   restoredCols <- purrr::map_chr(currentCols, function(col) {
-    if (col == "Protein.Ids") {
+    if (col == proteinColumn) {
       return(col)
     }
 
@@ -304,9 +334,19 @@ runProteinIqRollupApplyStep <- function(workflowData,
   colnames(proteinLog2QuantAliased) <- restoredCols
   proteinLog2Quant <- proteinLog2QuantAliased
 
-  survivingSamples <- setdiff(colnames(proteinLog2Quant), "Protein.Ids")
+  if (!proteinColumn %in% names(proteinLog2Quant)) {
+    stop(
+      sprintf("IQ output is missing the active protein key `%s`.", proteinColumn),
+      call. = FALSE
+    )
+  }
+
+  survivingSamples <- intersect(
+    originalSamples,
+    setdiff(colnames(proteinLog2Quant), proteinColumn)
+  )
   finalDesignMatrix <- peptideS4@design_matrix |>
-    dplyr::filter(Run %in% survivingSamples)
+    dplyr::filter(!!rlang::sym(sampleColumn) %in% survivingSamples)
 
   droppedSamples <- setdiff(originalSamples, survivingSamples)
   if (length(droppedSamples) > 0) {
@@ -333,31 +373,52 @@ runProteinIqRollupApplyStep <- function(workflowData,
 
   proteinObj <- createProteinDataFn(
     protein_quant_table = proteinLog2Quant,
-    protein_id_column = "Protein.Ids",
-    protein_id_table = proteinLog2Quant |> dplyr::distinct(Protein.Ids),
+    protein_id_column = proteinColumn,
+    protein_id_table = .proteinIdTableFromPeptideLineage(
+      peptideS4,
+      proteinLog2Quant[[proteinColumn]]
+    ),
     design_matrix = finalDesignMatrix,
-    sample_id = "Run",
-    group_id = "group",
-    technical_replicate_id = "replicates",
+    sample_id = sampleColumn,
+    group_id = groupColumn,
+    technical_replicate_id = replicateColumn,
     args = peptideS4@args
   )
 
-  workflowData$state_manager$saveState(
-    state_name = "protein_s4_created",
-    s4_data_object = proteinObj,
-    config_object = list(
+  iqStateConfig <- list(
       iq_output_file = iqOutputFile,
       peptide_input_file = peptideValuesImputedFile,
       s4_class = "ProteinQuantitativeData",
-      protein_id_column = "Protein.Ids"
+      protein_id_column = proteinColumn
+  )
+  proteinObj <- .savePeptideQcState(
+    state_manager = workflowData$state_manager,
+    before = peptideS4,
+    after = proteinObj,
+    stage_id = "protein_rollup",
+    state_name = "protein_s4_created",
+    config_object = iqStateConfig,
+    audit_parameters = list(
+      rollup_method = "iq_maxlfq",
+      primary_id = proteinColumn,
+      secondary_id = peptideColumn,
+      sample_id = sampleColumn,
+      intensity_column = intensityColumn,
+      q_value_compatibility_value = 0.0009,
+      pg_q_value_compatibility_value = 0.009,
+      missing_intensity_compatibility_value = 0,
+      filter_double_less = c(Q.Value = 0.01, PG.Q.Value = 0.01),
+      normalization = "none",
+      dropped_samples = droppedSamples
     ),
-    description = "IQ protein rollup completed and ProteinQuantitativeData S4 object created"
+    description = "IQ protein rollup completed and ProteinQuantitativeData S4 object created",
+    transformation_type = "aggregation"
   )
 
   captureCheckpointFn(proteinObj, "cp03", "rolled_up_protein")
 
   proteinCount <- proteinObj@protein_quant_table |>
-    dplyr::distinct(Protein.Ids) |>
+    dplyr::distinct(!!rlang::sym(proteinColumn)) |>
     nrow()
 
   resultText <- paste(
@@ -365,6 +426,7 @@ runProteinIqRollupApplyStep <- function(workflowData,
     "============================================================\n",
     sprintf("Proteins quantified: %d\n", proteinCount),
     sprintf("Samples: %d\n", ncol(proteinObj@protein_quant_table) - 1),
+    sprintf("Active protein key: %s\n", proteinColumn),
     "Algorithm: MaxLFQ (via IQ tool)\n",
     sprintf("S4 Class: %s\n", class(proteinObj)[1]),
     sprintf("Design matrix: %s\n", paste(colnames(proteinObj@design_matrix), collapse = ", ")),
@@ -412,16 +474,21 @@ runProteinLimpaRollupApplyStep <- function(workflowData,
   workflowData$config_list$globalParameters$use_limpa <- TRUE
   workflowData$config_list$globalParameters$report_template <- "DIANN_limpa_report.rmd"
 
-  workflowData$state_manager$saveState(
-    state_name = "protein_s4_created",
-    s4_data_object = proteinObj,
-    config_object = list(
+  limpaConfig <- list(
       rollup_method = "limpa_dpc_quant",
       s4_class = "ProteinQuantitativeData",
       protein_id_column = proteinObj@protein_id_column,
       report_template = "DIANN_limpa_report.rmd"
-    ),
-    description = "limpa DPC-Quant protein rollup completed and ProteinQuantitativeData S4 object created"
+  )
+  proteinObj <- .savePeptideQcState(
+    state_manager = workflowData$state_manager,
+    before = peptideS4,
+    after = proteinObj,
+    stage_id = "protein_rollup",
+    state_name = "protein_s4_created",
+    config_object = limpaConfig,
+    description = "limpa DPC-Quant protein rollup completed and ProteinQuantitativeData S4 object created",
+    transformation_type = "aggregation"
   )
 
   captureCheckpointFn(proteinObj, "cp03", "rolled_up_protein_limpa")

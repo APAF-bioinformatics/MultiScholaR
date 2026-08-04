@@ -1,0 +1,102 @@
+{
+  "project": "MultiScholaR",
+  "sprint": "Peptide QC Scientific Integrity",
+  "branch": "janitor",
+  "plan": "00-IMPLEMENTATION-PLAN.md",
+  "tickets": [
+    {
+      "id": "PQC-001",
+      "title": "Lock DIA-NN q-value and threshold contracts",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [],
+      "time_estimate": "4h",
+      "file": "PQC-001.md"
+    },
+    {
+      "id": "PQC-006",
+      "title": "Classify and exclude decoys and contaminants auditably",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "PQC-001"
+      ],
+      "time_estimate": "5h",
+      "file": "PQC-006.md"
+    },
+    {
+      "id": "PQC-005",
+      "title": "Harden precursor-to-peptide rollup integrity",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "PQC-001",
+        "PQC-006"
+      ],
+      "time_estimate": "4h",
+      "file": "PQC-005.md"
+    },
+    {
+      "id": "PQC-002",
+      "title": "Replace percentage-derived peptide missingness with direct counts",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "PQC-005"
+      ],
+      "time_estimate": "5h",
+      "file": "PQC-002.md"
+    },
+    {
+      "id": "PQC-003",
+      "title": "Count distinct peptide and replicate identities",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "PQC-002"
+      ],
+      "time_estimate": "4h",
+      "file": "PQC-003.md"
+    },
+    {
+      "id": "PQC-004",
+      "title": "Correct technical-replicate imputation",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "PQC-003"
+      ],
+      "time_estimate": "5h",
+      "file": "PQC-004.md"
+    },
+    {
+      "id": "PQC-007",
+      "title": "Carry Protein.Group through protein quantification",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "PQC-004",
+        "PQC-005"
+      ],
+      "time_estimate": "6h",
+      "file": "PQC-007.md"
+    },
+    {
+      "id": "PQC-008",
+      "title": "Emit a complete peptide-QC audit ledger and E2E evidence",
+      "status": "completed",
+      "priority": "P0",
+      "dependencies": [
+        "PQC-001",
+        "PQC-002",
+        "PQC-003",
+        "PQC-004",
+        "PQC-005",
+        "PQC-006",
+        "PQC-007"
+      ],
+      "time_estimate": "6h",
+      "file": "PQC-008.md"
+    }
+  ]
+}

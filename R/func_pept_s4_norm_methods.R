@@ -14,7 +14,9 @@
 setMethod(f="normaliseBetweenSamples"
           , signature="PeptideQuantitativeData"
           , definition=function(theObject, normalisation_method = NULL) {
-            peptide_data <- theObject@peptide_data
+            keyed <- .peptideDataWithFeatureKey(theObject)
+            theObject <- keyed$theObject
+            peptide_data <- keyed$data
             design_matrix <- theObject@design_matrix
             sample_id <- theObject@sample_id
             current_quant_column <- theObject@norm_quantity_column
@@ -25,23 +27,16 @@ setMethod(f="normaliseBetweenSamples"
 
             theObject <- updateParamInObject(theObject, "normalisation_method")
 
-            # Create matrix from peptide_data (like protein version from protein_quant_table)
-            # Create unique peptide identifier for matrix rownames
-            peptide_unique_id <- paste(peptide_data[[theObject@protein_id_column]],
-                                      peptide_data[[theObject@peptide_sequence_column]],
-                                      sep = "%")
-
             # Create wide format data frame then convert to matrix (exactly like protein version)
             temp_peptide_wide <- peptide_data |>
-              mutate(peptide_id = peptide_unique_id) |>
-              select(peptide_id, !!sym(sample_id), !!sym(current_quant_column)) |>
+              select(.peptide_feature_key, !!sym(sample_id), !!sym(current_quant_column)) |>
               pivot_wider(names_from = !!sym(sample_id),
                          values_from = !!sym(current_quant_column),
                          values_fn = mean)
 
             # Convert to matrix exactly like protein version: column_to_rownames() then as.matrix()
             frozen_peptide_matrix <- temp_peptide_wide |>
-              column_to_rownames("peptide_id") |>
+              column_to_rownames(".peptide_feature_key") |>
               as.matrix()
 
             frozen_peptide_matrix[!is.finite(frozen_peptide_matrix)] <- NA
@@ -70,18 +65,17 @@ setMethod(f="normaliseBetweenSamples"
             # Convert back to data frame (exactly like protein version)
             normalised_peptide_table <- normalised_frozen_peptide_matrix |>
               as.data.frame() |>
-              rownames_to_column("peptide_id")
+              rownames_to_column(".peptide_feature_key")
 
             # Update peptide_data by joining with normalized values and replacing the quant column
             updated_peptide_data <- peptide_data |>
-              mutate(peptide_id = peptide_unique_id) |>
               select(-!!sym(current_quant_column)) |>
               left_join(normalised_peptide_table |>
-                       pivot_longer(cols = -peptide_id,
+                       pivot_longer(cols = -.peptide_feature_key,
                                    names_to = sample_id,
                                    values_to = current_quant_column),
-                       by = c("peptide_id", sample_id)) |>
-              select(-peptide_id)
+                       by = c(".peptide_feature_key", sample_id)) |>
+              select(-.peptide_feature_key)
 
             # Update both slots
             theObject@peptide_data <- updated_peptide_data
@@ -124,23 +118,26 @@ setMethod(f="log2TransformPeptideMatrix"
             # Update matrix
             theObject@peptide_matrix <- log2_peptide_matrix
 
-            # Also update peptide_data to maintain consistency
-            # Create long format from log2 matrix
-            log2_long <- log2_peptide_matrix |>
-              as.data.frame() |>
-              rownames_to_column("peptide_row_id") |>
-              pivot_longer(cols = -peptide_row_id,
-                          names_to = theObject@sample_id,
-                          values_to = "log2_value")
+            # Also update peptide_data using the authoritative feature-key map.
+            log2_identity <- .peptideMatrixToIdentityLong(
+              theObject,
+              log2_peptide_matrix,
+              "log2_value"
+            )
+            theObject <- log2_identity$theObject
+            log2_long <- log2_identity$data
 
-            # Update peptide_data: match by protein%peptide ID and sample
             updated_peptide_data <- peptide_data |>
-              mutate(peptide_row_id = paste(!!sym(theObject@protein_id_column),
-                                           !!sym(theObject@peptide_sequence_column),
-                                           sep = "%")) |>
-              left_join(log2_long, by = c("peptide_row_id", theObject@sample_id)) |>
+              left_join(
+                log2_long,
+                by = c(
+                  theObject@protein_id_column,
+                  theObject@peptide_sequence_column,
+                  theObject@sample_id
+                )
+              ) |>
               mutate(!!sym(current_quant_column) := log2_value) |>
-              select(-peptide_row_id, -log2_value)
+              select(-log2_value)
 
             theObject@peptide_data <- updated_peptide_data
 
@@ -820,7 +817,9 @@ setMethod( f = "ruvIII_C_Varying"
            , signature="PeptideQuantitativeData"
            , definition=function( theObject, ruv_grouping_variable = NULL, ruv_number_k = NULL, ctrl = NULL) {
 
-             peptide_data <- theObject@peptide_data
+             keyed <- .peptideDataWithFeatureKey(theObject)
+             theObject <- keyed$theObject
+             peptide_data <- keyed$data
              protein_id_column <- theObject@protein_id_column
              design_matrix <- theObject@design_matrix
              group_id <- theObject@group_id
@@ -835,25 +834,19 @@ setMethod( f = "ruvIII_C_Varying"
              theObject <- updateParamInObject(theObject, "ruv_number_k")
              theObject <- updateParamInObject(theObject, "ctrl")
 
-             # Create matrix from peptide_data (exactly like protein version)
+             # Create matrix from peptide_data using the reversible feature map.
              current_quant_column <- theObject@norm_quantity_column
-
-             # Create unique peptide identifier for matrix rownames
-             peptide_unique_id <- paste(peptide_data[[theObject@protein_id_column]],
-                                       peptide_data[[theObject@peptide_sequence_column]],
-                                       sep = "%")
 
              # Create wide format data frame then convert to matrix (exactly like protein version)
              temp_peptide_wide <- peptide_data |>
-               mutate(peptide_id = peptide_unique_id) |>
-               select(peptide_id, !!sym(sample_id), !!sym(current_quant_column)) |>
+               select(.peptide_feature_key, !!sym(sample_id), !!sym(current_quant_column)) |>
                pivot_wider(names_from = !!sym(sample_id),
                           values_from = !!sym(current_quant_column),
                           values_fn = mean)
 
              # Convert to matrix exactly like protein version: column_to_rownames() then as.matrix()
              normalised_frozen_peptide_matrix_filt <- temp_peptide_wide |>
-               column_to_rownames("peptide_id") |>
+               column_to_rownames(".peptide_feature_key") |>
                as.matrix()
 
              Y <-  t( normalised_frozen_peptide_matrix_filt[,design_matrix |> dplyr::pull(!!sym(sample_id))])
@@ -878,18 +871,17 @@ setMethod( f = "ruvIII_C_Varying"
              # Convert back to data frame (exactly like protein version)
              ruv_normalised_results_cln <- cln_mat_4 |>
                as.data.frame() |>
-               rownames_to_column("peptide_id")
+               rownames_to_column(".peptide_feature_key")
 
              # Update peptide_data by joining with RUV-corrected values and replacing the quant column
              updated_peptide_data <- peptide_data |>
-               mutate(peptide_id = peptide_unique_id) |>
                select(-!!sym(current_quant_column)) |>
                left_join(ruv_normalised_results_cln |>
-                        pivot_longer(cols = -peptide_id,
+                        pivot_longer(cols = -.peptide_feature_key,
                                     names_to = sample_id,
                                     values_to = current_quant_column),
-                        by = c("peptide_id", sample_id)) |>
-               select(-peptide_id)
+                        by = c(".peptide_feature_key", sample_id)) |>
+               select(-.peptide_feature_key)
 
              # Update both slots
              theObject@peptide_data <- updated_peptide_data

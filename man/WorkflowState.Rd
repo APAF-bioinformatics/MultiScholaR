@@ -16,154 +16,222 @@ It works by storing copies of data objects in a list, acting as a "save game"
 feature for the analysis.
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{states}}{A list to store the different data states. Each element is a
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{states}}{A list to store the different data states. Each element is a
 list containing the data object, timestamp, configuration, and other metadata.}
 
-\item{\code{current_state}}{A character string holding the name of the current active state.}
+    \item{\code{current_state}}{A character string holding the name of the current active state.}
 
-\item{\code{state_history}}{A character vector that logs the sequence of saved states.}
+    \item{\code{state_history}}{A character vector that logs the sequence of saved states.}
 
-\item{\code{workflow_type}}{A character string indicating the type of workflow (e.g., "LFQ", "TMT").}
-}
-\if{html}{\out{</div>}}
+    \item{\code{audit_records}}{Immutable audit records keyed by record ID. Reverting
+changes the active lineage but deliberately does not delete these records.}
+
+    \item{\code{audit_enabled}}{Logical; peptide-QC audit capture is additive and can
+be disabled without changing any scientific transformation.}
+
+    \item{\code{workflow_type}}{A character string indicating the type of workflow (e.g., "LFQ", "TMT").}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-WorkflowState-new}{\code{WorkflowState$new()}}
-\item \href{#method-WorkflowState-saveState}{\code{WorkflowState$saveState()}}
-\item \href{#method-WorkflowState-getState}{\code{WorkflowState$getState()}}
-\item \href{#method-WorkflowState-revertToState}{\code{WorkflowState$revertToState()}}
-\item \href{#method-WorkflowState-getHistory}{\code{WorkflowState$getHistory()}}
-\item \href{#method-WorkflowState-setWorkflowType}{\code{WorkflowState$setWorkflowType()}}
-\item \href{#method-WorkflowState-clone}{\code{WorkflowState$clone()}}
-}
+  \itemize{
+    \item \href{#method-WorkflowState-initialize}{\code{WorkflowState$new()}}
+    \item \href{#method-WorkflowState-saveState}{\code{WorkflowState$saveState()}}
+    \item \href{#method-WorkflowState-getState}{\code{WorkflowState$getState()}}
+    \item \href{#method-WorkflowState-revertToState}{\code{WorkflowState$revertToState()}}
+    \item \href{#method-WorkflowState-getHistory}{\code{WorkflowState$getHistory()}}
+    \item \href{#method-WorkflowState-getStateAudit}{\code{WorkflowState$getStateAudit()}}
+    \item \href{#method-WorkflowState-getAuditRecords}{\code{WorkflowState$getAuditRecords()}}
+    \item \href{#method-WorkflowState-setWorkflowType}{\code{WorkflowState$setWorkflowType()}}
+    \item \href{#method-WorkflowState-clone}{\code{WorkflowState$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-WorkflowState-new"></a>}}
-\if{latex}{\out{\hypertarget{method-WorkflowState-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize the WorkflowState object.
+\if{html}{\out{<a id="method-WorkflowState-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-initialize}{}}}
+\subsection{\code{WorkflowState$new()}}{
+  Initialize the WorkflowState object.
 Sets up the initial state.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{WorkflowState$new()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$new(audit_enabled = TRUE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{audit_enabled}}{Logical; peptide-QC audit capture is additive and can
+be disabled without changing any scientific transformation.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-WorkflowState-saveState"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-saveState}{}}}
-\subsection{Method \code{saveState()}}{
-Save a new state (a snapshot of a data object).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{WorkflowState$saveState(state_name, s4_data_object, config_object, description)}\if{html}{\out{</div>}}
+\subsection{\code{WorkflowState$saveState()}}{
+  Save a new state (a snapshot of a data object).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$saveState(
+  state_name,
+  s4_data_object,
+  config_object,
+  description,
+  audit_metadata = NULL
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{state_name}}{A character string for the name of the state (e.g., "raw_data_s4").}
+      \item{\code{s4_data_object}}{The S4 data object to save. A copy will be made.}
+      \item{\code{config_object}}{A list containing the configuration parameters used to generate this state.}
+      \item{\code{description}}{A character string describing the state.}
+      \item{\code{audit_metadata}}{Optional additive audit record. Existing callers do
+not need to supply it; peptide objects carrying audit lineage are
+detected automatically.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{state_name}}{A character string for the name of the state (e.g., "raw_data_s4").}
-
-\item{\code{s4_data_object}}{The S4 data object to save. A copy will be made.}
-
-\item{\code{config_object}}{A list containing the configuration parameters used to generate this state.}
-
-\item{\code{description}}{A character string describing the state.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-WorkflowState-getState"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-getState}{}}}
-\subsection{Method \code{getState()}}{
-Retrieve a data object from a specific state.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{WorkflowState$getState(state_name = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{WorkflowState$getState()}}{
+  Retrieve a data object from a specific state.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getState(state_name = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{state_name}}{The name of the state to retrieve. If NULL, retrieves the current state.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The data object (e.g., an S4 object) stored in that state.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{state_name}}{The name of the state to retrieve. If NULL, retrieves the current state.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The data object (e.g., an S4 object) stored in that state.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-WorkflowState-revertToState"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-revertToState}{}}}
-\subsection{Method \code{revertToState()}}{
-Revert the current active state to a previously saved state.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{WorkflowState$revertToState(state_name)}\if{html}{\out{</div>}}
+\subsection{\code{WorkflowState$revertToState()}}{
+  Revert the current active state to a previously saved state.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$revertToState(state_name)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{state_name}}{The name of the state to revert to.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The data object from the state that is now active.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{state_name}}{The name of the state to revert to.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The data object from the state that is now active.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-WorkflowState-getHistory"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-getHistory}{}}}
-\subsection{Method \code{getHistory()}}{
-Get the list of all saved state names.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{WorkflowState$getHistory()}\if{html}{\out{</div>}}
+\subsection{\code{WorkflowState$getHistory()}}{
+  Get the list of all saved state names.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getHistory()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A character vector of state names.
+  }
 }
 
-\subsection{Returns}{
-A character vector of state names.
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-getStateAudit"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-getStateAudit}{}}}
+\subsection{\code{WorkflowState$getStateAudit()}}{
+  Return the audit metadata associated with a state.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getStateAudit(state_name = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{state_name}}{State to inspect; defaults to the active state.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-getAuditRecords"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-getAuditRecords}{}}}
+\subsection{\code{WorkflowState$getAuditRecords()}}{
+  Return all immutable audit records, including records from
+branches that are no longer active after a revert.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getAuditRecords()}
+    \if{html}{\out{</div>}}
+  }
 }
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-WorkflowState-setWorkflowType"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-setWorkflowType}{}}}
-\subsection{Method \code{setWorkflowType()}}{
-Set the workflow type for the session.
+\subsection{\code{WorkflowState$setWorkflowType()}}{
+  Set the workflow type for the session.
 Workflow type determines which set of modules to load.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{WorkflowState$setWorkflowType(type)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{type}}{A character string for the workflow type.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$setWorkflowType(type)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{type}}{A character string for the workflow type.
 Proteomics: "LFQ", "TMT", "DIA"
 Metabolomics: "metabolomics_standard"
 Lipidomics: "lipidomics_standard"}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-WorkflowState-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{WorkflowState$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{WorkflowState$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

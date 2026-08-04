@@ -50,10 +50,14 @@ test_that("MCI-006.2 peptide q-value filter covers valid, inclusive-boundary, mi
     proteotypic = rep(1, 5)
   )
   expect_setequal(
-    module_ci_prot_peptide_ids(module_ci_prot_qvalue_filter(all_pass_tbl, q_threshold = 1, global_threshold = 1)),
+    module_ci_prot_peptide_ids(module_ci_prot_qvalue_filter(all_pass_tbl)),
     module_ci_prot_peptide_ids(all_pass_tbl)
   )
-  expect_equal(nrow(module_ci_prot_qvalue_filter(all_pass_tbl, q_threshold = 0, global_threshold = 0)), 0L)
+  expect_error(
+    module_ci_prot_qvalue_filter(all_pass_tbl, q_threshold = 0, global_threshold = 0),
+    "fixed at 0.01",
+    fixed = TRUE
+  )
 
   expect_error(
     module_ci_prot_qvalue_filter(tbl[, setdiff(names(tbl), "Q.Value")]),
@@ -131,9 +135,9 @@ test_that("MCI-006.4 peptide imputation matrix covers deterministic imputation, 
   expect_true(all(is.na(all_missing)))
   expect_true(any(imputed$is_imputed))
 
-  no_impute <- module_ci_prot_impute(fixture, proportion_missing_values = 0.50)
-  expect_false(any(no_impute$is_imputed, na.rm = TRUE))
-  expect_true(all(is.na(no_impute$Peptide.Imputed[no_impute$Stripped.Sequence == "ALL_MISSING"])))
+  boundary_impute <- module_ci_prot_impute(fixture, proportion_missing_values = 0.50)
+  expect_true(any(boundary_impute$is_imputed, na.rm = TRUE))
+  expect_true(all(is.na(boundary_impute$Peptide.Imputed[boundary_impute$Stripped.Sequence == "ALL_MISSING"])))
 
   empty_fixture <- fixture
   empty_fixture$data <- fixture$data[0, , drop = FALSE]

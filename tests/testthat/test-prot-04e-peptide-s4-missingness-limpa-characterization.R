@@ -5,7 +5,8 @@ localFakeLimpa <- function(env = parent.frame()) {
   old_lib_paths <- .libPaths()
   old_options <- options(
     multischolar.fake_limpa.dpc = NULL,
-    multischolar.fake_limpa.dpcImpute = NULL
+    multischolar.fake_limpa.dpcImpute = NULL,
+    multischolar.fake_limpa.dpcQuant = NULL
   )
 
   fake_lib <- file.path(tempdir(), "multischolar-fake-limpa-lib")
@@ -28,7 +29,7 @@ localFakeLimpa <- function(env = parent.frame()) {
       ),
       file.path(fake_pkg, "DESCRIPTION")
     )
-    writeLines("export(dpc,dpcImpute)", file.path(fake_pkg, "NAMESPACE"))
+    writeLines("export(dpc,dpcImpute,dpcQuant)", file.path(fake_pkg, "NAMESPACE"))
     writeLines(
       c(
         ".call_handler <- function(handler, args) {",
@@ -58,6 +59,16 @@ localFakeLimpa <- function(env = parent.frame()) {
         "  replacement <- if (missing(dpc.slope)) 1 else dpc.slope",
         "  E[is.na(E)] <- replacement",
         "  list(E = E)",
+        "}",
+        "",
+        "dpcQuant <- function(y, protein.id, dpc, dpc.slope, verbose = TRUE, chunk = 1000) {",
+        "  handler <- getOption('multischolar.fake_limpa.dpcQuant')",
+        "  if (is.function(handler)) {",
+        "    dpc_arg <- if (missing(dpc)) NULL else dpc",
+        "    slope_arg <- if (missing(dpc.slope)) NULL else dpc.slope",
+        "    return(.call_handler(handler, list(y = y, protein.id = protein.id, dpc = dpc_arg, dpc.slope = slope_arg, verbose = verbose, chunk = chunk)))",
+        "  }",
+        "  stop('No fake dpcQuant handler configured')",
         "}"
       ),
       file.path(fake_pkg, "R", "limpa.R")
@@ -308,4 +319,128 @@ test_that("PeptideQuantitativeData limpa imputation wraps limpa failures", {
     "limpa imputation failed: mock dpc failure",
     fixed = TRUE
   )
+})
+
+test_that("limpa imputation round-trips DIA group identities through opaque feature keys", {
+  localFakeLimpa()
+  options(
+    multischolar.fake_limpa.dpc = function(y) list(dpc = c(0.2, 0.8), y = y),
+    multischolar.fake_limpa.dpcImpute = function(y, dpc) {
+      E <- y
+      E[is.na(E)] <- log2(33)
+      list(E = E)
+    }
+  )
+
+  peptide_object <- newPeptideLimpaObject()
+  peptide_object@peptide_data$Protein.Group <- ifelse(
+    peptide_object@peptide_data$Stripped.Sequence == "PEP1",
+    "GROUP%ONE",
+    "GROUP_TWO"
+  )
+  peptide_object@peptide_data$Protein.Ids <- "P_SHARED"
+  peptide_object@peptide_data$Stripped.Sequence[
+    peptide_object@peptide_data$Protein.Group == "GROUP%ONE"
+  ] <- "PEP%ONE"
+  peptide_object@protein_id_column <- "Protein.Group"
+  peptide_object@args <- list()
+  peptide_object <- calcPeptideMatrix(peptide_object)
+
+  imputed <- peptideMissingValueImputationLimpa(
+    peptide_object,
+    imputed_value_column = "Peptide.Imputed.Group",
+    use_log2_transform = TRUE,
+    verbose = FALSE
+  )
+
+  expect_true(all(grepl("^.multischolar_peptide_", rownames(imputed@peptide_matrix))))
+  expect_identical(
+    imputed@args$peptide_feature_key_map,
+    peptide_object@args$peptide_feature_key_map
+  )
+  expect_equal(
+    imputed@peptide_data$Peptide.Imputed.Group[
+      imputed@peptide_data$Protein.Group == "GROUP%ONE" &
+        imputed@peptide_data$Run == "S1"
+    ],
+    32
+  )
+  expect_setequal(unique(imputed@peptide_data$Protein.Group), c("GROUP%ONE", "GROUP_TWO"))
+  expect_identical(unique(imputed@peptide_data$Protein.Ids), "P_SHARED")
+})
+
+test_that("limpa DPC-Quant receives Protein.Group from the feature map without parsing row names", {
+  localFakeLimpa()
+  captured <- new.env(parent = emptyenv())
+  options(
+    multischolar.fake_limpa.dpc = function(y) list(dpc = c(0.2, 0.8), y = y),
+    multischolar.fake_limpa.dpcQuant = function(y,
+                                               protein.id,
+                                               dpc = NULL,
+                                               dpc.slope = NULL,
+                                               verbose,
+                                               chunk) {
+      captured$genes <- y$genes
+      protein_ids <- unique(y$genes[[protein.id]])
+      E <- matrix(
+        seq_len(length(protein_ids) * ncol(y$E)),
+        nrow = length(protein_ids),
+        dimnames = list(protein_ids, colnames(y$E))
+      )
+      list(
+        E = E,
+        genes = data.frame(protein.id = protein_ids, stringsAsFactors = FALSE),
+        other = list(
+          standard.error = matrix(0, nrow(E), ncol(E), dimnames = dimnames(E)),
+          n.observations = matrix(1L, nrow(E), ncol(E), dimnames = dimnames(E))
+        )
+      )
+    }
+  )
+
+  peptide_object <- newPeptideLimpaObject(
+    values = matrix(
+      c(10, 20, 30, 40),
+      nrow = 2,
+      byrow = TRUE,
+      dimnames = list(c("FEATURE_ONE", "FEATURE_TWO"), c("S1", "S2"))
+    )
+  )
+  peptide_object@peptide_data$Protein.Group <- ifelse(
+    peptide_object@peptide_data$Stripped.Sequence == "FEATURE_ONE",
+    "GROUP%ONE",
+    "GROUP_TWO"
+  )
+  peptide_object@peptide_data$Protein.Ids <- "P_SHARED"
+  peptide_object@peptide_data$Stripped.Sequence <- "SHARED_SEQUENCE"
+  peptide_object@protein_id_column <- "Protein.Group"
+  peptide_object@args <- list()
+  peptide_object <- calcPeptideMatrix(peptide_object)
+
+  protein_method <- methods::selectMethod(
+    "proteinMissingValueImputationLimpa",
+    "PeptideQuantitativeData"
+  )
+  protein_method_env <- list2env(
+    list(
+      ProteinQuantitativeData = function(...) {
+        methods::new("ProteinQuantitativeData", ...)
+      }
+    ),
+    parent = environment(protein_method)
+  )
+  environment(protein_method) <- protein_method_env
+
+  quantified <- protein_method(
+    peptide_object,
+    dpc_slope = 0.8,
+    verbose = FALSE
+  )
+
+  expect_identical(captured$genes$protein.id, c("GROUP%ONE", "GROUP_TWO"))
+  expect_false(any(grepl("SHARED_SEQUENCE", captured$genes$protein.id, fixed = TRUE)))
+  expect_identical(quantified@protein_id_column, "Protein.Group")
+  expect_identical(quantified@protein_quant_table$Protein.Group, c("GROUP%ONE", "GROUP_TWO"))
+  expect_true(all(c("Protein.Group", "Protein.Ids") %in% names(quantified@protein_id_table)))
+  expect_identical(unique(quantified@protein_id_table$Protein.Ids), "P_SHARED")
 })

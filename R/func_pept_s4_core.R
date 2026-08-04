@@ -92,8 +92,6 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
                                        }
 
                                        if( ! object@protein_id_column %in% colnames(object@peptide_data) ) {
-                                         print(protein_id_column)
-                                         print( colnames(object@peptide_data) )
                                          stop("Protein ID column must be in the peptide data table")
                                        }
 
@@ -131,7 +129,7 @@ PeptideQuantitativeDataDiann <- function( peptide_data
                                           , sample_id = "Run"
                                           , group_id = "group"
                                           , technical_replicate_id = "replicates"
-                                          , args = NA) {
+                                          , args = list()) {
 
   protein_id_column <- if ("Protein.Group" %in% names(peptide_data)) {
     "Protein.Group"
@@ -169,37 +167,238 @@ PeptideQuantitativeDataDiann <- function( peptide_data
 
 }
 
+# Peptide matrices need a compact row key, but that key must never become the
+# source of truth for the biological identity.  Keep the reversible relation in
+# @args so existing serialized PeptideQuantitativeData objects remain readable
+# without changing the S4 schema.
+.buildPeptideFeatureKeyMap <- function(theObject) {
+  protein_column <- theObject@protein_id_column
+  peptide_column <- theObject@peptide_sequence_column
+  peptide_data <- theObject@peptide_data
+
+  required_columns <- c(protein_column, peptide_column)
+  missing_columns <- setdiff(required_columns, names(peptide_data))
+  if (length(missing_columns) > 0L) {
+    stop(
+      "Cannot build peptide feature keys; missing column(s): ",
+      paste(missing_columns, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  feature_pairs <- data.frame(
+    active_protein_id = as.character(peptide_data[[protein_column]]),
+    peptide_sequence = as.character(peptide_data[[peptide_column]]),
+    stringsAsFactors = FALSE
+  )
+  feature_pairs <- feature_pairs[!duplicated(feature_pairs), , drop = FALSE]
+
+  invalid_identity <- is.na(feature_pairs$active_protein_id) |
+    !nzchar(feature_pairs$active_protein_id) |
+    is.na(feature_pairs$peptide_sequence) |
+    !nzchar(feature_pairs$peptide_sequence)
+  if (any(invalid_identity)) {
+    stop(
+      "Peptide feature identities cannot contain missing or empty protein/peptide values.",
+      call. = FALSE
+    )
+  }
+
+  contains_separator <- grepl("%", feature_pairs$active_protein_id, fixed = TRUE) |
+    grepl("%", feature_pairs$peptide_sequence, fixed = TRUE)
+  display_keys <- paste(
+    feature_pairs$active_protein_id,
+    feature_pairs$peptide_sequence,
+    sep = "%"
+  )
+  use_opaque_keys <- any(contains_separator) || anyDuplicated(display_keys) > 0L
+  feature_pairs$feature_key <- if (use_opaque_keys) {
+    sprintf(".multischolar_peptide_%08d", seq_len(nrow(feature_pairs)))
+  } else {
+    display_keys
+  }
+
+  feature_pairs <- feature_pairs[
+    c("feature_key", "active_protein_id", "peptide_sequence")
+  ]
+  if (anyDuplicated(feature_pairs$feature_key) > 0L ||
+      anyDuplicated(feature_pairs[c("active_protein_id", "peptide_sequence")]) > 0L) {
+    stop("Peptide feature-key mapping is not one-to-one.", call. = FALSE)
+  }
+
+  feature_pairs
+}
+
+.peptideProteinAccessionProvenance <- function(theObject) {
+  peptide_data <- theObject@peptide_data
+  protein_column <- theObject@protein_id_column
+
+  if (!protein_column %in% names(peptide_data)) {
+    return(data.frame())
+  }
+
+  provenance_columns <- unique(c(protein_column, "Protein.Ids"))
+  provenance_columns <- provenance_columns[provenance_columns %in% names(peptide_data)]
+  provenance <- peptide_data[, provenance_columns, drop = FALSE]
+  for (column in provenance_columns) {
+    provenance[[column]] <- as.character(provenance[[column]])
+  }
+  provenance[!duplicated(provenance), , drop = FALSE]
+}
+
+.ensurePeptideFeatureKeyMap <- function(theObject, record_migration = TRUE) {
+  expected_map <- .buildPeptideFeatureKeyMap(theObject)
+  args <- theObject@args
+  if (!is.list(args)) {
+    args <- list()
+  }
+
+  existing_map <- args$peptide_feature_key_map
+  metadata <- args$peptide_feature_key_metadata
+  map_columns <- c("feature_key", "active_protein_id", "peptide_sequence")
+  existing_valid <- is.data.frame(existing_map) &&
+    all(map_columns %in% names(existing_map)) &&
+    is.list(metadata) &&
+    identical(metadata$protein_id_column, theObject@protein_id_column) &&
+    identical(metadata$peptide_sequence_column, theObject@peptide_sequence_column) &&
+    anyDuplicated(existing_map$feature_key) == 0L &&
+    anyDuplicated(existing_map[c("active_protein_id", "peptide_sequence")]) == 0L
+
+  if (existing_valid) {
+    matched_map <- dplyr::left_join(
+      expected_map[c("active_protein_id", "peptide_sequence")],
+      existing_map[map_columns],
+      by = c("active_protein_id", "peptide_sequence")
+    )
+    if (!anyNA(matched_map$feature_key)) {
+      expected_map$feature_key <- as.character(matched_map$feature_key)
+    } else {
+      existing_valid <- FALSE
+    }
+  }
+
+  if (!existing_valid && isTRUE(record_migration)) {
+    args$peptide_feature_key_migration <- list(
+      note = "Feature-key map rebuilt from declared protein and peptide columns.",
+      protein_id_column = theObject@protein_id_column,
+      peptide_sequence_column = theObject@peptide_sequence_column
+    )
+  }
+
+  args$peptide_feature_key_map <- expected_map
+  args$peptide_feature_key_metadata <- list(
+    schema_version = 1L,
+    protein_id_column = theObject@protein_id_column,
+    peptide_sequence_column = theObject@peptide_sequence_column,
+    key_is_display_only = !all(grepl("^\\.multischolar_peptide_", expected_map$feature_key))
+  )
+  args$protein_accession_provenance <- .peptideProteinAccessionProvenance(theObject)
+  theObject@args <- args
+  theObject
+}
+
+.peptideDataWithFeatureKey <- function(theObject,
+                                       peptide_data = theObject@peptide_data,
+                                       key_column = ".peptide_feature_key") {
+  theObject <- .ensurePeptideFeatureKeyMap(theObject)
+  feature_map <- theObject@args$peptide_feature_key_map
+  lookup <- feature_map
+  names(lookup)[names(lookup) == "active_protein_id"] <- theObject@protein_id_column
+  names(lookup)[names(lookup) == "peptide_sequence"] <- theObject@peptide_sequence_column
+  names(lookup)[names(lookup) == "feature_key"] <- key_column
+
+  keyed_data <- dplyr::left_join(
+    peptide_data,
+    lookup,
+    by = c(theObject@protein_id_column, theObject@peptide_sequence_column)
+  )
+  if (anyNA(keyed_data[[key_column]])) {
+    stop("A peptide row could not be mapped to a feature key.", call. = FALSE)
+  }
+
+  list(theObject = theObject, data = keyed_data)
+}
+
+.peptideMatrixToIdentityLong <- function(theObject,
+                                         peptide_matrix,
+                                         value_column) {
+  theObject <- .ensurePeptideFeatureKeyMap(theObject)
+  feature_map <- theObject@args$peptide_feature_key_map
+  matrix_keys <- rownames(peptide_matrix)
+  if (is.null(matrix_keys) || anyDuplicated(matrix_keys) > 0L ||
+      !all(matrix_keys %in% feature_map$feature_key)) {
+    stop(
+      "Peptide matrix row keys do not match the reversible feature-key map; recalculate the peptide matrix.",
+      call. = FALSE
+    )
+  }
+
+  identity_lookup <- feature_map
+  names(identity_lookup)[names(identity_lookup) == "active_protein_id"] <- theObject@protein_id_column
+  names(identity_lookup)[names(identity_lookup) == "peptide_sequence"] <- theObject@peptide_sequence_column
+
+  long_data <- peptide_matrix |>
+    as.data.frame() |>
+    tibble::rownames_to_column("feature_key") |>
+    tidyr::pivot_longer(
+      cols = -feature_key,
+      names_to = theObject@sample_id,
+      values_to = value_column
+    ) |>
+    dplyr::left_join(identity_lookup, by = "feature_key") |>
+    dplyr::select(-feature_key)
+
+  identity_columns <- c(
+    theObject@protein_id_column,
+    theObject@peptide_sequence_column,
+    theObject@sample_id,
+    value_column
+  )
+  list(
+    theObject = theObject,
+    data = long_data[, identity_columns, drop = FALSE]
+  )
+}
+
 #'@export
 setMethod(f="calcPeptideMatrix"
           , signature="PeptideQuantitativeData"
           , definition=function( theObject ) {
 
-            peptide_data <- theObject@peptide_data
+            keyed <- .peptideDataWithFeatureKey(theObject)
+            theObject <- keyed$theObject
+            peptide_data <- keyed$data
             # Use the NORMALIZED quantity column for the matrix, not the raw one.
             # This is critical for all downstream stats (limpa, etc.)
             quantity_column_to_use <- theObject@norm_quantity_column
             sample_id_column <- theObject@sample_id
-            protein_id_column <- theObject@protein_id_column
-            peptide_sequence_column <- theObject@peptide_sequence_column
+            duplicate_identity <- duplicated(peptide_data[
+              c(".peptide_feature_key", sample_id_column)
+            ])
+            if (any(duplicate_identity)) {
+              stop(
+                "Peptide matrix input contains duplicate protein/peptide/sample identities.",
+                call. = FALSE
+              )
+            }
 
-            peptide_quant_table <- peptide_data |>
-              dplyr::select(!!sym(sample_id_column)
-                            , !!sym(theObject@protein_id_column)
-                            , !!sym(theObject@peptide_sequence_column)
-                            , !!sym(quantity_column_to_use)) |>
-              mutate( !!sym(quantity_column_to_use)  := purrr::map_dbl(!!sym(quantity_column_to_use), as.numeric )) |>
-              tidyr::pivot_wider(names_from = !!sym(sample_id_column)
-                                 , values_from = !!sym(quantity_column_to_use)) |>
-              dplyr::rename(Protein.Ids = !!sym(theObject@protein_id_column)
-                            , Stripped.Sequence = !!sym(theObject@peptide_sequence_column))
-
-
-            normalised_frozen_peptide_matrix_filt <- peptide_quant_table |>
-              mutate(Protein.Ids = as.character(Protein.Ids)
-                     , Stripped.Sequence = as.character(Stripped.Sequence) ) |>
-              mutate(peptide_ids = paste(Protein.Ids, Stripped.Sequence, sep = "%")) |>
-              dplyr::select(-Protein.Ids,-Stripped.Sequence) |>
-              column_to_rownames("peptide_ids") |>
+            normalised_frozen_peptide_matrix_filt <- peptide_data |>
+              dplyr::select(
+                .peptide_feature_key,
+                !!sym(sample_id_column),
+                !!sym(quantity_column_to_use)
+              ) |>
+              dplyr::mutate(
+                !!sym(quantity_column_to_use) := purrr::map_dbl(
+                  !!sym(quantity_column_to_use),
+                  as.numeric
+                )
+              ) |>
+              tidyr::pivot_wider(
+                names_from = !!sym(sample_id_column),
+                values_from = !!sym(quantity_column_to_use)
+              ) |>
+              tibble::column_to_rownames(".peptide_feature_key") |>
               as.matrix()
 
             theObject@peptide_matrix <- normalised_frozen_peptide_matrix_filt

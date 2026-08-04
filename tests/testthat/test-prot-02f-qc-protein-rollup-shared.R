@@ -7,7 +7,12 @@ if (!methods::isClass("FakeSharedProteinRollupPeptideState")) {
     slots = c(
       peptide_data = "data.frame",
       design_matrix = "data.frame",
-      args = "list"
+      args = "list",
+      protein_id_column = "character",
+      peptide_sequence_column = "character",
+      sample_id = "character",
+      group_id = "character",
+      technical_replicate_id = "character"
     )
   )
 }
@@ -58,7 +63,12 @@ makeSharedProteinRollupPeptideState <- function() {
       replicates = c(1, 1),
       stringsAsFactors = FALSE
     ),
-    args = list(source = "shared-rollup-test")
+    args = list(source = "shared-rollup-test"),
+    protein_id_column = "Protein.Ids",
+    peptide_sequence_column = "Stripped.Sequence",
+    sample_id = "Run",
+    group_id = "group",
+    technical_replicate_id = "replicates"
   )
 }
 
@@ -382,6 +392,117 @@ test_that("proteomics protein rollup module preserves successful apply behavior"
     function(notification) identical(notification$type, "message"),
     logical(1)
   )))
+})
+
+test_that("IQ rollup keeps Protein.Group active and Protein.Ids as many-to-many provenance", {
+  captured <- new.env(parent = emptyenv())
+  peptide_state <- makeSharedProteinRollupPeptideState()
+  peptide_state@peptide_data <- data.frame(
+    Protein.Group = c("GROUP%ONE", "GROUP%ONE", "GROUP_TWO", "GROUP_TWO"),
+    Protein.Ids = c("P_SHARED", "P_ALPHA", "P_SHARED", "P_SHARED"),
+    Stripped.Sequence = c("PEP%ONE", "PEP_TWO", "PEP%ONE", "PEP_THREE"),
+    Run = c("sample_a", "sample_b", "sample_a", "sample_b"),
+    Peptide.Imputed = c(10, NA, 20, 30),
+    stringsAsFactors = FALSE
+  )
+  peptide_state@protein_id_column <- "Protein.Group"
+  peptide_state@args <- list(
+    source = "protein-group-lineage-test",
+    protein_accession_provenance = peptide_state@peptide_data |>
+      dplyr::distinct(Protein.Group, Protein.Ids)
+  )
+  workflow_data <- makeSharedProteinRollupWorkflow(peptide_state, captured)
+  test_dir <- tempfile("protein-group-iq-")
+  dir.create(test_dir)
+
+  result <- runProteinIqRollupApplyStep(
+    workflowData = workflow_data,
+    experimentPaths = list(peptide_qc_dir = test_dir, protein_qc_dir = test_dir),
+    createProteinDataFn = function(protein_quant_table,
+                                   protein_id_column,
+                                   protein_id_table,
+                                   design_matrix,
+                                   sample_id,
+                                   group_id,
+                                   technical_replicate_id,
+                                   args) {
+      captured$create <- list(
+        protein_quant_table = protein_quant_table,
+        protein_id_column = protein_id_column,
+        protein_id_table = protein_id_table,
+        design_matrix = design_matrix,
+        sample_id = sample_id,
+        group_id = group_id,
+        technical_replicate_id = technical_replicate_id,
+        args = args
+      )
+      makeSharedProteinRollupProteinState(protein_quant_table, design_matrix, args)
+    },
+    writeTsvFn = function(data, path) {
+      captured$iq_input <- data
+      captured$iq_input_path <- path
+      invisible(path)
+    },
+    processLongFormatFn = function(input_filename,
+                                   output_filename,
+                                   sample_id,
+                                   primary_id,
+                                   secondary_id,
+                                   intensity_col,
+                                   filter_double_less,
+                                   normalization) {
+      captured$iq_call <- as.list(environment())
+      file.create(output_filename)
+      invisible(output_filename)
+    },
+    readTsvFn = function(path, .name_repair) {
+      data.frame(
+        Protein.Group = c("GROUP%ONE", "GROUP_TWO"),
+        S_001 = c(11, 21),
+        S_002 = c(12, 31),
+        check.names = FALSE,
+        stringsAsFactors = FALSE
+      )
+    },
+    captureCheckpointFn = function(object, checkpointId, checkpointLabel) {
+      captured$checkpoint <- list(checkpointId, checkpointLabel)
+      invisible(NULL)
+    },
+    showNotificationFn = function(...) invisible(NULL),
+    logInfoFn = function(...) invisible(NULL),
+    logWarnFn = function(...) invisible(NULL),
+    sleepFn = function(...) invisible(NULL),
+    maxWait = 1
+  )
+
+  expect_identical(captured$iq_call$sample_id, "Run")
+  expect_identical(captured$iq_call$primary_id, "Protein.Group")
+  expect_identical(captured$iq_call$secondary_id, "Stripped.Sequence")
+  expect_identical(captured$iq_call$intensity_col, "Peptide.Imputed")
+  expect_identical(
+    captured$iq_call$filter_double_less,
+    c("Q.Value" = "0.01", "PG.Q.Value" = "0.01")
+  )
+  expect_identical(captured$iq_call$normalization, "none")
+  expect_true(all(captured$iq_input$Q.Value == 0.0009))
+  expect_true(all(captured$iq_input$PG.Q.Value == 0.009))
+  expect_identical(captured$iq_input$Peptide.Imputed, c(10, 0, 20, 30))
+  expect_identical(unique(captured$iq_input$Run), c("S_001", "S_002"))
+
+  expect_identical(captured$create$protein_id_column, "Protein.Group")
+  expect_identical(
+    names(captured$create$protein_quant_table),
+    c("Protein.Group", "sample_a", "sample_b")
+  )
+  expect_setequal(
+    captured$create$protein_id_table$Protein.Group,
+    c("GROUP%ONE", "GROUP_TWO")
+  )
+  expect_equal(nrow(captured$create$protein_id_table), 3L)
+  expect_true(all(c("Protein.Group", "Protein.Ids") %in% names(captured$create$protein_id_table)))
+  expect_identical(captured$save_state$config_object$protein_id_column, "Protein.Group")
+  expect_match(result$resultText, "Active protein key: Protein.Group", fixed = TRUE)
+  expect_match(result$resultText, "Proteins quantified: 2", fixed = TRUE)
 })
 
 test_that("proteomics protein rollup module preserves IQ timeout behavior", {

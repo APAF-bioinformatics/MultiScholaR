@@ -341,6 +341,7 @@ setMethod(
     peptide_sequence_column <- theObject@peptide_sequence_column
     sample_id_column <- theObject@sample_id
     design_matrix <- theObject@design_matrix
+    theObject <- .ensurePeptideFeatureKeyMap(theObject)
 
     if (verbose) {
       log_info("Starting limpa DPC-Quant protein quantification...")
@@ -465,10 +466,17 @@ setMethod(
       )
     }
 
-    # Create protein ID mapping from peptide data
-    # Extract protein IDs from rownames (format: "ProteinID%PeptideSequence")
-    rownames_split <- strsplit(rownames(y_peptide), "%")
-    protein_ids <- sapply(rownames_split, function(x) x[1])
+    # Create the protein mapping from the authoritative feature-key table.
+    # Matrix labels are opaque identifiers and are never parsed as biology.
+    feature_map <- theObject@args$peptide_feature_key_map
+    feature_index <- match(rownames(y_peptide), feature_map$feature_key)
+    if (anyNA(feature_index)) {
+      stop(
+        "Peptide matrix row keys do not match the reversible feature-key map; recalculate the peptide matrix.",
+        call. = FALSE
+      )
+    }
+    protein_ids <- feature_map$active_protein_id[feature_index]
 
     # Calculate peptide and peptidoform counts per protein for future filtering
     # This ensures we carry this critical info to the protein level
@@ -591,7 +599,10 @@ setMethod(
         protein_obj <- ProteinQuantitativeData(
           protein_quant_table = protein_wide,
           protein_id_column = protein_id_column,
-          protein_id_table = protein_wide |> dplyr::distinct(!!sym(protein_id_column)),
+          protein_id_table = .proteinIdTableFromPeptideLineage(
+            theObject,
+            protein_wide[[protein_id_column]]
+          ),
           design_matrix = design_matrix,
           sample_id = sample_id_column,
           group_id = theObject@group_id,

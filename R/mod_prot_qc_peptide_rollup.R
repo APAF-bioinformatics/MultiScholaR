@@ -34,9 +34,9 @@ mod_prot_qc_peptide_rollup_ui <- function(id) {
       shiny::column(4,
         shiny::wellPanel(
           shiny::h4("Precursor to Peptide Rollup"),
-          shiny::p("Aggregate intensity measurements from multiple precursor ions to peptide level."),
+          shiny::p("Sum linear precursor intensities across charge states and modified/unmodified forms to stripped-peptide level."),
           shiny::hr(),
-          shiny::p("This step has no configurable parameters - it uses statistical methods to combine precursor measurements."),
+          shiny::p("This step has no configurable parameters. Duplicate precursor identities and logged or invalid quantities are rejected before aggregation; all-missing outputs remain missing."),
           shiny::hr(),
           shiny::div(
             shiny::actionButton(ns("apply_rollup"), "Apply Rollup", 
@@ -62,6 +62,41 @@ mod_prot_qc_peptide_rollup_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+.peptideRollupSummaryFromObject <- function(object) {
+  if (!base::isS4(object) || !"args" %in% methods::slotNames(object)) {
+    return(NULL)
+  }
+  object@args$rollUpPrecursorToPeptide$rollup_summary
+}
+
+.formatPeptideRollupSummary <- function(summary) {
+  if (is.null(summary)) {
+    return("Rollup audit: unavailable for this legacy result")
+  }
+
+  paste(
+    sprintf("Aggregation: %s", summary$aggregation_rule),
+    sprintf("Active protein key: %s", summary$active_protein_key),
+    sprintf("Precursor identity: %s", summary$precursor_identity_mode),
+    sprintf("Input precursor rows: %d", summary$input_precursor_rows),
+    sprintf("Unique precursor identities: %d", summary$unique_precursor_identities),
+    sprintf("Output stripped-peptide identities: %d", summary$output_stripped_peptide_identities),
+    sprintf(
+      "Raw partial/all-missing outputs: %d / %d",
+      summary$raw_partial_missing_outputs,
+      summary$raw_all_missing_outputs
+    ),
+    sprintf(
+      "Normalised partial/all-missing outputs: %d / %d",
+      summary$normalised_partial_missing_outputs,
+      summary$normalised_all_missing_outputs
+    ),
+    sprintf("Frozen identification evidence: %s", summary$frozen_identification_evidence),
+    sprintf("Protein.Ids provenance: %s", summary$protein_ids_provenance),
+    sep = "\n"
+  )
+}
+
 runPeptideRollupApplyStep <- function(workflowData,
                                       rollupFn = rollUpPrecursorToPeptide,
                                       logInfoFn = logger::log_info,
@@ -81,16 +116,23 @@ runPeptideRollupApplyStep <- function(workflowData,
     workflowData$qc_params$peptide_qc <- list()
   }
 
+  rollupSummary <- .peptideRollupSummaryFromObject(rolledUpS4)
   workflowData$qc_params$peptide_qc$precursor_rollup <- list(
     applied = TRUE,
-    timestamp = nowFn()
+    timestamp = nowFn(),
+    summary = rollupSummary
   )
 
-  workflowData$state_manager$saveState(
+  rolledUpS4 <- .savePeptideQcState(
+    state_manager = workflowData$state_manager,
+    before = currentS4,
+    after = rolledUpS4,
+    stage_id = "precursor_rollup",
     state_name = "precursor_rollup",
-    s4_data_object = rolledUpS4,
-    config_object = list(),
-    description = "Applied precursor to peptide rollup"
+    config_object = list(rollup_summary = rollupSummary),
+    description = "Applied precursor to peptide rollup",
+    now = nowFn(),
+    transformation_type = "aggregation"
   )
 
   proteinCount <- .countPeptideProteinGroups(rolledUpS4)
@@ -99,6 +141,7 @@ runPeptideRollupApplyStep <- function(workflowData,
     "Precursor Rollup Applied Successfully\n",
     "====================================\n",
     sprintf("Proteins remaining: %d\n", proteinCount),
+    paste0(.formatPeptideRollupSummary(rollupSummary), "\n"),
     "State saved as: 'precursor_rollup'\n"
   )
 

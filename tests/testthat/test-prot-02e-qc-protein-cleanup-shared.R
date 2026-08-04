@@ -4,7 +4,10 @@ library(testthat)
 if (!methods::isClass("FakeSharedProteinCleanupState")) {
   methods::setClass(
     "FakeSharedProteinCleanupState",
-    slots = c(protein_quant_table = "data.frame")
+    slots = c(
+      protein_quant_table = "data.frame",
+      protein_id_column = "character"
+    )
   )
 }
 
@@ -21,13 +24,14 @@ getProtProteinCleanupServer <- function() {
   mod_prot_qc_protein_cleanup_server
 }
 
-makeSharedProteinCleanupState <- function(proteins = "P0") {
+makeSharedProteinCleanupState <- function(proteins = "P0",
+                                          protein_id_column = "Protein.Ids") {
+  protein_table <- data.frame(proteins, stringsAsFactors = FALSE)
+  names(protein_table) <- protein_id_column
   methods::new(
     "FakeSharedProteinCleanupState",
-    protein_quant_table = data.frame(
-      Protein.Ids = proteins,
-      stringsAsFactors = FALSE
-    )
+    protein_quant_table = protein_table,
+    protein_id_column = protein_id_column
   )
 }
 
@@ -264,6 +268,34 @@ withSharedProteinCleanupUiMocks <- function(server_env,
     .env = mock_frame
   )
 }
+
+test_that("protein cleanup counts and reports the declared Protein.Group key", {
+  captured <- new.env(parent = emptyenv())
+  current_state <- makeSharedProteinCleanupState(
+    c("GROUP_ONE", "GROUP_ONE", "GROUP_TWO"),
+    protein_id_column = "Protein.Group"
+  )
+  workflow_data <- makeSharedProteinCleanupWorkflow(current_state, captured)
+
+  result <- runProteinAccessionCleanupStep(
+    workflowData = workflow_data,
+    delimiter = ";",
+    aggregationMethod = "mean",
+    nowFn = function() as.POSIXct("2026-08-03", tz = "UTC"),
+    logInfoFn = function(...) invisible(NULL),
+    logWarnFn = function(...) invisible(NULL),
+    existsFn = function(...) FALSE
+  )
+
+  expect_identical(workflow_data$accession_cleanup_results$proteins_before, 2L)
+  expect_identical(workflow_data$accession_cleanup_results$proteins_after, 2L)
+  expect_identical(
+    workflow_data$accession_cleanup_results$active_protein_key_after,
+    "Protein.Group"
+  )
+  expect_identical(captured$save_state$config_object$active_protein_key, "Protein.Group")
+  expect_match(result$resultText, "Active protein key: Protein.Group", fixed = TRUE)
+})
 
 newSharedProteinCleanupCapture <- function() {
   captured <- new.env(parent = emptyenv())

@@ -74,6 +74,57 @@ setMethod(
     theObject <- updateParamInObject(theObject, "replace_zero_with_na")
     theObject <- updateParamInObject(theObject, "aggregation_method")
 
+    # DIA-NN Protein.Group is an inference identity, not an accession list.
+    # Rank the retained Protein.Ids provenance for annotation while preserving
+    # the quantitative group key and its protein matrix unchanged.
+    if (!identical(protein_id_column, "Protein.Ids") &&
+        all(c(protein_id_column, "Protein.Ids") %in% names(theObject@protein_id_table))) {
+      accession_provenance <- theObject@protein_id_table |>
+        dplyr::select(
+          !!sym(protein_id_column),
+          Protein.Ids
+        ) |>
+        dplyr::distinct()
+
+      selected_accessions <- chooseBestProteinAccessionHelper(
+        input_tbl = accession_provenance,
+        acc_detail_tab = seqinr_obj,
+        accessions_column = Protein.Ids,
+        row_id_column = seqinr_accession_column,
+        group_id = !!sym(protein_id_column),
+        delim = delim
+      ) |>
+        dplyr::select(
+          !!sym(protein_id_column),
+          !!sym(seqinr_accession_column)
+        ) |>
+        dplyr::distinct()
+
+      retained_provenance <- theObject@protein_id_table |>
+        dplyr::select(-dplyr::any_of(seqinr_accession_column)) |>
+        dplyr::left_join(selected_accessions, by = protein_id_column)
+      retained_provenance <- retained_provenance[
+        c(
+          protein_id_column,
+          setdiff(names(retained_provenance), protein_id_column)
+        )
+      ]
+
+      theObject@protein_id_table <- retained_provenance
+      if (!is.list(theObject@args)) {
+        theObject@args <- list()
+      }
+      theObject@args$protein_accession_cleanup <- list(
+        active_protein_key = protein_id_column,
+        accession_source_column = "Protein.Ids",
+        selected_accession_column = seqinr_accession_column,
+        quantitative_groups_merged = FALSE
+      )
+
+      methods::validObject(theObject)
+      return(theObject)
+    }
+
     evidence_tbl_cleaned <- protein_quant_table |>
       distinct() |>
       mutate(row_id = row_number() - 1)

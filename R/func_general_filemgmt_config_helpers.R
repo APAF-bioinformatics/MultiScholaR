@@ -107,25 +107,56 @@ readConfigFile <- function(file = file.path(source_dir, "config.ini"), file_type
             "srlQvalueProteotypicPeptideClean",
             "global_qvalue_threshold"
         )
+        if ("global_pg_qvalue_threshold" %in%
+            names(config_list[["srlQvalueProteotypicPeptideClean"]])) {
+            config_list <- setConfigValueAsNumeric(
+                config_list,
+                "srlQvalueProteotypicPeptideClean",
+                "global_pg_qvalue_threshold"
+            )
+        } else {
+            config_list[["srlQvalueProteotypicPeptideClean"]][["global_pg_qvalue_threshold"]] <- 0.01
+        }
         config_list <- setConfigValueAsNumeric(
             config_list,
             "srlQvalueProteotypicPeptideClean",
             "choose_only_proteotypic_peptide"
         )
+        for (exclusion_flag in c("exclude_decoys", "exclude_contaminants")) {
+            if (exclusion_flag %in%
+                names(config_list[["srlQvalueProteotypicPeptideClean"]])) {
+                config_list <- setConfigValueAsNumeric(
+                    config_list,
+                    "srlQvalueProteotypicPeptideClean",
+                    exclusion_flag
+                )
+            }
+        }
     }
 
 
     if ("peptideIntensityFiltering" %in% names(config_list)) {
-        config_list <- setConfigValueAsNumeric(
-            config_list,
-            "peptideIntensityFiltering",
-            "peptides_intensity_cutoff_percentile"
+        numeric_peptide_intensity_fields <- c(
+            "peptides_intensity_cutoff_percentile",
+            "peptides_proportion_of_samples_below_cutoff",
+            "min_reps_per_group",
+            "min_groups"
         )
-        config_list <- setConfigValueAsNumeric(
-            config_list,
-            "peptideIntensityFiltering",
-            "peptides_proportion_of_samples_below_cutoff"
-        )
+        for (field_name in numeric_peptide_intensity_fields) {
+            if (field_name %in% names(config_list[["peptideIntensityFiltering"]])) {
+                config_list <- setConfigValueAsNumeric(
+                    config_list,
+                    "peptideIntensityFiltering",
+                    field_name
+                )
+            }
+        }
+        if ("strict_mode" %in% names(config_list[["peptideIntensityFiltering"]])) {
+            strict_value <- config_list[["peptideIntensityFiltering"]][["strict_mode"]]
+            config_list[["peptideIntensityFiltering"]][["strict_mode"]] <-
+                tolower(trimws(as.character(strict_value))) %in%
+                    c("1", "true", "t", "yes", "y")
+        }
     }
 
 

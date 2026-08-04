@@ -371,6 +371,56 @@ test_that("PeptideQuantitativeData chooseBestProteinAccession and log2Transforma
   expect_equal(transformed[2, 2], log2(401))
 })
 
+test_that("peptide accession cleanup annotates but does not replace Protein.Group", {
+  peptide_object <- newPeptideNormObject(peptide_count = 2, sample_ids = c("S1", "S2"))
+  peptide_object@peptide_data$Protein.Group <- ifelse(
+    peptide_object@peptide_data$Protein.Ids == "P1",
+    "GROUP_ONE",
+    "GROUP_TWO"
+  )
+  peptide_object@peptide_data$Protein.Ids <- ifelse(
+    peptide_object@peptide_data$Protein.Group == "GROUP_ONE",
+    "P_SHARED;P_ALPHA",
+    "P_SHARED;P_BETA"
+  )
+  peptide_object@protein_id_column <- "Protein.Group"
+  peptide_object@args <- list(chooseBestProteinAccession = list())
+
+  method_env <- environment(methods::selectMethod("chooseBestProteinAccession", "PeptideQuantitativeData")@.Data)
+  local_mocked_bindings(
+    chooseBestProteinAccessionHelper = function(input_tbl,
+                                                acc_detail_tab,
+                                                accessions_column,
+                                                row_id_column,
+                                                group_id,
+                                                delim) {
+      data.frame(
+        Protein.Group = c("GROUP_ONE", "GROUP_TWO"),
+        uniprot_acc = c("P_ALPHA", "P_BETA"),
+        stringsAsFactors = FALSE
+      )
+    },
+    .env = method_env
+  )
+
+  accession_method <- methods::selectMethod("chooseBestProteinAccession", "PeptideQuantitativeData")
+  cleaned <- accession_method(
+    peptide_object,
+    delim = ";",
+    seqinr_obj = data.frame(uniprot_acc = c("P_ALPHA", "P_BETA")),
+    seqinr_accession_column = "uniprot_acc",
+    aggregation_method = "mean"
+  )
+
+  expect_identical(cleaned@protein_id_column, "Protein.Group")
+  expect_setequal(unique(cleaned@peptide_data$Protein.Group), c("GROUP_ONE", "GROUP_TWO"))
+  expect_setequal(unique(cleaned@peptide_data$Protein.Ids), c("P_ALPHA", "P_BETA"))
+  expect_setequal(
+    cleaned@args$peptide_feature_key_map$active_protein_id,
+    c("GROUP_ONE", "GROUP_TWO")
+  )
+})
+
 test_that("PeptideQuantitativeData normalization preserves none mode and log2 transforms matrices", {
   peptide_object <- newPeptideNormObject(peptide_count = 3, sample_ids = c("S1", "S2"))
   original_matrix <- peptide_object@peptide_matrix
@@ -389,6 +439,66 @@ test_that("PeptideQuantitativeData normalization preserves none mode and log2 tr
       logged@peptide_data$Run == "S2" & logged@peptide_data$Stripped.Sequence == "PEP3"
     ],
     log2(original_matrix["P3%PEP3", "S2"])
+  )
+})
+
+test_that("DIA peptide feature keys preserve Protein.Group and separator-containing identities", {
+  peptide_object <- newPeptideNormObject(peptide_count = 3, sample_ids = c("S1", "S2"))
+  peptide_object@peptide_data$Protein.Group <- c(
+    "GROUP%ONE", "GROUP_TWO", "GROUP_THREE",
+    "GROUP%ONE", "GROUP_TWO", "GROUP_THREE"
+  )
+  peptide_object@peptide_data$Protein.Ids <- c(
+    "P_SHARED", "P_SHARED", "P3;P4",
+    "P_SHARED", "P_SHARED", "P3;P4"
+  )
+  peptide_object@peptide_data$Stripped.Sequence <- c(
+    "SHARED", "SHARED", "PEP%THREE",
+    "SHARED", "SHARED", "PEP%THREE"
+  )
+  peptide_object@protein_id_column <- "Protein.Group"
+  peptide_object@args <- list()
+
+  calculated <- calcPeptideMatrix(peptide_object)
+  feature_map <- calculated@args$peptide_feature_key_map
+
+  expect_identical(calculated@protein_id_column, "Protein.Group")
+  expect_equal(nrow(calculated@peptide_matrix), 3L)
+  expect_equal(length(unique(rownames(calculated@peptide_matrix))), 3L)
+  expect_true(all(grepl("^.multischolar_peptide_", rownames(calculated@peptide_matrix))))
+  expect_setequal(feature_map$active_protein_id, c("GROUP%ONE", "GROUP_TWO", "GROUP_THREE"))
+  expect_equal(
+    nrow(calculated@args$protein_accession_provenance),
+    3L
+  )
+
+  normalized <- normaliseBetweenSamples(calculated, normalisation_method = "none")
+  logged <- log2TransformPeptideMatrix(calculated)
+
+  expect_identical(
+    normalized@args$peptide_feature_key_map,
+    calculated@args$peptide_feature_key_map
+  )
+  expect_identical(rownames(normalized@peptide_matrix), rownames(calculated@peptide_matrix))
+  expect_equal(normalized@peptide_matrix, calculated@peptide_matrix)
+  expect_identical(logged@args$peptide_feature_key_map, calculated@args$peptide_feature_key_map)
+  expect_equal(logged@peptide_matrix, log2(calculated@peptide_matrix))
+  expect_setequal(unique(logged@peptide_data$Protein.Group), unique(peptide_object@peptide_data$Protein.Group))
+})
+
+test_that("legacy peptide objects rebuild a collision-checked feature map", {
+  peptide_object <- newPeptideNormObject(peptide_count = 2, sample_ids = c("S1", "S2"))
+  peptide_object@args$peptide_feature_key_map <- NULL
+  peptide_object@args$peptide_feature_key_metadata <- NULL
+  peptide_object@args$peptide_feature_key_migration <- NULL
+
+  migrated <- calcPeptideMatrix(peptide_object)
+
+  expect_identical(rownames(migrated@peptide_matrix), c("P1%PEP1", "P2%PEP2"))
+  expect_match(
+    migrated@args$peptide_feature_key_migration$note,
+    "rebuilt",
+    fixed = TRUE
   )
 })
 

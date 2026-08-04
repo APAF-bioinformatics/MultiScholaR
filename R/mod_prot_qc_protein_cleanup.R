@@ -95,6 +95,24 @@ mod_prot_qc_protein_cleanup_ui <- function(id) {
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot textOutput
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
+.proteinCleanupActiveKey <- function(proteinObject) {
+  declaredKey <- tryCatch(
+    proteinObject@protein_id_column,
+    error = function(...) character()
+  )
+  if (length(declaredKey) == 1L &&
+      declaredKey %in% names(proteinObject@protein_quant_table)) {
+    return(declaredKey)
+  }
+
+  candidates <- c("Protein.Group", "Protein.Ids", "Protein.IDs", "protein_id")
+  inferredKey <- candidates[candidates %in% names(proteinObject@protein_quant_table)][1]
+  if (length(inferredKey) == 0L || is.na(inferredKey)) {
+    stop("No active protein identity column is available.", call. = FALSE)
+  }
+  inferredKey
+}
+
 runProteinAccessionCleanupStep <- function(workflowData,
                                            delimiter,
                                            aggregationMethod,
@@ -114,8 +132,10 @@ runProteinAccessionCleanupStep <- function(workflowData,
     delimiter
   ))
 
+  proteinKeyBefore <- .proteinCleanupActiveKey(currentS4)
+
   proteinsBefore <- currentS4@protein_quant_table |>
-    dplyr::distinct(Protein.Ids) |>
+    dplyr::distinct(!!rlang::sym(proteinKeyBefore)) |>
     nrow()
 
   if (existsFn("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE)) {
@@ -136,14 +156,17 @@ runProteinAccessionCleanupStep <- function(workflowData,
     cleanupApplied <- FALSE
   }
 
+  proteinKeyAfter <- .proteinCleanupActiveKey(cleanedS4)
   proteinsAfter <- cleanedS4@protein_quant_table |>
-    dplyr::distinct(Protein.Ids) |>
+    dplyr::distinct(!!rlang::sym(proteinKeyAfter)) |>
     nrow()
 
   workflowData$accession_cleanup_results <- list(
     cleanup_applied = cleanupApplied,
     delimiter_used = delimiter,
     aggregation_method = aggregationMethod,
+    active_protein_key_before = proteinKeyBefore,
+    active_protein_key_after = proteinKeyAfter,
     proteins_before = proteinsBefore,
     proteins_after = proteinsAfter,
     had_full_metadata = if (!is.null(workflowData$fasta_metadata)) {
@@ -198,7 +221,8 @@ runProteinAccessionCleanupStep <- function(workflowData,
     config_object = list(
       delimiter = delimiter,
       aggregation_method = aggregationMethod,
-      cleanup_applied = cleanupApplied
+      cleanup_applied = cleanupApplied,
+      active_protein_key = proteinKeyAfter
     ),
     description = if (cleanupApplied) {
       "Applied protein accession cleanup"
@@ -208,7 +232,7 @@ runProteinAccessionCleanupStep <- function(workflowData,
   )
 
   proteinCount <- cleanedS4@protein_quant_table |>
-    dplyr::distinct(Protein.Ids) |>
+    dplyr::distinct(!!rlang::sym(proteinKeyAfter)) |>
     nrow()
 
   resultText <- if (cleanupApplied) {
@@ -216,6 +240,7 @@ runProteinAccessionCleanupStep <- function(workflowData,
       "Protein Accession Cleanup Applied Successfully\n",
       "==============================================\n",
       sprintf("Proteins remaining: %d\n", proteinCount),
+      sprintf("Active protein key: %s\n", proteinKeyAfter),
       sprintf("Delimiter: %s\n", delimiter),
       sprintf("Aggregation method: %s\n", aggregationMethod),
       "State saved as: 'protein_accession_cleaned'\n"
@@ -225,6 +250,7 @@ runProteinAccessionCleanupStep <- function(workflowData,
       "Protein Accession Cleanup Skipped\n",
       "=================================\n",
       sprintf("Proteins remaining: %d\n", proteinCount),
+      sprintf("Active protein key: %s\n", proteinKeyAfter),
       "Reason: No FASTA data available for cleanup\n",
       "State saved as: 'protein_accession_cleaned'\n"
     )

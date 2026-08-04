@@ -257,7 +257,12 @@ test_that("proteomics peptide replicate module preserves successful apply behavi
   expect_identical(captured$save_state$config_object$replicate_group_column, "replicates")
   expect_identical(
     captured$save_state$description,
-    "Applied replicate filter (removed single-replicate peptides)"
+    "Applied distinct-run replicate support filter (supported in any group)"
+  )
+  expect_identical(captured$save_state$config_object$minimum_distinct_runs, 2L)
+  expect_identical(
+    captured$save_state$config_object$retention_policy,
+    "supported_in_any_group"
   )
   expect_identical(captured$plot_update$step_name, "7_replicate_filtered")
   expect_identical(captured$plot_update$omic_type, "proteomics")
@@ -266,6 +271,11 @@ test_that("proteomics peptide replicate module preserves successful apply behavi
   expect_true(captured$plot_update$overwrite)
   expect_match(captured$output$replicate_results, "Proteins remaining: 2", fixed = TRUE)
   expect_match(captured$output$replicate_results, "Replicate group column: replicates", fixed = TRUE)
+  expect_match(
+    captured$output$replicate_results,
+    "Rule: >= 2 distinct runs in any replicate group",
+    fixed = TRUE
+  )
   expect_identical(captured$output$replicate_plot, "rendered-plot")
   expect_identical(captured$drawn_plot, "plot-token")
   expect_identical(captured$removed_notifications, "replicate_working")

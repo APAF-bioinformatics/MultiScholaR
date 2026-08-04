@@ -99,21 +99,20 @@ setMethod(f="peptideMissingValueImputationLimpa"
             tryCatch({
               dpcfit <- limpa::dpc(y_peptide)
 
+              slope_interpretation <- if (dpcfit$dpc[2] < 0.3) {
+                "nearly random missing"
+              } else if (dpcfit$dpc[2] < 0.7) {
+                "moderate intensity-dependent missing"
+              } else if (dpcfit$dpc[2] < 1.2) {
+                "strong intensity-dependent missing"
+              } else {
+                "very strong intensity-dependent missing (approaching left-censoring)"
+              }
+
               if (verbose) {
                 log_info("DPC parameters estimated:")
                 log_info("  beta0 (intercept): {round(dpcfit$dpc[1], 4)}")
                 log_info("  beta1 (slope): {round(dpcfit$dpc[2], 4)}")
-
-                # Interpret the slope
-                slope_interpretation <- if (dpcfit$dpc[2] < 0.3) {
-                  "nearly random missing"
-                } else if (dpcfit$dpc[2] < 0.7) {
-                  "moderate intensity-dependent missing"
-                } else if (dpcfit$dpc[2] < 1.2) {
-                  "strong intensity-dependent missing"
-                } else {
-                  "very strong intensity-dependent missing (approaching left-censoring)"
-                }
                 log_info("  Interpretation: {slope_interpretation}")
               }
 
@@ -147,19 +146,15 @@ setMethod(f="peptideMissingValueImputationLimpa"
                 log_info("Converting imputed data back to original format...")
               }
 
-              # Create peptide IDs that match the matrix rownames
-              peptide_ids <- rownames(imputed_matrix)
-
-              # Convert imputed matrix to long format
-              imputed_long <- imputed_matrix |>
-                as.data.frame() |>
-                tibble::rownames_to_column("peptide_id") |>
-                tidyr::pivot_longer(cols = -peptide_id,
-                                   names_to = sample_id_column,
-                                   values_to = imputed_value_column) |>
-                tidyr::separate(peptide_id,
-                               into = c(theObject@protein_id_column, theObject@peptide_sequence_column),
-                               sep = "%")
+              # Convert with the authoritative feature map; matrix row labels
+              # are never parsed as biological identifiers.
+              imputed_identity <- .peptideMatrixToIdentityLong(
+                theObject,
+                imputed_matrix,
+                imputed_value_column
+              )
+              theObject <- imputed_identity$theObject
+              imputed_long <- imputed_identity$data
 
               # Merge with original peptide data
               updated_peptide_data <- peptide_data |>
