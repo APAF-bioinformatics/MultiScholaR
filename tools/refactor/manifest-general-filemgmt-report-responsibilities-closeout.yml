@@ -1,0 +1,70 @@
+version: 1
+wave: general_filemgmt_report_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_results_summary_helpers.R
+  - R/func_general_filemgmt_report_render_helpers.R
+
+entries:
+  - id: results_summary_copy
+    source: R/func_general_filemgmt_report_helpers.R
+    selector: { kind: symbol, value: copyToResultsSummary }
+    target: R/func_general_filemgmt_results_summary_helpers.R
+    group: general.filemgmt.results_summary
+
+  - id: report_template_download
+    source: R/func_general_filemgmt_report_helpers.R
+    selector: { kind: symbol, value: downloadReportTemplate }
+    target: R/func_general_filemgmt_report_render_helpers.R
+    group: general.filemgmt.report_rendering
+
+  - id: report_render
+    source: R/func_general_filemgmt_report_helpers.R
+    selector: { kind: symbol, value: RenderReport }
+    target: R/func_general_filemgmt_report_render_helpers.R
+    group: general.filemgmt.report_rendering
+
+  - id: pdf_list_save
+    source: R/func_general_filemgmt_report_helpers.R
+    selector: { kind: symbol, value: saveListOfPdfs }
+    target: R/func_general_filemgmt_report_render_helpers.R
+    group: general.filemgmt.report_rendering
+
+  - id: simple_rmd_source
+    source: R/func_general_filemgmt_report_helpers.R
+    selector: { kind: symbol, value: sourceRmdFileSimple }
+    target: R/func_general_filemgmt_report_render_helpers.R
+    group: general.filemgmt.report_rendering
+
+  - id: rmd_source
+    source: R/func_general_filemgmt_report_helpers.R
+    selector: { kind: symbol, value: sourceRmdFile }
+    target: R/func_general_filemgmt_report_render_helpers.R
+    group: general.filemgmt.report_rendering
+
+  - id: plot_save
+    source: R/func_general_filemgmt_report_helpers.R
+    selector: { kind: symbol, value: savePlot }
+    target: R/func_general_filemgmt_report_render_helpers.R
+    group: general.filemgmt.report_rendering
+
+  - id: plot_save_alias
+    source: R/func_general_filemgmt_report_helpers.R
+    selector: { kind: symbol, value: save_plot }
+    target: R/func_general_filemgmt_report_render_helpers.R
+    group: general.filemgmt.report_rendering
+
+  - id: results_write
+    source: R/func_general_filemgmt_report_helpers.R
+    selector: { kind: symbol, value: write_results }
+    target: R/func_general_filemgmt_report_render_helpers.R
+    group: general.filemgmt.report_rendering
