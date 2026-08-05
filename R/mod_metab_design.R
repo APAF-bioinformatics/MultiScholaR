@@ -19,7 +19,7 @@
 # ============================================================================
 # Purpose: Metabolomics design matrix host module - 1:1 with proteomics
 #
-# This module embeds mod_metab_design_builder.R and handles orchestration,
+# This module embeds the metabolomics design-builder UI/server modules and handles orchestration,
 # including Import Existing Design, S4 object creation, and state management.
 # ============================================================================
 

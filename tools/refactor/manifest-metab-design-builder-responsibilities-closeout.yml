@@ -1,0 +1,32 @@
+version: 1
+wave: metab_design_builder_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_design_builder_ui.R
+  - R/mod_metab_design_builder_server.R
+
+entries:
+  - id: metabolomics_design_builder_ui
+    source: R/mod_metab_design_builder.R
+    selector:
+      kind: anchor_range
+      start: '^# MultiScholaR: Interactive Multi-Omics Analysis$'
+      end: "^#' Metabolomics Design Matrix Builder Server Module$"
+      end_inclusive: false
+    target: R/mod_metab_design_builder_ui.R
+    group: metabolomics.design_builder.ui
+
+  - id: metabolomics_design_builder_server
+    source: R/mod_metab_design_builder.R
+    selector: { kind: symbol, value: mod_metab_design_builder_server }
+    target: R/mod_metab_design_builder_server.R
+    group: metabolomics.design_builder.server
