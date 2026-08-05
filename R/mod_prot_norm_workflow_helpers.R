@@ -338,3 +338,476 @@ buildProtNormCompletionNotification <- function(ruvMode) {
   "Normalization and RUV correction completed! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step."
 }
 
+notifyProtNormNormalizationPrereqWarning <- function(
+  currentState,
+  showNotificationFn = shiny::showNotification,
+  messageFn = message
+) {
+  messageFn(sprintf(
+    "*** State '%s' is not valid for normalization. User needs to complete QC. ***",
+    currentState
+  ))
+  showNotificationFn(
+    "Please complete the Quality Control filtering steps before accessing normalization.",
+    type = "warning",
+    duration = 5
+  )
+
+  invisible(FALSE)
+}
+
+handleProtNormPreQcGenerationError <- function(
+  error,
+  showNotificationFn = shiny::showNotification,
+  messageFn = message
+) {
+  messageFn(paste("*** ERROR generating pre-normalization QC:", error$message))
+  showNotificationFn(
+    paste("Error generating pre-normalization QC:", error$message),
+    type = "error",
+    duration = 10
+  )
+
+  invisible(FALSE)
+}
+
+runProtNormTabEntryWorkflow <- function(
+  selectedTab,
+  workflowData,
+  normData,
+  generatePreNormalizationQcFn,
+  shouldAutoGeneratePreQcFn = shouldProtNormAutoGeneratePreQc,
+  notifyInvalidStateFn = notifyProtNormNormalizationPrereqWarning,
+  handlePreQcErrorFn = handleProtNormPreQcGenerationError,
+  messageFn = message
+) {
+  if (is.null(selectedTab) || selectedTab != "normalization") {
+    return(invisible(FALSE))
+  }
+
+  messageFn("=== NORMALIZATION TAB CLICKED ===")
+  messageFn(sprintf(
+    "workflow_data$state_manager is NULL: %s",
+    is.null(workflowData$state_manager)
+  ))
+
+  if (is.null(workflowData$state_manager)) {
+    messageFn("*** workflow_data$state_manager is NULL - cannot check state ***")
+    return(invisible(FALSE))
+  }
+
+  current_state <- workflowData$state_manager$current_state
+
+  messageFn(sprintf("Current state: '%s'", current_state))
+  messageFn(sprintf("Target trigger state: 'protein_replicate_filtered'"))
+  messageFn(sprintf("Pre-norm QC generated: %s", normData$pre_norm_qc_generated))
+
+  if (!shouldAutoGeneratePreQcFn(
+    selectedTab,
+    current_state,
+    normData$pre_norm_qc_generated
+  )) {
+    return(notifyInvalidStateFn(currentState = current_state))
+  }
+
+  messageFn("*** AUTO-TRIGGERING PRE-NORMALIZATION QC (chunk 24) ***")
+
+  tryCatch({
+    generatePreNormalizationQcFn()
+    normData$pre_norm_qc_generated <- TRUE
+
+    messageFn("*** PRE-NORMALIZATION QC COMPLETED SUCCESSFULLY ***")
+    messageFn(sprintf("State is '%s' and PCA already generated. skipping.", current_state))
+
+    TRUE
+  }, error = function(e) {
+    handlePreQcErrorFn(error = e)
+  })
+}
+
+handleProtNormNormalizationError <- function(
+  error,
+  showNotificationFn = shiny::showNotification,
+  messageFn = message
+) {
+  messageFn(paste("Error in normalization workflow:", error$message))
+  showNotificationFn(
+    paste("Error in normalization:", error$message),
+    type = "error",
+    duration = 10
+  )
+
+  invisible(FALSE)
+}
+
+runProtNormNormalizationWorkflow <- function(
+  input,
+  workflowData,
+  normData,
+  experimentPaths,
+  omicType,
+  experimentLabel,
+  checkMemoryUsageFn,
+  generatePostNormalizationQcFn,
+  generateRuvCorrectedQcFn,
+  getRuvGroupingVariableFn,
+  prepareNormalizationRunFn = prepareProtNormNormalizationRun,
+  runBetweenSamplesStepFn = runProtNormBetweenSamplesStep,
+  runPostNormalizationQcStepFn = runProtNormPostNormalizationQcStep,
+  applySkippedRuvStateFn = applyProtNormSkippedRuvState,
+  resolveRuvParametersFn = resolveProtNormRuvParameters,
+  applyRuvCorrectionStepFn = applyProtNormRuvCorrectionStep,
+  finalizeRuvCleanupStepFn = finalizeProtNormRuvCleanupStep,
+  resolveStep6QcObjectFn = resolveProtNormStep6QcObject,
+  runStep6RuvQcFn = runProtNormStep6RuvQc,
+  generateCompositeQcFigureFn = generateProtNormCompositeQcFigure,
+  finalizeWorkflowStateFn = finalizeProtNormWorkflowState,
+  buildCompletionNotificationFn = buildProtNormCompletionNotification,
+  withProgressFn = shiny::withProgress,
+  incProgressFn = shiny::incProgress,
+  showNotificationFn = shiny::showNotification,
+  handleErrorFn = handleProtNormNormalizationError,
+  messageFn = message
+) {
+  messageFn("=== NORMALIZATION BUTTON CLICKED ===")
+  messageFn("Starting normalization workflow...")
+
+  checkMemoryUsageFn(threshold_gb = 8, context = "Normalization Start")
+
+  tryCatch({
+    run_context <- prepareNormalizationRunFn(
+      stateManager = workflowData$state_manager,
+      normData = normData
+    )
+    current_s4 <- run_context$currentS4
+    ruv_corrected_s4_clean <- NULL
+
+    withProgressFn(message = "Running normalization...", value = 0, {
+      incProgressFn(0.2, detail = "Normalizing between samples...")
+
+      normalized_s4 <- tryCatch({
+        runBetweenSamplesStepFn(
+          currentS4 = current_s4,
+          normMethod = input$norm_method,
+          normData = normData,
+          proteinQcDir = experimentPaths$protein_qc_dir
+        )
+      }, error = function(e) {
+        stop(paste("Step 1 (normalization) error:", e$message))
+      })
+
+      incProgressFn(0.2, detail = "Generating post-normalization QC plots...")
+
+      tryCatch({
+        runPostNormalizationQcStepFn(
+          normalizedS4 = normalized_s4,
+          normData = normData,
+          generatePostNormalizationQcFn = generatePostNormalizationQcFn
+        )
+      }, error = function(e) {
+        stop(paste("Step 2 (post-norm QC) error:", e$message))
+      })
+
+      messageFn(sprintf("*** DEBUG: input$ruv_mode value = '%s' ***", input$ruv_mode))
+      messageFn(sprintf(
+        "*** DEBUG: Checking if '%s' == 'skip': %s ***",
+        input$ruv_mode,
+        input$ruv_mode == "skip"
+      ))
+
+      if (input$ruv_mode == "skip") {
+        applySkippedRuvStateFn(
+          normalizedS4 = normalized_s4,
+          normMethod = input$norm_method,
+          normData = normData,
+          workflowData = workflowData,
+          sourceDir = experimentPaths$source_dir
+        )
+      } else {
+        incProgressFn(0.2, detail = "Determining RUV parameters...")
+
+        tryCatch({
+          resolveRuvParametersFn(
+            normalizedS4 = normalized_s4,
+            input = input,
+            normData = normData,
+            workflowData = workflowData,
+            sourceDir = experimentPaths$source_dir,
+            getRuvGroupingVariableFn = getRuvGroupingVariableFn
+          )
+        }, error = function(e) {
+          stop(paste("Step 3 (RUV parameter determination) error:", e$message))
+        })
+
+        incProgressFn(0.2, detail = "Applying RUV-III batch correction...")
+
+        ruv_corrected_s4 <- tryCatch({
+          applyRuvCorrectionStepFn(
+            normalizedS4 = normalized_s4,
+            normData = normData,
+            getRuvGroupingVariableFn = getRuvGroupingVariableFn
+          )
+        }, error = function(e) {
+          stop(paste("Step 4 (RUV-III correction) error:", e$message))
+        })
+
+        tryCatch({
+          ruv_corrected_s4_clean <- finalizeRuvCleanupStepFn(
+            ruvCorrectedS4 = ruv_corrected_s4,
+            input = input,
+            normData = normData,
+            workflowData = workflowData,
+            omicType = omicType,
+            experimentLabel = experimentLabel
+          )
+        }, error = function(e) {
+          messageFn(paste("*** ERROR in Step 5:", e$message, "***"))
+          messageFn("*** STEP 5: Continuing to Step 6 despite error ***")
+        })
+      }
+
+      incProgressFn(0.2, detail = "Generating RUV-corrected QC plots...")
+      messageFn("*** STEP 6: STARTING RUV-corrected QC plot generation ***")
+
+      step6_object <- resolveStep6QcObjectFn(
+        step5Object = ruv_corrected_s4_clean,
+        normData = normData
+      )
+
+      runStep6RuvQcFn(
+        ruvMode = input$ruv_mode,
+        step6Object = step6_object,
+        normData = normData,
+        qcDir = experimentPaths$protein_qc_dir,
+        generateRuvCorrectedQcFn = generateRuvCorrectedQcFn
+      )
+
+      generateCompositeQcFigureFn(
+        ruvMode = input$ruv_mode,
+        qcDir = experimentPaths$protein_qc_dir,
+        omicType = omicType
+      )
+
+      finalizeWorkflowStateFn(normData)
+    })
+
+    showNotificationFn(
+      buildCompletionNotificationFn(input$ruv_mode),
+      type = "message",
+      duration = 10
+    )
+
+    messageFn("Normalization workflow completed successfully")
+
+    TRUE
+  }, error = function(e) {
+    handleErrorFn(error = e)
+  })
+}
+
+runProtNormApplyCorrelationObserver <- function(
+  input,
+  output,
+  workflowData,
+  normData,
+  experimentPaths,
+  omicType,
+  experimentLabel,
+  getRuvGroupingVariableFn,
+  getPlotAestheticsFn,
+  checkMemoryUsageFn,
+  resolveCorrelationInputObjectFn = resolveProtNormCorrelationInputObject,
+  runApplyCorrelationWorkflowFn = runProtNormApplyCorrelationWorkflow,
+  completeCorrelationWorkflowFn = completeProtNormCorrelationWorkflow,
+  handleCorrelationErrorFn = handleProtNormCorrelationError,
+  messageFn = message
+) {
+  messageFn("=== CORRELATION FILTERING BUTTON CLICKED (DEBUG66 ACTIVE) ===")
+
+  checkMemoryUsageFn(threshold_gb = 8, context = "Correlation Filtering Start")
+
+  tryCatch({
+    ruv_s4 <- resolveCorrelationInputObjectFn(
+      ruvNormalizedObj = normData$ruv_normalized_obj,
+      startMessage = "Starting Correlation Filter Flow",
+      missingObjectMessage = "RUV correction must be completed before correlation filtering"
+    )
+    final_s4_for_de <- runApplyCorrelationWorkflowFn(
+      ruvS4 = ruv_s4,
+      correlationThreshold = input$min_pearson_correlation_threshold,
+      normData = normData,
+      experimentPaths = experimentPaths,
+      workflowData = workflowData,
+      omicType = omicType,
+      experimentLabel = experimentLabel,
+      getRuvGroupingVariableFn = getRuvGroupingVariableFn,
+      getPlotAestheticsFn = getPlotAestheticsFn
+    )
+
+    completeCorrelationWorkflowFn(
+      finalS4ForDe = final_s4_for_de,
+      workflowData = workflowData,
+      output = output,
+      normData = normData,
+      correlationThreshold = input$min_pearson_correlation_threshold,
+      skipped = FALSE,
+      successNotification = "Correlation filtering completed! Ready for differential expression analysis.",
+      completionMessage = "=== CORRELATION FILTERING COMPLETED SUCCESSFULLY ===",
+      messagePrefix = "*** CORRELATION"
+    )
+
+    final_s4_for_de
+  }, error = function(e) {
+    handleCorrelationErrorFn(
+      error = e,
+      logPrefix = "Error in correlation filtering:",
+      notificationPrefix = "Error in correlation filtering:"
+    )
+  })
+}
+
+runProtNormSkipCorrelationObserver <- function(
+  output,
+  workflowData,
+  normData,
+  experimentPaths,
+  omicType,
+  experimentLabel,
+  getPlotAestheticsFn,
+  checkMemoryUsageFn,
+  resolveCorrelationInputObjectFn = resolveProtNormCorrelationInputObject,
+  runSkipCorrelationWorkflowFn = runProtNormSkipCorrelationWorkflow,
+  completeCorrelationWorkflowFn = completeProtNormCorrelationWorkflow,
+  handleCorrelationErrorFn = handleProtNormCorrelationError,
+  messageFn = message
+) {
+  messageFn("=== SKIP CORRELATION FILTERING BUTTON CLICKED (DEBUG66 ACTIVE) ===")
+
+  checkMemoryUsageFn(threshold_gb = 8, context = "Skip Correlation Filtering Start")
+
+  tryCatch({
+    ruv_s4 <- resolveCorrelationInputObjectFn(
+      ruvNormalizedObj = normData$ruv_normalized_obj,
+      startMessage = "Skipping Correlation Filter Flow",
+      missingObjectMessage = "RUV correction must be completed before proceeding"
+    )
+    final_s4_for_de <- runSkipCorrelationWorkflowFn(
+      ruvS4 = ruv_s4,
+      normData = normData,
+      experimentPaths = experimentPaths,
+      workflowData = workflowData,
+      omicType = omicType,
+      experimentLabel = experimentLabel,
+      getPlotAestheticsFn = getPlotAestheticsFn
+    )
+
+    completeCorrelationWorkflowFn(
+      finalS4ForDe = final_s4_for_de,
+      workflowData = workflowData,
+      output = output,
+      normData = normData,
+      correlationThreshold = 0,
+      skipped = TRUE,
+      successNotification = "Correlation filtering skipped! Ready for differential expression analysis.",
+      completionMessage = "=== SKIP CORRELATION FILTERING COMPLETED SUCCESSFULLY ===",
+      messagePrefix = "*** SKIP CORRELATION"
+    )
+
+    final_s4_for_de
+  }, error = function(e) {
+    handleCorrelationErrorFn(
+      error = e,
+      logPrefix = "Error in skipping correlation filtering:",
+      notificationPrefix = "Error in skipping correlation filtering:"
+    )
+  })
+}
+
+notifyProtNormExportSessionPrereqWarning <- function(
+  showNotificationFn = shiny::showNotification,
+  messageFn = message
+) {
+  messageFn("Export skipped because correlation filtering is not complete.")
+  showNotificationFn(
+    "Please complete correlation filtering before exporting session data.",
+    type = "warning",
+    duration = 5
+  )
+
+  invisible(FALSE)
+}
+
+runProtNormExportObserver <- function(
+  input,
+  workflowData,
+  normData,
+  experimentPaths,
+  canExportFilteredSessionFn = canProtNormExportFilteredSession,
+  notifyExportPrereqFn = notifyProtNormExportSessionPrereqWarning,
+  resolveExportSourceDirFn = resolveProtNormExportSourceDir,
+  runExportSessionWorkflowFn = runProtNormExportSessionWorkflow,
+  handleExportErrorFn = handleProtNormExportError,
+  showNotificationFn = shiny::showNotification,
+  messageFn = message
+) {
+  messageFn("=== EXPORT FILTERED SESSION BUTTON CLICKED ===")
+
+  if (!canExportFilteredSessionFn(
+    correlationFilteringComplete = normData$correlation_filtering_complete,
+    correlationFilteredObj = normData$correlation_filtered_obj
+  )) {
+    return(notifyExportPrereqFn())
+  }
+
+  tryCatch({
+    source_dir <- resolveExportSourceDirFn(experimentPaths)
+
+    export_result <- runExportSessionWorkflowFn(
+      workflowData = workflowData,
+      normData = normData,
+      input = input,
+      sourceDir = source_dir
+    )
+
+    showNotificationFn(
+      sprintf(
+        "Filtered session data exported successfully!\nSaved as: %s\nSee summary file for details.",
+        export_result$exportArtifacts$sessionFilename
+      ),
+      type = "message",
+      duration = 10
+    )
+
+    messageFn("=== EXPORT FILTERED SESSION COMPLETED SUCCESSFULLY ===")
+
+    export_result
+  }, error = function(e) {
+    handleExportErrorFn(e)
+  })
+}
+
+runProtNormResetObserver <- function(
+  workflowData,
+  normData,
+  output,
+  ruvMode,
+  groupingVariable,
+  runResetWorkflowFn = runProtNormResetWorkflow,
+  handleResetErrorFn = handleProtNormResetError,
+  messageFn = message
+) {
+  messageFn("Resetting normalization...")
+
+  tryCatch({
+    runResetWorkflowFn(
+      workflowData = workflowData,
+      normData = normData,
+      output = output,
+      ruvMode = ruvMode,
+      groupingVariable = groupingVariable
+    )
+  }, error = function(e) {
+    handleResetErrorFn(e)
+  })
+}
+

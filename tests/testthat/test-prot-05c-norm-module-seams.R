@@ -4,7 +4,9 @@ repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
 skipIfMissingProtNormSplitFiles <- function() {
   required_paths <- c(
-    "R/mod_prot_norm_server_helpers.R",
+    "R/mod_prot_norm_render_helpers.R",
+    "R/mod_prot_norm_workflow_helpers.R",
+    "R/mod_prot_norm_observer_helpers.R",
     "R/mod_prot_norm_server.R"
   )
   missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
@@ -22,7 +24,9 @@ skipIfMissingProtNormSplitFiles()
 
 loadProtNormModuleEnv <- function() {
   module_env <- new.env(parent = globalenv())
-  sys.source(file.path(repo_root, "R", "mod_prot_norm_server_helpers.R"), envir = module_env)
+  sys.source(file.path(repo_root, "R", "mod_prot_norm_render_helpers.R"), envir = module_env)
+  sys.source(file.path(repo_root, "R", "mod_prot_norm_workflow_helpers.R"), envir = module_env)
+  sys.source(file.path(repo_root, "R", "mod_prot_norm_observer_helpers.R"), envir = module_env)
   sys.source(file.path(repo_root, "R", "mod_prot_norm_server.R"), envir = module_env)
   module_env
 }
