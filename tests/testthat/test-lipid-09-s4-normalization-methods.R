@@ -110,7 +110,7 @@ test_that("getNegCtrlMetabAnova resolves through the live lipid RUV helper and s
     expect_method_defined_in_current_layout(
         method_name = "getNegCtrlMetabAnova",
         wrapper_path = file.path("..", "..", "R", "func_lipid_s4_objects.R"),
-        helper_path = file.path("..", "..", "R", "func_lipid_norm_ruv_helpers.R")
+        helper_path = file.path("..", "..", "R", "func_lipid_s4_ruv_control_methods.R")
     )
 
     empty_object <- createLipidomicsAssayData(
@@ -133,7 +133,7 @@ test_that("ruvCancor resolves through the live lipid RUV helper and rejects miss
     expect_method_defined_in_current_layout(
         method_name = "ruvCancor",
         wrapper_path = file.path("..", "..", "R", "func_lipid_s4_objects.R"),
-        helper_path = file.path("..", "..", "R", "func_lipid_norm_ruv_helpers.R")
+        helper_path = file.path("..", "..", "R", "func_lipid_s4_ruv_methods.R")
     )
 
     empty_object <- createLipidomicsAssayData(
@@ -159,7 +159,7 @@ test_that("ruvIII_C_Varying resolves through the live lipid RUV helper and rejec
     expect_method_defined_in_current_layout(
         method_name = "ruvIII_C_Varying",
         wrapper_path = file.path("..", "..", "R", "func_lipid_s4_objects.R"),
-        helper_path = file.path("..", "..", "R", "func_lipid_norm_ruv_helpers.R")
+        helper_path = file.path("..", "..", "R", "func_lipid_s4_ruv_methods.R")
     )
 
     empty_object <- createLipidomicsAssayData(

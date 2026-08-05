@@ -158,7 +158,8 @@ log_error <- function(...) {
 is_replicate_temp <- "is_replicate_temp"
 
 target_paths <- c(
-  file.path(repo_root, "R", "func_lipid_norm_ruv_helpers.R"),
+  file.path(repo_root, "R", "func_lipid_s4_ruv_control_methods.R"),
+  file.path(repo_root, "R", "func_lipid_s4_ruv_methods.R"),
   file.path(repo_root, "R", "func_lipid_s4_objects.R")
 )
 
