@@ -1,6 +1,8 @@
 library(testthat)
 
-source(test_path("..", "..", "R", "mod_lipid_summary_server_helpers.R"), local = environment())
+source(test_path("..", "..", "R", "mod_lipid_summary_state_helpers.R"), local = environment())
+source(test_path("..", "..", "R", "mod_lipid_summary_workflow_helpers.R"), local = environment())
+source(test_path("..", "..", "R", "mod_lipid_summary_observer_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_summary.R"), local = environment())
 
 test_that("buildLipidSummaryTemplateStatus keeps missing-project warnings stable", {

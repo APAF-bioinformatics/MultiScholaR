@@ -1,0 +1,56 @@
+version: 1
+wave: lipid_summary_server_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_summary_state_helpers.R
+  - R/mod_lipid_summary_workflow_helpers.R
+  - R/mod_lipid_summary_observer_helpers.R
+
+entries:
+  - id: lipid_summary_state
+    source: R/mod_lipid_summary_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^# ============================================================================$'
+      end: '^handleLipidSummarySaveWorkflowArgs <-'
+      end_inclusive: false
+    target: R/mod_lipid_summary_state_helpers.R
+    group: lipidomics.summary.state
+
+  - id: lipid_summary_workflows
+    source: R/mod_lipid_summary_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^handleLipidSummarySaveWorkflowArgs <-'
+      end: '^initializeLipidSummarySessionBootstrap <-'
+      end_inclusive: false
+    target: R/mod_lipid_summary_workflow_helpers.R
+    group: lipidomics.summary.workflows
+
+  - id: lipid_summary_observer_shells
+    source: R/mod_lipid_summary_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^initializeLipidSummarySessionBootstrap <-'
+      end: '^runLipidSummaryExportSessionObserverShell <-'
+      end_inclusive: false
+    target: R/mod_lipid_summary_observer_helpers.R
+    group: lipidomics.summary.observers
+
+  - id: lipid_summary_export_observer_shell
+    source: R/mod_lipid_summary_server_helpers.R
+    selector:
+      kind: symbol
+      value: runLipidSummaryExportSessionObserverShell
+      include_leading_comments: false
+    target: R/mod_lipid_summary_observer_helpers.R
+    group: lipidomics.summary.observers
