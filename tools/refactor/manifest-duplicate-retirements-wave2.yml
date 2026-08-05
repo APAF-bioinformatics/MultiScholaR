@@ -1,0 +1,92 @@
+version: 1
+wave: duplicate_retirements_wave2
+source_root: R
+collate_mode: preserve_winner
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets: []
+
+entries:
+  - id: retire_earlier_protein_da_method
+    source: R/func_prot_s4_da_methods.R
+    selector: { kind: setMethod, value: differentialAbundanceAnalysis }
+    target: retired/protein-da-method.R
+    group: proteomics.da.methods
+
+  - id: retire_late_lipid_intensity_method_copy
+    source: R/func_lipid_qc.R
+    selector: { kind: setMethod, value: lipidIntensityFiltering }
+    target: retired/lipid-intensity-method.R
+    group: lipidomics.qc.methods
+
+  - id: retire_late_metabolite_intensity_method_copy
+    source: R/func_metab_qc.R
+    selector: { kind: setMethod, value: metaboliteIntensityFiltering }
+    target: retired/metabolite-intensity-method.R
+    group: metabolomics.qc.methods
+
+  - id: retire_metabolite_plot_density_list_method_copy
+    source: R/func_metab_s4_plotting_methods.R
+    selector: { kind: expr_index, value: 4 }
+    target: retired/plot-density-list-method.R
+    group: shared.s4.plotting.methods
+
+  - id: retire_s4_metabolite_pair_correlation_copy
+    source: R/func_metab_s4_qc_methods.R
+    selector: { kind: symbol, value: calculateMetabolitePairCorrelation }
+    target: retired/metabolite-pair-correlation.R
+    group: metabolomics.qc.correlation
+
+  - id: retire_lipid_import_constructor_copy
+    source: R/func_lipid_import_core.R
+    selector: { kind: symbol, value: createLipidomicsAssayData }
+    target: retired/lipid-assay-constructor.R
+    group: lipidomics.s4.constructors
+
+  - id: retire_metabolite_import_constructor_copy
+    source: R/func_metab_import.R
+    selector: { kind: symbol, value: createMetaboliteAssayData }
+    target: retired/metabolite-assay-constructor.R
+    group: metabolomics.s4.constructors
+
+  - id: retire_general_helpers_format_config_copy
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: formatConfigList }
+    target: retired/config-formatting.R
+    group: general.filemgmt.config
+
+  - id: retire_general_helpers_update_config_copy
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: updateConfigParameter }
+    target: retired/config-update.R
+    group: general.filemgmt.config
+
+  - id: retire_general_s4_palette_copy
+    source: R/func_general_s4_objects.R
+    selector: { kind: symbol, value: get_color_palette }
+    target: retired/color-palette.R
+    group: general.plotting.palette
+
+  - id: retire_s4_metabolite_intensity_helper_copy
+    source: R/func_metab_s4_qc_methods.R
+    selector: { kind: symbol, value: metaboliteIntensityFilteringHelper }
+    target: retired/metabolite-intensity-helper.R
+    group: metabolomics.qc.filtering
+
+  - id: retire_lipid_s4_duplicate_resolution_copy
+    source: R/func_lipid_s4_duplicate_helpers.R
+    selector: { kind: symbol, value: resolveDuplicateFeaturesByIntensity }
+    target: retired/duplicate-resolution-lipid.R
+    group: shared.qc.duplicate_resolution
+
+  - id: retire_metabolite_s4_duplicate_resolution_copy
+    source: R/func_metab_s4_qc_methods.R
+    selector: { kind: symbol, value: resolveDuplicateFeaturesByIntensity }
+    target: retired/duplicate-resolution-metabolite.R
+    group: shared.qc.duplicate_resolution

@@ -29,6 +29,7 @@ RoxygenNote: 7.3.3
 Collate: 
     'allGenerics.R'
     'func_general_s4_objects.R'
+    'func_general_s4_plotting_methods.R'
     'func_pept_s4_core.R'
     'func_pept_s4_objects.R'
     'func_pept_s4_norm_methods.R'

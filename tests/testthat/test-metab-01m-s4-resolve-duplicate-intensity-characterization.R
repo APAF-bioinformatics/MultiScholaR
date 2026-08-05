@@ -45,7 +45,7 @@ isTargetSymbolAssignment <- function(expr, symbol_name) {
 }
 
 target_paths <- c(
-  file.path(repo_root, "R", "func_metab_s4_qc_methods.R"),
+  file.path(repo_root, "R", "func_omics_qc_shared.R"),
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 

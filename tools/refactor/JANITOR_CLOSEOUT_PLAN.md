@@ -177,17 +177,23 @@ Every production wave follows the same sequence:
 - [ ] Pass the final dual-baseline fidelity gate.
 
 Current checkpoint after peptide-QC assimilation and duplicate canonicalization
-wave 1:
+wave 2:
 
-- runtime `.R` files: `324`
-- files over 1,000 LOC: `17`
+- runtime `.R` files: `325`
+- files over 1,000 LOC: `16`
 - files over 2,000 LOC: `6`
-- duplicate entity keys: `25` (`12` exact, `13` variant)
-- redundant duplicate occurrences: `29`
+- duplicate entity keys: `13` (`0` exact, `13` variant)
+- redundant duplicate occurrences: `16`
 - stale `TODO: Extract` headers: `17`
 - imputation ownership wave: `dc5d6ec`
 - replicate/evidence/confidence ownership wave: `fa5ed55`
-- duplicate canonicalization wave 1: this checkpoint
+- duplicate canonicalization wave 1: `67c44b9`
+- duplicate canonicalization wave 2: this checkpoint
+
+Wave 2 preserved all `1,851` effective entities from `67c44b9` with zero
+missing keys, zero added keys, and zero effective AST drift. Its focused gate
+passed 346 expectations, with three existing palette warnings and two expected
+environment/artifact skips.
 
 The isolated `test-prot-s4-missingness-direct-shared.R` file currently has two
 errors in untouched protein missingness paths. Both errors reproduce against a

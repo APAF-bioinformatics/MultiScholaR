@@ -24,6 +24,7 @@ loadSelectedFunctions <- function(paths, symbols, env) {
 loadSelectedFunctions(
   paths = c(
     file.path(repo_root, "R", "func_metab_qc_filtering_helpers.R"),
+    file.path(repo_root, "R", "func_omics_qc_shared.R"),
     file.path(repo_root, "R", "func_metab_qc.R")
   ),
   symbols = c(

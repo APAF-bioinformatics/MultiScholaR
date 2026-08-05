@@ -233,18 +233,14 @@ test_that("plotRle passes labeled assay matrices and grouping info to the helper
     }
 })
 
-test_that("plotDensity resolves through the active lipid S4 plotting source", {
+test_that("plotDensity resolves through lipid-specific and shared S4 plotting owners", {
     wrapper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_s4_objects.R"))
-    helper_path <- file.path("..", "..", "R", "func_lipid_s4_plotting_methods.R")
-    helper_source_lines <- if (file.exists(helper_path)) readLines(helper_path) else character()
-    helper_plot_density_defs <- sum(grepl("f = \"plotDensity\"", helper_source_lines, fixed = TRUE))
+    lipid_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_s4_plotting_methods.R"))
+    shared_source_lines <- readLines(file.path("..", "..", "R", "func_general_s4_plotting_methods.R"))
 
-    if (helper_plot_density_defs > 0) {
-        expect_false(any(grepl("f = \"plotDensity\"", wrapper_source_lines, fixed = TRUE)))
-        expect_gte(helper_plot_density_defs, 2)
-    } else {
-        expect_identical(sum(grepl("f = \"plotDensity\"", wrapper_source_lines, fixed = TRUE)), 2L)
-    }
+    expect_false(any(grepl("f = \"plotDensity\"", wrapper_source_lines, fixed = TRUE)))
+    expect_identical(sum(grepl("f = \"plotDensity\"", lipid_source_lines, fixed = TRUE)), 1L)
+    expect_identical(sum(grepl("f = \"plotDensity\"", shared_source_lines, fixed = TRUE)), 1L)
 })
 
 test_that("plotDensity on LipidomicsAssayData returns an empty list for empty assay inputs", {

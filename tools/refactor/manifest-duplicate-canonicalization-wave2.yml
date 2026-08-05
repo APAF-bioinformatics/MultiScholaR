@@ -1,0 +1,46 @@
+version: 1
+wave: duplicate_canonicalization_wave2
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_s4_plotting_methods.R
+  - R/func_omics_qc_shared.R
+
+duplicate_retirements:
+  - setMethod::differentialAbundanceAnalysis::ProteinQuantitativeData
+  - setMethod::lipidIntensityFiltering::LipidomicsAssayData
+  - setMethod::metaboliteIntensityFiltering::MetaboliteAssayData
+  - setMethod::plotDensity::list
+  - symbol::calculateMetabolitePairCorrelation
+  - symbol::createLipidomicsAssayData
+  - symbol::createMetaboliteAssayData
+  - symbol::formatConfigList
+  - symbol::get_color_palette
+  - symbol::metaboliteIntensityFilteringHelper
+  - symbol::resolveDuplicateFeaturesByIntensity
+  - symbol::updateConfigParameter
+
+entries:
+  - id: shared_s4_plot_density_list_method
+    source: R/func_lipid_s4_plotting_methods.R
+    selector:
+      kind: expr_index
+      value: 4
+    target: R/func_general_s4_plotting_methods.R
+    group: shared.s4.plotting.methods
+    note: Preserve the exact current load-order winner in a cross-omics owner.
+
+  - id: shared_qc_resolve_duplicate_features_by_intensity
+    source: R/func_metab_qc_filtering_helpers.R
+    selector: { kind: symbol, value: resolveDuplicateFeaturesByIntensity }
+    target: R/func_omics_qc_shared.R
+    group: shared.qc.duplicate_resolution
+    note: Preserve the exact current load-order winner in shared omics QC ownership.

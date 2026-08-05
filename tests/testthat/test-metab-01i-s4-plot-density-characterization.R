@@ -88,6 +88,7 @@ if (!methods::isGeneric("plotDensity")) {
 
 target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_plotting_methods.R"),
+  file.path(repo_root, "R", "func_general_s4_plotting_methods.R"),
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
