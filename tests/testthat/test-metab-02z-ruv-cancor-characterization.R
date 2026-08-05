@@ -133,7 +133,7 @@ log_error <- function(...) {
 }
 
 target_paths <- c(
-  file.path(repo_root, "R", "func_metab_s4_norm_methods.R"),
+  file.path(repo_root, "R", "func_metab_s4_ruv_methods.R"),
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 

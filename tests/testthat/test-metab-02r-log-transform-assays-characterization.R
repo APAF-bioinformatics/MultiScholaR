@@ -84,7 +84,7 @@ if (!methods::isGeneric("logTransformAssays")) {
 }
 
 target_paths <- c(
-  file.path(repo_root, "R", "func_metab_s4_norm_methods.R"),
+  file.path(repo_root, "R", "func_metab_s4_transformation_methods.R"),
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 

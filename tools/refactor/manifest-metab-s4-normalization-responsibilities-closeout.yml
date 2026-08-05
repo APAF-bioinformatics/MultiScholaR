@@ -1,0 +1,59 @@
+version: 1
+wave: metab_s4_normalization_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_metab_s4_transformation_methods.R
+  - R/func_metab_s4_design_control_methods.R
+  - R/func_metab_s4_ruv_methods.R
+
+entries:
+  - id: metab_log_transform_assays
+    source: R/func_metab_s4_norm_methods.R
+    selector: { kind: setMethod, value: logTransformAssays }
+    target: R/func_metab_s4_transformation_methods.R
+    group: metabolomics.s4.transformation_methods
+
+  - id: metab_normalise_untransformed_data
+    source: R/func_metab_s4_norm_methods.R
+    selector: { kind: setMethod, value: normaliseUntransformedData }
+    target: R/func_metab_s4_transformation_methods.R
+    group: metabolomics.s4.transformation_methods
+
+  - id: metab_normalise_between_samples
+    source: R/func_metab_s4_norm_methods.R
+    selector: { kind: setMethod, value: normaliseBetweenSamples }
+    target: R/func_metab_s4_transformation_methods.R
+    group: metabolomics.s4.transformation_methods
+
+  - id: metab_clean_design_matrix
+    source: R/func_metab_s4_norm_methods.R
+    selector: { kind: setMethod, value: cleanDesignMatrix }
+    target: R/func_metab_s4_design_control_methods.R
+    group: metabolomics.s4.design_control_methods
+
+  - id: metab_negative_control_anova
+    source: R/func_metab_s4_norm_methods.R
+    selector: { kind: setMethod, value: getNegCtrlMetabAnova }
+    target: R/func_metab_s4_design_control_methods.R
+    group: metabolomics.s4.design_control_methods
+
+  - id: metab_ruv_cancor
+    source: R/func_metab_s4_norm_methods.R
+    selector: { kind: setMethod, value: ruvCancor }
+    target: R/func_metab_s4_ruv_methods.R
+    group: metabolomics.s4.ruv_methods
+
+  - id: metab_ruviii_c_varying
+    source: R/func_metab_s4_norm_methods.R
+    selector: { kind: setMethod, value: ruvIII_C_Varying }
+    target: R/func_metab_s4_ruv_methods.R
+    group: metabolomics.s4.ruv_methods
