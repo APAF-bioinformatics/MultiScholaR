@@ -129,7 +129,7 @@ PeptideQuantitativeDataDiann <- function( peptide_data
                                           , sample_id = "Run"
                                           , group_id = "group"
                                           , technical_replicate_id = "replicates"
-                                          , args = list()) {
+                                          , args = NA) {
 
   protein_id_column <- if ("Protein.Group" %in% names(peptide_data)) {
     "Protein.Group"

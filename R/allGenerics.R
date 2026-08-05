@@ -451,12 +451,6 @@ setGeneric(name = "getNegCtrlMetabAnova",
            },
            signature = c("theObject")) # Primary dispatch on object
 
-setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold",
-           def = function(theObject, pearson_correlation_per_pair_list = NULL, min_pearson_correlation_threshold = NULL) {
-             standardGeneric("filterSamplesByMetaboliteCorrelationThreshold")
-           },
-           signature = c("theObject", "pearson_correlation_per_pair_list", "min_pearson_correlation_threshold"))
-
 ###### Metabolomics
 
 

@@ -1,0 +1,51 @@
+version: 1
+wave: duplicate_canonicalization_wave1
+source_root: R
+collate_mode: preserve_winner
+
+defaults:
+  action: manual_merge
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_pept_s4_core.R
+  - R/func_general_plotting_reporting_dispatch_helpers.R
+
+retired_files:
+  - R/func_prot_s4_objects.R
+
+duplicate_retirements:
+  - setGeneric::InitialiseGrid
+  - setGeneric::createGridQC
+  - setGeneric::filterSamplesByProteinCorrelationThreshold
+  - setGeneric::getNegCtrlProtAnova
+  - setGeneric::getRuvIIIReplicateMatrix
+  - setGeneric::preservePeptideNaValues
+  - setGeneric::removeProteinsWithOnlyOneReplicate
+  - setGeneric::removeRowsWithMissingValuesPercent
+  - setGeneric::filterSamplesByMetaboliteCorrelationThreshold
+  - setMethod::plotPca::PeptideQuantitativeData
+  - symbol::PeptideQuantitativeDataDiann
+  - symbol::plotPcaDispatch
+
+entries:
+  - id: preserve_effective_diann_constructor
+    action: manual_merge
+    source: R/func_prot_import_diann_format.R
+    selector: { kind: symbol, value: PeptideQuantitativeDataDiann }
+    target: R/func_pept_s4_core.R
+    target_selector: { kind: symbol, value: PeptideQuantitativeDataDiann }
+    group: proteomics.peptide.s4.constructors
+    note: Replace the earlier core copy with the effective later-loaded implementation, then retire the import-file copy.
+
+  - id: preserve_effective_pca_dispatch
+    action: manual_merge
+    source: R/func_pept_s4_qc_methods.R
+    selector: { kind: symbol, value: plotPcaDispatch }
+    target: R/func_general_plotting_reporting_dispatch_helpers.R
+    target_selector: { kind: symbol, value: plotPcaDispatch }
+    group: shared.plotting.dispatch
+    note: Retire the earlier peptide copy and retain the effective later-loaded shared implementation unchanged.

@@ -176,19 +176,26 @@ Every production wave follows the same sequence:
 - [ ] Complete filename normalization.
 - [ ] Pass the final dual-baseline fidelity gate.
 
-Current checkpoint after peptide-QC assimilation:
+Current checkpoint after peptide-QC assimilation and duplicate canonicalization
+wave 1:
 
-- runtime `.R` files: `325`
+- runtime `.R` files: `324`
 - files over 1,000 LOC: `17`
 - files over 2,000 LOC: `6`
-- duplicate entity keys: `37` (`20` exact, `17` variant)
-- redundant duplicate occurrences: `41`
+- duplicate entity keys: `25` (`12` exact, `13` variant)
+- redundant duplicate occurrences: `29`
 - stale `TODO: Extract` headers: `17`
 - imputation ownership wave: `dc5d6ec`
-- replicate/evidence/confidence ownership wave: this checkpoint
+- replicate/evidence/confidence ownership wave: `fa5ed55`
+- duplicate canonicalization wave 1: this checkpoint
 
 The isolated `test-prot-s4-missingness-direct-shared.R` file currently has two
 errors in untouched protein missingness paths. Both errors reproduce against a
 clean archive of pre-structure commit `7e74163`; they are inherited defects, not
 peptide extraction regressions, and remain mandatory remediation before the
 final all-contract gate.
+
+The isolated `test-prot-s4-qc-direct-shared.R` file also has one stale
+error-message expectation in the protein intensity-filtering path. Its other 71
+expectations pass, and the same assertion fails identically against a clean
+archive of pre-wave commit `fa5ed55`; it is likewise inherited final-gate debt.
