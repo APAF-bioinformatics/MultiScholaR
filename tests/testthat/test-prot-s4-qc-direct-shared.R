@@ -149,7 +149,8 @@ test_that("protein S4 helper-entry methods dispatch through ProteinQuantitativeD
         proteins_proportion_of_samples_below_cutoff = 0.5,
         core_utilisation = 1
       ),
-      "first argument must be a vector"
+      "`input_table` and `design_matrix` must be data.frames",
+      fixed = TRUE
     )
   } else {
     expect_false(methods::hasMethod("proteinIntensityFiltering", "ProteinQuantitativeData"))

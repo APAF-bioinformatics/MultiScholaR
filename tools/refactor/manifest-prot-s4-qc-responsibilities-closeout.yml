@@ -1,0 +1,149 @@
+version: 1
+wave: prot_s4_qc_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_s4_qc_filter_methods.R
+  - R/func_prot_s4_qc_plot_methods.R
+  - R/func_prot_s4_qc_correlation_methods.R
+
+entries:
+  - id: qc_parameter_resolver
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: symbol, value: .resolveProteinQcMethodParam }
+    target: R/func_prot_s4_qc_filter_methods.R
+    group: proteomics.s4.qc_filtering
+
+  - id: qc_parameter_updater
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: symbol, value: .updateProteinQcMethodParam }
+    target: R/func_prot_s4_qc_filter_methods.R
+    group: proteomics.s4.qc_filtering
+
+  - id: single_replicate_filter
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: removeProteinsWithOnlyOneReplicate }
+    target: R/func_prot_s4_qc_filter_methods.R
+    group: proteomics.s4.qc_filtering
+
+  - id: missing_value_filter
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: removeRowsWithMissingValuesPercent }
+    target: R/func_prot_s4_qc_filter_methods.R
+    group: proteomics.s4.qc_filtering
+
+  - id: sample_correlation_filter
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: filterSamplesByProteinCorrelationThreshold }
+    target: R/func_prot_s4_qc_filter_methods.R
+    group: proteomics.s4.qc_filtering
+
+  - id: design_matrix_cleanup
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: cleanDesignMatrix }
+    target: R/func_prot_s4_qc_filter_methods.R
+    group: proteomics.s4.qc_filtering
+
+  - id: protein_intensity_filter
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: proteinIntensityFiltering }
+    target: R/func_prot_s4_qc_filter_methods.R
+    group: proteomics.s4.qc_filtering
+
+  - id: rle_plot
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: plotRle }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: rle_plot_list
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: plotRleList }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: rle_plot_save
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: symbol, value: savePlotRleList }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: pca_plot
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: plotPca }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: pca_plot_list
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: plotPcaList }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: density_plot
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: plotDensity }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: pca_plot_save
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: symbol, value: savePlotPcaList }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: pca_matrix
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: getPcaMatrix }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: technical_replicate_correlation
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: proteinTechRepCorrelation }
+    target: R/func_prot_s4_qc_correlation_methods.R
+    group: proteomics.s4.qc_correlation
+
+  - id: pearson_plot
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: plotPearson }
+    target: R/func_prot_s4_qc_correlation_methods.R
+    group: proteomics.s4.qc_correlation
+
+  - id: sample_pair_pearson
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: pearsonCorForSamplePairs }
+    target: R/func_prot_s4_qc_correlation_methods.R
+    group: proteomics.s4.qc_correlation
+
+  - id: pca_box_plot
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: plotPcaBox }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: density_plot_list
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: plotDensityList }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: density_plot_save
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: symbol, value: savePlotDensityList }
+    target: R/func_prot_s4_qc_plot_methods.R
+    group: proteomics.s4.qc_plotting
+
+  - id: minimum_peptide_filter
+    source: R/func_prot_s4_qc_methods.R
+    selector: { kind: setMethod, value: filterMinNumPeptidesPerProtein }
+    target: R/func_prot_s4_qc_filter_methods.R
+    group: proteomics.s4.qc_filtering
