@@ -1,0 +1,80 @@
+version: 1
+wave: peptide_qc_assimilation_wave2
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_prot_qc_peptide_technical_replicate_filters.R
+  - R/func_prot_qc_peptide_evidence_filters.R
+  - R/func_prot_qc_peptide_confidence_filters.R
+
+retired_files:
+  - R/func_prot_qc_peptide_replicate_filters.R
+
+entries:
+  - id: validate_peptide_run_design
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: .validatePeptideRunDesign }
+    target: R/func_prot_qc_peptide_technical_replicate_filters.R
+    group: proteomics.peptide.qc.technical_replicates
+
+  - id: remove_single_replicate_peptides
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: removePeptidesWithOnlyOneReplicateHelper }
+    target: R/func_prot_qc_peptide_technical_replicate_filters.R
+    group: proteomics.peptide.qc.technical_replicates
+
+  - id: protein_identification_evidence_columns
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: .proteinIdentificationEvidenceColumns }
+    target: R/func_prot_qc_peptide_evidence_filters.R
+    group: proteomics.peptide.qc.identification_evidence
+
+  - id: calculate_protein_identification_evidence
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: .calculateProteinIdentificationEvidence }
+    target: R/func_prot_qc_peptide_evidence_filters.R
+    group: proteomics.peptide.qc.identification_evidence
+
+  - id: annotate_protein_identification_evidence
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: .annotateProteinIdentificationEvidence }
+    target: R/func_prot_qc_peptide_evidence_filters.R
+    group: proteomics.peptide.qc.identification_evidence
+
+  - id: filter_minimum_peptides_per_protein
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: filterMinNumPeptidesPerProteinHelper }
+    target: R/func_prot_qc_peptide_evidence_filters.R
+    group: proteomics.peptide.qc.identification_evidence
+
+  - id: filter_minimum_peptides_per_sample
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: filterMinNumPeptidesPerSampleHelper }
+    target: R/func_prot_qc_peptide_evidence_filters.R
+    group: proteomics.peptide.qc.identification_evidence
+
+  - id: diann_identification_qvalue_cutoff
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: .diaNnIdentificationQvalueCutoff }
+    target: R/func_prot_qc_peptide_confidence_filters.R
+    group: proteomics.peptide.qc.confidence
+
+  - id: validate_diann_identification_contract
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: .validateDiaNnIdentificationContract }
+    target: R/func_prot_qc_peptide_confidence_filters.R
+    group: proteomics.peptide.qc.confidence
+
+  - id: filter_qvalue_and_proteotypic_peptides
+    source: R/func_prot_qc_peptide_replicate_filters.R
+    selector: { kind: symbol, value: srlQvalueProteotypicPeptideCleanHelper }
+    target: R/func_prot_qc_peptide_confidence_filters.R
+    group: proteomics.peptide.qc.confidence

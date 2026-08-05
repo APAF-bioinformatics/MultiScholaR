@@ -10,9 +10,9 @@ Budget bands:
 ## Summary
 
 - `oversized`: 17
-- `soft_cap`: 8
+- `soft_cap`: 7
 - `acceptable`: 43
-- `ideal`: 157
+- `ideal`: 160
 - `small`: 98
 
 ## Largest Files
@@ -34,7 +34,6 @@ Budget bands:
 - `oversized` 1104 LOC [R/mod_prot_norm_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_prot_norm_server_helpers.R)
 - `oversized` 1101 LOC [R/mod_prot_summary_support_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_prot_summary_support_helpers.R)
 - `oversized` 1006 LOC [R/func_prot_qc_reporting_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_prot_qc_reporting_helpers.R)
-- `soft_cap` 985 LOC [R/func_prot_qc_peptide_replicate_filters.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_prot_qc_peptide_replicate_filters.R)
 - `soft_cap` 980 LOC [R/func_lipid_s4_normalization_methods.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_lipid_s4_normalization_methods.R)
 - `soft_cap` 977 LOC [R/mod_metab_summary_observer_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_metab_summary_observer_helpers.R)
 - `soft_cap` 898 LOC [R/func_prot_norm_optimization_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_prot_norm_optimization_helpers.R)
@@ -57,3 +56,4 @@ Budget bands:
 - `acceptable` 657 LOC [R/mod_lipid_qc_duplicates_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_lipid_qc_duplicates_server_helpers.R)
 - `acceptable` 650 LOC [R/mod_metab_norm_ui.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_metab_norm_ui.R)
 - `acceptable` 648 LOC [R/mod_lipid_da_session_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_lipid_da_session_helpers.R)
+- `acceptable` 645 LOC [R/func_lipid_s4_plotting_methods.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_lipid_s4_plotting_methods.R)
