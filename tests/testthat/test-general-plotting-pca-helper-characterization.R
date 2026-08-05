@@ -4,12 +4,7 @@ library(testthat)
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
 plotPcaHelperSourcePath <- function() {
-  candidates <- file.path(
-    repo_root,
-    "R",
-    c("func_general_plotting_pca_rle_helpers.R", "func_general_plotting.R")
-  )
-  candidates[file.exists(candidates)][[1]]
+  file.path(repo_root, "R", "func_general_plotting_pca_rle_helpers.R")
 }
 
 findPlotPcaHelperExpression <- function(path) {
@@ -74,12 +69,8 @@ test_that("plotPcaHelper source retains the mixOmics fast path with an explicit 
   target_text <- paste(deparse(target_expr), collapse = "\n")
 
   expect_match(target_text, "mixOmics::pca\\(")
-  if (basename(helper_source_path) == "func_general_plotting_pca_rle_helpers.R") {
-    expect_match(target_text, "requireNamespace\\(\"mixOmics\", quietly = TRUE\\)")
-    expect_match(target_text, "stats::prcomp\\(")
-  } else {
-    expect_false(grepl("stats::prcomp\\(", target_text))
-  }
+  expect_match(target_text, "requireNamespace\\(\"mixOmics\", quietly = TRUE\\)")
+  expect_match(target_text, "stats::prcomp\\(")
 })
 
 test_that("plotPcaHelper preserves a usable PCA plot when mixOmics is unavailable", {

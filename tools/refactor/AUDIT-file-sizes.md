@@ -11,21 +11,21 @@ Budget bands:
 
 - `oversized`: 16
 - `soft_cap`: 8
-- `acceptable`: 42
-- `ideal`: 161
-- `small`: 100
+- `acceptable`: 40
+- `ideal`: 155
+- `small`: 103
 
 ## Largest Files
 
 - `oversized` 4224 LOC [R/mod_prot_enrich_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_prot_enrich_server_helpers.R)
-- `oversized` 3990 LOC [R/func_general_enrichment.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_general_enrichment.R)
-- `oversized` 3622 LOC [R/func_multiomics_enrich.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_multiomics_enrich.R)
+- `oversized` 3671 LOC [R/func_general_enrichment.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_general_enrichment.R)
+- `oversized` 3511 LOC [R/func_multiomics_enrich.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_multiomics_enrich.R)
 - `oversized` 3206 LOC [R/mod_metab_norm_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_metab_norm_server_helpers.R)
 - `oversized` 2147 LOC [R/func_metab_s4_norm_methods.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_metab_s4_norm_methods.R)
 - `oversized` 2086 LOC [R/func_general_filemgmt_config_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_general_filemgmt_config_helpers.R)
 - `oversized` 1835 LOC [R/func_lipid_norm_ruv_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_lipid_norm_ruv_helpers.R)
 - `oversized` 1725 LOC [R/mod_lipid_import_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_lipid_import_server_helpers.R)
-- `oversized` 1552 LOC [R/func_general_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_general_helpers.R)
+- `oversized` 1489 LOC [R/func_general_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_general_helpers.R)
 - `oversized` 1396 LOC [R/func_prot_s4_qc_methods.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_prot_s4_qc_methods.R)
 - `oversized` 1263 LOC [R/func_general_filemgmt_report_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_general_filemgmt_report_helpers.R)
 - `oversized` 1249 LOC [R/mod_lipid_summary_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_lipid_summary_server_helpers.R)

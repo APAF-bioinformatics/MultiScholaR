@@ -33,28 +33,6 @@
 # - func_general_s4_objects.R (for S4 class definitions)
 # ============================================================================
 
-# TODO: Extract the following functions from their current locations:
-
-# Function 1: createMetaboliteAssayData()
-# Current location: R/metaboliteVsSamplesS4Objects.R
-# Description: Creates a MetaboliteAssayData S4 object from assay data
-# createMetaboliteAssayData <- function(...) {
-#   # Extract from R/metaboliteVsSamplesS4Objects.R
-# }
-
-# Function 2: getMetaboliteQuantData()
-# Current location: R/QC_visualisation.R
-# Description: Extracts quantitative data and sample names from assay tibble
-# getMetaboliteQuantData <- function(assay_data) {
-#   # Extract from R/QC_visualisation.R
-# }
-
-
-
-
-# ----------------------------------------------------------------------------
-# getMetaboliteQuantData
-# ----------------------------------------------------------------------------
 #' @title Extract Quantitative Data and Sample Names from Assay Tibble
 #' @description Separates annotation columns from quantitative data columns
 #'              in a metabolomics assay tibble.

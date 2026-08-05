@@ -17,7 +17,7 @@ da_server_volcano_render_handler <- function(input, output, session, ns, da_data
   output$volcano_glimma <- shiny::renderUI({
     shiny::req(input$volcano_contrast, da_data$da_results_list)
     
-    # Call the dedicated Glimma generation function from func_prot_da.R
+    # Call the dedicated Glimma generation helper.
     generateProtDAVolcanoPlotGlimma(
       da_results_list = da_data$da_results_list,
       selected_contrast = input$volcano_contrast,
@@ -31,7 +31,7 @@ da_server_volcano_render_handler <- function(input, output, session, ns, da_data
   output$volcano_plot_static <- shiny::renderPlot({
     shiny::req(input$volcano_contrast, da_data$da_results_list)
 
-    # Call the dedicated static volcano generation function from func_prot_da.R
+    # Call the dedicated static volcano generation helper.
     generateProtDAVolcanoStatic(
       da_results_list = da_data$da_results_list,
       selected_contrast = input$volcano_contrast,
@@ -42,4 +42,3 @@ da_server_volcano_render_handler <- function(input, output, session, ns, da_data
     )
   })
 }
-

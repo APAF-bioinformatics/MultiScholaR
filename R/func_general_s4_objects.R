@@ -39,35 +39,6 @@
 # - func_general_helpers.R (for utility functions)
 # ============================================================================
 
-# TODO: Extract the following functions from their current locations:
-
-# === Shared S4 Class Definitions ===
-
-# Function 1: FilteringProgress class definition
-# Current location: R/qc_and_rollup.R
-# Description: S4 class for filtering progress tracking (used by proteomics)
-# setClass("FilteringProgress", ...) {
-#   # Extract from R/qc_and_rollup.R
-# }
-
-# Function 2: FilteringProgressMetabolomics class definition
-# Current location: R/qc_and_rollup.R
-# Description: S4 class for metabolomics filtering progress
-# setClass("FilteringProgressMetabolomics", ...) {
-#   # Extract from R/qc_and_rollup.R
-# }
-
-# === Shared S4 Utilities ===
-
-# Function 3: Shared S4 utility methods
-# Current location: Various files
-# Description: Any S4 methods that are shared across multiple omics types
-# # Extract shared methods if any exist
-
-
-# ----------------------------------------------------------------------------
-# FilteringProgress
-# ----------------------------------------------------------------------------
 #' FilteringProgress Class
 #' 
 #' @description

@@ -29,28 +29,10 @@
 #
 # Dependencies:
 # - MOFA2 package
-# - func_general_plotting.R (for visualization)
+# - func_general_plotting_*_helpers.R (for visualization)
 # - func_general_helpers.R (for utility functions)
 # ============================================================================
 
-# TODO: Extract the following functions from their current locations:
-
-# Function 1: plotMofaWeights()
-# Current location: R/multiomics_functions_MOFA.R
-# Description: Plots MOFA factor weights
-# plotMofaWeights <- function(model, view, factor_level = Factor1) {
-#   # Extract from R/multiomics_functions_MOFA.R
-# }
-
-# Additional MOFA functions from multiomics_functions_MOFA.R:
-# - All functions related to MOFA model building, training, and analysis
-# - Functions for MOFA visualization and interpretation
-# - Functions for extracting MOFA results
-
-
-# ----------------------------------------------------------------------------
-# plotMofaWeights
-# ----------------------------------------------------------------------------
 #' Plot Top MOFA Weights for a Specific View and Factor
 #'
 #' @description
@@ -159,4 +141,3 @@ plotMofaWeights <- function( model, view, factor_level = Factor1) {
   
   return(plotMofaWeightsAll)
 }
-

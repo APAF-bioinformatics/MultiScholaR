@@ -31,40 +31,10 @@
 #
 # Dependencies:
 # - limma, edgeR
-# - func_general_plotting.R (for visualization)
+# - func_general_plotting_*_helpers.R (for visualization)
 # - func_general_helpers.R (for utility functions)
 # ============================================================================
 
-# TODO: Extract the following functions from their current locations:
-
-# Function 1: differentialAbundanceAnalysis() (lipid method)
-# Current location: R/lipidVsSamplesS4Objects.R
-# Type: S4 method (exportMethods)
-# Description: Performs differential abundance analysis on lipids
-# setMethod(f = "differentialAbundanceAnalysis", signature = "LipidomicsAssayData", ...) {
-#   # Extract from R/lipidVsSamplesS4Objects.R
-# }
-
-# Function 2: differentialAbundanceAnalysisHelper()
-# Current location: R/lipidVsSamplesS4Objects.R
-# Type: S4 method (exportMethods)
-# Description: Helper function for lipid DA analysis
-# setMethod(f = "differentialAbundanceAnalysisHelper", ...) {
-#   # Extract from R/lipidVsSamplesS4Objects.R
-# }
-
-# Function 3: getCountsTable()
-# Current location: R/lipid_da_analysis_wrapper.R, R/lipids_da_analysis_wrapper.R
-# Description: Gets counts table from object
-# getCountsTable <- function(obj) {
-#   # Extract from R/lipid_da_analysis_wrapper.R or R/lipids_da_analysis_wrapper.R
-# }
-
-
-# ----------------------------------------------------------------------------
-# getCountsTable
-# ----------------------------------------------------------------------------
-# Helper function to get counts table
 .getCountsTableLipidomics <- function(obj) {
     if (inherits(obj, "LipidomicsAssayData")) {
         message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
@@ -146,7 +116,6 @@ getLipidDaQuantData <- function(
         sample_cols = sample_cols
     )
 }
-
 
 
 

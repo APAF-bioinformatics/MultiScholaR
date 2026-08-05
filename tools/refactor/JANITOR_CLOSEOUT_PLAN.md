@@ -170,27 +170,27 @@ Every production wave follows the same sequence:
 - [x] Freeze and checkpoint the post-peptide behavioral baseline at `02d596c`.
 - [x] Assimilate peptide-QC code into the refactored ownership model.
 - [x] Reduce duplicate entity keys from 38 to 0.
-- [ ] Remove all 18 stale extraction headers.
+- [x] Remove all 18 stale extraction headers.
 - [ ] Split all six files over 2,000 LOC.
 - [ ] Split all remaining files over 1,000 LOC.
 - [ ] Complete filename normalization.
 - [ ] Pass the final dual-baseline fidelity gate.
 
-Current checkpoint after peptide-QC assimilation and duplicate canonicalization
-wave 3:
+Current checkpoint after extraction-scaffold cleanup:
 
-- runtime `.R` files: `327`
+- runtime `.R` files: `322`
 - files over 1,000 LOC: `16`
 - files over 2,000 LOC: `6`
 - duplicate entity keys: `0`
 - redundant duplicate occurrences: `0`
-- stale `TODO: Extract` headers: `17`
-- `R/func_general_helpers.R`: `1,552` LOC
+- stale `TODO: Extract` headers: `0`
+- `R/func_general_helpers.R`: `1,489` LOC
 - imputation ownership wave: `dc5d6ec`
 - replicate/evidence/confidence ownership wave: `fa5ed55`
 - duplicate canonicalization wave 1: `67c44b9`
 - duplicate canonicalization wave 2: `a1fb983`
-- duplicate canonicalization wave 3: this checkpoint
+- duplicate canonicalization wave 3: `58a3bef`
+- extraction-scaffold cleanup: this checkpoint
 
 Wave 3 preserved all `3,339` recursive function occurrences and all `2,875`
 unique function ASTs from `a1fb983` exactly, with zero unmatched expressions or
@@ -198,6 +198,12 @@ AST drift. It replaces the remaining load-order-dependent cross-omics methods
 with one tested list router per generic and retains every prior domain method as
 an internal helper. The package inventory now contains one `Collate` entry for
 every runtime file and zero duplicate entity keys.
+
+The extraction-scaffold cleanup removed the remaining `17` stale inventory
+headers and retired five comment-only runtime breadcrumbs. All `3,345` function
+occurrences from `58a3bef` remain AST-identical, the runtime and `Collate`
+inventories both contain `322` files, and `75` generated Rd provenance lines
+now identify their actual roxygen-owning source files.
 
 The isolated `test-prot-s4-missingness-direct-shared.R` file currently has two
 errors in untouched protein missingness paths. Both errors reproduce against a

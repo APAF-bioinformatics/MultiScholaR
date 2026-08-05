@@ -38,69 +38,6 @@
 # - func_general_filemgmt.R (for file utilities)
 # ============================================================================
 
-# TODO: Extract the following functions from their current locations:
-
-# === Parameter Checking Functions ===
-
-# Function 1: checkParamsObjectFunctionSimplify()
-# Current location: R/helper_functions.R
-# Description: Checks and simplifies parameters from object
-# checkParamsObjectFunctionSimplify <- function(...) {
-#   # Extract from R/helper_functions.R
-# }
-
-# Function 2: checkParamsObjectFunctionSimplifyAcceptNull()
-# Current location: R/helper_functions.R
-# Description: Checks parameters accepting NULL values
-# checkParamsObjectFunctionSimplifyAcceptNull <- function(...) {
-#   # Extract from R/helper_functions.R
-# }
-
-# Function 3: testRequiredArguments()
-# Current location: R/helper_functions.R
-# Description: Tests if required arguments are present
-# testRequiredArguments <- function(...) {
-#   # Extract from R/helper_functions.R
-# }
-
-# Function 4: testRequiredFiles()
-# Current location: R/helper_functions.R
-# Description: Tests if required files exist
-# testRequiredFiles <- function(...) {
-#   # Extract from R/helper_functions.R
-# }
-
-# Function 5: testRequiredFilesWarning()
-# Current location: R/helper_functions.R
-# Description: Tests required files with warnings
-# testRequiredFilesWarning <- function(...) {
-#   # Extract from R/helper_functions.R
-# }
-
-# Function 6: isArgumentDefined()
-# Current location: R/helper_functions.R
-# Description: Checks if argument is defined
-# isArgumentDefined <- function(...) {
-#   # Extract from R/helper_functions.R
-# }
-
-# Function 7: getFunctionName()
-# Current location: R/helper_functions.R
-# Description: Gets current function name
-# getFunctionName <- function() {
-#   # Extract from R/helper_functions.R
-# }
-
-# Function 8: getFunctionNameSecondLevel()
-# Current location: R/helper_functions.R
-# Description: Gets function name from second level
-# getFunctionNameSecondLevel <- function() {
-#   # Extract from R/helper_functions.R
-# }
-
-# ----------------------------------------------------------------------------
-# findMatchingColumn
-# ----------------------------------------------------------------------------
 #' @title Find Matching Column in Headers (Case-Insensitive)
 #' @description Searches for a column name in headers using case-insensitive matching.
 #'              Used for auto-populating column mapping inputs.

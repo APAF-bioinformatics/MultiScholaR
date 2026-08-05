@@ -36,49 +36,6 @@
 # - func_general_helpers.R (for utility functions)
 # ============================================================================
 
-# TODO: Extract the following functions from their current locations:
-
-# Function 1: cleanDesignMatrix()
-# Current location: R/proteinVsSamplesS4Objects.R
-# Type: S4 method (exportMethods)
-# Description: Cleans design matrix for protein data
-# setMethod(f = "cleanDesignMatrix", signature = "ProteinQuantitativeData", ...) {
-#   # Extract from R/proteinVsSamplesS4Objects.R
-# }
-
-# Function 2: cleanDesignMatrixPeptide()
-# Current location: R/peptideVsSamplesS4Objects.R
-# Type: S4 method (exportMethods)
-# Description: Cleans design matrix for peptide data
-# setMethod(f = "cleanDesignMatrixPeptide", signature = "PeptideQuantitativeData", ...) {
-#   # Extract from R/peptideVsSamplesS4Objects.R
-# }
-
-# Function 3: cleanDesignMatrixCleanCategories()
-# Current location: R/helper_functions.R
-# Description: Cleans design matrix categories
-# cleanDesignMatrixCleanCategories <- function(...) {
-#   # Extract from R/helper_functions.R
-# }
-
-# Function 4: cleanDesignMatrixCleanCategoriesMap()
-# Current location: R/helper_functions.R
-# Description: Maps cleaned categories in design matrix
-# cleanDesignMatrixCleanCategoriesMap <- function(...) {
-#   # Extract from R/helper_functions.R
-# }
-
-# Function 5: cleanDesignMatrixCreateEachVersusAllColumns()
-# Current location: R/helper_functions.R
-# Description: Creates each versus all columns in design matrix
-# cleanDesignMatrixCreateEachVersusAllColumns <- function(...) {
-#   # Extract from R/helper_functions.R
-# }
-
-
-# ----------------------------------------------------------------------------
-# cleanDesignMatrixCleanCategories
-# ----------------------------------------------------------------------------
 #' @export
 cleanDesignMatrixCleanCategories <- function(x ) {
 
