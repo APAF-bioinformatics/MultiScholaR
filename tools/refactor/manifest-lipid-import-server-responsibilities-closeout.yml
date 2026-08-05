@@ -1,0 +1,56 @@
+version: 1
+wave: lipid_import_server_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_lipid_import_processing_helpers.R
+  - R/mod_lipid_import_selection_helpers.R
+  - R/mod_lipid_import_output_helpers.R
+
+entries:
+  - id: lipid_import_processing
+    source: R/mod_lipid_import_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^buildLipidImportFormatDetectionStatus <-'
+      end: '^loadLipidImportAssayPreview <-'
+      end_inclusive: false
+    target: R/mod_lipid_import_processing_helpers.R
+    group: lipidomics.import.processing
+
+  - id: lipid_import_selection
+    source: R/mod_lipid_import_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^loadLipidImportAssayPreview <-'
+      end: '^handleLipidImportValidationSummaryRender <-'
+      end_inclusive: false
+    target: R/mod_lipid_import_selection_helpers.R
+    group: lipidomics.import.selection
+
+  - id: lipid_import_outputs
+    source: R/mod_lipid_import_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^handleLipidImportValidationSummaryRender <-'
+      end: '^handleLipidImportStatusRender <-'
+      end_inclusive: false
+    target: R/mod_lipid_import_output_helpers.R
+    group: lipidomics.import.outputs
+
+  - id: lipid_import_status_output
+    source: R/mod_lipid_import_server_helpers.R
+    selector:
+      kind: symbol
+      value: handleLipidImportStatusRender
+      include_leading_comments: false
+    target: R/mod_lipid_import_output_helpers.R
+    group: lipidomics.import.outputs

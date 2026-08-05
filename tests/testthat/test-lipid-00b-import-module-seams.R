@@ -5,7 +5,9 @@ repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 skipIfMissingLipidImportTargetFiles <- function() {
   required_paths <- c(
     "R/mod_lipid_import_ui_helpers.R",
-    "R/mod_lipid_import_server_helpers.R",
+    "R/mod_lipid_import_processing_helpers.R",
+    "R/mod_lipid_import_selection_helpers.R",
+    "R/mod_lipid_import_output_helpers.R",
     "R/mod_lipid_import_ui.R",
     "R/mod_lipid_import_server.R"
   )
@@ -23,7 +25,9 @@ skipIfMissingLipidImportTargetFiles <- function() {
 skipIfMissingLipidImportTargetFiles()
 
 source(test_path("..", "..", "R", "mod_lipid_import_ui_helpers.R"), local = environment())
-source(test_path("..", "..", "R", "mod_lipid_import_server_helpers.R"), local = environment())
+source(test_path("..", "..", "R", "mod_lipid_import_processing_helpers.R"), local = environment())
+source(test_path("..", "..", "R", "mod_lipid_import_selection_helpers.R"), local = environment())
+source(test_path("..", "..", "R", "mod_lipid_import_output_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_import_ui.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_import_server.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_import.R"), local = environment())
@@ -3089,13 +3093,15 @@ test_that("runLipidImportProcessing preserves notification lifecycle and downstr
       assayList,
       detectedFormat,
       lipidIdCol,
-      sampleColumns
+      sampleColumns,
+      artifactResult
     ) {
       finalize_args <<- list(
         assayList = assayList,
         detectedFormat = detectedFormat,
         lipidIdCol = lipidIdCol,
-        sampleColumns = sampleColumns
+        sampleColumns = sampleColumns,
+        artifactResult = artifactResult
       )
       invisible(NULL)
     },
@@ -3115,12 +3121,13 @@ test_that("runLipidImportProcessing preserves notification lifecycle and downstr
     logError = function(...) stop("unexpected error path")
   )
 
+  expect_identical(result$status, "success")
+  expect_identical(result$assayList, sanitized_assays)
+  expect_identical(result$sampleColumns, "clean_sample_a")
+  expect_true(result$validationResult$valid)
   expect_identical(
-    result,
-    list(
-      assayList = sanitized_assays,
-      sampleColumns = "clean_sample_a"
-    )
+    result$artifactResult,
+    list(written = FALSE, reason = "source_dir unavailable")
   )
   expect_identical(apply_args$assayList, sanitized_assays)
   expect_identical(apply_args$dataFormat, "custom")
@@ -3132,6 +3139,7 @@ test_that("runLipidImportProcessing preserves notification lifecycle and downstr
   expect_identical(finalize_args$detectedFormat, "custom")
   expect_identical(finalize_args$lipidIdCol, "lipid_id")
   expect_identical(finalize_args$sampleColumns, "clean_sample_a")
+  expect_identical(finalize_args$artifactResult, result$artifactResult)
   expect_identical(removed_notifications, "lipid_import_working")
   expect_identical(
     notifications,
