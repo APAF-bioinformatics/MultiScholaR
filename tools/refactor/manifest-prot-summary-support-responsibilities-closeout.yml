@@ -1,0 +1,56 @@
+version: 1
+wave: prot_summary_support_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_summary_report_helpers.R
+  - R/mod_prot_summary_session_helpers.R
+  - R/mod_prot_summary_publication_helpers.R
+
+entries:
+  - id: prot_summary_reporting
+    source: R/mod_prot_summary_support_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^resolveProtSummaryFinalS4State <-'
+      end: '^completeProtSummaryWorkflowArgsSave <-'
+      end_inclusive: false
+    target: R/mod_prot_summary_report_helpers.R
+    group: proteomics.summary.reporting
+
+  - id: prot_summary_session_persistence
+    source: R/mod_prot_summary_support_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^completeProtSummaryWorkflowArgsSave <-'
+      end: '^bootstrapProtSummaryCopyFallbackStudyParams <-'
+      end_inclusive: false
+    target: R/mod_prot_summary_session_helpers.R
+    group: proteomics.summary.session
+
+  - id: prot_summary_publication
+    source: R/mod_prot_summary_support_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^bootstrapProtSummaryCopyFallbackStudyParams <-'
+      end: '^completeProtSummaryGithubPush <-'
+      end_inclusive: false
+    target: R/mod_prot_summary_publication_helpers.R
+    group: proteomics.summary.publication
+
+  - id: prot_summary_github_completion
+    source: R/mod_prot_summary_support_helpers.R
+    selector:
+      kind: symbol
+      value: completeProtSummaryGithubPush
+      include_leading_comments: false
+    target: R/mod_prot_summary_publication_helpers.R
+    group: proteomics.summary.publication
