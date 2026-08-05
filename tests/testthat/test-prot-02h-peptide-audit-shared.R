@@ -57,6 +57,30 @@ test_that("peptide-QC audit records are deterministic apart from timestamps", {
   )
 })
 
+test_that("confidence failure reasons report the configured thresholds", {
+  data <- data.frame(
+    Q.Value = c(0.051, 0.001),
+    Global.Q.Value = c(0.001, 0.026),
+    Global.PG.Q.Value = c(0.001, 0.001),
+    Proteotypic = c(1, 1)
+  )
+
+  reasons <- .peptideQcConfidenceFailureReasons(
+    data,
+    list(
+      qvalue_threshold = 0.05,
+      global_qvalue_threshold = 0.025,
+      global_pg_qvalue_threshold = 0.01,
+      proteotypic_only = TRUE
+    )
+  )
+
+  expect_identical(
+    reasons,
+    c("Q.Value_above_0.05", "Global.Q.Value_above_0.025")
+  )
+})
+
 test_that("audit summaries keep frozen identification evidence distinct from survivors", {
   before <- module_ci_prot_peptide_object()
   annotated <- .annotateProteinIdentificationEvidence(

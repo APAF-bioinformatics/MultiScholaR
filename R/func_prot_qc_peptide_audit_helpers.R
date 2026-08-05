@@ -8,10 +8,6 @@
 
 .peptideQcAuditSchemaVersion <- "1.0.0"
 
-.peptideQcAuditValue <- function(value, default = NULL) {
-  if (is.null(value) || length(value) == 0L) default else value
-}
-
 .peptideQcOr <- function(value, default) {
   if (is.null(value) || length(value) == 0L) default else value
 }
@@ -284,7 +280,14 @@
     missing <- is.na(values) | !is.finite(values)
     above <- !missing & values > thresholds[[index]]
     reasons[missing] <- paste0(reasons[missing], ifelse(nzchar(reasons[missing]), ";", ""), column, "_missing_or_non_finite")
-    reasons[above] <- paste0(reasons[above], ifelse(nzchar(reasons[above]), ";", ""), column, "_above_0.01")
+    threshold_label <- format(thresholds[[index]], scientific = FALSE, trim = TRUE)
+    reasons[above] <- paste0(
+      reasons[above],
+      ifelse(nzchar(reasons[above]), ";", ""),
+      column,
+      "_above_",
+      threshold_label
+    )
   }
   if (isTRUE(params$proteotypic_only) && "Proteotypic" %in% names(data)) {
     failed <- is.na(data$Proteotypic) | suppressWarnings(as.numeric(data$Proteotypic)) != 1
