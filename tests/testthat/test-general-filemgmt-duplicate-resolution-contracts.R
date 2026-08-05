@@ -252,29 +252,35 @@ makeProteinNAContractObject <- function() {
   )
 }
 
-test_that("DESCRIPTION keeps general filemgmt ahead of general helpers for the canonical helper load order", {
+test_that("DESCRIPTION keeps general filemgmt ahead of the extracted canonical helper owners", {
   collate_lines <- strsplit(
     read.dcf(file.path(repoRoot, "DESCRIPTION"), fields = "Collate")[1, 1],
     "\n"
   )[[1]]
   collate_entries <- trimws(gsub("'", "", collate_lines, fixed = TRUE))
 
-  expect_lt(
-    match("func_general_filemgmt.R", collate_entries),
-    match("func_general_helpers.R", collate_entries)
+  helper_entries <- c(
+    "func_general_data_helpers.R",
+    "func_general_parameter_helpers.R",
+    "func_prot_accession_helpers.R"
   )
+
+  expect_true(all(
+    match("func_general_filemgmt.R", collate_entries) <
+      match(helper_entries, collate_entries)
+  ))
 })
 
 test_that("extract_experiment duplicate implementation is removed from general filemgmt", {
   filemgmt_impl <- readTopLevelFunction("R/func_general_filemgmt.R", "extract_experiment")
-  helper_impl <- readTopLevelFunction("R/func_general_helpers.R", "extract_experiment")
+  helper_impl <- readTopLevelFunction("R/func_general_data_helpers.R", "extract_experiment")
 
   expect_null(filemgmt_impl)
   expect_true(is.function(helper_impl))
 })
 
 test_that("package-level extract_experiment matches the canonical helper implementation", {
-  helper_impl <- readTopLevelFunction("R/func_general_helpers.R", "extract_experiment")
+  helper_impl <- readTopLevelFunction("R/func_general_data_helpers.R", "extract_experiment")
   inputs <- c(
     "20140602_ffs_expt1_r1_junk",
     "20140603_ffs_expt2_r2_test"
@@ -325,7 +331,7 @@ test_that("package-level extract_experiment matches the canonical helper impleme
 
 test_that("updateMissingValueParameters now resolves directly to the canonical helper signature", {
   filemgmt_impl <- readTopLevelFunction("R/func_general_filemgmt.R", "updateMissingValueParameters")
-  helper_impl <- readTopLevelFunction("R/func_general_helpers.R", "updateMissingValueParameters")
+  helper_impl <- readTopLevelFunction("R/func_general_parameter_helpers.R", "updateMissingValueParameters")
   helper_formals <- c(
     "theObject",
     "min_reps_per_group",
@@ -344,7 +350,7 @@ test_that("updateMissingValueParameters now resolves directly to the canonical h
 
 test_that("package-level updateMissingValueParameters matches the canonical helper on default and helper-only paths", {
   helper_impl <- readTopLevelFunction(
-    "R/func_general_helpers.R",
+    "R/func_general_parameter_helpers.R",
     "updateMissingValueParameters",
     parent = environment(updateMissingValueParameters)
   )
@@ -411,7 +417,7 @@ test_that("chooseBestProteinAccession_s3 duplicate implementation is removed fro
     parent = environment(chooseBestProteinAccession_s3)
   )
   helper_impl <- readTopLevelFunction(
-    "R/func_general_helpers.R",
+    "R/func_prot_accession_helpers.R",
     "chooseBestProteinAccession_s3",
     parent = environment(chooseBestProteinAccession_s3)
   )
@@ -423,7 +429,7 @@ test_that("chooseBestProteinAccession_s3 duplicate implementation is removed fro
 
 test_that("package-level chooseBestProteinAccession_s3 matches the canonical helper on current fallback paths", {
   helper_impl <- readTopLevelFunction(
-    "R/func_general_helpers.R",
+    "R/func_prot_accession_helpers.R",
     "chooseBestProteinAccession_s3",
     parent = environment(chooseBestProteinAccession_s3)
   )

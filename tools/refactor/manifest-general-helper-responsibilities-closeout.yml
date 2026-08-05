@@ -1,0 +1,150 @@
+version: 1
+wave: general_helper_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_data_helpers.R
+  - R/func_general_runtime_helpers.R
+  - R/func_general_parameter_helpers.R
+  - R/func_prot_accession_helpers.R
+
+entries:
+  - id: matching_column
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: findMatchingColumn }
+    target: R/func_general_data_helpers.R
+    group: general.data
+
+  - id: save_time_record
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: saveTimeRecord }
+    target: R/func_general_runtime_helpers.R
+    group: general.runtime
+
+  - id: categorical_conversion
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: changeToCategorical }
+    target: R/func_general_data_helpers.R
+    group: general.data
+
+  - id: peptide_matrix_pivot
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: peptidesIntensityMatrixPivotLonger }
+    target: R/func_general_data_helpers.R
+    group: general.data
+
+  - id: protein_matrix_pivot
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: proteinIntensityMatrixPivotLonger }
+    target: R/func_general_data_helpers.R
+    group: general.data
+
+  - id: attribute_hash_creation
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: createIdToAttributeHash }
+    target: R/func_general_data_helpers.R
+    group: general.data
+
+  - id: attribute_hash_lookup
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: convertKeyToAttribute }
+    target: R/func_general_data_helpers.R
+    group: general.data
+
+  - id: argument_default
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: setArgsDefault }
+    target: R/func_general_parameter_helpers.R
+    group: general.parameters
+
+  - id: current_function_name
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: getFunctionName }
+    target: R/func_general_runtime_helpers.R
+    group: general.runtime
+
+  - id: caller_function_name
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: getFunctionNameSecondLevel }
+    target: R/func_general_runtime_helpers.R
+    group: general.runtime
+
+  - id: object_parameter_resolution
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: checkParamsObjectFunctionSimplify }
+    target: R/func_general_parameter_helpers.R
+    group: general.parameters
+
+  - id: nullable_object_parameter_resolution
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: checkParamsObjectFunctionSimplifyAcceptNull }
+    target: R/func_general_parameter_helpers.R
+    group: general.parameters
+
+  - id: object_parameter_update
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: updateParamInObject }
+    target: R/func_general_parameter_helpers.R
+    group: general.parameters
+
+  - id: experiment_name_extraction
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: extract_experiment }
+    target: R/func_general_data_helpers.R
+    group: general.data
+
+  - id: missing_value_parameter_update
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: updateMissingValueParameters }
+    target: R/func_general_parameter_helpers.R
+    group: general.parameters
+
+  - id: protein_accession_selection
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: chooseBestProteinAccession_s3 }
+    target: R/func_prot_accession_helpers.R
+    group: proteomics.accession_selection
+
+  - id: heatmap_size
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: calcHtSize }
+    target: R/func_general_data_helpers.R
+    group: general.data
+
+  - id: process_memory
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: getProcessMemoryMB }
+    target: R/func_general_runtime_helpers.R
+    group: general.runtime
+
+  - id: r_heap_memory
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: getRHeapMemoryMB }
+    target: R/func_general_runtime_helpers.R
+    group: general.runtime
+
+  - id: null_coalescing_operator
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: "%||%" }
+    target: R/func_general_runtime_helpers.R
+    group: general.runtime
+
+  - id: memory_checkpoint
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: checkMemoryBoth }
+    target: R/func_general_runtime_helpers.R
+    group: general.runtime
+
+  - id: memory_delta
+    source: R/func_general_helpers.R
+    selector: { kind: symbol, value: reportMemoryDelta }
+    target: R/func_general_runtime_helpers.R
+    group: general.runtime
