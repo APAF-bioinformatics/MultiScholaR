@@ -1,0 +1,113 @@
+version: 1
+wave: prot_enrich_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_prot_enrich_setup_helpers.R
+  - R/mod_prot_enrich_registration_helpers.R
+  - R/mod_prot_enrich_observer_helpers.R
+  - R/mod_prot_enrich_execution_helpers.R
+  - R/mod_prot_enrich_render_helpers.R
+  - R/mod_prot_enrich_state_helpers.R
+  - R/mod_prot_enrich_analysis_helpers.R
+  - R/mod_prot_enrich_input_helpers.R
+
+entries:
+  - id: prot_enrich_setup
+    source: R/mod_prot_enrich_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^setupProtEnrichReactiveValues <-'
+      end: '^registerProtEnrichPlotOutputs <-'
+      end_inclusive: false
+    target: R/mod_prot_enrich_setup_helpers.R
+    group: proteomics.enrichment.setup
+
+  - id: prot_enrich_registration
+    source: R/mod_prot_enrich_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^registerProtEnrichPlotOutputs <-'
+      end: '^runProtEnrichObserverShell <-'
+      end_inclusive: false
+    target: R/mod_prot_enrich_registration_helpers.R
+    group: proteomics.enrichment.registration
+
+  - id: prot_enrich_observer_lifecycle
+    source: R/mod_prot_enrich_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^runProtEnrichObserverShell <-'
+      end: '^if \(!methods::isClass\("ProtEnrichDeterministicResult"\)\) \{'
+      end_inclusive: false
+    target: R/mod_prot_enrich_observer_helpers.R
+    group: proteomics.enrichment.observer_lifecycle
+
+  - id: prot_enrich_deterministic_execution
+    source: R/mod_prot_enrich_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^if \(!methods::isClass\("ProtEnrichDeterministicResult"\)\) \{'
+      end: '^formatProtEnrichStatusText <-'
+      end_inclusive: false
+    target: R/mod_prot_enrich_execution_helpers.R
+    group: proteomics.enrichment.execution
+
+  - id: prot_enrich_rendering_and_downloads
+    source: R/mod_prot_enrich_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^formatProtEnrichStatusText <-'
+      end: '^buildProtEnrichAnalysisResultsPayload <-'
+      end_inclusive: false
+    target: R/mod_prot_enrich_render_helpers.R
+    group: proteomics.enrichment.rendering
+
+  - id: prot_enrich_state_and_persistence
+    source: R/mod_prot_enrich_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^buildProtEnrichAnalysisResultsPayload <-'
+      end: '^resolveProtEnrichAnalysisInputColumns <-'
+      end_inclusive: false
+    target: R/mod_prot_enrich_state_helpers.R
+    group: proteomics.enrichment.state
+
+  - id: prot_enrich_analysis_orchestration
+    source: R/mod_prot_enrich_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^resolveProtEnrichAnalysisInputColumns <-'
+      end: '^resolveProtEnrichOrganismMapping <-'
+      end_inclusive: false
+    target: R/mod_prot_enrich_analysis_helpers.R
+    group: proteomics.enrichment.analysis
+
+  - id: prot_enrich_input_resolution
+    source: R/mod_prot_enrich_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^resolveProtEnrichOrganismMapping <-'
+      end: '^resolveProtEnrichAnnotationMatching <-'
+      end_inclusive: false
+    target_selector:
+      kind: anchor_range
+      start: '^resolveProtEnrichOrganismMapping <-'
+      end: '^resolveProtEnrichAnnotationMatching <-'
+      end_inclusive: false
+    target: R/mod_prot_enrich_input_helpers.R
+    group: proteomics.enrichment.input_resolution
+
+  - id: prot_enrich_annotation_matching
+    source: R/mod_prot_enrich_server_helpers.R
+    selector: { kind: symbol, value: resolveProtEnrichAnnotationMatching }
+    target: R/mod_prot_enrich_input_helpers.R
+    group: proteomics.enrichment.input_resolution

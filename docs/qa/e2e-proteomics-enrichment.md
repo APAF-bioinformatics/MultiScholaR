@@ -62,7 +62,7 @@ places:
 
 The browser app runs enrichment in a separate R process, so test-process mocks are
 not sufficient for required E2E coverage. E2E-007 adds app-side deterministic
-test-mode seams in `R/mod_prot_enrich_server_helpers.R`:
+test-mode seams in `R/mod_prot_enrich_execution_helpers.R`:
 
 - deterministic UniProt annotations are generated when no annotation table is
   available in `test_mode`;

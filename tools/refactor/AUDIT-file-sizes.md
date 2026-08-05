@@ -9,15 +9,14 @@ Budget bands:
 
 ## Summary
 
-- `oversized`: 16
+- `oversized`: 15
 - `soft_cap`: 8
-- `acceptable`: 40
-- `ideal`: 155
+- `acceptable`: 46
+- `ideal`: 157
 - `small`: 103
 
 ## Largest Files
 
-- `oversized` 4224 LOC [R/mod_prot_enrich_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_prot_enrich_server_helpers.R)
 - `oversized` 3671 LOC [R/func_general_enrichment.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_general_enrichment.R)
 - `oversized` 3511 LOC [R/func_multiomics_enrich.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_multiomics_enrich.R)
 - `oversized` 3206 LOC [R/mod_metab_norm_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_metab_norm_server_helpers.R)
@@ -43,6 +42,7 @@ Budget bands:
 - `soft_cap` 843 LOC [R/mod_metab_da_observer_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_metab_da_observer_helpers.R)
 - `acceptable` 797 LOC [R/func_prot_limpa_qc_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_prot_limpa_qc_helpers.R)
 - `acceptable` 773 LOC [R/func_lipid_da_plotting.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_lipid_da_plotting.R)
+- `acceptable` 754 LOC [R/mod_prot_enrich_input_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_prot_enrich_input_helpers.R)
 - `acceptable` 732 LOC [R/func_prot_qc_peptide_methods.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_prot_qc_peptide_methods.R)
 - `acceptable` 731 LOC [R/func_lipid_qc_reporting_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_lipid_qc_reporting_helpers.R)
 - `acceptable` 729 LOC [R/func_metab_norm.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_metab_norm.R)
@@ -54,6 +54,6 @@ Budget bands:
 - `acceptable` 658 LOC [R/mod_lipid_design_builder_state_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_lipid_design_builder_state_helpers.R)
 - `acceptable` 657 LOC [R/mod_lipid_qc_duplicates_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_lipid_qc_duplicates_server_helpers.R)
 - `acceptable` 650 LOC [R/mod_metab_norm_ui.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_metab_norm_ui.R)
+- `acceptable` 649 LOC [R/mod_prot_enrich_registration_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_prot_enrich_registration_helpers.R)
 - `acceptable` 648 LOC [R/mod_lipid_da_session_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_lipid_da_session_helpers.R)
 - `acceptable` 643 LOC [R/mod_metab_qc_s4_server_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_metab_qc_s4_server_helpers.R)
-- `acceptable` 641 LOC [R/func_prot_qc_peptide_audit_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_prot_qc_peptide_audit_helpers.R)

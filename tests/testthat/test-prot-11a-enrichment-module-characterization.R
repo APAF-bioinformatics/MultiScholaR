@@ -15,13 +15,29 @@ getMultiScholaRBinding <- function(name) {
 }
 
 restoreProtEnrichServerBindingsFromSource <- function() {
-  helper_path <- testthat::test_path("..", "..", "R", "mod_prot_enrich_server_helpers.R")
-  if (!file.exists(helper_path)) {
+  helper_paths <- testthat::test_path(
+    "..",
+    "..",
+    "R",
+    c(
+      "mod_prot_enrich_setup_helpers.R",
+      "mod_prot_enrich_registration_helpers.R",
+      "mod_prot_enrich_observer_helpers.R",
+      "mod_prot_enrich_execution_helpers.R",
+      "mod_prot_enrich_render_helpers.R",
+      "mod_prot_enrich_state_helpers.R",
+      "mod_prot_enrich_analysis_helpers.R",
+      "mod_prot_enrich_input_helpers.R"
+    )
+  )
+  if (!all(file.exists(helper_paths))) {
     return(invisible(FALSE))
   }
 
   source_env <- new.env(parent = multiScholaRNamespace())
-  sys.source(helper_path, envir = source_env)
+  for (helper_path in helper_paths) {
+    sys.source(helper_path, envir = source_env)
+  }
 
   server_env <- environment(mod_prot_enrich_server)
   symbols <- c(

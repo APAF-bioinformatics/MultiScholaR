@@ -178,9 +178,9 @@ Every production wave follows the same sequence:
 
 Current checkpoint after extraction-scaffold cleanup:
 
-- runtime `.R` files: `322`
-- files over 1,000 LOC: `16`
-- files over 2,000 LOC: `6`
+- runtime `.R` files: `329`
+- files over 1,000 LOC: `15`
+- files over 2,000 LOC: `5`
 - duplicate entity keys: `0`
 - redundant duplicate occurrences: `0`
 - stale `TODO: Extract` headers: `0`
@@ -190,7 +190,8 @@ Current checkpoint after extraction-scaffold cleanup:
 - duplicate canonicalization wave 1: `67c44b9`
 - duplicate canonicalization wave 2: `a1fb983`
 - duplicate canonicalization wave 3: `58a3bef`
-- extraction-scaffold cleanup: this checkpoint
+- extraction-scaffold cleanup: `66001da`
+- proteomics enrichment responsibility split: this checkpoint
 
 Wave 3 preserved all `3,339` recursive function occurrences and all `2,875`
 unique function ASTs from `a1fb983` exactly, with zero unmatched expressions or
@@ -204,6 +205,11 @@ headers and retired five comment-only runtime breadcrumbs. All `3,345` function
 occurrences from `58a3bef` remain AST-identical, the runtime and `Collate`
 inventories both contain `322` files, and `75` generated Rd provenance lines
 now identify their actual roxygen-owning source files.
+
+The proteomics enrichment module split replaces the `4,224`-line accumulated
+helper file with eight exact-source owners between `258` and `754` LOC. Its
+focused package-loaded gate passes `1,412` expectations, and all `3,345`
+recursive function ASTs from `66001da` remain exact.
 
 The isolated `test-prot-s4-missingness-direct-shared.R` file currently has two
 errors in untouched protein missingness paths. Both errors reproduce against a
