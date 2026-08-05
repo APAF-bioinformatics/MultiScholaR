@@ -28,7 +28,7 @@ loadSelectedFunctions(
     file.path(repo_root, "R", "func_metab_da_quant_data.R"),
     file.path(repo_root, "R", "func_metab_da.R")
   ),
-  symbols = "getMetaboliteQuantData",
+  symbols = "getMetaboliteDaQuantData",
   env = environment()
 )
 
@@ -42,7 +42,7 @@ test_that("metabolomics DA quant-data helper preserves default metadata filterin
     check.names = FALSE
   )
 
-  quant_info <- getMetaboliteQuantData(assay_df)
+  quant_info <- getMetaboliteDaQuantData(assay_df)
 
   expect_identical(quant_info$sample_cols, c("Sample_1", "Sample_2"))
   expect_identical(
@@ -66,7 +66,7 @@ test_that("metabolomics DA quant-data helper preserves explicit metadata exclusi
     check.names = FALSE
   )
 
-  quant_info <- getMetaboliteQuantData(
+  quant_info <- getMetaboliteDaQuantData(
     assay_df = assay_df,
     metabolite_id_col = "feature_id",
     annotation_col = "label",

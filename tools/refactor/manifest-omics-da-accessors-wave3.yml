@@ -1,0 +1,33 @@
+version: 1
+wave: omics_da_accessors_wave3
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_omics_da_list_methods.R
+
+entries:
+  - id: shared_da_accessor_source
+    source: R/func_prot_da_results_methods.R
+    selector: { kind: symbol, value: .resolveDaAccessorSource }
+    target: R/func_omics_da_list_methods.R
+    group: shared.da.result_accessors
+
+  - id: shared_da_results_long_list_method
+    source: R/func_prot_da_results_methods.R
+    selector: { kind: setMethod, value: getDaResultsLongFormat }
+    target: R/func_omics_da_list_methods.R
+    group: shared.da.result_accessors
+
+  - id: shared_da_results_wide_list_method
+    source: R/func_prot_da_results_methods.R
+    selector: { kind: setMethod, value: getDaResultsWideFormat }
+    target: R/func_omics_da_list_methods.R
+    group: shared.da.result_accessors

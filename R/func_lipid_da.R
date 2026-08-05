@@ -65,7 +65,7 @@
 # getCountsTable
 # ----------------------------------------------------------------------------
 # Helper function to get counts table
-getCountsTable <- function(obj) {
+.getCountsTableLipidomics <- function(obj) {
     if (inherits(obj, "LipidomicsAssayData")) {
         message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
         message(sprintf(
@@ -119,8 +119,9 @@ getCountsTable <- function(obj) {
 #'   - meta_data: Data frame with only metadata columns
 #'   - sample_cols: Names of sample columns
 #'
-#' @export
-getLipidQuantData <- function(
+#' @keywords internal
+#' @noRd
+getLipidDaQuantData <- function(
   assay_df,
   lipid_id_col = "Alignment ID",
   annotation_col = "Lipid name",
@@ -145,7 +146,6 @@ getLipidQuantData <- function(
         sample_cols = sample_cols
     )
 }
-
 
 
 

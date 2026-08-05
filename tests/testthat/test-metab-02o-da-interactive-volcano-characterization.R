@@ -59,6 +59,14 @@ isTargetSetMethod <- function(expr, method_name) {
   !is.null(method_arg) && identical(normalizeSelectorValue(method_arg), method_name)
 }
 
+isTargetSymbolAssignment <- function(expr, symbol_name) {
+  is.call(expr) &&
+    length(expr) >= 3 &&
+    as.character(expr[[1]]) %in% c("<-", "=") &&
+    is.symbol(expr[[2]]) &&
+    identical(as.character(expr[[2]]), symbol_name)
+}
+
 if (!methods::isClass("MetaboliteAssayData")) {
   methods::setClass(
     "MetaboliteAssayData",
@@ -103,7 +111,7 @@ loadSelectedExpressions(
   paths = target_paths,
   matcher = function(expr) {
     isTargetSetClass(expr, "MetabolomicsDifferentialAbundanceResults") ||
-      isTargetSetMethod(expr, "plotInteractiveVolcano")
+      isTargetSymbolAssignment(expr, ".plotInteractiveVolcanoMetabolomicsList")
   },
   env = environment()
 )
@@ -146,7 +154,7 @@ test_that("metabolomics S4 interactive-volcano method preserves zero-coefficient
   output <- NULL
 
   expect_warning(
-    output <- plotInteractiveVolcano(list(primary = newDaInteractiveResultObject())),
+    output <- .plotInteractiveVolcanoMetabolomicsList(list(primary = newDaInteractiveResultObject())),
     "components were missing rownames"
   )
 
@@ -159,7 +167,7 @@ test_that("metabolomics S4 interactive-volcano definition retains qvalue and Gli
   target_expr <- findSelectedExpression(
     paths = target_paths,
     matcher = function(expr) {
-      isTargetSetMethod(expr, "plotInteractiveVolcano")
+      isTargetSymbolAssignment(expr, ".plotInteractiveVolcanoMetabolomicsList")
     }
   )
 

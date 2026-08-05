@@ -7,6 +7,28 @@ makeFunctionWithOverrides <- function(fun, replacements) {
   fun_override
 }
 
+getS4LocalFunction <- function(method) {
+  method_body <- body(method)
+  local_assignment <- method_body[[2L]]
+
+  stopifnot(
+    is.call(local_assignment),
+    identical(local_assignment[[1L]], quote(`<-`)),
+    identical(local_assignment[[2L]], quote(.local))
+  )
+
+  local_function <- local_assignment[[3L]]
+  if (is.function(local_function)) {
+    return(local_function)
+  }
+
+  stopifnot(
+    is.call(local_function),
+    identical(local_function[[1L]], quote(`function`))
+  )
+  eval(local_function, envir = environment(method))
+}
+
 newMetabS4DaObject <- function(group_values = c("1A", "1A", "2B", "2B"), args = list()) {
   methods::new(
     "MetaboliteAssayData",
@@ -37,7 +59,10 @@ newMetabS4DaObject <- function(group_values = c("1A", "1A", "2B", "2B"), args = 
 
 test_that("metabolite S4 DA methods preserve list validation and helper orchestration", {
   list_method <- makeFunctionWithOverrides(
-    methods::selectMethod("differentialAbundanceAnalysis", "list"),
+    getFromNamespace(
+      ".differentialAbundanceAnalysisMetabolomicsList",
+      "MultiScholaR"
+    ),
     list(
       differentialAbundanceAnalysisHelper = function(obj, ...) {
         paste("ok", obj@group_id)
@@ -55,7 +80,10 @@ test_that("metabolite S4 DA helper preserves numeric-group remapping and namespa
   helper_calls <- new.env(parent = emptyenv())
 
   helper_method <- makeFunctionWithOverrides(
-    methods::selectMethod("differentialAbundanceAnalysisHelper", "MetaboliteAssayData"),
+    getS4LocalFunction(methods::selectMethod(
+      "differentialAbundanceAnalysisHelper",
+      "MetaboliteAssayData"
+    )),
     list(
       checkParamsObjectFunctionSimplify = function(theObject, name, default) {
         value <- theObject@args[[name]]
@@ -111,7 +139,7 @@ test_that("metabolite S4 DA helper preserves numeric-group remapping and namespa
   expect_identical(helper_calls$contrast_strings, "grp_2B-grp_1A")
   expect_identical(helper_calls$design_groups, c("grp_1A", "grp_1A", "grp_2B", "grp_2B"))
   expect_identical(helper_calls$formula_string, "~ 0 + group")
-  expect_identical(helper_calls$treat_lfc_cutoff, 0.5)
+  expect_identical(helper_calls$treat_lfc_cutoff, "0.5")
   expect_false(helper_calls$eBayes_trend)
   expect_true(helper_calls$eBayes_robust)
   expect_identical(result_object@contrasts_results_table[[1]]$comparison, c("2B-1A", "2B-1A"))

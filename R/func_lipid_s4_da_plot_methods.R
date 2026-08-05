@@ -1,9 +1,7 @@
 #' plot number of significant differentially expressed lipids
-#' @export
-setMethod(
-    f = "plotNumSigDiffExpBarPlot",
-    signature = "list",
-    definition = function(objectsList) {
+#' @keywords internal
+#' @noRd
+.plotNumSigDiffExpBarPlotLipidomicsList <- function(objectsList) {
         return_object_list <- purrr::imap(
             objectsList,
             function(object, idx) {
@@ -32,14 +30,11 @@ setMethod(
 
         return_object_list
     }
-)
 
 #' Plot static volcano plot (without gene names)
-#' @export
-setMethod(
-    f = "plotVolcanoS4",
-    signature = "list",
-    definition = function(objectsList,
+#' @keywords internal
+#' @noRd
+.plotVolcanoS4LipidomicsList <- function(objectsList,
                           da_q_val_thresh = 0.05,
                           qvalue_column = "fdr_qvalue",
                           log2fc_column = "logFC") {
@@ -106,15 +101,11 @@ setMethod(
 
         return(return_object_list)
     }
-)
 
 ## Create proteomics interactive volcano plot
-#' @export
-setMethod(
-    f = "plotInteractiveVolcano",
-    signature = "list",
-    definition =
-        function(objectsList, anno_list = NULL) {
+#' @keywords internal
+#' @noRd
+.plotInteractiveVolcanoLipidomicsList <- function(objectsList, anno_list = NULL) {
             list_of_objects <- purrr::imap(
                 objectsList,
                 \(de_output_object, idx) {
@@ -238,4 +229,3 @@ setMethod(
 
             list_of_objects
         }
-)

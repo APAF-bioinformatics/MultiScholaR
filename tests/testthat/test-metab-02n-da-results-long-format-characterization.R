@@ -45,6 +45,14 @@ isTargetSetMethod <- function(expr, method_name) {
   !is.null(method_arg) && identical(normalizeSelectorValue(method_arg), method_name)
 }
 
+isTargetSymbolAssignment <- function(expr, symbol_name) {
+  is.call(expr) &&
+    length(expr) >= 3 &&
+    as.character(expr[[1]]) %in% c("<-", "=") &&
+    is.symbol(expr[[2]]) &&
+    identical(as.character(expr[[2]]), symbol_name)
+}
+
 if (!methods::isClass("MetaboliteAssayData")) {
   methods::setClass(
     "MetaboliteAssayData",
@@ -75,7 +83,7 @@ loadSelectedExpressions(
   ),
   matcher = function(expr) {
     isTargetSetClass(expr, "MetabolomicsDifferentialAbundanceResults") ||
-      isTargetSetMethod(expr, "getDaResultsLongFormat")
+      isTargetSymbolAssignment(expr, ".getDaResultsLongFormatMetabolomicsList")
   },
   env = environment()
 )
@@ -121,7 +129,7 @@ test_that("metabolomics DA long-format method preserves joined counts for each c
     stringsAsFactors = FALSE
   )
 
-  output <- getDaResultsLongFormat(list(primary = newDaLongResultObject(list(counts_table))))
+  output <- .getDaResultsLongFormatMetabolomicsList(list(primary = newDaLongResultObject(list(counts_table))))
 
   expect_identical(names(output), "primary")
   expect_s3_class(output$primary@results_table_long, "data.frame")
@@ -165,7 +173,7 @@ test_that("metabolomics DA long-format method supports a bare-data-frame counts 
     stringsAsFactors = FALSE
   )
 
-  output <- getDaResultsLongFormat(list(primary = newDaLongResultObject(counts_table)))
+  output <- .getDaResultsLongFormatMetabolomicsList(list(primary = newDaLongResultObject(counts_table)))
 
   expect_identical(names(output), "primary")
   expect_equal(output$primary@results_table_long$metabolite_id, c("M1", "M2", "M1", "M2"))

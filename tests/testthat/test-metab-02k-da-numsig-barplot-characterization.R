@@ -45,6 +45,14 @@ isTargetSetMethod <- function(expr, method_name) {
   !is.null(method_arg) && identical(normalizeSelectorValue(method_arg), method_name)
 }
 
+isTargetSymbolAssignment <- function(expr, symbol_name) {
+  is.call(expr) &&
+    length(expr) >= 3 &&
+    as.character(expr[[1]]) %in% c("<-", "=") &&
+    is.symbol(expr[[2]]) &&
+    identical(as.character(expr[[2]]), symbol_name)
+}
+
 if (!methods::isClass("MetaboliteAssayData")) {
   methods::setClass(
     "MetaboliteAssayData",
@@ -87,7 +95,7 @@ loadSelectedExpressions(
   ),
   matcher = function(expr) {
     isTargetSetClass(expr, "MetabolomicsDifferentialAbundanceResults") ||
-      isTargetSetMethod(expr, "plotNumSigDiffExpBarPlot")
+      isTargetSymbolAssignment(expr, ".plotNumSigDiffExpBarPlotMetabolomicsList")
   },
   env = environment()
 )
@@ -104,7 +112,7 @@ test_that("metabolomics DA numsig barplot method preserves slot updates and list
     contrasts_results_table = contrasts_results_table
   )
 
-  output <- plotNumSigDiffExpBarPlot(list(primary = result_object))
+  output <- .plotNumSigDiffExpBarPlotMetabolomicsList(list(primary = result_object))
 
   expect_equal(names(output), "primary")
   expect_identical(

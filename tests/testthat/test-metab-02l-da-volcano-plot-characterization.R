@@ -45,6 +45,14 @@ isTargetSetMethod <- function(expr, method_name) {
   !is.null(method_arg) && identical(normalizeSelectorValue(method_arg), method_name)
 }
 
+isTargetSymbolAssignment <- function(expr, symbol_name) {
+  is.call(expr) &&
+    length(expr) >= 3 &&
+    as.character(expr[[1]]) %in% c("<-", "=") &&
+    is.symbol(expr[[2]]) &&
+    identical(as.character(expr[[2]]), symbol_name)
+}
+
 if (!methods::isClass("MetaboliteAssayData")) {
   methods::setClass(
     "MetaboliteAssayData",
@@ -117,7 +125,7 @@ loadSelectedExpressions(
   ),
   matcher = function(expr) {
     isTargetSetClass(expr, "MetabolomicsDifferentialAbundanceResults") ||
-      isTargetSetMethod(expr, "plotVolcanoS4")
+      isTargetSymbolAssignment(expr, ".plotVolcanoS4MetabolomicsList")
   },
   env = environment()
 )
@@ -144,7 +152,7 @@ test_that("metabolomics DA volcano list-method preserves grouped plot names and 
     contrasts_results_table = contrasts_results_table
   )
 
-  output <- plotVolcanoS4(list(primary = result_object))
+  output <- .plotVolcanoS4MetabolomicsList(list(primary = result_object))
 
   expect_identical(names(output), "primary")
   expect_identical(names(output$primary@volcano_plot), names(contrasts_results_table))

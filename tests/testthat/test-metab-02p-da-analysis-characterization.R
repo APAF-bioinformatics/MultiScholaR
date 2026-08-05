@@ -52,6 +52,14 @@ isTargetSetMethod <- function(expr, method_name) {
   !is.null(method_arg) && identical(normalizeSelectorValue(method_arg), method_name)
 }
 
+isTargetSymbolAssignment <- function(expr, symbol_name) {
+  is.call(expr) &&
+    length(expr) >= 3 &&
+    as.character(expr[[1]]) %in% c("<-", "=") &&
+    is.symbol(expr[[2]]) &&
+    identical(as.character(expr[[2]]), symbol_name)
+}
+
 if (!methods::isClass("MetaboliteAssayData")) {
   methods::setClass(
     "MetaboliteAssayData",
@@ -117,7 +125,7 @@ target_paths <- c(
 loadSelectedExpressions(
   paths = target_paths,
   matcher = function(expr) {
-    isTargetSetMethod(expr, "differentialAbundanceAnalysis")
+    isTargetSymbolAssignment(expr, ".differentialAbundanceAnalysisMetabolomicsList")
   },
   env = environment()
 )
@@ -129,7 +137,7 @@ test_that("metabolomics S4 DA analysis list method validates inputs and preserve
   )
   helper_calls <<- list()
 
-  output <- differentialAbundanceAnalysis(
+  output <- .differentialAbundanceAnalysisMetabolomicsList(
     object_list,
     contrasts_tbl = data.frame(contrasts = "B-A", stringsAsFactors = FALSE),
     formula_string = "~ 0 + group",
@@ -161,7 +169,7 @@ test_that("metabolomics S4 DA analysis list method validates inputs and preserve
 
 test_that("metabolomics S4 DA analysis list method rejects non-MetaboliteAssayData entries", {
   expect_error(
-    differentialAbundanceAnalysis(
+    .differentialAbundanceAnalysisMetabolomicsList(
       list(makeMetabCharacterizationObject(args = list(label = "alpha")), "bad-entry")
     ),
     "All objects in objectsList must be of class MetaboliteAssayData"
@@ -172,7 +180,7 @@ test_that("metabolomics S4 DA analysis definition still delegates through the he
   target_expr <- findSelectedExpression(
     paths = target_paths,
     matcher = function(expr) {
-      isTargetSetMethod(expr, "differentialAbundanceAnalysis")
+      isTargetSymbolAssignment(expr, ".differentialAbundanceAnalysisMetabolomicsList")
     }
   )
 

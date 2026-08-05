@@ -255,8 +255,9 @@ getMetabolomicsColumnDefaults <- function(format) {
 # ----------------------------------------------------------------------------
 #' @title Validate Column Mapping (Alias)
 #' @description Alias for validateMetabColumnMapping for backward compatibility.
-#' @export
-validateColumnMapping <- function(data, metabolite_id_column, sample_columns) {
+#' @keywords internal
+#' @noRd
+.validateColumnMappingMetabolomicsCompatibility <- function(data, metabolite_id_column, sample_columns) {
     validateMetabColumnMapping(data, metabolite_id_column, sample_columns)
 }
 
@@ -329,4 +330,3 @@ validateMetabColumnMapping <- function(data, metabolite_id_column, sample_column
         , summary = summary_stats
     ))
 }
-

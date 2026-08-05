@@ -16,8 +16,9 @@
 #'   - meta_data: Data frame with only metadata columns
 #'   - sample_cols: Names of sample columns
 #'
-#' @export
-getMetaboliteQuantData <- function(
+#' @keywords internal
+#' @noRd
+getMetaboliteDaQuantData <- function(
   assay_df,
   metabolite_id_col = "Alignment ID",
   annotation_col = "Metabolite name",
@@ -42,4 +43,3 @@ getMetaboliteQuantData <- function(
         sample_cols = sample_cols
     )
 }
-

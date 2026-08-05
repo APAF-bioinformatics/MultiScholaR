@@ -1,0 +1,75 @@
+version: 1
+wave: duplicate_canonicalization_wave3
+source_root: R
+collate_mode: shared_dispatch
+
+method_helper_conversions:
+  - source: R/func_metab_s4_da_methods.R
+    method: differentialAbundanceAnalysis
+    signature: list
+    helper: .differentialAbundanceAnalysisMetabolomicsList
+
+  - source: R/func_lipid_s4_da_analysis_methods.R
+    method: differentialAbundanceAnalysis
+    signature: list
+    helper: .differentialAbundanceAnalysisLipidomicsList
+
+  - source: R/func_metab_s4_da_results.R
+    method: plotNumSigDiffExpBarPlot
+    signature: list
+    helper: .plotNumSigDiffExpBarPlotMetabolomicsList
+
+  - source: R/func_metab_s4_da_results.R
+    method: plotVolcanoS4
+    signature: list
+    helper: .plotVolcanoS4MetabolomicsList
+
+  - source: R/func_metab_s4_da_results.R
+    method: getDaResultsWideFormat
+    signature: list
+    helper: .getDaResultsWideFormatMetabolomicsList
+
+  - source: R/func_metab_s4_da_results.R
+    method: getDaResultsLongFormat
+    signature: list
+    helper: .getDaResultsLongFormatMetabolomicsList
+
+  - source: R/func_metab_s4_da_results.R
+    method: plotInteractiveVolcano
+    signature: list
+    helper: .plotInteractiveVolcanoMetabolomicsList
+
+  - source: R/func_lipid_s4_da_plot_methods.R
+    method: plotNumSigDiffExpBarPlot
+    signature: list
+    helper: .plotNumSigDiffExpBarPlotLipidomicsList
+
+  - source: R/func_lipid_s4_da_plot_methods.R
+    method: plotVolcanoS4
+    signature: list
+    helper: .plotVolcanoS4LipidomicsList
+
+  - source: R/func_lipid_s4_da_plot_methods.R
+    method: plotInteractiveVolcano
+    signature: list
+    helper: .plotInteractiveVolcanoLipidomicsList
+
+  - source: R/func_lipid_s4_results_accessors.R
+    method: getDaResultsWideFormat
+    signature: list
+    helper: .getDaResultsWideFormatLipidomicsList
+
+  - source: R/func_lipid_s4_results_accessors.R
+    method: getDaResultsLongFormat
+    signature: list
+    helper: .getDaResultsLongFormatLipidomicsList
+
+  - source: R/func_prot_s4_da_methods.R
+    method: differentialAbundanceAnalysisHelper
+    signature: ProteinQuantitativeData
+    helper: .differentialAbundanceAnalysisHelperProteomicsLegacy
+
+  - source: R/func_prot_s4_da_results.R
+    method: outputDaResultsAllContrasts
+    signature: ProteinQuantitativeData
+    helper: .outputDaResultsAllContrastsProteomicsLegacy

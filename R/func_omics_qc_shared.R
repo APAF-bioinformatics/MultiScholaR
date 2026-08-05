@@ -82,8 +82,9 @@ findDuplicateFeatureIDs <- function(theObject) {
 #'                   If NULL, attempts to guess based on context.
 #'
 #' @return A list containing validation status and summary statistics.
-#' @export
-validateColumnMapping <- function(data, id_column, sample_columns, omics_type = NULL) {
+#' @keywords internal
+#' @noRd
+validateOmicsColumnMapping <- function(data, id_column, sample_columns, omics_type = NULL) {
     # If omics_type is not provided, we check which function to call.
     # We default to metabolomics if unknown, but prefer explicit type.
     if (!is.null(omics_type) && tolower(omics_type) == "lipidomics") {

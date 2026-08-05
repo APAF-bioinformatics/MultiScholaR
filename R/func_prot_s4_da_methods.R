@@ -1,9 +1,7 @@
 
-#' @export
-setMethod(
-  f = "differentialAbundanceAnalysisHelper",
-  signature = "ProteinQuantitativeData",
-  definition = function(
+#' @keywords internal
+#' @noRd
+.differentialAbundanceAnalysisHelperProteomicsLegacy <- function(
     theObject,
     contrasts_tbl = NULL,
     formula_string = NULL,
@@ -501,4 +499,3 @@ setMethod(
     message("--- Exiting differentialAbundanceAnalysisHelper ---")
     return(return_list)
   }
-)

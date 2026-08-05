@@ -1,8 +1,6 @@
-#' @export
-setMethod(
-    f = "differentialAbundanceAnalysis",
-    signature = "list",
-    definition = function(theObject,
+#' @keywords internal
+#' @noRd
+.differentialAbundanceAnalysisLipidomicsList <- function(theObject,
                           contrasts_tbl = NULL,
                           formula_string = NULL,
                           group_id = NULL,
@@ -44,7 +42,6 @@ setMethod(
 
         return(results_list)
     }
-)
 
 #' @export
 setMethod(

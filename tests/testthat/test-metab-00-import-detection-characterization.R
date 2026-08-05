@@ -34,7 +34,7 @@ loadSelectedFunctions(
     "detectMetabolomicsFormat",
     "findMetabMatchingColumn",
     "getMetabolomicsColumnDefaults",
-    "validateColumnMapping",
+    "validateOmicsColumnMapping",
     "validateMetabColumnMapping"
   ),
   env = environment()
@@ -89,10 +89,11 @@ test_that("metabolomics import validation helpers preserve current summary and a
     sample_columns = c("Sample1", "Sample2")
   )
 
-  aliased <- validateColumnMapping(
+  aliased <- validateOmicsColumnMapping(
     data = assay_data,
-    metabolite_id_column = "metabolite_id",
-    sample_columns = c("Sample1", "Sample2")
+    id_column = "metabolite_id",
+    sample_columns = c("Sample1", "Sample2"),
+    omics_type = "metabolomics"
   )
 
   expect_true(validated$valid)

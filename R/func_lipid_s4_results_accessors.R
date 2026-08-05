@@ -1,8 +1,6 @@
-#' @export
-setMethod(
-    f = "getDaResultsWideFormat",
-    signature = "list",
-    definition = function(objectsList,
+#' @keywords internal
+#' @noRd
+.getDaResultsWideFormatLipidomicsList <- function(objectsList,
                           qvalue_column = "fdr_qvalue",
                           raw_pvalue_column = "raw_pvalue",
                           log2fc_column = "logFC") {
@@ -44,14 +42,11 @@ setMethod(
 
         return(return_object_list)
     }
-)
 
 # Get the differential expression results in wide format
-#' @export
-setMethod(
-    f = "getDaResultsLongFormat",
-    signature = "list",
-    definition = function(objectsList) {
+#' @keywords internal
+#' @noRd
+.getDaResultsLongFormatLipidomicsList <- function(objectsList) {
         return_object_list <- purrr::map(objectsList, function(object) {
             # Correctly access the lipid data from the nested 'theObject' slot.
             # This defensively handles cases where the slot might hold a list of
@@ -85,5 +80,4 @@ setMethod(
 
         return(return_object_list)
     }
-)
 

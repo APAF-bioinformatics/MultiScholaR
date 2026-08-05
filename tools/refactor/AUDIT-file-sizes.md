@@ -11,9 +11,9 @@ Budget bands:
 
 - `oversized`: 16
 - `soft_cap`: 8
-- `acceptable`: 43
-- `ideal`: 159
-- `small`: 99
+- `acceptable`: 42
+- `ideal`: 161
+- `small`: 100
 
 ## Largest Files
 

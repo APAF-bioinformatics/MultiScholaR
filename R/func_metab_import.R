@@ -137,8 +137,9 @@ getMetaboliteQuantData <- function(assay_data, sample_columns = NULL) {
 # ----------------------------------------------------------------------------
 #' @title Import MS-DIAL Data (Alias)
 #' @description Alias for importMetabMSDIALData for backward compatibility.
-#' @export
-importMSDIALData <- function(...) {
+#' @keywords internal
+#' @noRd
+.importMSDIALDataMetabolomicsCompatibility <- function(...) {
     importMetabMSDIALData(...)
 }
 
@@ -274,7 +275,6 @@ importMetabMSDIALData <- function(
         , is_pattern = defaults$is_pattern
     ))
 }
-
 
 
 

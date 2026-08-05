@@ -1,8 +1,6 @@
-#' @export
-setMethod(
-  f = "outputDaResultsAllContrasts",
-  signature = "ProteinQuantitativeData",
-  definition = function(theObject,
+#' @keywords internal
+#' @noRd
+.outputDaResultsAllContrastsProteomicsLegacy <- function(theObject,
                         da_results_list_all_contrasts = NULL,
                         uniprot_tbl = NULL,
                         da_output_dir = NULL,
@@ -278,4 +276,3 @@ setMethod(
     message("--- Exiting outputDaResultsAllContrasts ---")
     return(TRUE)
   }
-)

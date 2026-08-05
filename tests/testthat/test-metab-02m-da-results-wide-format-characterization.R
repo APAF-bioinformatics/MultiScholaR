@@ -45,6 +45,14 @@ isTargetSetMethod <- function(expr, method_name) {
   !is.null(method_arg) && identical(normalizeSelectorValue(method_arg), method_name)
 }
 
+isTargetSymbolAssignment <- function(expr, symbol_name) {
+  is.call(expr) &&
+    length(expr) >= 3 &&
+    as.character(expr[[1]]) %in% c("<-", "=") &&
+    is.symbol(expr[[2]]) &&
+    identical(as.character(expr[[2]]), symbol_name)
+}
+
 if (!methods::isClass("MetaboliteAssayData")) {
   methods::setClass(
     "MetaboliteAssayData",
@@ -81,7 +89,7 @@ loadSelectedExpressions(
   ),
   matcher = function(expr) {
     isTargetSetClass(expr, "MetabolomicsDifferentialAbundanceResults") ||
-      isTargetSetMethod(expr, "getDaResultsWideFormat")
+      isTargetSymbolAssignment(expr, ".getDaResultsWideFormatMetabolomicsList")
   },
   env = environment()
 )
@@ -127,7 +135,7 @@ test_that("metabolomics DA wide-format method preserves joined counts and q-valu
     stringsAsFactors = FALSE
   )
 
-  output <- getDaResultsWideFormat(list(primary = newDaWideResultObject(list(counts_table))))
+  output <- .getDaResultsWideFormatMetabolomicsList(list(primary = newDaWideResultObject(list(counts_table))))
 
   expect_identical(names(output), "primary")
   expect_s3_class(output$primary@results_table_wide, "data.frame")
@@ -161,7 +169,7 @@ test_that("metabolomics DA wide-format method supports a bare-data-frame counts 
     stringsAsFactors = FALSE
   )
 
-  output <- getDaResultsWideFormat(list(primary = newDaWideResultObject(counts_table)))
+  output <- .getDaResultsWideFormatMetabolomicsList(list(primary = newDaWideResultObject(counts_table)))
 
   expect_identical(names(output), "primary")
   expect_equal(output$primary@results_table_wide$metabolite_id, c("M2", "M1"))

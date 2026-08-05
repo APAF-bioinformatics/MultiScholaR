@@ -1,5 +1,5 @@
 # Helper function to get counts table
-getCountsTable <- function(obj) {
+.getCountsTableMetabolomics <- function(obj) {
     if (inherits(obj, "MetaboliteAssayData")) {
         message(sprintf("   Getting counts table for object of class: %s", class(obj)[1]))
         message(sprintf(
@@ -61,11 +61,9 @@ setClass("MetabolomicsDifferentialAbundanceResults",
 )
 
 #' plot number of significant differentially expressed metabolites
-#' @export
-setMethod(
-    f = "plotNumSigDiffExpBarPlot",
-    signature = "list",
-    definition = function(objectsList) {
+#' @keywords internal
+#' @noRd
+.plotNumSigDiffExpBarPlotMetabolomicsList <- function(objectsList) {
         return_object_list <- purrr::imap(
             objectsList,
             function(object, idx) {
@@ -89,14 +87,11 @@ setMethod(
 
         return_object_list
     }
-)
 
 #' Plot static volcano plot (without gene names)
-#' @export
-setMethod(
-    f = "plotVolcanoS4",
-    signature = "list",
-    definition = function(
+#' @keywords internal
+#' @noRd
+.plotVolcanoS4MetabolomicsList <- function(
       objectsList,
       da_q_val_thresh = 0.05,
       qvalue_column = "fdr_qvalue",
@@ -160,13 +155,10 @@ setMethod(
 
         return(return_object_list)
     }
-)
 
-#' @export
-setMethod(
-    f = "getDaResultsWideFormat",
-    signature = "list",
-    definition = function(
+#' @keywords internal
+#' @noRd
+.getDaResultsWideFormatMetabolomicsList <- function(
       objectsList,
       qvalue_column = "fdr_qvalue",
       raw_pvalue_column = "raw_pvalue",
@@ -210,14 +202,11 @@ setMethod(
 
         return(return_object_list)
     }
-)
 
 # Get the differential expression results in wide format
-#' @export
-setMethod(
-    f = "getDaResultsLongFormat",
-    signature = "list",
-    definition = function(objectsList) {
+#' @keywords internal
+#' @noRd
+.getDaResultsLongFormatMetabolomicsList <- function(objectsList) {
         return_object_list <- purrr::map(objectsList, function(object) {
             # Correctly access the metabolite data from the nested 'theObject' slot.
             # This defensively handles cases where the slot might hold a list of
@@ -251,15 +240,11 @@ setMethod(
 
         return(return_object_list)
     }
-)
 
 ## Create proteomics interactive volcano plot
-#' @export
-setMethod(
-    f = "plotInteractiveVolcano",
-    signature = "list",
-    definition =
-        function(objectsList, anno_list = NULL) {
+#' @keywords internal
+#' @noRd
+.plotInteractiveVolcanoMetabolomicsList <- function(objectsList, anno_list = NULL) {
             list_of_objects <- purrr::imap(
                 objectsList,
                 \(de_output_object, idx) {
@@ -383,5 +368,3 @@ setMethod(
 
             list_of_objects
         }
-)
-
