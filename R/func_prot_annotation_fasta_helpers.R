@@ -49,9 +49,7 @@ parseFastaObject <- function(aa_seq ) {
   acc_detail_tab <- accession_tab %>%
     mutate( is_isoform = case_when( str_detect( uniprot_acc, "-\\d+") ~ "Isoform",
                                     TRUE ~ "Canonical") ) %>%
-    mutate (isoform_num = case_when ( is_isoform == "Isoform" ~ str_replace_all( uniprot_acc,
-                                                                                 "(.*)(-)(\\d{1,})",
-                                                                                 "\\3") %>%
+    mutate (isoform_num = case_when ( is_isoform == "Isoform" ~ str_extract(uniprot_acc, "(?<=-)\\d+$") %>%
                                         as.numeric,
                                       is_isoform == "Canonical" ~ 0,
                                       TRUE ~ NA_real_ ) ) %>%
@@ -98,7 +96,6 @@ parseFastaFile <- function(fasta_file) {
   names(aa_seqinr) <- str_match( names(aa_seqinr), "(sp|tr)\\|(.+?)\\|(.*)\\s+" )[,3]
 
   aa_seq_tbl <- acc_detail_tab %>%
-    mutate(seq = map_chr( aa_seqinr, 1)) %>%
-    mutate(seq_length = purrr::map_int(seq, str_length) )
+    mutate(seq = unname(map_chr(aa_seqinr, 1))) %>%
+    mutate(seq_length = unname(purrr::map_int(seq, str_length)))
 }
-

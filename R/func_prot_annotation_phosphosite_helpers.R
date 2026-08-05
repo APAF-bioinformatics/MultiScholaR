@@ -45,13 +45,18 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
   if (!"seq" %in% available_cols) {
     resolve_acc_joined <- resolve_acc_joined %>% mutate(seq = NA_character_)
   }
+
+  if (!"annotation_score" %in% available_cols) {
+    resolve_acc_joined <- resolve_acc_joined %>% mutate(annotation_score = 0)
+  }
   
   # Now select, filter, and arrange using the complete set of columns
   resolve_acc_helper <- resolve_acc_joined %>%
     ## Just a sanity check that the peptide is actually in the sequence (skip if seq not available)
     {if ("seq" %in% colnames(.) && all(!is.na(.$seq))) filter(., str_detect( seq, cleaned_peptide  )) else .} %>%
     dplyr::select({{group_id}}, one_of(c( "uniprot_acc", "gene_name", "cleaned_acc",
-                                          "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length"  ))) %>%
+                                          "protein_evidence", "status", "is_isoform", "isoform_num", "seq_length",
+                                          "annotation_score"  ))) %>%
     distinct %>%
     mutate(annotation_score = if_else(is.na(annotation_score), 0, annotation_score)) %>%
     arrange( {{group_id}}, desc(annotation_score), protein_evidence, status, is_isoform, desc(seq_length), isoform_num )
@@ -95,4 +100,3 @@ chooseBestPhosphositeAccession <- function(input_tbl, acc_detail_tab, accessions
   return( group_gene_names_and_uniprot_accs )
 
 }
-

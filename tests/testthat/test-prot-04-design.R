@@ -4640,7 +4640,8 @@ test_that("buildProtDesignReplicateInputs wires the replicate_start numeric inpu
       inputId = "builder-replicate_start",
       label = "Starting replicate number for 3 selected runs:",
       value = 1,
-      min = 1
+      min = 1,
+      attribs = list(`data-testid` = "prot-design-replicate-start")
     )
   )
 })

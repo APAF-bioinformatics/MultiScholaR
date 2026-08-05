@@ -1062,6 +1062,7 @@ test_that("KEGG and Reactome helpers preserve early-return branches when inputs 
     assay_name = "metabolome_lc"
   )
   expect_equal(nrow(kegg_empty), 0L)
+  expect_true("mappedIDs" %in% names(kegg_empty))
 
   readr::write_tsv(
     tibble::tibble(
@@ -1083,6 +1084,74 @@ test_that("KEGG and Reactome helpers preserve early-return branches when inputs 
     reactome_organism = "Homo sapiens"
   )
   expect_equal(nrow(reactome_empty), 0L)
+})
+
+test_that("metabolomics orchestration handles empty assay results", {
+  package_ns <- asNamespace("MultiScholaR")
+  results_dir <- tempfile("metab-enrichment-empty-")
+  dir.create(results_dir, recursive = TRUE)
+  withr::defer(unlink(results_dir, recursive = TRUE, force = TRUE))
+
+  metabolomics_obj <- methods::new(
+    "MetaboliteAssayData",
+    metabolite_data = list(
+      data.frame(
+        metabolite = "met_lc_a",
+        database_identifier = "CHEBI:1",
+        metabolite_identification = "met_lc_a",
+        S1 = 10,
+        stringsAsFactors = FALSE
+      ),
+      data.frame(
+        metabolite = "met_gc_a",
+        database_identifier = "CHEBI:3",
+        metabolite_identification = "met_gc_a",
+        S1 = 30,
+        stringsAsFactors = FALSE
+      )
+    ),
+    design_matrix = data.frame(Sample_ID = "S1", group = "A", stringsAsFactors = FALSE)
+  )
+
+  empty_result <- function(...) {
+    data.frame(
+      termDescription = character(),
+      enrichmentScore = numeric(),
+      falseDiscoveryRate = numeric(),
+      genesMapped = integer(),
+      mappedIDs = character(),
+      comparison = character(),
+      category = character(),
+      stringsAsFactors = FALSE
+    )
+  }
+  localNamespaceBindings(
+    package_ns,
+    list(
+      getProjectPaths = function(...) {
+        list(integration_enrichment_plots_dir = results_dir)
+      },
+      runMetabolomicsEnrichmentAnalysis = empty_result
+    )
+  )
+
+  combined <- runMetabolomicsPathwayEnrichment(
+    weights = data.frame(
+      view = character(),
+      factor = character(),
+      feature = character(),
+      value = numeric()
+    ),
+    metabolomics_obj = metabolomics_obj,
+    mapping_table = data.frame(KEGG = "C00001", ChEBI = "1"),
+    project_dirs = list(),
+    omic_type = "metabolomics",
+    experiment_label = "demo"
+  )
+
+  expect_equal(nrow(combined), 0L)
+  expect_true("mappedNames" %in% names(combined))
+  expect_type(combined$mappedNames, "character")
 })
 
 test_that("KEGG and Reactome helpers preserve mapped enrichment formatting on success and fallback branches", {

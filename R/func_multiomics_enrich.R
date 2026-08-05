@@ -1500,74 +1500,81 @@ runMetabolomicsPathwayEnrichment <- function(weights,
       chebi_id = paste0("CHEBI:", ChEBI)
     )
   
-  # Function to map IDs to names
-  map_ids_to_names <- function(id_string, assay_type) {
-    if (is.na(id_string) || id_string == "") {
-      return(NA_character_)
-    }
-    
-    # Split the ID string
-    ids <- unlist(strsplit(id_string, split = ",|/"))
-    names_vec <- character(length(ids))
-    
-    for (i in seq_along(ids)) {
-      id <- ids[i]
-      if (grepl("^cpd:", id)) {
-        # For KEGG IDs, try to map to ChEBI first
-        kegg_matches <- kegg_to_chebi |> dplyr::filter(kegg_id == id)
-        if (nrow(kegg_matches) > 0) {
-          # Found a matching ChEBI ID, now look up its name
-          chebi_id <- kegg_matches$chebi_id[1]
-          chebi_matches <- all_names_mapping |> 
-            dplyr::filter(chebi_id == !!chebi_id & assay == !!assay_type)
-          
-          if (nrow(chebi_matches) > 0) {
-            names_vec[i] <- chebi_matches$metabolite[1]
-          } else {
-            # Try without assay filter as fallback
-            chebi_matches <- all_names_mapping |> dplyr::filter(chebi_id == !!chebi_id)
+  # Apply the mapping function to each row
+  message("   runMetabolomicsPathwayEnrichment Step: Mapping IDs to names...")
+
+  if (nrow(combined_results) == 0) {
+    message("   runMetabolomicsPathwayEnrichment: No results to map. Adding empty mappedNames column.")
+    combined_results$mappedNames <- character(0)
+  } else {
+    if (!"mappedIDs" %in% colnames(combined_results)) {
+      message("   runMetabolomicsPathwayEnrichment WARNING: mappedIDs column missing! Adding empty mappedNames.")
+      combined_results$mappedNames <- rep(NA_character_, nrow(combined_results))
+    } else {
+      map_ids_to_names <- function(id_string, assay_type) {
+        if (is.null(id_string) || length(id_string) == 0 ||
+            isTRUE(is.na(id_string[1])) || id_string[1] == "") {
+          return(NA_character_)
+        }
+
+        ids <- unlist(strsplit(as.character(id_string), split = ",|/"))
+        names_vec <- character(length(ids))
+
+        for (i in seq_along(ids)) {
+          id <- ids[i]
+          if (isTRUE(is.na(id)) || id == "") {
+            names_vec[i] <- NA_character_
+            next
+          }
+
+          if (grepl("^cpd:", id)) {
+            kegg_matches <- kegg_to_chebi |> dplyr::filter(kegg_id == id)
+            if (nrow(kegg_matches) > 0) {
+              chebi_id <- kegg_matches$chebi_id[1]
+              chebi_matches <- all_names_mapping |>
+                dplyr::filter(chebi_id == !!chebi_id & assay == !!assay_type)
+
+              if (nrow(chebi_matches) > 0) {
+                names_vec[i] <- chebi_matches$metabolite[1]
+              } else {
+                chebi_matches <- all_names_mapping |> dplyr::filter(chebi_id == !!chebi_id)
+                if (nrow(chebi_matches) > 0) {
+                  names_vec[i] <- chebi_matches$metabolite[1]
+                } else {
+                  names_vec[i] <- id
+                }
+              }
+            } else {
+              names_vec[i] <- id
+            }
+          } else if (grepl("^CHEBI:", id)) {
+            chebi_matches <- all_names_mapping |>
+              dplyr::filter(chebi_id == !!id & assay == !!assay_type)
+
             if (nrow(chebi_matches) > 0) {
               names_vec[i] <- chebi_matches$metabolite[1]
             } else {
-              names_vec[i] <- id  # Just use the ID if no match
+              chebi_matches <- all_names_mapping |> dplyr::filter(chebi_id == !!id)
+              if (nrow(chebi_matches) > 0) {
+                names_vec[i] <- chebi_matches$metabolite[1]
+              } else {
+                names_vec[i] <- id
+              }
             }
-          }
-        } else {
-          names_vec[i] <- id  # Just use the ID if no match
-        }
-      } else if (grepl("^CHEBI:", id)) {
-        # Direct ChEBI ID lookup
-        chebi_matches <- all_names_mapping |> 
-          dplyr::filter(chebi_id == !!id & assay == !!assay_type)
-        
-        if (nrow(chebi_matches) > 0) {
-          names_vec[i] <- chebi_matches$metabolite[1]
-        } else {
-          # Try without assay filter as fallback
-          chebi_matches <- all_names_mapping |> dplyr::filter(chebi_id == !!id)
-          if (nrow(chebi_matches) > 0) {
-            names_vec[i] <- chebi_matches$metabolite[1]
           } else {
-            names_vec[i] <- id  # Just use the ID if no match
+            names_vec[i] <- id
           }
         }
-      } else {
-        names_vec[i] <- id  # Just use the ID if no match
+
+        paste(names_vec[!is.na(names_vec)], collapse = ", ")
       }
+
+      combined_results <- combined_results |>
+        dplyr::rowwise() |>
+        dplyr::mutate(mappedNames = map_ids_to_names(mappedIDs, assay)) |>
+        dplyr::ungroup()
     }
-    
-    # Join with commas
-    paste(names_vec, collapse = ", ")
   }
-  
-  # Apply the mapping function to each row
-  message("   runMetabolomicsPathwayEnrichment Step: Mapping IDs to names...")
-  combined_results <- combined_results |>
-    dplyr::rowwise() |>
-    dplyr::mutate(
-      mappedNames = map_ids_to_names(mappedIDs, assay)
-    ) |>
-    dplyr::ungroup()
   
   # Save combined results
   message(sprintf("   runMetabolomicsPathwayEnrichment Step: Saving combined results to %s...", 
@@ -2436,6 +2443,7 @@ runKeggEnrichment <- function(ranked_list,
       enrichmentScore = numeric(),
       falseDiscoveryRate = numeric(),
       genesMapped = integer(),
+      mappedIDs = character(),
       comparison = character()
     ))
   }
@@ -2945,6 +2953,7 @@ runKeggEnrichment <- function(ranked_list,
       enrichmentScore = numeric(),
       falseDiscoveryRate = numeric(),
       genesMapped = integer(),
+      mappedIDs = character(),
       comparison = character()
     ))
   }
@@ -3606,8 +3615,8 @@ runReactomeEnrichment <- function(ranked_list,
       enrichmentScore = numeric(),
       falseDiscoveryRate = numeric(),
       genesMapped = integer(),
+      mappedIDs = character(),
       comparison = character()
     ))
   })
 }
-

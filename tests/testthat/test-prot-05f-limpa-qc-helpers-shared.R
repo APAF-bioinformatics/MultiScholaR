@@ -30,7 +30,8 @@ localFakeLimpaQc <- function(env = parent.frame()) {
         "  list(dpc = c(0.25, 0.75), y = y)",
         "}",
         "",
-        "plotDPC <- function(dpc_obj) {",
+        "plotDPC <- function(dpc_obj, main = NULL) {",
+        "  options(multischolar.fake.limpa.call = list(main = main, mar = graphics::par('mar')))",
         "  ggplot2::ggplot(data.frame(x = c(0, 1), y = c(0, 1)), ggplot2::aes(x, y)) +",
         "    ggplot2::geom_line() +",
         "    ggplot2::ggtitle('Fake limpa DPC')",
@@ -223,6 +224,9 @@ test_that("generateLimpaQCPlots covers peptide-level fallback and save-dir resol
 
 test_that("generateLimpaQCPlots covers explicit DPC plotting without saving", {
   localFakeLimpaQc()
+  old_call <- getOption("multischolar.fake.limpa.call")
+  options(multischolar.fake.limpa.call = NULL)
+  withr::defer(options(multischolar.fake.limpa.call = old_call))
 
   before_object <- makeSharedPeptideLimpaObject(matrix(
     c(NA_real_, 4,
@@ -264,6 +268,15 @@ test_that("generateLimpaQCPlots covers explicit DPC plotting without saving", {
     c("dpc_curve", "missing_comparison", "intensity_distribution", "summary")
   )
   expect_true(all(vapply(plot_list, inherits, logical(1), what = "ggplot")))
+  expect_identical(getOption("multischolar.fake.limpa.call")$main, "")
+  expect_equal(
+    getOption("multischolar.fake.limpa.call")$mar,
+    c(6, 4.5, 2, 1.5)
+  )
+  expect_equal(
+    plot_list$dpc_curve$theme$plot.margin,
+    ggplot2::margin(t = 5, r = 5, b = 15, l = 5)
+  )
 })
 
 test_that("generateLimpaQCPlots covers protein-level comparison and no-save branch", {

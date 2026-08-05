@@ -286,9 +286,9 @@ test_that("lipid design import confirmation helper preserves failure and success
   inferred_source <- tempfile("lipid-design-source-infer-")
   dir.create(inferred_dir, recursive = TRUE)
   dir.create(inferred_source, recursive = TRUE)
-  writeLines("Run\tgroup\treplicates\nRun_A\tA\t1", file.path(inferred_dir, "design_matrix.tab"))
+  writeLines("Run\tgroup\treplicates\nRun_A\tA\t1\nRun_B\tB\t1", file.path(inferred_dir, "design_matrix.tab"))
   writeLines("Assay_A", file.path(inferred_dir, "assay_manifest.txt"))
-  writeLines("Peak ID\tName\tRun_A\nL1\tAnnot1\t10", file.path(inferred_dir, "data_cln_Assay_A.tab"))
+  writeLines("Peak ID\tName\tRun_A\tRun_B\nL1\tAnnot1\t10\t20", file.path(inferred_dir, "data_cln_Assay_A.tab"))
   writeLines("[globalParameters]\nworkflow_type = lipidomics", file.path(inferred_source, "config.ini"))
 
   inferred_workflow <- new.env(parent = emptyenv())
@@ -304,9 +304,9 @@ test_that("lipid design import confirmation helper preserves failure and success
     readConfigFileFn = function(file) list(globalParameters = list(source = basename(file))),
     vroomFn = function(path, show_col_types = FALSE) {
       if (basename(path) == "design_matrix.tab") {
-        data.frame(Run = "Run_A", group = "A", replicates = 1L)
+        data.frame(Run = c("Run_A", "Run_B"), group = c("A", "B"), replicates = c(1L, 1L))
       } else {
-        data.frame(check.names = FALSE, "Peak ID" = "L1", Name = "Annot1", Run_A = 10)
+        data.frame(check.names = FALSE, "Peak ID" = "L1", Name = "Annot1", Run_A = 10, Run_B = 20)
       }
     },
     createLipidomicsAssayDataFn = function(...) s4_token,

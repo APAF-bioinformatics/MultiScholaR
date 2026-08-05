@@ -122,12 +122,13 @@ plotPcaHelper <- function(data,
 
   checkMem("Before mixOmics::pca")
   pca_input <- t(as.matrix(data_filtered))
-  if (requireNamespace("mixOmics", quietly = TRUE)) {
-    message("   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca()...")
-    pca.res <- mixOmics::pca(pca_input, ncomp = ncomp)
-  } else {
-    message("   DEBUG66 [plotPcaHelper] mixOmics not available; falling back to stats::prcomp()")
-    component_names <- paste0("PC", seq_len(ncomp))
+  requested_components <- as.integer(ncomp)[1]
+  if (is.na(requested_components) || requested_components < 1L) {
+    stop("ncomp must be a positive integer")
+  }
+  component_names <- paste0("PC", seq_len(max(2L, requested_components)))
+
+  run_fallback_pca <- function() {
     pca_input_complete <- pca_input[, colSums(is.finite(pca_input)) == nrow(pca_input), drop = FALSE]
     if (ncol(pca_input_complete) > 0) {
       feature_sds <- apply(pca_input_complete, 2, stats::sd)
@@ -145,7 +146,7 @@ plotPcaHelper <- function(data,
       explained_variance <- stats::setNames(rep(0, length(component_names)), component_names)
     } else {
       pca_fallback <- stats::prcomp(pca_input_complete, center = TRUE, scale. = TRUE)
-      available_components <- min(ncomp, ncol(pca_fallback$x))
+      available_components <- min(requested_components, ncol(pca_fallback$x))
       pca_scores <- as.data.frame(matrix(
         0,
         nrow = nrow(pca_fallback$x),
@@ -160,13 +161,71 @@ plotPcaHelper <- function(data,
         explained_variance[seq_len(available_components)] <- (pca_fallback$sdev[seq_len(available_components)]^2) / total_variance
       }
     }
-    pca.res <- list(
+
+    list(
       variates = list(X = pca_scores),
       prop_expl_var = list(
         X = explained_variance
       )
     )
   }
+
+  if (requireNamespace("mixOmics", quietly = TRUE)) {
+    max_mixomics_components <- min(
+      requested_components,
+      nrow(pca_input),
+      ncol(pca_input)
+    )
+
+    if (max_mixomics_components < 1L) {
+      message("   DEBUG66 [plotPcaHelper] PCA input has no usable dimensions; falling back to zero-valued PCA scores")
+      pca.res <- run_fallback_pca()
+    } else {
+      message(sprintf(
+        "   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca() with %d component(s)...",
+        max_mixomics_components
+      ))
+      pca.res <- tryCatch(
+        mixOmics::pca(pca_input, ncomp = max_mixomics_components),
+        error = function(error) {
+          message(sprintf(
+            "   DEBUG66 [plotPcaHelper] mixOmics::pca() failed (%s); falling back to stats::prcomp()",
+            conditionMessage(error)
+          ))
+          run_fallback_pca()
+        }
+      )
+    }
+  } else {
+    message("   DEBUG66 [plotPcaHelper] mixOmics not available; falling back to stats::prcomp()")
+    pca.res <- run_fallback_pca()
+  }
+
+  raw_scores <- as.data.frame(pca.res$variates$X)
+  score_row_names <- rownames(raw_scores)
+  if (is.null(score_row_names)) {
+    score_row_names <- rownames(pca_input)
+  }
+  padded_scores <- as.data.frame(matrix(
+    0,
+    nrow = nrow(raw_scores),
+    ncol = length(component_names),
+    dimnames = list(score_row_names, component_names)
+  ))
+  available_components <- min(ncol(raw_scores), length(component_names))
+  if (available_components > 0L) {
+    padded_scores[, seq_len(available_components)] <- raw_scores[, seq_len(available_components), drop = FALSE]
+  }
+
+  raw_explained_variance <- as.numeric(pca.res$prop_expl_var$X)
+  explained_variance <- stats::setNames(rep(0, length(component_names)), component_names)
+  available_variances <- min(length(raw_explained_variance), length(component_names))
+  if (available_variances > 0L) {
+    explained_variance[seq_len(available_variances)] <- raw_explained_variance[seq_len(available_variances)]
+  }
+  pca.res$variates$X <- padded_scores
+  pca.res$prop_expl_var$X <- explained_variance
+
   checkMem("After mixOmics::pca")
   message(sprintf("   DEBUG66 [plotPcaHelper] pca.res class: %s", class(pca.res)[1]))
   proportion_explained <- pca.res$prop_expl_var

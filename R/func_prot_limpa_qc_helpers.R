@@ -218,7 +218,10 @@ generateLimpaQCPlots <- function(after_object,
             } else {
               message("        Calling plotDPC and converting with ggplotify")
               # Call plotDPC and immediately convert to ggplot
-              ggplotify_plot <- ggplotify::as.ggplot(function() limpa::plotDPC(stored_dpc))
+              ggplotify_plot <- ggplotify::as.ggplot(function() {
+                graphics::par(mar = c(6, 4.5, 2, 1.5))
+                limpa::plotDPC(stored_dpc, main = "")
+              })
               message(sprintf("        ggplotify conversion successful, class: %s", class(ggplotify_plot)))
             }
           },
@@ -240,7 +243,8 @@ generateLimpaQCPlots <- function(after_object,
               message("        Using cowplot to capture base plot")
               # Create the plot and capture as grob
               captured_grob <- grid::grid.grabExpr({
-                limpa::plotDPC(stored_dpc)
+                graphics::par(mar = c(6, 4.5, 2, 1.5))
+                limpa::plotDPC(stored_dpc, main = "")
               })
 
               # Convert using cowplot
@@ -262,7 +266,8 @@ generateLimpaQCPlots <- function(after_object,
         tryCatch(
           {
             message("        About to call plotDPC directly")
-            direct_plot <- limpa::plotDPC(stored_dpc)
+            graphics::par(mar = c(6, 4.5, 2, 1.5))
+            direct_plot <- limpa::plotDPC(stored_dpc, main = "")
             message(sprintf("        Direct plotDPC returned: %s", capture.output(str(direct_plot))))
             message(sprintf("        Direct plotDPC class: %s", class(direct_plot)))
           },
@@ -282,7 +287,8 @@ generateLimpaQCPlots <- function(after_object,
             png(temp_file, width = 800, height = 600, res = 150)
 
             message("        Calling plotDPC to temp file")
-            limpa::plotDPC(stored_dpc)
+            graphics::par(mar = c(6, 4.5, 2, 1.5))
+            limpa::plotDPC(stored_dpc, main = "")
             dev.off()
 
             message("        Reading temp file back as ggplot")
@@ -336,7 +342,10 @@ generateLimpaQCPlots <- function(after_object,
               "Slope:", round(as.numeric(dpc_params[2]), 3),
               "- Mechanism:", slope_text
             )) +
-            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+            ggplot2::theme(
+              plot.title = ggplot2::element_text(hjust = 0.5),
+              plot.margin = ggplot2::margin(t = 5, r = 5, b = 15, l = 5)
+            )
 
           message("     ggplotify plot with title created successfully")
         } else if (!is.null(cowplot_plot)) {
@@ -352,7 +361,10 @@ generateLimpaQCPlots <- function(after_object,
               "Slope:", round(as.numeric(dpc_params[2]), 3),
               "- Mechanism:", slope_text
             )) +
-            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+            ggplot2::theme(
+              plot.title = ggplot2::element_text(hjust = 0.5),
+              plot.margin = ggplot2::margin(t = 5, r = 5, b = 15, l = 5)
+            )
 
           message("     cowplot plot with title created successfully")
         } else if (!is.null(direct_plot) && inherits(direct_plot, "ggplot")) {
@@ -367,7 +379,10 @@ generateLimpaQCPlots <- function(after_object,
               "Slope:", round(as.numeric(dpc_params[2]), 3),
               "- Mechanism:", slope_text
             )) +
-            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+            ggplot2::theme(
+              plot.title = ggplot2::element_text(hjust = 0.5),
+              plot.margin = ggplot2::margin(t = 5, r = 5, b = 15, l = 5)
+            )
 
           message("     direct ggplot with title created successfully")
         } else if (!is.null(temp_plot)) {
@@ -382,7 +397,10 @@ generateLimpaQCPlots <- function(after_object,
               "Slope:", round(as.numeric(dpc_params[2]), 3),
               "- Mechanism:", slope_text
             )) +
-            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+            ggplot2::theme(
+              plot.title = ggplot2::element_text(hjust = 0.5),
+              plot.margin = ggplot2::margin(t = 5, r = 5, b = 15, l = 5)
+            )
 
           message("     temp file plot with title created successfully")
         }
@@ -777,4 +795,3 @@ generateLimpaQCPlots <- function(after_object,
   # Return the list of individual plots instead of the composite
   return(plot_list)
 }
-

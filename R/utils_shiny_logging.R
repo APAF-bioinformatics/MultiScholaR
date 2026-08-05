@@ -43,10 +43,10 @@ appender_shiny <- function(lines) {
     # We prepend the new message so it appears at the top of the log
     updated_logs <- paste(new_log, current_logs, sep = "\n")
     
-    # Trim the log to the last 1000 lines to prevent performance issues
+    # New messages are prepended, so retain the newest 1000 lines.
     log_lines <- strsplit(updated_logs, "\n")[[1]]
     if (length(log_lines) > 1000) {
-      log_lines <- tail(log_lines, 1000)
+      log_lines <- head(log_lines, 1000)
       updated_logs <- paste(log_lines, collapse = "\n")
     }
     
@@ -103,4 +103,3 @@ setup_shiny_logger <- function() {
   }
 }
 # --- END CHECKPOINT CAPTURE ---
-

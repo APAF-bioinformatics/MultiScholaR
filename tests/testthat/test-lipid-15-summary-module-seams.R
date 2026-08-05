@@ -885,12 +885,14 @@ test_that("registerLipidSummaryExportSessionObserver keeps the observer shell ha
     observer_event <- NULL
     req_value <- NULL
     handler_args <- NULL
+    workflow_data <- list(state_manager = "workflow-state")
 
     result <- registerLipidSummaryExportSessionObserver(
         input = input,
         values = list(report_generated = FALSE),
         projectDirs = list(lipidomics = list(source_dir = tempdir())),
         omicType = "lipidomics",
+        workflowData = workflow_data,
         observeEventFn = function(event, handler) {
             observer_event <<- event
             force(handler)
@@ -909,9 +911,13 @@ test_that("registerLipidSummaryExportSessionObserver keeps the observer shell ha
     expect_identical(result, input)
     expect_identical(observer_event, 27L)
     expect_identical(req_value, "lipid-study")
-    expect_setequal(names(handler_args), c("input", "values", "projectDirs", "omicType"))
+    expect_setequal(
+        names(handler_args),
+        c("input", "values", "projectDirs", "omicType", "workflowData")
+    )
     expect_identical(handler_args$input, input)
     expect_identical(handler_args$values$report_generated, FALSE)
     expect_identical(handler_args$projectDirs$lipidomics$source_dir, tempdir())
     expect_identical(handler_args$omicType, "lipidomics")
+    expect_identical(handler_args$workflowData, workflow_data)
 })
