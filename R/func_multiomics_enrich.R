@@ -44,7 +44,7 @@
 # Dependencies:
 # - gprofiler2, clusterProfiler, STRINGdb
 # - func_general_plotting_*_helpers.R (for visualization)
-# - func_general_enrichment.R (for shared enrichment functions)
+# - func_general_enrichment_* (for shared enrichment functions)
 # ============================================================================
 
 submitStringDBEnrichment <- function(input_data_frame,

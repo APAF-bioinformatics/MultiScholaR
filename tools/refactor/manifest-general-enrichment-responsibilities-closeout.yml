@@ -1,0 +1,89 @@
+version: 1
+wave: general_enrichment_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_enrichment_core.R
+  - R/func_general_enrichment_revigo_helpers.R
+  - R/func_general_enrichment_plotting_helpers.R
+  - R/func_general_enrichment_pathway_helpers.R
+  - R/func_general_enrichment_engine_helpers.R
+  - R/func_general_enrichment_orchestration.R
+
+entries:
+  - id: general_enrichment_core
+    source: R/func_general_enrichment.R
+    selector:
+      kind: anchor_range
+      start: '^# MultiScholaR: Interactive Multi-Omics Analysis$'
+      end: '^# queryRevigo$'
+      end_inclusive: false
+    target: R/func_general_enrichment_core.R
+    group: general.enrichment.core
+
+  - id: general_enrichment_revigo
+    source: R/func_general_enrichment.R
+    selector:
+      kind: anchor_range
+      start: '^# queryRevigo$'
+      end: '^# enrichedPathwayBarPlot$'
+      end_inclusive: false
+    target: R/func_general_enrichment_revigo_helpers.R
+    group: general.enrichment.revigo
+
+  - id: general_enrichment_plotting
+    source: R/func_general_enrichment.R
+    selector:
+      kind: anchor_range
+      start: '^# enrichedPathwayBarPlot$'
+      end: '^# enrichProteinsPathwaysHelper$'
+      end_inclusive: false
+    target: R/func_general_enrichment_plotting_helpers.R
+    group: general.enrichment.plotting
+
+  - id: general_enrichment_pathways
+    source: R/func_general_enrichment.R
+    selector:
+      kind: anchor_range
+      start: '^# enrichProteinsPathwaysHelper$'
+      end: '^# Enrichment constructor functions removed - migrated to R/func_general_s4_objects.R$'
+      end_inclusive: false
+    target: R/func_general_enrichment_pathway_helpers.R
+    group: general.enrichment.pathways
+
+  - id: general_enrichment_engine
+    source: R/func_general_enrichment.R
+    selector:
+      kind: anchor_range
+      start: '^# Enrichment constructor functions removed - migrated to R/func_general_s4_objects.R$'
+      end: '^# processEnrichments$'
+      end_inclusive: false
+    target: R/func_general_enrichment_engine_helpers.R
+    group: general.enrichment.engine
+
+  - id: general_enrichment_orchestration
+    source: R/func_general_enrichment.R
+    selector:
+      kind: anchor_range
+      start: '^# processEnrichments$'
+      end: '^getEnrichmentSummary <-'
+      end_inclusive: false
+    target: R/func_general_enrichment_orchestration.R
+    group: general.enrichment.orchestration
+
+  - id: general_enrichment_summary_accessor
+    source: R/func_general_enrichment.R
+    selector:
+      kind: symbol
+      value: getEnrichmentSummary
+      include_leading_comments: false
+    target: R/func_general_enrichment_orchestration.R
+    group: general.enrichment.orchestration
