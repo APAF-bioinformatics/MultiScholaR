@@ -1,0 +1,78 @@
+version: 1
+wave: metab_norm_server_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/mod_metab_norm_session_helpers.R
+  - R/mod_metab_norm_pipeline_helpers.R
+  - R/mod_metab_norm_render_helpers.R
+  - R/mod_metab_norm_binding_helpers.R
+  - R/mod_metab_norm_entry_helpers.R
+
+entries:
+  - id: metab_norm_session_control
+    source: R/mod_metab_norm_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^runMetabNormApplyCorrelationWorkflow <-'
+      end: '^# Keep the observer shell top-level so later waves can move it without$'
+      end_inclusive: false
+    target: R/mod_metab_norm_session_helpers.R
+    group: metabolomics.normalization.session_control
+
+  - id: metab_norm_pipeline
+    source: R/mod_metab_norm_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^# Keep the observer shell top-level so later waves can move it without$'
+      end: '^# Keep the composite image-assembly helper cluster top-level so later waves can$'
+      end_inclusive: false
+    target: R/mod_metab_norm_pipeline_helpers.R
+    group: metabolomics.normalization.pipeline
+
+  - id: metab_norm_rendering
+    source: R/mod_metab_norm_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^# Keep the composite image-assembly helper cluster top-level so later waves can$'
+      end: '^# Keep design-driven input-choice updates top-level so a later extraction wave$'
+      end_inclusive: false
+    target: R/mod_metab_norm_render_helpers.R
+    group: metabolomics.normalization.rendering
+
+  - id: metab_norm_bindings
+    source: R/mod_metab_norm_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^# Keep design-driven input-choice updates top-level so a later extraction wave$'
+      end: '^createMetabNormReactiveState <-'
+      end_inclusive: false
+    target: R/mod_metab_norm_binding_helpers.R
+    group: metabolomics.normalization.bindings
+
+  - id: metab_norm_entry_shell
+    source: R/mod_metab_norm_server_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^createMetabNormReactiveState <-'
+      end: '^runMetabNormModuleServerPublicWrapper <-'
+      end_inclusive: false
+    target: R/mod_metab_norm_entry_helpers.R
+    group: metabolomics.normalization.entry_shell
+
+  - id: metab_norm_public_wrapper
+    source: R/mod_metab_norm_server_helpers.R
+    selector:
+      kind: symbol
+      value: runMetabNormModuleServerPublicWrapper
+      include_leading_comments: false
+    target: R/mod_metab_norm_entry_helpers.R
+    group: metabolomics.normalization.entry_shell

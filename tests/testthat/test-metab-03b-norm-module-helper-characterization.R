@@ -25,7 +25,11 @@ loadSelectedFunctions <- function(paths, symbols, env) {
 
 loadSelectedFunctions(
   paths = c(
-    file.path(repo_root, "R", "mod_metab_norm_server_helpers.R"),
+    file.path(repo_root, "R", "mod_metab_norm_session_helpers.R"),
+    file.path(repo_root, "R", "mod_metab_norm_pipeline_helpers.R"),
+    file.path(repo_root, "R", "mod_metab_norm_render_helpers.R"),
+    file.path(repo_root, "R", "mod_metab_norm_binding_helpers.R"),
+    file.path(repo_root, "R", "mod_metab_norm_entry_helpers.R"),
     file.path(repo_root, "R", "mod_metab_norm.R")
   ),
   symbols = c(

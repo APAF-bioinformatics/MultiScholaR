@@ -4,7 +4,16 @@ repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
 loadMetabNormModuleEnv <- function() {
   module_env <- new.env(parent = globalenv())
-  sys.source(file.path(repo_root, "R", "mod_metab_norm_server_helpers.R"), envir = module_env)
+  helper_files <- c(
+    "mod_metab_norm_session_helpers.R",
+    "mod_metab_norm_pipeline_helpers.R",
+    "mod_metab_norm_render_helpers.R",
+    "mod_metab_norm_binding_helpers.R",
+    "mod_metab_norm_entry_helpers.R"
+  )
+  for (helper_file in helper_files) {
+    sys.source(file.path(repo_root, "R", helper_file), envir = module_env)
+  }
   sys.source(file.path(repo_root, "R", "mod_metab_norm_server.R"), envir = module_env)
   module_env
 }
