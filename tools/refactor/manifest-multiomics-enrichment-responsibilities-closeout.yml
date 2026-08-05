@@ -1,0 +1,89 @@
+version: 1
+wave: multiomics_enrichment_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_multiomics_enrich_stringdb_api.R
+  - R/func_multiomics_enrich_stringdb_rank_helpers.R
+  - R/func_multiomics_enrich_metabolomics_helpers.R
+  - R/func_multiomics_enrich_stringdb_reporting_helpers.R
+  - R/func_multiomics_enrich_kegg_helpers.R
+  - R/func_multiomics_enrich_reactome_helpers.R
+
+entries:
+  - id: multiomics_enrich_stringdb_api
+    source: R/func_multiomics_enrich.R
+    selector:
+      kind: anchor_range
+      start: '^# MultiScholaR: Interactive Multi-Omics Analysis$'
+      end: '^# runOneStringDbRankEnrichment$'
+      end_inclusive: false
+    target: R/func_multiomics_enrich_stringdb_api.R
+    group: multiomics.enrichment.stringdb_api
+
+  - id: multiomics_enrich_stringdb_rank
+    source: R/func_multiomics_enrich.R
+    selector:
+      kind: anchor_range
+      start: '^# runOneStringDbRankEnrichment$'
+      end: '^# runMetabolomicsEnrichmentAnalysis$'
+      end_inclusive: false
+    target: R/func_multiomics_enrich_stringdb_rank_helpers.R
+    group: multiomics.enrichment.stringdb_rank
+
+  - id: multiomics_enrich_metabolomics
+    source: R/func_multiomics_enrich.R
+    selector:
+      kind: anchor_range
+      start: '^# runMetabolomicsEnrichmentAnalysis$'
+      end: '^# printStringDbFunctionalEnrichmentBarGraph$'
+      end_inclusive: false
+    target: R/func_multiomics_enrich_metabolomics_helpers.R
+    group: multiomics.enrichment.metabolomics
+
+  - id: multiomics_enrich_stringdb_reporting
+    source: R/func_multiomics_enrich.R
+    selector:
+      kind: anchor_range
+      start: '^# printStringDbFunctionalEnrichmentBarGraph$'
+      end: '^# runKeggEnrichment$'
+      end_inclusive: false
+    target: R/func_multiomics_enrich_stringdb_reporting_helpers.R
+    group: multiomics.enrichment.stringdb_reporting
+
+  - id: multiomics_enrich_kegg
+    source: R/func_multiomics_enrich.R
+    selector:
+      kind: anchor_range
+      start: '^# runKeggEnrichment$'
+      end: '^# runReactomeEnrichment$'
+      end_inclusive: false
+    target: R/func_multiomics_enrich_kegg_helpers.R
+    group: multiomics.enrichment.kegg
+
+  - id: multiomics_enrich_reactome_header
+    source: R/func_multiomics_enrich.R
+    selector:
+      kind: anchor_range
+      start: '^# runReactomeEnrichment$'
+      end: '^runReactomeEnrichment <-'
+      end_inclusive: false
+    target: R/func_multiomics_enrich_reactome_helpers.R
+    group: multiomics.enrichment.reactome
+
+  - id: multiomics_enrich_reactome
+    source: R/func_multiomics_enrich.R
+    selector:
+      kind: symbol
+      value: runReactomeEnrichment
+      include_leading_comments: false
+    target: R/func_multiomics_enrich_reactome_helpers.R
+    group: multiomics.enrichment.reactome
