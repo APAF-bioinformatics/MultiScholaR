@@ -89,6 +89,9 @@ The design goal is simple:
 - `check_wave_apply.R`: post-apply checker for a wave already materialized into `R/`
 - `audit_refactor_coupling.R`: filename-coupling audit for `R/*.R` references outside the manifest flow
 - `audit_file_sizes.R`: file-size budget audit for the whole repo or a single wave manifest
+- `audit_function_expressions.R`: recursive function-AST and extraction-scaffold parity audit against a git ref
+- `FULL_FUNCTION_PARITY_AUDIT.md`: dual-baseline completeness and behavior audit
+- `JANITOR_CLOSEOUT_PLAN.md`: ordered structural closeout phases and exit gates
 - `stabilization-status.py`: machine-readable target/backlog progress estimator for the stabilization workflow
 - `stabilization-reviewer.py`: local checkpoint reviewer that reruns reported test commands and verifies status
 - `stabilization-codex-runner.py`: default noninteractive `codex exec` runner for loop iterations

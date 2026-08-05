@@ -1328,7 +1328,8 @@ entries:
     ]
   }, null, 2));
 
-  writeFile(path.join(targetRoot, 'tests', 'testthat', 'test-overlap-helper-characterization.R'), `library(testthat)
+  writeFile(path.join(targetRoot, 'tests', 'testthat', 'test-overlap-helper-characterization.R'), `# fidelity-coverage-compare: shared
+library(testthat)
 
 test_that("overlapHelper retains curated semantics", {
   expect_true(TRUE)
