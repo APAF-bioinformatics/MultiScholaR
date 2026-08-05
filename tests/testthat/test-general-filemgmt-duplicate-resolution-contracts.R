@@ -7,7 +7,7 @@ skipIfMissingGeneralFilemgmtCanonicalTargetFiles <- function() {
   required_paths <- c(
     "R/func_prot_norm_optimization_helpers.R",
     "R/func_prot_qc_peptide_support.R",
-    "R/func_prot_qc_reporting_helpers.R"
+    "R/func_prot_qc_diagnostic_helpers.R"
   )
   missing <- required_paths[!file.exists(file.path(repoRoot, required_paths))]
   if (length(missing) > 0) {
@@ -622,7 +622,7 @@ test_that("DESCRIPTION keeps general filemgmt ahead of the NA-validation canonic
   )
   expect_lt(
     match("func_general_filemgmt.R", collate_entries),
-    match("func_prot_qc_reporting_helpers.R", collate_entries)
+    match("func_prot_qc_diagnostic_helpers.R", collate_entries)
   )
 })
 
@@ -645,7 +645,7 @@ test_that("NA-validation duplicates are removed from general filemgmt while cano
     parent = namespace_env
   )
   protein_impls <- readTopLevelFunctionsFromFiles(
-    "R/func_prot_qc_reporting_helpers.R",
+    "R/func_prot_qc_diagnostic_helpers.R",
     c(
       "getProteinNARecommendations",
       "checkProteinNAPercentages",
@@ -725,7 +725,7 @@ test_that("package-level peptide NA helpers match the canonical helper implement
 test_that("package-level protein NA helpers match the canonical helper implementations on the current recommendation and validation paths", {
   namespace_env <- environment(checkProteinNAPercentages)
   canonical_impls <- readTopLevelFunctionsFromFiles(
-    "R/func_prot_qc_reporting_helpers.R",
+    "R/func_prot_qc_diagnostic_helpers.R",
     c(
       "getProteinNARecommendations",
       "checkProteinNAPercentages",

@@ -23,7 +23,8 @@
 # - func_prot_qc_filtering_helpers.R
 # - func_prot_qc_correlation_helpers.R
 # - func_prot_qc_support_helpers.R
-# - func_prot_qc_reporting_helpers.R
+# - func_prot_qc_diagnostic_helpers.R
+# - func_prot_qc_filtering_progress_helpers.R
 # - func_prot_qc_replicate_helpers.R
 #
 # This breadcrumb file stays in place so existing references continue to point
