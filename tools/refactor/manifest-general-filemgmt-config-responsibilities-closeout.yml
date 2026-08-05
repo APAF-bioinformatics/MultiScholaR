@@ -1,0 +1,36 @@
+version: 1
+wave: general_filemgmt_config_responsibilities_closeout
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_general_filemgmt_config_io_helpers.R
+  - R/func_general_filemgmt_study_parameter_support.R
+  - R/func_general_filemgmt_study_parameter_writer.R
+
+entries:
+  - id: general_filemgmt_config_io
+    source: R/func_general_filemgmt_config_helpers.R
+    selector:
+      kind: anchor_range
+      start: '^# ----------------------------------------------------------------------------$'
+      occurrence: 1
+      end: '^# Updated function to extract parameters from S4 @args slot$'
+      end_inclusive: false
+    target: R/func_general_filemgmt_config_io_helpers.R
+    group: general.filemgmt.config_io
+
+  - id: general_filemgmt_study_parameter_writer
+    source: R/func_general_filemgmt_config_helpers.R
+    selector:
+      kind: symbol
+      value: createWorkflowArgsFromConfig
+    target: R/func_general_filemgmt_study_parameter_writer.R
+    group: general.filemgmt.study_parameters
