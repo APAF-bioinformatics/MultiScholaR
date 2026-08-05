@@ -1,3 +1,116 @@
+# ----------------------------------------------------------------------------
+# peptideMissingValueImputation
+# ----------------------------------------------------------------------------
+#'@export
+setMethod( f="peptideMissingValueImputation"
+           , signature="PeptideQuantitativeData"
+           , definition = function(theObject,
+                                   imputed_value_column = NULL,
+                                   proportion_missing_values = NULL,
+                                   core_utilisation = NULL,
+                                   exclusion_column = NULL,
+                                   hek_string = NULL) {
+             section <- theObject@args$peptideMissingValueImputation
+             if (!is.list(section)) {
+               section <- list()
+             }
+             resolve_section_value <- function(explicit_value, parameter_name, default_value = NULL) {
+               if (!is.null(explicit_value)) {
+                 return(explicit_value)
+               }
+               if (parameter_name %in% names(section) && !is.null(section[[parameter_name]])) {
+                 return(section[[parameter_name]])
+               }
+               default_value
+             }
+
+             imputed_value_column <- resolve_section_value(
+               imputed_value_column,
+               "imputed_value_column",
+               "Peptide.Imputed"
+             )
+             proportion_missing_values <- resolve_section_value(
+               proportion_missing_values,
+               "proportion_missing_values",
+               0.50
+             )
+             core_utilisation <- resolve_section_value(core_utilisation, "core_utilisation", NA)
+             exclusion_column <- resolve_section_value(exclusion_column, "exclusion_column", NULL)
+             hek_string <- resolve_section_value(hek_string, "hek_string", NULL)
+             if (length(exclusion_column) == 0L || is.na(exclusion_column[[1L]]) ||
+                 !nzchar(trimws(as.character(exclusion_column[[1L]])))) {
+               exclusion_column <- NULL
+             } else {
+               exclusion_column <- trimws(as.character(exclusion_column[[1L]]))
+             }
+
+             replicate_group_column <- theObject@technical_replicate_id
+             has_declared_replicates <- length(replicate_group_column) == 1L &&
+               !is.na(replicate_group_column) && nzchar(trimws(replicate_group_column)) &&
+               replicate_group_column %in% names(theObject@design_matrix)
+
+             if (!has_declared_replicates) {
+               peptide_values_imputed <- theObject@peptide_data
+               peptide_values_imputed[[imputed_value_column]] <-
+                 peptide_values_imputed[[theObject@raw_quantity_column]]
+               peptide_values_imputed$is_imputed <- rep(FALSE, nrow(peptide_values_imputed))
+               filter_result <- list(
+                 data = peptide_values_imputed,
+                 support_table = data.frame(),
+                 summary = list(
+                   status = "skipped",
+                   skip_reason = "technical_replicate_column_not_declared",
+                   quantity_column = theObject@raw_quantity_column,
+                   imputed_value_column = imputed_value_column,
+                   eligibility_denominator = "distinct_design_runs_in_technical_replicate_group",
+                   maximum_missing_fraction = as.numeric(proportion_missing_values),
+                   eligibility_operator = "<=",
+                   exclusion_source = if (is.null(exclusion_column)) "none" else paste0("design_column:", exclusion_column),
+                   input_rows = nrow(theObject@peptide_data),
+                   output_rows = nrow(peptide_values_imputed),
+                   imputed_rows = 0L
+                 )
+               )
+             } else {
+               filter_result <- peptideMissingValueImputationHelper(
+                 input_table = theObject@peptide_data,
+                 metadata_table = theObject@design_matrix,
+                 quantity_to_impute_column = !!rlang::sym(theObject@raw_quantity_column),
+                 imputed_value_column = !!rlang::sym(imputed_value_column),
+                 core_utilisation = core_utilisation,
+                 input_table_sample_id_column = !!rlang::sym(theObject@sample_id),
+                 sample_id_tbl_sample_id_column = !!rlang::sym(theObject@sample_id),
+                 replicate_group_column = !!rlang::sym(replicate_group_column),
+                 protein_id_column = !!rlang::sym(theObject@protein_id_column),
+                 peptide_sequence_column = !!rlang::sym(theObject@peptide_sequence_column),
+                 hek_string = hek_string,
+                 proportion_missing_values = proportion_missing_values,
+                 exclusion_column = exclusion_column,
+                 return_imputation_result = TRUE
+               )
+               if (is.data.frame(filter_result)) {
+                 filter_result <- list(
+                   data = filter_result,
+                   support_table = NULL,
+                   summary = list(status = "applied", skip_reason = NULL)
+                 )
+               }
+             }
+
+             section$imputed_value_column <- imputed_value_column
+             section$proportion_missing_values <- as.numeric(proportion_missing_values)
+             section$core_utilisation <- core_utilisation
+             section$exclusion_column <- exclusion_column
+             section$hek_string <- hek_string
+             section$quantity_column <- theObject@raw_quantity_column
+             section$support_table <- filter_result$support_table
+             section$imputation_summary <- filter_result$summary
+             theObject@args$peptideMissingValueImputation <- section
+             theObject@peptide_data <- filter_result$data
+             theObject <- cleanDesignMatrixPeptide(theObject)
+             theObject
+           })
+
 #' @export
 setMethod(f="peptideMissingValueImputationLimpa"
           , signature="PeptideQuantitativeData"

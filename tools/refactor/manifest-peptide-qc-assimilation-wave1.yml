@@ -1,0 +1,55 @@
+version: 1
+wave: peptide_qc_assimilation_wave1
+source_root: R
+collate_mode: explicit
+
+defaults:
+  action: extract
+  preserve:
+    roxygen: true
+    comments: true
+    whitespace: true
+
+collate_targets:
+  - R/func_pept_imputation_helpers.R
+  - R/func_prot_imputation_helpers.R
+  - R/func_pept_s4_missingness.R
+
+retired_files:
+  - R/func_peptide_qc_imputation.R
+  - R/func_pept_limpa.R
+
+entries:
+  - id: peptide_imputation_per_column
+    source: R/func_peptide_qc_imputation.R
+    selector: { kind: symbol, value: imputePerCol }
+    target: R/func_pept_imputation_helpers.R
+    group: proteomics.peptide.imputation.helpers
+
+  - id: peptide_imputation_validation
+    source: R/func_peptide_qc_imputation.R
+    selector: { kind: symbol, value: validatePostImputationData }
+    target: R/func_pept_imputation_helpers.R
+    group: proteomics.peptide.imputation.helpers
+
+  - id: peptide_technical_replicate_imputation
+    source: R/func_peptide_qc_imputation.R
+    selector: { kind: symbol, value: peptideMissingValueImputationHelper }
+    target: R/func_pept_imputation_helpers.R
+    group: proteomics.peptide.imputation.helpers
+
+  - id: protein_technical_replicate_imputation
+    source: R/func_peptide_qc_imputation.R
+    selector: { kind: symbol, value: proteinMissingValueImputation }
+    target: R/func_prot_imputation_helpers.R
+    group: proteomics.protein.imputation.helpers
+
+  - id: peptide_s4_technical_replicate_imputation
+    source: R/func_peptide_qc_imputation.R
+    selector:
+      kind: setMethod
+      value: peptideMissingValueImputation
+      signature: PeptideQuantitativeData
+    target: R/func_pept_s4_missingness.R
+    group: proteomics.peptide.s4.missingness
+    note: Append this method to the existing target, retain its canonical limpa method, and retire the whitespace-only later duplicate with the source file.

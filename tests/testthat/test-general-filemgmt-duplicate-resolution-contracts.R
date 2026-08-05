@@ -612,7 +612,7 @@ test_that("DESCRIPTION keeps general filemgmt ahead of the NA-validation canonic
   )
   expect_lt(
     match("func_general_filemgmt.R", collate_entries),
-    match("func_peptide_qc_imputation.R", collate_entries)
+    match("func_pept_imputation_helpers.R", collate_entries)
   )
   expect_lt(
     match("func_general_filemgmt.R", collate_entries),
@@ -634,7 +634,7 @@ test_that("NA-validation duplicates are removed from general filemgmt while cano
     parent = namespace_env
   )
   peptide_impls <- readTopLevelFunctionsFromFiles(
-    c("R/func_prot_qc_peptide_support.R", "R/func_peptide_qc_imputation.R"),
+    c("R/func_prot_qc_peptide_support.R", "R/func_pept_imputation_helpers.R"),
     c("checkPeptideNAPercentages", "validatePostImputationData"),
     parent = namespace_env
   )
@@ -683,7 +683,7 @@ test_that("NA-validation duplicates are removed from general filemgmt while cano
 test_that("package-level peptide NA helpers match the canonical helper implementations on the current analysis and validation paths", {
   namespace_env <- environment(checkPeptideNAPercentages)
   canonical_impls <- readTopLevelFunctionsFromFiles(
-    c("R/func_prot_qc_peptide_support.R", "R/func_peptide_qc_imputation.R"),
+    c("R/func_prot_qc_peptide_support.R", "R/func_pept_imputation_helpers.R"),
     c("checkPeptideNAPercentages", "validatePostImputationData"),
     parent = namespace_env
   )
