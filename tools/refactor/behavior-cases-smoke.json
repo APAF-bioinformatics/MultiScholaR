@@ -9,8 +9,7 @@
       "risk_level": "medium",
       "compare_warnings": false,
       "baseline_files": [
-        "R/allGenerics.R",
-        "R/func_prot_rollup.R"
+        "R/func_prot_rollup_count_helpers.R"
       ],
       "target_files": [
         "R/func_prot_rollup_count_helpers.R"
@@ -31,8 +30,7 @@
       "risk_level": "medium",
       "compare_warnings": false,
       "baseline_files": [
-        "R/allGenerics.R",
-        "R/func_prot_rollup.R"
+        "R/func_prot_rollup_count_helpers.R"
       ],
       "target_files": [
         "R/func_prot_rollup_count_helpers.R"
@@ -53,8 +51,7 @@
       "risk_level": "medium",
       "compare_warnings": false,
       "baseline_files": [
-        "R/allGenerics.R",
-        "R/func_prot_rollup.R"
+        "R/func_prot_rollup_count_helpers.R"
       ],
       "target_files": [
         "R/func_prot_rollup_count_helpers.R"
@@ -75,7 +72,7 @@
       "risk_level": "high",
       "compare_messages": true,
       "baseline_files": [
-        "R/func_prot_norm.R"
+        "R/func_prot_norm_optimization_helpers.R"
       ],
       "target_files": [
         "R/func_prot_norm_optimization_helpers.R"

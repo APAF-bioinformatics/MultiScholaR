@@ -2614,6 +2614,36 @@ serialTest('manifest command catalogs entries, classifies fidelity tiers, and em
   assert.match(summaryMarkdown, /`manual_merge_expected`: `1`/);
 });
 
+serialTest('manifest command default discovery ignores non-extraction manifests', () => {
+  const { baselineRoot, targetRoot } = makeManifestComparisonPair();
+  writeFile(
+    path.join(targetRoot, 'tools', 'refactor', 'manifest-specialized.yml'),
+    `version: 1
+wave: specialized
+method_helper_conversions:
+  - source: R/a.R
+    method: foo
+`
+  );
+
+  const summary = runJson('python3', [
+    AUDIT_SCRIPT,
+    'manifest',
+    '--repo-root',
+    targetRoot,
+    '--baseline-path',
+    baselineRoot,
+    '--target-path',
+    targetRoot
+  ]);
+
+  assert.equal(summary.manifest_count, 1);
+  assert.deepEqual(
+    [...new Set(summary.sample_comparisons.map((entry) => entry.manifest_path))],
+    ['tools/refactor/manifest-fidelity.yml']
+  );
+});
+
 serialTest('manifest command records source lineage gaps instead of aborting when baseline selectors no longer resolve', () => {
   const { baselineRoot, targetRoot } = makeManifestSourceGapPair();
   const summary = runJson('python3', [

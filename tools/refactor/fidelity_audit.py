@@ -1402,7 +1402,12 @@ def list_manifest_paths(repo_root: pathlib.Path, explicit_paths: list[str] | Non
             manifests.append(manifest_path.resolve())
         return manifests
 
-    return sorted((repo_root / "tools" / "refactor").glob("manifest-*.yml"))
+    candidates = sorted((repo_root / "tools" / "refactor").glob("manifest-*.yml"))
+    return [
+        path
+        for path in candidates
+        if re.search(r"(?m)^entries:\s*$", path.read_text(encoding="utf-8"))
+    ]
 
 
 def list_behavior_case_paths(repo_root: pathlib.Path, explicit_paths: list[str] | None) -> list[pathlib.Path]:
