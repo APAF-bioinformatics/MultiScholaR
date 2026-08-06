@@ -51,6 +51,10 @@ it adds coupling risk without improving ownership.
 
 Use these runtime filename forms:
 
+- `app_ui.R`, `app_server.R`, `run_app.R`, `launch_app.R`, and `zzz.R` for
+  Golem package entrypoints
+- `mod_<domain>.R` for a top-level omics workflow shell
+- `mod_<domain>_<feature>.R` for a cohesive complete module
 - `mod_<domain>_<feature>_ui.R`
 - `mod_<domain>_<feature>_server.R`
 - `mod_<domain>_<feature>_<responsibility>_helpers.R`
@@ -59,6 +63,10 @@ Use these runtime filename forms:
 - `func_<domain>_s4_<responsibility>_methods.R`
 - `func_<domain>_s4_<responsibility>_helpers.R`
 - `utils_<crosscutting_purpose>.R`
+
+All names use lower snake case. Shared S4 generics load first from
+`func_general_s4_generics.R`; this is an ownership rule, not a filename
+exception.
 
 Within peptide code, `func_pept_s4_*` owns peptide S4 behavior and
 `func_prot_qc_peptide_*` owns the proteomics peptide-QC workflow.

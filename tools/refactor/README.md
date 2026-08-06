@@ -90,6 +90,7 @@ The design goal is simple:
 - `audit_refactor_coupling.R`: filename-coupling audit for `R/*.R` references outside the manifest flow
 - `audit_file_sizes.R`: file-size budget audit for the whole repo or a single wave manifest
 - `audit_function_expressions.R`: recursive function-AST and extraction-scaffold parity audit against a git ref
+- `audit_runtime_filenames.R`: runtime naming-contract and `Collate` completeness audit
 - `FULL_FUNCTION_PARITY_AUDIT.md`: dual-baseline completeness and behavior audit
 - `JANITOR_CLOSEOUT_PLAN.md`: ordered structural closeout phases and exit gates
 - `stabilization-status.py`: machine-readable target/backlog progress estimator for the stabilization workflow

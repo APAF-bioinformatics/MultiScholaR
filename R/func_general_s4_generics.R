@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# R/allGenerics.R
-# This file contains all setGeneric definitions for the ProteomeScholaR package.
+# R/func_general_s4_generics.R
+# This file contains the shared setGeneric definitions for MultiScholaR.
 # Loading this file early ensures that generic functions are defined before
 # their corresponding setMethod definitions are encountered during package loading.
 

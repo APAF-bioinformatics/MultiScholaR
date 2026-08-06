@@ -27,7 +27,7 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Collate: 
-    'allGenerics.R'
+    'func_general_s4_generics.R'
     'func_general_s4_objects.R'
     'func_general_s4_plotting_methods.R'
     'func_omics_da_shared.R'
@@ -363,7 +363,7 @@ Collate:
     'mod_prot_summary_server_helpers.R'
     'mod_prot_summary_server.R'
     'mod_proteomics.R'
-    'func_applets.R'
+    'func_general_applets.R'
     'run_app.R'
     'utils_shiny_logging.R'
     'utils_test_mode.R'
