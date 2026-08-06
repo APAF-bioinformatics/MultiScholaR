@@ -1,3 +1,11 @@
+#' Metabolomics Normalization Module
+#'
+#' A Shiny module for multi-step metabolomics normalization, harmonized with
+#' the proteomics workflow.
+#'
+#' @name mod_metab_norm
+NULL
+
 #' @rdname mod_metab_norm
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h3 h4 h5 p hr br radioButtons selectInput textInput actionButton uiOutput verbatimTextOutput icon tags checkboxInput numericInput plotOutput conditionalPanel tabsetPanel tabPanel sliderInput helpText
@@ -647,4 +655,3 @@ mod_metab_norm_ui <- function(id) {
         )
     )
 }
-

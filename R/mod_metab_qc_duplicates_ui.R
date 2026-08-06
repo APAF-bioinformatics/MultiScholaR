@@ -1,3 +1,10 @@
+#' Metabolite Duplicate Resolution Module
+#'
+#' A Shiny module for identifying and resolving duplicate metabolite features.
+#'
+#' @name mod_metab_qc_duplicates
+NULL
+
 #' @rdname mod_metab_qc_duplicates
 #' @export
 #' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr div actionButton verbatimTextOutput uiOutput plotOutput
@@ -61,4 +68,3 @@ mod_metab_qc_duplicates_ui <- function(id) {
         )
     )
 }
-

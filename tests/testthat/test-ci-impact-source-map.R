@@ -20,7 +20,7 @@ test_that("ci impact source map owns every tracked R source path", {
 test_that("ci impact source map routes canonical source families", {
   cases <- list(
     lipid_design = list(path = "R/mod_lipid_design_builder_helpers.R", module = "lipidomics/design", rule = "lipidomics-design"),
-    prot_limpa = list(path = "R/func_prot_limpa.R", module = "proteomics/normalization", rule = "proteomics-normalization-limpa"),
+    prot_limpa = list(path = "R/func_prot_limpa_qc_helpers.R", module = "proteomics/normalization", rule = "proteomics-normalization-limpa"),
     metab_da = list(path = "R/mod_metab_da_server.R", module = "metabolomics/differential_abundance", rule = "metabolomics-da"),
     shared_state = list(path = "R/utils_workflow_state.R", module = "proteomics/all", rule = "shared-state-and-workflow")
   )

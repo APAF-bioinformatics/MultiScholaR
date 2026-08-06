@@ -25,8 +25,7 @@ loadSelectedFunctions <- function(paths, symbols, env) {
 
 loadSelectedFunctions(
   paths = c(
-    file.path(repo_root, "R", "func_metab_da_core_engine.R"),
-    file.path(repo_root, "R", "func_metab_da.R")
+    file.path(repo_root, "R", "func_metab_da_core_engine.R")
   ),
   symbols = "runTestsContrastsMetabDA",
   env = environment()

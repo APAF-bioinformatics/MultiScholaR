@@ -1,3 +1,11 @@
+#' Proteomics Design Matrix Builder Module
+#'
+#' A Shiny module for building a proteomics design matrix inside the
+#' MultiScholaR application.
+#'
+#' @name designMatrixBuilderModule
+NULL
+
 #' Design Matrix Builder UI Module
 #'
 #' @param id Module ID.

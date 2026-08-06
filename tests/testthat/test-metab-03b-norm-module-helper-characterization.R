@@ -29,8 +29,7 @@ loadSelectedFunctions(
     file.path(repo_root, "R", "mod_metab_norm_pipeline_helpers.R"),
     file.path(repo_root, "R", "mod_metab_norm_render_helpers.R"),
     file.path(repo_root, "R", "mod_metab_norm_binding_helpers.R"),
-    file.path(repo_root, "R", "mod_metab_norm_entry_helpers.R"),
-    file.path(repo_root, "R", "mod_metab_norm.R")
+    file.path(repo_root, "R", "mod_metab_norm_entry_helpers.R")
   ),
   symbols = c(
     "updateMetabNormDesignDrivenChoices",

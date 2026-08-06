@@ -4,7 +4,7 @@ test_that("ci impact audit covers representative routing bundles", {
   cases <- list(
     lipid_norm = list(path = "R/mod_lipid_norm_server.R", impact = "targeted", module = "lipidomics/normalization", e2e = "^e2e-lipidomics-canonical$"),
     metab_da = list(path = "R/mod_metab_da_server.R", impact = "targeted", module = "metabolomics/differential_abundance", e2e = "^e2e-metabolomics-lc-gc$"),
-    prot_limpa = list(path = "R/func_prot_limpa.R", impact = "targeted", module = "proteomics/normalization", e2e = "^e2e-proteomics-dia-limpa$"),
+    prot_limpa = list(path = "R/func_prot_limpa_qc_helpers.R", impact = "targeted", module = "proteomics/normalization", e2e = "^e2e-proteomics-dia-limpa$"),
     state = list(path = "R/utils_workflow_state.R", impact = "broad", module = "proteomics/all", e2e = "^e2e-proteomics-dia$"),
     ci = list(path = ".github/workflows/module-ci.yml", impact = "broad", module = "all/ci_release_gate", e2e = "^e2e-lipidomics-canonical$")
   )

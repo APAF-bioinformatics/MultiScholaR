@@ -48,8 +48,7 @@ loadSelectedFunctions(
     file.path(repo_root, "R", "mod_metab_qc_duplicates_render_helpers.R"),
     file.path(repo_root, "R", "mod_metab_qc_duplicates_server_helpers.R"),
     file.path(repo_root, "R", "mod_metab_qc_duplicates_ui.R"),
-    file.path(repo_root, "R", "mod_metab_qc_duplicates_server.R"),
-    file.path(repo_root, "R", "mod_metab_qc_duplicates.R")
+    file.path(repo_root, "R", "mod_metab_qc_duplicates_server.R")
   ),
   symbols = c(
     "reportMetabDuplicateDetection",

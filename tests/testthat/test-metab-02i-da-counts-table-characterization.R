@@ -40,8 +40,7 @@ if (!methods::isClass("ProteinQuantitativeData")) {
 loadSelectedFunctions(
   paths = c(
     file.path(repo_root, "R", "func_metab_s4_da_results.R"),
-    file.path(repo_root, "R", "func_metab_s4_objects.R"),
-    file.path(repo_root, "R", "func_metab_da.R")
+    file.path(repo_root, "R", "func_metab_s4_objects.R")
   ),
   symbols = "getCountsTable",
   env = environment()

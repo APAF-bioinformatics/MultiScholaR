@@ -5,7 +5,6 @@ source(test_path("..", "..", "R", "mod_lipid_design_builder_helpers.R"), local =
 source(test_path("..", "..", "R", "mod_lipid_design_import_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_design_ui.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_design_server.R"), local = environment())
-source(test_path("..", "..", "R", "mod_lipid_design.R"), local = environment())
 
 test_that("formatLipidDesignAssaysPreview keeps assay list text stable", {
     expect_identical(
@@ -185,12 +184,20 @@ test_that("registerLipidDesignBuilderResultsObserver keeps observer handoff stab
         value
     }
 
-    run_builder_observer_shell <- function(results, workflowData, experimentPaths, qcTrigger = NULL) {
+    create_assay_data_fn <- function(...) NULL
+    run_builder_observer_shell <- function(
+        results,
+        workflowData,
+        experimentPaths,
+        qcTrigger = NULL,
+        createLipidomicsAssayDataFn = createLipidomicsAssayData
+    ) {
         shell_calls <<- list(
             results = results,
             workflowData = workflowData,
             experimentPaths = experimentPaths,
-            qcTrigger = qcTrigger
+            qcTrigger = qcTrigger,
+            createLipidomicsAssayDataFn = createLipidomicsAssayDataFn
         )
     }
 
@@ -206,7 +213,8 @@ test_that("registerLipidDesignBuilderResultsObserver keeps observer handoff stab
         qcTrigger = qc_trigger,
         observeEventFn = observe_event_fn,
         reqFn = req_fn,
-        runBuilderObserverShell = run_builder_observer_shell
+        runBuilderObserverShell = run_builder_observer_shell,
+        createLipidomicsAssayDataFn = create_assay_data_fn
     )
 
     expect_identical(observed_event, builder_result)
@@ -217,6 +225,7 @@ test_that("registerLipidDesignBuilderResultsObserver keeps observer handoff stab
     expect_identical(shell_calls$workflowData, workflow_data)
     expect_identical(shell_calls$experimentPaths, experiment_paths)
     expect_identical(shell_calls$qcTrigger, qc_trigger)
+    expect_identical(shell_calls$createLipidomicsAssayDataFn, create_assay_data_fn)
 })
 
 test_that("initializeLipidDesignImportBootstrap keeps import bootstrap handoff stable", {

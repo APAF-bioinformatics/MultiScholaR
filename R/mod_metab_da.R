@@ -21,7 +21,7 @@
 #
 # This module provides per-assay differential abundance analysis using limma,
 # with interactive volcano plots (Glimma), heatmaps, and result tables.
-# UI and functionality matches the proteomics DA module (mod_prot_da.R).
+# UI and functionality match the proteomics DA UI and server modules.
 # ============================================================================
 
 #' @title Metabolomics Differential Analysis Module
@@ -439,7 +439,6 @@ mod_metab_da_ui <- function(id) {
         )
     )
 }
-
 
 
 

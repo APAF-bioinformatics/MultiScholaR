@@ -17,7 +17,7 @@
 #' @title Metabolomics Design Matrix Builder Module
 #'
 #' @description A Shiny module to build a design matrix for metabolomics experiments.
-#' This module is 1:1 with the proteomics design builder (mod_prot_design_builder.R),
+#' This module follows the proteomics design-builder UI and server modules,
 #' with the key difference that metabolomics data is stored as a LIST of assays
 #' (e.g., LCMS_Pos, LCMS_Neg) where samples are COLUMN NAMES, not row values.
 #'
@@ -282,4 +282,3 @@ mod_metab_design_builder_ui <- function(id) {
         )
     )
 }
-

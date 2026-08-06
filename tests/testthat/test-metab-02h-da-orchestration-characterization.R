@@ -39,8 +39,7 @@ if (!methods::isClass("MetaboliteAssayData")) {
 
 loadSelectedFunctions(
   paths = c(
-    file.path(repo_root, "R", "func_metab_da_orchestration.R"),
-    file.path(repo_root, "R", "func_metab_da.R")
+    file.path(repo_root, "R", "func_metab_da_orchestration.R")
   ),
   symbols = "runMetabolitesDA",
   env = environment()

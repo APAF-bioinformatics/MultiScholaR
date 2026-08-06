@@ -1,3 +1,11 @@
+#' Metabolomics Import Module
+#'
+#' A Shiny module for importing metabolomics data with vendor-format detection
+#' and dynamic column mapping.
+#'
+#' @name mod_metab_import
+NULL
+
 #' @rdname mod_metab_import
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h3 h4 h5 p hr br radioButtons selectInput textInput actionButton uiOutput verbatimTextOutput icon tags conditionalPanel helpText div

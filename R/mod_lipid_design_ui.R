@@ -1,3 +1,18 @@
+#' Lipidomics Design Matrix Applet Module
+#'
+#' A Shiny module that hosts the lipidomics design-matrix workflow, including
+#' the design builder, existing-design import, S4 object creation, and state
+#' persistence.
+#'
+#' @param id Module ID.
+#' @param workflow_data Reactive values used to store workflow data.
+#' @param experiment_paths Paths for the current experiment.
+#' @param volumes Optional shinyFiles volumes.
+#' @param qc_trigger Optional reactive QC trigger.
+#'
+#' @name lipidomicsDesignMatrixAppletModule
+NULL
+
 #' @rdname lipidomicsDesignMatrixAppletModule
 #' @export
 #' @importFrom shiny NS tagList wellPanel h3 h4 p conditionalPanel div icon tags HTML fluidRow column actionButton
@@ -72,4 +87,3 @@ mod_lipid_design_ui <- function(id) {
         )
     )
 }
-

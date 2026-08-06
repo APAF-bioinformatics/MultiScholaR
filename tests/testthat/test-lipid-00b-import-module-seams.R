@@ -30,7 +30,6 @@ source(test_path("..", "..", "R", "mod_lipid_import_selection_helpers.R"), local
 source(test_path("..", "..", "R", "mod_lipid_import_output_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_import_ui.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_import_server.R"), local = environment())
-source(test_path("..", "..", "R", "mod_lipid_import.R"), local = environment())
 
 test_that("buildLipidImportFormatDetectionStatus renders the vendor label and success class", {
   rendered <- htmltools::renderTags(

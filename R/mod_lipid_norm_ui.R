@@ -1,3 +1,11 @@
+#' Lipidomics Normalization Module
+#'
+#' A Shiny module for multi-step lipidomics normalization, harmonized with the
+#' proteomics workflow.
+#'
+#' @name mod_lipid_norm
+NULL
+
 #' @rdname mod_lipid_norm
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h3 h4 h5 p hr br radioButtons selectInput textInput actionButton uiOutput verbatimTextOutput icon tags checkboxInput numericInput plotOutput conditionalPanel tabsetPanel tabPanel sliderInput helpText
@@ -22,4 +30,3 @@ mod_lipid_norm_ui <- function(id) {
         )
     )
 }
-

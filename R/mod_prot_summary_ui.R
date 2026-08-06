@@ -1,3 +1,10 @@
+#' Session Summary Module
+#'
+#' A Shiny module for session summaries and report generation.
+#'
+#' @name sessionSummaryModule
+NULL
+
 #' @rdname sessionSummaryModule
 #' @export
 #' @importFrom shiny NS tagList fluidPage h3 fluidRow column wellPanel h4 textInput textAreaInput actionButton icon br hr downloadButton verbatimTextOutput

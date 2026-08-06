@@ -1,3 +1,11 @@
+#' Proteomics Normalization Applet Module
+#'
+#' A Shiny module for normalization, RUV-III batch correction, and
+#' correlation-based filtering before differential-abundance analysis.
+#'
+#' @name normalizationAppletModule
+NULL
+
 #' @rdname normalizationAppletModule
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h4 selectInput helpText hr numericInput checkboxInput actionButton icon br sliderInput h5 verbatimTextOutput plotOutput tabsetPanel tabPanel conditionalPanel
@@ -471,4 +479,3 @@ mod_prot_norm_ui <- function(id) {
   )
   )
 }
-

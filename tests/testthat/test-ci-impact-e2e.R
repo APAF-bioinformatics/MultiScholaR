@@ -7,7 +7,7 @@ test_that("ci impact E2E metadata selects current omic workflow filters", {
   payload <- ci_impact_run("R/mod_metab_import_server.R")
   expect_true("^e2e-metabolomics-lc-gc$" %in% ci_impact_e2e_filters(payload))
 
-  payload <- ci_impact_run("R/func_prot_limpa.R")
+  payload <- ci_impact_run("R/func_prot_limpa_qc_helpers.R")
   expect_true("^e2e-proteomics-dia-limpa$" %in% ci_impact_e2e_filters(payload))
 })
 

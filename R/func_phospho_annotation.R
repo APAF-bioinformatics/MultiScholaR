@@ -26,7 +26,7 @@
 # - Phosphopeptide data pivoting and summarization
 # - Multi-site evidence processing
 #
-# Source: Extracted from R/phosphoproteomics_helper.R
+# Source: Extracted from the former phosphoproteomics helper monolith.
 #
 # Dependencies:
 # - dplyr, tidyr, purrr, stringr
@@ -34,7 +34,7 @@
 # ============================================================================
 
 # Functions will be extracted here by the extraction tool from:
-# - phosphoproteomics_helper.R
+# - Legacy phosphoproteomics helper implementation
 
 
 
@@ -841,4 +841,3 @@ getUniprotAccRankFromSitesId <- function( input_table, uniprot_acc, sites_id) {
     relocate(uniprot_list, .after="uniprot_acc_split" ) %>%
     relocate(gene_list_position, .after="uniprot_list" )
 }
-

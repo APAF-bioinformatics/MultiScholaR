@@ -33,7 +33,6 @@ source(test_path("..", "..", "R", "mod_lipid_norm_server_helpers.R"), local = en
 source(test_path("..", "..", "R", "mod_lipid_norm_ui_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_norm_ui.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_norm_server.R"), local = environment())
-source(test_path("..", "..", "R", "mod_lipid_norm.R"), local = environment())
 
 makeValidLipidNormContractS4 <- function(
     lipid_data,
@@ -169,23 +168,6 @@ loadLipidNormModuleHarness <- function(
     stubItsdSelectionRuntime = FALSE,
     stubPostNormalizationOutputs = FALSE
 ) {
-    source_lines <- readLines(
-        test_path("..", "..", "R", "mod_lipid_norm.R"),
-        warn = FALSE
-    )
-    source_lines <- sub(
-        "shiny::moduleServer",
-        "moduleServer",
-        source_lines,
-        fixed = TRUE
-    )
-    source_lines <- gsub(
-        "shiny::observeEvent",
-        "observeEvent",
-        source_lines,
-        fixed = TRUE
-    )
-
     module_env <- new.env(parent = globalenv())
     module_env$moduleServer <- function(id, module, session = shiny::getDefaultReactiveDomain()) {
         assign("capturedModule", module, envir = module_env)
@@ -255,8 +237,6 @@ loadLipidNormModuleHarness <- function(
         )
         eval(parse(text = helper_lines), envir = module_env)
     }
-
-    eval(parse(text = source_lines), envir = module_env)
 
     module_env$staticQcImageHelperCalls <- list()
     module_env$assayLabelHelperCalls <- list()

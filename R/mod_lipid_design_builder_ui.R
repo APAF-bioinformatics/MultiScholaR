@@ -1,3 +1,21 @@
+#' Lipidomics Design Matrix Builder Module
+#'
+#' A Shiny module to build a design matrix for lipidomics experiments. It
+#' follows the proteomics design-builder UI and server modules, with the key
+#' difference that lipidomics data is stored as a list of assays where samples
+#' are column names rather than row values.
+#'
+#' @param id The module ID.
+#' @param data_tbl A reactive expression returning the data-table list.
+#' @param config_list A reactive expression returning the configuration list.
+#' @param column_mapping A reactive expression returning the column mapping.
+#'
+#' @return A reactive expression containing the saved design matrix, filtered
+#'   data, contrasts, and updated configuration.
+#'
+#' @name lipidomicsDesignMatrixBuilderModule
+NULL
+
 #' Lipidomics Design Matrix Builder UI Module
 #'
 #' @param id Module ID.
@@ -237,4 +255,3 @@ mod_lipid_design_builder_ui <- function(id) {
         )
     )
 }
-

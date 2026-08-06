@@ -159,7 +159,7 @@
     {
       "id": "proteomics-da",
       "owner": "proteomics",
-      "paths": ["^R/(mod|func)_prot_.*da.*\\.R$", "^R/da_analysis_function_wrapper\\.R$"],
+      "paths": ["^R/(mod|func)_prot_.*da.*\\.R$"],
       "impact_level": "targeted",
       "module_ci": [{"name": "proteomics-da", "omic": "proteomics", "module": "differential_abundance", "runtime": "unit-contract"}],
       "e2e": [{"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"}],

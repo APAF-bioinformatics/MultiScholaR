@@ -5,7 +5,6 @@ source(test_path("..", "..", "R", "mod_lipid_design_builder_action_helpers.R"), 
 source(test_path("..", "..", "R", "mod_lipid_design_builder_state_helpers.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_design_builder_ui.R"), local = environment())
 source(test_path("..", "..", "R", "mod_lipid_design_builder_server.R"), local = environment())
-source(test_path("..", "..", "R", "mod_lipid_design_builder.R"), local = environment())
 
 makeReactiveValMock <- function(initialValue) {
     currentValue <- initialValue

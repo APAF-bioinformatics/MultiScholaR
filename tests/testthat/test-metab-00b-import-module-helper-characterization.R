@@ -50,8 +50,7 @@ loadSelectedFunctions(
     file.path(repo_root, "R", "mod_metab_import_display_helpers.R"),
     file.path(repo_root, "R", "mod_metab_import_registration_helpers.R"),
     file.path(repo_root, "R", "mod_metab_import_processing_helpers.R"),
-    file.path(repo_root, "R", "mod_metab_import_server_helpers.R"),
-    file.path(repo_root, "R", "mod_metab_import.R")
+    file.path(repo_root, "R", "mod_metab_import_server_helpers.R")
   ),
   symbols = c(
     "resolveMetabImportColumnName",

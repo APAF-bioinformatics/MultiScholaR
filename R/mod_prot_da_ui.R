@@ -1,3 +1,11 @@
+#' Differential Abundance Applet Module
+#'
+#' A Shiny module for proteomics differential-abundance analysis and result
+#' visualization across user-defined contrasts.
+#'
+#' @name differentialAbundanceAppletModule
+NULL
+
 #' @rdname differentialAbundanceAppletModule
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h4 h5 textAreaInput helpText hr numericInput actionButton icon verbatimTextOutput br downloadButton
@@ -452,4 +460,3 @@ mod_prot_da_table_tab_ui <- function(ns) {
     DT::DTOutput(ns("da_results_table"))
   )
 }
-

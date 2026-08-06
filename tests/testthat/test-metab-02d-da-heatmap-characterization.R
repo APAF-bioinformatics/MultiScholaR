@@ -25,8 +25,7 @@ loadSelectedFunctions <- function(paths, symbols, env) {
 
 loadSelectedFunctions(
   paths = c(
-    file.path(repo_root, "R", "func_metab_da_heatmap.R"),
-    file.path(repo_root, "R", "func_metab_da.R")
+    file.path(repo_root, "R", "func_metab_da_heatmap.R")
   ),
   symbols = "generateMetabDAHeatmap",
   env = environment()

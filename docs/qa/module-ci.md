@@ -1289,7 +1289,7 @@ Local routing examples:
 ```bash
 Rscript tools/ci/detect-impact.R --changed-files R/mod_lipid_norm_server.R --output /tmp/mci-impact-targeted-lipid.json --summary /tmp/mci-impact-targeted-lipid.md
 Rscript tools/ci/detect-impact.R --changed-files R/mod_metab_da_server.R --output /tmp/mci-impact-targeted-metab.json --summary /tmp/mci-impact-targeted-metab.md
-Rscript tools/ci/detect-impact.R --changed-files R/func_prot_limpa.R --output /tmp/mci-impact-targeted-prot-limpa.json --summary /tmp/mci-impact-targeted-prot-limpa.md
+Rscript tools/ci/detect-impact.R --changed-files R/func_prot_limpa_qc_helpers.R --output /tmp/mci-impact-targeted-prot-limpa.json --summary /tmp/mci-impact-targeted-prot-limpa.md
 Rscript tools/ci/detect-impact.R --changed-files R/utils_workflow_state.R --output /tmp/mci-impact-broad-state.json --summary /tmp/mci-impact-broad-state.md
 Rscript tools/ci/detect-impact.R --changed-files docs/qa/module-ci.md --output /tmp/mci-impact-docs.json --summary /tmp/mci-impact-docs.md
 Rscript tools/ci/detect-impact.R --changed-files R/new_unmapped_surface.R --output /tmp/mci-impact-unknown-source.json --summary /tmp/mci-impact-unknown-source.md
