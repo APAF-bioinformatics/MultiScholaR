@@ -23,31 +23,9 @@
 # configuration file handling, and project path management. Functions in
 # this file are used across all omics types and workflows.
 #
-# Functions to extract here:
-# - setupDirectories(): Main function for setting up project directories
-# - createDirIfNotExists(): Creates directory if it doesn't exist
-# - createDirectoryIfNotExists(): Alternative directory creation function
-# - createOutputDir(): Creates output directory
-# - setupAndShowDirectories(): Sets up and shows directory structure
-# - getProjectPaths(): Gets project paths
-# - readConfigFile(): Reads configuration file
-# - readConfigFileSection(): Reads section from config file
-# - formatConfigList(): Formats config list
-# - updateConfigParameter(): Updates config parameter
-# - createStudyParametersFile(): Creates study parameters file
-# - createWorkflowArgsFromConfig(): Creates workflow args from config
-# - getDefaultProteomicsConfig(): Gets default proteomics config
-# - copyToResultsSummary(): Copies files to results summary
-# - write_results(): Writes results to file
-# - pushProjectToGithub(): Pushes project to GitHub
-# - pushProjectToGithubFromDirs(): Pushes project from directories
-# - sourceRmdFile(): Sources R Markdown file
-# - sourceRmdFileSimple(): Simple R Markdown sourcing
-# - Additional file management helper functions
-#
-# Dependencies:
-# - fs, here, configr, ini
-# - func_general_helpers.R (for utility functions)
+# Ownership: remaining public file-management orchestration and compatibility
+# entrypoints. Path, config, directory, result, and report behavior lives in
+# focused func_general_filemgmt_* owners.
 # ============================================================================
 
 #' @title Setup directories

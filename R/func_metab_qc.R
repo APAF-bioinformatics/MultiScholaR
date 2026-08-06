@@ -24,22 +24,8 @@
 # internal standard metrics. Functions in this file are used by metabolomics
 # QC modules and related workflows.
 #
-# Functions to extract here:
-# - metaboliteIntensityFiltering(): S4 method for metabolite intensity filtering
-# - metaboliteIntensityFilteringHelper(): Helper for intensity filtering
-# - updateMetaboliteFiltering(): Updates filtering progress tracking
-# - getFilteringProgressMetabolomics(): Gets filtering progress object
-# - countUniqueMetabolites(): Counts unique metabolites
-# - countMetabolitesPerSample(): Counts metabolites per sample
-# - calculateMissingness(): Calculates missing value percentage
-# - calculateSumIntensityPerSample(): Calculates sum intensity per sample
-# - calculateMetaboliteCVs(): Calculates coefficient of variation
-# - getInternalStandardMetrics(): Gets internal standard metrics
-# - Additional metabolomics QC helper functions
-#
-# Dependencies:
-# - dplyr, tidyr
-# - func_general_helpers.R (for utility functions)
+# Ownership: metabolomics QC orchestration retained here. Correlation, filtering,
+# metrics, plotting, progress, and variability live in func_metab_qc_* owners.
 # ============================================================================
 
 #' @title Update and Visualize Metabolomics Filtering Progress

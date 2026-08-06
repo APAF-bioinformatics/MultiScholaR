@@ -23,14 +23,8 @@
 # platforms and formats. Functions in this file are used by metabolomics
 # import modules and related workflows.
 #
-# Functions to extract here:
-# - createMetaboliteAssayData(): Creates MetaboliteAssayData S4 object
-# - getMetaboliteQuantData(): Extracts quantitative data from assay tibbles
-# - Additional metabolomics import helper functions
-#
-# Dependencies:
-# - dplyr, tidyr
-# - func_general_s4_objects.R (for S4 class definitions)
+# Ownership: public metabolomics import helpers that remain cohesive here.
+# Format detection and reader-specific behavior live in func_metab_import_*.
 # ============================================================================
 
 #' @title Extract Quantitative Data and Sample Names from Assay Tibble
@@ -253,6 +247,5 @@ importMetabMSDIALData <- function(
         , is_pattern = defaults$is_pattern
     ))
 }
-
 
 

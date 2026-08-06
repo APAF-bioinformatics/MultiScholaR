@@ -24,22 +24,8 @@
 # internal standard metrics. Functions in this file are used by lipidomics
 # QC modules and related workflows.
 #
-# Functions to extract here:
-# - lipidIntensityFiltering(): S4 method for lipid intensity filtering
-# - lipidIntensityFilteringHelper(): Helper for intensity filtering
-# - updateLipidFiltering(): Updates filtering progress tracking
-# - getFilteringProgressLipidomics(): Gets filtering progress object
-# - countUniqueLipids(): Counts unique lipids
-# - countLipidsPerSample(): Counts lipids per sample
-# - calculateLipidMissingness(): Calculates missing value percentage
-# - calculateLipidSumIntensityPerSample(): Calculates sum intensity per sample
-# - calculateLipidCVs(): Calculates coefficient of variation
-# - getLipidInternalStandardMetrics(): Gets internal standard metrics
-# - Additional lipidomics QC helper functions
-#
-# Dependencies:
-# - dplyr, tidyr
-# - func_general_helpers.R (for utility functions)
+# Ownership: lipidomics QC orchestration retained here. Filtering, progress,
+# reporting, and support behavior live in func_lipid_qc_* owners.
 # ============================================================================
 
 #' @title Helper function for lipid intensity filtering

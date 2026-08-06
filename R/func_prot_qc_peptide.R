@@ -27,21 +27,8 @@
 # NOTE: Peptides are part of the proteomics workflow, hence "prot" prefix.
 # This file contains peptide-specific QC functions within the proteomics context.
 #
-# Functions to extract here:
-# - peptideIntensityFiltering(): S4 method for peptide intensity filtering
-# - peptideIntensityFilteringHelper(): Helper for peptide intensity filtering
-# - removePeptidesWithMissingValuesPercent(): S4 method for missing value filtering
-# - removePeptidesWithMissingValuesPercentHelper(): Helper for missing value filtering
-# - removePeptidesWithOnlyOneReplicate(): S4 method for replicate filtering
-# - removePeptidesWithOnlyOneReplicateHelper(): Helper for replicate filtering
-# - filterMinNumPeptidesPerProtein(): S4 method for filtering by peptides per protein
-# - filterMinNumPeptidesPerSample(): S4 method for filtering by peptides per sample
-# - srlQvalueProteotypicPeptideClean(): S4 method for q-value filtering
-# - Additional peptide QC helper functions
-#
-# Dependencies:
-# - dplyr, tidyr
-# - func_general_helpers.R (for utility functions)
+# Ownership: shared peptide-QC compatibility helpers. Filtering responsibilities
+# live in func_prot_qc_peptide_*; peptide S4 behavior lives in func_pept_s4_*.
 # ============================================================================
 
 #' @keywords internal
@@ -98,7 +85,6 @@ resolvePeptideQcColumnArgument <- function(column_expr, column_value, candidates
 
   resolvePeptideQcColumnName(column_expr, env = env)
 }
-
 
 
 

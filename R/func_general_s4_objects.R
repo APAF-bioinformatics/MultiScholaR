@@ -28,15 +28,7 @@
 # - func_metab_s4_objects.R (MetaboliteAssayData)
 # - func_lipid_s4_objects.R (LipidAssayData - placeholder)
 #
-# Functions to extract here:
-# - FilteringProgress class definition (shared across omics)
-# - FilteringProgressMetabolomics class definition
-# - Shared S4 utility methods
-# - S4 object validation helpers (if shared)
-#
-# Dependencies:
-# - methods package
-# - func_general_helpers.R (for utility functions)
+# Ownership: shared filtering-progress classes and their cross-omics utilities.
 # ============================================================================
 
 #' FilteringProgress Class
@@ -238,4 +230,3 @@ createEnrichmentResults <- function(contrasts_tbl) {
       enrichment_plotly = list(),
       enrichment_summaries = list())
 }
-

@@ -23,17 +23,7 @@
 # design matrices used across all omics types. Functions in this file are
 # used by design builder modules and DE analysis workflows.
 #
-# Functions to extract here:
-# - cleanDesignMatrix(): S4 method for cleaning design matrix
-# - cleanDesignMatrixPeptide(): S4 method for cleaning peptide design matrix
-# - cleanDesignMatrixCleanCategories(): Cleans design matrix categories
-# - cleanDesignMatrixCleanCategoriesMap(): Maps cleaned categories
-# - cleanDesignMatrixCreateEachVersusAllColumns(): Creates each vs all columns
-# - Additional design matrix helper functions
-#
-# Dependencies:
-# - dplyr, tidyr
-# - func_general_helpers.R (for utility functions)
+# Ownership: shared design-matrix cleaning and category helpers.
 # ============================================================================
 
 #' @export
@@ -116,4 +106,3 @@ setMethod( f ="cleanDesignMatrixPeptide"
 
              return(theObject)
            })
-

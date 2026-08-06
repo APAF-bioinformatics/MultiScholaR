@@ -23,16 +23,8 @@
 # analysis, including limma-based analysis and result formatting. Functions
 # in this file are used by lipidomics DA modules and related workflows.
 #
-# Functions to extract here:
-# - differentialAbundanceAnalysis(): S4 method for DA analysis (lipid)
-# - differentialAbundanceAnalysisHelper(): Helper for DA analysis
-# - getCountsTable(): Gets counts table from object
-# - Additional lipidomics DE helper functions
-#
-# Dependencies:
-# - limma, edgeR
-# - func_general_plotting_*_helpers.R (for visualization)
-# - func_general_helpers.R (for utility functions)
+# Ownership: lipidomics DA compatibility and count-table helpers. Model,
+# result, export, and plotting responsibilities live in func_lipid_da_*.
 # ============================================================================
 
 .getCountsTableLipidomics <- function(obj) {
@@ -116,7 +108,6 @@ getLipidDaQuantData <- function(
         sample_cols = sample_cols
     )
 }
-
 
 
 

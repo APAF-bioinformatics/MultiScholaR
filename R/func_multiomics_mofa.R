@@ -23,14 +23,7 @@
 # integration and visualization. Functions in this file are used by
 # multiomics integration modules and related workflows.
 #
-# Functions to extract here:
-# - plotMofaWeights(): Plot MOFA factor weights
-# - Additional MOFA integration and analysis functions
-#
-# Dependencies:
-# - MOFA2 package
-# - func_general_plotting_*_helpers.R (for visualization)
-# - func_general_helpers.R (for utility functions)
+# Ownership: cohesive MOFA integration and visualization helpers.
 # ============================================================================
 
 #' Plot Top MOFA Weights for a Specific View and Factor
