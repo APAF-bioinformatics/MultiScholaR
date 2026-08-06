@@ -1,211 +1,228 @@
 # Full Function Parity Audit
 
-Audit date: 2026-08-04 (Australia/Sydney)
-
-## Scope And Baselines
-
-- Refactor branch point: `326c04904e504339a7ff15af00240a51cf337343`
-- Completeness baseline: `main@436cdbe83aebfef1b8ec1c7c6d77027c004e4e0f`
-- Frozen post-peptide behavioral baseline:
-  `janitor@02d596cff48df289eba52b35d51d421feaf0d74d`
-- Source scope: every `.R` file under `R/`
-- Function scope: top-level and nested assignments, anonymous callbacks,
-  function-valued formal defaults, `setGeneric()` definitions, and
-  `setMethod()` definitions
-- Contract scope: package-loaded `tests/testthat/test-*.R` files, one isolated R
-  process per test file
-
-`main` is the completeness baseline. Commit `02d596c` is the behavioral baseline
-for all remaining structural work because it contains the peptide-QC changes and
-the parity regressions fixed during this audit.
+Audit date: 2026-08-06 (Australia/Sydney)
 
 ## Verdict
 
-Every public function export, S4 class export, S4 method export, generic, and
-effective named function present on `main` is accounted for in the post-peptide
-worktree. No baseline public function is missing.
+The janitor de-monolith refactor is structurally complete. Every public export,
+S4 class export, S4 method export, generic, and named top-level definition from
+`main` is accounted for. No function was lost during the final structural
+campaign.
 
-The surface auditor reports one apparent missing method,
-`removeProteinsWithOnlyOneReplicate`. This is a parser artefact: the `main`
-definition omitted an explicit `signature`, causing its method body to be parsed as
-the selector. The current method has an explicit signature and the same owned
-behavior.
+The current runtime tree contains zero parse failures, zero duplicate entity
+keys, zero stale extraction inventories, zero filename-contract violations, and
+zero files over 1,000 lines. All 275 package-loaded isolated test files pass.
 
-This is behavioral and API parity, not byte-for-byte parity. The branch contains
-intentional scientific fixes, hardened contracts, extracted helpers, new peptide-QC
-owners, and the documented `findBestK()` deprecation. Changed function expressions
-were therefore audited by owner, effective load-order definition, and contracts.
+This verdict is narrower than saying the package is `R CMD check` clean. The
+package has an inherited check backlog, but a like-for-like offline check gives
+the same `1 ERROR, 10 WARNINGs, 7 NOTEs` for the frozen behavioral baseline and
+the current archived source tree. The refactor introduced no new check category
+or count.
 
-The de-monolith charter is not complete. Oversized files, duplicate definitions,
-stale extraction scaffolds, and inconsistent filenames remain and are tracked in
-`JANITOR_CLOSEOUT_PLAN.md`.
+## Baselines
 
-## Inventory Results
+- Completeness baseline: `main@436cdbe83aebfef1b8ec1c7c6d77027c004e4e0f`
+- Frozen post-peptide behavioral baseline:
+  `02d596cff48df289eba52b35d51d421feaf0d74d`
+- Final structural checkpoint before breadcrumb and filename cleanup:
+  `cd5083f`
+- Audited runtime target: the current worktree after `635fa18`, plus comment-only
+  stale-header cleanup
 
-### Public And S4 Surface
+`main` is authoritative for API and named-definition completeness. `02d596c` is
+authoritative for intentional peptide-QC and parity-remediation behavior.
+`cd5083f` proves that the final breadcrumb, naming, and header cleanup did not
+change executable R code.
 
-| Surface | `main` | `02d596c` tree | Result |
-| --- | ---: | ---: | --- |
-| Function exports | 482 | 484 | All baseline exports present; two additions |
-| Method exports | 61 | 61 | Exact export-set parity |
-| Class exports | 13 | 13 | Exact export-set parity |
-| `setClass` occurrences | 13 | 13 | Accounted for |
-| `setGeneric` occurrences | 75 | 75 | Accounted for |
-| `setMethod` occurrences | 120 | 116 | Reduction is duplicate retirement and explicit ownership |
-| Top-level symbol occurrences | 569 | 1,690 | Increase reflects extraction into focused files |
-| Parsed R files | 92 | 323 | Zero parse failures on either side |
-| `DESCRIPTION` `Collate:` entries | 92 | 323 | Every target file is collated |
+## Final Inventory
 
-The two added function exports are
-`classifyPeptideBiologicalExclusions()` and `findBestKElbow()`.
+| Gate | Starting state | Final state |
+| --- | ---: | ---: |
+| Runtime `.R` files | 323 | 342 |
+| `Collate` entries | 323 | 342 |
+| Files over 1,000 LOC | 18 | 0 |
+| Files over 2,000 LOC | 6 | 0 |
+| Largest runtime file | 4,224 LOC | 987 LOC |
+| `func_general_helpers.R` | 1,789 LOC | retired |
+| Duplicate entity keys | 38 | 0 |
+| Redundant duplicate occurrences | 42 | 0 |
+| Tracked stale extraction headers | 18 | 0 |
+| Additional generic extraction inventories | not previously counted | 0 |
+| Runtime filename violations | not enforced | 0 |
+| Parse failures | 0 | 0 |
 
-### Recursive Function Expressions
+The final target surface is:
 
-The recursive audit found 2,032 function occurrences on `main` and 3,383 in the
-target. Every baseline occurrence has a recorded classification:
+- 484 function exports
+- 61 method exports
+- 13 class exports
+- 13 `setClass()` entities
+- 66 canonical `setGeneric()` entities
+- 100 canonical `setMethod()` entities
+- 1,697 named symbol entities
+- 342 unique `Collate` entries for 342 runtime files
 
-| Classification | Occurrences | Interpretation |
-| --- | ---: | --- |
-| Exact full function AST present | 1,538 | Exact implementation exists in the target |
-| Exact body, changed formals | 7 | API/default drift retained with an owned target |
-| Same named/owned function, changed AST | 244 | Named owner exists and behavior was reviewed |
-| Changed nested/anonymous expression | 243 | Callback changed with its named owner |
+The generated reports are `AUDIT-file-sizes.md`,
+`AUDIT-runtime-filenames.md`, and `AUDIT-filename-coupling.md`.
 
-There are 1,551 unique function ASTs on `main`; 1,134 remain exact and 417 are
-changed. The unmatched expressions are nested or anonymous callbacks belonging to
-changed owners, not missing exported functions. The machine-readable comparison is
-written by `audit_function_expressions.R`.
+## Function Evidence
 
-### Migration Manifests
+### Final Structural Fidelity
 
-The pre-peptide manifest campaign accounted for all 288 manifests and 1,241
-entries. Manifest resolution remains supporting migration evidence; recursive
-inventory and effective-definition comparison are authoritative where intentional
-function edits mean exact source text no longer matches.
+Comparison with `cd5083f` is exact:
 
-## Extraction Scaffold Audit
+- 3,347 of 3,347 recursive function occurrences have the same function AST.
+- 2,883 of 2,883 unique function ASTs are present.
+- Zero unmatched expressions.
+- Zero multiplicity changes.
 
-Eighteen `.R` files still carry stale `TODO: Extract` headers. Seventeen contain
-376 numbered function references covering 337 unique names:
+This comparison includes top-level and nested assignments, anonymous callbacks,
+function-valued defaults, `setGeneric()` definitions, and `setMethod()` bodies.
 
-- 368 references resolve to current function definitions.
-- Eight references do not resolve as functions.
-- Seven are historical aspirations that were not functions at the branch point:
-  `createDEResultsForEnrichment`, `countStatDeGenes`,
-  `countStatDeGenesHelper`, `printCountDeGenesTable`, `generateDEHeatmap`
-  (listed twice), and `saveDeProteinList`.
-- `filtering_progress` exists on both sides as an instantiated S4 object, not a
-  function.
+### Frozen Behavioral Fidelity
 
-`R/func_general_helpers.R` lists 73 scaffold entries. Sixty-eight resolve to live
-functions; its apparent misses are the historical aspirations above plus
-`filtering_progress`. No function listed in that file was silently lost.
+The frozen baseline has 3,383 recursive function occurrences and 2,880 unique
+function ASTs. The final tree accounts for every occurrence:
 
-## Duplicate And Load-Order Audit
+| Classification | Occurrences |
+| --- | ---: |
+| Exact function AST present | 3,376 |
+| Exact body with reviewed formal drift | 3 |
+| Reviewed named-owner drift | 4 |
+| Unmatched | 0 |
+| Duplicate multiplicity reductions | 79 |
 
-The target contains 38 duplicate entity keys and 42 redundant occurrences:
+The seven reviewed non-exact owners are:
 
-- 21 keys have one exact AST variant.
-- 17 keys have multiple variants.
-- 31 effective target winners are AST-identical to the `main` winner.
-- Seven effective winners intentionally differ from `main`:
-  `getDaResultsLongFormat(list)`, `getDaResultsWideFormat(list)`,
-  `peptideMissingValueImputationLimpa(PeptideQuantitativeData)`,
-  `plotNumSigDiffExpBarPlot(list)`, `plotPca(PeptideQuantitativeData)`,
-  `plotVolcanoS4(list)`, and `PeptideQuantitativeDataDiann`.
+- `filterSamplesByMetaboliteCorrelationThreshold` generic
+- `createWorkflowArgsFromConfig`
+- `PeptideQuantitativeDataDiann`
+- `plotPcaDispatch`
+- `plotPca(PeptideQuantitativeData)`
+- `.peptideQcAuditValue`
+- `.peptideQcConfidenceFailureReasons`
 
-The two peptide-QC drifts were introduced intentionally by the recently integrated
-peptide work. The remaining duplicate keys are load-order debt, not evidence of a
-missing baseline function. They must reach zero before closeout so future behavior
-does not depend on accidental `Collate:` winners.
+They are the previously audited API/default, PCA hardening, serialization, and
+peptide-QC helper changes. The four executable smoke cases covering the relevant
+legacy helpers replay exactly against `02d596c` after correcting stale baseline
+file selectors in the audit catalog.
 
-## Defects Fixed During The Audit
+### Main Completeness
 
-1. Ported `main`'s empty-result and `mappedIDs` handling into metabolomics KEGG,
-   Reactome, and pathway enrichment.
-2. Ported `main`'s limpa DPC title and margin fix through all four plot paths.
-3. Corrected peptide and metabolomics `Collate:` order so classes load before
-   split methods.
-4. Retired the redundant protein limpa-imputation method from the peptide
-   imputation file.
-5. Hardened PCA handling for rank-one and degenerate inputs, including
-   deterministic axis padding.
-6. Corrected FASTA parsing and phosphosite accession ranking while preserving
-   `annotation_score`.
-7. Corrected the Shiny log cap to retain the newest 1,000 prepended lines.
-8. Updated stale lipid summary, lipid import, proteomics replicate, and
-   fidelity-audit fixtures to their current contracts.
+`main` exports 482 functions, 61 methods, and 13 classes. The target exports all
+of them and adds only:
 
-`findBestK()` was not reverted. `NEWS.md` documents its deprecation and delegation
-to `findBestKElbow()`.
+- `classifyPeptideBiologicalExclusions`
+- `findBestKElbow`
+
+The surface auditor's sole apparent missing `main` definition is
+`removeProteinsWithOnlyOneReplicate`. This is a parser artefact caused by the
+`main` method omitting an explicit `signature`; the target has the explicit
+`ProteinQuantitativeData,ANY,ANY` method and its owned implementation.
+
+The reductions from 75 to 66 generic occurrences and from 120 to 100 method
+occurrences are duplicate canonicalization, not surface loss. Independent target
+inventory grouping confirms zero duplicate entity keys.
 
 ## Runtime Verification
 
-| Verification | Result |
-| --- | --- |
-| Historical isolated contract campaign | 271 files, 2,607 cases; all files have passing evidence after focused remediation |
-| Current changed lipid design file | 146 expectations passed |
-| Current changed lipid summary file | 134 expectations passed |
-| Current metabolomics enrichment file | Passed |
-| Current proteomics design file | Passed |
-| Current limpa QC helper file | Passed |
-| Package load against all 323 collated files | Passed; no undefined-class failures |
-| Recursive function audit | Completed; all 2,032 baseline occurrences classified |
-| Surface audit | 323 target files; zero parse failures and no missing baseline exports |
-| Fidelity-audit tool regression | Passed |
-| Current complete isolated campaign | Pending final closeout gate; repository now has 274 test files |
+The authoritative contract campaign ran each test file in a fresh R process
+with the package loaded:
 
-The test runner uses one R process per file. A single-process
-`testthat::test_dir()` run is not authoritative because helper and S4 state leak
-between files and can create order-dependent results.
+| Result | Count |
+| --- | ---: |
+| Test files executed | 275 |
+| Test cases | 2,669 |
+| Failed files | 0 |
+| Contract exceptions | 0 |
+| Skips | 42 |
 
-`tools/test_with_renv.R` now uses the repository `renv` activation when present and
-otherwise uses the current R libraries. `--restore` still requires
-`renv/activate.R`.
+The skips are fully classified: 18 deliberate legacy seam skips, 13 unavailable
+browser tests, nine unavailable Git LFS snapshots, one no-`mixOmics` fallback
+characterization, and one baseline-only timeout branch.
 
-## Structural Baseline
+The refactor-tool Node regression suite also passes, including the default
+manifest-discovery regression added during closeout.
 
-- Runtime `.R` files: 323
-- Files over 1,000 LOC: 18
-- Files over 2,000 LOC: six
-- Largest file: `R/mod_prot_enrich_server_helpers.R`, 4,224 LOC
-- `R/func_general_helpers.R`: 1,789 LOC
-- `R/func_peptide_qc_imputation.R`: 1,090 LOC
-- Duplicate entity keys: 38
-- Stale extraction headers: 18
+## Audit Tool Reconciliation
 
-The generated size inventory is `AUDIT-file-sizes.md`. The ordered execution and
-exit gates are in `JANITOR_CLOSEOUT_PLAN.md`.
+The aggregate closeout run `janitor-final-closeout-2` reports `blocked` even
+though its contract component passed all 275 files. Its remaining records are
+audit-model debt rather than unaccounted runtime functions:
+
+- The surface layer keys many records to historical file ownership, so moved
+  definitions and retired files remain candidates despite the recursive AST and
+  named-owner inventories accounting for them.
+- The manifest layer replays all 310 historical manifests against one late
+  baseline. Ninety-one open entries refer to source files already retired before
+  `02d596c`; per-wave source baselines were not recorded in those manifests.
+- Four behavior mismatches came from stale baseline file selectors. The corrected
+  replay `janitor-final-behavior-replay` is 4 of 4 exact.
+
+The closeout wrapper should eventually support per-manifest source commits and
+location-independent surface reconciliation. That tooling limitation does not
+override the exact recursive inventory, zero-duplicate target inventory, and
+passing package-loaded contracts.
+
+## Package Check
+
+Both `02d596c` and the current archived source tree were built and checked with:
+
+```sh
+_R_CHECK_FORCE_SUGGESTS_=false R CMD check \
+  --no-manual --no-build-vignettes MultiScholaR_0.5.0.tar.gz
+```
+
+Both return `1 ERROR, 10 WARNINGs, 7 NOTEs`. `dynamicTreeCut` and `GlimmaV2`
+were unavailable in the offline environment and were reported as informational
+missing suggestions.
+
+The inherited error is the executable `generateLimpaQCPlots` example referring
+to undefined fixture objects. A top-level `tests/test_limpa_connection.R` file is
+also cwd-sensitive because it calls `devtools::load_all()` with no package path;
+it can create a second error when the check directory is not beneath a source
+tree.
+
+The highest-risk inherited warnings are two statically detected calls with
+unused arguments:
+
+- `ComplexHeatmap::Heatmap(..., core_utilisation_columns = ...)`
+- `writeInteractiveVolcanoPlotProteomics(..., de_q_val_thresh = ...)`
+
+The remaining package-quality backlog covers namespace/dependency declarations,
+S3 and replacement-function checks, a non-ASCII UI label, Rd links and usage,
+documentation coverage, source-package path hygiene, and metadata. These should
+be handled as a separate package-quality campaign, not mixed into the completed
+structural refactor.
 
 ## Reproduction
 
-Recursive function and scaffold inventory:
-
 ```sh
+python3 tools/refactor/fidelity_audit.py inventory \
+  --repo-root . --side target --target-ref WORKTREE
+
+Rscript --vanilla tools/refactor/audit_function_expressions.R \
+  --repo-root . --baseline-ref cd5083f --target-root . \
+  --output-dir .refactor-fidelity-audit/function-expressions-final-current
+
 Rscript --vanilla tools/refactor/audit_function_expressions.R \
   --repo-root . --baseline-ref main --target-root . \
-  --output-dir .refactor-fidelity-audit/function-expressions-main
-```
+  --output-dir .refactor-fidelity-audit/function-expressions-final-main
 
-Surface and manifest inventories:
+python3 tools/refactor/fidelity_audit.py behavior \
+  --repo-root . --baseline-ref 02d596c --target-ref WORKTREE
 
-```sh
-python3 tools/refactor/fidelity_audit.py surface \
-  --repo-root . --baseline-ref main --target-ref WORKTREE
-python3 tools/refactor/fidelity_audit.py manifest \
-  --repo-root . \
-  --baseline-ref 326c04904e504339a7ff15af00240a51cf337343 \
-  --target-ref WORKTREE
-```
-
-File-size inventory and isolated contracts:
-
-```sh
-Rscript --vanilla tools/refactor/audit_file_sizes.R \
-  --output tools/refactor/AUDIT-file-sizes.md
 python3 tools/refactor/fidelity_audit.py contracts \
   --repo-root . --target-ref WORKTREE --execute --load-package
+
+Rscript --vanilla tools/refactor/audit_file_sizes.R \
+  --repo-root . --output tools/refactor/AUDIT-file-sizes.md
+Rscript --vanilla tools/refactor/audit_runtime_filenames.R \
+  --repo-root . --output tools/refactor/AUDIT-runtime-filenames.md --check
+Rscript --vanilla tools/refactor/audit_refactor_coupling.R \
+  --repo-root . --output tools/refactor/AUDIT-filename-coupling.md
 ```
 
-Machine-readable CSV, JSON, and SQLite results are generated under
-`.refactor-fidelity-audit/`, which is intentionally gitignored.
+Machine-readable function comparisons and the SQLite audit ledger are generated
+under `.refactor-fidelity-audit/` and intentionally remain outside version
+control.

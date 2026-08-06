@@ -179,53 +179,49 @@ Every production wave follows the same sequence:
 - [x] Assimilate peptide-QC code into the refactored ownership model.
 - [x] Reduce duplicate entity keys from 38 to 0.
 - [x] Remove all 18 stale extraction headers.
-- [ ] Split all six files over 2,000 LOC.
-- [ ] Split all remaining files over 1,000 LOC.
-- [ ] Complete filename normalization.
-- [ ] Pass the final dual-baseline fidelity gate.
+- [x] Split all six files over 2,000 LOC.
+- [x] Split all remaining files over 1,000 LOC.
+- [x] Complete filename normalization.
+- [x] Pass the final dual-baseline fidelity gate.
 
-Current checkpoint after extraction-scaffold cleanup:
+Final checkpoint on 2026-08-06:
 
-- runtime `.R` files: `329`
-- files over 1,000 LOC: `15`
-- files over 2,000 LOC: `5`
+- runtime `.R` files: `342`
+- `Collate` entries: `342`, with no duplicates or missing files
+- files over 1,000 LOC: `0`
+- largest runtime file: `987` LOC
+- filename-contract violations: `0`
+- high- or medium-severity filename coupling: `0`
 - duplicate entity keys: `0`
 - redundant duplicate occurrences: `0`
-- stale `TODO: Extract` headers: `0`
-- `R/func_general_helpers.R`: `1,489` LOC
+- stale extraction headers or inventories: `0`
+- parse failures: `0`
+- `R/func_general_helpers.R`: retired and replaced by focused owners
+- frozen-to-current recursive function audit: `3,347 / 3,347` exact from
+  the final structural checkpoint, with `2,883 / 2,883` unique ASTs exact
+- package-loaded isolated contracts: `275 / 275` files passed, `2,669` test
+  cases, zero failures, and `42` accounted skips
+- frozen behavior replay: `4 / 4` exact
+- offline `R CMD check`: the same `1 ERROR, 10 WARNINGs, 7 NOTEs` on
+  `02d596c` and the current archived source tree
+
+Key checkpoints:
+
+- behavioral baseline: `02d596c`
 - imputation ownership wave: `dc5d6ec`
 - replicate/evidence/confidence ownership wave: `fa5ed55`
 - duplicate canonicalization wave 1: `67c44b9`
 - duplicate canonicalization wave 2: `a1fb983`
 - duplicate canonicalization wave 3: `58a3bef`
 - extraction-scaffold cleanup: `66001da`
-- proteomics enrichment responsibility split: this checkpoint
+- oversized-file closeout waves: `c6f076d` through `cd5083f`
+- breadcrumb retirement: `fc42ab6`
+- filename normalization: `635fa18`
 
-Wave 3 preserved all `3,339` recursive function occurrences and all `2,875`
-unique function ASTs from `a1fb983` exactly, with zero unmatched expressions or
-AST drift. It replaces the remaining load-order-dependent cross-omics methods
-with one tested list router per generic and retains every prior domain method as
-an internal helper. The package inventory now contains one `Collate` entry for
-every runtime file and zero duplicate entity keys.
-
-The extraction-scaffold cleanup removed the remaining `17` stale inventory
-headers and retired five comment-only runtime breadcrumbs. All `3,345` function
-occurrences from `58a3bef` remain AST-identical, the runtime and `Collate`
-inventories both contain `322` files, and `75` generated Rd provenance lines
-now identify their actual roxygen-owning source files.
-
-The proteomics enrichment module split replaces the `4,224`-line accumulated
-helper file with eight exact-source owners between `258` and `754` LOC. Its
-focused package-loaded gate passes `1,412` expectations, and all `3,345`
-recursive function ASTs from `66001da` remain exact.
-
-The isolated `test-prot-s4-missingness-direct-shared.R` file currently has two
-errors in untouched protein missingness paths. Both errors reproduce against a
-clean archive of pre-structure commit `7e74163`; they are inherited defects, not
-peptide extraction regressions, and remain mandatory remediation before the
-final all-contract gate.
-
-The isolated `test-prot-s4-qc-direct-shared.R` file also has one stale
-error-message expectation in the protein intensity-filtering path. Its other 71
-expectations pass, and the same assertion fails identically against a clean
-archive of pre-wave commit `fa5ed55`; it is likewise inherited final-gate debt.
+The janitor refactor is structurally complete. Package-wide `R CMD check`
+cleanliness is a separate inherited backlog: the current and frozen trees have
+identical diagnostic counts under the same offline archived-source check. The
+highest-value follow-up is to fix the two statically detected unused-argument
+calls, then repair executable examples/top-level check tests, package metadata
+and namespace declarations, and generated documentation in a dedicated package
+quality campaign.

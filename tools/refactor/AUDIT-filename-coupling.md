@@ -4,49 +4,91 @@ This report flags filename-coupled references to `R/*.R` that can break wave-bas
 
 ## Summary
 
-- `high` / `dev`: 38
-- `low` / `docs`: 3
+- `low` / `tests`: 84
 
 ## Findings
 
-- `high` `dev` [dev/test_lipid_app.R:6](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:6): source("R/allGenerics.R")
-- `high` `dev` [dev/test_lipid_app.R:7](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:7): source("R/func_lipid_s4_objects.R")
-- `high` `dev` [dev/test_lipid_app.R:8](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:8): source("R/func_general_plotting.R")
-- `high` `dev` [dev/test_lipid_app.R:9](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:9): if (file.exists("R/func_general_s4_generics.R")) source("R/func_general_s4_generics.R")
-- `high` `dev` [dev/test_lipid_app.R:12](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:12): source("R/mod_lipid_import.R")
-- `high` `dev` [dev/test_lipid_app.R:13](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:13): source("R/mod_lipid_design.R")
-- `high` `dev` [dev/test_lipid_app.R:14](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:14): source("R/mod_lipid_qc.R")
-- `high` `dev` [dev/test_lipid_app.R:15](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:15): source("R/mod_lipid_norm.R")
-- `high` `dev` [dev/test_lipid_app.R:16](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:16): source("R/mod_lipid_de.R")
-- `high` `dev` [dev/test_lipid_app.R:20](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:20): source("R/mod_lipid_summary.R")
-- `high` `dev` [dev/test_lipid_app.R:21](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_app.R:21): source("R/mod_lipidomics.R")
-- `high` `dev` [dev/test_lipid_core.R:7](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_core.R:7): source("R/allGenerics.R")
-- `high` `dev` [dev/test_lipid_core.R:10](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_core.R:10): source("R/func_lipid_s4_objects.R")
-- `high` `dev` [dev/test_lipid_core.R:14](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_core.R:14): source("R/mod_lipid_import.R")
-- `high` `dev` [dev/test_lipid_core.R:15](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_core.R:15): source("R/func_lipid_import.R")
-- `high` `dev` [dev/test_lipid_core.R:16](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_core.R:16): source("R/mod_lipid_design.R")
-- `high` `dev` [dev/test_lipid_core.R:17](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_core.R:17): source("R/mod_lipid_design_builder.R")
-- `high` `dev` [dev/test_lipid_de.R:6](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_de.R:6): source("R/allGenerics.R")
-- `high` `dev` [dev/test_lipid_de.R:7](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_de.R:7): source("R/func_lipid_s4_objects.R")
-- `high` `dev` [dev/test_lipid_de.R:8](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_de.R:8): source("R/func_general_plotting.R")
-- `high` `dev` [dev/test_lipid_de.R:9](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_de.R:9): if (file.exists("R/func_general_s4_generics.R")) source("R/func_general_s4_generics.R")
-- `high` `dev` [dev/test_lipid_de.R:13](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_de.R:13): source("R/func_lipid_de.R")
-- `high` `dev` [dev/test_lipid_de.R:14](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_de.R:14): source("R/mod_lipid_de.R")
-- `high` `dev` [dev/test_lipid_qc.R:6](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:6): source("R/allGenerics.R")
-- `high` `dev` [dev/test_lipid_qc.R:7](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:7): source("R/func_lipid_s4_objects.R")
-- `high` `dev` [dev/test_lipid_qc.R:8](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:8): source("R/func_general_plotting.R")
-- `high` `dev` [dev/test_lipid_qc.R:10](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:10): if (file.exists("R/func_general_s4_generics.R")) source("R/func_general_s4_generics.R")
-- `high` `dev` [dev/test_lipid_qc.R:14](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:14): source("R/func_lipid_qc.R")
-- `high` `dev` [dev/test_lipid_qc.R:15](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:15): source("R/func_lipid_norm.R")
-- `high` `dev` [dev/test_lipid_qc.R:16](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:16): source("R/mod_lipid_qc.R")
-- `high` `dev` [dev/test_lipid_qc.R:17](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:17): source("R/mod_lipid_qc_duplicates.R")
-- `high` `dev` [dev/test_lipid_qc.R:18](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:18): source("R/mod_lipid_qc_intensity.R")
-- `high` `dev` [dev/test_lipid_qc.R:19](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:19): source("R/mod_lipid_qc_itsd.R")
-- `high` `dev` [dev/test_lipid_qc.R:20](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:20): source("R/mod_lipid_qc_s4.R")
-- `high` `dev` [dev/test_lipid_qc.R:21](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_qc.R:21): source("R/mod_lipid_norm.R")
-- `high` `dev` [dev/test_lipid_s4.R:7](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_s4.R:7): if (file.exists("R/allGenerics.R")) source("R/allGenerics.R")
-- `high` `dev` [dev/test_lipid_s4.R:9](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_s4.R:9): if (file.exists("R/func_general_s4_generics.R")) source("R/func_general_s4_generics.R")
-- `high` `dev` [dev/test_lipid_s4.R:11](/home/doktersmol/Documents/MultiScholaR/dev/test_lipid_s4.R:11): source("R/func_lipid_s4_objects.R")
-- `low` `docs` [docs/proteomics_gui_testthat_strategy.md:377](/home/doktersmol/Documents/MultiScholaR/docs/proteomics_gui_testthat_strategy.md:377): source_files = c("R/func_prot_import.R", "R/func_prot_qc.R",
-- `low` `docs` [docs/proteomics_gui_testthat_strategy.md:378](/home/doktersmol/Documents/MultiScholaR/docs/proteomics_gui_testthat_strategy.md:378): "R/func_prot_rollup.R", "R/func_prot_norm.R",
-- `low` `docs` [docs/proteomics_gui_testthat_strategy.md:379](/home/doktersmol/Documents/MultiScholaR/docs/proteomics_gui_testthat_strategy.md:379): "R/func_prot_da.R", "R/func_prot_annotation.R"),
+- `low` `tests` [tests/testthat/test-ci-impact-audit.R:5](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-audit.R:5): lipid_norm = list(path = "R/mod_lipid_norm_server.R", impact = "targeted", module = "lipidomics/normalization", e2e = "^e2e-lipidomics-canonical$"),
+- `low` `tests` [tests/testthat/test-ci-impact-audit.R:6](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-audit.R:6): metab_da = list(path = "R/mod_metab_da_server.R", impact = "targeted", module = "metabolomics/differential_abundance", e2e = "^e2e-metabolomics-lc-gc$"),
+- `low` `tests` [tests/testthat/test-ci-impact-audit.R:7](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-audit.R:7): prot_limpa = list(path = "R/func_prot_limpa_qc_helpers.R", impact = "targeted", module = "proteomics/normalization", e2e = "^e2e-proteomics-dia-limpa$"),
+- `low` `tests` [tests/testthat/test-ci-impact-audit.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-audit.R:8): state = list(path = "R/utils_workflow_state.R", impact = "broad", module = "proteomics/all", e2e = "^e2e-proteomics-dia$"),
+- `low` `tests` [tests/testthat/test-ci-impact-audit.R:25](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-audit.R:25): unknown <- ci_impact_run("R/new_unmapped_surface.R")
+- `low` `tests` [tests/testthat/test-ci-impact-e2e.R:4](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-e2e.R:4): payload <- ci_impact_run("R/mod_lipid_norm_server.R")
+- `low` `tests` [tests/testthat/test-ci-impact-e2e.R:7](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-e2e.R:7): payload <- ci_impact_run("R/mod_metab_import_server.R")
+- `low` `tests` [tests/testthat/test-ci-impact-e2e.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-e2e.R:10): payload <- ci_impact_run("R/func_prot_limpa_qc_helpers.R")
+- `low` `tests` [tests/testthat/test-ci-impact-router.R:4](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-router.R:4): payload <- ci_impact_run("R/mod_lipid_norm_server.R")
+- `low` `tests` [tests/testthat/test-ci-impact-router.R:24](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-router.R:24): payload <- ci_impact_run("R/unmapped_new_file.R")
+- `low` `tests` [tests/testthat/test-ci-impact-router.R:34](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-router.R:34): payload <- ci_impact_run(c("docs/qa/module-ci.md", "R/mod_lipid_da.R"))
+- `low` `tests` [tests/testthat/test-ci-impact-router.R:42](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-router.R:42): payload_a <- ci_impact_run(c("R/mod_lipid_da.R", "R/func_lipid_da.R"))
+- `low` `tests` [tests/testthat/test-ci-impact-router.R:43](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-router.R:43): payload_b <- ci_impact_run(c("R/func_lipid_da.R", "R/mod_lipid_da.R"))
+- `low` `tests` [tests/testthat/test-ci-impact-safety.R:4](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-safety.R:4): state_payload <- ci_impact_run("R/utils_workflow_state.R")
+- `low` `tests` [tests/testthat/test-ci-impact-scorecard.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-scorecard.R:8): payload <- ci_impact_run("R/mod_lipid_da.R", output = output, summary = summary)
+- `low` `tests` [tests/testthat/test-ci-impact-scorecard.R:23](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-scorecard.R:23): payload <- ci_impact_run("R/mod_lipid_da.R")
+- `low` `tests` [tests/testthat/test-ci-impact-source-map.R:6](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-source-map.R:6): r_files <- system2("git", c("-C", repo_root, "ls-files", "R/*.R"), stdout = TRUE)
+- `low` `tests` [tests/testthat/test-ci-impact-source-map.R:22](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-source-map.R:22): lipid_design = list(path = "R/mod_lipid_design_builder_helpers.R", module = "lipidomics/design", rule = "lipidomics-design"),
+- `low` `tests` [tests/testthat/test-ci-impact-source-map.R:23](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-source-map.R:23): prot_limpa = list(path = "R/func_prot_limpa_qc_helpers.R", module = "proteomics/normalization", rule = "proteomics-normalization-limpa"),
+- `low` `tests` [tests/testthat/test-ci-impact-source-map.R:24](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-source-map.R:24): metab_da = list(path = "R/mod_metab_da_server.R", module = "metabolomics/differential_abundance", rule = "metabolomics-da"),
+- `low` `tests` [tests/testthat/test-ci-impact-source-map.R:25](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-source-map.R:25): shared_state = list(path = "R/utils_workflow_state.R", module = "proteomics/all", rule = "shared-state-and-workflow")
+- `low` `tests` [tests/testthat/test-ci-impact-source-map.R:36](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-ci-impact-source-map.R:36): payload <- ci_impact_run(c("R/mod_lipid_da.R", "R/utils_workflow_state.R"))
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:8): "R/func_prot_norm_optimization_helpers.R",
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:9): "R/func_prot_qc_peptide_support.R",
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:10): "R/func_prot_qc_diagnostic_helpers.R"
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:24](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:24): filemgmt_lines <- readLines(file.path(repoRoot, "R/func_general_filemgmt.R"), warn = FALSE)
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:275](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:275): filemgmt_impl <- readTopLevelFunction("R/func_general_filemgmt.R", "extract_experiment")
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:276](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:276): helper_impl <- readTopLevelFunction("R/func_general_data_helpers.R", "extract_experiment")
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:283](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:283): helper_impl <- readTopLevelFunction("R/func_general_data_helpers.R", "extract_experiment")
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:333](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:333): filemgmt_impl <- readTopLevelFunction("R/func_general_filemgmt.R", "updateMissingValueParameters")
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:334](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:334): helper_impl <- readTopLevelFunction("R/func_general_parameter_helpers.R", "updateMissingValueParameters")
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:353](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:353): "R/func_general_parameter_helpers.R",
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:415](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:415): "R/func_general_filemgmt.R",
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:420](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:420): "R/func_prot_accession_helpers.R",
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:432](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:432): "R/func_prot_accession_helpers.R",
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:525](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:525): filemgmt_impl <- readTopLevelFunction("R/func_general_filemgmt.R", "updateRuvParameters")
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:526](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:526): norm_impl <- readTopLevelFunction("R/func_prot_norm_optimization_helpers.R", "updateRuvParameters")
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:538](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:538): norm_impl <- readTopLevelFunction("R/func_prot_norm_optimization_helpers.R", "updateRuvParameters")
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:632](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:632): "R/func_general_filemgmt.R",
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:643](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:643): c("R/func_prot_qc_peptide_support.R", "R/func_pept_imputation_helpers.R"),
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:648](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:648): "R/func_prot_qc_diagnostic_helpers.R",
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:692](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:692): c("R/func_prot_qc_peptide_support.R", "R/func_pept_imputation_helpers.R"),
+- `low` `tests` [tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:728](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-general-filemgmt-duplicate-resolution-contracts.R:728): "R/func_prot_qc_diagnostic_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-00b-import-module-seams.R:7](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-00b-import-module-seams.R:7): "R/mod_lipid_import_ui_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-00b-import-module-seams.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-00b-import-module-seams.R:8): "R/mod_lipid_import_processing_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-00b-import-module-seams.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-00b-import-module-seams.R:9): "R/mod_lipid_import_selection_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-00b-import-module-seams.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-00b-import-module-seams.R:10): "R/mod_lipid_import_output_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-00b-import-module-seams.R:11](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-00b-import-module-seams.R:11): "R/mod_lipid_import_ui.R",
+- `low` `tests` [tests/testthat/test-lipid-00b-import-module-seams.R:12](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-00b-import-module-seams.R:12): "R/mod_lipid_import_server.R"
+- `low` `tests` [tests/testthat/test-lipid-12-norm-module-contracts.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-12-norm-module-contracts.R:8): "R/mod_lipid_norm_support_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-12-norm-module-contracts.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-12-norm-module-contracts.R:9): "R/mod_lipid_norm_observer_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-12-norm-module-contracts.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-12-norm-module-contracts.R:10): "R/mod_lipid_norm_workflow_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-12-norm-module-contracts.R:11](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-12-norm-module-contracts.R:11): "R/mod_lipid_norm_runtime_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-12-norm-module-contracts.R:12](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-12-norm-module-contracts.R:12): "R/mod_lipid_norm_server_helpers.R",
+- `low` `tests` [tests/testthat/test-lipid-12-norm-module-contracts.R:13](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-lipid-12-norm-module-contracts.R:13): "R/mod_lipid_norm_ui_helpers.R"
+- `low` `tests` [tests/testthat/test-metab-00b-import-helper-shared.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-00b-import-helper-shared.R:8): "R/mod_metab_import_column_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-00b-import-helper-shared.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-00b-import-helper-shared.R:9): "R/mod_metab_import_display_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-00b-import-helper-shared.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-00b-import-helper-shared.R:10): "R/mod_metab_import_processing_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-00b-import-helper-shared.R:11](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-00b-import-helper-shared.R:11): "R/mod_metab_import_server_helpers.R"
+- `low` `tests` [tests/testthat/test-metab-00b-import-module-helper-characterization.R:7](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-00b-import-module-helper-characterization.R:7): "R/mod_metab_import_column_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-00b-import-module-helper-characterization.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-00b-import-module-helper-characterization.R:8): "R/mod_metab_import_display_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-00b-import-module-helper-characterization.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-00b-import-module-helper-characterization.R:9): "R/mod_metab_import_registration_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-00b-import-module-helper-characterization.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-00b-import-module-helper-characterization.R:10): "R/mod_metab_import_processing_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-00b-import-module-helper-characterization.R:11](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-00b-import-module-helper-characterization.R:11): "R/mod_metab_import_server_helpers.R"
+- `low` `tests` [tests/testthat/test-metab-01p-qc-duplicates-module-characterization.R:7](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-01p-qc-duplicates-module-characterization.R:7): "R/mod_metab_qc_duplicates_ui_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-01p-qc-duplicates-module-characterization.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-01p-qc-duplicates-module-characterization.R:8): "R/mod_metab_qc_duplicates_render_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-01p-qc-duplicates-module-characterization.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-01p-qc-duplicates-module-characterization.R:9): "R/mod_metab_qc_duplicates_server_helpers.R"
+- `low` `tests` [tests/testthat/test-metab-01s-qc-s4-module-characterization.R:7](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-01s-qc-s4-module-characterization.R:7): "R/mod_metab_qc_s4_server_helpers.R"
+- `low` `tests` [tests/testthat/test-metab-02aa-da-display-filter-shared.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-02aa-da-display-filter-shared.R:8): "R/mod_metab_da_display_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-02aa-da-display-filter-shared.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-02aa-da-display-filter-shared.R:9): "R/mod_metab_da_registration_helpers.R",
+- `low` `tests` [tests/testthat/test-metab-02aa-da-display-filter-shared.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-metab-02aa-da-display-filter-shared.R:10): "R/mod_metab_da_server_helpers.R"
+- `low` `tests` [tests/testthat/test-prot-04-design.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-04-design.R:8): "R/mod_prot_design_builder_action_helpers.R",
+- `low` `tests` [tests/testthat/test-prot-04-design.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-04-design.R:9): "R/mod_prot_design_builder_display_helpers.R",
+- `low` `tests` [tests/testthat/test-prot-04-design.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-04-design.R:10): "R/mod_prot_design_builder_server_helpers.R",
+- `low` `tests` [tests/testthat/test-prot-04-design.R:11](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-04-design.R:11): "R/mod_prot_design_builder_state_helpers.R",
+- `low` `tests` [tests/testthat/test-prot-04-design.R:12](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-04-design.R:12): "R/mod_prot_design_import_helpers.R"
+- `low` `tests` [tests/testthat/test-prot-05c-norm-module-seams.R:7](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-05c-norm-module-seams.R:7): "R/mod_prot_norm_render_helpers.R",
+- `low` `tests` [tests/testthat/test-prot-05c-norm-module-seams.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-05c-norm-module-seams.R:8): "R/mod_prot_norm_workflow_helpers.R",
+- `low` `tests` [tests/testthat/test-prot-05c-norm-module-seams.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-05c-norm-module-seams.R:9): "R/mod_prot_norm_observer_helpers.R",
+- `low` `tests` [tests/testthat/test-prot-05c-norm-module-seams.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-05c-norm-module-seams.R:10): "R/mod_prot_norm_server.R"
+- `low` `tests` [tests/testthat/test-prot-07-da-analysis.R:9](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-07-da-analysis.R:9): "R/func_prot_da_model_methods.R",
+- `low` `tests` [tests/testthat/test-prot-07-da-analysis.R:10](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-07-da-analysis.R:10): "R/func_prot_da_results_methods.R",
+- `low` `tests` [tests/testthat/test-prot-07-da-analysis.R:11](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-07-da-analysis.R:11): "R/func_prot_da_heatmap.R"
+- `low` `tests` [tests/testthat/test-prot-09-heatmap.R:8](/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-prot-09-heatmap.R:8): required_paths <- c("R/func_prot_da_heatmap.R")
