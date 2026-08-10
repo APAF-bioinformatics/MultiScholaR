@@ -2,7 +2,7 @@
 # Verify Issue 1: Missing deAnalysisWrapperFunction
 
 library(testthat)
-devtools::load_all()
+suppressPackageStartupMessages(library(MultiScholaR))
 
 test_that("protein_deAnalysisWrapperFunction exists and is callable", {
   expect_true(exists("protein_deAnalysisWrapperFunction"))

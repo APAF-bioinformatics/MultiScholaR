@@ -36,7 +36,7 @@ Budget bands:
 - `soft_cap` 813 LOC [R/mod_prot_norm_workflow_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/mod_prot_norm_workflow_helpers.R)
 - `soft_cap` 809 LOC [R/func_multiomics_enrich_kegg_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_multiomics_enrich_kegg_helpers.R)
 - `soft_cap` 803 LOC [R/func_general_filemgmt_config_io_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_general_filemgmt_config_io_helpers.R)
-- `acceptable` 797 LOC [R/func_prot_limpa_qc_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_prot_limpa_qc_helpers.R)
+- `acceptable` 799 LOC [R/func_prot_limpa_qc_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_prot_limpa_qc_helpers.R)
 - `acceptable` 793 LOC [R/func_multiomics_enrich_stringdb_reporting_helpers.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_multiomics_enrich_stringdb_reporting_helpers.R)
 - `acceptable` 773 LOC [R/func_lipid_da_plotting.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_lipid_da_plotting.R)
 - `acceptable` 761 LOC [R/func_metab_s4_transformation_methods.R](/home/doktersmol/Projects/APAF/MultiScholaR/R/func_metab_s4_transformation_methods.R)

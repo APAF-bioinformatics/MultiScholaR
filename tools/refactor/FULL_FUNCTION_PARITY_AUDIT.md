@@ -11,13 +11,16 @@ campaign.
 
 The current runtime tree contains zero parse failures, zero duplicate entity
 keys, zero stale extraction inventories, zero filename-contract violations, and
-zero files over 1,000 lines. All 275 package-loaded isolated test files pass.
+zero files over 1,000 lines. After the post-parity quality pass, all 276
+package-loaded isolated test files pass.
 
-This verdict is narrower than saying the package is `R CMD check` clean. The
-package has an inherited check backlog, but a like-for-like offline check gives
-the same `1 ERROR, 10 WARNINGs, 7 NOTEs` for the frozen behavioral baseline and
-the current archived source tree. The refactor introduced no new check category
-or count.
+At structural closeout, a like-for-like offline check gave the same
+`1 ERROR, 10 WARNINGs, 7 NOTEs` for the frozen behavioral baseline and the
+refactored source tree. A subsequent bounded quality pass intentionally fixed
+two inherited runtime defects and the executable-example error. The current
+archived source now checks with `0 ERRORs, 9 WARNINGs, 6 NOTEs`; the remaining
+diagnostics are an inherited package-quality backlog rather than refactor
+fidelity failures.
 
 ## Baselines
 
@@ -26,13 +29,15 @@ or count.
   `02d596cff48df289eba52b35d51d421feaf0d74d`
 - Final structural checkpoint before breadcrumb and filename cleanup:
   `cd5083f`
-- Audited runtime target: the current worktree after `635fa18`, plus comment-only
-  stale-header cleanup
+- Exact-parity closeout checkpoint: `47716f0`
+- Audited runtime target: the current worktree after `47716f0`, including the
+  reviewed post-parity quality fixes
 
 `main` is authoritative for API and named-definition completeness. `02d596c` is
 authoritative for intentional peptide-QC and parity-remediation behavior.
 `cd5083f` proves that the final breadcrumb, naming, and header cleanup did not
-change executable R code.
+change executable R code. `47716f0` marks the documented exact-parity closeout
+and is the baseline for the intentional quality-hardening drift below.
 
 ## Final Inventory
 
@@ -67,7 +72,7 @@ The generated reports are `AUDIT-file-sizes.md`,
 
 ## Function Evidence
 
-### Final Structural Fidelity
+### Structural Closeout Fidelity
 
 Comparison with `cd5083f` is exact:
 
@@ -79,10 +84,31 @@ Comparison with `cd5083f` is exact:
 This comparison includes top-level and nested assignments, anonymous callbacks,
 function-valued defaults, `setGeneric()` definitions, and `setMethod()` bodies.
 
+### Post-Parity Quality Hardening
+
+Comparison of the current tree with `47716f0` accounts for all 3,347 recursive
+function occurrences:
+
+- 3,345 occurrences retain the exact function AST.
+- Two named owners have reviewed implementation drift.
+- Zero occurrences are unmatched and zero multiplicities changed.
+
+The two intentional drifts are:
+
+- `getProteinsHeatMap`: stops forwarding the unsupported
+  `core_utilisation_columns` argument to `ComplexHeatmap::Heatmap()`, while
+  retaining the public compatibility formal.
+- `outputDeAnalysisResults`: forwards the configured threshold as
+  `da_q_val_thresh`, matching `writeInteractiveVolcanoPlotProteomics()`.
+
+The target-only `test-quality-runtime-contracts.R` exercises both corrected
+contracts without changing the frozen baseline comparison suite.
+
 ### Frozen Behavioral Fidelity
 
 The frozen baseline has 3,383 recursive function occurrences and 2,880 unique
-function ASTs. The final tree accounts for every occurrence:
+function ASTs. At the exact-parity closeout, the target accounted for every
+occurrence:
 
 | Classification | Occurrences |
 | --- | ---: |
@@ -105,7 +131,9 @@ The seven reviewed non-exact owners are:
 They are the previously audited API/default, PCA hardening, serialization, and
 peptide-QC helper changes. The four executable smoke cases covering the relevant
 legacy helpers replay exactly against `02d596c` after correcting stale baseline
-file selectors in the audit catalog.
+file selectors in the audit catalog. The current tree adds only the two reviewed
+post-parity drifts listed above; the target inventory and four smoke replays
+remain complete.
 
 ### Main Completeness
 
@@ -126,13 +154,14 @@ inventory grouping confirms zero duplicate entity keys.
 
 ## Runtime Verification
 
-The authoritative contract campaign ran each test file in a fresh R process
+The post-parity contract campaign
+`contracts-20260806T083149Z-f63f72c7` ran each test file in a fresh R process
 with the package loaded:
 
 | Result | Count |
 | --- | ---: |
-| Test files executed | 275 |
-| Test cases | 2,669 |
+| Test files executed | 276 |
+| Test cases | 2,671 |
 | Failed files | 0 |
 | Contract exceptions | 0 |
 | Skips | 42 |
@@ -166,34 +195,41 @@ passing package-loaded contracts.
 
 ## Package Check
 
-Both `02d596c` and the current archived source tree were built and checked with:
+At structural closeout, both `02d596c` and the refactored archived source were
+built and checked with:
 
 ```sh
 _R_CHECK_FORCE_SUGGESTS_=false R CMD check \
   --no-manual --no-build-vignettes MultiScholaR_0.5.0.tar.gz
 ```
 
-Both return `1 ERROR, 10 WARNINGs, 7 NOTEs`. `dynamicTreeCut` and `GlimmaV2`
-were unavailable in the offline environment and were reported as informational
-missing suggestions.
+Both returned `1 ERROR, 10 WARNINGs, 7 NOTEs`. The bounded quality pass then:
 
-The inherited error is the executable `generateLimpaQCPlots` example referring
-to undefined fixture objects. A top-level `tests/test_limpa_connection.R` file is
-also cwd-sensitive because it calls `devtools::load_all()` with no package path;
-it can create a second error when the check directory is not beneath a source
-tree.
+- fixed both unused-argument runtime defects and added strict regressions;
+- made the limpa example non-running and repaired the next stale GO example;
+- replaced cwd-sensitive `devtools::load_all()` calls in package-check scripts;
+- retained the rendered q-value symbol through an ASCII source escape;
+- declared the actual `R >= 4.1.0` requirement; and
+- excluded local agent, audit, ticket, staging, generated-result, and refactor
+  material from source builds.
 
-The highest-risk inherited warnings are two statically detected calls with
-unused arguments:
+The resulting offline archived-source check returns
+`0 ERRORs, 9 WARNINGs, 6 NOTEs`; examples and package tests pass. The source
+archive is approximately 12.1 MB instead of approximately 32 MB.
+`dynamicTreeCut` and `GlimmaV2` remain unavailable in the offline environment
+and are reported as informational missing suggestions.
 
-- `ComplexHeatmap::Heatmap(..., core_utilisation_columns = ...)`
-- `writeInteractiveVolcanoPlotProteomics(..., de_q_val_thresh = ...)`
+The package still has no conventional `tests/testthat.R` entrypoint, so
+`R CMD check` executes the four loose scripts under `tests/`; the 276-file
+testthat suite is enforced separately by the isolated contract harness. Adding
+the standard runner requires reconciling its CI fixtures and dependency policy
+and remains part of the next package-quality campaign.
 
-The remaining package-quality backlog covers namespace/dependency declarations,
-S3 and replacement-function checks, a non-ASCII UI label, Rd links and usage,
-documentation coverage, source-package path hygiene, and metadata. These should
-be handled as a separate package-quality campaign, not mixed into the completed
-structural refactor.
+The remaining package-quality backlog covers import masking and namespace
+declarations, S3 and replacement-function consistency, a base foreign call,
+NSE/global bindings, Rd links and usage, documentation coverage, metadata, and
+34 tracked module-CI fixture paths over 100 bytes. Those categories should be
+handled as a separate package-quality campaign.
 
 ## Reproduction
 
@@ -214,6 +250,10 @@ python3 tools/refactor/fidelity_audit.py behavior \
 
 python3 tools/refactor/fidelity_audit.py contracts \
   --repo-root . --target-ref WORKTREE --execute --load-package
+
+Rscript --vanilla tools/refactor/audit_function_expressions.R \
+  --repo-root . --baseline-ref 47716f0 --target-root . \
+  --output-dir .refactor-fidelity-audit/function-expressions-quality-hardening
 
 Rscript --vanilla tools/refactor/audit_file_sizes.R \
   --repo-root . --output tools/refactor/AUDIT-file-sizes.md

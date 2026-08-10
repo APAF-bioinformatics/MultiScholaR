@@ -4,13 +4,19 @@
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Convert a list of Gene Ontology IDs to their respective human readable name (e.g. GO term).
 #' @param go_string A string consisting of a list of Gene Ontology ID, separated by a delimiter
+#' @param sep Delimiter separating GO IDs in `go_string`.
 #' @param goterms Output from running \code{goterms <- Term(GOTERM)} from the GO.db library.
 #' @param gotypes Output from running \code{gotypes <- Ontology(GOTERM)} from the GO.db library.
 #' @return A table with three columns. go_biological_process, go_celluar_compartment, and go_molecular_function. Each column is a list of gene ontology terms, separated by '; '.
 #' @export
 #' @examples
-#' go_string <- "GO:0016021; GO:0030659; GO:0031410; GO:0035915; GO:0042742; GO:0045087; GO:0045335; GO:0050829; GO:0050830"
-#' go_id_to_term(go_string)
+#' go_string <- "GO:0016021; GO:0045087"
+#' goterms <- c(
+#'   "GO:0016021" = "integral component of membrane",
+#'   "GO:0045087" = "innate immune response"
+#' )
+#' gotypes <- c("GO:0016021" = "CC", "GO:0045087" = "BP")
+#' goIdToTerm(go_string, goterms = goterms, gotypes = gotypes)
 goIdToTerm <- function(go_string, sep = "; ", goterms, gotypes) {
 
   if (!is.na(go_string)) {
@@ -82,4 +88,3 @@ uniprotGoIdToTerm <- function(uniprot_dat, uniprot_id_column = UNIPROTKB
   return(output_uniprot_dat)
 
 }
-

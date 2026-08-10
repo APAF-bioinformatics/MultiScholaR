@@ -581,7 +581,7 @@ outputDeAnalysisResults <- function(
       fdr_column = fdr_column,
       raw_p_value_column = raw_p_value_column,
       log2fc_column = log2fc_column,
-      de_q_val_thresh = de_q_val_thresh,
+      da_q_val_thresh = de_q_val_thresh,
       counts_tbl = counts_mat,
       groups = this_groups,
       uniprot_id_column = uniprot_id_column,
@@ -597,4 +597,3 @@ deAnalysisWrapperFunction <- function(...) {
   .Deprecated("protein_deAnalysisWrapperFunction")
   protein_deAnalysisWrapperFunction(...)
 }
-

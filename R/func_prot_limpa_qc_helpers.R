@@ -19,6 +19,7 @@
 #' @return A composite ggplot object containing all diagnostic plots arranged in a grid
 #'
 #' @examples
+#' \dontrun{
 #' # For peptide-level limpa imputation
 #' limpa_qc_fig <- generateLimpaQCPlots(
 #'   after_object = peptide_ruv_normalised_imputed_obj,
@@ -30,6 +31,7 @@
 #'   after_object = protein_dpc_quant_obj,
 #'   before_object = peptide_obj
 #' )
+#' }
 #'
 #' @importFrom ggplotify as.ggplot
 #' @importFrom cowplot ggdraw draw_grob

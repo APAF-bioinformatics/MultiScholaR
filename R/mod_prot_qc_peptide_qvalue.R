@@ -39,11 +39,11 @@ mod_prot_qc_peptide_qvalue_ui <- function(id) {
           
           shiny::tags$dl(
             shiny::tags$dt("Run-specific precursor Q.Value"),
-            shiny::tags$dd("≤ 0.01 (fixed)"),
+            shiny::tags$dd("\u2264 0.01 (fixed)"),
             shiny::tags$dt("Global precursor Global.Q.Value"),
-            shiny::tags$dd("≤ 0.01 (fixed)"),
+            shiny::tags$dd("\u2264 0.01 (fixed)"),
             shiny::tags$dt("Global protein-group Global.PG.Q.Value"),
-            shiny::tags$dd("≤ 0.01 (fixed)"),
+            shiny::tags$dd("\u2264 0.01 (fixed)"),
             shiny::tags$dt("Proteotypic"),
             shiny::tags$dd("= 1 (fixed)")
           ),

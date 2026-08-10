@@ -37,6 +37,7 @@ including detection probability curves, missing value comparisons, intensity dis
 and summary statistics. Works with both peptide-level imputation and protein-level quantification.
 }
 \examples{
+\dontrun{
 # For peptide-level limpa imputation
 limpa_qc_fig <- generateLimpaQCPlots(
   after_object = peptide_ruv_normalised_imputed_obj,
@@ -48,5 +49,6 @@ limpa_qc_fig <- generateLimpaQCPlots(
   after_object = protein_dpc_quant_obj,
   before_object = peptide_obj
 )
+}
 
 }

@@ -1,6 +1,6 @@
 
 # Verification script for LipidomicsAssayData and renamed functions
-devtools::load_all(".")
+suppressPackageStartupMessages(library(MultiScholaR))
 
 # 1. Check if renamed functions exist
 functions_to_check <- c(

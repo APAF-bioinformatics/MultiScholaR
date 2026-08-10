@@ -173,6 +173,8 @@ getProteinsHeatMap <- function(
 
   print("Print Heatmap")
 
+  # Retained in the public signature for compatibility; ComplexHeatmap has no
+  # equivalent per-call core-utilisation argument.
   heatmap <- Heatmap(protein_matrix[, samples_to_use],
     name = "Intensity",
     top_annotation = top_annotation,
@@ -184,8 +186,7 @@ getProteinsHeatMap <- function(
     column_title_gp = gpar(fontsize = 13.2),
     row_names_gp = gpar(fontsize = 12, fontfamily = "sans"),
     column_names_gp = gpar(fontsize = 12),
-    heatmap_legend_param = heatmap_legend_param,
-    core_utilisation_columns = core_utilisation_samples
+    heatmap_legend_param = heatmap_legend_param
   )
 
   output_legends <- purrr::map2(
@@ -317,4 +318,3 @@ save_heatmap_products <- function(heatmap_obj, row_clusters, params_list, output
 
   logger::log_info("--- Exiting save_heatmap_products ---")
 }
-

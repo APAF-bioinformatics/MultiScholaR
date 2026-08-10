@@ -205,6 +205,30 @@ Final checkpoint on 2026-08-06:
 - offline `R CMD check`: the same `1 ERROR, 10 WARNINGs, 7 NOTEs` on
   `02d596c` and the current archived source tree
 
+Post-closeout quality hardening on 2026-08-06 intentionally diverges from the
+exact-parity checkpoint in two function owners:
+
+- `getProteinsHeatMap` no longer forwards an unsupported ComplexHeatmap
+  argument.
+- `outputDeAnalysisResults` now uses the interactive volcano writer's actual
+  q-value-threshold argument name.
+
+The current post-hardening gates are:
+
+- recursive comparison with `47716f0`: `3,345 / 3,347` exact, with exactly two
+  reviewed named-owner drifts and zero unmatched occurrences
+- package-loaded isolated contracts: `276 / 276` files passed, `2,671` cases,
+  zero failures, zero exceptions, and `42` accounted skips
+- frozen smoke behavior replay: `4 / 4` exact
+- offline archived-source `R CMD check`: `0 ERRORs, 9 WARNINGs, 6 NOTEs`
+- examples and all four package-check scripts pass
+- source archive reduced from approximately 32 MB to approximately 12.1 MB
+
+The 276-file testthat campaign is currently enforced by the isolated audit
+harness. The package does not yet contain a standard `tests/testthat.R` runner;
+adopting it is deferred to the package-quality campaign with the CI fixture and
+dependency cleanup it requires.
+
 Key checkpoints:
 
 - behavioral baseline: `02d596c`
@@ -217,11 +241,10 @@ Key checkpoints:
 - oversized-file closeout waves: `c6f076d` through `cd5083f`
 - breadcrumb retirement: `fc42ab6`
 - filename normalization: `635fa18`
+- exact-parity closeout: `47716f0`
 
 The janitor refactor is structurally complete. Package-wide `R CMD check`
-cleanliness is a separate inherited backlog: the current and frozen trees have
-identical diagnostic counts under the same offline archived-source check. The
-highest-value follow-up is to fix the two statically detected unused-argument
-calls, then repair executable examples/top-level check tests, package metadata
-and namespace declarations, and generated documentation in a dedicated package
-quality campaign.
+cleanliness remains a separate inherited backlog. The highest-risk runtime and
+executable-check defects are now fixed; the next campaign should address
+namespace/import consistency, S3/replacement-function checks, tracked fixture
+path portability, and generated documentation.
