@@ -12,6 +12,7 @@
 #'@param quantity_to_impute_column Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)
 #'@param hek_string The string denoting samples that are controls using HEK cells (default: "HEK")
 #'@export
+#' @param imputed_value_column,core_utilisation Runtime inputs used by this function; see the usage section for accepted values.
 proteinMissingValueImputation <- function( input_table
                                            , metadata_table
                                            , input_table_sample_id_column = Run

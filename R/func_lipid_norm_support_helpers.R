@@ -227,7 +227,7 @@ generateLipidQcPlots <- function(
         tryCatch({
             rle_plots <- plotRle(
                 theObject
-                , group = grouping_variable
+                , grouping_variable = grouping_variable
                 , yaxis_limit = c(-6, 6)
             )
 
@@ -318,4 +318,3 @@ generateLipidQcPlots <- function(
     logger::log_info(paste("Generated", length(saved_paths), "QC plots for stage:", stage))
     return(invisible(saved_paths))
 }
-

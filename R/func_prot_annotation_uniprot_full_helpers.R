@@ -10,11 +10,6 @@
 #' Automatically detects and converts Ensembl protein IDs to UniProt IDs using gprofiler2
 #' before querying the UniProt API.
 #'
-#' @param data_tbl Data frame containing the actual imported quantitative data
-#' @param protein_id_column Character string specifying the protein ID column in data_tbl
-#' @param cache_dir Character string path to cache directory for storing annotations
-#' @param taxon_id Numeric taxonomy ID for the organism
-#' @param chunk_size Numeric size of chunks for batch processing (default: 25)
 #'
 #' @return Data frame with comprehensive UniProt annotations for proteins in the dataset
 #'
@@ -49,6 +44,7 @@
 #' }
 #'
 #' @export
+#' @param id_string Runtime inputs used by this function; see the usage section for accepted values.
 .extractProteinIdFromHeader <- function(id_string) {
   # 1. Try to match standard UniProt/SwissProt header: sp|ACCESSION|...
   # or tr|ACCESSION|...
@@ -89,6 +85,7 @@
 #' @param taxon_id Taxonomic ID of the organism.
 #' @return Data frame with UniProt annotations.
 #' @export
+#' @param chunk_size,progress_callback Runtime inputs used by this function; see the usage section for accepted values.
 getUniprotAnnotationsFull <- function(data_tbl,
                                      protein_id_column,
                                      cache_dir,

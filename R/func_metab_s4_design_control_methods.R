@@ -5,6 +5,7 @@
 #' @importFrom methods slot
 #' @importFrom tibble tibble
 #' @export
+#' @param theObject Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "cleanDesignMatrix",
     signature = "MetaboliteAssayData",

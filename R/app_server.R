@@ -18,8 +18,8 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny
-#' @import shinyjs
+#' @rawNamespace import(shiny, except = c(dataTableOutput, renderDataTable))
+#' @rawNamespace import(shinyjs, except = runExample)
 #' @import shinydashboard
 #' @import logger
 #' @import shinyFiles

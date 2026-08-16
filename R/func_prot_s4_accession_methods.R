@@ -255,6 +255,7 @@ setMethod(
 #' @title Choose Best Protein Accession Sum Duplicates
 #' @name chooseBestProteinAccessionSumDuplicates,ProteinQuantitativeData-method
 #' @export
+#' @param theObject,delim,quant_columns_pattern,islogged Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
   f = "chooseBestProteinAccessionSumDuplicates",
   signature = "ProteinQuantitativeData",

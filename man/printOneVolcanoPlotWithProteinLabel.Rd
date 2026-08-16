@@ -40,6 +40,8 @@ printOneVolcanoPlotWithProteinLabel(
 
 \item{input_title}{The title to use for the volcano plot}
 
+\item{include_protein_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{max.overlaps}{The maximum number of overlaps to allow for the protein labels using ggrepel (default is 20)}
 }
 \value{

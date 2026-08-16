@@ -20,7 +20,7 @@ oneGoEnrichment(
 )
 }
 \arguments{
-\item{go_annot:}{Go annotation table.}
+\item{go_annot, background_list, go_aspect, query_list, id_to_annotation_dictionary, annotation_id, protein_id, aspect_column, p_val_thresh, min_gene_set_size, max_gene_set_size, get_cluster_profiler_object}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 Run one GO enrichment

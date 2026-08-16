@@ -111,6 +111,20 @@ setMethod( f="peptideMissingValueImputation"
              theObject
            })
 
+#' Impute Missing Peptide Values with limpa
+#'
+#' Uses limpa's detection-probability-curve approach to model the relationship
+#' between peptide intensity and detection probability before imputing missing
+#' values.
+#'
+#' @param theObject A `PeptideQuantitativeData` object.
+#' @param imputed_value_column Name of the column that receives imputed values.
+#' @param use_log2_transform Whether to transform values to log2 scale before
+#'   imputation and restore the original scale afterwards.
+#' @param verbose Whether to emit progress messages.
+#' @param ensure_matrix Whether to calculate the peptide matrix when absent.
+#'
+#' @return The updated `PeptideQuantitativeData` object.
 #' @export
 setMethod(f="peptideMissingValueImputationLimpa"
           , signature="PeptideQuantitativeData"

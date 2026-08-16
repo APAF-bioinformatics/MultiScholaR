@@ -23,11 +23,12 @@
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
-#' @import plotly
+#' @rawNamespace import(plotly, except = last_plot)
 #' @importFrom purrr map map_chr walk
 #' @importFrom stringr str_split str_replace_all
 #'
 #' @export
+#' @param cache_file Runtime inputs used by this function; see the usage section for accepted values.
 enrichProteinsPathwaysHelper <- function(da_analysis_results,
                                   organism_taxid,
                                   min_gene_set_size = 4,
@@ -47,7 +48,7 @@ enrichProteinsPathwaysHelper <- function(da_analysis_results,
   dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
   # Initialize UniProt.ws handle
-  up <- UniProt.ws(taxId = organism_taxid)
+  up <- UniProt.ws::UniProt.ws(taxId = organism_taxid)
 
   # Cache file paths
   go_cache_file <- file.path(cache_dir, cache_file)
@@ -206,7 +207,6 @@ enrichProteinsPathwaysHelper <- function(da_analysis_results,
 #'
 #' @param da_analysis_results_list List of differential expression results for each contrast
 #' @param taxon_id NCBI taxonomy ID for the organism (e.g., "9606" for human)
-#' @param pathway_dir Directory for storing pathway analysis results
 #' @param protein_id_delimiter Delimiter used in protein IDs (default: ":")
 #' @param protein_p_val_thresh P-value threshold for protein significance (default: 0.05)
 #' @param min_gene_set_size Minimum number of genes in a gene set (default: 4)
@@ -222,6 +222,7 @@ enrichProteinsPathwaysHelper <- function(da_analysis_results,
 #' @importFrom purrr map set_names
 #'
 #' @export
+#' @param de_analysis_results_list Runtime inputs used by this function; see the usage section for accepted values.
 enrichProteinsPathways <- function(da_analysis_results_list = NULL,
                                  taxon_id,
                                  protein_id_delimiter = ":",
@@ -410,6 +411,7 @@ download_uniprot_data <- function(protein_ids, cache_file, uniprot_handle, prote
 #' @param gotypes Output from running \code{gotypes <- Ontology(GOTERM)} from the GO.db library.
 #' @return A table with columns for uniprot_id, go_id, go_term, and go_type
 #' @export
+#' @param gene_name_column,sep Runtime inputs used by this function; see the usage section for accepted values.
 uniprotGoIdToTermSimple <- function(uniprot_dat
                                    , uniprot_id_column = UNIPROTKB
                                    , go_id_column = `GO-IDs`
@@ -456,4 +458,3 @@ uniprotGoIdToTermSimple <- function(uniprot_dat
 
 
 # ----------------------------------------------------------------------------
-

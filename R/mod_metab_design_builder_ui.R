@@ -34,10 +34,10 @@
 #'   - `contrasts_tbl`: A data frame of the defined contrasts.
 #'   - `config_list`: The updated configuration list with the new formula.
 #'
-#' @import shiny
+#' @rawNamespace import(shiny, except = c(dataTableOutput, renderDataTable))
 #' @import shinydashboard
 #' @import DT
-#' @import gtools
+#' @rawNamespace import(gtools, except = chr)
 #' @import dplyr
 #' @importFrom tibble tibble
 #' @name metabolomicsDesignMatrixBuilderModule

@@ -13,6 +13,9 @@ peptidesIntensityMatrixPivotLonger(
   unlog_data = TRUE
 )
 }
+\arguments{
+\item{input_matrix, sample_id_column, sequence_column, protein_id_column, quantity_column, unlog_data}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Pivot peptide intensity matrix into long format table.
 }

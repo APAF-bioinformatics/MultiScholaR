@@ -14,6 +14,8 @@ getSamplesCorrelationMatrix(
 }
 \arguments{
 \item{input_table}{Table with samples as columns and peptides as rows. Contains the log peptide intensity values.}
+
+\item{metadata_tbl, is_HEK_column, use, method}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 Calculate the Pearson's correlation score between sample

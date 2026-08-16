@@ -3,17 +3,27 @@
 \name{mod_prot_qc_peptide_qvalue}
 \alias{mod_prot_qc_peptide_qvalue}
 \alias{mod_prot_qc_peptide_qvalue_ui}
-\alias{mod_prot_qc_peptide_qvalue_server}
+\alias{runPeptideQvalueApplyStep}
 \title{Peptide Q-Value Filter Module}
 \usage{
 mod_prot_qc_peptide_qvalue_ui(id)
 
-mod_prot_qc_peptide_qvalue_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
+runPeptideQvalueApplyStep(
+  workflowData,
+  qvalueThreshold,
+  globalQvalueThreshold,
+  proteotypicOnly,
+  updateConfigParameterFn = updateConfigParameter,
+  qvalueFilterFn = srlQvalueProteotypicPeptideClean,
+  logInfoFn = logger::log_info,
+  logWarnFn = logger::log_warn,
+  nowFn = Sys.time,
+  globalPGQvalueThreshold = .diaNnIdentificationQvalueCutoff,
+  confidenceProvenanceMode = "diann_main_report"
 )
+}
+\arguments{
+\item{id, workflowData, qvalueThreshold, globalQvalueThreshold, proteotypicOnly, updateConfigParameterFn, qvalueFilterFn, logInfoFn, logWarnFn, nowFn, globalPGQvalueThreshold, confidenceProvenanceMode}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for applying Q-value and proteotypic peptide filters.

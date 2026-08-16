@@ -301,9 +301,8 @@ readConfigFile <- function(file = file.path(source_dir, "config.ini"), file_type
 #' @description Read the config file and specify the section and or parameter to update the object
 #' @param theObject The object to be updated
 #' @param file The file path to the config file
-#' @param section The section to be updated
-#' @param value The parameter value to be updated
 #' @export
+#' @param function_name,parameter_name Runtime inputs used by this function; see the usage section for accepted values.
 readConfigFileSection <- function(
   theObject,
   file = file.path(source_dir, "config.ini"),

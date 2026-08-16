@@ -1,3 +1,9 @@
+#' Find Duplicate Lipid Feature Identifiers
+#'
+#' Reports duplicated feature identifiers independently for each lipid assay.
+#'
+#' @param theObject A `LipidomicsAssayData` object.
+#' @return A named list of per-assay duplicate identifier tables.
 #' @importFrom dplyr count filter pull %>%
 #' @importFrom purrr map set_names
 #' @importFrom methods slot

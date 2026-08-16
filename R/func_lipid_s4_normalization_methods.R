@@ -390,6 +390,7 @@ setMethod(
 #' @importFrom methods slot
 #' @importFrom tibble tibble
 #' @export
+#' @param theObject Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "cleanDesignMatrix",
     signature = "LipidomicsAssayData",
@@ -650,7 +651,7 @@ setMethod(
         normalisation_method_final <- checkParamsObjectFunctionSimplify(
             theObject,
             "normalisation_method",
-            default = "cyclicloess" # Default if not found in args or user override
+            default_value = "cyclicloess" # Default if not found in args or user override
         )
         # Store the *actually used* method back into args
         theObject@args$normalisation_method <- normalisation_method_final

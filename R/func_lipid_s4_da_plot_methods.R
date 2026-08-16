@@ -213,7 +213,7 @@
                                 counts = counts_matrix,
                                 groups = groups,
                                 display.columns = if (!is.null(anno_tbl)) colnames(anno_tbl) else NULL,
-                                status = decideTests(my_fit_eb, adjust.method = "none"),
+                                status = limma::decideTests(my_fit_eb, adjust.method = "none"),
                                 p.adj.method = "none",
                                 transform.counts = "none"
                             )

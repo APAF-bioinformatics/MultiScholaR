@@ -26,6 +26,8 @@ directUniprotDownload(
 \item{timeout}{Timeout in seconds for the download operation}
 
 \item{api_delay}{Sleep time in seconds between API calls}
+
+\item{progress_callback}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
 A data frame containing the raw UniProt results

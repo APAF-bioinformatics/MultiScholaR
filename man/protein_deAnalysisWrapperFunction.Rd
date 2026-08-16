@@ -40,6 +40,8 @@ deAnalysisWrapperFunction(...)
 \item{args_group_pattern}{Regex to match group names.}
 
 \item{args_row_id}{The column name for protein IDs.}
+
+\item{...}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
 A list containing analysis results and plots.

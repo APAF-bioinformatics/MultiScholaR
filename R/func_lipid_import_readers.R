@@ -4,6 +4,7 @@
 #' @title Import MS-DIAL Data (Alias)
 #' @description Alias for importLipidMSDIALData for backward compatibility.
 #' @export
+#' @param ... Runtime inputs used by this function; see the usage section for accepted values.
 importMSDIALData <- function(...) {
     importLipidMSDIALData(...)
 }

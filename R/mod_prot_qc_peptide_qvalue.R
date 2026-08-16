@@ -19,6 +19,7 @@
 #' @description A Shiny module for applying Q-value and proteotypic peptide filters.
 #'
 #' @name mod_prot_qc_peptide_qvalue
+#' @param id,workflowData,qvalueThreshold,globalQvalueThreshold,proteotypicOnly,updateConfigParameterFn,qvalueFilterFn,logInfoFn,logWarnFn,nowFn,globalPGQvalueThreshold,confidenceProvenanceMode Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_peptide_qvalue

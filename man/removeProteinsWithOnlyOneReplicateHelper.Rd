@@ -15,6 +15,9 @@ removeProteinsWithOnlyOneReplicateHelper(
   core_utilisation
 )
 }
+\arguments{
+\item{input_table, samples_id_tbl, input_table_sample_id_column, sample_id_tbl_sample_id_column, replicate_group_column, protein_id_column, quantity_column, core_utilisation}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Remove proteins that have been identified in only one replicate across all patients
 (e.g. identified no more than one relpicate in any patient)

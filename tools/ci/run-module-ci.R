@@ -311,8 +311,8 @@ dir.create(args$artifact_dir, recursive = TRUE, showWarnings = FALSE)
 Sys.setenv(MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR = args$artifact_dir)
 
 all_scenarios <- c(
-  manifest_scenarios(file.path("tests", "testdata", "module_ci", "manifest.json")),
-  fixture_pack_scenarios(file.path("tests", "testdata", "module_ci", "fixture_packs.json"))
+  manifest_scenarios(file.path("tests", "testdata", "mci", "manifest.json")),
+  fixture_pack_scenarios(file.path("tests", "testdata", "mci", "fixture_packs.json"))
 )
 selected <- select_scenarios(all_scenarios, args)
 if (length(selected) == 0L) {

@@ -13,6 +13,7 @@
 #' @importFrom writexl write_xlsx
 #' @importFrom vroom vroom_write
 #' @export
+#' @param da_results_list,selected_contrast,uniprot_tbl,args_row_id,fdr_column,raw_p_value_column,log2fc_column,da_q_val_thresh,uniprot_id_column,gene_names_column,display_columns,output_dir,... Runtime inputs used by this function; see the usage section for accepted values.
 generateProtDAVolcanoPlotGlimma <- function(
   da_results_list,
   selected_contrast = NULL,

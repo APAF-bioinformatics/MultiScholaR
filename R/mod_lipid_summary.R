@@ -27,6 +27,7 @@
 #' @description A Shiny module for displaying processing summary and enabling
 #'              data export for integration workflows.
 #' @name mod_lipid_summary
+#' @param id,project_dirs,omic_type,experiment_label,workflow_data Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_lipid_summary

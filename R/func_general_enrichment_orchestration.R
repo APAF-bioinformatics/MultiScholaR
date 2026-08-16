@@ -513,7 +513,7 @@ processEnrichments <- function(da_results,
     term2name <- data.frame(
       TERM = unique(all_terms$TERM),
       NAME = purrr::map_chr(unique(all_terms$TERM),
-                            ~tryCatch(GO.db::Term(GO.db::GOTERM[[.x]]),
+                            ~tryCatch(AnnotationDbi::Term(GO.db::GOTERM[[.x]]),
                                       error = function(e) .x))
     )
 
@@ -899,4 +899,3 @@ getEnrichmentSummary <- function(enrichment_results) {
 
   return(summaries)
 }
-

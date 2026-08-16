@@ -164,6 +164,7 @@ detectMetabolomicsFormat <- function(headers, filename = NULL) {
 #' @title Find Matching Column (Alias)
 #' @description Alias for findMatchingColumn for backward compatibility.
 #' @export
+#' @param headers,candidates Runtime inputs used by this function; see the usage section for accepted values.
 findMetabMatchingColumn <- function(headers, candidates) {
     if (!requireNamespace("MultiScholaR", quietly = TRUE)) {
         # Fallback if package not fully loaded

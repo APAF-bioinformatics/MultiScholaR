@@ -12,6 +12,7 @@
 #' @param args_row_id The column name for protein IDs.
 #' @return A list containing analysis results and plots.
 #' @export
+#' @param ... Runtime inputs used by this function; see the usage section for accepted values.
 protein_deAnalysisWrapperFunction <- function(
   theObject,
   contrasts_tbl = NULL,
@@ -239,7 +240,7 @@ protein_deAnalysisWrapperFunction <- function(
     nest() %>%
     ungroup() %>%
     mutate(title = paste(comparison)) %>%
-    mutate(plot = purrr:::map2(data, title, \(x, y) {
+    mutate(plot = purrr::map2(data, title, \(x, y) {
       plotOneVolcanoNoVerticalLines(x, y,
         log_q_value_column = lqm,
         log_fc_column = log2FC

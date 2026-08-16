@@ -27,6 +27,7 @@
 #' @description A Shiny module for applying lipid intensity and missing value filters.
 #'              Wraps the lipidIntensityFiltering() S4 method.
 #' @name mod_lipid_qc_intensity
+#' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_lipid_qc_intensity

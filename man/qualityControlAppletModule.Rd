@@ -3,19 +3,15 @@
 \name{qualityControlAppletModule}
 \alias{qualityControlAppletModule}
 \alias{mod_prot_qc_ui}
-\alias{mod_prot_qc_server}
+\alias{completeProtQcWorkflowStatus}
 \title{qualityControlAppletModule}
 \usage{
 mod_prot_qc_ui(id)
 
-mod_prot_qc_server(
-  id,
-  workflow_data,
-  experiment_paths,
-  omic_type,
-  experiment_label,
-  qc_trigger = NULL
-)
+completeProtQcWorkflowStatus(workflowData, logInfoFn = logger::log_info)
+}
+\arguments{
+\item{id, workflowData, logInfoFn}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module coordinator for the Quality Control step of the proteomics

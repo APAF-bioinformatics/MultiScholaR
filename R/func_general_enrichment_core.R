@@ -55,8 +55,8 @@ convertIdToAnnotation <- function( id, id_to_annotation_dictionary) {
 # oneGoEnrichment
 # ----------------------------------------------------------------------------
 #'@title Run one GO enrichment
-#'@param go_annot: Go annotation table.
 #'@export
+#' @param go_annot,background_list,go_aspect,query_list,id_to_annotation_dictionary,annotation_id,protein_id,aspect_column,p_val_thresh,min_gene_set_size,max_gene_set_size,get_cluster_profiler_object Runtime inputs used by this function; see the usage section for accepted values.
 oneGoEnrichment <- function( go_annot
                              , background_list
                              , go_aspect
@@ -136,7 +136,7 @@ oneGoEnrichment <- function( go_annot
   # print( min_gene_set_size)
   # print( max_gene_set_size)
 
-  enrichment_result <- enricher(
+  enrichment_result <- clusterProfiler::enricher(
     no_singleton_terms_query_gene_list,
     pvalueCutoff = p_val_thresh,
     pAdjustMethod = "BH",
@@ -452,7 +452,7 @@ runGsea <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene
 
   gene_list <- list_of_de_proteins[[contrast_name]]
 
-  msigdb_gene_set <- geneIds(list_of_gene_sets[[index_name]])
+  msigdb_gene_set <- GSEABase::geneIds(list_of_gene_sets[[index_name]])
 
   query_gene_list <- data.frame(gene = names(gene_list))
 
@@ -476,7 +476,10 @@ runGsea <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene
   # intersect( names( gene_list_final) ,  unique( term_to_gene_tab_filt$gene )) %>% length
 
 
-  gsea_results <- GSEA(geneList = gene_list, TERM2GENE = as.data.frame(term_to_gene_tab_filt))
+  gsea_results <- clusterProfiler::GSEA(
+    geneList = gene_list,
+    TERM2GENE = as.data.frame(term_to_gene_tab_filt)
+  )
 
   return(gsea_results)
 
@@ -492,7 +495,7 @@ runEnricher <- function(index_name, contrast_name, list_of_de_proteins, list_of_
 
   gene_list <- list_of_de_proteins[[contrast_name]]
 
-  msigdb_gene_set <- geneIds(list_of_gene_sets[[index_name]])
+  msigdb_gene_set <- GSEABase::geneIds(list_of_gene_sets[[index_name]])
 
   query_gene_list <- data.frame(gene = gene_list)
 
@@ -517,7 +520,10 @@ runEnricher <- function(index_name, contrast_name, list_of_de_proteins, list_of_
 
   print(intersect(gene_list, unique(term_to_gene_tab_filt$gene)) %>% length)
 
-  gsea_results <- enricher(gene = gene_list, TERM2GENE = as.data.frame(term_to_gene_tab_filt))
+  gsea_results <- clusterProfiler::enricher(
+    gene = gene_list,
+    TERM2GENE = as.data.frame(term_to_gene_tab_filt)
+  )
 
   return(gsea_results)
 

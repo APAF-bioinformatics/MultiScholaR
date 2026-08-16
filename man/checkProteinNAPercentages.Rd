@@ -5,8 +5,6 @@
 \title{Check Missing Value Percentages in Protein Data}
 \usage{
 checkProteinNAPercentages(protein_obj, verbose = TRUE)
-
-checkProteinNAPercentages(protein_obj, verbose = TRUE)
 }
 \arguments{
 \item{protein_obj}{A ProteinQuantitativeData S4 object}
@@ -21,19 +19,8 @@ A list containing:
 \item per_group_na: Data frame with NA percentages per group
 \item summary_stats: Summary statistics of NA distribution
 }
-
-A list containing:
-\itemize{
-\item total_na_percent: Overall percentage of NAs in the dataset
-\item per_sample_na: Data frame with NA percentages per sample
-\item per_group_na: Data frame with NA percentages per group
-\item summary_stats: Summary statistics of NA distribution
-}
 }
 \description{
-Calculate and report the percentage of missing values (NAs) in protein data
-at different levels: total dataset, per sample, and per group.
-
 Calculate and report the percentage of missing values (NAs) in protein data
 at different levels: total dataset, per sample, and per group.
 }

@@ -170,13 +170,10 @@ copyToResultsSummary <- function(omic_type,
                         rstudioapi::documentSave(context$id)
                         cat(sprintf("Saved current Rmd file: %s\n", current_rmd))
                     } else {
-                        docs <- rstudioapi::getSourceEditorContexts()
-                        for (doc in docs) {
-                            if (!is.null(doc$path) && normalizePath(tools::file_path_as_absolute(doc$path)) == normalizePath(tools::file_path_as_absolute(current_rmd))) {
-                                rstudioapi::documentSave(doc$id)
-                                cat(sprintf("Saved Rmd file: %s\n", current_rmd))
-                                break
-                            }
+                        doc <- rstudioapi::getSourceEditorContext()
+                        if (!is.null(doc$path) && normalizePath(tools::file_path_as_absolute(doc$path)) == normalizePath(tools::file_path_as_absolute(current_rmd))) {
+                            rstudioapi::documentSave(doc$id)
+                            cat(sprintf("Saved Rmd file: %s\n", current_rmd))
                         }
                     }
                 }

@@ -21,6 +21,8 @@ getUniprotAnnotationsFull(
 \item{cache_dir}{Directory of the UniProt cache.}
 
 \item{taxon_id}{Taxonomic ID of the organism.}
+
+\item{chunk_size, progress_callback}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
 Data frame with UniProt annotations.

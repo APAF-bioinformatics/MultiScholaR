@@ -10,13 +10,6 @@ calculateMetabolitePairCorrelation(
   sample_id_column,
   value_column
 )
-
-calculateMetabolitePairCorrelation(
-  input_pair_table,
-  feature_id_column,
-  sample_id_column,
-  value_column
-)
 }
 \arguments{
 \item{input_pair_table}{Tibble in long format with columns for feature ID,
@@ -30,13 +23,8 @@ sample ID, and abundance values. Must contain exactly two unique sample IDs.}
 }
 \value{
 Numeric Pearson correlation value, or NA_real_ on error or insufficient data.
-
-Numeric Pearson correlation value, or NA_real_ on error or insufficient data.
 }
 \description{
-Internal helper function specifically for metabolomics data structure.
-Assumes input table is already filtered for the two relevant samples.
-
 Internal helper function specifically for metabolomics data structure.
 Assumes input table is already filtered for the two relevant samples.
 }

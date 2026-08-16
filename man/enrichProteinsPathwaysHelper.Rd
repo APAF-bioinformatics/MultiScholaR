@@ -34,6 +34,8 @@ enrichProteinsPathwaysHelper(
 
 \item{cache_dir}{Directory to store cached UniProt data (default: "cache")}
 
+\item{cache_file}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{output_dir}{Directory for output files (default: "proteins_pathways_enricher")}
 
 \item{use_cached}{Whether to use cached data if available (default: TRUE)}

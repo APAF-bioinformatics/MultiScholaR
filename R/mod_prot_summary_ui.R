@@ -3,6 +3,7 @@
 #' A Shiny module for session summaries and report generation.
 #'
 #' @name sessionSummaryModule
+#' @param id,project_dirs,omic_type,experiment_label,workflow_data Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname sessionSummaryModule

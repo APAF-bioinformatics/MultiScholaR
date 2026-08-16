@@ -13,6 +13,9 @@ plotPeptidesProteinsCountsPerSampleHelper(
   peptide_sequence_column = Stripped.Sequence
 )
 }
+\arguments{
+\item{input_table, intensity_column, protein_id_column, peptide_id_column, sample_id_column, peptide_sequence_column}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Plot the number of proteins and peptides identified per sample
 }

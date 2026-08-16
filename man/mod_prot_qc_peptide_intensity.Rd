@@ -3,17 +3,20 @@
 \name{mod_prot_qc_peptide_intensity}
 \alias{mod_prot_qc_peptide_intensity}
 \alias{mod_prot_qc_peptide_intensity_ui}
-\alias{mod_prot_qc_peptide_intensity_server}
+\alias{buildPeptideIntensityThresholdPreview}
 \title{Peptide Intensity Filter Module}
 \usage{
 mod_prot_qc_peptide_intensity_ui(id)
 
-mod_prot_qc_peptide_intensity_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
+buildPeptideIntensityThresholdPreview(
+  workflowData,
+  minRepsPerGroup,
+  minGroups,
+  updateMissingValueParametersFn = updateMissingValueParameters
 )
+}
+\arguments{
+\item{id, workflowData, minRepsPerGroup, minGroups, updateMissingValueParametersFn}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for applying peptide intensity filtering.

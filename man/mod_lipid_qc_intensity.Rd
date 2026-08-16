@@ -10,6 +10,9 @@ mod_lipid_qc_intensity_ui(id)
 
 mod_lipid_qc_intensity_server(id, workflow_data, omic_type, experiment_label)
 }
+\arguments{
+\item{id, workflow_data, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 A Shiny module for applying lipid intensity and missing value filters.
 Wraps the lipidIntensityFiltering() S4 method.

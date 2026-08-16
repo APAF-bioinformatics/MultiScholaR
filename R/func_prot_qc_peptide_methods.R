@@ -305,9 +305,8 @@ setMethod( f="removePeptidesWithOnlyOneReplicate"
 #'@description Keep protein groups with at least one distinct stripped peptide
 #'  and at least two distinct peptidoforms by default.
 #'@param theObject Object of class PeptideQuantitativeData
-#'@param num_peptides_per_protein_thresh Minimum number of peptides per protein
-#'@param num_peptidoforms_per_protein_thresh Minimum number of peptidoforms per protein
-#'@param core_utilisation core_utilisation to use for parallel processing
+#' @param ... Filtering overrides, including `num_peptides_per_protein_thresh`,
+#'   `num_peptidoforms_per_protein_thresh`, and `core_utilisation`.
 #'@export
 setMethod( f="filterMinNumPeptidesPerProtein"
            , signature="PeptideQuantitativeData"

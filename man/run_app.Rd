@@ -9,6 +9,7 @@ run_app(
   options = list(),
   enableBookmarking = NULL,
   uiPattern = "/",
+  test_mode = FALSE,
   ...
 )
 }
@@ -32,6 +33,10 @@ for more information on bookmarking your app.}
 request to determine whether the \code{ui} should be used to handle the
 request. Note that the entire request path must match the regular
 expression in order for the match to be considered successful.}
+
+\item{test_mode}{Logical. When TRUE, sets the \code{multischolar.test_mode}
+option before launching, enabling test-only UI elements (stable selectors,
+state digest output) and disabling native file dialogs.}
 
 \item{...}{arguments to pass to golem_opts.
 See \code{?golem::get_golem_options} for more details.}

@@ -32,6 +32,7 @@
 #' @importFrom dplyr filter arrange desc slice_head pull
 #' @importFrom logger log_info log_error log_warn
 #' @export
+#' @param show_gene_names,da_q_val_thresh,qvalue_column,log2fc_column Runtime inputs used by this function; see the usage section for accepted values.
 generateProtDAHeatmap <- function(
   da_results_list,
   selected_contrast = NULL,

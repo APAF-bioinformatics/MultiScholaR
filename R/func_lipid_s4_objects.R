@@ -240,6 +240,7 @@
 #' @title Resolve Duplicate Features for LipidomicsAssayData
 #' @name resolveDuplicateFeatures,LipidomicsAssayData-method
 #' @export
+#' @param theObject,itsd_pattern_columns Runtime inputs used by this function; see the usage section for accepted values.
 setMethod("resolveDuplicateFeatures",
     signature = "LipidomicsAssayData",
     definition = function(theObject, itsd_pattern_columns = NULL) {

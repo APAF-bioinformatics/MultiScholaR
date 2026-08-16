@@ -12,6 +12,9 @@ calculatePercentMissingProteinPerReplicate(
   replicate_id_column = Run
 )
 }
+\arguments{
+\item{input_table, metadata_table, protein_id_column, intensity_column, replicate_id_column}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Calculate percentage of proteins from each sample that is missing and merge with metadata
 }

@@ -22,6 +22,8 @@ getNegCtrlProtAnovaHelper(
 
 \item{grouping_variable}{The name of the column with the experimental group, as a string.}
 
+\item{percentage_as_neg_ctrl}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{num_neg_ctrl}{The number of negative control genes to select. Typically the number of genes with the highest q-value (e.g. least statistically significant). Default is 100}
 
 \item{ruv_qval_cutoff}{The FDR threshold. No proteins with q-values lower than this value are included in the list of negative control proteins. This means the number of negative control proteins could be less than the number specified in \code{num_neg_ctrl} when some were excluded by this threshold.}

@@ -42,6 +42,14 @@ newProteinNormObject <- function(values = data.frame(
 }
 
 test_that("protein S4 normalisation methods preserve switch routing and RUV helper orchestration", {
+  local_mocked_bindings(
+    impute.nipals = function(x, ncomp) {
+      x[is.na(x)] <- 99
+      x
+    },
+    .package = "mixOmics"
+  )
+
   overrides <- list(
     checkParamsObjectFunctionSimplify = function(theObject, name, default) {
       value <- theObject@args[[name]]
@@ -52,10 +60,6 @@ test_that("protein S4 normalisation methods preserve switch routing and RUV help
     normalizeCyclicLoess = function(x) x + 1,
     normalizeQuantiles = function(x) x + 2,
     normalizeMedianAbsValues = function(x) x + 3,
-    impute.nipals = function(x, ncomp) {
-      x[is.na(x)] <- 99
-      x
-    },
     ruv_cancorplot = function(Y, X, ctl) {
       list(Y = Y, X = X, ctl = ctl)
     },

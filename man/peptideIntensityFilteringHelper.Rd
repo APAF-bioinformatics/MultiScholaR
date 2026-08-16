@@ -23,6 +23,9 @@ peptideIntensityFilteringHelper(
   ...
 )
 }
+\arguments{
+\item{input_table, design_matrix, min_peptide_intensity_threshold, sample_id_column, grouping_variable, groupwise_percentage_cutoff, max_groups_percentage_cutoff, protein_id_column, peptide_sequence_column, peptide_quantity_column, core_utilisation, min_reps_per_group, min_groups, strict_mode, return_filter_result, ...}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Retain peptide identities observed at or above an intensity
 threshold in the required number of distinct design runs and biological

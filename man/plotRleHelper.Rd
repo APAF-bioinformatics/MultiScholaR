@@ -13,6 +13,8 @@ plotRleHelper(
 }
 \arguments{
 \item{Y}{Rows = Samples, Columns = Proteins or Peptides}
+
+\item{rowinfo, probs, yaxis_limit}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 Plot RLE

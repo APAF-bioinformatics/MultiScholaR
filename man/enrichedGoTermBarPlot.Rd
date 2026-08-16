@@ -13,6 +13,9 @@ enrichedGoTermBarPlot(
   height = 7
 )
 }
+\arguments{
+\item{input_table, output_dir, analysis_type, file_suffix, width, height}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 given input table, draw a bar plot representing the GO enrichment results.
 The height of each bar represents the negative log (base 10) q-values of the query proteins.

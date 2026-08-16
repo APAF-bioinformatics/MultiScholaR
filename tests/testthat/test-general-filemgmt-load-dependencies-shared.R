@@ -72,7 +72,7 @@ test_that("loadDependencies preserves already-installed loading flow", {
   )
 
   expect_invisible(helper(verbose = TRUE))
-  expect_identical(calls$library, "pacman")
+  expect_length(calls$library, 0L)
   expect_true("tidyverse" %in% calls$p_load)
   expect_true("limma" %in% calls$p_load)
   expect_true("RUVIIIC" %in% calls$p_load)
@@ -138,7 +138,7 @@ test_that("loadDependencies preserves installation branches across CRAN, Biocond
   )
 
   expect_invisible(helper(verbose = TRUE))
-  expect_identical(calls$library, "pacman")
+  expect_length(calls$library, 0L)
   expect_true("pacman" %in% calls$cran)
   expect_true("BiocManager" %in% calls$cran)
   expect_true("devtools" %in% calls$cran)

@@ -18,6 +18,8 @@ plotOneVolcano(
 \arguments{
 \item{input_data}{Input data with the \code{log_q_value_column}, the \code{log_fc_column}, the \code{points_type_label} and the \code{points_color} columns.}
 
+\item{input_title}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{log_q_value_column}{The name of the column representing the log q-value.}
 
 \item{log_fc_column}{The name of the column representing the log fold-change.}
@@ -29,8 +31,6 @@ plotOneVolcano(
 \item{q_val_thresh}{A numerical value specifying the q-value threshold for statistically significant proteins.}
 
 \item{log2FC_thresh}{A numerical value specifying the log fold-change threshold to draw a vertical line}
-
-\item{formula_string}{The formula string used in the facet_grid command for the ggplot scatter plot.}
 }
 \description{
 Draw the volcano plot, used in publication graphs

@@ -2,12 +2,12 @@
 # ebFit
 # ----------------------------------------------------------------------------
 #' Run the Empircal Bayes Statistics for Differential Expression in the limma package
-#' @param ID List of protein accessions / row names.
 #' @param design Output from running the function \code{\link{model.matrix}}.
 #' @param contr.matrix Output from the function \code{\link{makeContrasts}}.
 #' @seealso \code{\link{model.matrix}}
 #' @seealso \code{\link{makeContrasts}}
 #' @export
+#' @param data Runtime inputs used by this function; see the usage section for accepted values.
 ebFit <- function(data, design, contr.matrix) {
   fit <- lmFit(data, design)
   fit.c <- contrasts.fit(fit, contrasts = contr.matrix)
@@ -51,7 +51,7 @@ ebFit <- function(data, design, contr.matrix) {
 #' @param weights Numeric matrix for adjusting each sample and gene.
 #' @return A data frame with the following columns:
 #' row.names = the protein accessions
-#' comparison A string showing log({group B's name}) minus log({group A's name})
+#' comparison A string showing `log(group B) - log(group A)`.
 #' meanA     mean of the normalised log abundance value of the gene across samples from experimental group A
 #' meanB     mean of the normalised log abundance value of the gene across samples from experimental group B
 #' logFC     log fold-change
@@ -121,15 +121,15 @@ runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
 #' @param data Data frame containing the log (base 2) protein abundance values where each column represents a sample and each row represents a protein group, and proteins as rows. The data is preferably median-scaled, with missing values imputed, and batch-effects removed.
 #' @param test_pairs Input file with a table listing all the pairs of experimental groups to compare. First column represents group A and second column represents group B. Linear model comparisons (e.g. Contrasts) would be group B minus group A.
 #' @param sample_columns A vector of column names (e.g. strings) representing samples which would be used in the statistical tests. Each column contains protein abundance values.
-#' @param sample_rows_list A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values. It is usually the output from the function \code{get_rows_to_keep_list}.
-#' @param type_of_grouping A list where each element name is the name of a treatment group and each element is a vector containing the sample IDs within the treatment group. It is usually the output from the function \code{get_type_of_grouping}.
+#' @param sample_rows_list A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values. It is usually the output from [getRowsToKeepList()].
+#' @param type_of_grouping A list where each element name is the name of a treatment group and each element is a vector containing the sample IDs within the treatment group. It is usually the output from [getTypeOfGrouping()].
 #' @param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
 #' @param formula_string A formula string representing the experimental design. e.g. ("~ 0 + group")
 #' @param contrast_variable String representing the contrast variable, which is also used in the formula string. (e.g. "group")
 #' @param weights Numeric matrix for adjusting each sample and gene.
 #' @return A list of data frames, the name of each element represents each pairwise comparison. Each data frame has the following columns:
 #' row.names = the protein accessions
-#' comparison A string showing log({group B's name}) minus log({group A's name})
+#' comparison A string showing `log(group B) - log(group A)`.
 #' meanA     mean of the normalised log abundance value of the gene across samples from experimental group A
 #' meanB     mean of the normalised log abundance value of the gene across samples from experimental group B
 #' logFC     log fold-change
@@ -139,8 +139,8 @@ runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
 #' raw_pvalue      moderated t-test p-value
 #' qval      t-test q-value
 #' fdr_qvalue     moderated t-test q-value
-#' @seealso \code{\link{get_rows_to_keep_list}}
-#' @seealso \code{\link{get_type_of_grouping}}
+#' @seealso [getRowsToKeepList()]
+#' @seealso [getTypeOfGrouping()]
 #' @export
 runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA, type_of_grouping, design_matrix, formula_string, contrast_variable = "group", weights = NA) {
   r <- list()
@@ -217,6 +217,7 @@ runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA
 #' @param fdr_value_column The name of the fdr-value column (tidyverse style).
 #' @return A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object.
 #' @export
+#' @param weights,treat_lfc_cutoff,eBayes_trend,eBayes_robust Runtime inputs used by this function; see the usage section for accepted values.
 runTestsContrasts <- function(data,
                               contrast_strings,
                               design_matrix,
@@ -465,7 +466,7 @@ runTestsContrasts <- function(data,
         tryCatch(
           {
             message(sprintf("      About to call topTable with coef = %s", contrast))
-            da_tbl <- topTable(t.fit, coef = contrast, n = Inf)
+            da_tbl <- topTable(t.fit, coef = contrast, number = Inf)
             message(sprintf("      [map] topTable success: %d rows", nrow(da_tbl)))
 
             message("      Adding qvalue column...")
@@ -575,4 +576,3 @@ runTestsContrasts <- function(data,
   message("--- Exiting runTestsContrasts ---")
   return(list(results = result_tables, fit.eb = t.fit, qvalue_warnings = qvalue_failures))
 }
-

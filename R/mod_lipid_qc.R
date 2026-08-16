@@ -28,6 +28,7 @@
 #'              lipidomics workflow. Integrates sub-modules for intensity filtering,
 #'              duplicate resolution, internal standard QC, and finalization.
 #' @name mod_lipid_qc
+#' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_lipid_qc

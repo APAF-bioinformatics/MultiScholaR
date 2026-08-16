@@ -10,6 +10,9 @@ mod_lipid_qc_duplicates_ui(id)
 
 mod_lipid_qc_duplicates_server(id, workflow_data, omic_type, experiment_label)
 }
+\arguments{
+\item{id, workflow_data, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 A Shiny module for identifying and resolving duplicate lipid features.
 Wraps the resolveDuplicateFeaturesByIntensity() function.

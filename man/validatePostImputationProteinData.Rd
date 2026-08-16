@@ -9,12 +9,6 @@ validatePostImputationProteinData(
   expected_na_percent = NULL,
   tolerance = 10
 )
-
-validatePostImputationProteinData(
-  protein_obj,
-  expected_na_percent = NULL,
-  tolerance = 10
-)
 }
 \arguments{
 \item{protein_obj}{A ProteinQuantitativeData S4 object (post-imputation)}
@@ -25,13 +19,8 @@ validatePostImputationProteinData(
 }
 \value{
 Logical indicating if validation passed, with detailed output
-
-Logical indicating if validation passed, with detailed output
 }
 \description{
-A simple wrapper to validate protein data after imputation,
-specifically checking if imputation was successful.
-
 A simple wrapper to validate protein data after imputation,
 specifically checking if imputation was successful.
 }

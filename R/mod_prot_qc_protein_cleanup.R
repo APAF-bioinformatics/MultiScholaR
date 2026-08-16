@@ -19,6 +19,7 @@
 #' @description A Shiny module for performing protein accession cleanup.
 #'
 #' @name mod_prot_qc_protein_cleanup
+#' @param id,proteinObject Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_protein_cleanup

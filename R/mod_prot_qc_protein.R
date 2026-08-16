@@ -21,6 +21,7 @@
 #' appropriate sub-modules for the given workflow.
 #'
 #' @name mod_prot_qc_protein
+#' @param id,workflow_type,workflow_data,experiment_paths,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 getProtQcProteinRollupModuleSpec <- function() {

@@ -303,6 +303,7 @@ setMethod(
 #' @param grouping_variable Character string specifying the grouping variable
 #' @param title Plot title (default: "")
 #' @param font_size Font size for plot text (default: 8)
+#' @param show_legend Whether to display the boxplot legend.
 #'
 #' @return A patchwork combined plot with PC1 and PC2 boxplots
 #' @export
@@ -452,4 +453,3 @@ savePlotDensityList <- function(input_list, prefix = "Density", suffix = c("png"
 
   list_of_filenames
 }
-

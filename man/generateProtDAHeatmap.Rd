@@ -43,6 +43,8 @@ generateProtDAHeatmap(
 
 \item{color_scheme}{Color palette name.}
 
+\item{show_gene_names, da_q_val_thresh, qvalue_column, log2fc_column}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{tree_cut_method}{Method for tree cutting: "k_clusters", "height_cutoff", "dynamic", or "none".}
 
 \item{n_clusters}{Number of clusters for k_clusters method.}

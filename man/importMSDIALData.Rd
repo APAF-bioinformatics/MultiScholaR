@@ -2,30 +2,13 @@
 % Please edit documentation in R/func_lipid_import_readers.R
 \name{importMSDIALData}
 \alias{importMSDIALData}
-\title{Find Matching Column in Headers (Case-Insensitive)}
+\title{Import MS-DIAL Data (Alias)}
 \usage{
-importMSDIALData(...)
-
 importMSDIALData(...)
 }
 \arguments{
-\item{headers}{Character vector of column headers from the data file.}
-
-\item{candidates}{Character vector of candidate column names to search for.}
-}
-\value{
-The first matching header name (preserving original case), or NULL if no match.
-
-The first matching header name (preserving original case), or NULL if no match.
+\item{...}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
-Searches for a column name in headers using case-insensitive matching.
-Used for auto-populating column mapping inputs.
-
-Alias for importMetabMSDIALData for backward compatibility.
-
-Searches for a column name in headers using case-insensitive matching.
-Used for auto-populating column mapping inputs.
-
 Alias for importLipidMSDIALData for backward compatibility.
 }

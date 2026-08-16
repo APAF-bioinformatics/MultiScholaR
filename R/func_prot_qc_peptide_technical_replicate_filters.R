@@ -88,6 +88,7 @@
 #'   against the validated design, while singleton observations in other groups
 #'   remain in the globally retained feature.
 #' @export
+#' @param input_table,samples_id_tbl,input_table_sample_id_column,sample_id_tbl_sample_id_column,replicate_group_column,protein_id_column,peptide_sequence_column,core_utilisation,minimum_distinct_runs,retention_policy,return_filter_result Runtime inputs used by this function; see the usage section for accepted values.
 removePeptidesWithOnlyOneReplicateHelper <- function(input_table,
                                                       samples_id_tbl,
                                                       input_table_sample_id_column = Run,

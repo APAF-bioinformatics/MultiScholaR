@@ -10,13 +10,6 @@ metaboliteIntensityFilteringHelper(
   metabolites_proportion_of_samples_below_cutoff,
   metabolite_id_column
 )
-
-metaboliteIntensityFilteringHelper(
-  assay_table,
-  min_metabolite_intensity_threshold,
-  metabolites_proportion_of_samples_below_cutoff,
-  metabolite_id_column
-)
 }
 \arguments{
 \item{assay_table}{A wide data frame where rows are metabolites and columns include a metabolite identifier and numeric sample intensities.}
@@ -29,11 +22,7 @@ metaboliteIntensityFilteringHelper(
 }
 \value{
 A filtered wide data frame containing only the metabolites that pass the filter.
-
-A filtered wide data frame containing only the metabolites that pass the filter.
 }
 \description{
-Filter metabolites based on an intensity threshold and the proportion of samples below that threshold in a wide-format table.
-
 Filter metabolites based on an intensity threshold and the proportion of samples below that threshold in a wide-format table.
 }

@@ -3,18 +3,28 @@
 \name{mod_prot_qc_protein_replicate}
 \alias{mod_prot_qc_protein_replicate}
 \alias{mod_prot_qc_protein_replicate_ui}
-\alias{mod_prot_qc_protein_replicate_server}
+\alias{runProteinReplicateFilterApplyStep}
 \title{Protein Replicate Filter Module}
 \usage{
 mod_prot_qc_protein_replicate_ui(id)
 
-mod_prot_qc_protein_replicate_server(
-  id,
-  workflow_data,
-  experiment_paths,
-  omic_type,
-  experiment_label
+runProteinReplicateFilterApplyStep(
+  workflowData,
+  experimentPaths,
+  groupingVariable,
+  parallelCores,
+  removeProteinsWithOnlyOneReplicateFn = removeProteinsWithOnlyOneReplicate,
+  writeTsvFn = vroom::vroom_write,
+  saveRdsFn = saveRDS,
+  logInfoFn = logger::log_info,
+  logWarnFn = logger::log_warn,
+  newClusterFn = if (exists("new_cluster")) get("new_cluster") else NULL,
+  isTestModeFn = is_test_mode,
+  nowFn = Sys.time
 )
+}
+\arguments{
+\item{id, workflowData, experimentPaths, groupingVariable, parallelCores, removeProteinsWithOnlyOneReplicateFn, writeTsvFn, saveRdsFn, logInfoFn, logWarnFn, newClusterFn, isTestModeFn, nowFn}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for applying the protein replicate filter.

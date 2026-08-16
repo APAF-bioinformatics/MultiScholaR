@@ -15,6 +15,9 @@ avgReplicateProteinIntensity(
   avg_quantity_column = Avg.Log2.Protein.Imputed
 )
 }
+\arguments{
+\item{input_table, metadata_table, protein_id_column, input_table_sample_id_column, sample_id_tbl_sample_id_column, replicate_group_column, quantity_column, avg_quantity_column}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Protein average values from replicate samples
 }

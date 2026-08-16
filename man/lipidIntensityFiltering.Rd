@@ -9,12 +9,6 @@
   lipids_intensity_cutoff_percentile = NULL,
   lipids_proportion_of_samples_below_cutoff = NULL
 )
-
-\S4method{lipidIntensityFiltering}{LipidomicsAssayData}(
-  theObject,
-  lipids_intensity_cutoff_percentile = NULL,
-  lipids_proportion_of_samples_below_cutoff = NULL
-)
 }
 \arguments{
 \item{theObject}{A LipidomicsAssayData object.}
@@ -25,15 +19,8 @@
 }
 \value{
 An updated LipidomicsAssayData object.
-
-An updated LipidomicsAssayData object.
 }
 \description{
-Filters lipids in \emph{all} assays of a LipidomicsAssayData object.
-It removes lipids that have intensities below a certain percentile threshold
-in a proportion of samples exceeding a defined cutoff. The threshold is calculated
-independently for each assay.
-
 Filters lipids in \emph{all} assays of a LipidomicsAssayData object.
 It removes lipids that have intensities below a certain percentile threshold
 in a proportion of samples exceeding a defined cutoff. The threshold is calculated
@@ -41,8 +28,6 @@ independently for each assay.
 }
 \section{Functions}{
 \itemize{
-\item \code{lipidIntensityFiltering(LipidomicsAssayData)}: Method for LipidomicsAssayData
-
 \item \code{lipidIntensityFiltering(LipidomicsAssayData)}: Method for LipidomicsAssayData
 
 }}

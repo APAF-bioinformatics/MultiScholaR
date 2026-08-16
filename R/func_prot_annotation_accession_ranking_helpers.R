@@ -5,7 +5,6 @@
 #'@title Choose the best UniProt accession for a protein group
 #'@description From a list of UniProt accessions, choose the best accession to use based on the UniProt score for quality of annotation for the protein entries
 #'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
-#'@param acc_detail_tabl The out table from running the function 'parseFastaFile'
 #'@param accessions_column The name of the column with the list of protein accessions, separated by ';' semi-colon. No need to quote the name as we are using tidyverse programming quosure.
 #'@param group_id The name of the column with the group ID for each protein group. No need to quote the name as we are using tidyverse programming quosure.
 #' @returns A table with the following columns:
@@ -15,6 +14,7 @@
 #'  uniprot_acc: List of uniprot accessions, but with the list ordered by the best one to less useful one to use
 #'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
 #'@export
+#' @param acc_detail_tab,row_id_column,delim Runtime inputs used by this function; see the usage section for accepted values.
 chooseBestProteinAccessionHelper <- function(input_tbl
                                              , acc_detail_tab
                                              , accessions_column
@@ -166,7 +166,6 @@ chooseBestProteinAccessionHelper <- function(input_tbl
 #'@title Rank the UniProt accessions for a protein group
 #'@description From a list of UniProt accessions, rank the accession to use based on the UniProt score for quality of annotation for the protein entries
 #'@param input_tbl Contain the following columns, 'group_id' which is the Id for each protein group, 'accessions_column' which is the column with the accession of the protein
-#'@param acc_detail_tabl The out table from running the function 'parseFastaFile'
 #'@param accessions_column The name of the column with the list of protein accessions, separated by ';' semi-colon. No need to quote the name as we are using tidyverse programming quosure.
 #'@param group_id The name of the column with the group ID for each protein group. No need to quote the name as we are using tidyverse programming quosure.
 #' @returns A table with the following columns:
@@ -176,6 +175,7 @@ chooseBestProteinAccessionHelper <- function(input_tbl
 #'  uniprot_acc: List of uniprot accessions, but with the list ordered by the best one to less useful one to use
 #'  is_unique: Is the protein group assined to a unique UniProt accession or multiple UniProt accessions
 #'@export
+#' @param acc_detail_tab,row_id_column,delim Runtime inputs used by this function; see the usage section for accepted values.
 rankProteinAccessionHelper <- function(input_tbl
                                        , acc_detail_tab
                                        , accessions_column

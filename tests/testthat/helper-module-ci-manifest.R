@@ -12,7 +12,7 @@ module_ci_coalesce <- function(x, y) {
 }
 
 module_ci_fixture_root <- function() {
-  testthat::test_path("..", "testdata", "module_ci")
+  testthat::test_path("..", "testdata", "mci")
 }
 
 module_ci_manifest_path <- function() {

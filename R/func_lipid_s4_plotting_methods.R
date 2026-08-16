@@ -3,6 +3,7 @@
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames
 #' @export
+#' @param theObject,grouping_variable,shape_variable,label_column,title,font_size Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "plotPca",
     signature = "LipidomicsAssayData",
@@ -159,6 +160,7 @@ setMethod(
 #' @importFrom purrr map set_names
 #' @importFrom tibble column_to_rownames
 #' @export
+#' @param theObject,grouping_variable,yaxis_limit,sample_label Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "plotRle",
     signature = "LipidomicsAssayData",
@@ -328,6 +330,7 @@ setMethod(
 #' @importFrom dplyr left_join select all_of
 #' @importFrom rlang sym !!
 #' @export
+#' @param theObject,grouping_variable,title,font_size Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "plotDensity",
     signature = "LipidomicsAssayData",

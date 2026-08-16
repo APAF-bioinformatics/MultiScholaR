@@ -3,29 +3,33 @@
 \name{designMatrixAppletModule}
 \alias{designMatrixAppletModule}
 \alias{mod_prot_design_ui}
-\alias{mod_prot_design_server}
+\alias{registerProtDesignServerShells}
 \title{designMatrixAppletModule}
 \usage{
 mod_prot_design_ui(id)
 
-mod_prot_design_server(
-  id,
-  workflow_data,
-  experiment_paths,
+registerProtDesignServerShells(
+  input,
+  output,
+  session,
+  workflowData,
+  experimentPaths,
   volumes = NULL,
-  qc_trigger = NULL
+  qcTrigger = NULL,
+  initializeImportBootstrap = initializeProtDesignImportBootstrap,
+  registerImportModalShell = registerProtDesignImportModalShell,
+  registerImportConfirmationObserver = registerProtDesignImportConfirmationObserver,
+  registerPreviewOutputs = registerProtDesignPreviewOutputs,
+  registerBuilderModule = registerProtDesignBuilderModule,
+  registerBuilderResultsObserver = registerProtDesignBuilderResultsObserver
 )
 }
 \arguments{
 \item{id}{Module ID}
 
-\item{workflow_data}{A reactive values object to store workflow data.}
-
-\item{experiment_paths}{A list of paths for the current experiment.}
+\item{input, output, session, workflowData, experimentPaths, qcTrigger, initializeImportBootstrap, registerImportModalShell, registerImportConfirmationObserver, registerPreviewOutputs, registerBuilderModule, registerBuilderResultsObserver}{Runtime inputs used by this function; see the usage section for accepted values.}
 
 \item{volumes}{A list of volumes for shinyFiles (optional).}
-
-\item{qc_trigger}{A reactive trigger for QC execution (optional).}
 }
 \description{
 A Shiny module that serves as the main host for the design

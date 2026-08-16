@@ -24,6 +24,7 @@
 #' @export
 #' @title Log2 Transformation with Pseudo-count
 #' @description Log 2 transformation with pseudo count
+#' @param input_matrix Runtime inputs used by this function; see the usage section for accepted values.
 log2Transformation <- function(input_matrix) {
   pseudo_count <- min(input_matrix[input_matrix > 0], na.rm = TRUE) / 100
   positive_values <- input_matrix > 0 & !is.na(input_matrix)

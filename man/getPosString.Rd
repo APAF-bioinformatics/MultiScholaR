@@ -7,9 +7,7 @@
 getPosString(peptide_start_position, site_relative_position)
 }
 \arguments{
-\item{peptide_start_position:}{Start position of peptide relative to the entire protein sequence}
-
-\item{site_relative_position:}{Position of the modification site relative to the N-terminus of the peptide sequence}
+\item{peptide_start_position, site_relative_position}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
 A string. If the position are limited to one unique peptide in the protein, all the phosphosite on that peptide. If the positions are found in multiple repeated peptides in the protein, the phosphosites in each peptide will be contained in round bracket (e.g. (144,148),(170,174),(183,187) ).

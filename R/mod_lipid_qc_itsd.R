@@ -27,6 +27,7 @@
 #' @description A Shiny module for visualizing internal standard quality metrics.
 #'              Displays IS detection, CV distributions, and intensity trends.
 #' @name mod_lipid_qc_itsd
+#' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_lipid_qc_itsd

@@ -16,6 +16,9 @@ mod_lipid_summary_server(
   workflow_data = NULL
 )
 }
+\arguments{
+\item{id, project_dirs, omic_type, experiment_label, workflow_data}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 A Shiny module for displaying processing summary and enabling
 data export for integration workflows.

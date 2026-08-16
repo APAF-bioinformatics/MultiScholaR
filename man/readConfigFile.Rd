@@ -4,7 +4,7 @@
 \alias{readConfigFile}
 \title{Read the config file and return the list of parameters}
 \usage{
-readConfigFile(file = file.path(source_dir, "config.ini"))
+readConfigFile(file = file.path(source_dir, "config.ini"), file_type = "ini")
 }
 \arguments{
 \item{file}{The file path to the config file}

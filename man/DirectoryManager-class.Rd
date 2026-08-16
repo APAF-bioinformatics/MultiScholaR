@@ -32,5 +32,7 @@ This class stores paths to various output directories used during analysis.
 \item{\code{results_summary_dir}}{Character string for results summary directory}
 
 \item{\code{pathway_dir}}{Character string for pathway analysis output}
+
+\item{\code{integration_dir}}{Character string for integrated multi-omics output}
 }}
 

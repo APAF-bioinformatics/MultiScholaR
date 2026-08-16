@@ -19,6 +19,7 @@
 #' @description A Shiny module for removing duplicate proteins.
 #'
 #' @name mod_prot_qc_protein_dedup
+#' @param id,workflowData,aggregationMethod,aggregationResolverFn,logInfoFn Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_protein_dedup

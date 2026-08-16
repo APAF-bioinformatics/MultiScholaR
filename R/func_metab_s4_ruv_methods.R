@@ -8,6 +8,7 @@
 #' @importFrom logger log_info log_warn log_error
 #' @export
 #' @export
+#' @param theObject,ctrl,num_components_to_impute,ruv_grouping_variable Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "ruvCancor",
     signature = "MetaboliteAssayData",
@@ -379,11 +380,6 @@ setMethod(
 #'     should be a vector specifying controls for that specific assay.
 #'   Defaults are looked up via `checkParamsObjectFunctionSimplify` using the key
 #'   `"ctrl"`. Must be provided.
-#' @param num_components_to_impute Integer. The number of principal components
-#'   to use for NIPALS imputation if missing values are present before RUV.
-#'   Defaults are looked up via `checkParamsObjectFunctionSimplify` using the key
-#'   `"num_components_to_impute"`.
-#'
 #' @return A modified `MetaboliteAssayData` object where the `metabolite_data`
 #'   slot contains the RUV-corrected assay data. Features or samples with only
 #'   NA/NaN values after correction are removed. The `design_matrix` is updated
@@ -929,4 +925,3 @@ setMethod(
         return(theObject)
     }
 )
-

@@ -17,6 +17,8 @@ plotOneVolcanoNoVerticalLines(
 \arguments{
 \item{input_data}{Input data with the \code{log_q_value_column}, the \code{log_fc_column}, the \code{points_type_label} and the \code{points_color} columns.}
 
+\item{input_title}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{log_q_value_column}{The name of the column representing the log q-value.}
 
 \item{log_fc_column}{The name of the column representing the log fold-change.}
@@ -26,10 +28,6 @@ plotOneVolcanoNoVerticalLines(
 \item{points_color}{A column in input table with the colour of the points corresponding to each type of points (e.g. orange, purple, blue black, )}
 
 \item{q_val_thresh}{A numerical value specifying the q-value threshold for statistically significant proteins.}
-
-\item{gene_name}{The column representing the gene name}
-
-\item{formula_string}{The formula string used in the facet_grid command for the ggplot scatter plot.}
 }
 \description{
 Draw the volcano plot, used in publication graphs

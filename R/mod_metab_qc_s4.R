@@ -27,6 +27,7 @@
 #' @description A Shiny module for finalizing the QC step and confirming the S4 state.
 #'              Displays QC summary statistics and state history.
 #' @name mod_metab_qc_s4
+#' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_metab_qc_s4

@@ -153,7 +153,7 @@ setMethod(
     Y <- t(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))])
     if (length(which(is.na(normalised_frozen_protein_matrix_filt))) > 0) {
       message("   DEBUG66 S4: Performing imputation (NIPALS)...")
-      Y <- impute.nipals(t(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))]),
+      Y <- mixOmics::impute.nipals(t(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))]),
         ncomp = num_components_to_impute
       )
     }

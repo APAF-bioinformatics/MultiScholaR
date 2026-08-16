@@ -3,17 +3,26 @@
 \name{mod_prot_qc_protein_intensity}
 \alias{mod_prot_qc_protein_intensity}
 \alias{mod_prot_qc_protein_intensity_ui}
-\alias{mod_prot_qc_protein_intensity_server}
+\alias{runProteinIntensityFilterApplyStep}
 \title{Protein Intensity Filter Module}
 \usage{
 mod_prot_qc_protein_intensity_ui(id)
 
-mod_prot_qc_protein_intensity_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
+runProteinIntensityFilterApplyStep(
+  workflowData,
+  useStrictMode,
+  minRepsPerGroup,
+  minGroups,
+  intensityCutoffPercentile,
+  updateConfigParameterFn = updateConfigParameter,
+  updateMissingValueParametersFn = updateMissingValueParameters,
+  removeRowsWithMissingValuesPercentFn = removeRowsWithMissingValuesPercent,
+  logInfoFn = logger::log_info,
+  nowFn = Sys.time
 )
+}
+\arguments{
+\item{id, workflowData, useStrictMode, minRepsPerGroup, minGroups, intensityCutoffPercentile, updateConfigParameterFn, updateMissingValueParametersFn, removeRowsWithMissingValuesPercentFn, logInfoFn, nowFn}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for applying protein intensity and missing value filters.

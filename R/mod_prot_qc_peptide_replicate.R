@@ -19,6 +19,7 @@
 #' @description A Shiny module for applying the replicate filter.
 #'
 #' @name mod_prot_qc_peptide_replicate
+#' @param id,workflowData,logInfoFn Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_peptide_replicate

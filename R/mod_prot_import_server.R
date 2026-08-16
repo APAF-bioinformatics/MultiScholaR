@@ -15,6 +15,7 @@
 #' @importFrom stats setNames
 #' @importFrom DT renderDT datatable formatStyle
 #' @export
+#' @param volumes Runtime inputs used by this function; see the usage section for accepted values.
 mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes = NULL) {
   message(sprintf("--- Entering mod_prot_import_server ---"))
   message(sprintf("   mod_prot_import_server Arg: id = %s", id))

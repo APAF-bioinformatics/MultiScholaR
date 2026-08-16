@@ -3,17 +3,15 @@
 \name{mod_prot_qc_peptide_replicate}
 \alias{mod_prot_qc_peptide_replicate}
 \alias{mod_prot_qc_peptide_replicate_ui}
-\alias{mod_prot_qc_peptide_replicate_server}
+\alias{runPeptideReplicateRevertStep}
 \title{Peptide Replicate Filter Module}
 \usage{
 mod_prot_qc_peptide_replicate_ui(id)
 
-mod_prot_qc_peptide_replicate_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
-)
+runPeptideReplicateRevertStep(workflowData, logInfoFn = logger::log_info)
+}
+\arguments{
+\item{id, workflowData, logInfoFn}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for applying the replicate filter.

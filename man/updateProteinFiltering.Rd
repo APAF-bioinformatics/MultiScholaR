@@ -42,6 +42,8 @@ is \code{NULL}, plots are not saved.}
 \item{return_grid}{Logical. If \code{TRUE}, returns a single combined plot grid
 object created with \code{gridExtra::grid.arrange()}. If \code{FALSE} (default), prints
 individual plots and returns an invisible list of the ggplot objects.}
+
+\item{formats, project_dirs}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
 If \code{return_grid} is \code{TRUE}, returns a \code{grob} object (a grid graphical object).

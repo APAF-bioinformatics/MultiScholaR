@@ -152,10 +152,9 @@ getBestPositionFutureMap <- function(phosphopeptide, num_sites=1  ) {
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Get PTM position string for the modified peptide
 #' @description get_pos_string
-#' @param peptide_start_position: Start position of peptide relative to the entire protein sequence
-#' @param site_relative_position: Position of the modification site relative to the N-terminus of the peptide sequence
 #' @return A string. If the position are limited to one unique peptide in the protein, all the phosphosite on that peptide. If the positions are found in multiple repeated peptides in the protein, the phosphosites in each peptide will be contained in round bracket (e.g. (144,148),(170,174),(183,187) ).
 #' @export
+#' @param peptide_start_position,site_relative_position Runtime inputs used by this function; see the usage section for accepted values.
 getPosString <-  function(peptide_start_position, site_relative_position) {
 
   a <- peptide_start_position
@@ -195,6 +194,7 @@ getPosString <-  function(peptide_start_position, site_relative_position) {
 #' Get X-mer string given the primary sequence and the position of the PTM
 #' @description Given the bioiString object, the uniprot accession, and the position of the phosphorylation site, return the 15mer sequence with the phosphorylation site at the middle.
 #' @export
+#' @param seq,uniprot_acc,position,padding_length Runtime inputs used by this function; see the usage section for accepted values.
 getXMerString <- function(seq, uniprot_acc, position, padding_length=7 ) {
 
     start <- position - padding_length
@@ -752,10 +752,12 @@ processMultisiteEvidence <- function(fasta_file,
 
   ## Get best accession per entry, work out peptides mapped to multiple genes
   print("Step 3: Use decision tree to get best accession per phosphosite evidence entry")
-  accession_gene_name_tbl <- chooseBestAccession(evidence_tbl_cleaned,
-                                                 aa_seq_tbl,
-                                                 {{accession_col}},
-                                                 {{group_id}})
+  accession_gene_name_tbl <- chooseBestPhosphositeAccession(
+    evidence_tbl_cleaned,
+    aa_seq_tbl,
+    {{ accession_col }},
+    {{ group_id }}
+  )
 
   ## Remove peptides without abundance values at all
   print("Step 4: Remove peptides without abundance values at all")

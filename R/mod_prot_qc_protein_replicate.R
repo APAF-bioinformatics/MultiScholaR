@@ -19,6 +19,7 @@
 #' @description A Shiny module for applying the protein replicate filter.
 #'
 #' @name mod_prot_qc_protein_replicate
+#' @param id,workflowData,experimentPaths,groupingVariable,parallelCores,removeProteinsWithOnlyOneReplicateFn,writeTsvFn,saveRdsFn,logInfoFn,logWarnFn,newClusterFn,isTestModeFn,nowFn Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_protein_replicate

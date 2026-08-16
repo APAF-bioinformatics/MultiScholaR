@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "MCI-002",
+  "fixture_class": "multi_factor",
+  "case_category": "normal",
+  "omic": "lipidomics",
+  "import_format": "gc",
+  "ci_lane": "push",
+  "push_safe": true,
+  "data_path": "fx/lipidomics/lipidomics-gc-multi-factor_data.tsv",
+  "design_path": "fx/lipidomics/lipidomics-gc-multi-factor_design.tsv",
+  "schema": {
+    "feature_id_col": "LipidName",
+    "sample_columns": [
+      "WT_1",
+      "WT_2",
+      "KO_1",
+      "KO_2"
+    ],
+    "required_columns": [
+      "LipidName",
+      "Assay",
+      "WT_1",
+      "WT_2",
+      "KO_1",
+      "KO_2"
+    ]
+  },
+  "assay_names": [
+    "GCMS"
+  ],
+  "sample_order": [
+    "WT_1",
+    "WT_2",
+    "KO_1",
+    "KO_2"
+  ],
+  "feature_ids": [
+    "LGC_001",
+    "LGC_002",
+    "LGC_003",
+    "LGC_004",
+    "LGC_005",
+    "LGC_006"
+  ],
+  "duplicate_feature_ids": [],
+  "expected_dropped_rows": [],
+  "expected_warnings": [],
+  "expected_validation_errors": [],
+  "expected_missingness_by_column": {
+    "WT_1": 0,
+    "WT_2": 0,
+    "KO_1": 0,
+    "KO_2": 0
+  },
+  "expected_nonfinite_columns": [],
+  "expected_exported_schema": {
+    "long_table_columns": [
+      "omic",
+      "import_format",
+      "assay",
+      "feature_id",
+      "sample",
+      "group",
+      "batch",
+      "intensity",
+      "qc_flag"
+    ],
+    "report_parameter_columns": [
+      "fixture_class",
+      "case_category",
+      "ci_lane",
+      "feature_id_col",
+      "sample_count",
+      "feature_count"
+    ]
+  },
+  "expected_transformed_columns": [
+    "feature_id",
+    "assay",
+    "sample",
+    "intensity",
+    "group",
+    "batch",
+    "source_fixture",
+    "import_format"
+  ],
+  "input_checksums": {
+    "data_columns": [
+      "LipidName",
+      "WT_1",
+      "WT_2",
+      "KO_1",
+      "KO_2"
+    ],
+    "data_selected_columns_md5": "eb4b4b243d9440ad8e67a1c3159423fe",
+    "design_columns": [
+      "sample",
+      "group",
+      "batch",
+      "sex",
+      "site",
+      "age"
+    ],
+    "design_selected_columns_md5": "9090c5bd2daa3feed46be79414cdfd17"
+  }
+}

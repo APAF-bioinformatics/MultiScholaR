@@ -7,11 +7,8 @@
 #' with UniProt annotations, enriching the DE results with gene names and other
 #' annotation information.
 #'
-#' @param da_results_s4 S4 object containing DE results from differential expression analysis
 #' @param uniprot_annotations Data frame with UniProt annotations (typically uniprot_dat_cln)
-#' @param protein_id_column Character string specifying the protein ID column name in DE results
 #' @param uniprot_id_column Character string specifying the UniProt ID column in annotations (default: "Entry")
-#' @param gene_names_column Character string specifying the gene names column in annotations (default: "gene_names")
 #'
 #' @return List containing:
 #' \itemize{
@@ -47,6 +44,7 @@
 #'
 # findFuzzyAnnotationMatches
 # ----------------------------------------------------------------------------
+#' @param unmatched_proteins Runtime inputs used by this function; see the usage section for accepted values.
 findFuzzyAnnotationMatches <- function(unmatched_proteins,
                                        uniprot_annotations,
                                        uniprot_id_column) {

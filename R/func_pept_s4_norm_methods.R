@@ -206,6 +206,31 @@ setMethod(f="getNegCtrlProtAnovaPeptides"
             return(control_genes_index)
           })
 
+#' Find the Best Negative Control Percentage for Peptide RUV-III Analysis
+#'
+#' Tests candidate peptide percentages as negative controls and evaluates the
+#' separation between the `All` and `Control` groups in canonical correlation
+#' plots.
+#'
+#' @param theObject A `PeptideQuantitativeData` object.
+#' @param percentage_range Numeric vector of percentages to test.
+#' @param num_components_to_impute Number of components used for imputation.
+#' @param ruv_grouping_variable Design column used to group samples.
+#' @param ruv_qval_cutoff FDR threshold for negative-control selection.
+#' @param ruv_fdr_method FDR calculation method.
+#' @param separation_metric Separation metric. Supported values include
+#'   `"max_difference"`, `"mean_difference"`, and `"auc"`.
+#' @param k_penalty_weight Weight applied when penalizing high values of `k`.
+#' @param max_acceptable_k Maximum acceptable value of `k`.
+#' @param adaptive_k_penalty Whether to adapt `max_acceptable_k` to sample size.
+#' @param verbose Whether to emit progress messages.
+#' @param ensure_matrix Whether to calculate the peptide matrix when absent.
+#'
+#' @return A list containing the selected percentage and `k`, control indices,
+#'   separation and composite scores, optimization results, and the selected
+#'   canonical-correlation plot.
+#' @importFrom logger log_info log_warn
+#' @importFrom purrr imap map_dfr map_dbl
 #' @export
 setMethod(f="findBestNegCtrlPercentagePeptides"
           , signature="PeptideQuantitativeData"
@@ -794,9 +819,9 @@ setMethod( f = "ruvCancor"
              })
 
 
-             dpcfit <- dpc(peptide_matrix_clean)
+             dpcfit <- limpa::dpc(peptide_matrix_clean)
 
-             peptide_matrix_complete <- dpcImpute(peptide_matrix_clean, dpc=dpcfit)$E
+             peptide_matrix_complete <- limpa::dpcImpute(peptide_matrix_clean, dpc = dpcfit)$E
 
 
              Y <-  t( peptide_matrix_complete[,design_matrix |> dplyr::pull(!!sym(sample_id))])

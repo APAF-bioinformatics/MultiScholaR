@@ -20,6 +20,8 @@
 \item{title}{Plot title (default: "")}
 
 \item{font_size}{Font size for plot text (default: 8)}
+
+\item{show_legend}{Whether to display the boxplot legend.}
 }
 \value{
 A patchwork combined plot with PC1 and PC2 boxplots

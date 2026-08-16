@@ -3,17 +3,15 @@
 \name{mod_prot_qc_peptide_rollup}
 \alias{mod_prot_qc_peptide_rollup}
 \alias{mod_prot_qc_peptide_rollup_ui}
-\alias{mod_prot_qc_peptide_rollup_server}
+\alias{.peptideRollupSummaryFromObject}
 \title{Peptide Precursor Rollup Module}
 \usage{
 mod_prot_qc_peptide_rollup_ui(id)
 
-mod_prot_qc_peptide_rollup_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
-)
+.peptideRollupSummaryFromObject(object)
+}
+\arguments{
+\item{id, object}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for applying precursor to peptide rollup.

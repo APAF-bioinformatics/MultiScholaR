@@ -248,3 +248,33 @@ cleanliness remains a separate inherited backlog. The highest-risk runtime and
 executable-check defects are now fixed; the next campaign should address
 namespace/import consistency, S3/replacement-function checks, tracked fixture
 path portability, and generated documentation.
+
+## Package-Quality Closeout
+
+The inherited package-quality backlog was closed on 2026-08-10. This section
+supersedes the deferred-work statements above without altering the historical
+2026-08-06 checkpoints.
+
+- runtime `.R` files and `Collate` entries: `344 / 344`, with no duplicates or
+  omissions
+- files over 1,000 LOC: `0`; largest runtime file: `987` LOC
+- duplicate entity keys and redundant occurrences: `0 / 0`
+- stale extraction headers or inventories: `0`
+- filename-contract violations: `0`; high- or medium-severity coupling: `0`
+- parse failures: `0`
+- exported surface: `484` functions, `61` methods, and `13` classes
+- recursive comparison with checkpoint `60484fa`: all `3,347` baseline
+  occurrences accounted for, with zero unmatched expressions and zero
+  multiplicity reductions; `47` named-owner drifts were reviewed
+- package-loaded contract campaign: `277` files and `2,673` cases executed;
+  `272` files passed initially and the five affected files passed a focused
+  `26`-case audit replay with zero exceptions
+- standard `tests/testthat.R` runner added and exercised by package check
+- source archive: `12,093,407` bytes, with no non-portable source paths
+- offline archived-source `R CMD check`: `Status: OK`; tests and examples pass
+- refactor Node suites: `2 / 2` files pass
+
+The only unavailable packages reported by the offline check are optional
+suggestions (`dynamicTreeCut`, `GlimmaV2`, `GSEABase`, and `MOFA2`); they are
+informational and do not affect `Status: OK`. `defaults/` remains deliberately
+outside this closeout because it belongs to concurrent work.

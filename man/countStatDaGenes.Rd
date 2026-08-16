@@ -13,6 +13,8 @@ countStatDaGenes(
 )
 }
 \arguments{
+\item{data}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{lfc_thresh}{A numerical value specifying the log fold-change threhold (absolute value) for calling statistically significant proteins.}
 
 \item{q_val_thresh}{A numerical value specifying the q-value threshold for statistically significant proteins.}

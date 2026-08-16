@@ -27,6 +27,7 @@
 #' @description A Shiny module for applying metabolite intensity and missing value filters.
 #'              Wraps the metaboliteIntensityFiltering() S4 method.
 #' @name mod_metab_qc_intensity
+#' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_metab_qc_intensity

@@ -32,6 +32,8 @@ proteinMissingValueImputation(
 
 \item{quantity_to_impute_column}{Name of column containing the peptide abundance that needs to be normalised in tidyverse format (default: Peptide.RawQuantity)}
 
+\item{imputed_value_column, core_utilisation}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{hek_string}{The string denoting samples that are controls using HEK cells (default: "HEK")}
 }
 \description{

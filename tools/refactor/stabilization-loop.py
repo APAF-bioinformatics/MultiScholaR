@@ -6,6 +6,7 @@ import json
 import os
 import pathlib
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -457,7 +458,10 @@ def script_command(script_path: pathlib.Path, payload_path: pathlib.Path) -> lis
     if script_path.suffix == ".py":
         return [sys.executable, str(script_path), str(payload_path)]
     if script_path.suffix in {".js", ".cjs", ".mjs"}:
-        return ["/usr/bin/node", str(script_path), str(payload_path)]
+        node_path = shutil.which("node")
+        if node_path is None:
+            raise FileNotFoundError("Node.js is required to run JavaScript stabilization scripts")
+        return [node_path, str(script_path), str(payload_path)]
     return [str(script_path), str(payload_path)]
 
 

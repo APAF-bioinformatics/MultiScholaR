@@ -6,6 +6,9 @@
 \usage{
 log2Transformation(input_matrix)
 }
+\arguments{
+\item{input_matrix}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Log 2 transformation with pseudo count
 }

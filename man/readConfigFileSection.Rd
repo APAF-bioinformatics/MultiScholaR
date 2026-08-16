@@ -16,9 +16,7 @@ readConfigFileSection(
 
 \item{file}{The file path to the config file}
 
-\item{section}{The section to be updated}
-
-\item{value}{The parameter value to be updated}
+\item{function_name, parameter_name}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 Read the config file and specify the section and or parameter to update the object

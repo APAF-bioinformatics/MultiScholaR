@@ -27,6 +27,7 @@
 #' @importFrom dplyr filter arrange desc slice_head
 #' @importFrom logger log_info log_error log_warn
 #' @export
+#' @param tree_cut_method,n_clusters,cut_height,min_cluster_size Runtime inputs used by this function; see the usage section for accepted values.
 generateMetabDAHeatmap <- function(
   da_results_list,
   selected_contrast = NULL,

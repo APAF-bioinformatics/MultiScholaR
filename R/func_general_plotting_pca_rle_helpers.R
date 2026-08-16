@@ -495,6 +495,7 @@ plotPcaGgpairs <- function(
 #' @title Plot RLE
 #' @export
 #' @param Y  Rows = Samples, Columns = Proteins or Peptides
+#' @param rowinfo,probs,yaxis_limit Runtime inputs used by this function; see the usage section for accepted values.
 plotRleHelper <- function(Y, rowinfo = NULL, probs = c(
                             0.05, 0.25, 0.5, 0.75,
                             0.95

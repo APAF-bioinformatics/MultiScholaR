@@ -33,6 +33,8 @@ The contrast string consists of variable that each consist of concatenating the 
 \item{q_value_column}{The name of the q-value column (tidyverse style).}
 
 \item{fdr_value_column}{The name of the fdr-value column (tidyverse style).}
+
+\item{weights, treat_lfc_cutoff, eBayes_trend, eBayes_robust}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
 A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object.

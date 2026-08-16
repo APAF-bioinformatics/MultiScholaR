@@ -38,6 +38,7 @@ check_case_collision_columns <- function(df, df_label = "data frame") {
 #'   threshold in the required number of distinct design runs and biological
 #'   groups. Historical percentage parameters remain available as an explicit,
 #'   deprecated compatibility path.
+#' @param input_table,design_matrix,min_peptide_intensity_threshold,sample_id_column,grouping_variable,groupwise_percentage_cutoff,max_groups_percentage_cutoff,protein_id_column,peptide_sequence_column,peptide_quantity_column,core_utilisation,min_reps_per_group,min_groups,strict_mode,return_filter_result,... Runtime inputs used by this function; see the usage section for accepted values.
 peptideIntensityFilteringHelper <- function(input_table = NULL,
                                              design_matrix = NULL,
                                              min_peptide_intensity_threshold = 15,
@@ -505,7 +506,6 @@ peptideIntensityFilteringHelper <- function(input_table = NULL,
 # ----------------------------------------------------------------------------
 #' @title Remove Peptides with Missing Values
 #'@param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
-#'@param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
 #'@param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
 #'@param sample_id The name of the column in design_matrix table that has the sample ID.
 #'@param protein_id_column Protein ID column name

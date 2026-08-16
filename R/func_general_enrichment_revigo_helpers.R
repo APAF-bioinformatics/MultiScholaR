@@ -34,7 +34,7 @@ queryRevigo <- function( input_list,
   print(dat)
 
 
-  dat <- stri_replace_all_fixed(dat, "\r", "")
+  dat <- stringi::stri_replace_all_fixed(dat, "\r", "")
 
   if(is.na( temp_file) |
      is.null(temp_file)) {
@@ -48,9 +48,9 @@ queryRevigo <- function( input_list,
   html_doc <- rvest::read_html(dat, as.data.frame=T, stringsAsFactors = FALSE)
 
   revigo_tbl <- html_doc  %>%
-    html_nodes("table") %>%
+    rvest::html_nodes("table") %>%
     purrr::map( ~html_table(.)) %>%
-    discard( ~{ nrow(.) ==0 }) %>%
+    purrr::discard( ~{ nrow(.) ==0 }) %>%
     bind_rows()
 
   if( file.exists( temp_file) ) {
@@ -690,4 +690,3 @@ saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
 
 
 # ----------------------------------------------------------------------------
-

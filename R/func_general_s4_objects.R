@@ -111,6 +111,7 @@ filtering_progress <- new("FilteringProgress",
 #' @slot time_dir Character string for time-stamped directory
 #' @slot results_summary_dir Character string for results summary directory
 #' @slot pathway_dir Character string for pathway analysis output
+#' @slot integration_dir Character string for integrated multi-omics output
 #' 
 #' @export
 setClass("DirectoryManager",

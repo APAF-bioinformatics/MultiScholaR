@@ -136,6 +136,7 @@ setMethod(
 #' @title Resolve Duplicate Features for MetaboliteAssayData
 #' @name resolveDuplicateFeatures,MetaboliteAssayData-method
 #' @export
+#' @param theObject,itsd_pattern_columns Runtime inputs used by this function; see the usage section for accepted values.
 setMethod("resolveDuplicateFeatures",
     signature = "MetaboliteAssayData",
     definition = function(theObject, itsd_pattern_columns = NULL) {
@@ -494,6 +495,7 @@ setMethod(
 #' @importFrom rlang sym !! :=
 #' @export
 #' @export
+#' @param theObject,tech_rep_remove_regex,correlation_group Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "pearsonCorForSamplePairs",
     signature = "MetaboliteAssayData",
@@ -755,6 +757,7 @@ setMethod(
 #' @importFrom purrr map set_names
 #' @importFrom ggplot2 ggplot aes geom_histogram scale_y_continuous xlab ylab theme element_blank
 #' @export
+#' @param theObject,tech_rep_remove_regex,correlation_group Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "plotPearson",
     signature = "MetaboliteAssayData",
@@ -843,6 +846,12 @@ setMethod(
 
 
 
+#' Find Duplicate Metabolite Feature Identifiers
+#'
+#' Reports duplicated feature identifiers independently for each metabolite assay.
+#'
+#' @param theObject A `MetaboliteAssayData` object.
+#' @return A named list of per-assay duplicate identifier tables.
 #' @importFrom dplyr count filter pull %>%
 #' @importFrom purrr map set_names
 #' @importFrom methods slot

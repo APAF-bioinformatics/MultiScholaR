@@ -21,6 +21,7 @@
 #' the process for workflows like TMT.
 #'
 #' @name mod_prot_qc_protein_s4
+#' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_protein_s4

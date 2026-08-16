@@ -3,17 +3,19 @@
 \name{mod_prot_qc_peptide_impute}
 \alias{mod_prot_qc_peptide_impute}
 \alias{mod_prot_qc_peptide_impute_ui}
-\alias{mod_prot_qc_peptide_impute_server}
+\alias{.peptideImputationAuditSummary}
 \title{Peptide Imputation Module}
 \usage{
 mod_prot_qc_peptide_impute_ui(id)
 
-mod_prot_qc_peptide_impute_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
+.peptideImputationAuditSummary(
+  imputed_s4,
+  proportion_missing_values,
+  exclusion_column = NULL
 )
+}
+\arguments{
+\item{id, imputed_s4, proportion_missing_values, exclusion_column}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for applying missing value imputation.

@@ -5,10 +5,6 @@
 \title{Resolve Duplicate Features by Keeping Highest Average Intensity}
 \usage{
 resolveDuplicateFeaturesByIntensity(assay_tibble, id_col, sample_cols)
-
-resolveDuplicateFeaturesByIntensity(assay_tibble, id_col, sample_cols)
-
-resolveDuplicateFeaturesByIntensity(assay_tibble, id_col, sample_cols)
 }
 \arguments{
 \item{assay_tibble}{A data frame or tibble representing one assay.}
@@ -19,18 +15,8 @@ resolveDuplicateFeaturesByIntensity(assay_tibble, id_col, sample_cols)
 }
 \value{
 A tibble with duplicate features resolved based on highest average intensity.
-
-A tibble with duplicate features resolved based on highest average intensity.
-
-A tibble with duplicate features resolved based on highest average intensity.
 }
 \description{
-Within an assay tibble, identifies features with duplicate IDs and keeps only
-the one with the highest average intensity across sample columns.
-
-Within an assay tibble, identifies features with duplicate IDs and keeps only
-the one with the highest average intensity across sample columns.
-
 Within an assay tibble, identifies features with duplicate IDs and keeps only
 the one with the highest average intensity across sample columns.
 }

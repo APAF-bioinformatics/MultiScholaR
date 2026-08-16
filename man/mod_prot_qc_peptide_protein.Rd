@@ -3,17 +3,23 @@
 \name{mod_prot_qc_peptide_protein}
 \alias{mod_prot_qc_peptide_protein}
 \alias{mod_prot_qc_peptide_protein_ui}
-\alias{mod_prot_qc_peptide_protein_server}
+\alias{runProteinPeptideApplyStep}
 \title{Protein Peptide Count Filter Module}
 \usage{
 mod_prot_qc_peptide_protein_ui(id)
 
-mod_prot_qc_peptide_protein_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
+runProteinPeptideApplyStep(
+  workflowData,
+  minPeptidesPerProtein,
+  minPeptidoformsPerProtein,
+  updateConfigParameterFn = updateConfigParameter,
+  filterMinNumPeptidesPerProteinFn = filterMinNumPeptidesPerProtein,
+  logInfoFn = logger::log_info,
+  nowFn = Sys.time
 )
+}
+\arguments{
+\item{id, workflowData, minPeptidesPerProtein, minPeptidoformsPerProtein, updateConfigParameterFn, filterMinNumPeptidesPerProteinFn, logInfoFn, nowFn}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for applying the protein peptide count filter.

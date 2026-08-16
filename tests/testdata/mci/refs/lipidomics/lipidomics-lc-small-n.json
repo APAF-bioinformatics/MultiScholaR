@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "MCI-002",
+  "fixture_class": "small_n",
+  "case_category": "boundary",
+  "omic": "lipidomics",
+  "import_format": "lc",
+  "ci_lane": "push",
+  "push_safe": true,
+  "data_path": "fx/lipidomics/lipidomics-lc-small-n_data.tsv",
+  "design_path": "fx/lipidomics/lipidomics-lc-small-n_design.tsv",
+  "schema": {
+    "feature_id_col": "LipidName",
+    "sample_columns": [
+      "WT_1",
+      "KO_1"
+    ],
+    "required_columns": [
+      "LipidName",
+      "Assay",
+      "WT_1",
+      "KO_1"
+    ]
+  },
+  "assay_names": [
+    "LCMS_Pos"
+  ],
+  "sample_order": [
+    "WT_1",
+    "KO_1"
+  ],
+  "feature_ids": [
+    "LLC_001",
+    "LLC_002",
+    "LLC_003",
+    "LLC_004"
+  ],
+  "duplicate_feature_ids": [],
+  "expected_dropped_rows": [],
+  "expected_warnings": [
+    "single_replicate_guard"
+  ],
+  "expected_validation_errors": [
+    "insufficient_replicates_for_model"
+  ],
+  "expected_missingness_by_column": {
+    "WT_1": 0,
+    "KO_1": 0
+  },
+  "expected_nonfinite_columns": [],
+  "expected_exported_schema": {
+    "long_table_columns": [
+      "omic",
+      "import_format",
+      "assay",
+      "feature_id",
+      "sample",
+      "group",
+      "batch",
+      "intensity",
+      "qc_flag"
+    ],
+    "report_parameter_columns": [
+      "fixture_class",
+      "case_category",
+      "ci_lane",
+      "feature_id_col",
+      "sample_count",
+      "feature_count"
+    ]
+  },
+  "expected_transformed_columns": [
+    "feature_id",
+    "assay",
+    "sample",
+    "intensity",
+    "group",
+    "batch",
+    "source_fixture",
+    "import_format"
+  ],
+  "input_checksums": {
+    "data_columns": [
+      "LipidName",
+      "WT_1",
+      "KO_1"
+    ],
+    "data_selected_columns_md5": "0554609978fabd17c79a0d2082c95137",
+    "design_columns": [
+      "sample",
+      "group",
+      "batch",
+      "sex"
+    ],
+    "design_selected_columns_md5": "f7e6ab18cdce2a3a8b42d1f3574c80ba"
+  }
+}

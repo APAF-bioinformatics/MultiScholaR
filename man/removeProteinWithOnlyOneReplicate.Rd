@@ -14,6 +14,9 @@ removeProteinWithOnlyOneReplicate(
   core_utilisation
 )
 }
+\arguments{
+\item{input_table, samples_id_tbl, input_table_sample_id_column, sample_id_tbl_sample_id_column, replicate_group_column, protein_id_column, core_utilisation}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Remove proteins that only have data for one technical replicate for all sample.
 This can be repurposed for removing proteins that only have one biological replicates for all experimental groups.

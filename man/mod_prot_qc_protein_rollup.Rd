@@ -3,18 +3,28 @@
 \name{mod_prot_qc_protein_rollup}
 \alias{mod_prot_qc_protein_rollup}
 \alias{mod_prot_qc_protein_rollup_ui}
-\alias{mod_prot_qc_protein_rollup_server}
+\alias{runProteinIqRollupApplyStep}
 \title{IQ Protein Rollup Module}
 \usage{
 mod_prot_qc_protein_rollup_ui(id)
 
-mod_prot_qc_protein_rollup_server(
-  id,
-  workflow_data,
-  experiment_paths,
-  omic_type,
-  experiment_label
+runProteinIqRollupApplyStep(
+  workflowData,
+  experimentPaths,
+  createProteinDataFn = ProteinQuantitativeData,
+  writeTsvFn = vroom::vroom_write,
+  processLongFormatFn = iq::process_long_format,
+  readTsvFn = vroom::vroom,
+  captureCheckpointFn = .capture_checkpoint,
+  showNotificationFn = shiny::showNotification,
+  logInfoFn = logger::log_info,
+  logWarnFn = logger::log_warn,
+  sleepFn = Sys.sleep,
+  maxWait = 30
 )
+}
+\arguments{
+\item{id, workflowData, experimentPaths, createProteinDataFn, writeTsvFn, processLongFormatFn, readTsvFn, captureCheckpointFn, showNotificationFn, logInfoFn, logWarnFn, sleepFn, maxWait}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for performing peptide-to-protein rollup using the IQ tool.

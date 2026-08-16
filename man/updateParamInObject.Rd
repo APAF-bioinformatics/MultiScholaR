@@ -6,6 +6,9 @@
 \usage{
 updateParamInObject(theObject, param_name_string)
 }
+\arguments{
+\item{theObject, param_name_string}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Update the parameter in the object
 }

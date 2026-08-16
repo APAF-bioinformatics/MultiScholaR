@@ -10,6 +10,9 @@ mod_prot_qc_protein_s4_ui(id)
 
 mod_prot_qc_protein_s4_server(id, workflow_data, omic_type, experiment_label)
 }
+\arguments{
+\item{id, workflow_data, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 UI component for creating a ProteinQuantitativeData S4 object
 from protein-level data. This provides a user-facing button to trigger

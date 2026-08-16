@@ -28,6 +28,7 @@
 #' while maintaining backward compatibility.
 #'
 #' @name qualityControlAppletModule
+#' @param id,workflowData,logInfoFn Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname qualityControlAppletModule

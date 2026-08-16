@@ -299,7 +299,7 @@ sourceRmdFile <- function(file, skip_plots = TRUE) {
     if (skip_plots) {
         old_dev <- getOption("device")
         options(device = function(...) {
-            .Call("R_GD_nullDevice", PACKAGE = "grDevices")
+            grDevices::pdf(NULL, ...)
         })
     }
     source(temp)
@@ -399,4 +399,3 @@ save_plot <- function(plot, base_path, plot_name, formats = c("pdf", "png"), wid
 write_results <- function(data, filename) {
     vroom::vroom_write(data, file.path(results_dir, "protein_qc", filename))
 }
-

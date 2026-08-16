@@ -6,6 +6,7 @@
 #' @importFrom patchwork plot_layout plot_annotation
 #' @importFrom rlang sym !!
 #' @export
+#' @param theObject,grouping_variable,title,font_size Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "plotDensity",
     signature = c(theObject = "list"), # Explicitly define signature argument

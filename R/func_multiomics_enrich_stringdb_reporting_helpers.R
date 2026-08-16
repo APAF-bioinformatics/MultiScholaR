@@ -20,19 +20,19 @@ printStringDbFunctionalEnrichmentBarGraph <- function (input_table, word_limit =
     mutate(direction = factor(direction, levels = c("top", "bottom", "both ends")))
 
   output_group_enrichment_table <- ggplot(plot_data,
-                                          aes(y =  reorder_within(  termDescriptionAbbrev, enrichmentScore, list( category )  ) , x = enrichmentScore )) +
+                                          aes(y = tidytext::reorder_within(termDescriptionAbbrev, enrichmentScore, list(category)), x = enrichmentScore)) +
     geom_bar(aes(fill=direction),stat = "identity",  width = 0.1) +
     scale_fill_manual(
       name = "Direction",
       values = c("top" = "red", "bottom" = "blue", "both ends" = "grey"),
       drop = FALSE
     ) +
-    geom_point(aes(y = reorder_within( termDescriptionAbbrev, enrichmentScore, list( category  )) ,
+    geom_point(aes(y = tidytext::reorder_within(termDescriptionAbbrev, enrichmentScore, list(category)),
                    x = enrichmentScore, colour = -log10(falseDiscoveryRate),
                    size = (genesMapped))) + theme(strip.text.y = element_text(angle = 0)) +
     facet_grid( category ~ comparison, scales = "free_y",
                                space = "free") +
-    scale_y_reordered() +
+    tidytext::scale_y_reordered() +
     ylab("Term Description") +
     xlab("Enrichment Score")
   output_group_enrichment_table
@@ -335,6 +335,7 @@ searchStringDbSpecies <- function(species_name, api_key = NULL, show_top_n = 10)
 #' }
 #'
 #' @export
+#' @param de_analysis_results_list Runtime inputs used by this function; see the usage section for accepted values.
 runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list = NULL,
                                              project_dirs,
                                              omic_type,
@@ -565,6 +566,7 @@ runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list = NULL,
 #' }
 #'
 #' @export
+#' @param fdr_threshold Runtime inputs used by this function; see the usage section for accepted values.
 plotStringDbEnrichmentResults <- function(project_dirs,
                                          omic_type,
                                          experiment_label,
@@ -790,4 +792,3 @@ plotStringDbEnrichmentResults <- function(project_dirs,
 
 
 # ----------------------------------------------------------------------------
-

@@ -12,15 +12,6 @@ updateConfigParameter(
   config_list_name = "config_list",
   env = .GlobalEnv
 )
-
-updateConfigParameter(
-  theObject,
-  function_name,
-  parameter_name,
-  new_value,
-  config_list_name = "config_list",
-  env = .GlobalEnv
-)
 }
 \arguments{
 \item{theObject}{The S4 object whose @args slot needs updating.}
@@ -43,14 +34,8 @@ configuration (defaults to "config_list").}
 }
 \value{
 The modified S4 object.
-
-The modified S4 object.
 }
 \description{
-Modifies a specific parameter within an S4 object's @args slot
-and also updates the corresponding value in a global list named
-'config_list'.
-
 Modifies a specific parameter within an S4 object's @args slot
 and also updates the corresponding value in a global list named
 'config_list'.
@@ -70,26 +55,6 @@ myPeptideData <- updateConfigParameter(
     function_name = "peptideIntensityFiltering",
     parameter_name = "peptides_proportion_of_samples_below_cutoff",
     new_value = 0.7
-)
-
-# Verify changes (example)
-# print(myPeptideData@args$peptideIntensityFiltering$peptides_proportion_of_samples_below_cutoff) # Should be 0.7
-# print(config_list$peptideIntensityFiltering$peptides_proportion_of_samples_below_cutoff) # Should be 0.7
-}
-\dontrun{
-# Assume 'myPeptideData' is a PeptideQuantitativeData object
-# Assume 'config_list' exists in the global environment
-
-# Check initial values (example)
-# print(myPeptideData@args$peptideIntensityFiltering$peptides_proportion_of_samples_below_cutoff)
-# print(config_list$peptideIntensityFiltering$peptides_proportion_of_samples_below_cutoff)
-
-# Update the parameter to 0.7
-myPeptideData <- updateConfigParameter(
-  theObject = myPeptideData,
-  function_name = "peptideIntensityFiltering",
-  parameter_name = "peptides_proportion_of_samples_below_cutoff",
-  new_value = 0.7
 )
 
 # Verify changes (example)

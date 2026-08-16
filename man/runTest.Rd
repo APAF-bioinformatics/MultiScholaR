@@ -38,7 +38,7 @@ runTest(
 \value{
 A data frame with the following columns:
 row.names = the protein accessions
-comparison A string showing log({group B's name}) minus log({group A's name})
+comparison A string showing \verb{log(group B) - log(group A)}.
 meanA     mean of the normalised log abundance value of the gene across samples from experimental group A
 meanB     mean of the normalised log abundance value of the gene across samples from experimental group B
 logFC     log fold-change

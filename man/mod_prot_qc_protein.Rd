@@ -16,6 +16,9 @@ mod_prot_qc_protein_server(
   experiment_label
 )
 }
+\arguments{
+\item{id, workflow_type, workflow_data, experiment_paths, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Server orchestrator for the protein-level quality control workflow.
 This module reads the workflow type from the state manager and calls the

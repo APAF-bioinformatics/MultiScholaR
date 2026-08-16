@@ -3,17 +3,22 @@
 \name{mod_prot_qc_peptide_sample}
 \alias{mod_prot_qc_peptide_sample}
 \alias{mod_prot_qc_peptide_sample_ui}
-\alias{mod_prot_qc_peptide_sample_server}
+\alias{runPeptideSampleApplyStep}
 \title{Peptide Sample Filter Module}
 \usage{
 mod_prot_qc_peptide_sample_ui(id)
 
-mod_prot_qc_peptide_sample_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
+runPeptideSampleApplyStep(
+  workflowData,
+  minPeptidesPerSample,
+  updateConfigParameterFn = updateConfigParameter,
+  filterMinNumPeptidesPerSampleFn = filterMinNumPeptidesPerSample,
+  logInfoFn = logger::log_info,
+  nowFn = Sys.time
 )
+}
+\arguments{
+\item{id, workflowData, minPeptidesPerSample, updateConfigParameterFn, filterMinNumPeptidesPerSampleFn, logInfoFn, nowFn}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for applying the sample quality filter.

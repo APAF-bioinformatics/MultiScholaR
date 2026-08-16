@@ -147,7 +147,7 @@ generateMetabQcPlots <- function(
         tryCatch({
             rle_plots <- plotRle(
                 theObject
-                , group = grouping_variable
+                , grouping_variable = grouping_variable
                 , yaxis_limit = c(-6, 6)
             )
 
@@ -259,7 +259,7 @@ generateMetabQcPlots <- function(
 #'   - ruv_grouping_variable: Column name for grouping
 #'   - separation_metric: One of "max_difference", "mean_difference", "auc",
 #'     "weighted_difference" (deprecated)
-#'   - k_penalty_weight: Penalty weight in [0,1] (default 0.5)
+#'   - k_penalty_weight: Penalty weight from 0 to 1 (default 0.5)
 #'   - adaptive_k_penalty: Use sample-size-adaptive max_acceptable_k (default TRUE)
 #'   - manual_k: k value for manual mode (default 2)
 #'   - manual_percentage: Percentage for manual mode (default 10)
@@ -719,8 +719,6 @@ runPerAssayRuvOptimization <- function(
     message("+===========================================================================+")
     return(results)
 }
-
-
 
 
 

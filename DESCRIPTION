@@ -21,12 +21,10 @@ Description: A comprehensive R package providing an end-to-end graphical user in
     transparency and education, providing well-documented workflows that enable 
     researchers to understand and adapt analytical methods while ensuring reproducibility 
     through standardized, citable workflows.
-License: LGPL (>= 3)
+License: LGPL (>= 3) + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
-LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Collate: 
     'func_general_s4_generics.R'
     'func_general_s4_objects.R'
@@ -90,6 +88,8 @@ Collate:
     'func_general_filemgmt_utility_helpers.R'
     'func_general_filemgmt.R'
     'func_general_data_helpers.R'
+    'func_general_legacy_api_docs.R'
+    'func_general_package_bindings.R'
     'func_general_runtime_helpers.R'
     'func_general_parameter_helpers.R'
     'func_prot_accession_helpers.R'
@@ -371,26 +371,50 @@ Collate:
     'utils_workflow_state.R'
     'zzz.R'
 Suggests:
+    AnnotationDbi,
+    beepr,
+    BiocManager,
+    BiocParallel,
+    clusterProfiler,
+    flextable,
+    future.apply,
+    glue,
+    gplots,
+    gt,
     testthat (>= 3.0.0),
     covr,
     dynamicTreeCut,
     GlimmaV2,
+    GO.db,
+    GSEABase,
+    KEGGREST,
+    limpa,
+    mixOmics,
+    MOFA2,
+    progress,
+    Rcpp,
+    RcppEigen,
+    RSpectra,
+    statmod,
+    SummarizedExperiment,
+    tidytext,
+    tm,
+    UniProt.ws,
     UpSetR,
     tidyverse,
-    GGally,
+    xml2,
     svglite,
     iheatmapr,
     reticulate,
     gprofiler2,
     webshot2,
-    shinytest2,
-    seqinr,
-    ggpubr
+    shinytest2
 Config/testthat/edition: 3
 Imports: 
     arrow,
-    beepr,
+    Biobase,
     circlize,
+    checkmate,
     ComplexHeatmap,
     configr,
     cowplot,
@@ -398,30 +422,26 @@ Imports:
     DT,
     digest,
     dplyr,
-    flextable,
     forcats,
     furrr,
     future,
-    future.apply,
     fs,
     GGally,
     ggplot2,
     ggplotify,
     ggpubr,
+    ggnewscale,
     Glimma,
     ggraph,
     ggrepel,
     gh,
     git2r,
-    glue,
     golem,
-    gplots,
     graphics,
     grDevices,
     grid,
     gridExtra,
     gtools,
-    gt,
     here,
     htmltools,
     htmlwidgets,
@@ -445,21 +465,18 @@ Imports:
     patchwork,
     plotly,
     png,
-    progress,
     purrr,
     qvalue,
     R6,
     rappdirs,
-    Rcpp,
-    RcppEigen,
     RColorBrewer,
     readr,
     readxl,
     rlang,
     rmarkdown,
-    RSpectra,
     rstudioapi,
     ruv,
+    RUVIIIC,
     rvest,
     seqinr,
     shiny,
@@ -467,7 +484,6 @@ Imports:
     shinyFiles,
     shinyjqui,
     shinyjs,
-    statmod,
     stats,
     stringi,
     stringr,
@@ -478,10 +494,12 @@ Imports:
     tools,
     utils,
     viridis,
+    viridisLite,
     vroom,
+    withr,
     writexl,
-    xml2,
     magick
 Remotes:
     cran/RUVIIIC,
     APAF-bioinformatics/GlimmaV2
+Config/roxygen2/version: 8.0.0

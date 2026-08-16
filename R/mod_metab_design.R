@@ -31,12 +31,9 @@
 #' Architecture is 1:1 with mod_prot_design.R.
 #'
 #' @param id Module ID
-#' @param workflow_data A reactive values object to store workflow data.
-#' @param experiment_paths A list of paths for the current experiment.
-#' @param volumes A list of volumes for shinyFiles (optional).
-#' @param qc_trigger A reactive trigger for QC execution (optional).
 #'
 #' @name metabolomicsDesignMatrixAppletModule
+#' @param output,workflowData,renderDt,renderText,req Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname metabolomicsDesignMatrixAppletModule

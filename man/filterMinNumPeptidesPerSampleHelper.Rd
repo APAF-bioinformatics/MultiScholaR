@@ -18,6 +18,8 @@ filterMinNumPeptidesPerSampleHelper(
 )
 }
 \arguments{
+\item{input_table, peptides_per_sample_cutoff, sample_id_column, core_utilisation, protein_id_column, peptide_sequence_column, design_matrix, design_sample_id_column, return_filter_result}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{inclusion_list}{Samples to retain regardless of their observed
 distinct peptide-identity count.}
 }

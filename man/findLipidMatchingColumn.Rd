@@ -6,6 +6,9 @@
 \usage{
 findLipidMatchingColumn(headers, candidates)
 }
+\arguments{
+\item{headers, candidates}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Alias for findMatchingColumn for backward compatibility.
 }

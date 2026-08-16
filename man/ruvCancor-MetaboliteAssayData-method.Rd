@@ -11,6 +11,9 @@
   ruv_grouping_variable = NULL
 )
 }
+\arguments{
+\item{theObject, ctrl, num_components_to_impute, ruv_grouping_variable}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 RUV Canonical Correlation for MetaboliteAssayData
 }

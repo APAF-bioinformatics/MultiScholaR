@@ -9,6 +9,7 @@
 #' status: The status could be Significant and Up, Significant and Down or Not significant
 #' counts: The number of proteins wit this status
 #' @export
+#' @param data Runtime inputs used by this function; see the usage section for accepted values.
 countStatDaGenes <- function(data,
                              lfc_thresh = 0,
                              q_val_thresh = 0.05,
@@ -226,6 +227,7 @@ printCountDaGenesTable <- function(
 #'   blue = Absolute Log fold-change < 1 and q-value < threshold
 #'   black = all other values
 #' @export
+#' @param fdr_value_column Runtime inputs used by this function; see the usage section for accepted values.
 getSignificantData <- function(
   list_of_da_tables,
   list_of_descriptions,

@@ -80,7 +80,8 @@ updateProteinIDs <- function(protein_data, aa_seq_tbl_final) {
 #' @param silent Only print critical information (default: FALSE)
 #' @param no_backup Deactivate backup of previous run (default: FALSE)
 #' @return List containing cleaned data and statistics
-#' @import vroom magrittr knitr rlang optparse janitor tictoc configr logging
+#' @import vroom knitr rlang optparse janitor tictoc configr logging
+#' @rawNamespace import(magrittr, except = c(extract, set_names))
 #' @export
 #'
 cleanMaxQuantProteins <- function(
@@ -223,4 +224,3 @@ cleanMaxQuantProteins <- function(
 
   return(filtered_data)
 }
-

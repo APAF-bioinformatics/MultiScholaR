@@ -21,12 +21,10 @@
 #' and handles the logic for saving the results back to the main workflow.
 #' 
 #' @param id Module ID
-#' @param workflow_data A reactive values object to store workflow data.
-#' @param experiment_paths A list of paths for the current experiment.
 #' @param volumes A list of volumes for shinyFiles (optional).
-#' @param qc_trigger A reactive trigger for QC execution (optional).
 #'
 #' @name designMatrixAppletModule
+#' @param input,output,session,workflowData,experimentPaths,qcTrigger,initializeImportBootstrap,registerImportModalShell,registerImportConfirmationObserver,registerPreviewOutputs,registerBuilderModule,registerBuilderResultsObserver Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 

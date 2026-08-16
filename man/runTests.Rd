@@ -26,9 +26,9 @@ runTests(
 
 \item{sample_columns}{A vector of column names (e.g. strings) representing samples which would be used in the statistical tests. Each column contains protein abundance values.}
 
-\item{sample_rows_list}{A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values. It is usually the output from the function \code{get_rows_to_keep_list}.}
+\item{sample_rows_list}{A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values. It is usually the output from \code{\link[=getRowsToKeepList]{getRowsToKeepList()}}.}
 
-\item{type_of_grouping}{A list where each element name is the name of a treatment group and each element is a vector containing the sample IDs within the treatment group. It is usually the output from the function \code{get_type_of_grouping}.}
+\item{type_of_grouping}{A list where each element name is the name of a treatment group and each element is a vector containing the sample IDs within the treatment group. It is usually the output from \code{\link[=getTypeOfGrouping]{getTypeOfGrouping()}}.}
 
 \item{design_matrix}{A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.}
 
@@ -41,7 +41,7 @@ runTests(
 \value{
 A list of data frames, the name of each element represents each pairwise comparison. Each data frame has the following columns:
 row.names = the protein accessions
-comparison A string showing log({group B's name}) minus log({group A's name})
+comparison A string showing \verb{log(group B) - log(group A)}.
 meanA     mean of the normalised log abundance value of the gene across samples from experimental group A
 meanB     mean of the normalised log abundance value of the gene across samples from experimental group B
 logFC     log fold-change
@@ -56,7 +56,7 @@ fdr_qvalue     moderated t-test q-value
 Compare a pair of experimental groups and output the log fold-change and q-values per protein.
 }
 \seealso{
-\code{\link{get_rows_to_keep_list}}
+\code{\link[=getRowsToKeepList]{getRowsToKeepList()}}
 
-\code{\link{get_type_of_grouping}}
+\code{\link[=getTypeOfGrouping]{getTypeOfGrouping()}}
 }

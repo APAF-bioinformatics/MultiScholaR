@@ -3,17 +3,15 @@
 \name{mod_prot_qc_protein_cleanup}
 \alias{mod_prot_qc_protein_cleanup}
 \alias{mod_prot_qc_protein_cleanup_ui}
-\alias{mod_prot_qc_protein_cleanup_server}
+\alias{.proteinCleanupActiveKey}
 \title{Protein Accession Cleanup Module}
 \usage{
 mod_prot_qc_protein_cleanup_ui(id)
 
-mod_prot_qc_protein_cleanup_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
-)
+.proteinCleanupActiveKey(proteinObject)
+}
+\arguments{
+\item{id, proteinObject}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for performing protein accession cleanup.

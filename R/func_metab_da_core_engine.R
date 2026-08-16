@@ -142,7 +142,7 @@ runTestsContrastsMetabDA <- function(
     } else {
         logger::log_info("   Running standard analysis...")
         t.fit <- eb.fit
-        extract_fn <- function(fit, coef) limma::topTable(fit, coef = coef, n = Inf)
+        extract_fn <- function(fit, coef) limma::topTable(fit, coef = coef, number = Inf)
     }
 
     # Process each contrast
@@ -218,4 +218,3 @@ runTestsContrastsMetabDA <- function(
         qvalue_warnings = qvalue_failures
     ))
 }
-

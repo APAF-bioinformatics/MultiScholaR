@@ -17,6 +17,7 @@
 #' @importFrom GGally ggpairs
 #' @importFrom ggpubr ggarrange
 #' @export
+#' @param input_table,intensity_column,protein_id_column,peptide_id_column,sample_id_column,peptide_sequence_column Runtime inputs used by this function; see the usage section for accepted values.
 plotPeptidesProteinsCountsPerSampleHelper <- function(
   input_table,
   intensity_column = Peptide.RawQuantity,
@@ -159,7 +160,7 @@ plotRleQc <- function(
 #------------------------------------------------------------------------------------------------
 #' @export
 compareUmapComponentsPairs <- function(input_table, columns = c("V1", "V2", "V3", "V4"), covariate) {
-  pm <- umap_data |>
+  pm <- input_table |>
     ggpairs(columns = columns, ggplot2::aes(colour = {{ covariate }}), legend = 1) +
     apafTheme()
 
@@ -183,4 +184,3 @@ umap_factor_plot <- function(input_data, header, legend_label, x = V1, y = V2, c
     ) +
     apafTheme()
 }
-

@@ -8,11 +8,9 @@
 #' @param is_HEK_column A logical column in the metadata table that indicates if the sample is a HEK sample
 #' @param metadata_column_selected A list of column names in string selected from the metadata tbl
 #' @param metadata_column_labels A list of column names in string to rename each of the columns selected in the param `metadata_column_selected`
-#' @param categorical_columns A vector of string with all the names of the categorical data column  present in the `metadata_tbl` table
-#' @param continous_scale_columns  A vector of string with all the names of the continuous data column  present in the `metadata_tbl` table
-#' @param ms_machine_column A string of the column name describing the mass spectrometer machine used to analyze each sample
 #' @param sample_id_column A string describing the column name of the sample ID column
 #' @export
+#' @param colour_rules,columns_to_exclude,use_raster,raster_device,heatmap_legend_param,heatmap_width,heatmap_height Runtime inputs used by this function; see the usage section for accepted values.
 getSamplesCorrelationHeatMap <- function(
   correlation_matrix,
   metadata_tbl,
@@ -58,7 +56,7 @@ getSamplesCorrelationHeatMap <- function(
   )
 
   print("Add row annotation")
-  row_ha <- rowAnnotation(
+  row_ha <- ComplexHeatmap::rowAnnotation(
     df = cln_meatadata_tbl |>
       dplyr::select(-any_of(metadata_column_labels[columns_to_exclude])),
     col = colour_rules_filt,
@@ -86,7 +84,7 @@ getSamplesCorrelationHeatMap <- function(
     colour_rules_filt,
     names(colour_rules_filt),
     \(rule, title) {
-      Legend(
+      ComplexHeatmap::Legend(
         labels = names(rule), title = title,
         legend_gp = gpar(fill = rule)
       )
@@ -107,6 +105,7 @@ getSamplesCorrelationHeatMap <- function(
 #' @title get protein intensity heatmap
 #' @description Generates a heatmap of protein intensities
 #' @export
+#' @param protein_matrix,metadata_tbl,is_HEK_column,metadata_column_selected,metadata_column_labels,colour_rules,columns_to_exclude,core_utilisation_samples,sort_by_sample_id,sample_id_column,use_raster,raster_device,heatmap_legend_param Runtime inputs used by this function; see the usage section for accepted values.
 getProteinsHeatMap <- function(
   protein_matrix,
   metadata_tbl,
@@ -193,7 +192,7 @@ getProteinsHeatMap <- function(
     colour_rules_filt,
     names(colour_rules_filt),
     \(rule, title) {
-      Legend(
+      ComplexHeatmap::Legend(
         labels = names(rule), title = title,
         legend_gp = gpar(fill = rule)
       )

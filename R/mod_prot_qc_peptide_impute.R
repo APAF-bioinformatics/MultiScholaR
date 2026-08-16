@@ -19,6 +19,7 @@
 #' @description A Shiny module for applying missing value imputation.
 #'
 #' @name mod_prot_qc_peptide_impute
+#' @param id,imputed_s4,proportion_missing_values,exclusion_column Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_peptide_impute

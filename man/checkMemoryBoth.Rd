@@ -2,7 +2,7 @@
 % Please edit documentation in R/func_general_runtime_helpers.R
 \name{checkMemoryBoth}
 \alias{checkMemoryBoth}
-\title{Comprehensive Memory Checkpoint}
+\title{environment capture issues where R heap stays flat but process memory spikes.}
 \usage{
 checkMemoryBoth(step_name, context = "", log_level = "DEBUG66")
 }
@@ -17,6 +17,5 @@ checkMemoryBoth(step_name, context = "", log_level = "DEBUG66")
 Invisibly returns a list with r_heap_mb and process_mb
 }
 \description{
-Logs BOTH R heap memory AND actual process memory to help identify
 environment capture issues where R heap stays flat but process memory spikes.
 }

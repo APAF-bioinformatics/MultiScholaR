@@ -377,8 +377,8 @@ test_that("multisite orchestration and site-id ranking preserve staged helper wi
           corrected_1 = 10
         )
       },
-      chooseBestAccession = function(...) {
-        call_log <<- c(call_log, "chooseBestAccession")
+      chooseBestPhosphositeAccession = function(...) {
+        call_log <<- c(call_log, "chooseBestPhosphositeAccession")
         tibble::tibble(evidence_id = 1L, uniprot_acc = "P1", gene_name = "GENE1")
       },
       removePeptidesWithoutAbundances = function(...) {
@@ -446,7 +446,7 @@ test_that("multisite orchestration and site-id ranking preserve staged helper wi
     c(
       "parseFastaFile",
       "addColumnsToEvidenceTbl",
-      "chooseBestAccession",
+      "chooseBestPhosphositeAccession",
       "removePeptidesWithoutAbundances",
       "filterPeptideAndExtractProbabilities",
       "addPeptideStartAndEnd",

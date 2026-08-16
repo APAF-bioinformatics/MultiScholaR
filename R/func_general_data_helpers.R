@@ -31,6 +31,7 @@ findMatchingColumn <- function(headers, candidates) {
 # ----------------------------------------------------------------------------
 #' getOneContinousPalette
 #' @export
+#' @param metadata_tbl,column_name,num_colours Runtime inputs used by this function; see the usage section for accepted values.
 changeToCategorical <- function(metadata_tbl, column_name, num_colours=9) {
 
   list_of_values <-  metadata_tbl |>
@@ -61,6 +62,7 @@ changeToCategorical <- function(metadata_tbl, column_name, num_colours=9) {
 #' @description
 #'  Pivot peptide intensity matrix into long format table.
 #' @export
+#' @param input_matrix,sample_id_column,sequence_column,protein_id_column,quantity_column,unlog_data Runtime inputs used by this function; see the usage section for accepted values.
 peptidesIntensityMatrixPivotLonger <- function( input_matrix
                                                 , sample_id_column
                                                 , sequence_column
@@ -93,6 +95,7 @@ peptidesIntensityMatrixPivotLonger <- function( input_matrix
 #' @description
 #' Pivot protein intensity matrix into long format
 #' @export
+#' @param input_matrix,sample_id_column,protein_id_column,quantity_column Runtime inputs used by this function; see the usage section for accepted values.
 proteinIntensityMatrixPivotLonger <- function( input_matrix
                                                , sample_id_column
                                                , protein_id_column
@@ -214,14 +217,8 @@ extract_experiment <- function(x, mode = "range", start = 1, end = NULL) {
 # ----------------------------------------------------------------------------
 #' @export
 calcHtSize = function(ht, unit = "inch") {
-  pdf(NULL)
-  ht = draw(ht)
-  w = ComplexHeatmap:::width(ht)
-  w = convertX(w, unit, valueOnly = TRUE)
-  h = ComplexHeatmap:::height(ht)
-  h = convertY(h, unit, valueOnly = TRUE)
-  dev.off()
-
-  c(w, h)
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  ComplexHeatmap::draw(ht)
+  grDevices::dev.size(unit = unit)
 }
-

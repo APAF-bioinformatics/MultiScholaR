@@ -344,6 +344,7 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 #' @param exclude_pool_samples Logical. If TRUE (default), automatically exclude samples from groups containing "Pool" in their name from ANOVA calculation. Pool/QC samples are excluded from negative control selection but remain in RUV-III correction.
 #' @return A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
 #'@export
+#' @param percentage_as_neg_ctrl Runtime inputs used by this function; see the usage section for accepted values.
 getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , design_matrix
                                 , grouping_variable = "group"
@@ -368,7 +369,10 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
       is.na(num_neg_ctrl) ) &&
      nrow(data_matrix) >= 50 ) {
     num_neg_ctrl <- round( nrow(data_matrix)*10/100, 0)
-    warnings( paste0( getFunctionName(), ": Using 10% of proteins from the input matrix as negative controls by default.\n"))
+    warning(
+      getFunctionName(),
+      ": Using 10% of proteins from the input matrix as negative controls by default."
+    )
     message("   DEBUG66: Defaulting to 10% negative controls")
   } else if (!is.null(percentage_as_neg_ctrl) &
              !is.na(percentage_as_neg_ctrl)) {
@@ -469,7 +473,7 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
     message("   DEBUG66: Calculating BH adjusted p-values...")
     aov <- qvalue(unlist(ps), pi0=1)$qvalues
   } else {
-    error( paste( "Input FDR method", ruv_fdr_method, "not valid") )
+    stop("Input FDR method ", ruv_fdr_method, " is not valid")
   }
 
   message(sprintf("   DEBUG66: q-values calculated. Range: %.4f - %.4f", min(aov, na.rm=TRUE), max(aov, na.rm=TRUE)))
@@ -895,4 +899,3 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     sample_size              = sample_size
   )
 }
-

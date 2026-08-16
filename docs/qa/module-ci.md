@@ -7,7 +7,7 @@ edge cases, state transitions, and artifact schemas.
 
 ## Manifest
 
-The manifest lives at `tests/testdata/module_ci/manifest.json`. Each scenario has
+The manifest lives at `tests/testdata/mci/manifest.json`. Each scenario has
 these required fields:
 
 - `scenario_id`
@@ -52,8 +52,8 @@ Shared oracles live in `tests/testthat/helper-module-ci-oracles.R` and validate:
 
 ## Fixture Packs
 
-`tests/testdata/module_ci/fixture_packs.json` is the fixture catalog added for
-MCI-002. It is generated from `tests/testdata/module_ci/generate-fixtures.R`
+`tests/testdata/mci/fixture_packs.json` is the fixture catalog added for
+MCI-002. It is generated from `tests/testdata/mci/generate-fixtures.R`
 and is intentionally separate from the workflow E2E manifest so module-level
 edge cases do not disturb stable browser fixtures.
 
@@ -80,9 +80,9 @@ Each omic/import form has all required fixture classes:
 
 Each pack includes:
 
-- a data TSV under `fixtures/<omic>/`;
-- a design TSV under `fixtures/<omic>/`;
-- a JSON oracle under `oracles/<omic>/`;
+- a data TSV under `fx/<omic>/`;
+- a design TSV under `fx/<omic>/`;
+- a JSON oracle under `refs/<omic>/`;
 - `ci_lane` and `push_safe` labels;
 - source generator metadata;
 - expected exported schema columns;

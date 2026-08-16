@@ -12,6 +12,9 @@ getContinousColourRules(
   na_colour = "white"
 )
 }
+\arguments{
+\item{metadata_tbl, metadata_column_labels, metadata_column_selected, continous_scale_columns, na_colour}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 getContinousColourRules
 }

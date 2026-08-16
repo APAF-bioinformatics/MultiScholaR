@@ -10,6 +10,9 @@ filterSamplesByMetaboliteCorrelationThreshold(
   min_pearson_correlation_threshold = 0.5
 )
 }
+\arguments{
+\item{theObject, pearson_correlation_per_pair, min_pearson_correlation_threshold}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Filters samples from a MetaboliteAssayData object based on
 pairwise Pearson correlation results. Samples with correlation

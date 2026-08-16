@@ -5,8 +5,6 @@
 \title{Get Recommendations for Handling Protein-Level Missing Values}
 \usage{
 getProteinNARecommendations(protein_obj, include_code = TRUE)
-
-getProteinNARecommendations(protein_obj, include_code = TRUE)
 }
 \arguments{
 \item{protein_obj}{A ProteinQuantitativeData S4 object}
@@ -15,13 +13,8 @@ getProteinNARecommendations(protein_obj, include_code = TRUE)
 }
 \value{
 Prints recommendations and invisibly returns a list of strategies
-
-Prints recommendations and invisibly returns a list of strategies
 }
 \description{
-Provides specific recommendations for dealing with missing values
-in protein data based on the percentage and distribution of NAs.
-
 Provides specific recommendations for dealing with missing values
 in protein data based on the percentage and distribution of NAs.
 }

@@ -10,6 +10,9 @@ checkParamsObjectFunctionSimplify(
   default_value = NULL
 )
 }
+\arguments{
+\item{theObject, param_name_string, default_value}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Check the parameters in the arguments list and the function parameters to see what param applies
 }

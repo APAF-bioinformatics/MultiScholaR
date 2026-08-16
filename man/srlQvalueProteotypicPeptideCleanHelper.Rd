@@ -17,34 +17,64 @@ srlQvalueProteotypicPeptideCleanHelper(
   modified_peptide_sequence_column = Modified.Sequence,
   q_value_column = Q.Value,
   global_q_value_column = Global.Q.Value,
-  proteotypic_peptide_sequence_column = Proteotypic
+  proteotypic_peptide_sequence_column = Proteotypic,
+  global_pg_qvalue_threshold = 0.01,
+  confidence_provenance_mode = "diann_main_report",
+  global_pg_q_value_column = Global.PG.Q.Value,
+  exclude_decoys = TRUE,
+  exclude_contaminants = TRUE,
+  contaminant_manifest = NULL,
+  protein_ids_column = "Protein.Ids",
+  return_exclusion_result = FALSE
 )
 }
 \arguments{
-\item{input_table}{Peptide quantities table in long format.}
+\item{input_table}{Peptide quantities table in long format}
 
-\item{qvalue_threshold}{Maximum precursor q-value.}
+\item{qvalue_threshold}{Maximum precursor q-value}
 
-\item{global_qvalue_threshold}{Maximum global q-value.}
+\item{global_qvalue_threshold}{Maximum global q-value}
 
-\item{choose_only_proteotypic_peptide}{Whether to retain only proteotypic identifications.}
+\item{choose_only_proteotypic_peptide}{Whether to retain only proteotypic
+identifications}
 
-\item{input_matrix_column_ids}{Columns retained in the filtered table.}
+\item{input_matrix_column_ids}{Columns retained in the filtered table}
 
-\item{protein_id_column}{Protein-group identity column.}
+\item{protein_id_column}{Protein-group identity column}
 
-\item{peptide_sequence_column}{Stripped peptide identity column.}
+\item{peptide_sequence_column}{Stripped peptide identity column}
 
-\item{modified_peptide_sequence_column}{Modified peptidoform identity column.}
+\item{modified_peptide_sequence_column}{Modified peptidoform identity column}
 
-\item{q_value_column}{Precursor q-value column.}
+\item{q_value_column}{Precursor q-value column}
 
-\item{global_q_value_column}{Global q-value column.}
+\item{global_q_value_column}{Global precursor q-value column}
 
-\item{proteotypic_peptide_sequence_column}{Proteotypic indicator column.}
+\item{proteotypic_peptide_sequence_column}{Proteotypic indicator column}
+
+\item{global_pg_qvalue_threshold}{Maximum global protein-group q-value}
+
+\item{confidence_provenance_mode}{Either \code{diann_main_report}, which requires
+all confidence fields, or the explicit \code{upstream_prefiltered} compatibility
+mode, which records any unavailable fields as unverified.}
+
+\item{global_pg_q_value_column}{Global protein-group q-value column}
+
+\item{exclude_decoys}{Exclude confidently classified decoys from the
+biological analysis view.}
+
+\item{exclude_contaminants}{Exclude confidently classified contaminants from
+the biological analysis view.}
+
+\item{contaminant_manifest}{Optional user-supplied contaminant accessions.}
+
+\item{protein_ids_column}{Accession-provenance column used for classification.}
+
+\item{return_exclusion_result}{Return classification/ledger metadata together
+with the filtered data. The default preserves the historical data-frame API.}
 }
 \description{
-Keep spectrum-peptide matches that are within the q-value thresholds and
-proteotypic, then freeze experiment-wide peptide and peptidoform identity
-counts for each protein group.
+Keep spectrum-peptide matches that are within the q-value
+thresholds and proteotypic, then freeze experiment-wide peptide and
+peptidoform identity counts for each protein group.
 }

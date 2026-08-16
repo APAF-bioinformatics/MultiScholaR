@@ -20,6 +20,8 @@ uniprotGoIdToTerm(
 
 \item{go_id_column}{The name of the column with the GO-ID, as a tidyverse header format, not a string}
 
+\item{sep}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{goterms}{Output from running \code{goterms <- Term(GOTERM)} from the GO.db library.}
 
 \item{gotypes}{Output from running \code{gotypes <- Ontology(GOTERM)} from the GO.db library.}

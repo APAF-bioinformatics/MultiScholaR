@@ -6,6 +6,9 @@
 \usage{
 \S4method{cleanDesignMatrix}{MetaboliteAssayData}(theObject)
 }
+\arguments{
+\item{theObject}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Clean Design Matrix for MetaboliteAssayData
 }

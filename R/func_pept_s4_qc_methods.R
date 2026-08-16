@@ -223,7 +223,7 @@ setMethod(
 )
 
 setMethod(f="plotDensity"
-          , signature="ggplot2::ggplot"
+          , signature="ggplot"
           , definition=function(theObject, grouping_variable, title = "", font_size = 8) {
             # First try to get data directly from the ggplot object's data element
             if (!is.null(theObject$data) && is.data.frame(theObject$data)) {

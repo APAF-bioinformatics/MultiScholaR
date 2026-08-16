@@ -197,6 +197,6 @@ test_that("module CI manifest rejects duplicate scenario IDs and missing fixture
   expect_error(validate_module_ci_manifest(manifest), "duplicate scenario_id")
 
   manifest <- read_module_ci_manifest(validate = FALSE)
-  manifest$scenarios[[1]]$fixture$path <- "fixtures/missing.tsv"
+  manifest$scenarios[[1]]$fixture$path <- "fx/missing.tsv"
   expect_error(validate_module_ci_manifest(manifest), "fixture does not exist")
 })

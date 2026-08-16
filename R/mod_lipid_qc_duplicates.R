@@ -27,6 +27,7 @@
 #' @description A Shiny module for identifying and resolving duplicate lipid features.
 #'              Wraps the resolveDuplicateFeaturesByIntensity() function.
 #' @name mod_lipid_qc_duplicates
+#' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_lipid_qc_duplicates

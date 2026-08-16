@@ -5,6 +5,7 @@
 #' @description
 #' Protein average values from replicate samples
 #' @export
+#' @param input_table,metadata_table,protein_id_column,input_table_sample_id_column,sample_id_tbl_sample_id_column,replicate_group_column,quantity_column,avg_quantity_column Runtime inputs used by this function; see the usage section for accepted values.
 avgReplicateProteinIntensity <- function(
   input_table,
   metadata_table,
@@ -32,6 +33,7 @@ avgReplicateProteinIntensity <- function(
 #' calculatePercentMissingPeptidePerReplicate
 #' @description Calculate percentage of peptides from each sample that is missing and merge with metadata
 #' @export
+#' @param input_table,metadata_table,protein_id_column,intensity_column,replicate_id_column,peptide_sequence_column Runtime inputs used by this function; see the usage section for accepted values.
 calculatePercentMissingPeptidePerReplicate <- function(
   input_table,
   metadata_table,
@@ -67,6 +69,7 @@ calculatePercentMissingPeptidePerReplicate <- function(
 #' calculatePercentMissingProteinPerReplicate
 #' @description Calculate percentage of proteins from each sample that is missing and merge with metadata
 #' @export
+#' @param input_table,metadata_table,protein_id_column,intensity_column,replicate_id_column Runtime inputs used by this function; see the usage section for accepted values.
 calculatePercentMissingProteinPerReplicate <- function(
   input_table,
   metadata_table,
@@ -189,7 +192,7 @@ calculateMissingValuesPerProteinFishersTest <- function(contrasts_table, missing
     fisher.test(matrix(c(a1, b1, a2, b2), 2, 2, byrow = TRUE))$p.value
   }
 
-  plan(multisession, workers = 8)
+  future::plan(future::multisession, workers = 8)
 
 
   contasts_missing_counts_tbl <- contrasts_table_separated |>
@@ -292,6 +295,7 @@ getRowsToKeepList <- function(input_table, cols, design_matrix, sample_id, row_i
 #' @title Average values from replicates
 #' @param design_matrix Contains the sample_id column and the average_replicates_id column
 #' @export
+#' @param input_table,group_pattern,row_id,sample_id,average_replicates_id Runtime inputs used by this function; see the usage section for accepted values.
 averageValuesFromReplicates <- function(input_table, design_matrix, group_pattern, row_id, sample_id, average_replicates_id) {
   output_table <- input_table |>
     as.data.frame() |>
@@ -320,12 +324,8 @@ averageValuesFromReplicates <- function(input_table, design_matrix, group_patter
 # ----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @title Calculate protein technical replicate correlation
-#' @param design_matrix_tech_rep: design matrix with the technical replicates
-#' @param data_matrix: input data matrix
-#' @param sample_id_column: column name of the sample ID. This is the unique identifier for each sample.
-#' @param tech_rep_column: column name of the technical replicates. Technical replicates of the same sample will have the same value.
-#' @param tech_rep_num_column: column name of the technical replicate number. This is a unique number for each technical replicate for each sample.
 #' @export
+#' @param design_matrix_tech_rep,data_matrix,protein_id_column,sample_id_column,tech_rep_column,tech_rep_num_column,tech_rep_remove_regex Runtime inputs used by this function; see the usage section for accepted values.
 proteinTechRepCorrelationHelper <- function(
   design_matrix_tech_rep, data_matrix,
   protein_id_column = "Protein.Ids",
@@ -375,4 +375,3 @@ proteinTechRepCorrelationHelper <- function(
 
   frozen_protein_matrix_tech_rep
 }
-

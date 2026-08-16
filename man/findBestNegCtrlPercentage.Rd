@@ -37,7 +37,8 @@ Default is 0.05}
 \item{ruv_fdr_method}{The FDR calculation method. Default is "qvalue"}
 
 \item{separation_metric}{The metric to use for evaluating separation quality.
-Options: "max_difference" (default), "mean_difference", "auc", "weighted_difference"}
+Options: "max_difference" (default), "mean_difference", "auc", "weighted_difference"
+Note: "weighted_difference" is deprecated.}
 
 \item{k_penalty_weight}{Weight for penalizing high k values in composite score.
 Default is 0.5. Higher values penalize high k more strongly}
@@ -54,11 +55,11 @@ Default is TRUE (recommended). Set to FALSE only if you need exact reproducibili
 A list containing:
 \itemize{
 \item best_percentage: The optimal percentage as a numeric value
-\item best_k: The optimal k value from findBestK() for the best percentage
+\item best_k: The optimal k value (scalar integer) for the best percentage
 \item best_control_genes_index: The control genes index for the best percentage
 \item best_separation_score: The separation score for the best percentage
 \item best_composite_score: The composite score (separation penalized by k value)
-\item optimization_results: A data frame with all tested percentages and their scores
+\item optimization_results: A data frame with one row per tested percentage
 \item best_cancor_plot: The canonical correlation plot for the best percentage
 \item separation_metric_used: The separation metric that was used
 \item k_penalty_weight: The k penalty weight that was used

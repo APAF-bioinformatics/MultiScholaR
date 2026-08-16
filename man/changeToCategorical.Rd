@@ -6,6 +6,9 @@
 \usage{
 changeToCategorical(metadata_tbl, column_name, num_colours = 9)
 }
+\arguments{
+\item{metadata_tbl, column_name, num_colours}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 getOneContinousPalette
 }

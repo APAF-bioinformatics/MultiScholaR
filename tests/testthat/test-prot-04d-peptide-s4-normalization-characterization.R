@@ -800,12 +800,11 @@ test_that("PeptideQuantitativeData canonical-correlation methods validate and ca
   expect_s3_class(median_imputed_plot, "ggplot")
   expect_s3_class(min_imputed_plot, "ggplot")
 
-  localGlobalBinding("dpc", function(x) {
-    list(centered = x)
-  })
-  localGlobalBinding("dpcImpute", function(x, dpc) {
-    list(E = x)
-  })
+  local_mocked_bindings(
+    dpc = function(x) list(centered = x),
+    dpcImpute = function(x, dpc) list(E = x),
+    .package = "limpa"
+  )
 
   cancor_plot <- suppressWarnings(ruvCancor(
     peptide_object,
@@ -818,12 +817,12 @@ test_that("PeptideQuantitativeData canonical-correlation methods validate and ca
   expect_setequal(cancor_plot$data$featureset, c("All", "Control"))
   expect_true(all(c("K", "cc") %in% colnames(cancor_plot$data)))
 
-  localGlobalBinding(
-    "RUVIII_C_Varying",
-    function(k, Y, M, toCorrect, potentialControls) {
+  local_mocked_bindings(
+    RUVIII_C_Varying = function(k, Y, M, toCorrect, potentialControls) {
       ruv_call <<- list(k = k, Y = Y, M = M, toCorrect = toCorrect, potentialControls = potentialControls)
       Y + 1
-    }
+    },
+    .package = "MultiScholaR"
   )
 
   corrected <- ruvIII_C_Varying(

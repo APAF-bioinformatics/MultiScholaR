@@ -28,6 +28,7 @@
 #'              metabolomics workflow. Integrates sub-modules for intensity filtering,
 #'              duplicate resolution, internal standard QC, and finalization.
 #' @name mod_metab_qc
+#' @param id,workflow_data,experiment_paths,omic_type,experiment_label,qc_trigger Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_metab_qc

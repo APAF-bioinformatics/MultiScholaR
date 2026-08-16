@@ -19,6 +19,7 @@
 #' @return A data frame containing UniProt annotations and GO terms
 #'
 #' @export
+#' @param progress_callback Runtime inputs used by this function; see the usage section for accepted values.
 getUniprotAnnotations <- function(input_tbl, 
                                  cache_dir, 
                                  taxon_id,
@@ -111,6 +112,7 @@ getUniprotAnnotations <- function(input_tbl,
 #' @return A data frame containing the raw UniProt results
 #'
 #' @export
+#' @param progress_callback Runtime inputs used by this function; see the usage section for accepted values.
 directUniprotDownload <- function(input_tbl, 
                                  output_path, 
                                  taxon_id, 
@@ -396,7 +398,7 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
   uniprot_file<-file.path( output_dir, "uniprot_dat.rds")
   if( ! file.exists( uniprot_file )) {
 
-    up <- UniProt.ws(taxId= taxonomy_id)
+    up <- UniProt.ws::UniProt.ws(taxId = taxonomy_id)
     list_of_sp_columns <- c("EXISTENCE"
                             , "SCORE"
                             , "REVIEWED"
@@ -417,7 +419,7 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
                             , "go_id"
                             , "keyword"
     )
-    up_cls<-unlist(columns(up))
+    up_cls <- unlist(AnnotationDbi::columns(up))
     list_intersect<-intersect(list_of_sp_columns,up_cls)
     if(length(setdiff( list_of_sp_columns,list_intersect)) > 0)
     {
@@ -425,7 +427,7 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
     }
 
     my_keytype <- "UniProtKB"
-    if( "UNIPROTKB" %in% keytypes(up) ) {
+    if ("UNIPROTKB" %in% AnnotationDbi::keytypes(up)) {
       my_keytype <- "UNIPROTKB"
     }
 
@@ -451,8 +453,8 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
 
 
     ## Merge with Gene Ontology terms.
-    goterms <- Term(GOTERM)
-    gotypes <- Ontology(GOTERM)
+    goterms <- AnnotationDbi::Term(GO.db::GOTERM)
+    gotypes <- AnnotationDbi::Ontology(GO.db::GOTERM)
 
 
     uniprot_dat_cln <- uniprotGoIdToTerm(uniprot_dat, sep="; ", goterms, gotypes  )
@@ -478,4 +480,3 @@ getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_
   }
 
 }
-

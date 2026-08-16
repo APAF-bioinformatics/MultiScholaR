@@ -3,6 +3,7 @@
 #' A Shiny module for identifying and resolving duplicate metabolite features.
 #'
 #' @name mod_metab_qc_duplicates
+#' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_metab_qc_duplicates

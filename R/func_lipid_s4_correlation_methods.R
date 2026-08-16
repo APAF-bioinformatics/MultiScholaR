@@ -8,6 +8,7 @@
 #' @importFrom rlang sym !! :=
 #' @export
 #' @export
+#' @param theObject,tech_rep_remove_regex,correlation_group Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "pearsonCorForSamplePairs",
     signature = "LipidomicsAssayData",
@@ -280,6 +281,7 @@ setMethod(
 #' @importFrom purrr map set_names
 #' @importFrom ggplot2 ggplot aes geom_histogram scale_y_continuous xlab ylab theme element_blank
 #' @export
+#' @param theObject,tech_rep_remove_regex,correlation_group Runtime inputs used by this function; see the usage section for accepted values.
 setMethod(
     f = "plotPearson",
     signature = "LipidomicsAssayData",

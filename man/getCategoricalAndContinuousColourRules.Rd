@@ -20,6 +20,8 @@ getCategoricalAndContinuousColourRules(
 \item{metadata_tbl}{This is the table containing sample ID and other columns containing clinical variables / metadata}
 
 \item{metadata_column_labels}{This is the nice}
+
+\item{metadata_column_selected, categorical_columns, continous_scale_columns, ms_machine_column, sample_id_column, columns_to_exclude, na_colour}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 getCategoricalAndContinuousColourRules

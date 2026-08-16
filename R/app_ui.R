@@ -18,9 +18,9 @@
 #'
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
-#' @import shiny
+#' @rawNamespace import(shiny, except = c(dataTableOutput, renderDataTable))
 #' @import shinydashboard
-#' @import shinyjs
+#' @rawNamespace import(shinyjs, except = runExample)
 #' @noRd
 app_ui <- function(request) {
   dashboardPage(

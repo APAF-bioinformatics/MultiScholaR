@@ -7,11 +7,11 @@
 ebFit(data, design, contr.matrix)
 }
 \arguments{
+\item{data}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{design}{Output from running the function \code{\link{model.matrix}}.}
 
 \item{contr.matrix}{Output from the function \code{\link{makeContrasts}}.}
-
-\item{ID}{List of protein accessions / row names.}
 }
 \description{
 Run the Empircal Bayes Statistics for Differential Expression in the limma package

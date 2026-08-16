@@ -19,6 +19,7 @@
 #' @description A Shiny module for performing peptide-to-protein rollup using the IQ tool.
 #'
 #' @name mod_prot_qc_protein_rollup
+#' @param id,workflowData,experimentPaths,createProteinDataFn,writeTsvFn,processLongFormatFn,readTsvFn,captureCheckpointFn,showNotificationFn,logInfoFn,logWarnFn,sleepFn,maxWait Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_protein_rollup

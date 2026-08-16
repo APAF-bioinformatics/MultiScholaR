@@ -14,7 +14,7 @@ calculateCompositeScore(
 \arguments{
 \item{separation_score}{The separation score from calculateSeparationScore()}
 
-\item{best_k}{The best k value from findBestK()}
+\item{best_k}{The best k value from findBestKElbow()}
 
 \item{k_penalty_weight}{Weight for k penalty (0-1). Higher values penalize high k more}
 
@@ -25,7 +25,7 @@ A numeric composite score (higher is better)
 }
 \description{
 Internal helper function to calculate a composite score that considers both
-separation quality and the resulting k value from findBestK(). This prevents
+separation quality and the resulting k value from findBestKElbow(). This prevents
 over-optimization towards percentages that give good separation but unreasonably
 high k values that would remove biological signal.
 }

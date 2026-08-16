@@ -30,6 +30,8 @@ getSignificantData(
 
 \item{q_value_column}{The name of the q-value column (tidyverse style).}
 
+\item{fdr_value_column}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{log_q_value_column}{The name of the log q-value column (tidyverse style).}
 
 \item{log_fc_column}{The name of the log fold-change column (tidyverse style).}

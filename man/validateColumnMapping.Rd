@@ -2,32 +2,13 @@
 % Please edit documentation in R/func_lipid_import_detection.R
 \name{validateColumnMapping}
 \alias{validateColumnMapping}
-\title{Validate Column Mapping for Omics Data}
+\title{Validate Column Mapping (Alias)}
 \usage{
-validateColumnMapping(data, lipid_id_column, sample_columns)
-
-validateColumnMapping(data, lipid_id_column, sample_columns)
-
 validateColumnMapping(data, lipid_id_column, sample_columns)
 }
 \arguments{
-\item{data}{Data frame to validate.}
-
-\item{sample_columns}{Character vector of sample column names.}
-
-\item{id_column}{Name of the primary feature ID column (e.g., lipid_id or metabolite_id).}
-
-\item{omics_type}{Character specifying "lipidomics" or "metabolomics".
-If NULL, attempts to guess based on context.}
-}
-\value{
-A list containing validation status and summary statistics.
+\item{data, lipid_id_column, sample_columns}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
-Checks that required columns exist in the data and returns validation status.
-Supports both lipidomics and metabolomics validation.
-
-Alias for validateMetabColumnMapping for backward compatibility.
-
 Alias for validateLipidColumnMapping for backward compatibility.
 }

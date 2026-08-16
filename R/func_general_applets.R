@@ -129,13 +129,6 @@ render_workflow_stepper <- function(steps, tab_status) {
 #' @export
 RunApplet <- function(applet_type, omic_type, experiment_label, 
                       project_dirs_object_name = "project_dirs", force = FALSE) {
-  # Load required packages
-  require(shiny)
-  require(DT)
-  require(gtools) # For mixedsort
-  require(dplyr)  # For data manipulation
-  require(logger) # For logging
-
   # --- Input Validation ---
   valid_applet_types <- c("designMatrix") # Add more as they are developed
   if (!applet_type %in% valid_applet_types) {
@@ -310,4 +303,3 @@ RunApplet <- function(applet_type, omic_type, experiment_label,
   
   return(result)
 }
-

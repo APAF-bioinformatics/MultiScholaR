@@ -50,6 +50,7 @@ goIdToTerm <- function(go_string, sep = "; ", goterms, gotypes) {
 #' @param gotypes Output from running \code{gotypes <- Ontology(GOTERM)} from the GO.db library.
 #' @return A table with three columns. go_biological_process, go_celluar_compartment, and go_molecular_function. Each column is a list of gene ontology terms, separated by '; '.
 #' @export
+#' @param sep Runtime inputs used by this function; see the usage section for accepted values.
 uniprotGoIdToTerm <- function(uniprot_dat, uniprot_id_column = UNIPROTKB
                               , go_id_column = `GO-IDs`,  sep = "; "
                               , goterms = AnnotationDbi::Term(GO.db::GOTERM)

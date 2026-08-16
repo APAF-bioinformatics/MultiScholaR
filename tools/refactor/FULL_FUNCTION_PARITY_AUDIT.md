@@ -231,6 +231,38 @@ NSE/global bindings, Rd links and usage, documentation coverage, metadata, and
 34 tracked module-CI fixture paths over 100 bytes. Those categories should be
 handled as a separate package-quality campaign.
 
+## 2026-08-10 Quality Closeout
+
+The deferred package-quality campaign is now complete. This section supersedes
+the backlog statements above while preserving the earlier parity evidence.
+
+The final target inventory contains 344 runtime files and 344 unique `Collate`
+entries, 484 function exports, 61 method exports, 13 class exports, 13 classes,
+66 generics, 100 methods, and 1,699 named symbols. It has zero parse failures,
+zero duplicate entity keys, zero redundant occurrences, zero stale extraction
+scaffolds, zero filename violations, and zero runtime files above 1,000 LOC.
+
+Comparison with the quality checkpoint `60484fa` accounts for every one of its
+3,347 recursive function occurrences. Of those, 3,300 retain the exact function
+AST and 47 have reviewed named-owner drift from the package-quality fixes. No
+occurrence is unmatched and no duplicate multiplicity was reduced. The target
+also contains four additional helper/test-support function occurrences.
+
+The exhaustive package-loaded contract run
+`contracts-20260810T015010Z-40c8f49c` executed all 277 files and 2,673 cases.
+It passed 272 files and identified five stale test seams after dependency
+qualification and fixture relocation. After repairing those seams, the audit
+run `janitor-quality-failure-replay` passed all five files and all 26 affected
+cases with zero exceptions. The combined gate therefore accounts for all 277
+files without suppressing or reclassifying a runtime failure.
+
+The archived source now includes the conventional `tests/testthat.R` runner,
+uses portable module-CI fixture paths, and checks with `Status: OK` under
+`_R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-manual
+--no-build-vignettes`. Package tests and examples pass. The archive is
+12,093,407 bytes. Unavailable optional suggestions are reported as INFO only.
+Both refactor Node suites also pass.
+
 ## Reproduction
 
 ```sh

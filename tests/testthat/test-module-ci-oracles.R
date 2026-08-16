@@ -34,7 +34,7 @@ test_that("module CI assay provenance oracle supports lists, state payloads, and
 })
 
 test_that("module CI table and numeric oracles validate common module outputs", {
-  fixture <- file.path(module_ci_fixture_root(), "fixtures", "metabolomics", "metabolite_assay.tsv")
+  fixture <- file.path(module_ci_fixture_root(), "fx", "metabolomics", "metabolite_assay.tsv")
   table <- module_ci_assert_table_schema(
     fixture,
     required_columns = c("Feature.Name", "WT_1", "KO_1"),

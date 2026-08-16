@@ -19,6 +19,7 @@
 #' @description A Shiny module for applying precursor to peptide rollup.
 #'
 #' @name mod_prot_qc_peptide_rollup
+#' @param id,object Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_peptide_rollup

@@ -14,6 +14,8 @@ averageValuesFromReplicates(
 )
 }
 \arguments{
+\item{input_table, group_pattern, row_id, sample_id, average_replicates_id}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{design_matrix}{Contains the sample_id column and the average_replicates_id column}
 }
 \description{

@@ -5,8 +5,6 @@
 \title{Generate a color palette}
 \usage{
 get_color_palette(n, base_color)
-
-get_color_palette(n, base_color)
 }
 \arguments{
 \item{n}{Number of colors needed}
@@ -15,11 +13,7 @@ get_color_palette(n, base_color)
 }
 \value{
 Vector of colors
-
-Vector of colors
 }
 \description{
-Generate a color palette
-
 Generate a color palette
 }

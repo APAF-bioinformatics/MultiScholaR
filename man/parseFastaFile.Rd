@@ -8,7 +8,7 @@ Use seqinr object instead as it seems to be a lot faster to run substring}
 parseFastaFile(fasta_file)
 }
 \arguments{
-\item{path}{to input faster file with header format described in https://www.uniprot.org/help/fasta-headers}
+\item{fasta_file}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
 A table containing the following columns:

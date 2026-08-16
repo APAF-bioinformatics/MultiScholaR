@@ -13,6 +13,9 @@ calculatePercentMissingPeptidePerReplicate(
   peptide_sequence_column = Stripped.Sequence
 )
 }
+\arguments{
+\item{input_table, metadata_table, protein_id_column, intensity_column, replicate_id_column, peptide_sequence_column}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Calculate percentage of peptides from each sample that is missing and merge with metadata
 }

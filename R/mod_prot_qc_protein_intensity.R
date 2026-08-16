@@ -19,6 +19,7 @@
 #' @description A Shiny module for applying protein intensity and missing value filters.
 #'
 #' @name mod_prot_qc_protein_intensity
+#' @param id,workflowData,useStrictMode,minRepsPerGroup,minGroups,intensityCutoffPercentile,updateConfigParameterFn,updateMissingValueParametersFn,removeRowsWithMissingValuesPercentFn,logInfoFn,nowFn Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_protein_intensity

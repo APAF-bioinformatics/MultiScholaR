@@ -84,6 +84,7 @@
 #' @importFrom future plan
 #'
 #' @export
+#' @param formats,project_dirs Runtime inputs used by this function; see the usage section for accepted values.
 updateProteinFiltering <- function(data, step_name,
                                    omic_type = NULL, experiment_label = NULL,
                                    overwrite = FALSE, return_grid = FALSE,

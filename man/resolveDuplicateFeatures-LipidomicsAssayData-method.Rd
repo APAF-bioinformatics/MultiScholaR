@@ -6,6 +6,9 @@
 \usage{
 \S4method{resolveDuplicateFeatures}{LipidomicsAssayData}(theObject, itsd_pattern_columns = NULL)
 }
+\arguments{
+\item{theObject, itsd_pattern_columns}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Resolve Duplicate Features for LipidomicsAssayData
 }

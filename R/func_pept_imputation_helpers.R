@@ -3,11 +3,11 @@
 # ----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' Data imputation function
-#'@param df Data matrix
 #'@param width Adjustment factor to the observed standard deviation
 #'@param downshift Downshift the mean value by this downshift factor multiplied by the observed standard deviation.
 #'@return Data matrix with the missing values from each column replaced with a value randomly sampled from the normal distribution with adjusted mean and standard deviation. The normal distribution parameters are based on the observed distribution of the same column.
 #'@export
+#' @param temp Runtime inputs used by this function; see the usage section for accepted values.
 imputePerCol <- function(temp, width = 0.3, downshift = 1.8) {
 
   temp[!is.finite(temp)] <- NA

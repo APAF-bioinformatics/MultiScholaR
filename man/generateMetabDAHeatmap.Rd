@@ -47,6 +47,8 @@ generateMetabDAHeatmap(
 \item{show_metabolite_names}{Logical, show metabolite name labels.}
 
 \item{da_q_val_thresh}{Q-value threshold for significance.}
+
+\item{tree_cut_method, n_clusters, cut_height, min_cluster_size}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
 A ggplot2 or ComplexHeatmap object, or NULL.

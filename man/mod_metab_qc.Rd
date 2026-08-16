@@ -17,6 +17,9 @@ mod_metab_qc_server(
   qc_trigger = NULL
 )
 }
+\arguments{
+\item{id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 A Shiny module coordinator for the Quality Control step of the
 metabolomics workflow. Integrates sub-modules for intensity filtering,

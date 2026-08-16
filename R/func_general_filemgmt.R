@@ -206,8 +206,6 @@ loadDependencies <- function(verbose = TRUE) {
         if (verbose) message("Installing pacman...")
         utils::install.packages("pacman")
     }
-    library(pacman)
-
     if (!requireNamespace("BiocManager", quietly = TRUE)) {
         if (verbose) message("Installing BiocManager...")
         utils::install.packages("BiocManager")

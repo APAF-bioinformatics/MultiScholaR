@@ -5,8 +5,6 @@
 \title{Detect Proteomics Data Format}
 \usage{
 detectProteomicsFormat(headers, filename, preview_lines = NULL)
-
-detectProteomicsFormat(headers, filename, preview_lines = NULL)
 }
 \arguments{
 \item{headers}{Character vector of column headers}
@@ -17,11 +15,7 @@ detectProteomicsFormat(headers, filename, preview_lines = NULL)
 }
 \value{
 List with format and confidence score
-
-List with format and confidence score
 }
 \description{
-Detects the format of proteomics search results based on headers and filename
-
 Detects the format of proteomics search results based on headers and filename
 }

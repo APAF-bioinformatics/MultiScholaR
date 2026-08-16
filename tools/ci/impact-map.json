@@ -34,7 +34,7 @@
         "^tools/ci/.*",
         "^tests/testthat/test-(ci-impact|module-ci-release-gate).*\\.R$",
         "^tests/testthat/helper-(ci-impact|module-ci|e2e).*\\.R$",
-        "^tests/testdata/module_ci/(manifest|fixture_packs)\\.json$",
+        "^tests/testdata/mci/(manifest|fixture_packs)\\.json$",
         "^tests/testdata/e2e/(manifest|cross_omic_packs)\\.json$"
       ],
       "impact_level": "broad",

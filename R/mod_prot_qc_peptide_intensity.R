@@ -19,6 +19,7 @@
 #' @description A Shiny module for applying peptide intensity filtering.
 #'
 #' @name mod_prot_qc_peptide_intensity
+#' @param id,workflowData,minRepsPerGroup,minGroups,updateMissingValueParametersFn Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_peptide_intensity

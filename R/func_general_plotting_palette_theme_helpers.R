@@ -23,6 +23,96 @@ getCategoricalColourPalette <- function() {
 }
 
 # ----------------------------------------------------------------------------
+# getCmriMachineColour
+# ----------------------------------------------------------------------------
+#' Standard colours for CMRI mass spectrometers
+#'
+#' @return A named character vector of colours for machines M01 through M08.
+#' @export
+getCmriMachineColour <- function() {
+  colours <- RColorBrewer::brewer.pal(8, "Set2")
+  names(colours) <- sprintf("M%02d", seq_along(colours))
+  colours
+}
+
+# ----------------------------------------------------------------------------
+# getCategoricalColourRules
+# ----------------------------------------------------------------------------
+#' Build colour rules for categorical sample metadata
+#'
+#' @param metadata_tbl Sample metadata containing the selected columns.
+#' @param metadata_column_labels Display labels corresponding to
+#'   `metadata_column_selected`.
+#' @param metadata_column_selected Metadata columns available for annotation.
+#' @param categorical_columns Columns that should use categorical colours.
+#' @param ms_machine_column Optional mass-spectrometer column.
+#' @param columns_to_exclude Columns that should not receive colour rules.
+#' @param colour_palette Character vector of colours to allocate.
+#' @param na_colour Colour used for missing categorical values.
+#'
+#' @return A named list of named colour vectors.
+#' @export
+getCategoricalColourRules <- function(
+  metadata_tbl,
+  metadata_column_labels,
+  metadata_column_selected,
+  categorical_columns,
+  ms_machine_column,
+  columns_to_exclude,
+  colour_palette = getCategoricalColourPalette(),
+  na_colour = "white"
+) {
+  stopifnot(length(metadata_column_labels) == length(metadata_column_selected))
+  label_by_column <- stats::setNames(metadata_column_labels, metadata_column_selected)
+  excluded <- intersect(columns_to_exclude, names(metadata_tbl))
+  machine_enabled <- length(ms_machine_column) == 1L &&
+    !is.na(ms_machine_column) &&
+    nzchar(ms_machine_column) &&
+    ms_machine_column %in% names(metadata_tbl) &&
+    !ms_machine_column %in% excluded
+
+  if (machine_enabled) {
+    colour_palette <- setdiff(colour_palette, unname(getCmriMachineColour()))
+  }
+
+  categorical_columns <- intersect(
+    setdiff(categorical_columns, c(ms_machine_column, excluded)),
+    names(metadata_tbl)
+  )
+  category_values <- lapply(categorical_columns, function(column) {
+    sort(unique(as.character(metadata_tbl[[column]][!is.na(metadata_tbl[[column]])])))
+  })
+  required_colours <- sum(lengths(category_values))
+  if (required_colours > length(colour_palette)) {
+    colour_palette <- grDevices::colorRampPalette(colour_palette)(required_colours)
+  }
+
+  next_colour <- 1L
+  colour_rules <- lapply(seq_along(categorical_columns), function(index) {
+    column <- categorical_columns[[index]]
+    values <- category_values[[index]]
+    colours <- colour_palette[seq.int(next_colour, length.out = length(values))]
+    next_colour <<- next_colour + length(values)
+    names(colours) <- values
+    if (anyNA(metadata_tbl[[column]])) {
+      colours <- c(colours, "NA" = na_colour)
+    }
+    colours
+  })
+  names(colour_rules) <- unname(label_by_column[categorical_columns])
+
+  if (machine_enabled) {
+    machine_values <- sort(unique(as.character(metadata_tbl[[ms_machine_column]])))
+    machine_colours <- getCmriMachineColour()[machine_values]
+    machine_colours[is.na(machine_colours)] <- na_colour
+    names(machine_colours) <- machine_values
+    colour_rules[[unname(label_by_column[[ms_machine_column]])]] <- machine_colours
+  }
+
+  colour_rules
+}
+
+# ----------------------------------------------------------------------------
 # getOneContinousPalette
 # ----------------------------------------------------------------------------
 #' @export
@@ -65,6 +155,7 @@ getOneContinousPalette <- function(metadata_tbl, column_name, palette_name, na_c
 # ----------------------------------------------------------------------------
 #' getContinousColourRules
 #' @export
+#' @param metadata_tbl,metadata_column_labels,metadata_column_selected,continous_scale_columns,na_colour Runtime inputs used by this function; see the usage section for accepted values.
 getContinousColourRules <- function(
   metadata_tbl,
   metadata_column_labels,
@@ -109,6 +200,7 @@ getContinousColourRules <- function(
 #' @param metadata_tbl This is the table containing sample ID and other columns containing clinical variables / metadata
 #' @param metadata_column_labels This is the nice
 #' @export
+#' @param metadata_column_selected,categorical_columns,continous_scale_columns,ms_machine_column,sample_id_column,columns_to_exclude,na_colour Runtime inputs used by this function; see the usage section for accepted values.
 getCategoricalAndContinuousColourRules <- function(
   metadata_tbl,
   metadata_column_labels,
@@ -133,7 +225,7 @@ getCategoricalAndContinuousColourRules <- function(
 
   colour_rules <- getCategoricalColourRules(
     metadata_tbl = cln_meatadata_tbl,
-    metadata_column_labels = metadata_column_labels,
+    metadata_column_labels = unname(metadata_column_labels_copy[metadata_column_selected]),
     metadata_column_selected = metadata_column_selected,
     categorical_columns = categorical_columns,
     ms_machine_column = ms_machine_column,
@@ -207,4 +299,3 @@ apafTheme <- function() {
 get_color_palette <- function(n, base_color) {
   colorRampPalette(c(base_color, "black"))(n)
 }
-

@@ -329,6 +329,7 @@ validatePostImputationProteinData <- function(protein_obj, expected_na_percent =
 #' @description Calculate the Pearson's correlation score between sample
 #' @param input_table Table with samples as columns and peptides as rows. Contains the log peptide intensity values.
 #' @export
+#' @param metadata_tbl,is_HEK_column,use,method Runtime inputs used by this function; see the usage section for accepted values.
 getSamplesCorrelationMatrix <- function(
   input_table,
   metadata_tbl,

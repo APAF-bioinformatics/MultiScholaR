@@ -12,6 +12,8 @@ mod_prot_import_server(id, workflow_data, experiment_paths, volumes = NULL)
 \item{workflow_data}{Reactive values object to store workflow data}
 
 \item{experiment_paths}{List of paths for this experiment}
+
+\item{volumes}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 Server logic for data import and initial setup with multi-format support

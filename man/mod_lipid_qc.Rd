@@ -3,19 +3,15 @@
 \name{mod_lipid_qc}
 \alias{mod_lipid_qc}
 \alias{mod_lipid_qc_ui}
-\alias{mod_lipid_qc_server}
+\alias{initializeLipidQcSubmodules}
 \title{Lipidomics Quality Control Orchestrator Module}
 \usage{
 mod_lipid_qc_ui(id)
 
-mod_lipid_qc_server(
-  id,
-  workflow_data,
-  experiment_paths,
-  omic_type,
-  experiment_label,
-  qc_trigger = NULL
-)
+initializeLipidQcSubmodules(workflow_data, omic_type, experiment_label)
+}
+\arguments{
+\item{id, workflow_data, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module coordinator for the Quality Control step of the

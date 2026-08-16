@@ -16,19 +16,6 @@ createMetaboliteAssayData(
   internal_standard_regex = NA_character_,
   args = list()
 )
-
-createMetaboliteAssayData(
-  metabolite_data,
-  design_matrix,
-  metabolite_id_column = "database_identifier",
-  annotation_id_column = "metabolite_identification",
-  sample_id = "Sample_ID",
-  group_id = "group",
-  technical_replicate_id = NA_character_,
-  database_identifier_type = "Unknown",
-  internal_standard_regex = NA_character_,
-  args = list()
-)
 }
 \arguments{
 \item{metabolite_data}{Named list of data frames (assays).}
@@ -53,38 +40,11 @@ createMetaboliteAssayData(
 }
 \value{
 A MetaboliteAssayData object.
-
-A MetaboliteAssayData object.
 }
 \description{
 Constructor function for the MetaboliteAssayData class.
-
-Constructor function for the MetaboliteAssayData class.
 }
 \examples{
-\dontrun{
-# Assuming lcms_pos_df, lcms_neg_df, gcms_df are data frames
-# with 'Metabolite' as ID column and samples as other columns
-# Assuming design_df has 'SampleID', 'Group', 'Replicate' columns
-assays_list <- list(
-    LCMS_Pos = lcms_pos_df,
-    LCMS_Neg = lcms_neg_df,
-    GCMS = gcms_df
-)
-config <- list(...) # Your config list
-
-met_assay_obj <- createMetaboliteAssayData(
-    metabolite_data = assays_list,
-    design_matrix = design_df,
-    metabolite_id_column = "Metabolite",
-    sample_id = "SampleID",
-    group_id = "Group",
-    technical_replicate_id = "Replicate",
-    database_identifier_type = "InternalName",
-    internal_standard_regex = "^IS_",
-    args = config
-)
-}
 \dontrun{
 # Assuming lcms_pos_df, lcms_neg_df, gcms_df are data frames
 # with 'Metabolite' as ID column and samples as other columns

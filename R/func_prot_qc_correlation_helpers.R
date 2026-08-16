@@ -354,15 +354,14 @@ findSamplesPairBelowPeptideCorrelationThreshold <- function(
 #' @title Filter Samples by Protein Correlation
 #' @description Remove samples which is correlated with any technical replicate samples
 #' @param protein_intensity_table A data frame with the following columns: 1. ID of technical replicate group, 2. sample file name X, 3. sample file name Y, 4. Pearson correlation of the abundances of peptides between sample X and Y.
-#' @param peptide_keep_samples_with_min_num_peptides A data frame with the proteins as rows and samples ID as columns.
 #' @param min_pearson_correlation_threshold Minimum pearson correlation for a pair of files to be considered to be consistent and kept for further analysis
 #' @param filename_column_x Name of column containing the sample file name X (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
 #' @param filename_column_y Name of column containing the sample file name Y (for a pair of sample in the same technical replicate group). Tidyverse column header format, not a string.
 #' @param protein_id_column Name of column containing the protein ID. Tidyverse column header format, not a string.
 #' @param correlation_column Name of column containing the Pearson's correlation score between Sample X and Y. Tidyverse column header format, not a string.
-#' @param filename_id_column A string indicating the name of column that contains the sample ID or Run ID in the data frame `peptide_keep_samples_with_min_num_peptides`.
 #' @return A table without samples that are poorly correlated with the rest of the samples in the technical replicate group. Contains the following columns: 1. Sample file name or Run name, 2. Protein IDs, 3. Stripped peptide sequence, 4. Normalised peptide abundances
 #' @export
+#' @param pearson_correlation_per_pair Runtime inputs used by this function; see the usage section for accepted values.
 filterSamplesByProteinCorrelationThresholdHelper <- function(
   pearson_correlation_per_pair,
   protein_intensity_table,

@@ -3,17 +3,20 @@
 \name{mod_prot_qc_protein_dedup}
 \alias{mod_prot_qc_protein_dedup}
 \alias{mod_prot_qc_protein_dedup_ui}
-\alias{mod_prot_qc_protein_dedup_server}
+\alias{runProteinDuplicateRemovalStep}
 \title{Protein Duplicate Removal Module}
 \usage{
 mod_prot_qc_protein_dedup_ui(id)
 
-mod_prot_qc_protein_dedup_server(
-  id,
-  workflow_data,
-  omic_type,
-  experiment_label
+runProteinDuplicateRemovalStep(
+  workflowData,
+  aggregationMethod,
+  aggregationResolverFn = base::get,
+  logInfoFn = logger::log_info
 )
+}
+\arguments{
+\item{id, workflowData, aggregationMethod, aggregationResolverFn, logInfoFn}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module for removing duplicate proteins.

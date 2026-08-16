@@ -6,17 +6,17 @@ documented Golem entrypoint, function, module, or utility forms.
 
 ## Summary
 
-- Runtime `.R` files: `342`
-- Conforming filenames: `342`
+- Runtime `.R` files: `344`
+- Conforming filenames: `344`
 - Filename violations: `0`
-- `Collate` entries: `342`
+- `Collate` entries: `344`
 - Duplicate `Collate` entries: `0`
 - Runtime files absent from `Collate`: `0`
 - `Collate` entries absent from runtime: `0`
 
 ## Families
 
-- `function`: `176`
+- `function`: `178`
 - `module`: `158`
 - `golem_entrypoint`: `5`
 - `utility`: `3`

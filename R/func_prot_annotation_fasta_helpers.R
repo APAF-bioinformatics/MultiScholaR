@@ -67,7 +67,6 @@ parseFastaObject <- function(aa_seq ) {
 # ----------------------------------------------------------------------------
 #'Parse the headers of a Uniprot FASTA file and extract the headers and sequences into a data frame
 #'Use seqinr object instead as it seems to be a lot faster to run substring
-#' @param path to input faster file with header format described in https://www.uniprot.org/help/fasta-headers
 #' @return A table containing the following columns:
 #' db  sp for Swiss-Prot, tr for TrEMBL
 #' uniprot_acc Uniprot Accession
@@ -84,6 +83,7 @@ parseFastaObject <- function(aa_seq ) {
 #' seq     Amino acid sequence.
 #' seq_length      Sequence length (integer).
 #' @export
+#' @param fasta_file Runtime inputs used by this function; see the usage section for accepted values.
 parseFastaFile <- function(fasta_file) {
 
   aa_seqinr <-  read.fasta( file = fasta_file,

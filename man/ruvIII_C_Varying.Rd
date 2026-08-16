@@ -48,11 +48,6 @@ should be a vector specifying controls for that specific assay.
 Defaults are looked up via \code{checkParamsObjectFunctionSimplify} using the key
 \code{"ctrl"}. Must be provided.
 }}
-
-\item{num_components_to_impute}{Integer. The number of principal components
-to use for NIPALS imputation if missing values are present before RUV.
-Defaults are looked up via \code{checkParamsObjectFunctionSimplify} using the key
-\code{"num_components_to_impute"}.}
 }
 \value{
 A modified \code{MetaboliteAssayData} object where the \code{metabolite_data}

@@ -21,6 +21,7 @@
 #' appropriate sub-modules for the given workflow (e.g., LFQ/DIA).
 #'
 #' @name mod_prot_qc_peptide
+#' @param id,workflow_data,experiment_paths,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 getProtQcPeptideModuleSpecs <- function() {

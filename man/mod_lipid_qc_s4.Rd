@@ -10,6 +10,9 @@ mod_lipid_qc_s4_ui(id)
 
 mod_lipid_qc_s4_server(id, workflow_data, omic_type, experiment_label)
 }
+\arguments{
+\item{id, workflow_data, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 A Shiny module for finalizing the QC step and confirming the S4 state.
 Displays QC summary statistics and state history.

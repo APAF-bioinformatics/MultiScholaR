@@ -31,6 +31,13 @@
 #' @slot theObject The original MetaboliteAssayData object used for analysis
 #' @slot fit.eb The fitted eBayes model from limma analysis (ANY type to allow limma MArrayLM when available)
 #' @slot contrasts_results_table Data frame with differential abundance statistics
+#' @slot num_sig_diff_exp_bar_plot Per-contrast significant-feature count plots
+#' @slot num_sig_diff_table Summary table of significant-feature counts
+#' @slot volcano_plot Per-contrast static volcano plots
+#' @slot interactive_volcano_plot Per-contrast interactive volcano plots
+#' @slot p_value_dist_plot Per-contrast p-value distribution plots
+#' @slot results_table_long Differential abundance results in long format
+#' @slot results_table_wide Differential abundance results in wide format
 #'
 #' @export
 setClass("MetabolomicsDifferentialAbundanceResults",
@@ -352,7 +359,7 @@ setClass("MetabolomicsDifferentialAbundanceResults",
                                 counts = counts_matrix,
                                 groups = groups,
                                 display.columns = if (!is.null(anno_tbl)) colnames(anno_tbl) else NULL,
-                                status = decideTests(my_fit_eb, adjust.method = "none"),
+                                status = limma::decideTests(my_fit_eb, adjust.method = "none"),
                                 p.adj.method = "none",
                                 transform.counts = "none"
                             )

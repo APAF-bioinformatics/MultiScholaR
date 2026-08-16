@@ -2,7 +2,7 @@
 % Please edit documentation in R/func_metab_s4_transformation_methods.R
 \name{logTransformAssays,MetaboliteAssayData-method}
 \alias{logTransformAssays,MetaboliteAssayData-method}
-\title{Log Transform Assays for MetaboliteAssayData}
+\title{Log2 Transform Assay Data for MetaboliteAssayData}
 \usage{
 \S4method{logTransformAssays}{MetaboliteAssayData}(theObject, offset = 1, ...)
 }

@@ -19,6 +19,7 @@
 #' @description A Shiny module for applying the protein peptide count filter.
 #'
 #' @name mod_prot_qc_peptide_protein
+#' @param id,workflowData,minPeptidesPerProtein,minPeptidoformsPerProtein,updateConfigParameterFn,filterMinNumPeptidesPerProteinFn,logInfoFn,nowFn Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_prot_qc_peptide_protein

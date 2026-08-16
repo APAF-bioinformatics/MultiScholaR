@@ -9,7 +9,9 @@ calculateSeparationScore(cancorplot, metric = "max_difference")
 \arguments{
 \item{cancorplot}{A ggplot object from ruvCancor}
 
-\item{metric}{The separation metric to calculate}
+\item{metric}{The separation metric to calculate.
+Options: "max_difference" (default), "mean_difference", "auc".
+"weighted_difference" is deprecated; use "max_difference" or "mean_difference" instead.}
 }
 \value{
 A numeric separation score (higher is better)

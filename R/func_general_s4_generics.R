@@ -526,6 +526,7 @@ setGeneric(name="plotNumSigDiffExpBarPlot",
 #'              below the threshold are removed.
 #' @name filterSamplesByMetaboliteCorrelationThreshold
 #' @export
+#' @param theObject,pearson_correlation_per_pair,min_pearson_correlation_threshold Runtime inputs used by this function; see the usage section for accepted values.
 setGeneric(name = "filterSamplesByMetaboliteCorrelationThreshold"
            , def = function(theObject
                             , pearson_correlation_per_pair = NULL

@@ -15,15 +15,7 @@ proteinTechRepCorrelationHelper(
 )
 }
 \arguments{
-\item{design_matrix_tech_rep:}{design matrix with the technical replicates}
-
-\item{data_matrix:}{input data matrix}
-
-\item{sample_id_column:}{column name of the sample ID. This is the unique identifier for each sample.}
-
-\item{tech_rep_column:}{column name of the technical replicates. Technical replicates of the same sample will have the same value.}
-
-\item{tech_rep_num_column:}{column name of the technical replicate number. This is a unique number for each technical replicate for each sample.}
+\item{design_matrix_tech_rep, data_matrix, protein_id_column, sample_id_column, tech_rep_column, tech_rep_num_column, tech_rep_remove_regex}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 Calculate protein technical replicate correlation

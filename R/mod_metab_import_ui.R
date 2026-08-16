@@ -4,6 +4,7 @@
 #' and dynamic column mapping.
 #'
 #' @name mod_metab_import
+#' @param id,workflow_data,experiment_paths,volumes Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname mod_metab_import

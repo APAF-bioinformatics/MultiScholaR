@@ -25,6 +25,8 @@ prepareDataForVolcanoPlot(
 
 \item{uniprot_protein_id_column}{The name of the column representing the protein ID in the uniprot table (tidyverse style).}
 
+\item{gene_name_column}{Runtime inputs used by this function; see the usage section for accepted values.}
+
 \item{number_of_genes}{The number of genes to show in the volcano plot.}
 
 \item{fdr_threshold}{The FDR threshold for the volcano plot.}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/func_pept_s4_missingness.R
 \name{peptideMissingValueImputationLimpa,PeptideQuantitativeData-method}
 \alias{peptideMissingValueImputationLimpa,PeptideQuantitativeData-method}
-\title{Peptide Missing Value Imputation using limpa Package}
+\title{Impute Missing Peptide Values with limpa}
 \usage{
 \S4method{peptideMissingValueImputationLimpa}{PeptideQuantitativeData}(
   theObject,
@@ -13,37 +13,22 @@
 )
 }
 \arguments{
-\item{theObject}{A PeptideQuantitativeData object}
+\item{theObject}{A \code{PeptideQuantitativeData} object.}
 
-\item{imputed_value_column}{Name for the new column containing imputed values.
-Default is "Peptide.Imputed.Limpa"}
+\item{imputed_value_column}{Name of the column that receives imputed values.}
 
-\item{use_log2_transform}{Whether to log2 transform the data before imputation.
-Default is TRUE (recommended by limpa)}
+\item{use_log2_transform}{Whether to transform values to log2 scale before
+imputation and restore the original scale afterwards.}
 
-\item{verbose}{Whether to print progress messages. Default is TRUE}
+\item{verbose}{Whether to emit progress messages.}
 
-\item{ensure_matrix}{Whether to ensure peptide matrix is calculated. Default is TRUE}
+\item{ensure_matrix}{Whether to calculate the peptide matrix when absent.}
 }
 \value{
-Updated PeptideQuantitativeData object with imputed values
+The updated \code{PeptideQuantitativeData} object.
 }
 \description{
-This function uses the limpa package's detection probability curve (DPC) approach
-for sophisticated missing value imputation specifically designed for proteomics data.
-This method is more robust than traditional imputation as it models the missing value
-mechanism based on detection probabilities.
-}
-\details{
-The limpa package uses a detection probability curve (DPC) to model the relationship
-between peptide intensity and the probability of detection. This allows for more
-sophisticated imputation that accounts for the intensity-dependent nature of missing
-values in proteomics data, rather than assuming they are missing at random.
-
-The process follows these steps:
-\enumerate{
-\item Estimate the detection probability curve using dpc()
-\item Perform row-wise imputation using dpcImpute()
-\item Transform results back to original scale if needed
-}
+Uses limpa's detection-probability-curve approach to model the relationship
+between peptide intensity and detection probability before imputing missing
+values.
 }

@@ -6,6 +6,9 @@
 \usage{
 getXMerString(seq, uniprot_acc, position, padding_length = 7)
 }
+\arguments{
+\item{seq, uniprot_acc, position, padding_length}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Given the bioiString object, the uniprot accession, and the position of the phosphorylation site, return the 15mer sequence with the phosphorylation site at the middle.
 }

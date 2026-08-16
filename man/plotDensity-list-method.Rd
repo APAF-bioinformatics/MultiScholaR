@@ -5,11 +5,10 @@
 \title{Plot Density for list of ggplot objects}
 \usage{
 \S4method{plotDensity}{list}(theObject, grouping_variable, title = "", font_size = 8)
-
-\S4method{plotDensity}{list}(theObject, grouping_variable, title = "", font_size = 8)
+}
+\arguments{
+\item{theObject, grouping_variable, title, font_size}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
-Plot Density for list of ggplot objects
-
 Plot Density for list of ggplot objects
 }

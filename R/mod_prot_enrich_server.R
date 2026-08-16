@@ -5,6 +5,7 @@
 #' @importFrom readr write_tsv
 #' @importFrom dplyr filter select mutate case_when slice_head all_of pull
 #' @importFrom stringr str_split str_detect str_extract
+#' @param id,workflow_data,experiment_paths,omic_type,experiment_label,selected_tab Runtime inputs used by this function; see the usage section for accepted values.
 mod_prot_enrich_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
 

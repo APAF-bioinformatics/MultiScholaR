@@ -7,15 +7,7 @@
 .extractProteinIdFromHeader(id_string)
 }
 \arguments{
-\item{data_tbl}{Data frame containing the actual imported quantitative data}
-
-\item{protein_id_column}{Character string specifying the protein ID column in data_tbl}
-
-\item{cache_dir}{Character string path to cache directory for storing annotations}
-
-\item{taxon_id}{Numeric taxonomy ID for the organism}
-
-\item{chunk_size}{Numeric size of chunks for batch processing (default: 25)}
+\item{id_string}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
 Data frame with comprehensive UniProt annotations for proteins in the dataset

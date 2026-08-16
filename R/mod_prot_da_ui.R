@@ -4,6 +4,7 @@
 #' visualization across user-defined contrasts.
 #'
 #' @name differentialAbundanceAppletModule
+#' @param id,workflow_data,experiment_paths,omic_type,experiment_label,selected_tab Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
 #' @rdname differentialAbundanceAppletModule

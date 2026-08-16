@@ -12,24 +12,6 @@
   verbose = TRUE,
   chunk = 1000
 )
-
-\S4method{proteinMissingValueImputationLimpa}{ProteinQuantitativeData}(
-  theObject,
-  dpc_results = NULL,
-  dpc_slope = 0.8,
-  quantified_protein_column = NULL,
-  verbose = TRUE,
-  chunk = 1000
-)
-
-\S4method{proteinMissingValueImputationLimpa}{ProteinQuantitativeData}(
-  theObject,
-  dpc_results = NULL,
-  dpc_slope = 0.8,
-  quantified_protein_column = NULL,
-  verbose = TRUE,
-  chunk = 1000
-)
 }
 \arguments{
 \item{theObject}{A ProteinQuantitativeData object with protein-level data}
@@ -46,33 +28,13 @@
 }
 \value{
 Updated ProteinQuantitativeData object with imputed protein values
-
-Updated ProteinQuantitativeData object with imputed protein values
-
-Updated ProteinQuantitativeData object with imputed protein values
 }
 \description{
 This function applies limpa's DPC-based missing value imputation directly to
 protein-level quantification data. This is useful when you already have protein
 quantification data with missing values that need to be handled.
-
-This function applies limpa's DPC-based missing value imputation directly to
-protein-level quantification data. This is useful when you already have protein
-quantification data with missing values that need to be handled.
-
-This function applies limpa's DPC-based missing value imputation directly to
-protein-level quantification data. This is useful when you already have protein
-quantification data with missing values that need to be handled.
 }
 \details{
-This method treats each protein as a separate "feature" and applies DPC-based
-imputation using limpa's dpcImpute function. This is appropriate when you have
-protein-level data with missing values that follow intensity-dependent patterns.
-
-This method treats each protein as a separate "feature" and applies DPC-based
-imputation using limpa's dpcImpute function. This is appropriate when you have
-protein-level data with missing values that follow intensity-dependent patterns.
-
 This method treats each protein as a separate "feature" and applies DPC-based
 imputation using limpa's dpcImpute function. This is appropriate when you have
 protein-level data with missing values that follow intensity-dependent patterns.

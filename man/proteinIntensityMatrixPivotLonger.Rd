@@ -11,6 +11,9 @@ proteinIntensityMatrixPivotLonger(
   quantity_column
 )
 }
+\arguments{
+\item{input_matrix, sample_id_column, protein_id_column, quantity_column}{Runtime inputs used by this function; see the usage section for accepted values.}
+}
 \description{
 Pivot protein intensity matrix into long format
 }

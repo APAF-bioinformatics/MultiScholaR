@@ -9,12 +9,6 @@ validatePostImputationData(
   expected_na_percent = 0,
   tolerance = 0.1
 )
-
-validatePostImputationData(
-  peptide_obj,
-  expected_na_percent = 0,
-  tolerance = 0.1
-)
 }
 \arguments{
 \item{peptide_obj}{A PeptideQuantitativeData S4 object (post-imputation)}
@@ -25,13 +19,8 @@ validatePostImputationData(
 }
 \value{
 Logical indicating if validation passed, with detailed output
-
-Logical indicating if validation passed, with detailed output
 }
 \description{
-A simple wrapper to validate peptide data after imputation,
-specifically checking if imputation was successful (should show 0\% NAs).
-
 A simple wrapper to validate peptide data after imputation,
 specifically checking if imputation was successful (should show 0\% NAs).
 }

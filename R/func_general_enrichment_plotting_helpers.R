@@ -97,13 +97,14 @@ enrichedPathwayBarPlot <- function( input_table, input_go_type = NA, remove_dupl
 #'@description given input table, draw a bar plot representing the GO enrichment results.
 #'The height of each bar represents the negative log (base 10) q-values of the query proteins.
 #'@export
+#' @param input_table,output_dir,analysis_type,file_suffix,width,height Runtime inputs used by this function; see the usage section for accepted values.
 enrichedGoTermBarPlot <- function( input_table, output_dir,
                                    analysis_type = "GO", file_suffix, width=10, height = 7) {
 
   partial_go_term_bar_plot <- partial( enrichedPathwayBarPlot,
-                                       input_table = filtered_enrich_revigo)
+                                       input_table = input_table)
 
-  list_of_go_type <- filtered_enrich_revigo %>%
+  list_of_go_type <- input_table %>%
     distinct( go_type) %>%
     arrange(go_type) %>%
     dplyr::pull(go_type)
@@ -147,16 +148,16 @@ enrichedGoTermBarPlot <- function( input_table, output_dir,
 #'@param text_list, a vector of text (e.g. a list of GO terms name)
 createWordCloudDataFrame <- function( text_list) {
 
-  docs <- Corpus(VectorSource(text_list))
+  docs <- tm::Corpus(tm::VectorSource(text_list))
 
   docs <- docs %>%
-    tm_map(removeNumbers) %>%
-    tm_map(removePunctuation) %>%
-    tm_map(stripWhitespace)
-  docs <- tm_map(docs, content_transformer(tolower))
-  docs <- tm_map(docs, removeWords, stopwords("english"))
+    tm::tm_map(tm::removeNumbers) %>%
+    tm::tm_map(tm::removePunctuation) %>%
+    tm::tm_map(tm::stripWhitespace)
+  docs <- tm::tm_map(docs, tm::content_transformer(tolower))
+  docs <- tm::tm_map(docs, tm::removeWords, tm::stopwords("english"))
 
-  dtm <- TermDocumentMatrix(docs)
+  dtm <- tm::TermDocumentMatrix(docs)
   matrix <- as.matrix(dtm)
   words <- sort(rowSums(matrix),decreasing=TRUE)
   df <- data.frame(word = names(words),freq=words)
@@ -274,6 +275,7 @@ list2df <- function(inputList) {
 # ----------------------------------------------------------------------------
 # list2graph
 # ----------------------------------------------------------------------------
+#' @importFrom igraph graph.data.frame V E
 #' @export
 list2graph <- function(inputList) {
   x <- list2df(inputList)
@@ -354,7 +356,14 @@ set_enrichplot_color <- function(colors = get_enrichplot_color(2),
   if (!is.null(.fun)) {
     if (n == 3) {
       # should determine parameter for user selected functions: 'gradient2' or 'gradientn'
-      fn_type <- which_scale_fun(.fun)
+      scale_parameters <- names(formals(.fun))
+      fn_type <- if ("colours" %in% scale_parameters || "colors" %in% scale_parameters) {
+        "gradientn"
+      } else if ("mid" %in% scale_parameters) {
+        "gradient2"
+      } else {
+        "continuous"
+      }
       if (fn_type == "gradientn") {
         params <- list(colors = colors)
       } else {
@@ -378,6 +387,7 @@ set_enrichplot_color <- function(colors = get_enrichplot_color(2),
 # ----------------------------------------------------------------------------
 # add_node_label
 # ----------------------------------------------------------------------------
+#' @importFrom ggraph geom_node_text geom_edge_arc geom_edge_link ggraph geom_node_point
 #' @export
 add_node_label <- function(p, data, label_size_node, cex_label_node, shadowtext) {
   # If use 'aes_(alpha =~I(alpha))' will put an error for AsIs object.
@@ -716,7 +726,7 @@ extract_geneSets <- function(x, n) {
   if (inherits(x, 'list')) {
     geneSets <- x
   } else {
-    geneSets <- geneInCategory(x) ## use core gene for gsea result
+    geneSets <- clusterProfiler::geneInCategory(x) ## use core gene for gsea result
     y <- as.data.frame(x)
     geneSets <- geneSets[y$ID]
     names(geneSets) <- y$Description
@@ -729,4 +739,3 @@ extract_geneSets <- function(x, n) {
 
 
 # ----------------------------------------------------------------------------
-

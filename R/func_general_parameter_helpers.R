@@ -22,6 +22,7 @@ setArgsDefault <- function(args, value_name, as_func, default_val=NA ) {
 # ----------------------------------------------------------------------------
 #' Check the parameters in the arguments list and the function parameters to see what param applies
 #' @export
+#' @param theObject,param_name_string,default_value Runtime inputs used by this function; see the usage section for accepted values.
 checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, default_value = NULL) {
 
   function_name <- getFunctionNameSecondLevel()
@@ -59,6 +60,7 @@ checkParamsObjectFunctionSimplify <- function(theObject, param_name_string, defa
 # ----------------------------------------------------------------------------
 #' Check the parameters in the arguments list and the function parameters to see what param applies
 #' @export
+#' @param theObject,param_name_string,default_value Runtime inputs used by this function; see the usage section for accepted values.
 checkParamsObjectFunctionSimplifyAcceptNull <- function(theObject, param_name_string, default_value = NULL) {
 
   function_name <- getFunctionNameSecondLevel()
@@ -89,6 +91,7 @@ checkParamsObjectFunctionSimplifyAcceptNull <- function(theObject, param_name_st
 # ----------------------------------------------------------------------------
 #' Update the parameter in the object
 #'@export
+#' @param theObject,param_name_string Runtime inputs used by this function; see the usage section for accepted values.
 updateParamInObject <- function(theObject, param_name_string) {
 
   function_name <- getFunctionNameSecondLevel()
@@ -136,6 +139,7 @@ updateParamInObject <- function(theObject, param_name_string) {
 #' }
 #'
 #' @export
+#' @param function_name,grouping_variable Runtime inputs used by this function; see the usage section for accepted values.
 updateMissingValueParameters <- function(theObject, 
                                        min_reps_per_group = 2, 
                                        min_groups = 2,

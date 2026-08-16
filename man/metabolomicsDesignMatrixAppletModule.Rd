@@ -3,29 +3,23 @@
 \name{metabolomicsDesignMatrixAppletModule}
 \alias{metabolomicsDesignMatrixAppletModule}
 \alias{mod_metab_design_ui}
-\alias{mod_metab_design_server}
+\alias{registerMetabDesignPreviewOutputs}
 \title{Metabolomics Design Matrix Applet Module}
 \usage{
 mod_metab_design_ui(id)
 
-mod_metab_design_server(
-  id,
-  workflow_data,
-  experiment_paths,
-  volumes = NULL,
-  qc_trigger = NULL
+registerMetabDesignPreviewOutputs(
+  output,
+  workflowData,
+  renderDt = DT::renderDT,
+  renderText = shiny::renderText,
+  req = shiny::req
 )
 }
 \arguments{
 \item{id}{Module ID}
 
-\item{workflow_data}{A reactive values object to store workflow data.}
-
-\item{experiment_paths}{A list of paths for the current experiment.}
-
-\item{volumes}{A list of volumes for shinyFiles (optional).}
-
-\item{qc_trigger}{A reactive trigger for QC execution (optional).}
+\item{output, workflowData, renderDt, renderText, req}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \description{
 A Shiny module that serves as the main host for the design

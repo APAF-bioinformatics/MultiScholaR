@@ -21,6 +21,7 @@
 #' gene_name_significant  The gene name of the significant proteins.
 #'
 #' @export
+#' @param gene_name_column Runtime inputs used by this function; see the usage section for accepted values.
 prepareDataForVolcanoPlot <- function(
   input_table,
   protein_id_column = uniprot_acc,
