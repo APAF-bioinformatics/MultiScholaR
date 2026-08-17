@@ -9,16 +9,19 @@ if (length(script_file_arg) > 0L) {
   }
 }
 
+source(file.path("tools", "ci", "e2e-browser-preflight.R"), local = TRUE)
+
 default_args <- list(
   lane = character(),
   filter = character(),
   reporter = "summary",
   artifact_dir = file.path("tests", "testthat", "_e2e_artifacts"),
   manifest = file.path("tests", "testdata", "e2e", "manifest.json"),
+  browser_required = NULL,
   dry_run = FALSE
 )
 
-`%||%` <- function(x, y) {
+fallback_if_null <- function(x, y) {
   if (is.null(x)) y else x
 }
 
@@ -32,6 +35,7 @@ usage <- function() {
     "  --reporter <testthat_reporter>",
     "  --artifact-dir <path>",
     "  --manifest <tests/testdata/e2e/manifest.json>",
+    "  --browser-required <true|false>  Override MULTISCHOLAR_E2E_BROWSER_REQUIRED",
     "  --dry-run <true|false>  Write the run manifest without executing tests",
     "  --help",
     sep = "\n"
@@ -77,7 +81,7 @@ parse_args <- function(argv) {
     }
     if (key %in% c("lane", "filter")) {
       args[[key]] <- c(args[[key]], split_values(value))
-    } else if (identical(key, "dry_run")) {
+    } else if (key %in% c("browser_required", "dry_run")) {
       args[[key]] <- parse_bool(value)
     } else {
       args[[key]] <- value
@@ -104,6 +108,12 @@ write_manifest <- function(path, payload) {
 }
 
 args <- parse_args(commandArgs(trailingOnly = TRUE))
+if (is.null(args$browser_required)) {
+  args$browser_required <- e2e_browser_required()
+}
+Sys.setenv(
+  MULTISCHOLAR_E2E_BROWSER_REQUIRED = if (isTRUE(args$browser_required)) "true" else "false"
+)
 dir.create(args$artifact_dir, recursive = TRUE, showWarnings = FALSE)
 Sys.setenv(MULTISCHOLAR_E2E_ARTIFACT_DIR = args$artifact_dir)
 
@@ -117,7 +127,11 @@ if (length(args$lane) > 0L) {
   selected_lanes <- lanes[args$lane]
 }
 
-lane_filters <- unique(vapply(selected_lanes, function(lane) lane$test_filter %||% NA_character_, character(1)))
+lane_filters <- unique(vapply(
+  selected_lanes,
+  function(lane) fallback_if_null(lane$test_filter, NA_character_),
+  character(1)
+))
 lane_filters <- lane_filters[!is.na(lane_filters) & nzchar(lane_filters)]
 filters <- unique(c(args$filter, lane_filters))
 if (length(filters) == 0L) {
@@ -127,8 +141,12 @@ test_filter <- sprintf("(%s)", paste(filters, collapse = "|"))
 
 run_started_at <- utc_now()
 test_error <- NULL
+browser_preflight <- e2e_browser_preflight()
 tryCatch(
   {
+    if (isTRUE(args$browser_required)) {
+      e2e_require_browser_preflight(browser_preflight)
+    }
     if (!isTRUE(args$dry_run)) {
       Sys.setenv(NOT_CRAN = "true")
       pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE)
@@ -150,11 +168,16 @@ payload <- list(
   result = result,
   failure_reason = test_error,
   test_filter = test_filter,
+  browser = list(
+    required = isTRUE(args$browser_required),
+    preflight = browser_preflight
+  ),
   lanes = selected_lanes,
   filters = as.list(filters),
   artifact_dir = args$artifact_dir,
   run_artifacts = as.list(c(
-    file.path(args$artifact_dir, "e2e-run-manifest.json")
+    file.path(args$artifact_dir, "e2e-run-manifest.json"),
+    file.path(args$artifact_dir, "test-output.log")
   ))
 )
 write_manifest(file.path(args$artifact_dir, "e2e-run-manifest.json"), payload)

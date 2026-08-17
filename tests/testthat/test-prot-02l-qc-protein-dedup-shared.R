@@ -4,7 +4,10 @@ library(testthat)
 if (!methods::isClass("FakeSharedProteinDedupState")) {
   methods::setClass(
     "FakeSharedProteinDedupState",
-    slots = c(protein_quant_table = "data.frame")
+    slots = c(
+      protein_quant_table = "data.frame",
+      protein_id_column = "character"
+    )
   )
 }
 
@@ -23,15 +26,20 @@ getProtProteinDedupServer <- function() {
 
 makeSharedProteinDedupState <- function(proteins = c("P1", "P1", "P2"),
                                         sample1 = c(2, 4, 8),
-                                        sample2 = c(10, 14, 18)) {
+                                        sample2 = c(10, 14, 18),
+                                        protein_id_column = "Protein.Ids") {
+  protein_table <- data.frame(
+    proteins = proteins,
+    sample1 = sample1,
+    sample2 = sample2,
+    stringsAsFactors = FALSE
+  )
+  names(protein_table)[[1L]] <- protein_id_column
+
   methods::new(
     "FakeSharedProteinDedupState",
-    protein_quant_table = data.frame(
-      Protein.Ids = proteins,
-      sample1 = sample1,
-      sample2 = sample2,
-      stringsAsFactors = FALSE
-    )
+    protein_quant_table = protein_table,
+    protein_id_column = protein_id_column
   )
 }
 
@@ -281,6 +289,33 @@ test_that("proteomics protein dedup module preserves successful apply behavior",
     function(notification) identical(notification$type, "message"),
     logical(1)
   )))
+})
+
+test_that("protein deduplication honours the declared Protein.Group identity", {
+  captured <- newSharedProteinDedupCapture()
+  workflow_data <- makeSharedProteinDedupWorkflow(
+    makeSharedProteinDedupState(
+      proteins = c("GROUP_ONE", "GROUP_ONE", "GROUP_TWO"),
+      protein_id_column = "Protein.Group"
+    ),
+    captured
+  )
+
+  result <- runProteinDuplicateRemovalStep(
+    workflowData = workflow_data,
+    aggregationMethod = "mean",
+    logInfoFn = function(...) invisible(NULL)
+  )
+
+  expect_identical(result$duplicates, "GROUP_ONE")
+  expect_identical(
+    result$deduplicatedS4@protein_quant_table$Protein.Group,
+    c("GROUP_ONE", "GROUP_TWO")
+  )
+  expect_equal(result$deduplicatedS4@protein_quant_table$sample1, c(3, 8))
+  expect_equal(result$deduplicatedS4@protein_quant_table$sample2, c(12, 18))
+  expect_identical(captured$save_state$config_object$active_protein_key, "Protein.Group")
+  expect_match(result$resultText, "Proteins remaining: 2", fixed = TRUE)
 })
 
 test_that("proteomics protein dedup module preserves apply error behavior", {

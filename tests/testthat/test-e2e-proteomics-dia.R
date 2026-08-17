@@ -48,6 +48,24 @@ test_that("E2E-004 canonical DIA workflow reaches summary/report through the bro
 
     e2e_run_prot_dia_qc(driver, timeout = 180000L)
     e2e_wait_for_step_status(driver, "proteomics", "quality_control", "complete", timeout = 180000L)
+    peptide_audit <- e2e_assert_peptide_qc_audit_state(
+      driver,
+      omic = "proteomics",
+      minimum_records = 7L,
+      timeout = 60000L
+    )
+    jsonlite::write_json(
+      list(
+        schema_version = "1.0.0",
+        case_id = case_id,
+        lane_id = lane$lane_id,
+        quality_control_status = "complete",
+        peptide_qc_audit = peptide_audit
+      ),
+      file.path(e2e_case_artifact_dir(case_id), "peptide-qc-audit-state.json"),
+      auto_unbox = TRUE,
+      pretty = TRUE
+    )
 
     e2e_run_prot_dia_normalization_export(driver, timeout = 240000L)
     e2e_wait_for_step_status(driver, "proteomics", "normalization", "complete", timeout = 240000L)

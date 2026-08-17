@@ -110,6 +110,44 @@ ProteinQuantitativeData <- setClass("ProteinQuantitativeData",
   }
 )
 
+resolveProteinQuantIdentityColumn <- function(proteinObject) {
+  proteinTable <- tryCatch(
+    proteinObject@protein_quant_table,
+    error = function(...) NULL
+  )
+  if (!is.data.frame(proteinTable)) {
+    stop("Protein quantification data must be a data frame.", call. = FALSE)
+  }
+
+  declaredColumn <- tryCatch(
+    proteinObject@protein_id_column,
+    error = function(...) character()
+  )
+  if (length(declaredColumn) == 1L &&
+      !is.na(declaredColumn) &&
+      nzchar(declaredColumn)) {
+    if (declaredColumn %in% names(proteinTable)) {
+      return(declaredColumn)
+    }
+    stop(sprintf(
+      "Declared protein identity column `%s` is missing from the quantification table.",
+      declaredColumn
+    ), call. = FALSE)
+  }
+
+  candidates <- c("Protein.Group", "Protein.Ids", "Protein.IDs", "protein_id")
+  inferredColumn <- candidates[candidates %in% names(proteinTable)][1L]
+  if (length(inferredColumn) == 0L || is.na(inferredColumn)) {
+    stop("No active protein identity column is available.", call. = FALSE)
+  }
+  inferredColumn
+}
+
+countDistinctProteinQuantIdentities <- function(proteinObject) {
+  proteinColumn <- resolveProteinQuantIdentityColumn(proteinObject)
+  length(unique(proteinObject@protein_quant_table[[proteinColumn]]))
+}
+
 .proteinIdTableFromPeptideLineage <- function(peptideS4, quantifiedProteinIds) {
   proteinColumn <- peptideS4@protein_id_column
   quantifiedIds <- data.frame(

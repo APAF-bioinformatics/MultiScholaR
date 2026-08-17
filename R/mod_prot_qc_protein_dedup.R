@@ -85,26 +85,19 @@ runProteinDuplicateRemovalStep <- function(workflowData,
     aggregationMethod
   ))
 
-  duplicates <- currentS4@protein_quant_table |>
-    dplyr::group_by(Protein.Ids) |>
+  proteinIdColumn <- resolveProteinQuantIdentityColumn(currentS4)
+  proteinTable <- currentS4@protein_quant_table
+
+  duplicates <- proteinTable |>
+    dplyr::group_by(!!rlang::sym(proteinIdColumn)) |>
     dplyr::filter(dplyr::n() > 1) |>
-    dplyr::select(Protein.Ids) |>
-    dplyr::distinct() |>
-    dplyr::pull(Protein.Ids)
+    dplyr::distinct(!!rlang::sym(proteinIdColumn)) |>
+    dplyr::pull(!!rlang::sym(proteinIdColumn))
 
   aggregationFn <- aggregationResolverFn(aggregationMethod)
-  proteinIdColumn <- if (isS4(currentS4) &&
-                         "protein_id_column" %in% methods::slotNames(currentS4)) {
-    currentS4@protein_id_column
-  } else {
-    "Protein.Ids"
-  }
-  if (is.null(proteinIdColumn) || !nzchar(proteinIdColumn)) {
-    proteinIdColumn <- "Protein.Ids"
-  }
-  quantColumns <- setdiff(colnames(currentS4@protein_quant_table), proteinIdColumn)
+  quantColumns <- setdiff(colnames(proteinTable), proteinIdColumn)
   numericQuantColumns <- quantColumns[vapply(
-    currentS4@protein_quant_table[quantColumns],
+    proteinTable[quantColumns],
     is.numeric,
     logical(1)
   )]
@@ -125,15 +118,14 @@ runProteinDuplicateRemovalStep <- function(workflowData,
     s4_data_object = currentS4,
     config_object = list(
       aggregation_method = aggregationMethod,
+      active_protein_key = proteinIdColumn,
       duplicates_found = duplicates,
       num_duplicates = length(duplicates)
     ),
     description = "Removed duplicate proteins by aggregation"
   )
 
-  proteinCount <- currentS4@protein_quant_table |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  proteinCount <- countDistinctProteinQuantIdentities(currentS4)
 
   resultText <- paste(
     "Duplicate Protein Removal Completed Successfully\n",

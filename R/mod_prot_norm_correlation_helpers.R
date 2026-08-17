@@ -185,7 +185,7 @@ finalizeProtNormCorrelationWorkflowState <- function(
   }
   catFn(exit_label)
 
-  final_protein_count <- length(unique(finalS4ForDe@protein_quant_table$Protein.Ids))
+  final_protein_count <- countDistinctProteinQuantIdentities(finalS4ForDe)
   final_sample_count <- length(setdiff(
     colnames(finalS4ForDe@protein_quant_table),
     finalS4ForDe@protein_id_column
@@ -557,4 +557,3 @@ handleProtNormCorrelationError <- function(
 
   invisible(NULL)
 }
-

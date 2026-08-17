@@ -101,6 +101,8 @@ test_mode_digest_ui <- function(ns = NULL) {
 #'     \item{step_status_per_omic}{Named list of tab status objects per omic.}
 #'     \item{r6_current_state_per_omic}{Named list of current WorkflowState state names per omic.}
 #'     \item{r6_state_history_per_omic}{Named list of WorkflowState history vectors per omic.}
+#'     \item{peptide_qc_audit_per_omic}{Named bounded summaries of persisted
+#'       peptide-QC audit records per omic.}
 #'     \item{active_tab_per_omic}{Named list of active tab strings per omic, or NULL.}
 #'     \item{export_paths}{Named list of processing logs per omic.}
 #'     \item{report_fingerprints}{Named list of MD5 hashes or NULL per report file.}
@@ -184,6 +186,81 @@ collect_state_digest <- function(values = list(), workflow_states = list()) {
     )
   })
 
+  peptide_qc_audit_per_omic <- lapply(workflow_states, \(ws) {
+    tryCatch(
+      shiny::isolate({
+        state_manager <- ws$state_manager
+        records <- if (!is.null(state_manager)) {
+          state_manager$audit_records
+        } else {
+          ws[["audit_records"]]
+        }
+        records <- records %||% list()
+        if (!length(records)) {
+          return(list(
+            status = "not_recorded",
+            record_count = 0L,
+            record_ids = character(),
+            stage_ids = character(),
+            canonical_digests = character(),
+            immutable_import_digests = character(),
+            all_records_complete = FALSE
+          ))
+        }
+
+        record_field <- function(record, field) {
+          value <- record[[field]]
+          if (is.null(value) || length(value) != 1L || is.na(value)) {
+            return(NA_character_)
+          }
+          as.character(value)
+        }
+        record_ids <- vapply(records, record_field, character(1L), field = "record_id")
+        stage_ids <- vapply(records, record_field, character(1L), field = "stage_id")
+        canonical_digests <- vapply(
+          records,
+          record_field,
+          character(1L),
+          field = "canonical_digest"
+        )
+        immutable_import_digests <- unique(vapply(
+          records,
+          record_field,
+          character(1L),
+          field = "immutable_import_digest"
+        ))
+        immutable_import_digests <- immutable_import_digests[
+          !is.na(immutable_import_digests) & nzchar(immutable_import_digests)
+        ]
+        all_records_complete <- all(
+          !is.na(record_ids) & nzchar(record_ids) &
+            !is.na(stage_ids) & nzchar(stage_ids) &
+            !is.na(canonical_digests) & grepl("^[0-9a-f]{64}$", canonical_digests)
+        ) && length(immutable_import_digests) == 1L &&
+          grepl("^[0-9a-f]{64}$", immutable_import_digests[[1L]])
+
+        list(
+          status = "recorded",
+          record_count = length(records),
+          record_ids = unname(record_ids),
+          stage_ids = unname(stage_ids),
+          canonical_digests = unname(canonical_digests),
+          immutable_import_digests = unname(immutable_import_digests),
+          all_records_complete = isTRUE(all_records_complete)
+        )
+      }),
+      error = function(condition) list(
+        status = "unavailable",
+        record_count = 0L,
+        record_ids = character(),
+        stage_ids = character(),
+        canonical_digests = character(),
+        immutable_import_digests = character(),
+        all_records_complete = FALSE
+      )
+    )
+  })
+
   # active_tab_per_omic:
   # Try active_tab reactive (new, added by task-008) then current_state key (legacy)
   active_tab_per_omic <- lapply(workflow_states, \(ws) {
@@ -228,6 +305,7 @@ collect_state_digest <- function(values = list(), workflow_states = list()) {
     , step_status_per_omic = step_status_per_omic
     , r6_current_state_per_omic = r6_current_state_per_omic
     , r6_state_history_per_omic = r6_state_history_per_omic
+    , peptide_qc_audit_per_omic = peptide_qc_audit_per_omic
     , active_tab_per_omic = active_tab_per_omic
     , export_paths = export_paths
     , report_fingerprints = report_fingerprints

@@ -200,9 +200,7 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
     }
   )
 
-  proteinCount <- filteredS4@protein_quant_table |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  proteinCount <- countDistinctProteinQuantIdentities(filteredS4)
 
   resultText <- if (useStrictMode) {
     paste(

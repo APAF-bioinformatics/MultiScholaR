@@ -1595,7 +1595,7 @@ test_that("updateProtNormFinalFilteringPlot and updateProtNormFinalQcPlot store 
   expect_equal(norm_data$final_qc_plot, "qc_plot")
 })
 
-test_that("finalizeProtNormCorrelationWorkflowState stores DE-ready state and counts", {
+test_that("finalizeProtNormCorrelationWorkflowState counts the declared protein identity", {
   if (!methods::isClass("MockCorrelationWorkflowData")) {
     methods::setClass(
       "MockCorrelationWorkflowData",
@@ -1609,11 +1609,11 @@ test_that("finalizeProtNormCorrelationWorkflowState stores DE-ready state and co
   final_s4 <- methods::new(
     "MockCorrelationWorkflowData",
     protein_quant_table = data.frame(
-      Protein.Ids = c("p1", "p1", "p2"),
+      Protein.Group = c("p1", "p1", "p2"),
       S1 = c(1, 2, 3),
       S2 = c(4, 5, 6)
     ),
-    protein_id_column = "Protein.Ids"
+    protein_id_column = "Protein.Group"
   )
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$state_manager <- new.env(parent = emptyenv())
@@ -2279,6 +2279,62 @@ test_that("collectProtNormExportSessionData builds the export payload with count
   expect_equal(session_data$correlation_threshold, 0.7)
   expect_equal(session_data$final_protein_count, 2)
   expect_equal(session_data$final_sample_count, 2)
+})
+
+test_that("collectProtNormExportSessionData counts a Protein.Group-only payload", {
+  protein_table <- data.frame(
+    Protein.Group = c("group1", "group1", "group2"),
+    S1 = c(1, 2, 3),
+    S2 = c(4, 5, 6)
+  )
+  design_matrix <- data.frame(
+    Run = c("S1", "S2"),
+    group = c("A", "B"),
+    replicates = c("R1", "R1")
+  )
+  current_s4 <- ProteinQuantitativeData(
+    protein_quant_table = protein_table,
+    protein_id_column = "Protein.Group",
+    protein_id_table = dplyr::distinct(protein_table, Protein.Group),
+    design_matrix = design_matrix,
+    sample_id = "Run",
+    group_id = "group",
+    technical_replicate_id = "replicates",
+    args = list(globalParameters = list(workflow_type = "DIA"))
+  )
+  workflow_data <- new.env(parent = emptyenv())
+  workflow_data$state_manager <- new.env(parent = emptyenv())
+  workflow_data$state_manager$current_state <- "correlation_filtered"
+  workflow_data$state_manager$getState <- function(state) current_s4
+  workflow_data$contrasts_tbl <- data.frame(friendly_names = "A vs B")
+  workflow_data$design_matrix <- design_matrix
+  workflow_data$config_list <- list(globalParameters = list(workflow_type = "DIA"))
+  norm_data <- new.env(parent = emptyenv())
+
+  session_data <- collectProtNormExportSessionData(
+    workflowData = workflow_data,
+    normData = norm_data,
+    input = list(norm_method = "none", ruv_mode = "skip"),
+    messageFn = function(...) invisible(NULL)
+  )
+
+  expect_identical(session_data$final_protein_count, 2L)
+  expect_identical(session_data$final_sample_count, 2L)
+  expect_silent(validateProtDaFilteredSession(session_data))
+})
+
+test_that("protein identity resolution rejects inconsistent declared metadata", {
+  inconsistent <- methods::new(
+    "MockProtNormExportData",
+    protein_quant_table = data.frame(Protein.Group = "group1", S1 = 1),
+    protein_id_column = "Protein.Ids",
+    args = list()
+  )
+
+  expect_error(
+    resolveProteinQuantIdentityColumn(inconsistent),
+    "Declared protein identity column `Protein.Ids` is missing"
+  )
 })
 
 test_that("collectProtNormExportSessionData carries limpa metadata into filtered-session exports", {

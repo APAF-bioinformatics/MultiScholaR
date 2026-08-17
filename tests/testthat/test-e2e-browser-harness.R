@@ -90,6 +90,45 @@ new_fake_e2e_driver <- function(digest = NULL, logs = list(), select_options = l
   )
 }
 
+test_that("browser preflight validates packages and an executable Chromium", {
+  chrome <- tempfile("synthetic-chrome-")
+  file.create(chrome)
+
+  preflight <- e2e_browser_preflight(
+    package_available = function(package) package %in% c("shinytest2", "chromote"),
+    chrome_finder = function() chrome,
+    executable_check = function(path) identical(path, normalizePath(chrome, winslash = "/")),
+    launch_probe = function(path) list(usable = TRUE, error = NULL)
+  )
+
+  expect_true(preflight$available)
+  expect_true(preflight$shinytest2_available)
+  expect_true(preflight$chromote_available)
+  expect_identical(preflight$chrome_path, normalizePath(chrome, winslash = "/"))
+  expect_length(preflight$failures, 0L)
+})
+
+test_that("required browser mode fails while optional local mode skips explicitly", {
+  unavailable <- list(
+    available = FALSE,
+    shinytest2_available = TRUE,
+    chromote_available = TRUE,
+    chrome_path = NA_character_,
+    failures = list("Chromium executable unavailable for test")
+  )
+
+  expect_error(
+    skip_if_no_e2e_browser(preflight = unavailable, required = TRUE),
+    "Required E2E browser preflight failed"
+  )
+  skipped <- tryCatch(
+    skip_if_no_e2e_browser(preflight = unavailable, required = FALSE),
+    skip = function(condition) condition
+  )
+  expect_s3_class(skipped, "skip")
+  expect_match(conditionMessage(skipped), "Optional E2E browser runtime is unavailable")
+})
+
 test_that("e2e_selector builds stable data-testid selectors", {
   expect_identical(e2e_selector("tile-proteomics"), "[data-testid=\"tile-proteomics\"]")
   expect_error(e2e_selector(""), "non-empty")
@@ -209,6 +248,35 @@ test_that("state digest assertions parse test_state_digest and validate invarian
   )
 
   expect_identical(unlist(digest$selected_omics), "proteomics")
+})
+
+test_that("browser audit assertion validates persisted bounded peptide-QC evidence", {
+  immutable_digest <- paste(rep("a", 64L), collapse = "")
+  canonical_digests <- c(
+    paste(rep("b", 64L), collapse = ""),
+    paste(rep("c", 64L), collapse = "")
+  )
+  driver <- new_fake_e2e_driver(digest = jsonlite::toJSON(
+    list(
+      peptide_qc_audit_per_omic = list(proteomics = list(
+        status = "recorded",
+        record_count = 2L,
+        record_ids = c("pqc:one", "pqc:two"),
+        stage_ids = c("qvalue_filter", "precursor_rollup"),
+        canonical_digests = canonical_digests,
+        immutable_import_digests = immutable_digest,
+        all_records_complete = TRUE
+      ))
+    ),
+    auto_unbox = TRUE
+  ))
+
+  audit <- e2e_assert_peptide_qc_audit_state(
+    driver,
+    minimum_records = 2L,
+    timeout = 1000L
+  )
+  expect_identical(audit$status, "recorded")
 })
 
 test_that("step-status assertions and waits inspect per-omic digest state", {

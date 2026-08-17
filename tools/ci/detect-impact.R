@@ -343,6 +343,13 @@ resolve_impact <- function(changed_files, impact_map, args, seed_errors = charac
   browser_rows <- dedupe_rows(browser_rows, c("filter"))
   e2e_rows <- dedupe_rows(e2e_rows, c("filter"))
 
+  required_browser_lanes <- as_chr(impact_map$required_browser_lanes)
+  e2e_rows <- lapply(e2e_rows, function(row) {
+    row_lanes <- trimws(unlist(strsplit(as_chr(row$lane), ",", fixed = TRUE)))
+    row$browser_required <- any(row_lanes %in% required_browser_lanes)
+    row
+  })
+
   module_rows <- add_artifact_dirs(module_rows, file.path("tests", "testthat", "_module_ci_artifacts", "impact", "module"))
   browser_rows <- add_artifact_dirs(browser_rows, file.path("tests", "testthat", "_module_ci_artifacts", "impact", "browser"))
   e2e_rows <- add_artifact_dirs(e2e_rows, file.path("tests", "testthat", "_e2e_artifacts", "impact"))

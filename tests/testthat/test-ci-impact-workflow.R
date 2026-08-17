@@ -10,6 +10,9 @@ test_that("ci impact workflow exposes detect-impact and dynamic matrix jobs", {
   expect_match(workflow, "module-ci-browser-impacted:", fixed = TRUE)
   expect_match(workflow, "e2e-impacted:", fixed = TRUE)
   expect_match(workflow, "Rscript tools/ci/run-e2e-ci.R", fixed = TRUE)
+  expect_match(workflow, "MULTISCHOLAR_E2E_BROWSER_REQUIRED", fixed = TRUE)
+  expect_match(workflow, "matrix.browser_required", fixed = TRUE)
+  expect_match(workflow, "test-output.log", fixed = TRUE)
   expect_match(workflow, "impact-routing-summary:", fixed = TRUE)
 })
 
@@ -18,6 +21,8 @@ test_that("ci impact workflow keeps full nightly and release gates conservative"
 
   expect_match(workflow, "full-gates:", fixed = TRUE)
   expect_match(workflow, "filter = \"^e2e-\"", fixed = TRUE)
+  expect_match(workflow, "peptide-qc-browser-required", fixed = TRUE)
+  expect_match(workflow, "Run mandatory DIA peptide-QC browser evidence", fixed = TRUE)
   expect_match(workflow, "release-candidate-gate:", fixed = TRUE)
   expect_match(workflow, "test \"${{ needs.full-gates.result }}\" = \"success\"", fixed = TRUE)
 })

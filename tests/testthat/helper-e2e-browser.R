@@ -1,30 +1,32 @@
 # Shared shinytest2 browser harness for GUI E2E tests.
 # The helpers keep workflow tests readable and centralize failure artifacts.
 
+source(
+  testthat::test_path("..", "..", "tools", "ci", "e2e-browser-preflight.R"),
+  local = TRUE
+)
+
 .E2E_BROWSER_DEFAULT_TIMEOUT <- 30000L
 .E2E_BROWSER_DEFAULT_LOAD_TIMEOUT <- 120000L
 .E2E_VALID_OMICS <- c("proteomics", "metabolomics", "lipidomics")
 
 e2e_browser_dependencies_available <- function() {
-  if (!requireNamespace("shinytest2", quietly = TRUE)) {
-    return(FALSE)
-  }
-  if (!requireNamespace("chromote", quietly = TRUE)) {
-    return(FALSE)
-  }
-
-  chrome_path <- tryCatch(
-    chromote::find_chrome(),
-    error = function(e) ""
-  )
-  any(nzchar(chrome_path))
+  isTRUE(e2e_browser_preflight()$available)
 }
 
-skip_if_no_e2e_browser <- function() {
-  testthat::skip_if_not(
-    e2e_browser_dependencies_available(),
-    "shinytest2/chromote browser dependencies are not available"
-  )
+skip_if_no_e2e_browser <- function(
+    preflight = e2e_browser_preflight(),
+    required = e2e_browser_required()) {
+  if (isTRUE(preflight$available)) {
+    return(invisible(preflight))
+  }
+  if (isTRUE(required)) {
+    e2e_require_browser_preflight(preflight)
+  }
+  testthat::skip(paste(
+    "Optional E2E browser runtime is unavailable:",
+    e2e_browser_preflight_message(preflight)
+  ))
 }
 
 e2e_sanitize_id <- function(value) {
@@ -1739,6 +1741,37 @@ e2e_digest_r6_state_history <- function(digest, omic) {
     return(as.character(unlist(histories[[omic]], use.names = FALSE)))
   }
   as.character(unlist(digest$r6_state_history %||% character(), use.names = FALSE))
+}
+
+e2e_assert_peptide_qc_audit_state <- function(
+    driver,
+    omic = "proteomics",
+    minimum_records = 7L,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+  digest <- e2e_state_digest(driver, timeout = timeout)
+  audit <- digest$peptide_qc_audit_per_omic[[omic]]
+  testthat::expect_false(is.null(audit), info = "Peptide-QC audit digest is missing")
+  testthat::expect_identical(audit$status, "recorded")
+
+  record_count <- as.integer(unlist(audit$record_count, use.names = FALSE)[[1L]])
+  record_ids <- as.character(unlist(audit$record_ids, use.names = FALSE))
+  stage_ids <- as.character(unlist(audit$stage_ids, use.names = FALSE))
+  canonical_digests <- as.character(unlist(audit$canonical_digests, use.names = FALSE))
+  immutable_import_digests <- as.character(unlist(
+    audit$immutable_import_digests,
+    use.names = FALSE
+  ))
+
+  testthat::expect_gte(record_count, as.integer(minimum_records))
+  testthat::expect_length(record_ids, record_count)
+  testthat::expect_length(unique(record_ids), record_count)
+  testthat::expect_length(stage_ids, record_count)
+  testthat::expect_length(canonical_digests, record_count)
+  testthat::expect_true(all(grepl("^[0-9a-f]{64}$", canonical_digests)))
+  testthat::expect_length(immutable_import_digests, 1L)
+  testthat::expect_match(immutable_import_digests[[1L]], "^[0-9a-f]{64}$")
+  testthat::expect_true(isTRUE(audit$all_records_complete))
+  invisible(audit)
 }
 
 e2e_assert_step_statuses <- function(driver, omic, expected, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {

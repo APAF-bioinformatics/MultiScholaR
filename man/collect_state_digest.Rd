@@ -28,6 +28,8 @@ Named list with the following elements:
 \item{step_status_per_omic}{Named list of tab status objects per omic.}
 \item{r6_current_state_per_omic}{Named list of current WorkflowState state names per omic.}
 \item{r6_state_history_per_omic}{Named list of WorkflowState history vectors per omic.}
+\item{peptide_qc_audit_per_omic}{Named bounded summaries of persisted
+peptide-QC audit records per omic.}
 \item{active_tab_per_omic}{Named list of active tab strings per omic, or NULL.}
 \item{export_paths}{Named list of processing logs per omic.}
 \item{report_fingerprints}{Named list of MD5 hashes or NULL per report file.}

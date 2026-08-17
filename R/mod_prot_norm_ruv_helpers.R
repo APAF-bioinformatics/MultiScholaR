@@ -306,11 +306,7 @@ finalizeProtNormRuvCleanupStep <- function(
   omicType,
   experimentLabel,
   removeRowsWithMissingValuesPercentFn = removeRowsWithMissingValuesPercent,
-  countDistinctProteinsFn = function(s4Object) {
-    s4Object@protein_quant_table |>
-      dplyr::distinct(Protein.Ids) |>
-      nrow()
-  },
+  countDistinctProteinsFn = countDistinctProteinQuantIdentities,
   updateProteinFilteringFn = updateProteinFiltering,
   messageFn = message
 ) {

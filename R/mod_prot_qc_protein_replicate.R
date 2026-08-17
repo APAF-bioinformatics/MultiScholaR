@@ -155,9 +155,7 @@ runProteinReplicateFilterApplyStep <- function(workflowData,
     description = "Applied protein replicate filter (removed single-replicate proteins)"
   )
 
-  proteinCount <- filteredS4@protein_quant_table |>
-    dplyr::distinct(Protein.Ids) |>
-    nrow()
+  proteinCount <- countDistinctProteinQuantIdentities(filteredS4)
 
   if (is.null(workflowData$protein_counts)) {
     workflowData$protein_counts <- list()

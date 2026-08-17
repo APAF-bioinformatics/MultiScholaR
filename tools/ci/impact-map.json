@@ -2,6 +2,7 @@
   "schema_version": "1.0.0",
   "resolver_min_version": "1.0.0",
   "impact_levels": ["none", "targeted", "omic", "broad", "full"],
+  "required_browser_lanes": ["prot_dia"],
   "module_families": [
     "foundation",
     "fixtures",

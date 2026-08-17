@@ -32,4 +32,8 @@ P00003–P00005 are not expected to be significant (<0.1 log2FC between groups).
 
 `importDIANNData()` in `R/func_prot_import_readers.R`
 
-Required columns consumed: `Protein.Group`, `Stripped.Sequence`, `Run`, `Precursor.Quantity`, `Q.Value`, `PG.Q.Value`
+Required columns consumed include `Protein.Group`, `Stripped.Sequence`, `Run`,
+`Precursor.Quantity`, `Precursor.Normalised`, `Q.Value`, `Global.Q.Value`,
+`PG.Q.Value`, `Global.PG.Q.Value`, and `Proteotypic`. The synthetic fixture uses
+the same valid `0.001` confidence value for run-specific and global gates and
+marks every invented precursor as proteotypic.

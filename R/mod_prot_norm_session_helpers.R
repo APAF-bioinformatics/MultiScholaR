@@ -101,7 +101,7 @@ collectProtNormExportSessionData <- function(
     qc_params = workflowData$qc_params,
     protein_counts = workflowData$protein_counts,
     mixed_species_analysis = workflowData$mixed_species_analysis,
-    final_protein_count = length(unique(current_s4_object@protein_quant_table$Protein.Ids)),
+    final_protein_count = countDistinctProteinQuantIdentities(current_s4_object),
     final_sample_count = length(setdiff(
       colnames(current_s4_object@protein_quant_table),
       current_s4_object@protein_id_column

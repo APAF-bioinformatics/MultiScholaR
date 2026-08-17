@@ -192,6 +192,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-pandoc@v2
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
@@ -201,12 +202,17 @@ jobs:
             any::shinytest2
             any::chromote
       - name: Run impacted E2E lane
-        run: >
-          Rscript tools/ci/run-e2e-ci.R
-          --lane ${{ matrix.lane }}
-          --filter ${{ matrix.filter }}
-          --reporter summary
-          --artifact-dir ${{ matrix.artifact_dir }}
+        env:
+          MULTISCHOLAR_E2E_BROWSER_REQUIRED: ${{ matrix.browser_required && 'true' || 'false' }}
+        run: |
+          mkdir -p "${{ matrix.artifact_dir }}"
+          set -o pipefail
+          Rscript tools/ci/run-e2e-ci.R \
+            --lane "${{ matrix.lane }}" \
+            --filter "${{ matrix.filter }}" \
+            --reporter summary \
+            --artifact-dir "${{ matrix.artifact_dir }}" \
+            2>&1 | tee "${{ matrix.artifact_dir }}/test-output.log"
       - name: Upload impacted E2E artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -262,6 +268,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-pandoc@v2
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
@@ -350,6 +357,9 @@ jobs:
           - name: all-current-e2e-workflows
             kind: e2e
             artifact_dir: tests/testthat/_e2e_artifacts/full/current-e2e
+          - name: peptide-qc-browser-required
+            kind: e2e-required
+            artifact_dir: tests/testthat/_e2e_artifacts/full/peptide-qc-browser-required
           - name: alternate-launch-browser-smoke
             kind: browser
             artifact_dir: tests/testthat/_e2e_artifacts/full/alternate-launch
@@ -362,6 +372,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-pandoc@v2
+        if: matrix.kind == 'e2e' || matrix.kind == 'e2e-required' || matrix.kind == 'report'
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
@@ -385,6 +397,19 @@ jobs:
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
           testthat::test_dir("tests/testthat", filter = "^e2e-", reporter = "summary")'
+      - name: Run mandatory DIA peptide-QC browser evidence
+        if: matrix.kind == 'e2e-required'
+        env:
+          MULTISCHOLAR_E2E_BROWSER_REQUIRED: "true"
+        run: |
+          mkdir -p "${{ matrix.artifact_dir }}"
+          set -o pipefail
+          Rscript tools/ci/run-e2e-ci.R \
+            --lane prot_dia \
+            --filter '^e2e-proteomics-dia$' \
+            --reporter summary \
+            --artifact-dir "${{ matrix.artifact_dir }}" \
+            2>&1 | tee "${{ matrix.artifact_dir }}/test-output.log"
       - name: Run alternate launch/browser smoke
         if: matrix.kind == 'browser'
         env:

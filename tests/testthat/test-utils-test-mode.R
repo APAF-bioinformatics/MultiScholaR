@@ -222,7 +222,8 @@ test_that("collect_state_digest() returns complete list with empty inputs", {
     "selected_omics", "initialized_omics", "project_dir_keys"
     , "experiment_label", "workflow_type_per_omic", "step_status_per_omic"
     , "r6_current_state_per_omic", "r6_state_history_per_omic"
-    , "active_tab_per_omic", "export_paths", "report_fingerprints"
+    , "peptide_qc_audit_per_omic", "active_tab_per_omic", "export_paths"
+    , "report_fingerprints"
   )
   expect_true(all(expected_keys %in% names(result)))
 })
@@ -311,6 +312,37 @@ test_that("collect_state_digest() reads workflow_type from state_manager field",
   expect_identical(result$workflow_type_per_omic[["proteomics"]], "TMT")
   expect_identical(result$r6_current_state_per_omic[["proteomics"]], "initial")
   expect_identical(result$r6_state_history_per_omic[["proteomics"]], "initial")
+})
+
+test_that("collect_state_digest() exposes bounded persisted peptide-QC audit evidence", {
+  immutable_digest <- paste(rep("a", 64L), collapse = "")
+  sm <- WorkflowState$new()
+  sm$audit_records <- list(
+    `pqc:record-1` = list(
+      record_id = "pqc:record-1",
+      stage_id = "qvalue_filter",
+      canonical_digest = paste(rep("b", 64L), collapse = ""),
+      immutable_import_digest = immutable_digest
+    ),
+    `pqc:record-2` = list(
+      record_id = "pqc:record-2",
+      stage_id = "precursor_rollup",
+      canonical_digest = paste(rep("c", 64L), collapse = ""),
+      immutable_import_digest = immutable_digest
+    )
+  )
+  result <- collect_state_digest(workflow_states = list(
+    proteomics = list(state_manager = sm)
+  ))
+  audit <- result$peptide_qc_audit_per_omic$proteomics
+
+  expect_identical(audit$status, "recorded")
+  expect_identical(audit$record_count, 2L)
+  expect_identical(audit$record_ids, c("pqc:record-1", "pqc:record-2"))
+  expect_identical(audit$stage_ids, c("qvalue_filter", "precursor_rollup"))
+  expect_identical(audit$immutable_import_digests, immutable_digest)
+  expect_true(audit$all_records_complete)
+  expect_false(any(c("data", "removal_ledger", "imputation_ledger") %in% names(audit)))
 })
 
 test_that("collect_state_digest() reads tab_status as step_status_per_omic", {
