@@ -56,47 +56,169 @@
   })
 }
 
+.peptideContaminantManifestSchemaVersion <- "1.0.0"
+
+.emptyPeptideContaminantManifest <- function() {
+  list(
+    accessions = character(),
+    source = "none",
+    input_source = "none",
+    source_name = NA_character_,
+    source_uri = NA_character_,
+    license = NA_character_,
+    version = NA_character_,
+    schema_version = .peptideContaminantManifestSchemaVersion,
+    declared_schema_version = NA_character_,
+    checksum = NA_character_,
+    checksum_algorithm = "sha256",
+    fingerprint = NA_character_,
+    fingerprint_algorithm = "sha256",
+    source_file_fingerprint = NA_character_,
+    contract = "not_supplied",
+    legacy_adapter = FALSE,
+    validation_status = "not_supplied"
+  )
+}
+
+.peptideManifestScalarMetadata <- function(manifest_data, candidates, label) {
+  columns <- .findPeptideExclusionColumns(names(manifest_data), candidates)
+  if (!length(columns)) {
+    return(NA_character_)
+  }
+
+  values <- unlist(lapply(columns, function(column) {
+    trimws(as.character(manifest_data[[column]]))
+  }), use.names = FALSE)
+  values <- sort(unique(values[!is.na(values) & nzchar(values)]))
+  if (length(values) != 1L) {
+    stop(
+      sprintf("Contaminant manifest metadata '%s' must contain one non-empty value.", label),
+      call. = FALSE
+    )
+  }
+  values[[1]]
+}
+
+.looksLikePeptideManifestPath <- function(value) {
+  length(value) == 1L && (
+    grepl("[/\\\\]", value) ||
+      grepl("^~", value) ||
+      grepl("\\.(?:csv|tsv|tab|txt)$", value, ignore.case = TRUE, perl = TRUE)
+  )
+}
+
+.isLocalAbsoluteManifestPath <- function(value) {
+  !is.na(value) && grepl(
+    "^(?:/|~[/\\\\]|[A-Za-z]:[/\\\\]|file:(?://)?/)",
+    value,
+    ignore.case = TRUE,
+    perl = TRUE
+  )
+}
+
+.peptideManifestFingerprint <- function(
+    accessions,
+    version,
+    source_name,
+    source_uri,
+    license) {
+  digest::digest(
+    list(
+      schema_version = .peptideContaminantManifestSchemaVersion,
+      accessions = sort(unique(accessions)),
+      version = version,
+      source_name = source_name,
+      source_uri = source_uri,
+      license = license
+    ),
+    algo = "sha256",
+    serialize = TRUE,
+    serializeVersion = 2
+  )
+}
+
+.portablePeptideContaminantManifest <- function(manifest) {
+  if (!length(manifest$accessions)) {
+    return("")
+  }
+
+  portable <- data.frame(
+    accession = manifest$accessions,
+    stringsAsFactors = FALSE
+  )
+  metadata <- list(
+    manifest_schema_version = manifest$declared_schema_version,
+    version = manifest$version,
+    source_name = manifest$source_name,
+    source_uri = manifest$source_uri,
+    license = manifest$license,
+    manifest_input_source = manifest$input_source
+  )
+  for (field in names(metadata)) {
+    if (!is.na(metadata[[field]]) && nzchar(metadata[[field]])) {
+      portable[[field]] <- metadata[[field]]
+    }
+  }
+  portable
+}
+
 #' Read a contaminant accession manifest
 #'
 #' @param manifest `NULL`, a character vector of accessions, a data frame with
-#'   an `accession` column, or a path to a one-column/TSV/CSV manifest.
-#' @return A list containing normalised accessions and provenance metadata.
+#'   an `accession` column, or a path to a one-column/TSV/CSV manifest. Current
+#'   manifests also provide `manifest_schema_version`, `version`, and
+#'   `source_name`; valid older inputs use the explicit legacy adapter.
+#' @return A list containing normalised accessions, validated portable
+#'   provenance metadata, and deterministic SHA-256 fingerprints.
 #' @keywords internal
 readPeptideContaminantManifest <- function(manifest = NULL) {
-  empty_manifest <- list(
-    accessions = character(),
-    source = "none",
-    version = NA_character_,
-    checksum = NA_character_
-  )
+  empty_manifest <- .emptyPeptideContaminantManifest()
   if (is.null(manifest) || (is.character(manifest) &&
       length(manifest) == 1L && !nzchar(trimws(manifest)))) {
     return(empty_manifest)
   }
 
   manifest_data <- NULL
-  source <- "user_vector"
+  input_source <- "user_vector"
   source_path <- NULL
   if (is.character(manifest) && length(manifest) == 1L && file.exists(manifest)) {
     source_path <- normalizePath(manifest, winslash = "/", mustWork = TRUE)
-    source <- paste0("user_file:", basename(source_path))
-    manifest_data <- if (grepl("\\.csv$", manifest, ignore.case = TRUE)) {
-      utils::read.csv(
-        manifest,
-        header = TRUE,
-        stringsAsFactors = FALSE,
-        check.names = FALSE
-      )
-    } else {
-      utils::read.delim(
-        manifest,
-        header = TRUE,
-        stringsAsFactors = FALSE,
-        check.names = FALSE
-      )
-    }
+    input_source <- paste0("user_file:", basename(source_path))
+    manifest_data <- tryCatch(
+      if (grepl("\\.csv$", manifest, ignore.case = TRUE)) {
+        utils::read.csv(
+          manifest,
+          header = TRUE,
+          stringsAsFactors = FALSE,
+          check.names = FALSE
+        )
+      } else {
+        utils::read.delim(
+          manifest,
+          header = TRUE,
+          stringsAsFactors = FALSE,
+          check.names = FALSE
+        )
+      },
+      error = function(condition) {
+        stop(
+          sprintf(
+            "Unable to read contaminant manifest '%s': %s",
+            basename(manifest),
+            conditionMessage(condition)
+          ),
+          call. = FALSE
+        )
+      }
+    )
+  } else if (is.character(manifest) && length(manifest) == 1L &&
+      .looksLikePeptideManifestPath(manifest)) {
+    stop(
+      sprintf("Contaminant manifest file does not exist: %s", basename(manifest)),
+      call. = FALSE
+    )
   } else if (is.data.frame(manifest)) {
-    source <- "user_data_frame"
+    input_source <- "user_data_frame"
     manifest_data <- manifest
   } else if (is.character(manifest)) {
     manifest_data <- data.frame(accession = manifest, stringsAsFactors = FALSE)
@@ -128,18 +250,101 @@ readPeptideContaminantManifest <- function(manifest = NULL) {
     stop("Contaminant manifest contains no usable accessions.", call. = FALSE)
   }
 
+  declared_schema_version <- .peptideManifestScalarMetadata(
+    manifest_data,
+    c("manifest_schema_version", "schema_version"),
+    "manifest_schema_version"
+  )
+  version <- .peptideManifestScalarMetadata(
+    manifest_data,
+    c("version", "resource_version"),
+    "version"
+  )
+  source_name <- .peptideManifestScalarMetadata(
+    manifest_data,
+    c("source_name", "source"),
+    "source_name"
+  )
+  source_uri <- .peptideManifestScalarMetadata(
+    manifest_data,
+    c("source_uri", "source_url"),
+    "source_uri"
+  )
+  license <- .peptideManifestScalarMetadata(
+    manifest_data,
+    c("license", "licence"),
+    "license"
+  )
+  recorded_input_source <- .peptideManifestScalarMetadata(
+    manifest_data,
+    "manifest_input_source",
+    "manifest_input_source"
+  )
+
+  if (!is.na(declared_schema_version) &&
+      !identical(declared_schema_version, .peptideContaminantManifestSchemaVersion)) {
+    stop(
+      sprintf(
+        "Unsupported contaminant manifest schema version '%s'; expected '%s'.",
+        declared_schema_version,
+        .peptideContaminantManifestSchemaVersion
+      ),
+      call. = FALSE
+    )
+  }
+  if (.isLocalAbsoluteManifestPath(source_name) ||
+      .isLocalAbsoluteManifestPath(source_uri) ||
+      .isLocalAbsoluteManifestPath(recorded_input_source)) {
+    stop(
+      "Contaminant manifest source metadata must not contain an absolute local path.",
+      call. = FALSE
+    )
+  }
+  if (!is.na(recorded_input_source)) {
+    if (!grepl(
+        "^(?:user_vector|user_data_frame|user_file:[^/\\\\]+)$",
+        recorded_input_source,
+        perl = TRUE)) {
+      stop("Contaminant manifest input source metadata is malformed.", call. = FALSE)
+    }
+    input_source <- recorded_input_source
+  }
+
+  current_contract <- !is.na(declared_schema_version) &&
+    !is.na(version) && !is.na(source_name)
+  fingerprint <- .peptideManifestFingerprint(
+    accessions,
+    version,
+    source_name,
+    source_uri,
+    license
+  )
+
   list(
     accessions = accessions,
-    source = source,
-    version = if ("version" %in% names(manifest_data)) {
-      paste(sort(unique(as.character(manifest_data$version))), collapse = ",")
+    source = input_source,
+    input_source = input_source,
+    source_name = source_name,
+    source_uri = source_uri,
+    license = license,
+    version = version,
+    schema_version = .peptideContaminantManifestSchemaVersion,
+    declared_schema_version = declared_schema_version,
+    checksum = fingerprint,
+    checksum_algorithm = "sha256",
+    fingerprint = fingerprint,
+    fingerprint_algorithm = "sha256",
+    source_file_fingerprint = if (!is.null(source_path)) {
+      digest::digest(source_path, algo = "sha256", serialize = FALSE, file = TRUE)
     } else {
       NA_character_
     },
-    checksum = if (!is.null(source_path)) {
-      unname(tools::md5sum(source_path))
+    contract = if (current_contract) "versioned_manifest_v1" else "legacy_adapter",
+    legacy_adapter = !current_contract,
+    validation_status = if (current_contract) {
+      "valid_versioned_manifest"
     } else {
-      NA_character_
+      "valid_legacy_adapter"
     }
   )
 }

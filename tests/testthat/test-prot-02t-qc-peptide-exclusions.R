@@ -128,6 +128,17 @@ test_that("biological exclusions occur before frozen identification evidence", {
 })
 
 test_that("DIA-NN S4 filtering stores the exclusion ledger and manifest provenance", {
+  manifest_file <- tempfile(fileext = ".tsv")
+  writeLines(
+    c(
+      paste(
+        "accession", "manifest_schema_version", "version", "source_name",
+        sep = "\t"
+      ),
+      paste("P02769", "1.0.0", "test-v1", "synthetic test manifest", sep = "\t")
+    ),
+    manifest_file
+  )
   input <- data.frame(
     Run = c("S1", "S2"),
     Precursor.Id = c("prec1", "prec2"),
@@ -159,14 +170,26 @@ test_that("DIA-NN S4 filtering stores the exclusion ledger and manifest provenan
       "Stripped.Sequence", "Modified.Sequence", "Precursor.Charge",
       "Precursor.Quantity", "Precursor.Normalised"
     ),
-    contaminant_manifest = "P02769"
+    contaminant_manifest = manifest_file
   )
   metadata <- filtered@args$srlQvalueProteotypicPeptideClean
+  local_root <- normalizePath(tempdir(), winslash = "/", mustWork = TRUE)
 
   expect_identical(filtered@peptide_data$Protein.Group, "P_TARGET")
   expect_identical(metadata$biological_exclusion_summary$excluded_rows, 1L)
   expect_identical(metadata$biological_exclusion_ledger$Protein.Group, "P_CONT")
   expect_identical(metadata$contaminant_manifest_provenance$accessions, "P02769")
+  expect_identical(
+    metadata$contaminant_manifest_provenance$validation_status,
+    "valid_versioned_manifest"
+  )
+  expect_s3_class(metadata$contaminant_manifest, "data.frame")
+  expect_false(any(grepl(local_root, unlist(metadata$contaminant_manifest), fixed = TRUE)))
+  expect_false(any(grepl(
+    local_root,
+    unlist(metadata$contaminant_manifest_provenance),
+    fixed = TRUE
+  )))
 })
 
 test_that("an explicit contaminant column takes precedence over missing manifests", {

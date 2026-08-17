@@ -659,7 +659,6 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
                exclude_contaminants,
                "exclude_contaminants"
              )
-             theObject@args$srlQvalueProteotypicPeptideClean$contaminant_manifest <- contaminant_manifest
              theObject@args$srlQvalueProteotypicPeptideClean$confidence_metric_columns <- list(
                q_value = q_value_column,
                global_q_value = global_q_value_column,
@@ -721,6 +720,8 @@ setMethod( f ="srlQvalueProteotypicPeptideClean"
 
              theObject@args$srlQvalueProteotypicPeptideClean$biological_exclusion_summary <- exclusion_summary
              theObject@args$srlQvalueProteotypicPeptideClean$biological_exclusion_ledger <- exclusion_ledger
+             theObject@args$srlQvalueProteotypicPeptideClean$contaminant_manifest <-
+               .portablePeptideContaminantManifest(manifest_provenance)
              theObject@args$srlQvalueProteotypicPeptideClean$contaminant_manifest_provenance <- manifest_provenance
 
              theObject@peptide_data <- search_srl_quant_cln

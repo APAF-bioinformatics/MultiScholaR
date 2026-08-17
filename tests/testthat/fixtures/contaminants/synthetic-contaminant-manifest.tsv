@@ -1,0 +1,3 @@
+accession	manifest_schema_version	version	source_name	source_uri	license
+SYNTH_CONT_A	1.0.0	1.0.0	MultiScholaR synthetic contaminant fixture	urn:multischolar:test:synthetic-contaminants	LGPL-3.0-or-later
+sp|SYNTH_CONT_B|SYNTHETIC_B	1.0.0	1.0.0	MultiScholaR synthetic contaminant fixture	urn:multischolar:test:synthetic-contaminants	LGPL-3.0-or-later

@@ -8,10 +8,13 @@ readPeptideContaminantManifest(manifest = NULL)
 }
 \arguments{
 \item{manifest}{\code{NULL}, a character vector of accessions, a data frame with
-an \code{accession} column, or a path to a one-column/TSV/CSV manifest.}
+an \code{accession} column, or a path to a one-column/TSV/CSV manifest. Current
+manifests also provide \code{manifest_schema_version}, \code{version}, and
+\code{source_name}; valid older inputs use the explicit legacy adapter.}
 }
 \value{
-A list containing normalised accessions and provenance metadata.
+A list containing normalised accessions, validated portable
+provenance metadata, and deterministic SHA-256 fingerprints.
 }
 \description{
 Read a contaminant accession manifest
