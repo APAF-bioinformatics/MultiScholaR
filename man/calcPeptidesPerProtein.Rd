@@ -4,10 +4,13 @@
 \alias{calcPeptidesPerProtein}
 \title{Calculate peptides per protein}
 \usage{
-calcPeptidesPerProtein(data)
+calcPeptidesPerProtein(data, protein_id_column = NULL)
 }
 \arguments{
 \item{data}{A data frame or S4 object containing protein/peptide data}
+
+\item{protein_id_column}{Optional declared protein identity column. The active
+protein key is inferred when \code{NULL}.}
 }
 \value{
 Data frame with protein IDs and peptide counts

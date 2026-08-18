@@ -218,6 +218,19 @@ buildProtTestModeLimpaProteinObject <- function(peptideS4,
   )
 }
 
+ensurePeptideMatrixForLimpaRollup <- function(peptideS4,
+                                              calcPeptideMatrixFn = calcPeptideMatrix) {
+  if (!methods::is(peptideS4, "PeptideQuantitativeData")) {
+    return(peptideS4)
+  }
+
+  if (length(peptideS4@peptide_matrix) == 0L) {
+    peptideS4 <- calcPeptideMatrixFn(peptideS4)
+  }
+
+  peptideS4
+}
+
 #' @rdname mod_prot_qc_protein_rollup
 #' @export
 #' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
@@ -446,6 +459,7 @@ runProteinLimpaRollupApplyStep <- function(workflowData,
                                            experimentPaths,
                                            proteinLimpaFn = proteinMissingValueImputationLimpa,
                                            testModeFallbackFn = buildProtTestModeLimpaProteinObject,
+                                           preparePeptideMatrixFn = ensurePeptideMatrixForLimpaRollup,
                                            requireNamespaceFn = requireNamespace,
                                            isTestModeFn = is_test_mode,
                                            captureCheckpointFn = .capture_checkpoint,
@@ -455,6 +469,7 @@ runProteinLimpaRollupApplyStep <- function(workflowData,
   currentState <- workflowData$state_manager$current_state
   peptideS4 <- workflowData$state_manager$getState(currentState)
   shiny::req(peptideS4)
+  peptideS4 <- preparePeptideMatrixFn(peptideS4)
 
   logInfoFn("Protein Processing: Starting limpa DPC-Quant rollup from peptide state")
 
@@ -474,6 +489,11 @@ runProteinLimpaRollupApplyStep <- function(workflowData,
   }
   workflowData$config_list$globalParameters$use_limpa <- TRUE
   workflowData$config_list$globalParameters$report_template <- "DIANN_limpa_report.rmd"
+  if (is.null(proteinObj@args$globalParameters)) {
+    proteinObj@args$globalParameters <- list()
+  }
+  proteinObj@args$globalParameters$use_limpa <- TRUE
+  proteinObj@args$globalParameters$report_template <- "DIANN_limpa_report.rmd"
 
   limpaConfig <- list(
       rollup_method = "limpa_dpc_quant",
@@ -548,6 +568,7 @@ runProteinIqRollupApplyObserver <- function(workflowData,
                                             updateOutputsFn = updateProteinIqRollupOutputs,
                                             showNotificationFn = shiny::showNotification,
                                             removeNotificationFn = shiny::removeNotification,
+                                            renderTextFn = shiny::renderText,
                                             logInfoFn = logger::log_info,
                                             logErrorFn = logger::log_error) {
   showNotificationFn(
@@ -584,6 +605,7 @@ runProteinIqRollupApplyObserver <- function(workflowData,
     )
   }, error = function(e) {
     errorMessage <- paste("Error in IQ protein rollup & S4 creation:", e$message)
+    output$iq_rollup_results <- renderTextFn(errorMessage)
     logErrorFn(errorMessage)
     showNotificationFn(errorMessage, type = "error", duration = 15)
     removeNotificationFn("iq_rollup_working")

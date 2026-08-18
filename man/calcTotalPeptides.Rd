@@ -4,10 +4,13 @@
 \alias{calcTotalPeptides}
 \title{Calculate total unique peptides}
 \usage{
-calcTotalPeptides(data)
+calcTotalPeptides(data, protein_id_column = NULL)
 }
 \arguments{
 \item{data}{A data frame or S4 object containing protein/peptide data}
+
+\item{protein_id_column}{Optional declared protein identity column. The active
+protein key is inferred when \code{NULL}.}
 }
 \value{
 Integer count of unique peptide-protein combinations

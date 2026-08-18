@@ -2924,6 +2924,11 @@ test_that("runProteinIqRollupApplyStep saves the protein S4 state and restores s
       slots = c(
         peptide_data = "data.frame",
         design_matrix = "data.frame",
+        protein_id_column = "character",
+        peptide_sequence_column = "character",
+        sample_id = "character",
+        group_id = "character",
+        technical_replicate_id = "character",
         args = "list"
       )
     )
@@ -2953,6 +2958,11 @@ test_that("runProteinIqRollupApplyStep saves the protein S4 state and restores s
       replicates = c(1, 1),
       stringsAsFactors = FALSE
     ),
+    protein_id_column = "Protein.Ids",
+    peptide_sequence_column = "Stripped.Sequence",
+    sample_id = "Run",
+    group_id = "group",
+    technical_replicate_id = "replicates",
     args = list(source = "test")
   )
 
@@ -3196,6 +3206,11 @@ test_that("runProteinLimpaRollupApplyStep saves limpa state and report routing m
   expect_identical(captured$fallback_input, peptide_state)
   expect_identical(workflow_data$config_list$globalParameters$use_limpa, TRUE)
   expect_identical(workflow_data$config_list$globalParameters$report_template, "DIANN_limpa_report.rmd")
+  expect_identical(protein_state@args$globalParameters$use_limpa, TRUE)
+  expect_identical(
+    protein_state@args$globalParameters$report_template,
+    "DIANN_limpa_report.rmd"
+  )
   expect_identical(captured$saveState$state_name, "protein_s4_created")
   expect_identical(captured$saveState$s4_data_object, protein_state)
   expect_identical(captured$saveState$config_object$rollup_method, "limpa_dpc_quant")
@@ -3205,6 +3220,32 @@ test_that("runProteinLimpaRollupApplyStep saves limpa state and report routing m
   expect_identical(captured$checkpoint$checkpointLabel, "rolled_up_protein_limpa")
   expect_match(result$resultText, "limpa DPC-Quant Protein Rollup Completed Successfully", fixed = TRUE)
   expect_match(result$resultText, "Report template: DIANN_limpa_report.rmd", fixed = TRUE)
+})
+
+test_that("ensurePeptideMatrixForLimpaRollup materializes only an empty peptide matrix", {
+  peptide_state <- calcPeptideMatrix(module_ci_prot_peptide_rollup_object())
+  populated_matrix <- peptide_state@peptide_matrix
+  peptide_state@peptide_matrix <- matrix(numeric(0), nrow = 0L, ncol = 0L)
+  calls <- 0L
+
+  prepared <- ensurePeptideMatrixForLimpaRollup(
+    peptide_state,
+    calcPeptideMatrixFn = function(object) {
+      calls <<- calls + 1L
+      object@peptide_matrix <- populated_matrix
+      object
+    }
+  )
+
+  expect_identical(calls, 1L)
+  expect_identical(prepared@peptide_matrix, populated_matrix)
+  expect_identical(
+    ensurePeptideMatrixForLimpaRollup(
+      prepared,
+      calcPeptideMatrixFn = function(...) stop("populated matrix must be reused")
+    )@peptide_matrix,
+    populated_matrix
+  )
 })
 
 test_that("updateProteinIqRollupOutputs refreshes result text and plot grid", {
@@ -3372,6 +3413,11 @@ test_that("runProteinIqRollupApplyObserver reports apply errors and clears the w
       captured$calls <- c(captured$calls, "remove")
       captured$removed <- c(captured$removed, id)
     },
+    renderTextFn = function(text) {
+      captured$calls <- c(captured$calls, "render")
+      captured$rendered <- text
+      text
+    },
     logInfoFn = function(...) {
       stop("success logging should not run on the error path")
     },
@@ -3383,7 +3429,7 @@ test_that("runProteinIqRollupApplyObserver reports apply errors and clears the w
 
   expect_identical(
     captured$calls,
-    c("show", "run", "log_error", "show", "remove")
+    c("show", "run", "render", "log_error", "show", "remove")
   )
   expect_identical(
     captured$notifications[[1]][[1]],
@@ -3397,6 +3443,8 @@ test_that("runProteinIqRollupApplyObserver reports apply errors and clears the w
   expect_identical(captured$notifications[[2]]$type, "error")
   expect_identical(captured$notifications[[2]]$duration, 15)
   expect_identical(captured$removed, "iq_rollup_working")
+  expect_identical(output$iq_rollup_results, captured$error)
+  expect_identical(captured$rendered, captured$error)
   expect_identical(captured$error, "Error in IQ protein rollup & S4 creation: mock failure")
   expect_identical(completed$status, "error")
   expect_identical(

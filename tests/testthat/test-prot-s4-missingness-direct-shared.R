@@ -130,15 +130,20 @@ localFakeLimpa <- function(env = parent.frame()) {
 newProteinMissingnessObject <- function(values,
                                         row_samples = colnames(values),
                                         args = list()) {
+  protein_ids <- paste0("P", seq_len(nrow(values)))
   ProteinQuantitativeData(
     protein_quant_table = data.frame(
-      Protein.Ids = paste0("P", seq_len(nrow(values))),
+      Protein.Ids = protein_ids,
       description = row_samples,
       values,
       check.names = FALSE,
       stringsAsFactors = FALSE
     ),
     protein_id_column = "Protein.Ids",
+    protein_id_table = data.frame(
+      Protein.Ids = protein_ids,
+      stringsAsFactors = FALSE
+    ),
     design_matrix = data.frame(
       description = c("description", colnames(values)),
       group = "G1",
@@ -335,11 +340,15 @@ test_that("protein missingness methods cover direct package routes and DPC fallb
       c(
         NA_real_, 120,
         NA_real_, NA_real_,
-        240, 360
+        240, 360,
+        180, NA_real_
       ),
-      nrow = 3,
+      nrow = 4,
       byrow = TRUE,
-      dimnames = list(c("P1%PEP1", "P2%PEP2", "P1%PEP3"), c("S1", "S2"))
+      dimnames = list(
+        c("P1%PEP1", "P2%PEP2", "P1%PEP3", "P2%PEP4"),
+        c("S1", "S2")
+      )
     ),
     is_logged_data = FALSE,
     args = list(
@@ -359,9 +368,9 @@ test_that("protein missingness methods cover direct package routes and DPC fallb
   expect_s4_class(peptide_imputed, "ProteinQuantitativeData")
   expect_null(peptide_captured$dpc)
   expect_identical(peptide_captured$dpc_slope, 0.8)
-  expect_equal(nrow(peptide_captured$y$E), 2)
+  expect_equal(nrow(peptide_captured$y$E), 3)
   expect_identical(peptide_captured$protein.id, "protein.id")
-  expect_equal(peptide_imputed@args$limpa_dpc_quant_results$total_peptides_used, 2)
+  expect_equal(peptide_imputed@args$limpa_dpc_quant_results$total_peptides_used, 3)
   expect_equal(peptide_imputed@args$limpa_dpc_quant_results$total_proteins_quantified, 2)
   expect_identical(
     peptide_imputed@args$limpa_dpc_quant_results$slope_interpretation,
@@ -397,6 +406,7 @@ test_that("preservePeptideNaValuesHelper preserves direct NA synchronization and
 
   protein_object <- ProteinQuantitativeData(
     protein_quant_table = data.frame(
+      Protein.Ids = c("P1", "P2"),
       S1 = c(10, 30),
       S2 = c(20, 40),
       row.names = c("1", "2"),
@@ -405,11 +415,17 @@ test_that("preservePeptideNaValuesHelper preserves direct NA synchronization and
     design_matrix = data.frame(
       Run = c("S1", "S2"),
       group = c("A", "A"),
+      replicates = c("R1", "R1"),
       stringsAsFactors = FALSE
     ),
     sample_id = "Run",
     group_id = "group",
-    protein_id_column = "Protein.Ids"
+    technical_replicate_id = "replicates",
+    protein_id_column = "Protein.Ids",
+    protein_id_table = data.frame(
+      Protein.Ids = c("P1", "P2"),
+      stringsAsFactors = FALSE
+    )
   )
 
   preserved <- preservePeptideNaValuesHelper(peptide_object, protein_object)
@@ -419,7 +435,7 @@ test_that("preservePeptideNaValuesHelper preserves direct NA synchronization and
   expect_true(is.na(preserved@protein_quant_table[2, "S2"]))
 
   bad_rows <- protein_object
-  rownames(bad_rows@protein_quant_table) <- c("1", "3")
+  bad_rows@protein_quant_table$Protein.Ids[2] <- "P3"
   expect_error(
     preservePeptideNaValuesHelper(peptide_object, bad_rows),
     "do not match",
@@ -427,7 +443,9 @@ test_that("preservePeptideNaValuesHelper preserves direct NA synchronization and
   )
 
   bad_cols <- protein_object
-  colnames(bad_cols@protein_quant_table) <- c("S1", "S9")
+  colnames(bad_cols@protein_quant_table)[
+    colnames(bad_cols@protein_quant_table) == "S2"
+  ] <- "S9"
   expect_error(
     preservePeptideNaValuesHelper(peptide_object, bad_cols),
     "do not match",

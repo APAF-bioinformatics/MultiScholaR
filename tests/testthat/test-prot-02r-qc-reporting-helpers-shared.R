@@ -129,6 +129,15 @@ makeSharedProteinQuantFilteringData <- function() {
   )
 }
 
+makeSharedProteinGroupQuantFilteringData <- function() {
+  data.frame(
+    Protein.Group = c("G1", "G2", "G3"),
+    S1 = c(1, 2, NA_real_),
+    S2 = c(2, NA_real_, 3),
+    check.names = FALSE
+  )
+}
+
 test_that("protein NA helper rejects non-S4 inputs", {
   expect_error(
     checkProteinNAPercentages(list()),
@@ -425,4 +434,26 @@ test_that("updateProteinFiltering initializes protein-only progress with placeho
   expect_true(is.na(progress@total_peptides))
   expect_identical(nrow(progress@peptides_per_protein[[1]]), 0L)
   expect_identical(nrow(progress@peptides_per_run[[1]]), 0L)
+})
+
+test_that("protein filtering counts resolve a Protein.Group quantification key", {
+  localSharedProteinFilteringProgress()
+  protein_data <- makeSharedProteinGroupQuantFilteringData()
+
+  expect_identical(resolveProteinCountColumn(protein_data), "Protein.Group")
+  expect_identical(countUniqueProteins(protein_data), 3L)
+  expect_identical(
+    countProteinsPerRun(protein_data),
+    data.frame(Run = c("S1", "S2"), n_proteins = c(2L, 2L))
+  )
+
+  withSharedPdfDevice(
+    suppressWarnings(updateProteinFiltering(
+      protein_data,
+      step_name = "protein_group_step",
+      return_grid = TRUE
+    ))
+  )
+  progress <- get("filtering_progress", envir = .GlobalEnv)
+  expect_identical(unname(progress@proteins), 3)
 })

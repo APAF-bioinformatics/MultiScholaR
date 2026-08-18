@@ -22,6 +22,7 @@ if (!methods::isClass("FakeSharedProteinRollupProteinState")) {
     "FakeSharedProteinRollupProteinState",
     slots = c(
       protein_quant_table = "data.frame",
+      protein_id_column = "character",
       design_matrix = "data.frame",
       args = "list"
     )
@@ -74,10 +75,16 @@ makeSharedProteinRollupPeptideState <- function() {
 
 makeSharedProteinRollupProteinState <- function(protein_quant_table,
                                                 design_matrix,
-                                                args) {
+                                                args,
+                                                protein_id_column = NULL) {
+  if (is.null(protein_id_column)) {
+    candidates <- c("Protein.Group", "Protein.Ids", "Protein.IDs", "protein_id")
+    protein_id_column <- candidates[candidates %in% names(protein_quant_table)][1]
+  }
   methods::new(
     "FakeSharedProteinRollupProteinState",
     protein_quant_table = protein_quant_table,
+    protein_id_column = protein_id_column,
     design_matrix = design_matrix,
     args = args
   )
@@ -161,7 +168,8 @@ localSharedProteinRollupBinding <- function(env, name, value, .local_envir = par
 
 withSharedProteinRollupPackageMocks <- function(server_env,
                                                 captured,
-                                                create_output = TRUE) {
+                                                create_output = TRUE,
+                                                .local_envir = parent.frame()) {
   localSharedProteinRollupBinding(
     server_env,
     "updateProteinFiltering",
@@ -176,7 +184,7 @@ withSharedProteinRollupPackageMocks <- function(server_env,
       )
       "plot-token"
     },
-    .local_envir = parent.frame()
+    .local_envir = .local_envir
   )
 
   testthat::local_mocked_bindings(
@@ -212,7 +220,7 @@ withSharedProteinRollupPackageMocks <- function(server_env,
       )
       invisible(NULL)
     },
-    .env = server_env
+    .env = .local_envir
   )
 }
 
@@ -295,7 +303,7 @@ withSharedProteinRollupUiMocks <- function(server_env,
       captured$drawn_plot <- value
       invisible(NULL)
     },
-    .env = server_env
+    .env = mock_frame
   )
 
   testthat::local_mocked_bindings(

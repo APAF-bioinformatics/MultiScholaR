@@ -77,6 +77,13 @@ module_ci_prot_enrich_object <- function(protein_id_column = "uniprot_acc",
     stringsAsFactors = FALSE
   )
   names(protein_quant_table)[[1]] <- protein_id_column
+  protein_id_table <- data.frame(
+    feature_id = id_values,
+    gene_names = da_table$gene_name,
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+  names(protein_id_table)[[1]] <- protein_id_column
 
   methods::new(
     "ProteinQuantitativeData",
@@ -85,11 +92,7 @@ module_ci_prot_enrich_object <- function(protein_id_column = "uniprot_acc",
     sample_id = "Run",
     group_id = "group",
     protein_id_column = protein_id_column,
-    protein_id_table = data.frame(
-      uniprot_acc = da_table$uniprot_acc,
-      gene_names = da_table$gene_name,
-      stringsAsFactors = FALSE
-    ),
+    protein_id_table = protein_id_table,
     args = list(
       globalParameters = list(workflow_type = "DIA", report_template = "DIA_report"),
       enrichmentAnalysisUI = list()

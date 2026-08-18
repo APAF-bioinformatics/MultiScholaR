@@ -42,8 +42,8 @@ test_that("MCI-025/MCI-031 browser and representative E2E smoke are impact-route
   expect_workflow_contains(workflow, "e2e-impacted:")
   expect_workflow_contains(workflow, "matrix: ${{ fromJSON(needs.detect-impact.outputs.e2e_matrix) }}")
   expect_workflow_contains(workflow, "Rscript tools/ci/run-e2e-ci.R")
-  expect_workflow_contains(workflow, "--lane ${{ matrix.lane }}")
-  expect_workflow_contains(workflow, "--filter ${{ matrix.filter }}")
+  expect_workflow_contains(workflow, "--lane \"${{ matrix.lane }}\"")
+  expect_workflow_contains(workflow, "--filter \"${{ matrix.filter }}\"")
 
   expect_workflow_contains(workflow, "any::shinytest2")
   expect_workflow_contains(workflow, "any::chromote")

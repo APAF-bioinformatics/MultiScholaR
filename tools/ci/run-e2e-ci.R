@@ -115,7 +115,12 @@ Sys.setenv(
   MULTISCHOLAR_E2E_BROWSER_REQUIRED = if (isTRUE(args$browser_required)) "true" else "false"
 )
 dir.create(args$artifact_dir, recursive = TRUE, showWarnings = FALSE)
-Sys.setenv(MULTISCHOLAR_E2E_ARTIFACT_DIR = args$artifact_dir)
+artifact_runtime_dir <- normalizePath(
+  args$artifact_dir,
+  winslash = "/",
+  mustWork = TRUE
+)
+Sys.setenv(MULTISCHOLAR_E2E_ARTIFACT_DIR = artifact_runtime_dir)
 
 lanes <- read_lanes(args$manifest)
 selected_lanes <- list()

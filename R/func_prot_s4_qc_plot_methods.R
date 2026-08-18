@@ -231,7 +231,7 @@ setMethod(
       title = title,
       font_size = font_size
     )
-    plotDensity(
+    plotPcaBox(
       pca_plot,
       grouping_variable = grouping_variable,
       title = title,

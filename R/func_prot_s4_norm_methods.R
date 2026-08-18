@@ -105,6 +105,7 @@ setMethod(
   }
 )
 
+#' @importFrom mixOmics impute.nipals
 #' @export
 setMethod(
   f = "ruvCancor",
@@ -149,11 +150,12 @@ setMethod(
     normalised_frozen_protein_matrix_filt <- protein_quant_table |>
       column_to_rownames(protein_id_column) |>
       as.matrix()
+    normalised_frozen_protein_matrix_filt[!is.finite(normalised_frozen_protein_matrix_filt)] <- NA_real_
 
     Y <- t(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))])
-    if (length(which(is.na(normalised_frozen_protein_matrix_filt))) > 0) {
+    if (anyNA(normalised_frozen_protein_matrix_filt)) {
       message("   DEBUG66 S4: Performing imputation (NIPALS)...")
-      Y <- mixOmics::impute.nipals(t(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))]),
+      Y <- impute.nipals(t(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))]),
         ncomp = num_components_to_impute
       )
     }

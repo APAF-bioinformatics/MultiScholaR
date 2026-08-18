@@ -44,4 +44,8 @@ simulating "Missing Not At Random" (MNAR) data typical of DIA proteomics:
 
 `importDIANNData()` in `R/func_prot_import_readers.R`, followed by limpa imputation.
 
-Required columns consumed: `Protein.Group`, `Stripped.Sequence`, `Run`, `Precursor.Quantity`, `Q.Value`, `PG.Q.Value`
+Required columns consumed: `Protein.Group`, `Stripped.Sequence`, `Run`,
+`Precursor.Quantity`, `Precursor.Normalised`, `Q.Value`, `Global.Q.Value`,
+`PG.Q.Value`, `Global.PG.Q.Value`, and `Proteotypic`. The fixture keeps all
+confidence values below the canonical DIA import thresholds and marks every
+precursor as proteotypic so the workflow reaches the limpa missing-value branch.

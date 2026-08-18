@@ -236,39 +236,51 @@ setMethod(
 #' @export
 preservePeptideNaValuesHelper <- function(peptide_obj, protein_obj) {
   sample_id_column <- peptide_obj@sample_id
-  protein_id_column <- peptide_obj@protein_id_column
+  peptide_protein_id_column <- peptide_obj@protein_id_column
+  peptide_quantity_column <- peptide_obj@norm_quantity_column
+  protein_id_column <- protein_obj@protein_id_column
 
   check_peptide_value <- peptide_obj@peptide_data |>
-    group_by(!!sym(sample_id_column), !!sym(protein_id_column)) |>
+    group_by(!!sym(sample_id_column), !!sym(peptide_protein_id_column)) |>
     summarise(
-      Peptide.Normalised = sum(Peptide.Normalised, na.rm = TRUE),
-      is_na = sum(is.na(Peptide.Normalised)),
+      peptide_value = sum(!!sym(peptide_quantity_column), na.rm = TRUE),
+      is_na = sum(is.na(!!sym(peptide_quantity_column))),
       num_values = n()
     ) |>
-    mutate(Peptide.Normalised = if_else(is_na == num_values, NA_real_, Peptide.Normalised)) |>
+    mutate(peptide_value = if_else(is_na == num_values, NA_real_, peptide_value)) |>
     ungroup() |>
     arrange(!!sym(sample_id_column)) |>
     pivot_wider(
-      id_cols = !!sym(protein_id_column),
+      id_cols = !!sym(peptide_protein_id_column),
       names_from = !!sym(sample_id_column),
-      values_from = Peptide.Normalised,
+      values_from = peptide_value,
       values_fill = NA_real_
     )
 
-  check_peptide_value_cln <- check_peptide_value[
-    rownames(protein_obj@protein_quant_table),
-    colnames(protein_obj@protein_quant_table)
-  ]
-
-  if (length(which(rownames(protein_obj@protein_quant_table) == rownames(check_peptide_value_cln))) != nrow(check_peptide_value_cln)) {
+  protein_table <- protein_obj@protein_quant_table
+  protein_ids <- as.character(protein_table[[protein_id_column]])
+  peptide_ids <- as.character(check_peptide_value[[peptide_protein_id_column]])
+  peptide_index <- match(protein_ids, peptide_ids)
+  if (anyNA(peptide_index)) {
     stop("The rows in the protein object and the peptide object do not match")
   }
 
-  if (length(which(colnames(protein_obj@protein_quant_table) == colnames(check_peptide_value_cln))) != ncol(check_peptide_value_cln)) {
+  sample_ids <- as.character(
+    protein_obj@design_matrix[[protein_obj@sample_id]]
+  )
+  if (
+    !all(sample_ids %in% names(check_peptide_value)) ||
+      !all(sample_ids %in% names(protein_table))
+  ) {
     stop("The columns in the protein object and the peptide object do not match")
   }
 
-  protein_obj@protein_quant_table[is.na(check_peptide_value_cln)] <- NA
+  peptide_missing <- is.na(as.data.frame(
+    check_peptide_value[peptide_index, sample_ids, drop = FALSE]
+  ))
+  protein_values <- protein_table[, sample_ids, drop = FALSE]
+  protein_values[peptide_missing] <- NA_real_
+  protein_obj@protein_quant_table[, sample_ids] <- protein_values
 
   protein_obj
 }
@@ -553,7 +565,23 @@ setMethod(
 
         # Extract quantified protein matrix
         protein_matrix <- protein_quant_result$E
-        rownames(protein_matrix) <- protein_quant_result$genes$protein.id
+        quantified_protein_ids <- protein_quant_result$genes[["protein.id"]]
+        if (is.null(quantified_protein_ids) || length(quantified_protein_ids) != nrow(protein_matrix)) {
+          quantified_protein_ids <- rownames(protein_matrix)
+        }
+        if (is.null(quantified_protein_ids) || length(quantified_protein_ids) != nrow(protein_matrix)) {
+          quantified_protein_ids <- rownames(protein_quant_result$genes)
+        }
+        if (
+          is.null(quantified_protein_ids) ||
+            length(quantified_protein_ids) != nrow(protein_matrix) ||
+            anyNA(quantified_protein_ids) ||
+            any(!nzchar(as.character(quantified_protein_ids))) ||
+            anyDuplicated(as.character(quantified_protein_ids))
+        ) {
+          stop("limpa DPC-Quant returned invalid or non-unique protein identifiers.", call. = FALSE)
+        }
+        rownames(protein_matrix) <- as.character(quantified_protein_ids)
         colnames(protein_matrix) <- colnames(y_peptide)
 
         # Extract standard errors and observation counts
@@ -640,6 +668,13 @@ setMethod(
           total_proteins_quantified = nrow(protein_matrix),
           total_peptides_used = nrow(y_peptide),
           dpc_method = "limpa_dpc_quant" # Identify the method type
+        )
+        protein_obj@args$proteinMissingValueImputationLimpa <- list(
+          dpc_slope = dpc_slope,
+          quantified_protein_column = quantified_protein_column,
+          verbose = verbose,
+          chunk = chunk,
+          dpc_results_supplied = !is.null(dpc_results)
         )
 
         if (verbose) {

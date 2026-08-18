@@ -257,6 +257,22 @@ e2e_trigger_action_input_id <- function(
   invisible(driver)
 }
 
+e2e_signal_action_input_id <- function(
+    driver,
+    input_id,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
+  e2e_wait_for_input_id(driver, input_id, timeout = timeout)
+  e2e_call_driver_method(
+    driver,
+    "click",
+    input = input_id,
+    timeout_ = timeout
+  )
+  e2e_wait_for_idle(driver, timeout = timeout)
+  invisible(driver)
+}
+
 e2e_wait_for_output_ready <- function(
     driver,
     output_id,
@@ -495,6 +511,42 @@ e2e_set_input_and_idle <- function(
     timeout = timeout,
     priority = priority
   )
+  e2e_wait_for_idle(driver, timeout = timeout)
+  invisible(driver)
+}
+
+e2e_set_radio_value <- function(
+    driver,
+    input_id,
+    value,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
+  input_js <- jsonlite::toJSON(input_id, auto_unbox = TRUE)
+  value_js <- jsonlite::toJSON(as.character(value), auto_unbox = TRUE)
+  selected_script <- sprintf(
+    paste(
+      "(function(){",
+      "var inputId = %s;",
+      "var value = String(%s);",
+      "return Array.from(document.getElementsByName(inputId)).some(function(option) {",
+      "return String(option.value) === value && option.checked;",
+      "});",
+      "})()"
+    ),
+    input_js,
+    value_js
+  )
+
+  e2e_wait_for_input_id(driver, input_id, timeout = timeout)
+  e2e_set_input(
+    driver = driver,
+    input_id = input_id,
+    value = as.character(value),
+    wait = TRUE,
+    timeout = timeout,
+    priority = "event"
+  )
+  e2e_wait_for_js(driver, script = selected_script, timeout = timeout)
   e2e_wait_for_idle(driver, timeout = timeout)
   invisible(driver)
 }
@@ -1270,7 +1322,7 @@ e2e_run_prot_dia_qc <- function(
   for (step in protein_steps) {
     e2e_set_input_and_idle(driver, qc("protein_qc-protein_filter_tabs"), step$tab, timeout = timeout)
     if (identical(step$action, "protein_qc-rollup-apply_iq_rollup")) {
-      e2e_set_input_and_idle(
+      e2e_set_radio_value(
         driver,
         qc("protein_qc-rollup-rollup_method"),
         rollup_method,
@@ -1280,12 +1332,33 @@ e2e_run_prot_dia_qc <- function(
     if (is.function(step$configure)) {
       step$configure()
     }
-    click_fn <- if (identical(step$action, "protein_qc-replicate_filter-apply_protein_replicate_filter")) {
+    click_fn <- if (
+      identical(step$action, "protein_qc-rollup-apply_iq_rollup") &&
+        identical(rollup_method, "limpa")
+    ) {
+      e2e_signal_action_input_id
+    } else if (identical(step$action, "protein_qc-replicate_filter-apply_protein_replicate_filter")) {
       e2e_trigger_action_input_id
     } else {
       e2e_click_input_id
     }
     click_fn(driver, qc(step$action), timeout = timeout)
+    if (identical(step$action, "protein_qc-rollup-apply_iq_rollup")) {
+      output_id <- qc("protein_qc-rollup-iq_rollup_results")
+      e2e_wait_for_output_ready(driver, output_id, timeout = timeout)
+      result_text <- e2e_call_driver_method(
+        driver,
+        "get_value",
+        output = output_id,
+        required = FALSE
+      )
+      if (
+        !is.null(result_text) &&
+          grepl("Error in IQ protein rollup", paste(result_text, collapse = "\n"), fixed = TRUE)
+      ) {
+        stop(paste(result_text, collapse = "\n"), call. = FALSE)
+      }
+    }
     e2e_wait_for_r6_state(driver, "proteomics", step$state, timeout = timeout)
   }
 

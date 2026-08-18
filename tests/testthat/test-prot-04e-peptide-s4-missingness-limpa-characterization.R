@@ -389,7 +389,11 @@ test_that("limpa DPC-Quant receives Protein.Group from the feature map without p
       )
       list(
         E = E,
-        genes = data.frame(protein.id = protein_ids, stringsAsFactors = FALSE),
+        genes = data.frame(
+          NPrec = rep(1L, length(protein_ids)),
+          row.names = protein_ids,
+          stringsAsFactors = FALSE
+        ),
         other = list(
           standard.error = matrix(0, nrow(E), ncol(E), dimnames = dimnames(E)),
           n.observations = matrix(1L, nrow(E), ncol(E), dimnames = dimnames(E))
@@ -443,4 +447,14 @@ test_that("limpa DPC-Quant receives Protein.Group from the feature map without p
   expect_identical(quantified@protein_quant_table$Protein.Group, c("GROUP%ONE", "GROUP_TWO"))
   expect_true(all(c("Protein.Group", "Protein.Ids") %in% names(quantified@protein_id_table)))
   expect_identical(unique(quantified@protein_id_table$Protein.Ids), "P_SHARED")
+  expect_identical(
+    quantified@args$proteinMissingValueImputationLimpa,
+    list(
+      dpc_slope = 0.8,
+      quantified_protein_column = "Protein.Quantified.Limpa",
+      verbose = FALSE,
+      chunk = 1000,
+      dpc_results_supplied = FALSE
+    )
+  )
 })

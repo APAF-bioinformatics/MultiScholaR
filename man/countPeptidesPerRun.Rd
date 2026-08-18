@@ -4,10 +4,13 @@
 \alias{countPeptidesPerRun}
 \title{Count peptides per run}
 \usage{
-countPeptidesPerRun(data)
+countPeptidesPerRun(data, protein_id_column = NULL)
 }
 \arguments{
 \item{data}{A data frame or S4 object containing protein/peptide data}
+
+\item{protein_id_column}{Optional declared protein identity column. The active
+protein key is inferred when \code{NULL}.}
 }
 \value{
 Data frame with run IDs and peptide counts

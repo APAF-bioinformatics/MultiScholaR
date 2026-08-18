@@ -163,21 +163,18 @@ updateProteinFiltering <- function(data, step_name,
     }
   }
 
+  protein_id_column <- resolveProteinCountColumn(data)
+
   # Determine if we\'re working with protein_quant_table
   is_protein_quant <- if (methods::is(data, "S4")) {
     "protein_quant_table" %in% slotNames(data)
   } else {
-    # For data frames, check if it looks like a protein quant table
-    if ("Protein.Ids" %in% names(data)) {
-      all(sapply(data[setdiff(names(data), "Protein.Ids")], is.numeric))
-    } else {
-      FALSE
-    }
+    isProteinQuantificationTable(data, protein_id_column)
   }
 
   # Calculate protein metrics (always done)
-  protein_count <- countUniqueProteins(data)
-  proteins_per_run <- countProteinsPerRun(data)
+  protein_count <- countUniqueProteins(data, protein_id_column)
+  proteins_per_run <- countProteinsPerRun(data, protein_id_column)
 
   # Ensure consistent data types in proteins_per_run
   proteins_per_run$Run <- as.character(proteins_per_run$Run)
@@ -196,9 +193,9 @@ updateProteinFiltering <- function(data, step_name,
 
     if (!is_protein_quant) {
       # Update peptide metrics only for peptide data
-      filtering_progress@total_peptides[idx] <- calcTotalPeptides(data)
-      peptides_per_protein <- calcPeptidesPerProtein(data)
-      peptides_per_run <- countPeptidesPerRun(data)
+      filtering_progress@total_peptides[idx] <- calcTotalPeptides(data, protein_id_column)
+      peptides_per_protein <- calcPeptidesPerProtein(data, protein_id_column)
+      peptides_per_run <- countPeptidesPerRun(data, protein_id_column)
 
       # Ensure consistent data types
       peptides_per_protein$Protein.Ids <- as.character(peptides_per_protein$Protein.Ids)
@@ -222,11 +219,11 @@ updateProteinFiltering <- function(data, step_name,
       # Add peptide metrics only for peptide data
       filtering_progress@total_peptides <- c(
         filtering_progress@total_peptides,
-        calcTotalPeptides(data)
+        calcTotalPeptides(data, protein_id_column)
       )
 
-      peptides_per_protein <- calcPeptidesPerProtein(data)
-      peptides_per_run <- countPeptidesPerRun(data)
+      peptides_per_protein <- calcPeptidesPerProtein(data, protein_id_column)
+      peptides_per_run <- countPeptidesPerRun(data, protein_id_column)
 
       # Ensure consistent data types
       peptides_per_protein$Protein.Ids <- as.character(peptides_per_protein$Protein.Ids)
@@ -653,4 +650,3 @@ updateProteinFiltering <- function(data, step_name,
     invisible(plot_list)
   }
 }
-

@@ -236,6 +236,30 @@ test_that("workflow tab helper maps proteomics step keys to UI tab values", {
   expect_match(scripts, '"da"', fixed = TRUE)
 })
 
+test_that("radio helper changes and verifies the browser control value", {
+  driver <- new_fake_e2e_driver()
+
+  e2e_set_radio_value(driver, "protein-rollup-method", "limpa")
+
+  input_calls <- Filter(function(call) identical(call$method, "set_inputs"), driver$.state$calls)
+  wait_calls <- Filter(function(call) identical(call$method, "wait_for_js"), driver$.state$calls)
+  expect_length(input_calls, 1L)
+  expect_length(wait_calls, 2L)
+  expect_identical(input_calls[[1L]]$args[["protein-rollup-method"]], "limpa")
+  expect_identical(input_calls[[1L]]$args$priority_, "event")
+  expect_match(wait_calls[[2L]]$args$script, "option.checked", fixed = TRUE)
+})
+
+test_that("action signal helper uses the registered Shiny input binding", {
+  driver <- new_fake_e2e_driver()
+
+  e2e_signal_action_input_id(driver, "protein-rollup-apply")
+
+  click_calls <- Filter(function(call) identical(call$method, "click"), driver$.state$calls)
+  expect_length(click_calls, 1L)
+  expect_identical(click_calls[[1L]]$args$input, "protein-rollup-apply")
+})
+
 test_that("state digest assertions parse test_state_digest and validate invariants", {
   driver <- new_fake_e2e_driver()
 
