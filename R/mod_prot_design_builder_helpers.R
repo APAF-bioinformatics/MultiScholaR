@@ -26,9 +26,10 @@ persistProtDesignBuilderArtifacts <- function(results, workflowData, sourceDir) 
   logger::log_info(paste("Saved manifest.json to:", manifestPath))
 
   if (!is.null(workflowData$config_list)) {
-    if (!is.null(workflowData$state_manager$workflow_type)) {
-      workflowData$config_list$globalParameters$workflow_type <- workflowData$state_manager$workflow_type
-      logger::log_info(paste("Added workflow_type to config.ini:", workflowData$state_manager$workflow_type))
+    workflowType <- workflowStateType(workflowData$state_manager)
+    if (!is.null(workflowType)) {
+      workflowData$config_list$globalParameters$workflow_type <- workflowType
+      logger::log_info(paste("Added workflow_type to config.ini:", workflowType))
     }
 
     configPath <- file.path(sourceDir, "config.ini")
@@ -82,7 +83,7 @@ runProtDesignBuilderSaveFlow <- function(
       sourceDir = sourceDir
     )
 
-    workflowType <- shiny::isolate(workflowData$state_manager$workflow_type)
+    workflowType <- shiny::isolate(workflowStateType(workflowData$state_manager))
     buildProtDesignStateCheckpoint(
       workflowData = workflowData,
       workflowType = workflowType,
@@ -230,4 +231,3 @@ registerProtDesignBuilderResultsObserver <- function(
     )
   }, ignoreNULL = TRUE)
 }
-

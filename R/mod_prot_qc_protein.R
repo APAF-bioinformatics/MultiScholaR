@@ -123,7 +123,7 @@ mod_prot_qc_protein_ui <- function(id, workflow_type = NULL) {
 #' @importFrom logger log_info
 mod_prot_qc_protein_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
-    workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
+    workflow_type <- shiny::isolate(workflowStateType(workflow_data$state_manager))
     logger::log_info(paste("Protein QC orchestrator: workflow type is", workflow_type))
 
     if (workflow_type == "DIA") {

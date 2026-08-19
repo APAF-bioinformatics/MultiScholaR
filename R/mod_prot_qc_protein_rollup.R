@@ -252,7 +252,7 @@ runProteinIqRollupApplyStep <- function(workflowData,
                                         maxWait = 30) {
   shiny::req(workflowData$state_manager)
 
-  currentState <- workflowData$state_manager$current_state
+  currentState <- workflowStateCurrentName(workflowData$state_manager)
   peptideS4 <- workflowData$state_manager$getState(currentState)
   shiny::req(peptideS4)
 
@@ -466,7 +466,7 @@ runProteinLimpaRollupApplyStep <- function(workflowData,
                                            logInfoFn = logger::log_info) {
   shiny::req(workflowData$state_manager)
 
-  currentState <- workflowData$state_manager$current_state
+  currentState <- workflowStateCurrentName(workflowData$state_manager)
   peptideS4 <- workflowData$state_manager$getState(currentState)
   shiny::req(peptideS4)
   peptideS4 <- preparePeptideMatrixFn(peptideS4)

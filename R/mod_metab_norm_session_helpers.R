@@ -507,7 +507,7 @@ collectMetabNormFeatureCountsPerAssay <- function(currentS4) {
 }
 
 buildMetabNormExportSessionData <- function(workflowData, normData, inputValues, experimentLabel, exportTimestamp = Sys.time()) {
-    currentStateName <- workflowData$state_manager$current_state
+    currentStateName <- workflowStateCurrentName(workflowData$state_manager)
     currentS4 <- workflowData$state_manager$getState(currentStateName)
     featureCountsPerAssay <- collectMetabNormFeatureCountsPerAssay(currentS4)
 
@@ -871,4 +871,3 @@ runMetabNormApplyCorrelationObserverShell <- function(
 
     invisible(dispatchState)
 }
-

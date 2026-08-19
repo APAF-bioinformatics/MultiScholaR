@@ -69,6 +69,7 @@ Collate:
     'func_lipid_s4_da_plot_methods.R'
     'func_lipid_s4_plotting_methods.R'
     'func_omics_da_list_methods.R'
+    'utils_workflow_state_compat.R'
     'func_general_design.R'
     'func_general_enrichment_core.R'
     'func_general_enrichment_revigo_helpers.R'

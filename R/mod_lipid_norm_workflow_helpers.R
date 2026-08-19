@@ -370,7 +370,9 @@ handleLipidNormExportSession <- function(
             incProgressFn(0.2, detail = "Gathering data...")
 
             # Get current state from R6 manager
-            current_state_name <- workflowData$state_manager$current_state
+            current_state_name <- workflowStateCurrentName(
+                workflowData$state_manager
+            )
             current_s4 <- workflowData$state_manager$getState(current_state_name)
 
             # Calculate feature counts per assay

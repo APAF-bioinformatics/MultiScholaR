@@ -485,7 +485,7 @@
 }
 
 .peptideQcCurrentStateName <- function(state_manager) {
-  current <- tryCatch(state_manager$current_state, error = function(e) NULL)
+  current <- workflowStateCurrentName(state_manager)
   if (!is.null(current) && length(current) == 1L && nzchar(current)) return(current)
   history <- tryCatch(state_manager$getHistory(), error = function(e) character(0))
   if (length(history) > 0L) tail(history, 1L) else "legacy_untracked_state"
@@ -597,7 +597,7 @@
                                  status = "applied",
                                  decision_reason = NA_character_,
                                  transformation_type = "filter") {
-  audit_enabled <- tryCatch(state_manager$audit_enabled, error = function(e) NULL)
+  audit_enabled <- workflowStateAuditEnabled(state_manager)
   if (!identical(audit_enabled, FALSE) &&
       .isPeptideQcAuditableObject(before) &&
       .isPeptideQcAuditableObject(after)) {

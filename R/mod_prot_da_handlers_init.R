@@ -16,7 +16,7 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
           cat(sprintf("   DA TAB Step: workflow_data$state_manager is NULL = %s\n", is.null(workflow_data$state_manager)))
 
           if (!is.null(workflow_data$state_manager)) {
-            current_state <- workflow_data$state_manager$current_state
+            current_state <- workflowStateCurrentName(workflow_data$state_manager)
 
             # Define valid states where this tab can be active
             valid_states_for_de_tab <- c("normalized", "ruv_corrected", "correlation_filtered")
@@ -189,7 +189,7 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
 
       # Get current S4 object from state manager
       if (!is.null(workflow_data$state_manager)) {
-        current_state <- workflow_data$state_manager$current_state
+        current_state <- workflowStateCurrentName(workflow_data$state_manager)
         cat(sprintf("   DA TAB Step: Current state = %s\n", current_state))
 
         # Should be getting the correlation-filtered protein object (final state before DE)

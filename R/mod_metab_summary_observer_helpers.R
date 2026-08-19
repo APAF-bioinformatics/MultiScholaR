@@ -32,7 +32,7 @@ getMetabSummaryStateObject <- function(workflowData) {
     matching_states <- data_states[data_states %in% history]
     state_name <- if (length(matching_states) > 0L) matching_states[[1]] else NULL
     if (is.null(state_name) || is.na(state_name)) {
-        state_name <- tryCatch(state_manager$current_state, error = function(e) NULL)
+        state_name <- workflowStateCurrentName(state_manager)
     }
     if (is.null(state_name) || is.na(state_name)) {
         return(NULL)

@@ -140,7 +140,10 @@ runProtNormModuleServerShell <- function(
   messageFn(sprintf("Module ID: %s", id))
   messageFn(sprintf("workflow_data is NULL: %s", is.null(workflowData)))
   if (!is.null(workflowData$state_manager)) {
-    messageFn(sprintf("Current state at module start: %s", workflowData$state_manager$current_state))
+    messageFn(sprintf(
+      "Current state at module start: %s",
+      workflowStateCurrentName(workflowData$state_manager)
+    ))
   }
 
   normData <- createReactiveStateFn()
@@ -261,4 +264,3 @@ runProtNormModuleServerPublicWrapper <- function(
     selectedTab = selected_tab
   )
 }
-

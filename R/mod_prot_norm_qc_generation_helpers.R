@@ -1,7 +1,7 @@
 resolveProtNormQcStateObject <- function(stateManager, reqFn = shiny::req, messageFn = message) {
   reqFn(stateManager)
 
-  current_state <- stateManager$current_state
+  current_state <- workflowStateCurrentName(stateManager)
   messageFn(sprintf("Current state: '%s'", current_state))
 
   current_s4 <- stateManager$getState(current_state)
@@ -264,4 +264,3 @@ generateProtNormRuvCorrectedQcArtifacts <- function(
 
   qcPlotPaths
 }
-

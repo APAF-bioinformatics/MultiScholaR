@@ -7,31 +7,24 @@
 An R6 class to manage the state of a multi-step workflow.
 }
 \details{
-This class is designed to track the state of data objects (specifically S4 objects)
-as they are processed through a series of transformations in a Shiny app. It allows for
-saving named states, retrieving them, and reverting to previous states, which is essential
-for creating a non-linear, interactive analysis workflow.
-
-It works by storing copies of data objects in a list, acting as a "save game"
-feature for the analysis.
+This class tracks data objects as they move through an interactive
+workflow. Public fields remain available for serialized compatibility, while
+named methods are the supported production access path.
 }
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
   \describe{
-    \item{\code{states}}{A list to store the different data states. Each element is a
-list containing the data object, timestamp, configuration, and other metadata.}
+    \item{\code{states}}{Saved state records keyed by logical state name.}
 
-    \item{\code{current_state}}{A character string holding the name of the current active state.}
+    \item{\code{current_state}}{Name of the current active state.}
 
-    \item{\code{state_history}}{A character vector that logs the sequence of saved states.}
+    \item{\code{state_history}}{Active state lineage. Revert truncates this lineage.}
 
-    \item{\code{audit_records}}{Immutable audit records keyed by record ID. Reverting
-changes the active lineage but deliberately does not delete these records.}
+    \item{\code{audit_records}}{Immutable audit records keyed by record ID.}
 
-    \item{\code{audit_enabled}}{Logical; peptide-QC audit capture is additive and can
-be disabled without changing any scientific transformation.}
+    \item{\code{audit_enabled}}{Whether peptide-QC audit capture is enabled.}
 
-    \item{\code{workflow_type}}{A character string indicating the type of workflow (e.g., "LFQ", "TMT").}
+    \item{\code{workflow_type}}{Workflow route for this state manager.}
   }
   \if{html}{\out{</div>}}
 }
@@ -41,11 +34,23 @@ be disabled without changing any scientific transformation.}
     \item \href{#method-WorkflowState-initialize}{\code{WorkflowState$new()}}
     \item \href{#method-WorkflowState-saveState}{\code{WorkflowState$saveState()}}
     \item \href{#method-WorkflowState-getState}{\code{WorkflowState$getState()}}
+    \item \href{#method-WorkflowState-getStateMetadata}{\code{WorkflowState$getStateMetadata()}}
+    \item \href{#method-WorkflowState-getStateConfig}{\code{WorkflowState$getStateConfig()}}
+    \item \href{#method-WorkflowState-hasState}{\code{WorkflowState$hasState()}}
+    \item \href{#method-WorkflowState-getCurrentStateName}{\code{WorkflowState$getCurrentStateName()}}
     \item \href{#method-WorkflowState-revertToState}{\code{WorkflowState$revertToState()}}
     \item \href{#method-WorkflowState-getHistory}{\code{WorkflowState$getHistory()}}
     \item \href{#method-WorkflowState-getStateAudit}{\code{WorkflowState$getStateAudit()}}
     \item \href{#method-WorkflowState-getAuditRecords}{\code{WorkflowState$getAuditRecords()}}
+    \item \href{#method-WorkflowState-isAuditEnabled}{\code{WorkflowState$isAuditEnabled()}}
     \item \href{#method-WorkflowState-setWorkflowType}{\code{WorkflowState$setWorkflowType()}}
+    \item \href{#method-WorkflowState-getWorkflowType}{\code{WorkflowState$getWorkflowType()}}
+    \item \href{#method-WorkflowState-exportState}{\code{WorkflowState$exportState()}}
+    \item \href{#method-WorkflowState-exportLegacyState}{\code{WorkflowState$exportLegacyState()}}
+    \item \href{#method-WorkflowState-restoreState}{\code{WorkflowState$restoreState()}}
+    \item \href{#method-WorkflowState-getEvents}{\code{WorkflowState$getEvents()}}
+    \item \href{#method-WorkflowState-getRevision}{\code{WorkflowState$getRevision()}}
+    \item \href{#method-WorkflowState-observeTransitions}{\code{WorkflowState$observeTransitions()}}
     \item \href{#method-WorkflowState-clone}{\code{WorkflowState$clone()}}
   }
 }
@@ -53,8 +58,7 @@ be disabled without changing any scientific transformation.}
 \if{html}{\out{<a id="method-WorkflowState-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-initialize}{}}}
 \subsection{\code{WorkflowState$new()}}{
-  Initialize the WorkflowState object.
-Sets up the initial state.
+  Initialize an empty memory-backed workflow state.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{WorkflowState$new(audit_enabled = TRUE)}
@@ -63,8 +67,7 @@ Sets up the initial state.
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{audit_enabled}}{Logical; peptide-QC audit capture is additive and can
-be disabled without changing any scientific transformation.}
+      \item{\code{audit_enabled}}{Whether peptide-QC audit capture is enabled.}
     }
     \if{html}{\out{</div>}}
   }
@@ -74,7 +77,7 @@ be disabled without changing any scientific transformation.}
 \if{html}{\out{<a id="method-WorkflowState-saveState"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-saveState}{}}}
 \subsection{\code{WorkflowState$saveState()}}{
-  Save a new state (a snapshot of a data object).
+  Save a new state snapshot.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{WorkflowState$saveState(
@@ -89,13 +92,11 @@ be disabled without changing any scientific transformation.}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{state_name}}{A character string for the name of the state (e.g., "raw_data_s4").}
-      \item{\code{s4_data_object}}{The S4 data object to save. A copy will be made.}
-      \item{\code{config_object}}{A list containing the configuration parameters used to generate this state.}
-      \item{\code{description}}{A character string describing the state.}
-      \item{\code{audit_metadata}}{Optional additive audit record. Existing callers do
-not need to supply it; peptide objects carrying audit lineage are
-detected automatically.}
+      \item{\code{state_name}}{Logical state name.}
+      \item{\code{s4_data_object}}{Data object to save.}
+      \item{\code{config_object}}{Configuration used to produce the state.}
+      \item{\code{description}}{Human-readable state description.}
+      \item{\code{audit_metadata}}{Optional additive audit record.}
     }
     \if{html}{\out{</div>}}
   }
@@ -105,7 +106,7 @@ detected automatically.}
 \if{html}{\out{<a id="method-WorkflowState-getState"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-getState}{}}}
 \subsection{\code{WorkflowState$getState()}}{
-  Retrieve a data object from a specific state.
+  Retrieve data from a named or current state.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{WorkflowState$getState(state_name = NULL)}
@@ -114,12 +115,93 @@ detected automatically.}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{state_name}}{The name of the state to retrieve. If NULL, retrieves the current state.}
+      \item{\code{state_name}}{State name; defaults to the current state.}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    The data object (e.g., an S4 object) stored in that state.
+    The stored data object.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-getStateMetadata"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-getStateMetadata}{}}}
+\subsection{\code{WorkflowState$getStateMetadata()}}{
+  Return metadata for a named or current state.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getStateMetadata(state_name = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{state_name}}{State name; defaults to the current state.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    State metadata without the data payload, or \code{NULL} if absent.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-getStateConfig"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-getStateConfig}{}}}
+\subsection{\code{WorkflowState$getStateConfig()}}{
+  Return a state's saved configuration.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getStateConfig(state_name = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{state_name}}{State name; defaults to the current state.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The saved configuration or \code{NULL}.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-hasState"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-hasState}{}}}
+\subsection{\code{WorkflowState$hasState()}}{
+  Test whether a logical state exists.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$hasState(state_name)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{state_name}}{State name to test.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A scalar logical.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-getCurrentStateName"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-getCurrentStateName}{}}}
+\subsection{\code{WorkflowState$getCurrentStateName()}}{
+  Return the current logical state name.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getCurrentStateName()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A scalar character value.
   }
 }
 
@@ -127,7 +209,7 @@ detected automatically.}
 \if{html}{\out{<a id="method-WorkflowState-revertToState"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-revertToState}{}}}
 \subsection{\code{WorkflowState$revertToState()}}{
-  Revert the current active state to a previously saved state.
+  Revert the active lineage to a saved state.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{WorkflowState$revertToState(state_name)}
@@ -136,12 +218,12 @@ detected automatically.}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{state_name}}{The name of the state to revert to.}
+      \item{\code{state_name}}{State name to activate.}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    The data object from the state that is now active.
+    The data object from the newly active state.
   }
 }
 
@@ -149,7 +231,7 @@ detected automatically.}
 \if{html}{\out{<a id="method-WorkflowState-getHistory"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-getHistory}{}}}
 \subsection{\code{WorkflowState$getHistory()}}{
-  Get the list of all saved state names.
+  Return the active state lineage.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{WorkflowState$getHistory()}
@@ -164,7 +246,7 @@ detected automatically.}
 \if{html}{\out{<a id="method-WorkflowState-getStateAudit"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-getStateAudit}{}}}
 \subsection{\code{WorkflowState$getStateAudit()}}{
-  Return the audit metadata associated with a state.
+  Return audit metadata associated with a state.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{WorkflowState$getStateAudit(state_name = NULL)}
@@ -173,7 +255,7 @@ detected automatically.}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{state_name}}{State to inspect; defaults to the active state.}
+      \item{\code{state_name}}{State name; defaults to the current state.}
     }
     \if{html}{\out{</div>}}
   }
@@ -183,8 +265,7 @@ detected automatically.}
 \if{html}{\out{<a id="method-WorkflowState-getAuditRecords"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-getAuditRecords}{}}}
 \subsection{\code{WorkflowState$getAuditRecords()}}{
-  Return all immutable audit records, including records from
-branches that are no longer active after a revert.
+  Return every immutable audit record.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{WorkflowState$getAuditRecords()}
@@ -193,11 +274,22 @@ branches that are no longer active after a revert.
 }
 
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-isAuditEnabled"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-isAuditEnabled}{}}}
+\subsection{\code{WorkflowState$isAuditEnabled()}}{
+  Return whether audit capture is enabled.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$isAuditEnabled()}
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-WorkflowState-setWorkflowType"></a>}}
 \if{latex}{\out{\hypertarget{method-WorkflowState-setWorkflowType}{}}}
 \subsection{\code{WorkflowState$setWorkflowType()}}{
-  Set the workflow type for the session.
-Workflow type determines which set of modules to load.
+  Set the workflow route for this session.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{WorkflowState$setWorkflowType(type)}
@@ -206,12 +298,124 @@ Workflow type determines which set of modules to load.
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{type}}{A character string for the workflow type.
-Proteomics: "LFQ", "TMT", "DIA"
-Metabolomics: "metabolomics_standard"
-Lipidomics: "lipidomics_standard"}
+      \item{\code{type}}{One of the currently implemented workflow types.}
     }
     \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-getWorkflowType"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-getWorkflowType}{}}}
+\subsection{\code{WorkflowState$getWorkflowType()}}{
+  Return the configured workflow type.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getWorkflowType()}
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-exportState"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-exportState}{}}}
+\subsection{\code{WorkflowState$exportState()}}{
+  Export the versioned memory-state manifest.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$exportState()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A self-describing R list suitable for \code{restoreState()}.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-exportLegacyState"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-exportLegacyState}{}}}
+\subsection{\code{WorkflowState$exportLegacyState()}}{
+  Export the legacy filtered-session state fields.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$exportLegacyState()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A list preserving the existing session field names.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-restoreState"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-restoreState}{}}}
+\subsection{\code{WorkflowState$restoreState()}}{
+  Restore a validated modern or explicit legacy manifest.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$restoreState(manifest, schema_version = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{manifest}}{State manifest or legacy filtered-session list.}
+      \item{\code{schema_version}}{Explicit version for a legacy list. Modern
+manifests carry their own version.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-getEvents"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-getEvents}{}}}
+\subsection{\code{WorkflowState$getEvents()}}{
+  Return immutable workflow transition events.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getEvents()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A list ordered by monotonically increasing revision.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-getRevision"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-getRevision}{}}}
+\subsection{\code{WorkflowState$getRevision()}}{
+  Return the current transition revision.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$getRevision()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A non-negative integer.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WorkflowState-observeTransitions"></a>}}
+\if{latex}{\out{\hypertarget{method-WorkflowState-observeTransitions}{}}}
+\subsection{\code{WorkflowState$observeTransitions()}}{
+  Subscribe to subsequent workflow transitions.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WorkflowState$observeTransitions(callback)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{callback}}{Function accepting one immutable event list.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    An idempotent function that removes the subscription.
   }
 }
 

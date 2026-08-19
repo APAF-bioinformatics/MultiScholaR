@@ -91,7 +91,9 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             # Try to get RUV results from state manager config
             tryCatch(
                 {
-                    current_state_config <- workflow_data$state_manager$getStateConfig(workflow_data$state_manager$current_state)
+                    current_state_config <- workflow_data$state_manager$getStateConfig(
+                        workflowStateCurrentName(workflow_data$state_manager)
+                    )
                     if (!is.null(current_state_config$ruv_optimization_result)) {
                         ruv_optimization_result <- current_state_config$ruv_optimization_result
                         cat("WORKFLOW ARGS: Found RUV optimization results in state manager config\n")

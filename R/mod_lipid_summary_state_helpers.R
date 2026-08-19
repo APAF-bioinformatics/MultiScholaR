@@ -96,7 +96,7 @@ getLipidSummaryStateObject <- function(workflowData) {
     matchingStates <- dataStates[dataStates %in% history]
     stateName <- if (length(matchingStates) > 0L) matchingStates[[1]] else NULL
     if (is.null(stateName) || is.na(stateName)) {
-        stateName <- tryCatch(stateManager$current_state, error = function(e) NULL)
+        stateName <- workflowStateCurrentName(stateManager)
     }
     if (is.null(stateName) || is.na(stateName)) {
         return(NULL)

@@ -122,13 +122,13 @@ collect_state_digest <- function(values = list(), workflow_states = list()) {
   experiment_label <- values[["experiment_label"]]
 
   # workflow_type_per_omic:
-  # Try state_manager$workflow_type (new module structure) then direct key (legacy)
+  # Prefer the state-manager API, then the direct legacy workflow key.
   workflow_type_per_omic <- lapply(workflow_states, \(ws) {
     tryCatch(
       shiny::isolate({
         sm <- ws$state_manager
         if (!is.null(sm)) {
-          wt <- tryCatch(sm$workflow_type, error = function(e) NULL)
+          wt <- workflowStateType(sm)
           if (!is.null(wt)) return(wt)
         }
         ws[["workflow_type"]]
@@ -155,7 +155,7 @@ collect_state_digest <- function(values = list(), workflow_states = list()) {
       shiny::isolate({
         sm <- ws$state_manager
         if (!is.null(sm)) {
-          current_state <- tryCatch(sm$current_state, error = function(e) NULL)
+          current_state <- workflowStateCurrentName(sm)
           if (!is.null(current_state)) return(current_state)
         }
         ws[["r6_current_state_name"]] %||% ws[["current_state"]]
@@ -169,13 +169,10 @@ collect_state_digest <- function(values = list(), workflow_states = list()) {
       shiny::isolate({
         sm <- ws$state_manager
         if (!is.null(sm)) {
-          history <- tryCatch(sm$getHistory(), error = function(e) NULL)
-          if (is.null(history)) {
-            history <- tryCatch(unlist(sm$state_history), error = function(e) NULL)
-          }
+          history <- tryCatch(workflowStateHistory(sm), error = function(e) NULL)
           if (!is.null(history)) return(as.character(history))
 
-          state_names <- tryCatch(names(sm$states), error = function(e) NULL)
+          state_names <- tryCatch(workflowStateNames(sm), error = function(e) NULL)
           if (!is.null(state_names)) return(as.character(state_names))
         }
         history <- ws[["r6_state_history"]]
@@ -191,7 +188,7 @@ collect_state_digest <- function(values = list(), workflow_states = list()) {
       shiny::isolate({
         state_manager <- ws$state_manager
         records <- if (!is.null(state_manager)) {
-          state_manager$audit_records
+          workflowStateAuditRecords(state_manager)
         } else {
           ws[["audit_records"]]
         }

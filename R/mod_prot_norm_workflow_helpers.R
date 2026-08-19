@@ -7,7 +7,7 @@ prepareProtNormNormalizationRun <- function(
 ) {
   reqFn(stateManager)
 
-  current_state <- stateManager$current_state
+  current_state <- workflowStateCurrentName(stateManager)
   current_s4 <- stateManager$getState(current_state)
 
   if (is.null(current_s4)) {
@@ -396,7 +396,7 @@ runProtNormTabEntryWorkflow <- function(
     return(invisible(FALSE))
   }
 
-  current_state <- workflowData$state_manager$current_state
+  current_state <- workflowStateCurrentName(workflowData$state_manager)
 
   messageFn(sprintf("Current state: '%s'", current_state))
   messageFn(sprintf("Target trigger state: 'protein_replicate_filtered'"))
@@ -810,4 +810,3 @@ runProtNormResetObserver <- function(
     handleResetErrorFn(e)
   })
 }
-

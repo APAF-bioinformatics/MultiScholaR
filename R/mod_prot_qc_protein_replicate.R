@@ -219,7 +219,7 @@ runProteinReplicateFilterApplyObserver <- function(workflowData,
                                                    removeNotificationFn = shiny::removeNotification,
                                                    logInfoFn = logger::log_info,
                                                    logErrorFn = logger::log_error) {
-  currentState <- tryCatch(workflowData$state_manager$current_state, error = function(e) NULL)
+  currentState <- workflowStateCurrentName(workflowData$state_manager)
   if (identical(currentState, "protein_replicate_filtered")) {
     completeQcStatusFn(workflowData = workflowData)
     return(invisible(list(status = "skipped", reason = "already_complete")))

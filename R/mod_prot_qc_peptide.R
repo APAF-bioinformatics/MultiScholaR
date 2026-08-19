@@ -103,7 +103,7 @@ mod_prot_qc_peptide_server <- function(id, workflow_data, experiment_paths, omic
   shiny::moduleServer(id, function(input, output, session) {
     
     # Check workflow type to determine which modules to run
-    workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
+    workflow_type <- shiny::isolate(workflowStateType(workflow_data$state_manager))
     
     logger::log_info(paste("Peptide QC orchestrator: workflow type is", workflow_type))
     

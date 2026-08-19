@@ -199,7 +199,10 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
                   if (!is.null(current_data_state)) {
                     # CRITICAL FIX: Use the correct 'saveState' method instead of non-existent 'updateState'
                     # Retrieve existing config and description to preserve them
-                    existing_state_info <- workflow_data$state_manager$states[[current_data_state]]
+                    existing_state_info <- workflowStateMetadata(
+                      workflow_data$state_manager,
+                      current_data_state
+                    )
 
                     workflow_data$state_manager$saveState(
                       state_name = current_data_state,

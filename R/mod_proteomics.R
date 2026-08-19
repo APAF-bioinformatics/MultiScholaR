@@ -339,7 +339,9 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
       {
         # Enable QC tab after design matrix is complete
         if (workflow_data$tab_status$design_matrix == "complete") {
-          workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
+          workflow_type <- shiny::isolate(
+            workflowStateType(workflow_data$state_manager)
+          )
           log_info(paste("Workflow server: Design matrix complete. Workflow type:", workflow_type))
 
           if (workflow_type %in% c("TMT", "LFQ")) {

@@ -24,22 +24,18 @@ collectProtNormExportSessionData <- function(
   timeFn = Sys.time,
   messageFn = message
 ) {
-  current_state_name <- workflowData$state_manager$current_state
+  stateSnapshot <- workflowStateLegacySnapshot(workflowData$state_manager)
+  current_state_name <- stateSnapshot$r6_current_state_name
   current_s4_object <- workflowData$state_manager$getState(current_state_name)
-  r6_complete_states <- tryCatch(
-    workflowData$state_manager$states,
-    error = function(e) NULL
-  )
+  r6_complete_states <- stateSnapshot$r6_complete_states
   if (is.null(r6_complete_states)) {
     r6_complete_states <- list()
   }
-  r6_state_history <- tryCatch(
-    workflowData$state_manager$state_history,
-    error = function(e) NULL
-  )
+  r6_state_history <- stateSnapshot$r6_state_history
   if (is.null(r6_state_history)) {
     r6_state_history <- current_state_name
   }
+  stateManifest <- workflowStateManifest(workflowData$state_manager)
 
   workflow_type <- if (!is.null(workflowData$config_list) &&
     !is.null(workflowData$config_list$globalParameters) &&
@@ -107,6 +103,9 @@ collectProtNormExportSessionData <- function(
       current_s4_object@protein_id_column
     ))
   )
+  if (!is.null(stateManifest)) {
+    session_data$workflow_state_manifest <- stateManifest
+  }
 
   messageFn("*** EXPORT: Gathered session data successfully ***")
   messageFn(sprintf("*** EXPORT: Final protein count: %d ***", session_data$final_protein_count))

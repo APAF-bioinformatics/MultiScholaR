@@ -76,13 +76,20 @@ completeProtQcWorkflowStatus <- function(
 mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    state_transition <- shiny::reactiveVal(NULL)
+    stop_observing_state <- observeWorkflowStateTransitions(
+      workflow_data$state_manager,
+      \(event) state_transition(event$revision)
+    )
+    session$onSessionEnded(stop_observing_state)
     
     output$dynamic_qc_tabs <- shiny::renderUI({
       message("=== DEBUG66: mod_prot_qc_server renderUI fired ===")
       
       # This logic will run once workflow_type is available
-      shiny::req(workflow_data$state_manager$workflow_type)
-      workflow_type <- workflow_data$state_manager$workflow_type
+      state_transition()
+      workflow_type <- workflowStateType(workflow_data$state_manager)
+      shiny::req(workflow_type)
       message(sprintf("   DEBUG66: workflow_type = %s", workflow_type))
       
       if (workflow_type %in% c("TMT", "LFQ")) {
@@ -146,7 +153,7 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
       shiny::req(qc_trigger() == TRUE) # Only run when trigger is explicitly set to TRUE
       message("   DEBUG66: qc_trigger is TRUE, proceeding with module activation")
       
-      workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
+      workflow_type <- shiny::isolate(workflowStateType(workflow_data$state_manager))
       logger::log_info(paste("Main QC Applet: Routing for workflow type:", workflow_type))
       message(sprintf("   DEBUG66: Isolated workflow_type = %s", workflow_type))
       
@@ -197,12 +204,17 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
     }, ignoreNULL = TRUE, once = TRUE) # Run only once when triggered
     
     # Final step: update tab status when the final state is reached
-    shiny::observeEvent(workflow_data$state_manager$states$protein_replicate_filtered, {
-      # This observer is triggered when the final protein state is reached.
-      # It can be used to update the UI or perform final actions.
-      logger::log_info("Final protein state reached. Quality Control module is ready.")
-      completeProtQcWorkflowStatus(workflow_data)
-    })
+    shiny::observeEvent(state_transition(), {
+      if (workflowStateHasState(
+        workflow_data$state_manager,
+        "protein_replicate_filtered"
+      )) {
+        logger::log_info(
+          "Final protein state reached. Quality Control module is ready."
+        )
+        completeProtQcWorkflowStatus(workflow_data)
+      }
+    }, ignoreNULL = FALSE)
     
   })
 }
