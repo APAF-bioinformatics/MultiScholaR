@@ -941,10 +941,13 @@ e2e_complete_project_setup <- function(
     stop(sprintf("project_dir does not exist: %s", project_dir), call. = FALSE)
   }
 
-  e2e_click_testid(driver, "btn-start-analysis", timeout = timeout)
+  e2e_signal_action_input_id(driver, "start_analysis", timeout = timeout)
+  e2e_wait_for_input_id(driver, "experiment_label", timeout = timeout)
+  e2e_wait_for_input_id(driver, "project_dir", timeout = timeout)
+  e2e_wait_for_selector(driver, "btn-confirm-setup", timeout = timeout)
   e2e_set_input(driver, "experiment_label", experiment_label, timeout = timeout)
   e2e_set_input(driver, "project_dir", normalizePath(project_dir), timeout = timeout)
-  e2e_click_testid(driver, "btn-confirm-setup", timeout = timeout)
+  e2e_signal_action_input_id(driver, "confirm_setup", timeout = timeout)
   invisible(driver)
 }
 

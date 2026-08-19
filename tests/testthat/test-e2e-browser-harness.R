@@ -199,6 +199,40 @@ test_that("click, input, upload, and setup helpers call the driver through stabl
   )))
 })
 
+test_that("project setup waits for the modal and signals bound Shiny actions", {
+  driver <- new_fake_e2e_driver()
+
+  e2e_complete_project_setup(driver, "e2e_case", tempdir())
+
+  calls <- driver$.state$calls
+  click_calls <- Filter(\(call) identical(call$method, "click"), calls)
+  action_inputs <- vapply(
+    click_calls,
+    \(call) call$args$input,
+    character(1)
+  )
+  expect_identical(action_inputs, c("start_analysis", "confirm_setup"))
+
+  wait_calls <- Filter(\(call) identical(call$method, "wait_for_js"), calls)
+  wait_scripts <- vapply(wait_calls, \(call) call$args$script, character(1))
+  expect_true(any(grepl("experiment_label", wait_scripts, fixed = TRUE)))
+  expect_true(any(grepl("project_dir", wait_scripts, fixed = TRUE)))
+  expect_true(any(grepl("btn-confirm-setup", wait_scripts, fixed = TRUE)))
+
+  methods <- vapply(calls, `[[`, character(1), "method")
+  first_set <- match("set_inputs", methods)
+  modal_waits <- which(
+    methods == "wait_for_js" &
+      vapply(
+        calls,
+        \(call) grepl("experiment_label", call$args$script %||% "", fixed = TRUE),
+        logical(1)
+      )
+  )
+  expect_true(length(modal_waits) > 0L)
+  expect_lt(min(modal_waits), first_set)
+})
+
 test_that("selectize helpers resolve imported run case without inventing fixture-only IDs", {
   expect_identical(
     e2e_match_available_values(
