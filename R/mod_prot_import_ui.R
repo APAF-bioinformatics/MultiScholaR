@@ -1,3 +1,14 @@
+getProtImportFormatChoices <- function() {
+  c(
+    "Auto-detect" = "auto",
+    "DIA-NN" = "diann",
+    "Spectronaut DIA" = "spectronaut",
+    "FragPipe LFQ" = "fragpipe",
+    "MaxQuant LFQ" = "maxquant",
+    "Proteome Discoverer TMT" = "pd_tmt"
+  )
+}
+
 #' Setup & Import Applet UI
 #' 
 #' UI for data import and initial setup with multi-format support
@@ -52,12 +63,7 @@ mod_prot_import_ui <- function(id) {
             # Manual format override option
             shiny::radioButtons(ns("format_override"),
                         "Override detected format:",
-                        choices = c("Auto-detect" = "auto",
-                                  "DIA-NN" = "diann",
-                                  "Spectronaut DIA" = "spectronaut",
-                                  "FragPipe LFQ" = "fragpipe",
-                                  "MaxQuant LFQ" = "maxquant",
-                                  "Proteome Discoverer TMT" = "pd_tmt"),
+                        choices = getProtImportFormatChoices(),
                         selected = "auto",
                         inline = TRUE),
             

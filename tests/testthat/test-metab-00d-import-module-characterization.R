@@ -87,6 +87,8 @@ setMetabImportInputs <- function(session, ...) {
 }
 
 installMetabImportCommonMocks <- function(harness, importer_fn) {
+  test_env <- parent.frame()
+
   local_mocked_bindings(
     detectMetabolomicsFormat = function(...) {
       list(format = "msdial", confidence = 0.95)
@@ -100,7 +102,8 @@ installMetabImportCommonMocks <- function(harness, importer_fn) {
         errors = character()
       )
     },
-    .env = asNamespace("MultiScholaR")
+    .package = "MultiScholaR",
+    .env = test_env
   )
 
   local_mocked_bindings(
@@ -140,12 +143,14 @@ installMetabImportCommonMocks <- function(harness, importer_fn) {
       harness$capture$removed_notifications <<- c(harness$capture$removed_notifications, id)
       invisible(NULL)
     },
-    .env = asNamespace("shiny")
+    .package = "shiny",
+    .env = test_env
   )
 
   local_mocked_bindings(
     make_clean_names = function(x, ...) c("sample_a", "sample_b"),
-    .env = asNamespace("janitor")
+    .package = "janitor",
+    .env = test_env
   )
 }
 

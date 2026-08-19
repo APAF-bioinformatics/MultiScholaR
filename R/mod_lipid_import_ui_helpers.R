@@ -1,3 +1,14 @@
+getLipidImportVendorChoices <- function() {
+  c(
+    "MS-DIAL" = "msdial",
+    "Progenesis QI" = "progenesis",
+    "XCMS" = "xcms",
+    "Compound Discoverer" = "compound_discoverer",
+    "LipidSearch" = "lipidsearch",
+    "Other/Custom" = "custom"
+  )
+}
+
 # Shared assay input panel builder kept in the wrapper until the next staged UI wave.
 buildLipidImportAssayInputPanel <- function(
   ns,
@@ -78,14 +89,7 @@ buildLipidImportFileImportSection <- function(
       buildRadioButtons(
         ns("vendor_format"),
         NULL,
-        choices = c(
-          "MS-DIAL" = "msdial",
-          "Progenesis QI" = "progenesis",
-          "XCMS" = "xcms",
-          "Compound Discoverer" = "compound_discoverer",
-          "LipidSearch" = "lipidsearch",
-          "Other/Custom" = "custom"
-        ),
+        choices = getLipidImportVendorChoices(),
         selected = "msdial",
         inline = TRUE
       ),

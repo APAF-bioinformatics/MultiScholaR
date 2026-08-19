@@ -7,6 +7,16 @@
 #' @param id,workflow_data,experiment_paths,volumes Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
+getMetabImportVendorChoices <- function() {
+  c(
+    "MS-DIAL" = "msdial",
+    "Progenesis QI" = "progenesis",
+    "XCMS" = "xcms",
+    "Compound Discoverer" = "compound_discoverer",
+    "Other/Custom" = "custom"
+  )
+}
+
 #' @rdname mod_metab_import
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h3 h4 h5 p hr br radioButtons selectInput textInput actionButton uiOutput verbatimTextOutput icon tags conditionalPanel helpText div
@@ -33,13 +43,7 @@ mod_metab_import_ui <- function(id) {
                 shiny::radioButtons(
                   ns("vendor_format"),
                   NULL,
-                  choices = c(
-                    "MS-DIAL" = "msdial",
-                    "Progenesis QI" = "progenesis",
-                    "XCMS" = "xcms",
-                    "Compound Discoverer" = "compound_discoverer",
-                    "Other/Custom" = "custom"
-                  ),
+                  choices = getMetabImportVendorChoices(),
                   selected = "msdial",
                   inline = TRUE
                 ),

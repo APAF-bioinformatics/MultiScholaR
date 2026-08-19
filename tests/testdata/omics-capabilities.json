@@ -1,0 +1,567 @@
+{
+  "schema_version": "1.0.0",
+  "inventory_version": "2026-08-17.1",
+  "allowed_support_statuses": [
+    "scientifically_supported",
+    "reader_characterized",
+    "detection_only",
+    "advertised_unverified",
+    "unsupported"
+  ],
+  "session_identity_fields": [
+    "project_id",
+    "omic_type",
+    "omic_label",
+    "workflow_id",
+    "workflow_type",
+    "workflow_slug",
+    "input_format",
+    "data_level",
+    "acquisition_mode"
+  ],
+  "capability_key_fields": [
+    "omic_type",
+    "workflow_id",
+    "workflow_type",
+    "workflow_slug",
+    "input_format",
+    "data_level",
+    "acquisition_mode"
+  ],
+  "backend_contract": {
+    "allowed_requests": ["memory", "artifact", "auto"],
+    "allowed_artifact_rollouts": ["dual_write", "read_through", "evict"],
+    "known_initial_policy": {
+      "memory": "memory",
+      "artifact": "error_not_certified",
+      "auto": "memory"
+    },
+    "unknown_tuple_policy": {
+      "memory": "memory",
+      "artifact": "error_unknown_capability",
+      "auto": "memory"
+    }
+  },
+  "ui_surfaces": [
+    {
+      "omic_type": "proteomics",
+      "choice_function": "getProtImportFormatChoices",
+      "input_id": "format_override",
+      "choices": [
+        {"label": "Auto-detect", "value": "auto", "inventory_format_id": null},
+        {"label": "DIA-NN", "value": "diann", "inventory_format_id": "proteomics.diann"},
+        {"label": "Spectronaut DIA", "value": "spectronaut", "inventory_format_id": "proteomics.spectronaut"},
+        {"label": "FragPipe LFQ", "value": "fragpipe", "inventory_format_id": "proteomics.fragpipe"},
+        {"label": "MaxQuant LFQ", "value": "maxquant", "inventory_format_id": "proteomics.maxquant"},
+        {"label": "Proteome Discoverer TMT", "value": "pd_tmt", "inventory_format_id": "proteomics.pd_tmt"}
+      ]
+    },
+    {
+      "omic_type": "metabolomics",
+      "choice_function": "getMetabImportVendorChoices",
+      "input_id": "vendor_format",
+      "choices": [
+        {"label": "MS-DIAL", "value": "msdial", "inventory_format_id": "metabolomics.msdial"},
+        {"label": "Progenesis QI", "value": "progenesis", "inventory_format_id": "metabolomics.progenesis"},
+        {"label": "XCMS", "value": "xcms", "inventory_format_id": "metabolomics.xcms"},
+        {"label": "Compound Discoverer", "value": "compound_discoverer", "inventory_format_id": "metabolomics.compound_discoverer"},
+        {"label": "Other/Custom", "value": "custom", "inventory_format_id": "metabolomics.custom"}
+      ]
+    },
+    {
+      "omic_type": "lipidomics",
+      "choice_function": "getLipidImportVendorChoices",
+      "input_id": "vendor_format",
+      "choices": [
+        {"label": "MS-DIAL", "value": "msdial", "inventory_format_id": "lipidomics.msdial"},
+        {"label": "Progenesis QI", "value": "progenesis", "inventory_format_id": "lipidomics.progenesis"},
+        {"label": "XCMS", "value": "xcms", "inventory_format_id": "lipidomics.xcms"},
+        {"label": "Compound Discoverer", "value": "compound_discoverer", "inventory_format_id": "lipidomics.compound_discoverer"},
+        {"label": "LipidSearch", "value": "lipidsearch", "inventory_format_id": "lipidomics.lipidsearch"},
+        {"label": "Other/Custom", "value": "custom", "inventory_format_id": "lipidomics.custom"}
+      ]
+    }
+  ],
+  "formats": [
+    {
+      "format_id": "proteomics.diann",
+      "omic_type": "proteomics",
+      "ui_value": "diann",
+      "detector_owner": "detectProteomicsFormat",
+      "parser_owner": "importDIANNData",
+      "fallback_parser_owner": null,
+      "support_status": "scientifically_supported",
+      "fixture_requirement": "direct_file",
+      "fixture_refs": [
+        "tests/testdata/e2e/prot_dia/report.tsv",
+        "tests/testdata/e2e/prot_dia_limpa/report.tsv"
+      ],
+      "required_tests": [
+        "tests/testthat/test-module-ci-prot-import.R",
+        "tests/testthat/test-e2e-proteomics-dia.R",
+        "tests/testthat/test-e2e-proteomics-dia-limpa.R"
+      ],
+      "capabilities": [
+        {
+          "capability_id": "proteomics.diann.peptide.dia.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "proteomics",
+            "workflow_id": "proteomics.gui",
+            "workflow_type": "DIA",
+            "workflow_slug": "prot_dia",
+            "input_format": "diann",
+            "data_level": "peptide",
+            "acquisition_mode": "dia"
+          },
+          "complete_workflow": true,
+          "module_ci_lanes": ["proteomics"],
+          "e2e_lanes": ["prot_dia", "prot_dia_limpa"],
+          "reachable_stages": ["import", "design", "peptide_qc", "protein_rollup_qc", "normalization_ruv", "session", "differential_abundance", "enrichment", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    },
+    {
+      "format_id": "proteomics.spectronaut",
+      "omic_type": "proteomics",
+      "ui_value": "spectronaut",
+      "detector_owner": "detectProteomicsFormat",
+      "parser_owner": "importSpectronautData",
+      "fallback_parser_owner": null,
+      "support_status": "advertised_unverified",
+      "fixture_requirement": "required_before_scientific_promotion",
+      "fixture_refs": [],
+      "required_tests": ["tests/testthat/test-prot-01c-import-module-contracts.R"],
+      "capabilities": [
+        {
+          "capability_id": "proteomics.spectronaut.protein.lfq.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "proteomics",
+            "workflow_id": "proteomics.gui",
+            "workflow_type": "LFQ",
+            "workflow_slug": "prot_spectronaut_lfq",
+            "input_format": "spectronaut",
+            "data_level": "protein",
+            "acquisition_mode": "dia"
+          },
+          "complete_workflow": false,
+          "module_ci_lanes": [],
+          "e2e_lanes": [],
+          "reachable_stages": ["import", "design", "protein_qc_bypass", "normalization", "session", "differential_abundance", "enrichment", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        },
+        {
+          "capability_id": "proteomics.spectronaut.peptide.lfq.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "proteomics",
+            "workflow_id": "proteomics.gui",
+            "workflow_type": "LFQ",
+            "workflow_slug": "prot_spectronaut_lfq",
+            "input_format": "spectronaut",
+            "data_level": "peptide",
+            "acquisition_mode": "dia"
+          },
+          "complete_workflow": false,
+          "module_ci_lanes": [],
+          "e2e_lanes": [],
+          "reachable_stages": ["import", "design", "protein_qc_bypass", "normalization", "session", "differential_abundance", "enrichment", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    },
+    {
+      "format_id": "proteomics.fragpipe",
+      "omic_type": "proteomics",
+      "ui_value": "fragpipe",
+      "detector_owner": "detectProteomicsFormat",
+      "parser_owner": "importFragPipeData",
+      "fallback_parser_owner": null,
+      "support_status": "scientifically_supported",
+      "fixture_requirement": "direct_file",
+      "fixture_refs": ["tests/testdata/e2e/prot_lfq/seed_combined_protein.tsv"],
+      "required_tests": ["tests/testthat/test-module-ci-prot-import.R", "tests/testthat/test-e2e-proteomics-tmt-lfq.R"],
+      "capabilities": [
+        {
+          "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "proteomics",
+            "workflow_id": "proteomics.gui",
+            "workflow_type": "LFQ",
+            "workflow_slug": "prot_lfq_fragpipe",
+            "input_format": "fragpipe",
+            "data_level": "protein",
+            "acquisition_mode": "not_recorded"
+          },
+          "complete_workflow": true,
+          "module_ci_lanes": ["proteomics"],
+          "e2e_lanes": ["prot_lfq_fragpipe"],
+          "reachable_stages": ["import", "design", "protein_qc_bypass", "normalization", "session", "differential_abundance", "enrichment", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    },
+    {
+      "format_id": "proteomics.maxquant",
+      "omic_type": "proteomics",
+      "ui_value": "maxquant",
+      "detector_owner": "detectProteomicsFormat",
+      "parser_owner": "importMaxQuantData",
+      "fallback_parser_owner": null,
+      "support_status": "scientifically_supported",
+      "fixture_requirement": "direct_file",
+      "fixture_refs": ["tests/testdata/e2e/prot_lfq/proteinGroups.txt"],
+      "required_tests": ["tests/testthat/test-module-ci-prot-import.R", "tests/testthat/test-e2e-proteomics-tmt-lfq.R"],
+      "capabilities": [
+        {
+          "capability_id": "proteomics.maxquant.protein.lfq.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "proteomics",
+            "workflow_id": "proteomics.gui",
+            "workflow_type": "LFQ",
+            "workflow_slug": "prot_lfq",
+            "input_format": "maxquant",
+            "data_level": "protein",
+            "acquisition_mode": "not_recorded"
+          },
+          "complete_workflow": true,
+          "module_ci_lanes": ["proteomics"],
+          "e2e_lanes": ["prot_lfq"],
+          "reachable_stages": ["import", "design", "protein_qc_bypass", "normalization", "session", "differential_abundance", "enrichment", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    },
+    {
+      "format_id": "proteomics.pd_tmt",
+      "omic_type": "proteomics",
+      "ui_value": "pd_tmt",
+      "detector_owner": "detectProteomicsFormat",
+      "parser_owner": "importProteomeDiscovererTMTData",
+      "fallback_parser_owner": null,
+      "support_status": "scientifically_supported",
+      "fixture_requirement": "direct_file",
+      "fixture_refs": ["tests/testdata/e2e/prot_tmt/pd_tmt_peptides.tsv"],
+      "required_tests": ["tests/testthat/test-module-ci-prot-import.R", "tests/testthat/test-e2e-proteomics-tmt-lfq.R"],
+      "capabilities": [
+        {
+          "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "proteomics",
+            "workflow_id": "proteomics.gui",
+            "workflow_type": "TMT",
+            "workflow_slug": "prot_tmt",
+            "input_format": "pd_tmt",
+            "data_level": "protein",
+            "acquisition_mode": "not_recorded"
+          },
+          "complete_workflow": true,
+          "module_ci_lanes": ["proteomics"],
+          "e2e_lanes": ["prot_tmt"],
+          "reachable_stages": ["import", "design", "protein_qc_bypass", "normalization", "session", "differential_abundance", "enrichment", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    },
+    {
+      "format_id": "metabolomics.msdial",
+      "omic_type": "metabolomics",
+      "ui_value": "msdial",
+      "detector_owner": "detectMetabolomicsFormat",
+      "parser_owner": "importMetabMSDIALData",
+      "fallback_parser_owner": null,
+      "support_status": "reader_characterized",
+      "fixture_requirement": "generated_direct_reader_fixture",
+      "fixture_refs": ["tests/testthat/test-module-ci-metab-import.R"],
+      "required_tests": ["tests/testthat/test-module-ci-metab-import.R"],
+      "capabilities": [
+        {
+          "capability_id": "metabolomics.msdial.metabolite.standard.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "metabolomics",
+            "workflow_id": "metabolomics.gui",
+            "workflow_type": "metabolomics_standard",
+            "workflow_slug": "metab_standard",
+            "input_format": "msdial",
+            "data_level": "metabolite",
+            "acquisition_mode": "not_recorded"
+          },
+          "complete_workflow": false,
+          "module_ci_lanes": ["metabolomics"],
+          "e2e_lanes": [],
+          "reachable_stages": ["import", "design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    },
+    {
+      "format_id": "metabolomics.progenesis",
+      "omic_type": "metabolomics",
+      "ui_value": "progenesis",
+      "detector_owner": "detectMetabolomicsFormat",
+      "parser_owner": null,
+      "fallback_parser_owner": "importMetabMSDIALData",
+      "support_status": "detection_only",
+      "fixture_requirement": "dedicated_reader_and_fixture_required",
+      "fixture_refs": [],
+      "required_tests": ["tests/testthat/test-metab-import-detection-direct-shared.R"],
+      "capabilities": []
+    },
+    {
+      "format_id": "metabolomics.xcms",
+      "omic_type": "metabolomics",
+      "ui_value": "xcms",
+      "detector_owner": "detectMetabolomicsFormat",
+      "parser_owner": null,
+      "fallback_parser_owner": "importMetabMSDIALData",
+      "support_status": "detection_only",
+      "fixture_requirement": "dedicated_reader_and_fixture_required",
+      "fixture_refs": [],
+      "required_tests": ["tests/testthat/test-metab-import-detection-direct-shared.R"],
+      "capabilities": []
+    },
+    {
+      "format_id": "metabolomics.compound_discoverer",
+      "omic_type": "metabolomics",
+      "ui_value": "compound_discoverer",
+      "detector_owner": "detectMetabolomicsFormat",
+      "parser_owner": null,
+      "fallback_parser_owner": "importMetabMSDIALData",
+      "support_status": "detection_only",
+      "fixture_requirement": "dedicated_reader_and_fixture_required",
+      "fixture_refs": [],
+      "required_tests": ["tests/testthat/test-metab-import-detection-direct-shared.R"],
+      "capabilities": []
+    },
+    {
+      "format_id": "metabolomics.custom",
+      "omic_type": "metabolomics",
+      "ui_value": "custom",
+      "detector_owner": "detectMetabolomicsFormat",
+      "parser_owner": "importMetabMSDIALData",
+      "fallback_parser_owner": null,
+      "support_status": "scientifically_supported",
+      "fixture_requirement": "direct_file_with_explicit_column_mapping",
+      "fixture_refs": [
+        "tests/testdata/e2e/metab_lc/lcms_pos_features.tsv",
+        "tests/testdata/e2e/metab_gc/gcms_features.tsv",
+        "tests/testdata/e2e/metab_combined/combined_lcms_features.tsv",
+        "tests/testdata/e2e/metab_combined/combined_gcms_features.tsv"
+      ],
+      "required_tests": ["tests/testthat/test-module-ci-metab-import.R", "tests/testthat/test-e2e-metabolomics-lc-gc.R"],
+      "capabilities": [
+        {
+          "capability_id": "metabolomics.custom.metabolite.standard.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "metabolomics",
+            "workflow_id": "metabolomics.gui",
+            "workflow_type": "metabolomics_standard",
+            "workflow_slug": "metab_standard",
+            "input_format": "custom",
+            "data_level": "metabolite",
+            "acquisition_mode": "not_recorded"
+          },
+          "complete_workflow": true,
+          "module_ci_lanes": ["metabolomics"],
+          "e2e_lanes": ["metab_lc", "metab_gc", "metab_combined"],
+          "reachable_stages": ["import", "design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    },
+    {
+      "format_id": "lipidomics.msdial",
+      "omic_type": "lipidomics",
+      "ui_value": "msdial",
+      "detector_owner": "detectLipidomicsFormat",
+      "parser_owner": "importLipidMSDIALData",
+      "fallback_parser_owner": null,
+      "support_status": "reader_characterized",
+      "fixture_requirement": "generated_direct_reader_fixture",
+      "fixture_refs": ["tests/testthat/test-module-ci-lipid-import.R"],
+      "required_tests": ["tests/testthat/test-module-ci-lipid-import.R"],
+      "capabilities": [
+        {
+          "capability_id": "lipidomics.msdial.lipid.standard.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "lipidomics",
+            "workflow_id": "lipidomics.gui",
+            "workflow_type": "lipidomics_standard",
+            "workflow_slug": "lipid_standard",
+            "input_format": "msdial",
+            "data_level": "lipid",
+            "acquisition_mode": "not_recorded"
+          },
+          "complete_workflow": false,
+          "module_ci_lanes": ["lipidomics"],
+          "e2e_lanes": [],
+          "reachable_stages": ["import", "design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    },
+    {
+      "format_id": "lipidomics.progenesis",
+      "omic_type": "lipidomics",
+      "ui_value": "progenesis",
+      "detector_owner": "detectLipidomicsFormat",
+      "parser_owner": null,
+      "fallback_parser_owner": "importLipidMSDIALData",
+      "support_status": "detection_only",
+      "fixture_requirement": "dedicated_reader_and_fixture_required",
+      "fixture_refs": [],
+      "required_tests": ["tests/testthat/test-lipid-00-import-detection-helpers.R"],
+      "capabilities": []
+    },
+    {
+      "format_id": "lipidomics.xcms",
+      "omic_type": "lipidomics",
+      "ui_value": "xcms",
+      "detector_owner": "detectLipidomicsFormat",
+      "parser_owner": null,
+      "fallback_parser_owner": "importLipidMSDIALData",
+      "support_status": "detection_only",
+      "fixture_requirement": "dedicated_reader_and_fixture_required",
+      "fixture_refs": [],
+      "required_tests": ["tests/testthat/test-lipid-00-import-detection-helpers.R"],
+      "capabilities": []
+    },
+    {
+      "format_id": "lipidomics.compound_discoverer",
+      "omic_type": "lipidomics",
+      "ui_value": "compound_discoverer",
+      "detector_owner": "detectLipidomicsFormat",
+      "parser_owner": null,
+      "fallback_parser_owner": "importLipidMSDIALData",
+      "support_status": "detection_only",
+      "fixture_requirement": "dedicated_reader_and_fixture_required",
+      "fixture_refs": [],
+      "required_tests": ["tests/testthat/test-lipid-00-import-detection-helpers.R"],
+      "capabilities": []
+    },
+    {
+      "format_id": "lipidomics.lipidsearch",
+      "omic_type": "lipidomics",
+      "ui_value": "lipidsearch",
+      "detector_owner": "detectLipidomicsFormat",
+      "parser_owner": "importLipidSearchData",
+      "fallback_parser_owner": null,
+      "support_status": "scientifically_supported",
+      "fixture_requirement": "direct_file",
+      "fixture_refs": [
+        "tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_pos.txt",
+        "tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_neg.txt",
+        "tests/testdata/e2e/lipid_canonical/lipidsearch_gcms.txt"
+      ],
+      "required_tests": ["tests/testthat/test-module-ci-lipid-import.R", "tests/testthat/test-e2e-lipidomics-canonical.R"],
+      "capabilities": [
+        {
+          "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "lipidomics",
+            "workflow_id": "lipidomics.gui",
+            "workflow_type": "lipidomics_standard",
+            "workflow_slug": "lipid_standard",
+            "input_format": "lipidsearch",
+            "data_level": "lipid",
+            "acquisition_mode": "not_recorded"
+          },
+          "complete_workflow": true,
+          "module_ci_lanes": ["lipidomics"],
+          "e2e_lanes": ["lipid_canonical"],
+          "reachable_stages": ["import", "design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    },
+    {
+      "format_id": "lipidomics.custom",
+      "omic_type": "lipidomics",
+      "ui_value": "custom",
+      "detector_owner": "detectLipidomicsFormat",
+      "parser_owner": "importLipidMSDIALData",
+      "fallback_parser_owner": null,
+      "support_status": "reader_characterized",
+      "fixture_requirement": "generated_direct_reader_fixture_with_explicit_column_mapping",
+      "fixture_refs": ["tests/testthat/test-module-ci-lipid-import.R"],
+      "required_tests": ["tests/testthat/test-module-ci-lipid-import.R"],
+      "capabilities": [
+        {
+          "capability_id": "lipidomics.custom.lipid.standard.v1",
+          "capability_version": "1.0.0",
+          "identity": {
+            "omic_type": "lipidomics",
+            "workflow_id": "lipidomics.gui",
+            "workflow_type": "lipidomics_standard",
+            "workflow_slug": "lipid_standard",
+            "input_format": "custom",
+            "data_level": "lipid",
+            "acquisition_mode": "not_recorded"
+          },
+          "complete_workflow": false,
+          "module_ci_lanes": ["lipidomics"],
+          "e2e_lanes": [],
+          "reachable_stages": ["import", "design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"],
+          "artifact_eligible": false,
+          "auto_eligible": false,
+          "maximum_artifact_rollout": null
+        }
+      ]
+    }
+  ],
+  "non_workflow_surfaces": [
+    {
+      "surface_id": "transcriptomics.ui",
+      "surface_type": "ui_placeholder",
+      "programme_treatment": "excluded_until_implemented",
+      "owners": ["R/app_ui.R"]
+    },
+    {
+      "surface_id": "integration.ui",
+      "surface_type": "ui_placeholder",
+      "programme_treatment": "excluded_until_implemented",
+      "owners": ["R/app_ui.R"]
+    },
+    {
+      "surface_id": "phosphosite.api",
+      "surface_type": "auxiliary_exported_api",
+      "programme_treatment": "compatibility_and_performance_only",
+      "owners": ["R/func_phospho_annotation.R", "R/func_prot_annotation_phosphosite_helpers.R"]
+    },
+    {
+      "surface_id": "multiomics.api",
+      "surface_type": "auxiliary_exported_api",
+      "programme_treatment": "compatibility_and_performance_only",
+      "owners": ["R/func_multiomics_mofa.R", "R/func_multiomics_enrich_metabolomics_helpers.R", "R/func_multiomics_enrich_stringdb_api.R"]
+    }
+  ]
+}
