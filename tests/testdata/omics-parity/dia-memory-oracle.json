@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0.0",
+  "oracle_version": "2026-08-17.1",
+  "backend": "memory",
+  "oracle_origin": "Captured from the pre-artifact importDIANNData implementation and reviewed fixture expectations; artifact code must consume but never regenerate this file.",
+  "source_revision": "8ff6658d50217eae8100fecdad3d6eb3a7663571",
+  "scenarios": [
+    {
+      "scenario_id": "dia_canonical_import",
+      "expected": {
+        "input_sha256": "ea576515843e78acb88de5b18d07f3ccb14b5b49619d29ff98d4b47c51107160",
+        "output_sha256": "8c3b538c7edc257522056dbfb8d711c80205662157e1e44d813f46c1d82f64b6",
+        "rows": 60,
+        "columns": 16,
+        "column_names": [
+          "Protein.Group", "Protein.Ids", "Protein.Names", "Genes", "Precursor.Id",
+          "Modified.Sequence", "Stripped.Sequence", "Precursor.Charge",
+          "Precursor.Quantity", "Q.Value", "PG.Q.Value", "Run",
+          "Global.Q.Value", "Global.PG.Q.Value", "Proteotypic", "Precursor.Normalised"
+        ],
+        "column_classes": {
+          "Protein.Group": "character",
+          "Protein.Ids": "character",
+          "Protein.Names": "character",
+          "Genes": "character",
+          "Precursor.Id": "character",
+          "Modified.Sequence": "character",
+          "Stripped.Sequence": "character",
+          "Precursor.Charge": "numeric",
+          "Precursor.Quantity": "numeric",
+          "Q.Value": "numeric",
+          "PG.Q.Value": "numeric",
+          "Run": "character",
+          "Global.Q.Value": "numeric",
+          "Global.PG.Q.Value": "numeric",
+          "Proteotypic": "numeric",
+          "Precursor.Normalised": "numeric"
+        },
+        "runs": ["KO_1", "KO_2", "KO_3", "WT_1", "WT_2", "WT_3"],
+        "proteins": ["P00001", "P00002", "P00003", "P00004", "P00005"],
+        "peptides": [
+          "PEP1AK", "PEP1VR", "PEP2AK", "PEP2VR", "PEP3AK",
+          "PEP3VR", "PEP4AK", "PEP4VR", "PEP5AK", "PEP5VR"
+        ],
+        "quantity_column": "Precursor.Normalised",
+        "quantity_sum": 63111.199999999997,
+        "quantity_min": 522,
+        "quantity_max": 2167.5,
+        "na_quantity": 0,
+        "nan_quantity": 0,
+        "positive_infinite_quantity": 0,
+        "negative_infinite_quantity": 0
+      }
+    },
+    {
+      "scenario_id": "dia_limpa_mnar_import",
+      "expected": {
+        "input_sha256": "8d0b4ddf9760aed3ec98fe1d1bb4f483842ccedd8a1aa2bae9f20a418c00d118",
+        "output_sha256": "a1ed2d90910f32fcea8dfc3be5918269142d198681b39bf04681b236c1581b07",
+        "rows": 72,
+        "columns": 16,
+        "column_names": [
+          "Protein.Group", "Protein.Ids", "Protein.Names", "Genes", "Precursor.Id",
+          "Modified.Sequence", "Stripped.Sequence", "Precursor.Charge",
+          "Precursor.Quantity", "Q.Value", "PG.Q.Value", "Run",
+          "Global.Q.Value", "Global.PG.Q.Value", "Proteotypic", "Precursor.Normalised"
+        ],
+        "column_classes": {
+          "Protein.Group": "character",
+          "Protein.Ids": "character",
+          "Protein.Names": "character",
+          "Genes": "character",
+          "Precursor.Id": "character",
+          "Modified.Sequence": "character",
+          "Stripped.Sequence": "character",
+          "Precursor.Charge": "numeric",
+          "Precursor.Quantity": "numeric",
+          "Q.Value": "numeric",
+          "PG.Q.Value": "numeric",
+          "Run": "character",
+          "Global.Q.Value": "numeric",
+          "Global.PG.Q.Value": "numeric",
+          "Proteotypic": "numeric",
+          "Precursor.Normalised": "numeric"
+        },
+        "runs": ["KO_1", "KO_2", "KO_3", "WT_1", "WT_2", "WT_3"],
+        "proteins": ["P00001", "P00002", "P00003", "P00004", "P00005", "P00006"],
+        "peptides": [
+          "PEP1AK", "PEP1VR", "PEP2AK", "PEP2VR", "PEP3AK", "PEP3VR",
+          "PEP4AK", "PEP4VR", "PEP5AK", "PEP5VR", "PEP6AK", "PEP6VR"
+        ],
+        "quantity_column": "Precursor.Normalised",
+        "quantity_sum": 59720,
+        "quantity_min": 110,
+        "quantity_max": 3020,
+        "na_quantity": 20,
+        "nan_quantity": 0,
+        "positive_infinite_quantity": 0,
+        "negative_infinite_quantity": 0
+      }
+    }
+  ]
+}

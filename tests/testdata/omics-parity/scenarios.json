@@ -1,0 +1,211 @@
+{
+  "schema_version": "1.0.0",
+  "corpus_version": "2026-08-17.1",
+  "capability_id": "proteomics.diann.peptide.dia.v1",
+  "backend": "memory",
+  "oracle_path": "tests/testdata/omics-parity/dia-memory-oracle.json",
+  "execution": {
+    "repetitions": 2,
+    "sampling_interval_ms": 100,
+    "retention_window_ms": 500,
+    "rng_kind": ["Mersenne-Twister", "Inversion", "Rejection"],
+    "rng_seed": 104729,
+    "threads": 1,
+    "locale": "C",
+    "timezone": "UTC",
+    "concurrency": "one measured child process at a time",
+    "cache_sequence": ["cold_uncontrolled", "warm_candidate"],
+    "cache_control": "fresh R process for every run; OS page cache is reported but not privileged or dropped"
+  },
+  "thread_controls": {
+    "configured_environment": {
+      "OMP_NUM_THREADS": 1,
+      "OPENBLAS_NUM_THREADS": 1,
+      "MKL_NUM_THREADS": 1,
+      "ARROW_NUM_THREADS": 1,
+      "DUCKDB_THREADS": 1
+    },
+    "process_isolation": "one measured child process at a time; recursive descendants remain part of process-tree metrics",
+    "method_level_limitations": [
+      {
+        "component": "iq::process_long_format",
+        "status": "reported_not_controlled",
+        "reason": "the current IQ API exposes no thread argument; emitted IQ thread messages are retained in scientific-run stdout and must not be represented as single-thread execution"
+      }
+    ],
+    "claim_policy": "configured runtime limits and observed method-level behavior are reported separately"
+  },
+  "comparison_contract": {
+    "stable_keys": ["Run", "Protein.Group", "Stripped.Sequence", "Precursor.Id"],
+    "ordering_rule": "bytewise ascending canonical text over stable_keys; columns follow ordered_columns",
+    "ordered_columns": [
+      "Protein.Group", "Protein.Ids", "Protein.Names", "Genes", "Precursor.Id",
+      "Modified.Sequence", "Stripped.Sequence", "Precursor.Charge",
+      "Precursor.Quantity", "Q.Value", "PG.Q.Value", "Run",
+      "Global.Q.Value", "Global.PG.Q.Value", "Proteotypic", "Precursor.Normalised"
+    ],
+    "exact_fields": [
+      "input_sha256", "output_sha256", "rows", "columns", "column_names",
+      "column_classes", "runs", "proteins", "peptides", "quantity_column",
+      "na_quantity", "nan_quantity", "positive_infinite_quantity",
+      "negative_infinite_quantity"
+    ],
+    "numeric_fields": {
+      "quantity_sum": {"absolute": 1e-8, "relative": 1e-12},
+      "quantity_min": {"absolute": 1e-12, "relative": 1e-12},
+      "quantity_max": {"absolute": 1e-12, "relative": 1e-12}
+    },
+    "special_values": {
+      "missing": "NA is counted and encoded as <NA> in canonical hashes",
+      "not_a_number": "NaN is distinct from NA and encoded as <NaN>",
+      "positive_infinity": "positive infinity is encoded as <Inf>",
+      "negative_infinity": "negative infinity is encoded as <-Inf>",
+      "signed_zero": "numeric zero is canonicalized by sprintf %.17g"
+    }
+  },
+  "release_gates": {
+    "minimum_peak_rss_reduction_fraction": 0.30,
+    "minimum_retained_rss_reduction_fraction": 0.40,
+    "maximum_runtime_ratio": 1.25,
+    "maximum_committed_disk_ratio": 1.35,
+    "maximum_peak_disk_ratio": 2.20,
+    "maximum_final_file_count_ratio": 4.00,
+    "maximum_bounded_query_p95_ratio": 2.00,
+    "maximum_bounded_query_p95_seconds": 0.50,
+    "minimum_representative_repetitions": 5,
+    "gate_policy": "CI fixtures prove correctness only; performance promotion requires representative-project median and p95 evidence"
+  },
+  "disk_categories": [
+    {"category": "diagnostics", "pattern": "(^|/)diagnostics(/|$)"},
+    {"category": "committed", "pattern": "(^|/)committed(/|$)"},
+    {"category": "staging_snapshot", "pattern": "(^|/)(staging|snapshots)(/|$)"},
+    {"category": "duckdb_spill", "pattern": "(^|/)duckdb-spill(/|$)"},
+    {"category": "final", "pattern": "(^|/)final(/|$)"},
+    {"category": "harness", "pattern": ".*"}
+  ],
+  "bounded_queries": [
+    {
+      "query_id": "dia_rows_for_one_run",
+      "operation": "filter exact Run then project stable identity and quantity columns",
+      "run": "WT_1",
+      "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Precursor.Id", "Precursor.Normalised"],
+      "iterations": 25,
+      "ordering": ["Protein.Group", "Stripped.Sequence", "Precursor.Id"]
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "dia_canonical_import",
+      "kind": "committed_fixture",
+      "lane_id": "prot_dia",
+      "branch": "technical_replicate_peptide_imputation_then_iq_maxlfq",
+      "fixture_path": "tests/testdata/e2e/prot_dia/report.tsv",
+      "design_path": "tests/testdata/e2e/prot_dia/design.tsv",
+      "importer": "importDIANNData",
+      "parameters": {"use_precursor_norm": true, "backend": "memory"},
+      "oracle_id": "dia_canonical_import",
+      "required": true
+    },
+    {
+      "scenario_id": "dia_limpa_mnar_import",
+      "kind": "committed_fixture",
+      "lane_id": "prot_dia_limpa",
+      "branch": "limpa_dpc_peptide_imputation_then_limpa_dpc_quant_protein_rollup",
+      "fixture_path": "tests/testdata/e2e/prot_dia_limpa/seed_report.tsv",
+      "design_path": "tests/testdata/e2e/prot_dia_limpa/design.tsv",
+      "importer": "importDIANNData",
+      "parameters": {"use_precursor_norm": true, "backend": "memory"},
+      "oracle_id": "dia_limpa_mnar_import",
+      "required": true
+    },
+    {
+      "scenario_id": "dia_generated_scaling_250x",
+      "kind": "generated_scaling",
+      "lane_id": "prot_dia",
+      "branch": "import_scaling_only",
+      "base_fixture_path": "tests/testdata/e2e/prot_dia/report.tsv",
+      "row_multiplier": 250,
+      "importer": "importDIANNData",
+      "parameters": {"use_precursor_norm": true, "backend": "memory"},
+      "oracle_id": null,
+      "required": true
+    },
+    {
+      "scenario_id": "dia_private_representative",
+      "kind": "optional_private",
+      "lane_id": "prot_dia",
+      "branch": "representative_project_import",
+      "fixture_env": "MULTISCHOLAR_DIA_BASELINE_FIXTURE",
+      "importer": "importDIANNData",
+      "parameters": {"use_precursor_norm": true, "backend": "memory"},
+      "oracle_id": null,
+      "required": false,
+      "privacy": "never persist source path or row-level values; retain only salted fingerprint, shape, aggregate metrics, and environment"
+    }
+  ],
+  "scientific_targets": [
+    {
+      "target_id": "dia_browser_canonical",
+      "branch": "canonical DIA-NN through report/export",
+      "runner": "e2e_lane",
+      "lane": "prot_dia",
+      "test_filter": "^e2e-proteomics-dia$",
+      "parameters": {"browser_required": true, "backend": "memory"}
+    },
+    {
+      "target_id": "dia_browser_limpa",
+      "branch": "MNAR DIA-NN limpa through DPC-Quant report/export",
+      "runner": "e2e_lane",
+      "lane": "prot_dia_limpa",
+      "test_filter": "^e2e-proteomics-dia-limpa$",
+      "parameters": {"browser_required": true, "backend": "memory"}
+    },
+    {
+      "target_id": "technical_replicate_peptide_imputation",
+      "branch": "technical-replicate peptide imputation with explicit exclusion audit",
+      "runner": "test_filter",
+      "test_filter": "prot-02k-qc-peptide-impute-shared|module-ci-prot-peptide-qc",
+      "parameters": {"maximum_missing_fraction": [0.4, 0.5], "backend": "memory"}
+    },
+    {
+      "target_id": "iq_and_limpa_rollup",
+      "branch": "IQ MaxLFQ and limpa DPC-Quant protein rollup as separate methods",
+      "runner": "test_filter",
+      "test_filter": "module-ci-prot-protein-qc|prot-02f-qc-protein-rollup-shared",
+      "parameters": {"methods": ["iq_maxlfq", "limpa_dpc_quant"], "backend": "memory"}
+    },
+    {
+      "target_id": "normalization_and_ruv",
+      "branch": "normalization plus skipped, manual, and automatic RUV",
+      "runner": "test_filter",
+      "test_filter": "module-ci-prot-norm|prot-06-ruv",
+      "parameters": {"ruv_modes": ["skip", "manual", "automatic"], "backend": "memory"}
+    },
+    {
+      "target_id": "differential_abundance_golden_master",
+      "branch": "DA formula, contrast, q-value, export, and golden-master contracts",
+      "runner": "test_filter",
+      "test_filter": "module-ci-prot-da|protein-da-golden-master",
+      "parameters": {"contrast": "KO_vs_WT", "backend": "memory"}
+    },
+    {
+      "target_id": "enrichment_doubles",
+      "branch": "gprofiler2 and clusterProfiler deterministic enrichment doubles",
+      "runner": "test_filter",
+      "test_filter": "e2e-enrichment-doubles|e2e-proteomics-enrichment",
+      "parameters": {"backends": ["gprofiler2", "clusterprofiler"], "backend": "memory"}
+    },
+    {
+      "target_id": "session_summary_and_reports",
+      "branch": "session export, template routing, publication copy, and report rendering",
+      "runner": "test_filter",
+      "test_filter": "module-ci-prot-summary|general-filemgmt-report-helpers-shared",
+      "parameters": {"templates": ["DIANN_report.rmd", "DIANN_limpa_report.rmd"], "backend": "memory"}
+    }
+  ],
+  "cross_omic_regression_targets": [
+    {"target_id": "lfq_tmt", "test_filter": "e2e-proteomics-tmt-lfq|module-ci-prot-import"},
+    {"target_id": "metabolomics", "test_filter": "e2e-metabolomics-lc-gc|module-ci-metab"},
+    {"target_id": "lipidomics", "test_filter": "e2e-lipidomics-canonical|module-ci-lipid"}
+  ]
+}

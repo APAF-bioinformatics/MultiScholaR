@@ -36,7 +36,7 @@
       "import_tool": "diann",
       "use_limpa": true,
       "fixture_dir": "prot_dia_limpa",
-      "seed_file": "report.tsv",
+      "seed_file": "seed_report.tsv",
       "fasta_file": "proteins.fasta",
       "assays": [null],
       "expected_contrasts": ["KO_vs_WT"],

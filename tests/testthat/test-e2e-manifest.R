@@ -191,3 +191,14 @@ test_that("all 9 e2e seed files exist", {
         expect_true(file.exists(seed_path), info = paste("Missing seed:", seed_path))
     }
 })
+
+test_that("DIA limpa lane uses the intended MNAR fixture", {
+    lane <- read_e2e_manifest()[["prot_dia_limpa"]]
+    seed_path <- file.path(.e2e_fixture_root(), lane$fixture_dir, lane$seed_file)
+    fixture <- utils::read.delim(seed_path, check.names = FALSE)
+
+    expect_identical(lane$seed_file, "seed_report.tsv")
+    expect_equal(nrow(fixture), 72L)
+    expect_setequal(unique(fixture$Protein.Group), sprintf("P%05d", 1:6))
+    expect_equal(sum(is.na(fixture$Precursor.Normalised)), 20L)
+})
