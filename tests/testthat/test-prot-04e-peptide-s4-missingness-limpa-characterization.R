@@ -3,6 +3,12 @@ library(testthat)
 
 localFakeLimpa <- function(env = parent.frame()) {
   old_lib_paths <- .libPaths()
+  limpa_was_loaded <- "limpa" %in% loadedNamespaces()
+  old_limpa_lib <- if (limpa_was_loaded) {
+    dirname(getNamespaceInfo(asNamespace("limpa"), "path"))
+  } else {
+    NULL
+  }
   old_options <- options(
     multischolar.fake_limpa.dpc = NULL,
     multischolar.fake_limpa.dpcImpute = NULL,
@@ -76,11 +82,21 @@ localFakeLimpa <- function(env = parent.frame()) {
     utils::install.packages(fake_pkg, lib = fake_lib, repos = NULL, type = "source", quiet = TRUE)
   }
 
+  if ("limpa" %in% loadedNamespaces()) {
+    unloadNamespace("limpa")
+  }
   .libPaths(c(fake_lib, old_lib_paths))
+  loadNamespace("limpa", lib.loc = fake_lib)
 
   withr::defer({
+    if ("limpa" %in% loadedNamespaces()) {
+      unloadNamespace("limpa")
+    }
     options(old_options)
     .libPaths(old_lib_paths)
+    if (limpa_was_loaded) {
+      loadNamespace("limpa", lib.loc = old_limpa_lib)
+    }
   }, envir = env)
 
   invisible(fake_lib)

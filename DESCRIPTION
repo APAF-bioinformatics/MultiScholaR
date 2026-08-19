@@ -72,6 +72,10 @@ Collate:
     'utils_workflow_state_compat.R'
     'utils_workflow_capabilities.R'
     'utils_artifact_paths.R'
+    'utils_artifact_refs.R'
+    'utils_artifact_table_codecs.R'
+    'utils_artifact_codec_hydration.R'
+    'utils_artifact_s4_codecs.R'
     'utils_workflow_context.R'
     'func_general_design.R'
     'func_general_enrichment_core.R'
@@ -377,6 +381,7 @@ Collate:
 Suggests:
     AnnotationDbi,
     beepr,
+    bit64,
     BiocManager,
     BiocParallel,
     clusterProfiler,
