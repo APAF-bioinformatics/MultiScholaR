@@ -13,7 +13,8 @@ mod_metabolomics_server(
   project_dirs,
   omic_type,
   experiment_label,
-  volumes = NULL
+  volumes = NULL,
+  storage_policy = NULL
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ mod_metabolomics_server(
 \item{experiment_label}{The experiment label for this analysis}
 
 \item{volumes}{Volumes for shinyFiles file browser}
+
+\item{storage_policy}{Optional workflow storage policy. Defaults to auto.}
 }
 \description{
 Top-level Shiny module that coordinates the complete metabolomics

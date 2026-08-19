@@ -182,11 +182,19 @@ mod_proteomics_ui <- function(id) {
 #' @param omic_type The omics type (should be "proteomics")
 #' @param experiment_label The experiment label for this analysis
 #' @param volumes Volumes for shinyFiles
+#' @param storage_policy Optional workflow storage policy. Defaults to auto.
 #'
 #' @importFrom shiny moduleServer reactive reactiveValues observeEvent req reactiveVal
 #' @importFrom logger log_info log_error
 #' @export
-mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label, volumes = NULL) {
+mod_proteomics_server <- function(
+    id,
+    project_dirs,
+    omic_type,
+    experiment_label,
+    volumes = NULL,
+    storage_policy = NULL
+) {
   shiny::moduleServer(id, function(input, output, session) {
     # Initialize reactive values to share data between tabs
     workflow_data <- reactiveValues(
@@ -242,6 +250,12 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     }
 
     experiment_paths <- project_dirs[[paths_key]]
+    workflow_data$workflow_context <- createWorkflowContext(
+        experiment_paths = experiment_paths,
+        omic_type = omic_type,
+        experiment_label = experiment_label,
+        storage_policy = storage_policy
+    )
 
     # Load aa_seq_tbl_final from scripts directory if resuming session
     if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
@@ -311,6 +325,8 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     if (exists("mod_prot_summary_server")) {
       mod_prot_summary_server("session_summary", project_dirs, omic_type, experiment_label, workflow_data)
     }
+
+    registerWorkflowContextBindingObserver(workflow_data, session)
 
     # Workflow progress indicator using shared stepper component
     output$workflow_progress <- shiny::renderUI({

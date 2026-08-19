@@ -128,10 +128,18 @@ mod_metabolomics_ui <- function(id) {
 #' @param omic_type The omics type (should be "metabolomics")
 #' @param experiment_label The experiment label for this analysis
 #' @param volumes Volumes for shinyFiles file browser
+#' @param storage_policy Optional workflow storage policy. Defaults to auto.
 #' @export
 #' @importFrom shiny moduleServer reactiveValues reactive observeEvent renderUI req tags reactiveVal
 #' @importFrom logger log_info log_error log_warn
-mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_label, volumes = NULL) {
+mod_metabolomics_server <- function(
+    id,
+    project_dirs,
+    omic_type,
+    experiment_label,
+    volumes = NULL,
+    storage_policy = NULL
+) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
@@ -184,6 +192,12 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         }
 
         experiment_paths <- project_dirs[[paths_key]]
+        workflow_data$workflow_context <- createWorkflowContext(
+            experiment_paths = experiment_paths,
+            omic_type = omic_type,
+            experiment_label = experiment_label,
+            storage_policy = storage_policy
+        )
 
         logger::log_info(sprintf("Metabolomics module initialized with paths for: %s", paths_key))
 
@@ -253,6 +267,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
         )
 
         logger::log_info("Metabolomics workflow modules initialized")
+        registerWorkflowContextBindingObserver(workflow_data, session)
 
         # Workflow progress indicator using shared stepper component
         output$workflow_progress <- shiny::renderUI({

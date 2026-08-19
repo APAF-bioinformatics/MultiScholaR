@@ -212,6 +212,26 @@ test_that("proteomics workflow server wires modules and advances workflow state"
       expect_equal(captured$calls$norm$args[[5]](), "normalization")
       expect_true(exists("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE))
 
+      context <- workflow_data$workflow_context
+      child_contexts <- lapply(
+        c("import", "design", "qc", "norm", "da", "enrich"),
+        \(key) captured$calls[[key]]$args[[1L]]$workflow_context
+      )
+      expect_true(inherits(context, "WorkflowContext"))
+      expect_true(all(vapply(child_contexts, identical, logical(1), context)))
+      expect_false(context$isBound())
+      observed_binding <- NULL
+      context$observeBinding(function(snapshot) observed_binding <<- snapshot)
+      workflow_data$data_format <- "diann"
+      workflow_data$data_type <- "peptide"
+      session$flushReact()
+      expect_true(context$isBound())
+      expect_identical(
+        observed_binding$resolution$effective_backend,
+        "memory"
+      )
+      expect_false(dir.exists(file.path(fixture_dir, "state")))
+
       progress_markup <- renderSharedOutput(output$workflow_progress)
       expect_match(progress_markup, "Import", fixed = TRUE)
       expect_match(progress_markup, "Summary", fixed = TRUE)

@@ -9,7 +9,8 @@ mod_proteomics_server(
   project_dirs,
   omic_type,
   experiment_label,
-  volumes = NULL
+  volumes = NULL,
+  storage_policy = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ mod_proteomics_server(
 \item{experiment_label}{The experiment label for this analysis}
 
 \item{volumes}{Volumes for shinyFiles}
+
+\item{storage_policy}{Optional workflow storage policy. Defaults to auto.}
 }
 \description{
 Server logic for the proteomics workflow interface
