@@ -786,6 +786,8 @@ ArtifactWorkflowState <- R6::R6Class(
                 audit_metadata
             )
             manifest_path <- artifactWorkflowStateWriteManifest(private$store, manifest)
+            artifactWorkflowStateVerifyHydration(private$store, manifest, state_object,
+                private$hydrate_fn)
             timestamp <- manifest$created_at
             artifactWorkflowStateTransaction(private$session, function() {
                 actual_parent <- private$currentGenerationId()

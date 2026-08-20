@@ -327,8 +327,8 @@ bindWorkflowContextFromImport <- function(
                 "multischolar_ambiguous_workflow_capability"
             )
         }
-        capabilities <- artifactDescriptorCapabilities(
-            validateArtifactDescriptorCatalogue(descriptor_catalogue)
+        capabilities <- mergeWorkflowDescriptorCapabilities(
+            descriptor_catalogue = descriptor_catalogue
         )
     }
     identity <- resolveImportedWorkflowIdentity(
@@ -374,7 +374,8 @@ bindWorkflowContextFromImport <- function(
 registerWorkflowContextBindingObserver <- function(
     workflow_data,
     session,
-    register_session_cleanup = TRUE
+    register_session_cleanup = TRUE,
+    descriptor_catalogue_fn = artifactWorkflowDescriptorCatalogue
 ) {
     if (!is.logical(register_session_cleanup) ||
         length(register_session_cleanup) != 1L ||
@@ -400,7 +401,8 @@ registerWorkflowContextBindingObserver <- function(
                 context,
                 workflow_type = workflowStateType(workflow_data$state_manager),
                 input_format = workflow_data$data_format,
-                data_level = workflow_data$data_type
+                data_level = workflow_data$data_type,
+                descriptor_catalogue = descriptor_catalogue_fn()
             )
         },
         ignoreNULL = TRUE,

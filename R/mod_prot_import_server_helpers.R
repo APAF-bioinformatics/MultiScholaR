@@ -223,6 +223,7 @@ registerProtImportObservers <- function(
     resolveFilenameFn = resolveProtImportInputFilename,
     finalizeSetupStateFn = finalizeProtImportSetupState,
     completeSuccessStateFn = completeProtImportSuccessState,
+    persistImportArtifactsFn = persistProtDiaImportArtifacts,
     observeEventFn = shiny::observeEvent,
     reqFn = shiny::req,
     showNotificationFn = shiny::showNotification,
@@ -392,6 +393,15 @@ registerProtImportObservers <- function(
           dataImportResult = data_import_result,
           format = format,
           completeSuccessState = completeSuccessStateFn
+        )
+
+        persistImportArtifactsFn(
+          workflow_data = workflowData,
+          data_import_result = data_import_result,
+          source_path = search_results_path,
+          use_precursor_norm = input$diann_use_precursor_norm %||% TRUE,
+          sanitize_names = input$sanitize_names %||% FALSE,
+          log_warn = logWarn
         )
 
         invisible(data_import_result)

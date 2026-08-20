@@ -118,9 +118,9 @@
           "module_ci_lanes": ["proteomics"],
           "e2e_lanes": ["prot_dia", "prot_dia_limpa"],
           "reachable_stages": ["import", "design", "peptide_qc", "protein_rollup_qc", "normalization_ruv", "session", "differential_abundance", "enrichment", "summary_report_export"],
-          "artifact_eligible": false,
+          "artifact_eligible": true,
           "auto_eligible": false,
-          "maximum_artifact_rollout": null
+          "maximum_artifact_rollout": "dual_write"
         }
       ]
     },

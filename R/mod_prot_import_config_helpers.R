@@ -58,8 +58,12 @@ storeProtImportConfiguration <- function(
     , logInfo = logger::log_info
 ) {
   workflowData$config_list <- configList
-  assignFn("config_list", configList, envir = assignEnv)
-  logInfo("Created global config_list for compatibility")
+  if (!protDiaArtifactCoordinatorOwned(workflowData)) {
+    assignFn("config_list", configList, envir = assignEnv)
+    logInfo("Created global config_list for compatibility")
+  } else {
+    logInfo("Stored artifact-mode config_list on the workflow coordinator")
+  }
 
   invisible(configList)
 }
@@ -154,4 +158,3 @@ loadProtImportOptionalMappings <- function(
     , uniparcMapping = workflowData$uniparc_mapping
   ))
 }
-

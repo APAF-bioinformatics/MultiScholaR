@@ -108,6 +108,7 @@ applyProtImportResultToWorkflow <- function(
     , logInfo = logger::log_info
     , showNotification = shiny::showNotification
     , sanitizeRunNames = sanitizeProtImportRunNames
+    , prepareArtifactContext = prepareProtDiaArtifactContextSafely
 ) {
   workflowData$data_tbl <- dataImportResult$data
   workflowData$data_format <- format
@@ -133,6 +134,11 @@ applyProtImportResultToWorkflow <- function(
   )
   workflowData$state_manager$setWorkflowType(workflowType)
   workflowData$fasta_file_path <- fastaPath
+  prepareArtifactContext(
+    workflowData,
+    format = format,
+    data_type = dataImportResult$data_type
+  )
 
   invisible(workflowType)
 }
@@ -266,7 +272,9 @@ processProtImportFastaData <- function(
     workflowData$aa_seq_tbl_final <- aa_seq_tbl_final
     workflowData$fasta_metadata <- fasta_metadata
 
-    assignFn("aa_seq_tbl_final", aa_seq_tbl_final, envir = assignEnv)
+    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
+      assignFn("aa_seq_tbl_final", aa_seq_tbl_final, envir = assignEnv)
+    }
 
     if (!is.null(experimentPaths) && !is.null(experimentPaths$source_dir)) {
       scripts_aa_seq_path <- file.path(experimentPaths$source_dir, "aa_seq_tbl_final.RDS")

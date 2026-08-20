@@ -712,14 +712,21 @@ test_that("stage adapters expose only validated ordinary scientific inputs", {
     expect_identical(legacy_calls, 1L)
 })
 
-test_that("production omics remain unpromoted by the extension contract", {
+test_that("only the DIA-NN dual-write canary is production-certified", {
     production <- workflowCapabilityCatalogue()
-    expect_length(artifactDescriptorCatalogueValues(
+    descriptors <- artifactDescriptorCatalogueValues(
         artifactWorkflowDescriptorCatalogue()
-    ), 0L)
-    expect_true(all(vapply(production, function(capability) {
-        !isTRUE(capability$artifact_eligible) &&
-            !isTRUE(capability$auto_eligible) &&
+    )
+    expect_length(descriptors, 1L)
+    expect_identical(descriptors[[1L]], artifactDiaWorkflowDescriptor())
+    eligible <- Filter(\(capability) capability$artifact_eligible, production)
+    expect_length(eligible, 1L)
+    expect_identical(eligible[[1L]]$capability_id, descriptors[[1L]]$descriptor_id)
+    expect_identical(eligible[[1L]]$maximum_artifact_rollout, "dual_write")
+    expect_false(eligible[[1L]]$auto_eligible)
+    unsupported <- Filter(\(capability) !capability$artifact_eligible, production)
+    expect_true(all(vapply(unsupported, function(capability) {
+        !isTRUE(capability$auto_eligible) &&
             is.null(capability$maximum_artifact_rollout)
     }, logical(1))))
     sources <- vapply(

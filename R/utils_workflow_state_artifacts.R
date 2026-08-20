@@ -597,6 +597,32 @@ artifactWorkflowStateHydrateData <- function(
     hydrated
 }
 
+artifactWorkflowStateVerifyHydration <- function(
+    store,
+    manifest,
+    expected_object,
+    hydrate_fn = hydrateDiaS4Artifact
+) {
+    hydrated <- artifactWorkflowStateHydrateData(store, manifest, hydrate_fn)
+    if (!identical(hydrated, expected_object)) {
+        expected_class <- if (is.null(expected_object)) NULL else class(expected_object)[[1L]]
+        hydrated_class <- if (is.null(hydrated)) NULL else class(hydrated)[[1L]]
+        artifactWorkflowStateAbort(
+            "independent artifact hydration changed the pending scientific state",
+            "multischolar_inexact_artifact_state_hydration",
+            expected_class = expected_class,
+            hydrated_class = hydrated_class
+        )
+    }
+    if (isS4(hydrated) && !identical(methods::validObject(hydrated, test = TRUE), TRUE)) {
+        artifactWorkflowStateAbort(
+            "independently hydrated artifact state is not a valid S4 object",
+            "multischolar_invalid_hydrated_s4_object"
+        )
+    }
+    invisible(hydrated)
+}
+
 artifactWorkflowStateArtifactRecord <- function(identity, ref, ordinal) {
     list(
         workflow_id = identity$workflow_id,

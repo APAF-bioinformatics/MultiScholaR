@@ -13,22 +13,7 @@
 .artifactCodecCatalogueVersion <- 1L
 
 artifactDiaCodecDeclarations <- function() {
-    list(
-        "multischolar.s4.peptide_quantitative_data.diann" = list(
-            codec_id = "multischolar.s4.peptide_quantitative_data.diann",
-            codec_version = .artifactDiaCodecVersion,
-            class_name = "PeptideQuantitativeData",
-            payload_schema_id = "multischolar.rectangular",
-            payload_schema_version = 1L
-        ),
-        "multischolar.s4.protein_quantitative_data.diann" = list(
-            codec_id = "multischolar.s4.protein_quantitative_data.diann",
-            codec_version = .artifactDiaCodecVersion,
-            class_name = "ProteinQuantitativeData",
-            payload_schema_id = "multischolar.rectangular",
-            payload_schema_version = 1L
-        )
-    )
+    artifactDiaWorkflowCodecDeclarations()
 }
 
 artifactDiaCodecDescriptor <- function(class_name) {

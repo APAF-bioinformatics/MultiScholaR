@@ -107,7 +107,10 @@ workflowCapabilityIdentity <- function(
         workflowCapabilityIdentity(
             "proteomics", "proteomics.gui", "DIA", "prot_dia",
             "diann", "peptide", "dia"
-        )
+        ),
+        artifact_eligible = TRUE,
+        auto_eligible = FALSE,
+        maximum_artifact_rollout = "dual_write"
     ),
     newWorkflowCapability(
         "proteomics.spectronaut.protein.lfq.v1",
@@ -197,6 +200,27 @@ names(.WORKFLOW_CAPABILITY_CATALOGUE) <- vapply(
 
 workflowCapabilityCatalogue <- function() {
     .WORKFLOW_CAPABILITY_CATALOGUE
+}
+
+mergeWorkflowDescriptorCapabilities <- function(
+    capabilities = workflowCapabilityCatalogue(),
+    descriptor_catalogue = artifactWorkflowDescriptorCatalogue()
+) {
+    descriptor_capabilities <- artifactDescriptorCapabilities(
+        validateArtifactDescriptorCatalogue(descriptor_catalogue)
+    )
+    if (length(descriptor_capabilities) == 0L) return(capabilities)
+    descriptor_keys <- vapply(
+        descriptor_capabilities,
+        \(capability) workflowCapabilityKey(capability$identity),
+        character(1)
+    )
+    base_keys <- vapply(
+        capabilities,
+        \(capability) workflowCapabilityKey(capability$identity),
+        character(1)
+    )
+    c(capabilities[!base_keys %in% descriptor_keys], descriptor_capabilities)
 }
 
 findWorkflowCapability <- function(identity, capabilities = NULL) {

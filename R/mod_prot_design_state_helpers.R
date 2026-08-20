@@ -109,7 +109,8 @@ completeProtDesignPostCheckpoint <- function(
     qcTrigger = NULL,
     successMessage,
     successNotificationId = NULL,
-    debugQcTrigger = FALSE
+    debugQcTrigger = FALSE,
+    persistArtifactFn = persistProtDiaDesignArtifacts
 ) {
   log_info("Design Matrix complete. Triggering UniProt annotation.")
 
@@ -168,7 +169,9 @@ completeProtDesignPostCheckpoint <- function(
     )
 
     workflowData$uniprot_dat_cln <- uniprotDatCln
-    assign("uniprot_dat_cln", uniprotDatCln, envir = .GlobalEnv)
+    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
+      assign("uniprot_dat_cln", uniprotDatCln, envir = .GlobalEnv)
+    }
 
     if (!is.null(experimentPaths) && !is.null(experimentPaths$source_dir)) {
       scriptsUniprotPath <- file.path(experimentPaths$source_dir, "uniprot_dat_cln.RDS")
@@ -188,6 +191,11 @@ completeProtDesignPostCheckpoint <- function(
       duration = 8
     )
   })
+
+  persistArtifactFn(
+    workflow_data = workflowData,
+    state_name = workflowStateCurrentName(workflowData$state_manager)
+  )
 
   if (debugQcTrigger) {
     message("=== DEBUG66: designMatrixApplet Save Design - About to set qc_trigger ===")
@@ -219,4 +227,3 @@ completeProtDesignPostCheckpoint <- function(
   }
   shiny::showNotification(successMessage, type = "message")
 }
-

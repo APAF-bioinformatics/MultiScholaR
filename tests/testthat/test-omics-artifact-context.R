@@ -40,11 +40,20 @@ test_that("runtime capabilities exactly match the committed inventory", {
         unname(lapply(actual, `[[`, "identity")),
         lapply(expected, `[[`, "identity")
     )
-    expect_true(all(vapply(actual, \(capability) {
-        !capability$artifact_eligible &&
-            !capability$auto_eligible &&
-            is.null(capability$maximum_artifact_rollout)
-    }, logical(1))))
+    expect_identical(
+        unname(lapply(actual, function(capability) {
+            capability[c(
+                "artifact_eligible", "auto_eligible",
+                "maximum_artifact_rollout"
+            )]
+        })),
+        lapply(expected, function(capability) {
+            capability[c(
+                "artifact_eligible", "auto_eligible",
+                "maximum_artifact_rollout"
+            )]
+        })
+    )
     expect_identical(
         anyDuplicated(vapply(actual, \(capability) {
             workflowCapabilityKey(capability$identity)
@@ -98,6 +107,15 @@ test_that("all capability, backend, and project-state combinations fail closed",
                     automatic$reason_code,
                     "auto_preserve_legacy_memory"
                 )
+            } else if (identical(state, "artifact_valid") &&
+                isTRUE(capability$artifact_eligible)) {
+                automatic <- resolveWorkflowBackend(
+                    identity,
+                    requested_backend = "auto",
+                    project_state = state
+                )
+                expect_identical(automatic$effective_backend, "artifact")
+                expect_identical(automatic$effective_rollout, "dual_write")
             } else {
                 expected_class <- switch(state,
                     artifact_valid = "multischolar_artifact_capability_unavailable",
@@ -113,14 +131,47 @@ test_that("all capability, backend, and project-state combinations fail closed",
                     class = expected_class
                 )
             }
-            expect_error(
-                resolveWorkflowBackend(
+            if (!isTRUE(capability$artifact_eligible)) {
+                expect_error(
+                    resolveWorkflowBackend(
+                        identity,
+                        requested_backend = "artifact",
+                        project_state = state
+                    ),
+                    class = "multischolar_artifact_not_certified"
+                )
+            } else if (identical(state, "legacy_memory")) {
+                expect_error(
+                    resolveWorkflowBackend(
+                        identity,
+                        requested_backend = "artifact",
+                        project_state = state
+                    ),
+                    class = "multischolar_artifact_migration_required"
+                )
+            } else if (state %in% c("artifact_corrupt", "artifact_future_schema")) {
+                expected_class <- if (identical(state, "artifact_corrupt")) {
+                    "multischolar_corrupt_artifact_project"
+                } else {
+                    "multischolar_future_artifact_schema"
+                }
+                expect_error(
+                    resolveWorkflowBackend(
+                        identity,
+                        requested_backend = "artifact",
+                        project_state = state
+                    ),
+                    class = expected_class
+                )
+            } else {
+                forced <- resolveWorkflowBackend(
                     identity,
                     requested_backend = "artifact",
                     project_state = state
-                ),
-                class = "multischolar_artifact_not_certified"
-            )
+                )
+                expect_identical(forced$effective_backend, "artifact")
+                expect_identical(forced$effective_rollout, "dual_write")
+            }
             combinations <- combinations + 3L
         }
     }
@@ -223,9 +274,9 @@ test_that("unsupported forced artifact mode fails before project resources", {
     expect_error(
         bindWorkflowContextFromImport(
             context,
-            workflow_type = "DIA",
-            input_format = "diann",
-            data_level = "peptide",
+            workflow_type = "LFQ",
+            input_format = "spectronaut",
+            data_level = "protein",
             path_builder = function(...) {
                 calls$path_builder <- calls$path_builder + 1L
                 stop("path builder must not run")

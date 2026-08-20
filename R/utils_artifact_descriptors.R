@@ -515,7 +515,135 @@ artifactDescriptorCapabilities <- function(catalogue) {
     })
 }
 
-.ARTIFACT_WORKFLOW_DESCRIPTOR_CATALOGUE <- newArtifactDescriptorCatalogue()
+artifactDiaWorkflowCodecDeclarations <- function() {
+    list(
+        "multischolar.s4.peptide_quantitative_data.diann" = list(
+            codec_id = "multischolar.s4.peptide_quantitative_data.diann",
+            codec_version = 1L,
+            class_name = "PeptideQuantitativeData",
+            payload_schema_id = "multischolar.rectangular",
+            payload_schema_version = 1L
+        ),
+        "multischolar.s4.protein_quantitative_data.diann" = list(
+            codec_id = "multischolar.s4.protein_quantitative_data.diann",
+            codec_version = 1L,
+            class_name = "ProteinQuantitativeData",
+            payload_schema_id = "multischolar.rectangular",
+            payload_schema_version = 1L
+        )
+    )
+}
+
+artifactDiaWorkflowDescriptor <- function() {
+    owner <- "proteomics.diann.peptide.dia.v1"
+    codecs <- artifactDiaWorkflowCodecDeclarations()
+    query <- "proteomics.diann.import.preview.v1"
+    newArtifactWorkflowDescriptor(
+        descriptor_id = owner,
+        descriptor_version = "1.0.0",
+        identity = workflowCapabilityIdentity(
+            "proteomics", "proteomics.gui", "DIA", "prot_dia",
+            "diann", "peptide", "dia"
+        ),
+        stages = list(
+            import = list(
+                stage_id = "import",
+                state_roles = c("canonical_data"),
+                codec_ids = names(codecs),
+                query_operation_ids = query,
+                maximum_rollout = "dual_write"
+            ),
+            design = list(
+                stage_id = "design",
+                state_roles = c(
+                    "cleaned_data", "design_matrix", "contrasts", "args",
+                    "annotations", "sequences", "raw_data_s4"
+                ),
+                codec_ids = names(codecs),
+                query_operation_ids = character(),
+                maximum_rollout = "dual_write"
+            )
+        ),
+        codecs = codecs,
+        queries = stats::setNames(list(list(
+            operation_id = query,
+            state_role = "canonical_data",
+            projections = c(
+                "Run", "Protein.Group", "Stripped.Sequence", "Precursor.Id",
+                "Precursor.Normalised", "Q.Value"
+            ),
+            filters = list(
+                run = list(
+                    column = "Run",
+                    type = "character",
+                    operators = c("equal", "in")
+                ),
+                protein_group = list(
+                    column = "Protein.Group",
+                    type = "character",
+                    operators = c("equal", "in")
+                )
+            ),
+            order_by = c(
+                "Run", "Protein.Group", "Stripped.Sequence", "Precursor.Id"
+            ),
+            max_rows = 10000L,
+            max_bytes = 64L * 1024L * 1024L
+        )), query),
+        fixtures = list(
+            owner_id = owner,
+            fixture_ids = c(
+                "tests/testdata/e2e/prot_dia/report.tsv",
+                "tests/testdata/e2e/prot_dia_limpa/seed_report.tsv"
+            )
+        ),
+        scientific_oracle = list(
+            owner_id = owner,
+            oracle_id = "tests/testdata/omics-parity/dia-memory-oracle.json",
+            oracle_version = "1.0.0",
+            tolerances = c(quantity_absolute = 1e-10, quantity_relative = 1e-10)
+        ),
+        compatibility_products = list(
+            owner_id = owner,
+            product_ids = c(
+                "data_cln.tab", "design_matrix.tab", "contrast_strings.tab",
+                "config.ini", "aa_seq_tbl_final.RDS", "uniprot_dat_cln.RDS"
+            )
+        ),
+        evidence = list(
+            owner_id = owner,
+            inventory_ids = "tests/testdata/omics-capabilities.json",
+            codec_ids = names(codecs),
+            stage_ids = c("import", "design"),
+            lifecycle_ids = "OMICS-ART-058",
+            performance_thresholds = c(
+                runtime_ratio = 1.25,
+                committed_disk_ratio = 1.35,
+                retained_rss_reduction = 0.40
+            )
+        ),
+        migration = list(
+            owner_id = owner,
+            strategy_id = "explicit_dual_write_canary",
+            from_backend = "memory",
+            to_backend = "artifact"
+        ),
+        rollback = list(
+            owner_id = owner,
+            strategy_id = "force_memory_ignore_canary_generations",
+            target_backend = "memory"
+        ),
+        certification = list(
+            owner_id = owner,
+            status = "dual_write",
+            auto_eligible = FALSE
+        )
+    )
+}
+
+.ARTIFACT_WORKFLOW_DESCRIPTOR_CATALOGUE <- newArtifactDescriptorCatalogue(
+    list(artifactDiaWorkflowDescriptor())
+)
 
 artifactWorkflowDescriptorCatalogue <- function() {
     .ARTIFACT_WORKFLOW_DESCRIPTOR_CATALOGUE

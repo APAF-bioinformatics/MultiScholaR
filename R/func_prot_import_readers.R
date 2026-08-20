@@ -25,6 +25,10 @@ importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
   }, error = function(e) {
     stop("Failed to read file: ", e$message)
   })
+
+  # Parser diagnostics can contain process-local pointers and are not
+  # scientific data. Canonicalizing also makes TSV and Parquet inputs agree.
+  data <- tibble::as_tibble(data)
   
   log_info(sprintf("Read %d rows and %d columns", nrow(data), ncol(data)))
   
