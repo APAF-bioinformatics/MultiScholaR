@@ -86,6 +86,10 @@ Collate:
     'utils_project_duckdb_session.R'
     'utils_project_duckdb_operations.R'
     'utils_workflow_context.R'
+    'utils_workflow_state.R'
+    'utils_workflow_state_artifacts.R'
+    'utils_workflow_state_artifact_backend.R'
+    'utils_workflow_state_factory.R'
     'func_general_design.R'
     'func_general_enrichment_core.R'
     'func_general_enrichment_revigo_helpers.R'
@@ -385,7 +389,6 @@ Collate:
     'run_app.R'
     'utils_shiny_logging.R'
     'utils_test_mode.R'
-    'utils_workflow_state.R'
     'zzz.R'
 Suggests:
     AnnotationDbi,
