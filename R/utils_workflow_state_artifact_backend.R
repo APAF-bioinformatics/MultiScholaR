@@ -54,6 +54,7 @@ ArtifactWorkflowState <- R6::R6Class(
             private$cache_object <- NULL
             private$hydration_count <- 0L
             private$closed <- FALSE
+            private$process_id <- as.integer(Sys.getpid())
             private$session <- initializeProjectRegistry(private$registry)
             initialized <- FALSE
             on.exit({
@@ -68,7 +69,6 @@ ArtifactWorkflowState <- R6::R6Class(
             }
             initialized <- TRUE
         },
-
         saveState = function(
             state_name,
             s4_data_object,
@@ -94,7 +94,6 @@ ArtifactWorkflowState <- R6::R6Class(
             }
             state_name
         },
-
         commitState = function(
             state_name,
             s4_data_object,
@@ -143,7 +142,6 @@ ArtifactWorkflowState <- R6::R6Class(
                 event_type = "state_saved"
             )
         },
-
         getState = function(state_name = NULL) {
             private$assertOpen()
             row <- private$resolveStateRow(state_name)
@@ -165,7 +163,6 @@ ArtifactWorkflowState <- R6::R6Class(
             if (is_current) private$setCache(row$generation_id, object)
             object
         },
-
         getStateMetadata = function(state_name = NULL) {
             private$assertOpen()
             row <- private$resolveStateRow(state_name)
@@ -191,25 +188,20 @@ ArtifactWorkflowState <- R6::R6Class(
                 status = row$status
             )
         },
-
         getStateConfig = function(state_name = NULL) {
             metadata <- self$getStateMetadata(state_name)
             if (is.null(metadata)) NULL else metadata$config
         },
-
         hasState = function(state_name) {
             workflowStateScalarString(state_name) &&
                 any(vapply(private$state_rows, function(row) {
                     identical(row$logical_name, state_name)
                 }, logical(1)))
         },
-
         getCurrentStateName = function() self$current_state,
-
         getCurrentGenerationId = function() {
             private$current_generation_id
         },
-
         revertToState = function(state_name) {
             private$assertOpen()
             private$validateStateName(state_name)
@@ -232,11 +224,9 @@ ArtifactWorkflowState <- R6::R6Class(
             }
             self$getState(state_name)
         },
-
         getHistory = function() {
             unlist(self$state_history, use.names = FALSE)
         },
-
         getStateAudit = function(state_name = NULL) {
             metadata <- self$getStateMetadata(state_name)
             if (is.null(metadata) || is.null(metadata$audit_metadata)) {
@@ -244,13 +234,10 @@ ArtifactWorkflowState <- R6::R6Class(
             }
             metadata$audit_metadata
         },
-
         getAuditRecords = function() {
             self$audit_records
         },
-
         isAuditEnabled = function() isTRUE(self$audit_enabled),
-
         setWorkflowType = function(type) {
             private$assertOpen()
             if (!workflowStateScalarString(type) || !type %in% .WORKFLOW_STATE_TYPES) {
@@ -298,9 +285,7 @@ ArtifactWorkflowState <- R6::R6Class(
             }
             type
         },
-
         getWorkflowType = function() self$workflow_type,
-
         exportState = function() {
             private$assertOpen()
             artifactWorkflowStateExportSnapshot(
@@ -312,7 +297,6 @@ ArtifactWorkflowState <- R6::R6Class(
                 self$audit_enabled
             )
         },
-
         exportLegacyState = function() {
             list(
                 r6_current_state_name = self$current_state,
@@ -320,7 +304,6 @@ ArtifactWorkflowState <- R6::R6Class(
                 r6_state_history = self$getHistory()
             )
         },
-
         restoreState = function(manifest, schema_version = NULL) {
             private$assertOpen()
             artifactWorkflowStateValidateRestoreSnapshot(
@@ -332,7 +315,6 @@ ArtifactWorkflowState <- R6::R6Class(
             private$refresh()
             invisible(self)
         },
-
         getEvents = function() {
             private$assertOpen()
             artifactWorkflowStateEvents(
@@ -340,9 +322,7 @@ ArtifactWorkflowState <- R6::R6Class(
                 private$identity$workflow_id
             )
         },
-
         getRevision = function() length(self$getEvents()),
-
         observeTransitions = function(callback) {
             if (!is.function(callback)) {
                 stop("WorkflowState transition callback must be a function.")
@@ -368,12 +348,26 @@ ArtifactWorkflowState <- R6::R6Class(
             )
         },
 
+        getResourceInfo = function() {
+            artifactWorkflowStateResourceInfo(
+                private$session,
+                private$process_id,
+                private$closed,
+                private$cache_generation_id,
+                length(private$observers)
+            )
+        },
+
         close = function() {
             if (isTRUE(private$closed)) return(invisible(FALSE))
             private$clearCache()
-            closeProjectRegistry(private$session)
-            private$session <- NULL
-            private$closed <- TRUE
+            private$observers <- list()
+            cleanup <- closeArtifactWorkflowStateSession(private$session)
+            if (isTRUE(cleanup$closed)) {
+                private$session <- NULL
+                private$closed <- TRUE
+            }
+            if (!is.null(cleanup$error)) stop(cleanup$error)
             invisible(TRUE)
         }
     ),
@@ -394,6 +388,7 @@ ArtifactWorkflowState <- R6::R6Class(
         validate_bundle_fn = NULL,
         hydrate_fn = NULL,
         closed = FALSE,
+        process_id = NULL,
 
         finalize = function() {
             if (!isTRUE(private$closed) && !is.null(private$session)) {

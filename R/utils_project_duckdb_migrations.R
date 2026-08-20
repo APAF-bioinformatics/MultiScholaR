@@ -6,16 +6,47 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-projectRegistryExecuteBound <- function(connection, statement, values = list()) {
+projectRegistryObserveResult <- function(observer, event) {
+    if (is.null(observer)) return(invisible(NULL))
+    if (!is.function(observer)) {
+        projectRegistryAbort(
+            "project registry result observer must be a function",
+            "multischolar_invalid_registry_result_observer"
+        )
+    }
+    observer(event)
+    invisible(NULL)
+}
+
+projectRegistryExecuteBound <- function(
+    connection,
+    statement,
+    values = list(),
+    result_observer = NULL
+) {
     result <- DBI::dbSendStatement(connection, statement)
-    on.exit(DBI::dbClearResult(result), add = TRUE)
+    on.exit({
+        DBI::dbClearResult(result)
+        projectRegistryObserveResult(result_observer, "cleared")
+    }, add = TRUE)
+    projectRegistryObserveResult(result_observer, "opened")
     if (length(values) > 0L) DBI::dbBind(result, values)
     DBI::dbGetRowsAffected(result)
 }
 
-projectRegistryFetchBound <- function(connection, statement, values = list(), n = -1L) {
+projectRegistryFetchBound <- function(
+    connection,
+    statement,
+    values = list(),
+    n = -1L,
+    result_observer = NULL
+) {
     result <- DBI::dbSendQuery(connection, statement)
-    on.exit(DBI::dbClearResult(result), add = TRUE)
+    on.exit({
+        DBI::dbClearResult(result)
+        projectRegistryObserveResult(result_observer, "cleared")
+    }, add = TRUE)
+    projectRegistryObserveResult(result_observer, "opened")
     if (length(values) > 0L) DBI::dbBind(result, values)
     DBI::dbFetch(result, n = n)
 }

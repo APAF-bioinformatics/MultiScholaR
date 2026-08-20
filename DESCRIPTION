@@ -84,6 +84,7 @@ Collate:
     'utils_project_duckdb_writer.R'
     'utils_project_duckdb_schema.R'
     'utils_project_duckdb_migrations.R'
+    'utils_artifact_resource_lifecycle.R'
     'utils_project_duckdb_session.R'
     'utils_project_duckdb_operations.R'
     'utils_workflow_context.R'

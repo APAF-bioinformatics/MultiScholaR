@@ -26,7 +26,11 @@ projectRegistryByteSetting <- function(value) {
     paste0(format(value, scientific = FALSE, trim = TRUE), "B")
 }
 
-projectRegistryConnectionConfig <- function(registry, inspection = FALSE) {
+projectRegistryConnectionConfig <- function(
+    registry,
+    inspection = FALSE,
+    temporary_path = NULL
+) {
     registry <- validateProjectRegistry(registry)
     policy <- registry$resource_policy
     config <- list(
@@ -43,7 +47,13 @@ projectRegistryConnectionConfig <- function(registry, inspection = FALSE) {
         enable_external_file_cache = "false"
     )
     if (!isTRUE(inspection)) {
-        config$temp_directory <- projectRegistryPath(registry, "temporary")
+        if (!artifactResourceScalarString(temporary_path)) {
+            projectRegistryAbort(
+                "project registry temporary path is missing",
+                "multischolar_invalid_registry_temporary_path"
+            )
+        }
+        config$temp_directory <- temporary_path
     }
     config$autoinstall_known_extensions <- "false"
     config$autoload_known_extensions <- "false"
@@ -69,7 +79,56 @@ projectRegistryConfigureSecurity <- function(connection, registry) {
     invisible(TRUE)
 }
 
-projectRegistryConnect <- function(registry, read_only, inspection = FALSE) {
+artifactCleanupTemporaryPath <- function(path, root) {
+    if (is.null(path) || !file.exists(path) && !dir.exists(path)) {
+        return(invisible(FALSE))
+    }
+    root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+    target <- normalizePath(path, winslash = "/", mustWork = TRUE)
+    contained <- !identical(target, root) && artifactPathIsContained(target, root)
+    if (!isTRUE(contained)) {
+        projectRegistryAbort(
+            "artifact temporary cleanup path leaves its owned root",
+            "multischolar_invalid_registry_temporary_path"
+        )
+    }
+    status <- unlink(target, recursive = TRUE, force = FALSE)
+    if (!identical(as.integer(status), 0L) || file.exists(target) || dir.exists(target)) {
+        projectRegistryAbort(
+            "artifact temporary directory could not be removed",
+            "multischolar_artifact_temporary_cleanup_failed",
+            temporary_path = target
+        )
+    }
+    invisible(TRUE)
+}
+
+projectRegistrySessionTemporaryPath <- function(registry, session_id) {
+    artifactRefValidateId(session_id, "session_id", "session")
+    projectRegistryEnsureDirectory(registry, "temporary")
+    root <- projectRegistryPath(registry, "temporary", must_exist = TRUE)
+    path <- file.path(root, session_id)
+    if (file.exists(path) || dir.exists(path)) {
+        projectRegistryAbort(
+            "project registry session temporary path already exists",
+            "multischolar_registry_temporary_path_exists"
+        )
+    }
+    if (!dir.create(path, recursive = FALSE, showWarnings = FALSE)) {
+        projectRegistryAbort(
+            "project registry session temporary path could not be created",
+            "multischolar_registry_temporary_path_creation_failed"
+        )
+    }
+    normalizePath(path, winslash = "/", mustWork = TRUE)
+}
+
+projectRegistryConnect <- function(
+    registry,
+    read_only,
+    inspection = FALSE,
+    session_id = NULL
+) {
     registry <- validateProjectRegistry(registry)
     projectRegistryRequireDependencies()
     database <- projectRegistryPath(
@@ -77,25 +136,40 @@ projectRegistryConnect <- function(registry, read_only, inspection = FALSE) {
         "database",
         must_exist = isTRUE(read_only)
     )
+    temporary_root <- NULL
+    temporary_path <- NULL
+    if (!isTRUE(inspection)) {
+        if (is.null(session_id)) session_id <- artifactOpaqueId("session")
+        temporary_root <- projectRegistryPath(registry, "temporary")
+        temporary_path <- projectRegistrySessionTemporaryPath(registry, session_id)
+    }
     driver <- tryCatch(
         duckdb::duckdb(
             dbdir = database,
             read_only = isTRUE(read_only),
-            config = projectRegistryConnectionConfig(registry, inspection),
+            config = projectRegistryConnectionConfig(
+                registry,
+                inspection,
+                temporary_path
+            ),
             shared_home = FALSE,
             allow_extensions = FALSE,
             environment_scan = FALSE
         ),
-        error = \(error) projectRegistryAbort(
-            "project registry DuckDB driver could not be opened",
-            "multischolar_registry_open_failed",
-            parent = error
-        )
+        error = \(error) {
+            artifactCleanupTemporaryPath(temporary_path, temporary_root)
+            projectRegistryAbort(
+                "project registry DuckDB driver could not be opened",
+                "multischolar_registry_open_failed",
+                parent = error
+            )
+        }
     )
     connection <- tryCatch(
         DBI::dbConnect(driver),
         error = \(error) {
             try(duckdb::duckdb_shutdown(driver), silent = TRUE)
+            artifactCleanupTemporaryPath(temporary_path, temporary_root)
             projectRegistryAbort(
                 "project registry DuckDB connection could not be opened",
                 "multischolar_registry_open_failed",
@@ -106,7 +180,16 @@ projectRegistryConnect <- function(registry, read_only, inspection = FALSE) {
     tryCatch(
         projectRegistryConfigureSecurity(connection, registry),
         error = \(error) {
-            try(DBI::dbDisconnect(connection, shutdown = TRUE), silent = TRUE)
+            disconnected <- tryCatch(
+                {
+                    DBI::dbDisconnect(connection, shutdown = TRUE)
+                    TRUE
+                },
+                error = \(...) FALSE
+            )
+            if (isTRUE(disconnected)) {
+                artifactCleanupTemporaryPath(temporary_path, temporary_root)
+            }
             projectRegistryAbort(
                 "project registry DuckDB security configuration failed",
                 "multischolar_registry_security_configuration_failed",
@@ -114,7 +197,13 @@ projectRegistryConnect <- function(registry, read_only, inspection = FALSE) {
             )
         }
     )
-    list(driver = driver, connection = connection)
+    list(
+        driver = driver,
+        connection = connection,
+        process_id = as.integer(Sys.getpid()),
+        temporary_path = temporary_path,
+        temporary_root = temporary_root
+    )
 }
 
 projectRegistryDisconnect <- function(handle) {
@@ -125,11 +214,16 @@ projectRegistryDisconnect <- function(handle) {
             "multischolar_invalid_registry_connection"
         )
     }
+    artifactResourceAssertCreatorProcess(
+        handle$process_id,
+        "project registry connection"
+    )
     if (DBI::dbIsValid(handle$connection)) {
         DBI::dbDisconnect(handle$connection, shutdown = TRUE)
     } else {
         try(duckdb::duckdb_shutdown(handle$driver), silent = TRUE)
     }
+    artifactCleanupTemporaryPath(handle$temporary_path, handle$temporary_root)
     invisible(TRUE)
 }
 
@@ -164,7 +258,11 @@ projectRegistryParseByteSetting <- function(value) {
     as.numeric(parts[[2L]]) * multiplier
 }
 
-projectRegistryValidateEffectiveSettings <- function(settings, registry = NULL) {
+projectRegistryValidateEffectiveSettings <- function(
+    settings,
+    registry = NULL,
+    temporary_path = NULL
+) {
     missing <- setdiff(PROJECT_REGISTRY_DUCKDB_SETTINGS, settings$name)
     if (length(missing) > 0L || anyDuplicated(settings$name) > 0L) {
         projectRegistryAbort(
@@ -193,6 +291,23 @@ projectRegistryValidateEffectiveSettings <- function(settings, registry = NULL) 
         temp_bytes <- projectRegistryParseByteSetting(
             values[["max_temp_directory_size"]]
         )
+        effective_temp <- normalizePath(
+            values[["temp_directory"]],
+            winslash = "/",
+            mustWork = TRUE
+        )
+        temporary_root <- projectRegistryPath(
+            registry,
+            "temporary",
+            must_exist = TRUE
+        )
+        valid_temp <- artifactPathIsContained(effective_temp, temporary_root)
+        if (!is.null(temporary_path)) {
+            valid_temp <- valid_temp && identical(
+                effective_temp,
+                normalizePath(temporary_path, winslash = "/", mustWork = TRUE)
+            )
+        }
         valid_resources <- !is.na(memory_bytes) &&
             memory_bytes <= policy$duckdb_memory_limit_bytes &&
             !is.na(temp_bytes) && temp_bytes <= policy$temp_size_limit_bytes &&
@@ -200,10 +315,8 @@ projectRegistryValidateEffectiveSettings <- function(settings, registry = NULL) 
             identical(
                 tolower(values[["preserve_insertion_order"]]),
                 tolower(as.character(policy$preserve_insertion_order))
-            ) && identical(
-                normalizePath(values[["temp_directory"]], winslash = "/", mustWork = TRUE),
-                projectRegistryPath(registry, "temporary", must_exist = TRUE)
-            ) && grepl(registry$project_root, values[["allowed_directories"]], fixed = TRUE)
+            ) && valid_temp &&
+            grepl(registry$project_root, values[["allowed_directories"]], fixed = TRUE)
         if (!isTRUE(valid_resources)) {
             projectRegistryAbort(
                 "DuckDB project registry resource settings exceed their policy",
@@ -243,9 +356,14 @@ projectRegistrySettingUnit <- function(setting_name) {
     )
 }
 
-projectRegistryRecordSettings <- function(connection, registry, session_id) {
+projectRegistryRecordSettings <- function(
+    connection,
+    registry,
+    session_id,
+    temporary_path = NULL
+) {
     settings <- projectRegistryEffectiveSettings(connection)
-    projectRegistryValidateEffectiveSettings(settings, registry)
+    projectRegistryValidateEffectiveSettings(settings, registry, temporary_path)
     now <- artifactRefUtcNow()
     rows <- lapply(seq_len(nrow(settings)), function(index) {
         name <- settings$name[[index]]
@@ -317,6 +435,7 @@ newProjectRegistrySession <- function(
     session$session_id <- session_id
     session$writer <- writer
     session$backup <- backup
+    session$process_id <- as.integer(Sys.getpid())
     session$closed <- FALSE
     class(session) <- c("MultiScholaRProjectRegistrySession", "environment")
     session
@@ -332,6 +451,10 @@ validateProjectRegistrySession <- function(session, write = FALSE) {
             "multischolar_invalid_registry_session"
         )
     }
+    artifactResourceAssertCreatorProcess(
+        session$process_id,
+        "project registry session"
+    )
     if (isTRUE(write) && (isTRUE(session$read_only) || is.null(session$writer))) {
         projectRegistryAbort(
             "project registry write requires the exclusive writer guard",
@@ -346,6 +469,38 @@ projectRegistrySessionConnection <- function(session, write = FALSE) {
     session$handle$connection
 }
 
+projectRegistrySessionResourceInfo <- function(session) {
+    if (!inherits(session, "MultiScholaRProjectRegistrySession") ||
+        !is.environment(session)) {
+        projectRegistryAbort(
+            "project registry session is invalid",
+            "multischolar_invalid_registry_session"
+        )
+    }
+    artifactResourceAssertCreatorProcess(
+        session$process_id,
+        "project registry session"
+    )
+    connection_open <- !is.null(session$handle) && isTRUE(tryCatch(
+        DBI::dbIsValid(session$handle$connection),
+        error = \(...) FALSE
+    ))
+    temporary_path <- if (is.null(session$handle)) {
+        NULL
+    } else {
+        session$handle$temporary_path
+    }
+    list(
+        creator_pid = session$process_id,
+        closed = session$closed,
+        connection_count = as.integer(connection_open),
+        writer_guard_count = as.integer(!is.null(session$writer)),
+        temporary_path_count = as.integer(
+            !is.null(temporary_path) && dir.exists(temporary_path)
+        )
+    )
+}
+
 closeProjectRegistry <- function(session) {
     if (!inherits(session, "MultiScholaRProjectRegistrySession") ||
         !is.environment(session)) {
@@ -355,16 +510,24 @@ closeProjectRegistry <- function(session) {
         )
     }
     if (isTRUE(session$closed)) return(invisible(FALSE))
+    artifactResourceAssertCreatorProcess(
+        session$process_id,
+        "project registry session"
+    )
     disconnect_error <- NULL
     if (!is.null(session$handle)) {
         tryCatch(
             projectRegistryDisconnect(session$handle),
             error = \(error) disconnect_error <<- error
         )
-        if (is.null(disconnect_error)) session$handle <- NULL
+        disconnected <- tryCatch(
+            !DBI::dbIsValid(session$handle$connection),
+            error = \(...) TRUE
+        )
+        if (isTRUE(disconnected)) session$handle <- NULL
     }
     release_error <- NULL
-    if (is.null(disconnect_error) && !is.null(session$writer)) {
+    if (is.null(session$handle) && !is.null(session$writer)) {
         tryCatch(
             projectRegistryReleaseWriter(
                 session$writer,
@@ -411,7 +574,11 @@ initializeProjectRegistry <- function(registry, failure_injector = NULL) {
         backup <- projectRegistryBackup(registry, schema_info$version)
     }
     projectRegistryEnsureDirectory(registry, "temporary")
-    handle <- projectRegistryConnect(registry, read_only = FALSE)
+    handle <- projectRegistryConnect(
+        registry,
+        read_only = FALSE,
+        session_id = writer$owner$session_id
+    )
     handle_owned <- TRUE
     on.exit({
         if (handle_owned) try(projectRegistryDisconnect(handle), silent = TRUE)
@@ -432,7 +599,8 @@ initializeProjectRegistry <- function(registry, failure_injector = NULL) {
     projectRegistryRecordSettings(
         handle$connection,
         registry,
-        writer$owner$session_id
+        writer$owner$session_id,
+        temporary_path = handle$temporary_path
     )
     projectRegistryAssertRss(registry, "after_initialize")
     session <- newProjectRegistrySession(
@@ -452,7 +620,12 @@ openProjectRegistryReadOnly <- function(registry) {
     registry <- validateProjectRegistry(registry)
     projectRegistryRequireDependencies()
     projectRegistryAssertRss(registry, "before_read_only_open")
-    handle <- projectRegistryConnect(registry, read_only = TRUE)
+    session_id <- artifactOpaqueId("session")
+    handle <- projectRegistryConnect(
+        registry,
+        read_only = TRUE,
+        session_id = session_id
+    )
     handle_owned <- TRUE
     on.exit({
         if (handle_owned) try(projectRegistryDisconnect(handle), silent = TRUE)
@@ -465,12 +638,16 @@ openProjectRegistryReadOnly <- function(registry) {
         )
     }
     settings <- projectRegistryEffectiveSettings(handle$connection)
-    projectRegistryValidateEffectiveSettings(settings, registry)
+    projectRegistryValidateEffectiveSettings(
+        settings,
+        registry,
+        temporary_path = handle$temporary_path
+    )
     session <- newProjectRegistrySession(
         registry,
         handle,
         read_only = TRUE,
-        session_id = artifactOpaqueId("session")
+        session_id = session_id
     )
     handle_owned <- FALSE
     session

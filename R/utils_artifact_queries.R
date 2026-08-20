@@ -290,15 +290,22 @@ artifactQueryAssertRss <- function(policy, stage) {
 
 artifactQueryConnect <- function(store, policy) {
     projectRegistryRequireDependencies()
-    temporary <- artifactNormalizeRelativePath(store$relative_paths$duckdb_tmp)
+    temporary_root <- artifactNormalizeRelativePath(store$relative_paths$duckdb_tmp)
+    artifactStoreEnsureDirectory(store, temporary_root)
+    temporary <- artifactNormalizeRelativePath(file.path(
+        temporary_root,
+        artifactOpaqueId("query")
+    ))
     artifactStoreEnsureDirectory(store, temporary)
+    temporary_root_path <- artifactStoreResolveFile(store, temporary_root)
+    temporary_path <- artifactStoreResolveFile(store, temporary)
     config <- list(
         threads = as.character(policy$threads),
         memory_limit = projectRegistryByteSetting(policy$duckdb_memory_limit_bytes),
         max_temp_directory_size = projectRegistryByteSetting(
             policy$temp_size_limit_bytes
         ),
-        temp_directory = artifactStoreResolveFile(store, temporary),
+        temp_directory = temporary_path,
         preserve_insertion_order = "false",
         enable_external_file_cache = "false",
         autoinstall_known_extensions = "false",
@@ -314,16 +321,20 @@ artifactQueryConnect <- function(store, policy) {
             allow_extensions = FALSE,
             environment_scan = FALSE
         ),
-        error = function(error) artifactQueryAbort(
-            "bounded artifact query could not initialize DuckDB",
-            "multischolar_artifact_query_open_failed",
-            parent = error
-        )
+        error = \(error) {
+            artifactCleanupTemporaryPath(temporary_path, temporary_root_path)
+            artifactQueryAbort(
+                "bounded artifact query could not initialize DuckDB",
+                "multischolar_artifact_query_open_failed",
+                parent = error
+            )
+        }
     )
     connection <- tryCatch(
         DBI::dbConnect(driver),
-        error = function(error) {
+        error = \(error) {
             try(duckdb::duckdb_shutdown(driver), silent = TRUE)
+            artifactCleanupTemporaryPath(temporary_path, temporary_root_path)
             artifactQueryAbort(
                 "bounded artifact query could not connect to DuckDB",
                 "multischolar_artifact_query_open_failed",
@@ -333,15 +344,27 @@ artifactQueryConnect <- function(store, policy) {
     )
     tryCatch(
         {
-            DBI::dbExecute(
+            projectRegistryExecuteBound(
                 connection,
                 "SET allowed_directories = ?",
-                params = list(list(store$project_root))
+                list(list(store$project_root))
             )
-            DBI::dbExecute(connection, "SET lock_configuration = true")
+            projectRegistryExecuteBound(
+                connection,
+                "SET lock_configuration = true"
+            )
         },
-        error = function(error) {
-            try(DBI::dbDisconnect(connection, shutdown = TRUE), silent = TRUE)
+        error = \(error) {
+            disconnected <- tryCatch(
+                {
+                    DBI::dbDisconnect(connection, shutdown = TRUE)
+                    TRUE
+                },
+                error = \(...) FALSE
+            )
+            if (isTRUE(disconnected)) {
+                artifactCleanupTemporaryPath(temporary_path, temporary_root_path)
+            }
             artifactQueryAbort(
                 "bounded artifact query security policy could not be locked",
                 "multischolar_artifact_query_security_failed",
@@ -349,15 +372,26 @@ artifactQueryConnect <- function(store, policy) {
             )
         }
     )
-    list(driver = driver, connection = connection)
+    list(
+        driver = driver,
+        connection = connection,
+        process_id = as.integer(Sys.getpid()),
+        temporary_path = temporary_path,
+        temporary_root = temporary_root_path
+    )
 }
 
 artifactQueryDisconnect <- function(handle) {
+    artifactResourceAssertCreatorProcess(
+        handle$process_id,
+        "artifact query handle"
+    )
     if (!is.null(handle$connection) && DBI::dbIsValid(handle$connection)) {
         DBI::dbDisconnect(handle$connection, shutdown = TRUE)
     } else if (!is.null(handle$driver)) {
         try(duckdb::duckdb_shutdown(handle$driver), silent = TRUE)
     }
+    artifactCleanupTemporaryPath(handle$temporary_path, handle$temporary_root)
     invisible(TRUE)
 }
 
@@ -473,8 +507,12 @@ queryArtifactRef <- function(
     )
     values <- c(list(source$payload_path), filter$values, list(bounds$limit))
     estimate <- tryCatch(
-        DBI::dbGetQuery(handle$connection, statements$estimate, params = values),
-        error = function(error) artifactQueryAbort(
+        projectRegistryFetchBound(
+            handle$connection,
+            statements$estimate,
+            values
+        ),
+        error = \(error) artifactQueryAbort(
             "bounded artifact query byte estimation failed",
             "multischolar_artifact_query_failed",
             parent = error
@@ -490,8 +528,12 @@ queryArtifactRef <- function(
         )
     }
     result <- tryCatch(
-        DBI::dbGetQuery(handle$connection, statements$query, params = values),
-        error = function(error) artifactQueryAbort(
+        projectRegistryFetchBound(
+            handle$connection,
+            statements$query,
+            values
+        ),
+        error = \(error) artifactQueryAbort(
             "bounded artifact query failed",
             "multischolar_artifact_query_failed",
             parent = error

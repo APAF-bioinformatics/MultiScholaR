@@ -267,7 +267,16 @@ mod_lipidomics_server <- function(
         )
 
         logger::log_info("Lipidomics workflow modules initialized")
-        registerWorkflowContextBindingObserver(workflow_data, session)
+        context_observer <- registerWorkflowContextBindingObserver(
+            workflow_data,
+            session,
+            register_session_cleanup = FALSE
+        )
+        registerWorkflowArtifactLifecycle(
+            workflow_data,
+            session,
+            context_observer = context_observer
+        )
 
         # Workflow progress indicator using shared stepper component
         output$workflow_progress <- shiny::renderUI({

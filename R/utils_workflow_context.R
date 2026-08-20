@@ -371,7 +371,19 @@ bindWorkflowContextFromImport <- function(
     invisible(context$getSnapshot())
 }
 
-registerWorkflowContextBindingObserver <- function(workflow_data, session) {
+registerWorkflowContextBindingObserver <- function(
+    workflow_data,
+    session,
+    register_session_cleanup = TRUE
+) {
+    if (!is.logical(register_session_cleanup) ||
+        length(register_session_cleanup) != 1L ||
+        is.na(register_session_cleanup)) {
+        workflowCapabilityAbort(
+            "workflow context cleanup registration must be true or false",
+            "multischolar_invalid_workflow_context_cleanup"
+        )
+    }
     context <- workflow_data$workflow_context
     if (!inherits(context, "WorkflowContext")) return(NULL)
     binding_inputs <- shiny::reactive({
@@ -394,6 +406,8 @@ registerWorkflowContextBindingObserver <- function(workflow_data, session) {
         ignoreNULL = TRUE,
         once = TRUE
     )
-    session$onSessionEnded(\() observer$destroy())
+    if (isTRUE(register_session_cleanup)) {
+        session$onSessionEnded(\() observer$destroy())
+    }
     observer
 }
