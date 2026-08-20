@@ -74,7 +74,9 @@ ArtifactWorkflowState <- R6::R6Class(
             s4_data_object,
             config_object,
             description,
-            audit_metadata = NULL
+            audit_metadata = NULL,
+            persistence_hint = NULL,
+            failure_injector = NULL
         ) {
             result <- self$commitState(
                 state_name = state_name,
@@ -82,6 +84,8 @@ ArtifactWorkflowState <- R6::R6Class(
                 config_object = config_object,
                 description = description,
                 audit_metadata = audit_metadata,
+                persistence_hint = persistence_hint,
+                failure_injector = failure_injector,
                 action_id = artifactOpaqueId("action"),
                 expected_parent_generation_id = private$current_generation_id
             )
@@ -100,6 +104,8 @@ ArtifactWorkflowState <- R6::R6Class(
             config_object,
             description,
             audit_metadata = NULL,
+            persistence_hint = NULL,
+            failure_injector = NULL,
             action_id = artifactOpaqueId("action"),
             expected_parent_generation_id = NULL
         ) {
@@ -131,12 +137,20 @@ ArtifactWorkflowState <- R6::R6Class(
                     actual_parent
                 ))
             }
+            parent_object <- if (is.null(persistence_hint)) {
+                NULL
+            } else {
+                self$getState()
+            }
             private$commitStateInternal(
                 state_name = state_name,
                 state_object = s4_data_object,
                 config = config_object,
                 description = description,
                 audit_metadata = audit_metadata,
+                parent_object = parent_object,
+                persistence_hint = persistence_hint,
+                failure_injector = failure_injector,
                 action_id = action_id,
                 expected_parent = expected_parent_generation_id,
                 event_type = "state_saved"
@@ -760,6 +774,9 @@ ArtifactWorkflowState <- R6::R6Class(
             config,
             description,
             audit_metadata,
+            parent_object = NULL,
+            persistence_hint = NULL,
+            failure_injector = NULL,
             action_id,
             expected_parent,
             event_type,
@@ -773,6 +790,9 @@ ArtifactWorkflowState <- R6::R6Class(
                 generation_id,
                 state_object,
                 previous_manifest = previous_manifest,
+                parent_object = parent_object,
+                persistence_hint = persistence_hint,
+                failure_injector = failure_injector,
                 dehydrate_fn = private$dehydrate_fn,
                 validate_bundle_fn = private$validate_bundle_fn
             )
@@ -791,6 +811,13 @@ ArtifactWorkflowState <- R6::R6Class(
             manifest_path <- artifactWorkflowStateWriteManifest(private$store, manifest)
             artifactWorkflowStateVerifyHydration(private$store, manifest, state_object,
                 private$hydrate_fn)
+            metrics <- artifactWorkflowStateDataMetrics(private$store, data, state_object)
+            artifactWorkflowStateInvokeRegistryFailure(
+                failure_injector,
+                generation_id,
+                state_name,
+                expected_parent
+            )
             timestamp <- manifest$created_at
             artifactWorkflowStateTransaction(private$session, function() {
                 actual_parent <- private$currentGenerationId()
@@ -800,19 +827,12 @@ ArtifactWorkflowState <- R6::R6Class(
                         "multischolar_artifact_state_compare_and_set_failed"
                     )
                 }
-                if (!isTRUE(data$reused)) {
-                    for (index in seq_along(data$artifact_refs)) {
-                        projectRegistryWrite(
-                            private$session,
-                            "artifact",
-                            artifactWorkflowStateArtifactRecord(
-                                private$identity,
-                                data$artifact_refs[[index]],
-                                index - 1L
-                            )
-                        )
-                    }
-                }
+                artifactWorkflowStateRegisterData(
+                    private$session,
+                    private$identity,
+                    data,
+                    timestamp
+                )
                 artifactWorkflowStateUpdateStatus(
                     private$session,
                     private$identity,
@@ -836,7 +856,13 @@ ArtifactWorkflowState <- R6::R6Class(
                     generation_id,
                     expected_parent,
                     "accepted",
-                    list(state_name = state_name, artifacts_reused = isTRUE(data$reused))
+                    list(
+                        state_name = state_name,
+                        artifacts_reused = isTRUE(data$reused),
+                        representation = artifactWorkflowStateRepresentation(
+                            persistence_hint
+                        )
+                    )
                 )
                 private$writeEvent(
                     event_type,
@@ -857,6 +883,10 @@ ArtifactWorkflowState <- R6::R6Class(
                 generation_id = generation_id,
                 logical_name = state_name,
                 artifacts_reused = isTRUE(data$reused),
+                representation = artifactWorkflowStateRepresentation(
+                    persistence_hint
+                ),
+                metrics = metrics,
                 idempotent = FALSE
             )
         },

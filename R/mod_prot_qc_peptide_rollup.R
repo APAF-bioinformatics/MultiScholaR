@@ -126,6 +126,7 @@ runPeptideRollupApplyStep <- function(workflowData,
 
   rolledUpS4 <- .savePeptideQcState(
     state_manager = workflowData$state_manager,
+    workflow_data = workflowData,
     before = currentS4,
     after = rolledUpS4,
     stage_id = "precursor_rollup",
@@ -232,7 +233,7 @@ runPeptideRollupRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- revertProtDiaPeptideQcState(workflowData, previousState)
   logInfoFn(paste("Reverted precursor rollup to", previousState))
 
   list(

@@ -179,6 +179,68 @@ test_that("artifact states persist exact refs and reuse unchanged payloads", {
     expect_false(grepl('"data"[[:space:]]*:[[:space:]]*"', manifest_text))
 })
 
+test_that("row-selection hints are additive to materialized WorkflowState", {
+    artifactStateSkipDependencies()
+    project_root <- withr::local_tempdir()
+    manager <- newWorkflowState(
+        workflow_context = artifactStateTestContext(project_root)
+    )
+    withr::defer(manager$close())
+    manager$setWorkflowType("DIA")
+    parent <- artifactStateTestPeptide()
+    manager$saveState("imported", parent, list(stage = "import"), "Imported")
+    child <- parent
+    child@peptide_data <- child@peptide_data[c(4L, 1L), , drop = FALSE]
+    key_columns <- c("Protein.Group", "Stripped.Sequence", "Run")
+    parent_keys <- artifactWorkflowStateEntityKeys(parent@peptide_data, key_columns)
+    child_keys <- artifactWorkflowStateEntityKeys(child@peptide_data, key_columns)
+    rejected_keys <- parent_keys[!parent_keys %in% child_keys]
+    hint <- newArtifactRowSelectionHint(
+        slot_name = "peptide_data",
+        key_columns = key_columns,
+        method = "workflow_state_test_filter",
+        normalized_parameters = list(enabled = TRUE),
+        software = list(
+            name = "MultiScholaR",
+            version = "test",
+            source = "testthat"
+        ),
+        lineage = list(
+            audit_record_id = "audit-test-1",
+            state_name = "selected",
+            parent_state = "imported",
+            parent_record_id = "audit-test-0"
+        ),
+        rejected_reasons = stats::setNames(
+            rep("test_filter", length(rejected_keys)),
+            rejected_keys
+        )
+    )
+    selected <- manager$commitState(
+        "selected",
+        child,
+        list(stage = "filter"),
+        "Selected rows",
+        persistence_hint = hint,
+        expected_parent_generation_id = manager$getCurrentGenerationId()
+    )
+    expect_identical(selected$representation, "row_selection")
+    expectArtifactStateExact(child, manager$getState())
+
+    changed <- child
+    changed@peptide_data$Precursor.Normalised <-
+        changed@peptide_data$Precursor.Normalised + 1
+    materialized <- manager$commitState(
+        "changed",
+        changed,
+        list(stage = "transform"),
+        "Changed values",
+        expected_parent_generation_id = manager$getCurrentGenerationId()
+    )
+    expect_identical(materialized$representation, "materialized")
+    expectArtifactStateExact(changed, manager$getState())
+})
+
 test_that("artifact actions are idempotent and parent compare-and-set is strict", {
     artifactStateSkipDependencies()
     project_root <- withr::local_tempdir()

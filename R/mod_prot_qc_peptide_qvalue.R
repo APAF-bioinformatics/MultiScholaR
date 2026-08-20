@@ -204,6 +204,7 @@ runPeptideQvalueApplyStep <- function(workflowData,
   )
   filteredS4 <- .savePeptideQcState(
     state_manager = workflowData$state_manager,
+    workflow_data = workflowData,
     before = currentS4,
     after = filteredS4,
     stage_id = "qvalue_filter",
@@ -336,7 +337,7 @@ runPeptideQvalueRevertStep <- function(workflowData,
     stop(sprintf("Cannot revert: '%s' state not found in history.", revertStateName))
   }
 
-  revertedS4 <- workflowData$state_manager$revertToState(revertStateName)
+  revertedS4 <- revertProtDiaPeptideQcState(workflowData, revertStateName)
   logInfoFn("Reverted to raw data state")
 
   list(

@@ -592,11 +592,13 @@
                                  state_name,
                                  config_object,
                                  description,
+                                 workflow_data = NULL,
                                  audit_parameters = config_object,
                                  now = Sys.time(),
                                  status = "applied",
                                  decision_reason = NA_character_,
-                                 transformation_type = "filter") {
+                                 transformation_type = "filter",
+                                 failure_injector = NULL) {
   audit_enabled <- workflowStateAuditEnabled(state_manager)
   if (!identical(audit_enabled, FALSE) &&
       .isPeptideQcAuditableObject(before) &&
@@ -615,6 +617,21 @@
     )
     config_object$audit_record_id <- after@args$peptide_qc_audit$current_record_id
   }
+  artifact_result <- saveProtDiaPeptideQcArtifactState(
+    workflow_data = workflow_data,
+    state_manager = state_manager,
+    before = before,
+    after = after,
+    stage_id = stage_id,
+    state_name = state_name,
+    config_object = config_object,
+    description = description,
+    audit_parameters = audit_parameters,
+    status = status,
+    transformation_type = transformation_type,
+    failure_injector = failure_injector
+  )
+  if (isTRUE(artifact_result$handled)) return(after)
   state_manager$saveState(
     state_name = state_name,
     s4_data_object = after,

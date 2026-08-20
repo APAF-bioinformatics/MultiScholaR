@@ -249,6 +249,19 @@ test_that("proteomics peptide QC orchestrator skips non-DIA server fan-out", {
   expect_length(captured$server_calls, 0L)
   expect_true("Peptide QC orchestrator: workflow type is LFQ" %in% captured$log_info)
   expect_true("Skipping peptide processing for workflow type: LFQ" %in% captured$log_info)
+
+  workflow_data <- makeSharedProtPeptideWorkflow("TMT")
+  server_fn(
+    id = "peptide-qc",
+    workflow_data = workflow_data,
+    experiment_paths = list(peptide_qc_dir = tempdir()),
+    omic_type = "proteomics",
+    experiment_label = "TMT Experiment"
+  )
+
+  expect_length(captured$server_calls, 0L)
+  expect_true("Peptide QC orchestrator: workflow type is TMT" %in% captured$log_info)
+  expect_true("Skipping peptide processing for workflow type: TMT" %in% captured$log_info)
 })
 
 test_that("proteomics peptide QC UI preserves tab wiring", {

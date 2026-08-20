@@ -552,6 +552,80 @@ test_that("synthetic omic round trips, reopens, and rolls back through shared st
     expect_true(length(list.files(project_root, pattern = "[.]parquet$", recursive = TRUE)) > 0L)
 })
 
+test_that("synthetic omics can opt into generic parent-backed row selections", {
+    syntheticArtifactSkipDependencies()
+    project_root <- withr::local_tempdir()
+    descriptor <- syntheticArtifactDescriptor()
+    catalogues <- syntheticArtifactCatalogues(descriptor)
+    context <- syntheticArtifactContext(project_root, catalogues$descriptors)
+    manager <- newWorkflowState(
+        workflow_context = context,
+        workflow_descriptor = descriptor,
+        descriptor_catalogue = catalogues$descriptors,
+        codec_catalogue = catalogues$codecs
+    )
+    withr::defer(manager$close())
+    parent <- syntheticArtifactObject()
+    manager$saveState(
+        "imported",
+        parent,
+        list(stage = "import"),
+        "Synthetic import"
+    )
+    child <- parent
+    child@assay <- child@assay[c(4L, 2L), , drop = FALSE]
+    key_columns <- c("feature", "sample")
+    parent_keys <- artifactWorkflowStateEntityKeys(parent@assay, key_columns)
+    child_keys <- artifactWorkflowStateEntityKeys(child@assay, key_columns)
+    rejected_keys <- parent_keys[!parent_keys %in% child_keys]
+    hint <- newArtifactRowSelectionHint(
+        slot_name = "assay",
+        key_columns = key_columns,
+        method = "synthetic_quality_filter",
+        normalized_parameters = list(minimum_quality = "low"),
+        software = list(
+            name = "SyntheticExtension",
+            version = "1.0.0",
+            source = "testthat"
+        ),
+        lineage = list(
+            audit_record_id = "synthetic-audit-1",
+            state_name = "quality_filtered",
+            parent_state = "imported",
+            parent_record_id = "synthetic-audit-0"
+        ),
+        rejected_reasons = stats::setNames(
+            rep("below_quality_threshold", length(rejected_keys)),
+            rejected_keys
+        )
+    )
+    result <- manager$commitState(
+        "quality_filtered",
+        child,
+        list(stage = "quality_filter"),
+        "Synthetic quality filter",
+        persistence_hint = hint,
+        expected_parent_generation_id = manager$getCurrentGenerationId()
+    )
+
+    expect_identical(result$status, "accepted")
+    expect_identical(result$representation, "row_selection")
+    expectSyntheticArtifactExact(child, manager$getState())
+    expect_lte(manager$getCacheInfo()$entries, 1L)
+
+    changed <- child
+    changed@assay$abundance <- changed@assay$abundance + 1
+    materialized <- manager$commitState(
+        "normalized",
+        changed,
+        list(stage = "normalization"),
+        "Synthetic normalization",
+        expected_parent_generation_id = manager$getCurrentGenerationId()
+    )
+    expect_identical(materialized$representation, "materialized")
+    expectSyntheticArtifactExact(changed, manager$getState())
+})
+
 test_that("descriptor queries are typed, deterministic, and bounded before collection", {
     syntheticArtifactSkipDependencies()
     project_root <- withr::local_tempdir()

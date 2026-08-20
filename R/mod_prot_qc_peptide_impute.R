@@ -200,6 +200,7 @@ runPeptideImputationStep <- function(workflow_data,
   )
   imputed_s4 <- .savePeptideQcState(
     state_manager = workflow_data$state_manager,
+    workflow_data = workflow_data,
     before = current_s4,
     after = imputed_s4,
     stage_id = "imputation",
@@ -262,7 +263,7 @@ runPeptideImputationRevertStep <- function(workflow_data) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflow_data$state_manager$revertToState(previousState)
+  revertedS4 <- revertProtDiaPeptideQcState(workflow_data, previousState)
   logger::log_info(paste("Reverted imputation to", previousState))
 
   list(

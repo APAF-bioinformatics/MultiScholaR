@@ -78,7 +78,7 @@ runPeptideReplicateRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- revertProtDiaPeptideQcState(workflowData, previousState)
   logInfoFn(paste("Reverted replicate filter to", previousState))
 
   list(
@@ -159,6 +159,7 @@ runPeptideReplicateApplyStep <- function(workflowData,
 
   filteredS4 <- .savePeptideQcState(
     state_manager = workflowData$state_manager,
+    workflow_data = workflowData,
     before = currentS4,
     after = filteredS4,
     stage_id = "replicate_filter",

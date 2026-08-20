@@ -371,10 +371,52 @@ test_that("nested args externalize rectangular values and fail safely when unsup
     )
     oversized <- makeDiaCodecObjects("iq")$peptide
     oversized@args <- list(many_scalars = as.list(seq_len(500L)))
+    oversized_bundle <- dehydrateDiaS4Artifact(
+        oversized,
+        inline_limit_bytes = 512L
+    )
+    expect_gt(length(oversized_bundle$payloads), 2L)
+    expectExactS4Slots(oversized, hydrateDiaS4Artifact(oversized_bundle))
+
+    unsafe_nested <- oversized
+    unsafe_nested@args$many_scalars[[500L]] <- "/tmp/unsafe-artifact-path"
     expect_error(
-        dehydrateDiaS4Artifact(oversized, inline_limit_bytes = 512L),
-        regexp = "many_scalars.*requires an external codec",
-        class = "multischolar_artifact_externalization_required"
+        dehydrateDiaS4Artifact(unsafe_nested, inline_limit_bytes = 512L),
+        class = "multischolar_absolute_path_in_artifact_state"
+    )
+
+    cycle <- oversized_bundle
+    find_nested <- function(value) {
+        if (identical(value$node_type, "nested_rectangular")) return(value)
+        if (!identical(value$node_type, "list")) return(NULL)
+        matches <- Filter(Negate(is.null), lapply(value$values, find_nested))
+        if (length(matches) == 0L) NULL else matches[[1L]]
+    }
+    node <- find_nested(cycle$metadata$slot_values$args)
+    expect_false(is.null(node))
+    cycle_node <- list(
+        node_type = "nested_rectangular",
+        codec = list(
+            id = .artifactNestedNodeCodec,
+            version = .artifactNestedNodeCodecVersion
+        ),
+        payload_key = node$payload_key
+    )
+    encoded_cycle <- encodeArtifactTable(
+        data.frame(
+            serialized_node = as.character(jsonlite::serializeJSON(cycle_node)),
+            stringsAsFactors = FALSE
+        ),
+        owner = "cycle"
+    )
+    cycle$payloads[[node$payload_key]] <- encoded_cycle$payload
+    cycle$metadata$payloads[[node$payload_key]] <- encoded_cycle$metadata
+    cycle$metadata$semantic_digest <- artifactSemanticDigest(
+        artifactDiaBundleSemanticInput(cycle$metadata)
+    )
+    expect_error(
+        hydrateDiaS4Artifact(cycle),
+        class = "multischolar_invalid_artifact_payload"
     )
 })
 

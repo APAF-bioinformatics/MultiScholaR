@@ -482,6 +482,9 @@ artifactWorkflowStateWriteData <- function(
     generation_id,
     state_object,
     previous_manifest = NULL,
+    parent_object = NULL,
+    persistence_hint = NULL,
+    failure_injector = NULL,
     dehydrate_fn = dehydrateDiaS4Artifact,
     validate_bundle_fn = validateDiaS4Bundle
 ) {
@@ -492,7 +495,9 @@ artifactWorkflowStateWriteData <- function(
             codec = NULL,
             metadata_json = NULL,
             artifact_refs = list(),
-            reused = FALSE
+            reused = FALSE,
+            new_reference_names = character(),
+            dependencies = list()
         ))
     }
     if (!is.function(dehydrate_fn) || !is.function(validate_bundle_fn)) {
@@ -504,6 +509,25 @@ artifactWorkflowStateWriteData <- function(
     bundle <- dehydrate_fn(state_object)
     bundle <- validate_bundle_fn(bundle)
     semantic_digest <- bundle$metadata$semantic_digest
+    if (!is.null(persistence_hint)) {
+        if (is.null(previous_manifest) || is.null(parent_object)) {
+            artifactWorkflowStateAbort(
+                "artifact row selection requires one persisted parent object",
+                "multischolar_invalid_artifact_row_selection"
+            )
+        }
+        return(artifactWorkflowStateWriteSelectionData(
+            store = store,
+            identity = identity,
+            generation_id = generation_id,
+            state_object = state_object,
+            parent_object = parent_object,
+            previous_manifest = previous_manifest,
+            bundle = bundle,
+            hint = persistence_hint,
+            failure_injector = failure_injector
+        ))
+    }
     if (!is.null(previous_manifest) &&
         identical(previous_manifest$data$semantic_digest, semantic_digest)) {
         return(list(
@@ -512,7 +536,9 @@ artifactWorkflowStateWriteData <- function(
             codec = previous_manifest$data$codec,
             metadata_json = previous_manifest$data$metadata_json,
             artifact_refs = previous_manifest$data$artifact_refs,
-            reused = TRUE
+            reused = TRUE,
+            new_reference_names = character(),
+            dependencies = list()
         ))
     }
     references <- Map(function(payload, metadata, index) {
@@ -528,7 +554,12 @@ artifactWorkflowStateWriteData <- function(
             state_role = sprintf("payload_%04d", index),
             generation_id = generation_id
         )
-        artifactStoreWriteParquet(store, encoded, logical_key)
+        artifactStoreWriteParquet(
+            store,
+            encoded,
+            logical_key,
+            failure_injector = failure_injector
+        )
     }, bundle$payloads, bundle$metadata$payloads, seq_along(bundle$payloads))
     names(references) <- names(bundle$payloads)
     descriptor <- bundle$metadata$codec
@@ -541,16 +572,26 @@ artifactWorkflowStateWriteData <- function(
             "S4 codec metadata"
         ),
         artifact_refs = references,
-        reused = FALSE
+        reused = FALSE,
+        new_reference_names = names(references),
+        dependencies = list()
     )
 }
 
 artifactWorkflowStateHydrateData <- function(
     store,
     manifest,
-    hydrate_fn = hydrateDiaS4Artifact
+    hydrate_fn = hydrateDiaS4Artifact,
+    visited_generation_ids = character()
 ) {
     manifest <- artifactWorkflowStateValidateManifest(manifest)
+    if (manifest$generation_id %in% visited_generation_ids) {
+        artifactWorkflowStateAbort(
+            "artifact WorkflowState selection lineage contains a cycle",
+            "multischolar_invalid_artifact_state_lineage"
+        )
+    }
+    visited_generation_ids <- c(visited_generation_ids, manifest$generation_id)
     if (is.null(manifest$data$semantic_digest)) return(NULL)
     if (!is.function(hydrate_fn)) {
         artifactWorkflowStateAbort(
@@ -563,7 +604,7 @@ artifactWorkflowStateHydrateData <- function(
         "S4 codec metadata"
     )
     references <- manifest$data$artifact_refs
-    payloads <- lapply(names(references), function(payload_name) {
+    payload_entries <- lapply(names(references), function(payload_name) {
         ref <- references[[payload_name]]
         sidecar_path <- artifactStoreManagedPaths(
             store,
@@ -577,12 +618,41 @@ artifactWorkflowStateHydrateData <- function(
                 "multischolar_artifact_state_ref_mismatch"
             )
         }
-        arrow::read_parquet(
-            artifactStoreResolveFile(store, ref$relative_path, must_exist = TRUE),
-            as_data_frame = FALSE
+        list(
+            payload = arrow::read_parquet(
+                artifactStoreResolveFile(store, ref$relative_path, must_exist = TRUE),
+                as_data_frame = FALSE
+            ),
+            metadata = sidecar$codec_metadata,
+            ref = ref
         )
     })
-    names(payloads) <- names(references)
+    names(payload_entries) <- names(references)
+    payloads <- if (is.list(metadata$derivation)) {
+        artifactWorkflowStateHydrateSelectionPayloads(
+            store,
+            manifest,
+            metadata,
+            payload_entries,
+            hydrate_parent_fn = function(parent_manifest) {
+                artifactWorkflowStateHydrateData(
+                    store,
+                    parent_manifest,
+                    hydrate_fn,
+                    visited_generation_ids
+                )
+            }
+        )
+    } else {
+        expected <- names(metadata$payloads)
+        if (!identical(names(payload_entries), expected)) {
+            artifactWorkflowStateAbort(
+                "artifact state refs do not match exact S4 payload metadata",
+                "multischolar_artifact_state_ref_mismatch"
+            )
+        }
+        lapply(payload_entries, `[[`, "payload")
+    }
     bundle <- structure(
         list(metadata = metadata, payloads = payloads),
         class = c("MultiScholaRArtifactS4Bundle", "list")

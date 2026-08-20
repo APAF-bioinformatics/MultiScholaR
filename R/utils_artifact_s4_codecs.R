@@ -11,6 +11,8 @@
 .artifactDiaCodecVersion <- 1L
 .artifactCodecCatalogueSchema <- "multischolar.artifact_codec_catalogue"
 .artifactCodecCatalogueVersion <- 1L
+.artifactNestedNodeCodec <- "multischolar.r_nested_value"
+.artifactNestedNodeCodecVersion <- 1L
 
 artifactDiaCodecDeclarations <- function() {
     artifactDiaWorkflowCodecDeclarations()
@@ -202,6 +204,16 @@ artifactAddRectangularPayload <- function(state, encoded) {
     key
 }
 
+artifactAddNestedNodePayload <- function(state, node, owner) {
+    artifactWorkflowStateAssertSafeMetadata(node, owner)
+    serialized <- as.character(jsonlite::serializeJSON(node, digits = NA))
+    encoded <- encodeArtifactTable(
+        data.frame(serialized_node = serialized, stringsAsFactors = FALSE),
+        owner = paste(owner, "nested value")
+    )
+    artifactAddRectangularPayload(state, encoded)
+}
+
 artifactNodeOwner <- function(owner, names, index) {
     label <- if (!is.null(names) && nzchar(names[[index]])) names[[index]] else index
     paste0(owner, "[[", label, "]]")
@@ -290,15 +302,14 @@ artifactEncodeValueNode <- function(value, state, owner, inline_limit_bytes) {
             attributes = attribute_node
         )
         if (as.numeric(object.size(node)) > inline_limit_bytes) {
-            artifactCodecAbort(
-                sprintf(
-                    "nested owner '%s' exceeds the inline limit and requires an external codec",
-                    owner
+            return(list(
+                node_type = "nested_rectangular",
+                codec = list(
+                    id = .artifactNestedNodeCodec,
+                    version = .artifactNestedNodeCodecVersion
                 ),
-                "multischolar_artifact_externalization_required",
-                owner = owner,
-                inline_limit_bytes = inline_limit_bytes
-            )
+                payload_key = artifactAddNestedNodePayload(state, node, owner)
+            ))
         }
         return(node)
     }
@@ -310,7 +321,69 @@ artifactEncodeValueNode <- function(value, state, owner, inline_limit_bytes) {
     )
 }
 
-artifactDecodeValueNode <- function(node, payloads, payload_metadata) {
+artifactDecodeNestedNode <- function(
+    node,
+    payloads,
+    payload_metadata,
+    visited_payload_keys
+) {
+    expected_codec <- list(
+        id = .artifactNestedNodeCodec,
+        version = .artifactNestedNodeCodecVersion
+    )
+    if (!identical(node$codec, expected_codec) ||
+        !workflowCapabilityScalarString(node$payload_key)) {
+        artifactCodecAbort(
+            "nested artifact value codec is malformed or unsupported",
+            "multischolar_unsupported_artifact_codec_version"
+        )
+    }
+    if (node$payload_key %in% visited_payload_keys) {
+        artifactCodecAbort(
+            "nested artifact value payload lineage contains a cycle",
+            "multischolar_invalid_artifact_payload"
+        )
+    }
+    frame <- decodeArtifactRectangular(
+        payloads[[node$payload_key]],
+        payload_metadata[[node$payload_key]]
+    )
+    if (!identical(names(frame), "serialized_node") || nrow(frame) != 1L ||
+        !workflowCapabilityScalarString(frame$serialized_node[[1L]])) {
+        artifactCodecAbort(
+            "nested artifact value payload is malformed",
+            "multischolar_invalid_artifact_payload"
+        )
+    }
+    decoded <- tryCatch(
+        jsonlite::unserializeJSON(frame$serialized_node[[1L]]),
+        error = \(error) artifactCodecAbort(
+            "nested artifact value payload could not be decoded",
+            "multischolar_invalid_artifact_payload",
+            parent = error
+        )
+    )
+    if (!is.list(decoded) || !workflowCapabilityScalarString(decoded$node_type)) {
+        artifactCodecAbort(
+            "nested artifact value payload does not contain one value node",
+            "multischolar_invalid_artifact_payload"
+        )
+    }
+    artifactWorkflowStateAssertSafeMetadata(decoded, "nested artifact value")
+    artifactDecodeValueNode(
+        decoded,
+        payloads,
+        payload_metadata,
+        c(visited_payload_keys, node$payload_key)
+    )
+}
+
+artifactDecodeValueNode <- function(
+    node,
+    payloads,
+    payload_metadata,
+    visited_payload_keys = character()
+) {
     switch(node$node_type,
         null = NULL,
         raw_inline = {
@@ -331,17 +404,27 @@ artifactDecodeValueNode <- function(node, payloads, payload_metadata) {
             if (!is.null(node$names)) names(value) <- artifactDecodeInlineCharacter(node$names)
             value
         },
+        nested_rectangular = artifactDecodeNestedNode(
+            node,
+            payloads,
+            payload_metadata,
+            visited_payload_keys
+        ),
         list = {
-            value <- lapply(node$values, artifactDecodeValueNode,
+            value <- lapply(
+                node$values,
+                artifactDecodeValueNode,
                 payloads = payloads,
-                payload_metadata = payload_metadata
+                payload_metadata = payload_metadata,
+                visited_payload_keys = visited_payload_keys
             )
             if (!is.null(node$names)) names(value) <- artifactDecodeInlineCharacter(node$names)
             if (!is.null(node$attributes)) {
                 extra <- artifactDecodeValueNode(
                     node$attributes,
                     payloads,
-                    payload_metadata
+                    payload_metadata,
+                    visited_payload_keys
                 )
                 attributes(value) <- c(attributes(value), extra)
             }
