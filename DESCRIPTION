@@ -79,6 +79,12 @@ Collate:
     'utils_artifact_store.R'
     'utils_artifact_store_recovery.R'
     'utils_artifact_store_inventory.R'
+    'utils_project_duckdb.R'
+    'utils_project_duckdb_writer.R'
+    'utils_project_duckdb_schema.R'
+    'utils_project_duckdb_migrations.R'
+    'utils_project_duckdb_session.R'
+    'utils_project_duckdb_operations.R'
     'utils_workflow_context.R'
     'func_general_design.R'
     'func_general_enrichment_core.R'
@@ -395,7 +401,10 @@ Suggests:
     gt,
     testthat (>= 3.0.0),
     covr,
+    DBI,
+    duckdb,
     dynamicTreeCut,
+    filelock,
     GlimmaV2,
     GO.db,
     GSEABase,
