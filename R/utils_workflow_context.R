@@ -311,12 +311,24 @@ bindWorkflowContextFromImport <- function(
     data_level,
     capabilities = NULL,
     path_builder = buildArtifactPaths,
-    project_state_detector = detectWorkflowProjectState
+    project_state_detector = detectWorkflowProjectState,
+    descriptor_catalogue = NULL
 ) {
     if (!inherits(context, "WorkflowContext")) {
         workflowCapabilityAbort(
             "workflow context binding requires a WorkflowContext",
             "multischolar_invalid_workflow_context"
+        )
+    }
+    if (!is.null(descriptor_catalogue)) {
+        if (!is.null(capabilities)) {
+            workflowCapabilityAbort(
+                "workflow binding cannot combine capability and descriptor catalogues",
+                "multischolar_ambiguous_workflow_capability"
+            )
+        }
+        capabilities <- artifactDescriptorCapabilities(
+            validateArtifactDescriptorCatalogue(descriptor_catalogue)
         )
     }
     identity <- resolveImportedWorkflowIdentity(

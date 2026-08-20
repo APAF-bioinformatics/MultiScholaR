@@ -12,7 +12,10 @@ newWorkflowState <- function(
     resource_policy = NULL,
     dehydrate_fn = dehydrateDiaS4Artifact,
     validate_bundle_fn = validateDiaS4Bundle,
-    hydrate_fn = hydrateDiaS4Artifact
+    hydrate_fn = hydrateDiaS4Artifact,
+    workflow_descriptor = NULL,
+    descriptor_catalogue = NULL,
+    codec_catalogue = NULL
 ) {
     memory <- is.null(workflow_context) ||
         !inherits(workflow_context, "WorkflowContext") ||
@@ -22,12 +25,70 @@ newWorkflowState <- function(
             "memory"
         )
     if (memory) return(WorkflowState$new(audit_enabled = audit_enabled))
+    descriptor_contract <- NULL
+    if (!is.null(descriptor_catalogue)) {
+        candidate <- findArtifactWorkflowDescriptor(
+            workflow_context$getIdentity(),
+            descriptor_catalogue
+        )
+        if (is.null(candidate)) {
+            artifactWorkflowStateAbort(
+                "artifact context has no exact descriptor in the injected catalogue",
+                "multischolar_artifact_state_descriptor_mismatch"
+            )
+        }
+        if (!is.null(workflow_descriptor) && !identical(candidate, workflow_descriptor)) {
+            artifactWorkflowStateAbort(
+                "injected workflow descriptor disagrees with its immutable catalogue",
+                "multischolar_artifact_state_descriptor_mismatch"
+            )
+        }
+        workflow_descriptor <- candidate
+    }
+    if (!is.null(workflow_descriptor)) {
+        workflow_descriptor <- validateArtifactWorkflowDescriptor(workflow_descriptor)
+        identity <- workflow_context$getIdentity()
+        decision <- workflow_context$getStorageDecision()
+        matching_identity <- identical(
+            workflowCapabilityKey(identity),
+            workflowCapabilityKey(workflow_descriptor$identity)
+        )
+        matching_capability <- identical(
+            decision$capability_id,
+            workflow_descriptor$descriptor_id
+        ) && identical(
+            decision$capability_version,
+            workflow_descriptor$descriptor_version
+        )
+        if (!isTRUE(matching_identity) || !isTRUE(matching_capability)) {
+            artifactWorkflowStateAbort(
+                "artifact WorkflowState descriptor does not match its context decision",
+                "multischolar_artifact_state_descriptor_mismatch"
+            )
+        }
+        if (is.null(codec_catalogue)) codec_catalogue <- artifactS4CodecCatalogue()
+        adapter <- artifactCodecAdapter(workflow_descriptor, codec_catalogue)
+        dehydrate_fn <- adapter$dehydrate
+        validate_bundle_fn <- adapter$validate
+        hydrate_fn <- adapter$hydrate
+        descriptor_contract <- list(
+            descriptor_id = workflow_descriptor$descriptor_id,
+            descriptor_version = workflow_descriptor$descriptor_version,
+            descriptor_digest = workflow_descriptor$descriptor_digest
+        )
+    } else if (!is.null(codec_catalogue)) {
+        artifactWorkflowStateAbort(
+            "artifact codec catalogue requires an exact workflow descriptor",
+            "multischolar_artifact_state_descriptor_mismatch"
+        )
+    }
     ArtifactWorkflowState$new(
         workflow_context = workflow_context,
         audit_enabled = audit_enabled,
         resource_policy = resource_policy,
         dehydrate_fn = dehydrate_fn,
         validate_bundle_fn = validate_bundle_fn,
-        hydrate_fn = hydrate_fn
+        hydrate_fn = hydrate_fn,
+        descriptor_contract = descriptor_contract
     )
 }

@@ -9,6 +9,8 @@
 ARTIFACT_WORKFLOW_STATE_SCHEMA <- "multischolar.artifact_workflow_state"
 ARTIFACT_WORKFLOW_STATE_VERSION <- 1L
 ARTIFACT_WORKFLOW_STATE_METADATA_LIMIT <- 1024L * 1024L
+ARTIFACT_DESCRIPTOR_PIN_SCHEMA <- "multischolar.artifact_descriptor_pin"
+ARTIFACT_DESCRIPTOR_PIN_VERSION <- 1L
 
 artifactWorkflowStateAbort <- function(message, class, ...) {
     rlang::abort(
@@ -187,6 +189,105 @@ artifactWorkflowStateEnsureRootManifest <- function(store, identity) {
     }, add = TRUE)
     artifactStorePublishFile(store, temporary_path, relative_path)
     invisible(TRUE)
+}
+
+artifactWorkflowStateDescriptorPinPath <- function(store) {
+    artifactNormalizeRelativePath(file.path(
+        store$relative_paths$workflow_state_root,
+        "artifact-descriptor.json"
+    ))
+}
+
+artifactWorkflowStateValidateDescriptorContract <- function(contract) {
+    required <- c("descriptor_id", "descriptor_version", "descriptor_digest")
+    if (!is.list(contract) || !identical(names(contract), required) ||
+        !all(vapply(contract, workflowCapabilityScalarString, logical(1)))) {
+        artifactWorkflowStateAbort(
+            "artifact WorkflowState descriptor contract is malformed",
+            "multischolar_invalid_artifact_state_descriptor_contract"
+        )
+    }
+    artifactDescriptorSemver(contract$descriptor_version, "descriptor_version")
+    artifactRefValidateDigest(contract$descriptor_digest, "descriptor_digest")
+    contract
+}
+
+artifactWorkflowStateEnsureDescriptorPin <- function(
+    store,
+    identity,
+    contract = NULL,
+    allow_create = FALSE
+) {
+    relative_path <- artifactWorkflowStateDescriptorPinPath(store)
+    path <- artifactStoreResolveFile(store, relative_path)
+    if (is.null(contract)) {
+        if (file.exists(path)) {
+            artifactWorkflowStateAbort(
+                "artifact workflow is descriptor-pinned but no descriptor was supplied",
+                "multischolar_artifact_state_descriptor_required"
+            )
+        }
+        return(invisible(FALSE))
+    }
+    contract <- artifactWorkflowStateValidateDescriptorContract(contract)
+    if (file.exists(path)) {
+        pin <- artifactStoreReadJson(store, relative_path)
+        version <- workflowStateVersionValue(pin$schema_version)
+        valid <- identical(pin$schema, ARTIFACT_DESCRIPTOR_PIN_SCHEMA) &&
+            identical(version, ARTIFACT_DESCRIPTOR_PIN_VERSION) &&
+            identical(pin$project_id, identity$project_id) &&
+            identical(pin$workflow_id, identity$workflow_id) &&
+            identical(pin$contract, contract)
+        if (!isTRUE(valid)) {
+            artifactWorkflowStateAbort(
+                "artifact workflow descriptor pin is incompatible with this session",
+                "multischolar_artifact_state_descriptor_pin_mismatch"
+            )
+        }
+        return(invisible(FALSE))
+    }
+    generations <- artifactStoreResolveFile(
+        store, store$relative_paths$generations
+    )
+    recoverable_root <- !dir.exists(generations) ||
+        length(list.files(generations, all.files = FALSE, no.. = TRUE)) == 0L
+    if (!isTRUE(allow_create) && !isTRUE(recoverable_root)) {
+        artifactWorkflowStateAbort(
+            "existing artifact workflow has no immutable descriptor pin",
+            "multischolar_unpinned_artifact_state_descriptor"
+        )
+    }
+    pin <- list(
+        schema = ARTIFACT_DESCRIPTOR_PIN_SCHEMA,
+        schema_version = ARTIFACT_DESCRIPTOR_PIN_VERSION,
+        project_id = identity$project_id,
+        workflow_id = identity$workflow_id,
+        contract = contract,
+        created_at = artifactRefUtcNow()
+    )
+    temporary_path <- artifactNormalizeRelativePath(paste0(
+        relative_path,
+        ".",
+        artifactOpaqueId("tmp"),
+        ".tmp"
+    ))
+    artifactStoreWriteJson(store, pin, temporary_path)
+    on.exit({
+        temporary <- artifactStoreResolveFile(store, temporary_path)
+        if (file.exists(temporary)) unlink(temporary, force = FALSE)
+    }, add = TRUE)
+    artifactStorePublishFile(store, temporary_path, relative_path)
+    invisible(TRUE)
+}
+
+artifactWorkflowStateEnsureMetadata <- function(store, identity, contract = NULL) {
+    root_created <- artifactWorkflowStateEnsureRootManifest(store, identity)
+    artifactWorkflowStateEnsureDescriptorPin(
+        store,
+        identity,
+        contract = contract,
+        allow_create = root_created
+    )
 }
 
 artifactWorkflowStateManifestDigest <- function(manifest) {

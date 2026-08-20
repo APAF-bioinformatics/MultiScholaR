@@ -22,7 +22,7 @@ ArtifactWorkflowState <- R6::R6Class(
             resource_policy = NULL,
             dehydrate_fn = dehydrateDiaS4Artifact,
             validate_bundle_fn = validateDiaS4Bundle,
-            hydrate_fn = hydrateDiaS4Artifact
+            hydrate_fn = hydrateDiaS4Artifact, descriptor_contract = NULL
         ) {
             context <- artifactWorkflowStateValidateContext(workflow_context)
             if (!is.function(dehydrate_fn) || !is.function(validate_bundle_fn) ||
@@ -38,7 +38,8 @@ ArtifactWorkflowState <- R6::R6Class(
                 context$getPaths(),
                 private$identity$project_id
             )
-            artifactWorkflowStateEnsureRootManifest(private$store, private$identity)
+            artifactWorkflowStateEnsureMetadata(private$store, private$identity,
+                descriptor_contract)
             private$registry <- projectRegistryForContext(
                 context,
                 resource_policy = resource_policy

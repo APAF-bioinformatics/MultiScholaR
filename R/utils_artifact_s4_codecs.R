@@ -9,27 +9,41 @@
 .artifactS4BundleSchema <- "multischolar.s4_bundle"
 .artifactS4BundleSchemaVersion <- 1L
 .artifactDiaCodecVersion <- 1L
+.artifactCodecCatalogueSchema <- "multischolar.artifact_codec_catalogue"
+.artifactCodecCatalogueVersion <- 1L
 
-artifactDiaCodecDescriptor <- function(class_name) {
-    descriptors <- list(
-        PeptideQuantitativeData = list(
-            id = "multischolar.s4.peptide_quantitative_data.diann",
-            version = .artifactDiaCodecVersion
+artifactDiaCodecDeclarations <- function() {
+    list(
+        "multischolar.s4.peptide_quantitative_data.diann" = list(
+            codec_id = "multischolar.s4.peptide_quantitative_data.diann",
+            codec_version = .artifactDiaCodecVersion,
+            class_name = "PeptideQuantitativeData",
+            payload_schema_id = "multischolar.rectangular",
+            payload_schema_version = 1L
         ),
-        ProteinQuantitativeData = list(
-            id = "multischolar.s4.protein_quantitative_data.diann",
-            version = .artifactDiaCodecVersion
+        "multischolar.s4.protein_quantitative_data.diann" = list(
+            codec_id = "multischolar.s4.protein_quantitative_data.diann",
+            codec_version = .artifactDiaCodecVersion,
+            class_name = "ProteinQuantitativeData",
+            payload_schema_id = "multischolar.rectangular",
+            payload_schema_version = 1L
         )
     )
-    descriptor <- descriptors[[class_name]]
-    if (is.null(descriptor)) {
+}
+
+artifactDiaCodecDescriptor <- function(class_name) {
+    declarations <- artifactDiaCodecDeclarations()
+    matches <- Filter(function(value) {
+        identical(value$class_name, class_name)
+    }, declarations)
+    if (length(matches) != 1L) {
         artifactCodecAbort(
             sprintf("S4 class '%s' has no certified DIA artifact codec", class_name),
             "multischolar_missing_exact_s4_codec",
             owner = class_name
         )
     }
-    descriptor
+    list(id = matches[[1L]]$codec_id, version = matches[[1L]]$codec_version)
 }
 
 artifactDiaBundleSemanticInput <- function(metadata) {
@@ -358,18 +372,48 @@ artifactDecodeValueNode <- function(node, payloads, payload_metadata) {
     )
 }
 
-dehydrateDiaS4Artifact <- function(
+artifactExactS4CodecDeclaration <- function(codec) {
+    artifactDescriptorAssertDataOnly(codec, "codec declaration")
+    if (!is.list(codec) || !workflowCapabilityScalarString(codec$codec_id)) {
+        artifactCodecAbort(
+            "exact S4 codec declaration is malformed",
+            "multischolar_invalid_artifact_codec_catalogue"
+        )
+    }
+    codec <- artifactDescriptorValidateCodec(codec, codec$codec_id)
+    supported <- identical(codec$codec_version, 1L) &&
+        identical(codec$payload_schema_id, "multischolar.rectangular") &&
+        identical(codec$payload_schema_version, 1L)
+    if (!isTRUE(supported)) {
+        artifactCodecAbort(
+            "exact S4 codec or payload schema version is unsupported",
+            "multischolar_unsupported_artifact_codec_version"
+        )
+    }
+    codec
+}
+
+dehydrateExactS4Artifact <- function(
     value,
+    codec,
     inline_limit_bytes = .artifactInlineLimitBytes
 ) {
+    codec <- artifactExactS4CodecDeclaration(codec)
     if (!isS4(value) || length(class(value)) != 1L) {
         artifactCodecAbort(
-            "DIA S4 codec requires one supported S4 object",
+            "exact S4 codec requires one supported S4 object",
             "multischolar_missing_exact_s4_codec"
         )
     }
     class_name <- class(value)[[1L]]
-    descriptor <- artifactDiaCodecDescriptor(class_name)
+    if (!identical(class_name, codec$class_name)) {
+        artifactCodecAbort(
+            sprintf("S4 class '%s' does not match its exact artifact codec", class_name),
+            "multischolar_missing_exact_s4_codec",
+            owner = class_name
+        )
+    }
+    descriptor <- list(id = codec$codec_id, version = codec$codec_version)
     slot_names <- methods::slotNames(value)
     state <- new.env(parent = emptyenv())
     state$payloads <- list()
@@ -403,10 +447,11 @@ dehydrateDiaS4Artifact <- function(
     )
 }
 
-validateDiaS4Bundle <- function(bundle) {
+validateExactS4Bundle <- function(bundle, codec) {
+    codec <- artifactExactS4CodecDeclaration(codec)
     if (!is.list(bundle) || !is.list(bundle$metadata) || !is.list(bundle$payloads)) {
         artifactCodecAbort(
-            "DIA S4 artifact bundle is malformed",
+            "exact S4 artifact bundle is malformed",
             "multischolar_invalid_s4_artifact_bundle"
         )
     }
@@ -414,15 +459,15 @@ validateDiaS4Bundle <- function(bundle) {
     if (!identical(metadata$schema, .artifactS4BundleSchema) ||
         !identical(metadata$schema_version, .artifactS4BundleSchemaVersion)) {
         artifactCodecAbort(
-            "DIA S4 artifact bundle schema version is unsupported",
+            "exact S4 artifact bundle schema version is unsupported",
             "multischolar_unsupported_artifact_codec_version"
         )
     }
-    descriptor <- artifactDiaCodecDescriptor(metadata$class_name)
+    descriptor <- list(id = codec$codec_id, version = codec$codec_version)
     if (!identical(metadata$codec, descriptor) ||
-        !identical(metadata$codec$version, .artifactDiaCodecVersion)) {
+        !identical(metadata$class_name, codec$class_name)) {
         artifactCodecAbort(
-            "DIA S4 artifact codec version is unsupported",
+            "exact S4 artifact codec version or class is unsupported",
             "multischolar_unsupported_artifact_codec_version"
         )
     }
@@ -431,7 +476,7 @@ validateDiaS4Bundle <- function(bundle) {
         !identical(names(metadata$slot_values), expected_slots) ||
         !identical(names(metadata$payloads), names(bundle$payloads))) {
         artifactCodecAbort(
-            "DIA S4 artifact bundle shape does not match the class contract",
+            "exact S4 artifact bundle shape does not match the class contract",
             "multischolar_artifact_shape_mismatch"
         )
     }
@@ -440,15 +485,15 @@ validateDiaS4Bundle <- function(bundle) {
     )
     if (!identical(metadata$semantic_digest, expected_digest)) {
         artifactCodecAbort(
-            "DIA S4 artifact semantic lineage digest does not match its metadata",
+            "exact S4 artifact semantic lineage digest does not match its metadata",
             "multischolar_artifact_semantic_digest_mismatch"
         )
     }
     bundle
 }
 
-hydrateDiaS4Artifact <- function(bundle) {
-    bundle <- validateDiaS4Bundle(bundle)
+hydrateExactS4Artifact <- function(bundle, codec) {
+    bundle <- validateExactS4Bundle(bundle, codec)
     metadata <- bundle$metadata
     slot_values <- lapply(metadata$slot_values, artifactDecodeValueNode,
         payloads = bundle$payloads,
@@ -464,7 +509,7 @@ hydrateDiaS4Artifact <- function(bundle) {
     if (!all(exact_slots)) {
         artifactCodecAbort(
             sprintf(
-                "DIA S4 hydration changed slot(s): %s",
+                "exact S4 hydration changed slot(s): %s",
                 paste(metadata$slot_names[!exact_slots], collapse = ", ")
             ),
             "multischolar_inexact_s4_hydration",
@@ -474,12 +519,151 @@ hydrateDiaS4Artifact <- function(bundle) {
     validity <- methods::validObject(object, test = TRUE)
     if (!identical(validity, TRUE)) {
         artifactCodecAbort(
-            sprintf("hydrated DIA S4 object is invalid: %s", paste(validity, collapse = "; ")),
+            sprintf("hydrated S4 object is invalid: %s", paste(validity, collapse = "; ")),
             "multischolar_invalid_hydrated_s4_object",
             owner = metadata$class_name
         )
     }
     object
+}
+
+newArtifactCodecCatalogue <- function(codecs) {
+    if (!is.list(codecs) || length(codecs) == 0L) {
+        artifactCodecAbort(
+            "artifact codec catalogue requires one or more declarations",
+            "multischolar_invalid_artifact_codec_catalogue"
+        )
+    }
+    codecs <- lapply(codecs, artifactExactS4CodecDeclaration)
+    ids <- vapply(codecs, `[[`, character(1), "codec_id")
+    if (anyDuplicated(ids) > 0L) {
+        artifactCodecAbort(
+            "artifact codec catalogue contains duplicate codec IDs",
+            "multischolar_duplicate_artifact_codec"
+        )
+    }
+    catalogue <- new.env(parent = emptyenv())
+    catalogue$schema <- .artifactCodecCatalogueSchema
+    catalogue$schema_version <- .artifactCodecCatalogueVersion
+    catalogue$codecs <- stats::setNames(codecs, ids)
+    class(catalogue) <- c("MultiScholaRArtifactCodecCatalogue", "environment")
+    lockEnvironment(catalogue, bindings = TRUE)
+    catalogue
+}
+
+validateArtifactCodecCatalogue <- function(catalogue) {
+    valid <- inherits(catalogue, "MultiScholaRArtifactCodecCatalogue") &&
+        is.environment(catalogue) && environmentIsLocked(catalogue) &&
+        identical(catalogue$schema, .artifactCodecCatalogueSchema) &&
+        identical(catalogue$schema_version, .artifactCodecCatalogueVersion)
+    if (!isTRUE(valid)) {
+        artifactCodecAbort(
+            "artifact codec catalogue is invalid or mutable",
+            "multischolar_invalid_artifact_codec_catalogue"
+        )
+    }
+    catalogue
+}
+
+artifactCodecForClass <- function(catalogue, codec_ids, class_name) {
+    catalogue <- validateArtifactCodecCatalogue(catalogue)
+    unknown <- setdiff(codec_ids, names(catalogue$codecs))
+    if (length(unknown) > 0L) {
+        artifactCodecAbort(
+            "workflow descriptor references an unavailable exact S4 codec",
+            "multischolar_missing_exact_s4_codec",
+            codec_ids = unknown
+        )
+    }
+    matches <- Filter(function(codec) {
+        identical(codec$class_name, class_name)
+    }, catalogue$codecs[codec_ids])
+    if (length(matches) != 1L) {
+        artifactCodecAbort(
+            sprintf("S4 class '%s' has no unambiguous exact codec", class_name),
+            "multischolar_missing_exact_s4_codec",
+            owner = class_name
+        )
+    }
+    matches[[1L]]
+}
+
+artifactCodecForBundle <- function(catalogue, codec_ids, bundle) {
+    if (!is.list(bundle) || !is.list(bundle$metadata) ||
+        !workflowCapabilityScalarString(bundle$metadata$class_name)) {
+        artifactCodecAbort(
+            "exact S4 bundle cannot be resolved to a codec",
+            "multischolar_invalid_s4_artifact_bundle"
+        )
+    }
+    artifactCodecForClass(catalogue, codec_ids, bundle$metadata$class_name)
+}
+
+artifactCodecAdapter <- function(descriptor, catalogue) {
+    descriptor <- validateArtifactWorkflowDescriptor(descriptor)
+    validateArtifactCodecCatalogue(catalogue)
+    codec_ids <- names(descriptor$codecs)
+    for (codec_id in codec_ids) {
+        declared <- descriptor$codecs[[codec_id]]
+        available <- catalogue$codecs[[codec_id]]
+        if (is.null(available) || !identical(declared, available)) {
+            artifactCodecAbort(
+                "workflow and codec catalogues disagree on an exact codec",
+                "multischolar_incompatible_artifact_codec_catalogue",
+                codec_id = codec_id
+            )
+        }
+    }
+    list(
+        dehydrate = function(value) {
+            codec <- artifactCodecForClass(catalogue, codec_ids, class(value)[[1L]])
+            dehydrateExactS4Artifact(value, codec)
+        },
+        validate = function(bundle) {
+            codec <- artifactCodecForBundle(catalogue, codec_ids, bundle)
+            validateExactS4Bundle(bundle, codec)
+        },
+        hydrate = function(bundle) {
+            codec <- artifactCodecForBundle(catalogue, codec_ids, bundle)
+            hydrateExactS4Artifact(bundle, codec)
+        }
+    )
+}
+
+dehydrateDiaS4Artifact <- function(value, inline_limit_bytes = .artifactInlineLimitBytes) {
+    declarations <- artifactDiaCodecDeclarations()
+    descriptor <- artifactDiaCodecDescriptor(class(value)[[1L]])
+    dehydrateExactS4Artifact(
+        value,
+        declarations[[descriptor$id]],
+        inline_limit_bytes = inline_limit_bytes
+    )
+}
+
+validateDiaS4Bundle <- function(bundle) {
+    if (!is.list(bundle) || !is.list(bundle$metadata) ||
+        !workflowCapabilityScalarString(bundle$metadata$class_name)) {
+        artifactCodecAbort(
+            "DIA S4 artifact bundle is malformed",
+            "multischolar_invalid_s4_artifact_bundle"
+        )
+    }
+    descriptor <- artifactDiaCodecDescriptor(bundle$metadata$class_name)
+    validateExactS4Bundle(bundle, artifactDiaCodecDeclarations()[[descriptor$id]])
+}
+
+hydrateDiaS4Artifact <- function(bundle) {
+    bundle <- validateDiaS4Bundle(bundle)
+    descriptor <- artifactDiaCodecDescriptor(bundle$metadata$class_name)
+    hydrateExactS4Artifact(bundle, artifactDiaCodecDeclarations()[[descriptor$id]])
+}
+
+.ARTIFACT_S4_CODEC_CATALOGUE <- newArtifactCodecCatalogue(
+    artifactDiaCodecDeclarations()
+)
+
+artifactS4CodecCatalogue <- function() {
+    .ARTIFACT_S4_CODEC_CATALOGUE
 }
 
 encodeDiaS4Artifact <- dehydrateDiaS4Artifact
