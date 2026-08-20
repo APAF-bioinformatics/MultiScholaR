@@ -184,7 +184,11 @@ test_that("DIA-NN import dual-write records provenance without owning source pat
     expect_identical(sources$data_level, "peptide")
     expect_setequal(
         parameters$parameter_name,
-        c("column_mapping", "use_precursor_norm", "sanitize_names")
+        c(
+            "column_mapping", "column_mapping_serialized",
+            "readthrough_contract_version", "use_precursor_norm",
+            "sanitize_names"
+        )
     )
     expect_identical(artifacts$state_role, "canonical_data")
     expect_identical(artifacts$status, "committed")

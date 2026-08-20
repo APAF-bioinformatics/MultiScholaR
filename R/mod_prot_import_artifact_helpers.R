@@ -508,6 +508,11 @@ persistProtDiaImportArtifacts <- function(
                 tables = list(canonical_data = workflow_data$data_tbl),
                 parameters = list(
                     column_mapping = data_import_result$column_mapping,
+                    column_mapping_serialized = artifactWorkflowStateSerializeMetadata(
+                        data_import_result$column_mapping,
+                        "DIA-NN import column mapping"
+                    ),
+                    readthrough_contract_version = 1L,
                     use_precursor_norm = isTRUE(use_precursor_norm),
                     sanitize_names = isTRUE(sanitize_names)
                 ),

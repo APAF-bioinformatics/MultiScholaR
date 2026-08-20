@@ -56,6 +56,7 @@
 
 # Set up S4 class definitions for ggplot objects
 setOldClass(c("gg", "ggplot"))
+setOldClass(c("ggplot2::ggplot", "ggplot"))
 
 
 

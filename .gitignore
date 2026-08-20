@@ -68,6 +68,7 @@ data-raw/*.csv
 /renv/
 renv.lock
 /Workbooks/proteomics/
+/manuscript/
 /.refactor-fidelity-audit/
 /.bug-hunter/
 /.goyoke/

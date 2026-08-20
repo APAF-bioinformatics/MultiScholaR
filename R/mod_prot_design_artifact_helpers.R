@@ -187,8 +187,43 @@ protDiaArtifactStateAudit <- function(stage) {
         stage_id = stage$stage_id,
         run_id = stage$run_id,
         action_id = stage$action_id,
+        readthrough_contract_version = stage$readthrough_contract_version,
+        parent_import_run_id = stage$parent_import$run_id,
+        parent_import_generation_id = stage$parent_import$generation_id,
+        parent_import_artifact_id = stage$parent_import$artifact_id,
+        parent_import_semantic_digest = stage$parent_import$semantic_digest,
         stage_artifact_refs = stage$refs
     )
+}
+
+protDiaArtifactImportParent <- function(workflow_data) {
+    result <- workflow_data$artifact_stage_results$import
+    ref <- result$refs$canonical_data
+    valid <- is.list(result) && isTRUE(result$enabled) && isTRUE(result$ok) &&
+        isTRUE(result$committed) && workflowCapabilityScalarString(result$run_id) &&
+        workflowCapabilityScalarString(result$generation_id) && is.list(ref) &&
+        workflowCapabilityScalarString(ref$artifact_id) &&
+        workflowCapabilityScalarString(ref$hash_policy$semantic$digest)
+    if (!isTRUE(valid)) {
+        return(list(
+            run_id = NULL,
+            generation_id = NULL,
+            artifact_id = NULL,
+            semantic_digest = NULL
+        ))
+    }
+    list(
+        run_id = result$run_id,
+        generation_id = result$generation_id,
+        artifact_id = ref$artifact_id,
+        semantic_digest = ref$hash_policy$semantic$digest
+    )
+}
+
+protDiaArtifactContrastsKind <- function(value) {
+    if (is.null(value)) return("null")
+    if (is.character(value)) return("character")
+    "data.frame"
 }
 
 protDiaArtifactMemoryCheckpoint <- function(workflow_data, state_name) {
@@ -210,7 +245,8 @@ protDiaArtifactWriteDesignStage <- function(
     checkpoint,
     failure_injector
 ) {
-    writeProtDiaStageArtifacts(
+    parent_import <- protDiaArtifactImportParent(workflow_data)
+    stage <- writeProtDiaStageArtifacts(
         prepared$context,
         stage_id = "design",
         tables = protDiaDesignArtifactTables(
@@ -220,12 +256,23 @@ protDiaArtifactWriteDesignStage <- function(
         parameters = list(
             state_name = state_name,
             workflow_type = workflowStateType(checkpoint$manager),
+            readthrough_contract_version = 1L,
+            parent_import_run_id = parent_import$run_id,
+            parent_import_generation_id = parent_import$generation_id,
+            parent_import_artifact_id = parent_import$artifact_id,
+            parent_import_semantic_digest = parent_import$semantic_digest,
+            contrasts_kind = protDiaArtifactContrastsKind(
+                workflow_data$contrasts_tbl
+            ),
             annotation_available = !is.null(workflow_data$uniprot_dat_cln),
             sequence_data_available = !is.null(workflow_data$aa_seq_tbl_final)
         ),
         deferred_commit = TRUE,
         failure_injector = failure_injector
     )
+    stage$readthrough_contract_version <- 1L
+    stage$parent_import <- parent_import
+    stage
 }
 
 protDiaArtifactNewDesignStateManager <- function(prepared, manager_factory) {

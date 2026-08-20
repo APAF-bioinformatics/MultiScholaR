@@ -206,23 +206,19 @@ ArtifactWorkflowState <- R6::R6Class(
             private$assertOpen()
             private$validateStateName(state_name)
             lineage <- private$activeLineageRows()
-            matches <- which(vapply(lineage, function(row) {
-                identical(row$logical_name, state_name)
-            }, logical(1)))
-            if (length(matches) == 0L) stop("State not found: ", state_name)
-            target_index <- tail(matches, 1L)
-            target <- lineage[[target_index]]
-            previous <- tail(lineage, 1L)[[1L]]
-            if (!identical(target$generation_id, previous$generation_id)) {
-                private$revertGeneration(
-                    target,
-                    lineage,
-                    target_index,
-                    previous,
-                    artifactOpaqueId("action")
-                )
+            selection <- artifactWorkflowStateSelectGeneration(
+                private$state_rows,
+                lineage,
+                state_name
+            )
+            if (identical(selection$mode, "current")) {
+                return(self$getState(state_name))
             }
-            self$getState(state_name)
+            object <- private$preflightSelection(selection$target)
+            private$activateSelection(selection, artifactOpaqueId("action"))
+            private$hydration_count <- private$hydration_count + 1L
+            private$setCache(selection$target$generation_id, object)
+            object
         },
         getHistory = function() {
             unlist(self$state_history, use.names = FALSE)
@@ -858,60 +854,30 @@ ArtifactWorkflowState <- R6::R6Class(
             )
         },
 
-        revertGeneration = function(target, lineage, target_index, previous, action_id) {
-            timestamp <- artifactRefUtcNow()
-            descendants <- lineage[seq.int(target_index + 1L, length(lineage))]
-            artifactWorkflowStateTransaction(private$session, function() {
-                for (row in rev(descendants)) {
-                    artifactWorkflowStateUpdateStatus(
-                        private$session,
-                        private$identity,
-                        row$generation_id,
-                        row$status,
-                        "stale",
-                        timestamp
-                    )
-                }
-                artifactWorkflowStateUpdateStatus(
-                    private$session,
-                    private$identity,
-                    target$generation_id,
-                    target$status,
-                    "current",
-                    timestamp
-                )
-                private$writeRevision(
-                    action_id,
-                    target$generation_id,
-                    previous$generation_id,
-                    "reverted",
-                    list(
-                        state_name = target$logical_name,
-                        stale_generation_ids = vapply(
-                            descendants,
-                            `[[`,
-                            character(1),
-                            "generation_id"
-                        )
-                    )
-                )
-                private$writeEvent(
-                    "state_reverted",
-                    "accepted",
-                    target$generation_id,
-                    target$logical_name,
-                    previous$logical_name,
-                    list(
-                        stale_generation_ids = vapply(
-                            descendants,
-                            `[[`,
-                            character(1),
-                            "generation_id"
-                        )
-                    ),
-                    timestamp
-                )
-            })
+        preflightSelection = function(target) {
+            artifactWorkflowStatePreflightSelection(list(
+                store = private$store,
+                identity = private$identity,
+                target = target,
+                manifest = private$manifestForRow(target),
+                hydrate_fn = private$hydrate_fn
+            ))
+        },
+
+        activateSelection = function(selection, action_id) {
+            request <- list(
+                session = private$session,
+                identity = private$identity,
+                selection = selection,
+                action_id = action_id,
+                write_revision = private$writeRevision,
+                write_event = private$writeEvent
+            )
+            if (identical(selection$mode, "revert")) {
+                artifactWorkflowStateCommitRevert(request)
+            } else {
+                artifactWorkflowStateCommitResume(request)
+            }
             private$refresh()
             private$notifyLastEvent()
             invisible(TRUE)

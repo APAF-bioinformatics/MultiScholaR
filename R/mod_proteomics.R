@@ -256,9 +256,16 @@ mod_proteomics_server <- function(
         experiment_label = experiment_label,
         storage_policy = storage_policy
     )
+    resume_result <- resumeProtDiaArtifactWorkflowSafely(
+      workflow_data,
+      experiment_paths,
+      experiment_label,
+      storage_policy = storage_policy
+    )
 
     # Load aa_seq_tbl_final from scripts directory if resuming session
-    if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+    if (!isTRUE(resume_result$artifact_project) &&
+        !is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
       aa_seq_file_path <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
       if (file.exists(aa_seq_file_path)) {
         log_info("Loading existing aa_seq_tbl_final from scripts directory for session resumption")
@@ -295,6 +302,7 @@ mod_proteomics_server <- function(
     if (exists("mod_prot_qc_server")) {
       mod_prot_qc_server("quality_control", workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = qc_trigger)
     }
+    if (isTRUE(resume_result$resumed)) qc_trigger(TRUE)
 
     # Create reactive for selected tab to pass to normalization module
     selected_tab <- reactive({
