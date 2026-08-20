@@ -165,10 +165,12 @@ registerProtDesignPreviewOutputs <- function(
     reactiveFn = shiny::reactive,
     outputOptionsFn = shiny::outputOptions,
     renderDT = DT::renderDT,
+    payloadAvailableFn = protDiaWorkflowPayloadAvailable,
     reqFn = shiny::req
 ) {
   output$data_available <- reactiveFn({
-    !is.null(workflowData$data_tbl) && !is.null(workflowData$config_list)
+    payloadAvailableFn(workflowData, "data_tbl") &&
+      !is.null(workflowData$config_list)
   })
   outputOptionsFn(output, "data_available", suspendWhenHidden = FALSE)
 
@@ -196,7 +198,8 @@ registerProtDesignBuilderModule <- function(
     builderServerExists = exists("mod_prot_design_builder_server"),
     builderServerFn = NULL,
     reactiveFn = shiny::reactive,
-    reactiveValFn = shiny::reactiveVal
+    reactiveValFn = shiny::reactiveVal,
+    payloadResolverFn = resolveProtDiaWorkflowTable
 ) {
   if (isTRUE(builderServerExists)) {
     if (is.null(builderServerFn)) {
@@ -205,7 +208,7 @@ registerProtDesignBuilderModule <- function(
 
     return(builderServerFn(
       moduleId,
-      data_tbl = reactiveFn(workflowData$data_tbl),
+      data_tbl = reactiveFn(payloadResolverFn(workflowData, "data_tbl")),
       config_list = reactiveFn(workflowData$config_list),
       column_mapping = reactiveFn(workflowData$column_mapping)
     ))

@@ -331,6 +331,7 @@ Collate:
     'mod_prot_design_artifact_helpers.R'
     'mod_prot_artifact_readthrough_registry.R'
     'mod_prot_artifact_readthrough_helpers.R'
+    'mod_prot_artifact_eviction_helpers.R'
     'mod_prot_design_state_helpers.R'
     'mod_prot_design_import_helpers.R'
     'mod_prot_design_builder_helpers.R'
@@ -422,6 +423,7 @@ Suggests:
     GSEABase,
     KEGGREST,
     limpa,
+    lobstr,
     mixOmics,
     MOFA2,
     processx,

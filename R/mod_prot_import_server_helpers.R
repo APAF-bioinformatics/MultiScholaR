@@ -138,6 +138,7 @@ registerProtImportOutputs <- function(
     buildOrganismDistributionTableFn = buildProtImportOrganismDistributionTable,
     buildStatusUiFn = buildProtImportStatusUi,
     buildDataSummaryUiFn = buildProtImportDataSummaryUi,
+    payloadMarkerFn = protDiaWorkflowPayloadMarker,
     reqFn = shiny::req
 ) {
   output$format_detection <- renderUiFn({
@@ -160,17 +161,19 @@ registerProtImportOutputs <- function(
   })
 
   output$import_status <- renderUiFn({
+    dataMarker <- payloadMarkerFn(workflowData, "data_tbl")
     buildStatusUiFn(
       isProcessing = localData$processing,
-      dataTbl = workflowData$data_tbl,
+      dataTbl = dataMarker,
       dataFormat = workflowData$data_format,
       dataType = workflowData$data_type
     )
   })
 
   output$data_summary <- renderUiFn({
+    dataMarker <- payloadMarkerFn(workflowData, "data_tbl")
     buildDataSummaryUiFn(
-      dataTbl = workflowData$data_tbl,
+      dataTbl = dataMarker,
       setupImportLog = workflowData$processing_log$setup_import
     )
   })

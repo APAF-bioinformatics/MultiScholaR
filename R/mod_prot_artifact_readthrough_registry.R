@@ -99,7 +99,7 @@ createProtDiaResumeContext <- function(
     )
     decision <- context$getStorageDecision()
     enabled <- identical(decision$effective_backend, "artifact") &&
-        identical(decision$effective_rollout, "dual_write") &&
+        decision$effective_rollout %in% .WORKFLOW_ARTIFACT_ROLLOUTS &&
         identical(context$getIdentity()$project_id, probe$manifest$project_id) &&
         protDiaArtifactIdentityMatches(context$getIdentity())
     if (!isTRUE(enabled)) {
@@ -154,7 +154,12 @@ protDiaArtifactReadResources <- function(context, resource_policy = NULL) {
     list(identity = identity, store = store, registry = registry, session = session)
 }
 
-protDiaArtifactReadRegistryRef <- function(resources, row) {
+protDiaArtifactReadRegistryRef <- function(
+    resources,
+    row,
+    payload_validation = c("materialized", "digest", "sidecar")
+) {
+    payload_validation <- match.arg(payload_validation)
     key <- list(
         project_id = resources$identity$project_id,
         omic_type = resources$identity$omic_type,
@@ -171,9 +176,23 @@ protDiaArtifactReadRegistryRef <- function(resources, row) {
     sidecar <- artifactStoreReadSidecar(
         resources$store,
         sidecar_path,
-        validate_payload = TRUE
+        validate_payload = identical(payload_validation, "materialized")
     )
     ref <- artifactStoreNormalizeRef(sidecar$artifact_ref)
+    if (identical(payload_validation, "digest")) {
+        payload_path <- artifactStoreResolveFile(
+            resources$store,
+            ref$relative_path,
+            must_exist = TRUE
+        )
+        actual_shape <- ref$shape
+        actual_shape$bytes <- unname(as.numeric(file.info(payload_path)$size))
+        validateArtifactRefPayload(
+            ref,
+            resources$store$project_root,
+            actual_shape
+        )
+    }
     matches <- identical(ref$artifact_id, row$artifact_id) &&
         identical(ref$logical_key, key) &&
         identical(ref$relative_path, row$relative_path) &&
@@ -199,7 +218,14 @@ protDiaArtifactDataFrameRow <- function(value, index) {
     lapply(row, `[[`, 1L)
 }
 
-protDiaArtifactResolveRun <- function(resources, run, stage_id, required_roles) {
+protDiaArtifactResolveRun <- function(
+    resources,
+    run,
+    stage_id,
+    required_roles,
+    payload_validation = c("materialized", "digest", "sidecar")
+) {
+    payload_validation <- match.arg(payload_validation)
     links <- projectRegistryQuery(
         resources$session,
         "run_artifacts",
@@ -231,7 +257,11 @@ protDiaArtifactResolveRun <- function(resources, run, stage_id, required_roles) 
             identical(row$stage_id, stage_id) &&
             identical(row$state_role, role) && identical(row$status, "committed")
         if (!isTRUE(valid)) return(NULL)
-        protDiaArtifactReadRegistryRef(resources, row)
+        protDiaArtifactReadRegistryRef(
+            resources,
+            row,
+            payload_validation = payload_validation
+        )
     })
     if (any(vapply(refs, is.null, logical(1)))) return(NULL)
     generations <- unique(vapply(
@@ -254,8 +284,10 @@ resolveProtDiaCommittedStage <- function(
     resources,
     stage_id,
     required_roles,
-    run_id = NULL
+    run_id = NULL,
+    payload_validation = c("materialized", "digest", "sidecar")
 ) {
+    payload_validation <- match.arg(payload_validation)
     filters <- list(
         workflow_id = resources$identity$workflow_id,
         status = "completed"
@@ -269,7 +301,8 @@ resolveProtDiaCommittedStage <- function(
                 resources,
                 run,
                 stage_id,
-                required_roles
+                required_roles,
+                payload_validation = payload_validation
             )
             if (!is.null(resolved)) return(resolved)
         }
@@ -343,13 +376,19 @@ protDiaArtifactCurrentStateRow <- function(resources) {
     protDiaArtifactDataFrameRow(rows, 1L)
 }
 
-collectProtDiaResumeEvidence <- function(context, resource_policy = NULL) {
+collectProtDiaResumeEvidence <- function(
+    context,
+    resource_policy = NULL,
+    payload_validation = c("materialized", "digest", "sidecar")
+) {
+    payload_validation <- match.arg(payload_validation)
     resources <- protDiaArtifactReadResources(context, resource_policy)
     on.exit(closeProjectRegistry(resources$session), add = TRUE)
     design <- resolveProtDiaCommittedStage(
         resources,
         "design",
-        .PROT_DIA_DESIGN_ROLES
+        .PROT_DIA_DESIGN_ROLES,
+        payload_validation = payload_validation
     )
     design_parameters <- c(
         "state_name", "workflow_type", "readthrough_contract_version",
@@ -374,7 +413,8 @@ collectProtDiaResumeEvidence <- function(context, resource_policy = NULL) {
         resources,
         "import",
         .PROT_DIA_IMPORT_ROLES,
-        run_id = parent_run_id
+        run_id = parent_run_id,
+        payload_validation = payload_validation
     )
     import$parameters <- protDiaArtifactDecodeParameters(
         resources,

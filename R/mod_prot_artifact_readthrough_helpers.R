@@ -6,7 +6,7 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-protDiaArtifactReadTable <- function(store, ref) {
+protDiaArtifactValidateStoredRef <- function(store, ref) {
     ref <- artifactStoreNormalizeRef(ref)
     sidecar_path <- artifactStoreManagedPaths(
         store,
@@ -16,7 +16,7 @@ protDiaArtifactReadTable <- function(store, ref) {
     sidecar <- artifactStoreReadSidecar(
         store,
         sidecar_path,
-        validate_payload = TRUE
+        validate_payload = FALSE
     )
     if (!identical(artifactStoreNormalizeRef(sidecar$artifact_ref), ref)) {
         protDiaArtifactAbort(
@@ -25,11 +25,58 @@ protDiaArtifactReadTable <- function(store, ref) {
             artifact_id = ref$artifact_id
         )
     }
+    list(ref = ref, sidecar = sidecar)
+}
+
+protDiaArtifactReadTable <- function(store, ref) {
+    validated <- protDiaArtifactValidateStoredRef(store, ref)
+    payload_path <- artifactStoreResolveFile(
+        store,
+        validated$ref$relative_path,
+        must_exist = TRUE
+    )
     payload <- arrow::read_parquet(
-        artifactStoreResolveFile(store, ref$relative_path, must_exist = TRUE),
+        payload_path,
         as_data_frame = FALSE
     )
-    decodeArtifactRectangular(payload, sidecar$codec_metadata)
+    value <- decodeArtifactRectangular(
+        payload,
+        validated$sidecar$codec_metadata
+    )
+    validateArtifactRefPayload(
+        validated$ref,
+        store$project_root,
+        list(
+            kind = validated$sidecar$codec_metadata$kind,
+            rows = nrow(value),
+            columns = ncol(value),
+            payloads = 1L,
+            bytes = unname(as.numeric(file.info(payload_path)$size))
+        )
+    )
+    value
+}
+
+readProtDiaArtifactStageRoles <- function(store, stage, roles) {
+    missing <- setdiff(roles, names(stage$refs))
+    if (length(missing) > 0L) {
+        protDiaArtifactAbort(
+            sprintf(
+                "DIA-NN stage '%s' is missing role(s): %s",
+                stage$stage_id,
+                paste(missing, collapse = ", ")
+            ),
+            "multischolar_incomplete_prot_dia_readthrough_contract",
+            stage_id = stage$stage_id,
+            missing_roles = missing
+        )
+    }
+    values <- lapply(
+        stage$refs[roles],
+        \(ref) protDiaArtifactReadTable(store, ref)
+    )
+    names(values) <- roles
+    values
 }
 
 readProtDiaArtifactStage <- function(store, stage) {
@@ -191,6 +238,24 @@ protDiaArtifactValidateScientificTables <- function(
     invisible(TRUE)
 }
 
+protDiaArtifactValidateSettledScientificTables <- function(
+    state_object,
+    config,
+    design_tables
+) {
+    expected_args <- protDiaArtifactMetadataTable(state_object@args, "args")
+    valid <- identical(design_tables$design_matrix, state_object@design_matrix) &&
+        identical(design_tables$args, expected_args) &&
+        identical(config, state_object@args)
+    if (!isTRUE(valid)) {
+        protDiaArtifactAbort(
+            "DIA-NN settled metadata differs from the current scientific S4 state",
+            "multischolar_inexact_prot_dia_artifact_hydration"
+        )
+    }
+    invisible(TRUE)
+}
+
 protDiaArtifactColumnMapping <- function(parameters) {
     encoded <- parameters$column_mapping_serialized
     mapping <- artifactWorkflowStateUnserializeMetadata(
@@ -216,11 +281,40 @@ newProtDiaArtifactStateManager <- function(context, resource_policy = NULL) {
     )
 }
 
-hydrateProtDiaResumeBundle <- function(context, resource_policy = NULL) {
-    evidence <- collectProtDiaResumeEvidence(context, resource_policy)
+hydrateProtDiaResumeBundle <- function(
+    context,
+    resource_policy = NULL,
+    retain_source_payloads = TRUE
+) {
+    if (!is.logical(retain_source_payloads) ||
+        length(retain_source_payloads) != 1L || is.na(retain_source_payloads)) {
+        protDiaArtifactAbort(
+            "DIA-NN source retention mode must be true or false",
+            "multischolar_invalid_prot_dia_readthrough_mode"
+        )
+    }
+    evidence <- collectProtDiaResumeEvidence(
+        context,
+        resource_policy,
+        payload_validation = if (isTRUE(retain_source_payloads)) {
+            "sidecar"
+        } else {
+            "digest"
+        }
+    )
     protDiaArtifactValidateResumeContract(evidence)
-    import_tables <- readProtDiaArtifactStage(evidence$store, evidence$import)
-    design_tables <- readProtDiaArtifactStage(evidence$store, evidence$design)
+    if (isTRUE(retain_source_payloads)) {
+        import_tables <- readProtDiaArtifactStage(evidence$store, evidence$import)
+        design_tables <- readProtDiaArtifactStage(evidence$store, evidence$design)
+    } else {
+        import_tables <- list(canonical_data = NULL)
+        design_tables <- readProtDiaArtifactStageRoles(
+            evidence$store,
+            evidence$design,
+            c("design_matrix", "contrasts", "args", "annotations", "sequences")
+        )
+        design_tables$cleaned_data <- NULL
+    }
     manager <- newProtDiaArtifactStateManager(context, resource_policy)
     manager_owned <- TRUE
     on.exit({
@@ -229,7 +323,15 @@ hydrateProtDiaResumeBundle <- function(context, resource_policy = NULL) {
     state_object <- manager$getState()
     protDiaArtifactValidateStateEvidence(manager, evidence, state_object)
     config <- manager$getStateConfig()
-    protDiaArtifactValidateScientificTables(state_object, config, design_tables)
+    if (isTRUE(retain_source_payloads)) {
+        protDiaArtifactValidateScientificTables(state_object, config, design_tables)
+    } else {
+        protDiaArtifactValidateSettledScientificTables(
+            state_object,
+            config,
+            design_tables
+        )
+    }
     parameters <- evidence$design$parameters
     bundle <- list(
         context = context,
@@ -254,6 +356,13 @@ hydrateProtDiaResumeBundle <- function(context, resource_policy = NULL) {
             parameters$sequence_data_available,
             "sequences"
         ),
+        source_payloads_retained = retain_source_payloads,
+        annotation_completed = TRUE,
+        readthrough_mode = if (isTRUE(retain_source_payloads)) {
+            "full"
+        } else {
+            "settled"
+        },
         evidence = evidence
     )
     manager_owned <- FALSE
@@ -278,6 +387,7 @@ applyProtDiaResumeBundle <- function(workflow_data, bundle) {
         import = bundle$evidence$import$refs,
         design = bundle$evidence$design$refs
     )
+    readthrough <- recordProtDiaReadthroughProof(workflow_data, bundle)
     status <- workflow_data$tab_status
     status$setup_import <- "complete"
     status$design_matrix <- "complete"
@@ -289,7 +399,7 @@ applyProtDiaResumeBundle <- function(workflow_data, bundle) {
         !identical(previous_manager, bundle$state_manager)) {
         try(previous_manager$close(), silent = TRUE)
     }
-    invisible(workflow_data)
+    invisible(readthrough)
 }
 
 protDiaArtifactLegacyEligibleError <- function(error) {
@@ -316,8 +426,16 @@ resumeProtDiaArtifactWorkflow <- function(
     if (!isTRUE(prepared$enabled)) {
         return(c(prepared, list(ok = TRUE, resumed = FALSE)))
     }
+    retain_source_payloads <- !identical(
+        prepared$context$getStorageDecision()$effective_rollout,
+        "evict"
+    )
     bundle <- tryCatch(
-        hydrateProtDiaResumeBundle(prepared$context, resource_policy),
+        hydrateProtDiaResumeBundle(
+            prepared$context,
+            resource_policy,
+            retain_source_payloads = retain_source_payloads
+        ),
         error = \(error) error
     )
     if (inherits(bundle, "error")) {
@@ -342,7 +460,7 @@ resumeProtDiaArtifactWorkflow <- function(
     on.exit({
         if (!applied) try(bundle$state_manager$close(), silent = TRUE)
     }, add = TRUE)
-    applyProtDiaResumeBundle(workflow_data, bundle)
+    readthrough <- applyProtDiaResumeBundle(workflow_data, bundle)
     applied <- TRUE
     list(
         enabled = TRUE,
@@ -353,7 +471,10 @@ resumeProtDiaArtifactWorkflow <- function(
         import_run_id = bundle$evidence$import$run_id,
         design_run_id = bundle$evidence$design$run_id,
         state_generation_id = bundle$evidence$current_state$generation_id,
-        import_ref = unclass(bundle$evidence$import$refs$canonical_data)
+        import_ref = unclass(bundle$evidence$import$refs$canonical_data),
+        source_payloads_retained = bundle$source_payloads_retained,
+        readthrough_mode = bundle$readthrough_mode,
+        compatibility_checkpoint = readthrough$compatibility_checkpoint
     )
 }
 

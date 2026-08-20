@@ -248,6 +248,19 @@ test_that("table codecs preserve exact R semantics through Parquet", {
     expect_identical(encoded$metadata$writer_settings$partitioning, "none")
 })
 
+test_that("table codecs preserve zero-row automatic row names", {
+    value <- data.frame(
+        artifact_role = character(),
+        availability = character(),
+        stringsAsFactors = FALSE
+    )
+    encoded <- encodeArtifactTable(value)
+    restored <- decodeArtifactRectangular(encoded$payload, encoded$metadata)
+
+    expect_identical(encoded$metadata$row_names$kind, "automatic")
+    expect_identical(restored, value)
+})
+
 test_that("matrix codecs preserve dimensions, dimnames, storage, and non-finite values", {
     value <- matrix(
         c(1, NA_real_, NaN, Inf, -Inf, 6),

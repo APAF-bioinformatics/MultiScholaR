@@ -344,6 +344,13 @@ ArtifactWorkflowState <- R6::R6Class(
             )
         },
 
+        releaseCache = function() {
+            private$assertOpen()
+            released <- !is.null(private$cache_generation_id)
+            private$clearCache()
+            invisible(released)
+        },
+
         getResourceInfo = function() {
             artifactWorkflowStateResourceInfo(
                 private$session,

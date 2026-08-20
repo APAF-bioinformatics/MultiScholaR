@@ -53,7 +53,7 @@ prepareProtDiaArtifactContext <- function(
     }
     decision <- context$getStorageDecision()
     enabled <- identical(decision$effective_backend, "artifact") &&
-        identical(decision$effective_rollout, "dual_write") &&
+        decision$effective_rollout %in% .WORKFLOW_ARTIFACT_ROLLOUTS &&
         protDiaArtifactIdentityMatches(context$getIdentity())
     list(
         enabled = enabled,

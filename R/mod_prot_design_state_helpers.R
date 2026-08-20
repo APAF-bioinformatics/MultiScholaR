@@ -110,7 +110,8 @@ completeProtDesignPostCheckpoint <- function(
     successMessage,
     successNotificationId = NULL,
     debugQcTrigger = FALSE,
-    persistArtifactFn = persistProtDiaDesignArtifacts
+    persistArtifactFn = persistProtDiaDesignArtifacts,
+    settleArtifactFn = settleProtDiaArtifactWorkflowSafely
 ) {
   log_info("Design Matrix complete. Triggering UniProt annotation.")
 
@@ -192,10 +193,29 @@ completeProtDesignPostCheckpoint <- function(
     )
   })
 
-  persistArtifactFn(
+  artifactResult <- persistArtifactFn(
     workflow_data = workflowData,
     state_name = workflowStateCurrentName(workflowData$state_manager)
   )
+  if (isTRUE(artifactResult$committed)) {
+    context <- workflowData$workflow_context
+    experimentLabel <- if (inherits(context, "WorkflowContext")) {
+      context$getStaticIdentity()$omic_label
+    } else {
+      "proteomics"
+    }
+    storagePolicy <- if (inherits(context, "WorkflowContext")) {
+      context$getStoragePolicy()
+    } else {
+      NULL
+    }
+    settleArtifactFn(
+      workflow_data = workflowData,
+      experiment_paths = experimentPaths,
+      experiment_label = experimentLabel,
+      storage_policy = storagePolicy
+    )
+  }
 
   if (debugQcTrigger) {
     message("=== DEBUG66: designMatrixApplet Save Design - About to set qc_trigger ===")

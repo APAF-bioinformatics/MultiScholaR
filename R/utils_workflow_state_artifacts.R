@@ -749,6 +749,19 @@ artifactWorkflowStateEvents <- function(session, workflow_id) {
     })
 }
 
+#' Release the artifact state hydration cache
+#'
+#' @param workflow_state A workflow state manager.
+#' @return `TRUE` when one cached object was released, otherwise `FALSE`.
+#' @noRd
+workflowStateReleaseHydrationCache <- function(workflow_state) {
+    if (!inherits(workflow_state, "ArtifactWorkflowState") ||
+        !is.function(workflow_state$releaseCache)) {
+        return(invisible(FALSE))
+    }
+    workflow_state$releaseCache()
+}
+
 artifactWorkflowStateExportSnapshot <- function(
     identity,
     current_generation_id,

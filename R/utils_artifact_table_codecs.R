@@ -196,8 +196,11 @@ artifactPhysicalSchemaMetadata <- function(fields) {
 
 artifactRowNamesMetadata <- function(value) {
     row_names <- attr(value, "row.names", exact = TRUE)
-    automatic <- length(row_names) == 2L && is.na(row_names[[1L]]) &&
-        is.integer(row_names) && row_names[[2L]] <= 0L
+    automatic <- is.integer(row_names) && (
+        (length(row_names) == 0L && nrow(value) == 0L) ||
+            (length(row_names) == 2L && is.na(row_names[[1L]]) &&
+                row_names[[2L]] <= 0L)
+    )
     list(
         kind = if (automatic) "automatic" else "explicit",
         value = if (automatic) NULL else unname(row_names)

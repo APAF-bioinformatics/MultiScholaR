@@ -262,6 +262,10 @@ mod_proteomics_server <- function(
       experiment_label,
       storage_policy = storage_policy
     )
+    if (isTRUE(resume_result$resumed) &&
+        isTRUE(resume_result$source_payloads_retained)) {
+      evictProtDiaWorkflowPayloadsSafely(workflow_data)
+    }
 
     # Load aa_seq_tbl_final from scripts directory if resuming session
     if (!isTRUE(resume_result$artifact_project) &&
