@@ -13,6 +13,9 @@
 #' @param protein_id_column Name of the protein ID column (default: "Protein.IDs")
 #' @param contrast_names Vector of contrast names for output labeling
 #' @param correction_method Method for FDR correction (default: "gSCS")
+#' @param execution_context Optional artifact provenance execution context.
+#' @param gost_fn Injectable gprofiler2-compatible service function.
+#' @param enricher_fn Injectable clusterProfiler-compatible enrichment function.
 #'
 #' @return S4 EnrichmentResults object containing enrichment data, plots, and summaries
 #'
@@ -27,7 +30,10 @@ processEnrichments <- function(da_results,
                                exclude_iea = FALSE,
                                protein_id_column = "Protein.IDs",
                                contrast_names = NULL,
-                               correction_method = "gSCS") {
+                               correction_method = "gSCS",
+                               execution_context = NULL,
+                               gost_fn = gprofiler2::gost,
+                               enricher_fn = clusterProfiler::enricher) {
 
   message("--- RUNNING processEnrichments VERSION [Timestamp: ", Sys.time(), "] ---")
 
@@ -40,39 +46,19 @@ processEnrichments <- function(da_results,
     stop("exclude_iea must be a logical value (TRUE or FALSE)")
   }
 
-  # Common model organisms lookup
-  supported_organisms <- tibble::tribble(
-    ~taxid,     ~id,            ~name,
-    "9606",     "hsapiens",     "Homo sapiens",
-    "10090",    "mmusculus",    "Mus musculus",
-    "10116",    "rnorvegicus",  "Rattus norvegicus",
-    "7227",     "dmelanogaster", "Drosophila melanogaster",
-    "6239",     "celegans",     "Caenorhabditis elegans",
-    "4932",     "scerevisiae",  "Saccharomyces cerevisiae",
-    "3702",     "athaliana",    "Arabidopsis thaliana",
-    "7955",     "drerio",       "Danio rerio",
-    "9031",     "ggallus",      "Gallus gallus",
-    "9823",     "sscrofa",      "Sus scrofa",
-    "9913",     "btaurus",      "Bos taurus",
-    "9544",     "mmulatta",     "Macaca mulatta",
-    "9598",     "ptroglodytes", "Pan troglodytes"
-  )
-
-  is_supported <- as.character(taxon_id) %in% supported_organisms$taxid
+  organism <- resolveEnrichmentOrganism(taxon_id)
+  is_supported <- organism$supported
 
   if(is_supported) {
     message(sprintf("Taxon ID %s found in supported organisms. Proceeding with gprofiler2 analysis...", taxon_id))
 
-    # Convert taxon_id to species
-    species <- supported_organisms |>
-      dplyr::filter(.data$taxid == as.character(taxon_id)) |>
-      dplyr::pull(.data$id)
+    species <- organism$species
 
     enrichment_results <- createEnrichmentResults(da_results@contrasts)
 
     # Process each contrast
     results <- da_results@da_data |>
-      purrr::map(function(de_data) {
+      purrr::imap(function(de_data, contrast_key) {
         tryCatch({
         if(is.null(de_data)) {
           warning("No DE data found for contrast")
@@ -223,6 +209,30 @@ processEnrichments <- function(da_results,
         message("      Data State (custom_bg): First 5 background proteins:")
         message(paste(head(custom_bg, 5), collapse = ", "))
 
+        run_gprofiler_direction <- function(data_subset, direction) {
+          enrichment_args <- list(
+            data_subset = data_subset,
+            species = species,
+            threshold = q_cutoff,
+            sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC"),
+            domain_scope = "custom",
+            custom_bg = custom_bg,
+            exclude_iea = exclude_iea,
+            protein_id_column = protein_id_column,
+            correction_method = correction_method
+          )
+          if (isProtDiaEnrichExecutionContext(execution_context)) {
+            enrichment_args$execution_context <- execution_context
+            enrichment_args$request_context <- protDiaEnrichGprofilerContext(
+              contrast_key,
+              direction,
+              protein_id_column
+            )
+            enrichment_args$gost_fn <- gost_fn
+          }
+          do.call(perform_enrichment, enrichment_args)
+        }
+
         # Process up and down regulated genes
         list(
           up = tryCatch({
@@ -237,17 +247,7 @@ processEnrichments <- function(da_results,
               message(sprintf("      Using threshold: %s", q_cutoff))
               message(sprintf("      Using exclude_iea: %s", exclude_iea))
               
-              up_result <- perform_enrichment(
-                data_subset = up_matrix,
-                species = species,
-                threshold = q_cutoff,
-                sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC"),
-                domain_scope = "custom",
-                custom_bg = custom_bg,
-                exclude_iea = exclude_iea,
-                protein_id_column = protein_col,
-                correction_method = correction_method
-              )
+              up_result <- run_gprofiler_direction(up_matrix, "up")
               
               # [OK] DEBUG 66: Log result from perform_enrichment
               message("   processEnrichments Step: UP-REGULATED enrichment completed")
@@ -273,6 +273,15 @@ processEnrichments <- function(da_results,
               up_result
             } else {
               message("   processEnrichments Step: SKIPPING UP-REGULATED enrichment (no proteins)")
+              if (isProtDiaEnrichExecutionContext(execution_context)) {
+                protDiaEnrichRecordGprofilerSkip(
+                  execution_context,
+                  protDiaEnrichGprofilerContext(
+                    contrast_key, "up", protein_id_column
+                  ),
+                  custom_bg, species, q_cutoff, correction_method, exclude_iea
+                )
+              }
               NULL
             }
           }, error = function(e) {
@@ -295,17 +304,7 @@ processEnrichments <- function(da_results,
               message(sprintf("      Using threshold: %s", q_cutoff))
               message(sprintf("      Using exclude_iea: %s", exclude_iea))
               
-              down_result <- perform_enrichment(
-                data_subset = down_matrix,
-                species = species,
-                threshold = q_cutoff,
-                sources = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC"),
-                domain_scope = "custom",
-                custom_bg = custom_bg,
-                exclude_iea = exclude_iea,
-                protein_id_column = protein_col,
-                correction_method = correction_method
-              )
+              down_result <- run_gprofiler_direction(down_matrix, "down")
               
               # [OK] DEBUG 66: Log result from perform_enrichment
               message("   processEnrichments Step: DOWN-REGULATED enrichment completed")
@@ -331,6 +330,15 @@ processEnrichments <- function(da_results,
               down_result
             } else {
               message("   processEnrichments Step: SKIPPING DOWN-REGULATED enrichment (no proteins)")
+              if (isProtDiaEnrichExecutionContext(execution_context)) {
+                protDiaEnrichRecordGprofilerSkip(
+                  execution_context,
+                  protDiaEnrichGprofilerContext(
+                    contrast_key, "down", protein_id_column
+                  ),
+                  custom_bg, species, q_cutoff, correction_method, exclude_iea
+                )
+              }
               NULL
             }
           }, error = function(e) {
@@ -479,43 +487,10 @@ processEnrichments <- function(da_results,
 
     message(sprintf("Using custom GO annotations for taxon ID %s", taxon_id))
 
-    # Prepare GO term mappings
-    bp_terms <- go_annotations |>
-      dplyr::filter(!is.na(.data$go_id_go_biological_process)) |>
-      tidyr::separate_rows(.data$go_id_go_biological_process, sep = "; ") |>
-      dplyr::select(.data$Entry, .data$go_id_go_biological_process) |>
-      dplyr::rename(TERM = .data$go_id_go_biological_process)
-
-    mf_terms <- go_annotations |>
-      dplyr::filter(!is.na(.data$go_id_go_molecular_function)) |>
-      tidyr::separate_rows(.data$go_id_go_molecular_function, sep = "; ") |>
-      dplyr::select(.data$Entry, .data$go_id_go_molecular_function) |>
-      dplyr::rename(TERM = .data$go_id_go_molecular_function)
-
-    cc_terms <- go_annotations |>
-      dplyr::filter(!is.na(.data$go_id_go_cellular_compartment)) |>
-      tidyr::separate_rows(.data$go_id_go_cellular_compartment, sep = "; ") |>
-      dplyr::select(.data$Entry, .data$go_id_go_cellular_compartment) |>
-      dplyr::rename(TERM = .data$go_id_go_cellular_compartment)
-
-    # Combine all terms
-    all_terms <- rbind(
-      cbind(bp_terms, ONTOLOGY = "BP"),
-      cbind(mf_terms, ONTOLOGY = "MF"),
-      cbind(cc_terms, ONTOLOGY = "CC")
-    )
-
-    # Create term mappings with explicit dplyr namespace
-    term2gene <- all_terms |>
-      dplyr::select(.data$TERM, .data$Entry) |>
-      dplyr::distinct()
-
-    term2name <- data.frame(
-      TERM = unique(all_terms$TERM),
-      NAME = purrr::map_chr(unique(all_terms$TERM),
-                            ~tryCatch(AnnotationDbi::Term(GO.db::GOTERM[[.x]]),
-                                      error = function(e) .x))
-    )
+    go_mappings <- prepareClusterProfilerGoMappings(go_annotations)
+    all_terms <- go_mappings$all_terms
+    term2gene <- go_mappings$term2gene
+    term2name <- go_mappings$term2name
 
     # Get the internal long names (only used initially if short names aren't provided or needed for mapping)
     internal_contrast_names <- names(da_results@da_data)
@@ -569,18 +544,17 @@ processEnrichments <- function(da_results,
         # Background genes
         background_IDs <- unique(de_data |> dplyr::pull({{protein_id_column}}))
 
+        execute_cluster_request <- function(genes, direction) {
+          protDiaEnrichExecuteClusterRequest(
+            execution_context, genes, background_IDs, short_name, direction,
+            taxon_id, q_cutoff, exclude_iea, protein_id_column, term2gene,
+            term2name, enricher_fn
+          )
+        }
+
         # Perform enrichment for up-regulated genes
         up_enrich <- tryCatch({
-          if(length(up_genes) > 0) {
-            clusterProfiler::enricher(
-              gene = up_genes,
-              universe = background_IDs,
-              TERM2GENE = term2gene,
-              TERM2NAME = term2name,
-              pvalueCutoff = q_cutoff,
-              pAdjustMethod = "BH"
-            )
-          } else NULL
+          execute_cluster_request(up_genes, "up")
         }, error = function(e) {
           warning(sprintf("Error processing up-regulated genes: %s", e$message))
           NULL
@@ -588,16 +562,7 @@ processEnrichments <- function(da_results,
 
         # Perform enrichment for down-regulated genes
         down_enrich <- tryCatch({
-          if(length(down_genes) > 0) {
-            clusterProfiler::enricher(
-              gene = down_genes,
-              universe = background_IDs,
-              TERM2GENE = term2gene,
-              TERM2NAME = term2name,
-              pvalueCutoff = q_cutoff,
-              pAdjustMethod = "BH"
-            )
-          } else NULL
+          execute_cluster_request(down_genes, "down")
         }, error = function(e) {
           warning(sprintf("Error processing down-regulated genes: %s", e$message))
           NULL
@@ -684,63 +649,11 @@ processEnrichments <- function(da_results,
                             paste0(contrast, "_", direction, "_enrichment_results.tsv"))
                 )
 
-                # Generate static plot with q-value threshold line
-                # First identify top significant terms to label
-                top_terms <- plot_data %>%
-                  dplyr::filter(.data$qvalue < q_cutoff) %>%
-                  dplyr::arrange(.data$qvalue) %>%
-                  dplyr::slice_head(n = 5) # Label top 5 most significant terms
-                
-                static <- ggplot2::ggplot(plot_data,
-                                          ggplot2::aes(x = .data$source,
-                                                       y = .data$neg_log10_q,
-                                                       text = paste0(
-                                                         "Term: ", .data$term, "\n",
-                                                         "ID: ", .data$ID, "\n",
-                                                         "Genes: ", .data$Count, "\n",
-                                                         "Gene Ratio: ", .data$GeneRatio, "\n",
-                                                         "Background Ratio: ", .data$BgRatio, "\n",
-                                                         "Q-value: ", signif(.data$qvalue, 3)
-                                                       ))) +
-                  ggplot2::geom_hline(yintercept = -log10(q_cutoff),
-                                      linetype = "dashed",
-                                      color = "darkgrey") +
-                  ggplot2::geom_jitter(ggplot2::aes(size = .data$gene_count,
-                                                    color = -log10(.data$qvalue)),
-                                       alpha = 0.7,
-                                       width = 0.2) +
-                  # Add labels for significant terms
-                  ggrepel::geom_text_repel(
-                    data = top_terms,
-                    ggplot2::aes(label = .data$term),
-                    size = 3,
-                    max.overlaps = 15,
-                    box.padding = 0.5,
-                    point.padding = 0.3,
-                    force = 5
-                  ) +
-                  ggplot2::scale_color_gradient(low = "#FED976",
-                                                high = "#800026",
-                                                name = "-log10(q-value)") +
-                  ggplot2::scale_size_continuous(name = "Gene Count",
-                                                 range = c(3, 12)) +
-                  ggplot2::theme_minimal() +
-                  ggplot2::theme(
-                    axis.text.x = ggplot2::element_text(size = 10, angle = 0),
-                    axis.text.y = ggplot2::element_text(size = 8),
-                    plot.title = ggplot2::element_text(size = 12, face = "bold"),
-                    legend.title = ggplot2::element_text(size = 10),
-                    legend.text = ggplot2::element_text(size = 8)
-                  ) +
-                  ggplot2::labs(
-                    title = paste0(contrast, " ", tools::toTitleCase(direction), "-regulated"),
-                    x = "GO Category",
-                    y = "-log10(q-value)"
-                  )
-
-                list(
-                  static = static,
-                  interactive = plotly::ggplotly(static, tooltip = "text")
+                buildClusterProfilerEnrichmentPlots(
+                  plot_data,
+                  contrast,
+                  direction,
+                  q_cutoff
                 )
             } else {
                 NULL # Return NULL if no results

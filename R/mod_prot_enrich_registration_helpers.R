@@ -312,6 +312,7 @@ registerProtEnrichSelectedTabObserver <- function(selectedTabFn,
                                                   globalEnv = .GlobalEnv,
                                                   updateSelectInputFn = shiny::updateSelectInput,
                                                   showNotificationFn = shiny::showNotification,
+                                                  initialiseArtifactDataFn = initialiseProtDiaEnrichArtifactData,
                                                   catFn = cat) {
   observeEventFn(selectedTabFn(), {
     selectedTab <- selectedTabFn()
@@ -363,6 +364,24 @@ registerProtEnrichSelectedTabObserver <- function(selectedTabFn,
             catFn("   ENRICHMENT TAB Step: Getting S4 object and DE results from workflow_data...\n")
 
             daResultsList <- workflowData$da_analysis_results_list
+            if (protDiaEnrichArtifactEligible(workflowData, "queries") &&
+                isProtDiaDaArtifactIndex(daResultsList)) {
+              artifactState <- initialiseArtifactDataFn(
+                workflowData,
+                enrichmentData
+              )
+              observerState$source <- "artifact_index"
+              observerState$contrastChoices <-
+                artifactState$contrastConfig$contrastChoices
+              updateSelectInputFn(
+                session,
+                "selected_contrast",
+                choices = observerState$contrastChoices
+              )
+              observerState$initialized <- TRUE
+              observerState$reason <- "artifact_initialized"
+              return(observerState)
+            }
             resolvedContext <- resolveCurrentS4ObjectFn(workflowData, daResultsList)
             currentS4 <- resolvedContext$currentS4
             observerState$source <- resolvedContext$source
@@ -482,6 +501,7 @@ registerProtEnrichDaResultsObserver <- function(workflowData,
                                                 getFn = get,
                                                 globalEnv = .GlobalEnv,
                                                 updateSelectInputFn = shiny::updateSelectInput,
+                                                initialiseArtifactDataFn = initialiseProtDiaEnrichArtifactData,
                                                 catFn = cat) {
   observeEventFn(workflowData$da_analysis_results_list, {
     catFn("*** ENRICHMENT: DE results detected - updating contrasts ***\n")
@@ -497,6 +517,24 @@ registerProtEnrichDaResultsObserver <- function(workflowData,
 
     if (!is.null(daResultsList) && length(daResultsList) > 0) {
       observerState$hasResults <- TRUE
+      if (protDiaEnrichArtifactEligible(workflowData, "queries") &&
+          isProtDiaDaArtifactIndex(daResultsList)) {
+        artifactState <- initialiseArtifactDataFn(
+          workflowData,
+          enrichmentData
+        )
+        observerState$currentS4Stored <- !is.null(artifactState$currentS4)
+        observerState$source <- "artifact_index"
+        observerState$contrastChoices <-
+          artifactState$contrastConfig$contrastChoices
+        updateSelectInputFn(
+          session,
+          "selected_contrast",
+          choices = observerState$contrastChoices
+        )
+        observerState$reason <- "artifact_updated"
+        return(observerState)
+      }
       resolvedContext <- resolveCurrentS4ObjectFn(workflowData, daResultsList)
       currentS4 <- resolvedContext$currentS4
       observerState$source <- resolvedContext$source

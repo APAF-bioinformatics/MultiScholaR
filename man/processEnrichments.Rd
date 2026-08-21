@@ -15,7 +15,10 @@ processEnrichments(
   exclude_iea = FALSE,
   protein_id_column = "Protein.IDs",
   contrast_names = NULL,
-  correction_method = "gSCS"
+  correction_method = "gSCS",
+  execution_context = NULL,
+  gost_fn = gprofiler2::gost,
+  enricher_fn = clusterProfiler::enricher
 )
 }
 \arguments{
@@ -40,6 +43,12 @@ processEnrichments(
 \item{contrast_names}{Vector of contrast names for output labeling}
 
 \item{correction_method}{Method for FDR correction (default: "gSCS")}
+
+\item{execution_context}{Optional artifact provenance execution context.}
+
+\item{gost_fn}{Injectable gprofiler2-compatible service function.}
+
+\item{enricher_fn}{Injectable clusterProfiler-compatible enrichment function.}
 }
 \value{
 S4 EnrichmentResults object containing enrichment data, plots, and summaries

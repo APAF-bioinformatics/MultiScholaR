@@ -96,6 +96,28 @@ buildProtEnrichDeterministicClusterProfilerResult <- function(direction = "up") 
   methods::new("ProtEnrichDeterministicResult", result = result)
 }
 
+runProtEnrichDeterministicGost <- function(...) {
+  buildProtEnrichDeterministicGprofilerResult("positive")
+}
+
+runProtEnrichDeterministicEnricher <- function(...) {
+  buildProtEnrichDeterministicClusterProfilerResult("up")
+}
+
+resolveProtEnrichArtifactServiceFns <- function(
+    gostFn = gprofiler2::gost,
+    enricherFn = clusterProfiler::enricher,
+    isTestModeFn = is_test_mode
+) {
+  if (isTRUE(isTestModeFn())) {
+    return(list(
+      gost = runProtEnrichDeterministicGost,
+      enricher = runProtEnrichDeterministicEnricher
+    ))
+  }
+  list(gost = gostFn, enricher = enricherFn)
+}
+
 writeProtEnrichDeterministicResultTable <- function(resultTable,
                                                     pathwayDir,
                                                     contrast,

@@ -244,7 +244,10 @@ renderProtEnrichGprofilerPlot <- function(analysisComplete,
     }
 
     tryCatch({
-      plots <- enrichmentResultsFull@enrichment_plotly[[rawContrast]]
+      plots <- protDiaEnrichInteractivePlots(
+        enrichmentResultsFull,
+        rawContrast
+      )
 
       if (identical(directionFilter, "up") && !is.null(plots$up)) {
         return(plots$up)
@@ -306,7 +309,10 @@ renderProtEnrichClusterProfilerPlot <- function(analysisComplete,
     }
 
     tryCatch({
-      plots <- enrichmentResultsFull@enrichment_plotly[[rawContrast]]
+      plots <- protDiaEnrichInteractivePlots(
+        enrichmentResultsFull,
+        rawContrast
+      )
 
       if (identical(directionFilter, "up") && !is.null(plots$up)) {
         return(plots$up)

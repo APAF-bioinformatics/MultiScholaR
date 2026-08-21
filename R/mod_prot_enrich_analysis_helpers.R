@@ -38,7 +38,10 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
                                                   proteinIdColumn,
                                                   contrastNames,
                                                   correctionMethod,
-                                                  excludeIea = FALSE) {
+                                                  excludeIea = FALSE,
+                                                  executionContext = NULL,
+                                                  gostFn = NULL,
+                                                  enricherFn = NULL) {
   validatedParams <- validateProtEnrichProcessParameters(
     organismTaxid = organismTaxid,
     upCutoff = upCutoff,
@@ -47,6 +50,25 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
     correctionMethod = correctionMethod
   )
   taxonId <- as.numeric(validatedParams$organism_taxid)
+
+  processArgs <- list(
+    da_results = daResultsForEnrichment,
+    taxon_id = taxonId,
+    up_cutoff = validatedParams$up_cutoff,
+    down_cutoff = validatedParams$down_cutoff,
+    q_cutoff = validatedParams$q_cutoff,
+    pathway_dir = pathwayDir,
+    go_annotations = goAnnotations,
+    exclude_iea = excludeIea,
+    protein_id_column = proteinIdColumn,
+    contrast_names = contrastNames,
+    correction_method = validatedParams$correction_method
+  )
+  if (isProtDiaEnrichExecutionContext(executionContext)) {
+    processArgs$execution_context <- executionContext
+    processArgs$gost_fn <- gostFn
+    processArgs$enricher_fn <- enricherFn
+  }
 
   list(
     checkpointArgs = list(
@@ -62,19 +84,7 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
       contrast_names = contrastNames,
       correction_method = validatedParams$correction_method
     ),
-    processArgs = list(
-      da_results = daResultsForEnrichment,
-      taxon_id = taxonId,
-      up_cutoff = validatedParams$up_cutoff,
-      down_cutoff = validatedParams$down_cutoff,
-      q_cutoff = validatedParams$q_cutoff,
-      pathway_dir = pathwayDir,
-      go_annotations = goAnnotations,
-      exclude_iea = excludeIea,
-      protein_id_column = proteinIdColumn,
-      contrast_names = contrastNames,
-      correction_method = validatedParams$correction_method
-    )
+    processArgs = processArgs
   )
 }
 
@@ -84,6 +94,9 @@ prepareProtEnrichProcessExecution <- function(input,
                                               pathwayDir,
                                               goAnnotations,
                                               currentAnalysisMethodFn,
+                                              executionContext = NULL,
+                                              gostFn = NULL,
+                                              enricherFn = NULL,
                                               resolveAnalysisInputColumnsFn = resolveProtEnrichAnalysisInputColumns,
                                               buildProcessEnrichmentsArgsFn = buildProtEnrichProcessEnrichmentsArgs,
                                               catFn = cat) {
@@ -96,7 +109,12 @@ prepareProtEnrichProcessExecution <- function(input,
     currentS4Object = enrichmentData$current_s4_object
   )
 
-  enrichmentArgs <- buildProcessEnrichmentsArgsFn(
+  contrastNames <- if (isProtDiaEnrichExecutionContext(executionContext)) {
+    names(daResultsForEnrichment@da_data)
+  } else {
+    names(enrichmentData$da_results_data)
+  }
+  buildArgs <- list(
     daResultsForEnrichment = daResultsForEnrichment,
     organismTaxid = input$organism_taxid,
     upCutoff = input$up_cutoff,
@@ -105,9 +123,15 @@ prepareProtEnrichProcessExecution <- function(input,
     pathwayDir = pathwayDir,
     goAnnotations = goAnnotations,
     proteinIdColumn = inputColumnConfig$idColumn,
-    contrastNames = names(enrichmentData$da_results_data),
+    contrastNames = contrastNames,
     correctionMethod = input$correction_method
   )
+  if (isProtDiaEnrichExecutionContext(executionContext)) {
+    buildArgs$executionContext <- executionContext
+    buildArgs$gostFn <- gostFn
+    buildArgs$enricherFn <- enricherFn
+  }
+  enrichmentArgs <- do.call(buildProcessEnrichmentsArgsFn, buildArgs)
 
   list(
     methodInfo = methodInfo,
@@ -496,6 +520,10 @@ runProtEnrichAnalysisBody <- function(input,
                                       experimentPaths,
                                       currentAnalysisMethodFn,
                                       prepareAnalysisSetupFn = prepareProtEnrichAnalysisBodySetup,
+                                      prepareArtifactAnalysisSetupFn = prepareProtDiaEnrichArtifactAnalysisSetup,
+                                      createArtifactExecutionFn = newProtDiaEnrichExecutionContext,
+                                      resolveArtifactServiceFnsFn = resolveProtEnrichArtifactServiceFns,
+                                      finalizeArtifactResultsFn = finalizeProtDiaEnrichArtifactResults,
                                       captureCheckpointFn = .capture_checkpoint,
                                       resolveSelectedDaResultsFn = resolveProtEnrichSelectedDaResults,
                                       resolveRunDependenciesFn = resolveProtEnrichRunDependencies,
@@ -536,7 +564,13 @@ runProtEnrichAnalysisBody <- function(input,
 
   catFn("   ENRICHMENT Step: Creating DA results S4 object using createDAResultsForEnrichment\n")
 
-  setupConfig <- prepareAnalysisSetupFn(
+  artifactEnabled <- protDiaEnrichArtifactEligible(workflowData)
+  selectedSetupFn <- if (artifactEnabled) {
+    prepareArtifactAnalysisSetupFn
+  } else {
+    prepareAnalysisSetupFn
+  }
+  setupConfig <- selectedSetupFn(
     selectedContrast = selectedContrast,
     input = input,
     enrichmentData = enrichmentData,
@@ -566,7 +600,14 @@ runProtEnrichAnalysisBody <- function(input,
 
   catFn("   ENRICHMENT Step: Running processEnrichments\n")
 
-  processExecutionConfig <- prepareProcessExecutionFn(
+  executionContext <- NULL
+  serviceFns <- list(gost = NULL, enricher = NULL)
+  if (isTRUE(setupConfig$artifact)) {
+    executionContext <- createArtifactExecutionFn(workflowData)
+    serviceFns <- resolveArtifactServiceFnsFn()
+  }
+
+  processPreparationArgs <- list(
     input = input,
     enrichmentData = enrichmentData,
     daResultsForEnrichment = daResultsForEnrichment,
@@ -577,11 +618,22 @@ runProtEnrichAnalysisBody <- function(input,
     buildProcessEnrichmentsArgsFn = buildProcessEnrichmentsArgsFn,
     catFn = catFn
   )
+  if (isTRUE(setupConfig$artifact)) {
+    processPreparationArgs$executionContext <- executionContext
+    processPreparationArgs$gostFn <- serviceFns$gost
+    processPreparationArgs$enricherFn <- serviceFns$enricher
+  }
+  processExecutionConfig <- do.call(
+    prepareProcessExecutionFn,
+    processPreparationArgs
+  )
   methodInfo <- processExecutionConfig$methodInfo
   enrichmentArgs <- processExecutionConfig$enrichmentArgs
-  selectedProcessEnrichmentsFn <- resolveProcessEnrichmentsFn(
-    processEnrichmentsFn = processEnrichmentsFn
-  )
+  selectedProcessEnrichmentsFn <- if (isTRUE(setupConfig$artifact)) {
+    processEnrichmentsFn
+  } else {
+    resolveProcessEnrichmentsFn(processEnrichmentsFn = processEnrichmentsFn)
+  }
 
   enrichmentResults <- executeProcessEnrichmentsFn(
     enrichmentArgs = enrichmentArgs,
@@ -592,6 +644,27 @@ runProtEnrichAnalysisBody <- function(input,
     processEnrichmentsFn = selectedProcessEnrichmentsFn,
     catFn = catFn
   )
+
+  if (isTRUE(setupConfig$artifact)) {
+    return(finalizeArtifactResultsFn(
+      selectedContrast = selectedContrast,
+      setupConfig = setupConfig,
+      enrichmentResults = enrichmentResults,
+      enrichmentData = enrichmentData,
+      workflowData = workflowData,
+      input = input,
+      methodInfo = methodInfo,
+      executionContext = executionContext,
+      capturePostProcessResultsFn = capturePostProcessResultsFn,
+      buildAllContrastResultsFn = buildAllContrastResultsFn,
+      resolveSelectedContrastResultsFn = resolveSelectedContrastResultsFn,
+      propagateUiParamsFn = propagateUiParamsFn,
+      updateStateManagerUiParamsFn = updateStateManagerUiParamsFn,
+      completeTabStatusFn = completeTabStatusFn,
+      completeProgressFn = completeProgressFn,
+      catFn = catFn
+    ))
+  }
 
   finalizeAnalysisResultsFn(
     selectedContrast = selectedContrast,

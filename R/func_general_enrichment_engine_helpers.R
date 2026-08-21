@@ -1,11 +1,79 @@
 # Enrichment constructor functions removed - migrated to R/func_general_s4_objects.R
 # ----------------------------------------------------------------------------
 
+resolveEnrichmentOrganism <- function(taxon_id) {
+  supported <- tibble::tribble(
+    ~taxid, ~id, ~name,
+    "9606", "hsapiens", "Homo sapiens",
+    "10090", "mmusculus", "Mus musculus",
+    "10116", "rnorvegicus", "Rattus norvegicus",
+    "7227", "dmelanogaster", "Drosophila melanogaster",
+    "6239", "celegans", "Caenorhabditis elegans",
+    "4932", "scerevisiae", "Saccharomyces cerevisiae",
+    "3702", "athaliana", "Arabidopsis thaliana",
+    "7955", "drerio", "Danio rerio",
+    "9031", "ggallus", "Gallus gallus",
+    "9823", "sscrofa", "Sus scrofa",
+    "9913", "btaurus", "Bos taurus",
+    "9544", "mmulatta", "Macaca mulatta",
+    "9598", "ptroglodytes", "Pan troglodytes"
+  )
+  match <- supported |> dplyr::filter(.data$taxid == as.character(taxon_id))
+  list(
+    supported = nrow(match) == 1L,
+    species = if (nrow(match) == 1L) match$id[[1L]] else NULL
+  )
+}
+
+prepareClusterProfilerGoMappings <- function(go_annotations) {
+  term_table <- function(id_column, ontology) {
+    go_annotations |>
+      dplyr::filter(!is.na(.data[[id_column]])) |>
+      tidyr::separate_rows(dplyr::all_of(id_column), sep = "; ") |>
+      dplyr::select(.data$Entry, dplyr::all_of(id_column)) |>
+      dplyr::rename(TERM = dplyr::all_of(id_column)) |>
+      dplyr::mutate(ONTOLOGY = ontology)
+  }
+  all_terms <- rbind(
+    term_table("go_id_go_biological_process", "BP"),
+    term_table("go_id_go_molecular_function", "MF"),
+    term_table("go_id_go_cellular_compartment", "CC")
+  )
+  term2gene <- all_terms |>
+    dplyr::select(.data$TERM, .data$Entry) |>
+    dplyr::distinct()
+  term2name <- data.frame(
+    TERM = unique(all_terms$TERM),
+    NAME = purrr::map_chr(unique(all_terms$TERM), function(term) {
+      tryCatch(AnnotationDbi::Term(GO.db::GOTERM[[term]]), error = function(e) term)
+    })
+  )
+  list(all_terms = all_terms, term2gene = term2gene, term2name = term2name)
+}
+
 
 
 # ----------------------------------------------------------------------------
 # perform_enrichment
 # ----------------------------------------------------------------------------
+#' Run gprofiler2 Enrichment for One Direction
+#'
+#' @param data_subset Differential-abundance rows selected for one direction.
+#' @param species gprofiler2 organism identifier.
+#' @param threshold Adjusted significance threshold sent to gprofiler2.
+#' @param sources Annotation sources sent to gprofiler2.
+#' @param domain_scope gprofiler2 background-domain mode.
+#' @param custom_bg Identifier background sent to gprofiler2.
+#' @param exclude_iea Whether to exclude electronically inferred annotations.
+#' @param max_retries Maximum number of service attempts.
+#' @param wait_time Seconds between service attempts.
+#' @param protein_id_column Identifier column in `data_subset`.
+#' @param correction_method Multiple-testing correction method.
+#' @param execution_context Optional artifact provenance execution context.
+#' @param request_context Optional contrast, direction, and mapping provenance.
+#' @param gost_fn Injectable gprofiler2-compatible service function.
+#'
+#' @return A gprofiler2 response list, or `NULL` for no result in memory mode.
 #' @export
 perform_enrichment <- function(data_subset,
                                species,
@@ -17,7 +85,10 @@ perform_enrichment <- function(data_subset,
                                max_retries = 5,
                                wait_time = 5,
                                protein_id_column,
-                               correction_method = "gSCS") {
+                               correction_method = "gSCS",
+                               execution_context = NULL,
+                               request_context = list(),
+                               gost_fn = gprofiler2::gost) {
   
   message("--- Entering perform_enrichment ---")
   message(sprintf("   perform_enrichment Arg: species = %s", species))
@@ -36,6 +107,29 @@ perform_enrichment <- function(data_subset,
   print(head(data_subset))
   
   if (nrow(data_subset) == 0) {
+    if (isProtDiaEnrichExecutionContext(execution_context)) {
+      request <- protDiaEnrichCanonicalRequest(
+        backend = "gprofiler2",
+        contrast = request_context$contrast,
+        direction = request_context$direction,
+        identifiers = character(),
+        background = custom_bg,
+        parameters = list(
+          organism = species,
+          ordered_query = FALSE,
+          sources = as.list(sources),
+          user_threshold = as.double(threshold),
+          correction_method = correction_method,
+          exclude_iea = isTRUE(exclude_iea),
+          evcodes = TRUE,
+          domain_scope = domain_scope,
+          significant = TRUE,
+          highlight = TRUE
+        ),
+        mapping = request_context$mapping
+      )
+      protDiaEnrichRecordSkippedRequest(execution_context, request)
+    }
     message("   perform_enrichment Step: Data subset is empty, returning NULL")
     message("--- Exiting perform_enrichment. Returning: NULL ---")
     return(NULL)
@@ -109,6 +203,55 @@ perform_enrichment <- function(data_subset,
 
   custom_bg <- unique(custom_bg)
 
+  if (isProtDiaEnrichExecutionContext(execution_context)) {
+    request <- protDiaEnrichCanonicalRequest(
+      backend = "gprofiler2",
+      contrast = request_context$contrast,
+      direction = request_context$direction,
+      identifiers = protein_ids,
+      background = custom_bg,
+      parameters = list(
+        organism = species,
+        ordered_query = FALSE,
+        sources = as.list(sources),
+        user_threshold = as.double(threshold),
+        correction_method = correction_method,
+        exclude_iea = isTRUE(exclude_iea),
+        evcodes = TRUE,
+        domain_scope = domain_scope,
+        significant = TRUE,
+        highlight = TRUE
+      ),
+      mapping = request_context$mapping
+    )
+    if (length(protein_ids) == 0L) {
+      protDiaEnrichRecordSkippedRequest(execution_context, request)
+      return(NULL)
+    }
+    return(protDiaEnrichExecuteRequest(
+      execution_context,
+      request,
+      call = function() {
+        gost_fn(
+          query = request$identifiers,
+          organism = species,
+          ordered_query = FALSE,
+          sources = sources,
+          user_threshold = threshold,
+          correction_method = correction_method,
+          exclude_iea = exclude_iea,
+          evcodes = TRUE,
+          domain_scope = domain_scope,
+          custom_bg = request$background,
+          significant = TRUE,
+          highlight = TRUE
+        )
+      },
+      max_retries = max_retries,
+      wait_time = wait_time
+    ))
+  }
+
   result <- NULL
   attempt <- 1
 
@@ -127,7 +270,7 @@ perform_enrichment <- function(data_subset,
       message(sprintf("      gost custom_bg: %d background IDs", length(custom_bg)))
       message(sprintf("      gost exclude_iea: %s", exclude_iea))
       
-      result <- gprofiler2::gost(
+      result <- gost_fn(
         query = protein_ids,
         organism = species,
         ordered_query = FALSE,
@@ -194,11 +337,11 @@ perform_enrichment <- function(data_subset,
 # ----------------------------------------------------------------------------
 # generate_enrichment_plots
 # ----------------------------------------------------------------------------
-# Plot generation function
-#' @export
-generate_enrichment_plots <- function(enrichment_result, contrast, direction, pathway_dir) {
-  # Defensive check for empty or NULL results
-  if (is.null(enrichment_result) || is.null(enrichment_result$result) || nrow(enrichment_result$result) == 0) {
+buildGprofilerEnrichmentPlots <- function(enrichment_result, contrast, direction) {
+  empty <- is.null(enrichment_result) ||
+    is.null(enrichment_result$result) ||
+    nrow(enrichment_result$result) == 0L
+  if (empty) {
     return(list(static = NULL, interactive = NULL))
   }
 
@@ -206,41 +349,59 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
   significance_threshold <- enrichment_result$meta$query_metadata$user_threshold
 
   # Prepare data for plotting
-  plot_data <- enrichment_result$result %>%
+  plot_data <- enrichment_result$result |>
     dplyr::mutate(
-      neg_log10_p = -log10(p_value),
+      neg_log10_p = -log10(.data$p_value),
       # Ensure 'source' is a factor with a consistent level order for plotting
-      source = factor(source, levels = c("GO:BP", "GO:CC", "GO:MF", "KEGG", "REAC"))
-    ) %>%
+      source = factor(
+        .data$source,
+        levels = c("GO:BP", "GO:CC", "GO:MF", "KEGG", "REAC")
+      )
+    ) |>
     # Drop any levels that are not actually present in the data to avoid empty spaces on the plot
-    dplyr::mutate(source = forcats::fct_drop(source))
+    dplyr::mutate(source = forcats::fct_drop(.data$source))
 
   # Identify the top significant terms to add labels for
-  top_terms <- plot_data %>%
-    dplyr::group_by(source) %>%
-    dplyr::arrange(p_value) %>%
-    dplyr::slice_head(n = 3) %>%
+  top_terms <- plot_data |>
+    dplyr::group_by(.data$source) |>
+    dplyr::arrange(.data$p_value) |>
+    dplyr::slice_head(n = 3) |>
     dplyr::ungroup()
 
   # Create the static ggplot object
-  static_plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = source, y = neg_log10_p, text = paste0(
-    "Term: ", term_name, "\n",
-    "ID: ", term_id, "\n",
-    "P-value: ", signif(p_value, 3), "\n",
-    "Genes: ", intersection_size
-  ))) +
+  static_plot <- ggplot2::ggplot(
+    plot_data,
+    ggplot2::aes(
+      x = .data$source,
+      y = .data$neg_log10_p,
+      text = paste0(
+        "Term: ", .data$term_name, "\n",
+        "ID: ", .data$term_id, "\n",
+        "P-value: ", signif(.data$p_value, 3), "\n",
+        "Genes: ", .data$intersection_size
+      )
+    )
+  ) +
     # Add a line for the significance threshold
-    ggplot2::geom_hline(yintercept = -log10(significance_threshold), linetype = "dashed", color = "red") +
-    ggplot2::geom_jitter(ggplot2::aes(color = source, size = term_size), alpha = 0.7, width = 0.2) +
+    ggplot2::geom_hline(
+      yintercept = -log10(significance_threshold),
+      linetype = "dashed",
+      color = "red"
+    ) +
+    ggplot2::geom_jitter(
+      ggplot2::aes(color = .data$source, size = .data$term_size),
+      alpha = 0.7,
+      width = 0.2
+    ) +
     ggrepel::geom_text_repel(
       data = top_terms,
-      ggplot2::aes(label = term_name),
+      ggplot2::aes(label = .data$term_name),
       size = 3, max.overlaps = 15, box.padding = 0.5, point.padding = 0.3, force = 5
     ) +
     ggplot2::scale_color_manual(
-      values = c(`GO:BP` = "#ff9900", `GO:CC` = "#109618", `GO:MF` = "#dc3912", 
+      values = c(`GO:BP` = "#ff9900", `GO:CC` = "#109618", `GO:MF` = "#dc3912",
                  KEGG = "#dd4477", REAC = "#3366cc"),
-      name = "Source", drop = FALSE 
+      name = "Source", drop = FALSE
     ) +
     ggplot2::scale_size_continuous(name = "Term Size", range = c(3, 10)) +
     ggplot2::theme_minimal() +
@@ -257,12 +418,37 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
     ggplot2::guides(color = "none")
 
   # Convert to an interactive plotly object
-  interactive_plot <- tryCatch({
-      plotly::ggplotly(static_plot, tooltip = "text")
-  }, error = function(e) {
-      warning(paste("Failed to convert ggplot to plotly for", contrast, direction, ":", e$message))
+  interactive_plot <- tryCatch(
+    plotly::ggplotly(static_plot, tooltip = "text"),
+    error = function(error) {
+      warning(paste(
+        "Failed to convert ggplot to plotly for",
+        contrast,
+        direction,
+        ":",
+        conditionMessage(error)
+      ))
       return(NULL)
-  })
+    }
+  )
+
+  list(
+    static = static_plot,
+    interactive = interactive_plot
+  )
+}
+
+# Plot generation function
+#' @export
+generate_enrichment_plots <- function(enrichment_result, contrast, direction, pathway_dir) {
+  plots <- buildGprofilerEnrichmentPlots(
+    enrichment_result,
+    contrast,
+    direction
+  )
+  if (is.null(plots$static)) {
+    return(plots)
+  }
 
   # Save the results data table
   tryCatch({
@@ -272,13 +458,98 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
       file = file.path(pathway_dir, paste0(contrast, "_", direction, "_enrichment_results.tsv"))
     )
   }, error = function(e) {
-    warning(paste("Failed to write enrichment results table for", contrast, direction, ":", e$message))
+    warning(paste(
+      "Failed to write enrichment results table for",
+      contrast,
+      direction,
+      ":",
+      e$message
+    ))
   })
-  
-  return(list(
+
+  plots
+}
+
+buildClusterProfilerEnrichmentPlots <- function(plot_data,
+                                                contrast,
+                                                direction,
+                                                q_cutoff) {
+  if (is.null(plot_data) || nrow(plot_data) == 0L) {
+    return(list(static = NULL, interactive = NULL))
+  }
+  plot_data$source <- factor(
+    plot_data$source,
+    levels = c("GO:BP", "GO:CC", "GO:MF", "Other")
+  )
+  top_terms <- plot_data |>
+    dplyr::filter(.data$qvalue < q_cutoff) |>
+    dplyr::arrange(.data$qvalue) |>
+    dplyr::slice_head(n = 5)
+  static_plot <- ggplot2::ggplot(
+    plot_data,
+    ggplot2::aes(
+      x = .data$source,
+      y = .data$neg_log10_q,
+      text = paste0(
+        "Term: ", .data$term, "\n",
+        "ID: ", .data$ID, "\n",
+        "Genes: ", .data$Count, "\n",
+        "Gene Ratio: ", .data$GeneRatio, "\n",
+        "Background Ratio: ", .data$BgRatio, "\n",
+        "Q-value: ", signif(.data$qvalue, 3)
+      )
+    )
+  ) +
+    ggplot2::geom_hline(
+      yintercept = -log10(q_cutoff),
+      linetype = "dashed",
+      color = "darkgrey"
+    ) +
+    ggplot2::geom_jitter(
+      ggplot2::aes(
+        size = .data$gene_count,
+        color = -log10(.data$qvalue)
+      ),
+      alpha = 0.7,
+      width = 0.2
+    ) +
+    ggrepel::geom_text_repel(
+      data = top_terms,
+      ggplot2::aes(label = .data$term),
+      size = 3,
+      max.overlaps = 15,
+      box.padding = 0.5,
+      point.padding = 0.3,
+      force = 5
+    ) +
+    ggplot2::scale_color_gradient(
+      low = "#FED976",
+      high = "#800026",
+      name = "-log10(q-value)"
+    ) +
+    ggplot2::scale_size_continuous(name = "Gene Count", range = c(3, 12)) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(size = 10, angle = 0),
+      axis.text.y = ggplot2::element_text(size = 8),
+      plot.title = ggplot2::element_text(size = 12, face = "bold"),
+      legend.title = ggplot2::element_text(size = 10),
+      legend.text = ggplot2::element_text(size = 8)
+    ) +
+    ggplot2::labs(
+      title = paste0(
+        contrast,
+        " ",
+        tools::toTitleCase(direction),
+        "-regulated"
+      ),
+      x = "GO Category",
+      y = "-log10(q-value)"
+    )
+  list(
     static = static_plot,
-    interactive = interactive_plot
-  ))
+    interactive = plotly::ggplotly(static_plot, tooltip = "text")
+  )
 }
 
 
@@ -313,4 +584,3 @@ summarize_enrichment <- function(enrichment_result) {
 
 
 # ----------------------------------------------------------------------------
-
