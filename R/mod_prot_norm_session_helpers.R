@@ -75,7 +75,11 @@ collectProtNormExportSessionData <- function(
     r6_complete_states = r6_complete_states,
     r6_state_history = r6_state_history,
     current_s4_object = current_s4_object,
-    correlation_filtered_s4 = normData$correlation_filtered_obj,
+    correlation_filtered_s4 = if (is.null(normData$correlation_filtered_obj)) {
+      current_s4_object
+    } else {
+      normData$correlation_filtered_obj
+    },
     contrasts_tbl = workflowData$contrasts_tbl,
     design_matrix = workflowData$design_matrix,
     config_list = workflowData$config_list,
@@ -367,7 +371,8 @@ revertProtNormStateManagerToPreNormalization <- function(
     "raw_data_s4",
     "protein_s4_initial"
   ),
-  messageFn = message
+  messageFn = message,
+  revertStateFn = revertProtDiaNormState
 ) {
   previous_state <- NULL
   reverted_s4 <- NULL
@@ -380,7 +385,7 @@ revertProtNormStateManagerToPreNormalization <- function(
     )
 
     if (!is.null(previous_state)) {
-      reverted_s4 <- workflowData$state_manager$revertToState(previous_state)
+      reverted_s4 <- revertStateFn(workflowData, previous_state)
       messageFn(sprintf(
         "*** RESET: Reverted R6 state manager to '%s' (actual previous state) ***",
         previous_state
@@ -405,6 +410,7 @@ resetProtNormReactiveState <- function(
   normData$normalized_protein_obj <- NULL
   normData$ruv_normalized_obj <- NULL
   normData$correlation_filtered_obj <- NULL
+  normData$state_refs <- list()
   normData$best_k <- NULL
   normData$control_genes_index <- NULL
   normData$correlation_vector <- NULL
@@ -433,6 +439,8 @@ resetProtNormReactiveState <- function(
   )
 
   workflowData$ruv_normalised_for_da_analysis_obj <- NULL
+  workflowData$normalization_state_refs <- list()
+  workflowData$final_for_da_ref <- NULL
   updated_status <- workflowData$tab_status
   updated_status$normalization <- "pending"
   updated_status$differential_expression <- "disabled"

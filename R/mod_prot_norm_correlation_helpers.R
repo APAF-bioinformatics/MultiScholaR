@@ -124,15 +124,15 @@ updateProtNormFinalQcPlot <- function(
 finalizeProtNormCorrelationWorkflowState <- function(
   finalS4ForDe,
   workflowData,
+  normData = NULL,
   correlationThreshold = NULL,
   skipped = FALSE,
+  saveStateFn = saveProtNormState,
   timeFn = Sys.time,
   messagePrefix = "*** CORRELATION",
   messageFn = message,
   catFn = cat
 ) {
-  workflowData$ruv_normalised_for_da_analysis_obj <- finalS4ForDe
-
   config_object <- if (skipped) {
     list(min_pearson_correlation_threshold = 0, skipped = TRUE)
   } else {
@@ -145,12 +145,83 @@ finalizeProtNormCorrelationWorkflowState <- function(
     "Applied final sample correlation filter (chunk 28)"
   }
 
-  workflowData$state_manager$saveState(
-    state_name = "correlation_filtered",
-    s4_data_object = finalS4ForDe,
-    config_object = config_object,
-    description = description
-  )
+  if (methods::is(finalS4ForDe, "ProteinQuantitativeData")) {
+    parent <- workflowData$state_manager$getState()
+    correlation_args <- protDiaNormArgs(
+      finalS4ForDe
+    )$filterSamplesByProteinCorrelationThreshold
+    correlation_values <- correlation_args$pearson_correlation_per_pair
+    parameters <- list(
+      ruv_mode = workflowData$normalization_context$ruv_mode,
+      ruv_grouping_variable = workflowData$normalization_context$ruv_grouping_variable,
+      correlation_skipped = skipped,
+      min_pearson_correlation_threshold = if (skipped) 0 else correlationThreshold,
+      correlation_values = if (is.null(correlation_values)) {
+        NULL
+      } else {
+        list(
+          owner = paste0(
+            "ProteinQuantitativeData@args$",
+            "filterSamplesByProteinCorrelationThreshold$",
+            "pearson_correlation_per_pair"
+          ),
+          storage = "s4_args_named_payload",
+          rows = as.integer(nrow(correlation_values)),
+          columns = as.integer(ncol(correlation_values)),
+          digest = .peptideQcDigest(correlation_values)
+        )
+      },
+      output_files = if (isTRUE(
+        workflowData$ruv_optimization_result$ruv_skipped
+      )) {
+        c(
+          "normalised_results_cln_with_replicates.tsv",
+          "normalised_results_cln_with_replicates.RDS"
+        )
+      } else {
+        c(
+          "ruv_normalised_results_cln_with_replicates.tsv",
+          "ruv_normalised_results_cln_with_replicates.RDS"
+        )
+      }
+    )
+    finalS4ForDe <- saveStateFn(
+      workflow_data = workflowData,
+      state_manager = workflowData$state_manager,
+      before = parent,
+      after = finalS4ForDe,
+      stage_id = "correlation_filter",
+      state_name = "correlation_filtered",
+      config_object = config_object,
+      description = description,
+      parameters = parameters,
+      status = if (skipped) "skipped" else "applied",
+      transformation_type = if (skipped) "pass_through" else "sample_filter"
+    )
+    if (!is.null(normData)) {
+      settleProtNormArtifactState(
+        workflowData,
+        normData,
+        "correlation_filter",
+        "correlation_filtered",
+        finalS4ForDe
+      )
+    }
+  } else {
+    workflowData$state_manager$saveState(
+      state_name = "correlation_filtered",
+      s4_data_object = finalS4ForDe,
+      config_object = config_object,
+      description = description
+    )
+  }
+
+  if (is.null(workflowData$final_for_da_ref)) {
+    workflowData$ruv_normalised_for_da_analysis_obj <- finalS4ForDe
+  }
+  if (!is.null(normData) && is.null(normData$state_refs$correlation_filter)) {
+    normData$correlation_filtered_obj <- finalS4ForDe
+  }
 
   trigger_label <- if (skipped) {
     "--- Entering STATE UPDATE TRIGGER setting (SKIP MODE) ---\n"
@@ -514,6 +585,7 @@ completeProtNormCorrelationWorkflow <- function(
   correlation_metrics <- finalizeProtNormCorrelationWorkflowState(
     finalS4ForDe = finalS4ForDe,
     workflowData = workflowData,
+    normData = normData,
     correlationThreshold = correlationThreshold,
     skipped = skipped,
     messagePrefix = messagePrefix,

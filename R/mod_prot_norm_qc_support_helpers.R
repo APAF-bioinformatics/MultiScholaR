@@ -357,19 +357,31 @@ regenerateProtNormQcForAestheticChange <- function(
     })
   }
 
-  if (normData$normalization_complete && !is.null(normData$normalized_protein_obj)) {
+  normalized_object <- resolveProtNormStateObject(
+    norm_data = normData,
+    state_names = "normalized",
+    legacy_object = normData$normalized_protein_obj,
+    stage_id = "normalization"
+  )
+  if (normData$normalization_complete && !is.null(normalized_object)) {
     messageFn("Regenerating post-normalization QC plots with new aesthetics...")
     tryCatch({
-      generatePostNormalizationQcFn(normData$normalized_protein_obj)
+      generatePostNormalizationQcFn(normalized_object)
     }, error = function(e) {
       messageFn(paste("Error regenerating post-normalization QC:", e$message))
     })
   }
 
-  if (normData$ruv_complete && !is.null(normData$ruv_normalized_obj)) {
+  ruv_object <- resolveProtNormStateObject(
+    norm_data = normData,
+    state_names = c("ruv_corrected", "normalized"),
+    legacy_object = normData$ruv_normalized_obj,
+    stage_id = "ruv_correction"
+  )
+  if (normData$ruv_complete && !is.null(ruv_object)) {
     messageFn("Regenerating RUV-corrected QC plots with new aesthetics...")
     tryCatch({
-      generateRuvCorrectedQcFn(normData$ruv_normalized_obj)
+      generateRuvCorrectedQcFn(ruv_object)
     }, error = function(e) {
       messageFn(paste("Error regenerating RUV-corrected QC:", e$message))
     })
@@ -471,4 +483,3 @@ buildProtNormCorrelationPlot <- function(
     exclude_pool_samples = TRUE
   )
 }
-

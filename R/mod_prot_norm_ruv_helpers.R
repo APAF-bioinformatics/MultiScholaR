@@ -44,6 +44,7 @@ updateProtNormRuvAuditTrail <- function(
   controlGenesIndex,
   percentageAsNegCtrl,
   modeLabel,
+  workflowData = NULL,
   existsFn = exists,
   getFn = get,
   assignFn = assign,
@@ -51,7 +52,18 @@ updateProtNormRuvAuditTrail <- function(
   messageFn = message
 ) {
   tryCatch({
-    if (existsFn("config_list", envir = .GlobalEnv)) {
+    if (protDiaPeptideQcWorkflowData(workflowData)) {
+      config_list <- workflowData$config_list
+      if (!is.list(config_list)) config_list <- list()
+      config_list <- updateRuvParametersFn(
+        config_list,
+        ruvK,
+        controlGenesIndex,
+        percentageAsNegCtrl
+      )
+      workflowData$config_list <- config_list
+      messageFn(sprintf("*** AUDIT: Logged %s RUV parameters to workflow context ***", modeLabel))
+    } else if (existsFn("config_list", envir = .GlobalEnv)) {
       config_list <- getFn("config_list", envir = .GlobalEnv)
       config_list <- updateRuvParametersFn(
         config_list,
@@ -108,6 +120,7 @@ resolveProtNormRuvParameters <- function(
   ruvCancorFn = ruvCancor,
   buildManualRuvResultFn = buildProtNormManualRuvResult,
   updateAuditTrailFn = updateProtNormRuvAuditTrail,
+  updateWorkflowContextFn = updateProtNormWorkflowRuvContext,
   persistRuvResultFn = persistProtNormRuvResult,
   messageFn = message
 ) {
@@ -206,12 +219,17 @@ resolveProtNormRuvParameters <- function(
       ruv_k
     ))
 
-    updateAuditTrailFn(
+    audit_args <- list(
       ruvK = ruv_k,
       controlGenesIndex = control_genes_index,
       percentageAsNegCtrl = percentage_as_neg_ctrl,
       modeLabel = "automatic"
     )
+    supported <- names(formals(updateAuditTrailFn))
+    if ("workflowData" %in% supported || "..." %in% supported) {
+      audit_args$workflowData <- workflowData
+    }
+    do.call(updateAuditTrailFn, audit_args)
   } else {
     messageFn("*** STEP 3a: Using manual RUV parameters ***")
     percentage_as_neg_ctrl <- input$ruv_percentage
@@ -226,12 +244,17 @@ resolveProtNormRuvParameters <- function(
       ruv_fdr_method = "BH"
     )
 
-    updateAuditTrailFn(
+    audit_args <- list(
       ruvK = ruv_k,
       controlGenesIndex = control_genes_index,
       percentageAsNegCtrl = percentage_as_neg_ctrl,
       modeLabel = "manual"
     )
+    supported <- names(formals(updateAuditTrailFn))
+    if ("workflowData" %in% supported || "..." %in% supported) {
+      audit_args$workflowData <- workflowData
+    }
+    do.call(updateAuditTrailFn, audit_args)
 
     tryCatch({
       cancor_plot <- ruvCancorFn(
@@ -262,6 +285,16 @@ resolveProtNormRuvParameters <- function(
 
   normData$control_genes_index <- control_genes_index
   normData$best_k <- ruv_k
+  updateWorkflowContextFn(
+    workflow_data = workflowData,
+    mode = input$ruv_mode,
+    grouping_variable = getRuvGroupingVariableFn(),
+    percentage = percentage_as_neg_ctrl,
+    k = ruv_k,
+    controls = control_genes_index,
+    optimization_result = normData$ruv_optimization_result,
+    input = input
+  )
   messageFn("*** STEP 3: RUV parameter determination completed ***")
 
   list(
@@ -308,6 +341,7 @@ finalizeProtNormRuvCleanupStep <- function(
   removeRowsWithMissingValuesPercentFn = removeRowsWithMissingValuesPercent,
   countDistinctProteinsFn = countDistinctProteinQuantIdentities,
   updateProteinFilteringFn = updateProteinFiltering,
+  saveStateFn = saveProtNormState,
   messageFn = message
 ) {
   messageFn("*** STEP 5: Cleaning up missing values ***")
@@ -368,12 +402,60 @@ finalizeProtNormRuvCleanupStep <- function(
     best_percentage
   )
 
+  normalized_parent <- if (methods::is(
+    ruv_corrected_s4_clean,
+    "ProteinQuantitativeData"
+  )) {
+    workflowData$state_manager$getState()
+  } else {
+    NULL
+  }
+  if (!is.null(normalized_parent)) {
+    parameters <- workflowData$normalization_context$ruv_parameters
+    if (!is.list(parameters)) parameters <- list()
+    parameters$normalization_method <- input$norm_method
+    parameters$ruv_mode <- input$ruv_mode
+    parameters$ruv_k <- normData$best_k
+    parameters$percentage_as_neg_ctrl <- best_percentage
+    parameters$control_genes_index <- list(
+      owner = "ProteinQuantitativeData@args$ruvIII_C_Varying$ctrl",
+      storage = "s4_args_named_payload",
+      length = as.integer(length(normData$control_genes_index)),
+      selected = as.integer(sum(normData$control_genes_index, na.rm = TRUE)),
+      digest = .peptideQcDigest(normData$control_genes_index)
+    )
+    parameters$ruv_result_file <- "ruv_optimization_results.RDS"
+    ruv_corrected_s4_clean <- saveStateFn(
+      workflow_data = workflowData,
+      state_manager = workflowData$state_manager,
+      before = normalized_parent,
+      after = ruv_corrected_s4_clean,
+      stage_id = "ruv_correction",
+      state_name = "ruv_corrected",
+      config_object = protDiaNormAuditParameters(parameters),
+      description = paste(
+        "Post-normalization complete: RUV-III correction and missing",
+        "value cleanup completed"
+      ),
+      parameters = parameters,
+      status = "applied",
+      transformation_type = "batch_correction"
+    )
+    settleProtNormArtifactState(
+      workflowData,
+      normData,
+      "ruv_correction",
+      "ruv_corrected",
+      ruv_corrected_s4_clean
+    )
+  }
   normData$ruv_normalized_obj <- ruv_corrected_s4_clean
   messageFn("*** STEP 5: Missing values cleanup completed ***")
   messageFn("*** STEP 5: Saving state to R6 state manager ***")
 
-  tryCatch({
-    workflowData$state_manager$saveState(
+  if (is.null(normalized_parent)) {
+    tryCatch({
+      workflowData$state_manager$saveState(
       state_name = "ruv_corrected",
       s4_data_object = ruv_corrected_s4_clean,
       config_object = list(
@@ -384,11 +466,12 @@ finalizeProtNormRuvCleanupStep <- function(
       ),
       description = "Post-normalization complete: RUV-III correction and missing value cleanup completed"
     )
-    messageFn("*** STEP 5: State saved successfully ***")
-  }, error = function(e) {
-    messageFn(paste("*** WARNING: Could not save state to R6 manager:", e$message, "***"))
-    messageFn("*** STEP 5: Continuing without state save (Step 6 will still proceed) ***")
-  })
+      messageFn("*** STEP 5: State saved successfully ***")
+    }, error = function(e) {
+      messageFn(paste("*** WARNING: Could not save state to R6 manager:", e$message, "***"))
+      messageFn("*** STEP 5: Continuing without state save (Step 6 will still proceed) ***")
+    })
+  }
 
   ruv_corrected_s4_clean
 }

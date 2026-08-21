@@ -183,6 +183,8 @@ createProtNormReactiveState <- function(
     normalized_protein_obj = NULL,
     ruv_normalized_obj = NULL,
     correlation_filtered_obj = NULL,
+    state_manager = NULL,
+    state_refs = list(),
     best_k = NULL,
     control_genes_index = NULL,
     correlation_vector = NULL,
@@ -365,4 +367,3 @@ registerProtNormRenderOutputs <- function(
 
   invisible(output)
 }
-

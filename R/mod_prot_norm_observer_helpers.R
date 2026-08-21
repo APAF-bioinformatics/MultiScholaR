@@ -147,6 +147,7 @@ runProtNormModuleServerShell <- function(
   }
 
   normData <- createReactiveStateFn()
+  normData$state_manager <- workflowData$state_manager
 
   getPlotAesthetics <- function() {
     getPlotAestheticsFn(input$color_variable, input$shape_variable)

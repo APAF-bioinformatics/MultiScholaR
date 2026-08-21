@@ -24,6 +24,7 @@ runProtNormBetweenSamplesStep <- function(
   currentS4,
   normMethod,
   normData,
+  workflowData = NULL,
   proteinQcDir = NULL,
   normaliseBetweenSamplesFn = normaliseBetweenSamples,
   captureCheckpointFn = .capture_checkpoint,
@@ -35,7 +36,15 @@ runProtNormBetweenSamplesStep <- function(
 ) {
   messageFn("*** STEP 1: Starting between-samples normalization ***")
 
-  if (existsFn("config_list", envir = .GlobalEnv)) {
+  if (protDiaPeptideQcWorkflowData(workflowData)) {
+    config_list <- workflowData$config_list
+    if (!is.list(config_list)) config_list <- list()
+    if (!is.list(config_list$normaliseBetweenSamples)) {
+      config_list$normaliseBetweenSamples <- list()
+    }
+    config_list$normaliseBetweenSamples$method <- normMethod
+    workflowData$config_list <- config_list
+  } else if (existsFn("config_list", envir = .GlobalEnv)) {
     config_list <- getFn("config_list", envir = .GlobalEnv)
     config_list$normaliseBetweenSamples$method <- normMethod
     assignFn("config_list", config_list, envir = .GlobalEnv)
@@ -61,6 +70,52 @@ runProtNormBetweenSamplesStep <- function(
   })
 
   normalized_s4
+}
+
+persistProtNormNormalizedState <- function(
+  currentS4,
+  normalizedS4,
+  input,
+  workflowData,
+  normData,
+  experimentPaths,
+  saveStateFn = saveProtNormState
+) {
+  if (!methods::is(normalizedS4, "ProteinQuantitativeData")) return(normalizedS4)
+  if (!protDiaNormWorkflowIsDia(workflowData, workflowData$state_manager)) {
+    return(normalizedS4)
+  }
+  parameters <- list(
+    normalization_method = input$norm_method,
+    ruv_mode = input$ruv_mode,
+    ruv_grouping_variable = workflowData$normalization_context$ruv_grouping_variable,
+    skip_reason = if (identical(input$ruv_mode, "skip")) {
+      buildProtNormSkippedRuvResult()$skip_reason
+    } else {
+      NULL
+    },
+    normalized_matrix_file = "normalized_protein_matrix_pre_ruv.tsv"
+  )
+  saved <- saveStateFn(
+    workflow_data = workflowData,
+    state_manager = workflowData$state_manager,
+    before = currentS4,
+    after = normalizedS4,
+    stage_id = "normalization",
+    state_name = "normalized",
+    config_object = parameters,
+    description = "Applied between-samples protein normalization",
+    parameters = parameters,
+    status = "applied",
+    transformation_type = "normalization"
+  )
+  settleProtNormArtifactState(
+    workflowData,
+    normData,
+    "normalization",
+    "normalized",
+    saved
+  )
 }
 
 runProtNormPostNormalizationQcStep <- function(
@@ -107,6 +162,16 @@ applyProtNormSkippedRuvState <- function(
   normData$ruv_optimization_result <- skipResult
 
   workflowData$ruv_optimization_result <- skipResult
+  updateProtNormWorkflowRuvContext(
+    workflow_data = workflowData,
+    mode = "skip",
+    grouping_variable = workflowData$normalization_context$ruv_grouping_variable,
+    percentage = NA_real_,
+    k = NA_integer_,
+    controls = NA,
+    optimization_result = skipResult,
+    input = list()
+  )
   messageFn("*** RUV SKIP: Stored skip result in workflow_data for session summary ***")
 
   if (!is.null(sourceDir)) {
@@ -122,8 +187,13 @@ applyProtNormSkippedRuvState <- function(
   messageFn("*** RUV SKIP: Using normalized data directly for correlation filtering ***")
   messageFn("*** RUV SKIP: Saving state to R6 state manager ***")
 
-  tryCatch({
-    workflowData$state_manager$saveState(
+  current_state <- tryCatch(
+    workflowStateCurrentName(workflowData$state_manager),
+    error = \(error) NULL
+  )
+  if (!identical(current_state, "normalized")) {
+    tryCatch({
+      workflowData$state_manager$saveState(
       state_name = "normalized",
       s4_data_object = normalizedS4,
       config_object = list(
@@ -135,10 +205,11 @@ applyProtNormSkippedRuvState <- function(
       ),
       description = "Post-normalization complete: RUV-III skipped by user"
     )
-    messageFn("*** RUV SKIP: State saved successfully ***")
-  }, error = function(e) {
-    messageFn(paste("*** WARNING: Could not save state to R6 manager:", e$message, "***"))
-  })
+      messageFn("*** RUV SKIP: State saved successfully ***")
+    }, error = function(e) {
+      messageFn(paste("*** WARNING: Could not save state to R6 manager:", e$message, "***"))
+    })
+  }
 
   messageFn("*** RUV SKIP: Proceeding to QC figure generation (2-column layout) ***")
 
@@ -319,6 +390,7 @@ finalizeProtNormWorkflowState <- function(
   messageFn = message
 ) {
   normData$QC_composite_figure <- NULL
+  releaseProtNormArtifactStageObjects(normData)
   messageFn("*** STEP 6: Clearing redundant plot objects from memory ***")
   gcFn()
 
@@ -451,6 +523,8 @@ runProtNormNormalizationWorkflow <- function(
   generatePostNormalizationQcFn,
   generateRuvCorrectedQcFn,
   getRuvGroupingVariableFn,
+  initializeWorkflowContextFn = initializeProtNormWorkflowContext,
+  persistNormalizedStateFn = persistProtNormNormalizedState,
   prepareNormalizationRunFn = prepareProtNormNormalizationRun,
   runBetweenSamplesStepFn = runProtNormBetweenSamplesStep,
   runPostNormalizationQcStepFn = runProtNormPostNormalizationQcStep,
@@ -475,6 +549,14 @@ runProtNormNormalizationWorkflow <- function(
   checkMemoryUsageFn(threshold_gb = 8, context = "Normalization Start")
 
   tryCatch({
+    initializeWorkflowContextFn(
+      workflow_data = workflowData,
+      input = input,
+      experiment_paths = experimentPaths,
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      grouping_variable = getRuvGroupingVariableFn()
+    )
     run_context <- prepareNormalizationRunFn(
       stateManager = workflowData$state_manager,
       normData = normData
@@ -486,15 +568,29 @@ runProtNormNormalizationWorkflow <- function(
       incProgressFn(0.2, detail = "Normalizing between samples...")
 
       normalized_s4 <- tryCatch({
-        runBetweenSamplesStepFn(
+        between_args <- list(
           currentS4 = current_s4,
           normMethod = input$norm_method,
           normData = normData,
           proteinQcDir = experimentPaths$protein_qc_dir
         )
+        supported <- names(formals(runBetweenSamplesStepFn))
+        if ("workflowData" %in% supported || "..." %in% supported) {
+          between_args$workflowData <- workflowData
+        }
+        do.call(runBetweenSamplesStepFn, between_args)
       }, error = function(e) {
         stop(paste("Step 1 (normalization) error:", e$message))
       })
+
+      normalized_s4 <- persistNormalizedStateFn(
+        currentS4 = current_s4,
+        normalizedS4 = normalized_s4,
+        input = input,
+        workflowData = workflowData,
+        normData = normData,
+        experimentPaths = experimentPaths
+      )
 
       incProgressFn(0.2, detail = "Generating post-normalization QC plots...")
 
@@ -627,8 +723,15 @@ runProtNormApplyCorrelationObserver <- function(
   checkMemoryUsageFn(threshold_gb = 8, context = "Correlation Filtering Start")
 
   tryCatch({
+    correlation_input <- resolveProtNormStateObject(
+      workflow_data = workflowData,
+      norm_data = normData,
+      state_names = c("ruv_corrected", "normalized"),
+      legacy_object = normData$ruv_normalized_obj,
+      stage_id = "ruv_correction"
+    )
     ruv_s4 <- resolveCorrelationInputObjectFn(
-      ruvNormalizedObj = normData$ruv_normalized_obj,
+      ruvNormalizedObj = correlation_input,
       startMessage = "Starting Correlation Filter Flow",
       missingObjectMessage = "RUV correction must be completed before correlation filtering"
     )
@@ -686,8 +789,15 @@ runProtNormSkipCorrelationObserver <- function(
   checkMemoryUsageFn(threshold_gb = 8, context = "Skip Correlation Filtering Start")
 
   tryCatch({
+    correlation_input <- resolveProtNormStateObject(
+      workflow_data = workflowData,
+      norm_data = normData,
+      state_names = c("ruv_corrected", "normalized"),
+      legacy_object = normData$ruv_normalized_obj,
+      stage_id = "ruv_correction"
+    )
     ruv_s4 <- resolveCorrelationInputObjectFn(
-      ruvNormalizedObj = normData$ruv_normalized_obj,
+      ruvNormalizedObj = correlation_input,
       startMessage = "Skipping Correlation Filter Flow",
       missingObjectMessage = "RUV correction must be completed before proceeding"
     )
@@ -752,9 +862,11 @@ runProtNormExportObserver <- function(
 ) {
   messageFn("=== EXPORT FILTERED SESSION BUTTON CLICKED ===")
 
+  export_object <- normData$correlation_filtered_obj
+  if (is.null(export_object)) export_object <- workflowData$final_for_da_ref
   if (!canExportFilteredSessionFn(
     correlationFilteringComplete = normData$correlation_filtering_complete,
-    correlationFilteredObj = normData$correlation_filtered_obj
+    correlationFilteredObj = export_object
   )) {
     return(notifyExportPrereqFn())
   }
