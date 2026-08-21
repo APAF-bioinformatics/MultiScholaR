@@ -128,8 +128,9 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
                                                logInfoFn = logger::log_info,
                                                nowFn = Sys.time) {
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
-  shiny::req(currentS4)
+  selectedS4 <- workflowData$state_manager$getState()
+  shiny::req(selectedS4)
+  currentS4 <- selectedS4
 
   if (useStrictMode) {
     logInfoFn("Protein Processing: Using STRICT MODE (no missing values allowed)")
@@ -172,6 +173,7 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
     workflowData$qc_params$protein_qc <- list()
   }
 
+  transitionTime <- nowFn()
   workflowData$qc_params$protein_qc$intensity_filter <- list(
     strict_mode = useStrictMode,
     min_reps_per_group = if (!useStrictMode) minRepsPerGroup else NA,
@@ -179,25 +181,35 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
     groupwise_percentage_cutoff = currentS4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
     max_groups_percentage_cutoff = currentS4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
     proteins_intensity_cutoff_percentile = intensityCutoffPercentile,
-    timestamp = nowFn()
+    timestamp = transitionTime
   )
 
-  workflowData$state_manager$saveState(
+  stateConfig <- list(
+    strict_mode = useStrictMode,
+    min_reps_per_group = if (!useStrictMode) minRepsPerGroup else NA,
+    min_groups = if (!useStrictMode) minGroups else NA,
+    groupwise_percentage_cutoff =
+      currentS4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
+    max_groups_percentage_cutoff =
+      currentS4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
+    proteins_intensity_cutoff_percentile = intensityCutoffPercentile
+  )
+  filteredS4 <- saveProtProteinQcState(
+    workflow_data = workflowData,
+    state_manager = workflowData$state_manager,
+    before = selectedS4,
+    after = filteredS4,
+    stage_id = "protein_intensity_filter",
     state_name = "protein_intensity_filtered",
-    s4_data_object = filteredS4,
-    config_object = list(
-      strict_mode = useStrictMode,
-      min_reps_per_group = if (!useStrictMode) minRepsPerGroup else NA,
-      min_groups = if (!useStrictMode) minGroups else NA,
-      groupwise_percentage_cutoff = currentS4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
-      max_groups_percentage_cutoff = currentS4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
-      proteins_intensity_cutoff_percentile = intensityCutoffPercentile
-    ),
+    config_object = stateConfig,
+    audit_parameters = stateConfig,
     description = if (useStrictMode) {
       "Applied STRICT protein intensity filter (no missing values)"
     } else {
       "Applied FLEXIBLE protein intensity filter (adaptive thresholds)"
-    }
+    },
+    transformation_type = "filter",
+    now = transitionTime
   )
 
   proteinCount <- countDistinctProteinQuantIdentities(filteredS4)
@@ -246,10 +258,13 @@ updateProteinIntensityFilterOutputs <- function(output,
                                                 omicType,
                                                 experimentLabel,
                                                 renderTextFn = shiny::renderText,
-                                                updateProteinFilteringFn = updateProteinFiltering) {
+                                                updateProteinFilteringFn = updateProteinFiltering,
+                                                workflowData = NULL) {
   output$protein_intensity_filter_results <- renderTextFn(intensityFilterResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
+  plotGrid <- protDiaProteinQcUpdateFiltering(
+    update_fn = updateProteinFilteringFn,
+    workflow_data = workflowData,
     data = intensityFilterResult$filteredS4@protein_quant_table,
     step_name = "11_protein_intensity_filtered",
     omic_type = omicType,
@@ -292,12 +307,16 @@ runProteinIntensityFilterApplyObserver <- function(workflowData,
       intensityCutoffPercentile = intensityCutoffPercentile
     )
 
-    plotGrid <- updateOutputsFn(
-      output = output,
-      proteinIntensityFilterPlot = proteinIntensityFilterPlot,
-      intensityFilterResult = intensityFilterResult,
-      omicType = omicType,
-      experimentLabel = experimentLabel
+    plotGrid <- protDiaProteinQcInvokeOutputs(
+      update_outputs_fn = updateOutputsFn,
+      args = list(
+        output = output,
+        proteinIntensityFilterPlot = proteinIntensityFilterPlot,
+        intensityFilterResult = intensityFilterResult,
+        omicType = omicType,
+        experimentLabel = experimentLabel
+      ),
+      workflow_data = workflowData
     )
 
     logInfoFn("Protein intensity filter applied successfully")
@@ -331,7 +350,7 @@ runProteinIntensityFilterRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)
 
   list(
     previousState = previousState,

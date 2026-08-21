@@ -125,8 +125,17 @@ runProteinAccessionCleanupStep <- function(workflowData,
     dplyr::distinct(!!rlang::sym(proteinKeyBefore)) |>
     nrow()
 
-  if (existsFn("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE)) {
-    aaSeqTblFinal <- getFn("aa_seq_tbl_final", envir = .GlobalEnv) |>
+  artifactOwned <- protDiaArtifactCoordinatorOwned(workflowData)
+  sequenceData <- if (artifactOwned) {
+    workflowData$aa_seq_tbl_final
+  } else if (existsFn("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE)) {
+    getFn("aa_seq_tbl_final", envir = .GlobalEnv)
+  } else {
+    NULL
+  }
+
+  if (!is.null(sequenceData)) {
+    aaSeqTblFinal <- sequenceData |>
       dplyr::rename(uniprot_acc = database_id)
 
     cleanedS4 <- chooseBestProteinAccessionFn(
@@ -175,8 +184,14 @@ runProteinAccessionCleanupStep <- function(workflowData,
     workflowData$accession_cleanup_results
 
   tryCatch({
-    if (existsFn("experiment_paths", envir = .GlobalEnv, inherits = FALSE)) {
-      experimentPaths <- getFn("experiment_paths", envir = .GlobalEnv)
+    experimentPaths <- if (artifactOwned) {
+      workflowData$protein_qc_context$experiment_paths
+    } else if (existsFn("experiment_paths", envir = .GlobalEnv, inherits = FALSE)) {
+      getFn("experiment_paths", envir = .GlobalEnv)
+    } else {
+      NULL
+    }
+    if (!is.null(experimentPaths)) {
       if (!is.null(experimentPaths$source_dir)) {
         accessionCleanupFile <- file.path(
           experimentPaths$source_dir,
@@ -202,20 +217,36 @@ runProteinAccessionCleanupStep <- function(workflowData,
     proteinsAfter
   ))
 
-  workflowData$state_manager$saveState(
+  stateConfig <- list(
+    delimiter = delimiter,
+    aggregation_method = aggregationMethod,
+    cleanup_applied = cleanupApplied,
+    active_protein_key = proteinKeyAfter
+  )
+  cleanedS4 <- saveProtProteinQcState(
+    workflow_data = workflowData,
+    state_manager = workflowData$state_manager,
+    before = currentS4,
+    after = cleanedS4,
+    stage_id = "protein_accession_cleanup",
     state_name = "protein_accession_cleaned",
-    s4_data_object = cleanedS4,
-    config_object = list(
-      delimiter = delimiter,
-      aggregation_method = aggregationMethod,
-      cleanup_applied = cleanupApplied,
-      active_protein_key = proteinKeyAfter
+    config_object = stateConfig,
+    audit_parameters = c(
+      stateConfig,
+      list(
+        active_protein_key_before = proteinKeyBefore,
+        proteins_before = proteinsBefore,
+        proteins_after = proteinsAfter,
+        sequence_metadata_source = if (artifactOwned) "workflow_session" else "legacy_global"
+      )
     ),
     description = if (cleanupApplied) {
       "Applied protein accession cleanup"
     } else {
       "Skipped accession cleanup (no FASTA data)"
-    }
+    },
+    status = if (cleanupApplied) "applied" else "skipped",
+    transformation_type = if (cleanupApplied) "aggregation" else "filter"
   )
 
   proteinCount <- cleanedS4@protein_quant_table |>
@@ -256,10 +287,13 @@ updateProteinAccessionCleanupOutputs <- function(output,
                                                  omicType,
                                                  experimentLabel,
                                                  renderTextFn = shiny::renderText,
-                                                 updateProteinFilteringFn = updateProteinFiltering) {
+                                                 updateProteinFilteringFn = updateProteinFiltering,
+                                                 workflowData = NULL) {
   output$accession_cleanup_results <- renderTextFn(cleanupResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
+  plotGrid <- protDiaProteinQcUpdateFiltering(
+    update_fn = updateProteinFilteringFn,
+    workflow_data = workflowData,
     data = cleanupResult$cleanedS4@protein_quant_table,
     step_name = "10_protein_accession_cleaned",
     omic_type = omicType,
@@ -298,12 +332,16 @@ runProteinAccessionCleanupApplyObserver <- function(workflowData,
       aggregationMethod = aggregationMethod
     )
 
-    plotGrid <- updateOutputsFn(
-      output = output,
-      accessionCleanupPlot = accessionCleanupPlot,
-      cleanupResult = cleanupResult,
-      omicType = omicType,
-      experimentLabel = experimentLabel
+    plotGrid <- protDiaProteinQcInvokeOutputs(
+      update_outputs_fn = updateOutputsFn,
+      args = list(
+        output = output,
+        accessionCleanupPlot = accessionCleanupPlot,
+        cleanupResult = cleanupResult,
+        omicType = omicType,
+        experimentLabel = experimentLabel
+      ),
+      workflow_data = workflowData
     )
 
     logInfoFn("Protein accession cleanup completed")
@@ -337,7 +375,7 @@ runProteinAccessionCleanupRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)
 
   list(
     previousState = previousState,

@@ -77,8 +77,9 @@ runProteinDuplicateRemovalStep <- function(workflowData,
                                           logInfoFn = logger::log_info) {
   shiny::req(workflowData$state_manager)
 
-  currentS4 <- workflowData$state_manager$getState()
-  shiny::req(currentS4)
+  selectedS4 <- workflowData$state_manager$getState()
+  shiny::req(selectedS4)
+  currentS4 <- selectedS4
 
   logInfoFn(sprintf(
     "Protein Processing: Removing duplicate proteins using %s",
@@ -113,16 +114,23 @@ runProteinDuplicateRemovalStep <- function(workflowData,
     ) |>
     dplyr::ungroup()
 
-  workflowData$state_manager$saveState(
+  stateConfig <- list(
+    aggregation_method = aggregationMethod,
+    active_protein_key = proteinIdColumn,
+    duplicates_found = duplicates,
+    num_duplicates = length(duplicates)
+  )
+  currentS4 <- saveProtProteinQcState(
+    workflow_data = workflowData,
+    state_manager = workflowData$state_manager,
+    before = selectedS4,
+    after = currentS4,
+    stage_id = "protein_duplicate_aggregation",
     state_name = "duplicates_removed",
-    s4_data_object = currentS4,
-    config_object = list(
-      aggregation_method = aggregationMethod,
-      active_protein_key = proteinIdColumn,
-      duplicates_found = duplicates,
-      num_duplicates = length(duplicates)
-    ),
-    description = "Removed duplicate proteins by aggregation"
+    config_object = stateConfig,
+    audit_parameters = stateConfig,
+    description = "Removed duplicate proteins by aggregation",
+    transformation_type = "aggregation"
   )
 
   proteinCount <- countDistinctProteinQuantIdentities(currentS4)
@@ -149,10 +157,13 @@ updateProteinDuplicateRemovalOutputs <- function(output,
                                                  omicType,
                                                  experimentLabel,
                                                  renderTextFn = shiny::renderText,
-                                                 updateProteinFilteringFn = updateProteinFiltering) {
+                                                 updateProteinFilteringFn = updateProteinFiltering,
+                                                 workflowData = NULL) {
   output$duplicate_removal_results <- renderTextFn(duplicateRemovalResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
+  plotGrid <- protDiaProteinQcUpdateFiltering(
+    update_fn = updateProteinFilteringFn,
+    workflow_data = workflowData,
     data = duplicateRemovalResult$deduplicatedS4@protein_quant_table,
     step_name = "12_duplicates_removed",
     omic_type = omicType,
@@ -189,12 +200,16 @@ runProteinDuplicateRemovalApplyObserver <- function(workflowData,
       aggregationMethod = aggregationMethod
     )
 
-    plotGrid <- updateOutputsFn(
-      output = output,
-      duplicateRemovalPlot = duplicateRemovalPlot,
-      duplicateRemovalResult = duplicateRemovalResult,
-      omicType = omicType,
-      experimentLabel = experimentLabel
+    plotGrid <- protDiaProteinQcInvokeOutputs(
+      update_outputs_fn = updateOutputsFn,
+      args = list(
+        output = output,
+        duplicateRemovalPlot = duplicateRemovalPlot,
+        duplicateRemovalResult = duplicateRemovalResult,
+        omicType = omicType,
+        experimentLabel = experimentLabel
+      ),
+      workflow_data = workflowData
     )
 
     logInfoFn("Duplicate protein removal completed successfully")
@@ -231,7 +246,7 @@ runProteinDuplicateRemovalRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)
 
   list(
     previousState = previousState,

@@ -144,15 +144,26 @@ runProteinReplicateFilterApplyStep <- function(workflowData,
     logWarnFn(sprintf("Could not save QC parameters file: %s", e$message))
   })
 
-  workflowData$state_manager$saveState(
+  stateConfig <- list(
+    grouping_variable = groupingVariable,
+    parallel_cores = parallelCores,
+    output_file = outputFile
+  )
+  filteredS4 <- saveProtProteinQcState(
+    workflow_data = workflowData,
+    state_manager = workflowData$state_manager,
+    before = currentS4,
+    after = filteredS4,
+    stage_id = "protein_replicate_filter",
     state_name = "protein_replicate_filtered",
-    s4_data_object = filteredS4,
-    config_object = list(
+    config_object = stateConfig,
+    audit_parameters = list(
       grouping_variable = groupingVariable,
       parallel_cores = parallelCores,
-      output_file = outputFile
+      execution_mode = if (useLocalExecution) "local" else "multidplyr"
     ),
-    description = "Applied protein replicate filter (removed single-replicate proteins)"
+    description = "Applied protein replicate filter (removed single-replicate proteins)",
+    transformation_type = "filter"
   )
 
   proteinCount <- countDistinctProteinQuantIdentities(filteredS4)
@@ -188,10 +199,13 @@ updateProteinReplicateFilterOutputs <- function(output,
                                                 omicType,
                                                 experimentLabel,
                                                 renderTextFn = shiny::renderText,
-                                                updateProteinFilteringFn = updateProteinFiltering) {
+                                                updateProteinFilteringFn = updateProteinFiltering,
+                                                workflowData = NULL) {
   output$protein_replicate_filter_results <- renderTextFn(replicateFilterResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
+  plotGrid <- protDiaProteinQcUpdateFiltering(
+    update_fn = updateProteinFilteringFn,
+    workflow_data = workflowData,
     data = replicateFilterResult$filteredS4@protein_quant_table,
     step_name = "13_protein_replicate_filtered",
     omic_type = omicType,
@@ -246,12 +260,16 @@ runProteinReplicateFilterApplyObserver <- function(workflowData,
       parallelCores = parallelCores
     )
 
-    plotGrid <- updateOutputsFn(
-      output = output,
-      proteinReplicateFilterPlot = proteinReplicateFilterPlot,
-      replicateFilterResult = replicateFilterResult,
-      omicType = omicType,
-      experimentLabel = experimentLabel
+    plotGrid <- protDiaProteinQcInvokeOutputs(
+      update_outputs_fn = updateOutputsFn,
+      args = list(
+        output = output,
+        proteinReplicateFilterPlot = proteinReplicateFilterPlot,
+        replicateFilterResult = replicateFilterResult,
+        omicType = omicType,
+        experimentLabel = experimentLabel
+      ),
+      workflow_data = workflowData
     )
 
     completeQcStatusFn(workflowData = workflowData)
@@ -290,7 +308,7 @@ runProteinReplicateFilterRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)
 
   list(
     previousState = previousState,

@@ -3,7 +3,7 @@
 # ----------------------------------------------------------------------------
 #' @title Update and Visualize Filtering Progress
 #' @description Tracks and visualizes the impact of filtering steps on peptide
-#'   and protein counts. Updates a global `FilteringProgress` object and optionally
+#'   and protein counts. Updates a scoped `FilteringProgress` object and optionally
 #'   saves plots summarizing the changes. Handles both peptide-level and
 #'   protein-level data inputs.
 #'
@@ -11,7 +11,7 @@
 #' This function acts as a central hub for monitoring data reduction throughout
 #' a filtering workflow. It performs the following actions:
 #' \itemize{
-#'   \item Initializes or retrieves a global S4 object named `filtering_progress`
+#'   \item Initializes or retrieves an S4 object named `filtering_progress`
 #'     of class `FilteringProgress`.
 #'   \item Calculates key metrics (total unique proteins, proteins per run,
 #'     total unique peptides, peptides per protein distribution, peptides per run)
@@ -40,8 +40,9 @@
 #'     and returns the list of plot objects invisibly.
 #' }
 #'
-#' **Important:** This function relies on and modifies a global variable named
-#' `filtering_progress`. For saving plots, it depends on the global `project_dirs`
+#' **Important:** By default this function modifies a global variable named
+#' `filtering_progress`. Callers can provide `progress_env` for session ownership.
+#' For saving plots, it can use an explicit or global `project_dirs`
 #' object (expected to be populated by `setupDirectories()`) and the successful
 #' derivation of `time_dir` from it using `omic_type` and `experiment_label`.
 #'
@@ -85,19 +86,25 @@
 #'
 #' @export
 #' @param formats,project_dirs Runtime inputs used by this function; see the usage section for accepted values.
+#' @param progress_env Environment that owns `filtering_progress`. Defaults to the
+#'   global environment for backward compatibility.
 updateProteinFiltering <- function(data, step_name,
                                    omic_type = NULL, experiment_label = NULL,
                                    overwrite = FALSE, return_grid = FALSE,
                                    formats = c("png", "pdf"),
-                                   project_dirs = NULL) {
+                                   project_dirs = NULL,
+                                   progress_env = .GlobalEnv) {
+  if (!is.environment(progress_env)) {
+    stop("`progress_env` must be an environment.", call. = FALSE)
+  }
   # Initialize filtering_progress if it doesn\'t exist
-  if (!exists("filtering_progress", envir = .GlobalEnv)) {
+  if (!exists("filtering_progress", envir = progress_env)) {
     filtering_progress <- new("FilteringProgress")
-    assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
+    assign("filtering_progress", filtering_progress, envir = progress_env)
   }
 
   # Get the current filtering_progress object
-  filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
+  filtering_progress <- get("filtering_progress", envir = progress_env)
 
   # DEBUG66: Memory check
   message("--- DEBUG66 [updatePeptideFiltering]: Entry ---")
@@ -275,8 +282,8 @@ updateProteinFiltering <- function(data, step_name,
     }
   }
 
-  # Update the global filtering_progress object
-  assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
+  # Update the filtering_progress object in its owner environment
+  assign("filtering_progress", filtering_progress, envir = progress_env)
 
   # Create base protein count plot (always shown)
   message("   [updateProteinFiltering] Generating P1 (Protein Count Bar)...")

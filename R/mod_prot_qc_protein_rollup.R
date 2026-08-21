@@ -332,6 +332,11 @@ runProteinIqRollupApplyStep <- function(workflowData,
   }
 
   proteinLog2QuantAliased <- readTsvFn(iqOutputFile, .name_repair = "minimal")
+  iqOutputWasParserTable <- inherits(proteinLog2QuantAliased, "spec_tbl_df")
+  proteinLog2QuantAliased <- protDiaArtifactPortableTable(
+    proteinLog2QuantAliased,
+    "IQ MaxLFQ output"
+  )
   currentCols <- colnames(proteinLog2QuantAliased)
   restoredCols <- purrr::map_chr(currentCols, function(col) {
     if (col == proteinColumn) {
@@ -405,7 +410,8 @@ runProteinIqRollupApplyStep <- function(workflowData,
       s4_class = "ProteinQuantitativeData",
       protein_id_column = proteinColumn
   )
-  proteinObj <- .savePeptideQcState(
+  proteinObj <- saveProtProteinQcState(
+    workflow_data = workflowData,
     state_manager = workflowData$state_manager,
     before = peptideS4,
     after = proteinObj,
@@ -423,6 +429,7 @@ runProteinIqRollupApplyStep <- function(workflowData,
       missing_intensity_compatibility_value = 0,
       filter_double_less = c(Q.Value = 0.01, PG.Q.Value = 0.01),
       normalization = "none",
+      parser_metadata_removed = iqOutputWasParserTable,
       dropped_samples = droppedSamples
     ),
     description = "IQ protein rollup completed and ProteinQuantitativeData S4 object created",
@@ -467,9 +474,9 @@ runProteinLimpaRollupApplyStep <- function(workflowData,
   shiny::req(workflowData$state_manager)
 
   currentState <- workflowStateCurrentName(workflowData$state_manager)
-  peptideS4 <- workflowData$state_manager$getState(currentState)
-  shiny::req(peptideS4)
-  peptideS4 <- preparePeptideMatrixFn(peptideS4)
+  selectedPeptideS4 <- workflowData$state_manager$getState(currentState)
+  shiny::req(selectedPeptideS4)
+  peptideS4 <- preparePeptideMatrixFn(selectedPeptideS4)
 
   logInfoFn("Protein Processing: Starting limpa DPC-Quant rollup from peptide state")
 
@@ -501,13 +508,32 @@ runProteinLimpaRollupApplyStep <- function(workflowData,
       protein_id_column = proteinObj@protein_id_column,
       report_template = "DIANN_limpa_report.rmd"
   )
-  proteinObj <- .savePeptideQcState(
+  limpaResults <- proteinObj@args$limpa_dpc_quant_results
+  limpaParameters <- proteinObj@args$proteinMissingValueImputationLimpa
+  proteinObj <- saveProtProteinQcState(
+    workflow_data = workflowData,
     state_manager = workflowData$state_manager,
-    before = peptideS4,
+    before = selectedPeptideS4,
     after = proteinObj,
     stage_id = "protein_rollup",
     state_name = "protein_s4_created",
     config_object = limpaConfig,
+    audit_parameters = list(
+      rollup_method = "limpa_dpc_quant",
+      active_protein_key = resolveProteinQuantIdentityColumn(proteinObj),
+      peptide_matrix_prepared = !identical(selectedPeptideS4, peptideS4),
+      peptide_matrix_dimensions = dim(peptideS4@peptide_matrix),
+      dpc_slope = limpaParameters$dpc_slope,
+      dpc_parameters_used = limpaResults$dpc_parameters_used,
+      quantification_method = limpaResults$quantification_method,
+      dpc_method = limpaResults$dpc_method,
+      missing_percentage_peptides = limpaResults$missing_percentage_peptides,
+      missing_percentage_proteins = limpaResults$missing_percentage_proteins,
+      total_proteins_quantified = limpaResults$total_proteins_quantified,
+      total_peptides_used = limpaResults$total_peptides_used,
+      report_template = "DIANN_limpa_report.rmd",
+      test_mode = isTRUE(limpaParameters$test_mode)
+    ),
     description = "limpa DPC-Quant protein rollup completed and ProteinQuantitativeData S4 object created",
     transformation_type = "aggregation"
   )
@@ -542,10 +568,13 @@ updateProteinIqRollupOutputs <- function(output,
                                          omicType,
                                          experimentLabel,
                                          renderTextFn = shiny::renderText,
-                                         updateProteinFilteringFn = updateProteinFiltering) {
+                                         updateProteinFilteringFn = updateProteinFiltering,
+                                         workflowData = NULL) {
   output$iq_rollup_results <- renderTextFn(iqRollupResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
+  plotGrid <- protDiaProteinQcUpdateFiltering(
+    update_fn = updateProteinFilteringFn,
+    workflow_data = workflowData,
     data = iqRollupResult$proteinObj@protein_quant_table,
     step_name = "9_protein_s4_created",
     omic_type = omicType,
@@ -583,12 +612,16 @@ runProteinIqRollupApplyObserver <- function(workflowData,
       experimentPaths = experimentPaths
     )
 
-    plotGrid <- updateOutputsFn(
-      output = output,
-      iqRollupPlot = iqRollupPlot,
-      iqRollupResult = iqRollupResult,
-      omicType = omicType,
-      experimentLabel = experimentLabel
+    plotGrid <- protDiaProteinQcInvokeOutputs(
+      update_outputs_fn = updateOutputsFn,
+      args = list(
+        output = output,
+        iqRollupPlot = iqRollupPlot,
+        iqRollupResult = iqRollupResult,
+        omicType = omicType,
+        experimentLabel = experimentLabel
+      ),
+      workflow_data = workflowData
     )
 
     logInfoFn("IQ protein rollup and S4 object creation completed successfully")
@@ -636,7 +669,7 @@ runProteinIqRollupRevertStep <- function(workflowData) {
     stop("No previous peptide state to revert to.")
   }
 
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)
 
   list(
     previousState = previousState,

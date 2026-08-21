@@ -12,7 +12,8 @@ updateProteinFiltering(
   overwrite = FALSE,
   return_grid = FALSE,
   formats = c("png", "pdf"),
-  project_dirs = NULL
+  project_dirs = NULL,
+  progress_env = .GlobalEnv
 )
 }
 \arguments{
@@ -44,6 +45,9 @@ object created with \code{gridExtra::grid.arrange()}. If \code{FALSE} (default),
 individual plots and returns an invisible list of the ggplot objects.}
 
 \item{formats, project_dirs}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{progress_env}{Environment that owns \code{filtering_progress}. Defaults to the
+global environment for backward compatibility.}
 }
 \value{
 If \code{return_grid} is \code{TRUE}, returns a \code{grob} object (a grid graphical object).
@@ -55,7 +59,7 @@ global \code{filtering_progress} object and potentially saves plots to disk if
 }
 \description{
 Tracks and visualizes the impact of filtering steps on peptide
-and protein counts. Updates a global \code{FilteringProgress} object and optionally
+and protein counts. Updates a scoped \code{FilteringProgress} object and optionally
 saves plots summarizing the changes. Handles both peptide-level and
 protein-level data inputs.
 }
@@ -63,7 +67,7 @@ protein-level data inputs.
 This function acts as a central hub for monitoring data reduction throughout
 a filtering workflow. It performs the following actions:
 \itemize{
-\item Initializes or retrieves a global S4 object named \code{filtering_progress}
+\item Initializes or retrieves an S4 object named \code{filtering_progress}
 of class \code{FilteringProgress}.
 \item Calculates key metrics (total unique proteins, proteins per run,
 total unique peptides, peptides per protein distribution, peptides per run)
@@ -92,8 +96,9 @@ if plot saving is enabled.
 and returns the list of plot objects invisibly.
 }
 
-\strong{Important:} This function relies on and modifies a global variable named
-\code{filtering_progress}. For saving plots, it depends on the global \code{project_dirs}
+\strong{Important:} By default this function modifies a global variable named
+\code{filtering_progress}. Callers can provide \code{progress_env} for session ownership.
+For saving plots, it can use an explicit or global \code{project_dirs}
 object (expected to be populated by \code{setupDirectories()}) and the successful
 derivation of \code{time_dir} from it using \code{omic_type} and \code{experiment_label}.
 }

@@ -10,7 +10,8 @@ generateLimpaQCPlots(
   save_plots = TRUE,
   save_dir = "peptide_qc",
   plot_prefix = "limpa",
-  verbose = TRUE
+  verbose = TRUE,
+  project_dirs = NULL
 )
 }
 \arguments{
@@ -27,6 +28,9 @@ will attempt to use project directories.}
 \item{plot_prefix}{String prefix for saved plot filenames.}
 
 \item{verbose}{Logical. Whether to print progress messages.}
+
+\item{project_dirs}{Optional session-owned project directory mapping. The
+global \code{project_dirs} object remains the backward-compatible fallback.}
 }
 \value{
 A composite ggplot object containing all diagnostic plots arranged in a grid

@@ -1,6 +1,40 @@
 # ----------------------------------------------------------------------------
 # generateLimpaQCPlots
 # ----------------------------------------------------------------------------
+resolveLimpaQcSaveDir <- function(
+    save_dir,
+    project_dirs = NULL,
+    verbose = TRUE
+) {
+    if (!identical(save_dir, "peptide_qc")) return(save_dir)
+    tryCatch(
+        {
+            project_dirs_to_use <- project_dirs
+            if (is.null(project_dirs_to_use) &&
+                exists("project_dirs", envir = .GlobalEnv)) {
+                project_dirs_to_use <- get("project_dirs", envir = .GlobalEnv)
+            }
+            if (is.null(project_dirs_to_use)) return(save_dir)
+            for (experiment_name in names(project_dirs_to_use)) {
+                candidate <- project_dirs_to_use[[experiment_name]]$peptide_qc_dir
+                if (!is.null(candidate)) {
+                    if (verbose) {
+                        cat("[info] Using peptide_qc_dir from project_dirs:", candidate, "\n")
+                    }
+                    return(candidate)
+                }
+            }
+            save_dir
+        },
+        error = function(error) {
+            if (verbose) {
+                cat("Could not access project_dirs from global environment, using default\n")
+            }
+            save_dir
+        }
+    )
+}
+
 #' Generate limpa DPC Quality Control Diagnostic Plots
 #'
 #' Creates a comprehensive set of diagnostic plots for limpa DPC imputation or quantification,
@@ -13,6 +47,8 @@
 #' @param save_plots Logical. Whether to save individual plots to files.
 #' @param save_dir Optional directory path for saving plots. If NULL and save_plots=TRUE,
 #'   will attempt to use project directories.
+#' @param project_dirs Optional session-owned project directory mapping. The
+#'   global `project_dirs` object remains the backward-compatible fallback.
 #' @param plot_prefix String prefix for saved plot filenames.
 #' @param verbose Logical. Whether to print progress messages.
 #'
@@ -50,7 +86,8 @@ generateLimpaQCPlots <- function(after_object,
                                  save_plots = TRUE,
                                  save_dir = "peptide_qc",
                                  plot_prefix = "limpa",
-                                 verbose = TRUE) {
+                                 verbose = TRUE,
+                                 project_dirs = NULL) {
   message("--- Entering generateLimpaQCPlots ---")
   message(sprintf(
     "   Arguments: after_object type=%s, before_object=%s, save_plots=%s, save_dir=%s, plot_prefix=%s, verbose=%s",
@@ -99,28 +136,7 @@ generateLimpaQCPlots <- function(after_object,
 
   # Try to get the correct save directory from project_dirs GLOBAL OBJECT
   message("   Step: Determining save directory")
-  if (save_dir == "peptide_qc") {
-    tryCatch(
-      {
-        # Access project_dirs from global environment
-        if (exists("project_dirs", envir = .GlobalEnv)) {
-          project_dirs <- get("project_dirs", envir = .GlobalEnv)
-
-          # Look through each experiment in project_dirs
-          for (experiment_name in names(project_dirs)) {
-            if (!is.null(project_dirs[[experiment_name]]$peptide_qc_dir)) {
-              save_dir <- project_dirs[[experiment_name]]$peptide_qc_dir
-              if (verbose) cat("[info] Using peptide_qc_dir from global project_dirs:", save_dir, "\n")
-              break
-            }
-          }
-        }
-      },
-      error = function(e) {
-        if (verbose) cat("Could not access project_dirs from global environment, using default\n")
-      }
-    )
-  }
+  save_dir <- resolveLimpaQcSaveDir(save_dir, project_dirs, verbose)
   message(sprintf("   Results: save_dir=%s", save_dir))
 
   # Extract DPC parameters (handle both formats)

@@ -331,6 +331,7 @@ Collate:
     'mod_prot_da_server.R'
     'mod_prot_import_artifact_helpers.R'
     'mod_prot_qc_artifact_helpers.R'
+    'mod_prot_qc_protein_artifact_helpers.R'
     'mod_prot_design_artifact_helpers.R'
     'mod_prot_artifact_readthrough_registry.R'
     'mod_prot_artifact_readthrough_helpers.R'

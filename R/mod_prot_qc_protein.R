@@ -127,6 +127,12 @@ mod_prot_qc_protein_server <- function(id, workflow_data, experiment_paths, omic
     logger::log_info(paste("Protein QC orchestrator: workflow type is", workflow_type))
 
     if (workflow_type == "DIA") {
+      initializeProtDiaProteinQcSessionContext(
+        workflow_data = workflow_data,
+        experiment_paths = experiment_paths,
+        omic_type = omic_type,
+        experiment_label = experiment_label
+      )
       logger::log_info("Running DIA protein rollup sub-module.")
     }
     logger::log_info("Running common protein processing sub-modules.")
