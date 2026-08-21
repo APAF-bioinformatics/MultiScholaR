@@ -114,7 +114,7 @@ observeProtSummaryPublicationCopy <- function(input,
           "\n"
         )
 
-        runPublicationCopyFn(
+        publicationArgs <- list(
           output = output,
           values = values,
           projectDirs = projectDirs,
@@ -124,6 +124,13 @@ observeProtSummaryPublicationCopy <- function(input,
           contrastsTbl = contrastsTbl,
           designMatrix = designMatrix
         )
+        publicationFormals <- names(formals(runPublicationCopyFn))
+        if (!is.null(copyInputs$artifactDependencies) &&
+            "artifactDependencies" %in% publicationFormals) {
+          publicationArgs$artifactDependencies <-
+            copyInputs$artifactDependencies
+        }
+        do.call(runPublicationCopyFn, publicationArgs)
       }, error = function(e) {
         handleCopyErrorFn(
           output = output,

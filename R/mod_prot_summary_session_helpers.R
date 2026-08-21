@@ -16,18 +16,52 @@ completeProtSummaryWorkflowArgsSave <- function(output,
                                                 fileExistsFn = file.exists,
                                                 writeLinesFn = writeLines,
                                                 timestampFn = Sys.time,
-                                                catFn = cat) {
+                                                catFn = cat,
+                                                prepareSummaryDependenciesFn =
+                                                  prepareProtDiaSummaryDependencies,
+                                                releaseSummaryDependenciesFn =
+                                                  releaseProtDiaSummaryDependencies,
+                                                writeArtifactFinalExportFn =
+                                                  writeProtDiaSummaryFinalExport) {
   tryCatch({
-    finalS4State <- resolveFinalS4StateFn(workflowData)
-    finalS4Object <- finalS4State$finalS4Object
+    summaryDependencies <- prepareSummaryDependenciesFn(
+      workflow_data = workflowData,
+      project_dirs = projectDirs,
+      omic_type = omicType,
+      kind = "final_export",
+      hydrate_final = TRUE
+    )
+    if (!is.null(summaryDependencies)) {
+      on.exit(
+        releaseSummaryDependenciesFn(summaryDependencies),
+        add = TRUE
+      )
+      finalS4Object <- summaryDependencies$finalS4Object
+      finalS4State <- list(
+        finalS4Object = finalS4Object,
+        dataStateUsed = summaryDependencies$manifest$final_state$state_name
+      )
+    } else {
+      finalS4State <- resolveFinalS4StateFn(workflowData)
+      finalS4Object <- finalS4State$finalS4Object
+    }
+    projectPaths <- if (is.null(summaryDependencies)) {
+      projectDirs[[omicType]]
+    } else {
+      summaryDependencies$projectPaths
+    }
 
     contrastsTbl <- NULL
-    if (!is.null(workflowData) && !is.null(workflowData$contrasts_tbl)) {
+    if (!is.null(summaryDependencies)) {
+      contrastsTbl <- summaryDependencies$contrastsTbl
+      catFn("SESSION SUMMARY: Using contrasts from artifact dependencies\n")
+    } else if (!is.null(workflowData) && !is.null(workflowData$contrasts_tbl)) {
       contrastsTbl <- workflowData$contrasts_tbl
       catFn("SESSION SUMMARY: Using contrasts_tbl from workflow_data\n")
     }
 
-    if (!is.null(workflowData) && !is.null(workflowData$config_list)) {
+    if (is.null(summaryDependencies) &&
+        !is.null(workflowData) && !is.null(workflowData$config_list)) {
       assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
       catFn(
         "SESSION SUMMARY: Config list available with",
@@ -39,14 +73,32 @@ completeProtSummaryWorkflowArgsSave <- function(output,
     catFn(
       "SESSION SUMMARY: Creating study_parameters.txt file with S4 parameters and RUV results\n"
     )
-    studyParamsFile <- createWorkflowArgsFn(
+    workflowArgs <- list(
       workflow_name = experimentLabel,
       description = description,
-      source_dir_path = projectDirs[[omicType]]$source_dir,
+      source_dir_path = projectPaths$source_dir,
       final_s4_object = finalS4Object,
       contrasts_tbl = contrastsTbl,
       workflow_data = workflowData
     )
+    workflowArgsFormals <- names(formals(createWorkflowArgsFn))
+    if (!is.null(summaryDependencies) &&
+        "config_list" %in% workflowArgsFormals) {
+      workflowArgs$config_list <- summaryDependencies$configList
+    }
+    if (!is.null(summaryDependencies) &&
+        "organism_name" %in% workflowArgsFormals) {
+      workflowArgs$organism_name <- summaryDependencies$organismName
+    }
+    if (!is.null(summaryDependencies) &&
+        "taxon_id" %in% workflowArgsFormals) {
+      workflowArgs$taxon_id <- summaryDependencies$taxonId
+    }
+    if (!is.null(summaryDependencies) &&
+        "legacy_global_fallbacks" %in% workflowArgsFormals) {
+      workflowArgs$legacy_global_fallbacks <- FALSE
+    }
+    studyParamsFile <- do.call(createWorkflowArgsFn, workflowArgs)
 
     catFn(
       "SESSION SUMMARY: Successfully created study_parameters.txt at:",
@@ -55,9 +107,9 @@ completeProtSummaryWorkflowArgsSave <- function(output,
     )
 
     catFn("SESSION SUMMARY: Saving Integration S4 Object...\n")
-    integrationDir <- projectDirs[[omicType]]$integration_dir
+    integrationDir <- projectPaths$integration_dir
     if (is.null(integrationDir)) {
-      integrationDir <- file.path(projectDirs[[omicType]]$base_dir, "integration")
+      integrationDir <- file.path(projectPaths$base_dir, "integration")
     }
 
     if (!dirExistsFn(integrationDir)) {
@@ -67,7 +119,16 @@ completeProtSummaryWorkflowArgsSave <- function(output,
     s4Filename <- sprintf("%s_%s_final_s4.RDS", omicType, experimentLabel)
     s4Filepath <- file.path(integrationDir, s4Filename)
 
-    saveRDSFn(finalS4Object, s4Filepath)
+    if (is.null(summaryDependencies)) {
+      saveRDSFn(finalS4Object, s4Filepath)
+    } else {
+      values$artifact_final_export <- writeArtifactFinalExportFn(
+        object = finalS4Object,
+        path = s4Filepath,
+        dependencies = summaryDependencies,
+        save_rds_fn = saveRDSFn
+      )
+    }
     catFn(
       sprintf("SESSION SUMMARY: Saved Integration S4 object to: %s\n", s4Filepath)
     )
@@ -145,9 +206,19 @@ summariseProtSummaryWorkflowMetadata <- function(workflowData,
     report_template = reportTemplate,
     parameters = list(
       globalParameters = globalParameters,
-      da_ui_params = tryCatch(workflowData$da_ui_params, error = function(e) NULL),
-      enrichment_ui_params = tryCatch(workflowData$enrichment_ui_params, error = function(e) NULL),
-      ruv_optimization_result = tryCatch(workflowData$ruv_optimization_result, error = function(e) NULL)
+      da_ui_params = tryCatch(
+        workflowData$da_ui_params,
+        error = function(e) NULL
+      ),
+      enrichment_ui_params = tryCatch(
+        workflowData$enrichment_ui_params,
+        error = function(e) NULL
+      ),
+      ruv_optimization_result = tryCatch(
+        workflowData$ruv_optimization_result,
+        error = function(e) NULL
+      ),
+      artifact_summary_audit = protDiaSummarySessionAudit(workflowData)
     )
   )
 }
@@ -245,4 +316,3 @@ completeProtSummarySessionStateExport <- function(projectDirs,
     FALSE
   })
 }
-

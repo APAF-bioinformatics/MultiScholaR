@@ -10,6 +10,8 @@ params:
   experiment_label: "DEFAULT_LABEL" # Use experiment_label instead of suffix
   workflow_name: "Unknown Workflow"
   timestamp: "`r format(Sys.time(), '%Y-%m-%d %H:%M:%S')`"
+  project_paths: !r NULL
+  report_dependencies: !r NULL
 mainfont: "Calibri"    
 ---
 
@@ -22,7 +24,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r Project Setup, echo=FALSE, warning=FALSE}
-# This chunk now sets up paths using the global project_dirs object
+# Artifact sessions provide explicit paths; legacy renders retain project_dirs.
 library(tidyverse)
 library(purrr)
 library(flextable)
@@ -37,17 +39,17 @@ library(webshot2)
 library(dplyr)
 library(stringr)
 
-# Ensure global project_dirs object exists
-if (!exists("project_dirs", envir = .GlobalEnv) || !is.list(project_dirs)) {
-  stop("Global object 'project_dirs' not found or is not a list. Run MultiScholaR::setupDirectories() first.")
+current_project_paths <- params$project_paths
+if (is.null(current_project_paths)) {
+  if (!exists("project_dirs", envir = .GlobalEnv) || !is.list(project_dirs)) {
+    stop("Global object 'project_dirs' not found or is not a list. Run MultiScholaR::setupDirectories() first.")
+  }
+  current_omic_key <- paste0(params$omic_type, "_", params$experiment_label)
+  if (!current_omic_key %in% names(project_dirs)) {
+    stop(glue::glue("Key '{current_omic_key}' (from params$omic_type='{params$omic_type}' & params$experiment_label='{params$experiment_label}') not found in global 'project_dirs'. Ensure setupDirectories() was run correctly."))
+  }
+  current_project_paths <- project_dirs[[current_omic_key]]
 }
-# Construct the key for the current omic type and experiment label
-current_omic_key <- paste0(params$omic_type, "_", params$experiment_label)
-if (!current_omic_key %in% names(project_dirs)) {
-  stop(glue::glue("Key '{current_omic_key}' (from params$omic_type='{params$omic_type}' & params$experiment_label='{params$experiment_label}') not found in global 'project_dirs'. Ensure setupDirectories() was run correctly."))
-}
-# Get the list of paths for the current context
-current_project_paths <- project_dirs[[current_omic_key]]
 
 # Define commonly used paths for this report for convenience
 report_source_dir             <- current_project_paths$source_dir

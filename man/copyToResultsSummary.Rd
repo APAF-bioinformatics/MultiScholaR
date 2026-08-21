@@ -12,7 +12,8 @@ copyToResultsSummary(
   design_matrix = NULL,
   force = FALSE,
   current_rmd = NULL,
-  project_dirs_object_name = "project_dirs"
+  project_dirs_object_name = "project_dirs",
+  project_dirs = NULL
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ copyToResultsSummary(
 the function will attempt to detect and save the currently active .Rmd file in RStudio.}
 
 \item{project_dirs_object_name}{The name of the list object in the global environment that holds the directory structures (typically the output of setupDirectories). Defaults to "project_dirs".}
+
+\item{project_dirs}{Optional explicit project-directory object. Supplying it
+bypasses the legacy global lookup.}
 }
 \value{
 Invisible list of failed copies for error handling.

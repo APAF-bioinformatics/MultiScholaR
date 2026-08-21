@@ -8,13 +8,19 @@
 #' @param final_s4_object S4 object containing workflow parameters in @args slot (optional)
 #' @param contrasts_tbl Data frame, contrasts table (optional)
 #' @param workflow_data List containing workflow state and optimization results (optional)
+#' @param config_list Explicit workflow configuration. When omitted, the legacy
+#'   global compatibility lookup is retained.
+#' @param legacy_global_fallbacks Whether omitted metadata may use legacy global
+#'   compatibility bindings. Defaults to `TRUE`.
 #' @export
 createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                                          organism_name = NULL, taxon_id = NULL,
                                          source_dir_path = NULL,
                                          final_s4_object = NULL,
                                          contrasts_tbl = NULL,
-                                         workflow_data = NULL) {
+                                         workflow_data = NULL,
+                                         config_list = NULL,
+                                         legacy_global_fallbacks = TRUE) {
     # Validate required inputs
     if (missing(workflow_name) || !is.character(workflow_name) || length(workflow_name) != 1) {
         stop("workflow_name must be a single character string")
@@ -65,14 +71,17 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         cat("WORKFLOW ARGS: No S4 object provided or S4 @args is NULL\n")
     }
 
-    # Get fallback config_list from global environment
-    config_list <- if (exists("config_list", envir = .GlobalEnv)) {
-        get("config_list", envir = .GlobalEnv)
-    } else {
-        list()
+    # Preserve the legacy fallback only when no explicit owner supplied config.
+    if (is.null(config_list) && isTRUE(legacy_global_fallbacks)) {
+        config_list <- if (exists("config_list", envir = .GlobalEnv)) {
+            get("config_list", envir = .GlobalEnv)
+        } else {
+            list()
+        }
     }
+    if (is.null(config_list)) config_list <- list()
 
-    cat(sprintf("WORKFLOW ARGS: Global config_list has %d sections\n", length(config_list)))
+    cat(sprintf("WORKFLOW ARGS: Config list has %d sections\n", length(config_list)))
 
     # Extract RUV optimization results from workflow_data if available
     ruv_optimization_result <- NULL
@@ -150,16 +159,18 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
     git_info <- resolveWorkflowGitInfo()
 
     # Get organism information from session if not provided
-    if (is.null(organism_name) && exists("organism_name", envir = .GlobalEnv)) {
+    if (isTRUE(legacy_global_fallbacks) && is.null(organism_name) &&
+        exists("organism_name", envir = .GlobalEnv)) {
         organism_name <- get("organism_name", envir = .GlobalEnv)
     }
 
-    if (is.null(taxon_id) && exists("taxon_id", envir = .GlobalEnv)) {
+    if (isTRUE(legacy_global_fallbacks) && is.null(taxon_id) &&
+        exists("taxon_id", envir = .GlobalEnv)) {
         taxon_id <- get("taxon_id", envir = .GlobalEnv)
     }
 
     # Get contrasts_tbl if not provided
-    if (is.null(contrasts_tbl)) {
+    if (isTRUE(legacy_global_fallbacks) && is.null(contrasts_tbl)) {
         if (exists("contrasts_tbl", envir = parent.frame())) {
             contrasts_tbl <- get("contrasts_tbl", envir = parent.frame())
         } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {

@@ -12,7 +12,9 @@ createWorkflowArgsFromConfig(
   source_dir_path = NULL,
   final_s4_object = NULL,
   contrasts_tbl = NULL,
-  workflow_data = NULL
+  workflow_data = NULL,
+  config_list = NULL,
+  legacy_global_fallbacks = TRUE
 )
 }
 \arguments{
@@ -31,6 +33,12 @@ createWorkflowArgsFromConfig(
 \item{contrasts_tbl}{Data frame, contrasts table (optional)}
 
 \item{workflow_data}{List containing workflow state and optimization results (optional)}
+
+\item{config_list}{Explicit workflow configuration. When omitted, the legacy
+global compatibility lookup is retained.}
+
+\item{legacy_global_fallbacks}{Whether omitted metadata may use legacy global
+compatibility bindings. Defaults to \code{TRUE}.}
 }
 \description{
 Create workflow arguments from config

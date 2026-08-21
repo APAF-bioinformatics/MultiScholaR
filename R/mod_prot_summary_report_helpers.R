@@ -235,7 +235,13 @@ resolveProtSummaryReportTemplate <- function(workflowData,
     }
   }
 
-  if ((is.null(workflowTypeDetected) || !nzchar(workflowTypeDetected)) &&
+  artifactReadsEnabled <- protDiaSummaryArtifactEligible(
+    workflowData,
+    "report_reads"
+  )
+
+  if (!artifactReadsEnabled &&
+      (is.null(workflowTypeDetected) || !nzchar(workflowTypeDetected)) &&
       exists("config_list", envir = .GlobalEnv)) {
     configList <- get("config_list", envir = .GlobalEnv)
     workflowTypeFromGlobal <- configList$globalParameters$workflow_type
@@ -475,11 +481,15 @@ runProtSummaryReportGeneration <- function(output,
                                            experimentLabel,
                                            description,
                                            templateFilename,
+                                           projectDirs = NULL,
+                                           reportDependencies = NULL,
                                            renderReportAvailableFn = function() {
                                              exists("RenderReport", mode = "function", inherits = TRUE)
                                            },
                                            renderReportFn = NULL,
                                            activateReportFn = activateProtSummaryRenderedReport,
+                                           recordReportProductFn =
+                                             recordProtDiaSummaryReportProduct,
                                            showNotificationFn = shiny::showNotification,
                                            logInfoFn = function(message) logger::log_info(message),
                                            logErrorFn = function(message) logger::log_error(message),
@@ -506,13 +516,27 @@ runProtSummaryReportGeneration <- function(output,
       experimentLabel
     ))
 
-    renderedPath <- renderReportFn(
+    renderArgs <- list(
       omic_type = omicType,
       experiment_label = experimentLabel,
       rmd_filename = templateFilename
     )
+    renderFormals <- names(formals(renderReportFn))
+    if (!is.null(reportDependencies) &&
+        "project_dirs" %in% renderFormals) {
+      renderArgs$project_dirs <- projectDirs
+    }
+    if (!is.null(reportDependencies) &&
+        "report_dependencies" %in% renderFormals) {
+      renderArgs$report_dependencies <- reportDependencies$manifest
+    }
+    renderedPath <- do.call(renderReportFn, renderArgs)
 
     logInfoFn(sprintf("RenderReport returned path: %s", renderedPath))
+
+    if (!is.null(reportDependencies)) {
+      recordReportProductFn(reportDependencies, renderedPath)
+    }
 
     reportActivated <- activateReportFn(
       output = output,
@@ -565,6 +589,10 @@ runProtSummaryReportProgress <- function(output,
                                          resolveReportTemplateFn = resolveProtSummaryReportTemplate,
                                          retrieveTemplateAssetFn = retrieveProtSummaryReportTemplateAsset,
                                          runReportGenerationFn = runProtSummaryReportGeneration,
+                                         prepareSummaryDependenciesFn =
+                                           prepareProtDiaSummaryDependencies,
+                                         prepareReportDependenciesFn =
+                                           prepareProtDiaReportDependencies,
                                          incProgressFn = shiny::incProgress) {
   incProgressFn(0.1, detail = "Detecting workflow type...")
 
@@ -586,9 +614,21 @@ runProtSummaryReportProgress <- function(output,
     return(FALSE)
   }
 
+  summaryDependencies <- prepareSummaryDependenciesFn(
+    workflow_data = workflowData,
+    project_dirs = projectDirs,
+    omic_type = omicType,
+    kind = "report_reads",
+    hydrate_final = FALSE
+  )
+  reportDependencies <- prepareReportDependenciesFn(
+    summaryDependencies,
+    templateAsset$reportTemplatePath
+  )
+
   incProgressFn(0.5, detail = "Rendering report...")
 
-  runReportGenerationFn(
+  generationArgs <- list(
     output = output,
     values = values,
     omicType = omicType,
@@ -596,5 +636,14 @@ runProtSummaryReportProgress <- function(output,
     description = description,
     templateFilename = templateFilename
   )
+  generationFormals <- names(formals(runReportGenerationFn))
+  if (!is.null(reportDependencies) &&
+      "projectDirs" %in% generationFormals) {
+    generationArgs$projectDirs <- projectDirs
+  }
+  if (!is.null(reportDependencies) &&
+      "reportDependencies" %in% generationFormals) {
+    generationArgs$reportDependencies <- reportDependencies
+  }
+  do.call(runReportGenerationFn, generationArgs)
 }
-

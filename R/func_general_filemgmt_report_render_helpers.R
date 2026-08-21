@@ -57,6 +57,16 @@ downloadReportTemplate <- function(omic_type, rmd_filename) {
 }
 
 ##################################################################################################################
+#' Render a workflow report
+#'
+#' @param omic_type Character string identifying the omic type.
+#' @param experiment_label Character string identifying the experiment.
+#' @param rmd_filename Report template filename.
+#' @param project_dirs_object_name Legacy project-directory object name.
+#' @param output_format Optional rmarkdown output format.
+#' @param project_dirs Optional explicit project-directory object.
+#' @param report_dependencies Optional validated report dependency manifest.
+#' @return Invisibly, the rendered report path or `NULL` after a render error.
 #' @export
 #' @importFrom rlang abort
 #' @importFrom tools file_path_sans_ext
@@ -64,7 +74,9 @@ RenderReport <- function(omic_type,
                          experiment_label,
                          rmd_filename = "DIANN_report.rmd",
                          project_dirs_object_name = "project_dirs",
-                         output_format = NULL) {
+                         output_format = NULL,
+                         project_dirs = NULL,
+                         report_dependencies = NULL) {
     message("--- DEBUG66: Entering RenderReport ---")
     message(sprintf("   DEBUG66: omic_type = '%s'", omic_type))
     message(sprintf("   DEBUG66: experiment_label = '%s'", experiment_label))
@@ -87,12 +99,21 @@ RenderReport <- function(omic_type,
     # --- Retrieve Paths from Global Project Directories Object ---
     # Use the new helper function with automatic fallback
     message("   DEBUG66: Calling getProjectPaths...")
+    project_dirs_env <- if (is.null(project_dirs)) {
+        .GlobalEnv
+    } else {
+        list2env(
+            stats::setNames(list(project_dirs), project_dirs_object_name),
+            parent = emptyenv()
+        )
+    }
     current_paths <- tryCatch(
         {
             getProjectPaths(
                 omic_type = omic_type,
                 experiment_label = experiment_label,
-                project_dirs_object_name = project_dirs_object_name
+                project_dirs_object_name = project_dirs_object_name,
+                env = project_dirs_env
             )
         },
         error = function(e) {
@@ -152,6 +173,34 @@ RenderReport <- function(omic_type,
         ))
     }
 
+    explicit_report_context <- !is.null(project_dirs) ||
+        !is.null(report_dependencies)
+    if (isTRUE(explicit_report_context)) {
+        if (is.null(project_dirs) || is.null(report_dependencies)) {
+            rlang::abort(
+                "Explicit report rendering requires project_dirs and report_dependencies."
+            )
+        }
+        artifactWorkflowStateAssertSafeMetadata(
+            report_dependencies,
+            "report dependencies"
+        )
+        template_lines <- readLines(rmd_input_path, warn = FALSE, n = 80L)
+        declarations <- c(
+            project_paths = any(grepl("^[[:space:]]+project_paths:", template_lines)),
+            report_dependencies = any(grepl(
+                "^[[:space:]]+report_dependencies:",
+                template_lines
+            ))
+        )
+        if (!all(declarations)) {
+            rlang::abort(paste0(
+                "Report template does not declare the explicit DIA-NN artifact context: ",
+                paste(names(declarations)[!declarations], collapse = ", ")
+            ))
+        }
+    }
+
     # --- Construct Output Path (in the labelled results_summary directory) ---
     message("   DEBUG66: Constructing output file path...")
     output_file_basename <- paste0(
@@ -207,16 +256,22 @@ RenderReport <- function(omic_type,
     message(sprintf("         output_file = %s", output_file_path))
     message(sprintf("         output_format = %s", ifelse(is.null(output_format), "NULL (using Rmd default)", output_format)))
 
+    render_params <- list(
+        omic_type = omic_type,
+        experiment_label = experiment_label,
+        workflow_name = workflow_name,
+        timestamp = timestamp
+    )
+    if (isTRUE(explicit_report_context)) {
+        render_params$project_paths <- current_paths
+        render_params$report_dependencies <- report_dependencies
+    }
+
     rendered_path <- tryCatch(
         {
             rmarkdown::render(
                 input = rmd_input_path,
-                params = list(
-                    omic_type = omic_type,
-                    experiment_label = experiment_label,
-                    workflow_name = workflow_name,
-                    timestamp = timestamp
-                ),
+                params = render_params,
                 output_file = output_file_path,
                 output_format = output_format, # Pass this along; if NULL, Rmd default is used
                 envir = new.env(parent = globalenv()) # Render in a clean environment

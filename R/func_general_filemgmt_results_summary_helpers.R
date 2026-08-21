@@ -9,6 +9,8 @@
 #' @param current_rmd Optional path to the current .Rmd file being worked on; if NULL (default),
 #'                    the function will attempt to detect and save the currently active .Rmd file in RStudio.
 #' @param project_dirs_object_name The name of the list object in the global environment that holds the directory structures (typically the output of setupDirectories). Defaults to "project_dirs".
+#' @param project_dirs Optional explicit project-directory object. Supplying it
+#'   bypasses the legacy global lookup.
 #' @return Invisible list of failed copies for error handling.
 #' @importFrom rlang abort
 #' @importFrom tools file_path_as_absolute
@@ -19,7 +21,8 @@ copyToResultsSummary <- function(omic_type,
                                  design_matrix = NULL,
                                  force = FALSE,
                                  current_rmd = NULL,
-                                 project_dirs_object_name = "project_dirs") {
+                                 project_dirs_object_name = "project_dirs",
+                                 project_dirs = NULL) {
     # --- Start: Path Derivation and Validation --- #
     if (missing(omic_type) || !is.character(omic_type) || length(omic_type) != 1 || omic_type == "") {
         rlang::abort("`omic_type` must be a single non-empty character string.")
@@ -29,12 +32,21 @@ copyToResultsSummary <- function(omic_type,
     }
 
     # Use the new helper function with automatic fallback
+    project_dirs_env <- if (is.null(project_dirs)) {
+        .GlobalEnv
+    } else {
+        list2env(
+            stats::setNames(list(project_dirs), project_dirs_object_name),
+            parent = emptyenv()
+        )
+    }
     current_paths <- tryCatch(
         {
             getProjectPaths(
                 omic_type = omic_type,
                 experiment_label = experiment_label,
-                project_dirs_object_name = project_dirs_object_name
+                project_dirs_object_name = project_dirs_object_name,
+                env = project_dirs_env
             )
         },
         error = function(e) {

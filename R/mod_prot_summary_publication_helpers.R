@@ -52,9 +52,27 @@ prepareProtSummaryCopyInputs <- function(workflowData,
                                          projectDirs,
                                          omicType = "proteomics",
                                          readTsvFn = readr::read_tsv,
-                                         catFn = cat) {
+                                         catFn = cat,
+                                         prepareSummaryDependenciesFn =
+                                           prepareProtDiaSummaryDependencies) {
   contrastsTbl <- NULL
   designMatrix <- NULL
+  artifactDependencies <- prepareSummaryDependenciesFn(
+    workflow_data = workflowData,
+    project_dirs = projectDirs,
+    omic_type = omicType,
+    kind = "report_reads",
+    hydrate_final = FALSE
+  )
+
+  if (!is.null(artifactDependencies)) {
+    catFn("   SESSION SUMMARY Step: Resolved copy inputs from artifact dependencies\n")
+    return(list(
+      contrastsTbl = artifactDependencies$contrastsTbl,
+      designMatrix = artifactDependencies$designMatrix,
+      artifactDependencies = artifactDependencies
+    ))
+  }
 
   if (!is.null(workflowData)) {
     if (!is.null(workflowData$contrasts_tbl)) {
@@ -83,7 +101,11 @@ prepareProtSummaryCopyInputs <- function(workflowData,
     }
   }
 
-  list(contrastsTbl = contrastsTbl, designMatrix = designMatrix)
+  list(
+    contrastsTbl = contrastsTbl,
+    designMatrix = designMatrix,
+    artifactDependencies = NULL
+  )
 }
 
 runProtSummaryPublicationCopy <- function(output,
@@ -94,6 +116,7 @@ runProtSummaryPublicationCopy <- function(output,
                                           description,
                                           contrastsTbl = NULL,
                                           designMatrix = NULL,
+                                          artifactDependencies = NULL,
                                           existsFn = exists,
                                           assignFn = assign,
                                           copyFn = copyToResultsSummary,
@@ -101,7 +124,8 @@ runProtSummaryPublicationCopy <- function(output,
                                           showNotificationFn = shiny::showNotification,
                                           timestampFn = Sys.time,
                                           catFn = cat) {
-  if (!existsFn("project_dirs", envir = .GlobalEnv, inherits = FALSE)) {
+  if (is.null(artifactDependencies) &&
+      !existsFn("project_dirs", envir = .GlobalEnv, inherits = FALSE)) {
     catFn("   SESSION SUMMARY: Setting project_dirs in global environment\n")
     assignFn("project_dirs", projectDirs, envir = .GlobalEnv)
   }
@@ -126,6 +150,11 @@ runProtSummaryPublicationCopy <- function(output,
     design_matrix = designMatrix,
     force = TRUE
   )
+  copyFormals <- names(formals(copyFn))
+  if (!is.null(artifactDependencies) &&
+      "project_dirs" %in% copyFormals) {
+    copyArgs$project_dirs <- projectDirs
+  }
   do.call(copyFn, copyArgs)
 
   values$files_copied <- TRUE
@@ -251,4 +280,3 @@ completeProtSummaryGithubPush <- function(output,
     FALSE
   })
 }
-
