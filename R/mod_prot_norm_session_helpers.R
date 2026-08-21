@@ -24,7 +24,9 @@ collectProtNormExportSessionData <- function(
   timeFn = Sys.time,
   messageFn = message
 ) {
-  stateSnapshot <- workflowStateLegacySnapshot(workflowData$state_manager)
+  stateSnapshot <- materializeProtDiaLegacyStateSnapshot(
+    workflowData$state_manager
+  )
   current_state_name <- stateSnapshot$r6_current_state_name
   current_s4_object <- workflowData$state_manager$getState(current_state_name)
   r6_complete_states <- stateSnapshot$r6_complete_states
@@ -107,7 +109,7 @@ collectProtNormExportSessionData <- function(
       current_s4_object@protein_id_column
     ))
   )
-  if (!is.null(stateManifest)) {
+  if (!is.null(stateManifest) && !identical(stateManifest$backend, "artifact")) {
     session_data$workflow_state_manifest <- stateManifest
   }
 
@@ -292,6 +294,7 @@ runProtNormExportSessionWorkflow <- function(
   incProgressFn = shiny::incProgress,
   collectSessionDataFn = collectProtNormExportSessionData,
   saveExportArtifactsFn = saveProtNormExportArtifacts,
+  saveArtifactSessionFn = saveProtDiaSessionManifest,
   messageFn = message
 ) {
   withProgressFn(message = "Exporting filtered session data...", value = 0, {
@@ -310,10 +313,42 @@ runProtNormExportSessionWorkflow <- function(
       messageFn = messageFn
     )
 
+    if (protDiaSessionArtifactEligible(workflowData, "export")) {
+      artifact_session <- tryCatch(
+        saveArtifactSessionFn(
+          workflow_data = workflowData,
+          norm_data = normData,
+          session_data = session_data,
+          export_artifacts = export_artifacts,
+          source_dir = sourceDir
+        ),
+        error = function(error) {
+          messageFn(paste(
+            "*** WARNING: Portable artifact session was not published:",
+            conditionMessage(error),
+            "***"
+          ))
+          list(
+            enabled = TRUE,
+            ok = FALSE,
+            reason = "artifact_session_publish_failed",
+            error_class = class(error),
+            error_message = conditionMessage(error)
+          )
+        }
+      )
+      export_artifacts$artifactSession <- artifact_session
+    }
+
     incProgressFn(0.2, detail = "Creating latest version...")
     incProgressFn(0.1, detail = "Saving metadata files...")
     incProgressFn(0.1, detail = "Creating summary...")
 
+    state_manager <- tryCatch(
+      workflowData$state_manager,
+      error = function(error) NULL
+    )
+    workflowStateReleaseHydrationCache(state_manager)
     list(sessionData = session_data, exportArtifacts = export_artifacts)
   })
 }
