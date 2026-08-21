@@ -157,7 +157,10 @@ artifactDescriptorValidateQuery <- function(query, key) {
     query$filters <- artifactDescriptorNamedList(
         query$filters, paste0(key, ".filters"), allow_empty = TRUE
     )
-    allowed_operators <- c("equal", "in", "gte", "lte", "between", "is_missing")
+    allowed_operators <- c(
+        "equal", "in", "gt", "gte", "lt", "lte", "between",
+        "is_missing", "contains"
+    )
     filter_ids <- names(query$filters)
     query$filters <- Map(function(filter, filter_id) {
         if (!is.list(filter) ||

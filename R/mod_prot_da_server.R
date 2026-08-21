@@ -42,16 +42,21 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
     da_server_run_analysis_handler(input, output, session, ns, da_data, workflow_data, experiment_paths)
 
     # Handler 4: Volcano Plot Rendering (Restored)
-    da_server_volcano_render_handler(input, output, session, ns, da_data, experiment_paths)
+    da_server_volcano_render_handler(
+      input, output, session, ns, da_data, experiment_paths, workflow_data
+    )
 
     # Handler 5: Heatmap Rendering
-    da_server_heatmap_render_handler(input, output, session, ns, da_data, experiment_paths)
+    da_server_heatmap_render_handler(
+      input, output, session, ns, da_data, experiment_paths, workflow_data
+    )
 
     # Handler 6: Results Table Rendering
-    da_server_table_render_handler(input, output, session, da_data)
+    da_server_table_render_handler(
+      input, output, session, da_data, workflow_data
+    )
 
     # Return DE data for potential use by parent module
     return(da_data)
   })
 }
-

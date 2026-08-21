@@ -1,10 +1,49 @@
 # Handler 6: Results Table Rendering
-da_server_table_render_handler <- function(input, output, session, da_data) {
+da_server_table_render_handler <- function(
+  input,
+  output,
+  session,
+  da_data,
+  workflow_data = NULL
+) {
   output$da_results_table <- DT::renderDT({
     shiny::req(input$table_contrast, da_data$da_results_list)
 
     tryCatch(
       {
+        if (isProtDiaDaArtifactIndex(da_data$da_results_list)) {
+          protein_id_column <- da_data$current_s4_object@protein_id_column
+          projections <- c(
+            protein_id_column, "log2FC", "raw_pvalue", "fdr_qvalue"
+          )
+          page <- queryProtDiaDaPage(
+            workflow_data = workflow_data,
+            index = da_data$da_results_list,
+            contrast = input$table_contrast,
+            projections = projections,
+            filters = protDiaDaTableFilters(
+              input$table_significance,
+              input$da_q_val_thresh,
+              input$treat_lfc_cutoff
+            ),
+            limit = as.integer(input$table_max_rows)
+          )
+          return(DT::datatable(
+            page$data,
+            options = list(
+              pageLength = 25,
+              scrollX = TRUE,
+              dom = "Bfrtip",
+              buttons = c("copy", "csv", "excel")
+            ),
+            extensions = "Buttons"
+          ) |>
+            DT::formatRound(
+              columns = c("log2FC", "raw_pvalue", "fdr_qvalue"),
+              digits = 4
+            ))
+        }
+
         # Get DA results from the new format
         if (!is.null(da_data$da_results_list$da_proteins_long)) {
           # Debug: Show available contrasts in data vs selected contrast
@@ -83,6 +122,28 @@ da_server_table_render_handler <- function(input, output, session, da_data) {
 
     tryCatch(
       {
+        if (isProtDiaDaArtifactIndex(da_data$da_results_list)) {
+          summary <- protDiaDaArtifactSummary(
+            workflow_data,
+            da_data$da_results_list,
+            input$table_contrast,
+            input$da_q_val_thresh,
+            input$treat_lfc_cutoff
+          )
+          return(paste(
+            sprintf("Total genes: %d", summary$rows),
+            sprintf(
+              "Significant (q < %.3f): %d",
+              input$da_q_val_thresh,
+              summary$significant
+            ),
+            sprintf("Up-regulated: %d", summary$up),
+            sprintf("Down-regulated: %d", summary$down),
+            sprintf("Fold-change cutoff: %.2f", input$treat_lfc_cutoff),
+            sep = "\n"
+          ))
+        }
+
         if (!is.null(da_data$da_results_list$da_proteins_long)) {
           # Filter for selected contrast
           current_results <- da_data$da_results_list$da_proteins_long |>
@@ -128,4 +189,3 @@ da_server_table_render_handler <- function(input, output, session, da_data) {
     }
   )
 }
-

@@ -217,7 +217,8 @@ applyProtDaSessionBundle <- function(
     workflow_fields <- c(
         "workflow_context", "state_manager", "contrasts_tbl",
         "design_matrix", "config_list", "uniprot_dat_cln",
-        "aa_seq_tbl_final", names(protDaSessionFieldValues(session_data)),
+        "aa_seq_tbl_final", "artifact_session_manifest",
+        names(protDaSessionFieldValues(session_data)),
         "tab_status", "state_update_trigger"
     )
     workflow_before <- protDaSessionCaptureFields(
@@ -239,6 +240,7 @@ applyProtDaSessionBundle <- function(
         if (identical(bundle$format, "artifact")) {
             workflow_data$workflow_context <- bundle$workflow_context
             workflow_data$state_manager <- bundle$state_manager
+            workflow_data$artifact_session_manifest <- bundle$manifest
         }
         workflow_data$contrasts_tbl <- session_data$contrasts_tbl
         workflow_data$design_matrix <- session_data$design_matrix

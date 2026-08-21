@@ -198,6 +198,21 @@ artifactQueryFilterSql <- function(
             )
         }
         operator <- request$operator
+        if (identical(operator, "contains")) {
+            if (!identical(declaration$type, "character")) {
+                artifactQueryAbort(
+                    "artifact contains filter requires a character column",
+                    "multischolar_invalid_artifact_query_filter"
+                )
+            }
+            value <- artifactQueryValidateValue(request$value, "character")
+            clauses <- c(clauses, paste0(
+                "strpos(lower(COALESCE(CAST(", quote(column),
+                " AS VARCHAR), '')), lower(?)) > 0"
+            ))
+            values <- c(values, list(value))
+            next
+        }
         if (identical(operator, "is_missing")) {
             value <- artifactQueryValidateValue(request$value, "logical")
             status_column <- columns$descriptors[[declaration$column]]$status_name
@@ -233,7 +248,9 @@ artifactQueryFilterSql <- function(
         }
         sql <- switch(operator,
             equal = paste0(quote(column), " = ?"),
+            gt = paste0(quote(column), " > ?"),
             gte = paste0(quote(column), " >= ?"),
+            lt = paste0(quote(column), " < ?"),
             lte = paste0(quote(column), " <= ?"),
             between = paste0(quote(column), " BETWEEN ? AND ?"),
             `in` = paste0(

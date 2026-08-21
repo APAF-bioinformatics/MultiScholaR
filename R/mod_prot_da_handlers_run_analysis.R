@@ -20,29 +20,19 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           # Step 1: Prepare contrasts table for analysis
           shiny::incProgress(0.2, detail = "Preparing contrasts for analysis...")
 
-          # Get contrasts from global environment or create basic ones
-          contrasts_tbl <- NULL
-          if (exists("contrasts_tbl", envir = .GlobalEnv)) {
-            contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+          contrasts_tbl <- protDiaDaResolveContrasts(
+            workflow_data,
+            da_data
+          )
+          if (protDiaDaArtifactWorkflow(workflow_data)) {
+            cat("   DA ANALYSIS Step: Using explicit artifact workflow contrasts\n")
+          } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {
             cat("   DA ANALYSIS Step: Using existing contrasts_tbl from global environment\n")
-            cat("   DA ANALYSIS Step: contrasts_tbl structure:\n")
-            str(contrasts_tbl)
           } else {
-            # Create contrasts table that matches the original format
-            # The original expects a data frame with contrasts in the first column
             cat("   DA ANALYSIS Step: Creating contrasts_tbl from da_data$contrasts_available\n")
-            cat("   DA ANALYSIS Step: Available contrasts:\n")
-            print(da_data$contrasts_available)
-
-            contrasts_tbl <- data.frame(
-              contrasts = da_data$contrasts_available,
-              stringsAsFactors = FALSE
-            )
-            cat("   DA ANALYSIS Step: Created contrasts_tbl:\n")
-            str(contrasts_tbl)
-            print(contrasts_tbl)
           }
-          contrasts_tbl <- normaliseProtDaContrastsTable(contrasts_tbl)
+          cat("   DA ANALYSIS Step: contrasts_tbl structure:\n")
+          str(contrasts_tbl)
 
           # CRITICAL FIX: Use the correct column for contrast strings
           # The downstream functions expect "comparison=expression" format (from full_format column)
@@ -81,6 +71,13 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
             theObject = da_data$current_s4_object,
             formula_string = input$formula_string,
             contrasts_tbl = contrasts_tbl
+          )
+          artifact_parameters <- protDiaDaParameters(
+            formula_string = input$formula_string,
+            da_q_val_thresh = input$da_q_val_thresh,
+            treat_lfc_cutoff = input$treat_lfc_cutoff,
+            eBayes_trend = TRUE,
+            eBayes_robust = TRUE
           )
 
           # Step 2: Run actual differential abundance analysis
@@ -297,6 +294,13 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           cat(sprintf("   DA ANALYSIS Step: Completed DA analysis for %d contrasts\n", length(da_results_list)))
           cat(sprintf("   DA ANALYSIS Step: DA results list names: %s\n", paste(names(da_results_list), collapse = ", ")))
 
+          artifact_prepared <- prepareProtDiaDaArtifactRun(
+            workflow_data = workflow_data,
+            contrasts = contrasts_tbl,
+            results = da_results_list,
+            parameters = artifact_parameters
+          )
+
           # Step 3: Combine results into expected format for UI components
           shiny::incProgress(0.8, detail = "Processing results...")
 
@@ -322,31 +326,35 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           cat(sprintf("   DA ANALYSIS Step: Updated UI dropdowns with friendly names: %s\n", paste(names(contrast_choices), collapse = ", ")))
           cat(sprintf("   DA ANALYSIS Step: (These match the comparison column in da_proteins_long)\n"))
 
-          # Combine all da_proteins_long results into a single dataframe
-          cat("   DA ANALYSIS Step: Combining da_proteins_long results from all contrasts...\n")
-          combined_da_proteins_long <- da_results_list |>
-            purrr::keep(~ !is.null(.x$da_proteins_long)) |>
-            purrr::map(~ .x$da_proteins_long) |>
-            purrr::list_rbind()
+          if (isTRUE(artifact_prepared$enabled)) {
+            combined_results <- artifact_prepared$index
+          } else {
+            # Combine all da_proteins_long results into a single dataframe
+            cat("   DA ANALYSIS Step: Combining da_proteins_long results from all contrasts...\n")
+            combined_da_proteins_long <- da_results_list |>
+              purrr::keep(~ !is.null(.x$da_proteins_long)) |>
+              purrr::map(~ .x$da_proteins_long) |>
+              purrr::list_rbind()
 
-          cat(sprintf("   DA ANALYSIS Step: Combined da_proteins_long has %d total rows\n", nrow(combined_da_proteins_long)))
+            cat(sprintf(
+              "   DA ANALYSIS Step: Combined da_proteins_long has %d total rows\n",
+              nrow(combined_da_proteins_long)
+            ))
 
-          # Create the expected structure for UI components
-          combined_results <- list(
-            da_proteins_long = combined_da_proteins_long,
-            individual_contrasts = da_results_list # Keep individual results for other purposes
-          )
+            # Create the expected structure for UI components
+            combined_results <- list(
+              da_proteins_long = combined_da_proteins_long,
+              individual_contrasts = da_results_list
+            )
 
-          # Add other shared elements from the first contrast result (they should be the same)
-          if (length(da_results_list) > 0) {
-            first_result <- da_results_list[[1]]
-            if (!is.null(first_result$theObject)) {
-              combined_results$theObject <- first_result$theObject
+            # Add the shared S4 object for legacy UI components.
+            if (length(da_results_list) > 0) {
+              first_result <- da_results_list[[1]]
+              if (!is.null(first_result$theObject)) {
+                combined_results$theObject <- first_result$theObject
+              }
             }
           }
-
-          da_data$da_results_list <- combined_results
-          da_data$analysis_complete <- TRUE
           
           # --- TESTTHAT CHECKPOINT CP07 (see test-prot-07-da-analysis.R) ---
           .capture_checkpoint(combined_results, "cp07", "da_results")
@@ -361,8 +369,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           if (length(all_qvalue_warnings) > 0) {
             # Map contrast names to friendly names for user-friendly message
             failed_contrasts <- names(all_qvalue_warnings)
-            if (exists("contrasts_tbl", envir = .GlobalEnv)) {
-              contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+            if (!is.null(contrasts_tbl)) {
               friendly_failed_names <- purrr::map_chr(failed_contrasts, function(failed_contrast) {
                 # Extract the part before = if it exists
                 contrast_base <- stringr::str_extract(failed_contrast, "^[^=]+")
@@ -427,15 +434,6 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
             cat(sprintf("   DA ANALYSIS Step: [WARNING] qvalue() failed for %d contrast(s) - user notification shown\n", length(all_qvalue_warnings)))
           }
 
-          # Update workflow data
-          workflow_data$da_analysis_results_list <- da_results_list
-          # Must replace entire list to trigger reactivity
-          updated_status <- workflow_data$tab_status
-          updated_status$differential_expression <- "complete"
-          updated_status$differential_abundance <- "complete"
-          updated_status$enrichment_analysis <- "pending"
-          workflow_data$tab_status <- updated_status
-
           # [OK] FIXED: Write DA results to disk using new S4 method
           shiny::incProgress(0.9, detail = "Writing results to disk...")
 
@@ -444,9 +442,8 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           tryCatch(
             {
               # Get UniProt annotations for output
-              uniprot_tbl <- NULL
-              if (exists("uniprot_dat_cln", envir = .GlobalEnv)) {
-                uniprot_tbl <- get("uniprot_dat_cln", envir = .GlobalEnv)
+              uniprot_tbl <- protDiaDaResolveAnnotations(workflow_data)
+              if (!is.null(uniprot_tbl)) {
                 cat("   DA ANALYSIS Step: Found uniprot_dat_cln for annotations\n")
               } else {
                 cat("   DA ANALYSIS Step: No uniprot_dat_cln found - proceeding without annotations\n")
@@ -506,6 +503,24 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
               message(paste("Could not write DA results to disk:", e$message))
             }
           )
+
+          if (isTRUE(artifact_prepared$enabled)) {
+            artifact_prepared <- publishProtDiaDaArtifactRun(
+              workflow_data,
+              artifact_prepared
+            )
+            combined_results <- artifact_prepared$index
+            workflow_data$da_analysis_results_list <- combined_results
+          } else {
+            workflow_data$da_analysis_results_list <- da_results_list
+          }
+          da_data$da_results_list <- combined_results
+          da_data$analysis_complete <- TRUE
+          updated_status <- workflow_data$tab_status
+          updated_status$differential_expression <- "complete"
+          updated_status$differential_abundance <- "complete"
+          updated_status$enrichment_analysis <- "pending"
+          workflow_data$tab_status <- updated_status
 
           shiny::incProgress(1.0, detail = "Complete!")
         })

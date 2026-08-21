@@ -1,13 +1,34 @@
 # Handler 5: Heatmap Rendering
-da_server_heatmap_render_handler <- function(input, output, session, ns, da_data, experiment_paths) {
+da_server_heatmap_render_handler <- function(
+  input,
+  output,
+  session,
+  ns,
+  da_data,
+  experiment_paths,
+  workflow_data = NULL
+) {
   # --- TESTTHAT CHECKPOINT CP09 (see test-prot-09-heatmap.R) ---
   shiny::observeEvent(list(input$heatmap_contrast, da_data$da_results_list), {
   shiny::req(input$heatmap_contrast, da_data$da_results_list)
 
-  plot_data_structure <- list(
-    da_proteins_long = da_data$da_results_list$da_proteins_long,
-    theObject = da_data$da_results_list$theObject
-  )
+  plot_data_structure <- if (isProtDiaDaArtifactIndex(
+    da_data$da_results_list
+  )) {
+    protDiaDaSelectedResults(
+      workflow_data,
+      da_data,
+      input$heatmap_contrast,
+      view = "heatmap",
+      q_value_threshold = input$da_q_val_thresh,
+      top_n = input$heatmap_top_n
+    )
+  } else {
+    list(
+      da_proteins_long = da_data$da_results_list$da_proteins_long,
+      theObject = da_data$da_results_list$theObject
+    )
+  }
 
   .capture_checkpoint(list(
     da_results_list = plot_data_structure,
@@ -35,10 +56,23 @@ da_server_heatmap_render_handler <- function(input, output, session, ns, da_data
       {
         # Generate heatmap using new function
         # Create a compatible data structure for the plotting function
-        plot_data_structure <- list(
-          da_proteins_long = da_data$da_results_list$da_proteins_long,
-          theObject = da_data$da_results_list$theObject
-        )
+        plot_data_structure <- if (isProtDiaDaArtifactIndex(
+          da_data$da_results_list
+        )) {
+          protDiaDaSelectedResults(
+            workflow_data,
+            da_data,
+            input$heatmap_contrast,
+            view = "heatmap",
+            q_value_threshold = input$da_q_val_thresh,
+            top_n = input$heatmap_top_n
+          )
+        } else {
+          list(
+            da_proteins_long = da_data$da_results_list$da_proteins_long,
+            theObject = da_data$da_results_list$theObject
+          )
+        }
 
         # The heatmap contrast input should now match the comparison column in da_proteins_long
         cat(sprintf("   HEATMAP: Looking for contrast = %s\n", input$heatmap_contrast))
@@ -168,4 +202,3 @@ da_server_heatmap_render_handler <- function(input, output, session, ns, da_data
     )
   })
 }
-

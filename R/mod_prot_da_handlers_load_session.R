@@ -58,6 +58,39 @@ da_server_load_session_handler <- function(
               da_data,
               bundle
             )
+            artifact_index <- restoreProtDiaDaArtifactIndex(workflow_data)
+            if (!is.null(artifact_index)) {
+              da_data$da_results_list <- artifact_index
+              da_data$analysis_complete <- TRUE
+              workflow_data$da_analysis_results_list <- artifact_index
+              restored_status <- workflow_data$tab_status
+              restored_status$differential_expression <- "complete"
+              restored_status$differential_abundance <- "complete"
+              restored_status$enrichment_analysis <- "pending"
+              workflow_data$tab_status <- restored_status
+              restored_choices <- vapply(
+                artifact_index$contrasts,
+                `[[`,
+                character(1),
+                "friendly_name"
+              )
+              da_data$contrasts_available <- restored_choices
+              shiny::updateSelectInput(
+                session,
+                "volcano_contrast",
+                choices = stats::setNames(restored_choices, restored_choices)
+              )
+              shiny::updateSelectInput(
+                session,
+                "heatmap_contrast",
+                choices = stats::setNames(restored_choices, restored_choices)
+              )
+              shiny::updateSelectInput(
+                session,
+                "table_contrast",
+                choices = stats::setNames(restored_choices, restored_choices)
+              )
+            }
             state_snapshot <- applied$state_snapshot
             cat("*** LOAD DA: R6 state manager completely restored ***\n")
             cat(sprintf(
