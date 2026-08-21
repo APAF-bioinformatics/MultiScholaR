@@ -12,8 +12,9 @@ persistProtDesignBuilderArtifacts <- function(results, workflowData, sourceDir) 
     logger::log_info(paste("Writing contrasts to:", contrastPath))
     writeLines(results$contrasts_tbl$contrasts, contrastPath)
 
-    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-      assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
+    if (publishProtContextLegacyGlobal(
+      "contrasts", results$contrasts_tbl, workflow_data = workflowData
+    )) {
       logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
     }
   }
@@ -55,14 +56,16 @@ hydrateProtDesignBuilderResults <- function(results, workflowData) {
   workflowData$config_list <- results$config_list
 
   if (!is.null(results$contrasts_tbl)) {
-    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-      assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
+    if (publishProtContextLegacyGlobal(
+      "contrasts", results$contrasts_tbl, workflow_data = workflowData
+    )) {
       logger::log_info("Updated contrasts_tbl in global environment from design builder.")
     }
   }
 
-  if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-    assign("config_list", workflowData$config_list, envir = .GlobalEnv)
+  if (publishProtContextLegacyGlobal(
+    "config", workflowData$config_list, workflow_data = workflowData
+  )) {
     logger::log_info("Updated global config_list for updateConfigParameter compatibility")
   }
 }

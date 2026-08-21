@@ -28,9 +28,9 @@ hydrateProtDesignImportedUniprotSidecar <- function(workflowData, importPath, so
     logger::log_info("Loading uniprot_dat_cln from import directory.")
     uniprotDatCln <- readRDS(uniprotFileImport)
     workflowData$uniprot_dat_cln <- uniprotDatCln
-    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-      assign("uniprot_dat_cln", uniprotDatCln, envir = .GlobalEnv)
-    }
+    publishProtContextLegacyGlobal(
+      "annotations", uniprotDatCln, workflow_data = workflowData
+    )
 
     saveRDS(uniprotDatCln, uniprotFileScripts)
     logger::log_info(sprintf(
@@ -50,9 +50,9 @@ hydrateProtDesignImportedUniprotSidecar <- function(workflowData, importPath, so
     logger::log_info("Loading existing uniprot_dat_cln from scripts directory.")
     uniprotDatCln <- readRDS(uniprotFileScripts)
     workflowData$uniprot_dat_cln <- uniprotDatCln
-    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-      assign("uniprot_dat_cln", uniprotDatCln, envir = .GlobalEnv)
-    }
+    publishProtContextLegacyGlobal(
+      "annotations", uniprotDatCln, workflow_data = workflowData
+    )
 
     shiny::showNotification(
       sprintf("UniProt annotations loaded: %d protein annotations available", nrow(uniprotDatCln)),
@@ -91,9 +91,9 @@ hydrateProtDesignImportedFastaSidecar <- function(
     logger::log_info("Loading aa_seq_tbl_final from import directory.")
     aaSeqTblFinal <- readRDS(aaSeqFileImport)
     workflowData$aa_seq_tbl_final <- aaSeqTblFinal
-    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-      assign("aa_seq_tbl_final", aaSeqTblFinal, envir = .GlobalEnv)
-    }
+    publishProtContextLegacyGlobal(
+      "sequences", aaSeqTblFinal, workflow_data = workflowData
+    )
 
     saveRDS(aaSeqTblFinal, aaSeqFileScripts)
     logger::log_info("Copied aa_seq_tbl_final to scripts directory for persistence.")
@@ -107,9 +107,9 @@ hydrateProtDesignImportedFastaSidecar <- function(
     logger::log_info("Loading existing aa_seq_tbl_final from scripts directory.")
     aaSeqTblFinal <- readRDS(aaSeqFileScripts)
     workflowData$aa_seq_tbl_final <- aaSeqTblFinal
-    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-      assign("aa_seq_tbl_final", aaSeqTblFinal, envir = .GlobalEnv)
-    }
+    publishProtContextLegacyGlobal(
+      "sequences", aaSeqTblFinal, workflow_data = workflowData
+    )
 
     if (file.exists(fastaMetadataFileScripts)) {
       workflowData$fasta_metadata <- readRDS(fastaMetadataFileScripts)
@@ -149,9 +149,9 @@ hydrateProtDesignImportedFastaSidecar <- function(
 
       workflowData$aa_seq_tbl_final <- aaSeqTblFinal
       workflowData$fasta_metadata <- fastaMetadata
-      if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-        assign("aa_seq_tbl_final", aaSeqTblFinal, envir = .GlobalEnv)
-      }
+      publishProtContextLegacyGlobal(
+        "sequences", aaSeqTblFinal, workflow_data = workflowData
+      )
 
       if (!is.null(sourceDir)) {
         scriptsAaSeqPath <- file.path(sourceDir, "aa_seq_tbl_final.RDS")
@@ -238,8 +238,12 @@ loadProtDesignImportedConfigAndTables <- function(
 
   logger::log_info("Loading config.ini from project.")
   workflowData$config_list <- readConfig(file = configPath)
-  if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-    assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
+  if (publishProtContextLegacyGlobal(
+    "config",
+    workflowData$config_list,
+    workflow_data = workflowData,
+    assign_fn = assignFn
+  )) {
     logger::log_info("Created global config_list for updateConfigParameter compatibility")
   }
 
@@ -310,8 +314,9 @@ initializeProtDesignImportedWorkflowState <- function(
   workflowData$contrasts_tbl <- importedContrasts
 
   if (!is.null(importedContrasts)) {
-    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-      assign("contrasts_tbl", importedContrasts, envir = .GlobalEnv)
+    if (publishProtContextLegacyGlobal(
+      "contrasts", importedContrasts, workflow_data = workflowData
+    )) {
       logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
     }
   }

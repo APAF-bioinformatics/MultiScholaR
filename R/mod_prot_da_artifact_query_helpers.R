@@ -8,7 +8,11 @@
 
 protDiaDaResolveContrasts <- function(workflow_data, da_data = NULL) {
     if (protDiaDaArtifactWorkflow(workflow_data)) {
-        contrasts <- workflow_data$contrasts_tbl
+        contrasts <- resolveProtContextDependency(
+            "contrasts",
+            workflow_data = workflow_data,
+            required = TRUE
+        )$value
         if (is.null(contrasts) || !is.data.frame(contrasts) ||
             nrow(contrasts) == 0L) {
             protDiaDaArtifactAbort(
@@ -18,10 +22,12 @@ protDiaDaResolveContrasts <- function(workflow_data, da_data = NULL) {
         }
         return(normaliseProtDaContrastsTable(contrasts))
     }
-    if (exists("contrasts_tbl", envir = .GlobalEnv, inherits = FALSE)) {
-        return(normaliseProtDaContrastsTable(get(
-            "contrasts_tbl", envir = .GlobalEnv, inherits = FALSE
-        )))
+    legacy <- resolveProtContextDependency(
+        "contrasts",
+        workflow_data = NULL
+    )
+    if (!is.null(legacy$value)) {
+        return(normaliseProtDaContrastsTable(legacy$value))
     }
     available <- if (is.null(da_data)) NULL else da_data$contrasts_available
     normaliseProtDaContrastsTable(data.frame(
@@ -32,12 +38,15 @@ protDiaDaResolveContrasts <- function(workflow_data, da_data = NULL) {
 
 protDiaDaResolveAnnotations <- function(workflow_data) {
     if (protDiaDaArtifactWorkflow(workflow_data)) {
-        return(workflow_data$uniprot_dat_cln)
+        return(resolveProtContextDependency(
+            "annotations",
+            workflow_data = workflow_data
+        )$value)
     }
-    if (exists("uniprot_dat_cln", envir = .GlobalEnv, inherits = FALSE)) {
-        return(get("uniprot_dat_cln", envir = .GlobalEnv, inherits = FALSE))
-    }
-    NULL
+    resolveProtContextDependency(
+        "annotations",
+        workflow_data = NULL
+    )$value
 }
 
 protDiaDaContrastsVector <- function(workflow_data, da_data = NULL) {
@@ -45,6 +54,33 @@ protDiaDaContrastsVector <- function(workflow_data, da_data = NULL) {
     if ("comparison" %in% names(contrasts)) return(contrasts$comparison)
     if ("contrasts" %in% names(contrasts)) return(contrasts$contrasts)
     contrasts[[1L]]
+}
+
+resolveProtDaAvailableContrasts <- function(workflow_data) {
+    if (protDiaDaArtifactWorkflow(workflow_data)) {
+        return(list(
+            values = protDiaDaContrastsVector(workflow_data),
+            source = "artifact_context"
+        ))
+    }
+    legacy <- resolveProtContextDependency(
+        "contrasts",
+        workflow_data = NULL
+    )
+    table <- legacy$value
+    if (is.null(table) || !is.data.frame(table) || nrow(table) == 0L) {
+        return(list(values = NULL, source = "missing"))
+    }
+    values <- if ("comparison" %in% names(table)) {
+        table$comparison
+    } else if ("contrasts" %in% names(table)) {
+        table$contrasts
+    } else if (ncol(table) > 0L) {
+        table[[1L]]
+    } else {
+        NULL
+    }
+    list(values = values, source = legacy$source)
 }
 
 

@@ -58,11 +58,16 @@ storeProtImportConfiguration <- function(
     , logInfo = logger::log_info
 ) {
   workflowData$config_list <- configList
-  if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-    assignFn("config_list", configList, envir = assignEnv)
+  if (publishProtContextLegacyGlobal(
+    "config",
+    configList,
+    workflow_data = workflowData,
+    global_env = assignEnv,
+    assign_fn = assignFn
+  )) {
     logInfo("Created global config_list for compatibility")
   } else {
-    logInfo("Stored artifact-mode config_list on the workflow coordinator")
+    logInfo("Stored config_list on the workflow coordinator")
   }
 
   invisible(configList)

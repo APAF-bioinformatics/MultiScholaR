@@ -277,9 +277,9 @@ mod_proteomics_server <- function(
           {
             aa_seq_tbl_final <- readRDS(aa_seq_file_path)
             workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
-            if (!protDiaArtifactCoordinatorOwned(workflow_data)) {
-              assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
-            }
+            publishProtContextLegacyGlobal(
+              "sequences", aa_seq_tbl_final, workflow_data = workflow_data
+            )
             log_info(sprintf("Successfully loaded aa_seq_tbl_final with %d sequences", nrow(aa_seq_tbl_final)))
           },
           error = function(e) {

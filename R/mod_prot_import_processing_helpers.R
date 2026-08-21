@@ -272,9 +272,13 @@ processProtImportFastaData <- function(
     workflowData$aa_seq_tbl_final <- aa_seq_tbl_final
     workflowData$fasta_metadata <- fasta_metadata
 
-    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-      assignFn("aa_seq_tbl_final", aa_seq_tbl_final, envir = assignEnv)
-    }
+    publishProtContextLegacyGlobal(
+      "sequences",
+      aa_seq_tbl_final,
+      workflow_data = workflowData,
+      global_env = assignEnv,
+      assign_fn = assignFn
+    )
 
     if (!is.null(experimentPaths) && !is.null(experimentPaths$source_dir)) {
       scripts_aa_seq_path <- file.path(experimentPaths$source_dir, "aa_seq_tbl_final.RDS")

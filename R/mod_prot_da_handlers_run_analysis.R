@@ -26,7 +26,9 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           )
           if (protDiaDaArtifactWorkflow(workflow_data)) {
             cat("   DA ANALYSIS Step: Using explicit artifact workflow contrasts\n")
-          } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {
+          } else if (protContextLegacyGlobalExists(
+            "contrasts", workflow_data = workflow_data
+          )) {
             cat("   DA ANALYSIS Step: Using existing contrasts_tbl from global environment\n")
           } else {
             cat("   DA ANALYSIS Step: Creating contrasts_tbl from da_data$contrasts_available\n")

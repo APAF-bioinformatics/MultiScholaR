@@ -152,30 +152,13 @@ protDaSessionRestoreFields <- function(owner, values) {
 }
 
 protDaSessionCaptureGlobals <- function() {
-    names <- c("contrasts_tbl", "config_list", "uniprot_dat_cln")
-    values <- lapply(names, function(name) {
-        if (exists(name, envir = .GlobalEnv, inherits = FALSE)) {
-            return(list(exists = TRUE, value = get(
-                name,
-                envir = .GlobalEnv,
-                inherits = FALSE
-            )))
-        }
-        list(exists = FALSE, value = NULL)
-    })
-    stats::setNames(values, names)
+    captureProtContextLegacyGlobals(c(
+        "contrasts", "config", "annotations"
+    ))
 }
 
 protDaSessionRestoreGlobals <- function(values) {
-    for (name in names(values)) {
-        if (exists(name, envir = .GlobalEnv, inherits = FALSE)) {
-            rm(list = name, envir = .GlobalEnv)
-        }
-        if (isTRUE(values[[name]]$exists)) {
-            assign(name, values[[name]]$value, envir = .GlobalEnv)
-        }
-    }
-    invisible(NULL)
+    restoreProtContextLegacyGlobals(values)
 }
 
 protDaSessionCaptureManager <- function(manager) {
@@ -229,7 +212,12 @@ applyProtDaSessionBundle <- function(
         da_data,
         c("current_s4_object", "contrasts_available", "formula_from_s4")
     )
-    globals_before <- protDaSessionCaptureGlobals()
+    legacy_bundle <- identical(bundle$format, "legacy")
+    globals_before <- if (legacy_bundle) {
+        protDaSessionCaptureGlobals()
+    } else {
+        NULL
+    }
     result <- tryCatch({
         state_snapshot <- protDaSessionStateSnapshot(workflow_data, bundle)
         artifactStoreInvokeFailure(
@@ -259,22 +247,22 @@ applyProtDaSessionBundle <- function(
         da_data$formula_from_s4 <- protDaSessionFormula(
             session_data$current_s4_object
         )
-        if (!is.null(session_data$contrasts_tbl)) {
-            assign(
-                "contrasts_tbl",
-                session_data$contrasts_tbl,
-                envir = .GlobalEnv
-            )
-        }
-        if (!is.null(session_data$config_list)) {
-            assign("config_list", session_data$config_list, envir = .GlobalEnv)
-        }
-        if (!is.null(bundle$uniprot_dat_cln)) {
-            assign(
-                "uniprot_dat_cln",
-                bundle$uniprot_dat_cln,
-                envir = .GlobalEnv
-            )
+        if (legacy_bundle) {
+            if (!is.null(session_data$contrasts_tbl)) {
+                publishProtContextLegacyGlobal(
+                    "contrasts", session_data$contrasts_tbl
+                )
+            }
+            if (!is.null(session_data$config_list)) {
+                publishProtContextLegacyGlobal(
+                    "config", session_data$config_list
+                )
+            }
+            if (!is.null(bundle$uniprot_dat_cln)) {
+                publishProtContextLegacyGlobal(
+                    "annotations", bundle$uniprot_dat_cln
+                )
+            }
         }
         status <- workflow_data$tab_status
         status$normalization <- "complete"
@@ -300,7 +288,7 @@ applyProtDaSessionBundle <- function(
         }
         protDaSessionRestoreFields(workflow_data, workflow_before)
         protDaSessionRestoreFields(da_data, da_before)
-        protDaSessionRestoreGlobals(globals_before)
+        if (legacy_bundle) protDaSessionRestoreGlobals(globals_before)
         if (identical(bundle$format, "artifact") &&
             inherits(bundle$state_manager, "ArtifactWorkflowState")) {
             try(bundle$state_manager$close(), silent = TRUE)

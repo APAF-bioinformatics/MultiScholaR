@@ -40,50 +40,14 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
 
                     applyProtDiaDaArtifactIndex(workflow_data, da_data)
 
-                    # Check for explicit artifact/session contrasts first.
-                    cat("   DA TAB Step: Checking for contrasts_tbl in global environment...\n")
-                    cat(sprintf("   DA TAB Step: contrasts_tbl exists in global env: %s\n", exists("contrasts_tbl", envir = .GlobalEnv)))
-                    if (protDiaDaArtifactWorkflow(workflow_data)) {
-                      da_data$contrasts_available <- protDiaDaContrastsVector(
-                        workflow_data,
-                        da_data
-                      )
-                      cat("   DA TAB Step: Using explicit artifact workflow contrasts\n")
-                    } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {
-                      contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-                      cat("   DA TAB Step: Found contrasts_tbl in global environment\n")
-                      cat("   DA TAB Step: contrasts_tbl structure:\n")
-                      str(contrasts_tbl)
-                      cat("   DA TAB Step: contrasts_tbl content:\n")
-                      print(contrasts_tbl)
-
-                      # Validate contrasts_tbl has content
-                      if (is.null(contrasts_tbl) || nrow(contrasts_tbl) == 0) {
-                        cat("   DA TAB Step: contrasts_tbl exists but is empty, falling back to auto-generation\n")
-                        da_data$contrasts_available <- NULL
-                      } else if ("comparison" %in% names(contrasts_tbl)) {
-                        da_data$contrasts_available <- contrasts_tbl$comparison
-                        cat(sprintf("   DA TAB Step: Set contrasts from comparison column: %s\n", paste(da_data$contrasts_available, collapse = ", ")))
-                      } else if ("contrasts" %in% names(contrasts_tbl)) {
-                        da_data$contrasts_available <- contrasts_tbl$contrasts
-                        cat(sprintf("   DA TAB Step: Set contrasts from contrasts column: %s\n", paste(da_data$contrasts_available, collapse = ", ")))
-                      } else {
-                        cat("   DA TAB Step: contrasts_tbl found but no recognized column names\n")
-                        cat("   DA TAB Step: Available column names:\n")
-                        print(names(contrasts_tbl))
-                        # Try first column if it has content
-                        if (ncol(contrasts_tbl) > 0) {
-                          da_data$contrasts_available <- contrasts_tbl[[1]]
-                          cat(sprintf("   DA TAB Step: Using first column: %s\n", paste(da_data$contrasts_available, collapse = ", ")))
-                        } else {
-                          cat("   DA TAB Step: contrasts_tbl has no usable content\n")
-                          da_data$contrasts_available <- NULL
-                        }
-                      }
-                    } else {
-                      cat("   DA TAB Step: No contrasts_tbl in global environment. Will attempt auto-generation.\n")
-                      da_data$contrasts_available <- NULL
-                    }
+                    contrast_context <- resolveProtDaAvailableContrasts(
+                      workflow_data
+                    )
+                    da_data$contrasts_available <- contrast_context$values
+                    cat(sprintf(
+                      "   DA TAB Step: Contrast source = %s\n",
+                      contrast_context$source
+                    ))
 
                     # Only auto-generate contrasts if user-specified ones weren't found or were empty
                     if (is.null(da_data$contrasts_available) || length(da_data$contrasts_available) == 0) {
@@ -237,49 +201,14 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
 
               applyProtDiaDaArtifactIndex(workflow_data, da_data)
 
-              # Check for explicit artifact/session contrasts first.
-              cat(sprintf("   DA TAB Step: contrasts_tbl exists in global env: %s\n", exists("contrasts_tbl", envir = .GlobalEnv)))
-              if (protDiaDaArtifactWorkflow(workflow_data)) {
-                da_data$contrasts_available <- protDiaDaContrastsVector(
-                  workflow_data,
-                  da_data
-                )
-                cat("   DA TAB Step: Using explicit artifact workflow contrasts\n")
-              } else if (exists("contrasts_tbl", envir = .GlobalEnv)) {
-                contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-                cat("   DA TAB Step: Found contrasts_tbl in global environment\n")
-                cat("   DA TAB Step: contrasts_tbl structure:\n")
-                str(contrasts_tbl)
-                cat("   DA TAB Step: contrasts_tbl content:\n")
-                print(contrasts_tbl)
-
-                # Validate contrasts_tbl has content
-                if (is.null(contrasts_tbl) || nrow(contrasts_tbl) == 0) {
-                  cat("   DA TAB Step: contrasts_tbl exists but is empty, falling back to auto-generation\n")
-                  da_data$contrasts_available <- NULL
-                } else if ("comparison" %in% names(contrasts_tbl)) {
-                  da_data$contrasts_available <- contrasts_tbl$comparison
-                  cat(sprintf("   DA TAB Step: Set contrasts from comparison column: %s\n", paste(da_data$contrasts_available, collapse = ", ")))
-                } else if ("contrasts" %in% names(contrasts_tbl)) {
-                  da_data$contrasts_available <- contrasts_tbl$contrasts
-                  cat(sprintf("   DA TAB Step: Set contrasts from contrasts column: %s\n", paste(da_data$contrasts_available, collapse = ", ")))
-                } else {
-                  cat("   DA TAB Step: contrasts_tbl found but no recognized column names\n")
-                  cat("   DA TAB Step: Available column names:\n")
-                  print(names(contrasts_tbl))
-                  # Try first column if it has content
-                  if (ncol(contrasts_tbl) > 0) {
-                    da_data$contrasts_available <- contrasts_tbl[[1]]
-                    cat(sprintf("   DA TAB Step: Using first column: %s\n", paste(da_data$contrasts_available, collapse = ", ")))
-                  } else {
-                    cat("   DA TAB Step: contrasts_tbl has no usable content\n")
-                    da_data$contrasts_available <- NULL
-                  }
-                }
-              } else {
-                cat("   DA TAB Step: No contrasts_tbl in global environment. Will attempt auto-generation.\n")
-                da_data$contrasts_available <- NULL
-              }
+              contrast_context <- resolveProtDaAvailableContrasts(
+                workflow_data
+              )
+              da_data$contrasts_available <- contrast_context$values
+              cat(sprintf(
+                "   DA TAB Step: Contrast source = %s\n",
+                contrast_context$source
+              ))
 
               # Only auto-generate contrasts if user-specified ones weren't found or were empty
               if (is.null(da_data$contrasts_available) || length(da_data$contrasts_available) == 0) {

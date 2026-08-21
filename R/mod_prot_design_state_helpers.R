@@ -170,9 +170,9 @@ completeProtDesignPostCheckpoint <- function(
     )
 
     workflowData$uniprot_dat_cln <- uniprotDatCln
-    if (!protDiaArtifactCoordinatorOwned(workflowData)) {
-      assign("uniprot_dat_cln", uniprotDatCln, envir = .GlobalEnv)
-    }
+    publishProtContextLegacyGlobal(
+      "annotations", uniprotDatCln, workflow_data = workflowData
+    )
 
     if (!is.null(experimentPaths) && !is.null(experimentPaths$source_dir)) {
       scriptsUniprotPath <- file.path(experimentPaths$source_dir, "uniprot_dat_cln.RDS")
