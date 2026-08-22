@@ -20,6 +20,15 @@ baselineRepoRoot <- function() {
 }
 
 .BASELINE_REPO_ROOT <- baselineRepoRoot()
+source(
+    file.path(
+        .BASELINE_REPO_ROOT,
+        "tools",
+        "profiling",
+        "omics_resource_measurement.R"
+    ),
+    local = FALSE
+)
 if (!exists("omicsParityReadManifest", mode = "function")) {
     source(
         file.path(.BASELINE_REPO_ROOT, "tests", "testthat", "helper-omics-parity.R"),
@@ -40,25 +49,8 @@ source(
     local = FALSE
 )
 
-baselineUtcNow <- function() {
-    format(as.POSIXct(Sys.time(), tz = "UTC"), "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC")
-}
-
 baselineParseBool <- function(value) {
     tolower(as.character(value)) %in% c("1", "true", "yes", "y")
-}
-
-baselineThreadEnvironment <- function() {
-    as.list(Sys.getenv(
-        c(
-            "OMP_NUM_THREADS",
-            "OPENBLAS_NUM_THREADS",
-            "MKL_NUM_THREADS",
-            "ARROW_NUM_THREADS",
-            "DUCKDB_THREADS"
-        ),
-        unset = NA_character_
-    ))
 }
 
 baselineResolvePath <- function(path, must_work = FALSE) {
@@ -147,249 +139,6 @@ baselineParseArgs <- function(argv) {
     args
 }
 
-baselineWriteJson <- function(value, path) {
-    dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-    jsonlite::write_json(
-        value,
-        path,
-        auto_unbox = TRUE,
-        pretty = TRUE,
-        null = "null",
-        na = "null",
-        digits = 17
-    )
-    invisible(path)
-}
-
-baselineDisplayCommandArgs <- function(command_args, run_dir) {
-    replacements <- c(
-        "<repo-root>" = .BASELINE_REPO_ROOT,
-        "<run-dir>" = normalizePath(run_dir, mustWork = FALSE)
-    )
-    vapply(command_args, \(argument) {
-        displayed <- argument
-        for (label in names(replacements)) {
-            displayed <- gsub(replacements[[label]], label, displayed, fixed = TRUE)
-        }
-        displayed
-    }, character(1), USE.NAMES = FALSE)
-}
-
-baselineDirMetrics <- function(path, categories) {
-    files <- if (dir.exists(path)) {
-        list.files(path, recursive = TRUE, full.names = TRUE, all.files = TRUE, no.. = TRUE)
-    } else {
-        character()
-    }
-    files <- files[file.exists(files) & !dir.exists(files)]
-    relative <- if (length(files)) {
-        substring(files, nchar(normalizePath(path)) + 2L)
-    } else {
-        character()
-    }
-    sizes <- if (length(files)) as.numeric(file.info(files)$size) else numeric()
-    category_names <- vapply(categories, `[[`, character(1), "category")
-    bytes <- stats::setNames(as.list(rep(0, length(categories))), category_names)
-    counts <- stats::setNames(as.list(rep(0L, length(categories))), category_names)
-    assigned <- rep(FALSE, length(files))
-
-    for (category in categories) {
-        matches <- !assigned & grepl(category$pattern, relative, perl = TRUE)
-        bytes[[category$category]] <- sum(sizes[matches], na.rm = TRUE)
-        counts[[category$category]] <- sum(matches)
-        assigned[matches] <- TRUE
-    }
-    list(
-        total_bytes = sum(sizes, na.rm = TRUE),
-        file_count = length(files),
-        bytes = bytes,
-        counts = counts
-    )
-}
-
-baselineProcessTreeMetrics <- function(pid) {
-    if (!requireNamespace("ps", quietly = TRUE)) {
-        stop("Package 'ps' is required for process-tree RSS measurement", call. = FALSE)
-    }
-    root <- tryCatch(ps::ps_handle(pid), error = \(...) NULL)
-    if (is.null(root) || !isTRUE(tryCatch(ps::ps_is_running(root), error = \(...) FALSE))) {
-        return(list(rss_bytes = 0, vms_bytes = 0, process_count = 0L, pids = list()))
-    }
-    handles <- c(
-        list(root),
-        tryCatch(ps::ps_children(root, recursive = TRUE), error = \(...) list())
-    )
-    memory <- lapply(handles, \(handle) {
-        tryCatch(ps::ps_memory_info(handle), error = \(...) c(rss = 0, vms = 0))
-    })
-    list(
-        rss_bytes = sum(vapply(memory, \(info) as.numeric(info[["rss"]]), numeric(1))),
-        vms_bytes = sum(vapply(memory, \(info) as.numeric(info[["vms"]]), numeric(1))),
-        process_count = length(handles),
-        pids = as.list(vapply(handles, \(handle) ps::ps_pid(handle), integer(1)))
-    )
-}
-
-baselineMeasureSubprocess <- function(
-    command,
-    command_args,
-    run_dir,
-    execution,
-    categories,
-    env = character(),
-    capture_output = TRUE
-) {
-    if (!requireNamespace("processx", quietly = TRUE)) {
-        stop("Package 'processx' is required for fresh-process measurement", call. = FALSE)
-    }
-    dir.create(run_dir, recursive = TRUE, showWarnings = FALSE)
-    stdout_path <- file.path(run_dir, "final", "stdout.log")
-    stderr_path <- file.path(run_dir, "final", "stderr.log")
-    dir.create(dirname(stdout_path), recursive = TRUE, showWarnings = FALSE)
-    stdout_destination <- if (capture_output) stdout_path else nullfile()
-    stderr_destination <- if (capture_output) stderr_path else nullfile()
-    started_at <- baselineUtcNow()
-    started <- proc.time()[["elapsed"]]
-    process <- processx::process$new(
-        command,
-        command_args,
-        stdout = stdout_destination,
-        stderr = stderr_destination,
-        env = env,
-        wd = .BASELINE_REPO_ROOT,
-        cleanup = TRUE,
-        supervise = TRUE
-    )
-    samples <- list()
-    peak_category_bytes <- stats::setNames(
-        rep(0, length(categories)),
-        vapply(categories, `[[`, character(1), "category")
-    )
-    retained <- NULL
-    index <- 0L
-
-    repeat {
-        index <- index + 1L
-        tree <- baselineProcessTreeMetrics(process$get_pid())
-        disk <- baselineDirMetrics(run_dir, categories)
-        for (category in names(peak_category_bytes)) {
-            peak_category_bytes[[category]] <- max(
-                peak_category_bytes[[category]],
-                disk$bytes[[category]]
-            )
-        }
-        sample <- list(
-            elapsed_seconds = proc.time()[["elapsed"]] - started,
-            tree_rss_bytes = tree$rss_bytes,
-            tree_vms_bytes = tree$vms_bytes,
-            process_count = tree$process_count,
-            pids = tree$pids,
-            disk_bytes = disk$total_bytes,
-            file_count = disk$file_count,
-            disk_category_bytes = disk$bytes
-        )
-        samples[[index]] <- sample
-        if (file.exists(file.path(run_dir, "retention-ready")) && tree$rss_bytes > 0) {
-            retained <- sample
-        }
-        if (!process$is_alive()) {
-            break
-        }
-        Sys.sleep(as.numeric(execution$sampling_interval_ms) / 1000)
-    }
-    process$wait(timeout = 1000)
-    final_disk <- baselineDirMetrics(run_dir, categories)
-    rss_values <- vapply(samples, `[[`, numeric(1), "tree_rss_bytes")
-    vms_values <- vapply(samples, `[[`, numeric(1), "tree_vms_bytes")
-    disk_values <- vapply(samples, `[[`, numeric(1), "disk_bytes")
-    process_values <- vapply(samples, `[[`, integer(1), "process_count")
-    artifact_categories <- intersect(
-        c("committed", "staging_snapshot", "duckdb_spill"),
-        names(peak_category_bytes)
-    )
-    artifact_disk_values <- vapply(samples, \(sample) {
-        sum(unlist(sample$disk_category_bytes[artifact_categories], use.names = FALSE))
-    }, numeric(1))
-    if (is.null(retained)) {
-        retained <- samples[[length(samples)]]
-    }
-
-    list(
-        status = if (identical(process$get_exit_status(), 0L)) "passed" else "failed",
-        exit_status = process$get_exit_status(),
-        started_at = started_at,
-        finished_at = baselineUtcNow(),
-        command = basename(command),
-        arguments = as.list(baselineDisplayCommandArgs(command_args, run_dir)),
-        stdout = if (capture_output) file.path("final", "stdout.log") else NULL,
-        stderr = if (capture_output) file.path("final", "stderr.log") else NULL,
-        output_retained = capture_output,
-        metrics = list(
-            elapsed_seconds = proc.time()[["elapsed"]] - started,
-            peak_tree_rss_bytes = max(rss_values, na.rm = TRUE),
-            retained_tree_rss_bytes = retained$tree_rss_bytes,
-            peak_tree_vms_bytes = max(vms_values, na.rm = TRUE),
-            maximum_process_count = max(process_values, na.rm = TRUE),
-            peak_disk_bytes = max(disk_values, na.rm = TRUE),
-            peak_artifact_disk_bytes = max(artifact_disk_values, na.rm = TRUE),
-            peak_disk_category_bytes = as.list(peak_category_bytes),
-            final_disk_bytes = final_disk$total_bytes,
-            final_disk_category_bytes = final_disk$bytes,
-            final_file_count = final_disk$file_count,
-            sample_count = length(samples)
-        ),
-        samples = samples
-    )
-}
-
-baselineProcSelfRss <- function() {
-    status_path <- sprintf("/proc/%d/status", Sys.getpid())
-    if (!file.exists(status_path)) {
-        return(NA_real_)
-    }
-    line <- grep("^VmRSS:", readLines(status_path, warn = FALSE), value = TRUE)
-    if (!length(line)) {
-        return(NA_real_)
-    }
-    as.numeric(gsub("[^0-9]", "", line[[1L]])) * 1024
-}
-
-baselineNativeMetrics <- function() {
-    arrow_available <- requireNamespace("arrow", quietly = TRUE)
-    duckdb_available <- requireNamespace("duckdb", quietly = TRUE)
-    arrow_bytes <- if (arrow_available) {
-        tryCatch(as.numeric(arrow::default_memory_pool()$bytes_allocated), error = \(...) NA_real_)
-    } else {
-        NA_real_
-    }
-    list(
-        arrow = list(
-            available = arrow_available,
-            loaded = "arrow" %in% loadedNamespaces(),
-            bytes_allocated = arrow_bytes
-        ),
-        duckdb = list(
-            available = duckdb_available,
-            loaded = "duckdb" %in% loadedNamespaces(),
-            connections_opened = 0L
-        )
-    )
-}
-
-baselineAllocationMetrics <- function(path) {
-    if (!file.exists(path)) {
-        return(list(available = FALSE, allocated_bytes = NA_real_, allocation_records = 0L))
-    }
-    lines <- readLines(path, warn = FALSE)
-    bytes <- suppressWarnings(as.numeric(sub("^([0-9]+).*$", "\\1", lines)))
-    list(
-        available = TRUE,
-        allocated_bytes = sum(bytes[is.finite(bytes)]),
-        allocation_records = sum(is.finite(bytes)),
-        profile_sha256 = omicsParitySha256File(path)
-    )
-}
-
 baselinePrepareFixture <- function(scenario, repo_root, run_dir) {
     if (identical(scenario$kind, "committed_fixture")) {
         fixture_path <- file.path(repo_root, scenario$fixture_path)
@@ -456,60 +205,6 @@ baselineSanitizePrivateSummary <- function(summary) {
     summary$proteins <- NULL
     summary$peptides <- NULL
     summary
-}
-
-baselineWorkingTreeDigest <- function(repo_root = .BASELINE_REPO_ROOT) {
-    diff <- system2(
-        "git",
-        c(
-            "-C", repo_root, "diff", "--no-ext-diff", "--binary", "HEAD",
-            "--", "DESCRIPTION", "R", "tools/profiling"
-        ),
-        stdout = TRUE,
-        stderr = FALSE
-    )
-    untracked <- system2(
-        "git",
-        c(
-            "-C", repo_root, "ls-files", "--others", "--exclude-standard",
-            "--", "DESCRIPTION", "R", "tools/profiling"
-        ),
-        stdout = TRUE,
-        stderr = FALSE
-    )
-    untracked <- sort(untracked[nzchar(untracked)])
-    untracked_digests <- vapply(
-        file.path(repo_root, untracked),
-        omicsParitySha256File,
-        character(1)
-    )
-    digest::digest(
-        paste(
-            c(
-                paste(diff, collapse = "\n"),
-                paste(untracked, untracked_digests, sep = "=", collapse = "\n")
-            ),
-            collapse = "\n--untracked--\n"
-        ),
-        algo = "sha256",
-        serialize = FALSE
-    )
-}
-
-baselineCodeRevision <- function(repo_root = .BASELINE_REPO_ROOT) {
-    git_sha <- tryCatch(
-        system2(
-            "git",
-            c("-C", repo_root, "rev-parse", "HEAD"),
-            stdout = TRUE,
-            stderr = FALSE
-        )[[1L]],
-        error = \(...) NA_character_
-    )
-    list(
-        git_sha = git_sha,
-        working_tree_sha256 = baselineWorkingTreeDigest(repo_root)
-    )
 }
 
 baselineBindingEnvironment <- function(manifest) {
@@ -580,28 +275,6 @@ baselineEvidenceBinding <- function(path, scenario, manifest) {
         serialize = FALSE
     )
     binding
-}
-
-baselineInstallMeasurementPackage <- function(output_dir) {
-    library_path <- tempfile("multischolar-measurement-library-")
-    log_path <- file.path(output_dir, "harness", "package-install.log")
-    dir.create(library_path, recursive = TRUE, showWarnings = FALSE)
-    dir.create(dirname(log_path), recursive = TRUE, showWarnings = FALSE)
-    status <- system2(
-        file.path(R.home("bin"), "R"),
-        c(
-            "CMD", "INSTALL", "--no-test-load",
-            paste0("--library=", shQuote(library_path)),
-            shQuote(.BASELINE_REPO_ROOT)
-        ),
-        stdout = log_path,
-        stderr = log_path
-    )
-    installed <- file.path(library_path, "MultiScholaR")
-    if (!identical(as.integer(status), 0L) || !dir.exists(installed)) {
-        stop("measurement package installation failed", call. = FALSE)
-    }
-    normalizePath(library_path, mustWork = TRUE)
 }
 
 baselineBoundedQuery <- function(data, query, trace_copies = FALSE) {
