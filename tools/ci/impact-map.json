@@ -33,8 +33,11 @@
       "paths": [
         "^\\.github/workflows/.*",
         "^tools/ci/.*",
+        "^tools/profiling/(run_omics_artifact_baseline|omics_artifact_closeout_helpers|omics_artifact_baseline_orchestration)\\.R$",
         "^tests/testthat/test-(ci-impact|module-ci-release-gate).*\\.R$",
+        "^tests/testthat/test-omics-artifact-dia-closeout\\.R$",
         "^tests/testthat/helper-(ci-impact|module-ci|e2e).*\\.R$",
+        "^tests/testdata/omics-parity/.*",
         "^tests/testdata/mci/(manifest|fixture_packs)\\.json$",
         "^tests/testdata/e2e/(manifest|cross_omic_packs)\\.json$"
       ],

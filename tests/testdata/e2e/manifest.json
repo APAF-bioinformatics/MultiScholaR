@@ -27,7 +27,13 @@
       "module_families": ["import", "design", "qc_peptide", "qc_protein", "normalization", "differential_abundance", "enrichment", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "enrichment", "summary_report", "report_export"],
       "critical_shared": true,
-      "report_export": true
+      "report_export": true,
+      "artifact_closeout": {
+        "capability_id": "proteomics.diann.peptide.dia.v1",
+        "performance_scenario": "dia_private_representative",
+        "minimum_paired_repetitions": 5,
+        "generated_evidence_authorizes_promotion": false
+      }
     },
     {
       "lane_id": "prot_dia_limpa",

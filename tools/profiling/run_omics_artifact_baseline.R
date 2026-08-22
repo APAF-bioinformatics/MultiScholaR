@@ -26,6 +26,19 @@ if (!exists("omicsParityReadManifest", mode = "function")) {
         local = FALSE
     )
 }
+source(
+    file.path(.BASELINE_REPO_ROOT, "tools", "profiling", "omics_artifact_closeout_helpers.R"),
+    local = FALSE
+)
+source(
+    file.path(
+        .BASELINE_REPO_ROOT,
+        "tools",
+        "profiling",
+        "omics_artifact_baseline_orchestration.R"
+    ),
+    local = FALSE
+)
 
 baselineUtcNow <- function() {
     format(as.POSIXct(Sys.time(), tz = "UTC"), "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC")
@@ -61,10 +74,12 @@ baselineDefaultArgs <- function() {
         manifest = file.path("tests", "testdata", "omics-parity", "scenarios.json"),
         output_dir = file.path("tests", "testthat", "_omics_artifact_baseline"),
         mode = "fixture",
+        backend = "memory",
         scenario = character(),
         repetitions = NULL,
         diagnostics = TRUE,
         include_private = FALSE,
+        require_promotion = FALSE,
         worker_spec = NULL,
         help = FALSE
     )
@@ -78,10 +93,12 @@ baselineUsage <- function() {
         "  --manifest <path>          Scenario manifest",
         "  --output-dir <path>        Untracked result directory",
         "  --mode <fixture|scientific|all>",
+        "  --backend <memory|artifact|paired>",
         "  --scenario <id>            Repeatable fixture scenario selector",
         "  --repetitions <n>          Override manifest repetitions",
         "  --diagnostics <bool>        Run allocation/copy diagnostics separately",
         "  --include-private <bool>   Enable the opt-in private scenario",
+        "  --require-promotion <bool> Exit nonzero unless paired evidence authorizes",
         "  --help",
         sep = "\n"
     ))
@@ -118,7 +135,9 @@ baselineParseArgs <- function(argv) {
             args$scenario <- c(args$scenario, value)
         } else if (identical(key, "repetitions")) {
             args$repetitions <- as.integer(value)
-        } else if (key %in% c("include_private", "diagnostics")) {
+        } else if (key %in% c(
+            "include_private", "diagnostics", "require_promotion"
+        )) {
             args[[key]] <- baselineParseBool(value)
         } else {
             args[[key]] <- value
@@ -285,7 +304,7 @@ baselineMeasureSubprocess <- function(
     disk_values <- vapply(samples, `[[`, numeric(1), "disk_bytes")
     process_values <- vapply(samples, `[[`, integer(1), "process_count")
     artifact_categories <- intersect(
-        c("committed", "staging_snapshot", "duckdb_spill", "final"),
+        c("committed", "staging_snapshot", "duckdb_spill"),
         names(peak_category_bytes)
     )
     artifact_disk_values <- vapply(samples, \(sample) {
@@ -441,6 +460,8 @@ baselineSanitizePrivateSummary <- function(summary) {
 
 baselineBoundedQuery <- function(data, query, trace_copies = FALSE) {
     iterations <- as.integer(query$iterations)
+    selected_run <- baselineResolveQueryRun(data, query)
+    limit <- baselineQueryLimit(query)
     trace_events <- character()
     runQuery <- function() {
         iteration_timings <- numeric(iterations)
@@ -448,7 +469,7 @@ baselineBoundedQuery <- function(data, query, trace_copies = FALSE) {
         for (index in seq_len(iterations)) {
             started <- as.numeric(Sys.time())
             last_selected <- data[
-                data$Run == query$run,
+                data$Run == selected_run,
                 unlist(query$columns, use.names = FALSE),
                 drop = FALSE
             ]
@@ -460,6 +481,7 @@ baselineBoundedQuery <- function(data, query, trace_copies = FALSE) {
                 do.call(order, c(ordering, list(method = "radix"))), ,
                 drop = FALSE
             ]
+            last_selected <- head(last_selected, limit)
             iteration_timings[[index]] <- as.numeric(Sys.time()) - started
         }
         list(timings = iteration_timings, selected = last_selected)
@@ -482,6 +504,7 @@ baselineBoundedQuery <- function(data, query, trace_copies = FALSE) {
         query_id = query$query_id,
         rows = nrow(selected),
         columns = ncol(selected),
+        output_sha256 = baselineQueryDigest(selected),
         median_seconds = stats::median(timings),
         p95_seconds = omicsParityQuantile(timings, 0.95),
         maximum_seconds = max(timings),
@@ -543,13 +566,49 @@ baselineWorker <- function(spec_path) {
     }
     baselineWriteJson(summary, file.path(spec$run_dir, "snapshots", "import-summary.json"))
 
-    query_results <- lapply(spec$bounded_queries, \(query) {
-        baselineBoundedQuery(
-            as.data.frame(import_result$data),
-            query,
-            trace_copies = diagnostic_run
-        )
+    selected_runs <- lapply(spec$bounded_queries, function(query) {
+        baselineResolveQueryRun(import_result$data, query)
     })
+    artifact <- NULL
+    persist_seconds <- 0
+    if (identical(spec$backend, "artifact")) {
+        stage_started <- proc.time()[["elapsed"]]
+        artifact <- baselineArtifactPersistImport(
+            import_result,
+            fixture_path,
+            spec$run_dir,
+            use_precursor_norm = isTRUE(
+                spec$scenario$parameters$use_precursor_norm
+            )
+        )
+        persist_seconds <- proc.time()[["elapsed"]] - stage_started
+        import_result$data <- NULL
+        import_result <- NULL
+        query_results <- Map(
+            function(query, selected_run) {
+                baselineArtifactBoundedQuery(
+                    artifact$context,
+                    artifact$ref,
+                    query,
+                    selected_run,
+                    trace_copies = diagnostic_run
+                )
+            },
+            spec$bounded_queries,
+            selected_runs
+        )
+    } else {
+        query_results <- lapply(spec$bounded_queries, function(query) {
+            baselineBoundedQuery(
+                as.data.frame(import_result$data),
+                query,
+                trace_copies = diagnostic_run
+            )
+        })
+    }
+    if (identical(spec$scenario$kind, "optional_private")) {
+        query_results <- baselineSanitizePrivateQueries(query_results)
+    }
     baselineWriteJson(
         query_results,
         file.path(spec$run_dir, "snapshots", "bounded-query-summary.json")
@@ -572,14 +631,11 @@ baselineWorker <- function(spec_path) {
             "release_performance"
         },
         scenario_id = spec$scenario$scenario_id,
-        backend = "memory",
+        backend = spec$backend,
         fixture = list(
             kind = spec$scenario$kind,
-            committed_bytes = if (identical(spec$scenario$kind, "committed_fixture")) {
-                as.numeric(file.info(fixture_path)$size)
-            } else {
-                0
-            },
+            committed_bytes = as.numeric(file.info(fixture_path)$size),
+            committed_file_count = 1L,
             fingerprint = summary$input_sha256,
             source_path_retained = FALSE
         ),
@@ -589,242 +645,41 @@ baselineWorker <- function(spec_path) {
                 elapsed_seconds = import_seconds,
                 retained_rss_bytes = baselineProcSelfRss()
             ),
+            if (identical(spec$backend, "artifact")) list(
+                stage_id = "artifact_persist",
+                elapsed_seconds = persist_seconds,
+                generation_id_retained = FALSE
+            ) else NULL,
             list(stage_id = "bounded_query", results = query_results)
         ),
         observed_summary = summary,
         allocation_diagnostics = allocation,
         thread_environment = baselineThreadEnvironment(),
         native_resources = baselineNativeMetrics(),
-        retention_point = paste(
-            "after import summary and bounded queries while imported table",
-            "remains live"
-        )
+        retention_point = if (identical(spec$backend, "artifact")) {
+            "after artifact persistence, source-table eviction, and bounded queries"
+        } else {
+            paste(
+                "after import summary and bounded queries while imported table",
+                "remains live"
+            )
+        }
     )
+    result$stages <- Filter(Negate(is.null), result$stages)
+    if (identical(spec$backend, "artifact")) {
+        result$artifact_storage <- baselineArtifactProjectMetrics(artifact$project_root)
+        result$resource_evidence <- baselineArtifactResourceEvidence(artifact$project_root)
+        result$source_table_retained <- FALSE
+        if (identical(spec$scenario$kind, "optional_private")) {
+            result$private_artifact_payload_retained_at_worker_exit <- TRUE
+        }
+    } else {
+        result$source_table_retained <- TRUE
+    }
     baselineWriteJson(result, spec$result_path)
     writeLines("ready", file.path(spec$run_dir, "retention-ready"))
     Sys.sleep(as.numeric(execution$retention_window_ms) / 1000)
     invisible(result)
-}
-
-baselineEnvironment <- function(manifest) {
-    packages <- c("MultiScholaR", "arrow", "duckdb", "processx", "ps", "testthat")
-    versions <- lapply(packages, \(package) {
-        if (requireNamespace(package, quietly = TRUE)) {
-            as.character(utils::packageVersion(package))
-        } else {
-            NULL
-        }
-    })
-    names(versions) <- packages
-    if (is.null(versions$MultiScholaR)) {
-        versions$MultiScholaR <- read.dcf(
-            file.path(.BASELINE_REPO_ROOT, "DESCRIPTION"),
-            fields = "Version"
-        )[[1L]]
-    }
-    git_sha <- tryCatch(
-        system2(
-            "git",
-            c("-C", shQuote(.BASELINE_REPO_ROOT), "rev-parse", "HEAD"),
-            stdout = TRUE,
-            stderr = FALSE
-        )[[1L]],
-        error = \(...) NA_character_
-    )
-    memory_line <- if (file.exists("/proc/meminfo")) {
-        grep("^MemTotal:", readLines("/proc/meminfo", warn = FALSE), value = TRUE)
-    } else {
-        character()
-    }
-    os_info <- Sys.info()
-    public_os_fields <- intersect(c("sysname", "release", "version", "machine"), names(os_info))
-    list(
-        captured_at = baselineUtcNow(),
-        git_sha = git_sha,
-        r_version = R.version.string,
-        platform = R.version$platform,
-        os = as.list(os_info[public_os_fields]),
-        logical_cores = parallel::detectCores(logical = TRUE),
-        physical_cores = parallel::detectCores(logical = FALSE),
-        total_memory = if (length(memory_line)) memory_line[[1L]] else NULL,
-        locale = Sys.getlocale(),
-        timezone = Sys.timezone(),
-        rng_kind = as.list(RNGkind()),
-        rng_seed = manifest$execution$rng_seed,
-        configured_locale = manifest$execution$locale,
-        configured_timezone = manifest$execution$timezone,
-        configured_threads = manifest$execution$threads,
-        thread_control_contract = manifest$thread_controls,
-        package_versions = versions,
-        parent_thread_environment = baselineThreadEnvironment()
-    )
-}
-
-baselineFixtureRun <- function(
-    scenario,
-    repetition,
-    manifest,
-    output_dir,
-    diagnostics_only = FALSE
-) {
-    run_id <- if (diagnostics_only) {
-        sprintf("%s-diagnostic", scenario$scenario_id)
-    } else {
-        sprintf("%s-r%02d", scenario$scenario_id, repetition)
-    }
-    run_dir <- normalizePath(file.path(output_dir, "runs", run_id), mustWork = FALSE)
-    dir.create(run_dir, recursive = TRUE, showWarnings = FALSE)
-    result_path <- file.path(run_dir, "final", "worker-result.json")
-    spec_path <- tempfile("omics-baseline-worker-", fileext = ".json")
-    on.exit(unlink(spec_path), add = TRUE)
-    spec <- list(
-        schema_version = "1.0.0",
-        repo_root = .BASELINE_REPO_ROOT,
-        run_dir = run_dir,
-        result_path = result_path,
-        scenario = scenario,
-        execution = manifest$execution,
-        thread_controls = manifest$thread_controls,
-        comparison_contract = manifest$comparison_contract,
-        bounded_queries = manifest$bounded_queries,
-        diagnostics_only = diagnostics_only
-    )
-    baselineWriteJson(spec, spec_path)
-    measured <- baselineMeasureSubprocess(
-        file.path(R.home("bin"), "Rscript"),
-        c("--vanilla", baselineScriptPath(), "--worker-spec", spec_path),
-        run_dir,
-        manifest$execution,
-        manifest$disk_categories,
-        env = if (identical(scenario$kind, "optional_private")) {
-            c(
-                MULTISCHOLAR_DIA_BASELINE_FIXTURE = Sys.getenv(scenario$fixture_env),
-                MULTISCHOLAR_BASELINE_FINGERPRINT_SALT = Sys.getenv(
-                    "MULTISCHOLAR_BASELINE_FINGERPRINT_SALT"
-                )
-            )
-        } else {
-            character()
-        },
-        capture_output = !identical(scenario$kind, "optional_private")
-    )
-    worker <- if (file.exists(result_path)) {
-        jsonlite::read_json(result_path, simplifyVector = FALSE)
-    } else {
-        list(status = "missing", reason = "worker result was not written")
-    }
-    measured$run_id <- run_id
-    measured$scenario_id <- scenario$scenario_id
-    measured$repetition <- repetition
-    measured$measurement_class <- if (diagnostics_only) {
-        "allocation_copy_diagnostic"
-    } else {
-        "release_performance"
-    }
-    measured$cache_state <- manifest$execution$cache_sequence[[
-        min(repetition, length(manifest$execution$cache_sequence))
-    ]]
-    measured$worker <- worker
-    measured$metrics$committed_input_bytes <- if (!is.null(worker$fixture$committed_bytes)) {
-        as.numeric(worker$fixture$committed_bytes)
-    } else {
-        0
-    }
-    query_p95 <- if (!is.null(worker$stages) && length(worker$stages) >= 2L) {
-        vapply(worker$stages[[2L]]$results, \(query) as.numeric(query$p95_seconds), numeric(1))
-    } else {
-        numeric()
-    }
-    measured$metrics$bounded_query_p95_seconds <- if (length(query_p95)) {
-        max(query_p95)
-    } else {
-        NA_real_
-    }
-
-    if (!is.null(scenario$oracle_id) && identical(worker$status, "passed")) {
-        oracle <- omicsParityReadOracle(file.path(.BASELINE_REPO_ROOT, manifest$oracle_path))
-        matches <- Filter(
-            \(entry) identical(entry$scenario_id, scenario$oracle_id),
-            oracle$scenarios
-        )
-        if (length(matches) != 1L) {
-            measured$status <- "failed"
-            measured$worker$oracle_comparison <- list(
-                equal = FALSE,
-                errors = list("exactly one oracle entry is required")
-            )
-        } else {
-            comparison <- omicsParityCompareSummary(
-                worker$observed_summary,
-                matches[[1L]]$expected,
-                manifest$comparison_contract
-            )
-            measured$worker$oracle_comparison <- comparison
-            if (!isTRUE(comparison$equal)) {
-                measured$status <- "failed"
-            }
-        }
-    }
-    measured
-}
-
-baselineDeterminismChecks <- function(runs) {
-    scenario_ids <- unique(vapply(runs, `[[`, character(1), "scenario_id"))
-    lapply(scenario_ids, \(scenario_id) {
-        scenario_runs <- Filter(\(run) identical(run$scenario_id, scenario_id), runs)
-        fingerprints <- vapply(scenario_runs, \(run) {
-            fingerprint <- run$worker$observed_summary$output_sha256
-            if (is.null(fingerprint)) NA_character_ else fingerprint
-        }, character(1))
-        fingerprints <- fingerprints[!is.na(fingerprints)]
-        list(
-            scenario_id = scenario_id,
-            repetitions = length(scenario_runs),
-            observed_output_sha256 = as.list(unique(fingerprints)),
-            deterministic = length(fingerprints) == length(scenario_runs) &&
-                length(unique(fingerprints)) == 1L
-        )
-    })
-}
-
-baselineScientificRun <- function(target, manifest, output_dir) {
-    run_dir <- normalizePath(
-        file.path(output_dir, "scientific", target$target_id),
-        mustWork = FALSE
-    )
-    if (identical(target$runner, "e2e_lane")) {
-        command_args <- c(
-            "--vanilla", "tools/ci/run-e2e-ci.R", "--lane", target$lane,
-            "--browser-required", "true", "--reporter", "summary",
-            "--artifact-dir", file.path(run_dir, "final", "e2e-artifacts")
-        )
-    } else {
-        expression <- sprintf(
-            "devtools::test(filter = %s, reporter = 'summary')",
-            deparse(target$test_filter)
-        )
-        command_args <- c("--vanilla", "-e", expression)
-    }
-    measured <- baselineMeasureSubprocess(
-        file.path(R.home("bin"), "Rscript"),
-        command_args,
-        run_dir,
-        manifest$execution,
-        manifest$disk_categories,
-        env = c(
-            NOT_CRAN = "true",
-            MULTISCHOLAR_E2E_BROWSER_REQUIRED = "true",
-            OMP_NUM_THREADS = as.character(manifest$execution$threads),
-            OPENBLAS_NUM_THREADS = as.character(manifest$execution$threads),
-            MKL_NUM_THREADS = as.character(manifest$execution$threads),
-            ARROW_NUM_THREADS = as.character(manifest$execution$threads),
-            DUCKDB_THREADS = as.character(manifest$execution$threads),
-            TZ = manifest$execution$timezone
-        )
-    )
-    measured$run_id <- target$target_id
-    measured$target <- target
-    measured
 }
 
 baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
@@ -839,6 +694,12 @@ baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
     }
     if (!args$mode %in% c("fixture", "scientific", "all")) {
         stop("--mode must be fixture, scientific, or all", call. = FALSE)
+    }
+    if (!args$backend %in% c("memory", "artifact", "paired")) {
+        stop("--backend must be memory, artifact, or paired", call. = FALSE)
+    }
+    if (!identical(args$backend, "memory") && !identical(args$mode, "fixture")) {
+        stop("artifact and paired benchmarks require --mode fixture", call. = FALSE)
     }
 
     manifest_path <- baselineResolvePath(args$manifest, must_work = TRUE)
@@ -867,7 +728,8 @@ baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
     }
 
     run_id <- sprintf(
-        "omics-memory-baseline-%s-%d",
+        "omics-%s-baseline-%s-%d",
+        args$backend,
         format(Sys.time(), "%Y%m%dT%H%M%S"),
         Sys.getpid()
     )
@@ -875,22 +737,33 @@ baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
     diagnostic_runs <- list()
     if (args$mode %in% c("fixture", "all")) {
         for (scenario in scenarios) {
+            backends <- if (identical(args$backend, "paired")) {
+                c("memory", "artifact")
+            } else {
+                args$backend
+            }
             for (repetition in seq_len(repetitions)) {
-                fixture_runs[[length(fixture_runs) + 1L]] <- baselineFixtureRun(
-                    scenario,
-                    repetition,
-                    manifest,
-                    output_dir
-                )
+                for (backend in backends) {
+                    fixture_runs[[length(fixture_runs) + 1L]] <- baselineFixtureRun(
+                        scenario,
+                        repetition,
+                        manifest,
+                        output_dir,
+                        backend = backend
+                    )
+                }
             }
             if (isTRUE(args$diagnostics)) {
-                diagnostic_runs[[length(diagnostic_runs) + 1L]] <- baselineFixtureRun(
-                    scenario,
-                    1L,
-                    manifest,
-                    output_dir,
-                    diagnostics_only = TRUE
-                )
+                for (backend in backends) {
+                    diagnostic_runs[[length(diagnostic_runs) + 1L]] <- baselineFixtureRun(
+                        scenario,
+                        1L,
+                        manifest,
+                        output_dir,
+                        backend = backend,
+                        diagnostics_only = TRUE
+                    )
+                }
             }
         }
     }
@@ -906,9 +779,12 @@ baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
     determinism <- baselineDeterminismChecks(fixture_runs)
     failed_determinism <- vapply(determinism, \(check) !isTRUE(check$deterministic), logical(1))
     if (any(failed_determinism)) {
-        failed_ids <- vapply(determinism[failed_determinism], `[[`, character(1), "scenario_id")
+        failed_groups <- vapply(determinism[failed_determinism], function(check) {
+            paste(check$scenario_id, check$backend, sep = "::")
+        }, character(1))
         fixture_runs <- lapply(fixture_runs, \(run) {
-            if (run$scenario_id %in% failed_ids) {
+            group_id <- paste(run$scenario_id, run$backend, sep = "::")
+            if (group_id %in% failed_groups) {
                 run$status <- "failed"
                 run$determinism_failure <- TRUE
             }
@@ -922,7 +798,7 @@ baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
         generated_at = baselineUtcNow(),
         corpus_version = manifest$corpus_version,
         capability_id = manifest$capability_id,
-        backend = "memory",
+        backend = args$backend,
         manifest_sha256 = omicsParitySha256File(manifest_path),
         environment = baselineEnvironment(manifest),
         thread_controls = manifest$thread_controls,
@@ -947,21 +823,42 @@ baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
         diagnostics = diagnostic_runs,
         determinism = determinism,
         scenario_summaries = lapply(
-            split(fixture_runs, vapply(fixture_runs, `[[`, character(1), "scenario_id")),
+            split(fixture_runs, vapply(fixture_runs, function(run) {
+                if (identical(args$backend, "memory")) {
+                    run$scenario_id
+                } else {
+                    paste(run$scenario_id, run$backend, sep = "::")
+                }
+            }, character(1))),
             omicsParitySummarizeMeasurements
         ),
         summary = omicsParitySummarizeMeasurements(all_runs)
     )
+    if (identical(args$backend, "paired")) {
+        result$promotion_evaluation <- baselinePromotionEvaluation(
+            fixture_runs,
+            scenarios,
+            manifest$release_gates
+        )
+    }
+    result$promotion_required <- isTRUE(args$require_promotion)
     result_path <- file.path(output_dir, "baseline-result.json")
     baselineWriteJson(result, result_path)
-    run_status <- if (result$summary$failed) "failed" else "passed"
+    promotion_failed <- isTRUE(args$require_promotion) &&
+        (!identical(args$backend, "paired") ||
+            !isTRUE(result$promotion_evaluation$authorized))
+    run_status <- if (result$summary$failed || promotion_failed) {
+        "failed"
+    } else {
+        "passed"
+    }
     cat(sprintf(
         "OMICS baseline result=%s runs=%d output=%s\n",
         run_status,
         length(all_runs),
         result_path
     ))
-    if (result$summary$failed) {
+    if (result$summary$failed || promotion_failed) {
         return(invisible(1L))
     }
     invisible(0L)

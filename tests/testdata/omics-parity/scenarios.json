@@ -77,9 +77,9 @@
   },
   "disk_categories": [
     {"category": "diagnostics", "pattern": "(^|/)diagnostics(/|$)"},
-    {"category": "committed", "pattern": "(^|/)committed(/|$)"},
     {"category": "staging_snapshot", "pattern": "(^|/)(staging|snapshots)(/|$)"},
     {"category": "duckdb_spill", "pattern": "(^|/)duckdb-spill(/|$)"},
+    {"category": "committed", "pattern": "(^|/)committed(/|$)"},
     {"category": "final", "pattern": "(^|/)final(/|$)"},
     {"category": "harness", "pattern": ".*"}
   ],

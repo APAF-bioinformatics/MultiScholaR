@@ -160,6 +160,11 @@ jobs:
             any::jsonlite
             any::shinytest2
             any::chromote
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+      - name: Configure Chrome for chromote
+        run: echo "CHROMOTE_CHROME=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
       - name: Run impacted module/browser smoke
         env:
           MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
@@ -201,6 +206,11 @@ jobs:
             any::jsonlite
             any::shinytest2
             any::chromote
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+      - name: Configure Chrome for chromote
+        run: echo "CHROMOTE_CHROME=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
       - name: Run impacted E2E lane
         env:
           MULTISCHOLAR_E2E_BROWSER_REQUIRED: ${{ matrix.browser_required && 'true' || 'false' }}
@@ -382,6 +392,19 @@ jobs:
             any::jsonlite
             any::shinytest2
             any::chromote
+      - name: Set up Chrome
+        id: chrome
+        if: >-
+          matrix.kind == 'e2e' ||
+          matrix.kind == 'e2e-required' ||
+          matrix.kind == 'browser'
+        uses: browser-actions/setup-chrome@v1
+      - name: Configure Chrome for chromote
+        if: >-
+          matrix.kind == 'e2e' ||
+          matrix.kind == 'e2e-required' ||
+          matrix.kind == 'browser'
+        run: echo "CHROMOTE_CHROME=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
       - name: Run all unit-contract module scenarios
         if: matrix.kind == 'module-ci'
         run: >
