@@ -647,6 +647,8 @@ test_that("descriptor queries are typed, deterministic, and bounded before colle
     )
     store <- newArtifactStore(context$getPaths(), "synthetic-project")
     ref <- syntheticArtifactAssayRef(manager, store)
+    query_session <- newArtifactQuerySession(store)
+    withr::defer(query_session$close())
     filters <- list(
         feature = list(operator = "in", value = c("A", "B")),
         abundance = list(operator = "gte", value = 2)
@@ -658,7 +660,8 @@ test_that("descriptor queries are typed, deterministic, and bounded before colle
         syntheticArtifactQueryId(),
         projections = c("feature", "sample", "abundance"),
         filters = filters,
-        limit = 10L
+        limit = 10L,
+        query_session = query_session
     )
     second <- queryArtifactRef(
         store,
@@ -667,9 +670,11 @@ test_that("descriptor queries are typed, deterministic, and bounded before colle
         syntheticArtifactQueryId(),
         projections = c("feature", "sample", "abundance"),
         filters = filters,
-        limit = 10L
+        limit = 10L,
+        query_session = query_session
     )
     expect_identical(first, second)
+    expect_identical(query_session$getInfo()$borrow_count, 2L)
     expect_identical(first$feature, c("A", "B"))
     expect_identical(first$sample, c("S2", "S2"))
     expect_identical(first$abundance, c(2, 4))

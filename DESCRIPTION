@@ -339,6 +339,7 @@ Collate:
     'mod_prot_design_artifact_helpers.R'
     'mod_prot_artifact_readthrough_registry.R'
     'mod_prot_artifact_readthrough_helpers.R'
+    'mod_prot_artifact_stage_worker_helpers.R'
     'mod_prot_norm_session_artifact_helpers.R'
     'mod_prot_da_session_helpers.R'
     'mod_prot_da_handlers_load_session.R'
@@ -442,7 +443,6 @@ Suggests:
     KEGGREST,
     limpa,
     lobstr,
-    mixOmics,
     MOFA2,
     processx,
     progress,
@@ -513,6 +513,7 @@ Imports:
     logging,
     magrittr,
     methods,
+    mixOmics,
     multidplyr,
     openxlsx,
     optparse,

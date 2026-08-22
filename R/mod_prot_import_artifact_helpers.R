@@ -357,7 +357,13 @@ protDiaArtifactStageResources <- function(
     )
 }
 
-protDiaArtifactWriteStageRefs <- function(stage, tables, failure_injector = NULL) {
+protDiaArtifactWriteStageRefs <- function(
+    stage,
+    tables,
+    failure_injector = NULL,
+    verification = c("inline_exact", "deferred_exact")
+) {
+    verification <- match.arg(verification)
     tables <- lapply(names(tables), \(role) {
         protDiaArtifactPortableTable(
             tables[[role]],
@@ -382,12 +388,15 @@ protDiaArtifactWriteStageRefs <- function(stage, tables, failure_injector = NULL
                 generation_id = stage$generation_id
             ),
             provenance_ids = c(stage$run_id, stage$action_id),
-            failure_injector = failure_injector
+            failure_injector = failure_injector,
+            verification = verification
         )
     })
     names(refs) <- names(tables)
-    for (role in names(refs)) {
-        protDiaArtifactVerifyRef(stage$store, refs[[role]], tables[[role]])
+    if (identical(verification, "inline_exact")) {
+        for (role in names(refs)) {
+            protDiaArtifactVerifyRef(stage$store, refs[[role]], tables[[role]])
+        }
     }
     artifactStoreInvokeFailure(
         failure_injector,
@@ -487,12 +496,29 @@ persistProtDiaImportArtifacts <- function(
     sanitize_names = FALSE,
     retain_source_uri = FALSE,
     failure_injector = NULL,
+    pending_stage = NULL,
+    worker_attempted = !is.null(pending_stage),
     log_warn = logger::log_warn
 ) {
     runProtDiaArtifactSafely(
         workflow_data,
         "import",
         \() {
+            if (isTRUE(worker_attempted)) {
+                if (is.null(pending_stage)) {
+                    return(list(
+                        enabled = TRUE,
+                        ok = FALSE,
+                        stage_id = "import",
+                        reason = "artifact_worker_failed_no_retry",
+                        committed = FALSE
+                    ))
+                }
+                return(publishProtDiaArtifactWorkerStage(
+                    workflow_data,
+                    pending_stage
+                ))
+            }
             prepared <- prepareProtDiaArtifactContext(workflow_data)
             if (!isTRUE(prepared$enabled)) {
                 return(list(

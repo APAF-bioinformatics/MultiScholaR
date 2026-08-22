@@ -305,6 +305,15 @@ artifactQueryAssertRss <- function(policy, stage) {
     invisible(rss)
 }
 
+artifactQueryStoreBinding <- function(store) {
+    store <- validateArtifactStore(store)
+    list(
+        project_root = store$project_root,
+        project_id = store$project_id,
+        labels = store$labels
+    )
+}
+
 artifactQueryConnect <- function(store, policy) {
     projectRegistryRequireDependencies()
     temporary_root <- artifactNormalizeRelativePath(store$relative_paths$duckdb_tmp)
@@ -403,13 +412,149 @@ artifactQueryDisconnect <- function(handle) {
         handle$process_id,
         "artifact query handle"
     )
+    on.exit(
+        artifactCleanupTemporaryPath(
+            handle$temporary_path,
+            handle$temporary_root
+        ),
+        add = TRUE
+    )
     if (!is.null(handle$connection) && DBI::dbIsValid(handle$connection)) {
         DBI::dbDisconnect(handle$connection, shutdown = TRUE)
     } else if (!is.null(handle$driver)) {
         try(duckdb::duckdb_shutdown(handle$driver), silent = TRUE)
     }
-    artifactCleanupTemporaryPath(handle$temporary_path, handle$temporary_root)
     invisible(TRUE)
+}
+
+ArtifactQuerySession <- R6::R6Class(
+    "ArtifactQuerySession",
+    public = list(
+        initialize = function(store, resource_policy = NULL) {
+            store <- validateArtifactStore(store)
+            private$process_id <- as.integer(Sys.getpid())
+            private$store_binding <- artifactQueryStoreBinding(store)
+            private$policy <- normalizeProjectRegistryPolicy(resource_policy)
+            private$handle <- artifactQueryConnect(store, private$policy)
+            private$closed <- FALSE
+            private$borrow_count <- 0L
+        },
+
+        borrow = function(store, resource_policy = NULL) {
+            self$assertCompatible(store, resource_policy)
+            private$borrow_count <- private$borrow_count + 1L
+            private$handle
+        },
+
+        assertCompatible = function(store, resource_policy = NULL) {
+            private$assertProcess()
+            if (isTRUE(private$closed)) {
+                artifactQueryAbort(
+                    "artifact query session is closed",
+                    "multischolar_closed_artifact_query_session"
+                )
+            }
+            policy <- normalizeProjectRegistryPolicy(resource_policy)
+            if (!identical(artifactQueryStoreBinding(store), private$store_binding)) {
+                artifactQueryAbort(
+                    "artifact query session belongs to another project",
+                    "multischolar_cross_project_artifact_query_session"
+                )
+            }
+            if (!identical(policy, private$policy)) {
+                artifactQueryAbort(
+                    "artifact query session resource policy cannot change",
+                    "multischolar_artifact_query_session_policy_mismatch"
+                )
+            }
+            if (!isTRUE(tryCatch(
+                DBI::dbIsValid(private$handle$connection),
+                error = \(...) FALSE
+            ))) {
+                artifactQueryAbort(
+                    "artifact query session connection is unavailable",
+                    "multischolar_closed_artifact_query_session"
+                )
+            }
+            invisible(TRUE)
+        },
+
+        close = function() {
+            private$assertProcess()
+            if (isTRUE(private$closed)) return(invisible(FALSE))
+            handle <- private$handle
+            artifactQueryDisconnect(handle)
+            private$handle <- NULL
+            private$closed <- TRUE
+            invisible(TRUE)
+        },
+
+        getInfo = function() {
+            private$assertProcess()
+            list(
+                creator_pid = private$process_id,
+                project_id = private$store_binding$project_id,
+                project_root = private$store_binding$project_root,
+                closed = private$closed,
+                connection_open = !isTRUE(private$closed) && isTRUE(tryCatch(
+                    DBI::dbIsValid(private$handle$connection),
+                    error = \(...) FALSE
+                )),
+                temporary_path = if (is.null(private$handle)) {
+                    NULL
+                } else {
+                    private$handle$temporary_path
+                },
+                borrow_count = private$borrow_count
+            )
+        },
+
+        isClosed = function() isTRUE(private$closed)
+    ),
+    private = list(
+        process_id = NULL,
+        store_binding = NULL,
+        policy = NULL,
+        handle = NULL,
+        closed = FALSE,
+        borrow_count = 0L,
+
+        assertProcess = function() {
+            artifactResourceAssertCreatorProcess(
+                private$process_id,
+                "artifact query session"
+            )
+        },
+
+        finalize = function() {
+            if (!isTRUE(private$closed)) {
+                try(self$close(), silent = TRUE)
+            }
+        }
+    )
+)
+
+newArtifactQuerySession <- function(store, resource_policy = NULL) {
+    ArtifactQuerySession$new(store, resource_policy)
+}
+
+artifactQueryLease <- function(store, policy, query_session = NULL) {
+    if (is.null(query_session)) {
+        return(list(
+            handle = artifactQueryConnect(store, policy),
+            transient = TRUE
+        ))
+    }
+    if (!inherits(query_session, "ArtifactQuerySession")) {
+        artifactQueryAbort(
+            "artifact query session is invalid",
+            "multischolar_invalid_artifact_query_session"
+        )
+    }
+    list(
+        handle = query_session$borrow(store, policy),
+        transient = FALSE
+    )
 }
 
 artifactQueryStatements <- function(
@@ -492,7 +637,8 @@ queryArtifactRef <- function(
     projections = NULL,
     filters = list(),
     limit = NULL,
-    resource_policy = NULL
+    resource_policy = NULL,
+    query_session = NULL
 ) {
     specification <- artifactQuerySpecification(descriptor, operation_id)
     source <- artifactQueryValidateReference(
@@ -510,8 +656,11 @@ queryArtifactRef <- function(
     }
     bounds <- artifactQueryNormalizeBounds(specification, limit, resource_policy)
     artifactQueryAssertRss(bounds$policy, "before_query")
-    handle <- artifactQueryConnect(store, bounds$policy)
-    on.exit(artifactQueryDisconnect(handle), add = TRUE)
+    lease <- artifactQueryLease(store, bounds$policy, query_session)
+    handle <- lease$handle
+    if (isTRUE(lease$transient)) {
+        on.exit(artifactQueryDisconnect(handle), add = TRUE)
+    }
     filter <- artifactQueryFilterSql(
         specification, filters, columns, handle$connection
     )

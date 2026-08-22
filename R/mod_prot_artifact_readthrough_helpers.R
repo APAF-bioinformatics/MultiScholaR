@@ -542,7 +542,8 @@ previewProtDiaImportArtifact <- function(
     projections = NULL,
     filters = list(),
     limit = NULL,
-    resource_policy = NULL
+    resource_policy = NULL,
+    query_session = NULL
 ) {
     if (is.null(import_ref)) {
         evidence <- collectProtDiaResumeEvidence(context, resource_policy)
@@ -569,6 +570,7 @@ previewProtDiaImportArtifact <- function(
         projections = projections,
         filters = filters,
         limit = limit,
-        resource_policy = resource_policy
+        resource_policy = resource_policy,
+        query_session = query_session
     )
 }

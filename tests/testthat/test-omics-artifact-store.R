@@ -105,6 +105,63 @@ test_that("ArtifactStore construction is inert and successful writes are exact",
     )
 })
 
+test_that("deferred store verification avoids same-process hydration", {
+    project_root <- withr::local_tempdir()
+    fixture <- makeArtifactStoreFixture(project_root, "generation-deferred")
+    testthat::local_mocked_bindings(
+        decodeArtifactRectangular = \(...) {
+            testthat::fail("deferred verification hydrated the payload")
+        },
+        .package = "MultiScholaR"
+    )
+
+    ref <- artifactStoreWriteParquet(
+        fixture$store,
+        fixture$encoded,
+        fixture$logical_key,
+        verification = "deferred_exact"
+    )
+    expect_identical(ref$status, "committed")
+    expect_identical(ref$shape$rows, nrow(fixture$value))
+    expect_identical(ref$shape$columns, ncol(fixture$value))
+    expect_error(
+        artifactStoreWriteParquet(
+            fixture$store,
+            fixture$encoded,
+            within(fixture$logical_key, generation_id <- "generation-invalid"),
+            verification = "unknown"
+        ),
+        "'arg' should be one of"
+    )
+})
+
+test_that("deferred refs produce bounded exact hydration proofs", {
+    project_root <- withr::local_tempdir()
+    fixture <- makeArtifactStoreFixture(project_root, "generation-proof")
+    ref <- artifactStoreWriteParquet(
+        fixture$store,
+        fixture$encoded,
+        fixture$logical_key,
+        verification = "deferred_exact"
+    )
+    proof <- artifactStoreVerifyExactRef(fixture$store, ref)
+
+    expect_identical(
+        names(proof),
+        c(
+            "schema", "schema_version", "artifact_id", "semantic_digest",
+            "byte_digest", "hydration_digest", "rows", "columns",
+            "verifier_pid"
+        )
+    )
+    expect_identical(proof$artifact_id, ref$artifact_id)
+    expect_identical(
+        proof$hydration_digest,
+        artifactExactHydrationDigest(fixture$value)
+    )
+    expect_identical(proof$verifier_pid, as.integer(Sys.getpid()))
+})
+
 test_that("all write boundaries reconcile idempotently", {
     stages <- c(
         "before_write", "after_temp_write", "after_validation",

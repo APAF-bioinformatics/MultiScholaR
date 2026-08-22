@@ -276,6 +276,89 @@ test_that("bounded query handles clean temp paths after query errors", {
     expect_false(dir.exists(temporary_path))
 })
 
+test_that("query sessions are project bound, reusable, and explicitly closed", {
+    lifecycleSkipDependencies()
+    fixture <- lifecycleRegistryFixture()
+    store <- newArtifactStore(fixture$paths, "lifecycle-project")
+    session <- newArtifactQuerySession(store)
+    withr::defer(try(session$close(), silent = TRUE))
+    first <- session$borrow(store)
+    second <- session$borrow(store)
+
+    expect_identical(first$connection, second$connection)
+    expect_identical(session$getInfo()$borrow_count, 2L)
+    expect_true(session$getInfo()$connection_open)
+    expect_error(
+        artifactResourceDataOnly(session),
+        class = "multischolar_process_bound_worker_payload"
+    )
+
+    other <- lifecycleRegistryFixture()
+    other_store <- newArtifactStore(other$paths, "other-lifecycle-project")
+    expect_error(
+        session$borrow(other_store),
+        class = "multischolar_cross_project_artifact_query_session"
+    )
+    expect_error(
+        session$borrow(store, list(threads = if (
+            projectRegistryDefaultThreads() == 1L
+        ) 2L else 1L)),
+        class = "multischolar_artifact_query_session_policy_mismatch"
+    )
+
+    temporary_path <- session$getInfo()$temporary_path
+    expect_true(session$close())
+    expect_false(dir.exists(temporary_path))
+    expect_false(session$close())
+    expect_error(
+        session$borrow(store),
+        class = "multischolar_closed_artifact_query_session"
+    )
+})
+
+test_that("resource scopes own reusable query sessions", {
+    lifecycleSkipDependencies()
+    fixture <- lifecycleRegistryFixture()
+    store <- newArtifactStore(fixture$paths, "lifecycle-project")
+    scope <- ArtifactResourceScope$new("query-session-owner")
+    session <- newArtifactQuerySession(store)
+    registerArtifactQuerySessionResource(scope, session)
+
+    expect_identical(
+        scope$getInfo()$resources_by_type$duckdb_query_handle,
+        1L
+    )
+    expect_true(scope$close("test_close"))
+    expect_true(session$isClosed())
+    expect_false(session$getInfo()$connection_open)
+})
+
+test_that("failed query disconnects retain ownership for an explicit retry", {
+    lifecycleSkipDependencies()
+    fixture <- lifecycleRegistryFixture()
+    store <- newArtifactStore(fixture$paths, "lifecycle-project")
+    session <- newArtifactQuerySession(store)
+    original_disconnect <- artifactQueryDisconnect
+    attempts <- 0L
+    testthat::local_mocked_bindings(
+        artifactQueryDisconnect = \(handle) {
+            attempts <<- attempts + 1L
+            if (attempts == 1L) {
+                rlang::abort("injected query disconnect failure")
+            }
+            original_disconnect(handle)
+        },
+        .package = "MultiScholaR"
+    )
+
+    expect_error(session$close(), "injected query disconnect failure")
+    expect_false(session$isClosed())
+    expect_true(session$getInfo()$connection_open)
+    expect_true(session$close())
+    expect_true(session$isClosed())
+    expect_identical(attempts, 2L)
+})
+
 test_that("failed registry startup releases writer and temporary resources", {
     lifecycleSkipDependencies()
     fixture <- lifecycleRegistryFixture()

@@ -1624,6 +1624,33 @@ test_that("readProtImportDataWithStatus updates status and records imported data
   expect_equal(nrow(result$data), 2)
 })
 
+test_that("staged DIA-NN imports retain recording but bypass a second reader", {
+  importCalls <- 0L
+  recordCalls <- 0L
+  staged <- mockImportResult()
+  result <- readProtImportDataWithStatus(
+    format = "diann",
+    searchResultsPath = "/tmp/report.tsv",
+    input = list(),
+    stagedImportResult = staged,
+    updateStatus = \(...) invisible(NULL),
+    logInfo = \(...) invisible(NULL),
+    importDataByFormat = \(...) {
+      importCalls <<- importCalls + 1L
+      stop("reader must not run")
+    },
+    recordImportedData = \(dataImportResult, ...) {
+      recordCalls <<- recordCalls + 1L
+      expect_identical(dataImportResult, staged)
+      invisible(dataImportResult)
+    }
+  )
+
+  expect_identical(result, staged)
+  expect_identical(importCalls, 0L)
+  expect_identical(recordCalls, 1L)
+})
+
 test_that("applyProtImportWorkflowWithStatus updates status and delegates apply plus FASTA", {
   statusMessages <- character()
   applyCalls <- list()

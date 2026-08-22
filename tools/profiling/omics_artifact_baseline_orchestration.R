@@ -55,13 +55,95 @@ baselineEnvironment <- function(manifest) {
     )
 }
 
+baselineParityRun <- function(
+    scenario,
+    manifest,
+    output_dir,
+    parity_id,
+    fixture_path,
+    binding,
+    package_library
+) {
+    parity_dir <- normalizePath(
+        file.path(output_dir, "parity", parity_id),
+        mustWork = FALSE
+    )
+    dir.create(parity_dir, recursive = TRUE, showWarnings = FALSE)
+    result_path <- file.path(parity_dir, "parity-result.json")
+    if (file.exists(result_path)) {
+        cached <- jsonlite::read_json(result_path, simplifyVector = FALSE)
+        if (identical(cached$binding, binding) &&
+            identical(cached$status, "passed")) {
+            cached$cache_reused <- TRUE
+            return(cached)
+        }
+    }
+    spec_path <- tempfile("omics-parity-worker-", fileext = ".json")
+    on.exit(unlink(spec_path, force = TRUE), add = TRUE)
+    spec <- list(
+        schema_version = "1.0.0",
+        worker_kind = "scientific_parity",
+        repo_root = .BASELINE_REPO_ROOT,
+        run_dir = parity_dir,
+        result_path = result_path,
+        package_library = package_library,
+        fixture_path = fixture_path,
+        binding = binding,
+        scenario = scenario,
+        execution = manifest$execution,
+        thread_controls = manifest$thread_controls,
+        comparison_contract = manifest$comparison_contract,
+        bounded_queries = manifest$bounded_queries,
+        backend = "parity",
+        diagnostics_only = FALSE
+    )
+    baselineWriteJson(spec, spec_path)
+    process <- processx::run(
+        command = file.path(R.home("bin"), "Rscript"),
+        args = c("--vanilla", baselineScriptPath(), "--worker-spec", spec_path),
+        wd = .BASELINE_REPO_ROOT,
+        env = c(
+            OMP_NUM_THREADS = as.character(manifest$execution$threads),
+            OPENBLAS_NUM_THREADS = as.character(manifest$execution$threads),
+            MKL_NUM_THREADS = as.character(manifest$execution$threads),
+            ARROW_NUM_THREADS = as.character(manifest$execution$threads),
+            DUCKDB_THREADS = as.character(manifest$execution$threads),
+            TZ = manifest$execution$timezone,
+            MULTISCHOLAR_BASELINE_FINGERPRINT_SALT = Sys.getenv(
+                "MULTISCHOLAR_BASELINE_FINGERPRINT_SALT"
+            )
+        ),
+        stdout = if (identical(scenario$kind, "optional_private")) {
+            nullfile()
+        } else {
+            file.path(parity_dir, "stdout.log")
+        },
+        stderr = if (identical(scenario$kind, "optional_private")) {
+            nullfile()
+        } else {
+            file.path(parity_dir, "stderr.log")
+        },
+        error_on_status = FALSE,
+        echo = FALSE
+    )
+    result <- if (file.exists(result_path)) {
+        jsonlite::read_json(result_path, simplifyVector = FALSE)
+    } else {
+        list(status = "missing", reason = "parity result was not written")
+    }
+    result$process_status <- as.integer(process$status)
+    if (!identical(as.integer(process$status), 0L)) result$status <- "failed"
+    result
+}
+
 baselineFixtureRun <- function(
     scenario,
     repetition,
     manifest,
     output_dir,
     backend = "memory",
-    diagnostics_only = FALSE
+    diagnostics_only = FALSE,
+    package_library = NULL
 ) {
     run_id <- if (diagnostics_only) {
         sprintf("%s-%s-diagnostic", scenario$scenario_id, backend)
@@ -70,14 +152,41 @@ baselineFixtureRun <- function(
     }
     run_dir <- normalizePath(file.path(output_dir, "runs", run_id), mustWork = FALSE)
     dir.create(run_dir, recursive = TRUE, showWarnings = FALSE)
+    fixture_path <- baselinePrepareFixture(
+        scenario,
+        .BASELINE_REPO_ROOT,
+        run_dir
+    )
+    binding <- if (is.null(fixture_path)) {
+        NULL
+    } else {
+        baselineEvidenceBinding(fixture_path, scenario, manifest)
+    }
+    parity <- if (isTRUE(diagnostics_only) || is.null(fixture_path)) {
+        list(status = "not_required", reason = "not_release_measurement")
+    } else {
+        baselineParityRun(
+            scenario,
+            manifest,
+            output_dir,
+            sprintf("%s-r%02d", scenario$scenario_id, repetition),
+            fixture_path,
+            binding,
+            package_library
+        )
+    }
     result_path <- file.path(run_dir, "final", "worker-result.json")
     spec_path <- tempfile("omics-baseline-worker-", fileext = ".json")
     on.exit(unlink(spec_path), add = TRUE)
     spec <- list(
         schema_version = "1.0.0",
+        worker_kind = "performance_measurement",
         repo_root = .BASELINE_REPO_ROOT,
         run_dir = run_dir,
         result_path = result_path,
+        package_library = package_library,
+        fixture_path = fixture_path,
+        binding = binding,
         scenario = scenario,
         execution = manifest$execution,
         thread_controls = manifest$thread_controls,
@@ -135,6 +244,7 @@ baselineFixtureRun <- function(
         min(repetition, length(manifest$execution$cache_sequence))
     ]]
     measured$worker <- worker
+    measured$scientific_parity <- parity
     measured$metrics$committed_input_bytes <- if (!is.null(
         worker$fixture$committed_bytes
     )) {
@@ -163,11 +273,11 @@ baselineFixtureRun <- function(
     } else {
         0
     }
-    query_stage <- Filter(function(stage) {
+    query_stage <- Filter(\(stage) {
         identical(stage$stage_id, "bounded_query")
     }, worker$stages)
     query_p95 <- if (length(query_stage) == 1L) {
-        vapply(query_stage[[1L]]$results, function(query) {
+        vapply(query_stage[[1L]]$results, \(query) {
             as.numeric(query$p95_seconds)
         }, numeric(1))
     } else {
@@ -179,7 +289,52 @@ baselineFixtureRun <- function(
         NA_real_
     }
 
-    if (!is.null(scenario$oracle_id) && identical(worker$status, "passed")) {
+    binding_valid <- isTRUE(diagnostics_only) || is.null(fixture_path) || (
+        identical(worker$status, "passed") &&
+        identical(parity$status, "passed") &&
+        identical(worker$binding, parity$binding) &&
+        identical(
+            worker$binding$binding_sha256,
+            binding$binding_sha256
+        )
+    )
+    query_stage <- Filter(\(stage) {
+        identical(stage$stage_id, "bounded_query")
+    }, worker$stages)
+    measured_queries <- if (length(query_stage) == 1L) {
+        vapply(
+            query_stage[[1L]]$results,
+            `[[`,
+            character(1),
+            "output_sha256"
+        )
+    } else {
+        character()
+    }
+    parity_queries <- if (identical(parity$status, "passed")) {
+        vapply(parity$bounded_queries, `[[`, character(1), "output_sha256")
+    } else {
+        character()
+    }
+    hydration_valid <- !identical(backend, "artifact") || identical(
+        worker$workflow_evidence$hydration_digest,
+        parity$hydration_digest
+    )
+    workflow_parity_valid <- isTRUE(diagnostics_only) || is.null(fixture_path) || (
+        length(measured_queries) > 0L &&
+        identical(measured_queries, parity_queries) &&
+        isTRUE(hydration_valid)
+    )
+    measured$evidence_binding <- list(
+        valid = binding_valid,
+        binding_sha256 = if (is.null(binding)) NULL else binding$binding_sha256,
+        workflow_parity_valid = workflow_parity_valid
+    )
+    if (!isTRUE(binding_valid) || !isTRUE(workflow_parity_valid)) {
+        measured$status <- "failed"
+    }
+
+    if (!is.null(scenario$oracle_id) && identical(parity$status, "passed")) {
         oracle <- omicsParityReadOracle(file.path(
             .BASELINE_REPO_ROOT,
             manifest$oracle_path
@@ -196,7 +351,7 @@ baselineFixtureRun <- function(
             )
         } else {
             comparison <- omicsParityCompareSummary(
-                worker$observed_summary,
+                parity$observed_summary,
                 matches[[1L]]$expected,
                 manifest$comparison_contract
             )
@@ -208,16 +363,16 @@ baselineFixtureRun <- function(
 }
 
 baselineDeterminismChecks <- function(runs) {
-    group_ids <- unique(vapply(runs, function(run) {
+    group_ids <- unique(vapply(runs, \(run) {
         paste(run$scenario_id, run$backend, sep = "::")
     }, character(1)))
-    lapply(group_ids, function(group_id) {
-        scenario_runs <- Filter(function(run) {
+    lapply(group_ids, \(group_id) {
+        scenario_runs <- Filter(\(run) {
             identical(paste(run$scenario_id, run$backend, sep = "::"), group_id)
         }, runs)
         scenario_id <- scenario_runs[[1L]]$scenario_id
         fingerprints <- vapply(scenario_runs, \(run) {
-            fingerprint <- run$worker$observed_summary$output_sha256
+            fingerprint <- run$scientific_parity$observed_summary$output_sha256
             if (is.null(fingerprint)) NA_character_ else fingerprint
         }, character(1))
         fingerprints <- fingerprints[!is.na(fingerprints)]

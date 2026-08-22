@@ -58,8 +58,7 @@ baselineArtifactProjectMetrics <- function(project_root) {
     )
 }
 
-baselineArtifactPersistImport <- function(
-    import_result,
+baselineArtifactStageImport <- function(
     fixture_path,
     run_dir,
     use_precursor_norm
@@ -86,15 +85,36 @@ baselineArtifactPersistImport <- function(
             project_id = paths$project_id
         )
     )
-    workflow$data_tbl <- import_result$data
-    workflow$data_format <- "diann"
-    workflow$data_type <- import_result$data_type
     workflow$artifact_stage_results <- NULL
+    staged <- stageProtDiaImportArtifacts(
+        workflow_data = workflow,
+        source_path = fixture_path,
+        format = "diann",
+        use_precursor_norm = isTRUE(use_precursor_norm),
+        sanitize_names = FALSE
+    )
+    if (!isTRUE(staged$enabled) || !isTRUE(staged$attempted) ||
+        !isTRUE(staged$ok)) {
+        stop("DIA-NN artifact benchmark worker did not stage", call. = FALSE)
+    }
+    committed <- FALSE
+    on.exit({
+        if (!committed) {
+            try(discardProtDiaArtifactWorkerStage(
+                staged$pending_stage$stage
+            ), silent = TRUE)
+        }
+    }, add = TRUE)
+    workflow$data_tbl <- staged$result$data
+    workflow$data_format <- "diann"
+    workflow$data_type <- staged$result$data_type
     persisted <- persistProtDiaImportArtifacts(
         workflow,
-        import_result,
+        staged$result,
         fixture_path,
         use_precursor_norm = isTRUE(use_precursor_norm),
+        pending_stage = staged$pending_stage,
+        worker_attempted = TRUE,
         retain_source_uri = FALSE,
         log_warn = function(...) NULL
     )
@@ -102,12 +122,16 @@ baselineArtifactPersistImport <- function(
         !isTRUE(persisted$committed)) {
         stop("DIA-NN artifact benchmark import did not commit", call. = FALSE)
     }
+    committed <- TRUE
     workflow$data_tbl <- NULL
     list(
         context = workflow$workflow_context,
         ref = persisted$refs$canonical_data,
         project_root = project_root,
-        generation_id = persisted$generation_id
+        generation_id = persisted$generation_id,
+        import_result = staged$result,
+        process_evidence = staged$process_evidence,
+        hydration_digest = staged$pending_stage$proofs$canonical_data$hydration_digest
     )
 }
 
@@ -116,7 +140,8 @@ baselineArtifactBoundedQuery <- function(
     ref,
     query,
     selected_run,
-    trace_copies = FALSE
+    trace_copies = FALSE,
+    query_session = NULL
 ) {
     descriptor <- artifactDiaWorkflowDescriptor()
     operation_id <- names(descriptor$queries)[[1L]]
@@ -133,7 +158,8 @@ baselineArtifactBoundedQuery <- function(
                 ref,
                 projections = unlist(query$columns, use.names = FALSE),
                 filters = list(run = list(operator = "equal", value = selected_run)),
-                limit = limit
+                limit = limit,
+                query_session = query_session
             )
             timings[[index]] <- as.numeric(Sys.time()) - started
         }
@@ -254,16 +280,20 @@ baselinePairScientificParity <- function(pairs) {
         vapply(stages[[1L]]$results, `[[`, character(1), "output_sha256")
     }
     vapply(pairs, function(pair) {
-        memory <- pair$memory$worker
-        artifact <- pair$artifact$worker
+        memory <- pair$memory
+        artifact <- pair$artifact
         summaries_equal <- identical(
-            memory$observed_summary$output_sha256,
-            artifact$observed_summary$output_sha256
+            memory$scientific_parity$observed_summary$output_sha256,
+            artifact$scientific_parity$observed_summary$output_sha256
         )
-        memory_queries <- queryResults(memory)
-        artifact_queries <- queryResults(artifact)
+        memory_queries <- queryResults(memory$worker)
+        artifact_queries <- queryResults(artifact$worker)
         summaries_equal && !is.null(memory_queries) &&
-            identical(memory_queries, artifact_queries)
+            identical(memory_queries, artifact_queries) &&
+            isTRUE(memory$evidence_binding$valid) &&
+            isTRUE(artifact$evidence_binding$valid) &&
+            isTRUE(memory$evidence_binding$workflow_parity_valid) &&
+            isTRUE(artifact$evidence_binding$workflow_parity_valid)
     }, logical(1))
 }
 
@@ -442,7 +472,11 @@ baselineValidateCloseoutResult <- function(path) {
         is.logical(result$promotion_evaluation$authorized) &&
         length(result$promotion_evaluation$authorized) == 1L &&
         all(vapply(result$runs, function(run) {
-            run$backend %in% c("memory", "artifact")
+            run$backend %in% c("memory", "artifact") &&
+                isTRUE(run$evidence_binding$valid) &&
+                isTRUE(run$evidence_binding$workflow_parity_valid) &&
+                identical(run$scientific_parity$status, "passed") &&
+                is.null(run$worker$observed_summary)
         }, logical(1)))
     if (!isTRUE(valid)) {
         stop("DIA-NN artifact closeout result is incompatible", call. = FALSE)

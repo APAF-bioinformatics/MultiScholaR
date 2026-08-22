@@ -199,7 +199,7 @@ artifactQueryPageReference <- function(store, ref, specification) {
         store, ref$logical_key, ref$artifact_id
     )$sidecar
     sidecar <- artifactStoreReadSidecar(
-        store, sidecar_path, validate_payload = TRUE
+        store, sidecar_path, validate_payload = FALSE
     )
     if (!identical(sidecar$artifact_ref, ref)) {
         artifactQueryAbort(
@@ -207,12 +207,20 @@ artifactQueryPageReference <- function(store, ref, specification) {
             "multischolar_artifact_query_ref_mismatch"
         )
     }
+    payload_path <- artifactStoreResolveFile(
+        store, ref$relative_path, must_exist = TRUE
+    )
+    bytes <- unname(as.numeric(file.info(payload_path)$size))
+    if (!identical(bytes, as.numeric(ref$shape$bytes))) {
+        artifactQueryAbort(
+            "artifact page payload size differs from its immutable reference",
+            "multischolar_artifact_query_payload_mismatch"
+        )
+    }
     list(
         ref = ref,
         sidecar = sidecar,
-        payload_path = artifactStoreResolveFile(
-            store, ref$relative_path, must_exist = TRUE
-        )
+        payload_path = payload_path
     )
 }
 
@@ -428,7 +436,8 @@ queryArtifactPage <- function(
     direction = NULL,
     cursor = NULL,
     limit = NULL,
-    resource_policy = NULL
+    resource_policy = NULL,
+    query_session = NULL
 ) {
     specification <- validateArtifactQueryPageSpecification(specification)
     source <- artifactQueryPageReference(store, ref, specification)
@@ -438,8 +447,11 @@ queryArtifactPage <- function(
     )
     bounds <- artifactQueryNormalizeBounds(specification, limit, resource_policy)
     artifactQueryAssertRss(bounds$policy, "before_page_query")
-    handle <- artifactQueryConnect(store, bounds$policy)
-    on.exit(artifactQueryDisconnect(handle), add = TRUE)
+    lease <- artifactQueryLease(store, bounds$policy, query_session)
+    handle <- lease$handle
+    if (isTRUE(lease$transient)) {
+        on.exit(artifactQueryDisconnect(handle), add = TRUE)
+    }
     sort <- artifactQueryPageSort(
         specification, sort_id, direction, columns
     )

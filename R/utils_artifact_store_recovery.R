@@ -32,6 +32,12 @@ artifactStoreCharacterVector <- function(value) {
 
 artifactStoreNormalizeCodecMetadata <- function(metadata) {
     metadata <- artifactValidateRectangularMetadata(metadata)
+    metadata$stable_key$logical_columns <- artifactStoreCharacterVector(
+        metadata$stable_key$logical_columns
+    )
+    metadata$stable_key$physical_columns <- artifactStoreCharacterVector(
+        metadata$stable_key$physical_columns
+    )
     metadata$schema_evolution$allowed_changes <- artifactStoreCharacterVector(
         metadata$schema_evolution$allowed_changes
     )

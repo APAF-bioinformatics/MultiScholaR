@@ -264,6 +264,11 @@ queryProtDiaDaPage <- function(
     }
     entry <- protDiaDaIndexEntry(index, contrast)
     store <- protDiaDaStore(workflow_data$workflow_context)
+    query_session <- artifactQuerySessionForWorkflow(
+        workflow_data,
+        store,
+        resource_policy
+    )
     queryArtifactPage(
         store = store,
         ref = entry$long_table$ref,
@@ -274,7 +279,8 @@ queryProtDiaDaPage <- function(
         direction = direction,
         cursor = cursor,
         limit = limit,
-        resource_policy = resource_policy
+        resource_policy = resource_policy,
+        query_session = query_session
     )
 }
 

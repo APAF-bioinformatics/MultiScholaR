@@ -1,11 +1,6 @@
 # Shared shinytest2 browser harness for GUI E2E tests.
 # The helpers keep workflow tests readable and centralize failure artifacts.
 
-source(
-  testthat::test_path("..", "..", "tools", "ci", "e2e-browser-preflight.R"),
-  local = TRUE
-)
-
 .E2E_BROWSER_DEFAULT_TIMEOUT <- 30000L
 .E2E_BROWSER_DEFAULT_LOAD_TIMEOUT <- 120000L
 .E2E_VALID_OMICS <- c("proteomics", "metabolomics", "lipidomics")

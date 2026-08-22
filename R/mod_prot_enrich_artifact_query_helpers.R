@@ -303,15 +303,22 @@ queryProtDiaEnrichPage <- function(
             .PROT_DIA_ENRICH_ROW_ORDER_COLUMN
         )
     }
+    store <- protDiaEnrichStore(workflow_data$workflow_context)
+    query_session <- artifactQuerySessionForWorkflow(
+        workflow_data,
+        store,
+        resource_policy
+    )
     queryArtifactPage(
-        store = protDiaEnrichStore(workflow_data$workflow_context),
+        store = store,
         ref = index$result_table$ref,
         specification = index$query_specification,
         projections = projections,
         filters = filters,
         cursor = cursor,
         limit = limit,
-        resource_policy = resource_policy
+        resource_policy = resource_policy,
+        query_session = query_session
     )
 }
 

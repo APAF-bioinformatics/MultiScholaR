@@ -258,6 +258,13 @@ test_that("fresh-process harness records RSS, disk, allocation, query, and nativ
     expect_identical(run$status, "passed")
     expect_identical(run$worker$status, "passed")
     expect_true(run$worker$oracle_comparison$equal)
+    expect_true(run$evidence_binding$valid)
+    expect_true(run$evidence_binding$workflow_parity_valid)
+    expect_identical(
+        run$scientific_parity$evidence_class,
+        "independent_scientific_parity"
+    )
+    expect_null(run$worker$observed_summary)
     expect_gt(run$metrics$peak_tree_rss_bytes, 0)
     expect_gt(run$metrics$retained_tree_rss_bytes, 0)
     expect_gt(run$metrics$sample_count, 1L)
@@ -338,7 +345,7 @@ test_that("private fixture evidence excludes source paths and biological identif
 
     result <- omicsParityValidateResult(file.path(output_dir, "baseline-result.json"))
     run <- result$runs[[1L]]
-    summary <- run$worker$observed_summary
+    summary <- run$scientific_parity$observed_summary
     expect_false(run$output_retained)
     expect_false(run$worker$fixture$source_path_retained)
     expect_identical(summary$run_count, 6L)

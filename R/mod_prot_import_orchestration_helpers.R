@@ -242,21 +242,28 @@ readProtImportDataWithStatus <- function(
     , logError = logger::log_error
     , captureCheckpoint = .capture_checkpoint
     , messageFn = message
+    , stagedImportResult = NULL
+    , statusAlreadyUpdated = FALSE
 ) {
-  updateStatus(sprintf("Reading %s data...", toupper(format)))
+  if (!isTRUE(statusAlreadyUpdated)) {
+    updateStatus(sprintf("Reading %s data...", toupper(format)))
+  }
   logInfo(sprintf("Reading %s data from %s", format, searchResultsPath))
 
-  data_import_result <- importDataByFormat(
-    format = format
-    , searchResultsPath = searchResultsPath
-    , input = input
-    , importDiann = importDiann
-    , importSpectronaut = importSpectronaut
-    , importFragpipe = importFragpipe
-    , importMaxquant = importMaxquant
-    , importPdTmt = importPdTmt
-    , logError = logError
-  )
+  data_import_result <- stagedImportResult
+  if (is.null(data_import_result)) {
+    data_import_result <- importDataByFormat(
+      format = format
+      , searchResultsPath = searchResultsPath
+      , input = input
+      , importDiann = importDiann
+      , importSpectronaut = importSpectronaut
+      , importFragpipe = importFragpipe
+      , importMaxquant = importMaxquant
+      , importPdTmt = importPdTmt
+      , logError = logError
+    )
+  }
 
   recordImportedData(
     dataImportResult = data_import_result
@@ -379,4 +386,3 @@ runProtImportProcessingSafely <- function(
     }
   )
 }
-

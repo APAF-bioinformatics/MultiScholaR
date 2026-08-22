@@ -226,6 +226,8 @@ registerProtImportObservers <- function(
     resolveFilenameFn = resolveProtImportInputFilename,
     finalizeSetupStateFn = finalizeProtImportSetupState,
     completeSuccessStateFn = completeProtImportSuccessState,
+    stageImportArtifactsFn = stageProtDiaImportArtifactsSafely,
+    discardStagedArtifactsFn = discardProtDiaArtifactWorkerStage,
     persistImportArtifactsFn = persistProtDiaImportArtifacts,
     observeEventFn = shiny::observeEvent,
     reqFn = shiny::req,
@@ -291,6 +293,25 @@ registerProtImportObservers <- function(
 
     runProcessingSafelyFn(
       runProcessing = function() {
+        updateStatusFn(sprintf("Reading %s data...", toupper(format)))
+        artifact_import <- stageImportArtifactsFn(
+          workflow_data = workflowData,
+          source_path = search_results_path,
+          format = format,
+          use_precursor_norm = input$diann_use_precursor_norm %||% TRUE,
+          sanitize_names = input$sanitize_names %||% FALSE,
+          log_warn = logWarn
+        )
+        pending_stage <- artifact_import$pending_stage %||% NULL
+        artifact_stage_committed <- FALSE
+        on.exit({
+          if (!artifact_stage_committed && !is.null(pending_stage)) {
+            try(
+              discardStagedArtifactsFn(pending_stage$stage),
+              silent = TRUE
+            )
+          }
+        }, add = TRUE)
         data_import_result <- readDataWithStatusFn(
           format = format,
           searchResultsPath = search_results_path,
@@ -306,7 +327,13 @@ registerProtImportObservers <- function(
           importPdTmt = importPdTmtFn,
           logError = logError,
           captureCheckpoint = .capture_checkpoint,
-          messageFn = messageFn
+          messageFn = messageFn,
+          stagedImportResult = if (isTRUE(artifact_import$ok)) {
+            artifact_import$result
+          } else {
+            NULL
+          },
+          statusAlreadyUpdated = TRUE
         )
 
         applyWorkflowWithStatusFn(
@@ -398,14 +425,17 @@ registerProtImportObservers <- function(
           completeSuccessState = completeSuccessStateFn
         )
 
-        persistImportArtifactsFn(
+        artifact_persistence <- persistImportArtifactsFn(
           workflow_data = workflowData,
           data_import_result = data_import_result,
           source_path = search_results_path,
           use_precursor_norm = input$diann_use_precursor_norm %||% TRUE,
           sanitize_names = input$sanitize_names %||% FALSE,
+          pending_stage = pending_stage,
+          worker_attempted = isTRUE(artifact_import$attempted),
           log_warn = logWarn
         )
+        artifact_stage_committed <- isTRUE(artifact_persistence$committed)
 
         invisible(data_import_result)
       },

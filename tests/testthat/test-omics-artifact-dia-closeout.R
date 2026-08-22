@@ -78,16 +78,23 @@ diaArtifact020MockRun <- function(backend, repetition) {
         ),
         worker = list(
             status = "passed",
-            observed_summary = list(output_sha256 = "summary-digest"),
             stages = if (artifact) {
                 list(
                     list(stage_id = "import"),
-                    list(stage_id = "artifact_persist"),
+                    list(stage_id = "artifact_stage_worker"),
                     query_stage
                 )
             } else {
                 list(list(stage_id = "import"), query_stage)
             }
+        ),
+        scientific_parity = list(
+            status = "passed",
+            observed_summary = list(output_sha256 = "summary-digest")
+        ),
+        evidence_binding = list(
+            valid = TRUE,
+            workflow_parity_valid = TRUE
         )
     )
 }
@@ -164,6 +171,19 @@ test_that("DIA closeout promotion evaluation is paired and fail closed", {
     }, incomplete_result$scenarios[[1L]]$gates)[[1L]]
     expect_identical(query_gate$valid_pairs, 4L)
     expect_false(query_gate$passed)
+
+    mismatched <- runs
+    mismatched[[2L]]$evidence_binding$valid <- FALSE
+    mismatch_result <- baselinePromotionEvaluation(
+        mismatched,
+        list(scenario),
+        gates
+    )
+    expect_false(mismatch_result$authorized)
+    expect_identical(
+        mismatch_result$scenarios[[1L]]$reason,
+        "scientific_or_query_parity_failed"
+    )
 })
 
 test_that("paired DIA closeout preserves exact import and bounded query results", {

@@ -228,15 +228,191 @@ artifactStorePublishDirectory <- function(store, temporary_path, final_path) {
     invisible(target)
 }
 
-artifactStorePayloadShape <- function(path, metadata) {
+artifactStoreValidateArrowShape <- function(payload, metadata) {
+    fields <- payload$schema$fields
+    actual_schema <- lapply(fields, \(field) {
+        list(
+            name = field$name,
+            type = field$type$ToString(),
+            nullable = field$nullable
+        )
+    })
+    expected_rows <- as.integer(metadata$dimensions$rows)
+    expected_columns <- length(metadata$physical_schema)
+    valid <- identical(actual_schema, metadata$physical_schema) &&
+        identical(as.integer(payload$num_rows), expected_rows) &&
+        identical(as.integer(payload$num_columns), as.integer(expected_columns))
+    if (!isTRUE(valid)) {
+        artifactStoreAbort(
+            "artifact Parquet shape differs from its codec metadata",
+            "multischolar_artifact_shape_mismatch"
+        )
+    }
+    row_order_index <- match(
+        .artifactRowOrderColumn,
+        vapply(fields, `[[`, character(1), "name")
+    )
+    row_order <- as.numeric(payload$column(row_order_index - 1L)$as_vector())
+    if (!identical(row_order, as.numeric(seq_len(expected_rows)))) {
+        artifactStoreAbort(
+            "artifact Parquet row order is missing, duplicated, or reordered",
+            "multischolar_artifact_order_mismatch"
+        )
+    }
+    invisible(TRUE)
+}
+
+artifactStorePayloadShape <- function(path, metadata, validate_hydration = TRUE) {
+    metadata <- artifactValidateRectangularMetadata(metadata)
     payload <- arrow::read_parquet(path, as_data_frame = FALSE)
-    decodeArtifactRectangular(payload, metadata)
+    artifactStoreValidateArrowShape(payload, metadata)
+    if (isTRUE(validate_hydration)) decodeArtifactRectangular(payload, metadata)
     list(
         kind = metadata$kind,
         rows = as.integer(metadata$dimensions$rows),
         columns = as.integer(metadata$dimensions$columns),
         payloads = 1L,
         bytes = unname(as.numeric(file.info(path)$size))
+    )
+}
+
+artifactExactDigestValue <- function(value) {
+    if (is.null(value)) return(NULL)
+    if (is.atomic(value)) {
+        value_attributes <- attributes(value)
+        attributes(value) <- NULL
+        materialized <- vector(typeof(value), length(value))
+        materialized[] <- value
+        return(list(
+            storage_type = typeof(materialized),
+            values = materialized,
+            attributes = artifactExactDigestValue(value_attributes)
+        ))
+    }
+    if (is.list(value)) {
+        value_names <- names(value)
+        return(list(
+            names = if (is.null(value_names)) NULL else unname(value_names),
+            values = unname(lapply(value, artifactExactDigestValue))
+        ))
+    }
+    artifactStoreAbort(
+        "exact hydration digest contains an unsupported value",
+        "multischolar_invalid_artifact_hydration_digest"
+    )
+}
+
+artifactExactHydrationDigest <- function(value) {
+    if (!is.data.frame(value) && !is.matrix(value)) {
+        artifactStoreAbort(
+            "exact hydration digest requires a data frame or matrix",
+            "multischolar_invalid_artifact_hydration_digest"
+        )
+    }
+    descriptor <- if (is.data.frame(value)) {
+        list(
+            kind = "data.frame",
+            class = unname(class(value)),
+            dimensions = unname(dim(value)),
+            names = unname(names(value)),
+            row_names = artifactRowNamesMetadata(value),
+            columns = unname(lapply(value, artifactExactDigestValue))
+        )
+    } else {
+        list(
+            kind = "matrix",
+            class = unname(class(value)),
+            storage_mode = storage.mode(value),
+            dimensions = unname(dim(value)),
+            dimnames = artifactExactDigestValue(dimnames(value)),
+            values = artifactExactDigestValue(as.vector(value))
+        )
+    }
+    artifactSemanticDigest(list(
+        schema = "multischolar.exact_hydration_digest",
+        schema_version = 1L,
+        descriptor = descriptor
+    ))
+}
+
+artifactStoreVerifyExactRef <- function(store, ref) {
+    store <- validateArtifactStore(store)
+    ref <- artifactStoreNormalizeRef(ref)
+    managed <- artifactStoreManagedPaths(store, ref$logical_key, ref$artifact_id)
+    sidecar <- artifactStoreReadSidecar(
+        store,
+        managed$sidecar,
+        validate_payload = FALSE
+    )
+    if (!identical(artifactStoreNormalizeRef(sidecar$artifact_ref), ref)) {
+        artifactStoreAbort(
+            "artifact verification reference differs from its immutable sidecar",
+            "multischolar_artifact_ref_mismatch"
+        )
+    }
+    payload_path <- artifactStoreResolveFile(
+        store,
+        ref$relative_path,
+        must_exist = TRUE
+    )
+    if (!identical(artifactByteDigest(payload_path), ref$hash_policy$byte$digest)) {
+        artifactStoreAbort(
+            "artifact verification byte digest differs from its reference",
+            "multischolar_artifact_byte_digest_mismatch"
+        )
+    }
+    payload <- arrow::read_parquet(payload_path, as_data_frame = FALSE)
+    artifactStoreValidateArrowShape(payload, sidecar$codec_metadata)
+    shape <- list(
+        kind = sidecar$codec_metadata$kind,
+        rows = as.integer(sidecar$codec_metadata$dimensions$rows),
+        columns = as.integer(sidecar$codec_metadata$dimensions$columns),
+        payloads = 1L,
+        bytes = unname(as.numeric(file.info(payload_path)$size))
+    )
+    validateArtifactRefPayload(ref, store$project_root, shape)
+    hydrated <- decodeArtifactRectangular(payload, sidecar$codec_metadata)
+    payload <- NULL
+    stable_key <- sidecar$codec_metadata$stable_key$logical_columns
+    if (length(stable_key) == 0L) stable_key <- NULL
+    reencoded <- if (identical(sidecar$codec_metadata$kind, "matrix")) {
+        encodeArtifactMatrix(hydrated, sidecar$codec_metadata$owner)
+    } else {
+        encodeArtifactTable(
+            hydrated,
+            stable_key = stable_key,
+            owner = sidecar$codec_metadata$owner
+        )
+    }
+    reencoded_metadata <- artifactStoreNormalizeCodecMetadata(reencoded$metadata)
+    metadata_fields <- setdiff(names(reencoded_metadata), "semantic_digest")
+    if (!identical(
+        reencoded_metadata[metadata_fields],
+        sidecar$codec_metadata[metadata_fields]
+    )) {
+        artifactStoreAbort(
+            "artifact verification codec metadata is not an exact fixed point",
+            "multischolar_artifact_validation_failed"
+        )
+    }
+    hydrated_shape <- c(rows = nrow(hydrated), columns = ncol(hydrated))
+    expected_shape <- c(rows = ref$shape$rows, columns = ref$shape$columns)
+    if (!identical(as.integer(hydrated_shape), as.integer(expected_shape))) {
+        artifactStoreAbort(
+            "artifact verification hydration shape differs from its reference",
+            "multischolar_artifact_shape_mismatch"
+        )
+    }
+    list(
+        schema = "multischolar.artifact_exact_verification",
+        schema_version = 1L,
+        artifact_id = ref$artifact_id,
+        semantic_digest = ref$hash_policy$semantic$digest,
+        byte_digest = ref$hash_policy$byte$digest,
+        hydration_digest = artifactExactHydrationDigest(hydrated),
+        rows = as.integer(ref$shape$rows),
+        columns = as.integer(ref$shape$columns),
+        verifier_pid = as.integer(Sys.getpid())
     )
 }
 
@@ -299,8 +475,10 @@ artifactStoreInvokeFailure <- function(failure_injector, stage, context) {
 artifactStoreWriteParquet <- function(store, encoded, logical_key,
                                       provenance_ids = character(),
                                       failure_injector = NULL,
-                                      write_parquet_fn = arrow::write_parquet) {
+                                      write_parquet_fn = arrow::write_parquet,
+                                      verification = c("inline_exact", "deferred_exact")) {
     store <- validateArtifactStore(store)
+    verification <- match.arg(verification)
     if (!inherits(encoded, "MultiScholaRArtifactRectangular") ||
         !is.function(write_parquet_fn)) {
         artifactStoreAbort(
@@ -388,17 +566,23 @@ artifactStoreWriteParquet <- function(store, encoded, logical_key,
     )
     artifactStoreInvokeFailure(failure_injector, "after_temp_write", intent)
 
-    actual_shape <- artifactStorePayloadShape(payload_path, metadata)
-    before <- decodeArtifactRectangular(encoded$payload, metadata)
-    after <- decodeArtifactRectangular(
-        arrow::read_parquet(payload_path, as_data_frame = FALSE),
-        metadata
+    actual_shape <- artifactStorePayloadShape(
+        payload_path,
+        metadata,
+        validate_hydration = FALSE
     )
-    if (!identical(after, before)) {
-        artifactStoreAbort(
-            "artifact payload changed during Parquet serialization",
-            "multischolar_artifact_validation_failed"
+    if (identical(verification, "inline_exact")) {
+        before <- decodeArtifactRectangular(encoded$payload, metadata)
+        after <- decodeArtifactRectangular(
+            arrow::read_parquet(payload_path, as_data_frame = FALSE),
+            metadata
         )
+        if (!identical(after, before)) {
+            artifactStoreAbort(
+                "artifact payload changed during Parquet serialization",
+                "multischolar_artifact_validation_failed"
+            )
+        }
     }
     committed_ref <- newArtifactRef(
         logical_key = logical_key,

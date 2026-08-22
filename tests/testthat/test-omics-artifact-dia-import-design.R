@@ -352,6 +352,28 @@ test_that("store and registry failures leave successful memory import current", 
     }
 })
 
+test_that("failed DIA-NN workers are not retried by in-process persistence", {
+    diaArtifact009SkipDependencies()
+    root <- withr::local_tempdir()
+    source <- testthat::test_path("..", "testdata", "e2e", "prot_dia", "report.tsv")
+    workflow <- diaArtifact009Workflow(root)
+    imported <- diaArtifact009Import(workflow, source)
+    output <- persistProtDiaImportArtifacts(
+        workflow,
+        imported$result,
+        source,
+        pending_stage = NULL,
+        worker_attempted = TRUE,
+        log_warn = \(...) invisible(NULL)
+    )
+
+    expect_true(output$enabled)
+    expect_false(output$ok)
+    expect_false(output$committed)
+    expect_identical(output$reason, "artifact_worker_failed_no_retry")
+    expect_length(list.files(root, pattern = "[.]parquet$", recursive = TRUE), 0L)
+})
+
 test_that("failed design artifact state cannot replace its memory checkpoint", {
     diaArtifact009SkipDependencies()
     root <- tempfile("dia-artifact-009-design-failure-")

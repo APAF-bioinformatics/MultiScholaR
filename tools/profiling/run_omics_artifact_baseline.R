@@ -396,7 +396,7 @@ baselinePrepareFixture <- function(scenario, repo_root, run_dir) {
         if (!file.exists(fixture_path)) {
             stop(sprintf("Fixture not found: %s", scenario$fixture_path), call. = FALSE)
         }
-        return(scenario$fixture_path)
+        return(normalizePath(fixture_path, mustWork = TRUE))
     }
     if (identical(scenario$kind, "generated_scaling")) {
         source_path <- normalizePath(
@@ -456,6 +456,152 @@ baselineSanitizePrivateSummary <- function(summary) {
     summary$proteins <- NULL
     summary$peptides <- NULL
     summary
+}
+
+baselineWorkingTreeDigest <- function(repo_root = .BASELINE_REPO_ROOT) {
+    diff <- system2(
+        "git",
+        c(
+            "-C", repo_root, "diff", "--no-ext-diff", "--binary", "HEAD",
+            "--", "DESCRIPTION", "R", "tools/profiling"
+        ),
+        stdout = TRUE,
+        stderr = FALSE
+    )
+    untracked <- system2(
+        "git",
+        c(
+            "-C", repo_root, "ls-files", "--others", "--exclude-standard",
+            "--", "DESCRIPTION", "R", "tools/profiling"
+        ),
+        stdout = TRUE,
+        stderr = FALSE
+    )
+    untracked <- sort(untracked[nzchar(untracked)])
+    untracked_digests <- vapply(
+        file.path(repo_root, untracked),
+        omicsParitySha256File,
+        character(1)
+    )
+    digest::digest(
+        paste(
+            c(
+                paste(diff, collapse = "\n"),
+                paste(untracked, untracked_digests, sep = "=", collapse = "\n")
+            ),
+            collapse = "\n--untracked--\n"
+        ),
+        algo = "sha256",
+        serialize = FALSE
+    )
+}
+
+baselineCodeRevision <- function(repo_root = .BASELINE_REPO_ROOT) {
+    git_sha <- tryCatch(
+        system2(
+            "git",
+            c("-C", repo_root, "rev-parse", "HEAD"),
+            stdout = TRUE,
+            stderr = FALSE
+        )[[1L]],
+        error = \(...) NA_character_
+    )
+    list(
+        git_sha = git_sha,
+        working_tree_sha256 = baselineWorkingTreeDigest(repo_root)
+    )
+}
+
+baselineBindingEnvironment <- function(manifest) {
+    packages <- c("arrow", "duckdb", "processx", "vroom", "tibble")
+    versions <- lapply(packages, \(package) {
+        if (requireNamespace(package, quietly = TRUE)) {
+            as.character(utils::packageVersion(package))
+        } else {
+            NULL
+        }
+    })
+    names(versions) <- packages
+    list(
+        r_version = R.version.string,
+        platform = R.version$platform,
+        package_version = read.dcf(
+            file.path(.BASELINE_REPO_ROOT, "DESCRIPTION"),
+            fields = "Version"
+        )[[1L]],
+        package_versions = versions,
+        locale = manifest$execution$locale,
+        timezone = manifest$execution$timezone,
+        threads = as.integer(manifest$execution$threads),
+        rng_kind = unname(unlist(manifest$execution$rng_kind, use.names = FALSE)),
+        rng_seed = as.integer(manifest$execution$rng_seed)
+    )
+}
+
+baselineInputFingerprint <- function(path, scenario) {
+    fingerprint <- omicsParitySha256File(path)
+    if (!identical(scenario$kind, "optional_private")) return(fingerprint)
+    salt <- Sys.getenv("MULTISCHOLAR_BASELINE_FINGERPRINT_SALT", unset = "")
+    if (!nzchar(salt)) {
+        stop("Private fixture runs require a fingerprint salt", call. = FALSE)
+    }
+    digest::digest(
+        paste0(salt, ":", fingerprint),
+        algo = "sha256",
+        serialize = FALSE
+    )
+}
+
+baselineEvidenceBinding <- function(path, scenario, manifest) {
+    binding <- list(
+        schema = "multischolar.omics_artifact_evidence_binding",
+        schema_version = 1L,
+        input_fingerprint = baselineInputFingerprint(path, scenario),
+        code_revision = baselineCodeRevision(),
+        capability = list(
+            capability_id = manifest$capability_id,
+            omic_type = "proteomics",
+            input_format = "diann",
+            data_level = "peptide",
+            acquisition_mode = "dia"
+        ),
+        parameters = scenario$parameters,
+        environment = baselineBindingEnvironment(manifest)
+    )
+    binding$binding_sha256 <- digest::digest(
+        jsonlite::toJSON(
+            binding,
+            auto_unbox = TRUE,
+            null = "null",
+            na = "null",
+            digits = 17
+        ),
+        algo = "sha256",
+        serialize = FALSE
+    )
+    binding
+}
+
+baselineInstallMeasurementPackage <- function(output_dir) {
+    library_path <- tempfile("multischolar-measurement-library-")
+    log_path <- file.path(output_dir, "harness", "package-install.log")
+    dir.create(library_path, recursive = TRUE, showWarnings = FALSE)
+    dir.create(dirname(log_path), recursive = TRUE, showWarnings = FALSE)
+    status <- system2(
+        file.path(R.home("bin"), "R"),
+        c(
+            "CMD", "INSTALL", "--no-test-load",
+            paste0("--library=", shQuote(library_path)),
+            shQuote(.BASELINE_REPO_ROOT)
+        ),
+        stdout = log_path,
+        stderr = log_path
+    )
+    installed <- file.path(library_path, "MultiScholaR")
+    if (!identical(as.integer(status), 0L) || !dir.exists(installed)) {
+        stop("measurement package installation failed", call. = FALSE)
+    }
+    normalizePath(library_path, mustWork = TRUE)
 }
 
 baselineBoundedQuery <- function(data, query, trace_copies = FALSE) {
@@ -536,15 +682,41 @@ baselineWorker <- function(spec_path) {
         utils::Rprofmem(allocation_path)
         on.exit(utils::Rprofmem(NULL), add = TRUE)
     }
-    pkgload::load_all(
-        path = spec$repo_root,
-        export_all = TRUE,
-        helpers = FALSE,
-        attach_testthat = FALSE,
-        quiet = TRUE
-    )
+    actual_binding <- if (
+        identical(spec$worker_kind, "scientific_parity") &&
+        !is.null(spec$fixture_path)
+    ) {
+        baselineEvidenceBinding(
+            spec$fixture_path,
+            spec$scenario,
+            list(
+                capability_id = spec$binding$capability$capability_id,
+                execution = spec$execution
+            )
+        )
+    } else {
+        NULL
+    }
+    if (!is.null(spec$package_library)) {
+        namespace <- loadNamespace(
+            "MultiScholaR",
+            lib.loc = spec$package_library
+        )
+        list2env(
+            as.list(namespace, all.names = TRUE),
+            envir = .GlobalEnv
+        )
+    } else {
+        pkgload::load_all(
+            path = spec$repo_root,
+            export_all = TRUE,
+            helpers = FALSE,
+            attach_testthat = FALSE,
+            quiet = TRUE
+        )
+    }
 
-    fixture_path <- baselinePrepareFixture(spec$scenario, spec$repo_root, spec$run_dir)
+    fixture_path <- spec$fixture_path
     if (is.null(fixture_path)) {
         result <- list(
             schema_version = "1.0.0",
@@ -554,51 +726,111 @@ baselineWorker <- function(spec_path) {
         baselineWriteJson(result, spec$result_path)
         return(invisible(result))
     }
-    stage_started <- proc.time()[["elapsed"]]
-    import_result <- suppressMessages(importDIANNData(
-        fixture_path,
-        use_precursor_norm = isTRUE(spec$scenario$parameters$use_precursor_norm)
-    ))
-    import_seconds <- proc.time()[["elapsed"]] - stage_started
-    summary <- omicsParitySummarizeDiann(import_result, fixture_path, spec$comparison_contract)
-    if (identical(spec$scenario$kind, "optional_private")) {
-        summary <- baselineSanitizePrivateSummary(summary)
-    }
-    baselineWriteJson(summary, file.path(spec$run_dir, "snapshots", "import-summary.json"))
-
-    selected_runs <- lapply(spec$bounded_queries, function(query) {
-        baselineResolveQueryRun(import_result$data, query)
-    })
-    artifact <- NULL
-    persist_seconds <- 0
-    if (identical(spec$backend, "artifact")) {
-        stage_started <- proc.time()[["elapsed"]]
-        artifact <- baselineArtifactPersistImport(
+    if (identical(spec$worker_kind, "scientific_parity")) {
+        if (!identical(
+            actual_binding$binding_sha256,
+            spec$binding$binding_sha256
+        )) {
+            result <- list(
+                schema_version = "1.0.0",
+                status = "failed",
+                reason = "scientific_parity_binding_mismatch",
+                expected_binding = spec$binding,
+                observed_binding = actual_binding
+            )
+            baselineWriteJson(result, spec$result_path)
+            return(invisible(result))
+        }
+        import_result <- suppressMessages(importDIANNData(
+            fixture_path,
+            use_precursor_norm = isTRUE(
+                spec$scenario$parameters$use_precursor_norm
+            )
+        ))
+        summary <- omicsParitySummarizeDiann(
             import_result,
+            fixture_path,
+            spec$comparison_contract
+        )
+        query_results <- lapply(spec$bounded_queries, \(query) {
+            baselineBoundedQuery(as.data.frame(import_result$data), query)
+        })
+        hydration_digest <- artifactExactHydrationDigest(import_result$data)
+        if (identical(spec$scenario$kind, "optional_private")) {
+            summary <- baselineSanitizePrivateSummary(summary)
+            query_results <- baselineSanitizePrivateQueries(query_results)
+            hydration_digest <- baselinePrivateFingerprint(hydration_digest)
+        }
+        result <- list(
+            schema_version = "1.0.0",
+            status = "passed",
+            evidence_class = "independent_scientific_parity",
+            binding = spec$binding,
+            observed_summary = summary,
+            hydration_digest = hydration_digest,
+            bounded_queries = query_results
+        )
+        baselineWriteJson(
+            summary,
+            file.path(spec$run_dir, "snapshots", "parity-import-summary.json")
+        )
+        baselineWriteJson(result, spec$result_path)
+        return(invisible(result))
+    }
+    stage_started <- proc.time()[["elapsed"]]
+    artifact <- NULL
+    if (identical(spec$backend, "artifact")) {
+        artifact <- baselineArtifactStageImport(
             fixture_path,
             spec$run_dir,
             use_precursor_norm = isTRUE(
                 spec$scenario$parameters$use_precursor_norm
             )
         )
-        persist_seconds <- proc.time()[["elapsed"]] - stage_started
+        import_result <- artifact$import_result
+    } else {
+        import_result <- suppressMessages(importDIANNData(
+            fixture_path,
+            use_precursor_norm = isTRUE(
+                spec$scenario$parameters$use_precursor_norm
+            )
+        ))
+    }
+    import_seconds <- proc.time()[["elapsed"]] - stage_started
+    import_shape <- list(
+        rows = nrow(import_result$data),
+        columns = ncol(import_result$data)
+    )
+    selected_runs <- lapply(spec$bounded_queries, \(query) {
+        baselineResolveQueryRun(import_result$data, query)
+    })
+    if (identical(spec$backend, "artifact")) {
         import_result$data <- NULL
+        artifact$import_result <- NULL
         import_result <- NULL
+        store <- newArtifactStore(
+            artifact$context$getPaths(),
+            artifact$context$getIdentity()$project_id
+        )
+        query_session <- newArtifactQuerySession(store)
+        on.exit(query_session$close(), add = TRUE)
         query_results <- Map(
-            function(query, selected_run) {
+            \(query, selected_run) {
                 baselineArtifactBoundedQuery(
                     artifact$context,
                     artifact$ref,
                     query,
                     selected_run,
-                    trace_copies = diagnostic_run
+                    trace_copies = diagnostic_run,
+                    query_session = query_session
                 )
             },
             spec$bounded_queries,
             selected_runs
         )
+        query_session$close()
     } else {
-        query_results <- lapply(spec$bounded_queries, function(query) {
+        query_results <- lapply(spec$bounded_queries, \(query) {
             baselineBoundedQuery(
                 as.data.frame(import_result$data),
                 query,
@@ -608,6 +840,15 @@ baselineWorker <- function(spec_path) {
     }
     if (identical(spec$scenario$kind, "optional_private")) {
         query_results <- baselineSanitizePrivateQueries(query_results)
+    }
+    hydration_digest <- if (identical(spec$backend, "artifact")) {
+        artifact$hydration_digest
+    } else {
+        NULL
+    }
+    if (!is.null(hydration_digest) &&
+        identical(spec$scenario$kind, "optional_private")) {
+        hydration_digest <- baselinePrivateFingerprint(hydration_digest)
     }
     baselineWriteJson(
         query_results,
@@ -636,9 +877,10 @@ baselineWorker <- function(spec_path) {
             kind = spec$scenario$kind,
             committed_bytes = as.numeric(file.info(fixture_path)$size),
             committed_file_count = 1L,
-            fingerprint = summary$input_sha256,
+            fingerprint = spec$binding$input_fingerprint,
             source_path_retained = FALSE
         ),
+        binding = spec$binding,
         stages = list(
             list(
                 stage_id = "import",
@@ -646,13 +888,17 @@ baselineWorker <- function(spec_path) {
                 retained_rss_bytes = baselineProcSelfRss()
             ),
             if (identical(spec$backend, "artifact")) list(
-                stage_id = "artifact_persist",
-                elapsed_seconds = persist_seconds,
+                stage_id = "artifact_stage_worker",
+                elapsed_seconds = import_seconds,
+                process_evidence = artifact$process_evidence,
                 generation_id_retained = FALSE
             ) else NULL,
             list(stage_id = "bounded_query", results = query_results)
         ),
-        observed_summary = summary,
+        workflow_evidence = list(
+            import_shape = import_shape,
+            hydration_digest = hydration_digest
+        ),
         allocation_diagnostics = allocation,
         thread_environment = baselineThreadEnvironment(),
         native_resources = baselineNativeMetrics(),
@@ -726,6 +972,16 @@ baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
     if (!isTRUE(args$include_private)) {
         scenarios <- Filter(\(scenario) !identical(scenario$kind, "optional_private"), scenarios)
     }
+    package_library <- if (
+        args$mode %in% c("fixture", "all") && length(scenarios) > 0L
+    ) {
+        baselineInstallMeasurementPackage(output_dir)
+    } else {
+        NULL
+    }
+    if (!is.null(package_library)) {
+        on.exit(unlink(package_library, recursive = TRUE, force = TRUE), add = TRUE)
+    }
 
     run_id <- sprintf(
         "omics-%s-baseline-%s-%d",
@@ -749,7 +1005,8 @@ baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
                         repetition,
                         manifest,
                         output_dir,
-                        backend = backend
+                        backend = backend,
+                        package_library = package_library
                     )
                 }
             }
@@ -761,7 +1018,8 @@ baselineMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
                         manifest,
                         output_dir,
                         backend = backend,
-                        diagnostics_only = TRUE
+                        diagnostics_only = TRUE,
+                        package_library = package_library
                     )
                 }
             }

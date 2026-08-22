@@ -39,7 +39,7 @@ artifactResourceOwnershipTable <- function() {
         owner = c(
             "project registry session", "calling function", "project registry session",
             "artifact workflow state", "calling codec/query function",
-            "queryArtifactRef call", "owning registry/query handle",
+            "artifact query session", "owning registry/query handle",
             "artifact resource scope", "artifact resource scope",
             "artifact resource scope"
         ),
@@ -53,13 +53,13 @@ artifactResourceOwnershipTable <- function() {
         normal_close_hook = c(
             "ArtifactWorkflowState$close", "on.exit", "closeProjectRegistry",
             "ArtifactWorkflowState$close", "lexical function return",
-            "on.exit", "owning handle close", "resource scope close",
+            "ArtifactQuerySession$close", "owning handle close", "resource scope close",
             "resource scope close", "resource scope close"
         ),
         error_cancel_cleanup = c(
             "startup unwind/session close", "on.exit", "startup unwind/session close",
             "state close before registry close", "lexical unwind",
-            "on.exit", "close after native handle release", "cancel and join",
+            "session/module close", "close after native handle release", "cancel and join",
             "destroy", "session/module close"
         ),
         process_bound = c(
@@ -103,7 +103,7 @@ artifactResourceAssertCreatorProcess <- function(process_id, owner) {
 
 artifactResourceDataOnly <- function(value, owner = "worker payload") {
     unsafe_class <- inherits(value, c(
-        "ArtifactResourceScope", "ArtifactWorkflowState",
+        "ArtifactResourceScope", "ArtifactWorkflowState", "ArtifactQuerySession",
         "MultiScholaRProjectRegistrySession", "DBIConnection", "DBIResult",
         "ArrowObject"
     ))
@@ -416,6 +416,44 @@ registerArtifactWorkflowStateResource <- function(scope, manager) {
     )
 }
 
+registerArtifactQuerySessionResource <- function(
+    scope,
+    query_session,
+    resource_id = "bounded_query_session"
+) {
+    if (!inherits(scope, "ArtifactResourceScope") ||
+        !inherits(query_session, "ArtifactQuerySession")) {
+        artifactResourceAbort(
+            "artifact query session registration is malformed",
+            "multischolar_invalid_artifact_query_session_resource"
+        )
+    }
+    scope$register(
+        resource_id,
+        "duckdb_query_handle",
+        close_fn = \() query_session$close(),
+        status_fn = \() query_session$getInfo()
+    )
+}
+
+artifactQuerySessionForWorkflow <- function(
+    workflow_data,
+    store,
+    resource_policy = NULL
+) {
+    scope <- shiny::isolate(workflow_data$artifact_resource_scope)
+    if (!inherits(scope, "ArtifactResourceScope") || scope$isClosed()) return(NULL)
+    query_session <- shiny::isolate(workflow_data$artifact_query_session)
+    if (inherits(query_session, "ArtifactQuerySession")) {
+        query_session$assertCompatible(store, resource_policy)
+        return(query_session)
+    }
+    query_session <- newArtifactQuerySession(store, resource_policy)
+    registerArtifactQuerySessionResource(scope, query_session)
+    workflow_data$artifact_query_session <- query_session
+    query_session
+}
+
 artifactWorkflowStateResourceInfo <- function(
     session,
     process_id,
@@ -471,6 +509,7 @@ closeWorkflowArtifactLifecycle <- function(
         workflow_data$state_manager <- NULL
     }
     workflow_data$artifact_resource_scope <- NULL
+    workflow_data$artifact_query_session <- NULL
     if (!is.null(cleanup_error) && isTRUE(strict)) stop(cleanup_error)
     if (!is.null(cleanup_error)) {
         logger::log_error(paste(
@@ -517,6 +556,7 @@ registerWorkflowArtifactLifecycle <- function(
     })
     registerArtifactObserverResource(scope, "state_manager_tracking", state_observer)
     workflow_data$artifact_resource_scope <- scope
+    workflow_data$artifact_query_session <- NULL
     workflow_data$artifact_cleanup_report <- NULL
     session$onSessionEnded(\() {
         closeWorkflowArtifactLifecycle(
