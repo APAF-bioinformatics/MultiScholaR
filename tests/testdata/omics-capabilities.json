@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "inventory_version": "2026-08-22.1",
+  "inventory_version": "2026-08-22.2",
   "allowed_support_statuses": [
     "scientifically_supported",
     "reader_characterized",
@@ -134,7 +134,10 @@
       "support_status": "advertised_unverified",
       "fixture_requirement": "required_before_scientific_promotion",
       "fixture_refs": [],
-      "required_tests": ["tests/testthat/test-prot-01c-import-module-contracts.R"],
+      "required_tests": [
+        "tests/testthat/test-prot-01c-import-module-contracts.R",
+        "tests/testthat/test-omics-artifact-prot-nondia-baseline.R"
+      ],
       "capabilities": [
         {
           "capability_id": "proteomics.spectronaut.protein.lfq.v1",
@@ -188,7 +191,12 @@
       "support_status": "scientifically_supported",
       "fixture_requirement": "direct_file",
       "fixture_refs": ["tests/testdata/e2e/prot_lfq/seed_combined_protein.tsv"],
-      "required_tests": ["tests/testthat/test-module-ci-prot-import.R", "tests/testthat/test-e2e-proteomics-tmt-lfq.R"],
+      "required_tests": [
+        "tests/testthat/test-module-ci-prot-import.R",
+        "tests/testthat/test-e2e-proteomics-tmt-lfq.R",
+        "tests/testthat/test-omics-artifact-prot-nondia-baseline.R",
+        "tests/testthat/test-omics-workload-proteomics.R"
+      ],
       "capabilities": [
         {
           "capability_id": "proteomics.fragpipe.protein.lfq.v1",
@@ -222,7 +230,12 @@
       "support_status": "scientifically_supported",
       "fixture_requirement": "direct_file",
       "fixture_refs": ["tests/testdata/e2e/prot_lfq/proteinGroups.txt"],
-      "required_tests": ["tests/testthat/test-module-ci-prot-import.R", "tests/testthat/test-e2e-proteomics-tmt-lfq.R"],
+      "required_tests": [
+        "tests/testthat/test-module-ci-prot-import.R",
+        "tests/testthat/test-e2e-proteomics-tmt-lfq.R",
+        "tests/testthat/test-omics-artifact-prot-nondia-baseline.R",
+        "tests/testthat/test-omics-workload-proteomics.R"
+      ],
       "capabilities": [
         {
           "capability_id": "proteomics.maxquant.protein.lfq.v1",
@@ -256,7 +269,12 @@
       "support_status": "scientifically_supported",
       "fixture_requirement": "direct_file",
       "fixture_refs": ["tests/testdata/e2e/prot_tmt/pd_tmt_peptides.tsv"],
-      "required_tests": ["tests/testthat/test-module-ci-prot-import.R", "tests/testthat/test-e2e-proteomics-tmt-lfq.R"],
+      "required_tests": [
+        "tests/testthat/test-module-ci-prot-import.R",
+        "tests/testthat/test-e2e-proteomics-tmt-lfq.R",
+        "tests/testthat/test-omics-artifact-prot-nondia-baseline.R",
+        "tests/testthat/test-omics-workload-proteomics.R"
+      ],
       "capabilities": [
         {
           "capability_id": "proteomics.pd_tmt.protein.tmt.v1",

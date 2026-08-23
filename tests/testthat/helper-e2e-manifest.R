@@ -41,6 +41,7 @@
     , "import"
     , "design"
     , "qc"
+    , "qc_bypass"
     , "limpa_imputation"
     , "normalization"
     , "session_export"

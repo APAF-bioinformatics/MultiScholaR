@@ -803,7 +803,7 @@ e2e_upload_lane_inputs <- function(driver, lane) {
         fasta_path
       )
     }
-    e2e_set_input(
+    e2e_set_radio_value(
       driver,
       e2e_input_id("proteomics", "import", "format_override"),
       lane$import_tool

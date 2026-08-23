@@ -1,0 +1,171 @@
+{
+  "schema": "multischolar.proteomics_nondia_baseline_manifest",
+  "schema_version": "1.0.0",
+  "baseline_version": "2026-08-23.1",
+  "backend": "memory",
+  "scope": "pre-artifact non-DIA proteomics characterization",
+  "support_decisions": [
+    {
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "support_status": "scientifically_supported",
+      "workflow_type": "LFQ",
+      "acquisition_mode": "not_recorded",
+      "report_branch": "LFQ_report.rmd",
+      "e2e_lane": "prot_lfq",
+      "reachable_stages": [
+        "import",
+        "design",
+        "protein_qc_bypass",
+        "normalization",
+        "session",
+        "differential_abundance",
+        "enrichment",
+        "summary_report_export"
+      ]
+    },
+    {
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "support_status": "scientifically_supported",
+      "workflow_type": "LFQ",
+      "acquisition_mode": "not_recorded",
+      "report_branch": "LFQ_report.rmd",
+      "e2e_lane": "prot_lfq_fragpipe",
+      "reachable_stages": [
+        "import",
+        "design",
+        "protein_qc_bypass",
+        "normalization",
+        "session",
+        "differential_abundance",
+        "enrichment",
+        "summary_report_export"
+      ]
+    },
+    {
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "support_status": "scientifically_supported",
+      "workflow_type": "TMT",
+      "acquisition_mode": "not_recorded",
+      "report_branch": "TMT_report.rmd",
+      "e2e_lane": "prot_tmt",
+      "reachable_stages": [
+        "import",
+        "design",
+        "protein_qc_bypass",
+        "normalization",
+        "session",
+        "differential_abundance",
+        "enrichment",
+        "summary_report_export"
+      ]
+    },
+    {
+      "capability_id": "proteomics.spectronaut.protein.lfq.v1",
+      "support_status": "advertised_unverified",
+      "workflow_type": "LFQ",
+      "acquisition_mode": "dia",
+      "report_branch": "LFQ_report.rmd",
+      "e2e_lane": null,
+      "reachable_stages": []
+    },
+    {
+      "capability_id": "proteomics.spectronaut.peptide.lfq.v1",
+      "support_status": "advertised_unverified",
+      "workflow_type": "LFQ",
+      "acquisition_mode": "dia",
+      "report_branch": "LFQ_report.rmd",
+      "e2e_lane": null,
+      "reachable_stages": []
+    }
+  ],
+  "fixture_scenarios": [
+    {
+      "scenario_id": "maxquant_lfq",
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "format": "maxquant",
+      "fixture_path": "tests/testdata/e2e/prot_lfq/proteinGroups.txt",
+      "design_path": "tests/testdata/e2e/prot_lfq/design.tsv",
+      "evidence_class": "reviewed_small_fixture",
+      "scientific_oracle_id": "shared_5x6_cyclicloess_v1"
+    },
+    {
+      "scenario_id": "fragpipe_lfq",
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "format": "fragpipe",
+      "fixture_path": "tests/testdata/e2e/prot_lfq/seed_combined_protein.tsv",
+      "design_path": "tests/testdata/e2e/prot_lfq/design.tsv",
+      "evidence_class": "reviewed_small_fixture",
+      "scientific_oracle_id": "shared_5x6_cyclicloess_v1"
+    },
+    {
+      "scenario_id": "pd_tmt",
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "format": "pd_tmt",
+      "fixture_path": "tests/testdata/e2e/prot_tmt/pd_tmt_peptides.tsv",
+      "design_path": "tests/testdata/e2e/prot_tmt/design.tsv",
+      "evidence_class": "reviewed_small_fixture",
+      "scientific_oracle_id": "shared_5x6_cyclicloess_v1"
+    }
+  ],
+  "current_workflow_contract": {
+    "qc_route": "top_level_protein_qc_bypass",
+    "dormant_qc_helpers_are_reachable": false,
+    "design_transform": "log2(quantity + 1)",
+    "normalization_method": "cyclicloess",
+    "ruv_mode": "skip",
+    "correlation_filter": "skip",
+    "da_formula": "~ 0 + group",
+    "da_contrast": "KO_vs_WT=groupKO-groupWT",
+    "treat_lfc_cutoff": 0,
+    "ebayes_trend": true,
+    "ebayes_robust": true
+  },
+  "comparison_contract": {
+    "import_exact_fields": [
+      "data_type",
+      "mapping",
+      "rows",
+      "columns",
+      "column_names",
+      "feature_ids",
+      "sample_ids",
+      "table_sha256"
+    ],
+    "import_numeric_tolerance": {
+      "absolute": 1e-10,
+      "relative": 1e-12
+    },
+    "normalization_numeric_tolerance": {
+      "absolute": 1e-8,
+      "relative": 1e-8
+    },
+    "da_numeric_tolerance": {
+      "absolute": 1e-7,
+      "relative": 1e-7
+    },
+    "special_values": {
+      "fdr_qvalue": "null_when_qvalue_estimation_is_not_supported_by_five_features"
+    }
+  },
+  "evidence_classes": {
+    "reviewed_small_fixture": "parser, identity, structural, transform, and current small-sample scientific characterization",
+    "generated_scaling": "determinism and resource measurement only; never parser-support or biological evidence",
+    "browser_e2e": "reachable workflow, bypass, session, report-branch, and export evidence",
+    "resource_baseline": "fresh-process performance and memory evidence only"
+  },
+  "workload_contracts": [
+    "tests/testdata/omics-parity/proteomics/workloads/maxquant-protein-lfq-public-v1.json",
+    "tests/testdata/omics-parity/proteomics/workloads/fragpipe-protein-lfq-public-v1.json",
+    "tests/testdata/omics-parity/proteomics/workloads/pd-tmt-protein-public-v1.json"
+  ],
+  "resource_gate_policy": {
+    "minimum_repetitions_per_tuple": 5,
+    "materiality_margin_fraction": 0.25,
+    "gate_rounding": "byte and count gates use ceiling; second gates use millisecond ceiling",
+    "gate_location": "release_gates in each tuple-specific resource evidence file",
+    "threshold_source": "tuple-specific fresh-process resource evidence",
+    "cross_tuple_pooling": false,
+    "dia_threshold_reuse": false
+  },
+  "fixture_limitation": "Five-protein fixtures characterize current output but do not establish differential-abundance sensitivity or statistical power."
+}

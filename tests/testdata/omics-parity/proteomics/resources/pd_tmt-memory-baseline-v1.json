@@ -1,0 +1,1265 @@
+{
+  "schema": "multischolar.omics_memory_baseline",
+  "schema_version": "1.0.0",
+  "status": "passed",
+  "generated_at": "2026-08-23T01:58:39.539Z",
+  "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+  "adapter": {
+    "adapter_id": "multischolar.proteomics.nondia.v1",
+    "adapter_version": "1.0.0",
+    "source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae"
+  },
+  "capability": {
+    "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+    "omic_type": "proteomics",
+    "input_format": "pd_tmt",
+    "data_level": "protein",
+    "acquisition_mode": "not_recorded"
+  },
+  "contract_sha256": "0800f982b387ef334207bd5c7d2f074510c2a1f0f1daf8b9385dd79a20352897",
+  "determinism": {
+    "fresh_preparation": true,
+    "payload": true,
+    "truth": true,
+    "workflow": true,
+    "binding": true
+  },
+  "environment": {
+    "captured_at": "2026-08-23T01:55:41.994Z",
+    "code_revision": {
+      "git_sha": "8971162019739956ffeb196dea32e172de5c436f",
+      "working_tree_sha256": "3a7c1ced9080a8601d8e1db62e01de5b71f55092e512409391d520d92361c3a2"
+    },
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "platform": "x86_64-pc-linux-gnu",
+    "os": {
+      "sysname": "Linux",
+      "release": "7.1.8-1-cachyos",
+      "version": "#1 SMP PREEMPT_DYNAMIC Mon, 10 Aug 2026 19:39:40 +0000",
+      "machine": "x86_64"
+    },
+    "locale": "C",
+    "timezone": "UTC",
+    "threads": 1,
+    "rng_kind": [
+      "Mersenne-Twister",
+      "Inversion",
+      "Rejection"
+    ],
+    "rng_seed": 104761,
+    "package_versions": {
+      "MultiScholaR": "0.5.0",
+      "processx": "3.9.0",
+      "ps": "1.9.3",
+      "jsonlite": "2.0.0",
+      "digest": "0.6.39"
+    },
+    "parent_thread_environment": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null,
+      "ARROW_NUM_THREADS": null,
+      "DUCKDB_THREADS": null
+    }
+  },
+  "preparation": {
+    "fresh_processes": 2,
+    "deterministic": true,
+    "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+    "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+    "metadata": {
+      "generated": true,
+      "evidence_class": "generated_scaling",
+      "format": "pd_tmt",
+      "feature_count": 10000,
+      "sample_count": 12
+    }
+  },
+  "measurement_contract": {
+    "process_isolation": "one fresh measured child at a time",
+    "process_tree": "recursive RSS and VMS",
+    "retained_marker": "retention-ready",
+    "cache_state": "cold_uncontrolled",
+    "cache_claim": "uncontrolled unless the operating system cache was dropped",
+    "allocation_diagnostics": "separate child only",
+    "generated_inputs": "prepared before measured intervals",
+    "maximum_retained_samples": 20
+  },
+  "summary": {
+    "requested": 5,
+    "completed": 5,
+    "failed": 0,
+    "peak_tree_rss_bytes": [
+      935284736,
+      934727680,
+      935079936,
+      935096320,
+      932659200
+    ],
+    "retained_tree_rss_bytes": [
+      935284736,
+      934727680,
+      935079936,
+      935096320,
+      932659200
+    ],
+    "elapsed_seconds": [
+      14.936999999999998,
+      14.721000000000004,
+      14.945999999999998,
+      15,
+      15.379999999999995
+    ]
+  },
+  "compaction": {
+    "samples_omitted": true,
+    "process_commands_omitted": true,
+    "source_paths_omitted": true,
+    "retained_fields": "release metrics, bindings, scientific checks, and diagnostics"
+  },
+  "release_gates": {
+    "materiality_margin_fraction": 0.25,
+    "source_statistic": "maximum_observed_across_five_release_runs",
+    "integer_rounding": "ceiling",
+    "seconds_rounding": "ceiling_to_millisecond",
+    "maximum_peak_tree_rss_bytes": 1169105920,
+    "maximum_retained_tree_rss_bytes": 1169105920,
+    "maximum_elapsed_seconds": 19.225000000000001,
+    "maximum_peak_disk_bytes": 4134,
+    "maximum_final_disk_bytes": 4134,
+    "maximum_final_file_count": 5,
+    "maximum_bounded_query_p95_seconds": 0.14699999999999999,
+    "maximum_peak_artifact_disk_bytes": 0,
+    "maximum_duckdb_spill_bytes": 0,
+    "maximum_session_resource_count": 0,
+    "maximum_report_file_count": 0
+  },
+  "runs": [
+    {
+      "status": "passed",
+      "repetition": 1,
+      "measurement_class": "release_performance",
+      "cache_state": "cold_uncontrolled",
+      "retention_marker_observed": true,
+      "metrics": {
+        "elapsed_seconds": 14.936999999999998,
+        "peak_tree_rss_bytes": 935284736,
+        "retained_tree_rss_bytes": 935284736,
+        "peak_tree_vms_bytes": 2062618624,
+        "maximum_process_count": 1,
+        "peak_disk_bytes": 3307,
+        "peak_artifact_disk_bytes": 0,
+        "peak_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3301,
+          "harness": 6
+        },
+        "final_disk_bytes": 3307,
+        "final_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3301,
+          "harness": 6
+        },
+        "final_file_count": 4,
+        "sample_count": 284,
+        "committed_input_bytes": 1972006,
+        "committed_input_file_count": 2
+      },
+      "binding": {
+        "schema": "multischolar.omics_workload_evidence",
+        "schema_version": "1.0.0",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability": {
+          "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+          "omic_type": "proteomics",
+          "input_format": "pd_tmt",
+          "data_level": "protein",
+          "acquisition_mode": "not_recorded"
+        },
+        "contract_sha256": "0800f982b387ef334207bd5c7d2f074510c2a1f0f1daf8b9385dd79a20352897",
+        "adapter": {
+          "adapter_id": "multischolar.proteomics.nondia.v1",
+          "adapter_version": "1.0.0",
+          "source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae",
+          "observed_source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae"
+        },
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "code_revision": {
+          "git_sha": "8971162019739956ffeb196dea32e172de5c436f",
+          "working_tree_sha256": "3a7c1ced9080a8601d8e1db62e01de5b71f55092e512409391d520d92361c3a2"
+        },
+        "environment": {
+          "r_version": "R version 4.6.1 (2026-06-24)",
+          "platform": "x86_64-pc-linux-gnu",
+          "locale": "C",
+          "timezone": "UTC",
+          "threads": 1,
+          "rng_kind": [
+            "Mersenne-Twister",
+            "Inversion",
+            "Rejection"
+          ],
+          "rng_seed": 104761,
+          "package_versions": {
+            "MultiScholaR": "0.5.0",
+            "processx": "3.9.0",
+            "ps": "1.9.3",
+            "jsonlite": "2.0.0",
+            "digest": "0.6.39"
+          }
+        },
+        "privacy_classification": "public_synthetic",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe"
+      },
+      "preparation": {
+        "outside_measured_interval": true,
+        "fresh_process": true,
+        "metadata": {
+          "generated": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "feature_count": 10000,
+          "sample_count": 12
+        },
+        "payload_bytes": 1971587,
+        "truth_bytes": 419
+      },
+      "worker": {
+        "schema": "multischolar.omics_memory_worker",
+        "schema_version": "1.0.0",
+        "status": "passed",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe",
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "import": {
+            "data_type": "protein",
+            "rows": 120000,
+            "columns": 4,
+            "feature_count": 10000,
+            "sample_count": 12,
+            "column_names": [
+              "Annotated.Sequence",
+              "Protein.Ids",
+              "Run",
+              "Abundance"
+            ],
+            "quantity_sum": 214499364833.29398,
+            "quantity_min": 24176.865732999999,
+            "quantity_max": 55671737.212315001,
+            "quantity_na_count": 0
+          },
+          "differential_direction": {
+            "valid": true,
+            "expected_up_count": 500,
+            "expected_down_count": 500,
+            "observed_up_count": 500,
+            "observed_down_count": 500,
+            "unaffected_max_abs_log2fc": 0.30567591771122693
+          },
+          "reachable_stage_claim": "import_and_bounded_memory_query_only",
+          "e2e_lane": "prot_tmt"
+        },
+        "query_evidence": [
+          {
+            "query_id": "bounded_feature_lookup",
+            "rows": 1200,
+            "p95_seconds": 0.073150000000000964
+          }
+        ],
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "covered_by_separate_browser_lane",
+          "file_count": 0
+        },
+        "allocation_diagnostics": {
+          "available": false,
+          "reason": "allocation diagnostics run in a separate child process"
+        },
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "ARROW_NUM_THREADS": "1",
+          "DUCKDB_THREADS": "1"
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "retained_rss_bytes": 935219200,
+        "workflow_sha256": "987a1b9e680d1f5c14e546ac496c81568e50fb6bce156737890ff2045de0aa06"
+      },
+      "validation": {
+        "worker": {
+          "valid": true,
+          "reason": null
+        },
+        "finite_release_metrics": true,
+        "undeclared_files": []
+      }
+    },
+    {
+      "status": "passed",
+      "repetition": 2,
+      "measurement_class": "release_performance",
+      "cache_state": "cold_uncontrolled",
+      "retention_marker_observed": true,
+      "metrics": {
+        "elapsed_seconds": 14.721000000000004,
+        "peak_tree_rss_bytes": 934727680,
+        "retained_tree_rss_bytes": 934727680,
+        "peak_tree_vms_bytes": 1862979584,
+        "maximum_process_count": 1,
+        "peak_disk_bytes": 3307,
+        "peak_artifact_disk_bytes": 0,
+        "peak_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3301,
+          "harness": 6
+        },
+        "final_disk_bytes": 3307,
+        "final_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3301,
+          "harness": 6
+        },
+        "final_file_count": 4,
+        "sample_count": 273,
+        "committed_input_bytes": 1972006,
+        "committed_input_file_count": 2
+      },
+      "binding": {
+        "schema": "multischolar.omics_workload_evidence",
+        "schema_version": "1.0.0",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability": {
+          "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+          "omic_type": "proteomics",
+          "input_format": "pd_tmt",
+          "data_level": "protein",
+          "acquisition_mode": "not_recorded"
+        },
+        "contract_sha256": "0800f982b387ef334207bd5c7d2f074510c2a1f0f1daf8b9385dd79a20352897",
+        "adapter": {
+          "adapter_id": "multischolar.proteomics.nondia.v1",
+          "adapter_version": "1.0.0",
+          "source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae",
+          "observed_source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae"
+        },
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "code_revision": {
+          "git_sha": "8971162019739956ffeb196dea32e172de5c436f",
+          "working_tree_sha256": "3a7c1ced9080a8601d8e1db62e01de5b71f55092e512409391d520d92361c3a2"
+        },
+        "environment": {
+          "r_version": "R version 4.6.1 (2026-06-24)",
+          "platform": "x86_64-pc-linux-gnu",
+          "locale": "C",
+          "timezone": "UTC",
+          "threads": 1,
+          "rng_kind": [
+            "Mersenne-Twister",
+            "Inversion",
+            "Rejection"
+          ],
+          "rng_seed": 104761,
+          "package_versions": {
+            "MultiScholaR": "0.5.0",
+            "processx": "3.9.0",
+            "ps": "1.9.3",
+            "jsonlite": "2.0.0",
+            "digest": "0.6.39"
+          }
+        },
+        "privacy_classification": "public_synthetic",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe"
+      },
+      "preparation": {
+        "outside_measured_interval": true,
+        "fresh_process": true,
+        "metadata": {
+          "generated": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "feature_count": 10000,
+          "sample_count": 12
+        },
+        "payload_bytes": 1971587,
+        "truth_bytes": 419
+      },
+      "worker": {
+        "schema": "multischolar.omics_memory_worker",
+        "schema_version": "1.0.0",
+        "status": "passed",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe",
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "import": {
+            "data_type": "protein",
+            "rows": 120000,
+            "columns": 4,
+            "feature_count": 10000,
+            "sample_count": 12,
+            "column_names": [
+              "Annotated.Sequence",
+              "Protein.Ids",
+              "Run",
+              "Abundance"
+            ],
+            "quantity_sum": 214499364833.29398,
+            "quantity_min": 24176.865732999999,
+            "quantity_max": 55671737.212315001,
+            "quantity_na_count": 0
+          },
+          "differential_direction": {
+            "valid": true,
+            "expected_up_count": 500,
+            "expected_down_count": 500,
+            "observed_up_count": 500,
+            "observed_down_count": 500,
+            "unaffected_max_abs_log2fc": 0.30567591771122693
+          },
+          "reachable_stage_claim": "import_and_bounded_memory_query_only",
+          "e2e_lane": "prot_tmt"
+        },
+        "query_evidence": [
+          {
+            "query_id": "bounded_feature_lookup",
+            "rows": 1200,
+            "p95_seconds": 0.090850000000000458
+          }
+        ],
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "covered_by_separate_browser_lane",
+          "file_count": 0
+        },
+        "allocation_diagnostics": {
+          "available": false,
+          "reason": "allocation diagnostics run in a separate child process"
+        },
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "ARROW_NUM_THREADS": "1",
+          "DUCKDB_THREADS": "1"
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "retained_rss_bytes": 934662144,
+        "workflow_sha256": "987a1b9e680d1f5c14e546ac496c81568e50fb6bce156737890ff2045de0aa06"
+      },
+      "validation": {
+        "worker": {
+          "valid": true,
+          "reason": null
+        },
+        "finite_release_metrics": true,
+        "undeclared_files": []
+      }
+    },
+    {
+      "status": "passed",
+      "repetition": 3,
+      "measurement_class": "release_performance",
+      "cache_state": "cold_uncontrolled",
+      "retention_marker_observed": true,
+      "metrics": {
+        "elapsed_seconds": 14.945999999999998,
+        "peak_tree_rss_bytes": 935079936,
+        "retained_tree_rss_bytes": 935079936,
+        "peak_tree_vms_bytes": 2081058816,
+        "maximum_process_count": 1,
+        "peak_disk_bytes": 3307,
+        "peak_artifact_disk_bytes": 0,
+        "peak_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3301,
+          "harness": 6
+        },
+        "final_disk_bytes": 3307,
+        "final_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3301,
+          "harness": 6
+        },
+        "final_file_count": 4,
+        "sample_count": 269,
+        "committed_input_bytes": 1972006,
+        "committed_input_file_count": 2
+      },
+      "binding": {
+        "schema": "multischolar.omics_workload_evidence",
+        "schema_version": "1.0.0",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability": {
+          "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+          "omic_type": "proteomics",
+          "input_format": "pd_tmt",
+          "data_level": "protein",
+          "acquisition_mode": "not_recorded"
+        },
+        "contract_sha256": "0800f982b387ef334207bd5c7d2f074510c2a1f0f1daf8b9385dd79a20352897",
+        "adapter": {
+          "adapter_id": "multischolar.proteomics.nondia.v1",
+          "adapter_version": "1.0.0",
+          "source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae",
+          "observed_source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae"
+        },
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "code_revision": {
+          "git_sha": "8971162019739956ffeb196dea32e172de5c436f",
+          "working_tree_sha256": "3a7c1ced9080a8601d8e1db62e01de5b71f55092e512409391d520d92361c3a2"
+        },
+        "environment": {
+          "r_version": "R version 4.6.1 (2026-06-24)",
+          "platform": "x86_64-pc-linux-gnu",
+          "locale": "C",
+          "timezone": "UTC",
+          "threads": 1,
+          "rng_kind": [
+            "Mersenne-Twister",
+            "Inversion",
+            "Rejection"
+          ],
+          "rng_seed": 104761,
+          "package_versions": {
+            "MultiScholaR": "0.5.0",
+            "processx": "3.9.0",
+            "ps": "1.9.3",
+            "jsonlite": "2.0.0",
+            "digest": "0.6.39"
+          }
+        },
+        "privacy_classification": "public_synthetic",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe"
+      },
+      "preparation": {
+        "outside_measured_interval": true,
+        "fresh_process": true,
+        "metadata": {
+          "generated": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "feature_count": 10000,
+          "sample_count": 12
+        },
+        "payload_bytes": 1971587,
+        "truth_bytes": 419
+      },
+      "worker": {
+        "schema": "multischolar.omics_memory_worker",
+        "schema_version": "1.0.0",
+        "status": "passed",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe",
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "import": {
+            "data_type": "protein",
+            "rows": 120000,
+            "columns": 4,
+            "feature_count": 10000,
+            "sample_count": 12,
+            "column_names": [
+              "Annotated.Sequence",
+              "Protein.Ids",
+              "Run",
+              "Abundance"
+            ],
+            "quantity_sum": 214499364833.29398,
+            "quantity_min": 24176.865732999999,
+            "quantity_max": 55671737.212315001,
+            "quantity_na_count": 0
+          },
+          "differential_direction": {
+            "valid": true,
+            "expected_up_count": 500,
+            "expected_down_count": 500,
+            "observed_up_count": 500,
+            "observed_down_count": 500,
+            "unaffected_max_abs_log2fc": 0.30567591771122693
+          },
+          "reachable_stage_claim": "import_and_bounded_memory_query_only",
+          "e2e_lane": "prot_tmt"
+        },
+        "query_evidence": [
+          {
+            "query_id": "bounded_feature_lookup",
+            "rows": 1200,
+            "p95_seconds": 0.076300000000001103
+          }
+        ],
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "covered_by_separate_browser_lane",
+          "file_count": 0
+        },
+        "allocation_diagnostics": {
+          "available": false,
+          "reason": "allocation diagnostics run in a separate child process"
+        },
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "ARROW_NUM_THREADS": "1",
+          "DUCKDB_THREADS": "1"
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "retained_rss_bytes": 935014400,
+        "workflow_sha256": "987a1b9e680d1f5c14e546ac496c81568e50fb6bce156737890ff2045de0aa06"
+      },
+      "validation": {
+        "worker": {
+          "valid": true,
+          "reason": null
+        },
+        "finite_release_metrics": true,
+        "undeclared_files": []
+      }
+    },
+    {
+      "status": "passed",
+      "repetition": 4,
+      "measurement_class": "release_performance",
+      "cache_state": "cold_uncontrolled",
+      "retention_marker_observed": true,
+      "metrics": {
+        "elapsed_seconds": 15,
+        "peak_tree_rss_bytes": 935096320,
+        "retained_tree_rss_bytes": 935096320,
+        "peak_tree_vms_bytes": 1861296128,
+        "maximum_process_count": 1,
+        "peak_disk_bytes": 3307,
+        "peak_artifact_disk_bytes": 0,
+        "peak_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3301,
+          "harness": 6
+        },
+        "final_disk_bytes": 3307,
+        "final_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3301,
+          "harness": 6
+        },
+        "final_file_count": 4,
+        "sample_count": 268,
+        "committed_input_bytes": 1972006,
+        "committed_input_file_count": 2
+      },
+      "binding": {
+        "schema": "multischolar.omics_workload_evidence",
+        "schema_version": "1.0.0",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability": {
+          "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+          "omic_type": "proteomics",
+          "input_format": "pd_tmt",
+          "data_level": "protein",
+          "acquisition_mode": "not_recorded"
+        },
+        "contract_sha256": "0800f982b387ef334207bd5c7d2f074510c2a1f0f1daf8b9385dd79a20352897",
+        "adapter": {
+          "adapter_id": "multischolar.proteomics.nondia.v1",
+          "adapter_version": "1.0.0",
+          "source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae",
+          "observed_source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae"
+        },
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "code_revision": {
+          "git_sha": "8971162019739956ffeb196dea32e172de5c436f",
+          "working_tree_sha256": "3a7c1ced9080a8601d8e1db62e01de5b71f55092e512409391d520d92361c3a2"
+        },
+        "environment": {
+          "r_version": "R version 4.6.1 (2026-06-24)",
+          "platform": "x86_64-pc-linux-gnu",
+          "locale": "C",
+          "timezone": "UTC",
+          "threads": 1,
+          "rng_kind": [
+            "Mersenne-Twister",
+            "Inversion",
+            "Rejection"
+          ],
+          "rng_seed": 104761,
+          "package_versions": {
+            "MultiScholaR": "0.5.0",
+            "processx": "3.9.0",
+            "ps": "1.9.3",
+            "jsonlite": "2.0.0",
+            "digest": "0.6.39"
+          }
+        },
+        "privacy_classification": "public_synthetic",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe"
+      },
+      "preparation": {
+        "outside_measured_interval": true,
+        "fresh_process": true,
+        "metadata": {
+          "generated": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "feature_count": 10000,
+          "sample_count": 12
+        },
+        "payload_bytes": 1971587,
+        "truth_bytes": 419
+      },
+      "worker": {
+        "schema": "multischolar.omics_memory_worker",
+        "schema_version": "1.0.0",
+        "status": "passed",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe",
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "import": {
+            "data_type": "protein",
+            "rows": 120000,
+            "columns": 4,
+            "feature_count": 10000,
+            "sample_count": 12,
+            "column_names": [
+              "Annotated.Sequence",
+              "Protein.Ids",
+              "Run",
+              "Abundance"
+            ],
+            "quantity_sum": 214499364833.29398,
+            "quantity_min": 24176.865732999999,
+            "quantity_max": 55671737.212315001,
+            "quantity_na_count": 0
+          },
+          "differential_direction": {
+            "valid": true,
+            "expected_up_count": 500,
+            "expected_down_count": 500,
+            "observed_up_count": 500,
+            "observed_down_count": 500,
+            "unaffected_max_abs_log2fc": 0.30567591771122693
+          },
+          "reachable_stage_claim": "import_and_bounded_memory_query_only",
+          "e2e_lane": "prot_tmt"
+        },
+        "query_evidence": [
+          {
+            "query_id": "bounded_feature_lookup",
+            "rows": 1200,
+            "p95_seconds": 0.082300000000000498
+          }
+        ],
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "covered_by_separate_browser_lane",
+          "file_count": 0
+        },
+        "allocation_diagnostics": {
+          "available": false,
+          "reason": "allocation diagnostics run in a separate child process"
+        },
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "ARROW_NUM_THREADS": "1",
+          "DUCKDB_THREADS": "1"
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "retained_rss_bytes": 935030784,
+        "workflow_sha256": "987a1b9e680d1f5c14e546ac496c81568e50fb6bce156737890ff2045de0aa06"
+      },
+      "validation": {
+        "worker": {
+          "valid": true,
+          "reason": null
+        },
+        "finite_release_metrics": true,
+        "undeclared_files": []
+      }
+    },
+    {
+      "status": "passed",
+      "repetition": 5,
+      "measurement_class": "release_performance",
+      "cache_state": "cold_uncontrolled",
+      "retention_marker_observed": true,
+      "metrics": {
+        "elapsed_seconds": 15.379999999999995,
+        "peak_tree_rss_bytes": 932659200,
+        "retained_tree_rss_bytes": 932659200,
+        "peak_tree_vms_bytes": 2062635008,
+        "maximum_process_count": 1,
+        "peak_disk_bytes": 3306,
+        "peak_artifact_disk_bytes": 0,
+        "peak_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3300,
+          "harness": 6
+        },
+        "final_disk_bytes": 3306,
+        "final_disk_category_bytes": {
+          "diagnostics": 0,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3300,
+          "harness": 6
+        },
+        "final_file_count": 4,
+        "sample_count": 263,
+        "committed_input_bytes": 1972006,
+        "committed_input_file_count": 2
+      },
+      "binding": {
+        "schema": "multischolar.omics_workload_evidence",
+        "schema_version": "1.0.0",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability": {
+          "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+          "omic_type": "proteomics",
+          "input_format": "pd_tmt",
+          "data_level": "protein",
+          "acquisition_mode": "not_recorded"
+        },
+        "contract_sha256": "0800f982b387ef334207bd5c7d2f074510c2a1f0f1daf8b9385dd79a20352897",
+        "adapter": {
+          "adapter_id": "multischolar.proteomics.nondia.v1",
+          "adapter_version": "1.0.0",
+          "source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae",
+          "observed_source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae"
+        },
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "code_revision": {
+          "git_sha": "8971162019739956ffeb196dea32e172de5c436f",
+          "working_tree_sha256": "3a7c1ced9080a8601d8e1db62e01de5b71f55092e512409391d520d92361c3a2"
+        },
+        "environment": {
+          "r_version": "R version 4.6.1 (2026-06-24)",
+          "platform": "x86_64-pc-linux-gnu",
+          "locale": "C",
+          "timezone": "UTC",
+          "threads": 1,
+          "rng_kind": [
+            "Mersenne-Twister",
+            "Inversion",
+            "Rejection"
+          ],
+          "rng_seed": 104761,
+          "package_versions": {
+            "MultiScholaR": "0.5.0",
+            "processx": "3.9.0",
+            "ps": "1.9.3",
+            "jsonlite": "2.0.0",
+            "digest": "0.6.39"
+          }
+        },
+        "privacy_classification": "public_synthetic",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe"
+      },
+      "preparation": {
+        "outside_measured_interval": true,
+        "fresh_process": true,
+        "metadata": {
+          "generated": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "feature_count": 10000,
+          "sample_count": 12
+        },
+        "payload_bytes": 1971587,
+        "truth_bytes": 419
+      },
+      "worker": {
+        "schema": "multischolar.omics_memory_worker",
+        "schema_version": "1.0.0",
+        "status": "passed",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe",
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "import": {
+            "data_type": "protein",
+            "rows": 120000,
+            "columns": 4,
+            "feature_count": 10000,
+            "sample_count": 12,
+            "column_names": [
+              "Annotated.Sequence",
+              "Protein.Ids",
+              "Run",
+              "Abundance"
+            ],
+            "quantity_sum": 214499364833.29398,
+            "quantity_min": 24176.865732999999,
+            "quantity_max": 55671737.212315001,
+            "quantity_na_count": 0
+          },
+          "differential_direction": {
+            "valid": true,
+            "expected_up_count": 500,
+            "expected_down_count": 500,
+            "observed_up_count": 500,
+            "observed_down_count": 500,
+            "unaffected_max_abs_log2fc": 0.30567591771122693
+          },
+          "reachable_stage_claim": "import_and_bounded_memory_query_only",
+          "e2e_lane": "prot_tmt"
+        },
+        "query_evidence": [
+          {
+            "query_id": "bounded_feature_lookup",
+            "rows": 1200,
+            "p95_seconds": 0.11720000000000007
+          }
+        ],
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "covered_by_separate_browser_lane",
+          "file_count": 0
+        },
+        "allocation_diagnostics": {
+          "available": false,
+          "reason": "allocation diagnostics run in a separate child process"
+        },
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "ARROW_NUM_THREADS": "1",
+          "DUCKDB_THREADS": "1"
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "retained_rss_bytes": 932593664,
+        "workflow_sha256": "987a1b9e680d1f5c14e546ac496c81568e50fb6bce156737890ff2045de0aa06"
+      },
+      "validation": {
+        "worker": {
+          "valid": true,
+          "reason": null
+        },
+        "finite_release_metrics": true,
+        "undeclared_files": []
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "status": "passed",
+      "repetition": 1,
+      "measurement_class": "allocation_copy_diagnostic",
+      "cache_state": "cold_uncontrolled",
+      "retention_marker_observed": true,
+      "metrics": {
+        "elapsed_seconds": 18.083999999999975,
+        "peak_tree_rss_bytes": 932208640,
+        "retained_tree_rss_bytes": 932208640,
+        "peak_tree_vms_bytes": 1659969536,
+        "maximum_process_count": 1,
+        "peak_disk_bytes": 1349883,
+        "peak_artifact_disk_bytes": 0,
+        "peak_disk_category_bytes": {
+          "diagnostics": 1346494,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3383,
+          "harness": 6
+        },
+        "final_disk_bytes": 1349883,
+        "final_disk_category_bytes": {
+          "diagnostics": 1346494,
+          "staging_snapshot": 0,
+          "duckdb_spill": 0,
+          "committed": 0,
+          "final": 3383,
+          "harness": 6
+        },
+        "final_file_count": 5,
+        "sample_count": 241,
+        "committed_input_bytes": 1972006,
+        "committed_input_file_count": 2
+      },
+      "binding": {
+        "schema": "multischolar.omics_workload_evidence",
+        "schema_version": "1.0.0",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability": {
+          "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+          "omic_type": "proteomics",
+          "input_format": "pd_tmt",
+          "data_level": "protein",
+          "acquisition_mode": "not_recorded"
+        },
+        "contract_sha256": "0800f982b387ef334207bd5c7d2f074510c2a1f0f1daf8b9385dd79a20352897",
+        "adapter": {
+          "adapter_id": "multischolar.proteomics.nondia.v1",
+          "adapter_version": "1.0.0",
+          "source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae",
+          "observed_source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae"
+        },
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "code_revision": {
+          "git_sha": "8971162019739956ffeb196dea32e172de5c436f",
+          "working_tree_sha256": "3a7c1ced9080a8601d8e1db62e01de5b71f55092e512409391d520d92361c3a2"
+        },
+        "environment": {
+          "r_version": "R version 4.6.1 (2026-06-24)",
+          "platform": "x86_64-pc-linux-gnu",
+          "locale": "C",
+          "timezone": "UTC",
+          "threads": 1,
+          "rng_kind": [
+            "Mersenne-Twister",
+            "Inversion",
+            "Rejection"
+          ],
+          "rng_seed": 104761,
+          "package_versions": {
+            "MultiScholaR": "0.5.0",
+            "processx": "3.9.0",
+            "ps": "1.9.3",
+            "jsonlite": "2.0.0",
+            "digest": "0.6.39"
+          }
+        },
+        "privacy_classification": "public_synthetic",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe"
+      },
+      "preparation": {
+        "outside_measured_interval": true,
+        "fresh_process": true,
+        "metadata": {
+          "generated": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "feature_count": 10000,
+          "sample_count": 12
+        },
+        "payload_bytes": 1971587,
+        "truth_bytes": 419
+      },
+      "worker": {
+        "schema": "multischolar.omics_memory_worker",
+        "schema_version": "1.0.0",
+        "status": "passed",
+        "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+        "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+        "binding_sha256": "e85b3a81ba7efb2250e1c1228d9a3b28099cfbad32c76acbe194c2f8becb8efe",
+        "payload_sha256": "6e5319d953fae9d65769c8fcf9af730f7f83abf2a5e1f22c19afa2c41823620a",
+        "truth_sha256": "1a219e670449acbe254def470f4dfabc56a9fc59c5b5f613b32bdfe6a6d8a265",
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "generated_scaling",
+          "format": "pd_tmt",
+          "import": {
+            "data_type": "protein",
+            "rows": 120000,
+            "columns": 4,
+            "feature_count": 10000,
+            "sample_count": 12,
+            "column_names": [
+              "Annotated.Sequence",
+              "Protein.Ids",
+              "Run",
+              "Abundance"
+            ],
+            "quantity_sum": 214499364833.29398,
+            "quantity_min": 24176.865732999999,
+            "quantity_max": 55671737.212315001,
+            "quantity_na_count": 0
+          },
+          "differential_direction": {
+            "valid": true,
+            "expected_up_count": 500,
+            "expected_down_count": 500,
+            "observed_up_count": 500,
+            "observed_down_count": 500,
+            "unaffected_max_abs_log2fc": 0.30567591771122693
+          },
+          "reachable_stage_claim": "import_and_bounded_memory_query_only",
+          "e2e_lane": "prot_tmt"
+        },
+        "query_evidence": [
+          {
+            "query_id": "bounded_feature_lookup",
+            "rows": 1200,
+            "p95_seconds": 0.13319999999999851
+          }
+        ],
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "covered_by_separate_browser_lane",
+          "file_count": 0
+        },
+        "allocation_diagnostics": {
+          "available": true,
+          "allocated_bytes": 118183792,
+          "allocation_records": 3579,
+          "profile_sha256": "b44a30acc6c84966d47942529f584264caf334c139fc64cb687c980c0e2d3473"
+        },
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "ARROW_NUM_THREADS": "1",
+          "DUCKDB_THREADS": "1"
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "retained_rss_bytes": 932143104,
+        "workflow_sha256": "987a1b9e680d1f5c14e546ac496c81568e50fb6bce156737890ff2045de0aa06"
+      },
+      "validation": {
+        "worker": {
+          "valid": true,
+          "reason": null
+        },
+        "finite_release_metrics": true,
+        "undeclared_files": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "schema": "multischolar.omics_workload_contract",
+  "schema_version": "1.0.0",
+  "workload_id": "proteomics.maxquant.protein.lfq.public-10000x12.v1",
+  "capability": {
+    "capability_id": "proteomics.maxquant.protein.lfq.v1",
+    "omic_type": "proteomics",
+    "input_format": "maxquant",
+    "data_level": "protein",
+    "acquisition_mode": "not_recorded"
+  },
+  "adapter": {
+    "adapter_id": "multischolar.proteomics.nondia.v1",
+    "adapter_version": "1.0.0",
+    "source_sha256": "cdfca635627975c30d9f142e944f7a472bb1dd78c9d893720882396a9efe31ae"
+  },
+  "rng": {
+    "kind": ["Mersenne-Twister", "Inversion", "Rejection"],
+    "seed": 104729
+  },
+  "dimensions": {
+    "feature_count": 10000,
+    "sample_count": 12,
+    "assay_count": 1
+  },
+  "assay_mix": {
+    "protein": 1
+  },
+  "distributions": {
+    "intensity": "independent_log2_normal_with_declared_group_effects",
+    "base_log2_mean": 20,
+    "base_log2_sd": 1.5,
+    "noise_log2_sd": 0.12
+  },
+  "missingness": {
+    "mechanism": "none",
+    "rate": 0
+  },
+  "censoring": {
+    "mechanism": "none"
+  },
+  "duplicate_policy": {
+    "mode": "none"
+  },
+  "sample_perturbations": {
+    "groups": ["CTRL", "TREAT"],
+    "effect_fraction_per_direction": 0.05,
+    "effect_log2": 1.25
+  },
+  "adapter_parameters": {
+    "format": "maxquant",
+    "effect_fraction": 0.05,
+    "effect_log2": 1.25,
+    "base_log2_mean": 20,
+    "base_log2_sd": 1.5,
+    "noise_log2_sd": 0.12,
+    "bounded_query_features": 100,
+    "query_repetitions": 20,
+    "e2e_lane": "prot_lfq"
+  },
+  "privacy": {
+    "classification": "public_synthetic",
+    "source": "versioned_proteomics_schema_and_declared_truth",
+    "scale_metadata": null
+  },
+  "execution": {
+    "repetitions": 5,
+    "sampling_interval_ms": 20,
+    "retention_window_ms": 500,
+    "timeout_ms": 120000,
+    "maximum_retained_samples": 20,
+    "threads": 1,
+    "locale": "C",
+    "timezone": "UTC",
+    "cache_state": "cold_uncontrolled"
+  },
+  "expected_digests": {
+    "payload_sha256": "9b198b925563223533e8d0685c27d968d7533cddea7cacff21061287cd03333b",
+    "truth_sha256": "dfe51a1bff92bf1a809fd61b6964c9205fdbbb585ed5581e5c1607202f45dd37"
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "schema": "multischolar.proteomics_nondia_memory_oracle",
+  "schema_version": "1.0.0",
+  "oracle_version": "2026-08-23.1",
+  "backend": "memory",
+  "oracle_origin": "reviewed pre-artifact memory workflow",
+  "imports": [
+    {
+      "scenario_id": "maxquant_lfq",
+      "data_type": "protein",
+      "mapping": {
+        "protein_col": "Protein.Ids",
+        "peptide_col": null,
+        "run_col": "Run",
+        "quantity_col": "Intensity",
+        "qvalue_col": "Q.value"
+      },
+      "rows": 30,
+      "columns": 4,
+      "column_names": ["Protein.Ids", "Gene.names", "Run", "Intensity"],
+      "feature_ids": ["P00001", "P00002", "P00003", "P00004", "P00005"],
+      "sample_ids": ["WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3"],
+      "quantity_sum": 31555.6,
+      "quantity_min": 522,
+      "quantity_max": 2167.5,
+      "table_sha256": "e2aa2abeeec4cd17a164d751e209c22303464f3c939950fcd4eeca8df93bab30"
+    },
+    {
+      "scenario_id": "fragpipe_lfq",
+      "data_type": "protein",
+      "mapping": {
+        "protein_col": "Protein.Ids",
+        "run_col": "Run",
+        "quantity_col": "Intensity",
+        "qvalue_col": null
+      },
+      "rows": 30,
+      "columns": 3,
+      "column_names": ["Protein.Ids", "Run", "Intensity"],
+      "feature_ids": ["P00001", "P00002", "P00003", "P00004", "P00005"],
+      "sample_ids": ["WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3"],
+      "quantity_sum": 31555.6,
+      "quantity_min": 522,
+      "quantity_max": 2167.5,
+      "table_sha256": "0eb3a548605c83d6f31ee3ef783f18edb4c297b29c8e883040b2ada14c83d74a"
+    },
+    {
+      "scenario_id": "pd_tmt",
+      "data_type": "protein",
+      "mapping": {
+        "protein_col": "Protein.Ids",
+        "run_col": "Run",
+        "quantity_col": "Abundance",
+        "batch_col": null
+      },
+      "rows": 30,
+      "columns": 4,
+      "column_names": ["Annotated.Sequence", "Protein.Ids", "Run", "Abundance"],
+      "feature_ids": ["P00001", "P00002", "P00003", "P00004", "P00005"],
+      "sample_ids": [
+        "126_WT_1",
+        "127N_WT_2",
+        "127C_WT_3",
+        "128N_KO_1",
+        "128C_KO_2",
+        "129N_KO_3"
+      ],
+      "quantity_sum": 31555.6,
+      "quantity_min": 522,
+      "quantity_max": 2167.5,
+      "table_sha256": "8286cf3ecd8740982db641f34dc99e5ca33cf8270282571db747b8c3eb8dba46"
+    }
+  ],
+  "scientific_oracles": [
+    {
+      "scientific_oracle_id": "shared_5x6_cyclicloess_v1",
+      "raw_log2fc": {
+        "P00001": 1.0317213211453282,
+        "P00002": -0.8994195842878678,
+        "P00003": 0.03458023380846775,
+        "P00004": 0.08941116856343534,
+        "P00005": -0.07432411492164981
+      },
+      "raw_invariants": {
+        "P00001": "up",
+        "P00002": "down",
+        "P00003": "stable",
+        "P00004": "stable",
+        "P00005": "stable"
+      },
+      "normalized_column_names": [
+        "Protein.Ids",
+        "WT_1",
+        "WT_2",
+        "WT_3",
+        "KO_1",
+        "KO_2",
+        "KO_3"
+      ],
+      "normalized_values": {
+        "P00001": [
+          10.450336160611533,
+          10.450336160611533,
+          10.450336160611533,
+          10.450336160611533,
+          10.450335074041716,
+          10.450045864159767
+        ],
+        "P00002": [
+          9.501106926011426,
+          9.501106926011426,
+          9.501106926011426,
+          9.501106926011426,
+          9.501107940928845,
+          9.50138245906537
+        ],
+        "P00003": [
+          10.019175398887642,
+          10.086353950281627,
+          10.019175398887642,
+          9.979066246096249,
+          10.019190628426689,
+          10.022781681641632
+        ],
+        "P00004": [
+          9.814715722888979,
+          9.955842755987655,
+          9.903291391342663,
+          9.95707810763857,
+          10.106905854109135,
+          10.029119550356647
+        ],
+        "P00005": [
+          10.024898957945588,
+          9.931504473327454,
+          10.000766945032687,
+          9.962375681485705,
+          9.929388531765044,
+          9.959122766783978
+        ]
+      },
+      "da_column_names": [
+        "logFC",
+        "AveExpr",
+        "t",
+        "raw_pvalue",
+        "adj.P.Val",
+        "fdr_qvalue",
+        "fdr_value_bh_adjustment",
+        "feature_id"
+      ],
+      "da_rows": [
+        {
+          "feature_id": "P00001",
+          "logFC": -0.0000971276738575,
+          "AveExpr": 10.450287596774603,
+          "t": -0.7521201291044402,
+          "raw_pvalue": 0.4909545075847238,
+          "adj.P.Val": 0.5014660788132879,
+          "fdr_qvalue": null,
+          "fdr_value_bh_adjustment": 0.5014660788132879
+        },
+        {
+          "feature_id": "P00002",
+          "logFC": 0.0000921826571236,
+          "AveExpr": 9.501153017339986,
+          "t": 0.732912343582757,
+          "raw_pvalue": 0.5014660788132879,
+          "adj.P.Val": 0.5014660788132879,
+          "fdr_qvalue": null,
+          "fdr_value_bh_adjustment": 0.5014660788132879
+        },
+        {
+          "feature_id": "P00003",
+          "logFC": -0.0345553972974493,
+          "AveExpr": 10.024290550703579,
+          "t": -1.358326415267753,
+          "raw_pvalue": 0.2410778549623631,
+          "adj.P.Val": 0.4688981163687669,
+          "fdr_qvalue": null,
+          "fdr_value_bh_adjustment": 0.4688981163687669
+        },
+        {
+          "feature_id": "P00004",
+          "logFC": 0.1397512139616879,
+          "AveExpr": 9.961158897053942,
+          "t": 2.429548737487022,
+          "raw_pvalue": 0.06741787326043831,
+          "adj.P.Val": 0.3370893663021916,
+          "fdr_qvalue": null,
+          "fdr_value_bh_adjustment": 0.3370893663021916
+        },
+        {
+          "feature_id": "P00005",
+          "logFC": -0.0354277987569986,
+          "AveExpr": 9.968009559390076,
+          "t": -1.230590897366281,
+          "raw_pvalue": 0.2813388698212601,
+          "adj.P.Val": 0.4688981163687669,
+          "fdr_qvalue": null,
+          "fdr_value_bh_adjustment": 0.4688981163687669
+        }
+      ],
+      "current_da_significant_at_bh_0_05": [],
+      "interpretation": "The five-protein fixture is too small and compositionally unbalanced to establish cyclic-loess DA sensitivity; these values are a current-behavior parity oracle only."
+    }
+  ]
+}

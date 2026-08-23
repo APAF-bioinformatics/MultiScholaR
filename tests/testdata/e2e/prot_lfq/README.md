@@ -29,14 +29,19 @@ FragPipe intensity columns follow combined-protein convention:
 The `importMaxQuantData()` function detects `LFQ.intensity.*` columns,
 extracts sample names, filters contaminants/reverse hits, and pivots to long format.
 
-## Expected Significant Proteins (KO_vs_WT)
+## Raw Fixture Effects (KO_vs_WT)
 
 | Protein | Gene | Direction | Approx log2FC |
 |---|---|---|---|
-| P00001 | GENE1 | UP in KO | ~1.05 |
-| P00002 | GENE2 | UP in KO | ~1.01 |
+| P00001 | GENE1 | Up in KO | ~1.03 |
+| P00002 | GENE2 | Down in KO | ~-0.90 |
 
-P00003–P00005 are not expected to be significant (<0.1 log2FC between groups).
+P00003-P00005 have raw absolute log2 fold changes below 0.1. This five-protein
+fixture validates parser identity, workflow routing, and current transform
+parity. It does not establish differential-abundance sensitivity or power.
+The current default cyclic-loess workflow produces no BH-significant proteins
+from this intentionally tiny fixture; that result is frozen separately as a
+current-behavior oracle.
 
 ## Import Function
 
