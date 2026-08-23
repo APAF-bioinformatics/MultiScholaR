@@ -116,7 +116,7 @@ applyProtImportResultToWorkflow <- function(
     , logInfo = logger::log_info
     , showNotification = shiny::showNotification
     , sanitizeRunNames = sanitizeProtImportRunNames
-    , prepareArtifactContext = prepareProtDiaArtifactContextSafely
+    , prepareArtifactContext = prepareProtArtifactContextSafely
 ) {
   workflowData$data_tbl <- dataImportResult$data
   workflowData$data_format <- format

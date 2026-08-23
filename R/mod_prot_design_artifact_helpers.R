@@ -7,37 +7,11 @@
 # (at your option) any later version.
 
 protDiaArtifactMetadataTable <- function(value, owner) {
-    if (is.null(value)) {
-        return(data.frame(
-            key = character(),
-            value_json = character(),
-            value_digest = character(),
-            stringsAsFactors = FALSE
-        ))
-    }
-    if (!is.list(value)) value <- list(value = value)
-    value_names <- names(value)
-    if (is.null(value_names) || any(!nzchar(value_names))) {
-        value_names <- sprintf("item_%04d", seq_along(value))
-    }
-    data.frame(
-        key = value_names,
-        value_json = vapply(value, protDiaArtifactParameterJson, character(1)),
-        value_digest = vapply(value, artifactSemanticDigest, character(1)),
-        stringsAsFactors = FALSE,
-        check.names = FALSE
-    )
+    artifactStageMetadataTable(value)
 }
 
 protDiaArtifactOptionalTable <- function(value, role) {
-    if (is.null(value)) {
-        return(data.frame(
-            artifact_role = character(),
-            availability = character(),
-            stringsAsFactors = FALSE
-        ))
-    }
-    protDiaArtifactPortableTable(value, role)
+    artifactStageOptionalTable(value, role, protDiaArtifactAbort)
 }
 
 protDiaDesignArtifactTables <- function(workflow_data, state_object) {
@@ -73,30 +47,14 @@ protDiaArtifactSetRunStatus <- function(
     completed,
     timestamp
 ) {
-    run_status <- if (isTRUE(completed)) "completed" else "failed"
-    run_count <- projectRegistryExecuteBound(
+    artifactStageSetRunStatus(
         connection,
-        paste0(
-            "UPDATE workflow_runs SET status = ?, completed_at = ?, updated_at = ? ",
-            "WHERE project_id = ? AND workflow_id = ? AND run_id = ? ",
-            "AND status = 'running'"
-        ),
-        list(
-            run_status,
-            timestamp,
-            timestamp,
-            identity$project_id,
-            identity$workflow_id,
-            stage$run_id
-        )
+        identity,
+        stage,
+        completed,
+        timestamp,
+        protDiaArtifactAbort
     )
-    if (!identical(as.integer(run_count), 1L)) {
-        protDiaArtifactAbort(
-            "DIA-NN artifact stage run status did not advance exactly once",
-            "multischolar_prot_dia_registry_compare_and_set_failed"
-        )
-    }
-    invisible(TRUE)
 }
 
 protDiaArtifactCommitStageRefs <- function(
@@ -106,39 +64,14 @@ protDiaArtifactCommitStageRefs <- function(
     stage,
     timestamp
 ) {
-    artifact_count <- projectRegistryExecuteBound(
+    artifactStageCommitRefs(
+        session,
         connection,
-        paste0(
-            "UPDATE artifacts SET status = 'committed', updated_at = ? ",
-            "WHERE project_id = ? AND workflow_id = ? AND run_id = ? ",
-            "AND status = 'validated'"
-        ),
-        list(
-            timestamp,
-            identity$project_id,
-            identity$workflow_id,
-            stage$run_id
-        )
+        identity,
+        stage,
+        timestamp,
+        protDiaArtifactAbort
     )
-    if (!identical(as.integer(artifact_count), as.integer(length(stage$refs)))) {
-        protDiaArtifactAbort(
-            "DIA-NN artifact stage refs did not commit as one complete set",
-            "multischolar_prot_dia_registry_compare_and_set_failed"
-        )
-    }
-    for (index in seq_along(stage$refs)) {
-        ref <- stage$refs[[index]]
-        projectRegistryWrite(session, "run_artifact", list(
-            workflow_id = identity$workflow_id,
-            run_id = stage$run_id,
-            artifact_id = ref$artifact_id,
-            direction = "output",
-            artifact_role = ref$logical_key$state_role,
-            ordinal = index - 1L,
-            recorded_at = timestamp
-        ))
-    }
-    invisible(TRUE)
 }
 
 protDiaArtifactUpdateStageStatus <- function(
@@ -148,36 +81,14 @@ protDiaArtifactUpdateStageStatus <- function(
     failure_injector = NULL,
     resource_policy = NULL
 ) {
-    identity <- context$getIdentity()
-    registry <- projectRegistryForContext(context, resource_policy)
-    session <- initializeProjectRegistry(registry)
-    on.exit(closeProjectRegistry(session), add = TRUE)
-    connection <- projectRegistrySessionConnection(session, write = TRUE)
-    timestamp <- artifactRefUtcNow()
-    artifactStoreInvokeFailure(
+    artifactStageUpdateStatus(
+        context,
+        stage,
+        completed,
         failure_injector,
-        "before_stage_status_commit",
-        list(stage_id = stage$stage_id, run_id = stage$run_id)
+        resource_policy,
+        protDiaArtifactAbort
     )
-    artifactWorkflowStateTransaction(session, \() {
-        protDiaArtifactSetRunStatus(
-            connection,
-            identity,
-            stage,
-            completed,
-            timestamp
-        )
-        if (isTRUE(completed)) {
-            protDiaArtifactCommitStageRefs(
-                session,
-                connection,
-                identity,
-                stage,
-                timestamp
-            )
-        }
-    })
-    invisible(TRUE)
 }
 
 protDiaArtifactStateAudit <- function(stage) {
@@ -221,9 +132,7 @@ protDiaArtifactImportParent <- function(workflow_data) {
 }
 
 protDiaArtifactContrastsKind <- function(value) {
-    if (is.null(value)) return("null")
-    if (is.character(value)) return("character")
-    "data.frame"
+    artifactStageContrastsKind(value)
 }
 
 protDiaArtifactMemoryCheckpoint <- function(workflow_data, state_name) {

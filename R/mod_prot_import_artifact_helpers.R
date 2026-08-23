@@ -15,18 +15,11 @@ protDiaArtifactAbort <- function(message, class, ...) {
 }
 
 protDiaArtifactIdentityMatches <- function(identity) {
-    if (is.null(identity)) return(FALSE)
-    expected <- artifactDiaWorkflowDescriptor()$identity
-    identical(workflowCapabilityKey(identity), workflowCapabilityKey(expected))
+    artifactStageIdentityMatches(identity, artifactDiaWorkflowDescriptor())
 }
 
 protDiaArtifactCoordinatorOwned <- function(workflow_data) {
-    context <- workflow_data$workflow_context
-    if (!inherits(context, "WorkflowContext")) return(FALSE)
-    if (!context$isBound()) return(FALSE)
-    decision <- context$getStorageDecision()
-    identical(decision$effective_backend, "artifact") &&
-        protDiaArtifactIdentityMatches(context$getIdentity())
+    artifactStageCoordinatorOwned(workflow_data, artifactDiaWorkflowDescriptor())
 }
 
 prepareProtDiaArtifactContext <- function(
@@ -38,37 +31,17 @@ prepareProtDiaArtifactContext <- function(
     if (!identical(format, "diann") || !identical(data_type, "peptide")) {
         return(list(enabled = FALSE, reason = "not_exact_dia_canary"))
     }
-    context <- workflow_data$workflow_context
-    if (!inherits(context, "WorkflowContext")) {
-        return(list(enabled = FALSE, reason = "workflow_context_absent"))
-    }
-    if (!context$isBound()) {
-        bindWorkflowContextFromImport(
-            context,
-            workflow_type = "DIA",
-            input_format = "diann",
-            data_level = "peptide",
-            descriptor_catalogue = descriptor_catalogue
-        )
-    }
-    decision <- context$getStorageDecision()
-    enabled <- identical(decision$effective_backend, "artifact") &&
-        decision$effective_rollout %in% .WORKFLOW_ARTIFACT_ROLLOUTS &&
-        protDiaArtifactIdentityMatches(context$getIdentity())
-    list(
-        enabled = enabled,
-        reason = decision$reason_code,
-        context = context,
-        decision = unclass(decision)
+    prepareArtifactStageContext(
+        workflow_data,
+        workflow_type = "DIA",
+        input_format = format,
+        data_level = data_type,
+        descriptor_catalogue = descriptor_catalogue
     )
 }
 
 recordProtDiaArtifactResult <- function(workflow_data, stage_id, result) {
-    results <- workflow_data$artifact_stage_results
-    if (is.null(results)) results <- list()
-    results[[stage_id]] <- result
-    workflow_data$artifact_stage_results <- results
-    invisible(result)
+    recordArtifactStageResult(workflow_data, stage_id, result)
 }
 
 runProtDiaArtifactSafely <- function(
@@ -77,25 +50,13 @@ runProtDiaArtifactSafely <- function(
     operation,
     log_warn = logger::log_warn
 ) {
-    result <- tryCatch(
-        operation(),
-        error = \(error) {
-            log_warn(paste(
-                "DIA-NN artifact",
-                stage_id,
-                "dual-write failed without changing memory state:",
-                conditionMessage(error)
-            ))
-            list(
-                enabled = TRUE,
-                ok = FALSE,
-                stage_id = stage_id,
-                error_class = class(error),
-                error_message = conditionMessage(error)
-            )
-        }
+    runArtifactStageSafely(
+        workflow_data,
+        stage_id,
+        operation,
+        "DIA-NN",
+        log_warn
     )
-    recordProtDiaArtifactResult(workflow_data, stage_id, result)
 }
 
 prepareProtDiaArtifactContextSafely <- function(
@@ -122,33 +83,15 @@ prepareProtDiaArtifactContextSafely <- function(
 }
 
 protDiaArtifactDescriptorContract <- function() {
-    descriptor <- artifactDiaWorkflowDescriptor()
-    list(
-        descriptor_id = descriptor$descriptor_id,
-        descriptor_version = descriptor$descriptor_version,
-        descriptor_digest = descriptor$descriptor_digest
-    )
+    artifactStageDescriptorContract(artifactDiaWorkflowDescriptor())
 }
 
 protDiaArtifactPortableTable <- function(value, owner) {
-    if (!is.data.frame(value)) {
-        protDiaArtifactAbort(
-            sprintf("DIA-NN artifact '%s' must be a data frame", owner),
-            "multischolar_invalid_prot_dia_artifact_table"
-        )
-    }
-    if (inherits(value, "spec_tbl_df")) value <- tibble::as_tibble(value)
-    value
+    artifactStagePortableTable(value, owner, protDiaArtifactAbort)
 }
 
 protDiaArtifactPackageVersion <- function() {
-    version <- tryCatch(
-        as.character(utils::packageVersion("MultiScholaR")),
-        error = \(...) NA_character_
-    )
-    if (!is.na(version)) return(version)
-    description <- tryCatch(read.dcf("DESCRIPTION"), error = \(...) NULL)
-    if (is.null(description)) "unknown" else description[[1L, "Version"]]
+    artifactStagePackageVersion()
 }
 
 protDiaArtifactSourceMetadata <- function(source_path, retain_source_uri = FALSE) {
@@ -177,13 +120,7 @@ protDiaArtifactSourceMetadata <- function(source_path, retain_source_uri = FALSE
 }
 
 protDiaArtifactParameterJson <- function(value) {
-    as.character(jsonlite::toJSON(
-        value,
-        auto_unbox = TRUE,
-        null = "null",
-        na = "string",
-        digits = NA
-    ))
+    artifactStageParameterJson(value)
 }
 
 protDiaArtifactVerifyRef <- function(store, ref, expected) {
@@ -218,16 +155,14 @@ protDiaArtifactRegistryRun <- function(
     status,
     timestamp
 ) {
-    projectRegistryWrite(session, "run", list(
-        workflow_id = identity$workflow_id,
-        run_id = run_id,
-        status = status,
-        action_id = action_id,
-        started_at = timestamp,
-        completed_at = if (identical(status, "completed")) timestamp else NULL,
-        created_at = timestamp,
-        updated_at = timestamp
-    ))
+    artifactStageRegistryRun(
+        session,
+        identity,
+        run_id,
+        action_id,
+        status,
+        timestamp
+    )
 }
 
 protDiaArtifactRegistrySource <- function(
@@ -237,12 +172,7 @@ protDiaArtifactRegistrySource <- function(
     source,
     timestamp
 ) {
-    if (is.null(source)) return(invisible(FALSE))
-    projectRegistryWrite(session, "source", c(list(
-        workflow_id = identity$workflow_id,
-        run_id = run_id,
-        source_id = artifactOpaqueId("source")
-    ), source, list(recorded_at = timestamp)))
+    artifactStageRegistrySource(session, identity, run_id, source, timestamp)
 }
 
 protDiaArtifactRegistryParameters <- function(
@@ -252,36 +182,17 @@ protDiaArtifactRegistryParameters <- function(
     parameters,
     timestamp
 ) {
-    for (parameter_name in names(parameters)) {
-        value <- parameters[[parameter_name]]
-        projectRegistryWrite(session, "parameter", list(
-            workflow_id = identity$workflow_id,
-            run_id = run_id,
-            parameter_id = artifactOpaqueId("parameter"),
-            parameter_name = parameter_name,
-            value_json = protDiaArtifactParameterJson(value),
-            value_digest = artifactSemanticDigest(value),
-            recorded_at = timestamp
-        ))
-    }
-    invisible(TRUE)
+    artifactStageRegistryParameters(
+        session,
+        identity,
+        run_id,
+        parameters,
+        timestamp
+    )
 }
 
 protDiaArtifactRegistrySoftware <- function(session, identity, run_id, timestamp) {
-    version <- protDiaArtifactPackageVersion()
-    projectRegistryWrite(session, "software", list(
-        workflow_id = identity$workflow_id,
-        run_id = run_id,
-        software_id = artifactOpaqueId("software"),
-        software_name = "MultiScholaR",
-        software_version = version,
-        software_source = "R package",
-        software_digest = artifactSemanticDigest(list(
-            package = "MultiScholaR",
-            version = version
-        )),
-        recorded_at = timestamp
-    ))
+    artifactStageRegistrySoftware(session, identity, run_id, timestamp)
 }
 
 protDiaArtifactRegistryRefs <- function(
@@ -293,29 +204,15 @@ protDiaArtifactRegistryRefs <- function(
     timestamp,
     register_run_artifacts
 ) {
-    for (index in seq_along(refs)) {
-        record <- artifactWorkflowStateArtifactRecord(
-            identity,
-            refs[[index]],
-            index - 1L
-        )
-        record$run_id <- run_id
-        record$status <- status
-        record$updated_at <- timestamp
-        projectRegistryWrite(session, "artifact", record)
-        if (isTRUE(register_run_artifacts)) {
-            projectRegistryWrite(session, "run_artifact", list(
-                workflow_id = identity$workflow_id,
-                run_id = run_id,
-                artifact_id = refs[[index]]$artifact_id,
-                direction = "output",
-                artifact_role = refs[[index]]$logical_key$state_role,
-                ordinal = index - 1L,
-                recorded_at = timestamp
-            ))
-        }
-    }
-    invisible(TRUE)
+    artifactStageRegistryRefs(
+        session,
+        identity,
+        run_id,
+        refs,
+        status,
+        timestamp,
+        register_run_artifacts
+    )
 }
 
 protDiaArtifactStageResources <- function(
@@ -330,30 +227,12 @@ protDiaArtifactStageResources <- function(
             "multischolar_invalid_prot_dia_artifact_context"
         )
     }
-    identity <- context$getIdentity()
-    store <- newArtifactStore(context$getPaths(), identity$project_id)
-    artifactWorkflowStateEnsureMetadata(
-        store,
-        identity,
-        protDiaArtifactDescriptorContract()
-    )
-    registry <- projectRegistryForContext(context, resource_policy)
-    session <- initializeProjectRegistry(registry)
-    tryCatch(
-        artifactWorkflowStateEnsureWorkflow(session, identity),
-        error = \(error) {
-            closeProjectRegistry(session)
-            stop(error)
-        }
-    )
-    list(
-        stage_id = stage_id,
-        identity = identity,
-        store = store,
-        session = session,
-        run_id = artifactOpaqueId("run"),
-        action_id = artifactOpaqueId("action"),
-        generation_id = artifactOpaqueId("gen")
+    artifactStageResources(
+        context,
+        artifactDiaWorkflowDescriptor(),
+        stage_id,
+        resource_policy,
+        protDiaArtifactAbort
     )
 }
 
@@ -363,47 +242,13 @@ protDiaArtifactWriteStageRefs <- function(
     failure_injector = NULL,
     verification = c("inline_exact", "deferred_exact")
 ) {
-    verification <- match.arg(verification)
-    tables <- lapply(names(tables), \(role) {
-        protDiaArtifactPortableTable(
-            tables[[role]],
-            paste(stage$stage_id, role, sep = ".")
-        )
-    }) |>
-        stats::setNames(names(tables))
-    refs <- lapply(names(tables), \(role) {
-        encoded <- encodeArtifactTable(
-            tables[[role]],
-            owner = paste("proteomics", "diann", stage$stage_id, role, sep = ".")
-        )
-        artifactStoreWriteParquet(
-            stage$store,
-            encoded,
-            logical_key = list(
-                project_id = stage$identity$project_id,
-                omic_type = stage$identity$omic_type,
-                workflow_slug = stage$identity$workflow_slug,
-                stage_id = stage$stage_id,
-                state_role = role,
-                generation_id = stage$generation_id
-            ),
-            provenance_ids = c(stage$run_id, stage$action_id),
-            failure_injector = failure_injector,
-            verification = verification
-        )
-    })
-    names(refs) <- names(tables)
-    if (identical(verification, "inline_exact")) {
-        for (role in names(refs)) {
-            protDiaArtifactVerifyRef(stage$store, refs[[role]], tables[[role]])
-        }
-    }
-    artifactStoreInvokeFailure(
+    artifactStageWriteRefs(
+        stage,
+        tables,
         failure_injector,
-        "before_registry_commit",
-        list(stage_id = stage$stage_id, run_id = stage$run_id, refs = refs)
+        verification,
+        protDiaArtifactAbort
     )
-    refs
 }
 
 protDiaArtifactRegisterStage <- function(
@@ -413,49 +258,7 @@ protDiaArtifactRegisterStage <- function(
     source,
     deferred_commit
 ) {
-    timestamp <- artifactRefUtcNow()
-    run_status <- if (isTRUE(deferred_commit)) "running" else "completed"
-    artifact_status <- if (isTRUE(deferred_commit)) "validated" else "committed"
-    artifactWorkflowStateTransaction(stage$session, \() {
-        protDiaArtifactRegistryRun(
-            stage$session,
-            stage$identity,
-            stage$run_id,
-            stage$action_id,
-            run_status,
-            timestamp
-        )
-        protDiaArtifactRegistrySource(
-            stage$session,
-            stage$identity,
-            stage$run_id,
-            source,
-            timestamp
-        )
-        protDiaArtifactRegistryParameters(
-            stage$session,
-            stage$identity,
-            stage$run_id,
-            parameters,
-            timestamp
-        )
-        protDiaArtifactRegistrySoftware(
-            stage$session,
-            stage$identity,
-            stage$run_id,
-            timestamp
-        )
-        protDiaArtifactRegistryRefs(
-            stage$session,
-            stage$identity,
-            stage$run_id,
-            refs,
-            artifact_status,
-            timestamp,
-            register_run_artifacts = !isTRUE(deferred_commit)
-        )
-    })
-    invisible(TRUE)
+    artifactStageRegister(stage, refs, parameters, source, deferred_commit)
 }
 
 writeProtDiaStageArtifacts <- function(
@@ -468,23 +271,17 @@ writeProtDiaStageArtifacts <- function(
     failure_injector = NULL,
     resource_policy = NULL
 ) {
-    stage <- protDiaArtifactStageResources(context, stage_id, resource_policy)
-    on.exit(closeProjectRegistry(stage$session), add = TRUE)
-    refs <- protDiaArtifactWriteStageRefs(stage, tables, failure_injector)
-    protDiaArtifactRegisterStage(
-        stage,
-        refs,
+    writeArtifactStage(
+        context,
+        artifactDiaWorkflowDescriptor(),
+        stage_id,
+        tables,
         parameters,
         source,
-        deferred_commit
-    )
-    list(
-        stage_id = stage_id,
-        run_id = stage$run_id,
-        action_id = stage$action_id,
-        generation_id = stage$generation_id,
-        refs = lapply(refs, unclass),
-        committed = !isTRUE(deferred_commit)
+        deferred_commit,
+        failure_injector,
+        resource_policy,
+        protDiaArtifactAbort
     )
 }
 

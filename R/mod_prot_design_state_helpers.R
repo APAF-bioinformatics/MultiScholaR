@@ -110,7 +110,7 @@ completeProtDesignPostCheckpoint <- function(
     successMessage,
     successNotificationId = NULL,
     debugQcTrigger = FALSE,
-    persistArtifactFn = persistProtDiaDesignArtifacts,
+    persistArtifactFn = persistProtDesignArtifacts,
     settleArtifactFn = settleProtDiaArtifactWorkflowSafely
 ) {
   log_info("Design Matrix complete. Triggering UniProt annotation.")

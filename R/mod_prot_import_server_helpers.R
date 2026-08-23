@@ -228,7 +228,7 @@ registerProtImportObservers <- function(
     completeSuccessStateFn = completeProtImportSuccessState,
     stageImportArtifactsFn = stageProtDiaImportArtifactsSafely,
     discardStagedArtifactsFn = discardProtDiaArtifactWorkerStage,
-    persistImportArtifactsFn = persistProtDiaImportArtifacts,
+    persistImportArtifactsFn = persistProtImportArtifacts,
     observeEventFn = shiny::observeEvent,
     reqFn = shiny::req,
     showNotificationFn = shiny::showNotification,

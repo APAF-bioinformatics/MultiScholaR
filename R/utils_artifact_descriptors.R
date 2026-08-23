@@ -645,7 +645,10 @@ artifactDiaWorkflowDescriptor <- function() {
 }
 
 .ARTIFACT_WORKFLOW_DESCRIPTOR_CATALOGUE <- newArtifactDescriptorCatalogue(
-    list(artifactDiaWorkflowDescriptor())
+    c(
+        list(artifactDiaWorkflowDescriptor()),
+        unname(artifactProteomicsNonDiaWorkflowDescriptors())
+    )
 )
 
 artifactWorkflowDescriptorCatalogue <- function() {

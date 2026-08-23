@@ -456,16 +456,14 @@ test_that("memory and non-DIA lanes cannot initialize the DIA canary registry", 
     expect_true(output$ok)
     expect_false(dir.exists(file.path(root, "state")))
 
-    capabilities <- workflowCapabilityCatalogue()
-    eligible <- vapply(capabilities, `[[`, logical(1), "artifact_eligible")
-    expect_identical(sum(eligible), 1L)
-    expect_identical(capabilities[[which(eligible)]]$capability_id,
-        "proteomics.diann.peptide.dia.v1"
-    )
-    expect_false(any(vapply(capabilities[!eligible], \(capability) {
-        capability$identity$omic_type %in% c("metabolomics", "lipidomics") &&
-            capability$artifact_eligible
-    }, logical(1))))
+    descriptor_ids <- names(artifactWorkflowDescriptorCatalogue()$descriptors)
+    expect_setequal(descriptor_ids, c(
+        "proteomics.diann.peptide.dia.v1",
+        "proteomics.maxquant.protein.lfq.v1",
+        "proteomics.fragpipe.protein.lfq.v1",
+        "proteomics.pd_tmt.protein.tmt.v1"
+    ))
+    expect_false(any(grepl("spectronaut", descriptor_ids, fixed = TRUE)))
 
     unsupported_root <- tempfile("dia-artifact-009-unsupported-")
     dir.create(unsupported_root)

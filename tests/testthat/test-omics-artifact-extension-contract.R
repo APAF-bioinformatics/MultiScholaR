@@ -791,18 +791,31 @@ test_that("stage adapters expose only validated ordinary scientific inputs", {
     expect_identical(legacy_calls, 1L)
 })
 
-test_that("only the DIA-NN dual-write canary is production-certified", {
-    production <- workflowCapabilityCatalogue()
+test_that("only immutable descriptor-backed tuples are dual-write certified", {
+    production <- mergeWorkflowDescriptorCapabilities()
     descriptors <- artifactDescriptorCatalogueValues(
         artifactWorkflowDescriptorCatalogue()
     )
-    expect_length(descriptors, 1L)
-    expect_identical(descriptors[[1L]], artifactDiaWorkflowDescriptor())
+    descriptor_ids <- vapply(
+        descriptors,
+        `[[`,
+        character(1),
+        "descriptor_id"
+    )
+    expect_setequal(descriptor_ids, c(
+        "proteomics.diann.peptide.dia.v1",
+        "proteomics.maxquant.protein.lfq.v1",
+        "proteomics.fragpipe.protein.lfq.v1",
+        "proteomics.pd_tmt.protein.tmt.v1"
+    ))
+    expect_false(any(grepl("spectronaut", descriptor_ids, fixed = TRUE)))
     eligible <- Filter(\(capability) capability$artifact_eligible, production)
-    expect_length(eligible, 1L)
-    expect_identical(eligible[[1L]]$capability_id, descriptors[[1L]]$descriptor_id)
-    expect_identical(eligible[[1L]]$maximum_artifact_rollout, "dual_write")
-    expect_false(eligible[[1L]]$auto_eligible)
+    eligible_ids <- vapply(eligible, `[[`, character(1), "capability_id")
+    expect_setequal(unname(eligible_ids), unname(descriptor_ids))
+    expect_true(all(vapply(eligible, function(capability) {
+        identical(capability$maximum_artifact_rollout, "dual_write") &&
+            !isTRUE(capability$auto_eligible)
+    }, logical(1))))
     unsupported <- Filter(\(capability) !capability$artifact_eligible, production)
     expect_true(all(vapply(unsupported, function(capability) {
         !isTRUE(capability$auto_eligible) &&
