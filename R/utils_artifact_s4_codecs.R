@@ -727,7 +727,10 @@ hydrateDiaS4Artifact <- function(bundle) {
 }
 
 .ARTIFACT_S4_CODEC_CATALOGUE <- newArtifactCodecCatalogue(
-    artifactDiaCodecDeclarations()
+    c(
+        artifactDiaCodecDeclarations(),
+        artifactProteomicsNonDiaCodecDeclarations()
+    )
 )
 
 artifactS4CodecCatalogue <- function() {
