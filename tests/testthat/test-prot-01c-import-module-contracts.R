@@ -818,7 +818,8 @@ test_that("importProtImportDataByFormat dispatches DIANN options and wraps impor
       importPdTmt = function(...) NULL,
       logError = function(...) NULL
     ),
-    "Failed to import data: Unsupported format: unknown"
+    "Unknown proteomics import format: unknown",
+    class = "multischolar_format_unknown"
   )
 })
 
@@ -2409,7 +2410,7 @@ test_that("mod_prot_import_server falls back to default config when optional fil
   })
 })
 
-test_that("mod_prot_import_server cleans workflow state after unsupported format failure", {
+test_that("mod_prot_import_server preserves state after unsupported format failure", {
   fixture <- makeImportFixture(withConfig = FALSE)
   on.exit(unlink(fixture$rootDir, recursive = TRUE, force = TRUE), add = TRUE)
 
@@ -2467,16 +2468,19 @@ test_that("mod_prot_import_server cleans workflow state after unsupported format
       session$setInputs(process_data = 1)
       session$flushReact()
 
-      expect_null(workflowData$data_tbl)
-      expect_null(workflowData$data_format)
-      expect_null(workflowData$data_type)
-      expect_null(workflowData$column_mapping)
-      expect_null(workflowData$data_cln)
-      expect_null(workflowData$fasta_file_path)
-      expect_null(workflowData$aa_seq_tbl_final)
-      expect_null(workflowData$config_list)
-      expect_null(workflowData$processing_log$setup_import)
-      expect_equal(workflowData$tab_status$setup_import, "incomplete")
+      expect_identical(workflowData$data_tbl, data.frame(old = 1))
+      expect_identical(workflowData$data_format, "stale")
+      expect_identical(workflowData$data_type, "stale")
+      expect_identical(workflowData$column_mapping, list(old = TRUE))
+      expect_identical(workflowData$data_cln, data.frame(old = 1))
+      expect_identical(workflowData$fasta_file_path, "stale.fasta")
+      expect_identical(workflowData$aa_seq_tbl_final, data.frame(old = 1))
+      expect_identical(workflowData$config_list, list(old = TRUE))
+      expect_identical(
+        workflowData$processing_log$setup_import,
+        list(old = TRUE)
+      )
+      expect_identical(workflowData$tab_status$setup_import, "complete")
     }
   )
 })

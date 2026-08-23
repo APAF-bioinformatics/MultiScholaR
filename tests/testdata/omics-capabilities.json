@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "inventory_version": "2026-08-17.1",
+  "inventory_version": "2026-08-22.1",
   "allowed_support_statuses": [
     "scientifically_supported",
     "reader_characterized",
@@ -50,7 +50,7 @@
       "choices": [
         {"label": "Auto-detect", "value": "auto", "inventory_format_id": null},
         {"label": "DIA-NN", "value": "diann", "inventory_format_id": "proteomics.diann"},
-        {"label": "Spectronaut DIA", "value": "spectronaut", "inventory_format_id": "proteomics.spectronaut"},
+        {"label": "Spectronaut DIA (unverified)", "value": "spectronaut", "inventory_format_id": "proteomics.spectronaut"},
         {"label": "FragPipe LFQ", "value": "fragpipe", "inventory_format_id": "proteomics.fragpipe"},
         {"label": "MaxQuant LFQ", "value": "maxquant", "inventory_format_id": "proteomics.maxquant"},
         {"label": "Proteome Discoverer TMT", "value": "pd_tmt", "inventory_format_id": "proteomics.pd_tmt"}
@@ -62,9 +62,9 @@
       "input_id": "vendor_format",
       "choices": [
         {"label": "MS-DIAL", "value": "msdial", "inventory_format_id": "metabolomics.msdial"},
-        {"label": "Progenesis QI", "value": "progenesis", "inventory_format_id": "metabolomics.progenesis"},
-        {"label": "XCMS", "value": "xcms", "inventory_format_id": "metabolomics.xcms"},
-        {"label": "Compound Discoverer", "value": "compound_discoverer", "inventory_format_id": "metabolomics.compound_discoverer"},
+        {"label": "Progenesis QI (unavailable)", "value": "progenesis", "inventory_format_id": "metabolomics.progenesis"},
+        {"label": "XCMS (unavailable)", "value": "xcms", "inventory_format_id": "metabolomics.xcms"},
+        {"label": "Compound Discoverer (unavailable)", "value": "compound_discoverer", "inventory_format_id": "metabolomics.compound_discoverer"},
         {"label": "Other/Custom", "value": "custom", "inventory_format_id": "metabolomics.custom"}
       ]
     },
@@ -74,9 +74,9 @@
       "input_id": "vendor_format",
       "choices": [
         {"label": "MS-DIAL", "value": "msdial", "inventory_format_id": "lipidomics.msdial"},
-        {"label": "Progenesis QI", "value": "progenesis", "inventory_format_id": "lipidomics.progenesis"},
-        {"label": "XCMS", "value": "xcms", "inventory_format_id": "lipidomics.xcms"},
-        {"label": "Compound Discoverer", "value": "compound_discoverer", "inventory_format_id": "lipidomics.compound_discoverer"},
+        {"label": "Progenesis QI (unavailable)", "value": "progenesis", "inventory_format_id": "lipidomics.progenesis"},
+        {"label": "XCMS (unavailable)", "value": "xcms", "inventory_format_id": "lipidomics.xcms"},
+        {"label": "Compound Discoverer (unavailable)", "value": "compound_discoverer", "inventory_format_id": "lipidomics.compound_discoverer"},
         {"label": "LipidSearch", "value": "lipidsearch", "inventory_format_id": "lipidomics.lipidsearch"},
         {"label": "Other/Custom", "value": "custom", "inventory_format_id": "lipidomics.custom"}
       ]
@@ -320,7 +320,7 @@
       "ui_value": "progenesis",
       "detector_owner": "detectMetabolomicsFormat",
       "parser_owner": null,
-      "fallback_parser_owner": "importMetabMSDIALData",
+      "fallback_parser_owner": null,
       "support_status": "detection_only",
       "fixture_requirement": "dedicated_reader_and_fixture_required",
       "fixture_refs": [],
@@ -333,7 +333,7 @@
       "ui_value": "xcms",
       "detector_owner": "detectMetabolomicsFormat",
       "parser_owner": null,
-      "fallback_parser_owner": "importMetabMSDIALData",
+      "fallback_parser_owner": null,
       "support_status": "detection_only",
       "fixture_requirement": "dedicated_reader_and_fixture_required",
       "fixture_refs": [],
@@ -346,7 +346,7 @@
       "ui_value": "compound_discoverer",
       "detector_owner": "detectMetabolomicsFormat",
       "parser_owner": null,
-      "fallback_parser_owner": "importMetabMSDIALData",
+      "fallback_parser_owner": null,
       "support_status": "detection_only",
       "fixture_requirement": "dedicated_reader_and_fixture_required",
       "fixture_refs": [],
@@ -432,7 +432,7 @@
       "ui_value": "progenesis",
       "detector_owner": "detectLipidomicsFormat",
       "parser_owner": null,
-      "fallback_parser_owner": "importLipidMSDIALData",
+      "fallback_parser_owner": null,
       "support_status": "detection_only",
       "fixture_requirement": "dedicated_reader_and_fixture_required",
       "fixture_refs": [],
@@ -445,7 +445,7 @@
       "ui_value": "xcms",
       "detector_owner": "detectLipidomicsFormat",
       "parser_owner": null,
-      "fallback_parser_owner": "importLipidMSDIALData",
+      "fallback_parser_owner": null,
       "support_status": "detection_only",
       "fixture_requirement": "dedicated_reader_and_fixture_required",
       "fixture_refs": [],
@@ -458,7 +458,7 @@
       "ui_value": "compound_discoverer",
       "detector_owner": "detectLipidomicsFormat",
       "parser_owner": null,
-      "fallback_parser_owner": "importLipidMSDIALData",
+      "fallback_parser_owner": null,
       "support_status": "detection_only",
       "fixture_requirement": "dedicated_reader_and_fixture_required",
       "fixture_refs": [],

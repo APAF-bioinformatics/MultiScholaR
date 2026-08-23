@@ -147,3 +147,16 @@ resolveActiveProtImportFormat <- function(formatOverride, detectedFormat) {
   formatOverride
 }
 
+resolveProtImportFormatForDispatch <- function(
+    formatOverride,
+    detectedFormat,
+    formatConfidence,
+    resolveSupport = resolveWorkflowFormatSupport
+) {
+  resolveSupport(
+    omicType = "proteomics",
+    requestedFormat = formatOverride,
+    detectedFormat = detectedFormat,
+    detectionConfidence = formatConfidence
+  )
+}

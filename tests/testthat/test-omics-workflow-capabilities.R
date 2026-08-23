@@ -177,7 +177,7 @@ test_that("parser ownership and evidence tiers do not overstate support", {
 
     if (identical(format$support_status, "detection_only")) {
       expect_null(format$parser_owner)
-      expect_false(is.null(format$fallback_parser_owner))
+      expect_null(format$fallback_parser_owner)
       expect_length(format$capabilities, 0L)
     }
   }
@@ -196,9 +196,14 @@ test_that("capabilities preserve current analytical routing and coverage", {
     expect_true(all(unlist(capability$module_ci_lanes, use.names = FALSE) %in%
       c("proteomics", "metabolomics", "lipidomics")))
     expect_true(all(unlist(capability$e2e_lanes, use.names = FALSE) %in% e2e_lane_ids))
-    expect_false(isTRUE(capability$artifact_eligible))
     expect_false(isTRUE(capability$auto_eligible))
-    expect_null(capability$maximum_artifact_rollout)
+    if (identical(capability$capability_id, "proteomics.diann.peptide.dia.v1")) {
+      expect_true(isTRUE(capability$artifact_eligible))
+      expect_identical(capability$maximum_artifact_rollout, "dual_write")
+    } else {
+      expect_false(isTRUE(capability$artifact_eligible))
+      expect_null(capability$maximum_artifact_rollout)
+    }
   }
 
   spectronaut <- Filter(
@@ -229,7 +234,7 @@ test_that("exact capability matching fails closed for artifact requests", {
   )
   expect_identical(
     .resolve_inventory_backend(inventory, known, "artifact"),
-    list(effective_backend = NULL, reason_code = "error_not_certified")
+    list(effective_backend = "artifact", reason_code = "artifact_certified")
   )
   expect_identical(
     .resolve_inventory_backend(inventory, known, "auto"),

@@ -368,21 +368,29 @@ assembleLipidImportAssayList <- function(
   annotationCol = NULL,
   importSecondAssay = NULL,
   resolveSecondAssayReader = resolveLipidImportSecondAssayReader,
-  callSecondAssayReader = callLipidImportSecondAssayReader
+  callSecondAssayReader = callLipidImportSecondAssayReader,
+  prepareSecondAssay = NULL
 ) {
   assay_list <- list()
   assay_list[[assay1Name]] <- assay1Data
 
   if (!is.null(assay2File) && nzchar(assay2Name)) {
-    if (is.null(importSecondAssay)) {
-      importSecondAssay <- resolveSecondAssayReader(dataFormat = dataFormat)
+    if (is.null(importSecondAssay) && !is.null(prepareSecondAssay)) {
+      assay2_import <- prepareSecondAssay(
+        assay1File = assay2File,
+        vendorFormat = dataFormat
+      )$importResult
+    } else {
+      if (is.null(importSecondAssay)) {
+        importSecondAssay <- resolveSecondAssayReader(dataFormat = dataFormat)
+      }
+      assay2_import <- callSecondAssayReader(
+        importSecondAssay = importSecondAssay,
+        assay2File = assay2File,
+        lipidIdCol = lipidIdCol,
+        annotationCol = annotationCol
+      )
     }
-    assay2_import <- callSecondAssayReader(
-      importSecondAssay = importSecondAssay,
-      assay2File = assay2File,
-      lipidIdCol = lipidIdCol,
-      annotationCol = annotationCol
-    )
     assay_list[[assay2Name]] <- assay2_import$data
   }
 
@@ -635,8 +643,18 @@ runLipidImportProcessing <- function(
   finalizeSetupState = finalizeLipidImportSetupState,
   notify = shiny::showNotification,
   removeNotify = shiny::removeNotification,
-  logError = logger::log_error
+  logError = logger::log_error,
+  formatConfidence = NULL,
+  resolveFormatSupport = resolveWorkflowFormatSupport
 ) {
+  format_decision <- resolveFormatSupport(
+    omicType = "lipidomics",
+    requestedFormat = vendorFormat,
+    detectedFormat = detectedFormat,
+    detectionConfidence = formatConfidence
+  )
+  detectedFormat <- format_decision$format
+
   notify(
     "Processing imported data...",
     id = "lipid_import_working",
@@ -651,15 +669,22 @@ runLipidImportProcessing <- function(
         assay2File = assay2File
       )
 
-      assay_list <- assembleAssayList(
+      assemble_args <- list(
         assay1Name = assay1Name,
         assay1Data = assay1Data,
         assay2File = assay2File,
         assay2Name = assay2Name,
-        dataFormat = if (identical(vendorFormat, "custom")) detectedFormat else detectedFormat %||% vendorFormat,
+        dataFormat = detectedFormat,
         lipidIdCol = lipidIdCol,
         annotationCol = annotationCol
       )
+      if (lipidImportFunctionAcceptsArg(
+        assembleAssayList,
+        "prepareSecondAssay"
+      )) {
+        assemble_args$prepareSecondAssay <- loadLipidImportAssayPreview
+      }
+      assay_list <- do.call(assembleAssayList, assemble_args)
 
       sanitized_import <- sanitizeSampleNames(
         assayList = assay_list,
@@ -732,4 +757,3 @@ runLipidImportProcessing <- function(
     }
   )
 }
-

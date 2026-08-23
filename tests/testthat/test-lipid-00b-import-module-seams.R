@@ -370,9 +370,9 @@ test_that("buildLipidImportFileImportSection preserves vendor-selector and assay
     captured$radio$choices,
     c(
       "MS-DIAL" = "msdial",
-      "Progenesis QI" = "progenesis",
-      "XCMS" = "xcms",
-      "Compound Discoverer" = "compound_discoverer",
+      "Progenesis QI (unavailable)" = "progenesis",
+      "XCMS (unavailable)" = "xcms",
+      "Compound Discoverer (unavailable)" = "compound_discoverer",
       "LipidSearch" = "lipidsearch",
       "Other/Custom" = "custom"
     )
@@ -591,7 +591,7 @@ test_that("loadLipidImportAssayPreview preserves the detected lipidsearch import
   )
 })
 
-test_that("loadLipidImportAssayPreview preserves fallback import and omitted IS-pattern updates", {
+test_that("loadLipidImportAssayPreview keeps explicit custom imports generic", {
   captured <- list()
   assay_data <- data.frame(
     lipid_id = c("L1", "L2"),
@@ -625,7 +625,8 @@ test_that("loadLipidImportAssayPreview preserves fallback import and omitted IS-
       captured$lipidsearch_path <<- path
       stop("LipidSearch importer should not be used")
     },
-    logInfo = function(...) NULL
+    logInfo = function(...) NULL,
+    vendorFormat = "custom"
   )
 
   expect_identical(captured$header_path, "/tmp/custom.tsv")
@@ -633,7 +634,8 @@ test_that("loadLipidImportAssayPreview preserves fallback import and omitted IS-
   expect_identical(captured$filename, "custom.tsv")
   expect_identical(captured$msdial_path, "/tmp/custom.tsv")
   expect_false("lipidsearch_path" %in% names(captured))
-  expect_identical(preview$detectedFormat, "custom_vendor")
+  expect_identical(preview$detectedFormat, "custom")
+  expect_identical(preview$importResult$data, assay_data)
   expect_identical(preview$assayData, assay_data)
   expect_identical(preview$updates$lipidId$selected, "lipid_id")
   expect_identical(preview$updates$annotation$selected, "")

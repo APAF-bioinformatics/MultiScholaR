@@ -8,13 +8,7 @@
 NULL
 
 getMetabImportVendorChoices <- function() {
-  c(
-    "MS-DIAL" = "msdial",
-    "Progenesis QI" = "progenesis",
-    "XCMS" = "xcms",
-    "Compound Discoverer" = "compound_discoverer",
-    "Other/Custom" = "custom"
-  )
+  workflowFormatUiChoices("metabolomics")
 }
 
 #' @rdname mod_metab_import

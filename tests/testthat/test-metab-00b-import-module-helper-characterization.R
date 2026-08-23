@@ -334,7 +334,7 @@ test_that("metabolomics import assay-selection helper preserves header parsing a
   expect_identical(selection_state$isPattern, "^IS_")
 })
 
-test_that("metabolomics import assay-selection helper preserves header-read failure and default-import fallback contracts", {
+test_that("metabolomics import assay-selection fails closed before fallback readers", {
   expect_error(
     prepareMetabImportAssaySelectionState(
       assay1File = "broken.tsv",
@@ -346,39 +346,24 @@ test_that("metabolomics import assay-selection helper preserves header-read fail
     "Could not read headers from file"
   )
 
-  default_import_calls <- character()
-
-  fallback_state <- prepareMetabImportAssaySelectionState(
-    assay1File = "fallback.tsv",
-    readHeadersFn = function(path) c("Feature", "Sample_1"),
-    detectFormatFn = function(headers, filename) {
-      expect_identical(headers, c("Feature", "Sample_1"))
-      expect_identical(filename, "fallback.tsv")
-      list(format = "unknown", confidence = 0.2)
-    },
-    importers = list(
-      msdial = function(path) {
-        stop(sprintf("unexpected named importer call for %s", path))
-      }
+  reader_calls <- character()
+  expect_error(
+    prepareMetabImportAssaySelectionState(
+      assay1File = "fallback.tsv",
+      readHeadersFn = function(path) c("Feature", "Sample_1"),
+      detectFormatFn = function(headers, filename) {
+        expect_identical(headers, c("Feature", "Sample_1"))
+        expect_identical(filename, "fallback.tsv")
+        list(format = "unknown", confidence = 0.2)
+      },
+      importers = list(
+        msdial = function(path) reader_calls <<- c(reader_calls, "named")
+      ),
+      defaultImporter = function(path) reader_calls <<- c(reader_calls, "default")
     ),
-    defaultImporter = function(path) {
-      default_import_calls <<- c(default_import_calls, path)
-      list(
-        data = data.frame(Feature = "F1", Sample_1 = 1, check.names = FALSE),
-        detected_columns = list(
-          metabolite_id = "Feature",
-          annotation = ""
-        ),
-        sample_columns = "Sample_1",
-        is_pattern = NA_character_
-      )
-    }
+    class = "multischolar_format_unknown"
   )
-
-  expect_identical(default_import_calls, "fallback.tsv")
-  expect_identical(fallback_state$selectedMetaboliteId, "Feature")
-  expect_identical(fallback_state$selectedAnnotation, "")
-  expect_null(fallback_state$isPattern)
+  expect_identical(reader_calls, character())
 })
 
 test_that("metabolomics import assay-selection application helper preserves local-data commit and update contracts", {

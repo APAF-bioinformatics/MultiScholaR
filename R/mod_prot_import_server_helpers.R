@@ -245,7 +245,8 @@ registerProtImportObservers <- function(
     logInfo = logger::log_info,
     logError = logger::log_error,
     logWarn = logger::log_warn,
-    messageFn = message
+    messageFn = message,
+    resolveFormatSupportFn = resolveProtImportFormatForDispatch
 ) {
   observeEventFn(input$capture_checkpoints, {
     updateCheckpointCaptureFn(
@@ -281,7 +282,22 @@ registerProtImportObservers <- function(
   observeEventFn(input$process_data, {
     search_results_path <- searchResultsPathReactive()
     fasta_path <- fastaPathReactive()
-    format <- activeFormatReactive()
+    format_decision <- tryCatch(
+      resolveFormatSupportFn(
+        formatOverride = input$format_override,
+        detectedFormat = localData$detected_format,
+        formatConfidence = localData$format_confidence
+      ),
+      multischolar_format_support_error = function(e) {
+        logWarn(conditionMessage(e))
+        showNotificationFn(conditionMessage(e), type = "error", duration = 10)
+        NULL
+      }
+    )
+    if (is.null(format_decision)) {
+      return(invisible(NULL))
+    }
+    format <- format_decision$format
 
     startProcessingFn(
       searchResultsPath = search_results_path,

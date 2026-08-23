@@ -71,6 +71,7 @@ Collate:
     'func_omics_da_list_methods.R'
     'utils_workflow_state_compat.R'
     'utils_workflow_capabilities.R'
+    'utils_workflow_format_support.R'
     'utils_artifact_paths.R'
     'utils_artifact_refs.R'
     'utils_artifact_descriptors.R'

@@ -19,7 +19,8 @@ buildMetabImportWorkflowPayload <- function(
     assay2Importer = importMetabMSDIALData,
     cleanNamesFn = janitor::make_clean_names,
     mapAssaysFn = purrr::map,
-    timestampFn = Sys.time
+    timestampFn = Sys.time,
+    assay2PreparationFn = prepareMetabImportAssaySelectionState
 ) {
   assayNames <- c(assay1Name, if (!is.null(assay2File) && nzchar(assay2Name)) assay2Name else character(0))
   if (length(assayNames) == 0 || any(!nzchar(assayNames))) {
@@ -33,7 +34,14 @@ buildMetabImportWorkflowPayload <- function(
   assayList[[assay1Name]] <- assay1Data
 
   if (!is.null(assay2File) && nzchar(assay2Name)) {
-    assay2Import <- assay2Importer(assay2File)
+    assay2Import <- if (missing(assay2Importer)) {
+      assay2PreparationFn(
+        assay1File = assay2File,
+        vendorFormat = vendorFormat
+      )$importResult
+    } else {
+      assay2Importer(assay2File)
+    }
     assayList[[assay2Name]] <- assay2Import$data
   }
 
@@ -340,7 +348,9 @@ prepareMetabImportAssaySelectionState <- function(
           character(0)
         }
       )
-    }
+    },
+    vendorFormat = NULL,
+    resolveFormatSupportFn = resolveWorkflowFormatSupport
 ) {
   headers <- readHeadersFn(assay1File)
 
@@ -353,9 +363,31 @@ prepareMetabImportAssaySelectionState <- function(
     filename = basename(assay1File)
   )
 
-  importFn <- importers[[formatInfo$format]]
-  if (is.null(importFn)) {
+  requestedFormat <- vendorFormat %||% formatInfo$format
+  decision <- resolveFormatSupportFn(
+    omicType = "metabolomics",
+    requestedFormat = requestedFormat,
+    detectedFormat = formatInfo$format,
+    detectionConfidence = formatInfo$confidence
+  )
+  observedFormat <- formatInfo$format
+  formatInfo$observed_format <- observedFormat
+  formatInfo$format <- decision$format
+  formatInfo$support_status <- decision$support_status
+
+  importFn <- importers[[decision$format]]
+  if (is.null(importFn) && identical(decision$format, "custom")) {
     importFn <- defaultImporter
+  }
+  if (is.null(importFn)) {
+    workflowFormatSupportAbort(
+      sprintf("No reader is registered for metabolomics format '%s'", decision$format),
+      "multischolar_format_unsupported",
+      "metabolomics",
+      requestedFormat,
+      observedFormat,
+      decision$support_status
+    )
   }
 
   importResult <- importFn(assay1File)
@@ -494,13 +526,19 @@ runMetabImportAssaySelection <- function(
     reqFn = shiny::req,
     prepareImportStateFn = prepareMetabImportAssaySelectionState,
     applyImportStateFn = applyMetabImportAssaySelectionState,
-    finalizeErrorFn = finalizeMetabImportAssaySelectionError
+    finalizeErrorFn = finalizeMetabImportAssaySelectionError,
+    vendorFormat = NULL
 ) {
   reqFn(assay1File)
 
   tryCatch(
     {
-      importState <- prepareImportStateFn(assay1File = assay1File)
+      prepareArgs <- list(assay1File = assay1File)
+      if (!is.null(vendorFormat) &&
+          metabImportFunctionAcceptsArg(prepareImportStateFn, "vendorFormat")) {
+        prepareArgs$vendorFormat <- vendorFormat
+      }
+      importState <- do.call(prepareImportStateFn, prepareArgs)
 
       applyImportStateFn(
         localData = localData,
@@ -540,8 +578,18 @@ runMetabImportProcessing <- function(
     applyWorkflowPayloadFn = applyMetabImportWorkflowPayload,
     finalizeFeedbackFn = finalizeMetabImportProcessingFeedback,
     sprintfFn = sprintf,
-    lengthFn = length
+    lengthFn = length,
+    formatConfidence = NULL,
+    resolveFormatSupportFn = resolveWorkflowFormatSupport
 ) {
+  formatDecision <- resolveFormatSupportFn(
+    omicType = "metabolomics",
+    requestedFormat = vendorFormat,
+    detectedFormat = detectedFormat,
+    detectionConfidence = formatConfidence
+  )
+  detectedFormat <- formatDecision$format
+
   reqFn(assay1Data)
 
   metaboliteCol <- getMetaboliteIdColFn()

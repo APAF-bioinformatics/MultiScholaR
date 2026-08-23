@@ -45,7 +45,15 @@ importProtImportDataByFormat <- function(
     , importMaxquant = importMaxQuantData
     , importPdTmt = importProteomeDiscovererTMTData
     , logError = logger::log_error
+    , resolveFormatSupport = resolveWorkflowFormatSupport
 ) {
+  decision <- resolveFormatSupport(
+    omicType = "proteomics",
+    requestedFormat = format,
+    detectedFormat = format
+  )
+  format <- decision$format
+
   tryCatch({
     switch(format,
       "diann" = importDiann(

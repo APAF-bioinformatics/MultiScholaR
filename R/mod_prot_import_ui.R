@@ -1,12 +1,5 @@
 getProtImportFormatChoices <- function() {
-  c(
-    "Auto-detect" = "auto",
-    "DIA-NN" = "diann",
-    "Spectronaut DIA" = "spectronaut",
-    "FragPipe LFQ" = "fragpipe",
-    "MaxQuant LFQ" = "maxquant",
-    "Proteome Discoverer TMT" = "pd_tmt"
-  )
+  workflowFormatUiChoices("proteomics", includeAuto = TRUE)
 }
 
 #' Setup & Import Applet UI

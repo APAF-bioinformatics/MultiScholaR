@@ -217,14 +217,20 @@ setupMetabImportColumnAccessors <- function(
 setupMetabImportAssaySelectionCallback <- function(
     localData,
     session,
-    runAssaySelectionFn = runMetabImportAssaySelection
+    runAssaySelectionFn = runMetabImportAssaySelection,
+    input = NULL
 ) {
   function() {
-    runAssaySelectionFn(
+    runArgs <- list(
       assay1File = localData$assay1_file,
       localData = localData,
       session = session
     )
+    if (!is.null(input) &&
+        metabImportServerFunctionAcceptsArg(runAssaySelectionFn, "vendorFormat")) {
+      runArgs$vendorFormat <- input$vendor_format
+    }
+    do.call(runAssaySelectionFn, runArgs)
   }
 }
 
@@ -253,6 +259,9 @@ setupMetabImportProcessingObserver <- function(
       getSampleColumnsFn = columnAccessors$getSampleColumns,
       workflowData = workflowData
     )
+    if (metabImportServerFunctionAcceptsArg(runProcessingFn, "formatConfidence")) {
+      processingArgs$formatConfidence <- localData$format_confidence
+    }
     if (metabImportServerFunctionAcceptsArg(runProcessingFn, "experimentPaths")) {
       processingArgs$experimentPaths <- experimentPaths
     }
@@ -307,10 +316,14 @@ runMetabImportModuleServerShell <- function(
     all_headers = NULL
   )
 
-  importData <- setupAssaySelectionCallbackFn(
+  assaySelectionArgs <- list(
     localData = localData,
     session = session
   )
+  if (metabImportServerFunctionAcceptsArg(setupAssaySelectionCallbackFn, "input")) {
+    assaySelectionArgs$input <- input
+  }
+  importData <- do.call(setupAssaySelectionCallbackFn, assaySelectionArgs)
 
   if (useShinyFiles) {
     volumes <- setupShinyFilesFn(

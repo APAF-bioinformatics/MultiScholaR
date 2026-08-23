@@ -93,7 +93,7 @@ test_that("MCI-018.2 MS-DIAL matrix preserves annotation, duplicate, and intensi
   expect_null(no_annotation_run$workflow$column_mapping$annotation_col)
 })
 
-test_that("MCI-018.3 custom and vendor override matrix preserves fallback behavior", {
+test_that("MCI-018.3 custom and vendor overrides fail closed without fallback", {
   custom <- module_ci_lipid_custom_assay(sample_prefix = "sample")
   expect_identical(
     resolveLipidImportEffectiveColumn(custom, "custom", "ignored", "LIPID_ID"),
@@ -105,34 +105,33 @@ test_that("MCI-018.3 custom and vendor override matrix preserves fallback behavi
   )
 
   fallback_called <- character()
-  fallback_preview <- loadLipidImportAssayPreview(
-    assay1File = "unknown_vendor.tsv",
-    readHeaders = function(path) c("lipid_id", "annotation", "WT_1"),
-    detectFormat = function(headers, filename) list(format = "unsupported_vendor", confidence = 0.11),
-    importMsdial = function(path) {
-      fallback_called <<- c(fallback_called, path)
-      list(
-        data = data.frame(lipid_id = "L1", annotation = "PC", WT_1 = 10),
-        detected_columns = list(lipid_id = "lipid_id", annotation = "annotation"),
-        sample_columns = "WT_1",
-        is_pattern = NA_character_
-      )
-    },
-    importLipidSearch = function(...) stop("LipidSearch fallback should not be used")
+  expect_error(
+    loadLipidImportAssayPreview(
+      assay1File = "unknown_vendor.tsv",
+      readHeaders = function(path) c("lipid_id", "annotation", "WT_1"),
+      detectFormat = function(headers, filename) {
+        list(format = "unsupported_vendor", confidence = 0.11)
+      },
+      importMsdial = function(path) {
+        fallback_called <<- c(fallback_called, path)
+      },
+      importLipidSearch = function(...) stop("LipidSearch fallback should not be used")
+    ),
+    class = "multischolar_format_unknown"
   )
-  expect_identical(fallback_preview$detectedFormat, "unsupported_vendor")
-  expect_identical(fallback_called, "unknown_vendor.tsv")
+  expect_identical(fallback_called, character())
 
-  mismatch <- module_ci_lipid_import_run(
-    assay = module_ci_lipid_msdial_assay(),
-    vendor_format = "lipidsearch",
-    detected_format = "msdial",
-    lipid_id_col = "Peak ID",
-    annotation_col = "Name",
-    sample_cols = module_ci_lipid_sample_cols()
+  expect_error(
+    module_ci_lipid_import_run(
+      assay = module_ci_lipid_msdial_assay(),
+      vendor_format = "lipidsearch",
+      detected_format = "msdial",
+      lipid_id_col = "Peak ID",
+      annotation_col = "Name",
+      sample_cols = module_ci_lipid_sample_cols()
+    ),
+    class = "multischolar_format_mismatch"
   )
-  expect_identical(mismatch$result$status, "success")
-  expect_identical(mismatch$workflow$data_format, "msdial")
 
   custom_override <- module_ci_lipid_import_run(
     assay = module_ci_lipid_lipidsearch_assay(),
@@ -247,7 +246,10 @@ test_that("MCI-018.5 invalid input matrix fails before downstream state advances
 
   malformed_paths <- module_ci_lipid_import_paths()
   malformed_path <- module_ci_lipid_write_malformed(file.path(malformed_paths$raw_dir, "malformed.tsv"))
-  malformed_preview <- module_ci_lipid_preview(malformed_path)
+  malformed_preview <- loadLipidImportAssayPreview(
+    malformed_path,
+    vendorFormat = "custom"
+  )
   malformed_run <- module_ci_lipid_import_run(
     assay = malformed_preview$importResult$data,
     paths = malformed_paths,
