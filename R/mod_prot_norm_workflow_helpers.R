@@ -36,7 +36,7 @@ runProtNormBetweenSamplesStep <- function(
 ) {
   messageFn("*** STEP 1: Starting between-samples normalization ***")
 
-  if (protDiaPeptideQcWorkflowData(workflowData)) {
+  if (protNormWorkflowDataAvailable(workflowData)) {
     config_list <- workflowData$config_list
     if (!is.list(config_list)) config_list <- list()
     if (!is.list(config_list$normaliseBetweenSamples)) {
@@ -82,7 +82,8 @@ persistProtNormNormalizedState <- function(
   saveStateFn = saveProtNormState
 ) {
   if (!methods::is(normalizedS4, "ProteinQuantitativeData")) return(normalizedS4)
-  if (!protDiaNormWorkflowIsDia(workflowData, workflowData$state_manager)) {
+  if (!protDiaNormWorkflowIsDia(workflowData, workflowData$state_manager) &&
+      is.null(protNonDiaNormDescriptor(workflowData))) {
     return(normalizedS4)
   }
   parameters <- list(

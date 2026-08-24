@@ -486,6 +486,22 @@ saveProtNormState <- function(
     failure_injector = NULL
 ) {
     if (!protDiaNormTransition(before, after, stage_id)) return(after)
+    nondia_result <- saveProtNonDiaNormArtifactState(
+        workflow_data,
+        state_manager,
+        before,
+        after,
+        stage_id,
+        state_name,
+        config_object,
+        description,
+        parameters,
+        status,
+        transformation_type,
+        now,
+        failure_injector
+    )
+    if (isTRUE(nondia_result$handled)) return(nondia_result$object)
     if (!protDiaNormWorkflowIsDia(workflow_data, state_manager)) {
         protDiaNormSaveMemory(
             state_manager,
@@ -557,6 +573,18 @@ protDiaNormStateRef <- function(workflow_data, stage_id, state_name) {
     )
 }
 
+#' Resolve a normalization state ref by exact proteomics descriptor
+#' @param workflow_data Mutable proteomics workflow state.
+#' @param stage_id Normalization stage identifier.
+#' @param state_name State name.
+#' @return A payload-free generation ref, or `NULL`.
+#' @noRd
+protNormStateRef <- function(workflow_data, stage_id, state_name) {
+    nondia <- protNonDiaNormStateRef(workflow_data, stage_id, state_name)
+    if (!is.null(nondia)) return(nondia)
+    protDiaNormStateRef(workflow_data, stage_id, state_name)
+}
+
 settleProtNormArtifactState <- function(
     workflow_data,
     norm_data,
@@ -564,7 +592,7 @@ settleProtNormArtifactState <- function(
     state_name,
     object
 ) {
-    ref <- protDiaNormStateRef(workflow_data, stage_id, state_name)
+    ref <- protNormStateRef(workflow_data, stage_id, state_name)
     if (is.null(ref)) return(object)
     refs <- workflow_data$normalization_state_refs
     if (!is.list(refs)) refs <- list()
@@ -606,11 +634,11 @@ resolveProtNormStateObject <- function(
 ) {
     if (!is.null(legacy_object)) return(legacy_object)
     if (!is.null(stage_id) &&
-        identical(protDiaNormArtifactMode(stage_id), "disabled")) {
+        identical(protNormArtifactMode(workflow_data, stage_id), "disabled")) {
         return(NULL)
     }
     manager <- NULL
-    if (protDiaPeptideQcWorkflowData(workflow_data)) {
+    if (protNormWorkflowDataAvailable(workflow_data)) {
         manager <- workflow_data$state_manager
     }
     if (is.null(manager) && !is.null(norm_data)) manager <- norm_data$state_manager
@@ -706,7 +734,7 @@ initializeProtNormWorkflowContext <- function(
     experiment_label,
     grouping_variable
 ) {
-    if (!protDiaPeptideQcWorkflowData(workflow_data)) return(invisible(NULL))
+    if (!protNormWorkflowDataAvailable(workflow_data)) return(invisible(NULL))
     workflow_data$normalization_context <- list(
         workflow_context = workflow_data$workflow_context,
         experiment_paths = experiment_paths,
@@ -738,7 +766,7 @@ updateProtNormWorkflowRuvContext <- function(
     optimization_result = NULL,
     input = NULL
 ) {
-    if (!protDiaPeptideQcWorkflowData(workflow_data)) return(invisible(NULL))
+    if (!protNormWorkflowDataAvailable(workflow_data)) return(invisible(NULL))
     context <- workflow_data$normalization_context
     if (!is.list(context)) context <- list()
     trace <- optimization_result$optimization_results

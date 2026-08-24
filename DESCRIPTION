@@ -393,6 +393,7 @@ Collate:
     'mod_prot_import_server_helpers.R'
     'mod_prot_import_server.R'
     'mod_prot_norm_artifact_helpers.R'
+    'mod_prot_nondia_norm_artifact_helpers.R'
     'mod_prot_norm_qc_support_helpers.R'
     'mod_prot_norm_qc_generation_helpers.R'
     'mod_prot_norm_workflow_helpers.R'

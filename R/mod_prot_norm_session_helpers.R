@@ -407,7 +407,7 @@ revertProtNormStateManagerToPreNormalization <- function(
     "protein_s4_initial"
   ),
   messageFn = message,
-  revertStateFn = revertProtDiaNormState
+  revertStateFn = revertProtNormState
 ) {
   previous_state <- NULL
   reverted_s4 <- NULL

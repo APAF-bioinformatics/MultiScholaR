@@ -52,7 +52,7 @@ updateProtNormRuvAuditTrail <- function(
   messageFn = message
 ) {
   tryCatch({
-    if (protDiaPeptideQcWorkflowData(workflowData)) {
+    if (protNormWorkflowDataAvailable(workflowData)) {
       config_list <- workflowData$config_list
       if (!is.list(config_list)) config_list <- list()
       config_list <- updateRuvParametersFn(
