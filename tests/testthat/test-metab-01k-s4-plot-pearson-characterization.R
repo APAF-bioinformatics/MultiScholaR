@@ -99,6 +99,17 @@ if (!methods::isGeneric("pearsonCorForSamplePairs")) {
 pearsonStubCalls <- list()
 pearsonStubResults <- NULL
 
+originalPearsonMethod <- methods::selectMethod(
+  "pearsonCorForSamplePairs",
+  "MetaboliteAssayData",
+  optional = TRUE
+)
+originalPlotPearsonMethod <- methods::selectMethod(
+  "plotPearson",
+  "MetaboliteAssayData",
+  optional = TRUE
+)
+
 methods::setMethod(
   "pearsonCorForSamplePairs",
   "MetaboliteAssayData",
@@ -218,3 +229,22 @@ test_that("metabolomics S4 plotPearson source retains histogram guards and corre
     "pearson_plots_list <- pearson_plots_list\\[!sapply\\(pearson_plots_list,\\s+is\\.null\\)\\]"
   )
 })
+
+if (is.null(originalPlotPearsonMethod)) {
+  methods::removeMethod("plotPearson", "MetaboliteAssayData")
+} else {
+  methods::setMethod(
+    "plotPearson",
+    "MetaboliteAssayData",
+    definition = originalPlotPearsonMethod
+  )
+}
+if (is.null(originalPearsonMethod)) {
+  methods::removeMethod("pearsonCorForSamplePairs", "MetaboliteAssayData")
+} else {
+  methods::setMethod(
+    "pearsonCorForSamplePairs",
+    "MetaboliteAssayData",
+    definition = originalPearsonMethod
+  )
+}

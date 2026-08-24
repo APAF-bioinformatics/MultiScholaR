@@ -139,6 +139,12 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
+originalPearsonMethod <- methods::selectMethod(
+  "pearsonCorForSamplePairs",
+  "MetaboliteAssayData",
+  optional = TRUE
+)
+
 loadSelectedExpressions(
   paths = target_paths,
   matcher = function(expr) {
@@ -227,3 +233,13 @@ test_that("metabolomics S4 pearson-correlation source retains pair-building and 
   expect_match(target_text, "calculateMetabolitePairCorrelation\\(")
   expect_match(target_text, "!stringr::str_detect\\(")
 })
+
+if (is.null(originalPearsonMethod)) {
+  methods::removeMethod("pearsonCorForSamplePairs", "MetaboliteAssayData")
+} else {
+  methods::setMethod(
+    "pearsonCorForSamplePairs",
+    "MetaboliteAssayData",
+    definition = originalPearsonMethod
+  )
+}

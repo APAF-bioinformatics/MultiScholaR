@@ -106,6 +106,12 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
+originalPlotRleMethod <- methods::selectMethod(
+  "plotRle",
+  "MetaboliteAssayData",
+  optional = TRUE
+)
+
 loadSelectedExpressions(
   paths = target_paths,
   matcher = function(expr) {
@@ -212,3 +218,13 @@ test_that("metabolomics S4 plotRle source retains label remapping and helper del
   )
   expect_match(target_text, "plotRleHelper\\(")
 })
+
+if (is.null(originalPlotRleMethod)) {
+  methods::removeMethod("plotRle", "MetaboliteAssayData")
+} else {
+  methods::setMethod(
+    "plotRle",
+    "MetaboliteAssayData",
+    definition = originalPlotRleMethod
+  )
+}

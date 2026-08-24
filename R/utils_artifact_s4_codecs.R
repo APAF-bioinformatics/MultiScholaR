@@ -14,6 +14,25 @@
 .artifactNestedNodeCodec <- "multischolar.r_nested_value"
 .artifactNestedNodeCodecVersion <- 1L
 
+artifactMetabolomicsCodecDeclarations <- function() {
+    list(
+        "multischolar.s4.metabolite_assay_data" = list(
+            codec_id = "multischolar.s4.metabolite_assay_data",
+            codec_version = 1L,
+            class_name = "MetaboliteAssayData",
+            payload_schema_id = "multischolar.rectangular",
+            payload_schema_version = 1L
+        ),
+        "multischolar.s4.metabolomics_da_results" = list(
+            codec_id = "multischolar.s4.metabolomics_da_results",
+            codec_version = 1L,
+            class_name = "MetabolomicsDifferentialAbundanceResults",
+            payload_schema_id = "multischolar.rectangular",
+            payload_schema_version = 1L
+        )
+    )
+}
+
 artifactDiaCodecDeclarations <- function() {
     artifactDiaWorkflowCodecDeclarations()
 }
@@ -34,7 +53,7 @@ artifactDiaCodecDescriptor <- function(class_name) {
 }
 
 artifactDiaBundleSemanticInput <- function(metadata) {
-    list(
+    input <- list(
         codec = metadata$codec,
         class_name = metadata$class_name,
         slot_names = metadata$slot_names,
@@ -45,6 +64,13 @@ artifactDiaBundleSemanticInput <- function(metadata) {
             "semantic_digest"
         ))
     )
+    if (!is.null(metadata$identity_binding)) {
+        input$identity_binding <- metadata$identity_binding
+    }
+    if (!is.null(metadata$role_manifest)) {
+        input$role_manifest <- metadata$role_manifest
+    }
+    input
 }
 
 artifactInlineCharacter <- function(value) {
@@ -729,7 +755,8 @@ hydrateDiaS4Artifact <- function(bundle) {
 .ARTIFACT_S4_CODEC_CATALOGUE <- newArtifactCodecCatalogue(
     c(
         artifactDiaCodecDeclarations(),
-        artifactProteomicsNonDiaCodecDeclarations()
+        artifactProteomicsNonDiaCodecDeclarations(),
+        artifactMetabolomicsCodecDeclarations()
     )
 )
 

@@ -81,6 +81,7 @@ Collate:
     'utils_artifact_table_codecs.R'
     'utils_artifact_codec_hydration.R'
     'utils_artifact_s4_codecs.R'
+    'utils_artifact_metab_codecs.R'
     'utils_artifact_store.R'
     'utils_artifact_store_recovery.R'
     'utils_artifact_store_inventory.R'

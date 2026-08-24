@@ -126,6 +126,12 @@ target_paths <- c(
   file.path(repo_root, "R", "func_metab_s4_objects.R")
 )
 
+originalPlotPcaMethod <- methods::selectMethod(
+  "plotPca",
+  "MetaboliteAssayData",
+  optional = TRUE
+)
+
 loadSelectedExpressions(
   paths = target_paths,
   matcher = function(expr) {
@@ -236,3 +242,13 @@ test_that("metabolomics S4 plotPca source retains finite-data guards and helper 
     "assay_title <- if \\(!is\\.null\\(title\\) && title != \"\"\\)\\s+paste\\(title, \"-\", assay_name\\)\\s+else \"\""
   )
 })
+
+if (is.null(originalPlotPcaMethod)) {
+  methods::removeMethod("plotPca", "MetaboliteAssayData")
+} else {
+  methods::setMethod(
+    "plotPca",
+    "MetaboliteAssayData",
+    definition = originalPlotPcaMethod
+  )
+}
