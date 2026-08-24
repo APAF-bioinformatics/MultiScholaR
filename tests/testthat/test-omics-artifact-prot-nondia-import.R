@@ -191,7 +191,11 @@ test_that("only supported non-DIA protein tuples receive dual-write descriptors"
     catalogue <- artifactWorkflowDescriptorCatalogue()
     expect_setequal(
         names(catalogue$descriptors),
-        c("proteomics.diann.peptide.dia.v1", names(descriptors))
+        c(
+            "proteomics.diann.peptide.dia.v1",
+            names(descriptors),
+            "metabolomics.custom.metabolite.standard.v1"
+        )
     )
     expect_false(any(grepl("spectronaut", names(catalogue$descriptors))))
     expect_false(any(vapply(descriptors, function(descriptor) {

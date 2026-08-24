@@ -576,6 +576,7 @@ runMetabImportProcessing <- function(
     coerceWorkflowPayloadFn = coerceMetabImportWorkflowPayloadSamples,
     writeImportArtifactsFn = writeMetabImportSourceArtifacts,
     applyWorkflowPayloadFn = applyMetabImportWorkflowPayload,
+    persistArtifactFn = persistMetabImportArtifacts,
     finalizeFeedbackFn = finalizeMetabImportProcessingFeedback,
     sprintfFn = sprintf,
     lengthFn = length,
@@ -658,6 +659,12 @@ runMetabImportProcessing <- function(
         workflowData = workflowData,
         workflowPayload = workflowPayload
       )
+      artifactStageResult <- persistArtifactFn(
+        workflow_data = workflowData,
+        workflow_payload = workflowPayload
+      )
+      workflowData$processing_log$setup_import$artifact_stage <-
+        artifactStageResult
       finalizeResult <- finalizeFeedbackFn(status = "success")
 
       invisible(list(
@@ -665,6 +672,7 @@ runMetabImportProcessing <- function(
         workflowPayload = workflowPayload,
         validationResult = validationResult,
         artifactResult = artifactResult,
+        artifactStageResult = artifactStageResult,
         applyResult = applyResult,
         finalizeResult = finalizeResult
       ))

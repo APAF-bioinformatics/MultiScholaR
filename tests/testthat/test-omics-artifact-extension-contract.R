@@ -806,7 +806,8 @@ test_that("only immutable descriptor-backed tuples are dual-write certified", {
         "proteomics.diann.peptide.dia.v1",
         "proteomics.maxquant.protein.lfq.v1",
         "proteomics.fragpipe.protein.lfq.v1",
-        "proteomics.pd_tmt.protein.tmt.v1"
+        "proteomics.pd_tmt.protein.tmt.v1",
+        "metabolomics.custom.metabolite.standard.v1"
     ))
     expect_false(any(grepl("spectronaut", descriptor_ids, fixed = TRUE)))
     eligible <- Filter(\(capability) capability$artifact_eligible, production)

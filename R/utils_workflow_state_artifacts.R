@@ -506,7 +506,7 @@ artifactWorkflowStateWriteData <- function(
             "multischolar_invalid_artifact_state_codec"
         )
     }
-    bundle <- dehydrate_fn(state_object)
+    bundle <- artifactWorkflowStateDehydrate(dehydrate_fn, state_object, identity, generation_id)
     bundle <- validate_bundle_fn(bundle)
     semantic_digest <- bundle$metadata$semantic_digest
     if (!is.null(persistence_hint)) {

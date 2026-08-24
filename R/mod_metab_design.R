@@ -197,7 +197,8 @@ registerMetabDesignBuilderResultsObserver <- function(
     qcTrigger = NULL,
     observeEventFn = shiny::observeEvent,
     reqFn = shiny::req,
-    runBuilderResultsFlow = NULL
+    runBuilderResultsFlow = NULL,
+    persistArtifactFn = persistMetabDesignArtifacts
 ) {
     if (is.null(runBuilderResultsFlow)) {
         runBuilderResultsFlow <- function(results, workflowData, experimentPaths, qcTrigger) {
@@ -240,13 +241,16 @@ registerMetabDesignBuilderResultsObserver <- function(
             workflowData$contrasts_tbl <- results$contrasts_tbl
             workflowData$config_list <- results$config_list
 
-            if (!is.null(results$contrasts_tbl)) {
+            if (!metabArtifactCoordinatorOwned(workflowData) &&
+                !is.null(results$contrasts_tbl)) {
                 assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
                 logger::log_info("Updated contrasts_tbl in global environment.")
             }
 
-            assign("config_list", workflowData$config_list, envir = .GlobalEnv)
-            logger::log_info("Updated global config_list.")
+            if (!metabArtifactCoordinatorOwned(workflowData)) {
+                assign("config_list", workflowData$config_list, envir = .GlobalEnv)
+                logger::log_info("Updated global config_list.")
+            }
 
             source_dir <- experimentPaths$source_dir
             if (is.null(source_dir) || !dir.exists(source_dir)) {
@@ -342,6 +346,7 @@ registerMetabDesignBuilderResultsObserver <- function(
                     , config_object = results$config_list
                     , description = "Initial MetaboliteAssayData S4 object created after design matrix"
                 )
+                persistArtifactFn(workflow_data = workflowData)
 
                 if (!is.null(qcTrigger)) {
                     qcTrigger(TRUE)

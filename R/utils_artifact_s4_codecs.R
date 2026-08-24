@@ -14,25 +14,6 @@
 .artifactNestedNodeCodec <- "multischolar.r_nested_value"
 .artifactNestedNodeCodecVersion <- 1L
 
-artifactMetabolomicsCodecDeclarations <- function() {
-    list(
-        "multischolar.s4.metabolite_assay_data" = list(
-            codec_id = "multischolar.s4.metabolite_assay_data",
-            codec_version = 1L,
-            class_name = "MetaboliteAssayData",
-            payload_schema_id = "multischolar.rectangular",
-            payload_schema_version = 1L
-        ),
-        "multischolar.s4.metabolomics_da_results" = list(
-            codec_id = "multischolar.s4.metabolomics_da_results",
-            codec_version = 1L,
-            class_name = "MetabolomicsDifferentialAbundanceResults",
-            payload_schema_id = "multischolar.rectangular",
-            payload_schema_version = 1L
-        )
-    )
-}
-
 artifactDiaCodecDeclarations <- function() {
     artifactDiaWorkflowCodecDeclarations()
 }
