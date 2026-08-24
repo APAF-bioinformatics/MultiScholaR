@@ -375,6 +375,7 @@ Collate:
     'mod_prot_enrich_artifact_service_helpers.R'
     'mod_prot_enrich_artifact_manifest_helpers.R'
     'mod_prot_enrich_artifact_query_helpers.R'
+    'mod_prot_enrich_artifact_dispatch.R'
     'mod_prot_enrich_setup_helpers.R'
     'mod_prot_enrich_registration_helpers.R'
     'mod_prot_enrich_observer_helpers.R'

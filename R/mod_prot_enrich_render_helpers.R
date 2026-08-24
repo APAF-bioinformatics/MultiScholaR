@@ -244,7 +244,7 @@ renderProtEnrichGprofilerPlot <- function(analysisComplete,
     }
 
     tryCatch({
-      plots <- protDiaEnrichInteractivePlots(
+      plots <- protEnrichInteractivePlots(
         enrichmentResultsFull,
         rawContrast
       )
@@ -309,7 +309,7 @@ renderProtEnrichClusterProfilerPlot <- function(analysisComplete,
     }
 
     tryCatch({
-      plots <- protDiaEnrichInteractivePlots(
+      plots <- protEnrichInteractivePlots(
         enrichmentResultsFull,
         rawContrast
       )

@@ -366,12 +366,16 @@ protDiaEnrichValidateParameters <- function(value) {
     value
 }
 
-protDiaEnrichDaIndex <- function(workflow_data) {
+protDiaEnrichDaIndex <- function(
+    workflow_data,
+    restore_index_fn = restoreProtDiaDaArtifactIndex,
+    index_predicate = isProtDiaDaArtifactIndex
+) {
     index <- workflow_data$da_analysis_results_list
-    if (!isProtDiaDaArtifactIndex(index)) {
-        index <- restoreProtDiaDaArtifactIndex(workflow_data)
+    if (!index_predicate(index)) {
+        index <- restore_index_fn(workflow_data)
     }
-    if (!isProtDiaDaArtifactIndex(index)) {
+    if (!index_predicate(index)) {
         protDiaEnrichArtifactAbort(
             "DIA-NN enrichment requires a current validated DA artifact index",
             "multischolar_missing_prot_dia_enrichment_da_index"
@@ -387,8 +391,12 @@ protDiaEnrichDaIndex <- function(workflow_data) {
     index
 }
 
-protDiaEnrichSelectedContrast <- function(workflow_data, selected_contrast) {
-    index <- protDiaEnrichDaIndex(workflow_data)
+protDiaEnrichSelectedContrast <- function(
+    workflow_data,
+    selected_contrast,
+    da_index_fn = protDiaEnrichDaIndex
+) {
+    index <- da_index_fn(workflow_data)
     entry <- protDiaDaIndexEntry(index, selected_contrast)
     list(index = index, entry = entry)
 }
@@ -396,14 +404,16 @@ protDiaEnrichSelectedContrast <- function(workflow_data, selected_contrast) {
 protDiaEnrichOneContrastObject <- function(
     workflow_data,
     selected,
-    current_s4_object = NULL
+    current_s4_object = NULL,
+    complete_table_fn = protDiaDaCompleteSelectedTable,
+    resolve_contrasts_fn = protDiaDaResolveContrasts
 ) {
-    table <- protDiaDaCompleteSelectedTable(
+    table <- complete_table_fn(
         workflow_data,
         selected$index,
         selected$entry$contrast_name
     )
-    contrasts <- protDiaDaResolveContrasts(workflow_data)
+    contrasts <- resolve_contrasts_fn(workflow_data)
     matches <- which(
         contrasts$contrasts == selected$entry$contrast_name |
             contrasts$full_format == selected$entry$full_format |
@@ -442,11 +452,14 @@ protDiaEnrichOneContrastObject <- function(
 protDiaEnrichExplicitSetup <- function(
     workflow_data,
     selected_contrast,
-    current_s4_object = NULL
+    current_s4_object = NULL,
+    selected_contrast_fn = protDiaEnrichSelectedContrast,
+    one_contrast_fn = protDiaEnrichOneContrastObject,
+    resolve_annotations_fn = protDiaDaResolveAnnotations
 ) {
-    selected <- protDiaEnrichSelectedContrast(workflow_data, selected_contrast)
-    annotations <- protDiaDaResolveAnnotations(workflow_data)
-    object <- protDiaEnrichOneContrastObject(
+    selected <- selected_contrast_fn(workflow_data, selected_contrast)
+    annotations <- resolve_annotations_fn(workflow_data)
+    object <- one_contrast_fn(
         workflow_data,
         selected,
         current_s4_object
@@ -474,6 +487,7 @@ prepareProtDiaEnrichArtifactAnalysisSetup <- function(
     applyOrganismFilterFn = applyProtEnrichOrganismFilter,
     persistOrganismFilterMetadataFn = persistProtEnrichOrganismFilterMetadata,
     showNotificationFn = shiny::showNotification,
+    explicitSetupFn = protDiaEnrichExplicitSetup,
     ...
 ) {
     current_s4 <- enrichmentData$current_s4_object
@@ -482,7 +496,7 @@ prepareProtDiaEnrichArtifactAnalysisSetup <- function(
         current_s4 <- workflowData$state_manager$getState(state)
         enrichmentData$current_s4_object <- current_s4
     }
-    explicit <- protDiaEnrichExplicitSetup(
+    explicit <- explicitSetupFn(
         workflowData,
         selectedContrast,
         current_s4
@@ -733,7 +747,7 @@ protDiaEnrichExpectedProductNames <- function(source, records) {
             !is.null(record$response) && record$response$rows > 0L
     }, records)
     safe_contrast <- gsub("[^A-Za-z0-9_.-]", "_", source$contrast_name)
-    unlist(lapply(complete, function(record) {
+    expected <- unlist(lapply(complete, function(record) {
         paste0(
             safe_contrast,
             "_",
@@ -742,6 +756,7 @@ protDiaEnrichExpectedProductNames <- function(source, records) {
             c("results.tsv", "plot.html", "plot.png")
         )
     }), use.names = FALSE)
+    if (is.null(expected)) character() else expected
 }
 
 protDiaEnrichValidateProducts <- function(products, source, records, context, run_id) {

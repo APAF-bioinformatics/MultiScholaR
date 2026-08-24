@@ -520,10 +520,11 @@ runProtEnrichAnalysisBody <- function(input,
                                       experimentPaths,
                                       currentAnalysisMethodFn,
                                       prepareAnalysisSetupFn = prepareProtEnrichAnalysisBodySetup,
-                                      prepareArtifactAnalysisSetupFn = prepareProtDiaEnrichArtifactAnalysisSetup,
-                                      createArtifactExecutionFn = newProtDiaEnrichExecutionContext,
+                                      prepareArtifactAnalysisSetupFn =
+                                        prepareProtEnrichArtifactAnalysisSetup,
+                                      createArtifactExecutionFn = newProtEnrichExecutionContext,
                                       resolveArtifactServiceFnsFn = resolveProtEnrichArtifactServiceFns,
-                                      finalizeArtifactResultsFn = finalizeProtDiaEnrichArtifactResults,
+                                      finalizeArtifactResultsFn = finalizeProtEnrichArtifactResults,
                                       captureCheckpointFn = .capture_checkpoint,
                                       resolveSelectedDaResultsFn = resolveProtEnrichSelectedDaResults,
                                       resolveRunDependenciesFn = resolveProtEnrichRunDependencies,
@@ -564,7 +565,7 @@ runProtEnrichAnalysisBody <- function(input,
 
   catFn("   ENRICHMENT Step: Creating DA results S4 object using createDAResultsForEnrichment\n")
 
-  artifactEnabled <- protDiaEnrichArtifactEligible(workflowData)
+  artifactEnabled <- protEnrichArtifactEligible(workflowData)
   selectedSetupFn <- if (artifactEnabled) {
     prepareArtifactAnalysisSetupFn
   } else {

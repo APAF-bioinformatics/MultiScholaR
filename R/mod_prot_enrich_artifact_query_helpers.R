@@ -6,7 +6,11 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-protDiaEnrichQuerySpecification <- function(manifest, table) {
+protDiaEnrichQuerySpecification <- function(
+    manifest,
+    table,
+    query_namespace = "proteomics.diann.enrichment"
+) {
     filters <- list()
     if ("directionality" %in% names(table)) {
         filters$direction <- list(
@@ -16,7 +20,7 @@ protDiaEnrichQuerySpecification <- function(manifest, table) {
         )
     }
     newArtifactQueryPageSpecification(
-        query_id = paste0("proteomics.diann.enrichment.", manifest$run_id, ".v1"),
+        query_id = paste0(query_namespace, ".", manifest$run_id, ".v1"),
         state_role = manifest$result_table$ref$logical_key$state_role,
         projections = c(names(table), .PROT_DIA_ENRICH_ROW_ORDER_COLUMN),
         filters = filters,
@@ -31,7 +35,12 @@ protDiaEnrichQuerySpecification <- function(manifest, table) {
     )
 }
 
-protDiaEnrichRunIndex <- function(manifest, context, interactive_plots = NULL) {
+protDiaEnrichRunIndex <- function(
+    manifest,
+    context,
+    interactive_plots = NULL,
+    query_namespace = "proteomics.diann.enrichment"
+) {
     store <- protDiaEnrichStore(context)
     table <- protDiaEnrichReadTable(store, manifest$result_table)
     structure(
@@ -50,7 +59,8 @@ protDiaEnrichRunIndex <- function(manifest, context, interactive_plots = NULL) {
             result_table = manifest$result_table,
             query_specification = protDiaEnrichQuerySpecification(
                 manifest,
-                table
+                table,
+                query_namespace
             ),
             products = manifest$products,
             requests = manifest$requests,
@@ -194,8 +204,11 @@ isProtDiaEnrichArtifactIndex <- function(value) {
         identical(value$backend, "artifact")
 }
 
-protDiaEnrichArtifactContrastChoices <- function(index) {
-    if (!isProtDiaDaArtifactIndex(index)) {
+protDiaEnrichArtifactContrastChoices <- function(
+    index,
+    index_predicate = isProtDiaDaArtifactIndex
+) {
+    if (!index_predicate(index)) {
         protDiaEnrichArtifactAbort(
             "enrichment contrast choices require a DIA-NN DA artifact index",
             "multischolar_invalid_prot_dia_enrichment_da_index"
@@ -215,19 +228,26 @@ protDiaEnrichArtifactContrastChoices <- function(index) {
     )
 }
 
-initialiseProtDiaEnrichArtifactData <- function(workflow_data, enrichment_data) {
-    index <- protDiaEnrichDaIndex(workflow_data)
+initialiseProtDiaEnrichArtifactData <- function(
+    workflow_data,
+    enrichment_data,
+    da_index_fn = protDiaEnrichDaIndex,
+    contrast_choices_fn = protDiaEnrichArtifactContrastChoices,
+    restore_enrichment_fn = restoreProtDiaEnrichArtifactIndex,
+    reactive_payload_fn = protDiaEnrichReactivePayload
+) {
+    index <- da_index_fn(workflow_data)
     current_state <- workflowStateCurrentName(workflow_data$state_manager)
     current_s4 <- workflow_data$state_manager$getState(current_state)
-    choices <- protDiaEnrichArtifactContrastChoices(index)
+    choices <- contrast_choices_fn(index)
     enrichment_data$current_s4_object <- current_s4
     enrichment_data$da_artifact_index <- index
     enrichment_data$da_results_data <- index
     enrichment_data$contrasts_available <- choices$contrastsAvailable
 
-    enrichment_index <- restoreProtDiaEnrichArtifactIndex(workflow_data)
+    enrichment_index <- restore_enrichment_fn(workflow_data)
     if (!is.null(enrichment_index)) {
-        payload <- protDiaEnrichReactivePayload(workflow_data, enrichment_index)
+        payload <- reactive_payload_fn(workflow_data, enrichment_index)
         enrichment_data$gprofiler_results <- payload$gprofiler_results
         enrichment_data$clusterprofiler_results <-
             payload$clusterprofiler_results
@@ -245,8 +265,13 @@ initialiseProtDiaEnrichArtifactData <- function(workflow_data, enrichment_data) 
     )
 }
 
-restoreProtDiaEnrichArtifactIndex <- function(workflow_data) {
-    if (!protDiaEnrichArtifactEligible(workflow_data, "queries")) return(NULL)
+restoreProtDiaEnrichArtifactIndex <- function(
+    workflow_data,
+    eligibility_fn = protDiaEnrichArtifactEligible,
+    da_index_fn = protDiaEnrichDaIndex,
+    run_index_fn = protDiaEnrichRunIndex
+) {
+    if (!eligibility_fn(workflow_data, "queries")) return(NULL)
     context <- workflow_data$workflow_context
     current <- artifactResolveContainedPath(
         context$getProjectRoot(), protDiaEnrichPaths(context)$current
@@ -256,7 +281,7 @@ restoreProtDiaEnrichArtifactIndex <- function(workflow_data) {
         current,
         function(value) protDiaEnrichValidateRunManifest(value, context)
     )
-    da_index <- protDiaEnrichDaIndex(workflow_data)
+    da_index <- da_index_fn(workflow_data)
     entry <- protDiaDaIndexEntry(
         da_index,
         manifest$source$contrast_name
@@ -269,7 +294,7 @@ restoreProtDiaEnrichArtifactIndex <- function(workflow_data) {
             entry$manifest_digest
         )
     if (!isTRUE(valid)) return(NULL)
-    index <- protDiaEnrichRunIndex(manifest, context)
+    index <- run_index_fn(manifest, context)
     index$interactive_plots <- protDiaEnrichRestorePlots(workflow_data, index)
     index
 }
@@ -281,9 +306,10 @@ queryProtDiaEnrichPage <- function(
     direction = NULL,
     cursor = NULL,
     limit = 100L,
-    resource_policy = NULL
+    resource_policy = NULL,
+    eligibility_fn = protDiaEnrichArtifactEligible
 ) {
-    if (!protDiaEnrichArtifactEligible(workflow_data, "queries") ||
+    if (!eligibility_fn(workflow_data, "queries") ||
         !isProtDiaEnrichArtifactIndex(index)) {
         protDiaEnrichArtifactAbort(
             "DIA-NN enrichment query is disabled or invalid",
@@ -325,10 +351,11 @@ queryProtDiaEnrichPage <- function(
 protDiaEnrichCompleteTable <- function(
     workflow_data,
     index,
-    resource_policy = NULL
+    resource_policy = NULL,
+    query_page_fn = queryProtDiaEnrichPage
 ) {
     rows <- as.integer(index$result_table$rows)
-    page <- queryProtDiaEnrichPage(
+    page <- query_page_fn(
         workflow_data,
         index,
         cursor = NULL,
@@ -366,8 +393,12 @@ protDiaEnrichInteractivePlots <- function(value, contrast) {
     value@enrichment_plotly[[contrast]]
 }
 
-protDiaEnrichReactivePayload <- function(workflow_data, index) {
-    results <- protDiaEnrichCompleteTable(workflow_data, index)
+protDiaEnrichReactivePayload <- function(
+    workflow_data,
+    index,
+    complete_table_fn = protDiaEnrichCompleteTable
+) {
+    results <- complete_table_fn(workflow_data, index)
     method <- index$parameters$backend
     list(
         gprofiler_results = if (identical(method, "gprofiler2")) {
@@ -409,6 +440,8 @@ finalizeProtDiaEnrichArtifactResults <- function(
     updateStateManagerUiParamsFn = updateProtEnrichStateManagerUiParams,
     completeTabStatusFn = completeProtEnrichTabStatus,
     completeProgressFn = completeProtEnrichProgress,
+    runIndexFn = protDiaEnrichRunIndex,
+    reactivePayloadFn = protDiaEnrichReactivePayload,
     failure_injector = NULL,
     catFn = cat
 ) {
@@ -459,12 +492,12 @@ finalizeProtDiaEnrichArtifactResults <- function(
         prepared,
         failure_injector
     )
-    index <- protDiaEnrichRunIndex(
+    index <- runIndexFn(
         prepared$manifest,
         workflowData$workflow_context
     )
     index <- protDiaEnrichIndexWithPlots(index, enrichmentResults)
-    payload <- protDiaEnrichReactivePayload(workflowData, index)
+    payload <- reactivePayloadFn(workflowData, index)
     enrichmentData$gprofiler_results <- payload$gprofiler_results
     enrichmentData$clusterprofiler_results <- payload$clusterprofiler_results
     enrichmentData$stringdb_results <- NULL

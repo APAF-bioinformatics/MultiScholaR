@@ -312,7 +312,8 @@ registerProtEnrichSelectedTabObserver <- function(selectedTabFn,
                                                   globalEnv = .GlobalEnv,
                                                   updateSelectInputFn = shiny::updateSelectInput,
                                                   showNotificationFn = shiny::showNotification,
-                                                  initialiseArtifactDataFn = initialiseProtDiaEnrichArtifactData,
+                                                  initialiseArtifactDataFn =
+                                                    initialiseProtEnrichArtifactData,
                                                   catFn = cat) {
   observeEventFn(selectedTabFn(), {
     selectedTab <- selectedTabFn()
@@ -364,8 +365,8 @@ registerProtEnrichSelectedTabObserver <- function(selectedTabFn,
             catFn("   ENRICHMENT TAB Step: Getting S4 object and DE results from workflow_data...\n")
 
             daResultsList <- workflowData$da_analysis_results_list
-            if (protDiaEnrichArtifactEligible(workflowData, "queries") &&
-                isProtDiaDaArtifactIndex(daResultsList)) {
+            if (protEnrichArtifactEligible(workflowData, "queries") &&
+                isProtDaArtifactIndex(daResultsList)) {
               artifactState <- initialiseArtifactDataFn(
                 workflowData,
                 enrichmentData
@@ -501,7 +502,8 @@ registerProtEnrichDaResultsObserver <- function(workflowData,
                                                 getFn = get,
                                                 globalEnv = .GlobalEnv,
                                                 updateSelectInputFn = shiny::updateSelectInput,
-                                                initialiseArtifactDataFn = initialiseProtDiaEnrichArtifactData,
+                                                initialiseArtifactDataFn =
+                                                  initialiseProtEnrichArtifactData,
                                                 catFn = cat) {
   observeEventFn(workflowData$da_analysis_results_list, {
     catFn("*** ENRICHMENT: DE results detected - updating contrasts ***\n")
@@ -517,8 +519,8 @@ registerProtEnrichDaResultsObserver <- function(workflowData,
 
     if (!is.null(daResultsList) && length(daResultsList) > 0) {
       observerState$hasResults <- TRUE
-      if (protDiaEnrichArtifactEligible(workflowData, "queries") &&
-          isProtDiaDaArtifactIndex(daResultsList)) {
+      if (protEnrichArtifactEligible(workflowData, "queries") &&
+          isProtDaArtifactIndex(daResultsList)) {
         artifactState <- initialiseArtifactDataFn(
           workflowData,
           enrichmentData
