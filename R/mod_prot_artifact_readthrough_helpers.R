@@ -7,101 +7,33 @@
 # (at your option) any later version.
 
 protDiaArtifactValidateStoredRef <- function(store, ref) {
-    ref <- artifactStoreNormalizeRef(ref)
-    sidecar_path <- artifactStoreManagedPaths(
+    artifactStageValidateStoredRef(
+        protDiaArtifactReadthroughAdapter(),
         store,
-        ref$logical_key,
-        ref$artifact_id
-    )$sidecar
-    sidecar <- artifactStoreReadSidecar(
-        store,
-        sidecar_path,
-        validate_payload = FALSE
+        ref
     )
-    if (!identical(artifactStoreNormalizeRef(sidecar$artifact_ref), ref)) {
-        protDiaArtifactAbort(
-            "DIA-NN artifact ref differs from its immutable sidecar",
-            "multischolar_prot_dia_registry_ref_mismatch",
-            artifact_id = ref$artifact_id
-        )
-    }
-    list(ref = ref, sidecar = sidecar)
 }
 
 protDiaArtifactReadTable <- function(store, ref) {
-    validated <- protDiaArtifactValidateStoredRef(store, ref)
-    payload_path <- artifactStoreResolveFile(
-        store,
-        validated$ref$relative_path,
-        must_exist = TRUE
-    )
-    payload <- arrow::read_parquet(
-        payload_path,
-        as_data_frame = FALSE
-    )
-    value <- decodeArtifactRectangular(
-        payload,
-        validated$sidecar$codec_metadata
-    )
-    validateArtifactRefPayload(
-        validated$ref,
-        store$project_root,
-        list(
-            kind = validated$sidecar$codec_metadata$kind,
-            rows = nrow(value),
-            columns = ncol(value),
-            payloads = 1L,
-            bytes = unname(as.numeric(file.info(payload_path)$size))
-        )
-    )
-    value
+    artifactStageReadTable(protDiaArtifactReadthroughAdapter(), store, ref)
 }
 
 readProtDiaArtifactStageRoles <- function(store, stage, roles) {
-    missing <- setdiff(roles, names(stage$refs))
-    if (length(missing) > 0L) {
-        protDiaArtifactAbort(
-            sprintf(
-                "DIA-NN stage '%s' is missing role(s): %s",
-                stage$stage_id,
-                paste(missing, collapse = ", ")
-            ),
-            "multischolar_incomplete_prot_dia_readthrough_contract",
-            stage_id = stage$stage_id,
-            missing_roles = missing
-        )
-    }
-    values <- lapply(
-        stage$refs[roles],
-        \(ref) protDiaArtifactReadTable(store, ref)
+    readArtifactStageRoles(
+        protDiaArtifactReadthroughAdapter(),
+        store,
+        stage,
+        roles
     )
-    names(values) <- roles
-    values
 }
 
 readProtDiaArtifactStage <- function(store, stage) {
-    values <- lapply(stage$refs, \(ref) protDiaArtifactReadTable(store, ref))
-    names(values) <- names(stage$refs)
-    generations <- unique(vapply(
-        stage$refs,
-        \(ref) ref$logical_key$generation_id,
-        character(1)
-    ))
-    if (length(generations) != 1L ||
-        !identical(generations[[1L]], stage$generation_id)) {
-        protDiaArtifactAbort(
-            "DIA-NN stage hydration combined different generations",
-            "multischolar_mixed_prot_dia_artifact_generation",
-            stage_id = stage$stage_id,
-            run_id = stage$run_id
-        )
-    }
-    values
+    readArtifactStage(protDiaArtifactReadthroughAdapter(), store, stage)
 }
 
 protDiaArtifactContractVersion <- function(value) {
-    identical(
-        workflowStateVersionValue(value),
+    artifactStageReadthroughContractVersion(
+        value,
         .PROT_DIA_READTHROUGH_VERSION
     )
 }
@@ -144,9 +76,7 @@ protDiaArtifactValidateResumeContract <- function(evidence) {
 }
 
 protDiaArtifactNormalizedRefs <- function(refs) {
-    normalized <- lapply(refs, artifactStoreNormalizeRef)
-    names(normalized) <- names(refs)
-    normalized
+    artifactStageNormalizedRefs(refs)
 }
 
 protDiaArtifactValidateStateEvidence <- function(manager, evidence, state_object) {
@@ -205,17 +135,10 @@ protDiaArtifactRestoreOptional <- function(value, available, role) {
 }
 
 protDiaArtifactRestoreContrasts <- function(value, kind) {
-    if (identical(kind, "data.frame")) return(value)
-    if (identical(kind, "character") && identical(names(value), "contrasts")) {
-        return(as.character(value$contrasts))
-    }
-    if (identical(kind, "null") &&
-        identical(value, protDiaArtifactOptionalTable(NULL, "contrasts"))) {
-        return(NULL)
-    }
-    protDiaArtifactAbort(
-        "DIA-NN contrast representation is incompatible with its provenance",
-        "multischolar_inexact_prot_dia_artifact_hydration"
+    artifactStageRestoreContrasts(
+        protDiaArtifactReadthroughAdapter(),
+        value,
+        kind
     )
 }
 
@@ -257,18 +180,7 @@ protDiaArtifactValidateSettledScientificTables <- function(
 }
 
 protDiaArtifactColumnMapping <- function(parameters) {
-    encoded <- parameters$column_mapping_serialized
-    mapping <- artifactWorkflowStateUnserializeMetadata(
-        encoded,
-        "DIA-NN import column mapping"
-    )
-    if (!is.list(mapping)) {
-        protDiaArtifactAbort(
-            "DIA-NN import column mapping is not an R list",
-            "multischolar_invalid_prot_dia_run_parameters"
-        )
-    }
-    mapping
+    artifactStageColumnMapping(protDiaArtifactReadthroughAdapter(), parameters)
 }
 
 newProtDiaArtifactStateManager <- function(context, resource_policy = NULL) {

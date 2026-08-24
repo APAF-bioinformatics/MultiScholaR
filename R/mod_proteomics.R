@@ -256,13 +256,17 @@ mod_proteomics_server <- function(
         experiment_label = experiment_label,
         storage_policy = storage_policy
     )
-    resume_result <- resumeProtDiaArtifactWorkflowSafely(
+    resume_result <- resumeProtArtifactWorkflowSafely(
       workflow_data,
       experiment_paths,
       experiment_label,
       storage_policy = storage_policy
     )
     if (isTRUE(resume_result$resumed) &&
+        identical(
+          resume_result$capability_id,
+          artifactDiaWorkflowDescriptor()$descriptor_id
+        ) &&
         isTRUE(resume_result$source_payloads_retained)) {
       evictProtDiaWorkflowPayloadsSafely(workflow_data)
     }
