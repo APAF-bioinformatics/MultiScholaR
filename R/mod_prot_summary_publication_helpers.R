@@ -54,7 +54,7 @@ prepareProtSummaryCopyInputs <- function(workflowData,
                                          readTsvFn = readr::read_tsv,
                                          catFn = cat,
                                          prepareSummaryDependenciesFn =
-                                           prepareProtDiaSummaryDependencies) {
+                                           prepareProtSummaryDependencies) {
   contrastsTbl <- NULL
   designMatrix <- NULL
   artifactDependencies <- prepareSummaryDependenciesFn(

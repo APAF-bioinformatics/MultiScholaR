@@ -425,6 +425,7 @@ Collate:
     'mod_prot_qc_protein_rollup.R'
     'mod_prot_qc_protein_s4.R'
     'mod_prot_summary_artifact_helpers.R'
+    'mod_prot_summary_artifact_dispatch.R'
     'mod_prot_summary_report_helpers.R'
     'mod_prot_summary_session_helpers.R'
     'mod_prot_summary_publication_helpers.R'

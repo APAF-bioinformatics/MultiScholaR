@@ -18,11 +18,11 @@ completeProtSummaryWorkflowArgsSave <- function(output,
                                                 timestampFn = Sys.time,
                                                 catFn = cat,
                                                 prepareSummaryDependenciesFn =
-                                                  prepareProtDiaSummaryDependencies,
+                                                  prepareProtSummaryDependencies,
                                                 releaseSummaryDependenciesFn =
-                                                  releaseProtDiaSummaryDependencies,
+                                                  releaseProtSummaryDependencies,
                                                 writeArtifactFinalExportFn =
-                                                  writeProtDiaSummaryFinalExport) {
+                                                  writeProtSummaryFinalExport) {
   tryCatch({
     summaryDependencies <- prepareSummaryDependenciesFn(
       workflow_data = workflowData,
@@ -218,7 +218,7 @@ summariseProtSummaryWorkflowMetadata <- function(workflowData,
         workflowData$ruv_optimization_result,
         error = function(e) NULL
       ),
-      artifact_summary_audit = protDiaSummarySessionAudit(workflowData)
+      artifact_summary_audit = protSummarySessionAudit(workflowData)
     )
   )
 }

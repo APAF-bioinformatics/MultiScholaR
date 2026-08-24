@@ -160,34 +160,51 @@ resolveProtSummaryReportTemplate <- function(workflowData,
   dataStateUsed <- NULL
   reportTemplateRequested <- NULL
   limpaRequested <- FALSE
+  templateSource <- "workflow_data"
 
-  if (!is.null(workflowData) &&
+  artifactReadsEnabled <- protSummaryArtifactEligible(
+    workflowData,
+    "report_reads"
+  )
+  if (artifactReadsEnabled) {
+    artifactConfig <- protSummaryArtifactConfig(workflowData)
+    config <- artifactConfig$configList$globalParameters
+    workflowTypeDetected <- config$workflow_type %||%
+      artifactConfig$workflowType
+    reportTemplateRequested <- config$report_template
+    limpaRequested <- isTRUE(config$use_limpa)
+    dataStateUsed <- artifactConfig$stateName
+    templateSource <- "final generation config"
+  } else if (!is.null(workflowData) &&
       !is.null(workflowData$config_list) &&
       !is.null(workflowData$config_list$globalParameters)) {
     workflowTypeDetected <- workflowData$config_list$globalParameters$workflow_type
     reportTemplateRequested <- workflowData$config_list$globalParameters$report_template
     limpaRequested <- isTRUE(workflowData$config_list$globalParameters$use_limpa)
-    if (!is.null(reportTemplateRequested) && nzchar(reportTemplateRequested)) {
-      reportTemplateRequested <- basename(reportTemplateRequested)
-      catFn(sprintf(
-        "   %s: Detected report_template from workflow_data: %s\n",
-        logPrefix,
-        reportTemplateRequested
-      ))
-    }
+  }
+  if (!is.null(reportTemplateRequested) && nzchar(reportTemplateRequested)) {
+    reportTemplateRequested <- basename(reportTemplateRequested)
+    catFn(sprintf(
+      "   %s: Detected report_template from %s: %s\n",
+      logPrefix,
+      templateSource,
+      reportTemplateRequested
+    ))
   }
 
   if (!is.null(workflowTypeDetected) && nzchar(workflowTypeDetected)) {
     catFn(sprintf(
-      "   %s: Detected workflow_type from workflow_data: %s\n",
+      "   %s: Detected workflow_type from %s: %s\n",
       logPrefix,
+      templateSource,
       workflowTypeDetected
     ))
   }
 
   if ((is.null(workflowTypeDetected) || !nzchar(workflowTypeDetected)) &&
       !is.null(workflowData) &&
-      !is.null(workflowData$state_manager)) {
+      !is.null(workflowData$state_manager) &&
+      !artifactReadsEnabled) {
     finalS4State <- resolveProtSummaryFinalS4State(
       workflowData,
       logPrefix = logPrefix,
@@ -234,11 +251,6 @@ resolveProtSummaryReportTemplate <- function(workflowData,
       ))
     }
   }
-
-  artifactReadsEnabled <- protDiaSummaryArtifactEligible(
-    workflowData,
-    "report_reads"
-  )
 
   if (!artifactReadsEnabled &&
       (is.null(workflowTypeDetected) || !nzchar(workflowTypeDetected)) &&
@@ -489,7 +501,7 @@ runProtSummaryReportGeneration <- function(output,
                                            renderReportFn = NULL,
                                            activateReportFn = activateProtSummaryRenderedReport,
                                            recordReportProductFn =
-                                             recordProtDiaSummaryReportProduct,
+                                             recordProtSummaryReportProduct,
                                            showNotificationFn = shiny::showNotification,
                                            logInfoFn = function(message) logger::log_info(message),
                                            logErrorFn = function(message) logger::log_error(message),
@@ -590,9 +602,9 @@ runProtSummaryReportProgress <- function(output,
                                          retrieveTemplateAssetFn = retrieveProtSummaryReportTemplateAsset,
                                          runReportGenerationFn = runProtSummaryReportGeneration,
                                          prepareSummaryDependenciesFn =
-                                           prepareProtDiaSummaryDependencies,
+                                           prepareProtSummaryDependencies,
                                          prepareReportDependenciesFn =
-                                           prepareProtDiaReportDependencies,
+                                           prepareProtReportDependencies,
                                          incProgressFn = shiny::incProgress) {
   incProgressFn(0.1, detail = "Detecting workflow type...")
 

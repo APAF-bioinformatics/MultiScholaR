@@ -51,6 +51,7 @@ protDiaEnrichRunIndex <- function(
             run_id = manifest$run_id,
             source = manifest$source,
             parameters = manifest$parameters,
+            software = manifest$software,
             manifest_relative_path = protDiaEnrichPaths(
                 context,
                 run_id = manifest$run_id

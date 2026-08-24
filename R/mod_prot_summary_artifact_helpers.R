@@ -171,6 +171,21 @@ protDiaSummaryRefEvidence <- function(refs) {
     })
 }
 
+#' Resolve the exact summary workflow descriptor contract
+#'
+#' @param workflow_data Mutable proteomics workflow state.
+#'
+#' @return Descriptor identifier, version, and digest.
+#' @noRd
+protDiaSummaryDescriptorContract <- function(workflow_data) {
+    context <- workflow_data$workflow_context
+    descriptor <- findArtifactWorkflowDescriptor(
+        context$getIdentity(),
+        artifactWorkflowDescriptorCatalogue()
+    )
+    artifactStageDescriptorContract(descriptor)
+}
+
 protDiaSummaryDaAudit <- function(workflow_data) {
     index <- tryCatch(
         workflow_data$da_analysis_results_list,
@@ -204,13 +219,17 @@ protDiaSummaryEnrichmentAudit <- function(workflow_data) {
     requests <- lapply(index$requests, function(request) {
         list(
             request_id = request$request_id,
+            request_digest = request$request_digest,
             backend = request$backend,
+            contrast = request$contrast,
             direction = request$direction,
             status = request$status,
-            attempt = request$attempt,
+            execution_state = request$execution_state %||%
+                tryCatch(request$service$source, error = \(error) NULL),
+            attempts = request$attempts %||% request$attempt,
             response = request$response,
-            service = request$service,
-            software = request$software
+            legacy_service = request$service,
+            legacy_software = request$software
         )
     })
     products <- lapply(index$products, function(product) {
@@ -224,6 +243,7 @@ protDiaSummaryEnrichmentAudit <- function(workflow_data) {
         run_id = index$run_id,
         source = index$source,
         parameters = index$parameters,
+        software = index$software,
         manifest_digest = index$manifest_digest,
         requests = requests,
         products = products
@@ -253,8 +273,11 @@ protDiaSummaryAnalysisAudit <- function(workflow_data) {
     )
 }
 
-protDiaSummarySessionAudit <- function(workflow_data) {
-    if (!protDiaSummaryArtifactEligible(workflow_data, "report_reads")) {
+protDiaSummarySessionAudit <- function(
+    workflow_data,
+    eligibility_fn = protDiaSummaryArtifactEligible
+) {
+    if (!eligibility_fn(workflow_data, "report_reads")) {
         return(NULL)
     }
     context <- tryCatch(
@@ -274,6 +297,7 @@ protDiaSummarySessionAudit <- function(workflow_data) {
             "project_id", "workflow_id", "omic_type", "omic_label",
             "workflow_slug"
         )],
+        descriptor_contract = protDiaSummaryDescriptorContract(workflow_data),
         final_state = list(
             state_name = state_name,
             generation_id = metadata$generation_id,
@@ -333,11 +357,18 @@ protDiaSummaryScientificSummary <- function(
     )
     if (is.null(final_object)) return(summary)
     c(summary, list(
+        s4_class = class(final_object)[[1L]],
         protein_quant_rows = as.integer(nrow(final_object@protein_quant_table)),
         protein_quant_columns = as.integer(ncol(final_object@protein_quant_table)),
+        protein_quant_digest = artifactSemanticDigest(
+            final_object@protein_quant_table
+        ),
         protein_id_rows = as.integer(nrow(final_object@protein_id_table)),
         protein_id_columns = as.integer(ncol(final_object@protein_id_table)),
+        protein_id_digest = artifactSemanticDigest(final_object@protein_id_table),
+        object_design_digest = artifactSemanticDigest(final_object@design_matrix),
         args_groups = names(final_object@args),
+        args_digest = artifactSemanticDigest(final_object@args),
         peptide_audit_record_id = protDiaSummaryAuditRecordId(
             final_object,
             "peptide_qc_audit"
@@ -358,10 +389,11 @@ prepareProtDiaSummaryDependencies <- function(
     project_dirs,
     omic_type = "proteomics",
     kind = c("report_reads", "final_export"),
-    hydrate_final = identical(match.arg(kind), "final_export")
+    hydrate_final = identical(match.arg(kind), "final_export"),
+    eligibility_fn = protDiaSummaryArtifactEligible
 ) {
     kind <- match.arg(kind)
-    if (!protDiaSummaryArtifactEligible(workflow_data, kind)) return(NULL)
+    if (!eligibility_fn(workflow_data, kind)) return(NULL)
     context <- workflow_data$workflow_context
     manager <- workflow_data$state_manager
     paths <- protDiaSummaryProjectPaths(project_dirs, omic_type, context)
@@ -387,6 +419,7 @@ prepareProtDiaSummaryDependencies <- function(
             "project_id", "workflow_id", "omic_type", "omic_label",
             "workflow_slug"
         )],
+        descriptor_contract = protDiaSummaryDescriptorContract(workflow_data),
         final_state = list(
             state_name = state_name,
             generation_id = state_metadata$generation_id,
@@ -572,6 +605,7 @@ prepareProtDiaReportDependencies <- function(dependencies, template_path) {
         schema = .PROT_DIA_SUMMARY_REPORT_SCHEMA,
         schema_version = .PROT_DIA_SUMMARY_EVIDENCE_VERSION,
         identity = dependencies$manifest$identity,
+        descriptor_contract = dependencies$manifest$descriptor_contract,
         final_state = dependencies$manifest$final_state,
         scientific = dependencies$manifest$scientific,
         analysis = dependencies$manifest$analysis,
@@ -705,6 +739,7 @@ writeProtDiaSummaryFinalExport <- function(
         schema = .PROT_DIA_SUMMARY_EXPORT_SCHEMA,
         schema_version = .PROT_DIA_SUMMARY_EVIDENCE_VERSION,
         identity = dependencies$manifest$identity,
+        descriptor_contract = dependencies$manifest$descriptor_contract,
         final_state = dependencies$manifest$final_state,
         scientific = dependencies$manifest$scientific,
         analysis = dependencies$manifest$analysis,
