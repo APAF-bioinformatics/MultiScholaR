@@ -352,6 +352,8 @@ Collate:
     'mod_prot_artifact_resume_dispatch.R'
     'mod_prot_artifact_stage_worker_helpers.R'
     'mod_prot_norm_session_artifact_helpers.R'
+    'mod_prot_nondia_session_artifact_helpers.R'
+    'mod_prot_session_artifact_dispatch.R'
     'mod_prot_da_session_helpers.R'
     'mod_prot_da_handlers_load_session.R'
     'mod_prot_da_server.R'

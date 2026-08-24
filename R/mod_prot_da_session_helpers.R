@@ -56,7 +56,7 @@ loadProtDaLegacySessionBundle <- function(
 resolveProtDaSessionBundle <- function(
     experiment_paths,
     resource_policy = NULL,
-    restore_artifact_fn = restoreProtDiaSessionManifest,
+    restore_artifact_fn = restoreProtArtifactSessionManifest,
     load_legacy_fn = loadProtDaLegacySessionBundle
 ) {
     source_dir <- experiment_paths$source_dir
@@ -71,8 +71,7 @@ resolveProtDaSessionBundle <- function(
         "filtered_session_artifact_latest.json"
     )
     artifact_error <- NULL
-    if (identical(protDiaSessionMode("restore"), "enabled") &&
-        file.exists(artifact_path)) {
+    if (protArtifactSessionRestoreEnabled(artifact_path)) {
         bundle <- tryCatch(
             restore_artifact_fn(
                 artifact_path,
@@ -307,5 +306,5 @@ ensureProtDaCompatibilitySession <- function(bundle, source_dir) {
     if (!identical(bundle$format, "artifact")) return(NULL)
     path <- file.path(source_dir, "filtered_session_data_latest.rds")
     if (file.exists(path)) return(NULL)
-    writeProtDiaCompatibilitySession(bundle, path)
+    writeProtArtifactCompatibilitySession(bundle, path)
 }

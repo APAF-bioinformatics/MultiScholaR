@@ -294,7 +294,7 @@ runProtNormExportSessionWorkflow <- function(
   incProgressFn = shiny::incProgress,
   collectSessionDataFn = collectProtNormExportSessionData,
   saveExportArtifactsFn = saveProtNormExportArtifacts,
-  saveArtifactSessionFn = saveProtDiaSessionManifest,
+  saveArtifactSessionFn = saveProtArtifactSessionManifest,
   messageFn = message
 ) {
   withProgressFn(message = "Exporting filtered session data...", value = 0, {
@@ -313,7 +313,7 @@ runProtNormExportSessionWorkflow <- function(
       messageFn = messageFn
     )
 
-    if (protDiaSessionArtifactEligible(workflowData, "export")) {
+    if (protArtifactSessionEligible(workflowData, "export")) {
       artifact_session <- tryCatch(
         saveArtifactSessionFn(
           workflow_data = workflowData,
