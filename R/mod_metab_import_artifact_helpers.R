@@ -269,6 +269,14 @@ persistMetabImportArtifacts <- function(
                     assay_roles = manifest$artifact_role,
                     assay_identities = manifest$assay_identity,
                     column_mapping = workflow_payload$columnMapping,
+                    column_mapping_serialized =
+                        artifactWorkflowStateSerializeMetadata(
+                            workflow_payload$columnMapping,
+                            "metabolomics import column mapping"
+                        ),
+                    readthrough_contract_version = 1L,
+                    input_format = "custom",
+                    data_level = "metabolite",
                     sample_names_sanitized = isTRUE(
                         workflow_payload$sampleNamesSanitized
                     ),
