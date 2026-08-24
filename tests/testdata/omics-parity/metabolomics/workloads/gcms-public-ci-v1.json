@@ -1,0 +1,19 @@
+{
+  "schema": "multischolar.omics_workload_contract",
+  "schema_version": "1.0.0",
+  "workload_id": "metabolomics.custom.gcms.public-ci-24x6.v1",
+  "capability": {"capability_id": "metabolomics.custom.metabolite.standard.v1", "omic_type": "metabolomics", "input_format": "custom", "data_level": "metabolite", "acquisition_mode": "not_recorded"},
+  "adapter": {"adapter_id": "multischolar.metabolomics.custom.v1", "adapter_version": "1.0.0", "source_sha256": "5bc429c15c3b61bd4f891f16e285d0dd447ab2b35f286a83ddcdff9e6d7c7346"},
+  "rng": {"kind": ["Mersenne-Twister", "Inversion", "Rejection"], "seed": 21003},
+  "dimensions": {"feature_count": 24, "sample_count": 6, "assay_count": 1},
+  "assay_mix": {"GCMS": 1},
+  "distributions": {"intensity": "independent_declared_log2_normal_heteroscedastic", "assay_log2_means": {"GCMS": 16}, "base_log2_sd": 1.2, "noise_log2_sd": 0.10, "dynamic_range": "declared_not_instrument_specific"},
+  "missingness": {"mechanisms": {"MCAR": 1, "MAR": 1, "MNAR": 1, "left_censored": 1}},
+  "censoring": {"mechanism": "assay_specific_left_censoring", "assay_intensity_thresholds": {"GCMS": 50000}},
+  "duplicate_policy": {"mode": "declared_duplicates_resolve_sum", "fraction": 0.05},
+  "sample_perturbations": {"groups": ["CTRL", "TREAT"], "batches": ["B1", "B2"], "column_order": "declared"},
+  "adapter_parameters": {"generator_version": "1.0.0", "profile": "gcms_ci", "internal_standard_fraction": 0.10, "effect_fraction": 0.10, "effect_log2": 1.25, "batch_log2": 0.20, "heteroscedasticity": 0.30, "bounded_query_features": 8, "query_repetitions": 10},
+  "privacy": {"classification": "public_synthetic", "source": "declared_metabolomics_custom_schema", "scale_metadata": null},
+  "execution": {"repetitions": 5, "sampling_interval_ms": 20, "retention_window_ms": 500, "timeout_ms": 120000, "maximum_retained_samples": 20, "threads": 1, "locale": "C", "timezone": "UTC", "cache_state": "cold_uncontrolled"},
+  "expected_digests": {"payload_sha256": "5ca178c56e31184c4ee4f8501fc59abc07c8e4ca70bac13e1e7c8957fda869b6", "truth_sha256": "3078ece1100deeaf6df40de19be55ebded9cd5a1e083f125fb8e6812380a6827"}
+}

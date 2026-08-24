@@ -1,0 +1,19 @@
+{
+  "schema": "multischolar.omics_workload_contract",
+  "schema_version": "1.0.0",
+  "workload_id": "metabolomics.custom.mixed.public-representative-20000x12.v1",
+  "capability": {"capability_id": "metabolomics.custom.metabolite.standard.v1", "omic_type": "metabolomics", "input_format": "custom", "data_level": "metabolite", "acquisition_mode": "not_recorded"},
+  "adapter": {"adapter_id": "multischolar.metabolomics.custom.v1", "adapter_version": "1.0.0", "source_sha256": "5bc429c15c3b61bd4f891f16e285d0dd447ab2b35f286a83ddcdff9e6d7c7346"},
+  "rng": {"kind": ["Mersenne-Twister", "Inversion", "Rejection"], "seed": 104729},
+  "dimensions": {"feature_count": 20000, "sample_count": 12, "assay_count": 3},
+  "assay_mix": {"LCMS_Pos": 1, "LCMS_Neg": 1, "GCMS": 1},
+  "distributions": {"intensity": "independent_declared_log2_normal_heteroscedastic", "assay_log2_means": {"LCMS_Pos": 18, "LCMS_Neg": 17.5, "GCMS": 16}, "base_log2_sd": 1.2, "noise_log2_sd": 0.10, "dynamic_range": "declared_not_instrument_specific"},
+  "missingness": {"mechanisms": {"MCAR": 1, "MAR": 1, "MNAR": 1, "left_censored": 1}},
+  "censoring": {"mechanism": "assay_specific_left_censoring", "assay_intensity_thresholds": {"LCMS_Pos": 200000, "LCMS_Neg": 150000, "GCMS": 50000}},
+  "duplicate_policy": {"mode": "declared_duplicates_resolve_sum", "fraction": 0.05},
+  "sample_perturbations": {"groups": ["CTRL", "TREAT"], "batches": ["B1", "B2"], "column_order": "reordered_with_alignment_truth"},
+  "adapter_parameters": {"generator_version": "1.0.0", "profile": "mixed_representative", "internal_standard_fraction": 0.10, "effect_fraction": 0.10, "effect_log2": 1.25, "batch_log2": 0.20, "heteroscedasticity": 0.30, "bounded_query_features": 200, "query_repetitions": 20},
+  "privacy": {"classification": "public_synthetic", "source": "declared_metabolomics_custom_schema", "scale_metadata": null},
+  "execution": {"repetitions": 5, "sampling_interval_ms": 20, "retention_window_ms": 500, "timeout_ms": 180000, "maximum_retained_samples": 20, "threads": 1, "locale": "C", "timezone": "UTC", "cache_state": "cold_uncontrolled"},
+  "expected_digests": {"payload_sha256": "63c98dd011a7ce0c5a0446a0e8c2967a13f8d569d5a7e453a8ce57305b360be8", "truth_sha256": "7c54f4659a31ac9dca51868d498e3ac192c0b977a052eef2ef0472d438aec4f5"}
+}

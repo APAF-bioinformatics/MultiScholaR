@@ -1,0 +1,11 @@
+{
+  "schema": "multischolar.metabolomics_memory_oracle",
+  "schema_version": "1.0.0",
+  "oracles": [
+    {"oracle_id": "msdial_lcms_pos_v1", "rows": 8, "sample_columns": ["ctrl_1", "ctrl_2", "treat_1", "treat_2"], "quantity_sum": 1104300, "first_feature": "1", "first_annotation": "Glucose"},
+    {"oracle_id": "custom_lcms_pos_neg_v1", "assays": [{"assay": "LCMS_Pos", "rows": 3, "samples": 6, "quantity_sum": 96799.7, "first_feature": "LC_Pos_Feature_001"}, {"assay": "LCMS_Neg", "rows": 3, "samples": 6, "quantity_sum": 96799.7, "first_feature": "LC_Neg_Feature_001"}]},
+    {"oracle_id": "custom_gcms_v1", "assays": [{"assay": "GCMS", "rows": 3, "samples": 5, "quantity_sum": 164153, "first_feature": "GC_Feature_001", "missing_design_sample": "WT_1"}]},
+    {"oracle_id": "custom_mixed_v1", "assays": [{"assay": "LCMS_Pos", "rows": 3, "samples": 6, "quantity_sum": 186266.35, "first_feature": "Combined_LC_Feature_001"}, {"assay": "GCMS", "rows": 3, "samples": 6, "quantity_sum": 145433.05, "first_feature": "Combined_GC_Feature_001"}]}
+  ],
+  "scientific_claim": "independent fixture identity and arithmetic only"
+}

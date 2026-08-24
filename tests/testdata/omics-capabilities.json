@@ -306,9 +306,9 @@
       "parser_owner": "importMetabMSDIALData",
       "fallback_parser_owner": null,
       "support_status": "reader_characterized",
-      "fixture_requirement": "generated_direct_reader_fixture",
-      "fixture_refs": ["tests/testthat/test-module-ci-metab-import.R"],
-      "required_tests": ["tests/testthat/test-module-ci-metab-import.R"],
+      "fixture_requirement": "reviewed_direct_reader_fixture",
+      "fixture_refs": ["tests/testdata/e2e/metab_lc/seed_lcms_pos.csv"],
+      "required_tests": ["tests/testthat/test-module-ci-metab-import.R", "tests/testthat/test-omics-artifact-metab-baseline.R"],
       "capabilities": [
         {
           "capability_id": "metabolomics.msdial.metabolite.standard.v1",
@@ -386,7 +386,7 @@
         "tests/testdata/e2e/metab_combined/combined_lcms_features.tsv",
         "tests/testdata/e2e/metab_combined/combined_gcms_features.tsv"
       ],
-      "required_tests": ["tests/testthat/test-module-ci-metab-import.R", "tests/testthat/test-e2e-metabolomics-lc-gc.R"],
+      "required_tests": ["tests/testthat/test-module-ci-metab-import.R", "tests/testthat/test-e2e-metabolomics-lc-gc.R", "tests/testthat/test-omics-artifact-metab-baseline.R"],
       "capabilities": [
         {
           "capability_id": "metabolomics.custom.metabolite.standard.v1",

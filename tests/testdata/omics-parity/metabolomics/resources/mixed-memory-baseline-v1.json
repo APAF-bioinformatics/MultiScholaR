@@ -1,0 +1,97 @@
+{
+  "schema": "multischolar.omics_memory_baseline",
+  "schema_version": "1.0.0",
+  "status": "passed",
+  "workload_id": "metabolomics.custom.mixed.public-representative-20000x12.v1",
+  "capability": {
+    "capability_id": "metabolomics.custom.metabolite.standard.v1",
+    "omic_type": "metabolomics",
+    "input_format": "custom",
+    "data_level": "metabolite",
+    "acquisition_mode": "not_recorded"
+  },
+  "contract_sha256": "68cfd4e150f08411ab0b6d85dbf7458b0228e55487f340da6e297255151e76d9",
+  "adapter": {
+    "adapter_id": "multischolar.metabolomics.custom.v1",
+    "adapter_version": "1.0.0",
+    "source_sha256": "5bc429c15c3b61bd4f891f16e285d0dd447ab2b35f286a83ddcdff9e6d7c7346"
+  },
+  "preparation": {
+    "fresh_processes": 2,
+    "deterministic": true,
+    "payload_sha256": "63c98dd011a7ce0c5a0446a0e8c2967a13f8d569d5a7e453a8ce57305b360be8",
+    "truth_sha256": "7c54f4659a31ac9dca51868d498e3ac192c0b977a052eef2ef0472d438aec4f5",
+    "metadata": {
+      "generated": true,
+      "evidence_class": "generated_scaling",
+      "profile": "mixed_representative",
+      "generator_version": "1.0.0",
+      "privacy_classification": "public_synthetic",
+      "feature_count": 20000,
+      "sample_count": 12,
+      "assay_count": 3
+    }
+  },
+  "determinism": {
+    "fresh_preparation": true,
+    "payload": true,
+    "truth": true,
+    "workflow": true,
+    "binding": true
+  },
+  "release_gates": {
+    "maximum_peak_tree_rss_bytes": 1149864960,
+    "maximum_retained_tree_rss_bytes": 1134709760,
+    "maximum_elapsed_seconds": 8.573,
+    "maximum_peak_disk_bytes": 3133,
+    "maximum_peak_artifact_disk_bytes": 0,
+    "maximum_duckdb_spill_bytes": 0,
+    "maximum_final_disk_bytes": 3133,
+    "maximum_final_file_count": 5,
+    "maximum_session_resource_count": 0,
+    "maximum_report_file_count": 0,
+    "maximum_bounded_query_p95_seconds": 0.447
+  },
+  "summary": {
+    "requested": 5,
+    "completed": 5,
+    "failed": 0,
+    "peak_tree_rss_bytes": [919891968, 919834624, 919859200, 919789568, 919769088],
+    "retained_tree_rss_bytes": [907767808, 907710464, 907735040, 907620352, 907538432],
+    "elapsed_seconds": [6.858, 6.845, 6.803, 6.828, 6.805]
+  },
+  "runs": [
+    {
+      "status": "passed",
+      "repetition": 1,
+      "metrics": {"elapsed_seconds": 6.858, "peak_tree_rss_bytes": 919891968, "retained_tree_rss_bytes": 907767808, "peak_disk_bytes": 2506, "peak_artifact_disk_bytes": 0, "final_disk_bytes": 2506, "final_file_count": 4, "bounded_query_p95_seconds": 0.3429},
+      "worker": {"workflow_evidence": {"truth_valid": true}, "session_evidence": {"status": "memory_only", "resource_count": 0}, "report_evidence": {"status": "covered_by_separate_e2e_lane", "file_count": 0}, "native_resources": {"arrow": {"available": true, "loaded": false, "bytes_allocated": null}, "duckdb": {"available": true, "loaded": false, "connections_opened": 0}}, "workflow_sha256": "b3259200fddc7f4b93946569bdbd11fe51637e4505f6a103e4230a0034a4407f"}
+    },
+    {
+      "status": "passed",
+      "repetition": 2,
+      "metrics": {"elapsed_seconds": 6.845, "peak_tree_rss_bytes": 919834624, "retained_tree_rss_bytes": 907710464, "peak_disk_bytes": 2506, "peak_artifact_disk_bytes": 0, "final_disk_bytes": 2506, "final_file_count": 4, "bounded_query_p95_seconds": 0.3494},
+      "worker": {"workflow_evidence": {"truth_valid": true}, "session_evidence": {"status": "memory_only", "resource_count": 0}, "report_evidence": {"status": "covered_by_separate_e2e_lane", "file_count": 0}, "native_resources": {"arrow": {"available": true, "loaded": false, "bytes_allocated": null}, "duckdb": {"available": true, "loaded": false, "connections_opened": 0}}, "workflow_sha256": "b3259200fddc7f4b93946569bdbd11fe51637e4505f6a103e4230a0034a4407f"}
+    },
+    {
+      "status": "passed",
+      "repetition": 3,
+      "metrics": {"elapsed_seconds": 6.803, "peak_tree_rss_bytes": 919859200, "retained_tree_rss_bytes": 907735040, "peak_disk_bytes": 2505, "peak_artifact_disk_bytes": 0, "final_disk_bytes": 2505, "final_file_count": 4, "bounded_query_p95_seconds": 0.34355},
+      "worker": {"workflow_evidence": {"truth_valid": true}, "session_evidence": {"status": "memory_only", "resource_count": 0}, "report_evidence": {"status": "covered_by_separate_e2e_lane", "file_count": 0}, "native_resources": {"arrow": {"available": true, "loaded": false, "bytes_allocated": null}, "duckdb": {"available": true, "loaded": false, "connections_opened": 0}}, "workflow_sha256": "b3259200fddc7f4b93946569bdbd11fe51637e4505f6a103e4230a0034a4407f"}
+    },
+    {
+      "status": "passed",
+      "repetition": 4,
+      "metrics": {"elapsed_seconds": 6.828, "peak_tree_rss_bytes": 919789568, "retained_tree_rss_bytes": 907620352, "peak_disk_bytes": 2505, "peak_artifact_disk_bytes": 0, "final_disk_bytes": 2505, "final_file_count": 4, "bounded_query_p95_seconds": 0.3572},
+      "worker": {"workflow_evidence": {"truth_valid": true}, "session_evidence": {"status": "memory_only", "resource_count": 0}, "report_evidence": {"status": "covered_by_separate_e2e_lane", "file_count": 0}, "native_resources": {"arrow": {"available": true, "loaded": false, "bytes_allocated": null}, "duckdb": {"available": true, "loaded": false, "connections_opened": 0}}, "workflow_sha256": "b3259200fddc7f4b93946569bdbd11fe51637e4505f6a103e4230a0034a4407f"}
+    },
+    {
+      "status": "passed",
+      "repetition": 5,
+      "metrics": {"elapsed_seconds": 6.805, "peak_tree_rss_bytes": 919769088, "retained_tree_rss_bytes": 907538432, "peak_disk_bytes": 2506, "peak_artifact_disk_bytes": 0, "final_disk_bytes": 2506, "final_file_count": 4, "bounded_query_p95_seconds": 0.34225},
+      "worker": {"workflow_evidence": {"truth_valid": true}, "session_evidence": {"status": "memory_only", "resource_count": 0}, "report_evidence": {"status": "covered_by_separate_e2e_lane", "file_count": 0}, "native_resources": {"arrow": {"available": true, "loaded": false, "bytes_allocated": null}, "duckdb": {"available": true, "loaded": false, "connections_opened": 0}}, "workflow_sha256": "b3259200fddc7f4b93946569bdbd11fe51637e4505f6a103e4230a0034a4407f"}
+    }
+  ],
+  "diagnostics": [{"status": "passed", "measurement_class": "allocation_copy_diagnostic", "allocated_bytes": 74464296, "allocation_records": 2594, "profile_sha256": "4c76f967389d7611b4560820b682f6b19b854ce89d834dcb92364ee629f6842c"}],
+  "gate_policy": {"materiality_margin_fraction": 0.25, "source": "maximum of five fresh runs plus margin", "generated_claim_boundary": "resource and scaling only"}
+}
