@@ -14,7 +14,7 @@ da_server_volcano_render_handler <- function(
   shiny::req(input$volcano_contrast, da_data$da_results_list)
 
   checkpoint_results <- if (isProtDiaDaArtifactIndex(da_data$da_results_list)) {
-    protDiaDaSelectedResults(
+    protDaSelectedResults(
       workflow_data,
       da_data,
       input$volcano_contrast,
@@ -37,7 +37,7 @@ da_server_volcano_render_handler <- function(
     shiny::req(input$volcano_contrast, da_data$da_results_list)
 
     plot_results <- if (isProtDiaDaArtifactIndex(da_data$da_results_list)) {
-      protDiaDaSelectedResults(
+      protDaSelectedResults(
         workflow_data,
         da_data,
         input$volcano_contrast,
@@ -62,7 +62,7 @@ da_server_volcano_render_handler <- function(
     shiny::req(input$volcano_contrast, da_data$da_results_list)
 
     plot_results <- if (isProtDiaDaArtifactIndex(da_data$da_results_list)) {
-      protDiaDaSelectedResults(
+      protDaSelectedResults(
         workflow_data,
         da_data,
         input$volcano_contrast,

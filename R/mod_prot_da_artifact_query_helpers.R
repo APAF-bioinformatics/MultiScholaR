@@ -111,13 +111,13 @@ protDiaDaValidateRunSource <- function(source, store) {
             "multischolar_prot_dia_da_source_mismatch"
         )
     }
-    protDiaSessionValidateStage(
+    protDaSessionValidateStageForStore(
         store,
         source$stage_refs$import,
         .PROT_DIA_SESSION_IMPORT_ROLES,
         "import"
     )
-    protDiaSessionValidateStage(
+    protDaSessionValidateStageForStore(
         store,
         source$stage_refs$design,
         .PROT_DIA_SESSION_DESIGN_ROLES,
@@ -187,8 +187,11 @@ isProtDiaDaArtifactIndex <- function(value) {
         identical(value$backend, "artifact")
 }
 
-restoreProtDiaDaArtifactIndex <- function(workflow_data) {
-    if (!protDiaDaArtifactEligible(workflow_data, "queries")) return(NULL)
+restoreProtDiaDaArtifactIndex <- function(
+    workflow_data,
+    eligibility_fn = protDiaDaArtifactEligible
+) {
+    if (!eligibility_fn(workflow_data, "queries")) return(NULL)
     context <- workflow_data$workflow_context
     current_path <- artifactResolveContainedPath(
         context$getProjectRoot(), protDiaDaPaths(context)$current
@@ -254,9 +257,10 @@ queryProtDiaDaPage <- function(
     direction = NULL,
     cursor = NULL,
     limit = 100L,
-    resource_policy = NULL
+    resource_policy = NULL,
+    eligibility_fn = protDiaDaArtifactEligible
 ) {
-    if (!protDiaDaArtifactEligible(workflow_data, "queries")) {
+    if (!eligibility_fn(workflow_data, "queries")) {
         protDiaDaArtifactAbort(
             "DIA-NN DA server-side queries are disabled or ineligible",
             "multischolar_prot_dia_da_queries_disabled"
@@ -293,7 +297,8 @@ protDiaDaCompleteSelectedTable <- function(
     sort_id = NULL,
     direction = NULL,
     limit = NULL,
-    resource_policy = NULL
+    resource_policy = NULL,
+    eligibility_fn = protDiaDaArtifactEligible
 ) {
     entry <- protDiaDaIndexEntry(index, contrast)
     rows <- as.integer(entry$long_table$rows)
@@ -314,7 +319,8 @@ protDiaDaCompleteSelectedTable <- function(
         direction,
         cursor = NULL,
         limit = limit,
-        resource_policy = resource_policy
+        resource_policy = resource_policy,
+        eligibility_fn = eligibility_fn
     )
     if (isTRUE(page$has_more)) {
         protDiaDaArtifactAbort(
@@ -345,7 +351,7 @@ protDiaDaSelectedResults <- function(
         filters <- list(q_value = list(
             operator = "lt", value = as.double(q_value_threshold)
         ))
-        page <- queryProtDiaDaPage(
+        page <- queryProtDaPage(
             workflow_data,
             index,
             contrast,
@@ -357,7 +363,7 @@ protDiaDaSelectedResults <- function(
         )
         table <- page$data
     } else {
-        table <- protDiaDaCompleteSelectedTable(
+        table <- protDaCompleteSelectedTable(
             workflow_data,
             index,
             contrast
@@ -396,7 +402,7 @@ protDiaDaArtifactSummary <- function(
         identical(as.double(summary$fold_change_cutoff), as.double(lfc))) {
         return(summary)
     }
-    table <- protDiaDaCompleteSelectedTable(
+    table <- protDaCompleteSelectedTable(
         workflow_data,
         index,
         contrast,

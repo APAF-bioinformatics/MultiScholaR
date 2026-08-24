@@ -210,7 +210,7 @@ protDiaDaStageEvidence <- function(workflow_data) {
     if (is.list(session) && is.list(session$stage_refs)) {
         return(session$stage_refs)
     }
-    protDiaSessionStageEvidence(workflow_data)
+    protDaSessionStageEvidence(workflow_data)
 }
 
 protDiaDaSourceBinding <- function(workflow_data) {
@@ -362,7 +362,13 @@ protDiaDaQuerySpecification <- function(ref, table, protein_id_column) {
         )
     )
     newArtifactQueryPageSpecification(
-        query_id = paste0("proteomics.diann.da.", ref$artifact_id, ".v1"),
+        query_id = paste0(
+            "proteomics.",
+            ref$logical_key$workflow_slug,
+            ".da.",
+            ref$artifact_id,
+            ".v1"
+        ),
         state_role = ref$logical_key$state_role,
         projections = projections,
         filters = filters,
@@ -784,9 +790,10 @@ prepareProtDiaDaArtifactRun <- function(
     results,
     parameters,
     failure_injector = NULL,
-    now = Sys.time()
+    now = Sys.time(),
+    eligibility_fn = protDiaDaArtifactEligible
 ) {
-    if (!protDiaDaArtifactEligible(workflow_data)) {
+    if (!eligibility_fn(workflow_data)) {
         return(list(enabled = FALSE, index = NULL, manifest = NULL))
     }
     contrasts <- normaliseProtDaContrastsTable(contrasts)

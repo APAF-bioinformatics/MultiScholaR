@@ -38,7 +38,7 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
                     cat(sprintf("   DA TAB Step: S4 object retrieved, class = %s\n", class(current_s4)))
                     da_data$current_s4_object <- current_s4
 
-                    applyProtDiaDaArtifactIndex(workflow_data, da_data)
+                    applyProtDaArtifactIndex(workflow_data, da_data)
 
                     contrast_context <- resolveProtDaAvailableContrasts(
                       workflow_data
@@ -199,7 +199,7 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
               cat("   DA TAB Step: Design matrix found in S4 object\n")
               cat(sprintf("   DA TAB Step: Design matrix dims = %d rows, %d cols\n", nrow(current_s4@design_matrix), ncol(current_s4@design_matrix)))
 
-              applyProtDiaDaArtifactIndex(workflow_data, da_data)
+              applyProtDaArtifactIndex(workflow_data, da_data)
 
               contrast_context <- resolveProtDaAvailableContrasts(
                 workflow_data

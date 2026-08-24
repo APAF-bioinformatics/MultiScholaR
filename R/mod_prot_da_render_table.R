@@ -11,17 +11,17 @@ da_server_table_render_handler <- function(
 
     tryCatch(
       {
-        if (isProtDiaDaArtifactIndex(da_data$da_results_list)) {
+        if (isProtDaArtifactIndex(da_data$da_results_list)) {
           protein_id_column <- da_data$current_s4_object@protein_id_column
           projections <- c(
             protein_id_column, "log2FC", "raw_pvalue", "fdr_qvalue"
           )
-          page <- queryProtDiaDaPage(
+          page <- queryProtDaPage(
             workflow_data = workflow_data,
             index = da_data$da_results_list,
             contrast = input$table_contrast,
             projections = projections,
-            filters = protDiaDaTableFilters(
+            filters = protDaTableFilters(
               input$table_significance,
               input$da_q_val_thresh,
               input$treat_lfc_cutoff
@@ -123,7 +123,7 @@ da_server_table_render_handler <- function(
     tryCatch(
       {
         if (isProtDiaDaArtifactIndex(da_data$da_results_list)) {
-          summary <- protDiaDaArtifactSummary(
+          summary <- protDaArtifactSummary(
             workflow_data,
             da_data$da_results_list,
             input$table_contrast,

@@ -58,7 +58,7 @@ da_server_load_session_handler <- function(
               da_data,
               bundle
             )
-            artifact_index <- restoreProtDiaDaArtifactIndex(workflow_data)
+            artifact_index <- restoreProtDaArtifactIndex(workflow_data)
             if (!is.null(artifact_index)) {
               da_data$da_results_list <- artifact_index
               da_data$analysis_complete <- TRUE

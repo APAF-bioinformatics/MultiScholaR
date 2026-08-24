@@ -277,10 +277,18 @@ protContextSpecification <- function(dependency) {
 
 protContextArtifactOwned <- function(workflow_data) {
     if (is.null(workflow_data)) return(FALSE)
-    isTRUE(tryCatch(
-        protDiaArtifactCoordinatorOwned(workflow_data),
-        error = \(error) FALSE
-    ))
+    isTRUE(tryCatch({
+        context <- workflow_data$workflow_context
+        if (!inherits(context, "WorkflowContext") || !context$isBound()) {
+            return(FALSE)
+        }
+        descriptor <- findArtifactWorkflowDescriptor(
+            context$getIdentity(),
+            artifactWorkflowDescriptorCatalogue()
+        )
+        !is.null(descriptor) &&
+            artifactStageCoordinatorOwned(workflow_data, descriptor)
+    }, error = \(...) FALSE))
 }
 
 protContextWorkflowValue <- function(workflow_data, field) {

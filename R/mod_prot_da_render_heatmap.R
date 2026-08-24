@@ -15,7 +15,7 @@ da_server_heatmap_render_handler <- function(
   plot_data_structure <- if (isProtDiaDaArtifactIndex(
     da_data$da_results_list
   )) {
-    protDiaDaSelectedResults(
+    protDaSelectedResults(
       workflow_data,
       da_data,
       input$heatmap_contrast,
@@ -59,7 +59,7 @@ da_server_heatmap_render_handler <- function(
         plot_data_structure <- if (isProtDiaDaArtifactIndex(
           da_data$da_results_list
         )) {
-          protDiaDaSelectedResults(
+          protDaSelectedResults(
             workflow_data,
             da_data,
             input$heatmap_contrast,

@@ -20,11 +20,11 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           # Step 1: Prepare contrasts table for analysis
           shiny::incProgress(0.2, detail = "Preparing contrasts for analysis...")
 
-          contrasts_tbl <- protDiaDaResolveContrasts(
+          contrasts_tbl <- protDaResolveContrasts(
             workflow_data,
             da_data
           )
-          if (protDiaDaArtifactWorkflow(workflow_data)) {
+          if (protDaArtifactWorkflow(workflow_data)) {
             cat("   DA ANALYSIS Step: Using explicit artifact workflow contrasts\n")
           } else if (protContextLegacyGlobalExists(
             "contrasts", workflow_data = workflow_data
@@ -74,7 +74,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
             formula_string = input$formula_string,
             contrasts_tbl = contrasts_tbl
           )
-          artifact_parameters <- protDiaDaParameters(
+          artifact_parameters <- protDaParameters(
             formula_string = input$formula_string,
             da_q_val_thresh = input$da_q_val_thresh,
             treat_lfc_cutoff = input$treat_lfc_cutoff,
@@ -296,7 +296,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           cat(sprintf("   DA ANALYSIS Step: Completed DA analysis for %d contrasts\n", length(da_results_list)))
           cat(sprintf("   DA ANALYSIS Step: DA results list names: %s\n", paste(names(da_results_list), collapse = ", ")))
 
-          artifact_prepared <- prepareProtDiaDaArtifactRun(
+          artifact_prepared <- prepareProtDaArtifactRun(
             workflow_data = workflow_data,
             contrasts = contrasts_tbl,
             results = da_results_list,
@@ -444,7 +444,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           tryCatch(
             {
               # Get UniProt annotations for output
-              uniprot_tbl <- protDiaDaResolveAnnotations(workflow_data)
+              uniprot_tbl <- protDaResolveAnnotations(workflow_data)
               if (!is.null(uniprot_tbl)) {
                 cat("   DA ANALYSIS Step: Found uniprot_dat_cln for annotations\n")
               } else {
@@ -507,7 +507,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           )
 
           if (isTRUE(artifact_prepared$enabled)) {
-            artifact_prepared <- publishProtDiaDaArtifactRun(
+            artifact_prepared <- publishProtDaArtifactRun(
               workflow_data,
               artifact_prepared
             )
