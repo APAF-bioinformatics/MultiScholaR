@@ -180,6 +180,36 @@ protNonDiaValidateScientificTables <- function(
     invisible(TRUE)
 }
 
+#' Validate settled non-DIA metadata against the current S4 state
+#' @param evidence Collected read-through evidence.
+#' @param state_object Independently hydrated S4 state.
+#' @param config Independently hydrated state configuration.
+#' @param design_tables Hydrated small design tables.
+#' @return `TRUE`, invisibly.
+#' @noRd
+protNonDiaValidateSettledScientificTables <- function(
+    evidence,
+    state_object,
+    config,
+    design_tables
+) {
+    adapter <- protNonDiaArtifactReadthroughAdapter(evidence$descriptor)
+    expected_args <- artifactStageMetadataTable(state_object@args)
+    valid <- identical(
+        design_tables$design_matrix,
+        state_object@design_matrix
+    ) && identical(design_tables$args, expected_args) &&
+        identical(config, state_object@args)
+    if (!isTRUE(valid)) {
+        artifactStageReadthroughAbort(
+            adapter,
+            "incomplete_contract",
+            "non-DIA settled metadata differs from the current scientific S4 state"
+        )
+    }
+    invisible(TRUE)
+}
+
 #' Construct a descriptor-bound non-DIA artifact state manager
 #' @param context Exact bound workflow context.
 #' @param descriptor Exact supported workflow descriptor.
@@ -214,30 +244,46 @@ hydrateProtNonDiaResumeBundle <- function(
     retain_source_payloads = TRUE
 ) {
     adapter <- protNonDiaArtifactReadthroughAdapter(descriptor)
-    if (!identical(retain_source_payloads, TRUE)) {
+    if (!is.logical(retain_source_payloads) ||
+        length(retain_source_payloads) != 1L || is.na(retain_source_payloads)) {
         artifactStageReadthroughAbort(
             adapter,
             "incomplete_contract",
-            "non-DIA payload eviction is not certified by this ticket"
+            "non-DIA source retention mode must be true or false"
         )
     }
     evidence <- collectProtNonDiaResumeEvidence(
         context,
         descriptor,
         resource_policy,
-        payload_validation = "sidecar"
+        payload_validation = if (isTRUE(retain_source_payloads)) {
+            "sidecar"
+        } else {
+            "digest"
+        }
     )
     protNonDiaValidateResumeContract(evidence)
-    import_tables <- readArtifactStage(
-        adapter,
-        evidence$store,
-        evidence$import
-    )
-    design_tables <- readArtifactStage(
-        adapter,
-        evidence$store,
-        evidence$design
-    )
+    if (isTRUE(retain_source_payloads)) {
+        import_tables <- readArtifactStage(
+            adapter,
+            evidence$store,
+            evidence$import
+        )
+        design_tables <- readArtifactStage(
+            adapter,
+            evidence$store,
+            evidence$design
+        )
+    } else {
+        import_tables <- list(canonical_data = NULL)
+        design_tables <- readArtifactStageRoles(
+            adapter,
+            evidence$store,
+            evidence$design,
+            c("design_matrix", "contrasts", "args", "annotations", "sequences")
+        )
+        design_tables$cleaned_data <- NULL
+    }
     manager <- newProtNonDiaResumeStateManager(
         context,
         descriptor,
@@ -250,13 +296,22 @@ hydrateProtNonDiaResumeBundle <- function(
     state_object <- manager$getState()
     protNonDiaValidateStateEvidence(manager, evidence, state_object)
     config <- manager$getStateConfig()
-    protNonDiaValidateScientificTables(
-        evidence,
-        state_object,
-        config,
-        import_tables,
-        design_tables
-    )
+    if (isTRUE(retain_source_payloads)) {
+        protNonDiaValidateScientificTables(
+            evidence,
+            state_object,
+            config,
+            import_tables,
+            design_tables
+        )
+    } else {
+        protNonDiaValidateSettledScientificTables(
+            evidence,
+            state_object,
+            config,
+            design_tables
+        )
+    }
     parameters <- evidence$design$parameters
     bundle <- list(
         context = context,
@@ -288,9 +343,13 @@ hydrateProtNonDiaResumeBundle <- function(
             parameters$sequence_data_available,
             "sequences"
         ),
-        source_payloads_retained = TRUE,
+        source_payloads_retained = retain_source_payloads,
         annotation_completed = TRUE,
-        readthrough_mode = "full",
+        readthrough_mode = if (isTRUE(retain_source_payloads)) {
+            "full"
+        } else {
+            "settled"
+        },
         evidence = evidence
     )
     manager_owned <- FALSE
@@ -383,7 +442,11 @@ newProtNonDiaReadthroughProof <- function(bundle) {
         registry_ready = TRUE,
         current_pointer_verified = TRUE,
         readthrough_completed = TRUE,
-        source_payloads_retained = TRUE,
+        annotation_completed = isTRUE(bundle$annotation_completed),
+        readthrough_mode = bundle$readthrough_mode,
+        source_payloads_retained = bundle$source_payloads_retained,
+        import_refs = artifactPayloadReadthroughRefProof(evidence$import$refs),
+        design_refs = artifactPayloadReadthroughRefProof(evidence$design$refs),
         consumer_inventory_digest = artifactSemanticDigest(
             protNonDiaReadthroughConsumerInventory()
         ),
@@ -597,12 +660,16 @@ resumeProtNonDiaArtifactWorkflow <- function(
     }
     descriptor <- prepared$descriptor
     before <- protNonDiaReadthroughResourceSnapshot(workflow_data, "before")
+    retain_source_payloads <- !identical(
+        prepared$context$getStorageDecision()$effective_rollout,
+        "evict"
+    )
     bundle <- tryCatch(
         hydrateProtNonDiaResumeBundle(
             prepared$context,
             descriptor,
             resource_policy,
-            retain_source_payloads = TRUE
+            retain_source_payloads = retain_source_payloads
         ),
         error = \(error) error
     )
@@ -647,8 +714,8 @@ resumeProtNonDiaArtifactWorkflow <- function(
         design_run_id = bundle$evidence$design$run_id,
         state_generation_id = bundle$evidence$current_state$generation_id,
         import_ref = unclass(bundle$evidence$import$refs$canonical_data),
-        source_payloads_retained = TRUE,
-        readthrough_mode = "full",
+        source_payloads_retained = bundle$source_payloads_retained,
+        readthrough_mode = bundle$readthrough_mode,
         compatibility_checkpoint = readthrough$compatibility_checkpoint,
         resource_evidence = list(before = before, after = after)
     )

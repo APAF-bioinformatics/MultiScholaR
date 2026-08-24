@@ -263,12 +263,8 @@ mod_proteomics_server <- function(
       storage_policy = storage_policy
     )
     if (isTRUE(resume_result$resumed) &&
-        identical(
-          resume_result$capability_id,
-          artifactDiaWorkflowDescriptor()$descriptor_id
-        ) &&
         isTRUE(resume_result$source_payloads_retained)) {
-      evictProtDiaWorkflowPayloadsSafely(workflow_data)
+      evictProtArtifactWorkflowPayloadsSafely(workflow_data)
     }
 
     # Load aa_seq_tbl_final from scripts directory if resuming session

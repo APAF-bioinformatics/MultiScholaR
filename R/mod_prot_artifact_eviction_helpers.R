@@ -10,6 +10,25 @@ PROT_DIA_EVICT_FIELDS <- c("data_tbl", "data_cln")
 PROT_DIA_EVICTION_PROOF_SCHEMA <- "multischolar.prot_dia_eviction_proof"
 PROT_DIA_EVICTION_PROOF_VERSION <- 1L
 
+#' Define the exact DIA-NN payload eviction compatibility contract
+#' @return A descriptor-bound artifact payload eviction contract.
+#' @noRd
+protDiaPayloadEvictionContract <- function() {
+    newArtifactPayloadEvictionContract(
+        descriptor = artifactDiaWorkflowDescriptor(),
+        owner_label = "DIA-NN",
+        owner_condition_name = "exact_dia_canary",
+        source_fields = PROT_DIA_EVICT_FIELDS,
+        inventory_digest_fn = protDiaEvictionInventoryDigest,
+        compatibility_strategy = "read_only_artifact_reconstruction",
+        abort_fn = protDiaArtifactAbort,
+        invalid_readiness_class =
+            "multischolar_invalid_prot_dia_eviction_readiness",
+        incomplete_eviction_class =
+            "multischolar_incomplete_prot_dia_eviction"
+    )
+}
+
 #' Inventory DIA-NN consumers at the import/design eviction boundary
 #'
 #' @return A data frame declaring each consumer and its post-eviction source.
@@ -60,15 +79,7 @@ protDiaEvictionInventoryDigest <- function() {
 }
 
 protDiaReadthroughRefProof <- function(refs) {
-    lapply(refs, \(ref) {
-        ref <- artifactStoreNormalizeRef(ref)
-        list(
-            artifact_id = ref$artifact_id,
-            generation_id = ref$logical_key$generation_id,
-            semantic_digest = ref$hash_policy$semantic$digest,
-            byte_digest = ref$hash_policy$byte$digest
-        )
-    })
+    artifactPayloadReadthroughRefProof(refs)
 }
 
 #' Build a small proof after exact DIA-NN artifact hydration
@@ -121,41 +132,23 @@ recordProtDiaReadthroughProof <- function(workflow_data, bundle) {
 }
 
 protDiaEvictionRollout <- function(workflow_data, rollout_fn) {
-    context <- workflow_data$workflow_context
-    if (!inherits(context, "WorkflowContext") || !context$isBound()) return(NULL)
-    rollout_fn(context)
+    artifactPayloadEvictionRollout(workflow_data, rollout_fn)
 }
 
 protDiaEvictionProofFlags <- function(proof) {
-    names <- c(
-        "payload_validated", "registry_ready", "current_pointer_verified",
-        "readthrough_completed", "annotation_completed"
-    )
-    stats::setNames(
-        vapply(names, \(name) isTRUE(proof[[name]]), logical(1)),
-        names
-    )
+    artifactPayloadEvictionProofFlags(proof)
 }
 
 protDiaEvictionCheckpointReady <- function(checkpoint, proof) {
-    is.list(checkpoint) && isTRUE(checkpoint$verified) &&
-        identical(checkpoint$strategy, "read_only_artifact_reconstruction") &&
-        identical(checkpoint$project_id, proof$project_id) &&
-        identical(checkpoint$workflow_id, proof$workflow_id) &&
-        identical(checkpoint$design_run_id, proof$design_run_id) &&
-        identical(
-            checkpoint$state_generation_id,
-            proof$state_generation_id
-        ) && identical(
-            checkpoint$consumer_inventory_digest,
-            protDiaEvictionInventoryDigest()
-        )
+    artifactPayloadEvictionCheckpointReady(
+        checkpoint,
+        proof,
+        protDiaPayloadEvictionContract()
+    )
 }
 
 protDiaEvictionCacheReady <- function(workflow_state) {
-    if (!inherits(workflow_state, "ArtifactWorkflowState")) return(TRUE)
-    info <- workflow_state$getCacheInfo()
-    is.list(info) && is.numeric(info$entries) && info$entries <= 1L
+    artifactPayloadEvictionCacheReady(workflow_state)
 }
 
 #' Evaluate all DIA-NN eviction prerequisites without mutation
@@ -168,65 +161,29 @@ protDiaEvictionReadiness <- function(
     workflow_data,
     rollout_fn = \(context) context$getStorageDecision()$effective_rollout
 ) {
-    proof <- workflow_data$artifact_readthrough_proof
-    checkpoint <- workflow_data$artifact_compatibility_checkpoint
-    source_ready <- vapply(
-        PROT_DIA_EVICT_FIELDS,
-        \(name) !is.null(workflow_data[[name]]),
-        logical(1)
-    )
-    c(
-        exact_dia_canary = protDiaArtifactCoordinatorOwned(workflow_data),
-        evict_rollout = identical(
-            protDiaEvictionRollout(workflow_data, rollout_fn),
-            "evict"
-        ),
-        source_payload_available = all(source_ready),
-        protDiaEvictionProofFlags(proof),
-        compatibility_checkpoint_verified = protDiaEvictionCheckpointReady(
-            checkpoint,
-            proof
-        ),
-        consumer_inventory_verified = identical(
-            proof$consumer_inventory_digest,
-            protDiaEvictionInventoryDigest()
-        ),
-        single_cache_entry = protDiaEvictionCacheReady(
-            workflow_data$state_manager
-        )
+    artifactPayloadEvictionReadiness(
+        workflow_data,
+        protDiaPayloadEvictionContract(),
+        rollout_fn
     )
 }
 
 validateProtDiaEvictionReadiness <- function(readiness) {
-    required <- c(
-        "exact_dia_canary", "evict_rollout", "source_payload_available",
-        "payload_validated", "registry_ready", "current_pointer_verified",
-        "readthrough_completed", "annotation_completed",
-        "compatibility_checkpoint_verified", "consumer_inventory_verified",
-        "single_cache_entry"
+    validateArtifactPayloadEvictionReadiness(
+        readiness,
+        protDiaPayloadEvictionContract()
     )
-    valid <- is.logical(readiness) && identical(names(readiness), required) &&
-        !anyNA(readiness)
-    if (!isTRUE(valid)) {
-        protDiaArtifactAbort(
-            "DIA-NN eviction readiness is malformed",
-            "multischolar_invalid_prot_dia_eviction_readiness"
-        )
-    }
-    readiness
 }
 
 protDiaEvictionSourceFieldBytes <- function(workflow_data) {
-    vapply(
-        PROT_DIA_EVICT_FIELDS,
-        \(name) as.numeric(utils::object.size(workflow_data[[name]])),
-        numeric(1)
+    artifactPayloadSourceFieldBytes(
+        workflow_data,
+        PROT_DIA_EVICT_FIELDS
     )
 }
 
 setProtDiaWorkflowField <- function(workflow_data, name, value) {
-    workflow_data[[name]] <- value
-    invisible(TRUE)
+    setArtifactWorkflowField(workflow_data, name, value)
 }
 
 clearProtDiaWorkflowPayloads <- function(
@@ -234,33 +191,12 @@ clearProtDiaWorkflowPayloads <- function(
     clear_fn,
     release_cache_fn
 ) {
-    original <- lapply(PROT_DIA_EVICT_FIELDS, \(name) workflow_data[[name]])
-    names(original) <- PROT_DIA_EVICT_FIELDS
-    committed <- FALSE
-    on.exit({
-        if (!committed) {
-            for (name in PROT_DIA_EVICT_FIELDS) {
-                setProtDiaWorkflowField(workflow_data, name, original[[name]])
-            }
-        }
-    }, add = TRUE)
-    for (name in PROT_DIA_EVICT_FIELDS) {
-        clear_fn(workflow_data, name, NULL)
-    }
-    release_cache_fn(workflow_data$state_manager)
-    cleared <- vapply(
-        PROT_DIA_EVICT_FIELDS,
-        \(name) is.null(workflow_data[[name]]),
-        logical(1)
+    clearArtifactWorkflowPayloads(
+        workflow_data,
+        protDiaPayloadEvictionContract(),
+        clear_fn,
+        release_cache_fn
     )
-    if (!all(cleared)) {
-        protDiaArtifactAbort(
-            "DIA-NN reactive payload eviction did not clear every source",
-            "multischolar_incomplete_prot_dia_eviction"
-        )
-    }
-    committed <- TRUE
-    invisible(TRUE)
 }
 
 #' Evict settled DIA-NN import/design reactive payloads
@@ -281,41 +217,16 @@ evictProtDiaWorkflowPayloads <- function(
     release_cache_fn = workflowStateReleaseHydrationCache,
     gc_fn = \() gc(full = TRUE)
 ) {
-    previous <- workflow_data$artifact_stage_results$eviction
-    if (is.list(previous) && isTRUE(previous$evicted)) return(previous)
-    readiness <- validateProtDiaEvictionReadiness(
-        readiness_fn(workflow_data, rollout_fn)
-    )
-    failed <- names(readiness)[!readiness]
-    if (length(failed) > 0L) {
-        return(list(
-            enabled = isTRUE(readiness[["exact_dia_canary"]]) &&
-                isTRUE(readiness[["evict_rollout"]]),
-            ok = TRUE,
-            evicted = FALSE,
-            reason = "eviction_prerequisites_incomplete",
-            failed_prerequisites = failed
-        ))
-    }
-    source_field_bytes <- protDiaEvictionSourceFieldBytes(workflow_data)
-    clearProtDiaWorkflowPayloads(
+    result <- evictArtifactWorkflowPayloads(
         workflow_data,
+        protDiaPayloadEvictionContract(),
+        rollout_fn,
+        readiness_fn,
         clear_fn,
         release_cache_fn
     )
-    invisible(gc_fn())
-    result <- list(
-        enabled = TRUE,
-        ok = TRUE,
-        evicted = TRUE,
-        reason = "artifact_payloads_evicted",
-        evicted_fields = PROT_DIA_EVICT_FIELDS,
-        released_source_field_bytes = source_field_bytes,
-        released_source_bytes_upper_bound = sum(source_field_bytes),
-        state_generation_id = workflow_data$artifact_readthrough_proof$state_generation_id,
-        compatibility_strategy = "read_only_artifact_reconstruction"
-    )
-    recordProtDiaArtifactResult(workflow_data, "eviction", result)
+    if (isTRUE(result$evicted)) invisible(gc_fn())
+    result
 }
 
 evictProtDiaWorkflowPayloadsSafely <- function(
@@ -466,19 +377,18 @@ resolveProtDiaWorkflowTable <- function(workflow_data, name) {
             "multischolar_invalid_prot_dia_payload_role"
         )
     }
-    if (!is.null(workflow_data[[name]])) return(workflow_data[[name]])
-    if (!protDiaArtifactCoordinatorOwned(workflow_data)) return(NULL)
-    refs <- workflow_data$artifact_readthrough_refs
-    ref <- if (identical(name, "data_tbl")) {
-        refs$import$canonical_data
-    } else {
-        refs$design$cleaned_data
-    }
-    if (!is.list(ref)) return(NULL)
-    identity <- workflow_data$workflow_context$getIdentity()
-    store <- newArtifactStore(
-        workflow_data$workflow_context$getPaths(),
-        identity$project_id
+    resolveArtifactWorkflowTable(
+        workflow_data,
+        name,
+        protDiaPayloadEvictionContract(),
+        ref_fn = \(owner, field) {
+            refs <- owner$artifact_readthrough_refs
+            if (identical(field, "data_tbl")) {
+                refs$import$canonical_data
+            } else {
+                refs$design$cleaned_data
+            }
+        },
+        read_fn = protDiaArtifactReadTable
     )
-    protDiaArtifactReadTable(store, ref)
 }
