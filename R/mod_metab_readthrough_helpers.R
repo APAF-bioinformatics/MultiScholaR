@@ -379,7 +379,10 @@ newMetabReadthroughProof <- function(bundle, inventory) {
             use.names = FALSE
         ),
         payload_validated = TRUE,
+        registry_ready = TRUE,
+        current_pointer_verified = TRUE,
         readthrough_completed = TRUE,
+        annotation_completed = TRUE,
         source_payloads_retained = TRUE,
         eviction_performed = FALSE,
         consumer_inventory_digest = artifactSemanticDigest(inventory),
@@ -442,6 +445,9 @@ applyMetabResumeBundle <- function(
         strategy = "restore_memory_reads_keep_metabolomics_generations",
         verified = TRUE,
         descriptor_id = proof$descriptor_id,
+        project_id = proof$project_id,
+        workflow_id = proof$workflow_id,
+        design_run_id = proof$design_run_id,
         state_generation_id = proof$state_generation_id,
         consumer_inventory_digest = proof$consumer_inventory_digest,
         verified_at = proof$verified_at

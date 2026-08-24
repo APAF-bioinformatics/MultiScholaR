@@ -204,6 +204,9 @@ mod_metabolomics_server <- function(
             experiment_label,
             storage_policy = storage_policy
         )
+        if (isTRUE(resume_result$resumed)) {
+            settleMetabArtifactWorkflowSafely(workflow_data)
+        }
 
         logger::log_info(sprintf("Metabolomics module initialized with paths for: %s", paths_key))
 

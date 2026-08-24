@@ -290,6 +290,7 @@ Collate:
     'mod_metab_summary.R'
     'mod_metab_readthrough_registry.R'
     'mod_metab_readthrough_helpers.R'
+    'mod_metab_eviction_helpers.R'
     'mod_metabolomics.R'
     'mod_lipid_da_display_helpers.R'
     'mod_lipid_da_results_helpers.R'
