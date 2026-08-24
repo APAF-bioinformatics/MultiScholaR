@@ -50,14 +50,18 @@ protDiaDaResolveAnnotations <- function(workflow_data) {
 }
 
 protDiaDaContrastsVector <- function(workflow_data, da_data = NULL) {
-    contrasts <- protDiaDaResolveContrasts(workflow_data, da_data)
+    contrasts <- if (protDaArtifactWorkflow(workflow_data)) {
+        protDaResolveContrasts(workflow_data, da_data)
+    } else {
+        protDiaDaResolveContrasts(workflow_data, da_data)
+    }
     if ("comparison" %in% names(contrasts)) return(contrasts$comparison)
     if ("contrasts" %in% names(contrasts)) return(contrasts$contrasts)
     contrasts[[1L]]
 }
 
 resolveProtDaAvailableContrasts <- function(workflow_data) {
-    if (protDiaDaArtifactWorkflow(workflow_data)) {
+    if (protDaArtifactWorkflow(workflow_data)) {
         return(list(
             values = protDiaDaContrastsVector(workflow_data),
             source = "artifact_context"
