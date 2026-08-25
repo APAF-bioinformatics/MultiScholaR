@@ -96,12 +96,26 @@ handleMetabNormApplyCorrelationOutcome <- function(
         normData$correlation_filtered_obj <- filteredS4
         normData$correlation_filtering_complete <- TRUE
 
-        workflowData$state_manager$saveState(
-            state_name = "metab_correlation_filtered"
-            , s4_data_object = filteredS4
-            , config_object = workflowData$config_list
-            , description = paste("Correlation filtering (threshold:", threshold, ")")
+        filteredS4 <- saveMetabNormState(
+            workflowData,
+            observerState$currentS4,
+            filteredS4,
+            stage_id = "correlation_filter",
+            state_name = "metab_correlation_filtered",
+            config_object = workflowData$config_list,
+            description = paste(
+                "Correlation filtering (threshold:",
+                threshold,
+                ")"
+            ),
+            parameters = list(
+                threshold = threshold,
+                grouping_variable = observerState$groupingVariable,
+                results = metabNormCorrelationSummary(corrResults)
+            ),
+            transformation_type = "sample_filter"
         )
+        normData$correlation_filtered_obj <- filteredS4
 
         updatedStatus <- workflowData$tab_status
         updatedStatus$quality_control <- "complete"
@@ -305,11 +319,29 @@ runMetabNormResetNormalizationObserverShell <- function(
 
     tryCatch({
         if (!is.null(postFilterObject)) {
-            workflowData$state_manager$saveState(
-                state_name = "metab_reset"
-                , s4_data_object = postFilterObject
-                , config_object = workflowData$config_list
-                , description = "Reset to pre-normalization state"
+            currentS4 <- tryCatch(
+                workflowData$state_manager$getState(),
+                error = function(error) NULL
+            )
+            if (!methods::is(currentS4, "MetaboliteAssayData")) {
+                currentS4 <- postFilterObject
+            }
+            postFilterObject <- saveMetabNormState(
+                workflowData,
+                currentS4,
+                postFilterObject,
+                stage_id = "normalization_reset",
+                state_name = "metab_reset",
+                config_object = workflowData$config_list,
+                description = "Reset to pre-normalization state",
+                parameters = list(
+                    target = "captured_pre_normalization_state",
+                    source_state = metabQcCurrentStateName(
+                        workflowData$state_manager
+                    )
+                ),
+                status = "reset",
+                transformation_type = "restore"
             )
         }
 
@@ -355,11 +387,17 @@ resolveMetabNormSkipCorrelationInputObject <- function(ruvCorrectedObject, postN
 }
 
 completeMetabNormSkipCorrelationState <- function(workflowData, currentS4) {
-    workflowData$state_manager$saveState(
-        state_name = "metab_norm_complete"
-        , s4_data_object = currentS4
-        , config_object = workflowData$config_list
-        , description = "Normalization complete (correlation filtering skipped)"
+    currentS4 <- saveMetabNormState(
+        workflowData,
+        currentS4,
+        currentS4,
+        stage_id = "correlation_skip",
+        state_name = "metab_norm_complete",
+        config_object = workflowData$config_list,
+        description = "Normalization complete (correlation filtering skipped)",
+        parameters = list(reason = "user_selected_skip"),
+        status = "skipped",
+        transformation_type = "no_op"
     )
 
     updated_status <- workflowData$tab_status

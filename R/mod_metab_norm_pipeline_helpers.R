@@ -280,6 +280,16 @@ runMetabNormItsdProgressApplyShell <- function(
     if (!isTRUE(applyItsd)) {
         skippedLogEntry <- "ITSD normalization skipped"
         addLogFn(skippedLogEntry)
+        currentS4 <- recordMetabNormNoOp(
+            workflowData,
+            currentS4,
+            "itsd_skip",
+            list(
+                applied = FALSE,
+                aggregation = itsdAggregation,
+                reason = "user_disabled"
+            )
+        )
 
         return(invisible(list(
             currentS4 = currentS4,
@@ -334,19 +344,21 @@ runMetabNormItsdNormalizationStep <- function(
 ) {
     stateDescription <- paste("ITSD normalization (aggregation:", itsdAggregation, ")")
 
+    beforeS4 <- currentS4
     currentS4 <- normaliseUntransformedDataFn(
         theObject = currentS4,
         method = "ITSD",
         itsd_aggregation = itsdAggregation,
         itsd_feature_ids = itsdFeatureIds
     )
-    normData$post_itsd_obj <- currentS4
-
-    workflowData$state_manager$saveState(
-        state_name = "metab_itsd_norm",
-        s4_data_object = currentS4,
-        config_object = workflowData$config_list,
-        description = stateDescription
+    currentS4 <- persistMetabNormItsdState(
+        workflowData,
+        normData,
+        beforeS4,
+        currentS4,
+        itsdAggregation,
+        itsdFeatureIds,
+        stateDescription
     )
 
     logEntry <- "ITSD normalization complete"
@@ -406,17 +418,18 @@ runMetabNormLog2TransformationStep <- function(
 ) {
     stateDescription <- paste("Log2 transformation (offset:", logOffset, ")")
 
+    beforeS4 <- currentS4
     currentS4 <- logTransformAssaysFn(
         theObject = currentS4,
         offset = logOffset
     )
-    normData$post_log2_obj <- currentS4
-
-    workflowData$state_manager$saveState(
-        state_name = "metab_log2",
-        s4_data_object = currentS4,
-        config_object = workflowData$config_list,
-        description = stateDescription
+    currentS4 <- persistMetabNormLog2State(
+        workflowData,
+        normData,
+        beforeS4,
+        currentS4,
+        logOffset,
+        stateDescription
     )
 
     logEntry <- "Log2 transformation complete"
@@ -485,6 +498,7 @@ runMetabNormBetweenSampleNormalizationStep <- function(
 ) {
     stateDescription <- paste("Between-sample normalization (method:", normMethod, ")")
 
+    beforeS4 <- currentS4
     if (normMethod != "none") {
         currentS4 <- normaliseBetweenSamplesFn(
             theObject = currentS4,
@@ -493,11 +507,12 @@ runMetabNormBetweenSampleNormalizationStep <- function(
     }
     normData$post_norm_obj <- currentS4
 
-    workflowData$state_manager$saveState(
-        state_name = "metab_normalized",
-        s4_data_object = currentS4,
-        config_object = workflowData$config_list,
-        description = stateDescription
+    currentS4 <- persistMetabNormBetweenSampleState(
+        workflowData,
+        beforeS4,
+        currentS4,
+        normMethod,
+        stateDescription
     )
 
     logEntry <- "Between-sample normalization complete"
@@ -594,7 +609,7 @@ runMetabNormRuvProgressApplyShell <- function(
             addLogFn = addLogFn
         )
 
-        correctionState <- runRuvCorrectionStepFn(
+        correctionArgs <- list(
             currentS4 = currentS4,
             ruvGroupingVariable = ruvGroupingVariable,
             bestKPerAssay = optimizationState$bestKPerAssay,
@@ -603,6 +618,14 @@ runMetabNormRuvProgressApplyShell <- function(
             normData = normData,
             addLogFn = addLogFn
         )
+        supported <- names(formals(runRuvCorrectionStepFn))
+        if ("ruvMode" %in% supported || "..." %in% supported) {
+            correctionArgs$ruvMode <- ruvMode
+        }
+        if ("optimizationState" %in% supported || "..." %in% supported) {
+            correctionArgs$optimizationState <- optimizationState
+        }
+        correctionState <- do.call(runRuvCorrectionStepFn, correctionArgs)
         currentS4 <- correctionState$currentS4
 
         ruvQcState <- runRuvQcStepFn(
@@ -617,6 +640,16 @@ runMetabNormRuvProgressApplyShell <- function(
     } else {
         skipLogEntry <- "RUV-III skipped"
         addLogFn(skipLogEntry)
+        currentS4 <- recordMetabNormNoOp(
+            workflowData,
+            currentS4,
+            "ruv_skip",
+            list(
+                mode = ruvMode,
+                grouping_variable = ruvGroupingVariable,
+                reason = "user_selected_skip"
+            )
+        )
         normData$ruv_corrected_obj <- currentS4
         normData$ruv_complete <- TRUE
     }
@@ -700,10 +733,13 @@ runMetabNormRuvCorrectionStep <- function(
     workflowData,
     normData,
     addLogFn = function(entry) invisible(entry),
-    ruvIII_C_VaryingFn = ruvIII_C_Varying
+    ruvIII_C_VaryingFn = ruvIII_C_Varying,
+    ruvMode = NULL,
+    optimizationState = NULL
 ) {
     stateDescription <- "RUV-III batch correction complete"
 
+    beforeS4 <- currentS4
     currentS4 <- ruvIII_C_VaryingFn(
         theObject = currentS4,
         ruv_grouping_variable = ruvGroupingVariable,
@@ -713,11 +749,16 @@ runMetabNormRuvCorrectionStep <- function(
     normData$ruv_corrected_obj <- currentS4
     normData$ruv_complete <- TRUE
 
-    workflowData$state_manager$saveState(
-        state_name = "metab_ruv_corrected",
-        s4_data_object = currentS4,
-        config_object = workflowData$config_list,
-        description = stateDescription
+    currentS4 <- persistMetabNormRuvState(
+        workflowData,
+        beforeS4,
+        currentS4,
+        ruvGroupingVariable,
+        bestKPerAssay,
+        ctrlPerAssay,
+        ruvMode,
+        optimizationState,
+        stateDescription
     )
 
     logEntry <- "RUV-III correction applied"
@@ -927,4 +968,3 @@ runMetabNormCompositeQcRefreshShell <- function(
         plotRefreshTrigger = normData$plot_refresh_trigger
     ))
 }
-
