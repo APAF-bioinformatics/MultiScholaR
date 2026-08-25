@@ -79,6 +79,7 @@ Collate:
     'utils_artifact_metab_descriptors.R'
     'utils_artifact_lipid_descriptors.R'
     'utils_artifact_prot_nondia_closeout.R'
+    'utils_artifact_metab_closeout.R'
     'utils_artifact_descriptors.R'
     'utils_artifact_table_codecs.R'
     'utils_artifact_codec_hydration.R'
