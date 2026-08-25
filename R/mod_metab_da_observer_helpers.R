@@ -614,7 +614,8 @@ runMetabDaAnalysisObserverShell <- function(
     showNotification = shiny::showNotification,
     removeNotification = shiny::removeNotification,
     logInfo = logger::log_info,
-    logError = logger::log_error
+    logError = logger::log_error,
+    persistResults = persistMetabDaArtifactsSafely
 ) {
     showNotification(
         "Running differential expression analysis...",
@@ -633,6 +634,22 @@ runMetabDaAnalysisObserverShell <- function(
                 eBayes_trend = TRUE,
                 eBayes_robust = TRUE
             )
+
+            persistence <- persistResults(
+                workflow_data = workflowData,
+                results = results,
+                contrasts_tbl = contrastsTbl,
+                parameters = list(
+                    formula_string = formulaString,
+                    da_q_val_thresh = daQValThresh,
+                    treat_lfc_cutoff = treatLfcCutoff,
+                    eBayes_trend = TRUE,
+                    eBayes_robust = TRUE
+                )
+            )
+            if (isTRUE(persistence$enabled) && !isTRUE(persistence$ok)) {
+                stop(persistence$error)
+            }
 
             daData$da_results_list <- results
             daData$analysis_complete <- TRUE
@@ -665,6 +682,7 @@ runMetabDaAnalysisObserverShell <- function(
             invisible(list(
                 status = "success",
                 results = results,
+                persistence = persistence,
                 selectorState = selectorState,
                 diskState = diskState
             ))
