@@ -11,6 +11,23 @@ Final promotion from release candidate to stable release is intended to follow t
 remaining end-to-end GUI suite validation across the default proteomics,
 metabolomics, and lipidomics workflows.
 
+### Artifact-Backed Workflow Closeout
+
+ * Artifact-backed state, Parquet persistence, bounded DuckDB queries, portable
+   sessions, and explicit lifecycle ownership are available as opt-in
+   descriptor-backed `dual_write` canaries for the scientifically supported
+   proteomics, metabolomics, and lipidomics tuples.
+ * No exact tuple met every scientific, recovery, portability, memory, runtime,
+   disk, query, and supported-OS gate required for automatic promotion. The
+   default request remains `auto`, its effective result for new projects remains
+   `memory`, and no existing memory project is migrated implicitly.
+ * DBI, duckdb, and filelock remain optional artifact dependencies. Existing
+   artifact projects fail explicitly when required dependencies are unavailable;
+   they do not silently downgrade to stale memory state.
+ * Explicit memory rollback, read-only artifact inspection, and verified
+   compatibility-session reconstruction remain supported. No compatibility
+   removal schedule starts from this release candidate.
+
 ### Architecture, De-Monolithing, and Helper Extraction
 
 The codebase underwent a broad stabilization pass focused on reducing god modules,

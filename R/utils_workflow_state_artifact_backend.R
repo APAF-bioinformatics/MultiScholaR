@@ -35,18 +35,12 @@ ArtifactWorkflowState <- R6::R6Class(
             private$context <- context
             private$identity <- context$getIdentity()
             private$store <- newArtifactStore(
-                context$getPaths(),
-                private$identity$project_id
+                context$getPaths(), private$identity$project_id
             )
             private$registry_identity <- artifactWorkflowStateEnsureMetadata(
-                private$store,
-                private$identity,
-                descriptor_contract
+                private$store, private$identity, descriptor_contract
             )
-            private$registry <- projectRegistryForContext(
-                context,
-                resource_policy = resource_policy
-            )
+            private$registry <- projectRegistryForContext(context, resource_policy)
             private$dehydrate_fn <- dehydrate_fn
             private$validate_bundle_fn <- validate_bundle_fn
             private$hydrate_fn <- hydrate_fn
@@ -66,8 +60,7 @@ ArtifactWorkflowState <- R6::R6Class(
                 }
             }, add = TRUE)
             artifactWorkflowStateEnsureWorkflow(
-                private$session,
-                private$registry_identity
+                private$session, private$registry_identity
             )
             private$refresh()
             if (is.null(private$current_generation_id)) {
@@ -458,9 +451,7 @@ ArtifactWorkflowState <- R6::R6Class(
             rows <- projectRegistryQuery(
                 private$session,
                 "states",
-                filters = list(
-                    workflow_id = private$registry_identity$workflow_id
-                )
+                filters = list(workflow_id = private$registry_identity$workflow_id)
             )
             if (nrow(rows) == 0L) return(list())
             lapply(seq_len(nrow(rows)), function(index) {

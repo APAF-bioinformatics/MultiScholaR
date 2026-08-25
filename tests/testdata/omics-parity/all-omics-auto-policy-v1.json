@@ -1,0 +1,78 @@
+{
+  "schema": "multischolar.all_omics_auto_policy",
+  "schema_version": "1.0.0",
+  "ticket_id": "OMICS-ART-049",
+  "decision": "no_promotion",
+  "closeout_path": "tests/testdata/omics-parity/all-omics-operational-closeout-v1.json",
+  "closeout_sha256": "21fdd34c410a8f90cc8f8a6bb94e5e603db185574cd4da4ad79ba48ee2e3187a",
+  "default_requested_backend": "auto",
+  "effective_backend_for_new_projects": "memory",
+  "promoted_capability_ids": [],
+  "forced_canary_capability_ids": [
+    "proteomics.diann.peptide.dia.v1",
+    "proteomics.maxquant.protein.lfq.v1",
+    "proteomics.fragpipe.protein.lfq.v1",
+    "proteomics.pd_tmt.protein.tmt.v1",
+    "metabolomics.custom.metabolite.standard.v1",
+    "lipidomics.lipidsearch.lipid.standard.v1"
+  ],
+  "dependency_policy": [
+    {
+      "package": "arrow",
+      "description_field": "Imports",
+      "policy": "existing_runtime_import_unchanged",
+      "minimum_version": null
+    },
+    {
+      "package": "DBI",
+      "description_field": "Suggests",
+      "policy": "optional_artifact_dependency",
+      "minimum_version": null
+    },
+    {
+      "package": "duckdb",
+      "description_field": "Suggests",
+      "policy": "optional_artifact_dependency",
+      "minimum_version": null
+    },
+    {
+      "package": "filelock",
+      "description_field": "Suggests",
+      "policy": "optional_artifact_dependency",
+      "minimum_version": null
+    }
+  ],
+  "namespace_policy": "qualified_calls_no_new_imports",
+  "project_state_policy": {
+    "new_unpromoted": "memory",
+    "legacy_memory": "memory_no_implicit_migration",
+    "existing_artifact_valid": "artifact_exact_certified_rollout",
+    "existing_artifact_corrupt": "fail_closed",
+    "existing_artifact_future_schema": "fail_closed",
+    "unknown_auto": "memory",
+    "unknown_forced_artifact": "fail_closed"
+  },
+  "compatibility_policy": {
+    "memory_backend": "retained",
+    "legacy_root_discovery": "retained",
+    "legacy_sessions": "retained",
+    "compatibility_products": "retained",
+    "read_only_artifact_rollback": "retained",
+    "compatibility_session_reconstruction": "retained",
+    "removal_schedule_status": "not_started_no_promoted_tuple",
+    "earliest_removal_release": null
+  },
+  "janitor_policy": {
+    "maximum_runtime_file_lines": 1000,
+    "duplicate_entity_keys": 0,
+    "stale_extraction_headers": 0,
+    "runtime_filename_violations": 0,
+    "duplicate_collate_entries": 0
+  },
+  "rollback": {
+    "new_work_backend": "memory",
+    "existing_artifact_mode": "read_only",
+    "memory_reconstruction": "verified_compatibility_session",
+    "delete_immutable_artifacts": false
+  }
+}
