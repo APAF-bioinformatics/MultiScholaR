@@ -279,7 +279,13 @@
       "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": true,
-      "report_export": true
+      "report_export": true,
+      "artifact_closeout": {
+        "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+        "promotion_candidate": false,
+        "reason_code": "eviction_and_performance_gates_failed",
+        "generated_evidence_authorizes_science": false
+      }
     }
   ]
 }
