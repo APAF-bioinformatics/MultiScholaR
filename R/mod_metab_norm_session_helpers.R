@@ -746,7 +746,8 @@ runMetabNormExportSessionWorkflow <- function(
     saveSessionRdsFilesFn = saveMetabNormExportSessionRdsFiles,
     saveMetadataFilesFn = saveMetabNormExportMetadataFiles,
     saveSummaryFileFn = saveMetabNormExportSummaryFile,
-    logInfoFn = logger::log_info
+    logInfoFn = logger::log_info,
+    saveArtifactManifestFn = saveMetabSessionManifestSafely
 ) {
     withProgressFn(message = "Exporting normalized session data...", value = 0, expr = {
         incProgressFn(0.2, detail = "Gathering data...")
@@ -782,6 +783,13 @@ runMetabNormExportSessionWorkflow <- function(
             sessionData = sessionData,
             sourceDir = sourceDir,
             sessionFilename = exportFiles$sessionFilename
+        )
+
+        saveArtifactManifestFn(
+            workflow_data = workflowData,
+            session_data = sessionData,
+            export_files = exportFiles,
+            source_dir = sourceDir
         )
 
         invisible(exportFiles)
