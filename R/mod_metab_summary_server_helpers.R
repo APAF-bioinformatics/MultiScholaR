@@ -100,7 +100,7 @@ registerMetabSummaryServerObservers <- function(
             )
         }, ignoreInit = TRUE),
         generateReportObserver = observeEventFn(input$generate_report, {
-            runGenerateReportObserverShellFn(
+            report_args <- list(
                 inputValues = list(
                     experiment_label = input$experiment_label,
                     description = input$description
@@ -110,6 +110,11 @@ registerMetabSummaryServerObservers <- function(
                 values = values,
                 output = output
             )
+            supported <- names(formals(runGenerateReportObserverShellFn))
+            if ("workflowData" %in% supported || "..." %in% supported) {
+                report_args$workflowData <- workflowData
+            }
+            do.call(runGenerateReportObserverShellFn, report_args)
         }),
         githubPushObserver = observeEventFn(input$push_to_github, {
             runGithubPushObserverShellFn(

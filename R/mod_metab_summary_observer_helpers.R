@@ -1,69 +1,3 @@
-metabSummaryFirstNonNull <- function(...) {
-    values <- list(...)
-    for (value in values) {
-        if (!is.null(value)) {
-            return(value)
-        }
-    }
-    NULL
-}
-
-getMetabSummaryWorkflowValue <- function(workflowData, name) {
-    if (is.null(workflowData)) {
-        return(NULL)
-    }
-
-    tryCatch(workflowData[[name]], error = function(e) NULL)
-}
-
-getMetabSummaryStateObject <- function(workflowData) {
-    state_manager <- getMetabSummaryWorkflowValue(workflowData, "state_manager")
-    if (is.null(state_manager)) {
-        return(NULL)
-    }
-
-    data_states <- c(
-        "metab_correlation_filtered", "metab_norm_complete",
-        "metab_ruv_corrected", "metab_normalized", "loaded_for_de",
-        "metab_qc_complete"
-    )
-
-    history <- tryCatch(state_manager$getHistory(), error = function(e) character())
-    matching_states <- data_states[data_states %in% history]
-    state_name <- if (length(matching_states) > 0L) matching_states[[1]] else NULL
-    if (is.null(state_name) || is.na(state_name)) {
-        state_name <- workflowStateCurrentName(state_manager)
-    }
-    if (is.null(state_name) || is.na(state_name)) {
-        return(NULL)
-    }
-
-    tryCatch(state_manager$getState(state_name), error = function(e) NULL)
-}
-
-getMetabSummaryObjectArgs <- function(object) {
-    if (is.null(object) || !isS4(object) || !"args" %in% methods::slotNames(object)) {
-        return(NULL)
-    }
-
-    tryCatch(object@args, error = function(e) NULL)
-}
-
-buildMetabSummaryParameterPayload <- function(workflowData, finalS4Object = NULL) {
-    payload <- list(
-        config_list = getMetabSummaryWorkflowValue(workflowData, "config_list"),
-        contrasts_tbl = getMetabSummaryWorkflowValue(workflowData, "contrasts_tbl"),
-        da_ui_params = getMetabSummaryWorkflowValue(workflowData, "da_ui_params"),
-        normalization_ui_params = getMetabSummaryWorkflowValue(workflowData, "normalization_ui_params"),
-        itsd_ui_params = getMetabSummaryWorkflowValue(workflowData, "itsd_ui_params"),
-        ruv_optimization_result = getMetabSummaryWorkflowValue(workflowData, "ruv_optimization_result"),
-        enrichment_ui_params = getMetabSummaryWorkflowValue(workflowData, "enrichment_ui_params"),
-        s4_args = getMetabSummaryObjectArgs(finalS4Object)
-    )
-
-    payload[!vapply(payload, is.null, logical(1))]
-}
-
 prepareMetabSummarySessionState <- function(
     inputValues,
     projectDirs,
@@ -163,11 +97,21 @@ runMetabSummaryExportSessionObserverShell <- function(
     showNotificationFn = shiny::showNotification,
     logInfoFn = logger::log_info,
     logErrorFn = logger::log_error,
-    skipFormatterFn = logger::skip_formatter
+    skipFormatterFn = logger::skip_formatter,
+    prepareDependenciesFn = prepareMetabSummaryDependencies,
+    releaseDependenciesFn = releaseMetabSummaryDependencies,
+    recordProductFn = recordMetabSummaryProduct
 ) {
     reqFn(inputValues$experiment_label)
+    dependencies <- NULL
+    on.exit(releaseDependenciesFn(dependencies), add = TRUE)
 
     tryCatch({
+        dependencies <- prepareDependenciesFn(
+            workflowData,
+            projectDirs,
+            omicType
+        )
         session_export_path <- file.path(
             projectDirs[[omicType]]$source_dir,
             paste0("session_state_", sysDateFn(), ".RDS")
@@ -183,6 +127,7 @@ runMetabSummaryExportSessionObserverShell <- function(
         )
 
         saveRdsFn(session_state, session_export_path)
+        recordProductFn(dependencies, session_export_path, "session_state")
 
         showNotificationFn(
             paste("Session state exported to:", session_export_path),
@@ -236,7 +181,10 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
     showNotificationFn = shiny::showNotification,
     sysTimeFn = Sys.time,
     catFn = cat,
-    globalEnv = .GlobalEnv
+    globalEnv = .GlobalEnv,
+    prepareDependenciesFn = prepareMetabSummaryDependencies,
+    releaseDependenciesFn = releaseMetabSummaryDependencies,
+    recordProductFn = recordMetabSummaryProduct
 ) {
     input <- inputValues
     project_dirs <- projectDirs
@@ -244,10 +192,17 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
     workflow_data <- workflowData
 
     reqFn(input$experiment_label)
+    dependencies <- NULL
+    on.exit(releaseDependenciesFn(dependencies), add = TRUE)
 
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
 
     tryCatch({
+        dependencies <- prepareDependenciesFn(
+            workflowData,
+            projectDirs,
+            omicType
+        )
         final_s4_object <- NULL
         data_state_used <- NULL
 
@@ -304,8 +259,10 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
 
         config_list_assigned <- FALSE
         if (!is.null(workflow_data) && !is.null(workflow_data$config_list)) {
-            assignFn("config_list", workflow_data$config_list, envir = globalEnv)
-            config_list_assigned <- TRUE
+            if (metabSummaryGlobalOwnershipAllowed(workflow_data)) {
+                assignFn("config_list", workflow_data$config_list, envir = globalEnv)
+                config_list_assigned <- TRUE
+            }
             catFn(
                 "SESSION SUMMARY: Config list available with",
                 length(workflow_data$config_list),
@@ -350,6 +307,8 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
         s4_filepath <- file.path(integration_dir, s4_filename)
 
         saveRdsFn(final_s4_object, s4_filepath)
+        recordProductFn(dependencies, s4_filepath, "final_s4")
+        recordProductFn(dependencies, study_params_file, "study_parameters")
         catFn(sprintf(
             "SESSION SUMMARY: Saved Integration S4 object to: %s\n",
             s4_filepath
@@ -556,19 +515,25 @@ runMetabSummaryCopyToPublicationObserverShell <- function(
             )
 
             project_dirs_assigned <- FALSE
-            if (!existsFn("project_dirs", envir = globalEnv)) {
+            if (metabSummaryGlobalOwnershipAllowed(workflow_data) &&
+                !existsFn("project_dirs", envir = globalEnv)) {
                 catFn("SESSION SUMMARY: Setting project_dirs in global environment\n")
                 assignFn("project_dirs", project_dirs, envir = globalEnv)
                 project_dirs_assigned <- TRUE
             }
 
-            copy_failures <- copyToResultsSummaryFn(
+            copy_args <- list(
                 omic_type = omic_type,
                 experiment_label = input$experiment_label,
                 contrasts_tbl = contrasts_tbl,
                 design_matrix = design_matrix,
                 force = TRUE
             )
+            supported <- names(formals(copyToResultsSummaryFn))
+            if ("project_dirs" %in% supported || "..." %in% supported) {
+                copy_args$project_dirs <- project_dirs
+            }
+            copy_failures <- do.call(copyToResultsSummaryFn, copy_args)
 
             classified_failures <- classifyMetabSummaryCopyFailures(copy_failures)
             if (length(classified_failures$required) > 0L) {
@@ -679,7 +644,11 @@ runMetabSummaryGenerateReportObserverShell <- function(
     logErrorFn = logger::log_error,
     skipFormatterFn = logger::skip_formatter,
     catFn = cat,
-    printFn = print
+    printFn = print,
+    workflowData = NULL,
+    prepareDependenciesFn = prepareMetabSummaryDependencies,
+    releaseDependenciesFn = releaseMetabSummaryDependencies,
+    recordProductFn = recordMetabSummaryProduct
 ) {
     input <- inputValues
     project_dirs <- projectDirs
@@ -687,6 +656,13 @@ runMetabSummaryGenerateReportObserverShell <- function(
 
     reqFn(input$experiment_label)
     reqFn(values$files_copied)
+
+    dependencies <- prepareDependenciesFn(
+        workflowData,
+        projectDirs,
+        omicType
+    )
+    on.exit(releaseDependenciesFn(dependencies), add = TRUE)
 
     if (!omic_type %in% names(project_dirs) || is.null(project_dirs[[omic_type]]$base_dir)) {
         showNotificationFn(
@@ -836,6 +812,7 @@ runMetabSummaryGenerateReportObserverShell <- function(
                 )
 
                 showNotificationFn("Report generated successfully!", type = "message")
+                recordProductFn(dependencies, rendered_path, "report")
 
                 output$session_summary <- renderTextFn({
                     paste("Workflow args created for:", input$experiment_label,

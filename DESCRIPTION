@@ -270,6 +270,7 @@ Collate:
     'mod_metab_norm_artifact_helpers.R'
     'mod_metab_session_artifact_helpers.R'
     'mod_metab_da_artifact_helpers.R'
+    'mod_metab_summary_artifact_helpers.R'
     'mod_metab_da_observer_helpers.R'
     'mod_metab_da_registration_helpers.R'
     'mod_metab_da_server_helpers.R'
