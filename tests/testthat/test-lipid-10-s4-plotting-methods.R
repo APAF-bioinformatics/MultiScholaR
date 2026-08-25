@@ -10,6 +10,20 @@ lipidS4PlottingMethodsAreSplit <- function() {
     file.exists(file.path("..", "..", "R", "func_lipid_s4_plotting_methods.R"))
 }
 
+localLipidS4PlotBinding <- function(name, value, .local_envir = parent.frame()) {
+    namespace <- asNamespace("MultiScholaR")
+    old_value <- get(name, envir = namespace, inherits = FALSE)
+    was_locked <- bindingIsLocked(name, namespace)
+    if (was_locked) unlockBinding(name, namespace)
+    assign(name, value, envir = namespace)
+    if (was_locked) lockBinding(name, namespace)
+    withr::defer({
+        if (bindingIsLocked(name, namespace)) unlockBinding(name, namespace)
+        assign(name, old_value, envir = namespace)
+        if (was_locked) lockBinding(name, namespace)
+    }, envir = .local_envir)
+}
+
 test_that("plotPca resolves through the active lipid S4 plotting source", {
     wrapper_source_lines <- readLines(file.path("..", "..", "R", "func_lipid_s4_objects.R"))
     helper_path <- file.path("..", "..", "R", "func_lipid_s4_plotting_methods.R")
@@ -50,22 +64,8 @@ test_that("plotPca returns one titled ggplot per assay with PCA coordinates", {
     )
     split_plotting_methods <- lipidS4PlottingMethodsAreSplit()
 
-    had_plot_helper <- exists("plotPcaHelper", envir = .GlobalEnv, inherits = FALSE)
-    old_plot_helper <- if (had_plot_helper) {
-        get("plotPcaHelper", envir = .GlobalEnv, inherits = FALSE)
-    } else {
-        NULL
-    }
-    on.exit({
-        if (had_plot_helper) {
-            assign("plotPcaHelper", old_plot_helper, envir = .GlobalEnv)
-        } else if (exists("plotPcaHelper", envir = .GlobalEnv, inherits = FALSE)) {
-            rm("plotPcaHelper", envir = .GlobalEnv)
-        }
-    }, add = TRUE)
-
     captured_call <- NULL
-    assign(
+    localLipidS4PlotBinding(
         "plotPcaHelper",
         function(data,
                  design_matrix,
@@ -97,8 +97,7 @@ test_that("plotPca returns one titled ggplot per assay with PCA coordinates", {
                 ggplot2::aes(PC1, PC2, colour = group)
             ) +
                 ggplot2::labs(title = title)
-        },
-        envir = .GlobalEnv
+        }
     )
 
     if (split_plotting_methods) {
@@ -177,22 +176,8 @@ test_that("plotRle passes labeled assay matrices and grouping info to the helper
     )
     split_plotting_methods <- lipidS4PlottingMethodsAreSplit()
 
-    had_plot_helper <- exists("plotRleHelper", envir = .GlobalEnv, inherits = FALSE)
-    old_plot_helper <- if (had_plot_helper) {
-        get("plotRleHelper", envir = .GlobalEnv, inherits = FALSE)
-    } else {
-        NULL
-    }
-    on.exit({
-        if (had_plot_helper) {
-            assign("plotRleHelper", old_plot_helper, envir = .GlobalEnv)
-        } else if (exists("plotRleHelper", envir = .GlobalEnv, inherits = FALSE)) {
-            rm("plotRleHelper", envir = .GlobalEnv)
-        }
-    }, add = TRUE)
-
     captured_call <- NULL
-    assign(
+    localLipidS4PlotBinding(
         "plotRleHelper",
         function(Y, rowinfo = NULL, yaxis_limit = c(-0.5, 0.5), ...) {
             captured_call <<- list(
@@ -208,8 +193,7 @@ test_that("plotRle passes labeled assay matrices and grouping info to the helper
                 ),
                 ggplot2::aes(sample, value)
             )
-        },
-        envir = .GlobalEnv
+        }
     )
 
     rle_plots <- plotRle(

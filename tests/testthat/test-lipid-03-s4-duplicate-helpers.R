@@ -10,6 +10,20 @@ lipid_duplicate_helper_seam_available <- function() {
     exists("resolveDuplicateFeaturesForLipidObject", mode = "function", inherits = TRUE)
 }
 
+localLipidDuplicateBinding <- function(name, value, .local_envir = parent.frame()) {
+    namespace <- asNamespace("MultiScholaR")
+    old_value <- get(name, envir = namespace, inherits = FALSE)
+    was_locked <- bindingIsLocked(name, namespace)
+    if (was_locked) unlockBinding(name, namespace)
+    assign(name, value, envir = namespace)
+    if (was_locked) lockBinding(name, namespace)
+    withr::defer({
+        if (bindingIsLocked(name, namespace)) unlockBinding(name, namespace)
+        assign(name, old_value, envir = namespace)
+        if (was_locked) lockBinding(name, namespace)
+    }, envir = .local_envir)
+}
+
 find_lipid_duplicates_binding_is_mocked <- function() {
     fn <- get0("findLipidDuplicateFeatureIDs", mode = "function", inherits = TRUE)
     if (!is.function(fn)) {
@@ -180,22 +194,8 @@ test_that("resolveDuplicateFeatures routes the S4 method through the duplicate h
         group_id = "group"
     )
 
-    had_helper <- exists("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv, inherits = FALSE)
-    old_helper <- if (had_helper) {
-        get("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv, inherits = FALSE)
-    } else {
-        NULL
-    }
-    on.exit({
-        if (had_helper) {
-            assign("resolveDuplicateFeaturesForLipidObject", old_helper, envir = .GlobalEnv)
-        } else if (exists("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv, inherits = FALSE)) {
-            rm("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv)
-        }
-    }, add = TRUE)
-
     captured_call <- NULL
-    assign(
+    localLipidDuplicateBinding(
         "resolveDuplicateFeaturesForLipidObject",
         function(theObject, itsd_pattern_columns = NULL) {
             captured_call <<- list(
@@ -204,8 +204,7 @@ test_that("resolveDuplicateFeatures routes the S4 method through the duplicate h
             )
             theObject@args$delegated_duplicate_helper <- TRUE
             theObject
-        },
-        envir = .GlobalEnv
+        }
     )
 
     resolved_object <- resolveDuplicateFeatures(

@@ -244,12 +244,7 @@
 setMethod("resolveDuplicateFeatures",
     signature = "LipidomicsAssayData",
     definition = function(theObject, itsd_pattern_columns = NULL) {
-        duplicate_helper <- get0("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv, inherits = FALSE)
-        if (!is.function(duplicate_helper)) {
-            duplicate_helper <- resolveDuplicateFeaturesForLipidObject
-        }
-
-        duplicate_helper(
+        resolveDuplicateFeaturesForLipidObject(
             theObject = theObject,
             itsd_pattern_columns = itsd_pattern_columns
         )

@@ -737,7 +737,8 @@ hydrateDiaS4Artifact <- function(bundle) {
     c(
         artifactDiaCodecDeclarations(),
         artifactProteomicsNonDiaCodecDeclarations(),
-        artifactMetabolomicsCodecDeclarations()
+        artifactMetabolomicsCodecDeclarations(),
+        artifactLipidomicsCodecDeclarations()
     )
 )
 
