@@ -594,7 +594,10 @@ test_that("memory and disabled read-through leave dual-written projects untouche
     expect_false(result$resumed)
     expect_identical(result$reason, "artifact_manifest_absent")
     expect_false(result$artifact_project)
-    expect_false(exists("evictLipidArtifactWorkflowPayloads", mode = "function"))
+    expect_true(exists("evictLipidArtifactWorkflowPayloads", mode = "function"))
+    descriptor <- artifactLipidomicsWorkflowDescriptor()
+    expect_identical(descriptor$certification$status, "dual_write")
+    expect_false(descriptor$certification$auto_eligible)
 })
 
 test_that("resume defaults and consumer inventory are complete", {

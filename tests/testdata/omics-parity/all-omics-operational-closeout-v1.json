@@ -1,0 +1,179 @@
+{
+  "schema": "multischolar.all_omics_operational_closeout",
+  "schema_version": "1.0.0",
+  "ticket_id": "OMICS-ART-048",
+  "decision": "withheld",
+  "effective_default_backend": "memory",
+  "promoted_capability_ids": [],
+  "capability_ids": [
+    "proteomics.diann.peptide.dia.v1",
+    "proteomics.spectronaut.protein.lfq.v1",
+    "proteomics.spectronaut.peptide.lfq.v1",
+    "proteomics.fragpipe.protein.lfq.v1",
+    "proteomics.maxquant.protein.lfq.v1",
+    "proteomics.pd_tmt.protein.tmt.v1",
+    "metabolomics.msdial.metabolite.standard.v1",
+    "metabolomics.custom.metabolite.standard.v1",
+    "lipidomics.msdial.lipid.standard.v1",
+    "lipidomics.lipidsearch.lipid.standard.v1",
+    "lipidomics.custom.lipid.standard.v1"
+  ],
+  "descriptor_canaries": [
+    {
+      "capability_id": "proteomics.diann.peptide.dia.v1",
+      "omic_type": "proteomics",
+      "descriptor_version": "1.0.0",
+      "descriptor_digest": "673b5d93149e17f08f2153ccde37ba10899ccf97548dc42b7e16a9e129dd5c6d",
+      "promotion_status": "withheld",
+      "reason_code": "one_or_more_performance_gates_failed",
+      "maximum_forced_rollout": "dual_write",
+      "auto_eligible": false,
+      "evidence_owner": "OMICS-ART-020",
+      "performance_evidence_class": "private_calibrated_paired",
+      "public_private_strata_pooled": false
+    },
+    {
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "omic_type": "proteomics",
+      "descriptor_version": "1.0.0",
+      "descriptor_digest": "61d8c33a8629ee3803dc1f45bd121cd672273db7b53b875c55f0c82cf1422932",
+      "promotion_status": "withheld",
+      "reason_code": "paired_artifact_performance_evidence_absent",
+      "maximum_forced_rollout": "dual_write",
+      "auto_eligible": false,
+      "evidence_owner": "OMICS-ART-028",
+      "performance_evidence_class": "historical_memory_only",
+      "public_private_strata_pooled": false
+    },
+    {
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "omic_type": "proteomics",
+      "descriptor_version": "1.0.0",
+      "descriptor_digest": "9c764ddb2a42fc2d137777f8fa8063a3fe5f917bf5195837b5b4b9c9a06c98ba",
+      "promotion_status": "withheld",
+      "reason_code": "paired_artifact_performance_evidence_absent",
+      "maximum_forced_rollout": "dual_write",
+      "auto_eligible": false,
+      "evidence_owner": "OMICS-ART-028",
+      "performance_evidence_class": "historical_memory_only",
+      "public_private_strata_pooled": false
+    },
+    {
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "omic_type": "proteomics",
+      "descriptor_version": "1.0.0",
+      "descriptor_digest": "6ce1f0220889b48394b4c9a45a4fad9843dc53875132d9330d2212b12121a953",
+      "promotion_status": "withheld",
+      "reason_code": "paired_artifact_performance_evidence_absent",
+      "maximum_forced_rollout": "dual_write",
+      "auto_eligible": false,
+      "evidence_owner": "OMICS-ART-028",
+      "performance_evidence_class": "historical_memory_only",
+      "public_private_strata_pooled": false
+    },
+    {
+      "capability_id": "metabolomics.custom.metabolite.standard.v1",
+      "omic_type": "metabolomics",
+      "descriptor_version": "1.0.0",
+      "descriptor_digest": "59f86816a6e844d1e8eaf972793f131aaef4ab03f33b8a483dc8506822ae921f",
+      "promotion_status": "withheld",
+      "reason_code": "eviction_and_performance_gates_failed",
+      "maximum_forced_rollout": "dual_write",
+      "auto_eligible": false,
+      "evidence_owner": "OMICS-ART-037",
+      "performance_evidence_class": "public_generated_operational",
+      "public_private_strata_pooled": false
+    },
+    {
+      "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+      "omic_type": "lipidomics",
+      "descriptor_version": "1.0.0",
+      "descriptor_digest": "654f7103b84b0e4cb1f0efea68620659a7355edd06fdcce46d6cbe72dd35772a",
+      "promotion_status": "withheld",
+      "reason_code": "eviction_and_performance_gates_failed",
+      "maximum_forced_rollout": "dual_write",
+      "auto_eligible": false,
+      "evidence_owner": "OMICS-ART-046",
+      "performance_evidence_class": "public_generated_operational",
+      "public_private_strata_pooled": false
+    }
+  ],
+  "unsupported_capabilities": [
+    {
+      "capability_id": "proteomics.spectronaut.protein.lfq.v1",
+      "reason_code": "scientific_support_evidence_absent"
+    },
+    {
+      "capability_id": "proteomics.spectronaut.peptide.lfq.v1",
+      "reason_code": "scientific_support_evidence_absent"
+    },
+    {
+      "capability_id": "metabolomics.msdial.metabolite.standard.v1",
+      "reason_code": "complete_scientific_workflow_unverified"
+    },
+    {
+      "capability_id": "lipidomics.msdial.lipid.standard.v1",
+      "reason_code": "complete_scientific_workflow_unverified"
+    },
+    {
+      "capability_id": "lipidomics.custom.lipid.standard.v1",
+      "reason_code": "complete_scientific_workflow_unverified"
+    }
+  ],
+  "operational_contract": {
+    "reconciliation": "passed_shared_kernel",
+    "retention_and_trash": "passed_shared_kernel",
+    "resource_plateau": "passed_shared_kernel",
+    "closed_project_portability": "passed_per_track",
+    "protected_reachability": [
+      "current_state",
+      "active_lineage",
+      "retained_history",
+      "artifact_dependency_edges",
+      "reports",
+      "exports",
+      "portable_sessions"
+    ],
+    "live_or_incomplete_copy_rejection": "absent_required_for_promotion",
+    "supported_os_promotion_matrix": "absent_required_for_promotion",
+    "tombstone_api": "unsupported",
+    "deliberate_purge_api": "unsupported",
+    "schema_migration_changed": false
+  },
+  "boundary_evidence": [
+    "tests/testthat/test-omics-artifact-store.R",
+    "tests/testthat/test-omics-artifact-duckdb.R",
+    "tests/testthat/test-omics-artifact-workflow-state.R",
+    "tests/testthat/test-omics-artifact-session-lifecycle.R",
+    "tests/testthat/test-omics-artifact-hybrid.R",
+    "tests/testthat/test-omics-artifact-dia-resume.R",
+    "tests/testthat/test-omics-artifact-prot-nondia-resume.R",
+    "tests/testthat/test-omics-artifact-metab-resume.R",
+    "tests/testthat/test-omics-artifact-lipid-resume.R"
+  ],
+  "performance_evidence": [
+    "tests/testthat/test-omics-artifact-baseline.R",
+    "tests/testthat/test-omics-artifact-prot-nondia-baseline.R",
+    "tests/testthat/test-omics-artifact-metab-baseline.R",
+    "tests/testthat/test-omics-artifact-lipid-baseline.R"
+  ],
+  "workload_contracts": [
+    "tests/testdata/omics-parity/metabolomics/workloads/mixed-public-representative-v1.json",
+    "tests/testdata/omics-parity/lipidomics/workloads/mixed-public-representative-v1.json"
+  ],
+  "evidence_boundaries": {
+    "generated_evidence_authorizes_operational_gates_only": true,
+    "scientific_parity_requires_hand_reviewed_fixtures": true,
+    "public_private_strata_pooled": false,
+    "private_source_path_retained": false,
+    "unsalted_private_fingerprint_retained": false,
+    "private_headers_identifiers_values_sequences_retained": false
+  },
+  "rollback": {
+    "target_backend": "memory",
+    "artifact_first_fallback": "read_only",
+    "memory_reconstruction": "verified_compatibility_session",
+    "registry_recovery": "checksummed_backup_restore",
+    "delete_immutable_generations": false
+  }
+}
