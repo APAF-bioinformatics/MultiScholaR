@@ -176,6 +176,7 @@ executeLipidDaRunAnalysis <- function(
     session,
     experimentPaths,
     runLipidsDaFn = runLipidsDA,
+    persistResultsFn = persistLipidDaArtifactsSafely,
     successFinalizerFn = finalizeLipidDaRunAnalysisSuccess,
     errorFinalizerFn = finalizeLipidDaRunAnalysisError
 ) {
@@ -190,6 +191,21 @@ executeLipidDaRunAnalysis <- function(
                 eBayes_trend = TRUE,
                 eBayes_robust = TRUE
             )
+            persistence <- persistResultsFn(
+                workflow_data = workflowData,
+                results = results,
+                contrasts_tbl = contrastsTbl,
+                parameters = list(
+                    formula_string = formulaString,
+                    da_q_val_thresh = daQValThresh,
+                    treat_lfc_cutoff = treatLfcCutoff,
+                    eBayes_trend = TRUE,
+                    eBayes_robust = TRUE
+                )
+            )
+            if (isTRUE(persistence$enabled) && !isTRUE(persistence$ok)) {
+                stop(persistence$error)
+            }
 
             list(
                 status = "success",
