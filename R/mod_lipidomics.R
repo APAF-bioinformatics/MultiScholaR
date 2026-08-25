@@ -198,11 +198,19 @@ mod_lipidomics_server <- function(
             experiment_label = experiment_label,
             storage_policy = storage_policy
         )
+        resume_result <- resumeLipidArtifactWorkflowSafely(
+            workflow_data,
+            experiment_paths,
+            experiment_label,
+            storage_policy = storage_policy
+        )
 
         logger::log_info(sprintf("Lipidomics module initialized with paths for: %s", paths_key))
 
         # Reactive trigger for initializing QC modules (like proteomics pattern)
-        qc_trigger <- shiny::reactiveVal(NULL)
+        qc_trigger <- shiny::reactiveVal(
+            if (isTRUE(resume_result$resumed)) TRUE else NULL
+        )
 
         # Initialize all sub-module servers
         logger::log_info("Initializing lipidomics workflow modules")
