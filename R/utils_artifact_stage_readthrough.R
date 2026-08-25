@@ -355,10 +355,12 @@ artifactStageReadResources <- function(
     identity <- context$getIdentity()
     store <- newArtifactStore(context$getPaths(), identity$project_id)
     artifactStageValidateDescriptorPin(adapter, store)
+    registry_identity <- artifactRegistryIdentity(store, identity)
     registry <- projectRegistryForContext(context, resource_policy)
     session <- openProjectRegistryReadOnly(registry)
     list(
         identity = identity,
+        registry_identity = registry_identity,
         store = store,
         registry = registry,
         session = session
@@ -469,7 +471,7 @@ artifactStageResolveRun <- function(
         resources$session,
         "run_artifacts",
         filters = list(
-            workflow_id = resources$identity$workflow_id,
+            workflow_id = resources$registry_identity$workflow_id,
             run_id = run$run_id,
             direction = "output"
         )
@@ -488,7 +490,7 @@ artifactStageResolveRun <- function(
             resources$session,
             "artifacts",
             filters = list(
-                workflow_id = resources$identity$workflow_id,
+                workflow_id = resources$registry_identity$workflow_id,
                 artifact_id = link$artifact_id[[1L]]
             ),
             limit = 1L
@@ -544,7 +546,7 @@ resolveArtifactStageCommittedStage <- function(
     adapter <- validateArtifactStageReadthroughAdapter(adapter)
     payload_validation <- match.arg(payload_validation)
     filters <- list(
-        workflow_id = resources$identity$workflow_id,
+        workflow_id = resources$registry_identity$workflow_id,
         status = "completed"
     )
     if (!is.null(run_id)) filters$run_id <- run_id
@@ -600,7 +602,7 @@ artifactStageDecodeParameters <- function(
         resources$session,
         "parameters",
         filters = list(
-            workflow_id = resources$identity$workflow_id,
+            workflow_id = resources$registry_identity$workflow_id,
             run_id = run_id
         )
     )
@@ -654,7 +656,7 @@ artifactStageCurrentStateRow <- function(adapter, resources) {
         resources$session,
         "states",
         filters = list(
-            workflow_id = resources$identity$workflow_id,
+            workflow_id = resources$registry_identity$workflow_id,
             status = "current"
         )
     )

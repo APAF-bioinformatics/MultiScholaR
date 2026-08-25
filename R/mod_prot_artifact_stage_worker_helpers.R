@@ -535,7 +535,10 @@ publishProtDiaArtifactWorkerStage <- function(workflow_data, pending_stage) {
     )
     session <- initializeProjectRegistry(registry)
     on.exit(closeProjectRegistry(session), add = TRUE)
-    artifactWorkflowStateEnsureWorkflow(session, pending$stage$identity)
+    artifactWorkflowStateEnsureWorkflow(
+        session,
+        pending$stage$registry_identity
+    )
     stage <- pending$stage
     stage$session <- session
     protDiaArtifactRegisterStage(

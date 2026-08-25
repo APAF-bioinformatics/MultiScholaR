@@ -8,6 +8,21 @@
 
 PROJECT_REGISTRY_OWNER_SCHEMA <- "multischolar.project_registry_owner"
 PROJECT_REGISTRY_OWNER_VERSION <- 1L
+.PROJECT_REGISTRY_ACTIVE_WRITERS <- new.env(parent = emptyenv())
+
+#' Build the process-local writer registry key
+#'
+#' @param registry A validated project registry.
+#'
+#' @return A normalized writer-lock path.
+#' @noRd
+projectRegistryWriterKey <- function(registry) {
+    normalizePath(
+        projectRegistryPath(registry, "lock"),
+        winslash = "/",
+        mustWork = FALSE
+    )
+}
 
 projectRegistryEnsureDirectory <- function(registry, path_name) {
     path <- projectRegistryPath(registry, path_name)
@@ -213,6 +228,17 @@ projectRegistryAcquireWriter <- function(registry, timeout_ms = NULL) {
         "writer_timeout_ms",
         maximum = 3600000L
     ))
+    writer_key <- projectRegistryWriterKey(registry)
+    if (exists(
+        writer_key,
+        envir = .PROJECT_REGISTRY_ACTIVE_WRITERS,
+        inherits = FALSE
+    )) {
+        projectRegistryAbort(
+            "project registry already has an active in-process writer",
+            "multischolar_registry_writer_busy"
+        )
+    }
     lock_handle <- tryCatch(
         filelock::lock(lock_path, exclusive = TRUE, timeout = timeout_ms),
         error = \(error) projectRegistryAbort(
@@ -248,6 +274,11 @@ projectRegistryAcquireWriter <- function(registry, timeout_ms = NULL) {
     }
     owner <- newProjectRegistryOwner(registry)
     projectRegistryWriteOwner(registry, owner)
+    assign(
+        writer_key,
+        owner$owner_token,
+        envir = .PROJECT_REGISTRY_ACTIVE_WRITERS
+    )
     release_on_error <- FALSE
     structure(
         list(
@@ -307,6 +338,15 @@ projectRegistryReleaseWriter <- function(writer, owner_token) {
             "multischolar_registry_writer_release_failed",
             parent = unlock_error
         )
+    }
+    writer_key <- projectRegistryWriterKey(writer$registry)
+    active_token <- get0(
+        writer_key,
+        envir = .PROJECT_REGISTRY_ACTIVE_WRITERS,
+        inherits = FALSE
+    )
+    if (identical(active_token, expected)) {
+        rm(list = writer_key, envir = .PROJECT_REGISTRY_ACTIVE_WRITERS)
     }
     invisible(TRUE)
 }

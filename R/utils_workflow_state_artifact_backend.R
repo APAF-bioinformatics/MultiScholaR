@@ -38,8 +38,11 @@ ArtifactWorkflowState <- R6::R6Class(
                 context$getPaths(),
                 private$identity$project_id
             )
-            artifactWorkflowStateEnsureMetadata(private$store, private$identity,
-                descriptor_contract)
+            private$registry_identity <- artifactWorkflowStateEnsureMetadata(
+                private$store,
+                private$identity,
+                descriptor_contract
+            )
             private$registry <- projectRegistryForContext(
                 context,
                 resource_policy = resource_policy
@@ -62,7 +65,10 @@ ArtifactWorkflowState <- R6::R6Class(
                     try(closeProjectRegistry(private$session), silent = TRUE)
                 }
             }, add = TRUE)
-            artifactWorkflowStateEnsureWorkflow(private$session, private$identity)
+            artifactWorkflowStateEnsureWorkflow(
+                private$session,
+                private$registry_identity
+            )
             private$refresh()
             if (is.null(private$current_generation_id)) {
                 private$createInitialGeneration()
@@ -329,7 +335,7 @@ ArtifactWorkflowState <- R6::R6Class(
             private$assertOpen()
             artifactWorkflowStateEvents(
                 private$session,
-                private$identity$workflow_id
+                private$registry_identity$workflow_id
             )
         },
         getRevision = function() length(self$getEvents()),
@@ -391,6 +397,7 @@ ArtifactWorkflowState <- R6::R6Class(
     private = list(
         context = NULL,
         identity = NULL,
+        registry_identity = NULL,
         store = NULL,
         registry = NULL,
         session = NULL,
@@ -451,7 +458,9 @@ ArtifactWorkflowState <- R6::R6Class(
             rows <- projectRegistryQuery(
                 private$session,
                 "states",
-                filters = list(workflow_id = private$identity$workflow_id)
+                filters = list(
+                    workflow_id = private$registry_identity$workflow_id
+                )
             )
             if (nrow(rows) == 0L) return(list())
             lapply(seq_len(nrow(rows)), function(index) {
@@ -643,7 +652,7 @@ ArtifactWorkflowState <- R6::R6Class(
             timestamp <- manifest$created_at
             artifactWorkflowStateTransaction(private$session, function() {
                 projectRegistryWrite(private$session, "state", list(
-                    workflow_id = private$identity$workflow_id,
+                    workflow_id = private$registry_identity$workflow_id,
                     generation_id = generation_id,
                     parent_generation_id = NULL,
                     logical_name = "initial",
@@ -714,7 +723,7 @@ ArtifactWorkflowState <- R6::R6Class(
                 private$session,
                 "revisions",
                 filters = list(
-                    workflow_id = private$identity$workflow_id,
+                    workflow_id = private$registry_identity$workflow_id,
                     action_id = action_id
                 ),
                 limit = 1L
@@ -829,20 +838,20 @@ ArtifactWorkflowState <- R6::R6Class(
                 }
                 artifactWorkflowStateRegisterData(
                     private$session,
-                    private$identity,
+                    private$registry_identity,
                     data,
                     timestamp
                 )
                 artifactWorkflowStateUpdateStatus(
                     private$session,
-                    private$identity,
+                    private$registry_identity,
                     expected_parent,
                     "current",
                     "historical",
                     timestamp
                 )
                 projectRegistryWrite(private$session, "state", list(
-                    workflow_id = private$identity$workflow_id,
+                    workflow_id = private$registry_identity$workflow_id,
                     generation_id = generation_id,
                     parent_generation_id = expected_parent,
                     logical_name = state_name,
@@ -904,7 +913,7 @@ ArtifactWorkflowState <- R6::R6Class(
         activateSelection = function(selection, action_id) {
             request <- list(
                 session = private$session,
-                identity = private$identity,
+                identity = private$registry_identity,
                 selection = selection,
                 action_id = action_id,
                 write_revision = private$writeRevision,
@@ -928,7 +937,7 @@ ArtifactWorkflowState <- R6::R6Class(
             details
         ) {
             projectRegistryWrite(private$session, "revision", list(
-                workflow_id = private$identity$workflow_id,
+                workflow_id = private$registry_identity$workflow_id,
                 revision_id = artifactOpaqueId("revision"),
                 generation_id = generation_id,
                 action_id = action_id,
@@ -949,7 +958,7 @@ ArtifactWorkflowState <- R6::R6Class(
             timestamp
         ) {
             projectRegistryWrite(private$session, "event", list(
-                workflow_id = private$identity$workflow_id,
+                workflow_id = private$registry_identity$workflow_id,
                 event_id = artifactOpaqueId("event"),
                 generation_id = generation_id,
                 run_id = NULL,

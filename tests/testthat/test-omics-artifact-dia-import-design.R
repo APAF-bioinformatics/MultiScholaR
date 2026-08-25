@@ -461,7 +461,9 @@ test_that("memory and non-DIA lanes cannot initialize the DIA canary registry", 
         "proteomics.diann.peptide.dia.v1",
         "proteomics.maxquant.protein.lfq.v1",
         "proteomics.fragpipe.protein.lfq.v1",
-        "proteomics.pd_tmt.protein.tmt.v1"
+        "proteomics.pd_tmt.protein.tmt.v1",
+        "metabolomics.custom.metabolite.standard.v1",
+        "lipidomics.lipidsearch.lipid.standard.v1"
     ))
     expect_false(any(grepl("spectronaut", descriptor_ids, fixed = TRUE)))
 

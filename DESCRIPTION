@@ -104,6 +104,7 @@ Collate:
     'utils_workflow_state_artifact_assay_selections.R'
     'utils_workflow_state_artifact_references.R'
     'utils_workflow_state_codec_context.R'
+    'utils_artifact_registry_scope.R'
     'utils_workflow_state_artifacts.R'
     'utils_workflow_session_artifacts.R'
     'utils_artifact_queries.R'

@@ -62,21 +62,64 @@ projectRegistryConnectionConfig <- function(
     config
 }
 
+#' Verify an already-locked DuckDB security configuration
+#'
+#' @param connection An open project registry connection.
+#' @param registry A validated project registry.
+#'
+#' @return A scalar logical.
+#' @noRd
+projectRegistryLockedSecurityEquivalent <- function(connection, registry) {
+    settings <- tryCatch(
+        projectRegistryEffectiveSettings(connection),
+        error = \(error) NULL
+    )
+    if (!is.data.frame(settings)) return(FALSE)
+    values <- stats::setNames(as.character(settings$value), settings$name)
+    disabled <- c(
+        "allow_community_extensions", "allow_unsigned_extensions",
+        "autoload_known_extensions", "autoinstall_known_extensions",
+        "enable_external_access", "enable_external_file_cache"
+    )
+    all(c(disabled, "lock_configuration", "allowed_directories") %in%
+        names(values)) &&
+        all(tolower(values[disabled]) == "false") &&
+        identical(tolower(values[["lock_configuration"]]), "true") &&
+        grepl(
+            normalizePath(registry$project_root, winslash = "/", mustWork = TRUE),
+            values[["allowed_directories"]],
+            fixed = TRUE
+        )
+}
+
 projectRegistryConfigureSecurity <- function(connection, registry) {
-    projectRegistryExecuteBound(
-        connection,
-        "SET allowed_directories = ?",
-        list(list(registry$project_root))
+    error <- tryCatch({
+        projectRegistryExecuteBound(
+            connection,
+            "SET allowed_directories = ?",
+            list(list(registry$project_root))
+        )
+        projectRegistryExecuteBound(
+            connection,
+            "SET enable_external_access = false"
+        )
+        projectRegistryExecuteBound(
+            connection,
+            "SET lock_configuration = true"
+        )
+        NULL
+    }, error = identity)
+    if (is.null(error)) return(invisible(TRUE))
+    locked <- grepl(
+        "configuration has been locked",
+        conditionMessage(error),
+        fixed = TRUE
     )
-    projectRegistryExecuteBound(
-        connection,
-        "SET enable_external_access = false"
-    )
-    projectRegistryExecuteBound(
-        connection,
-        "SET lock_configuration = true"
-    )
-    invisible(TRUE)
+    if (isTRUE(locked) &&
+        projectRegistryLockedSecurityEquivalent(connection, registry)) {
+        return(invisible(TRUE))
+    }
+    stop(error)
 }
 
 artifactCleanupTemporaryPath <- function(path, root) {

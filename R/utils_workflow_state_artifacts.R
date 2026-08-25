@@ -282,12 +282,18 @@ artifactWorkflowStateEnsureDescriptorPin <- function(
 
 artifactWorkflowStateEnsureMetadata <- function(store, identity, contract = NULL) {
     root_created <- artifactWorkflowStateEnsureRootManifest(store, identity)
+    registry_identity <- artifactRegistryIdentity(
+        store,
+        identity,
+        create_scope = root_created
+    )
     artifactWorkflowStateEnsureDescriptorPin(
         store,
         identity,
         contract = contract,
         allow_create = root_created
     )
+    registry_identity
 }
 
 artifactWorkflowStateManifestDigest <- function(manifest) {
@@ -759,7 +765,18 @@ artifactWorkflowStateEnsureWorkflow <- function(session, identity) {
         filters = list(workflow_id = identity$workflow_id),
         limit = 1L
     )
-    if (nrow(existing) == 1L) return(invisible(FALSE))
+    if (nrow(existing) == 1L) {
+        same_workflow <- identical(existing$omic_type[[1L]], identity$omic_type) &&
+            identical(existing$omic_label[[1L]], identity$omic_label) &&
+            identical(existing$workflow_slug[[1L]], identity$workflow_slug)
+        if (!isTRUE(same_workflow)) {
+            artifactWorkflowStateAbort(
+                "artifact registry workflow ID belongs to another workflow",
+                "multischolar_artifact_registry_workflow_collision"
+            )
+        }
+        return(invisible(FALSE))
+    }
     now <- artifactRefUtcNow()
     projectRegistryWrite(session, "workflow", list(
         workflow_id = identity$workflow_id,

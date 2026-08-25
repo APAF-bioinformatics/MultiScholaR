@@ -97,7 +97,7 @@ lipidArtifactRunHasParameters <- function(
         resources$session,
         "parameters",
         filters = list(
-            workflow_id = resources$identity$workflow_id,
+            workflow_id = resources$registry_identity$workflow_id,
             run_id = run_id
         )
     )
@@ -134,7 +134,7 @@ resolveLipidCommittedStage <- function(
     adapter <- lipidArtifactReadthroughAdapter()
     payload_validation <- match.arg(payload_validation)
     filters <- list(
-        workflow_id = resources$identity$workflow_id,
+        workflow_id = resources$registry_identity$workflow_id,
         status = "completed"
     )
     if (!is.null(run_id)) filters$run_id <- run_id

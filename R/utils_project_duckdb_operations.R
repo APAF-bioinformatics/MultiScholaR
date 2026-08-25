@@ -553,6 +553,54 @@ projectRegistryQuerySpecifications <- function() {
     )
 }
 
+#' Resolve a legacy public workflow filter when it is unambiguous
+#'
+#' @param session An open project registry session.
+#' @param operation Package-owned registry query operation.
+#' @param filters Candidate query filters.
+#'
+#' @return Query filters with an exact registry workflow ID when resolvable.
+#' @noRd
+projectRegistryResolveWorkflowFilter <- function(session, operation, filters) {
+    specification <- projectRegistryQuerySpecifications()[[operation]]
+    supports_workflow <- !is.null(specification) &&
+        !identical(operation, "workflows") &&
+        "workflow_id" %in% specification$filters
+    if (!isTRUE(supports_workflow)) return(filters)
+    if (!is.list(filters) ||
+        !workflowCapabilityScalarString(filters$workflow_id)) {
+        return(filters)
+    }
+    workflow_id <- filters$workflow_id
+    connection <- projectRegistrySessionConnection(session)
+    exact <- projectRegistryFetchBound(
+        connection,
+        paste0(
+            "SELECT workflow_id FROM workflows ",
+            "WHERE project_id = ? AND workflow_id = ? LIMIT 1"
+        ),
+        list(session$registry$project_id, workflow_id)
+    )
+    if (nrow(exact) == 1L) return(filters)
+    scoped <- projectRegistryFetchBound(
+        connection,
+        paste0(
+            "SELECT workflow_id FROM workflows ",
+            "WHERE project_id = ? AND starts_with(workflow_id, ?) ",
+            "ORDER BY workflow_id LIMIT 2"
+        ),
+        list(session$registry$project_id, paste0(workflow_id, "::"))
+    )
+    if (nrow(scoped) > 1L) {
+        projectRegistryAbort(
+            "public workflow ID matches multiple registry workflows",
+            "multischolar_ambiguous_registry_workflow_id"
+        )
+    }
+    if (nrow(scoped) == 1L) filters$workflow_id <- scoped$workflow_id[[1L]]
+    filters
+}
+
 projectRegistryNormalizeQuery <- function(session, operation, filters, limit) {
     specifications <- projectRegistryQuerySpecifications()
     if (!workflowCapabilityScalarString(operation) ||
@@ -640,6 +688,7 @@ projectRegistryQuery <- function(session, operation, filters = list(), limit = N
     session <- validateProjectRegistrySession(session)
     registry <- session$registry
     projectRegistryAssertRss(registry, paste0("before_query_", operation))
+    filters <- projectRegistryResolveWorkflowFilter(session, operation, filters)
     normalized <- projectRegistryNormalizeQuery(session, operation, filters, limit)
     connection <- projectRegistrySessionConnection(session)
     specification <- normalized$specification

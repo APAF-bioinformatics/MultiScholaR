@@ -544,7 +544,7 @@ artifactStageResources <- function(
     }
     identity <- context$getIdentity()
     store <- newArtifactStore(context$getPaths(), identity$project_id)
-    artifactWorkflowStateEnsureMetadata(
+    registry_identity <- artifactWorkflowStateEnsureMetadata(
         store,
         identity,
         artifactStageDescriptorContract(descriptor)
@@ -552,7 +552,7 @@ artifactStageResources <- function(
     registry <- projectRegistryForContext(context, resource_policy)
     session <- initializeProjectRegistry(registry)
     tryCatch(
-        artifactWorkflowStateEnsureWorkflow(session, identity),
+        artifactWorkflowStateEnsureWorkflow(session, registry_identity),
         error = \(error) {
             closeProjectRegistry(session)
             stop(error)
@@ -561,6 +561,7 @@ artifactStageResources <- function(
     list(
         stage_id = stage_id,
         identity = identity,
+        registry_identity = registry_identity,
         descriptor = descriptor,
         store = store,
         session = session,
@@ -659,7 +660,7 @@ artifactStageRegister <- function(
     artifactWorkflowStateTransaction(stage$session, \() {
         artifactStageRegistryRun(
             stage$session,
-            stage$identity,
+            stage$registry_identity,
             stage$run_id,
             stage$action_id,
             run_status,
@@ -667,27 +668,27 @@ artifactStageRegister <- function(
         )
         artifactStageRegistrySource(
             stage$session,
-            stage$identity,
+            stage$registry_identity,
             stage$run_id,
             source,
             timestamp
         )
         artifactStageRegistryParameters(
             stage$session,
-            stage$identity,
+            stage$registry_identity,
             stage$run_id,
             parameters,
             timestamp
         )
         artifactStageRegistrySoftware(
             stage$session,
-            stage$identity,
+            stage$registry_identity,
             stage$run_id,
             timestamp
         )
         artifactStageRegistryRefs(
             stage$session,
-            stage$identity,
+            stage$registry_identity,
             stage$run_id,
             refs,
             artifact_status,
@@ -869,6 +870,8 @@ artifactStageUpdateStatus <- function(
     abort_fn = artifactStagePersistenceAbort
 ) {
     identity <- context$getIdentity()
+    store <- newArtifactStore(context$getPaths(), identity$project_id)
+    registry_identity <- artifactRegistryIdentity(store, identity)
     registry <- projectRegistryForContext(context, resource_policy)
     session <- initializeProjectRegistry(registry)
     on.exit(closeProjectRegistry(session), add = TRUE)
@@ -882,7 +885,7 @@ artifactStageUpdateStatus <- function(
     artifactWorkflowStateTransaction(session, \() {
         artifactStageSetRunStatus(
             connection,
-            identity,
+            registry_identity,
             stage,
             completed,
             timestamp,
@@ -892,7 +895,7 @@ artifactStageUpdateStatus <- function(
             artifactStageCommitRefs(
                 session,
                 connection,
-                identity,
+                registry_identity,
                 stage,
                 timestamp,
                 abort_fn
