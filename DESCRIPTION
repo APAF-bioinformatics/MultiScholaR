@@ -309,6 +309,7 @@ Collate:
     'mod_lipid_design_artifact_helpers.R'
     'mod_lipid_readthrough_registry.R'
     'mod_lipid_readthrough_helpers.R'
+    'mod_lipid_eviction_helpers.R'
     'mod_lipid_design_builder_state_helpers.R'
     'mod_lipid_design_builder_ui.R'
     'mod_lipid_design_builder_server.R'
