@@ -163,6 +163,11 @@ jobs:
             any::jsonlite
             any::shinytest2
             any::chromote
+            any::ggraph
+            any::git2r
+            any::igraph
+            any::mixOmics
+            any::magick
       - name: Set up Chrome
         id: chrome
         uses: browser-actions/setup-chrome@v1
@@ -212,6 +217,11 @@ jobs:
             any::jsonlite
             any::shinytest2
             any::chromote
+            any::ggraph
+            any::git2r
+            any::igraph
+            any::mixOmics
+            any::magick
       - name: Set up Chrome
         id: chrome
         uses: browser-actions/setup-chrome@v1
