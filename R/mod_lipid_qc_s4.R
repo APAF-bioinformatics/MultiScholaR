@@ -444,15 +444,20 @@ updateLipidQcS4TrackingPlot <- function(
     omicType,
     setFilterPlotFn,
     stepName = "4_QC_Complete",
-    updateLipidFilteringFn = updateLipidFiltering
+    updateLipidFilteringFn = updateLipidFiltering,
+    workflowData = NULL
 ) {
     qcPlot <- tryCatch({
-        updateLipidFilteringFn(
-            theObject = currentS4
-            , step_name = stepName
-            , omics_type = omicType
-            , return_grid = TRUE
-            , overwrite = TRUE
+        invokeLipidQcTracking(
+            updateLipidFilteringFn,
+            list(
+                theObject = currentS4,
+                step_name = stepName,
+                omics_type = omicType,
+                return_grid = TRUE,
+                overwrite = TRUE
+            ),
+            workflowData
         )
     }, error = function(e) {
         NULL
@@ -513,7 +518,7 @@ runLipidQcS4FinalizeWorkflow <- function(
     output,
     getFinalizeStateFn = getLipidQcS4FinalizeState,
     validateFinalizeStateFn = validateLipidQcS4FinalizeState,
-    saveCompletedStateFn = saveLipidQcS4CompletedState,
+    saveCompletedStateFn = NULL,
     updateTrackingPlotFn = updateLipidQcS4TrackingPlot,
     completeTabStatusFn = completeLipidQcS4TabStatus,
     getFinalizeHistoryFn = getLipidQcS4FinalizeHistory,
@@ -526,17 +531,44 @@ runLipidQcS4FinalizeWorkflow <- function(
         )
         currentS4 <- validateFinalizeStateFn(currentS4 = currentS4)
 
-        saveCompletedStateFn(
-            stateManager = workflowData$state_manager
-            , currentS4 = currentS4
-            , configObject = workflowData$config_list
-        )
+        if (is.null(saveCompletedStateFn)) {
+            currentS4 <- saveLipidQcState(
+                workflowData,
+                currentS4,
+                currentS4,
+                stage_id = "qc_finalization",
+                state_name = "lipid_qc_complete",
+                config_object = workflowData$config_list,
+                description = paste(
+                    "QC processing complete - ready for normalization"
+                ),
+                parameters = list(
+                    assay_order = names(currentS4@lipid_data),
+                    design_digest = artifactSemanticDigest(
+                        currentS4@design_matrix
+                    )
+                ),
+                status = "complete",
+                transformation_type = "finalization"
+            )
+        } else {
+            saveCompletedStateFn(
+                stateManager = workflowData$state_manager,
+                currentS4 = currentS4,
+                configObject = workflowData$config_list
+            )
+        }
 
-        updateTrackingPlotFn(
+        tracking_args <- list(
             currentS4 = currentS4
-            , omicType = omicType
-            , setFilterPlotFn = filterPlot
+            , omicType = omicType,
+            setFilterPlotFn = filterPlot
         )
+        supported <- names(formals(updateTrackingPlotFn))
+        if ("workflowData" %in% supported || "..." %in% supported) {
+            tracking_args$workflowData <- workflowData
+        }
+        do.call(updateTrackingPlotFn, tracking_args)
 
         completeTabStatusFn(workflowData = workflowData)
 

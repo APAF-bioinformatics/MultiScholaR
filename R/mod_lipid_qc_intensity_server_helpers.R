@@ -84,7 +84,7 @@ registerLipidIntensityRevertObserver <- function(
             history <- workflowData$state_manager$getHistory()
             if (length(history) > 1) {
                 prev_state_name <- history[[length(history) - 1]]
-                workflowData$state_manager$revertToState(prev_state_name)
+                revertLipidQcState(workflowData, prev_state_name)
                 output$filter_results <- renderTextFn(
                     paste("Reverted to previous state:", prev_state_name)
                 )
@@ -183,12 +183,16 @@ registerLipidIntensityApplyFilterObserver <- function(
             filterStatsVal(stats_df)
 
             qc_plot <- tryCatch({
-                result <- updateLipidFilteringFn(
-                    theObject = filtered_s4
-                    , step_name = "2_Intensity_Filtered"
-                    , omics_type = omicType
-                    , return_grid = TRUE
-                    , overwrite = TRUE
+                result <- invokeLipidQcTracking(
+                    updateLipidFilteringFn,
+                    list(
+                        theObject = filtered_s4,
+                        step_name = "2_Intensity_Filtered",
+                        omics_type = omicType,
+                        return_grid = TRUE,
+                        overwrite = TRUE
+                    ),
+                    workflowData
                 )
                 result
             }, error = function(e) {
@@ -198,15 +202,27 @@ registerLipidIntensityApplyFilterObserver <- function(
 
             filterPlotVal(qc_plot)
 
-            workflowData$state_manager$saveState(
-                state_name = "lipid_intensity_filtered"
-                , s4_data_object = filtered_s4
-                , config_object = workflowData$config_list
-                , description = sprintf(
+            filtered_s4 <- saveLipidQcState(
+                workflowData,
+                current_s4,
+                filtered_s4,
+                stage_id = "intensity_filter",
+                state_name = "lipid_intensity_filtered",
+                config_object = workflowData$config_list,
+                description = sprintf(
                     "Applied lipid intensity filter (percentile: %d%%, proportion: %.2f)"
-                    , input$intensity_cutoff_percentile
-                    , input$proportion_below_cutoff
-                )
+                    , input$intensity_cutoff_percentile,
+                    input$proportion_below_cutoff
+                ),
+                parameters = list(
+                    intensity_cutoff_percentile =
+                        input$intensity_cutoff_percentile,
+                    proportion_below_cutoff = input$proportion_below_cutoff,
+                    missing_value_policy = "NA_excluded_from_below_threshold",
+                    threshold_comparator = "strictly_less_than",
+                    retention_comparator = "proportion_strictly_less_than_cutoff"
+                ),
+                transformation_type = "filter"
             )
 
             total_original <- sum(stats_df$Original)
@@ -260,4 +276,3 @@ registerLipidIntensityApplyFilterObserver <- function(
 
     invisible(input)
 }
-

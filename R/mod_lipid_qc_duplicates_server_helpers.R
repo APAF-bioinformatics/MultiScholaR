@@ -198,7 +198,6 @@ handleLipidDuplicateDetection <- function(
     if (!inherits(currentS4, "LipidomicsAssayData")) {
         stop("Current state is not a LipidomicsAssayData object")
     }
-
     duplicatesList <- findDuplicatesFn(currentS4)
     totalDuplicates <- sum(vapply(duplicatesList, function(dupDf) {
         if (is.null(dupDf)) {
@@ -241,6 +240,7 @@ handleLipidDuplicateResolution <- function(
     if (!inherits(currentS4, "LipidomicsAssayData")) {
         stop("Current state is not a LipidomicsAssayData object")
     }
+    parentS4 <- currentS4
 
     lipidIdCol <- currentS4@lipid_id_column
     assayList <- currentS4@lipid_data
@@ -282,20 +282,35 @@ handleLipidDuplicateResolution <- function(
 
     currentS4@lipid_data <- resolvedAssayList
 
-    workflowData$state_manager$saveState(
-        state_name = "lipid_duplicates_resolved"
-        , s4_data_object = currentS4
-        , config_object = workflowData$config_list
-        , description = "Resolved duplicate lipid features by keeping highest intensity"
+    currentS4 <- saveLipidQcState(
+        workflowData,
+        parentS4,
+        currentS4,
+        stage_id = "duplicate_resolution",
+        state_name = "lipid_duplicates_resolved",
+        config_object = workflowData$config_list,
+        description = paste(
+            "Resolved duplicate lipid features by keeping highest intensity"
+        ),
+        parameters = lipidQcDuplicateProvenance(
+            parentS4,
+            currentS4,
+            statsList
+        ),
+        transformation_type = "materialization"
     )
 
     qcPlot <- tryCatch({
-        updateFilteringFn(
-            theObject = currentS4
-            , step_name = "3_Duplicates_Resolved"
-            , omics_type = omicType
-            , return_grid = TRUE
-            , overwrite = TRUE
+        invokeLipidQcTracking(
+            updateFilteringFn,
+            list(
+                theObject = currentS4,
+                step_name = "3_Duplicates_Resolved",
+                omics_type = omicType,
+                return_grid = TRUE,
+                overwrite = TRUE
+            ),
+            workflowData
         )
     }, error = function(e) {
         logWarnFn(paste("Could not generate QC plot:", e$message))
@@ -551,7 +566,7 @@ handleLipidDuplicateRevert <- function(
     }
 
     previousStateName <- history[[length(history) - 1]]
-    workflowData$state_manager$revertToState(previousStateName)
+    revertLipidQcState(workflowData, previousStateName)
 
     logInfoFn(paste("Reverted duplicate resolution to", previousStateName))
 
@@ -654,4 +669,3 @@ runLipidDuplicateModuleServerShell <- function(
 
     invisible(duplicateState)
 }
-

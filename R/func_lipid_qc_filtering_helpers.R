@@ -209,7 +209,8 @@ finalizeLipidFilteringStep <- function(prog_met,
                                        metrics_list_this_step,
                                        assay_list,
                                        lipid_id_col,
-                                       overwrite = FALSE) {
+                                       overwrite = FALSE,
+                                       progress_owner = NULL) {
     total_lipids <- tryCatch(
         {
             calculateTotalUniqueLipidsAcrossAssays(assay_list, lipid_id_col)
@@ -227,7 +228,8 @@ finalizeLipidFilteringStep <- function(prog_met,
                 assay_names,
                 metrics_list_this_step,
                 total_lipids,
-                overwrite
+                overwrite,
+                owner = progress_owner
             )
         },
         error = function(e) {
@@ -237,7 +239,9 @@ finalizeLipidFilteringStep <- function(prog_met,
 
     plot_list <- tryCatch(
         {
-            generateLipidFilteringPlots(getFilteringProgressLipidomics())
+            generateLipidFilteringPlots(
+                getFilteringProgressLipidomics(progress_owner)
+            )
         },
         error = function(e) {
             stop(e)
@@ -252,7 +256,12 @@ finalizeLipidFilteringStep <- function(prog_met,
 
 resolveLipidFilteringPlotSaveDir <- function(publication_graphs_dir = NULL,
                                              omics_type = NULL,
-                                             time_dir = NULL) {
+                                             time_dir = NULL,
+                                             use_explicit_paths = FALSE) {
+    if (isTRUE(use_explicit_paths) &&
+        is.character(time_dir) && length(time_dir) == 1L && nzchar(time_dir)) {
+        return(time_dir)
+    }
     actual_save_dir <- NULL
 
     message("--- Plot Saving Diagnostics ---")
@@ -395,4 +404,3 @@ returnLipidFilteringPlots <- function(plot_list,
 
     invisible(plot_list)
 }
-

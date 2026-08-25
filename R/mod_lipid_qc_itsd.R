@@ -223,7 +223,12 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                 , id = "is_analysis_working"
                 , duration = NULL
             )
-            
+            current_s4 <- NULL
+            requested_pattern <- input$is_pattern
+            if (is.null(requested_pattern)) requested_pattern <- ""
+            matched_columns <- list()
+            searched_columns <- list()
+
             tryCatch({
                 current_s4 <- workflow_data$state_manager$getState()
                 shiny::req(current_s4)
@@ -233,8 +238,8 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                 }
                 
                 # Get IS pattern (from input or S4 object)
-                is_pattern <- if (nzchar(input$is_pattern)) {
-                    input$is_pattern
+                is_pattern <- if (nzchar(requested_pattern)) {
+                    requested_pattern
                 } else if (!is.na(current_s4@internal_standard_regex) && nzchar(current_s4@internal_standard_regex)) {
                     current_s4@internal_standard_regex
                 } else {
@@ -274,6 +279,9 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                     # Try each column until we find IS matches
                     is_met <- data.frame(is_id = character(), mean_intensity = numeric(), cv = numeric())
                     used_col <- NULL
+                    searched_columns[[assay_name]] <- cols_to_try[
+                        cols_to_try %in% colnames(assay_data)
+                    ]
 
                     for (col in cols_to_try) {
                         if (!is.null(col) && col %in% colnames(assay_data)) {
@@ -296,6 +304,7 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                     if (nrow(is_met) > 0) {
                         is_met$assay <- assay_name
                         metrics_list[[assay_name]] <- is_met
+                        matched_columns[[assay_name]] <- used_col
 
                         # Also extract long-format IS data for intensity plots
                         # Use the column where we found matches (used_col)
@@ -349,6 +358,19 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                 n_is_total <- nrow(all_metrics)
                 median_cv <- median(all_metrics$cv, na.rm = TRUE)
                 max_cv <- max(all_metrics$cv, na.rm = TRUE)
+                recordLipidQcItsdAnalysis(
+                    workflow_data,
+                    current_s4,
+                    list(
+                        metricsByAssay = metrics_list,
+                        metrics = all_metrics,
+                        pattern = is_pattern,
+                        nIsTotal = n_is_total,
+                        matchedColumns = matched_columns,
+                        searchedColumns = searched_columns
+                    ),
+                    requested_pattern
+                )
                 
                 result_text <- paste(
                     "Internal Standard Analysis Complete"
@@ -379,7 +401,24 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                 )
                 
             }, error = function(e) {
+                record_error <- tryCatch({
+                    recordLipidQcItsdFailure(
+                        workflow_data,
+                        current_s4,
+                        requested_pattern,
+                        e,
+                        searched_columns
+                    )
+                    NULL
+                }, error = identity)
                 msg <- paste("Error analyzing internal standards:", e$message)
+                if (inherits(record_error, "error")) {
+                    msg <- paste(
+                        msg,
+                        "Could not record ITSD failure:",
+                        conditionMessage(record_error)
+                    )
+                }
                 logger::log_error(msg)
                 shiny::showNotification(msg, type = "error", duration = 10)
                 shiny::removeNotification("is_analysis_working")

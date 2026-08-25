@@ -15,6 +15,7 @@
 #'                      for the current step.
 #' @param total_lipids The total unique lipids calculated across assays for this step.
 #' @param overwrite Logical, whether to overwrite if `step_name` exists.
+#' @param owner Optional workflow/session environment that owns progress state.
 #'
 #' @return The updated `FilteringProgressLipidomics` object (invisibly).
 #'         Has the side effect of updating the global object.
@@ -26,7 +27,8 @@ updateFilteringProgressLipidomics <- function(prog_met,
                                               current_assay_names,
                                               metrics_list,
                                               total_lipids,
-                                              overwrite = FALSE) {
+                                              overwrite = FALSE,
+                                              owner = NULL) {
     if (step_name %in% prog_met@steps) {
         if (!overwrite) {
             stop("Step name '", step_name, "' already exists in filtering_progress_lipidomics. Use overwrite = TRUE to replace it.")
@@ -55,8 +57,11 @@ updateFilteringProgressLipidomics <- function(prog_met,
         prog_met@is_metrics_per_assay <- c(prog_met@is_metrics_per_assay, list(lapply(metrics_list, `[[`, "is_metrics")))
     }
 
-    # Update the global object
-    assign("filtering_progress_lipidomics", prog_met, envir = .GlobalEnv)
+    if (is.null(owner)) {
+        assign("filtering_progress_lipidomics", prog_met, envir = .GlobalEnv)
+    } else {
+        owner$filtering_progress_lipidomics <- prog_met
+    }
     invisible(prog_met)
 }
 

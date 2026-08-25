@@ -86,6 +86,13 @@ initializeLipidQcSubmodules <- function(workflow_data, omic_type, experiment_lab
 mod_lipid_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
+        initializeLipidQcProjectContext(
+            workflow_data,
+            experiment_paths,
+            omic_type,
+            experiment_label
+        )
+        initializeLipidQcProgressOwnership(workflow_data, session)
         
         # Track whether sub-modules have been initialized
         modules_initialized <- shiny::reactiveVal(FALSE)

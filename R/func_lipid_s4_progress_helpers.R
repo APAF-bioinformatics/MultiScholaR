@@ -24,16 +24,31 @@ setClass("FilteringProgressLipidomics",
 #'              of class FilteringProgressLipidomics. If it doesn't exist,
 #'              it creates and assigns a new one to the global environment.
 #'
-#' @return The global FilteringProgressLipidomics object.
+#' @param owner Optional workflow/session environment that owns progress state.
+#' @return The FilteringProgressLipidomics object for the selected owner.
 #' @keywords internal
 #' @noRd
 #' @export
-getFilteringProgressLipidomics <- function() {
+getFilteringProgressLipidomics <- function(owner = NULL) {
+    if (!is.null(owner)) {
+        progress <- owner$filtering_progress_lipidomics
+        if (!methods::is(progress, "FilteringProgressLipidomics")) {
+            progress <- methods::new("FilteringProgressLipidomics")
+            owner$filtering_progress_lipidomics <- progress
+        }
+        return(progress)
+    }
     if (!exists("filtering_progress_lipidomics", envir = .GlobalEnv)) {
-        filtering_progress_lipidomics <- new("FilteringProgressLipidomics")
+        filtering_progress_lipidomics <- methods::new(
+            "FilteringProgressLipidomics"
+        )
         assign("filtering_progress_lipidomics", filtering_progress_lipidomics, envir = .GlobalEnv)
         message("Initialized global 'filtering_progress_lipidomics' object.")
     }
     get("filtering_progress_lipidomics", envir = .GlobalEnv)
 }
 
+releaseFilteringProgressLipidomics <- function(owner = NULL) {
+    if (!is.null(owner)) owner$filtering_progress_lipidomics <- NULL
+    invisible(TRUE)
+}
