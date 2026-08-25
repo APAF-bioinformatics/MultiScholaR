@@ -506,6 +506,21 @@ artifactWorkflowStateWriteData <- function(
             "multischolar_invalid_artifact_state_codec"
         )
     }
+    if (!is.null(persistence_hint) &&
+        identical(persistence_hint$representation, "state_reference")) {
+        if (is.null(previous_manifest) || is.null(parent_object)) {
+            artifactWorkflowStateAbort(
+                "artifact state reference requires one persisted parent object",
+                "multischolar_invalid_artifact_state_reference"
+            )
+        }
+        return(artifactWorkflowStateWriteStateReferenceData(
+            previous_manifest,
+            parent_object,
+            state_object,
+            persistence_hint
+        ))
+    }
     bundle <- artifactWorkflowStateDehydrate(dehydrate_fn, state_object, identity, generation_id)
     bundle <- validate_bundle_fn(bundle)
     semantic_digest <- bundle$metadata$semantic_digest
@@ -516,7 +531,7 @@ artifactWorkflowStateWriteData <- function(
                 "multischolar_invalid_artifact_row_selection"
             )
         }
-        return(artifactWorkflowStateWriteSelectionData(
+        return(artifactWorkflowStateWritePersistenceData(
             store = store,
             identity = identity,
             generation_id = generation_id,
@@ -603,6 +618,15 @@ artifactWorkflowStateHydrateData <- function(
         manifest$data$metadata_json,
         "S4 codec metadata"
     )
+    if (artifactWorkflowStateIsStateReference(metadata)) {
+        return(artifactWorkflowStateHydrateStateReference(
+            store,
+            manifest,
+            metadata,
+            hydrate_fn,
+            visited_generation_ids
+        ))
+    }
     references <- manifest$data$artifact_refs
     payload_entries <- lapply(names(references), function(payload_name) {
         ref <- references[[payload_name]]

@@ -7,7 +7,18 @@
 # (at your option) any later version.
 
 artifactWorkflowStateRepresentation <- function(persistence_hint) {
-    if (is.null(persistence_hint)) "materialized" else "row_selection"
+    if (is.null(persistence_hint)) return("materialized")
+    representation <- persistence_hint$representation
+    if (!workflowStateScalarString(representation) ||
+        !representation %in% c(
+            "row_selection", "assay_selection", "state_reference"
+        )) {
+        artifactWorkflowStateAbort(
+            "artifact persistence hint has an unsupported representation",
+            "multischolar_invalid_artifact_state_persistence_hint"
+        )
+    }
+    representation
 }
 
 artifactWorkflowStateDataMetrics <- function(store, data, state_object) {

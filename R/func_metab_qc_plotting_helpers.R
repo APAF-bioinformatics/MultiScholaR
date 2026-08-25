@@ -1,3 +1,51 @@
+resolveMetabQcPlotDirectory <- function(
+    publication_graphs_dir = NULL,
+    time_dir = NULL,
+    global_env = .GlobalEnv,
+    warn_fn = warning
+) {
+    if (workflowStateScalarString(time_dir)) return(time_dir)
+    if (workflowStateScalarString(publication_graphs_dir)) {
+        return(publication_graphs_dir)
+    }
+    required <- c("project_dirs", "omic_type", "experiment_label")
+    available <- vapply(
+        required,
+        exists,
+        logical(1),
+        envir = global_env,
+        inherits = FALSE
+    )
+    if (!all(available)) {
+        warn_fn(paste(
+            "No workflow/session QC plot directory or complete legacy",
+            "global project context was available. Plots will not be saved."
+        ))
+        return(NULL)
+    }
+    project_dirs <- get("project_dirs", envir = global_env, inherits = FALSE)
+    omic_type <- get("omic_type", envir = global_env, inherits = FALSE)
+    experiment_label <- get(
+        "experiment_label",
+        envir = global_env,
+        inherits = FALSE
+    )
+    key <- paste0(omic_type, "_", experiment_label)
+    candidate <- if (is.list(project_dirs) && key %in% names(project_dirs)) {
+        project_dirs[[key]]$time_dir
+    } else {
+        NULL
+    }
+    if (!workflowStateScalarString(candidate)) {
+        warn_fn(sprintf(
+            "Legacy project context '%s' has no valid time_dir. Plots will not be saved.",
+            key
+        ))
+        return(NULL)
+    }
+    candidate
+}
+
 # ----------------------------------------------------------------------------
 # generateMetaboliteFilteringPlots
 # ----------------------------------------------------------------------------
@@ -421,4 +469,3 @@ generateMetaboliteFilteringPlots <- function(prog_met = NULL) {
 
     return(plot_list)
 }
-

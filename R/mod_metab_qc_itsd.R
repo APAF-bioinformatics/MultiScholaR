@@ -368,6 +368,8 @@ runMetabQcItsdServerBody <- function(
     buildMetabQcItsdVizTabsUiFn = buildMetabQcItsdVizTabsUi,
     buildMetabQcItsdCvPlotFn = buildMetabQcItsdCvPlot,
     buildMetabQcItsdIntensityPlotFn = buildMetabQcItsdIntensityPlot,
+    recordMetabQcItsdAnalysisFn = recordMetabQcItsdAnalysis,
+    recordMetabQcItsdFailureFn = recordMetabQcItsdFailure,
     logInfoFn = logger::log_info,
     logErrorFn = logger::log_error
 ) {
@@ -379,6 +381,7 @@ runMetabQcItsdServerBody <- function(
     # Analyze internal standards
     observeEventFn(input$analyze_is, {
         reqFn(workflowData$state_manager)
+        current_s4 <- NULL
 
         showNotificationFn(
             "Analyzing internal standards..."
@@ -393,6 +396,12 @@ runMetabQcItsdServerBody <- function(
                 currentS4 = current_s4,
                 inputPattern = input$is_pattern
             )
+            recordMetabQcItsdAnalysisFn(
+                workflow_data = workflowData,
+                current_s4 = current_s4,
+                analysis = analysis,
+                input_pattern = input$is_pattern
+            )
             is_metrics(analysis$metrics)
             is_data_long(analysis$longData)
             output$is_results <- renderTextFn(analysis$resultText)
@@ -406,6 +415,15 @@ runMetabQcItsdServerBody <- function(
             )
 
         }, error = function(e) {
+            try(
+                recordMetabQcItsdFailureFn(
+                    workflow_data = workflowData,
+                    current_s4 = current_s4,
+                    input_pattern = input$is_pattern,
+                    error = e
+                ),
+                silent = TRUE
+            )
             msg <- paste("Error analyzing internal standards:", e$message)
             logErrorFn(msg)
             showNotificationFn(msg, type = "error", duration = 10)
@@ -442,4 +460,3 @@ runMetabQcItsdServerBody <- function(
 
     invisible(NULL)
 }
-

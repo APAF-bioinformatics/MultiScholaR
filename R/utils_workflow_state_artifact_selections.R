@@ -607,6 +607,18 @@ artifactWorkflowStateHydrateSelectionPayloads <- function(
     payload_entries,
     hydrate_parent_fn
 ) {
+    if (identical(
+        metadata$derivation$schema,
+        .ARTIFACT_ASSAY_SELECTION_SCHEMA
+    )) {
+        return(artifactWorkflowStateHydrateAssaySelectionPayloads(
+            store,
+            manifest,
+            metadata,
+            payload_entries,
+            hydrate_parent_fn
+        ))
+    }
     derivation <- artifactWorkflowStateValidateDerivation(
         metadata$derivation,
         manifest

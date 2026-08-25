@@ -15,7 +15,8 @@ updateMetaboliteFiltering(
   group_id_col = NULL,
   sample_id_col = NULL,
   metabolite_id_col = NULL,
-  is_pattern = NULL
+  is_pattern = NULL,
+  progress_owner = NULL
 )
 }
 \arguments{
@@ -26,8 +27,7 @@ and sample columns) and a colData/design matrix linking samples to groups.}
 
 \item{step_name}{Character string uniquely identifying the current filtering step.}
 
-\item{publication_graphs_dir}{Optional path for saving plots. If provided, the function
-will try to find the corresponding time_dir.}
+\item{publication_graphs_dir}{Optional path for saving plots.}
 
 \item{omics_type}{Optional character string specifying the omics type (e.g., "metabolomics").
 If provided and project_dirs exists in the global environment, will use
@@ -48,6 +48,8 @@ other methods of finding the time directory.}
 
 \item{is_pattern}{Character, regex for identifying internal standards. If not provided,
 attempts to get from \code{theObject@internal_standard_regex} if slot exists.}
+
+\item{progress_owner}{Optional workflow/session environment that owns progress state.}
 }
 \value{
 If \code{return_grid} is \code{TRUE}, a \code{grob} object. Otherwise, an invisible list
@@ -79,8 +81,7 @@ directory are available.
 \item Returns either a combined grid plot or an invisible list of plots.
 }
 
-\strong{Important:} Relies on and modifies the global \code{filtering_progress_metabolomics} object.
-Requires helper functions (defined previously in this file) to be available.
-For plot saving, requires either \code{time_dir} in the global environment or access to
-the appropriate directory via \code{project_dirs$omics_type$time_dir}.
+By default, this preserves the legacy global filtering-progress behavior.
+Artifact workflows supply \code{progress_owner} and explicit output paths so progress
+and plot ownership remain within the workflow session.
 }

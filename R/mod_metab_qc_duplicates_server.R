@@ -59,6 +59,7 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
                 runRevertFn = function() {
                     revertMetabDuplicateResolution(
                         stateManager = workflow_data$state_manager
+                        , workflowData = workflow_data
                     )
                 }
                 , output = output
@@ -76,4 +77,3 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
         })
     })
 }
-

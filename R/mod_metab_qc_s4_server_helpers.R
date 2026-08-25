@@ -351,15 +351,35 @@ saveMetabQcS4CompletedState <- function(
     stateManager,
     currentS4,
     configObject,
+    workflowData = NULL,
     stateName = "metab_qc_complete",
     description = "QC processing complete - ready for normalization"
 ) {
-    stateManager$saveState(
-        state_name = stateName
-        , s4_data_object = currentS4
-        , config_object = configObject
-        , description = description
-    )
+    if (is.null(workflowData)) {
+        stateManager$saveState(
+            state_name = stateName
+            , s4_data_object = currentS4
+            , config_object = configObject
+            , description = description
+        )
+    } else {
+        saveMetabQcState(
+            workflowData,
+            currentS4,
+            currentS4,
+            stage_id = "qc_finalization",
+            state_name = stateName,
+            config_object = configObject,
+            description = description,
+            parameters = list(
+                validation = "valid_MetaboliteAssayData",
+                assay_order = names(currentS4@metabolite_data),
+                design_digest = artifactSemanticDigest(currentS4@design_matrix)
+            ),
+            status = "complete",
+            transformation_type = "finalization"
+        )
+    }
 
     invisible(stateName)
 }
@@ -396,16 +416,21 @@ updateMetabQcS4TrackingPlot <- function(
     currentS4,
     omicType,
     setFilterPlotFn,
+    workflowData = NULL,
     stepName = "4_QC_Complete",
     updateMetaboliteFilteringFn = updateMetaboliteFiltering
 ) {
     qcPlot <- tryCatch({
-        updateMetaboliteFilteringFn(
-            theObject = currentS4
-            , step_name = stepName
-            , omics_type = omicType
-            , return_grid = TRUE
-            , overwrite = TRUE
+        invokeMetabQcTracking(
+            updateMetaboliteFilteringFn,
+            list(
+                theObject = currentS4,
+                step_name = stepName,
+                omics_type = omicType,
+                return_grid = TRUE,
+                overwrite = TRUE
+            ),
+            workflow_data = workflowData
         )
     }, error = function(e) {
         NULL
@@ -492,12 +517,14 @@ runMetabQcS4FinalizeWorkflow <- function(
             stateManager = workflowData$state_manager
             , currentS4 = currentS4
             , configObject = workflowData$config_list
+            , workflowData = workflowData
         )
 
         updateTrackingPlotFn(
             currentS4 = currentS4
             , omicType = omicType
             , setFilterPlotFn = filterPlot
+            , workflowData = workflowData
         )
 
         completeTabStatusFn(workflowData = workflowData)

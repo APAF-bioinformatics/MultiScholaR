@@ -564,7 +564,8 @@ test_that("memory and disabled read-through leave dual-written projects untouche
     expect_false(result$resumed)
     expect_identical(result$reason, "artifact_manifest_absent")
     expect_false(result$artifact_project)
-    expect_false(exists("evictMetabArtifactWorkflowPayloads", mode = "function"))
+    expect_true(exists("evictMetabArtifactWorkflowPayloads", mode = "function"))
+    expect_null(legacy$artifact_eviction_result)
 })
 
 test_that("resume defaults and consumer inventory are complete", {

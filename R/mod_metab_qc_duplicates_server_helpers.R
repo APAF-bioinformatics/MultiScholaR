@@ -126,6 +126,7 @@ detectMetabDuplicateFeatures <- function(
 
 revertMetabDuplicateResolution <- function(
     stateManager
+    , workflowData = NULL
     , reqFn = shiny::req
     , historyGetterFn = function(manager) manager$getHistory()
     , revertStateFn = function(manager, stateName) manager$revertToState(stateName)
@@ -138,7 +139,11 @@ revertMetabDuplicateResolution <- function(
     }
 
     previousStateName <- history[[length(history) - 1L]]
-    revertStateFn(stateManager, previousStateName)
+    if (is.null(workflowData)) {
+        revertStateFn(stateManager, previousStateName)
+    } else {
+        revertMetabQcState(workflowData, previousStateName)
+    }
 
     list(
         previousStateName = previousStateName
@@ -339,6 +344,7 @@ prepareMetabDuplicateResolutionState <- function(
         stop(sprintf("Current state is not a %s object", expectedClass))
     }
 
+    beforeS4 <- currentS4
     resolutionResult <- resolveDuplicateAssayDataFn(
         assayList = currentS4@metabolite_data
         , metaboliteIdCol = currentS4@metabolite_id_column
@@ -347,13 +353,15 @@ prepareMetabDuplicateResolutionState <- function(
     currentS4@metabolite_data <- resolutionResult$resolvedAssayList
 
     list(
-        currentS4 = currentS4
+        beforeS4 = beforeS4
+        , currentS4 = currentS4
         , statsList = resolutionResult$statsList
     )
 }
 
 applyMetabDuplicateResolutionState <- function(
     currentS4
+    , beforeS4 = NULL
     , statsList
     , workflowData
     , omicType
@@ -367,20 +375,44 @@ applyMetabDuplicateResolutionState <- function(
 ) {
     setResolutionStatsFn(statsList)
 
-    workflowData$state_manager$saveState(
-        state_name = stateName
-        , s4_data_object = currentS4
-        , config_object = workflowData$config_list
-        , description = description
-    )
+    if (is.null(beforeS4)) {
+        workflowData$state_manager$saveState(
+            state_name = stateName
+            , s4_data_object = currentS4
+            , config_object = workflowData$config_list
+            , description = description
+        )
+    } else {
+        currentS4 <- saveMetabQcState(
+            workflowData,
+            beforeS4,
+            currentS4,
+            stage_id = "duplicate_resolution",
+            state_name = stateName,
+            config_object = workflowData$config_list,
+            description = description,
+            parameters = list(
+                method = "highest_mean_intensity",
+                representative = "maximum_row_mean",
+                tie_break = "first_stable_input_feature",
+                aggregation = "none",
+                per_assay = statsList
+            ),
+            transformation_type = "materialization"
+        )
+    }
 
     qcPlot <- tryCatch({
-        updateMetaboliteFilteringFn(
-            theObject = currentS4
-            , step_name = stepName
-            , omics_type = omicType
-            , return_grid = TRUE
-            , overwrite = TRUE
+        invokeMetabQcTracking(
+            updateMetaboliteFilteringFn,
+            list(
+                theObject = currentS4,
+                step_name = stepName,
+                omics_type = omicType,
+                return_grid = TRUE,
+                overwrite = TRUE
+            ),
+            workflow_data = workflowData
         )
     }, error = function(e) {
         logWarnFn(paste("Could not generate QC plot:", e$message))
@@ -410,14 +442,20 @@ runMetabDuplicateResolutionWorkflow <- function(
         stateManager = workflowData$state_manager
     )
 
-    resolutionApply <- applyResolutionStateFn(
-        currentS4 = resolutionPreflight$currentS4
-        , statsList = resolutionPreflight$statsList
-        , workflowData = workflowData
-        , omicType = omicType
-        , setResolutionStatsFn = setResolutionStatsFn
-        , setFilterPlotFn = setFilterPlotFn
+    applyArgs <- list(
+        currentS4 = resolutionPreflight$currentS4,
+        statsList = resolutionPreflight$statsList,
+        workflowData = workflowData,
+        omicType = omicType,
+        setResolutionStatsFn = setResolutionStatsFn,
+        setFilterPlotFn = setFilterPlotFn
     )
+    supported <- names(formals(applyResolutionStateFn))
+    if (!is.null(resolutionPreflight$beforeS4) &&
+        ("beforeS4" %in% supported || "..." %in% supported)) {
+        applyArgs$beforeS4 <- resolutionPreflight$beforeS4
+    }
+    resolutionApply <- do.call(applyResolutionStateFn, applyArgs)
 
     resultSummary <- buildResolutionSummaryFn(
         statsList = resolutionPreflight$statsList
@@ -463,4 +501,3 @@ runMetabDuplicateResolutionObserver <- function(
         , setDuplicateInfoFn = setDuplicateInfoFn
     )
 }
-

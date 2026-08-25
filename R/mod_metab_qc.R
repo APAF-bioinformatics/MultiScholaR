@@ -88,6 +88,13 @@ initializeMetabQcSubmodules <- function(workflowData, omicType, experimentLabel)
 mod_metab_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
+        initializeMetabQcProjectContext(
+            workflow_data,
+            experiment_paths,
+            omic_type,
+            experiment_label
+        )
+        initializeMetabQcProgressOwnership(workflow_data, session)
         
         # Track whether sub-modules have been initialized
         modules_initialized <- shiny::reactiveVal(FALSE)

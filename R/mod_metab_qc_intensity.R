@@ -203,17 +203,22 @@ updateMetabIntensityFilterQcPlot <- function(
     filteredS4,
     omicType,
     setFilterPlotFn,
+    workflowData = NULL,
     stepName = "2_Intensity_Filtered",
     updateMetaboliteFilteringFn = updateMetaboliteFiltering,
     logWarnFn = logger::log_warn
 ) {
     qcPlot <- tryCatch({
-        updateMetaboliteFilteringFn(
-            theObject = filteredS4
-            , step_name = stepName
-            , omics_type = omicType
-            , return_grid = TRUE
-            , overwrite = TRUE
+        invokeMetabQcTracking(
+            updateMetaboliteFilteringFn,
+            list(
+                theObject = filteredS4,
+                step_name = stepName,
+                omics_type = omicType,
+                return_grid = TRUE,
+                overwrite = TRUE
+            ),
+            workflow_data = workflowData
         )
     }, error = function(e) {
         logWarnFn(paste("Could not generate QC plot:", e$message))
@@ -231,19 +236,39 @@ saveMetabIntensityFilterState <- function(
     configObject,
     intensityCutoffPercentile,
     proportionBelowCutoff,
+    workflowData = NULL,
+    currentS4 = NULL,
     stateName = "metab_intensity_filtered",
     sprintfFn = sprintf
 ) {
-    stateManager$saveState(
-        state_name = stateName
-        , s4_data_object = filteredS4
-        , config_object = configObject
-        , description = sprintfFn(
-            "Applied metabolite intensity filter (percentile: %d%%, proportion: %.2f)"
-            , intensityCutoffPercentile
-            , proportionBelowCutoff
-        )
+    description <- sprintfFn(
+        "Applied metabolite intensity filter (percentile: %d%%, proportion: %.2f)",
+        intensityCutoffPercentile,
+        proportionBelowCutoff
     )
+    if (!is.null(workflowData) && !is.null(currentS4)) {
+        saveMetabQcState(
+            workflowData,
+            currentS4,
+            filteredS4,
+            stage_id = "intensity_filter",
+            state_name = stateName,
+            config_object = configObject,
+            description = description,
+            parameters = list(
+                intensity_cutoff_percentile = intensityCutoffPercentile,
+                proportion_below_cutoff = proportionBelowCutoff
+            ),
+            transformation_type = "filter"
+        )
+    } else {
+        stateManager$saveState(
+            state_name = stateName,
+            s4_data_object = filteredS4,
+            config_object = configObject,
+            description = description
+        )
+    }
 
     invisible(stateName)
 }
@@ -419,6 +444,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     filteredS4 = filtered_s4
                     , omicType = omic_type
                     , setFilterPlotFn = filter_plot
+                    , workflowData = workflow_data
                 )
 
                 saved_state_name <- saveMetabIntensityFilterState(
@@ -427,6 +453,8 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     , configObject = workflow_data$config_list
                     , intensityCutoffPercentile = input$intensity_cutoff_percentile
                     , proportionBelowCutoff = input$proportion_below_cutoff
+                    , workflowData = workflow_data
+                    , currentS4 = current_s4
                 )
 
                 reportMetabIntensityFilterSuccess(
@@ -451,7 +479,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                 history <- workflow_data$state_manager$getHistory()
                 if (length(history) > 1) {
                     prev_state_name <- history[length(history) - 1]
-                    workflow_data$state_manager$revertToState(prev_state_name)
+                    revertMetabQcState(workflow_data, prev_state_name)
                     reportMetabIntensityFilterRevertSuccess(
                         prevStateName = prev_state_name
                         , output = output

@@ -6,11 +6,20 @@
 #'              of class `FilteringProgressMetabolomics`. If it doesn't exist,
 #'              it creates and assigns a new one to the global environment.
 #'
-#' @return The global `FilteringProgressMetabolomics` object.
+#' @param owner Optional workflow/session environment that owns progress state.
+#' @return The `FilteringProgressMetabolomics` object.
 #' @keywords internal
 #' @noRd
 #' @export
-getFilteringProgressMetabolomics <- function() {
+getFilteringProgressMetabolomics <- function(owner = NULL) {
+    if (!is.null(owner)) {
+        progress <- owner$filtering_progress_metabolomics
+        if (!methods::is(progress, "FilteringProgressMetabolomics")) {
+            progress <- new("FilteringProgressMetabolomics")
+            owner$filtering_progress_metabolomics <- progress
+        }
+        return(progress)
+    }
     if (!exists("filtering_progress_metabolomics", envir = .GlobalEnv)) {
         filtering_progress_metabolomics <- new("FilteringProgressMetabolomics")
         assign("filtering_progress_metabolomics", filtering_progress_metabolomics, envir = .GlobalEnv)
@@ -33,6 +42,7 @@ getFilteringProgressMetabolomics <- function() {
 #'                      for the current step.
 #' @param total_metabolites The total unique metabolites calculated across assays for this step.
 #' @param overwrite Logical, whether to overwrite if `step_name` exists.
+#' @param owner Optional workflow/session environment that owns progress state.
 #'
 #' @return The updated `FilteringProgressMetabolomics` object (invisibly).
 #'         Has the side effect of updating the global object.
@@ -44,7 +54,8 @@ updateFilteringProgressMetabolomics <- function(prog_met,
                                                 current_assay_names,
                                                 metrics_list,
                                                 total_metabolites,
-                                                overwrite = FALSE) {
+                                                overwrite = FALSE,
+                                                owner = NULL) {
     if (step_name %in% prog_met@steps) {
         if (!overwrite) {
             stop("Step name '", step_name, "' already exists in filtering_progress_metabolomics. Use overwrite = TRUE to replace it.")
@@ -73,9 +84,17 @@ updateFilteringProgressMetabolomics <- function(prog_met,
         prog_met@is_metrics_per_assay <- c(prog_met@is_metrics_per_assay, list(lapply(metrics_list, `[[`, "is_metrics")))
     }
 
-    # Update the global object
-    assign("filtering_progress_metabolomics", prog_met, envir = .GlobalEnv)
+    if (is.null(owner)) {
+        assign("filtering_progress_metabolomics", prog_met, envir = .GlobalEnv)
+    } else {
+        owner$filtering_progress_metabolomics <- prog_met
+    }
     invisible(prog_met)
+}
+
+releaseFilteringProgressMetabolomics <- function(owner) {
+    if (!is.null(owner)) owner$filtering_progress_metabolomics <- NULL
+    invisible(TRUE)
 }
 
 #' FilteringProgressMetabolomics S4 Class
@@ -97,4 +116,3 @@ setClass("FilteringProgressMetabolomics",
         is_metrics_per_assay = "list"
     )
 )
-
