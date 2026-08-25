@@ -220,13 +220,18 @@ resolveLipidDaSessionFile <- function(
 
     sessionFile <- filePathFn(sourceDir, "lipid_filtered_session_data_latest.rds")
     sessionFileExists <- fileExistsFn(sessionFile)
+    artifactManifest <- filePathFn(
+        sourceDir,
+        "lipid_filtered_session_artifact_latest.json"
+    )
+    artifactManifestExists <- fileExistsFn(artifactManifest)
 
     if (!is.null(debugLog)) {
         debugLog("  STEP 4: session_file = ", sessionFile)
         debugLog("  STEP 4: file.exists = ", sessionFileExists)
     }
 
-    if (!sessionFileExists) {
+    if (!sessionFileExists && !artifactManifestExists) {
         notifySessionFileMissingFn(sessionFile = sessionFile)
         return(NULL)
     }
@@ -257,6 +262,7 @@ showLipidDaSessionLoadingNotification <- function(
 
 readLipidDaSessionData <- function(
     sessionFile,
+    workflowData = NULL,
     readRdsFn = readRDS,
     debugLog = NULL,
     logInfo = logger::log_info
@@ -265,7 +271,15 @@ readLipidDaSessionData <- function(
         debugLog("  STEP 5: Reading RDS file...")
     }
 
-    sessionData <- readRdsFn(sessionFile)
+    sessionData <- if (lipidQcWorkflowData(workflowData)) {
+        readLipidArtifactOrLegacySession(
+            sessionFile,
+            workflowData,
+            read_rds = readRdsFn
+        )
+    } else {
+        readRdsFn(sessionFile)
+    }
     sessionDataNames <- names(sessionData)
 
     if (!is.null(debugLog)) {
@@ -448,10 +462,16 @@ loadLipidDaSessionFromFile <- function(
         {
             showLoadingContract <- showLoadingFn()
 
-            sessionLoad <- readSessionFn(
+            read_args <- list(
                 sessionFile = sessionFile,
                 debugLog = debugLog
             )
+            read_supported <- names(formals(readSessionFn))
+            if ("workflowData" %in% read_supported ||
+                "..." %in% read_supported) {
+                read_args$workflowData <- workflowData
+            }
+            sessionLoad <- do.call(readSessionFn, read_args)
             sessionData <- sessionLoad$sessionData
 
             if (!is.null(debugLog)) {

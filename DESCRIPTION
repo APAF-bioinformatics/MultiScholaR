@@ -335,6 +335,7 @@ Collate:
     'mod_lipid_import_server.R'
     'mod_lipid_qc_artifact_helpers.R'
     'mod_lipid_norm_artifact_helpers.R'
+    'mod_lipid_session_artifact_helpers.R'
     'mod_lipid_norm_support_helpers.R'
     'mod_lipid_norm_observer_helpers.R'
     'mod_lipid_norm_workflow_helpers.R'

@@ -408,6 +408,8 @@ handleLipidNormExportSession <- function(
         export_artifacts <- list(
             session_filepath = NULL
             , session_filename = NULL
+            , artifact_session_filepath = NULL
+            , artifact_session_latest_filepath = NULL
         )
 
         withProgressFn(message = "Exporting normalized session data...", value = 0, {
@@ -591,6 +593,24 @@ handleLipidNormExportSession <- function(
             writeLinesFn(summary_content, summary_filepath)
             logInfoFn(sprintf("*** EXPORT: Summary saved to: %s ***", summary_filepath))
         })
+
+        artifact_session <- saveLipidSessionManifestSafely(
+            workflow_data = workflowData,
+            session_data = session_data,
+            export_files = export_artifacts,
+            source_dir = source_dir
+        )
+        if (isTRUE(artifact_session$ok)) {
+            export_artifacts$artifact_session_filepath <-
+                artifact_session$session_filepath
+            export_artifacts$artifact_session_latest_filepath <-
+                artifact_session$latest_filepath
+        } else if (isTRUE(artifact_session$enabled)) {
+            logWarnFn(paste(
+                "Artifact session manifest was not published:",
+                artifact_session$error_message
+            ))
+        }
 
         addLog(paste("Exported comprehensive session data to:", export_artifacts$session_filepath))
         showNotificationFn(
