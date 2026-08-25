@@ -1,0 +1,55 @@
+{
+  "schema": "multischolar.lipidomics_memory_baseline_manifest",
+  "schema_version": "1.0.0",
+  "backend": "memory",
+  "support_decisions": [
+    {"format_id": "lipidomics.lipidsearch", "input_format": "lipidsearch", "support_status": "scientifically_supported", "fixture_id": "tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_pos.txt", "claim": "direct parser plus canonical workflow"},
+    {"format_id": "lipidomics.msdial", "input_format": "msdial", "support_status": "reader_characterized", "fixture_id": null, "claim": "reader behavior only; no independent fixture"},
+    {"format_id": "lipidomics.custom", "input_format": "custom", "support_status": "reader_characterized", "fixture_id": null, "claim": "column mapping behavior only"},
+    {"format_id": "lipidomics.progenesis", "input_format": "progenesis", "support_status": "detection_only", "fixture_id": null, "claim": "rejected before parser"},
+    {"format_id": "lipidomics.xcms", "input_format": "xcms", "support_status": "detection_only", "fixture_id": null, "claim": "rejected before parser"},
+    {"format_id": "lipidomics.compound_discoverer", "input_format": "compound_discoverer", "support_status": "detection_only", "fixture_id": null, "claim": "rejected before parser"}
+  ],
+  "fixture_scenarios": [
+    {"scenario_id": "lipidsearch_lcms_pos", "format": "lipidsearch", "assays": ["LCMS_Pos"], "data_paths": ["tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_pos.txt"], "oracle_id": "lipidsearch_lcms_pos_v1"},
+    {"scenario_id": "lipidsearch_lcms_neg", "format": "lipidsearch", "assays": ["LCMS_Neg"], "data_paths": ["tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_neg.txt"], "oracle_id": "lipidsearch_lcms_neg_v1"},
+    {"scenario_id": "lipidsearch_gcms", "format": "lipidsearch", "assays": ["GCMS"], "data_paths": ["tests/testdata/e2e/lipid_canonical/lipidsearch_gcms.txt"], "oracle_id": "lipidsearch_gcms_v1"},
+    {"scenario_id": "lipidsearch_mixed", "format": "lipidsearch", "assays": ["LCMS_Pos", "LCMS_Neg", "GCMS"], "data_paths": ["tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_pos.txt", "tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_neg.txt", "tests/testdata/e2e/lipid_canonical/lipidsearch_gcms.txt"], "oracle_id": "lipidsearch_mixed_v1"}
+  ],
+  "comparison_contract": {
+    "identity_fields": ["assay", "lipid_id", "lipid_class", "adduct", "ion_mode", "sample_id", "group", "batch", "internal_standard"],
+    "numeric_tolerance": {"absolute": 1e-8, "relative": 1e-8},
+    "missing_values": "exact positions and mechanism labels",
+    "duplicate_policy": "explicit sum or classed rejection by stage contract"
+  },
+  "branch_oracles": {
+    "qc": ["feature/sample counts", "missingness", "duplicates", "internal standards", "PCA", "density", "RLE", "correlation"],
+    "normalization": ["none", "cyclicloess", "quantile", "scale", "internal-standard"],
+    "ruv": ["run", "skip", "k", "controls", "correlation"],
+    "da": ["raw p-value", "BH FDR", "q-value", "effect", "direction", "renderer", "export"],
+    "summary": ["state", "design", "contrasts", "assays", "workbook", "report", "final S4"]
+  },
+  "workload_contracts": [
+    "workloads/lipidsearch-lcms-pos-fixture-v1.json",
+    "workloads/lipidsearch-lcms-neg-fixture-v1.json",
+    "workloads/lipidsearch-gcms-fixture-v1.json",
+    "workloads/lcms-pos-public-ci-v1.json",
+    "workloads/lcms-neg-public-ci-v1.json",
+    "workloads/gcms-public-ci-v1.json",
+    "workloads/mixed-public-ci-v1.json",
+    "workloads/lcms-pos-public-representative-v1.json",
+    "workloads/lcms-neg-public-representative-v1.json",
+    "workloads/gcms-public-representative-v1.json",
+    "workloads/mixed-public-representative-v1.json"
+  ],
+  "resource_evidence": [
+    {"contract": "workloads/lipidsearch-lcms-pos-fixture-v1.json", "result": "resources/ls-pos-memory-v1.json", "evidence_class": "independent_fixture"},
+    {"contract": "workloads/lipidsearch-lcms-neg-fixture-v1.json", "result": "resources/ls-neg-memory-v1.json", "evidence_class": "independent_fixture"},
+    {"contract": "workloads/lipidsearch-gcms-fixture-v1.json", "result": "resources/ls-gc-memory-v1.json", "evidence_class": "independent_fixture"},
+    {"contract": "workloads/lcms-pos-public-representative-v1.json", "result": "resources/lcms-pos-memory-baseline-v1.json", "evidence_class": "generated_scaling"},
+    {"contract": "workloads/lcms-neg-public-representative-v1.json", "result": "resources/lcms-neg-memory-baseline-v1.json", "evidence_class": "generated_scaling"},
+    {"contract": "workloads/gcms-public-representative-v1.json", "result": "resources/gcms-memory-baseline-v1.json", "evidence_class": "generated_scaling"},
+    {"contract": "workloads/mixed-public-representative-v1.json", "result": "resources/mixed-memory-baseline-v1.json", "evidence_class": "generated_scaling"}
+  ],
+  "claim_boundary": "generated workloads authorize workload/resource gates only; vendor support and biological parity require reviewed fixtures"
+}

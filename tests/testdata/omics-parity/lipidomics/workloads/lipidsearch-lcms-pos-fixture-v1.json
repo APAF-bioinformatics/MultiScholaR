@@ -1,0 +1,114 @@
+{
+  "schema": "multischolar.omics_workload_contract",
+  "schema_version": "1.0.0",
+  "workload_id": "lipidomics.lipidsearch.lcms-pos.public-fixture-10x6.v1",
+  "capability": {
+    "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+    "omic_type": "lipidomics",
+    "input_format": "lipidsearch",
+    "data_level": "lipid",
+    "acquisition_mode": "not_recorded"
+  },
+  "adapter": {
+    "adapter_id": "multischolar.lipidomics.v1",
+    "adapter_version": "1.1.0",
+    "source_sha256": "b3c4c0301dc07582a0aab1d0ec7488fbaf8a8d6ad10a15e2b3b51e2e077738a2"
+  },
+  "rng": {
+    "kind": [
+      "Mersenne-Twister",
+      "Inversion",
+      "Rejection"
+    ],
+    "seed": 30991
+  },
+  "dimensions": {
+    "feature_count": 10,
+    "sample_count": 6,
+    "assay_count": 1
+  },
+  "assay_mix": {
+    "LCMS_Pos": 1
+  },
+  "distributions": {
+    "intensity": "independent_declared_log2_normal_heteroscedastic",
+    "assay_log2_means": {
+      "LCMS_Pos": 18
+    },
+    "base_log2_sd": 1.25,
+    "noise_log2_sd": 0.12,
+    "dynamic_range": "declared_not_instrument_specific"
+  },
+  "missingness": {
+    "mechanisms": {
+      "MCAR": 1,
+      "MAR": 1,
+      "MNAR": 1,
+      "left_censored": 1
+    }
+  },
+  "censoring": {
+    "mechanism": "assay_specific_left_censoring",
+    "assay_intensity_thresholds": {
+      "LCMS_Pos": 180000
+    }
+  },
+  "duplicate_policy": {
+    "mode": "declared_duplicates_resolve_sum",
+    "fraction": 0.040000000000000001
+  },
+  "sample_perturbations": {
+    "groups": [
+      "CTRL",
+      "TREAT"
+    ],
+    "batches": [
+      "B1",
+      "B2"
+    ],
+    "column_order": "reordered_with_alignment_truth"
+  },
+  "adapter_parameters": {
+    "source_kind": "reviewed_lipidsearch_fixture",
+    "profile": "lipidsearch_lcms_pos_fixture",
+    "bounded_query_features": 8,
+    "query_repetitions": 10,
+    "fixture_relpath": "tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_pos.txt",
+    "oracle": {
+      "assay": "LCMS_Pos",
+      "rows": 10,
+      "sample_columns": [
+        "WT_1",
+        "WT_2",
+        "WT_3",
+        "KO_1",
+        "KO_2",
+        "KO_3"
+      ],
+      "quantity_sum": 4708352,
+      "first_lipid": "PC 34:1",
+      "first_class": "PC",
+      "first_adduct": "[M+H]+"
+    }
+  },
+  "privacy": {
+    "classification": "public_fixture",
+    "source": "reviewed_repository_fixture",
+    "scale_metadata": null
+  },
+  "execution": {
+    "repetitions": 5,
+    "sampling_interval_ms": 20,
+    "retention_window_ms": 500,
+    "timeout_ms": 120000,
+    "maximum_retained_samples": 20,
+    "threads": 1,
+    "locale": "C",
+    "timezone": "UTC",
+    "cache_state": "cold_uncontrolled"
+  },
+  "expected_digests": {
+    "payload_sha256": "c23154c95596cc055c5acfe9c14de4f9e2ca0d3b4821455f398595b957f8b0e4",
+    "truth_sha256": "8983ce380a78b87e71e6bfc594d3011ae39a6ce925776d3028b6f8626b513c01"
+  }
+}

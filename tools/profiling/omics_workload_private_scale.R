@@ -131,3 +131,38 @@ mapPrivateScaleToMetabolomics <- function(scale_metadata) {
         mapping_policy = "rows_to_bounded_features_columns_io_only_v1"
     )
 }
+
+mapPrivateScaleToLipidomics <- function(scale_metadata) {
+    required <- c(
+        "row_count", "column_count", "byte_size",
+        "salted_source_fingerprint"
+    )
+    if (!is.list(scale_metadata) || !identical(names(scale_metadata), required)) {
+        privateScaleAbort(
+            "private lipidomics scale mapping requires the sanitized manifest",
+            "omics_private_scale_unsafe_manifest"
+        )
+    }
+    rows <- as.integer(scale_metadata$row_count)
+    report_columns <- as.integer(scale_metadata$column_count)
+    bytes <- as.numeric(scale_metadata$byte_size)
+    if (!is.finite(rows) || rows < 1L || !is.finite(report_columns) ||
+        report_columns < 2L || !is.finite(bytes) || bytes < 1) {
+        privateScaleAbort(
+            "private lipidomics scale metadata is malformed",
+            "omics_private_scale_unsafe_manifest"
+        )
+    }
+    list(
+        feature_count = max(8000L, min(20000L, as.integer(round(rows / 5L)))),
+        sample_count = 12L,
+        assay_mix = list(LCMS_Pos = 1L, LCMS_Neg = 1L, GCMS = 1L),
+        source_report_column_count = report_columns,
+        source_byte_class = if (bytes >= 64 * 1024^2) {
+            "64_to_128_mib"
+        } else {
+            "under_64_mib"
+        },
+        mapping_policy = "rows_to_bounded_lipids_columns_io_only_v1"
+    )
+}

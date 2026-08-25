@@ -205,7 +205,11 @@ omicsWorkloadValidateContract <- function(contract) {
         c("classification", "source", "scale_metadata"),
         "privacy"
     )
-    privacy_classes <- c("public_synthetic", "private_scale_only")
+    privacy_classes <- c(
+        "public_synthetic",
+        "public_fixture",
+        "private_scale_only"
+    )
     if (!contract$privacy$classification %in% privacy_classes) {
         omicsWorkloadAbort(sprintf(
             "privacy.classification must be one of: %s",
@@ -236,7 +240,10 @@ omicsWorkloadValidateContract <- function(contract) {
         )
     } else if (!is.null(contract$privacy$scale_metadata)) {
         omicsWorkloadAbort(
-            "privacy.scale_metadata must be null for public_synthetic workloads"
+            paste(
+                "privacy.scale_metadata must be null for public synthetic",
+                "and fixture workloads"
+            )
         )
     }
 

@@ -420,7 +420,7 @@
       "support_status": "reader_characterized",
       "fixture_requirement": "generated_direct_reader_fixture",
       "fixture_refs": ["tests/testthat/test-module-ci-lipid-import.R"],
-      "required_tests": ["tests/testthat/test-module-ci-lipid-import.R"],
+      "required_tests": ["tests/testthat/test-module-ci-lipid-import.R", "tests/testthat/test-omics-artifact-lipid-baseline.R"],
       "capabilities": [
         {
           "capability_id": "lipidomics.msdial.lipid.standard.v1",
@@ -454,7 +454,7 @@
       "support_status": "detection_only",
       "fixture_requirement": "dedicated_reader_and_fixture_required",
       "fixture_refs": [],
-      "required_tests": ["tests/testthat/test-lipid-00-import-detection-helpers.R"],
+      "required_tests": ["tests/testthat/test-lipid-00-import-detection-helpers.R", "tests/testthat/test-omics-artifact-lipid-baseline.R"],
       "capabilities": []
     },
     {
@@ -467,7 +467,7 @@
       "support_status": "detection_only",
       "fixture_requirement": "dedicated_reader_and_fixture_required",
       "fixture_refs": [],
-      "required_tests": ["tests/testthat/test-lipid-00-import-detection-helpers.R"],
+      "required_tests": ["tests/testthat/test-lipid-00-import-detection-helpers.R", "tests/testthat/test-omics-artifact-lipid-baseline.R"],
       "capabilities": []
     },
     {
@@ -480,7 +480,7 @@
       "support_status": "detection_only",
       "fixture_requirement": "dedicated_reader_and_fixture_required",
       "fixture_refs": [],
-      "required_tests": ["tests/testthat/test-lipid-00-import-detection-helpers.R"],
+      "required_tests": ["tests/testthat/test-lipid-00-import-detection-helpers.R", "tests/testthat/test-omics-artifact-lipid-baseline.R"],
       "capabilities": []
     },
     {
@@ -497,7 +497,7 @@
         "tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_neg.txt",
         "tests/testdata/e2e/lipid_canonical/lipidsearch_gcms.txt"
       ],
-      "required_tests": ["tests/testthat/test-module-ci-lipid-import.R", "tests/testthat/test-e2e-lipidomics-canonical.R"],
+      "required_tests": ["tests/testthat/test-module-ci-lipid-import.R", "tests/testthat/test-e2e-lipidomics-canonical.R", "tests/testthat/test-omics-artifact-lipid-baseline.R"],
       "capabilities": [
         {
           "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
@@ -531,7 +531,7 @@
       "support_status": "reader_characterized",
       "fixture_requirement": "generated_direct_reader_fixture_with_explicit_column_mapping",
       "fixture_refs": ["tests/testthat/test-module-ci-lipid-import.R"],
-      "required_tests": ["tests/testthat/test-module-ci-lipid-import.R"],
+      "required_tests": ["tests/testthat/test-module-ci-lipid-import.R", "tests/testthat/test-omics-workload-lipidomics.R"],
       "capabilities": [
         {
           "capability_id": "lipidomics.custom.lipid.standard.v1",

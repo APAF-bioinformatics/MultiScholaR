@@ -156,6 +156,17 @@ test_that("workload contracts reject schema, adapter, and privacy drift", {
     )
     expect_invisible(omicsWorkloadValidateContract(contract))
 
+    public_fixture <- contract
+    public_fixture$privacy$classification <- "public_fixture"
+    public_fixture$privacy$source <- "reviewed_repository_fixture"
+    expect_invisible(omicsWorkloadValidateContract(public_fixture))
+    unsafe_fixture <- public_fixture
+    unsafe_fixture$privacy$scale_metadata <- list(row_count = 1L)
+    expect_error(
+        omicsWorkloadValidateContract(unsafe_fixture),
+        class = "omics_workload_contract_error"
+    )
+
     future <- contract
     future$schema_version <- "2.0.0"
     expect_error(

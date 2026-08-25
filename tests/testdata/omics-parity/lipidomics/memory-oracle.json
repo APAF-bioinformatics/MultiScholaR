@@ -1,0 +1,11 @@
+{
+  "schema": "multischolar.lipidomics_memory_oracle",
+  "schema_version": "1.0.0",
+  "oracles": [
+    {"oracle_id": "lipidsearch_lcms_pos_v1", "rows": 10, "sample_columns": ["WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3"], "quantity_sum": 4708352, "first_lipid": "PC 34:1", "first_class": "PC", "first_adduct": "[M+H]+"},
+    {"oracle_id": "lipidsearch_lcms_neg_v1", "rows": 10, "sample_columns": ["WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3"], "quantity_sum": 3195528, "first_lipid": "PI 36:2", "first_class": "PI", "first_adduct": "[M-H]-"},
+    {"oracle_id": "lipidsearch_gcms_v1", "rows": 10, "sample_columns": ["WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3"], "quantity_sum": 3453228, "first_lipid": "FA 16:0", "first_class": "FA", "first_adduct": "[M-H]-"},
+    {"oracle_id": "lipidsearch_mixed_v1", "assay_order": ["LCMS_Pos", "LCMS_Neg", "GCMS"], "rows_per_assay": [10, 10, 10], "sample_count": 6}
+  ],
+  "scientific_claim": "independent fixture identity and arithmetic only"
+}

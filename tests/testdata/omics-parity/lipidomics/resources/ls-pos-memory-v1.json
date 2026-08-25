@@ -1,0 +1,333 @@
+{
+  "schema": "multischolar.omics_memory_baseline",
+  "schema_version": "1.0.0",
+  "status": "passed",
+  "workload_id": "lipidomics.lipidsearch.lcms-pos.public-fixture-10x6.v1",
+  "capability": {
+    "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+    "omic_type": "lipidomics",
+    "input_format": "lipidsearch",
+    "data_level": "lipid",
+    "acquisition_mode": "not_recorded"
+  },
+  "contract_sha256": "78d82479483d07a8658947c4ff9e078e6a4ca47a6e673095c3027629e846abd1",
+  "adapter": {
+    "adapter_id": "multischolar.lipidomics.v1",
+    "adapter_version": "1.1.0",
+    "source_sha256": "b3c4c0301dc07582a0aab1d0ec7488fbaf8a8d6ad10a15e2b3b51e2e077738a2"
+  },
+  "preparation": {
+    "fresh_processes": 2,
+    "deterministic": true,
+    "payload_sha256": "c23154c95596cc055c5acfe9c14de4f9e2ca0d3b4821455f398595b957f8b0e4",
+    "truth_sha256": "8983ce380a78b87e71e6bfc594d3011ae39a6ce925776d3028b6f8626b513c01",
+    "metadata": {
+      "generated": false,
+      "evidence_class": "independent_fixture",
+      "profile": "lipidsearch_lcms_pos_fixture",
+      "input_format": "lipidsearch",
+      "assay": "LCMS_Pos",
+      "feature_count": 10,
+      "sample_count": 6
+    }
+  },
+  "determinism": {
+    "fresh_preparation": true,
+    "payload": true,
+    "truth": true,
+    "workflow": true,
+    "binding": true
+  },
+  "summary": {
+    "requested": 5,
+    "completed": 5,
+    "failed": 0,
+    "peak_tree_rss_bytes": [
+      905486336,
+      905629696,
+      905506816,
+      905592832,
+      905162752
+    ],
+    "retained_tree_rss_bytes": [
+      905486336,
+      905629696,
+      905506816,
+      905592832,
+      905162752
+    ],
+    "elapsed_seconds": [
+      13.60499999999999,
+      14.539000000000001,
+      14.296999999999997,
+      13.126000000000005,
+      11.034999999999997
+    ]
+  },
+  "release_gates": {
+    "maximum_peak_tree_rss_bytes": 1132037120,
+    "maximum_retained_tree_rss_bytes": 1132037120,
+    "maximum_elapsed_seconds": 18.173750000000002,
+    "maximum_peak_disk_bytes": 3174,
+    "maximum_transient_disk_bytes": 0,
+    "maximum_peak_artifact_disk_bytes": 0,
+    "maximum_peak_staging_snapshot_disk_bytes": 0,
+    "maximum_peak_duckdb_spill_bytes": 0,
+    "maximum_peak_committed_disk_bytes": 0,
+    "maximum_peak_final_disk_bytes": 3167,
+    "maximum_final_disk_bytes": 3174,
+    "maximum_final_file_count": 5,
+    "maximum_committed_input_bytes": 1659,
+    "maximum_committed_input_file_count": 3,
+    "maximum_session_resource_count": 0,
+    "maximum_report_file_count": 0,
+    "maximum_bounded_query_p95_seconds": 0.0012500000000018052
+  },
+  "runs": [
+    {
+      "status": "passed",
+      "repetition": 1,
+      "metrics": {
+        "elapsed_seconds": 13.60499999999999,
+        "peak_tree_rss_bytes": 905486336,
+        "retained_tree_rss_bytes": 905486336,
+        "peak_disk_bytes": 2538,
+        "transient_disk_bytes": 0,
+        "peak_artifact_disk_bytes": 0,
+        "peak_staging_snapshot_disk_bytes": 0,
+        "peak_duckdb_spill_bytes": 0,
+        "peak_committed_disk_bytes": 0,
+        "peak_final_disk_bytes": 2532,
+        "final_disk_bytes": 2538,
+        "final_file_count": 4,
+        "committed_input_bytes": 1327,
+        "committed_input_file_count": 2,
+        "bounded_query_p95_seconds": 0.0010000000000014442
+      },
+      "worker": {
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "independent_fixture"
+        },
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "separate_e2e",
+          "file_count": 0
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "workflow_sha256": "d665092d2aef1304d69a18d30d8107f16a43827129af3b7e9a16bd9c67f04e73"
+      }
+    },
+    {
+      "status": "passed",
+      "repetition": 2,
+      "metrics": {
+        "elapsed_seconds": 14.539000000000001,
+        "peak_tree_rss_bytes": 905629696,
+        "retained_tree_rss_bytes": 905629696,
+        "peak_disk_bytes": 2538,
+        "transient_disk_bytes": 0,
+        "peak_artifact_disk_bytes": 0,
+        "peak_staging_snapshot_disk_bytes": 0,
+        "peak_duckdb_spill_bytes": 0,
+        "peak_committed_disk_bytes": 0,
+        "peak_final_disk_bytes": 2532,
+        "final_disk_bytes": 2538,
+        "final_file_count": 4,
+        "committed_input_bytes": 1327,
+        "committed_input_file_count": 2,
+        "bounded_query_p95_seconds": 0.0010000000000014442
+      },
+      "worker": {
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "independent_fixture"
+        },
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "separate_e2e",
+          "file_count": 0
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "workflow_sha256": "d665092d2aef1304d69a18d30d8107f16a43827129af3b7e9a16bd9c67f04e73"
+      }
+    },
+    {
+      "status": "passed",
+      "repetition": 3,
+      "metrics": {
+        "elapsed_seconds": 14.296999999999997,
+        "peak_tree_rss_bytes": 905506816,
+        "retained_tree_rss_bytes": 905506816,
+        "peak_disk_bytes": 2538,
+        "transient_disk_bytes": 0,
+        "peak_artifact_disk_bytes": 0,
+        "peak_staging_snapshot_disk_bytes": 0,
+        "peak_duckdb_spill_bytes": 0,
+        "peak_committed_disk_bytes": 0,
+        "peak_final_disk_bytes": 2532,
+        "final_disk_bytes": 2538,
+        "final_file_count": 4,
+        "committed_input_bytes": 1327,
+        "committed_input_file_count": 2,
+        "bounded_query_p95_seconds": 0.0010000000000014442
+      },
+      "worker": {
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "independent_fixture"
+        },
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "separate_e2e",
+          "file_count": 0
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "workflow_sha256": "d665092d2aef1304d69a18d30d8107f16a43827129af3b7e9a16bd9c67f04e73"
+      }
+    },
+    {
+      "status": "passed",
+      "repetition": 4,
+      "metrics": {
+        "elapsed_seconds": 13.126000000000005,
+        "peak_tree_rss_bytes": 905592832,
+        "retained_tree_rss_bytes": 905592832,
+        "peak_disk_bytes": 2538,
+        "transient_disk_bytes": 0,
+        "peak_artifact_disk_bytes": 0,
+        "peak_staging_snapshot_disk_bytes": 0,
+        "peak_duckdb_spill_bytes": 0,
+        "peak_committed_disk_bytes": 0,
+        "peak_final_disk_bytes": 2532,
+        "final_disk_bytes": 2538,
+        "final_file_count": 4,
+        "committed_input_bytes": 1327,
+        "committed_input_file_count": 2,
+        "bounded_query_p95_seconds": 0.0010000000000014442
+      },
+      "worker": {
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "independent_fixture"
+        },
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "separate_e2e",
+          "file_count": 0
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "workflow_sha256": "d665092d2aef1304d69a18d30d8107f16a43827129af3b7e9a16bd9c67f04e73"
+      }
+    },
+    {
+      "status": "passed",
+      "repetition": 5,
+      "metrics": {
+        "elapsed_seconds": 11.034999999999997,
+        "peak_tree_rss_bytes": 905162752,
+        "retained_tree_rss_bytes": 905162752,
+        "peak_disk_bytes": 2539,
+        "transient_disk_bytes": 0,
+        "peak_artifact_disk_bytes": 0,
+        "peak_staging_snapshot_disk_bytes": 0,
+        "peak_duckdb_spill_bytes": 0,
+        "peak_committed_disk_bytes": 0,
+        "peak_final_disk_bytes": 2533,
+        "final_disk_bytes": 2539,
+        "final_file_count": 4,
+        "committed_input_bytes": 1327,
+        "committed_input_file_count": 2,
+        "bounded_query_p95_seconds": 0.00099999999999966782
+      },
+      "worker": {
+        "workflow_evidence": {
+          "truth_valid": true,
+          "evidence_class": "independent_fixture"
+        },
+        "session_evidence": {
+          "status": "memory_only",
+          "resource_count": 0
+        },
+        "report_evidence": {
+          "status": "separate_e2e",
+          "file_count": 0
+        },
+        "native_resources": {
+          "arrow": {
+            "available": true,
+            "loaded": false,
+            "bytes_allocated": null
+          },
+          "duckdb": {
+            "available": true,
+            "loaded": false,
+            "connections_opened": 0
+          }
+        },
+        "workflow_sha256": "d665092d2aef1304d69a18d30d8107f16a43827129af3b7e9a16bd9c67f04e73"
+      }
+    }
+  ],
+  "gate_policy": {
+    "materiality_margin_fraction": 0.25,
+    "source": "maximum of five fresh runs plus margin; observed zeros remain zero",
+    "claim_boundary": "reviewed LipidSearch fixture reader and resource evidence only; not representative-scale or biological validation"
+  }
+}
