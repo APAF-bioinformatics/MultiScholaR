@@ -227,6 +227,12 @@ handleLipidSummaryExportSessionState <- function(
     dateFn = Sys.Date,
     buildSessionStateFn = buildLipidSummarySessionState
 ) {
+    dependencies <- prepareLipidSummaryDependencies(
+        workflowData,
+        projectDirs,
+        omicType
+    )
+    on.exit(releaseLipidSummaryDependencies(dependencies), add = TRUE)
     tryCatch({
         sessionExportPath <- file.path(
             projectDirs[[omicType]]$source_dir,
@@ -251,6 +257,11 @@ handleLipidSummaryExportSessionState <- function(
         }
 
         saveRDSFn(sessionState, sessionExportPath)
+        recordLipidSummaryProduct(
+            dependencies,
+            sessionExportPath,
+            "session_state"
+        )
 
         showNotificationFn(
             paste("Session state exported to:", sessionExportPath),
@@ -348,7 +359,8 @@ collectLipidSummaryWorkflowArgsContext <- function(
         catFn("SESSION SUMMARY: Using contrasts_tbl from workflow_data\n")
     }
 
-    if (!is.null(workflowData) && !is.null(workflowData$config_list)) {
+    if (lipidSummaryGlobalOwnershipAllowed(workflowData) &&
+        !is.null(workflowData) && !is.null(workflowData$config_list)) {
         assignFn("config_list", workflowData$config_list, envir = globalEnv)
         catFn("SESSION SUMMARY: Config list available with", length(workflowData$config_list), "items\n")
     }

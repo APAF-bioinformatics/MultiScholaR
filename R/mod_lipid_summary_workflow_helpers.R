@@ -19,6 +19,12 @@ handleLipidSummarySaveWorkflowArgs <- function(
     catFn = cat
 ) {
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
+    dependencies <- prepareLipidSummaryDependencies(
+        workflowData,
+        projectDirs,
+        omicType
+    )
+    on.exit(releaseLipidSummaryDependencies(dependencies), add = TRUE)
 
     tryCatch({
         context <- collectContextFn(workflowData = workflowData, catFn = catFn)
@@ -49,6 +55,16 @@ handleLipidSummarySaveWorkflowArgs <- function(
         s4Filepath <- filePathFn(integrationDir, s4Filename)
 
         saveRDSFn(context$finalS4Object, s4Filepath)
+        recordLipidSummaryProduct(
+            dependencies,
+            studyParamsFile,
+            "study_parameters"
+        )
+        recordLipidSummaryProduct(
+            dependencies,
+            s4Filepath,
+            "final_s4"
+        )
         catFn(sprintf("SESSION SUMMARY: Saved Integration S4 object to: %s\n", s4Filepath))
         showNotificationFn("Saved Integration S4 Object", type = "message")
 
@@ -147,6 +163,12 @@ handleLipidSummaryCopyToPublication <- function(
     tracebackFn = traceback,
     classifyCopyFailuresFn = classifyLipidSummaryCopyFailures
 ) {
+    dependencies <- prepareLipidSummaryDependencies(
+        workflowData,
+        projectDirs,
+        omicType
+    )
+    on.exit(releaseLipidSummaryDependencies(dependencies), add = TRUE)
     if (!values$workflow_args_saved) {
         basicParamsFile <- filePathFn(projectDirs[[omicType]]$source_dir, "study_parameters.txt")
         if (!fileExistsFn(basicParamsFile)) {
@@ -189,6 +211,10 @@ handleLipidSummaryCopyToPublication <- function(
                     catFn("SESSION SUMMARY: Got design_matrix from workflow_data\n")
                 }
             }
+            if (is.environment(dependencies)) {
+                contrastsTbl <- dependencies$contrasts
+                designMatrix <- dependencies$object@design_matrix
+            }
 
             if (is.null(designMatrix)) {
                 designMatrixFile <- filePathFn(projectDirs[[omicType]]$source_dir, "design_matrix.tab")
@@ -212,18 +238,26 @@ handleLipidSummaryCopyToPublication <- function(
             catFn("SESSION SUMMARY: contrasts_tbl is", ifelse(is.null(contrastsTbl), "NULL", "available"), "\n")
             catFn("SESSION SUMMARY: design_matrix is", ifelse(is.null(designMatrix), "NULL", "available"), "\n")
 
-            if (!existsFn("project_dirs", envir = globalEnv)) {
+            if (lipidSummaryGlobalOwnershipAllowed(workflowData) &&
+                !existsFn("project_dirs", envir = globalEnv)) {
                 catFn("SESSION SUMMARY: Setting project_dirs in global environment\n")
                 assignFn("project_dirs", projectDirs, envir = globalEnv)
             }
 
-            copyFailures <- copyResultsSummaryFn(
+            copy_args <- list(
                 omic_type = omicType,
                 experiment_label = input$experiment_label,
                 contrasts_tbl = contrastsTbl,
                 design_matrix = designMatrix,
                 force = TRUE
             )
+            copy_supported <- names(formals(copyResultsSummaryFn))
+            if (is.environment(dependencies) &&
+                ("project_dirs" %in% copy_supported ||
+                    "..." %in% copy_supported)) {
+                copy_args$project_dirs <- projectDirs
+            }
+            copyFailures <- do.call(copyResultsSummaryFn, copy_args)
 
             classifiedFailures <- classifyCopyFailuresFn(copyFailures)
             if (length(classifiedFailures$required) > 0L) {
@@ -315,6 +349,7 @@ handleLipidSummaryGenerateReport <- function(
     output,
     projectDirs,
     omicType,
+    workflowData = NULL,
     templateFilename = "lipidomics_report.rmd",
     withProgressFn = shiny::withProgress,
     showNotificationFn = shiny::showNotification,
@@ -340,6 +375,12 @@ handleLipidSummaryGenerateReport <- function(
     catFn = cat,
     printFn = print
 ) {
+    dependencies <- prepareLipidSummaryDependencies(
+        workflowData,
+        projectDirs,
+        omicType
+    )
+    on.exit(releaseLipidSummaryDependencies(dependencies), add = TRUE)
     if (!omicType %in% names(projectDirs) || is.null(projectDirs[[omicType]]$base_dir)) {
         showNotificationFn(
             "Error: Project directories not properly initialized",
@@ -417,15 +458,27 @@ handleLipidSummaryGenerateReport <- function(
 
             logInfoFn("Calling RenderReport with omic_type: {omicType}, experiment_label: {input$experiment_label}")
 
-            renderedPath <- renderReportFn(
+            render_args <- list(
                 omic_type = omicType,
                 experiment_label = input$experiment_label,
                 rmd_filename = templateFilename
             )
+            render_supported <- names(formals(renderReportFn))
+            if (is.environment(dependencies) &&
+                ("workflow_data" %in% render_supported ||
+                    "..." %in% render_supported)) {
+                render_args$workflow_data <- workflowData
+            }
+            renderedPath <- do.call(renderReportFn, render_args)
 
             logInfoFn("RenderReport returned path: {renderedPath}")
 
             if (!is.null(renderedPath) && fileExistsFn(renderedPath)) {
+                recordLipidSummaryProduct(
+                    dependencies,
+                    renderedPath,
+                    "report_html"
+                )
                 values$report_generated <- TRUE
                 values$report_path <- renderedPath
 
@@ -485,6 +538,7 @@ registerLipidSummaryGenerateReportObserver <- function(
     output,
     projectDirs,
     omicType,
+    workflowData = NULL,
     observeEventFn = shiny::observeEvent,
     reqFn = shiny::req,
     handleGenerateReportFn = handleLipidSummaryGenerateReport
@@ -492,13 +546,19 @@ registerLipidSummaryGenerateReportObserver <- function(
     observeEventFn(input$generate_report, {
         reqFn(input$experiment_label)
         reqFn(values$files_copied)
-        handleGenerateReportFn(
+        handler_args <- list(
             input = input,
             values = values,
             output = output,
             projectDirs = projectDirs,
             omicType = omicType
         )
+        handler_supported <- names(formals(handleGenerateReportFn))
+        if ("workflowData" %in% handler_supported ||
+            "..." %in% handler_supported) {
+            handler_args$workflowData <- workflowData
+        }
+        do.call(handleGenerateReportFn, handler_args)
     })
 
     invisible(input)
@@ -589,4 +649,3 @@ registerLipidSummaryPushToGithubObserver <- function(
 
     invisible(input)
 }
-

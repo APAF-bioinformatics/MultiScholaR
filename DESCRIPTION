@@ -346,6 +346,7 @@ Collate:
     'mod_lipid_norm_ui.R'
     'mod_lipid_norm_server.R'
     'mod_lipid_summary_state_helpers.R'
+    'mod_lipid_summary_artifact_helpers.R'
     'mod_lipid_summary_workflow_helpers.R'
     'mod_lipid_summary_observer_helpers.R'
     'mod_lipid_qc.R'
