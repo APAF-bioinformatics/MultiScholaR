@@ -24,12 +24,36 @@ registerLipidDesignBuilderModule <- function(
     reactiveValFn(NULL)
 }
 
+hydrateLipidDesignBuilderWorkflowState <- function(
+    results,
+    workflowData,
+    assignFn = assign,
+    logInfo = logger::log_info
+) {
+    workflowData$design_matrix <- results$design_matrix
+    workflowData$data_cln <- results$data_cln
+    workflowData$contrasts_tbl <- results$contrasts_tbl
+    workflowData$config_list <- results$config_list
+
+    if (!lipidArtifactCoordinatorOwned(workflowData)) {
+        if (!is.null(results$contrasts_tbl)) {
+            assignFn("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
+            logInfo("Updated contrasts_tbl in global environment.")
+        }
+        assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
+        logInfo("Updated global config_list.")
+    }
+
+    invisible(workflowData)
+}
+
 runLipidDesignBuilderObserverShell <- function(
     results,
     workflowData,
     experimentPaths,
     qcTrigger = NULL,
-    createLipidomicsAssayDataFn = createLipidomicsAssayData
+    createLipidomicsAssayDataFn = createLipidomicsAssayData,
+    persistArtifactFn = persistLipidDesignArtifacts
 ) {
     shiny::showModal(shiny::modalDialog(
         title = "Processing Design Matrix"
@@ -73,18 +97,7 @@ runLipidDesignBuilderObserverShell <- function(
         return(invisible(NULL))
     }
 
-    workflowData$design_matrix <- results$design_matrix
-    workflowData$data_cln <- results$data_cln
-    workflowData$contrasts_tbl <- results$contrasts_tbl
-    workflowData$config_list <- results$config_list
-
-    if (!is.null(results$contrasts_tbl)) {
-        assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
-        logger::log_info("Updated contrasts_tbl in global environment.")
-    }
-
-    assign("config_list", workflowData$config_list, envir = .GlobalEnv)
-    logger::log_info("Updated global config_list.")
+    hydrateLipidDesignBuilderWorkflowState(results, workflowData)
 
     tryCatch({
         design_matrix_path <- file.path(source_dir, "design_matrix.tab")
@@ -170,6 +183,7 @@ runLipidDesignBuilderObserverShell <- function(
             , config_object = results$config_list
             , description = "Initial LipidomicsAssayData S4 object created after design matrix"
         )
+        persistArtifactFn(workflow_data = workflowData)
 
         if (!is.null(qcTrigger)) {
             qcTrigger(TRUE)
@@ -202,7 +216,8 @@ registerLipidDesignBuilderResultsObserver <- function(
     observeEventFn = shiny::observeEvent,
     reqFn = shiny::req,
     runBuilderObserverShell = runLipidDesignBuilderObserverShell,
-    createLipidomicsAssayDataFn = createLipidomicsAssayData
+    createLipidomicsAssayDataFn = createLipidomicsAssayData,
+    persistArtifactFn = persistLipidDesignArtifacts
 ) {
     observeEventFn(builderResultsRv(), {
         results <- builderResultsRv()
@@ -213,7 +228,8 @@ registerLipidDesignBuilderResultsObserver <- function(
             workflowData = workflowData,
             experimentPaths = experimentPaths,
             qcTrigger = qcTrigger,
-            createLipidomicsAssayDataFn = createLipidomicsAssayDataFn
+            createLipidomicsAssayDataFn = createLipidomicsAssayDataFn,
+            persistArtifactFn = persistArtifactFn
         )
     }, ignoreNULL = TRUE)
 }

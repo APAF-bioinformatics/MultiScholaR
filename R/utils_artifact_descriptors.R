@@ -648,7 +648,10 @@ artifactDiaWorkflowDescriptor <- function() {
     c(
         list(artifactDiaWorkflowDescriptor()),
         unname(artifactProteomicsNonDiaWorkflowDescriptors()),
-        list(artifactMetabolomicsWorkflowDescriptor())
+        list(
+            artifactMetabolomicsWorkflowDescriptor(),
+            artifactLipidomicsWorkflowDescriptor()
+        )
     )
 )
 

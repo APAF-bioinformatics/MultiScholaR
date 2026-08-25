@@ -194,7 +194,8 @@ test_that("only supported non-DIA protein tuples receive dual-write descriptors"
         c(
             "proteomics.diann.peptide.dia.v1",
             names(descriptors),
-            "metabolomics.custom.metabolite.standard.v1"
+            "metabolomics.custom.metabolite.standard.v1",
+            "lipidomics.lipidsearch.lipid.standard.v1"
         )
     )
     expect_false(any(grepl("spectronaut", names(catalogue$descriptors))))

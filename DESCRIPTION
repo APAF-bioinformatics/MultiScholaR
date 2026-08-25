@@ -305,6 +305,8 @@ Collate:
     'mod_lipid_da.R'
     'mod_lipid_design_builder_display_helpers.R'
     'mod_lipid_design_builder_action_helpers.R'
+    'mod_lipid_import_artifact_helpers.R'
+    'mod_lipid_design_artifact_helpers.R'
     'mod_lipid_design_builder_state_helpers.R'
     'mod_lipid_design_builder_ui.R'
     'mod_lipid_design_builder_server.R'

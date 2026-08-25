@@ -641,6 +641,7 @@ runLipidImportProcessing <- function(
   writeImportArtifacts = writeLipidImportSourceArtifacts,
   applyResultToWorkflow = applyLipidImportResultToWorkflow,
   finalizeSetupState = finalizeLipidImportSetupState,
+  persistArtifactFn = persistLipidImportArtifacts,
   notify = shiny::showNotification,
   removeNotify = shiny::removeNotification,
   logError = logger::log_error,
@@ -738,6 +739,21 @@ runLipidImportProcessing <- function(
         artifactResult = artifact_result
       )
 
+      artifact_stage_result <- persistArtifactFn(
+        workflow_data = workflowData,
+        workflow_payload = lipidArtifactImportWorkflowPayload(
+          assay_list = assay_list,
+          column_mapping = workflowData$column_mapping,
+          data_format = workflowData$data_format,
+          sample_names_sanitized = sanitizeNames,
+          assay1_file = assay1File,
+          assay2_file = assay2File,
+          processing_log = workflowData$processing_log$setup_import
+        )
+      )
+      workflowData$processing_log$setup_import$artifact_stage <-
+        artifact_stage_result
+
       removeNotify("lipid_import_working")
       notify("Data imported successfully!", type = "message")
 
@@ -746,7 +762,8 @@ runLipidImportProcessing <- function(
         assayList = assay_list,
         sampleColumns = sampleColumns,
         validationResult = validation_result,
-        artifactResult = artifact_result
+        artifactResult = artifact_result,
+        artifactStageResult = artifact_stage_result
       ))
     },
     error = function(e) {

@@ -84,6 +84,43 @@ registerLipidDesignImportModalShell <- function(
     invisible(output)
 }
 
+hydrateLipidDesignImportWorkflowState <- function(
+    workflowData,
+    importedConfig,
+    importedDesign,
+    assayList,
+    importedContrasts,
+    assignFn = assign,
+    mutateFn = dplyr::mutate,
+    logInfo = logger::log_info
+) {
+    workflowData$config_list <- importedConfig
+    workflowData$design_matrix <- importedDesign
+    workflowData$contrasts_tbl <- importedContrasts
+    workflowData$data_tbl <- assayList
+    workflowData$data_cln <- assayList
+
+    if (!lipidArtifactCoordinatorOwned(workflowData)) {
+        assignFn("config_list", importedConfig, envir = .GlobalEnv)
+        logInfo("Assigned imported config to global environment.")
+        if (!is.null(importedContrasts)) {
+            assignFn("contrasts_tbl", importedContrasts, envir = .GlobalEnv)
+            logInfo("Saved contrasts_tbl to global environment.")
+        }
+    }
+
+    workflowData$design_matrix <- mutateFn(
+        workflowData$design_matrix,
+        tech_rep_group = paste(group, replicates, sep = "_")
+    )
+
+    list(
+        designMatrix = workflowData$design_matrix,
+        assayList = workflowData$data_tbl,
+        importedContrasts = workflowData$contrasts_tbl
+    )
+}
+
 runLipidDesignImportConfirmationShell <- function(
     workflowData,
     experimentPaths,
@@ -100,7 +137,8 @@ runLipidDesignImportConfirmationShell <- function(
     assignFn = assign,
     createLipidomicsAssayDataFn = createLipidomicsAssayData,
     workflowStateClass = WorkflowState,
-    updateLipidFilteringFn = updateLipidFiltering
+    updateLipidFilteringFn = updateLipidFiltering,
+    persistArtifactFn = persistLipidDesignArtifacts
 ) {
     removeModalFn()
 
@@ -311,24 +349,15 @@ runLipidDesignImportConfirmationShell <- function(
         }
 
         # --- 6. Update workflow_data ---
-        workflowData$config_list <- imported_config
         workflowData$column_mapping <- col_map
-        workflowData$design_matrix <- imported_design
-        workflowData$contrasts_tbl <- imported_contrasts
-        workflowData$data_tbl <- assay_list
-        workflowData$data_cln <- assay_list
-
-        assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
-        message("DEBUG66: config assigned to global env")
-        logger::log_info("Assigned imported config to global environment.")
-
-        if (!is.null(imported_contrasts)) {
-            assignFn("contrasts_tbl", imported_contrasts, envir = .GlobalEnv)
-            logger::log_info("Saved contrasts_tbl to global environment.")
-        }
-
-        workflowData$design_matrix <- workflowData$design_matrix |>
-            dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
+        hydrateLipidDesignImportWorkflowState(
+            workflowData = workflowData,
+            importedConfig = imported_config,
+            importedDesign = imported_design,
+            assayList = assay_list,
+            importedContrasts = imported_contrasts,
+            assignFn = assignFn
+        )
 
         # --- 7. Create S4 Object ---
         col_map <- workflowData$column_mapping
@@ -391,6 +420,7 @@ runLipidDesignImportConfirmationShell <- function(
             description = "LipidomicsAssayData S4 object created from imported design"
         )
         message("DEBUG66: State saved successfully")
+        persistArtifactFn(workflow_data = workflowData)
 
         tryCatch({
             updateLipidFilteringFn(
