@@ -193,13 +193,13 @@
     openProjectRegistryReadOnly(registry)
 }
 
-test_that("only custom metabolomics receives a dual-write descriptor", {
+test_that("only custom metabolomics receives an evict descriptor", {
     descriptor <- artifactMetabolomicsWorkflowDescriptor()
     expect_identical(
         descriptor$descriptor_id,
         "metabolomics.custom.metabolite.standard.v1"
     )
-    expect_identical(descriptor$certification$status, "dual_write")
+    expect_identical(descriptor$certification$status, "evict")
     expect_false(descriptor$certification$auto_eligible)
     expect_identical(
         names(descriptor$codecs),

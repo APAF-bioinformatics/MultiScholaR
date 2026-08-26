@@ -85,7 +85,7 @@ artifactMetabolomicsWorkflowDescriptor <- function() {
                 ),
                 codec_ids = codec_id,
                 query_operation_ids = query_id,
-                maximum_rollout = "dual_write"
+                maximum_rollout = "evict"
             ),
             design = list(
                 stage_id = "design",
@@ -96,7 +96,7 @@ artifactMetabolomicsWorkflowDescriptor <- function() {
                 ),
                 codec_ids = codec_id,
                 query_operation_ids = character(),
-                maximum_rollout = "dual_write"
+                maximum_rollout = "evict"
             )
         ),
         codecs = codecs,
@@ -161,7 +161,7 @@ artifactMetabolomicsWorkflowDescriptor <- function() {
         ),
         certification = list(
             owner_id = owner,
-            status = "dual_write",
+            status = "evict",
             auto_eligible = FALSE
         )
     )

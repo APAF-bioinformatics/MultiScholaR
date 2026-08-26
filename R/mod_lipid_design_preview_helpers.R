@@ -1,5 +1,5 @@
 formatLipidDesignAssaysPreview <- function(dataTbl) {
-    assayNames <- names(dataTbl)
+    assayNames <- if (is.character(dataTbl)) dataTbl else names(dataTbl)
     paste("Included assays:", paste(assayNames, collapse = ", "))
 }
 
@@ -22,10 +22,15 @@ registerLipidDesignPreviewOutputs <- function(
     }, options = list(pageLength = 5, scrollX = TRUE))
 
     output$assays_preview <- renderText({
-        req(workflowData$data_tbl)
-        assayPreviewFormatter(workflowData$data_tbl)
+        if (!is.null(workflowData$data_tbl)) {
+            req(workflowData$data_tbl)
+            assayPreviewFormatter(workflowData$data_tbl)
+        } else {
+            assayNames <- lipidWorkflowAssayNames(workflowData)
+            req(assayNames)
+            assayPreviewFormatter(assayNames)
+        }
     })
 
     invisible(output)
 }
-

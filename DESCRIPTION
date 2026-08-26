@@ -111,11 +111,13 @@ Collate:
     'utils_artifact_query_pages.R'
     'utils_workflow_state_artifact_navigation.R'
     'utils_workflow_state_artifact_commits.R'
+    'utils_workflow_state_artifact_runtime.R'
     'utils_workflow_state_artifact_backend.R'
     'utils_workflow_state_factory.R'
     'utils_artifact_stage_adapters.R'
     'utils_artifact_stage_persistence.R'
     'utils_artifact_stage_readthrough.R'
+    'utils_artifact_settled_resume.R'
     'utils_artifact_payload_eviction.R'
     'func_general_design.R'
     'func_general_enrichment_core.R'
@@ -558,6 +560,7 @@ Imports:
     janitor,
     jsonlite,
     knitr,
+    later,
     lazyeval,
     limma,
     logger,

@@ -2,11 +2,11 @@
   "schema": "multischolar.all_omics_auto_policy",
   "schema_version": "1.0.0",
   "ticket_id": "OMICS-ART-049",
-  "decision": "no_promotion",
+  "decision": "adaptive_scale_promotion",
   "closeout_path": "tests/testdata/omics-parity/all-omics-operational-closeout-v1.json",
   "closeout_sha256": "21fdd34c410a8f90cc8f8a6bb94e5e603db185574cd4da4ad79ba48ee2e3187a",
   "default_requested_backend": "auto",
-  "effective_backend_for_new_projects": "memory",
+  "effective_backend_for_new_projects": "adaptive_by_projected_source_bytes",
   "promoted_capability_ids": [],
   "forced_canary_capability_ids": [
     "proteomics.diann.peptide.dia.v1",
@@ -44,7 +44,7 @@
   ],
   "namespace_policy": "qualified_calls_no_new_imports",
   "project_state_policy": {
-    "new_unpromoted": "memory",
+    "new_unpromoted": "adaptive_scale_gate",
     "legacy_memory": "memory_no_implicit_migration",
     "existing_artifact_valid": "artifact_exact_certified_rollout",
     "existing_artifact_corrupt": "fail_closed",
@@ -74,5 +74,23 @@
     "existing_artifact_mode": "read_only",
     "memory_reconstruction": "verified_compatibility_session",
     "delete_immutable_artifacts": false
+  },
+  "adaptive_capability_ids": [
+    "metabolomics.custom.metabolite.standard.v1",
+    "lipidomics.lipidsearch.lipid.standard.v1"
+  ],
+  "adaptive_policy": {
+    "certified_platforms": [
+      "Linux"
+    ],
+    "minimum_projected_source_bytes": 33554432,
+    "below_gate_backend": "memory",
+    "at_or_above_gate_backend": "artifact",
+    "at_or_above_gate_rollout": "evict",
+    "existing_memory_projects_migrate_implicitly": false,
+    "scale_workload_contracts": [
+      "tests/testdata/omics-parity/metabolomics/workloads/mixed-public-scale-v1.json",
+      "tests/testdata/omics-parity/lipidomics/workloads/mixed-public-scale-v1.json"
+    ]
   }
 }

@@ -78,7 +78,8 @@ mod_lipid_design_server <- function(id, workflow_data, experiment_paths, volumes
         # == Reactivity Checks ======================================================
 
         output$data_available <- shiny::reactive({
-            !is.null(workflow_data$data_tbl) && !is.null(workflow_data$config_list)
+            lipidWorkflowPayloadAvailable(workflow_data, "data_tbl") &&
+                !is.null(workflow_data$config_list)
         })
         shiny::outputOptions(output, "data_available", suspendWhenHidden = FALSE)
 
@@ -110,4 +111,3 @@ mod_lipid_design_server <- function(id, workflow_data, experiment_paths, volumes
         )
     })
 }
-

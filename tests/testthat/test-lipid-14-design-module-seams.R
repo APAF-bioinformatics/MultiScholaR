@@ -190,7 +190,8 @@ test_that("registerLipidDesignBuilderResultsObserver keeps observer handoff stab
         workflowData,
         experimentPaths,
         qcTrigger = NULL,
-        createLipidomicsAssayDataFn = createLipidomicsAssayData
+        createLipidomicsAssayDataFn = createLipidomicsAssayData,
+        persistArtifactFn = persistLipidDesignArtifacts
     ) {
         shell_calls <<- list(
             results = results,

@@ -477,6 +477,33 @@ artifactWorkflowStateResourceInfo <- function(
     )
 }
 
+artifactReleaseProcessAllocator <- function() {
+    if (!identical(Sys.info()[["sysname"]], "Linux")) {
+        return(invisible(FALSE))
+    }
+    released <- tryCatch(
+        .Call(C_multischolar_malloc_trim),
+        error = \(...) FALSE
+    )
+    invisible(isTRUE(released))
+}
+
+artifactReleaseTransientMemory <- function(full = FALSE) {
+    invisible(gc(full = full))
+    artifactReleaseProcessAllocator()
+}
+
+artifactScheduleTransientMemoryRelease <- function(delay = 0) {
+    if (!requireNamespace("later", quietly = TRUE)) {
+        return(invisible(FALSE))
+    }
+    later::later(
+        \() artifactReleaseTransientMemory(),
+        delay = delay
+    )
+    invisible(TRUE)
+}
+
 closeArtifactWorkflowStateSession <- function(session) {
     if (is.null(session)) return(list(closed = TRUE, error = NULL))
     cleanup_error <- tryCatch(

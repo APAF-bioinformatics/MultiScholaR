@@ -35,7 +35,7 @@ test_that("lipidomics workload contracts and chemistry are exact", {
         "tools", "profiling", "omics_workload_lipidomics.R"
     )
     paths <- lipidWorkloadTestContracts()
-    expect_length(paths, 11L)
+    expect_length(paths, 12L)
     ids <- character()
     profiles <- character()
     for (path in paths) {
@@ -105,7 +105,9 @@ test_that("lipidomics workload contracts and chemistry are exact", {
         profiles <- c(profiles, contract$adapter_parameters$profile)
     }
     expect_identical(anyDuplicated(ids), 0L)
-    expect_identical(anyDuplicated(profiles), 0L)
+    duplicate_profiles <- names(which(table(profiles) > 1L))
+    expect_identical(duplicate_profiles, "mixed_representative")
+    expect_identical(unname(table(profiles)[duplicate_profiles]), 2L)
 })
 
 test_that("lipidomics simulator is deterministic and binding-sensitive", {

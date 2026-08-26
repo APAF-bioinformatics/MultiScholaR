@@ -104,6 +104,89 @@ test_that("successful eviction releases lists and reconstructs exact assays", {
     }
 })
 
+test_that("settled resume avoids source and S4 hydration until explicit demand", {
+    for (kind in c("lc", "gc", "mixed")) {
+        root <- withr::local_tempdir(pattern = paste0("metab051-settled-", kind, "-"))
+        built <- .metab032PersistProject(root, kind)
+        expect_true(built$design$settled_resume_snapshot$written, info = kind)
+        prepared <- createMetabResumeContext(
+            built$paths,
+            "metabolomics-study"
+        )
+        bundle <- hydrateMetabResumeBundle(
+            prepared$context,
+            retain_source_payloads = FALSE
+        )
+        workflow <- .metab032FreshWorkflow(built$paths)
+        applyMetabResumeBundle(workflow, bundle)
+        expect_false(bundle$source_payloads_retained, info = kind)
+        expect_identical(bundle$readthrough_mode, "settled", info = kind)
+        expect_null(bundle$state_object, info = kind)
+        expect_null(workflow$data_tbl, info = kind)
+        expect_null(workflow$data_cln, info = kind)
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+        expect_false(
+            workflow$state_manager$getResourceInfo()$registry_connection,
+            info = kind
+        )
+        expect_identical(
+            metabWorkflowAssayNames(workflow),
+            names(built$payload$assayList),
+            info = kind
+        )
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+        result <- settleMetabArtifactWorkflowSafely(
+            workflow,
+            rollout_fn = \(...) "evict",
+            log_warn = \(...) invisible(NULL)
+        )
+        expect_true(result$evicted, info = kind)
+        expect_true(result$source_hydration_avoided, info = kind)
+        expect_identical(result$reason, "artifact_payload_hydration_avoided")
+        gate <- evaluateMetabEvictionStageGate(1, result, workflow$state_manager)
+        expect_true(gate$passed, info = kind)
+        expect_identical(
+            resolveMetabWorkflowAssays(workflow, "data_cln"),
+            built$object@metabolite_data,
+            info = kind
+        )
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+        expect_identical(workflow$state_manager$getState(), built$object, info = kind)
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 1L)
+        expect_false(
+            workflow$state_manager$getResourceInfo()$registry_connection,
+            info = kind
+        )
+        expect_true(workflowStateReleaseHydrationCache(workflow$state_manager))
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+        expect_true(workflow$state_manager$close())
+    }
+})
+
+test_that("settled resume validates payload bytes before changing workflow state", {
+    root <- withr::local_tempdir(pattern = "metab051-settled-corrupt-")
+    built <- .metab032PersistProject(root, "gc")
+    ref <- built$import$refs[["assay_0001"]]
+    path <- file.path(root, ref$relative_path)
+    connection <- file(path, open = "r+b")
+    byte <- readBin(connection, what = "raw", n = 1L)
+    seek(connection, where = 0L, origin = "start")
+    writeBin(as.raw(bitwXor(as.integer(byte), 1L)), connection)
+    close(connection)
+    prepared <- createMetabResumeContext(built$paths, "metabolomics-study")
+    bundle <- hydrateMetabResumeBundle(
+        prepared$context,
+        retain_source_payloads = FALSE
+    )
+    workflow <- .metab032FreshWorkflow(built$paths)
+    applyMetabResumeBundle(workflow, bundle)
+    expect_error(
+        resolveMetabWorkflowAssays(workflow, "data_tbl"),
+        class = "multischolar_artifact_hash_mismatch"
+    )
+    expect_true(workflow$state_manager$close())
+})
+
 test_that("clear, cache, checkpoint, and ownership failures are atomic", {
     resumed <- .metab051Resumed("mixed")
     workflow <- resumed$workflow
@@ -172,6 +255,20 @@ test_that("settlement defaults retain payloads and explicit evict releases them"
     expect_true(workflow$state_manager$close())
 })
 
+test_that("evict design persistence hands the current session to artifacts", {
+    root <- withr::local_tempdir(pattern = "metab051-current-handoff-")
+    built <- .metab032PersistProject(root, "mixed", rollout = "evict")
+    workflow <- built$workflow
+    expect_true(built$design$settlement$evicted)
+    expect_null(workflow$data_tbl)
+    expect_null(workflow$data_cln)
+    expect_s3_class(workflow$state_manager, "ArtifactWorkflowState")
+    expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+    expect_false(workflow$state_manager$getResourceInfo()$registry_connection)
+    expect_identical(workflow$state_manager$getState(), built$object)
+    expect_true(workflow$state_manager$close())
+})
+
 test_that("metabolomics eviction cannot own proteomics or lipidomics contexts", {
     descriptor <- artifactMetabolomicsWorkflowDescriptor()
     expect_identical(descriptor$identity$omic_type, "metabolomics")
@@ -184,4 +281,64 @@ test_that("metabolomics eviction cannot own proteomics or lipidomics contexts", 
         warn = FALSE
     ), collapse = "\n")
     expect_false(grepl("proteomics|lipidomics", source))
+})
+
+test_that("auto promotion is size-aware for supported assay workflows", {
+    scenarios <- list(
+        metabolomics = list(
+            label = "metabolomics-study",
+            data_format = "custom",
+            data_type = "metabolite",
+            prepare = prepareMetabArtifactContext
+        ),
+        lipidomics = list(
+            label = "lipidomics-study",
+            data_format = "lipidsearch",
+            data_type = "lipid",
+            prepare = prepareLipidArtifactContext
+        )
+    )
+    for (omic in names(scenarios)) {
+        scenario <- scenarios[[omic]]
+        make_workflow <- function(rows) {
+            root <- tempfile(paste0("adaptive-", omic, "-"))
+            dir.create(root)
+            workflow <- new.env(parent = emptyenv())
+            workflow$workflow_context <- createWorkflowContext(
+                list(base_dir = root, omic_label = scenario$label),
+                omic,
+                scenario$label,
+                storage_policy = list()
+            )
+            workflow$data_tbl <- list(assay = as.data.frame(matrix(
+                1,
+                nrow = rows,
+                ncol = 8L
+            )))
+            workflow$data_format <- scenario$data_format
+            workflow$data_type <- scenario$data_type
+            workflow
+        }
+        small <- make_workflow(10L)
+        small_result <- scenario$prepare(small)
+        expect_false(small_result$enabled, info = omic)
+        expect_identical(
+            small$workflow_context$getStorageDecision()$effective_backend,
+            "memory",
+            info = omic
+        )
+        large <- make_workflow(300000L)
+        expect_gte(
+            artifactPayloadProjectedSourceBytes(large$data_tbl),
+            artifactPayloadAutoPromotionGate()$minimum_projected_source_bytes
+        )
+        large_result <- scenario$prepare(large)
+        expect_true(large_result$enabled, info = omic)
+        expect_identical(large_result$decision$effective_backend, "artifact")
+        expect_identical(large_result$decision$effective_rollout, "evict")
+        expect_identical(
+            large_result$decision$reason_code,
+            "auto_promoted_new_project"
+        )
+    }
 })

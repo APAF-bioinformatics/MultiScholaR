@@ -90,6 +90,9 @@ validateArtifactPayloadEvictionContract <- function(contract) {
 #' @noRd
 artifactPayloadReadthroughRefProof <- function(refs) {
     lapply(refs, \(ref) {
+        if (inherits(ref, "ArtifactSettledResumeRefLocator")) {
+            return(ref$proof)
+        }
         ref <- artifactStoreNormalizeRef(ref)
         list(
             artifact_id = ref$artifact_id,
@@ -162,6 +165,52 @@ artifactPayloadEvictionCacheReady <- function(workflow_state) {
     if (!inherits(workflow_state, "ArtifactWorkflowState")) return(TRUE)
     info <- workflow_state$getCacheInfo()
     is.list(info) && is.numeric(info$entries) && info$entries <= 1L
+}
+
+artifactPayloadSettledRegistryPolicy <- function(resource_policy = NULL) {
+    if (!is.null(resource_policy)) return(resource_policy)
+    list(
+        threads = 1L,
+        duckdb_memory_limit_bytes = 16 * 1024^2,
+        max_result_bytes = 4 * 1024^2,
+        preserve_insertion_order = FALSE
+    )
+}
+
+artifactPayloadAutoPromotionGate <- function() {
+    list(minimum_projected_source_bytes = 32 * 1024^2)
+}
+
+artifactPayloadAutoPlatformEligible <- function() {
+    identical(Sys.info()[["sysname"]], "Linux")
+}
+
+artifactPayloadProjectedSourceBytes <- function(source_payload) {
+    if (is.null(source_payload)) return(0)
+    2 * as.numeric(utils::object.size(source_payload))
+}
+
+artifactPayloadAdaptiveCapabilities <- function(
+    descriptor_catalogue,
+    capability_id,
+    source_payload
+) {
+    capabilities <- mergeWorkflowDescriptorCapabilities(
+        descriptor_catalogue = descriptor_catalogue
+    )
+    gate <- artifactPayloadAutoPromotionGate()
+    eligible <- artifactPayloadAutoPlatformEligible() &&
+        artifactPayloadProjectedSourceBytes(source_payload) >=
+            gate$minimum_projected_source_bytes
+    matches <- vapply(
+        capabilities,
+        \(capability) identical(capability$capability_id, capability_id),
+        logical(1)
+    )
+    if (sum(matches) == 1L) {
+        capabilities[[which(matches)]]$auto_eligible <- isTRUE(eligible)
+    }
+    capabilities
 }
 
 #' Evaluate descriptor-bound payload eviction readiness
@@ -362,6 +411,67 @@ evictArtifactWorkflowPayloads <- function(
         state_generation_id =
             workflow_data$artifact_readthrough_proof$state_generation_id,
         compatibility_strategy = contract$compatibility_strategy
+    )
+    record_fn(workflow_data, "eviction", result)
+}
+
+#' Recognize a workflow resumed directly into payload-free state
+#' @param workflow_data Mutable workflow state.
+#' @param contract Validated payload eviction contract.
+#' @param record_fn Stage result recorder.
+#' @return A successful eviction result, or `NULL` when not already settled.
+#' @noRd
+settledArtifactWorkflowPayloadResult <- function(
+    workflow_data,
+    contract,
+    record_fn = recordArtifactStageResult
+) {
+    contract <- validateArtifactPayloadEvictionContract(contract)
+    proof <- workflow_data$artifact_readthrough_proof
+    checkpoint <- workflow_data$artifact_compatibility_checkpoint
+    source_empty <- vapply(
+        contract$source_fields,
+        \(name) is.null(workflow_data[[name]]),
+        logical(1)
+    )
+    cache <- tryCatch(
+        workflow_data$state_manager$getCacheInfo(),
+        error = \(...) NULL
+    )
+    ready <- artifactStageCoordinatorOwned(workflow_data, contract$descriptor) &&
+        is.list(proof) && identical(proof$readthrough_mode, "settled") &&
+        identical(proof$source_payloads_retained, FALSE) &&
+        identical(proof$eviction_performed, TRUE) &&
+        all(artifactPayloadEvictionProofFlags(proof)) &&
+        artifactPayloadEvictionCheckpointReady(checkpoint, proof, contract) &&
+        is.list(proof$import_refs) && length(proof$import_refs) > 0L &&
+        is.list(proof$design_refs) && length(proof$design_refs) > 0L &&
+        all(source_empty) && is.list(cache) && identical(cache$entries, 0L)
+    if (!isTRUE(ready)) return(NULL)
+    registry_released <- workflowStateReleaseRegistrySession(
+        workflow_data$state_manager
+    )
+    released <- stats::setNames(
+        rep(0, length(contract$source_fields)),
+        contract$source_fields
+    )
+    result <- list(
+        enabled = TRUE,
+        ok = TRUE,
+        evicted = TRUE,
+        reason = "artifact_payload_hydration_avoided",
+        descriptor_id = contract$descriptor$descriptor_id,
+        evicted_fields = contract$source_fields,
+        released_source_field_bytes = released,
+        released_source_bytes_upper_bound = 0,
+        state_generation_id = proof$state_generation_id,
+        compatibility_strategy = contract$compatibility_strategy,
+        source_hydration_avoided = TRUE,
+        registry_session_released = isTRUE(registry_released)
+    )
+    result$allocator_pages_released <- FALSE
+    result$allocator_release_scheduled <- isTRUE(
+        artifactScheduleTransientMemoryRelease()
     )
     record_fn(workflow_data, "eviction", result)
 }

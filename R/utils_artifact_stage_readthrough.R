@@ -797,6 +797,13 @@ artifactStageReadTable <- function(adapter, store, ref) {
         validated$ref$relative_path,
         must_exist = TRUE
     )
+    expected_shape <- validated$ref$shape
+    expected_shape$bytes <- unname(as.numeric(file.info(payload_path)$size))
+    validateArtifactRefPayload(
+        validated$ref,
+        store$project_root,
+        expected_shape
+    )
     payload <- arrow::read_parquet(payload_path, as_data_frame = FALSE)
     value <- decodeArtifactRectangular(
         payload,

@@ -77,7 +77,15 @@ evictLipidArtifactWorkflowPayloads <- function(
         clear_fn,
         release_cache_fn
     )
-    if (isTRUE(result$evicted)) invisible(gc_fn())
+    if (isTRUE(result$evicted)) {
+        result$registry_session_released <- isTRUE(
+            workflowStateReleaseRegistrySession(workflow_data$state_manager)
+        )
+        invisible(gc_fn())
+        result$allocator_pages_released <- isTRUE(
+            artifactReleaseProcessAllocator()
+        )
+    }
     result
 }
 
@@ -143,7 +151,7 @@ resolveLipidWorkflowAssays <- function(workflow_data, name) {
         context$getPaths(),
         context$getIdentity()$project_id
     )
-    values <- lapply(refs, \(ref) artifactStageReadTable(
+    values <- lapply(refs, \(ref) artifactSettledResumeReadLocator(
         lipidArtifactReadthroughAdapter(),
         store,
         ref
@@ -156,6 +164,13 @@ lipidWorkflowPayloadAvailable <- function(workflow_data, name) {
     if (!name %in% LIPID_EVICT_FIELDS) return(!is.null(workflow_data[[name]]))
     !is.null(workflow_data[[name]]) ||
         length(lipidWorkflowPayloadRefs(workflow_data, name)) > 0L
+}
+
+lipidWorkflowAssayNames <- function(workflow_data, name = "data_tbl") {
+    value <- workflow_data[[name]]
+    if (!is.null(value)) return(names(value))
+    refs <- lipidWorkflowPayloadRefs(workflow_data, name)
+    if (is.null(refs)) character() else names(refs)
 }
 
 evaluateLipidEvictionStageGate <- function(
@@ -171,7 +186,7 @@ evaluateLipidEvictionStageGate <- function(
         0L
     }
     checks <- c(
-        source_bytes = isTRUE(
+        source_bytes = isTRUE(eviction_result$source_hydration_avoided) || isTRUE(
             eviction_result$released_source_bytes_upper_bound >=
                 gate$minimum_released_source_bytes
         ),
@@ -207,9 +222,53 @@ settleLipidArtifactWorkflowSafely <- function(
             reason = "rollout_below_evict"
         ))
     }
+    settled <- settledArtifactWorkflowPayloadResult(
+        workflow_data,
+        lipidPayloadEvictionContract()
+    )
+    if (!is.null(settled)) return(settled)
     evictLipidArtifactWorkflowPayloadsSafely(
         workflow_data,
         rollout_fn,
         log_warn
     )
+}
+
+settlePersistedLipidArtifactWorkflowSafely <- function(
+    workflow_data,
+    log_warn = logger::log_warn
+) {
+    rollout <- artifactPayloadEvictionRollout(
+        workflow_data,
+        \(context) context$getStorageDecision()$effective_rollout
+    )
+    if (!identical(rollout, "evict")) {
+        return(list(
+            enabled = FALSE,
+            ok = TRUE,
+            evicted = FALSE,
+            reason = "rollout_below_evict"
+        ))
+    }
+    tryCatch({
+        bundle <- hydrateLipidResumeBundle(
+            workflow_data$workflow_context,
+            retain_source_payloads = FALSE
+        )
+        applyLipidResumeBundle(workflow_data, bundle)
+        settleLipidArtifactWorkflowSafely(workflow_data, log_warn = log_warn)
+    }, error = \(error) {
+        log_warn(paste(
+            "lipidomics post-design settlement failed; memory state retained:",
+            conditionMessage(error)
+        ))
+        list(
+            enabled = TRUE,
+            ok = FALSE,
+            evicted = FALSE,
+            reason = "artifact_settlement_failed",
+            error_class = class(error),
+            error_message = conditionMessage(error)
+        )
+    })
 }

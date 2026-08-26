@@ -1,0 +1,112 @@
+{
+  "schema": "multischolar.omics_workload_contract",
+  "schema_version": "1.0.0",
+  "workload_id": "lipidomics.custom.mixed.public-scale-80000x24.v1",
+  "capability": {
+    "capability_id": "lipidomics.custom.lipid.standard.v1",
+    "omic_type": "lipidomics",
+    "input_format": "custom",
+    "data_level": "lipid",
+    "acquisition_mode": "not_recorded"
+  },
+  "adapter": {
+    "adapter_id": "multischolar.lipidomics.v1",
+    "adapter_version": "1.1.0",
+    "source_sha256": "b3c4c0301dc07582a0aab1d0ec7488fbaf8a8d6ad10a15e2b3b51e2e077738a2"
+  },
+  "rng": {
+    "kind": [
+      "Mersenne-Twister",
+      "Inversion",
+      "Rejection"
+    ],
+    "seed": 31008
+  },
+  "dimensions": {
+    "feature_count": 80000,
+    "sample_count": 24,
+    "assay_count": 3
+  },
+  "assay_mix": {
+    "LCMS_Pos": 1,
+    "LCMS_Neg": 1,
+    "GCMS": 1
+  },
+  "distributions": {
+    "intensity": "independent_declared_log2_normal_heteroscedastic",
+    "assay_log2_means": {
+      "LCMS_Pos": 18,
+      "LCMS_Neg": 17.5,
+      "GCMS": 16
+    },
+    "base_log2_sd": 1.25,
+    "noise_log2_sd": 0.12,
+    "dynamic_range": "declared_not_instrument_specific"
+  },
+  "missingness": {
+    "mechanisms": {
+      "MCAR": 1,
+      "MAR": 1,
+      "MNAR": 1,
+      "left_censored": 1
+    }
+  },
+  "censoring": {
+    "mechanism": "assay_specific_left_censoring",
+    "assay_intensity_thresholds": {
+      "LCMS_Pos": 180000,
+      "LCMS_Neg": 130000,
+      "GCMS": 45000
+    }
+  },
+  "duplicate_policy": {
+    "mode": "declared_duplicates_resolve_sum",
+    "fraction": 0.040000000000000001
+  },
+  "sample_perturbations": {
+    "groups": [
+      "CTRL",
+      "TREAT"
+    ],
+    "batches": [
+      "B1",
+      "B2"
+    ],
+    "column_order": "reordered_with_alignment_truth"
+  },
+  "adapter_parameters": {
+    "source_kind": "generated_custom",
+    "generator_version": "1.0.0",
+    "profile": "mixed_representative",
+    "internal_standard_fraction": 0.080000000000000002,
+    "effect_fraction": 0.080000000000000002,
+    "effect_log2": 1.2,
+    "batch_log2": 0.17999999999999999,
+    "heteroscedasticity": 0.34999999999999998,
+    "bounded_query_features": 16,
+    "query_repetitions": 10,
+    "scale_mapping_policy": "declared_public_dimensions_v1",
+    "source_report_column_count": 0,
+    "source_byte_class": "public_synthetic"
+  },
+  "privacy": {
+    "classification": "public_synthetic",
+    "source": "declared_lipidomics_custom_schema",
+    "scale_metadata": null
+  },
+  "execution": {
+    "repetitions": 5,
+    "sampling_interval_ms": 20,
+    "retention_window_ms": 500,
+    "timeout_ms": 120000,
+    "maximum_retained_samples": 20,
+    "threads": 1,
+    "locale": "C",
+    "timezone": "UTC",
+    "cache_state": "cold_uncontrolled"
+  },
+  "expected_digests": {
+    "payload_sha256": "d0d557ffb896bc3ce6f22d293c5425fc9a274d5afc7ea11accdf717784061d12",
+    "truth_sha256": "ce74cee7f8fe078f5a59a2a2278592fd5c052cbed7c57374530c75cfa0acfd08"
+  }
+}

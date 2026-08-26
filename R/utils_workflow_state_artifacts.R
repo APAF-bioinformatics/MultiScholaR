@@ -873,6 +873,19 @@ workflowStateReleaseHydrationCache <- function(workflow_state) {
     workflow_state$releaseCache()
 }
 
+#' Release an idle artifact state registry session
+#'
+#' @param workflow_state A workflow state manager.
+#' @return `TRUE` when an open registry session was released.
+#' @noRd
+workflowStateReleaseRegistrySession <- function(workflow_state) {
+    if (!inherits(workflow_state, "ArtifactWorkflowState") ||
+        !is.function(workflow_state$releaseRegistrySession)) {
+        return(invisible(FALSE))
+    }
+    workflow_state$releaseRegistrySession()
+}
+
 artifactWorkflowStateExportSnapshot <- function(
     identity,
     current_generation_id,

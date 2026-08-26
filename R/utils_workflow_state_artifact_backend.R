@@ -22,7 +22,9 @@ ArtifactWorkflowState <- R6::R6Class(
             resource_policy = NULL,
             dehydrate_fn = dehydrateDiaS4Artifact,
             validate_bundle_fn = validateDiaS4Bundle,
-            hydrate_fn = hydrateDiaS4Artifact, descriptor_contract = NULL
+            hydrate_fn = hydrateDiaS4Artifact,
+            descriptor_contract = NULL,
+            settled_bootstrap = NULL
         ) {
             context <- artifactWorkflowStateValidateContext(workflow_context)
             if (!is.function(dehydrate_fn) || !is.function(validate_bundle_fn) ||
@@ -40,7 +42,7 @@ ArtifactWorkflowState <- R6::R6Class(
             private$registry_identity <- artifactWorkflowStateEnsureMetadata(
                 private$store, private$identity, descriptor_contract
             )
-            private$registry <- projectRegistryForContext(context, resource_policy)
+            private$resource_policy <- resource_policy
             private$dehydrate_fn <- dehydrate_fn
             private$validate_bundle_fn <- validate_bundle_fn
             private$hydrate_fn <- hydrate_fn
@@ -52,6 +54,18 @@ ArtifactWorkflowState <- R6::R6Class(
             private$hydration_count <- 0L
             private$closed <- FALSE
             private$process_id <- as.integer(Sys.getpid())
+            if (!is.null(settled_bootstrap)) {
+                artifactWorkflowStateInstallBootstrap(
+                    private,
+                    self,
+                    settled_bootstrap
+                )
+                return(invisible(self))
+            }
+            private$registry <- projectRegistryForContext(
+                context,
+                private$resource_policy
+            )
             private$session <- initializeProjectRegistry(private$registry)
             initialized <- FALSE
             on.exit({
@@ -156,7 +170,7 @@ ArtifactWorkflowState <- R6::R6Class(
             )
         },
         getState = function(state_name = NULL) {
-            private$assertOpen()
+            private$assertUsable()
             row <- private$resolveStateRow(state_name)
             if (is.null(row)) return(NULL)
             is_current <- identical(row$generation_id, private$current_generation_id)
@@ -177,9 +191,11 @@ ArtifactWorkflowState <- R6::R6Class(
             object
         },
         getStateMetadata = function(state_name = NULL) {
-            private$assertOpen()
+            private$assertUsable()
             row <- private$resolveStateRow(state_name)
             if (is.null(row)) return(NULL)
+            settled <- private$settled_metadata[[row$generation_id]]
+            if (is.list(settled)) return(settled)
             manifest <- private$manifestForRow(row)
             list(
                 timestamp = as.POSIXct(manifest$created_at, tz = "UTC"),
@@ -296,7 +312,7 @@ ArtifactWorkflowState <- R6::R6Class(
         },
         getWorkflowType = function() self$workflow_type,
         exportState = function() {
-            private$assertOpen()
+            private$assertUsable()
             artifactWorkflowStateExportSnapshot(
                 private$identity,
                 private$current_generation_id,
@@ -358,7 +374,7 @@ ArtifactWorkflowState <- R6::R6Class(
         },
 
         releaseCache = function() {
-            private$assertOpen()
+            private$assertUsable()
             released <- !is.null(private$cache_generation_id)
             private$clearCache()
             invisible(released)
@@ -374,17 +390,12 @@ ArtifactWorkflowState <- R6::R6Class(
             )
         },
 
+        releaseRegistrySession = function() {
+            artifactWorkflowStateReleaseRegistryInternal(private)
+        },
+
         close = function() {
-            if (isTRUE(private$closed)) return(invisible(FALSE))
-            private$clearCache()
-            private$observers <- list()
-            cleanup <- closeArtifactWorkflowStateSession(private$session)
-            if (isTRUE(cleanup$closed)) {
-                private$session <- NULL
-                private$closed <- TRUE
-            }
-            if (!is.null(cleanup$error)) stop(cleanup$error)
-            invisible(TRUE)
+            artifactWorkflowStateCloseInternal(private)
         }
     ),
     private = list(
@@ -393,6 +404,7 @@ ArtifactWorkflowState <- R6::R6Class(
         registry_identity = NULL,
         store = NULL,
         registry = NULL,
+        resource_policy = NULL,
         session = NULL,
         state_rows = list(),
         current_generation_id = NULL,
@@ -406,6 +418,9 @@ ArtifactWorkflowState <- R6::R6Class(
         hydrate_fn = NULL,
         closed = FALSE,
         process_id = NULL,
+        settled_metadata = NULL,
+        settled_workflow_type = NULL,
+        settled_audit_enabled = NULL,
 
         finalize = function() {
             if (!isTRUE(private$closed) && !is.null(private$session)) {
@@ -413,14 +428,12 @@ ArtifactWorkflowState <- R6::R6Class(
             }
         },
 
+        assertUsable = function() {
+            artifactWorkflowStateAssertUsableInternal(private)
+        },
+
         assertOpen = function() {
-            if (isTRUE(private$closed) || is.null(private$session)) {
-                artifactWorkflowStateAbort(
-                    "artifact WorkflowState is closed",
-                    "multischolar_closed_artifact_workflow_state"
-                )
-            }
-            invisible(TRUE)
+            artifactWorkflowStateEnsureOpen(private)
         },
 
         validateStateName = function(state_name) {
@@ -559,60 +572,14 @@ ArtifactWorkflowState <- R6::R6Class(
 
         refresh = function() {
             private$state_rows <- private$stateRows()
-            current <- private$currentRow()
-            private$current_generation_id <- if (is.null(current)) {
-                NULL
-            } else {
-                current$generation_id
-            }
-            if (is.null(current)) {
-                self$states <- list()
-                self$state_history <- list()
-                self$audit_records <- list()
-                self$current_state <- NULL
-                return(invisible(TRUE))
-            }
-            lineage <- private$activeLineageRows()
-            history <- vapply(lineage, `[[`, character(1), "logical_name")
-            history <- history[!duplicated(history, fromLast = TRUE)]
-            self$state_history <- as.list(history)
-            self$current_state <- current$logical_name
-            latest <- list()
-            audits <- list()
-            for (row in private$state_rows) {
-                manifest <- private$manifestForRow(row)
-                summary <- list(
-                    generation_id = row$generation_id,
-                    parent_generation_id = row$parent_generation_id,
-                    manifest_relative_path = row$manifest_relative_path,
-                    status = row$status,
-                    artifact_refs = manifest$data$artifact_refs
-                )
-                latest[[row$logical_name]] <- summary
-                audit <- artifactWorkflowStateUnserializeMetadata(
-                    manifest$audit_json,
-                    "audit metadata"
-                )
-                if (is.list(audit) && workflowStateScalarString(audit$record_id)) {
-                    existing <- audits[[audit$record_id]]
-                    if (!is.null(existing) && !identical(existing, audit)) {
-                        artifactWorkflowStateAbort(
-                            "artifact WorkflowState audit record IDs are not immutable",
-                            "multischolar_artifact_state_audit_mismatch"
-                        )
-                    }
-                    audits[[audit$record_id]] <- audit
-                }
-            }
-            self$states <- latest
-            self$audit_records <- audits
-            current_manifest <- private$manifestForRow(current)
-            self$audit_enabled <- current_manifest$audit_enabled
-            self$workflow_type <- current_manifest$workflow_type
-            if (!identical(private$cache_generation_id, current$generation_id)) {
-                private$clearCache()
-            }
-            invisible(TRUE)
+            private$settled_metadata <- NULL
+            private$settled_workflow_type <- NULL
+            private$settled_audit_enabled <- NULL
+            private$refreshCachedState()
+        },
+
+        refreshCachedState = function() {
+            artifactWorkflowStateRefreshCached(private, self)
         },
 
         createInitialGeneration = function() {

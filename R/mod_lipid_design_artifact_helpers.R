@@ -346,6 +346,32 @@ persistLipidDesignArtifactsCore <- function(
         abort_fn = lipidArtifactAbort
     )
     stage$committed <- TRUE
+    snapshot <- tryCatch({
+        evidence <- collectLipidResumeEvidence(
+            prepared$context,
+            payload_validation = "digest"
+        )
+        value <- artifactSettledResumeSnapshot(
+            prepared$context,
+            prepared$descriptor,
+            evidence,
+            state_result$state_manifest,
+            lipidArtifactReadthroughAdapter()
+        )
+        path <- artifactSettledResumeWrite(
+            prepared$context,
+            prepared$descriptor,
+            value
+        )
+        list(written = TRUE, relative_path = path, error = NULL)
+    }, error = \(error) {
+        list(
+            written = FALSE,
+            relative_path = NULL,
+            error = conditionMessage(error)
+        )
+    })
+    stage$settled_resume_snapshot <- snapshot
     c(list(enabled = TRUE, ok = TRUE), stage, state_result)
 }
 
@@ -355,7 +381,7 @@ persistLipidDesignArtifacts <- function(
     manager_factory = ArtifactWorkflowState$new,
     log_warn = logger::log_warn
 ) {
-    runArtifactStageSafely(
+    result <- runArtifactStageSafely(
         workflow_data,
         "design",
         \() persistLipidDesignArtifactsCore(
@@ -366,4 +392,13 @@ persistLipidDesignArtifacts <- function(
         "lipidomics",
         log_warn
     )
+    if (isTRUE(result$ok) && isTRUE(result$committed) &&
+        isTRUE(result$settled_resume_snapshot$written)) {
+        result$settlement <- settlePersistedLipidArtifactWorkflowSafely(
+            workflow_data,
+            log_warn
+        )
+        recordArtifactStageResult(workflow_data, "design", result)
+    }
+    result
 }

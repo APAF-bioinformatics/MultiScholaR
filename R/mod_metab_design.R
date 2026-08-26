@@ -137,8 +137,13 @@ registerMetabDesignPreviewOutputs <- function(
     }, options = list(pageLength = 5, scrollX = TRUE))
 
     output$assays_preview <- renderText({
-        req(workflowData$data_tbl)
-        assay_names <- names(workflowData$data_tbl)
+        if (!is.null(workflowData$data_tbl)) {
+            req(workflowData$data_tbl)
+            assay_names <- names(workflowData$data_tbl)
+        } else {
+            assay_names <- metabWorkflowAssayNames(workflowData)
+            req(assay_names)
+        }
         paste("Included assays:", paste(assay_names, collapse = ", "))
     })
 
@@ -152,7 +157,8 @@ registerMetabDesignStateOutputs <- function(
     outputOptions = shiny::outputOptions
 ) {
     output$data_available <- reactive({
-        !is.null(workflowData$data_tbl) && !is.null(workflowData$config_list)
+        metabWorkflowPayloadAvailable(workflowData, "data_tbl") &&
+            !is.null(workflowData$config_list)
     })
     outputOptions(output, "data_available", suspendWhenHidden = FALSE)
 
@@ -177,9 +183,14 @@ registerMetabDesignBuilderModule <- function(
             builderServerFn <- mod_metab_design_builder_server
         }
 
+        data_tbl <- if (!is.null(workflowData$data_tbl)) {
+            reactiveFn(workflowData$data_tbl)
+        } else {
+            reactiveFn(resolveMetabWorkflowAssays(workflowData, "data_tbl"))
+        }
         return(builderServerFn(
             moduleId,
-            data_tbl = reactiveFn(workflowData$data_tbl),
+            data_tbl = data_tbl,
             config_list = reactiveFn(workflowData$config_list),
             column_mapping = reactiveFn(workflowData$column_mapping),
             existing_design_matrix = reactiveFn(workflowData$design_matrix),

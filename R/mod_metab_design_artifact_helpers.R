@@ -346,6 +346,32 @@ persistMetabDesignArtifactsCore <- function(
         abort_fn = metabArtifactAbort
     )
     stage$committed <- TRUE
+    snapshot <- tryCatch({
+        evidence <- collectMetabResumeEvidence(
+            prepared$context,
+            payload_validation = "digest"
+        )
+        value <- artifactSettledResumeSnapshot(
+            prepared$context,
+            prepared$descriptor,
+            evidence,
+            state_result$state_manifest,
+            metabArtifactReadthroughAdapter()
+        )
+        path <- artifactSettledResumeWrite(
+            prepared$context,
+            prepared$descriptor,
+            value
+        )
+        list(written = TRUE, relative_path = path, error = NULL)
+    }, error = \(error) {
+        list(
+            written = FALSE,
+            relative_path = NULL,
+            error = conditionMessage(error)
+        )
+    })
+    stage$settled_resume_snapshot <- snapshot
     c(list(enabled = TRUE, ok = TRUE), stage, state_result)
 }
 
@@ -355,7 +381,7 @@ persistMetabDesignArtifacts <- function(
     manager_factory = ArtifactWorkflowState$new,
     log_warn = logger::log_warn
 ) {
-    runArtifactStageSafely(
+    result <- runArtifactStageSafely(
         workflow_data,
         "design",
         \() persistMetabDesignArtifactsCore(
@@ -366,4 +392,13 @@ persistMetabDesignArtifacts <- function(
         "metabolomics",
         log_warn
     )
+    if (isTRUE(result$ok) && isTRUE(result$committed) &&
+        isTRUE(result$settled_resume_snapshot$written)) {
+        result$settlement <- settlePersistedMetabArtifactWorkflowSafely(
+            workflow_data,
+            log_warn
+        )
+        recordArtifactStageResult(workflow_data, "design", result)
+    }
+    result
 }

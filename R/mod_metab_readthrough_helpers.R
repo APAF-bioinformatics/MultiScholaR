@@ -60,7 +60,11 @@ validateMetabResumeContract <- function(evidence) {
     invisible(TRUE)
 }
 
-newMetabResumeStateManager <- function(context, resource_policy = NULL) {
+newMetabResumeStateManager <- function(
+    context,
+    resource_policy = NULL,
+    settled_bootstrap = NULL
+) {
     ArtifactWorkflowState$new(
         workflow_context = context,
         resource_policy = resource_policy,
@@ -69,7 +73,8 @@ newMetabResumeStateManager <- function(context, resource_policy = NULL) {
         hydrate_fn = hydrateMetabolomicsS4Artifact,
         descriptor_contract = artifactStageDescriptorContract(
             artifactMetabolomicsWorkflowDescriptor()
-        )
+        ),
+        settled_bootstrap = settled_bootstrap
     )
 }
 
@@ -77,8 +82,8 @@ validateMetabStateEvidence <- function(manager, evidence, state_object) {
     adapter <- metabArtifactReadthroughAdapter()
     metadata <- manager$getStateMetadata()
     audit <- metadata$audit_metadata
-    expected_refs <- artifactStageNormalizedRefs(evidence$design$refs)
-    actual_refs <- artifactStageNormalizedRefs(audit$stage_artifact_refs)
+    expected_refs <- artifactPayloadReadthroughRefProof(evidence$design$refs)
+    actual_refs <- artifactPayloadReadthroughRefProof(audit$stage_artifact_refs)
     valid <- identical(
         manager$getCurrentGenerationId(),
         evidence$current_state$generation_id
@@ -100,6 +105,37 @@ validateMetabStateEvidence <- function(manager, evidence, state_object) {
             adapter,
             "incomplete_contract",
             "metabolomics current S4 state differs from its design generation"
+        )
+    }
+    invisible(TRUE)
+}
+
+validateMetabSettledStateEvidence <- function(manager, evidence) {
+    adapter <- metabArtifactReadthroughAdapter()
+    metadata <- manager$getStateMetadata()
+    audit <- metadata$audit_metadata
+    expected_refs <- artifactPayloadReadthroughRefProof(evidence$design$refs)
+    actual_refs <- artifactPayloadReadthroughRefProof(audit$stage_artifact_refs)
+    valid <- identical(
+        manager$getCurrentGenerationId(),
+        evidence$current_state$generation_id
+    ) && identical(
+        manager$getCurrentStateName(),
+        evidence$design$parameters$state_name
+    ) && identical(metadata$s4_class, "MetaboliteAssayData") &&
+        identical(audit$stage_id, "design") &&
+        identical(audit$run_id, evidence$design$run_id) &&
+        metabArtifactContractVersion(audit$readthrough_contract_version) &&
+        identical(audit$parent_import_run_id, evidence$import$run_id) &&
+        identical(
+            audit$parent_import_generation_id,
+            evidence$import$generation_id
+        ) && identical(actual_refs, expected_refs)
+    if (!isTRUE(valid)) {
+        artifactStageReadthroughAbort(
+            adapter,
+            "incomplete_contract",
+            "metabolomics settled state metadata differs from its design generation"
         )
     }
     invisible(TRUE)
@@ -207,75 +243,202 @@ validateMetabDesignTables <- function(
     assays
 }
 
+validateMetabSettledTables <- function(
+    evidence,
+    import_tables,
+    design_tables,
+    mapping,
+    config
+) {
+    adapter <- metabArtifactReadthroughAdapter()
+    assay_order <- unlist(
+        evidence$design$parameters$assay_order,
+        use.names = FALSE
+    )
+    assay_roles <- unlist(
+        evidence$import$parameters$assay_roles,
+        use.names = FALSE
+    )
+    manifest <- import_tables$assay_manifest
+    alignment <- design_tables$assay_alignment
+    dependencies <- design_tables$raw_s4_dependencies
+    sample_columns <- mapping$sample_columns
+    valid <- is.data.frame(manifest) && is.data.frame(alignment) &&
+        is.data.frame(dependencies) && is.data.frame(design_tables$design_matrix) &&
+        identical(manifest$assay_name, assay_order) &&
+        identical(manifest$assay_order, seq_along(assay_order)) &&
+        identical(manifest$artifact_role, assay_roles) &&
+        all(manifest$sample_count == length(sample_columns)) &&
+        identical(import_tables$source_manifest$assay_name, assay_order) &&
+        identical(
+            import_tables$column_mapping,
+            artifactStageMetadataTable(mapping)
+        ) && identical(
+            design_tables$column_mapping,
+            artifactStageMetadataTable(mapping)
+        ) && identical(design_tables$args, artifactStageMetadataTable(config)) &&
+        identical(alignment$assay_name, assay_order) &&
+        identical(alignment$assay_order, seq_along(assay_order)) &&
+        identical(dependencies$assay_name, assay_order) &&
+        all(dependencies$parent_import_run_id == evidence$import$run_id) &&
+        all(
+            dependencies$parent_import_generation_id ==
+                evidence$import$generation_id
+        ) && identical(
+            as.character(design_tables$design_matrix$Run),
+            as.character(sample_columns)
+        )
+    if (!isTRUE(valid)) {
+        artifactStageReadthroughAbort(
+            adapter,
+            "incomplete_contract",
+            "metabolomics settled metadata differs from committed assay lineage"
+        )
+    }
+    invisible(TRUE)
+}
+
 hydrateMetabResumeBundle <- function(
     context,
     resource_policy = NULL,
     retain_source_payloads = TRUE
 ) {
     adapter <- metabArtifactReadthroughAdapter()
-    if (!identical(retain_source_payloads, TRUE)) {
+    if (!is.logical(retain_source_payloads) ||
+        length(retain_source_payloads) != 1L || is.na(retain_source_payloads)) {
         artifactStageReadthroughAbort(
             adapter,
             "incomplete_contract",
-            "metabolomics import/design payloads must remain retained"
+            "metabolomics source retention mode must be true or false"
         )
     }
-    evidence <- collectMetabResumeEvidence(
+    if (!isTRUE(retain_source_payloads)) {
+        resource_policy <- artifactPayloadSettledRegistryPolicy(resource_policy)
+    }
+    snapshot <- if (isTRUE(retain_source_payloads)) {
+        NULL
+    } else {
+        artifactSettledResumeRead(
+            context,
+            artifactMetabolomicsWorkflowDescriptor(),
+            adapter
+        )
+    }
+    if (!is.null(snapshot)) artifactReleaseTransientMemory()
+    evidence <- if (is.null(snapshot)) {
+        collectMetabResumeEvidence(
+            context,
+            resource_policy,
+            payload_validation = if (isTRUE(retain_source_payloads)) {
+                "sidecar"
+            } else {
+                "digest"
+            }
+        )
+    } else {
+        list(
+            identity = snapshot$identity,
+            descriptor = artifactMetabolomicsWorkflowDescriptor(),
+            store = snapshot$store,
+            import = snapshot$import,
+            design = snapshot$design,
+            current_state = snapshot$current_state
+        )
+    }
+    validateMetabResumeContract(evidence)
+    if (isTRUE(retain_source_payloads)) {
+        import_tables <- readArtifactStage(
+            adapter,
+            evidence$store,
+            evidence$import
+        )
+        design_tables <- readArtifactStage(
+            adapter,
+            evidence$store,
+            evidence$design
+        )
+    } else if (!is.null(snapshot)) {
+        import_tables <- snapshot$settled_tables$import
+        design_tables <- snapshot$settled_tables$design
+    } else {
+        import_tables <- readArtifactStageRoles(
+            adapter,
+            evidence$store,
+            evidence$import,
+            .METAB_IMPORT_FIXED_ROLES
+        )
+        design_tables <- readArtifactStageRoles(
+            adapter,
+            evidence$store,
+            evidence$design,
+            .METAB_DESIGN_FIXED_ROLES
+        )
+    }
+    manager <- newMetabResumeStateManager(
         context,
         resource_policy,
-        payload_validation = "sidecar"
+        settled_bootstrap = if (is.null(snapshot)) {
+            NULL
+        } else {
+            snapshot$state_bootstrap
+        }
     )
-    validateMetabResumeContract(evidence)
-    import_tables <- readArtifactStage(
-        adapter,
-        evidence$store,
-        evidence$import
-    )
-    design_tables <- readArtifactStage(
-        adapter,
-        evidence$store,
-        evidence$design
-    )
-    manager <- newMetabResumeStateManager(context, resource_policy)
     manager_owned <- TRUE
     on.exit({
         if (manager_owned) try(manager$close(), silent = TRUE)
     }, add = TRUE)
-    state_object <- manager$getState()
-    validateMetabStateEvidence(manager, evidence, state_object)
     config <- manager$getStateConfig()
     mapping <- artifactStageColumnMapping(
         adapter,
         evidence$import$parameters
     )
-    data_tbl <- validateMetabImportTables(evidence, import_tables, mapping)
-    data_cln <- validateMetabDesignTables(
-        evidence,
-        design_tables,
-        mapping,
-        state_object,
-        config
-    )
+    if (isTRUE(retain_source_payloads)) {
+        state_object <- manager$getState()
+        validateMetabStateEvidence(manager, evidence, state_object)
+        data_tbl <- validateMetabImportTables(evidence, import_tables, mapping)
+        data_cln <- validateMetabDesignTables(
+            evidence,
+            design_tables,
+            mapping,
+            state_object,
+            config
+        )
+    } else {
+        state_object <- NULL
+        validateMetabSettledStateEvidence(manager, evidence)
+        validateMetabSettledTables(
+            evidence,
+            import_tables,
+            design_tables,
+            mapping,
+            config
+        )
+        data_tbl <- NULL
+        data_cln <- NULL
+    }
     contrasts <- artifactStageRestoreContrasts(
         adapter,
         design_tables$contrasts,
         evidence$design$parameters$contrasts_kind
     )
-    preflight <- validateMetabDesignDaPreflight(
-        designMatrix = design_tables$design_matrix,
-        assayList = data_cln,
-        contrastsTbl = contrasts,
-        formulaString = evidence$design$parameters$formula_string,
-        columnMapping = mapping,
-        requireContrasts = FALSE
-    )
-    if (!isTRUE(preflight$valid)) {
-        artifactStageReadthroughAbort(
-            adapter,
-            "incomplete_contract",
-            "metabolomics resumed design fails scientific preflight"
+    if (isTRUE(retain_source_payloads)) {
+        preflight <- validateMetabDesignDaPreflight(
+            designMatrix = design_tables$design_matrix,
+            assayList = data_cln,
+            contrastsTbl = contrasts,
+            formulaString = evidence$design$parameters$formula_string,
+            columnMapping = mapping,
+            requireContrasts = FALSE
         )
+        if (!isTRUE(preflight$valid)) {
+            artifactStageReadthroughAbort(
+                adapter,
+                "incomplete_contract",
+                "metabolomics resumed design fails scientific preflight"
+            )
+        }
     }
+    if (!isTRUE(retain_source_payloads)) artifactReleaseTransientMemory()
     bundle <- list(
         context = context,
         descriptor = evidence$descriptor,
@@ -287,8 +450,12 @@ hydrateMetabResumeBundle <- function(
         contrasts_tbl = contrasts,
         config_list = config,
         column_mapping = mapping,
-        source_payloads_retained = TRUE,
-        readthrough_mode = "full_retained",
+        source_payloads_retained = retain_source_payloads,
+        readthrough_mode = if (isTRUE(retain_source_payloads)) {
+            "full"
+        } else {
+            "settled"
+        },
         evidence = evidence
     )
     manager_owned <- FALSE
@@ -350,7 +517,14 @@ metabReadthroughResourceSnapshot <- function(workflow_data, phase) {
         unname(as.numeric(utils::object.size(value)))
     }, numeric(1))
     manager <- tryCatch(workflow_data$state_manager, error = \(...) NULL)
-    state <- tryCatch(manager$getState(), error = \(...) NULL)
+    cache <- tryCatch(manager$getCacheInfo(), error = \(...) NULL)
+    state <- if (is.list(cache) && cache$entries > 0L) {
+        tryCatch(manager$getState(), error = \(...) NULL)
+    } else if (inherits(manager, "WorkflowState")) {
+        tryCatch(manager$getState(), error = \(...) NULL)
+    } else {
+        NULL
+    }
     list(
         phase = phase,
         rss_bytes = unname(as.numeric(
@@ -383,8 +557,11 @@ newMetabReadthroughProof <- function(bundle, inventory) {
         current_pointer_verified = TRUE,
         readthrough_completed = TRUE,
         annotation_completed = TRUE,
-        source_payloads_retained = TRUE,
-        eviction_performed = FALSE,
+        readthrough_mode = bundle$readthrough_mode,
+        source_payloads_retained = bundle$source_payloads_retained,
+        eviction_performed = !bundle$source_payloads_retained,
+        import_refs = artifactPayloadReadthroughRefProof(evidence$import$refs),
+        design_refs = artifactPayloadReadthroughRefProof(evidence$design$refs),
         consumer_inventory_digest = artifactSemanticDigest(inventory),
         verified_at = artifactRefUtcNow()
     )
@@ -484,6 +661,10 @@ resumeMetabArtifactWorkflow <- function(
     failure_injector = NULL,
     inventory_fn = metabReadthroughConsumerInventory
 ) {
+    if (is.null(storage_policy) &&
+        inherits(workflow_data$workflow_context, "WorkflowContext")) {
+        storage_policy <- workflow_data$workflow_context$getStoragePolicy()
+    }
     prepared <- createMetabResumeContext(
         experiment_paths,
         experiment_label,
@@ -493,10 +674,14 @@ resumeMetabArtifactWorkflow <- function(
         return(c(prepared, list(ok = TRUE, resumed = FALSE)))
     }
     before <- metabReadthroughResourceSnapshot(workflow_data, "before")
+    retain_source_payloads <- !identical(
+        prepared$context$getStorageDecision()$effective_rollout,
+        "evict"
+    )
     bundle <- hydrateMetabResumeBundle(
         prepared$context,
         resource_policy,
-        retain_source_payloads = TRUE
+        retain_source_payloads = retain_source_payloads
     )
     applied <- FALSE
     on.exit({
@@ -520,9 +705,13 @@ resumeMetabArtifactWorkflow <- function(
         import_run_id = bundle$evidence$import$run_id,
         design_run_id = bundle$evidence$design$run_id,
         state_generation_id = bundle$evidence$current_state$generation_id,
-        assay_order = names(bundle$data_cln),
-        source_payloads_retained = TRUE,
-        eviction_performed = FALSE,
+        assay_order = unlist(
+            bundle$evidence$design$parameters$assay_order,
+            use.names = FALSE
+        ),
+        source_payloads_retained = bundle$source_payloads_retained,
+        readthrough_mode = bundle$readthrough_mode,
+        eviction_performed = !bundle$source_payloads_retained,
         compatibility_checkpoint = readthrough$compatibility_checkpoint,
         resource_evidence = list(before = before, after = after)
     )
@@ -612,7 +801,7 @@ previewMetabImportArtifact <- function(
         context$getPaths(),
         context$getIdentity()$project_id
     )
-    value <- artifactStageReadTable(
+    value <- artifactSettledResumeReadLocator(
         metabArtifactReadthroughAdapter(),
         store,
         refs[[roles[[index]]]]

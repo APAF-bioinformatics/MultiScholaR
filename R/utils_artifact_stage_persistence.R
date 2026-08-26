@@ -119,7 +119,8 @@ prepareArtifactStageContext <- function(
     workflow_type,
     input_format,
     data_level,
-    descriptor_catalogue = artifactWorkflowDescriptorCatalogue()
+    descriptor_catalogue = artifactWorkflowDescriptorCatalogue(),
+    capabilities = NULL
 ) {
     descriptor <- artifactStageDescriptorForImport(
         workflow_type,
@@ -135,13 +136,18 @@ prepareArtifactStageContext <- function(
         return(list(enabled = FALSE, reason = "workflow_context_absent"))
     }
     if (!context$isBound()) {
-        bindWorkflowContextFromImport(
-            context,
+        arguments <- list(
+            context = context,
             workflow_type = workflow_type,
             input_format = input_format,
-            data_level = data_level,
-            descriptor_catalogue = descriptor_catalogue
+            data_level = data_level
         )
+        if (is.null(capabilities)) {
+            arguments$descriptor_catalogue <- descriptor_catalogue
+        } else {
+            arguments$capabilities <- capabilities
+        }
+        do.call(bindWorkflowContextFromImport, arguments)
     }
     decision <- context$getStorageDecision()
     enabled <- identical(decision$effective_backend, "artifact") &&

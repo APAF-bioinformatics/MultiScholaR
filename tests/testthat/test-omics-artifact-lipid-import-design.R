@@ -216,13 +216,13 @@
     openProjectRegistryReadOnly(registry)
 }
 
-test_that("only reviewed LipidSearch receives a dual-write descriptor", {
+test_that("only reviewed LipidSearch receives an evict descriptor", {
     descriptor <- artifactLipidomicsWorkflowDescriptor()
     expect_identical(
         descriptor$descriptor_id,
         "lipidomics.lipidsearch.lipid.standard.v1"
     )
-    expect_identical(descriptor$certification$status, "dual_write")
+    expect_identical(descriptor$certification$status, "evict")
     expect_false(descriptor$certification$auto_eligible)
     expect_identical(
         names(descriptor$codecs),

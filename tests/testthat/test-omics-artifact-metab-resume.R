@@ -13,7 +13,11 @@
     )
 }
 
-.metab032Workflow <- function(paths, backend = "artifact") {
+.metab032Workflow <- function(
+    paths,
+    backend = "artifact",
+    rollout = "dual_write"
+) {
     dir.create(paths$source_dir, recursive = TRUE, showWarnings = FALSE)
     dir.create(paths$results_dir, recursive = TRUE, showWarnings = FALSE)
     workflow <- new.env(parent = emptyenv())
@@ -23,7 +27,7 @@
         "metabolomics-study",
         storage_policy = list(
             requested_backend = backend,
-            requested_rollout = "dual_write",
+            requested_rollout = rollout,
             migration_requested = identical(backend, "artifact"),
             project_id = paths$project_id
         )
@@ -100,10 +104,15 @@
     })
 }
 
-.metab032PersistProject <- function(root, kind = "mixed", payload = NULL) {
+.metab032PersistProject <- function(
+    root,
+    kind = "mixed",
+    payload = NULL,
+    rollout = "dual_write"
+) {
     project_id <- paste0("metab032-", basename(root))
     paths <- .metab032Paths(root, project_id)
-    workflow <- .metab032Workflow(paths)
+    workflow <- .metab032Workflow(paths, rollout = rollout)
     if (is.null(payload)) payload <- .metab032FixturePayload(root, kind)
     applyMetabImportWorkflowPayload(
         workflow,
@@ -183,7 +192,7 @@
         paths,
         "metabolomics",
         "metabolomics-study",
-        storage_policy = list()
+        storage_policy = list(requested_rollout = "dual_write")
     )
     workflow$state_manager <- WorkflowState$new()
     workflow$artifact_stage_results <- list()
@@ -270,7 +279,7 @@ test_that("fresh R process reopens a moved mixed project", {
             "'metabolomics-study', log_warn=function(...) NULL)"
         ),
         paste0(
-            "saveRDS(list(result=r, assays=names(w$data_cln), ",
+            "saveRDS(list(result=r, assays=metabWorkflowAssayNames(w, 'data_cln'), ",
             "valid=methods::validObject(w$state_manager$getState()), ",
             "state=w$state_manager$getCurrentStateName()), ",
             dQuote(output), ")"

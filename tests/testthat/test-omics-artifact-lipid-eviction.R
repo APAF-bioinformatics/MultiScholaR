@@ -104,6 +104,89 @@ test_that("successful eviction releases lists and reconstructs exact assays", {
     }
 })
 
+test_that("settled resume avoids source and S4 hydration until explicit demand", {
+    for (kind in c("lc", "gc", "mixed")) {
+        root <- withr::local_tempdir(pattern = paste0("lipid052-settled-", kind, "-"))
+        built <- .lipid041PersistProject(root, kind)
+        expect_true(built$design$settled_resume_snapshot$written, info = kind)
+        prepared <- createLipidResumeContext(
+            built$paths,
+            "lipidomics-study"
+        )
+        bundle <- hydrateLipidResumeBundle(
+            prepared$context,
+            retain_source_payloads = FALSE
+        )
+        workflow <- .lipid041FreshWorkflow(built$paths)
+        applyLipidResumeBundle(workflow, bundle)
+        expect_false(bundle$source_payloads_retained, info = kind)
+        expect_identical(bundle$readthrough_mode, "settled", info = kind)
+        expect_null(bundle$state_object, info = kind)
+        expect_null(workflow$data_tbl, info = kind)
+        expect_null(workflow$data_cln, info = kind)
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+        expect_false(
+            workflow$state_manager$getResourceInfo()$registry_connection,
+            info = kind
+        )
+        expect_identical(
+            lipidWorkflowAssayNames(workflow),
+            names(built$payload$assayList),
+            info = kind
+        )
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+        result <- settleLipidArtifactWorkflowSafely(
+            workflow,
+            rollout_fn = \(...) "evict",
+            log_warn = \(...) invisible(NULL)
+        )
+        expect_true(result$evicted, info = kind)
+        expect_true(result$source_hydration_avoided, info = kind)
+        expect_identical(result$reason, "artifact_payload_hydration_avoided")
+        gate <- evaluateLipidEvictionStageGate(1, result, workflow$state_manager)
+        expect_true(gate$passed, info = kind)
+        expect_identical(
+            resolveLipidWorkflowAssays(workflow, "data_cln"),
+            built$object@lipid_data,
+            info = kind
+        )
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+        expect_identical(workflow$state_manager$getState(), built$object, info = kind)
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 1L)
+        expect_false(
+            workflow$state_manager$getResourceInfo()$registry_connection,
+            info = kind
+        )
+        expect_true(workflowStateReleaseHydrationCache(workflow$state_manager))
+        expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+        expect_true(workflow$state_manager$close())
+    }
+})
+
+test_that("settled resume validates payload bytes before changing workflow state", {
+    root <- withr::local_tempdir(pattern = "lipid052-settled-corrupt-")
+    built <- .lipid041PersistProject(root, "gc")
+    ref <- built$import$refs[["assay_0001"]]
+    path <- file.path(root, ref$relative_path)
+    connection <- file(path, open = "r+b")
+    byte <- readBin(connection, what = "raw", n = 1L)
+    seek(connection, where = 0L, origin = "start")
+    writeBin(as.raw(bitwXor(as.integer(byte), 1L)), connection)
+    close(connection)
+    prepared <- createLipidResumeContext(built$paths, "lipidomics-study")
+    bundle <- hydrateLipidResumeBundle(
+        prepared$context,
+        retain_source_payloads = FALSE
+    )
+    workflow <- .lipid041FreshWorkflow(built$paths)
+    applyLipidResumeBundle(workflow, bundle)
+    expect_error(
+        resolveLipidWorkflowAssays(workflow, "data_tbl"),
+        class = "multischolar_artifact_hash_mismatch"
+    )
+    expect_true(workflow$state_manager$close())
+})
+
 test_that("clear, cache, checkpoint, and ownership failures are atomic", {
     resumed <- .lipid052Resumed("mixed")
     workflow <- resumed$workflow
@@ -169,6 +252,20 @@ test_that("settlement defaults retain payloads and explicit evict releases them"
     expect_true(result$evicted)
     expect_null(workflow$data_tbl)
     expect_null(workflow$data_cln)
+    expect_true(workflow$state_manager$close())
+})
+
+test_that("evict design persistence hands the current session to artifacts", {
+    root <- withr::local_tempdir(pattern = "lipid052-current-handoff-")
+    built <- .lipid041PersistProject(root, "mixed", rollout = "evict")
+    workflow <- built$workflow
+    expect_true(built$design$settlement$evicted)
+    expect_null(workflow$data_tbl)
+    expect_null(workflow$data_cln)
+    expect_s3_class(workflow$state_manager, "ArtifactWorkflowState")
+    expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+    expect_false(workflow$state_manager$getResourceInfo()$registry_connection)
+    expect_identical(workflow$state_manager$getState(), built$object)
     expect_true(workflow$state_manager$close())
 })
 

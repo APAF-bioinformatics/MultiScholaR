@@ -24,7 +24,7 @@ autoPolicyDescriptionPackages <- function(field) {
     trimws(sub("[[:space:]]*[(].*$", "", values))
 }
 
-test_that("auto policy is bound to the immutable empty closeout set", {
+test_that("auto policy overlays scale gating on the static closeout set", {
     policy <- autoPolicyReadRecord()
     closeout_path <- operationalArtifactRepoPath(policy$closeout_path)
     expect_identical(
@@ -32,7 +32,7 @@ test_that("auto policy is bound to the immutable empty closeout set", {
         "multischolar.all_omics_auto_policy"
     )
     expect_identical(policy$schema_version, "1.0.0")
-    expect_identical(policy$decision, "no_promotion")
+    expect_identical(policy$decision, "adaptive_scale_promotion")
     expect_true(file.exists(closeout_path))
     expect_identical(
         artifactByteDigest(closeout_path),
@@ -41,15 +41,31 @@ test_that("auto policy is bound to the immutable empty closeout set", {
     closeout <- operationalArtifactReadCloseout()
     expect_length(closeout$promoted_capability_ids, 0L)
     expect_length(policy$promoted_capability_ids, 0L)
+    expect_setequal(
+        unlist(policy$adaptive_capability_ids, use.names = FALSE),
+        c(
+            "metabolomics.custom.metabolite.standard.v1",
+            "lipidomics.lipidsearch.lipid.standard.v1"
+        )
+    )
     expect_identical(policy$default_requested_backend, "auto")
     expect_identical(
         policy$effective_backend_for_new_projects,
-        "memory"
+        "adaptive_by_projected_source_bytes"
     )
     expect_identical(
         normalizeWorkflowStoragePolicy()$requested_backend,
         "auto"
     )
+    expect_identical(
+        as.numeric(policy$adaptive_policy$minimum_projected_source_bytes),
+        artifactPayloadAutoPromotionGate()$minimum_projected_source_bytes
+    )
+    expect_true(all(file.exists(vapply(
+        policy$adaptive_policy$scale_workload_contracts,
+        operationalArtifactRepoPath,
+        character(1)
+    ))))
 })
 
 test_that("every exact capability resolves auto and memory fail closed", {
@@ -294,11 +310,13 @@ test_that("janitor promotion bands remain closed", {
         max(line_counts),
         as.integer(policy$janitor_policy$maximum_runtime_file_lines)
     )
-    expect_identical(
+    expect_lte(
         unname(line_counts[basename(runtime_files) ==
             "utils_workflow_state_artifact_backend.R"]),
-        1000L
+        as.integer(policy$janitor_policy$maximum_runtime_file_lines)
     )
+    expect_true("utils_workflow_state_artifact_runtime.R" %in%
+        basename(runtime_files))
     audit <- paste(readLines(
         operationalArtifactRepoPath(
             "tools", "refactor", "FULL_FUNCTION_PARITY_AUDIT.md"

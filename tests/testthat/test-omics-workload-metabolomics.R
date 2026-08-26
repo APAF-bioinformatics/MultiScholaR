@@ -33,7 +33,7 @@ test_that("metabolomics workload contracts and adapter are exact", {
         "tools", "profiling", "omics_workload_metabolomics.R"
     )
     contracts <- metabWorkloadTestContracts()
-    expect_length(contracts, 5L)
+    expect_length(contracts, 6L)
     workload_ids <- character()
     profiles <- character()
     for (path in contracts) {
@@ -95,7 +95,9 @@ test_that("metabolomics workload contracts and adapter are exact", {
         profiles <- c(profiles, contract$adapter_parameters$profile)
     }
     expect_identical(anyDuplicated(workload_ids), 0L)
-    expect_identical(anyDuplicated(profiles), 0L)
+    duplicate_profiles <- names(which(table(profiles) > 1L))
+    expect_identical(duplicate_profiles, "mixed_representative")
+    expect_identical(unname(table(profiles)[duplicate_profiles]), 2L)
 })
 
 test_that("metabolomics simulator is deterministic and binding-sensitive", {

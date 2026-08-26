@@ -11,9 +11,14 @@ registerLipidDesignBuilderModule <- function(
             builderServerFn <- mod_lipid_design_builder_server
         }
 
+        data_tbl <- if (!is.null(workflowData$data_tbl)) {
+            reactiveFn(workflowData$data_tbl)
+        } else {
+            reactiveFn(resolveLipidWorkflowAssays(workflowData, "data_tbl"))
+        }
         return(builderServerFn(
             moduleId,
-            data_tbl = reactiveFn(workflowData$data_tbl),
+            data_tbl = data_tbl,
             config_list = reactiveFn(workflowData$config_list),
             column_mapping = reactiveFn(workflowData$column_mapping),
             existing_design_matrix = reactiveFn(workflowData$design_matrix),

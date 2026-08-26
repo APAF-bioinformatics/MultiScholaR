@@ -204,6 +204,9 @@ mod_lipidomics_server <- function(
             experiment_label,
             storage_policy = storage_policy
         )
+        if (isTRUE(resume_result$resumed)) {
+            settleLipidArtifactWorkflowSafely(workflow_data)
+        }
 
         logger::log_info(sprintf("Lipidomics module initialized with paths for: %s", paths_key))
 

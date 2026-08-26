@@ -17,7 +17,13 @@ normalizeWorkflowStoragePolicy <- function(storage_policy = NULL) {
     requested_backend <- storage_policy$requested_backend
     if (is.null(requested_backend)) requested_backend <- "auto"
     requested_rollout <- storage_policy$requested_rollout
-    if (is.null(requested_rollout)) requested_rollout <- "dual_write"
+    if (is.null(requested_rollout)) {
+        requested_rollout <- if (identical(requested_backend, "auto")) {
+            "evict"
+        } else {
+            "dual_write"
+        }
+    }
     migration_requested <- storage_policy$migration_requested
     if (is.null(migration_requested)) migration_requested <- FALSE
     list(
