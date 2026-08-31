@@ -932,8 +932,9 @@ diaRepairBootstrapRatio <- function(pairs, gates) {
 
 diaRepairEvaluate <- function(records, gates = diaRepairReadGates()) {
     required_pairs <- as.integer(gates$design$required_pairs)
+    eligible_records <- diaRepairCompletePairRecords(records)
     gate_results <- lapply(gates$gates, function(gate) {
-        pairs <- diaRepairPairMetric(records, gate$metric)
+        pairs <- diaRepairPairMetric(eligible_records, gate$metric)
         summary <- diaRepairBootstrapRatio(pairs, gates)
         bound <- if (is.null(summary)) NA_real_ else
             as.numeric(summary[[gate$confidence_bound]])
@@ -965,19 +966,7 @@ diaRepairEvaluate <- function(records, gates = diaRepairReadGates()) {
                 pair[[2L]]$measurement$worker$scientific_proof
             )
     }, logical(1))
-    run_valid <- vapply(records, function(record) {
-        measurement <- record$measurement
-        worker <- measurement$worker
-        identical(measurement$status, "passed") &&
-            isTRUE(measurement$publication_certifiable) &&
-            isTRUE(measurement$cleanup$valid) &&
-            identical(as.numeric(measurement$metrics$peak_swap_bytes), 0) &&
-            isTRUE(worker$scientific_proof$valid_s4) &&
-            isTRUE(worker$scientific_proof$source_fields_released) &&
-            !isTRUE(worker$complete_payload_returned) &&
-            (!identical(record$arm, "candidate_artifact") ||
-                isTRUE(worker$payload_free_state_manager))
-    }, logical(1))
+    run_valid <- vapply(records, diaRepairRunAbsoluteValid, logical(1))
     numerical_pass <- all(vapply(gate_results, `[[`, logical(1), "passed"))
     absolute_pass <- length(pair_ids) >= required_pairs && all(parity) &&
         all(run_valid)

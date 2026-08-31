@@ -178,6 +178,26 @@ test_that("DIA repair evaluation requires every frozen gate", {
     expect_false(elapsed$passed)
 })
 
+test_that("DIA repair evaluation excludes every incomplete pair endpoint", {
+    records <- diaRepairTestRecords()
+    records[[72L]]$measurement$status <- "failed"
+    records[[72L]]$measurement$publication_certifiable <- FALSE
+
+    evaluation <- diaRepairEvaluate(records)
+    endpoint_pairs <- vapply(evaluation$numerical_gates, function(gate) {
+        gate$summary$pairs
+    }, integer(1))
+
+    expect_identical(evaluation$valid_pairs, 35L)
+    expect_true(all(endpoint_pairs == 35L))
+    expect_false(any(vapply(
+        evaluation$numerical_gates,
+        `[[`,
+        logical(1),
+        "passed"
+    )))
+})
+
 test_that("DIA repair resume retains only complete valid pairs", {
     records <- diaRepairTestRecords()[seq_len(68L)]
     records[[68L]]$measurement$status <- "failed"

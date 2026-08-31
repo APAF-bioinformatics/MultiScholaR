@@ -102,6 +102,20 @@ diaRepairPrelaunchMaximumLoad <- function(host, gates) {
     min(declared_limit, runtime_headroom)
 }
 
+diaRepairRunAbsoluteValid <- function(record) {
+    measurement <- record$measurement
+    worker <- measurement$worker
+    identical(measurement$status, "passed") &&
+        isTRUE(measurement$publication_certifiable) &&
+        isTRUE(measurement$cleanup$valid) &&
+        identical(as.numeric(measurement$metrics$peak_swap_bytes), 0) &&
+        isTRUE(worker$scientific_proof$valid_s4) &&
+        isTRUE(worker$scientific_proof$source_fields_released) &&
+        !isTRUE(worker$complete_payload_returned) &&
+        (!identical(record$arm, "candidate_artifact") ||
+            isTRUE(worker$payload_free_state_manager))
+}
+
 diaRepairCompletePairRecords <- function(records) {
     groups <- split(records, vapply(records, `[[`, character(1), "pair_id"))
     complete <- Filter(function(pair) {
@@ -112,12 +126,8 @@ diaRepairCompletePairRecords <- function(records) {
         length(pair) == 2L && setequal(
             arms,
             c("pre_repair_artifact", "candidate_artifact")
-        ) && all(vapply(pair, function(record) {
-            measurement <- record$measurement
-            identical(measurement$status, "passed") &&
-                isTRUE(measurement$publication_certifiable) &&
-                isTRUE(measurement$cleanup$valid)
-        }, logical(1))) && all(vapply(proofs, is.list, logical(1))) &&
+        ) && all(vapply(pair, diaRepairRunAbsoluteValid, logical(1))) &&
+            all(vapply(proofs, is.list, logical(1))) &&
             identical(proofs[[1L]], proofs[[2L]])
     }, groups)
     unlist(complete, recursive = FALSE, use.names = FALSE)
