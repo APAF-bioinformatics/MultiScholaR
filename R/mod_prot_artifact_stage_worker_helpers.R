@@ -7,7 +7,7 @@
 # (at your option) any later version.
 
 .PROT_DIA_STAGE_WORKER_SCHEMA <- "multischolar.prot_dia_stage_worker"
-.PROT_DIA_STAGE_WORKER_VERSION <- 1L
+.PROT_DIA_STAGE_WORKER_VERSION <- 2L
 .PROT_DIA_PENDING_STAGE_SCHEMA <- "multischolar.prot_dia_pending_stage"
 .PROT_DIA_PENDING_STAGE_VERSION <- 1L
 
@@ -199,32 +199,20 @@ runProtDiaArtifactWriterWorker <- function(spec) {
 runProtDiaArtifactVerifierWorker <- function(spec) {
     spec <- validateProtDiaArtifactWorkerSpec(spec, "verifier")
     protDiaArtifactWorkerFailure(spec$failure_stage, "before_verify")
-    proofs <- lapply(
-        spec$stage$refs,
-        \(ref) artifactStoreVerifyExactRef(spec$stage$store, ref)
-    )
-    names(proofs) <- names(spec$stage$refs)
-    if (isTRUE(spec$bounded_streaming)) {
-        imported <- importDIANNData(
-            spec$source_path,
-            use_precursor_norm = spec$use_precursor_norm
+    verify_ref <- if (isTRUE(spec$bounded_streaming)) {
+        \(store, ref) artifactStoreVerifyStreamingRef(
+            store,
+            ref,
+            verify_semantic = FALSE
         )
-        if (isTRUE(spec$sanitize_names)) {
-            imported <- sanitizeProtDiaArtifactImport(imported)
-        }
-        oracle_digest <- artifactExactHydrationDigest(imported$data)
-        if (!identical(
-            proofs$canonical_data$hydration_digest,
-            oracle_digest
-        )) {
-            protDiaArtifactAbort(
-                "streaming DIA-NN hydration differs from the public importer",
-                "multischolar_inexact_prot_dia_streaming_import"
-            )
-        }
     } else {
-        oracle_digest <- NULL
+        artifactStoreVerifyExactRef
     }
+    proofs <- lapply(spec$stage$refs, \(ref) {
+        verify_ref(spec$stage$store, ref)
+    })
+    names(proofs) <- names(spec$stage$refs)
+    oracle_digest <- NULL
     protDiaArtifactWorkerFailure(spec$failure_stage, "after_verify")
     result <- list(
         ok = TRUE,
@@ -314,6 +302,7 @@ runProtDiaArtifactStageProcess <- function(spec, timeout_ms = 600000L) {
         "R",
         "mod_prot_artifact_stage_worker_helpers.R"
     ))
+    started <- proc.time()[["elapsed"]]
     process <- processx::run(
         command = file.path(R.home("bin"), "Rscript"),
         args = c(
@@ -329,6 +318,7 @@ runProtDiaArtifactStageProcess <- function(spec, timeout_ms = 600000L) {
         timeout = as.numeric(timeout_ms) / 1000,
         echo = FALSE
     )
+    process_elapsed_seconds <- proc.time()[["elapsed"]] - started
     if (!file.exists(result_path)) {
         protDiaArtifactAbort(
             sprintf("DIA-NN artifact %s worker exited without a result", spec$mode),
@@ -337,6 +327,7 @@ runProtDiaArtifactStageProcess <- function(spec, timeout_ms = 600000L) {
         )
     }
     result <- readRDS(result_path)
+    result$process_elapsed_seconds <- unname(process_elapsed_seconds)
     artifactResourceDataOnly(result, "DIA-NN stage worker result")
     if (!isTRUE(result$ok) || !identical(as.integer(process$status), 0L)) {
         protDiaArtifactAbort(
@@ -612,6 +603,10 @@ stageProtDiaImportArtifacts <- function(
         result = imported,
         pending_stage = pending,
         process_evidence = pending$process_evidence,
+        worker_timings = list(
+            writer_elapsed_seconds = writer$process_elapsed_seconds,
+            verifier_elapsed_seconds = verifier$process_elapsed_seconds
+        ),
         preflight = preflight
     )
 }

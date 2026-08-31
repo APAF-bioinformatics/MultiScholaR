@@ -216,12 +216,17 @@ protDiaArtifactSaveDesignState <- function(
         save_state_fn(manager, state_name, state_object, audit)
     }
     hydration_verification <- manager$getLastHydrationVerification()
+    deferred <- identical(
+        hydration_verification$mode,
+        "deferred_exact_pending"
+    ) && is.null(hydration_verification$hydrated_digest)
+    exact <- identical(
+        hydration_verification$expected_digest,
+        hydration_verification$hydrated_digest
+    )
     if (!is.list(hydration_verification) ||
-        !isTRUE(hydration_verification$valid) ||
-        !identical(
-            hydration_verification$expected_digest,
-            hydration_verification$hydrated_digest
-        ) || isTRUE(hydration_verification$complete_payload_returned)) {
+        !isTRUE(hydration_verification$valid) || (!deferred && !exact) ||
+        isTRUE(hydration_verification$complete_payload_returned)) {
         protDiaArtifactAbort(
             "DIA-NN design artifact lacks an exact process-bound parity proof",
             "multischolar_inexact_prot_dia_s4_parity"

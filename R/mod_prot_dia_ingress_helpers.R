@@ -134,7 +134,15 @@ protDiaDuckdbCsvExpression <- function(connection, source_path) {
 }
 
 protDiaStreamingSelect <- function(connection, source_path, use_precursor_norm) {
-    source <- protDiaDuckdbCsvExpression(connection, source_path)
+    source_expression <- protDiaDuckdbCsvExpression(connection, source_path)
+    source <- as.character(DBI::dbQuoteIdentifier(
+        connection,
+        ".multischolar_ingress_source"
+    ))
+    DBI::dbExecute(
+        connection,
+        paste0("CREATE TEMP TABLE ", source, " AS SELECT * FROM ", source_expression)
+    )
     description <- DBI::dbGetQuery(
         connection,
         paste("DESCRIBE SELECT * FROM", source)
@@ -207,12 +215,17 @@ protDiaStreamingImportSummary <- function(connection, select, mapping) {
     quote <- function(value) {
         as.character(DBI::dbQuoteIdentifier(connection, value))
     }
+    row_order <- quote(.artifactRowOrderColumn)
+    run_column <- quote(mapping$run_col)
     query <- paste0(
-        "SELECT count(*) AS rows, ",
-        "list_sort(list_distinct(list(", quote(mapping$run_col),
-        "))) AS runs, count(DISTINCT ", quote(mapping$protein_col),
-        ") AS proteins, count(DISTINCT ", quote(mapping$peptide_col),
-        ") AS peptides FROM (", select$sql, ")"
+        "WITH imported AS MATERIALIZED (", select$sql, "), ",
+        "run_order AS (SELECT ", run_column, " AS run, min(", row_order,
+        ") AS first_row FROM imported GROUP BY ", run_column, "), ",
+        "summary AS (SELECT count(*) AS rows, count(DISTINCT ",
+        quote(mapping$protein_col), ") AS proteins, count(DISTINCT ",
+        quote(mapping$peptide_col), ") AS peptides FROM imported) ",
+        "SELECT summary.*, ordered.runs FROM summary CROSS JOIN ",
+        "(SELECT list(run ORDER BY first_row) AS runs FROM run_order) ordered"
     )
     observed <- DBI::dbGetQuery(connection, query)
     list(

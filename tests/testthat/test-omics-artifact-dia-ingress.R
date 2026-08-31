@@ -14,7 +14,7 @@ test_that("streaming DIA ingestion is exact and row-group invariant", {
         for (rows in c(2048L, 65536L)) {
             path <- tempfile(fileext = ".parquet")
             withr::defer(unlink(path, force = TRUE))
-            writeProtDiaStreamingParquet(
+            streamed <- writeProtDiaStreamingParquet(
                 source,
                 path,
                 row_group_rows = rows
@@ -29,6 +29,10 @@ test_that("streaming DIA ingestion is exact and row-group invariant", {
                 encoded$payload,
                 encoded$metadata
             ))
+            expect_identical(
+                unlist(streamed$import_summary$run_values, use.names = FALSE),
+                unique(expected$Run)
+            )
             digests <- c(digests, encoded$metadata$semantic_digest)
         }
         expect_identical(digests[[1L]], digests[[2L]])

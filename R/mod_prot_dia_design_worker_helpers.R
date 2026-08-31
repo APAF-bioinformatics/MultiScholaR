@@ -99,6 +99,13 @@ protDiaDeferredDesignData <- function(workflow, spec) {
     tibble::as_tibble(data)
 }
 
+protDiaDeferredDesignManagerFactory <- function(..., verify_hydration_fn) {
+    newWorkflowState(
+        ...,
+        verify_hydration_fn = artifactWorkflowStateVerifyDeferredDigest
+    )
+}
+
 runProtDiaDeferredDesignWorker <- function(spec) {
     spec <- validateProtDiaDeferredDesignSpec(spec)
     workflow <- protDiaDeferredDesignWorkflow(spec)
@@ -133,23 +140,25 @@ runProtDiaDeferredDesignWorker <- function(spec) {
         workflow,
         spec$experiment_paths$source_dir
     )
-    design <- persistProtDiaDesignArtifacts(workflow)
+    design <- persistProtDiaDesignArtifacts(
+        workflow,
+        manager_factory = protDiaDeferredDesignManagerFactory
+    )
     if (!isTRUE(design$ok) || !isTRUE(design$committed)) {
         protDiaArtifactAbort(
             "DIA-NN deferred design artifact publication failed",
             "multischolar_prot_dia_design_worker_failed"
         )
     }
-    parity <- verifyProtDiaBoundedStageParity(workflow, resource_policy = NULL)
     result <- list(
         ok = TRUE,
         worker_pid = as.integer(Sys.getpid()),
         design_result = design,
-        readthrough_proof = parity$proof,
-        compatibility_checkpoint = parity$compatibility_checkpoint,
-        import_refs = parity$import_refs,
-        design_refs = parity$design_refs,
-        state_generation_id = parity$state_generation_id,
+        readthrough_proof = NULL,
+        compatibility_checkpoint = NULL,
+        import_refs = spec$import_result$refs,
+        design_refs = design$refs,
+        state_generation_id = design$state_manifest$current_generation_id,
         exact_state_digest = design$hydration_verification$expected_digest,
         complete_payload_returned = FALSE
     )
@@ -195,8 +204,54 @@ protDiaDeferredDesignWorkerExpression <- function(source_tree) {
     )
 }
 
-runProtDiaDeferredDesignProcess <- function(spec, timeout_ms = 900000L) {
-    spec <- validateProtDiaDeferredDesignSpec(spec)
+protDiaDeferredDesignWorkerMode <- function() {
+    requested <- getOption(
+        "multischolar.prot_dia.design_worker_mode",
+        if (identical(Sys.info()[["sysname"]], "Linux")) "fork" else "process"
+    )
+    match.arg(requested, c("fork", "process"))
+}
+
+protDiaDeferredDesignParityMode <- function() {
+    requested <- getOption(
+        "multischolar.prot_dia.design_parity_worker_mode",
+        if (identical(Sys.info()[["sysname"]], "Linux")) "fork" else "process"
+    )
+    match.arg(requested, c("fork", "process"))
+}
+
+runProtDiaDeferredDesignFork <- function(spec, timeout_ms) {
+    job <- parallel::mcparallel(
+        tryCatch(
+            runProtDiaDeferredDesignWorker(spec),
+            error = function(error) list(
+                ok = FALSE,
+                worker_pid = as.integer(Sys.getpid()),
+                error_class = class(error),
+                error_message = conditionMessage(error),
+                complete_payload_returned = FALSE
+            )
+        ),
+        mc.set.seed = FALSE,
+        silent = TRUE
+    )
+    deadline <- proc.time()[["elapsed"]] + as.numeric(timeout_ms) / 1000
+    repeat {
+        collected <- parallel::mccollect(job, wait = FALSE)
+        if (!is.null(collected)) return(unname(collected)[[1L]])
+        if (proc.time()[["elapsed"]] >= deadline) {
+            tools::pskill(job$pid, signal = 15L)
+            parallel::mccollect(job, wait = TRUE)
+            protDiaArtifactAbort(
+                "DIA-NN design worker exceeded its timeout",
+                "multischolar_prot_dia_design_worker_failed"
+            )
+        }
+        Sys.sleep(0.05)
+    }
+}
+
+runProtDiaDeferredDesignProcessx <- function(spec, timeout_ms) {
     spec_path <- tempfile("prot-dia-design-spec-", fileext = ".rds")
     result_path <- tempfile("prot-dia-design-result-", fileext = ".rds")
     on.exit(unlink(c(spec_path, result_path), force = TRUE), add = TRUE)
@@ -223,9 +278,130 @@ runProtDiaDeferredDesignProcess <- function(spec, timeout_ms = 900000L) {
             "multischolar_prot_dia_design_worker_failed"
         )
     }
-    result <- readRDS(result_path)
+    list(result = readRDS(result_path), status = as.integer(process$status))
+}
+
+protDiaDeferredDesignParitySpec <- function(spec, result) {
+    workflow <- protDiaDeferredDesignWorkflow(spec)
+    context <- workflow$workflow_context
+    identity <- context$getIdentity()
+    store <- newArtifactStore(context$getPaths(), identity$project_id)
+    lineage <- result$design_result$state_manifest$active_lineage
+    entry <- tail(lineage, 1L)[[1L]]
+    manifest <- artifactWorkflowStateReadManifest(
+        store,
+        entry$manifest_relative_path
+    )
+    list(
+        workflow = workflow,
+        parity_spec = protDiaS4ParitySpecFromDigest(
+            store,
+            manifest,
+            "PeptideQuantitativeData",
+            result$exact_state_digest
+        )
+    )
+}
+
+runProtDiaDeferredDesignParityFork <- function(parity_spec, timeout_ms) {
+    job <- parallel::mcparallel(
+        tryCatch(
+            runProtDiaS4ParityWorker(parity_spec),
+            error = function(error) list(
+                valid = FALSE,
+                verifier_pid = as.integer(Sys.getpid()),
+                error_class = class(error),
+                error_message = conditionMessage(error),
+                complete_payload_returned = FALSE
+            )
+        ),
+        mc.set.seed = FALSE,
+        silent = TRUE
+    )
+    deadline <- proc.time()[["elapsed"]] + as.numeric(timeout_ms) / 1000
+    repeat {
+        collected <- parallel::mccollect(job, wait = FALSE)
+        if (!is.null(collected)) return(unname(collected)[[1L]])
+        if (proc.time()[["elapsed"]] >= deadline) {
+            tools::pskill(job$pid, signal = 15L)
+            parallel::mccollect(job, wait = TRUE)
+            protDiaArtifactAbort(
+                "DIA-NN parity worker exceeded its timeout",
+                "multischolar_prot_dia_s4_parity_process_failed"
+            )
+        }
+        Sys.sleep(0.05)
+    }
+}
+
+rollbackProtDiaDeferredDesignVerification <- function(spec, result) {
+    workflow <- protDiaDeferredDesignWorkflow(spec)
+    context <- workflow$workflow_context
+    try(
+        protDiaArtifactUpdateStageStatus(
+            context,
+            result$design_result,
+            completed = FALSE
+        ),
+        silent = TRUE
+    )
+    manager <- tryCatch(newProtDiaArtifactStateManager(context), error = identity)
+    if (inherits(manager, "ArtifactWorkflowState")) {
+        on.exit(manager$close(), add = TRUE)
+        if (isTRUE(manager$hasState("initial"))) {
+            try(manager$revertToState("initial"), silent = TRUE)
+        }
+    }
+    invisible(FALSE)
+}
+
+finalizeProtDiaDeferredDesignVerification <- function(
+    spec,
+    result,
+    timeout_ms
+) {
+    prepared <- protDiaDeferredDesignParitySpec(spec, result)
+    proof <- tryCatch(
+        if (identical(protDiaDeferredDesignParityMode(), "fork")) {
+            runProtDiaDeferredDesignParityFork(prepared$parity_spec, timeout_ms)
+        } else {
+            runProtDiaS4ParityProcess(prepared$parity_spec, timeout_ms)
+        },
+        error = identity
+    )
+    if (inherits(proof, "error") || !isTRUE(proof$valid) ||
+        isTRUE(proof$complete_payload_returned)) {
+        rollbackProtDiaDeferredDesignVerification(spec, result)
+        if (inherits(proof, "error")) stop(proof)
+        protDiaArtifactAbort(
+            "DIA-NN deferred design parity proof is invalid",
+            "multischolar_prot_dia_s4_parity_process_failed"
+        )
+    }
+    result$design_result$hydration_verification <- proof
+    workflow <- prepared$workflow
+    workflow$artifact_stage_results$design <- result$design_result
+    parity <- verifyProtDiaBoundedStageParity(workflow, resource_policy = NULL)
+    result$readthrough_proof <- parity$proof
+    result$compatibility_checkpoint <- parity$compatibility_checkpoint
+    result$import_refs <- parity$import_refs
+    result$design_refs <- parity$design_refs
+    result$state_generation_id <- parity$state_generation_id
+    result
+}
+
+runProtDiaDeferredDesignProcess <- function(spec, timeout_ms = 900000L) {
+    spec <- validateProtDiaDeferredDesignSpec(spec)
+    if (identical(protDiaDeferredDesignWorkerMode(), "fork")) {
+        result <- runProtDiaDeferredDesignFork(spec, timeout_ms)
+        status <- 0L
+    } else {
+        process_result <- runProtDiaDeferredDesignProcessx(spec, timeout_ms)
+        result <- process_result$result
+        status <- process_result$status
+    }
     artifactResourceDataOnly(result, "DIA-NN design worker result")
-    if (!isTRUE(result$ok) || !identical(as.integer(process$status), 0L) ||
+    if (!isTRUE(result$ok) || !identical(as.integer(status), 0L) ||
         isTRUE(result$complete_payload_returned)) {
         protDiaArtifactAbort(
             paste(
@@ -235,7 +411,7 @@ runProtDiaDeferredDesignProcess <- function(spec, timeout_ms = 900000L) {
             "multischolar_prot_dia_design_worker_failed"
         )
     }
-    result
+    finalizeProtDiaDeferredDesignVerification(spec, result, timeout_ms)
 }
 
 applyProtDiaDeferredDesignResult <- function(workflow_data, result) {

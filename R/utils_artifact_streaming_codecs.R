@@ -220,6 +220,82 @@ artifactStorePublishStreamingParquet <- function(
     )
 }
 
+artifactStoreVerifyStreamingRef <- function(store, ref, verify_semantic = TRUE) {
+    store <- validateArtifactStore(store)
+    ref <- artifactStoreNormalizeRef(ref)
+    managed <- artifactStoreManagedPaths(store, ref$logical_key, ref$artifact_id)
+    sidecar <- artifactStoreReadSidecar(
+        store,
+        managed$sidecar,
+        validate_payload = FALSE
+    )
+    if (!identical(artifactStoreNormalizeRef(sidecar$artifact_ref), ref)) {
+        artifactStoreAbort(
+            "streaming verification ref differs from its immutable sidecar",
+            "multischolar_artifact_ref_mismatch"
+        )
+    }
+    metadata <- validateArtifactStreamingMetadata(sidecar$codec_metadata)
+    payload_path <- artifactStoreResolveFile(
+        store,
+        ref$relative_path,
+        must_exist = TRUE
+    )
+    byte_digest <- artifactByteDigest(payload_path)
+    if (!identical(byte_digest, ref$hash_policy$byte$digest)) {
+        artifactStoreAbort(
+            "streaming verification byte digest differs from its reference",
+            "multischolar_artifact_byte_digest_mismatch"
+        )
+    }
+    reader <- arrow::ParquetFileReader$create(payload_path)
+    fields <- reader$GetSchema()$fields
+    observed_schema <- lapply(fields, function(field) {
+        list(
+            name = field$name,
+            type = field$type$ToString(),
+            nullable = field$nullable
+        )
+    })
+    shape_valid <- identical(observed_schema, metadata$physical_schema) &&
+        identical(as.integer(reader$num_rows), metadata$dimensions$rows) &&
+        identical(as.integer(reader$num_columns), length(observed_schema))
+    if (!isTRUE(shape_valid)) {
+        artifactStoreAbort(
+            "streaming verification shape differs from its metadata",
+            "multischolar_artifact_shape_mismatch"
+        )
+    }
+    shape <- list(
+        kind = metadata$kind,
+        rows = as.integer(metadata$dimensions$rows),
+        columns = as.integer(metadata$dimensions$columns),
+        payloads = 1L,
+        bytes = unname(as.numeric(file.info(payload_path)$size))
+    )
+    validateArtifactRefPayload(ref, store$project_root, shape)
+    if (isTRUE(verify_semantic)) {
+        payload <- reader$ReadTable()
+        verifyArtifactStreamingPayload(payload, metadata)
+    }
+    list(
+        schema = "multischolar.artifact_streaming_verification",
+        schema_version = 1L,
+        verification_mode = if (isTRUE(verify_semantic)) {
+            "bounded_streaming_semantic"
+        } else {
+            "byte_schema_bound"
+        },
+        artifact_id = ref$artifact_id,
+        semantic_digest = ref$hash_policy$semantic$digest,
+        byte_digest = byte_digest,
+        hydration_digest = metadata$semantic_digest,
+        rows = as.integer(ref$shape$rows),
+        columns = as.integer(ref$shape$columns),
+        verifier_pid = as.integer(Sys.getpid())
+    )
+}
+
 validateArtifactStreamingMetadata <- function(metadata) {
     if (!is.list(metadata)) {
         artifactCodecAbort(

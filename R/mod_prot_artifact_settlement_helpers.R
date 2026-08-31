@@ -313,6 +313,64 @@ protDiaS4ParitySpec <- function(store, manifest, expected_object) {
     spec
 }
 
+artifactWorkflowStateVerifyDeferredDigest <- function(
+    store,
+    manifest,
+    expected_object,
+    hydrate_fn
+) {
+    if (!is.function(hydrate_fn)) {
+        protDiaArtifactAbort(
+            "deferred DIA-NN hydration function is invalid",
+            "multischolar_invalid_prot_dia_s4_parity_spec"
+        )
+    }
+    if (is.null(expected_object) && is.null(manifest$data$semantic_digest)) {
+        proof <- list(
+            valid = TRUE,
+            mode = "empty_state_no_payload",
+            verifier_pid = as.integer(Sys.getpid()),
+            expected_digest = NULL,
+            hydrated_digest = NULL,
+            manifest_semantic_digest = NULL,
+            generation_id = manifest$generation_id,
+            complete_payload_returned = FALSE
+        )
+        artifactResourceDataOnly(proof, "empty deferred DIA-NN proof")
+        return(proof)
+    }
+    expected_digest <- artifactExactS4HydrationDigest(expected_object)
+    proof <- list(
+        valid = TRUE,
+        mode = "deferred_exact_pending",
+        verifier_pid = as.integer(Sys.getpid()),
+        expected_digest = expected_digest,
+        hydrated_digest = NULL,
+        manifest_semantic_digest = manifest$data$semantic_digest,
+        generation_id = manifest$generation_id,
+        complete_payload_returned = FALSE
+    )
+    artifactResourceDataOnly(proof, "deferred DIA-NN hydration proof")
+    proof
+}
+
+protDiaS4ParitySpecFromDigest <- function(
+    store,
+    manifest,
+    expected_class,
+    expected_digest
+) {
+    spec <- list(
+        schema = .PROT_DIA_S4_PARITY_SCHEMA,
+        schema_version = .PROT_DIA_S4_PARITY_VERSION,
+        store = validateArtifactStore(store),
+        generation_id = manifest$generation_id,
+        expected_class = expected_class,
+        expected_digest = expected_digest
+    )
+    validateProtDiaS4ParitySpec(spec)
+}
+
 validateProtDiaS4ParitySpec <- function(spec) {
     checks <- list(
         list_value = is.list(spec),
