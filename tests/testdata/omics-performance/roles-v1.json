@@ -1,0 +1,96 @@
+{
+  "schema": "multischolar.omics_publication_roles",
+  "schema_version": "1.0.0",
+  "roles_id": "multischolar.omics_publication_roles.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "roles": [
+    {
+      "role_id": "protocol_owner",
+      "principal_id": null,
+      "assignment_status": "required_before_protocol_completion",
+      "responsibilities": ["protocol", "estimands", "threshold_grid", "amendments"]
+    },
+    {
+      "role_id": "source_data_owner",
+      "principal_id": null,
+      "assignment_status": "required_before_source_acceptance",
+      "responsibilities": ["source_selection", "license", "privacy", "project_independence"]
+    },
+    {
+      "role_id": "implementation_owner",
+      "principal_id": null,
+      "assignment_status": "required_before_runtime_implementation",
+      "responsibilities": ["runtime_changes", "scientific_compatibility", "rollback"]
+    },
+    {
+      "role_id": "benchmark_operator",
+      "principal_id": null,
+      "assignment_status": "required_before_campaign_execution",
+      "responsibilities": ["host_preflight", "schedule_execution", "raw_ledger", "cleanup"]
+    },
+    {
+      "role_id": "analysis_owner",
+      "principal_id": null,
+      "assignment_status": "required_before_analysis",
+      "responsibilities": ["opaque_label_analysis", "statistics", "figures", "claim_matrix"]
+    },
+    {
+      "role_id": "independent_reviewer",
+      "principal_id": null,
+      "assignment_status": "required_before_runtime_implementation",
+      "responsibilities": ["protocol_review", "source_review", "unblinding", "claim_review", "promotion_approval"]
+    }
+  ],
+  "separation_rules": {
+    "independent_reviewer_must_differ_from": ["implementation_owner", "analysis_owner"],
+    "unassigned_role_blocks_owned_stage": true,
+    "conflicts_must_be_declared": true,
+    "self_approval_allowed": false
+  },
+  "handoffs": [
+    {
+      "handoff_id": "protocol_to_implementation",
+      "from_roles": ["protocol_owner", "independent_reviewer"],
+      "to_role": "implementation_owner",
+      "required_bindings": ["protocol", "estimands", "sources", "splits", "threshold_grid", "retry_policy", "campaign_budget"]
+    },
+    {
+      "handoff_id": "source_to_operator",
+      "from_roles": ["source_data_owner", "independent_reviewer"],
+      "to_role": "benchmark_operator",
+      "required_bindings": ["project_receipts", "privacy", "payloads", "truth", "splits"]
+    },
+    {
+      "handoff_id": "candidate_to_operator",
+      "from_roles": ["implementation_owner", "independent_reviewer"],
+      "to_role": "benchmark_operator",
+      "required_bindings": ["candidate", "package_build", "dependency_lock", "payload_access_audit", "rollback"]
+    },
+    {
+      "handoff_id": "raw_evidence_to_analysis",
+      "from_roles": ["benchmark_operator", "independent_reviewer"],
+      "to_role": "analysis_owner",
+      "required_bindings": ["raw_ledgers", "opaque_backend_labels", "schedule", "attempts", "budget_receipt"]
+    },
+    {
+      "handoff_id": "analysis_to_review",
+      "from_roles": ["analysis_owner"],
+      "to_role": "independent_reviewer",
+      "required_bindings": ["frozen_statistics", "frozen_figure_data", "claim_matrix", "opaque_label_digest"]
+    }
+  ],
+  "blinding": {
+    "primary_analysis_uses_opaque_backend_labels": true,
+    "mapping_owner_role": "independent_reviewer",
+    "unblind_after_statistics_and_figure_data_freeze": true,
+    "unblinding_receipt_required": true
+  },
+  "readiness": {
+    "governance_structure_complete": true,
+    "principal_assignments_complete": false,
+    "runtime_implementation_authorized": false,
+    "campaign_execution_authorized": false,
+    "promotion_authorized": false,
+    "next_required_action": "assign distinct accountable principals and obtain protocol/source review"
+  }
+}

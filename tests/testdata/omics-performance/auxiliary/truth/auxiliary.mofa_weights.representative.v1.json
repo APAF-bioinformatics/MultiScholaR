@@ -1,0 +1,66 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_truth",
+  "schema_version": "1.0.0",
+  "truth_id": "auxiliary.mofa_weights.representative.v1.truth",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "workload_id": "auxiliary.mofa_weights.representative.v1",
+  "route_id": "mofa_weights",
+  "workload_class": "representative",
+  "contract_basis_sha256": "3089833a59bba00e5a8040fbbf80d020b2fb1f2564af9997bad87ebc0fc190f8",
+  "payload_sha256": "618bad4ac873e8ee3e9a179e06d0f1a3bebd16ed1e974f761fe76661dc395216",
+  "dimensions": {
+    "evidence_row_count": 0,
+    "feature_count": 50000,
+    "sample_count": 100,
+    "measured_sample_count": 0,
+    "layer_count": 3,
+    "response_row_count": 0,
+    "primary_work_units": 50000,
+    "sample_scaling_measured": false
+  },
+  "facts": {
+    "feature_count": 50000,
+    "layer_feature_counts": {
+      "proteome": 16667,
+      "metabolome_lc": 16667,
+      "metabolome_gc": 16666
+    },
+    "missing_weight_count": 1000,
+    "duplicate_feature_count": 1500,
+    "tied_weight_count": 4000,
+    "contextual_sample_count": 100,
+    "measured_sample_count": 0,
+    "sample_union_count": 150,
+    "sample_intersection_count": 75,
+    "sample_union_sha256": "64a59a14c48a1e475a4a21f261ae7b3f2effa0639295a40684e97bbb107c115f",
+    "sample_intersection_sha256": "bdb632aec0ae074038731845da0fc784e1752cc0d15dc8c78723406f22c1b0c9",
+    "top_weight_ids": {
+      "proteome": ["SYN_FEATURE_000000182_proteome", "SYN_FEATURE_000000490_proteome", "SYN_FEATURE_000001106_proteome", "SYN_FEATURE_000001414_proteome", "SYN_FEATURE_000002030_proteome", "SYN_FEATURE_000002338_proteome", "SYN_FEATURE_000002646_proteome", "SYN_FEATURE_000003262_proteome", "SYN_FEATURE_000003570_proteome", "SYN_FEATURE_000003878_proteome", "SYN_FEATURE_000004186_proteome", "SYN_FEATURE_000004494_proteome", "SYN_FEATURE_000004802_proteome", "SYN_FEATURE_000005418_proteome", "SYN_FEATURE_000005726_proteome", "SYN_FEATURE_000006034_proteome", "SYN_FEATURE_000006342_proteome", "SYN_FEATURE_000006650_proteome", "SYN_FEATURE_000006958_proteome", "SYN_FEATURE_000007266_proteome"],
+      "metabolome_lc": ["SYN_FEATURE_000002584_metabolome_lc", "SYN_FEATURE_000002276_metabolome_lc", "SYN_FEATURE_000002892_metabolome_lc", "SYN_FEATURE_000001968_metabolome_lc", "SYN_FEATURE_000003200_metabolome_lc", "SYN_FEATURE_000001660_metabolome_lc", "SYN_FEATURE_000003508_metabolome_lc", "SYN_FEATURE_000001352_metabolome_lc", "SYN_FEATURE_000003816_metabolome_lc", "SYN_FEATURE_000001044_metabolome_lc", "SYN_FEATURE_000004124_metabolome_lc", "SYN_FEATURE_000000736_metabolome_lc", "SYN_FEATURE_000004432_metabolome_lc", "SYN_FEATURE_000000428_metabolome_lc", "SYN_FEATURE_000004740_metabolome_lc", "SYN_FEATURE_000000119_metabolome_lc.1", "SYN_FEATURE_000005048_metabolome_lc", "SYN_FEATURE_000005356_metabolome_lc", "SYN_FEATURE_000005972_metabolome_lc", "SYN_FEATURE_000006280_metabolome_lc"],
+      "metabolome_gc": ["SYN_FEATURE_000016382_metabolome_gc", "SYN_FEATURE_000016074_metabolome_gc", "SYN_FEATURE_000015765_metabolome_gc.1", "SYN_FEATURE_000015458_metabolome_gc", "SYN_FEATURE_000015150_metabolome_gc", "SYN_FEATURE_000014842_metabolome_gc", "SYN_FEATURE_000014534_metabolome_gc", "SYN_FEATURE_000014226_metabolome_gc", "SYN_FEATURE_000013918_metabolome_gc", "SYN_FEATURE_000013609_metabolome_gc.1", "SYN_FEATURE_000013302_metabolome_gc", "SYN_FEATURE_000012994_metabolome_gc", "SYN_FEATURE_000012686_metabolome_gc", "SYN_FEATURE_000012378_metabolome_gc", "SYN_FEATURE_000012070_metabolome_gc", "SYN_FEATURE_000011762_metabolome_gc", "SYN_FEATURE_000011453_metabolome_gc.1", "SYN_FEATURE_000011146_metabolome_gc", "SYN_FEATURE_000010838_metabolome_gc", "SYN_FEATURE_000010530_metabolome_gc"]
+    },
+    "top_weight_ids_sha256": {
+      "proteome": "bec4f6bda36c9250c9f59253d09dd20bc04ddc1839c22ca3aeb26440fa0b3ec8",
+      "metabolome_lc": "ffb74182d5f9eed13da6fec7c8da23437c54a5826c3167ea3e440c0fe42d9370",
+      "metabolome_gc": "a6b95149bdfc36314ab29a784eec43a166f211c432edd3a66194d75ef768eb68"
+    },
+    "enrichment_join_cardinality": [],
+    "response_row_counts": [],
+    "response_sha256": [],
+    "sample_scaling_performance_claim": false,
+    "mofa_fitting_or_inference_claim": false,
+    "service_behaviour_claim": false,
+    "exact_order_required": true
+  },
+  "oracle": {
+    "implementation": "independent_generator_cardinality_and_order_oracle",
+    "package_reader_used": false,
+    "package_export_used": false,
+    "historical_result_used": false,
+    "candidate_result_used": false
+  },
+  "scientific_authority": false,
+  "promotion_authority": false,
+  "publication_authority": false
+}

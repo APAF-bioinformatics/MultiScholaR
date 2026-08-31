@@ -1,0 +1,89 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_sources",
+  "schema_version": "1.0.0",
+  "sources_id": "multischolar.omics_publication_auxiliary_sources.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_nonpromotional",
+  "surface_binding": {
+    "path": "tests/testdata/omics-performance/auxiliary/surfaces-v1.json",
+    "sha256": "d6361f28e7d9566b6ddda217cd5238e49b207e931dc89fba38c6b825745b5e7e"
+  },
+  "minimum_real_projects_per_surface": 3,
+  "sources": [],
+  "decisions": [
+    {
+      "surface_id": "phosphosite.api",
+      "required_real_project_count": 3,
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "generated_local_nonpromotional",
+      "cross_project_source_ready": false,
+      "promotion_eligible": false
+    },
+    {
+      "surface_id": "multiomics.api",
+      "required_real_project_count": 3,
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "generated_local_nonpromotional",
+      "cross_project_source_ready": false,
+      "promotion_eligible": false
+    }
+  ],
+  "repository_searches": [
+    {
+      "surface_id": "phosphosite.api",
+      "repository": "PRIDE Archive",
+      "metadata_url": "https://www.ebi.ac.uk/pride/archive/",
+      "query_scope": "phosphoproteomics projects with processed evidence, FASTA, design, license, and independent owner metadata",
+      "admissible_source_count": 0,
+      "outcome": "no_exact_admissible_source_frozen"
+    },
+    {
+      "surface_id": "phosphosite.api",
+      "repository": "ProteomeXchange",
+      "metadata_url": "https://www.proteomexchange.org/",
+      "query_scope": "phosphosite processed-result projects with complete redistribution and design authority",
+      "admissible_source_count": 0,
+      "outcome": "no_exact_admissible_source_frozen"
+    },
+    {
+      "surface_id": "phosphosite.api",
+      "repository": "OmicsDI",
+      "metadata_url": "https://www.omicsdi.org/",
+      "query_scope": "independently owned phosphoproteomics projects with processable evidence and FASTA pairs",
+      "admissible_source_count": 0,
+      "outcome": "no_exact_admissible_source_frozen"
+    },
+    {
+      "surface_id": "multiomics.api",
+      "repository": "MetaboLights",
+      "metadata_url": "https://www.ebi.ac.uk/metabolights/",
+      "query_scope": "multiomics projects with proteomics, metabolomics, sample linkage, layer identities, and redistribution authority",
+      "admissible_source_count": 0,
+      "outcome": "no_exact_admissible_source_frozen"
+    },
+    {
+      "surface_id": "multiomics.api",
+      "repository": "OmicsDI",
+      "metadata_url": "https://www.omicsdi.org/",
+      "query_scope": "multiomics projects with at least three linked layers and exact sample-level joins",
+      "admissible_source_count": 0,
+      "outcome": "no_exact_admissible_source_frozen"
+    },
+    {
+      "surface_id": "multiomics.api",
+      "repository": "PRIDE Archive",
+      "metadata_url": "https://www.ebi.ac.uk/pride/archive/",
+      "query_scope": "proteomics projects with repository-linked metabolomics and independently verifiable sample correspondence",
+      "admissible_source_count": 0,
+      "outcome": "no_exact_admissible_source_frozen"
+    }
+  ],
+  "generated_counts_as_real": false,
+  "fixtures_count_as_real": false,
+  "metadata_search_counts_as_real": false,
+  "private_source_opened": false,
+  "unknown_policy": "reject",
+  "publication_authority": false
+}

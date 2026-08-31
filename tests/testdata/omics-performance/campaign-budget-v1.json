@@ -1,0 +1,73 @@
+{
+  "schema": "multischolar.omics_publication_campaign_budget",
+  "schema_version": "1.0.0",
+  "campaign_budget_id": "multischolar.omics_publication_campaign_budget.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "campaign_matrix": {
+    "path": "tests/testdata/omics-performance/campaign-matrix-v1.json",
+    "schema": "multischolar.omics_publication_campaign_matrix",
+    "schema_version": "1.0.0"
+  },
+  "hard_limits": {
+    "maximum_process_launches": 22000,
+    "maximum_measured_worker_seconds_per_attempt": 1800,
+    "maximum_total_worker_wall_seconds": 39600000,
+    "maximum_total_worker_cpu_seconds": 39600000,
+    "maximum_temporary_bytes_per_run": 53687091200,
+    "maximum_generated_payload_bytes_retained": 1099511627776,
+    "maximum_raw_evidence_bytes_retained": 536870912000,
+    "maximum_sanitized_publication_bytes": 53687091200,
+    "maximum_attempts_per_schedule_slot": 2
+  },
+  "host_preflight_required": [
+    "owned_cgroup_v2_available",
+    "free_memory_safety_margin_satisfied",
+    "free_disk_safety_margin_satisfied",
+    "swap_disabled_or_zero_activity",
+    "load_below_frozen_host_threshold",
+    "no_thermal_throttling",
+    "cpu_frequency_within_frozen_range",
+    "filesystem_healthy",
+    "no_stale_owned_workers",
+    "cleanup_receipt_current"
+  ],
+  "mid_run_abort_conditions": [
+    "cgroup_or_process_ownership_lost",
+    "host_memory_safety_margin_breached",
+    "disk_safety_margin_breached",
+    "swap_activity_detected",
+    "thermal_throttling_detected",
+    "cpu_frequency_drift_exceeded",
+    "unexpected_host_load",
+    "stale_worker_or_resource_detected",
+    "privacy_boundary_breached",
+    "hard_limit_exceeded"
+  ],
+  "resume_contract": {
+    "append_only_schedule_ledger": true,
+    "completed_attempt_overwritten": false,
+    "candidate_protocol_input_bindings_revalidated": true,
+    "safe_abort_outcome": "campaign_safely_aborted_incomplete_non_promotional",
+    "resume_requires_preflight": true
+  },
+  "retention_and_cleanup": {
+    "generated_payloads_untracked": true,
+    "private_payloads_removed_after_bound_evidence": true,
+    "raw_attempts_retained_until_final_audit": true,
+    "sanitized_outputs_reconciled_to_raw_digest": true,
+    "spill_and_temporary_paths_empty_after_attempt": true,
+    "comparator_libraries_have_manifest_and_quota": true,
+    "final_cleanup_receipt_required": true
+  },
+  "current_status": {
+    "budget_finite": true,
+    "execution_authorized": false,
+    "blocking_reasons": [
+      "project_sources_pending",
+      "precision_review_pending",
+      "candidate_pending",
+      "host_thresholds_pending",
+      "role_assignments_pending"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "multischolar.omics_publication_governance_manifest",
+  "schema_version": "1.0.0",
+  "manifest_id": "multischolar.omics_publication_governance_manifest.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "records": [
+    {"record_id": "current_policy_reconciliation", "path": "tests/testdata/omics-performance/current-policy-reconciliation-v1.json", "sha256": "05ca110ebf97ee62d900b11a25fa0b342d75631612b7726b23ad2a43833e397a", "schema": "multischolar.current_policy_reconciliation", "schema_version": "1.0.0"},
+    {"record_id": "protocol", "path": "tests/testdata/omics-performance/protocol-v1.json", "sha256": "0180f74c087f8d7f033a5fed140fa7cc5518308d9441f23d5e23d7db084c74a0", "schema": "multischolar.omics_publication_protocol", "schema_version": "1.0.0"},
+    {"record_id": "coverage", "path": "tests/testdata/omics-performance/coverage-v1.json", "sha256": "40d25d9405793b4489f63a80762e531b53997eea0070838eba6cd02e63e36020", "schema": "multischolar.omics_publication_coverage", "schema_version": "1.0.0"},
+    {"record_id": "roles", "path": "tests/testdata/omics-performance/roles-v1.json", "sha256": "0b80486472fd4b5569bcd83811ab1365b405b61d2d6028f3225ac65a962a4a27", "schema": "multischolar.omics_publication_roles", "schema_version": "1.0.0"},
+    {"record_id": "projects", "path": "tests/testdata/omics-performance/projects-v1.json", "sha256": "8f916e9b9dcd0ec2c49e0e1373658a0a2af240d12a7e72c931ba9b0176e58e62", "schema": "multischolar.omics_publication_projects", "schema_version": "1.0.0"},
+    {"record_id": "estimands", "path": "tests/testdata/omics-performance/estimands-v1.json", "sha256": "13432095088e0817b53039c6e4de8ca6695f866d50d5e3e40dccebbdd2cc8336", "schema": "multischolar.omics_publication_estimands", "schema_version": "1.0.0"},
+    {"record_id": "splits", "path": "tests/testdata/omics-performance/splits-v1.json", "sha256": "0b14a0874d7ecb09bd7ad75ba7ebaf7da8bb65a958d822e9afed662d347e7259", "schema": "multischolar.omics_publication_splits", "schema_version": "1.0.0"},
+    {"record_id": "threshold_grid", "path": "tests/testdata/omics-performance/threshold-grid-v1.json", "sha256": "c44d9a620f94c5350ef0d461fcdc3ee33edf63becbcb1113cf0c08590d3d41a0", "schema": "multischolar.omics_publication_threshold_grid", "schema_version": "1.0.0"},
+    {"record_id": "retry_policy", "path": "tests/testdata/omics-performance/retry-policy-v1.json", "sha256": "9688f975b70bf73b2d42cda821d2b0558880d12426d714539c5586b7292c9aa4", "schema": "multischolar.omics_publication_retry_policy", "schema_version": "1.0.0"},
+    {"record_id": "campaign_matrix", "path": "tests/testdata/omics-performance/campaign-matrix-v1.json", "sha256": "b0d244614686c0584cff4946638fb7bc039bacc27a2f22b7564f660399dd8c78", "schema": "multischolar.omics_publication_campaign_matrix", "schema_version": "1.0.0"},
+    {"record_id": "campaign_budget", "path": "tests/testdata/omics-performance/campaign-budget-v1.json", "sha256": "9341248fae4bc46d1bf1b9fac6fd1ddcf2d7b4cef13efc0648b65b6e015b8f6f", "schema": "multischolar.omics_publication_campaign_budget", "schema_version": "1.0.0"},
+    {"record_id": "policy_receipt_schema", "path": "tests/testdata/omics-performance/policy-receipt-schema-v1.json", "sha256": "20ed982ddfbd4bb0720d4c1ca908bba0754d861028b3329e3c6314fa4fa3c386", "schema": "json_schema", "schema_version": "2020-12"}
+  ],
+  "immutability": {
+    "hash_algorithm": "sha256",
+    "additive_successor_required": true,
+    "mutate_version_in_place": false,
+    "predecessor_replay_required": true,
+    "same_version_replacement": "reject",
+    "ticket_completion_freezes_record_bytes": true
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "schema": "multischolar.omics_publication_governance_manifest",
+  "schema_version": "3.0.0",
+  "manifest_id": "multischolar.omics_publication_governance_manifest.2026-08-27.v3",
+  "owner_ticket_id": "OMICS-ART-063",
+  "predecessor": {
+    "path": "tests/testdata/omics-performance/governance-manifest-v2.json",
+    "sha256": "42c8a3b137716bbd846aa05d419edaf673d34ef0d81c8e640ea505263f4c8f62",
+    "owner_ticket_id": "OMICS-ART-063"
+  },
+  "records": [
+    {
+      "record_id": "host_preflight_contract",
+      "path": "tests/testdata/omics-performance/host-preflight-contract-v2.json",
+      "sha256": "4d95546438091bc3d0333443edb60135823c2b8d21bbb68834d6ab3273601c19",
+      "schema": "multischolar.omics_publication_host_preflight_contract",
+      "schema_version": "1.0.0"
+    },
+    {
+      "record_id": "metric_contract",
+      "path": "tests/testdata/omics-performance/metric-contract-v1.json",
+      "sha256": "d34080fa001b371fe392f410ceea95214fbb353b3600b5e8c7110216672eca82",
+      "schema": "multischolar.omics_publication_metric_contract",
+      "schema_version": "1.0.0"
+    },
+    {
+      "record_id": "cache_contract",
+      "path": "tests/testdata/omics-performance/cache-contract-v1.json",
+      "sha256": "b5752b52edfe6055b8462172cd6779d8adc8b79f6634f6bbee0d587798ce604d",
+      "schema": "multischolar.omics_publication_cache_contract",
+      "schema_version": "1.0.0"
+    },
+    {
+      "record_id": "null_cgroup_calibration",
+      "path": "tests/testdata/omics-performance/null-cgroup-calibration-v6.json",
+      "sha256": "ffc7471a731307e837a5c6859b25755641f3e273ec96d336fe19d7cbc13a30f0",
+      "schema": "multischolar.omics_publication_null_calibration",
+      "schema_version": "1.0.0"
+    },
+    {
+      "record_id": "precision_successor",
+      "path": "tests/testdata/omics-performance/precision-successor-v6.json",
+      "sha256": "c88b78c6a4a527276e1c663b0014b03e1abf7c76043556c452ec72ef885f7cdb",
+      "schema": "multischolar.omics_publication_precision_successor",
+      "schema_version": "1.0.0"
+    }
+  ],
+  "implementation_sources": [
+    {
+      "path": "tools/profiling/omics_publication_protocol.R",
+      "sha256": "45b00788f8cbcc3746900d2dbe9d477b86a8da69175184145846ea0e6a55d822"
+    },
+    {
+      "path": "tools/profiling/omics_publication_measure_spec.R",
+      "sha256": "9fc4f3021f2858d4a851d70550b410e5bc71fa10af3d5405c327aadb174c2f61"
+    },
+    {
+      "path": "tools/profiling/omics_publication_linux_resources.R",
+      "sha256": "876078750f5983b9c32c899eb5e95381d870b2522404f4975689aed850571d16"
+    },
+    {
+      "path": "tools/profiling/omics_publication_retained_resources.R",
+      "sha256": "1ba2792b9abe6fbaf33588b286e9eb3a0d66f6971c17a5e94b53934eddf9b4a7"
+    },
+    {
+      "path": "tools/profiling/omics_publication_host_safety.R",
+      "sha256": "18c9216edab6dd3c0b5c968e5f30f98d30a85e3421c12c7492dd868614b3875d"
+    },
+    {
+      "path": "tools/profiling/omics_publication_schedule.R",
+      "sha256": "8b3daa6c6766d2094d82e05269f0d2aca36de4c8b0350687bd0949b0fbfbe999"
+    },
+    {
+      "path": "tools/profiling/omics_publication_campaign_state.R",
+      "sha256": "9fb0bc5a23ae466587a374029915ee85eea3841bc24dbf33102c81b33166d9d7"
+    },
+    {
+      "path": "tools/profiling/omics_publication_statistics.R",
+      "sha256": "07a53ca5d5665ee1b429904eecd3855f3ea7e9679243e655ba26ea99fa0ddb8e"
+    },
+    {
+      "path": "tools/profiling/run_omics_publication_benchmark.R",
+      "sha256": "823b951e2e53d43d822b80e21bc28e06e1cfc98149812166de71b1f7207657f2"
+    },
+    {
+      "path": "tools/profiling/omics_publication_oom_probe.c",
+      "sha256": "2dabecbf8f529bd595afae266655681a2573e563e2bdca28c5c5a1f34c3dce84"
+    }
+  ],
+  "decisions": {
+    "exact_primary_pair_count": 36,
+    "pair_count_status": "precision_satisfied",
+    "candidate_loaded_for_precision": false,
+    "publication_host_certified": false,
+    "reason_publication_host_not_certified": "actual project workloads, source authorities, candidate revision, quiet-session preflight, and role assignments remain pending",
+    "campaign_execution_authorized": false,
+    "promotion_authorized": false
+  },
+  "immutability": {
+    "hash_algorithm": "sha256",
+    "additive_successor_required": true,
+    "mutate_version_in_place": false,
+    "predecessor_replay_required": true,
+    "ticket_completion_freezes_record_and_source_bytes": true
+  }
+}

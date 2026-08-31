@@ -1,0 +1,57 @@
+{
+  "schema": "multischolar.omics_publication_proteomics_fixture_truth",
+  "schema_version": "1.0.0",
+  "owner_ticket_id": "OMICS-ART-065",
+  "truth_id": "proteomics.diann.peptide.dia.v1.fixture_correctness.truth",
+  "workload_id": "proteomics.diann.peptide.dia.v1.fixture_correctness",
+  "capability": {
+    "omic_type": "proteomics",
+    "capability_id": "proteomics.diann.peptide.dia.v1",
+    "input_format": "diann",
+    "data_level": "peptide",
+    "acquisition_mode": "dia"
+  },
+  "payload": {
+    "filename": "report.tsv",
+    "sha256": "ea576515843e78acb88de5b18d07f3ccb14b5b49619d29ff98d4b47c51107160",
+    "size_bytes": 6344
+  },
+  "review_authority": {
+    "path": "tests/testdata/e2e/prot_dia/README.md",
+    "sha256": "73802338d758fbd9d7f9011b83bb4b4ea7d761bc09875630fd0323cd3a161b08"
+  },
+  "dimensions": {
+    "protein_count": 5,
+    "peptide_count": 10,
+    "precursor_count": 10,
+    "sample_count": 6,
+    "quantity_count": 60,
+    "input_row_count": 60,
+    "input_column_count": 16,
+    "assay_count": 1
+  },
+  "expected_import": {
+    "data_type": "peptide",
+    "row_count": 60,
+    "protein_count": 5,
+    "peptide_count": 10,
+    "sample_count": 6,
+    "quantity_count": 60,
+    "quantity_na_count": 0,
+    "quantity_sum": 63111.2,
+    "quantity_min": 522,
+    "quantity_max": 2167.5,
+    "numerical_tolerance": 1e-08
+  },
+  "effects": {
+    "contrast": "KO_vs_WT",
+    "up_proteins": ["P00001", "P00002"],
+    "down_proteins": [],
+    "null_proteins": ["P00003", "P00004", "P00005"]
+  },
+  "oracle_method": "direct_raw_table_arithmetic_and_hand_reviewed_readme",
+  "limitations": [
+    "Five-protein parser/scientific fixture; no performance or power authority."
+  ],
+  "publication_authority": false
+}

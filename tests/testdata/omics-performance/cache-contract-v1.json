@@ -1,0 +1,39 @@
+{
+  "schema": "multischolar.omics_publication_cache_contract",
+  "schema_version": "1.0.0",
+  "cache_contract_id": "multischolar.omics_publication_cache_contract.2026-08-27.v1",
+  "owner_ticket_id": "OMICS-ART-063",
+  "strata": [
+    {
+      "stratum": "standardized_warm_input",
+      "pre_read_required": true,
+      "verified_page_cache_drop_required": false,
+      "primary_comparison_eligible": true
+    },
+    {
+      "stratum": "first_open",
+      "pre_read_required": false,
+      "verified_page_cache_drop_required": false,
+      "primary_comparison_eligible": false
+    },
+    {
+      "stratum": "cold_uncontrolled",
+      "pre_read_required": false,
+      "verified_page_cache_drop_required": false,
+      "primary_comparison_eligible": false
+    },
+    {
+      "stratum": "verified_cold",
+      "pre_read_required": false,
+      "verified_page_cache_drop_required": true,
+      "primary_comparison_eligible": false
+    }
+  ],
+  "rules": {
+    "bare_cold_label_allowed": false,
+    "cold_requires_privileged_drop_receipt": true,
+    "cache_state_inferred_from_runtime": false,
+    "cache_strata_pooled": false,
+    "cache_evidence_alone_authorizes_promotion": false
+  }
+}

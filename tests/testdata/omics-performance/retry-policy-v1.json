@@ -1,0 +1,64 @@
+{
+  "schema": "multischolar.omics_publication_retry_policy",
+  "schema_version": "1.0.0",
+  "retry_policy_id": "multischolar.omics_publication_retry_policy.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "attempt_contract": {
+    "initial_attempts_per_schedule_slot": 1,
+    "maximum_retries_per_schedule_slot": 1,
+    "maximum_attempts_per_schedule_slot": 2,
+    "overwrite_attempt_record": false,
+    "append_only_ledger": true,
+    "same_schedule_slot_identity_on_retry": true,
+    "same_input_candidate_protocol_host_binding_on_retry": true
+  },
+  "retryable_failures": [
+    {
+      "failure_class": "worker_not_started",
+      "ownership": "harness",
+      "worker_pid_existed": false,
+      "candidate_work_executed": false
+    },
+    {
+      "failure_class": "cgroup_creation_failed_before_worker",
+      "ownership": "host_harness",
+      "worker_pid_existed": false,
+      "candidate_work_executed": false
+    }
+  ],
+  "non_retryable_candidate_failures": [
+    "oom",
+    "timeout_after_worker_start",
+    "worker_crash_after_start",
+    "scientific_parity_mismatch",
+    "output_digest_mismatch",
+    "resource_leak",
+    "artifact_commit_failure",
+    "query_bound_failure",
+    "resume_failure",
+    "malformed_worker_result_after_candidate_start"
+  ],
+  "non_retryable_campaign_failures": [
+    "protocol_or_candidate_drift",
+    "source_or_split_drift",
+    "unsafe_host_state",
+    "privacy_violation",
+    "budget_exhausted",
+    "independent_review_unavailable"
+  ],
+  "slot_outcomes": [
+    "passed_first_attempt",
+    "passed_single_harness_retry",
+    "failed_candidate_non_retryable",
+    "failed_harness_retry_exhausted",
+    "campaign_aborted_before_attempt"
+  ],
+  "campaign_rule": {
+    "maximum_unresolved_infrastructure_slots": 0,
+    "candidate_failure_counts_against_decision": true,
+    "failed_pair_imputed": false,
+    "failed_slot_replaced_by_new_slot": false,
+    "post_hoc_attempt_extension": false,
+    "optional_stopping": false
+  }
+}

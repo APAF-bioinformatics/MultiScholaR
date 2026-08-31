@@ -1,0 +1,401 @@
+{
+  "schema": "multischolar.omics_publication_lipidomics_bundles",
+  "schema_version": "1.0.0",
+  "bundles_id": "multischolar.omics_publication_lipidomics_bundles.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-067",
+  "status": "frozen_pre_candidate",
+  "mapping_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/mapping-authorities-v1.json",
+    "sha256": "f0bb75f0d66013c50b2e9c189656ed4fa17ec0c91beb487b90cb533b214629d7"
+  },
+  "bundles": [
+    {
+      "bundle_id": "lipidomics.lipidsearch.mixed_lc.fixture_correctness.v1",
+      "route": "lipidsearch",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "lipidsearch.lcms_pos.v1",
+        "lipidsearch.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "e3f53912116525726917e509f3622c414c31d1eacf584921c742bf1eb304b9c2"
+    },
+    {
+      "bundle_id": "lipidomics.lipidsearch.mixed_lc.representative.v1",
+      "route": "lipidsearch",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "lipidsearch.lcms_pos.v1",
+        "lipidsearch.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "e983c119725911e72f00ebcd7ee8bac7da002a0861e66a5abbcbe03dc43668f3"
+    },
+    {
+      "bundle_id": "lipidomics.lipidsearch.mixed_lc.operational_heavy.v1",
+      "route": "lipidsearch",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "lipidsearch.lcms_pos.v1",
+        "lipidsearch.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "1887a5fab73feb53432171011d19c4e437e5ec0d69f6544ef6b33cef62403045"
+    },
+    {
+      "bundle_id": "lipidomics.lipidsearch.mixed_lc.stress.v1",
+      "route": "lipidsearch",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "lipidsearch.lcms_pos.v1",
+        "lipidsearch.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "a8c5c8ebe8bdd1c0ba3a37fb23a1ab48b330fc4ae75089df44babbce9d36ffb5"
+    },
+    {
+      "bundle_id": "lipidomics.lipidsearch.mixed_lc_gcms.fixture_correctness.v1",
+      "route": "lipidsearch",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "lipidsearch.lcms_pos.v1",
+        "lipidsearch.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "98d67bbcb629795a26b158770042efbafc2820486fe56fa7edaef92c0a71a102"
+    },
+    {
+      "bundle_id": "lipidomics.lipidsearch.mixed_lc_gcms.representative.v1",
+      "route": "lipidsearch",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "lipidsearch.lcms_pos.v1",
+        "lipidsearch.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "304d3ee9100165f67de57b1fb89b3d3dd8f14b70ccd480293f70d32d44889646"
+    },
+    {
+      "bundle_id": "lipidomics.lipidsearch.mixed_lc_gcms.operational_heavy.v1",
+      "route": "lipidsearch",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "lipidsearch.lcms_pos.v1",
+        "lipidsearch.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "6ab50254228c6d586bcd57a0bca3bfb740d9152befdec2fb80eedd3d3a8a4231"
+    },
+    {
+      "bundle_id": "lipidomics.lipidsearch.mixed_lc_gcms.stress.v1",
+      "route": "lipidsearch",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "lipidsearch.lcms_pos.v1",
+        "lipidsearch.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "9f29e25ae55bc1c623a255a2c1af89a3794dd5b7c5ca7f013e493799bc94ffb2"
+    },
+    {
+      "bundle_id": "lipidomics.msdial.mixed_lc.fixture_correctness.v1",
+      "route": "msdial",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "e93ba0bac79e21db5b0e8fefcad7399833b026f3fcc168874312ed0e2f541638"
+    },
+    {
+      "bundle_id": "lipidomics.msdial.mixed_lc.representative.v1",
+      "route": "msdial",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "a6ceeeb2f69535955e0631921bf094e320019832671a1f08e796578f0fb5f55b"
+    },
+    {
+      "bundle_id": "lipidomics.msdial.mixed_lc.operational_heavy.v1",
+      "route": "msdial",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "9367e39538fdbc2d22847a48dd677614101345defabc25188a613f9d396e6235"
+    },
+    {
+      "bundle_id": "lipidomics.msdial.mixed_lc.stress.v1",
+      "route": "msdial",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "b61051df424ab0c2c8479c768cc25ecb88e1a4782f9d4087b3df0a0831c8da4a"
+    },
+    {
+      "bundle_id": "lipidomics.msdial.mixed_lc_gcms.fixture_correctness.v1",
+      "route": "msdial",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "9e7279ec666aa2b7fddb39cad982201a5241f541ddb5b85c0cc6088c732357a3"
+    },
+    {
+      "bundle_id": "lipidomics.msdial.mixed_lc_gcms.representative.v1",
+      "route": "msdial",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "6445047a27f65174baa75dcf7d48a8de156d23aab41715ff9a197fd6b0b82280"
+    },
+    {
+      "bundle_id": "lipidomics.msdial.mixed_lc_gcms.operational_heavy.v1",
+      "route": "msdial",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "f9b48ea4da43d5ad3ca0a2bbc871aa8fbb1214d70411ea5e0a37c281c15191ba"
+    },
+    {
+      "bundle_id": "lipidomics.msdial.mixed_lc_gcms.stress.v1",
+      "route": "msdial",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "87b0a335e017ce60415105f9731976dfbe277b4a84c2a03751d0ffd531c0519f"
+    },
+    {
+      "bundle_id": "lipidomics.custom.mixed_lc.fixture_correctness.v1",
+      "route": "custom",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "custom.lcms_pos.v1",
+        "custom.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "7acc82447a009ba5d35190356e22fcbfcc5d060c35ea6846c8eee5a11d01bad4"
+    },
+    {
+      "bundle_id": "lipidomics.custom.mixed_lc.representative.v1",
+      "route": "custom",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "custom.lcms_pos.v1",
+        "custom.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "1eed450c53bdfa790d5c8704b8c25ebe492858123795195a90ef938c44ada25c"
+    },
+    {
+      "bundle_id": "lipidomics.custom.mixed_lc.operational_heavy.v1",
+      "route": "custom",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "custom.lcms_pos.v1",
+        "custom.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "4198dbf52a8e88a47fa8e0fb51abe8dcff940c204cfce235bd80650dbdc41c9c"
+    },
+    {
+      "bundle_id": "lipidomics.custom.mixed_lc.stress.v1",
+      "route": "custom",
+      "profile_id": "mixed_lc",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "custom.lcms_pos.v1",
+        "custom.lcms_neg.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "d9fc3feca748c0214c4bb5fac9a7496261d009af61f9baa42d53b858ececf41c"
+    },
+    {
+      "bundle_id": "lipidomics.custom.mixed_lc_gcms.fixture_correctness.v1",
+      "route": "custom",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "custom.lcms_pos.v1",
+        "custom.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "23b48cf5741e4788928f0404ae02d8a69f2c5014d5dfaee1f413dc2e00decd12"
+    },
+    {
+      "bundle_id": "lipidomics.custom.mixed_lc_gcms.representative.v1",
+      "route": "custom",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "custom.lcms_pos.v1",
+        "custom.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "a73d97a9831124505c9155d05c1c93a0018fbddd686c9be0a0822f1d469053a7"
+    },
+    {
+      "bundle_id": "lipidomics.custom.mixed_lc_gcms.operational_heavy.v1",
+      "route": "custom",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "custom.lcms_pos.v1",
+        "custom.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "1f11481d91acd414de71915d9b649c9a62187ab37b7b5e5b8365622a79117e8e"
+    },
+    {
+      "bundle_id": "lipidomics.custom.mixed_lc_gcms.stress.v1",
+      "route": "custom",
+      "profile_id": "mixed_lc_gcms",
+      "member_assays": [
+        "LCMS_Pos",
+        "GCMS"
+      ],
+      "member_count": 2,
+      "member_schema_ids": [
+        "custom.lcms_pos.v1",
+        "custom.gcms.v1"
+      ],
+      "single_table_substitution_allowed": false,
+      "bundle_digest": "026b6f089f91c6736817ba429a45ca9bca57ab4d1f705deab0a48bda8c8eb3ce"
+    }
+  ],
+  "member_order_semantic": false,
+  "missing_or_duplicate_member_policy": "reject",
+  "single_table_substitution_allowed": false,
+  "publication_authority": false
+}

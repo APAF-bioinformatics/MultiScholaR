@@ -1,0 +1,120 @@
+{
+  "schema": "multischolar.omics_publication_proteomics_sources",
+  "schema_version": "1.0.0",
+  "sources_id": "multischolar.omics_publication_proteomics_sources.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-065",
+  "status": "source_inventory_frozen",
+  "projects_predecessor": {
+    "path": "tests/testdata/omics-performance/projects-v1.json",
+    "sha256": "8f916e9b9dcd0ec2c49e0e1373658a0a2af240d12a7e72c931ba9b0176e58e62"
+  },
+  "private_envelope_binding": {
+    "path": "tests/testdata/omics-performance/proteomics/private-envelope-v1.json",
+    "sha256": "af2daff6eee048e561e37f1a5cdb018f84bd4c5ed9dd69f2eaeb9580e8607090"
+  },
+  "public_acquisition_binding": {
+    "path": "tests/testdata/omics-performance/proteomics/public-acquisition-v1.json",
+    "sha256": "9b9e80305cb53dec40840c075db1c6e0410f4e88414e1e5c42802d7d13edbef5"
+  },
+  "minimum_real_projects": 3,
+  "generated_counts_as_real": false,
+  "fixtures_count_as_real": false,
+  "sources": [
+    {
+      "source_id": "private.dia.cotton_report.v1",
+      "project_id": "private.dia.cotton.v1",
+      "capability_id": "proteomics.diann.peptide.dia.v1",
+      "owner_id": "user_supplied_local_analysis",
+      "independence_owner_id": "private.owner.user_supplied.v1",
+      "license_or_use_authority": "user_supplied_for_local_analysis_no_redistribution",
+      "privacy_class": "private_calibrated",
+      "source_kind": "private_real",
+      "schema_id": "diann.report.private-envelope-v1",
+      "byte_or_aggregate_receipt_digest": "af2daff6eee048e561e37f1a5cdb018f84bd4c5ed9dd69f2eaeb9580e8607090",
+      "selection_rule_id": "explicit_user_supplied_diann_canary_v1",
+      "exclusion_rule_id": "fasta_completeness_required_for_full_workflow_v1",
+      "support_tier": "import_scale_only",
+      "authority_scope": "private_project_specific_import_scale",
+      "status": "private_report_admissible_fasta_unconfirmed",
+      "counts_toward_cross_project": false
+    }
+  ],
+  "capability_decisions": [
+    {
+      "capability_id": "proteomics.diann.peptide.dia.v1",
+      "required_real_project_count": 3,
+      "source_ids": ["private.dia.cotton_report.v1"],
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "project_specific_non_promotional",
+      "cross_project_source_ready": false,
+      "promotion_eligible": false
+    },
+    {
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "required_real_project_count": 3,
+      "source_ids": [],
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "project_specific_non_promotional",
+      "cross_project_source_ready": false,
+      "promotion_eligible": false
+    },
+    {
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "required_real_project_count": 3,
+      "source_ids": [],
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "project_specific_non_promotional",
+      "cross_project_source_ready": false,
+      "promotion_eligible": false
+    },
+    {
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "required_real_project_count": 3,
+      "source_ids": [],
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "project_specific_non_promotional",
+      "cross_project_source_ready": false,
+      "promotion_eligible": false
+    }
+  ],
+  "acquisition_outcomes": [
+    {
+      "format": "diann",
+      "reviewed_candidate_count": 3,
+      "schema_admissible_count": 3,
+      "full_workflow_design_count": 0,
+      "cross_project_source_count": 0,
+      "decision": "project_specific_non_promotional"
+    },
+    {
+      "format": "maxquant",
+      "reviewed_candidate_count": 6,
+      "schema_admissible_count": 0,
+      "full_workflow_design_count": 0,
+      "cross_project_source_count": 0,
+      "decision": "project_specific_non_promotional"
+    },
+    {
+      "format": "fragpipe",
+      "reviewed_candidate_count": 5,
+      "schema_admissible_count": 2,
+      "full_workflow_design_count": 0,
+      "cross_project_source_count": 0,
+      "decision": "project_specific_non_promotional"
+    },
+    {
+      "format": "pd_tmt",
+      "reviewed_candidate_count": 3,
+      "schema_admissible_count": 0,
+      "full_workflow_design_count": 0,
+      "cross_project_source_count": 0,
+      "decision": "project_specific_non_promotional"
+    }
+  ],
+  "unknown_source_policy": "reject",
+  "publication_authority": false
+}

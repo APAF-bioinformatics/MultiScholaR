@@ -1,0 +1,57 @@
+{
+  "schema": "multischolar.omics_publication_proteomics_fixture_truth",
+  "schema_version": "1.0.0",
+  "owner_ticket_id": "OMICS-ART-065",
+  "truth_id": "proteomics.maxquant.protein.lfq.v1.fixture_correctness.truth",
+  "workload_id": "proteomics.maxquant.protein.lfq.v1.fixture_correctness",
+  "capability": {
+    "omic_type": "proteomics",
+    "capability_id": "proteomics.maxquant.protein.lfq.v1",
+    "input_format": "maxquant",
+    "data_level": "protein",
+    "acquisition_mode": "dda"
+  },
+  "payload": {
+    "filename": "proteinGroups.txt",
+    "sha256": "ad2ba7383d9703f14986e520617f9cccf0c79a923f03f6f65b030f72265dcacb",
+    "size_bytes": 435
+  },
+  "review_authority": {
+    "path": "tests/testdata/e2e/prot_lfq/README.md",
+    "sha256": "a0ac523318f77d8f28e02967e4d0451db2f54f69fb19da7ee9545c3083e89b57"
+  },
+  "dimensions": {
+    "protein_count": 5,
+    "peptide_count": 0,
+    "precursor_count": 0,
+    "sample_count": 6,
+    "quantity_count": 30,
+    "input_row_count": 5,
+    "input_column_count": 10,
+    "assay_count": 1
+  },
+  "expected_import": {
+    "data_type": "protein",
+    "row_count": 30,
+    "protein_count": 5,
+    "peptide_count": 0,
+    "sample_count": 6,
+    "quantity_count": 30,
+    "quantity_na_count": 0,
+    "quantity_sum": 31555.6,
+    "quantity_min": 522,
+    "quantity_max": 2167.5,
+    "numerical_tolerance": 1e-08
+  },
+  "effects": {
+    "contrast": "KO_vs_WT",
+    "up_proteins": ["P00001"],
+    "down_proteins": ["P00002"],
+    "null_proteins": ["P00003", "P00004", "P00005"]
+  },
+  "oracle_method": "direct_raw_table_arithmetic_and_hand_reviewed_readme",
+  "limitations": [
+    "Five-protein parser fixture; current default DA has no significance-power authority."
+  ],
+  "publication_authority": false
+}

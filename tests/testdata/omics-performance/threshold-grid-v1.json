@@ -1,0 +1,79 @@
+{
+  "schema": "multischolar.omics_publication_threshold_grid",
+  "schema_version": "1.0.0",
+  "threshold_grid_id": "multischolar.omics_publication_threshold_grid.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "size_measure": {
+    "measure_id": "total_uncompressed_input_bytes_v1",
+    "unit": "byte",
+    "plain_file_rule": "exact_file_size_sum",
+    "multiple_file_rule": "exact_sum_of_all_capability_input_file_bytes",
+    "compressed_file_rule": "exact_streamed_uncompressed_byte_count_before_full_parse",
+    "in_memory_or_unstable_source_rule": "unavailable_resolve_memory",
+    "uses_materialized_r_payload": false,
+    "uses_object_size_multiplier": false,
+    "uses_fitted_expansion_factor": false,
+    "backend_invariant": true
+  },
+  "threshold_bytes": [
+    8388608,
+    16777216,
+    33554432,
+    67108864,
+    134217728,
+    268435456,
+    536870912,
+    1073741824
+  ],
+  "selection_rule": {
+    "evidence_partition": "pilot_only",
+    "minimum_independent_pilot_projects": 3,
+    "minimum_pairs_per_pilot_project_size": 10,
+    "candidate_grid_can_change_after_confirmatory_start": false,
+    "selected_point": "smallest_grid_value_whose_gates_pass_at_that_and_every_larger_observed_pilot_size",
+    "required_gates": [
+      "peak_charged_memory_reduction_lower_confidence_bound",
+      "retained_charged_memory_reduction_lower_confidence_bound",
+      "wall_time_ratio_upper_confidence_bound",
+      "wall_throughput_ratio_lower_confidence_bound",
+      "cpu_efficiency_ratio_lower_confidence_bound",
+      "scientific_parity",
+      "resource_lifecycle"
+    ],
+    "rounding_rule": "grid_values_only_no_interpolation",
+    "monotonic_persistence_required": true
+  },
+  "heldout_validation": {
+    "source_project_seed_profile_disjoint": true,
+    "minimum_independent_holdout_projects": 3,
+    "minimum_pairs_per_holdout_project": 10,
+    "validate_below_threshold_memory_choice": true,
+    "validate_at_or_above_threshold_artifact_choice": true,
+    "confirmatory_results_may_reselect_threshold": false
+  },
+  "terminal_outcomes": [
+    "stable_threshold_selected_pending_holdout",
+    "stable_threshold_validated",
+    "exact_input_bytes_unavailable",
+    "insufficient_independent_pilot_projects",
+    "insufficient_independent_holdout_projects",
+    "underpowered_pilot",
+    "non_monotone_benefit",
+    "conflicting_gate_results",
+    "no_observed_grid_value_passes",
+    "holdout_validation_failed"
+  ],
+  "promotion_policy": {
+    "stable_threshold_validated_required": true,
+    "all_other_outcomes_promote": false,
+    "below_threshold_backend": "memory",
+    "at_or_above_threshold_backend": "artifact",
+    "at_or_above_threshold_rollout": "evict",
+    "existing_memory_projects_migrate_implicitly": false
+  },
+  "legacy_current_policy": {
+    "measure_id": "legacy_r_object_size_x2.v1",
+    "threshold_bytes": 33554432,
+    "status": "predecessor_engineering_only_not_eligible_for_publication_successor"
+  }
+}

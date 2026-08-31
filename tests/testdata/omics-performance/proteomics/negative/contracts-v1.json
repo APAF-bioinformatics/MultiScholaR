@@ -1,0 +1,187 @@
+{
+  "schema": "multischolar.omics_publication_proteomics_negative_contracts",
+  "schema_version": "1.0.0",
+  "negative_id": "multischolar.omics_publication_proteomics_negative.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-065",
+  "status": "frozen_pre_candidate",
+  "cases": [
+    {
+      "case_id": "diann.missing_protein_group.v1",
+      "format": "diann",
+      "capability_id": "proteomics.diann.peptide.dia.v1",
+      "mutation": "missing_protein_group",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "diann.missing_quantity.v1",
+      "format": "diann",
+      "capability_id": "proteomics.diann.peptide.dia.v1",
+      "mutation": "missing_quantity",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "diann.nonrectangular.v1",
+      "format": "diann",
+      "capability_id": "proteomics.diann.peptide.dia.v1",
+      "mutation": "nonrectangular",
+      "expected_outcome": "accepted_edge_characterization",
+      "expected_condition_class": "none_expected",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "diann.zero_and_nonfinite_quantity.v1",
+      "format": "diann",
+      "capability_id": "proteomics.diann.peptide.dia.v1",
+      "mutation": "zero_and_nonfinite_quantity",
+      "expected_outcome": "accepted_edge_characterization",
+      "expected_condition_class": "none_expected",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "maxquant.missing_protein_id.v1",
+      "format": "maxquant",
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "mutation": "missing_protein_id",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "maxquant.missing_intensity.v1",
+      "format": "maxquant",
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "mutation": "missing_intensity",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "maxquant.native_space_lfq_columns.v1",
+      "format": "maxquant",
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "mutation": "native_space_lfq_columns",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "maxquant.duplicate_and_contaminant_rows.v1",
+      "format": "maxquant",
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "mutation": "duplicate_and_contaminant_rows",
+      "expected_outcome": "accepted_edge_characterization",
+      "expected_condition_class": "none_expected",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "fragpipe.missing_protein_id.v1",
+      "format": "fragpipe",
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "mutation": "missing_protein_id",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "fragpipe.missing_intensity.v1",
+      "format": "fragpipe",
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "mutation": "missing_intensity",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "fragpipe.regular_intensity_without_maxlfq.v1",
+      "format": "fragpipe",
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "mutation": "regular_intensity_without_maxlfq",
+      "expected_outcome": "accepted_edge_characterization",
+      "expected_condition_class": "none_expected",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "fragpipe.duplicate_protein_rows.v1",
+      "format": "fragpipe",
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "mutation": "duplicate_protein_rows",
+      "expected_outcome": "accepted_edge_characterization",
+      "expected_condition_class": "none_expected",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "pd_tmt.missing_accession.v1",
+      "format": "pd_tmt",
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "mutation": "missing_accession",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "pd_tmt.missing_abundance.v1",
+      "format": "pd_tmt",
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "mutation": "missing_abundance",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "pd_tmt.duplicate_normalized_channel.v1",
+      "format": "pd_tmt",
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "mutation": "duplicate_normalized_channel",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "pd_tmt.native_grouped_abundance_columns.v1",
+      "format": "pd_tmt",
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "mutation": "native_grouped_abundance_columns",
+      "expected_outcome": "classed_rejection",
+      "expected_condition_class": "error",
+      "scientific_authority": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    }
+  ],
+  "unknown_mutation_policy": "reject",
+  "publication_authority": false
+}

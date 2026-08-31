@@ -1,0 +1,40 @@
+{
+  "schema": "multischolar.omics_publication_governance_manifest",
+  "schema_version": "2.0.0",
+  "manifest_id": "multischolar.omics_publication_governance_manifest.2026-08-27.v2",
+  "owner_ticket_id": "OMICS-ART-063",
+  "predecessor": {
+    "path": "tests/testdata/omics-performance/governance-manifest-v1.json",
+    "sha256": "1e20b183a6b827b9e0fea5857c26a8080b1ef723457814c568ed99756a12bc6b",
+    "owner_ticket_id": "OMICS-ART-062"
+  },
+  "records": [
+    {"record_id": "host_preflight_contract", "path": "tests/testdata/omics-performance/host-preflight-contract-v1.json", "sha256": "3649b84d7853be9ad1c2b3e5a46a990f2b2a93ec08c10d9ae60e2ab9b790e1a6", "schema": "multischolar.omics_publication_host_preflight_contract", "schema_version": "1.0.0"},
+    {"record_id": "null_cgroup_calibration", "path": "tests/testdata/omics-performance/null-cgroup-calibration-v1.json", "sha256": "444ad49acf2cda086c49b06bce524012473652b5b8c3b63220614660a679313b", "schema": "multischolar.omics_publication_null_calibration", "schema_version": "1.0.0"},
+    {"record_id": "precision_successor", "path": "tests/testdata/omics-performance/precision-successor-v1.json", "sha256": "90c3eb63394556b3ab21edb1f9b7dd160bad3952ce5f9d46d2b88ae12e1d42fb", "schema": "multischolar.omics_publication_precision_successor", "schema_version": "1.0.0"}
+  ],
+  "implementation_sources": [
+    {"path": "tools/profiling/omics_publication_protocol.R", "sha256": "671b33232cb8181776131ee3310f2f955d295bc9db7e22d38829c8c79d1e214f"},
+    {"path": "tools/profiling/omics_publication_linux_resources.R", "sha256": "6ebf84a4423fdf5824430cc93465548232f45c43ef03f4a189da0e367421250d"},
+    {"path": "tools/profiling/omics_publication_schedule.R", "sha256": "e565a7a0b0e61d2f4c6d636cb01e94894bf0d97e2f27d0b55cd476247c64bc73"},
+    {"path": "tools/profiling/omics_publication_campaign_state.R", "sha256": "23feb4bd26df33c261515283475a4386eacdf9b9484908465fd7c53964096fe9"},
+    {"path": "tools/profiling/omics_publication_statistics.R", "sha256": "2bf083a7e6f9513456ea42a5730c53741dd4a8326c5b65571fc28fe247077a80"},
+    {"path": "tools/profiling/run_omics_publication_benchmark.R", "sha256": "a7c42494f03a1b1677fa38505e857ddf90edafe8d693460ac957ead4cdeaec65"}
+  ],
+  "decisions": {
+    "exact_primary_pair_count": 48,
+    "pair_count_status": "precision_satisfied",
+    "candidate_loaded_for_precision": false,
+    "publication_host_certified": false,
+    "reason_publication_host_not_certified": "actual project workloads, host-specific expected peak thresholds, thermal/load session gates, and role assignments remain pending",
+    "campaign_execution_authorized": false,
+    "promotion_authorized": false
+  },
+  "immutability": {
+    "hash_algorithm": "sha256",
+    "additive_successor_required": true,
+    "mutate_version_in_place": false,
+    "predecessor_replay_required": true,
+    "ticket_completion_freezes_record_and_source_bytes": true
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "schema": "multischolar.omics_publication_splits",
+  "schema_version": "1.0.0",
+  "splits_id": "multischolar.omics_publication_splits.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "split_units": [
+    "source_id",
+    "project_id",
+    "independence_owner_id",
+    "aggregate_profile_id",
+    "generator_parameter_profile_id",
+    "seed_family_id"
+  ],
+  "disjointness_rules": {
+    "source_id_overlap": false,
+    "project_id_overlap": false,
+    "independence_owner_overlap": false,
+    "aggregate_profile_overlap": false,
+    "generator_parameter_profile_overlap": false,
+    "seed_family_overlap": false,
+    "derived_from_holdout_for_pilot": false,
+    "candidate_result_may_reassign_split": false
+  },
+  "generated_seed_families": {
+    "pilot": {
+      "seed_family_id": "generated.pilot.200000-299999.v1",
+      "minimum_seed": 200000,
+      "maximum_seed": 299999
+    },
+    "holdout": {
+      "seed_family_id": "generated.holdout.300000-399999.v1",
+      "minimum_seed": 300000,
+      "maximum_seed": 399999
+    },
+    "stress": {
+      "seed_family_id": "generated.stress.400000-499999.v1",
+      "minimum_seed": 400000,
+      "maximum_seed": 499999
+    }
+  },
+  "assignments": [
+    {
+      "subject_id": "proteomics.diann.peptide.dia.v1",
+      "subject_type": "capability",
+      "owner_ticket_id": "OMICS-ART-065",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "proteomics.maxquant.protein.lfq.v1",
+      "subject_type": "capability",
+      "owner_ticket_id": "OMICS-ART-065",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "proteomics.fragpipe.protein.lfq.v1",
+      "subject_type": "capability",
+      "owner_ticket_id": "OMICS-ART-065",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "subject_type": "capability",
+      "owner_ticket_id": "OMICS-ART-065",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "metabolomics.custom.metabolite.standard.v1",
+      "subject_type": "capability",
+      "owner_ticket_id": "OMICS-ART-066",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "metabolomics.msdial.metabolite.standard.v1",
+      "subject_type": "reader_boundary",
+      "owner_ticket_id": "OMICS-ART-066",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "lipidomics.lipidsearch.lipid.standard.v1",
+      "subject_type": "capability",
+      "owner_ticket_id": "OMICS-ART-067",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "lipidomics.msdial.lipid.standard.v1",
+      "subject_type": "reader_boundary",
+      "owner_ticket_id": "OMICS-ART-067",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "lipidomics.custom.lipid.standard.v1",
+      "subject_type": "reader_boundary",
+      "owner_ticket_id": "OMICS-ART-067",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "phosphosite.api",
+      "subject_type": "auxiliary_api",
+      "owner_ticket_id": "OMICS-ART-068",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    },
+    {
+      "subject_id": "multiomics.api",
+      "subject_type": "auxiliary_api",
+      "owner_ticket_id": "OMICS-ART-068",
+      "pilot_project_ids": [],
+      "holdout_project_ids": [],
+      "pilot_source_ids": [],
+      "holdout_source_ids": [],
+      "assignment_status": "pending_independent_source_acquisition",
+      "promotion_eligible": false
+    }
+  ],
+  "readiness": {
+    "split_contract_complete": true,
+    "source_assignments_complete": false,
+    "candidate_access_allowed": false,
+    "successor_required_before_candidate": true
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "schema": "multischolar.omics_publication_proteomics_workload",
+  "schema_version": "1.0.0",
+  "contract_id": "multischolar.proteomics.maxquant.protein.lfq.v1.fixture_correctness",
+  "owner_ticket_id": "OMICS-ART-065",
+  "status": "frozen",
+  "workload_id": "proteomics.maxquant.protein.lfq.v1.fixture_correctness",
+  "workload_class": "fixture_correctness",
+  "capability": {
+    "omic_type": "proteomics",
+    "capability_id": "proteomics.maxquant.protein.lfq.v1",
+    "input_format": "maxquant",
+    "data_level": "protein",
+    "acquisition_mode": "dda"
+  },
+  "format_schema": {
+    "schema_id": "multischolar.proteomics.maxquant.publication",
+    "schema_version": "1.0.0",
+    "orientation": "wide",
+    "delimiter": "tab",
+    "required_columns": [
+      "Protein.IDs",
+      "Gene.names",
+      "Protein.names",
+      "Potential.contaminant",
+      "Reverse"
+    ],
+    "quantity_column_rule": "LFQ.intensity.<sample_id>",
+    "line_ending": "LF",
+    "encoding": "UTF-8"
+  },
+  "dimensions": {
+    "protein_count": 5,
+    "peptide_count": 0,
+    "precursor_count": 0,
+    "sample_count": 6,
+    "quantity_count": 30,
+    "input_row_count": 5,
+    "input_column_count": 10,
+    "assay_count": 1
+  },
+  "model_profile_id": "hand_reviewed_fixture_v1",
+  "parameter_authority": {
+    "path": "tests/testdata/omics-performance/proteomics/parameters-v1.json",
+    "sha256": "93235fb4605ac86578586ce5c54eebc4bc50843aaa98cb1fa76d9e6008ed6843"
+  },
+  "source_authority": {
+    "path": "tests/testdata/omics-performance/proteomics/sources-v1.json",
+    "sha256": "872b332a3398d10c0552bff72297084fe5dfecf12bae9d64f4a10eed03a61b27"
+  },
+  "split_authority": {
+    "path": "tests/testdata/omics-performance/proteomics/splits-v1.json",
+    "sha256": "4894b65e2b3cf76f6ee4d82158fb58fe2ef8ee04be16e37389db9ad474aef191"
+  },
+  "generator": {
+    "mode": "fixture_replay",
+    "source_bindings": [
+      {
+        "path": "tools/profiling/omics_publication_workload_proteomics.R",
+        "sha256": "f10af9486122d8ecfdc4c99d77c30ae4fba1b09ccf7c9c7666d5254a87b1eb11"
+      },
+      {
+        "path": "tests/testdata/e2e/prot_lfq/proteinGroups.txt",
+        "sha256": "ad2ba7383d9703f14986e520617f9cccf0c79a923f03f6f65b030f72265dcacb"
+      },
+      {
+        "path": "tests/testdata/omics-performance/proteomics/truth/fixture-maxquant-v1.json",
+        "sha256": "df250c88d62a4e10acb7bba2a9169cdd72e094d29bd6b5f696574e8175bd1584"
+      },
+      {
+        "path": "tests/testdata/e2e/prot_lfq/README.md",
+        "sha256": "a0ac523318f77d8f28e02967e4d0451db2f54f69fb19da7ee9545c3083e89b57"
+      }
+    ],
+    "chunk_rows": null,
+    "output_filename": "proteinGroups.txt",
+    "truth_filename": "fixture-maxquant-v1.json",
+    "fixture_payload": {
+      "path": "tests/testdata/e2e/prot_lfq/proteinGroups.txt",
+      "sha256": "ad2ba7383d9703f14986e520617f9cccf0c79a923f03f6f65b030f72265dcacb"
+    },
+    "fixture_truth": {
+      "path": "tests/testdata/omics-performance/proteomics/truth/fixture-maxquant-v1.json",
+      "sha256": "df250c88d62a4e10acb7bba2a9169cdd72e094d29bd6b5f696574e8175bd1584"
+    }
+  },
+  "rng": {
+    "kind": "L'Ecuyer-CMRG",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "seed_family_id": "fixture.no_rng.maxquant.v1",
+    "seed": null,
+    "streams": []
+  },
+  "truth_contract": {
+    "schema_id": "multischolar.omics_publication_proteomics_fixture_truth",
+    "oracle_type": "hand_reviewed_fixture",
+    "independent_from_importer": true,
+    "source_bindings": [
+      {
+        "path": "tests/testdata/omics-performance/proteomics/truth/fixture-maxquant-v1.json",
+        "sha256": "df250c88d62a4e10acb7bba2a9169cdd72e094d29bd6b5f696574e8175bd1584"
+      },
+      {
+        "path": "tests/testdata/e2e/prot_lfq/README.md",
+        "sha256": "a0ac523318f77d8f28e02967e4d0451db2f54f69fb19da7ee9545c3083e89b57"
+      }
+    ]
+  },
+  "execution": {
+    "preparation_processes": 2,
+    "generation_inside_measured_worker": false,
+    "generated_payload_committed": false,
+    "timeout_seconds": 600,
+    "maximum_temporary_bytes": 1073741824
+  },
+  "privacy": {
+    "classification": "public_fixture",
+    "private_source": false,
+    "private_values_retained": false,
+    "source_project_identity_reused": false
+  },
+  "claim_scope": {
+    "evidence_class": "fixture_correctness",
+    "scientific_authority": true,
+    "performance_authority": false,
+    "cross_project_authority": false,
+    "promotion_authority": false,
+    "limitations": [
+      "Hand-reviewed small fixture; no performance or power claim."
+    ]
+  },
+  "expected_digests": {
+    "payload_sha256": "ad2ba7383d9703f14986e520617f9cccf0c79a923f03f6f65b030f72265dcacb",
+    "truth_sha256": "df250c88d62a4e10acb7bba2a9169cdd72e094d29bd6b5f696574e8175bd1584"
+  },
+  "publication_authority": false
+}

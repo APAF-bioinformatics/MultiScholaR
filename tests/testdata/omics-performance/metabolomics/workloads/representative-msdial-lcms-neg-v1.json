@@ -1,0 +1,177 @@
+{
+  "schema": "multischolar.omics_publication_metabolomics_workload",
+  "schema_version": "1.0.0",
+  "contract_id": "metabolomics.msdial.lcms_neg.representative.v1",
+  "owner_ticket_id": "OMICS-ART-066",
+  "status": "frozen",
+  "workload_id": "metabolomics.msdial.metabolite.standard.v1.lcms_neg.representative",
+  "workload_class": "representative",
+  "capability": {
+    "omic_type": "metabolomics",
+    "data_level": "metabolite",
+    "acquisition_mode": "not_recorded",
+    "capability_id": "metabolomics.msdial.metabolite.standard.v1",
+    "input_format": "msdial",
+    "support_tier": "reader_boundary",
+    "verified_stages": [
+      "import",
+      "design"
+    ]
+  },
+  "assay_profile": {
+    "profile_id": "lcms_neg",
+    "assays": [
+      "LCMS_Neg"
+    ],
+    "payload_mode": "single",
+    "member_count": 1
+  },
+  "dimensions": {
+    "aggregate_feature_count": 20000,
+    "assay_feature_counts": {
+      "LCMS_Neg": 20000
+    },
+    "sample_count": 24,
+    "assay_count": 1,
+    "quantity_count": 480000,
+    "payload_member_count": 1
+  },
+  "model_profile_id": "generated.parameters.msdial.lcms_neg.representative.holdout.v1",
+  "parameter_authority": {
+    "path": "tests/testdata/omics-performance/metabolomics/parameters-v1.json",
+    "sha256": "eadee7fdb1d1908c922c88cdd165430eb86f19bdcafb2a0367000b69cb7a40e0"
+  },
+  "source_authority": {
+    "path": "tests/testdata/omics-performance/metabolomics/sources-v1.json",
+    "sha256": "d1661d77db8b394658c3ccc2fc5dbc322ebb8981216f14f9b88748d5ed755130"
+  },
+  "split_authority": {
+    "path": "tests/testdata/omics-performance/metabolomics/splits-v1.json",
+    "sha256": "9597029e747d936182619ae51ab1922c515f1a4218758bcb757643c2d456dd5c"
+  },
+  "mapping_authority": {
+    "path": "tests/testdata/omics-performance/metabolomics/mapping-authorities-v1.json",
+    "sha256": "3d70d89e99903787895bc3c363a471c0a92a843492cf31dc658bf09dbeb7928a"
+  },
+  "contract_mapping_id": "metabolomics.mapping.msdial.lcms_neg",
+  "support_boundary": {
+    "path": "tests/testdata/omics-performance/metabolomics/support-boundaries-v1.json",
+    "sha256": "35d5648d242a4ec23d98d60e0d458398bc4dc7909c38eded117706e59a8ef5bf"
+  },
+  "generator": {
+    "mode": "generated",
+    "source_bindings": [
+      {
+        "path": "tools/profiling/omics_publication_protocol.R",
+        "sha256": "45b00788f8cbcc3746900d2dbe9d477b86a8da69175184145846ea0e6a55d822"
+      },
+      {
+        "path": "tools/profiling/omics_publication_metabolomics_contracts.R",
+        "sha256": "fde75a33f69913a6404a77c2d49e313079c48bdc46114ce2c286437a3b9f04ef"
+      },
+      {
+        "path": "tools/profiling/omics_publication_metabolomics_model.R",
+        "sha256": "ddebd9a068fb886f21a75c69b9ef41f198f56f4149f8eb491028c502080bf248"
+      },
+      {
+        "path": "tools/profiling/omics_publication_metabolomics_serializers.R",
+        "sha256": "1b1dce693a23ebd0e24e813d7ba7658a5e6afbe7474be53a22f6610e8ba9e291"
+      },
+      {
+        "path": "tools/profiling/omics_publication_metabolomics_truth.R",
+        "sha256": "558a7ba4f84d60f37116835cade0884ca0dce740ab1ddeb54e3553d55df2d518"
+      },
+      {
+        "path": "tools/profiling/omics_publication_metabolomics_sources.R",
+        "sha256": "34a87da103f8441515d17813e43d4312d47af6d0e316ed7a6cdd1b56db4682fb"
+      },
+      {
+        "path": "tools/profiling/omics_publication_metabolomics_governance.R",
+        "sha256": "a4caf01d5b8fc4cbb583a1a38c37a463f9cea3a418db1e8fbf659093c9dc1c9f"
+      },
+      {
+        "path": "tools/profiling/omics_publication_metabolomics_fixtures.R",
+        "sha256": "1713d38bf3c9c885780bd285d6a7816ba49452b7d04263911e0ee126bf435c0b"
+      },
+      {
+        "path": "tools/profiling/omics_publication_workload_metabolomics.R",
+        "sha256": "2425bff2b4d810b288aed669b7dbbfba795bf72272f62c6109e38309d017ba59"
+      }
+    ],
+    "chunk_rows": 5000,
+    "output_members": [
+      "lcms_neg.csv"
+    ],
+    "truth_filename": "truth.json",
+    "fixture_payloads": [],
+    "fixture_truth": null
+  },
+  "rng": {
+    "kind": "L'Ecuyer-CMRG",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "seed_family_id": "generated.holdout.300000-399999.v1",
+    "seed": 320202,
+    "streams": {
+      "hierarchy": 320302,
+      "feature_offsets": 320402,
+      "batch": 320502,
+      "residual": 320602,
+      "mcar": 320702,
+      "mar": 320802,
+      "mnar": 320902
+    }
+  },
+  "truth_contract": {
+    "schema_id": "metabolomics.truth.v1",
+    "oracle_method": "independent_online_generated_truth",
+    "validated_domains": [
+      "payload",
+      "mapping",
+      "assay_identity",
+      "dimensions",
+      "quantities",
+      "missingness",
+      "effects",
+      "design"
+    ],
+    "independent_of_package_reader": true,
+    "support_widening_allowed": false
+  },
+  "execution": {
+    "preparation_processes": 2,
+    "process_isolation": "fresh_vanilla_R",
+    "candidate_loaded": false,
+    "historical_pilot_required": false,
+    "swap_allowed": false,
+    "timeout_seconds": 900,
+    "expected_peak_bytes": 7680000
+  },
+  "privacy": {
+    "classification": "public_generated",
+    "private_source_opened": false,
+    "payload_tracked": false,
+    "direct_identifiers_present": false,
+    "cross_omic_values_reused": false
+  },
+  "claim_scope": {
+    "evidence_class": "public_generated",
+    "verified_stages": [
+      "import",
+      "design"
+    ],
+    "scientific_authority": false,
+    "performance_authority": true,
+    "cross_project_authority": false,
+    "promotion_authority": false,
+    "limitations": [
+      "Project-specific evidence without independent real-project sources.",
+      "Generated evidence cannot widen the declared route support boundary."
+    ]
+  },
+  "expected_digests": {
+    "payload_set_sha256": "c500900ee0d781fe472d7cf5a83a70081ec6e392c10bcf118dddc94b5c910797",
+    "truth_sha256": "f292b5a8274599d497223d550a146a260efbc10047f4dc4d6f8a967de7a48cc4"
+  },
+  "publication_authority": false
+}

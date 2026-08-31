@@ -1,0 +1,135 @@
+{
+  "schema": "multischolar.omics_publication_precision_successor",
+  "schema_version": "1.0.0",
+  "owner_ticket_id": "OMICS-ART-063",
+  "evidence_class": "immutable_pre_candidate_memory_and_null",
+  "candidate_loaded": false,
+  "method": {
+    "estimator": "conservative_independent_log_ratio_sd",
+    "formula": "sqrt(2) * max(sd(log(metric)))",
+    "confidence": 0.94999999999999996,
+    "ratio_half_width": 1.1000000000000001,
+    "round_to_multiple": 6,
+    "minimum_pairs": 30,
+    "maximum_pairs": 60
+  },
+  "source_records": [
+    {
+      "path": "tests/testdata/omics-parity/lipidomics/resources/gcms-memory-baseline-v1.json",
+      "sha256": "5c4e7a91dc61223c350ec170d9a099a7dc7d807a1d28b208096cf4afab5e15d2",
+      "workload_id": "lipidomics.custom.gcms.public-representative-16000x12.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/lipidomics/resources/lcms-neg-memory-baseline-v1.json",
+      "sha256": "6bc48a31ae8bdf637c09951850208030d35b1d6cae691d6299e3e198a10e26a4",
+      "workload_id": "lipidomics.custom.lcms-neg.public-representative-16000x12.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/lipidomics/resources/lcms-pos-memory-baseline-v1.json",
+      "sha256": "736210b739aa500316cd64c8d7b51454d84cb59a73d777931244da942bccbc3a",
+      "workload_id": "lipidomics.custom.lcms-pos.public-representative-16000x12.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/lipidomics/resources/ls-gc-memory-v1.json",
+      "sha256": "8c0147cc48170a8f7dd1a304684e46e5c4c96a99f54e8540d40a6f42bdd6480a",
+      "workload_id": "lipidomics.lipidsearch.gcms.public-fixture-10x6.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/lipidomics/resources/ls-neg-memory-v1.json",
+      "sha256": "3940409f74c3ffb86cc61025dc343c107aaf8815eeee1b14af593d3719f4d3a0",
+      "workload_id": "lipidomics.lipidsearch.lcms-neg.public-fixture-10x6.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/lipidomics/resources/ls-pos-memory-v1.json",
+      "sha256": "75c2e9c0009853c371478697f5708322f3fcd7eab81d413524d7544da4d0fb83",
+      "workload_id": "lipidomics.lipidsearch.lcms-pos.public-fixture-10x6.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/lipidomics/resources/mixed-memory-baseline-v1.json",
+      "sha256": "b395838bb19837801630de3567f866eeb9ae8290da52b2e160d13dd2639b2b43",
+      "workload_id": "lipidomics.custom.mixed.public-representative-16000x12.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/metabolomics/resources/mixed-memory-baseline-v1.json",
+      "sha256": "a76214078d2029bc049dddfb5904df84b25900508959084afddc2eb91c0ae908",
+      "workload_id": "metabolomics.custom.mixed.public-representative-20000x12.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/proteomics/resources/fragpipe-memory-baseline-v1.json",
+      "sha256": "763b6a11e15b40a40f7bb1bdf55e700115444919bd312e1ea9ed366725e3c72b",
+      "workload_id": "proteomics.fragpipe.protein.lfq.public-10000x12.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/proteomics/resources/maxquant-memory-baseline-v1.json",
+      "sha256": "7d88f435d2e11223546eba895ce91ac580d517bdc071ab31c16a9fec00ee066a",
+      "workload_id": "proteomics.maxquant.protein.lfq.public-10000x12.v1",
+      "repetitions": 5
+    },
+    {
+      "path": "tests/testdata/omics-parity/proteomics/resources/pd_tmt-memory-baseline-v1.json",
+      "sha256": "d0776fe06910acb675e65006631546b54d1be3959925a8ee9e0b1221b2e9ca15",
+      "workload_id": "proteomics.pd_tmt.protein.tmt.public-10000x12.v1",
+      "repetitions": 5
+    }
+  ],
+  "null_calibration_id": "multischolar.null_cgroup.2026-08-26.v1",
+  "null_calibration_digest": "ec9decbbd023e9e81b81006519e810392da0fe7cae8f62dad7bf83cbf55efcad",
+  "metric_log_sds": {
+    "lipidomics.custom.gcms.public-representative-16000x12.v1::peak_charged_proxy": 0.00056410991363525255,
+    "lipidomics.custom.gcms.public-representative-16000x12.v1::retained_charged_proxy": 0.00056410991363525255,
+    "lipidomics.custom.gcms.public-representative-16000x12.v1::elapsed_seconds": 0.024898341954485741,
+    "lipidomics.custom.lcms-neg.public-representative-16000x12.v1::peak_charged_proxy": 0.00084957632556178825,
+    "lipidomics.custom.lcms-neg.public-representative-16000x12.v1::retained_charged_proxy": 0.00084957632556178825,
+    "lipidomics.custom.lcms-neg.public-representative-16000x12.v1::elapsed_seconds": 0.036697140364583179,
+    "lipidomics.custom.lcms-pos.public-representative-16000x12.v1::peak_charged_proxy": 0.00069760038546791783,
+    "lipidomics.custom.lcms-pos.public-representative-16000x12.v1::retained_charged_proxy": 0.00069760038546791783,
+    "lipidomics.custom.lcms-pos.public-representative-16000x12.v1::elapsed_seconds": 0.011775479234501021,
+    "lipidomics.lipidsearch.gcms.public-fixture-10x6.v1::peak_charged_proxy": 2.1545445670466404e-05,
+    "lipidomics.lipidsearch.gcms.public-fixture-10x6.v1::retained_charged_proxy": 2.1545445670466404e-05,
+    "lipidomics.lipidsearch.gcms.public-fixture-10x6.v1::elapsed_seconds": 0.0098997718161699857,
+    "lipidomics.lipidsearch.lcms-neg.public-fixture-10x6.v1::peak_charged_proxy": 0.00024319404250733049,
+    "lipidomics.lipidsearch.lcms-neg.public-fixture-10x6.v1::retained_charged_proxy": 0.00024319404250733049,
+    "lipidomics.lipidsearch.lcms-neg.public-fixture-10x6.v1::elapsed_seconds": 0.1908403493802695,
+    "lipidomics.lipidsearch.lcms-pos.public-fixture-10x6.v1::peak_charged_proxy": 0.00020399919573778726,
+    "lipidomics.lipidsearch.lcms-pos.public-fixture-10x6.v1::retained_charged_proxy": 0.00020399919573778726,
+    "lipidomics.lipidsearch.lcms-pos.public-fixture-10x6.v1::elapsed_seconds": 0.11028381779451875,
+    "lipidomics.custom.mixed.public-representative-16000x12.v1::peak_charged_proxy": 0.00055417785602345101,
+    "lipidomics.custom.mixed.public-representative-16000x12.v1::retained_charged_proxy": 0.00055417785602345101,
+    "lipidomics.custom.mixed.public-representative-16000x12.v1::elapsed_seconds": 0.013202965175438194,
+    "metabolomics.custom.mixed.public-representative-20000x12.v1::peak_charged_proxy": 5.4501531656568256e-05,
+    "metabolomics.custom.mixed.public-representative-20000x12.v1::retained_charged_proxy": 0.00010322254123465697,
+    "metabolomics.custom.mixed.public-representative-20000x12.v1::elapsed_seconds": 0.0035439214962509902,
+    "proteomics.fragpipe.protein.lfq.public-10000x12.v1::peak_charged_proxy": 0.00038242159905559097,
+    "proteomics.fragpipe.protein.lfq.public-10000x12.v1::retained_charged_proxy": 0.00038242159905559097,
+    "proteomics.fragpipe.protein.lfq.public-10000x12.v1::elapsed_seconds": 0.0035740519380485121,
+    "proteomics.maxquant.protein.lfq.public-10000x12.v1::peak_charged_proxy": 0.00014729208800150811,
+    "proteomics.maxquant.protein.lfq.public-10000x12.v1::retained_charged_proxy": 0.00014729208800150811,
+    "proteomics.maxquant.protein.lfq.public-10000x12.v1::elapsed_seconds": 0.0028014370140368463,
+    "proteomics.pd_tmt.protein.tmt.public-10000x12.v1::peak_charged_proxy": 0.00116364561341768,
+    "proteomics.pd_tmt.protein.tmt.public-10000x12.v1::retained_charged_proxy": 0.00116364561341768,
+    "proteomics.pd_tmt.protein.tmt.public-10000x12.v1::elapsed_seconds": 0.015879400248252809,
+    "null::peak_charged_memory_bytes": 0.0057552106297198658,
+    "null::retained_charged_memory_bytes": 7.8236788874316891e-05,
+    "null::elapsed_seconds": 0.22794708246999201,
+    "null::cpu_usage_seconds": 0.071206642663114342
+  },
+  "conservative_log_ratio_sd": 0.32236585553244113,
+  "required_pairs": 44,
+  "selected_pairs": 48,
+  "status": "precision_satisfied",
+  "promotion_authority": false,
+  "successor_required_before_campaign": true,
+  "precision_successor_id": "multischolar.omics_publication_precision_successor.2026-08-27.v1",
+  "protocol_id": "multischolar.omics_publication_protocol.2026-08-26.v1",
+  "null_calibration_path": "tests/testdata/omics-performance/null-cgroup-calibration-v1.json",
+  "null_calibration_file_sha256": "444ad49acf2cda086c49b06bce524012473652b5b8c3b63220614660a679313b"
+}

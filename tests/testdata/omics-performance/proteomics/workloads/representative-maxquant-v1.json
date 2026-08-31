@@ -1,0 +1,154 @@
+{
+  "schema": "multischolar.omics_publication_proteomics_workload",
+  "schema_version": "1.0.0",
+  "contract_id": "multischolar.proteomics.maxquant.protein.lfq.v1.representative",
+  "owner_ticket_id": "OMICS-ART-065",
+  "status": "frozen",
+  "workload_id": "proteomics.maxquant.protein.lfq.v1.representative",
+  "workload_class": "representative",
+  "capability": {
+    "omic_type": "proteomics",
+    "capability_id": "proteomics.maxquant.protein.lfq.v1",
+    "input_format": "maxquant",
+    "data_level": "protein",
+    "acquisition_mode": "dda"
+  },
+  "format_schema": {
+    "schema_id": "multischolar.proteomics.maxquant.publication",
+    "schema_version": "1.0.0",
+    "orientation": "wide",
+    "delimiter": "tab",
+    "required_columns": [
+      "Protein.IDs",
+      "Gene.names",
+      "Protein.names",
+      "Potential.contaminant",
+      "Reverse"
+    ],
+    "quantity_column_rule": "LFQ.intensity.<sample_id>",
+    "line_ending": "LF",
+    "encoding": "UTF-8"
+  },
+  "dimensions": {
+    "protein_count": 10000,
+    "peptide_count": 0,
+    "precursor_count": 0,
+    "sample_count": 24,
+    "quantity_count": 240000,
+    "input_row_count": 10000,
+    "input_column_count": 29,
+    "assay_count": 1
+  },
+  "model_profile_id": "generated.parameters.maxquant.representative.holdout.v1",
+  "parameter_authority": {
+    "path": "tests/testdata/omics-performance/proteomics/parameters-v1.json",
+    "sha256": "93235fb4605ac86578586ce5c54eebc4bc50843aaa98cb1fa76d9e6008ed6843"
+  },
+  "source_authority": {
+    "path": "tests/testdata/omics-performance/proteomics/sources-v1.json",
+    "sha256": "872b332a3398d10c0552bff72297084fe5dfecf12bae9d64f4a10eed03a61b27"
+  },
+  "split_authority": {
+    "path": "tests/testdata/omics-performance/proteomics/splits-v1.json",
+    "sha256": "4894b65e2b3cf76f6ee4d82158fb58fe2ef8ee04be16e37389db9ad474aef191"
+  },
+  "generator": {
+    "mode": "generated",
+    "source_bindings": [
+      {
+        "path": "tools/profiling/omics_publication_proteomics_contracts.R",
+        "sha256": "ca995e98f03c17209cec4265bc325cfd6e21a817655d032de0dae8eaacff9a8a"
+      },
+      {
+        "path": "tools/profiling/omics_publication_proteomics_model.R",
+        "sha256": "031432b225f8ed598be676eeb8446d8b102798afee044cef5c1425085dc625af"
+      },
+      {
+        "path": "tools/profiling/omics_publication_proteomics_serializers.R",
+        "sha256": "5022b6b880abd4dc06980612268808c3bda424c6107f1e5c4d17574eaa6e0043"
+      },
+      {
+        "path": "tools/profiling/omics_publication_proteomics_truth.R",
+        "sha256": "fb34176b3008ebe86c6b2b4337173c16dd82aff3feffd35d825d6d2097f76a52"
+      },
+      {
+        "path": "tools/profiling/omics_publication_workload_proteomics.R",
+        "sha256": "f10af9486122d8ecfdc4c99d77c30ae4fba1b09ccf7c9c7666d5254a87b1eb11"
+      },
+      {
+        "path": "tools/profiling/run_omics_publication_workload_prepare.R",
+        "sha256": "ea94a1970ca6a2f5104fe86f328aded693521708f5291edb221db96011571579"
+      }
+    ],
+    "chunk_rows": 5000,
+    "output_filename": "maxquant.txt",
+    "truth_filename": "maxquant-truth.json",
+    "fixture_payload": null,
+    "fixture_truth": null
+  },
+  "rng": {
+    "kind": "L'Ecuyer-CMRG",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "seed_family_id": "generated.holdout.300000-399999.v1",
+    "seed": 300202,
+    "streams": {
+      "hierarchy": 300302,
+      "multiplicity": 300402,
+      "peptide_offsets": 300502,
+      "batch": 300602,
+      "residual": 300702,
+      "mar": 300802,
+      "mnar": 300902,
+      "annotations": 301002
+    }
+  },
+  "truth_contract": {
+    "schema_id": "multischolar.omics_publication_proteomics_truth",
+    "oracle_type": "generator_derived_latent_truth",
+    "independent_from_importer": true,
+    "source_bindings": [
+      {
+        "path": "tests/testdata/omics-performance/proteomics/parameters-v1.json",
+        "sha256": "93235fb4605ac86578586ce5c54eebc4bc50843aaa98cb1fa76d9e6008ed6843"
+      },
+      {
+        "path": "tools/profiling/omics_publication_proteomics_model.R",
+        "sha256": "031432b225f8ed598be676eeb8446d8b102798afee044cef5c1425085dc625af"
+      },
+      {
+        "path": "tools/profiling/omics_publication_proteomics_truth.R",
+        "sha256": "fb34176b3008ebe86c6b2b4337173c16dd82aff3feffd35d825d6d2097f76a52"
+      }
+    ]
+  },
+  "execution": {
+    "preparation_processes": 2,
+    "generation_inside_measured_worker": false,
+    "generated_payload_committed": false,
+    "timeout_seconds": 1800,
+    "maximum_temporary_bytes": 53687091200
+  },
+  "privacy": {
+    "classification": "public_generated",
+    "private_source": false,
+    "private_values_retained": false,
+    "source_project_identity_reused": false
+  },
+  "claim_scope": {
+    "evidence_class": "public_generated",
+    "scientific_authority": false,
+    "performance_authority": true,
+    "cross_project_authority": false,
+    "promotion_authority": false,
+    "limitations": [
+      "Declared synthetic truth and scaling only.",
+      "No instrument, cohort, parser-support, or promotion authority."
+    ]
+  },
+  "expected_digests": {
+    "payload_sha256": "2ef3974f6e0d5984c86a6920649c92abb388d21d7061cadca0e9a748550260df",
+    "truth_sha256": "c7e9c52cabd2ed1bcc264b886fc536478963051c078901458e4c94296c2b0035"
+  },
+  "publication_authority": false
+}

@@ -1,0 +1,62 @@
+{
+  "schema": "multischolar.omics_publication_metabolomics_governance_successor",
+  "schema_version": "1.0.0",
+  "successor_id": "multischolar.omics_publication_metabolomics_governance_successor.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-066",
+  "status": "metabolomics_scoped_nonpromotional",
+  "projects_predecessor": {
+    "path": "tests/testdata/omics-performance/projects-v1.json",
+    "sha256": "8f916e9b9dcd0ec2c49e0e1373658a0a2af240d12a7e72c931ba9b0176e58e62"
+  },
+  "splits_predecessor": {
+    "path": "tests/testdata/omics-performance/splits-v1.json",
+    "sha256": "0b14a0874d7ecb09bd7ad75ba7ebaf7da8bb65a958d822e9afed662d347e7259"
+  },
+  "sources": {
+    "path": "tests/testdata/omics-performance/metabolomics/sources-v1.json",
+    "sha256": "d1661d77db8b394658c3ccc2fc5dbc322ebb8981216f14f9b88748d5ed755130"
+  },
+  "splits": {
+    "path": "tests/testdata/omics-performance/metabolomics/splits-v1.json",
+    "sha256": "9597029e747d936182619ae51ab1922c515f1a4218758bcb757643c2d456dd5c"
+  },
+  "parameters": {
+    "path": "tests/testdata/omics-performance/metabolomics/parameters-v1.json",
+    "sha256": "eadee7fdb1d1908c922c88cdd165430eb86f19bdcafb2a0367000b69cb7a40e0"
+  },
+  "support_boundaries": {
+    "path": "tests/testdata/omics-performance/metabolomics/support-boundaries-v1.json",
+    "sha256": "35d5648d242a4ec23d98d60e0d458398bc4dc7909c38eded117706e59a8ef5bf"
+  },
+  "exclusions": {
+    "path": "tests/testdata/omics-performance/metabolomics/exclusions-v1.json",
+    "sha256": "2b6d457808e030be6b7723c7a09aab84d0da768536175c28ae1e1a0b1495005f"
+  },
+  "mapping_authorities": {
+    "path": "tests/testdata/omics-performance/metabolomics/mapping-authorities-v1.json",
+    "sha256": "3d70d89e99903787895bc3c363a471c0a92a843492cf31dc658bf09dbeb7928a"
+  },
+  "msdial_bundles": {
+    "path": "tests/testdata/omics-performance/metabolomics/msdial-bundles-v1.json",
+    "sha256": "6e9d0c2e473ddb817bc6b65badbed49844a2589654aa2d522897a6d943cee540"
+  },
+  "supersession": {
+    "field_scope": [
+      "project_sources",
+      "split_assignments",
+      "route_boundaries"
+    ],
+    "owned_capability_ids": {
+      "custom": "metabolomics.custom.metabolite.standard.v1",
+      "msdial": "metabolomics.msdial.metabolite.standard.v1"
+    },
+    "predecessors_mutated": false,
+    "unrelated_subjects_changed": false,
+    "generated_substitution_allowed": false,
+    "successor_required_before_candidate": true
+  },
+  "claim_scope": "project_specific_nonpromotional",
+  "candidate_access_allowed": false,
+  "promotion_authority": false,
+  "publication_authority": false
+}

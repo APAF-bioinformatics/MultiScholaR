@@ -1,0 +1,145 @@
+{
+  "schema": "multischolar.current_policy_reconciliation",
+  "schema_version": "1.0.0",
+  "record_id": "multischolar.current_policy_reconciliation.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "code_revision": "56725e90c5fda97835775f5f8f57c02703b53120",
+  "predecessors": [
+    {
+      "role": "operational_closeout",
+      "path": "tests/testdata/omics-parity/all-omics-operational-closeout-v1.json",
+      "sha256": "21fdd34c410a8f90cc8f8a6bb94e5e603db185574cd4da4ad79ba48ee2e3187a",
+      "owner_ticket_id": "OMICS-ART-048",
+      "decision": "withheld",
+      "effective_default_backend": "memory",
+      "promoted_capability_ids": []
+    },
+    {
+      "role": "adaptive_auto_policy",
+      "path": "tests/testdata/omics-parity/all-omics-auto-policy-v1.json",
+      "sha256": "a99b3bedeba074aab948e5e0ed3384bdf5e39725ef47a5c7792a654aa83e1d0e",
+      "owner_ticket_id": "OMICS-ART-049",
+      "decision": "adaptive_scale_promotion",
+      "default_requested_backend": "auto",
+      "promoted_capability_ids": [],
+      "adaptive_capability_ids": [
+        "metabolomics.custom.metabolite.standard.v1",
+        "lipidomics.lipidsearch.lipid.standard.v1"
+      ]
+    }
+  ],
+  "supersession": {
+    "kind": "additive_semantic_successor",
+    "preserve_predecessor_bytes": true,
+    "supersedes_default_decision_only": true,
+    "reason": "OMICS-ART-051 and OMICS-ART-052 supplied later scale-gated eviction evidence implemented by revision 56725e9.",
+    "later_evidence": [
+      {
+        "ticket_id": "OMICS-ART-051",
+        "path": "tickets/openai/OMICS-ART-051.md",
+        "ticket_sha256": "4778129f9d44c9b04565bac8fcdbd00ea3ee05ef1bb5dab37da6e8d23bebc9c7"
+      },
+      {
+        "ticket_id": "OMICS-ART-052",
+        "path": "tickets/openai/OMICS-ART-052.md",
+        "ticket_sha256": "149fe078166e334ebc018f320ac1c1056054993f523c1eac4de93d45d68c2ea0"
+      }
+    ]
+  },
+  "current_runtime_source": {
+    "path": "R/utils_artifact_payload_eviction.R",
+    "sha256": "9b13d4f0c154ecc7f9deb7b9b1665977d0cb7ffd4c7ffc89032c012d383518da",
+    "gate_function": "artifactPayloadAutoPromotionGate",
+    "platform_function": "artifactPayloadAutoPlatformEligible",
+    "capability_function": "artifactPayloadAdaptiveCapabilities"
+  },
+  "implemented_decisions": [
+    {
+      "capability_id": "metabolomics.custom.metabolite.standard.v1",
+      "predecessor_descriptor_digest": "59f86816a6e844d1e8eaf972793f131aaef4ab03f33b8a483dc8506822ae921f",
+      "descriptor_digest": "8e611dc20cea7d60656a1979c3bf3f959dcdfa2dacc7d2812907d72a659b3872",
+      "descriptor_source": {
+        "path": "R/utils_artifact_metab_descriptors.R",
+        "sha256": "5115ce9449fcf3d0932fd871781883d6d747210d1d2c066df3f3178905655cbf"
+      },
+      "static_certification": {
+        "status": "evict",
+        "auto_eligible": false
+      },
+      "dynamic_runtime_decision": {
+        "platform": "Linux",
+        "legacy_size_measure_id": "legacy_r_object_size_x2.v1",
+        "legacy_size_measure_is_heuristic": true,
+        "threshold_bytes": 33554432,
+        "below_threshold_backend": "memory",
+        "at_or_above_threshold_backend": "artifact",
+        "at_or_above_threshold_rollout": "evict"
+      },
+      "scale_workload": {
+        "path": "tests/testdata/omics-parity/metabolomics/workloads/mixed-public-scale-v1.json",
+        "sha256": "4cce7a2c15a8e6c292033b4bb9d3271d86be7d3b042ce6e57004894b4a89df1f"
+      },
+      "engineering_evidence": {
+        "valid_pairs": 5,
+        "median_rss_reduction_fraction": 0.8403,
+        "median_runtime_ratio": 0.163,
+        "evidence_class": "generated_scale_engineering",
+        "publication_authority": false
+      }
+    },
+    {
+      "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+      "predecessor_descriptor_digest": "654f7103b84b0e4cb1f0efea68620659a7355edd06fdcce46d6cbe72dd35772a",
+      "descriptor_digest": "6750a613c9a2c7ed2a37f24012937240c10c728b3583a6dc3aa583d6dd39db88",
+      "descriptor_source": {
+        "path": "R/utils_artifact_lipid_descriptors.R",
+        "sha256": "d1544cd5b25c117bf9312b88f32a863041c327ff130dc804e26fd77e293d241c"
+      },
+      "static_certification": {
+        "status": "evict",
+        "auto_eligible": false
+      },
+      "dynamic_runtime_decision": {
+        "platform": "Linux",
+        "legacy_size_measure_id": "legacy_r_object_size_x2.v1",
+        "legacy_size_measure_is_heuristic": true,
+        "threshold_bytes": 33554432,
+        "below_threshold_backend": "memory",
+        "at_or_above_threshold_backend": "artifact",
+        "at_or_above_threshold_rollout": "evict"
+      },
+      "scale_workload": {
+        "path": "tests/testdata/omics-parity/lipidomics/workloads/mixed-public-scale-v1.json",
+        "sha256": "1860da11c171a389805c72b65cc068729b5b5ca6da0d7181e3dfc2cb2782e42a"
+      },
+      "engineering_evidence": {
+        "valid_pairs": 5,
+        "median_rss_reduction_fraction": 0.9993,
+        "median_runtime_ratio": 0.215,
+        "evidence_class": "generated_scale_engineering",
+        "publication_authority": false
+      }
+    }
+  ],
+  "reconciled_current_decision": {
+    "decision": "adaptive_scale_promotion_implemented_engineering_only",
+    "default_requested_backend": "auto",
+    "effective_backend_for_new_projects": "legacy_adaptive_by_materialized_source_object",
+    "publication_decision_supported": false,
+    "successor_publication_protocol_required": true
+  },
+  "rollback": {
+    "new_work_backend": "memory",
+    "existing_artifact_mode": "read_only",
+    "existing_memory_projects_migrate_implicitly": false,
+    "delete_immutable_artifacts": false
+  },
+  "contradiction_policy": {
+    "duplicate_current_owner": "reject",
+    "predecessor_hash_mismatch": "reject",
+    "runtime_value_mismatch": "reject",
+    "descriptor_mismatch": "reject",
+    "unsupported_capability_promotion": "reject",
+    "missing_successor": "block_runtime_repair"
+  }
+}

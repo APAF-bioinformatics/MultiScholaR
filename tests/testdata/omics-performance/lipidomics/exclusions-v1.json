@@ -1,0 +1,40 @@
+{
+  "schema": "multischolar.omics_publication_lipidomics_exclusions",
+  "schema_version": "1.0.0",
+  "exclusions_id": "multischolar.omics_publication_lipidomics_exclusions.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-067",
+  "capability_binding": {
+    "path": "tests/testdata/omics-capabilities.json",
+    "sha256": "f202356edcdc3a812f0721e6092bc6d7007e9b752e13ad28a9f725f14fc1bf77"
+  },
+  "formats": [
+    {
+      "format": "progenesis",
+      "support_status": "detection_only",
+      "capability_count": 0,
+      "reason": "No dedicated reviewed reader and fixture authority."
+    },
+    {
+      "format": "xcms",
+      "support_status": "detection_only",
+      "capability_count": 0,
+      "reason": "No dedicated reviewed reader and fixture authority."
+    },
+    {
+      "format": "compound_discoverer",
+      "support_status": "detection_only",
+      "capability_count": 0,
+      "reason": "No dedicated reviewed reader and fixture authority."
+    },
+    {
+      "format": "unknown",
+      "support_status": "unknown_rejected",
+      "capability_count": 0,
+      "reason": "No dedicated reviewed reader and fixture authority."
+    }
+  ],
+  "reader_invocation_allowed": false,
+  "fallback_allowed": false,
+  "promotion_authority": false,
+  "publication_authority": false
+}

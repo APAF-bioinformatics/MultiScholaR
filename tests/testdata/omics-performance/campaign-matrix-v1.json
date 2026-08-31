@@ -1,0 +1,117 @@
+{
+  "schema": "multischolar.omics_publication_campaign_matrix",
+  "schema_version": "1.0.0",
+  "campaign_matrix_id": "multischolar.omics_publication_campaign_matrix.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "status": "finite_upper_bound_frozen_exact_project_slots_pending_successors",
+  "pair_design": {
+    "minimum_primary_pairs_per_estimand": 30,
+    "maximum_primary_pairs_per_estimand": 60,
+    "exact_primary_pairs_per_estimand": null,
+    "projects_per_cross_project_claim": 3,
+    "pairs_per_project": 10,
+    "warmups_per_backend_project_estimand": 2,
+    "stress_pairs_per_subject": 5,
+    "secondary_host_pairs_per_subject": 10,
+    "processes_per_pair": 2,
+    "maximum_attempts_per_measured_process_slot": 2
+  },
+  "subject_groups": [
+    {
+      "group_id": "full_workflow_capabilities",
+      "subject_count": 6,
+      "subject_ids": [
+        "proteomics.diann.peptide.dia.v1",
+        "proteomics.maxquant.protein.lfq.v1",
+        "proteomics.fragpipe.protein.lfq.v1",
+        "proteomics.pd_tmt.protein.tmt.v1",
+        "metabolomics.custom.metabolite.standard.v1",
+        "lipidomics.lipidsearch.lipid.standard.v1"
+      ],
+      "paired_strata_per_subject": [
+        {"phase_id": "import_and_settle", "workload_classes": ["representative", "operational_heavy"], "effect_classes": ["release_effect", "backend_effect", "repair_effect"], "maximum_pair_slots": 360},
+        {"phase_id": "complete_workflow", "workload_classes": ["operational_heavy"], "effect_classes": ["release_effect", "backend_effect"], "maximum_pair_slots": 120},
+        {"phase_id": "bounded_query", "workload_classes": ["operational_heavy"], "effect_classes": ["backend_effect"], "maximum_pair_slots": 60},
+        {"phase_id": "closed_project_resume", "workload_classes": ["operational_heavy"], "effect_classes": ["backend_effect"], "maximum_pair_slots": 60},
+        {"phase_id": "complete_workflow", "workload_classes": ["stress"], "effect_classes": ["backend_effect"], "maximum_pair_slots": 5}
+      ],
+      "maximum_pair_slots_per_subject": 605,
+      "maximum_measured_process_slots_per_subject": 1210,
+      "warmup_process_slots_per_subject": 44,
+      "maximum_retry_launches_per_subject": 1210,
+      "maximum_process_launches_per_subject": 2464,
+      "maximum_group_process_launches": 14784
+    },
+    {
+      "group_id": "reader_boundary_capabilities",
+      "subject_count": 3,
+      "subject_ids": [
+        "metabolomics.msdial.metabolite.standard.v1",
+        "lipidomics.msdial.lipid.standard.v1",
+        "lipidomics.custom.lipid.standard.v1"
+      ],
+      "paired_strata_per_subject": [
+        {"phase_id": "import_and_settle", "workload_classes": ["representative", "operational_heavy"], "effect_classes": ["release_effect", "backend_effect"], "maximum_pair_slots": 240},
+        {"phase_id": "bounded_query", "workload_classes": ["operational_heavy"], "effect_classes": ["backend_effect"], "maximum_pair_slots": 60},
+        {"phase_id": "closed_project_resume", "workload_classes": ["operational_heavy"], "effect_classes": ["backend_effect"], "maximum_pair_slots": 60},
+        {"phase_id": "import_and_settle", "workload_classes": ["stress"], "effect_classes": ["backend_effect"], "maximum_pair_slots": 5}
+      ],
+      "maximum_pair_slots_per_subject": 365,
+      "maximum_measured_process_slots_per_subject": 730,
+      "warmup_process_slots_per_subject": 28,
+      "maximum_retry_launches_per_subject": 730,
+      "maximum_process_launches_per_subject": 1488,
+      "maximum_group_process_launches": 4464
+    },
+    {
+      "group_id": "auxiliary_api_surfaces",
+      "subject_count": 2,
+      "subject_ids": ["phosphosite.api", "multiomics.api"],
+      "paired_strata_per_subject": [
+        {"phase_id": "auxiliary_api_call", "workload_classes": ["representative", "operational_heavy"], "effect_classes": ["release_effect"], "maximum_pair_slots": 120},
+        {"phase_id": "auxiliary_api_call", "workload_classes": ["stress"], "effect_classes": ["release_effect"], "maximum_pair_slots": 5}
+      ],
+      "maximum_pair_slots_per_subject": 125,
+      "maximum_measured_process_slots_per_subject": 250,
+      "warmup_process_slots_per_subject": 12,
+      "maximum_retry_launches_per_subject": 250,
+      "maximum_process_launches_per_subject": 512,
+      "maximum_group_process_launches": 1024
+    }
+  ],
+  "secondary_host_reserve": {
+    "maximum_subjects": 9,
+    "pairs_per_subject": 10,
+    "measured_process_slots_per_subject": 20,
+    "warmup_process_slots_per_subject": 4,
+    "maximum_retry_launches_per_subject": 20,
+    "maximum_process_launches_per_subject": 44,
+    "maximum_process_launches": 396
+  },
+  "setup_and_parity_reserve": {
+    "comparator_build_and_restore_processes": 200,
+    "fixture_preparation_processes": 200,
+    "independent_parity_processes": 700,
+    "analysis_and_render_validation_processes": 100,
+    "maximum_process_launches": 1200
+  },
+  "totals": {
+    "primary_maximum_pair_slots": 4975,
+    "primary_maximum_measured_process_slots": 9950,
+    "primary_warmup_process_slots": 372,
+    "primary_maximum_retry_launches": 9950,
+    "primary_maximum_process_launches": 20272,
+    "secondary_maximum_process_launches": 396,
+    "setup_and_parity_maximum_process_launches": 1200,
+    "computed_maximum_process_launches": 21868,
+    "governed_maximum_process_launches": 22000
+  },
+  "current_readiness": {
+    "project_ids_materialized": false,
+    "candidate_frozen": false,
+    "exact_pair_count_selected": false,
+    "exact_schedule_materialized": false,
+    "campaign_execution_authorized": false,
+    "successor_matrix_required_before_execution": true
+  }
+}

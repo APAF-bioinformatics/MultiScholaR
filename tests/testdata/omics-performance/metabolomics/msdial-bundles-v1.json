@@ -1,0 +1,85 @@
+{
+  "schema": "multischolar.omics_publication_metabolomics_msdial_bundles",
+  "schema_version": "1.0.0",
+  "bundles_id": "multischolar.omics_publication_metabolomics_bundles.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-066",
+  "status": "frozen_pre_candidate",
+  "mapping_authority": {
+    "path": "tests/testdata/omics-performance/metabolomics/mapping-authorities-v1.json",
+    "sha256": "3d70d89e99903787895bc3c363a471c0a92a843492cf31dc658bf09dbeb7928a"
+  },
+  "bundles": [
+    {
+      "bundle_id": "metabolomics.msdial.mixed.fixture_correctness.v1",
+      "profile_id": "mixed",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg",
+        "GCMS"
+      ],
+      "member_count": 3,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.lcms_neg.v1",
+        "msdial.gcms.v1"
+      ],
+      "single_custom_table_substitution_allowed": false,
+      "bundle_digest": "02d79849d9a7bcc3403fdb524583e79b0fba9aac3024752293250be1111a34ea"
+    },
+    {
+      "bundle_id": "metabolomics.msdial.mixed.representative.v1",
+      "profile_id": "mixed",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg",
+        "GCMS"
+      ],
+      "member_count": 3,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.lcms_neg.v1",
+        "msdial.gcms.v1"
+      ],
+      "single_custom_table_substitution_allowed": false,
+      "bundle_digest": "6578ed2b81cff8de4517a1ac87b3596362d529bae36548c850cd8de23703815a"
+    },
+    {
+      "bundle_id": "metabolomics.msdial.mixed.operational_heavy.v1",
+      "profile_id": "mixed",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg",
+        "GCMS"
+      ],
+      "member_count": 3,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.lcms_neg.v1",
+        "msdial.gcms.v1"
+      ],
+      "single_custom_table_substitution_allowed": false,
+      "bundle_digest": "4fb56e6a69dd973fb6302c8647e4c3db1a108fd0a85551725a90603ee509ed90"
+    },
+    {
+      "bundle_id": "metabolomics.msdial.mixed.stress.v1",
+      "profile_id": "mixed",
+      "member_assays": [
+        "LCMS_Pos",
+        "LCMS_Neg",
+        "GCMS"
+      ],
+      "member_count": 3,
+      "member_schema_ids": [
+        "msdial.lcms_pos.v1",
+        "msdial.lcms_neg.v1",
+        "msdial.gcms.v1"
+      ],
+      "single_custom_table_substitution_allowed": false,
+      "bundle_digest": "0f3f66851e5dae78cf2e90434230331532aecc5a0d0438bf2a30545700cba6f9"
+    }
+  ],
+  "member_order_semantic": false,
+  "missing_or_duplicate_member_policy": "reject",
+  "custom_substitution_allowed": false,
+  "publication_authority": false
+}

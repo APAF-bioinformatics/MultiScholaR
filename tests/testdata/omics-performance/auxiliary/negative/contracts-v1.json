@@ -1,0 +1,291 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_negatives",
+  "schema_version": "1.0.0",
+  "negatives_id": "multischolar.omics_publication_auxiliary_negatives.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "surface_binding": {
+    "path": "tests/testdata/omics-performance/auxiliary/surfaces-v1.json",
+    "sha256": "d6361f28e7d9566b6ddda217cd5238e49b207e931dc89fba38c6b825745b5e7e"
+  },
+  "exclusion_binding": {
+    "path": "tests/testdata/omics-performance/auxiliary/exclusions-v1.json",
+    "sha256": "6f3a848064834f3cd892f0c22ac67e8ca258fbd0c665c593d749372202d860b8"
+  },
+  "response_binding": {
+    "path": "tests/testdata/omics-performance/auxiliary/responses-v1.json",
+    "sha256": "d67e23333fd08e8c6789fed2d5d0de34e654f00ab37803ad4e82583901cfb71a"
+  },
+  "split_binding": {
+    "path": "tests/testdata/omics-performance/auxiliary/splits-v1.json",
+    "sha256": "763d229feec841166520f16efa6b13d709f985b9762f39d7d6e08e849373f374"
+  },
+  "cases": [
+    {
+      "case_id": "contract.unknown_route",
+      "target": "contract",
+      "mutation": "unknown_route",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "contract.network_enabled",
+      "target": "contract",
+      "mutation": "network_enabled",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "contract.workflow_authority",
+      "target": "contract",
+      "mutation": "workflow_authority",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "contract.artifact_authority",
+      "target": "contract",
+      "mutation": "artifact_authority",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "contract.mofa_fitting_authority",
+      "target": "contract",
+      "mutation": "mofa_fitting_authority",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "contract.stale_parameter_binding",
+      "target": "contract",
+      "mutation": "stale_parameter_binding",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "definition.wrong_service",
+      "target": "response_definition",
+      "mutation": "wrong_service",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "definition.wrong_version",
+      "target": "response_definition",
+      "mutation": "wrong_version",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "definition.stale_digest",
+      "target": "response_definition",
+      "mutation": "stale_digest",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "authority.generic_cross_service",
+      "target": "response_authority",
+      "mutation": "generic_cross_service",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "response.reordered",
+      "target": "expanded_response",
+      "mutation": "reordered",
+      "expected_condition_class": "multischolar_publication_auxiliary_response_invalid",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "response.missing_ids",
+      "target": "expanded_response",
+      "mutation": "missing_ids",
+      "expected_condition_class": "multischolar_publication_auxiliary_response_invalid",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "response.truncated",
+      "target": "expanded_response",
+      "mutation": "truncated",
+      "expected_condition_class": "multischolar_publication_auxiliary_response_invalid",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "response.schema_drift",
+      "target": "expanded_response",
+      "mutation": "schema_drift",
+      "expected_condition_class": "multischolar_publication_auxiliary_response_invalid",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "response.duplicate_row",
+      "target": "expanded_response",
+      "mutation": "duplicate_row",
+      "expected_condition_class": "multischolar_publication_auxiliary_response_invalid",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "split.pilot_source_overlap",
+      "target": "split",
+      "mutation": "pilot_source_overlap",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "split.candidate_access",
+      "target": "split",
+      "mutation": "candidate_access",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "phosphosite.malformed_probability",
+      "target": "phosphosite_payload",
+      "mutation": "malformed_probability",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "phosphosite.missing_sequence",
+      "target": "phosphosite_payload",
+      "mutation": "missing_sequence",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "multiomics.unknown_layer",
+      "target": "multiomics_payload",
+      "mutation": "unknown_layer",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "multiomics.wrong_response_service",
+      "target": "multiomics_payload",
+      "mutation": "wrong_response_service",
+      "expected_condition_class": "multischolar_publication_auxiliary_contract_error",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "case_id": "service.unknown",
+      "target": "response_lookup",
+      "mutation": "unknown_service",
+      "expected_condition_class": "multischolar_publication_auxiliary_response_excluded",
+      "expected_rejection_stage": "admission",
+      "network_invocation_allowed": false,
+      "runner_invocation_allowed": false,
+      "artifact_invocation_allowed": false,
+      "backend_invocation_allowed": false,
+      "promotion_authority": false
+    }
+  ],
+  "unknown_policy": "reject",
+  "publication_authority": false
+}

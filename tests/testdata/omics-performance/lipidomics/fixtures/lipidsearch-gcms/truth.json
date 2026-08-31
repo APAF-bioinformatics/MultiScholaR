@@ -1,0 +1,151 @@
+{
+  "schema": "multischolar.omics_publication_lipidomics_fixture_truth",
+  "schema_version": "1.0.0",
+  "owner_ticket_id": "OMICS-ART-067",
+  "truth_id": "lipidomics.lipidsearch.lipid.standard.v1.gcms.fixture_correctness.truth",
+  "workload_id": "lipidomics.lipidsearch.lipid.standard.v1.gcms.fixture_correctness",
+  "workload_class": "fixture_correctness",
+  "capability": {
+    "omic_type": "lipidomics",
+    "data_level": "lipid",
+    "acquisition_mode": "not_recorded",
+    "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+    "input_format": "lipidsearch",
+    "support_tier": "full_workflow",
+    "verified_stages": [
+      "import",
+      "design",
+      "qc",
+      "normalization_ruv",
+      "session",
+      "differential_abundance",
+      "summary_report_export"
+    ]
+  },
+  "assay_profile": {
+    "profile_id": "gcms",
+    "assays": [
+      "GCMS"
+    ],
+    "payload_mode": "single",
+    "member_count": 1
+  },
+  "payload": {
+    "members": [
+      {
+        "filename": "lipidsearch_gcms.txt",
+        "sha256": "15bccf37617c8d717e433af7b2833cf24477a2a9b5011c52762d2a9da8697936",
+        "size_bytes": 994
+      }
+    ],
+    "member_count": 1,
+    "payload_set_sha256": "0263278d23a3a706eff23ab83ecb8b314d77ab04bf0ef1d4ab237aab9fad7390",
+    "size_bytes": 994
+  },
+  "source_authority_bindings": [
+    {
+      "path": "tests/testdata/e2e/lipid_canonical/lipidsearch_gcms.txt",
+      "sha256": "e2c4fa3d401fa6b1e92ab4236907e97059bdf1269024eb5a7adab7efd3e84ee4"
+    },
+    {
+      "path": "tests/testdata/e2e/lipid_canonical/README.md",
+      "sha256": "56e66458f08dd159320b5b68aa1a72622492c506305086e38b21f9374341c296"
+    },
+    {
+      "path": "tools/profiling/omics_publication_lipidomics_fixtures.R",
+      "sha256": "68bdfd5dc1e593d77cc408220ccc39bd8774befecf537242c6b2328d1a2c7f4e"
+    }
+  ],
+  "dimensions": {
+    "aggregate_feature_count": 10,
+    "assay_feature_counts": {
+      "GCMS": 10
+    },
+    "sample_count": 6,
+    "assay_count": 1,
+    "quantity_count": 60,
+    "payload_member_count": 1
+  },
+  "expected_import": {
+    "member_count": 1,
+    "aggregate_feature_count": 10,
+    "assay_feature_counts": {
+      "GCMS": 10
+    },
+    "sample_count": 6,
+    "quantity_count": 60,
+    "quantity_na_count": 0,
+    "quantity_sum": 3453228,
+    "lipid_class_count": 5,
+    "composition_family_count": 9,
+    "isomer_like_pair_count": 0,
+    "numerical_tolerance": 3.4532279999999997e-06
+  },
+  "effects": {
+    "effect_log2": 0.81338032293263396,
+    "minimum_sign_agreement": 1,
+    "median_margin_fraction": 0,
+    "up_count": 10,
+    "down_count": 0,
+    "unaffected_count": 0,
+    "internal_standard_effect_count": 0,
+    "up_feature_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "down_feature_ids": [],
+    "assignment_sha256": "57251d96bef83e5483800da6fb2e7b292b0d6af05300fe2b5c5d034319295d2b"
+  },
+  "design": {
+    "sample_ids": [
+      "LIPID_S001",
+      "LIPID_S002",
+      "LIPID_S003",
+      "LIPID_S004",
+      "LIPID_S005",
+      "LIPID_S006"
+    ],
+    "control_ids": [
+      "LIPID_S001",
+      "LIPID_S002",
+      "LIPID_S003"
+    ],
+    "treatment_ids": [
+      "LIPID_S004",
+      "LIPID_S005",
+      "LIPID_S006"
+    ]
+  },
+  "mapping": {
+    "route": "lipidsearch",
+    "source": "lipidsearch_schema_autodetection",
+    "fallback_allowed": false
+  },
+  "oracle_method": "direct_arithmetic_application_assay_name_smoke",
+  "verified_stages": [
+    "import",
+    "design",
+    "qc",
+    "normalization_ruv",
+    "session",
+    "differential_abundance",
+    "summary_report_export"
+  ],
+  "fixture_evidence_class": "application_assay_name_smoke",
+  "gc_vendor_authority": false,
+  "chemical_identity_claim": false,
+  "limitations": [
+    "Fixture values establish correctness, not cross-project scale.",
+    "Synthetic labels and isomer-like pairs are not chemical identities.",
+    "GCMS-named LipidSearch fixtures are application naming smoke only."
+  ],
+  "publication_authority": false
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "multischolar.omics_publication_lipidomics_governance_successor",
+  "schema_version": "1.0.0",
+  "successor_id": "multischolar.omics_publication_lipidomics_governance_successor.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-067",
+  "status": "lipidomics_scoped_nonpromotional",
+  "projects_predecessor": {
+    "path": "tests/testdata/omics-performance/projects-v1.json",
+    "sha256": "8f916e9b9dcd0ec2c49e0e1373658a0a2af240d12a7e72c931ba9b0176e58e62"
+  },
+  "splits_predecessor": {
+    "path": "tests/testdata/omics-performance/splits-v1.json",
+    "sha256": "0b14a0874d7ecb09bd7ad75ba7ebaf7da8bb65a958d822e9afed662d347e7259"
+  },
+  "sources": {
+    "path": "tests/testdata/omics-performance/lipidomics/sources-v1.json",
+    "sha256": "f19653e8a29c4d1f36a763b252e99d6ff5414a12a125b0295f0de80f370279a0"
+  },
+  "splits": {
+    "path": "tests/testdata/omics-performance/lipidomics/splits-v1.json",
+    "sha256": "69591dff5b67ebdd3ce607e1ce250b45bba5e464d80758251257b250e32f0abf"
+  },
+  "parameters": {
+    "path": "tests/testdata/omics-performance/lipidomics/parameters-v1.json",
+    "sha256": "e781f875a283032c8203b66043b1fa8fc1cb510af4e30d0d59f72c2bb5ffb313"
+  },
+  "support_boundaries": {
+    "path": "tests/testdata/omics-performance/lipidomics/support-boundaries-v1.json",
+    "sha256": "79658b40a47d6b5be6bcd7a18f169b3ad8ce27053289250389c20a9ad299186f"
+  },
+  "exclusions": {
+    "path": "tests/testdata/omics-performance/lipidomics/exclusions-v1.json",
+    "sha256": "1c5f52a54151e3ee3b7d842c1e4ec87da79b78ea3c437f9000a5619e470b596d"
+  },
+  "mapping_authorities": {
+    "path": "tests/testdata/omics-performance/lipidomics/mapping-authorities-v1.json",
+    "sha256": "f0bb75f0d66013c50b2e9c189656ed4fa17ec0c91beb487b90cb533b214629d7"
+  },
+  "bundle_authorities": {
+    "path": "tests/testdata/omics-performance/lipidomics/bundle-authorities-v1.json",
+    "sha256": "ea26fb01df574ba21bf31d37ff6871941677d56f2dcd31db89b34b9dd756f219"
+  },
+  "supersession": {
+    "field_scope": [
+      "project_sources",
+      "split_assignments",
+      "route_boundaries"
+    ],
+    "owned_capability_ids": {
+      "lipidsearch": "lipidomics.lipidsearch.lipid.standard.v1",
+      "msdial": "lipidomics.msdial.lipid.standard.v1",
+      "custom": "lipidomics.custom.lipid.standard.v1"
+    },
+    "predecessors_mutated": false,
+    "unrelated_subjects_changed": false,
+    "generated_substitution_allowed": false,
+    "successor_required_before_candidate": true
+  },
+  "claim_scope": "project_specific_nonpromotional",
+  "candidate_access_allowed": false,
+  "promotion_authority": false,
+  "publication_authority": false
+}

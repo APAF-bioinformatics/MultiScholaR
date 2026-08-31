@@ -1,0 +1,116 @@
+{
+  "schema": "multischolar.omics_publication_metabolomics_mapping_authority",
+  "schema_version": "1.0.0",
+  "mapping_authority_id": "multischolar.omics_publication_metabolomics_mapping.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-066",
+  "status": "frozen_pre_candidate",
+  "mappings": [
+    {
+      "mapping_id": "metabolomics.mapping.custom.lcms_pos",
+      "route": "custom",
+      "profile_id": "lcms_pos",
+      "requested_format": "custom",
+      "observed_format": "custom",
+      "mapping_source": "explicit_user_mapping_contract",
+      "fallback_allowed": false,
+      "bundle_member_mappings": [{"assay": "LCMS_Pos", "mapping_id": "custom.lcms_pos.v1"}],
+      "verified_stages": ["import", "design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"],
+      "promotion_authority": false
+    },
+    {
+      "mapping_id": "metabolomics.mapping.custom.lcms_neg",
+      "route": "custom",
+      "profile_id": "lcms_neg",
+      "requested_format": "custom",
+      "observed_format": "custom",
+      "mapping_source": "explicit_user_mapping_contract",
+      "fallback_allowed": false,
+      "bundle_member_mappings": [{"assay": "LCMS_Neg", "mapping_id": "custom.lcms_neg.v1"}],
+      "verified_stages": ["import", "design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"],
+      "promotion_authority": false
+    },
+    {
+      "mapping_id": "metabolomics.mapping.custom.gcms",
+      "route": "custom",
+      "profile_id": "gcms",
+      "requested_format": "custom",
+      "observed_format": "custom",
+      "mapping_source": "explicit_user_mapping_contract",
+      "fallback_allowed": false,
+      "bundle_member_mappings": [{"assay": "GCMS", "mapping_id": "custom.gcms.v1"}],
+      "verified_stages": ["import", "design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"],
+      "promotion_authority": false
+    },
+    {
+      "mapping_id": "metabolomics.mapping.custom.mixed",
+      "route": "custom",
+      "profile_id": "mixed",
+      "requested_format": "custom",
+      "observed_format": "custom",
+      "mapping_source": "explicit_user_mapping_contract",
+      "fallback_allowed": false,
+      "bundle_member_mappings": [
+        {"assay": "LCMS_Pos", "mapping_id": "custom.mixed.lcms_pos.v1"},
+        {"assay": "LCMS_Neg", "mapping_id": "custom.mixed.lcms_neg.v1"},
+        {"assay": "GCMS", "mapping_id": "custom.mixed.gcms.v1"}
+      ],
+      "verified_stages": ["import", "design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"],
+      "promotion_authority": false
+    },
+    {
+      "mapping_id": "metabolomics.mapping.msdial.lcms_pos",
+      "route": "msdial",
+      "profile_id": "lcms_pos",
+      "requested_format": "msdial",
+      "observed_format": "msdial",
+      "mapping_source": "msdial_schema_autodetection",
+      "fallback_allowed": false,
+      "bundle_member_mappings": [{"assay": "LCMS_Pos", "mapping_id": "msdial.lcms_pos.v1"}],
+      "verified_stages": ["import", "design"],
+      "promotion_authority": false
+    },
+    {
+      "mapping_id": "metabolomics.mapping.msdial.lcms_neg",
+      "route": "msdial",
+      "profile_id": "lcms_neg",
+      "requested_format": "msdial",
+      "observed_format": "msdial",
+      "mapping_source": "msdial_schema_autodetection",
+      "fallback_allowed": false,
+      "bundle_member_mappings": [{"assay": "LCMS_Neg", "mapping_id": "msdial.lcms_neg.v1"}],
+      "verified_stages": ["import", "design"],
+      "promotion_authority": false
+    },
+    {
+      "mapping_id": "metabolomics.mapping.msdial.gcms",
+      "route": "msdial",
+      "profile_id": "gcms",
+      "requested_format": "msdial",
+      "observed_format": "msdial",
+      "mapping_source": "msdial_schema_autodetection",
+      "fallback_allowed": false,
+      "bundle_member_mappings": [{"assay": "GCMS", "mapping_id": "msdial.gcms.v1"}],
+      "verified_stages": ["import", "design"],
+      "promotion_authority": false
+    },
+    {
+      "mapping_id": "metabolomics.mapping.msdial.mixed",
+      "route": "msdial",
+      "profile_id": "mixed",
+      "requested_format": "msdial",
+      "observed_format": "msdial",
+      "mapping_source": "msdial_schema_autodetection",
+      "fallback_allowed": false,
+      "bundle_member_mappings": [
+        {"assay": "LCMS_Pos", "mapping_id": "msdial.mixed.lcms_pos.v1"},
+        {"assay": "LCMS_Neg", "mapping_id": "msdial.mixed.lcms_neg.v1"},
+        {"assay": "GCMS", "mapping_id": "msdial.mixed.gcms.v1"}
+      ],
+      "verified_stages": ["import", "design"],
+      "promotion_authority": false
+    }
+  ],
+  "identity_alias_allowed": false,
+  "unknown_policy": "reject",
+  "publication_authority": false
+}

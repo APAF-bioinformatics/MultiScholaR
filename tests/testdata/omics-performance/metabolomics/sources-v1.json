@@ -1,0 +1,70 @@
+{
+  "schema": "multischolar.omics_publication_metabolomics_sources",
+  "schema_version": "1.0.0",
+  "sources_id": "multischolar.omics_publication_metabolomics_sources.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-066",
+  "status": "frozen_nonpromotional",
+  "projects_predecessor": {
+    "path": "tests/testdata/omics-performance/projects-v1.json",
+    "sha256": "8f916e9b9dcd0ec2c49e0e1373658a0a2af240d12a7e72c931ba9b0176e58e62"
+  },
+  "private_scale_predecessor": {
+    "path": "tests/testdata/omics-performance/proteomics/private-envelope-v1.json",
+    "sha256": "af2daff6eee048e561e37f1a5cdb018f84bd4c5ed9dd69f2eaeb9580e8607090"
+  },
+  "allowed_scale_fields": [
+    "row_count",
+    "column_count",
+    "byte_size",
+    "salted_source_fingerprint"
+  ],
+  "scale_receipt": {
+    "row_count": 80170,
+    "column_count": 60,
+    "byte_size": 71000019,
+    "salted_source_fingerprint": "41f306cb4a9a5fb26cf08c856be73d58531cbf79ce4572dc2b39ccefa143a4d7"
+  },
+  "scale_mapping_policy": "proteomics_shape_to_bounded_metabolomics_dimensions_only_v1",
+  "minimum_real_projects": 3,
+  "sources": [],
+  "decisions": [
+    {
+      "route": "custom",
+      "capability_id": "metabolomics.custom.metabolite.standard.v1",
+      "required_real_project_count": 3,
+      "verified_real_project_count": 0,
+      "claim_scope": "project_specific_nonpromotional",
+      "cross_project_source_ready": false,
+      "promotion_eligible": false
+    },
+    {
+      "route": "msdial",
+      "capability_id": "metabolomics.msdial.metabolite.standard.v1",
+      "required_real_project_count": 3,
+      "verified_real_project_count": 0,
+      "claim_scope": "project_specific_nonpromotional",
+      "cross_project_source_ready": false,
+      "promotion_eligible": false
+    }
+  ],
+  "repository_searches": [
+    {
+      "route": "custom",
+      "repository": "MetaboLights",
+      "query": "public processed custom LC-MS GC-MS assay tables",
+      "admissible_source_count": 0,
+      "outcome": "no_admissible_format_exact_source_frozen"
+    },
+    {
+      "route": "msdial",
+      "repository": "MetaboLights",
+      "query": "MS-DIAL Alignment ID Average Rt(min) LC-MS GC-MS",
+      "admissible_source_count": 0,
+      "outcome": "no_admissible_format_exact_source_frozen"
+    }
+  ],
+  "generated_counts_as_real": false,
+  "fixtures_count_as_real": false,
+  "unknown_policy": "reject",
+  "publication_authority": false
+}

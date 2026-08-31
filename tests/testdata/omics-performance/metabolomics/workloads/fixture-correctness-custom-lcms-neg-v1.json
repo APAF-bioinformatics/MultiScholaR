@@ -1,0 +1,163 @@
+{
+  "schema": "multischolar.omics_publication_metabolomics_workload",
+  "schema_version": "1.0.0",
+  "contract_id": "metabolomics.custom.lcms_neg.fixture_correctness.v1",
+  "owner_ticket_id": "OMICS-ART-066",
+  "status": "frozen",
+  "workload_id": "metabolomics.custom.metabolite.standard.v1.lcms_neg.fixture_correctness",
+  "workload_class": "fixture_correctness",
+  "capability": {
+    "omic_type": "metabolomics",
+    "data_level": "metabolite",
+    "acquisition_mode": "not_recorded",
+    "capability_id": "metabolomics.custom.metabolite.standard.v1",
+    "input_format": "custom",
+    "support_tier": "full_workflow",
+    "verified_stages": [
+      "import",
+      "design",
+      "qc",
+      "normalization_ruv",
+      "session",
+      "differential_abundance",
+      "summary_report_export"
+    ]
+  },
+  "assay_profile": {
+    "profile_id": "lcms_neg",
+    "assays": [
+      "LCMS_Neg"
+    ],
+    "payload_mode": "single",
+    "member_count": 1
+  },
+  "dimensions": {
+    "aggregate_feature_count": 3,
+    "assay_feature_counts": {
+      "LCMS_Neg": 3
+    },
+    "sample_count": 6,
+    "assay_count": 1,
+    "quantity_count": 18,
+    "payload_member_count": 1
+  },
+  "model_profile_id": "generated.parameters.custom.lcms_neg.fixture_correctness.fixture.v1",
+  "parameter_authority": {
+    "path": "tests/testdata/omics-performance/metabolomics/parameters-v1.json",
+    "sha256": "eadee7fdb1d1908c922c88cdd165430eb86f19bdcafb2a0367000b69cb7a40e0"
+  },
+  "source_authority": {
+    "path": "tests/testdata/omics-performance/metabolomics/sources-v1.json",
+    "sha256": "d1661d77db8b394658c3ccc2fc5dbc322ebb8981216f14f9b88748d5ed755130"
+  },
+  "split_authority": {
+    "path": "tests/testdata/omics-performance/metabolomics/splits-v1.json",
+    "sha256": "9597029e747d936182619ae51ab1922c515f1a4218758bcb757643c2d456dd5c"
+  },
+  "mapping_authority": {
+    "path": "tests/testdata/omics-performance/metabolomics/mapping-authorities-v1.json",
+    "sha256": "3d70d89e99903787895bc3c363a471c0a92a843492cf31dc658bf09dbeb7928a"
+  },
+  "contract_mapping_id": "metabolomics.mapping.custom.lcms_neg",
+  "support_boundary": {
+    "path": "tests/testdata/omics-performance/metabolomics/support-boundaries-v1.json",
+    "sha256": "35d5648d242a4ec23d98d60e0d458398bc4dc7909c38eded117706e59a8ef5bf"
+  },
+  "generator": {
+    "mode": "fixture_replay",
+    "source_bindings": [
+      {
+        "path": "tests/testdata/e2e/metab_lc/lcms_neg_features.tsv",
+        "sha256": "f32cc0a3e60eed918f5fd42127eeecc43964f3b53dd248e2e40efa57f91cbf04"
+      },
+      {
+        "path": "tests/testdata/e2e/metab_lc/README.md",
+        "sha256": "2d1dc6dc8d185d72e532f9ba3a583a503d6c54961ff00efc6f8c0d56f46586c9"
+      },
+      {
+        "path": "tools/profiling/omics_publication_metabolomics_fixtures.R",
+        "sha256": "1713d38bf3c9c885780bd285d6a7816ba49452b7d04263911e0ee126bf435c0b"
+      }
+    ],
+    "chunk_rows": null,
+    "output_members": [
+      "custom.tsv"
+    ],
+    "truth_filename": "truth.json",
+    "fixture_payloads": [
+      {
+        "path": "tests/testdata/omics-performance/metabolomics/fixtures/custom-lcms_neg/payload/custom.tsv",
+        "sha256": "332ab9ae9919f378f02c1bfadb9c6ed0b6900ed2ffc28699d25bc92d346524df"
+      }
+    ],
+    "fixture_truth": {
+      "path": "tests/testdata/omics-performance/metabolomics/fixtures/custom-lcms_neg/truth.json",
+      "sha256": "5d8259f702fcd51df655797737a0fc7c923b7a0991891b5b68e5fed3e2245a5b"
+    }
+  },
+  "rng": {
+    "kind": "L'Ecuyer-CMRG",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "seed_family_id": "fixture.no_rng.custom.lcms_neg.v1",
+    "seed": null,
+    "streams": []
+  },
+  "truth_contract": {
+    "schema_id": "metabolomics.truth.v1",
+    "oracle_method": "direct_raw_table_arithmetic_and_reviewed_e2e_authority",
+    "validated_domains": [
+      "payload",
+      "mapping",
+      "assay_identity",
+      "dimensions",
+      "quantities",
+      "missingness",
+      "effects",
+      "design"
+    ],
+    "independent_of_package_reader": true,
+    "support_widening_allowed": false
+  },
+  "execution": {
+    "preparation_processes": 2,
+    "process_isolation": "fresh_vanilla_R",
+    "candidate_loaded": false,
+    "historical_pilot_required": false,
+    "swap_allowed": false,
+    "timeout_seconds": 900,
+    "expected_peak_bytes": 288
+  },
+  "privacy": {
+    "classification": "public_fixture",
+    "private_source_opened": false,
+    "payload_tracked": false,
+    "direct_identifiers_present": false,
+    "cross_omic_values_reused": false
+  },
+  "claim_scope": {
+    "evidence_class": "fixture_correctness",
+    "verified_stages": [
+      "import",
+      "design",
+      "qc",
+      "normalization_ruv",
+      "session",
+      "differential_abundance",
+      "summary_report_export"
+    ],
+    "scientific_authority": true,
+    "performance_authority": false,
+    "cross_project_authority": false,
+    "promotion_authority": false,
+    "limitations": [
+      "Project-specific evidence without independent real-project sources.",
+      "Generated evidence cannot widen the declared route support boundary."
+    ]
+  },
+  "expected_digests": {
+    "payload_set_sha256": "92beea4acddd004c20f7e42f3e1a8e4a9400537548dad03623a0df7f9fae9e1d",
+    "truth_sha256": "5d8259f702fcd51df655797737a0fc7c923b7a0991891b5b68e5fed3e2245a5b"
+  },
+  "publication_authority": false
+}

@@ -1,0 +1,135 @@
+{
+  "schema": "multischolar.omics_publication_lipidomics_fixture_truth",
+  "schema_version": "1.0.0",
+  "owner_ticket_id": "OMICS-ART-067",
+  "truth_id": "lipidomics.msdial.lipid.standard.v1.lcms_neg.fixture_correctness.truth",
+  "workload_id": "lipidomics.msdial.lipid.standard.v1.lcms_neg.fixture_correctness",
+  "workload_class": "fixture_correctness",
+  "capability": {
+    "omic_type": "lipidomics",
+    "data_level": "lipid",
+    "acquisition_mode": "not_recorded",
+    "capability_id": "lipidomics.msdial.lipid.standard.v1",
+    "input_format": "msdial",
+    "support_tier": "reader_boundary",
+    "verified_stages": [
+      "import",
+      "design"
+    ]
+  },
+  "assay_profile": {
+    "profile_id": "lcms_neg",
+    "assays": [
+      "LCMS_Neg"
+    ],
+    "payload_mode": "single",
+    "member_count": 1
+  },
+  "payload": {
+    "members": [
+      {
+        "filename": "msdial_lcms_neg.csv",
+        "sha256": "da410623fcc096a1b74ddd3b770200f2a7658f451b8e553348a23ac54cf547dd",
+        "size_bytes": 2553
+      }
+    ],
+    "member_count": 1,
+    "payload_set_sha256": "dca3e1ae5a1ee2e35edb39d8afd93e3b4dfddd1739661c5e066f54b0c818f565",
+    "size_bytes": 2553
+  },
+  "source_authority_bindings": [
+    {
+      "path": "tests/testdata/omics-performance/lipidomics/parameters-v1.json",
+      "sha256": "e781f875a283032c8203b66043b1fa8fc1cb510af4e30d0d59f72c2bb5ffb313"
+    },
+    {
+      "path": "tools/profiling/omics_publication_lipidomics_model.R",
+      "sha256": "fc759afc428f1a12fd5919f97f17a43e0af7fedfd765de2e09460390a18d6ae7"
+    },
+    {
+      "path": "tools/profiling/omics_publication_lipidomics_serializers.R",
+      "sha256": "9b7e24dffe88cc340bdfcfc318adcd4470bb9e6b89eac63475f1e1d1cff6dad6"
+    }
+  ],
+  "dimensions": {
+    "aggregate_feature_count": 12,
+    "assay_feature_counts": {
+      "LCMS_Neg": 12
+    },
+    "sample_count": 6,
+    "assay_count": 1,
+    "quantity_count": 72,
+    "payload_member_count": 1
+  },
+  "expected_import": {
+    "member_count": 1,
+    "aggregate_feature_count": 12,
+    "assay_feature_counts": {
+      "LCMS_Neg": 12
+    },
+    "sample_count": 6,
+    "quantity_count": 72,
+    "quantity_na_count": 4,
+    "quantity_sum": 39105314.877935,
+    "lipid_class_count": 3,
+    "composition_family_count": 3,
+    "isomer_like_pair_count": 0,
+    "numerical_tolerance": 3.9105314877934998e-05
+  },
+  "effects": {
+    "effect_log2": 0.32960984917765757,
+    "minimum_sign_agreement": 1,
+    "median_margin_fraction": 0,
+    "up_count": 1,
+    "down_count": 2,
+    "unaffected_count": 9,
+    "internal_standard_effect_count": 0,
+    "up_feature_ids": [
+      1
+    ],
+    "down_feature_ids": [
+      2,
+      4
+    ],
+    "assignment_sha256": "d47b798a93dfe4c4928b80b1bb87199cc163767e937202d43f6d155218992a18"
+  },
+  "design": {
+    "sample_ids": [
+      "LIPID_S001",
+      "LIPID_S002",
+      "LIPID_S003",
+      "LIPID_S004",
+      "LIPID_S005",
+      "LIPID_S006"
+    ],
+    "control_ids": [
+      "LIPID_S001",
+      "LIPID_S002",
+      "LIPID_S003"
+    ],
+    "treatment_ids": [
+      "LIPID_S004",
+      "LIPID_S005",
+      "LIPID_S006"
+    ]
+  },
+  "mapping": {
+    "route": "msdial",
+    "source": "msdial_schema_autodetection",
+    "fallback_allowed": false
+  },
+  "oracle_method": "generated_reader_schema_truth",
+  "verified_stages": [
+    "import",
+    "design"
+  ],
+  "fixture_evidence_class": "generated_reader_characterization",
+  "gc_vendor_authority": false,
+  "chemical_identity_claim": false,
+  "limitations": [
+    "Fixture values establish correctness, not cross-project scale.",
+    "Synthetic labels and isomer-like pairs are not chemical identities.",
+    "GCMS-named LipidSearch fixtures are application naming smoke only."
+  ],
+  "publication_authority": false
+}

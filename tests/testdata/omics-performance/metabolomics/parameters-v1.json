@@ -1,0 +1,1069 @@
+{
+  "schema": "multischolar.omics_publication_metabolomics_parameters",
+  "schema_version": "1.0.0",
+  "parameters_id": "multischolar.omics_publication_metabolomics_parameters.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-066",
+  "status": "frozen_pre_candidate",
+  "origin_classes": [
+    "methodological_design",
+    "protocol_authority",
+    "public_source_calibrated",
+    "private_scale_calibrated"
+  ],
+  "forbidden_unbound_vocabulary": [
+    "realistic",
+    "empirical",
+    "instrument_derived"
+  ],
+  "parameters": [
+    {
+      "parameter_id": "treatment_fraction",
+      "value": 0.5,
+      "unit": "fraction_of_samples",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0.10000000000000001,
+        "maximum": 0.90000000000000002
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "batch_count",
+      "value": 4,
+      "unit": "batches",
+      "domain": {
+        "type": "integer_interval",
+        "minimum": 1,
+        "maximum": 32
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "technical_replicate_size",
+      "value": 2,
+      "unit": "samples_per_group",
+      "domain": {
+        "type": "integer_interval",
+        "minimum": 1,
+        "maximum": 8
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "sample_correlation",
+      "value": 0.14999999999999999,
+      "unit": "pearson_correlation",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.94999999999999996
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "technical_replicate_correlation",
+      "value": 0.65000000000000002,
+      "unit": "pearson_correlation",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.98999999999999999
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "effect_fraction",
+      "value": 0.050000000000000003,
+      "unit": "fraction_per_direction",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0.001,
+        "maximum": 0.23999999999999999
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "effect_log2",
+      "value": 1.2,
+      "unit": "log2_fold_change",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0.10000000000000001,
+        "maximum": 5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "lcms_pos_mean_log2",
+      "value": 20,
+      "unit": "log2_intensity",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 40
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "lcms_neg_mean_log2",
+      "value": 19.5,
+      "unit": "log2_intensity",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 40
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_neg",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "gcms_mean_log2",
+      "value": 18.5,
+      "unit": "log2_intensity",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 40
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "base_log2_sd",
+      "value": 1.5,
+      "unit": "log2_intensity_sd",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0.10000000000000001,
+        "maximum": 10
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "correlated_group_size",
+      "value": 3,
+      "unit": "features",
+      "domain": {
+        "type": "integer_interval",
+        "minimum": 1,
+        "maximum": 12
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "group_offset_log2_sd",
+      "value": 0.29999999999999999,
+      "unit": "log2_intensity_sd",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "feature_offset_log2_sd",
+      "value": 0.14999999999999999,
+      "unit": "log2_intensity_sd",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "batch_log2_sd",
+      "value": 0.25,
+      "unit": "log2_intensity_sd",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "residual_sigma_floor",
+      "value": 0.080000000000000002,
+      "unit": "log2_intensity_sd",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0.001,
+        "maximum": 5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "residual_sigma_slope",
+      "value": 0.035000000000000003,
+      "unit": "sd_per_softplus_log2",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 2
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "heteroscedastic_reference_log2",
+      "value": 18,
+      "unit": "log2_intensity",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 40
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "mcar_probability",
+      "value": 0.01,
+      "unit": "probability",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "mar_logit_intercept",
+      "value": -4,
+      "unit": "log_odds",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": -20,
+        "maximum": 0
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "mar_batch_log_odds",
+      "value": 0.29999999999999999,
+      "unit": "log_odds",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": -5,
+        "maximum": 5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "detection_midpoint_log2",
+      "value": 16.5,
+      "unit": "log2_intensity",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": -10,
+        "maximum": 40
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "detection_slope_log2",
+      "value": 1.25,
+      "unit": "log2_intensity",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0.050000000000000003,
+        "maximum": 10
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "lcms_pos_censor_log2",
+      "value": 14.5,
+      "unit": "log2_intensity",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": -10,
+        "maximum": 40
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "lcms_neg_censor_log2",
+      "value": 14,
+      "unit": "log2_intensity",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": -10,
+        "maximum": 40
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "gcms_censor_log2",
+      "value": 13.5,
+      "unit": "log2_intensity",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": -10,
+        "maximum": 40
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "internal_standard_fraction",
+      "value": 0.10000000000000001,
+      "unit": "fraction_of_features",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "duplicate_fraction",
+      "value": 0.01,
+      "unit": "fraction_of_features",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.20000000000000001
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "annotation_width",
+      "value": 64,
+      "unit": "characters",
+      "domain": {
+        "type": "integer_interval",
+        "minimum": 8,
+        "maximum": 512
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "minimum_effect_sign_agreement",
+      "value": 0.94999999999999996,
+      "unit": "fraction",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0.5,
+        "maximum": 1
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    },
+    {
+      "parameter_id": "effect_median_margin_fraction",
+      "value": 0.5,
+      "unit": "effect_fraction",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "applicable_routes": [
+        "custom",
+        "msdial"
+      ],
+      "applicable_profiles": [
+        "lcms_pos",
+        "lcms_neg",
+        "gcms",
+        "mixed"
+      ],
+      "applicable_classes": [
+        "representative",
+        "operational_heavy",
+        "stress"
+      ],
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared simulation parameter; no empirical instrument or cohort claim."
+      ]
+    }
+  ],
+  "publication_authority": false
+}

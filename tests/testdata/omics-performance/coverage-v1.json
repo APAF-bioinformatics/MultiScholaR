@@ -1,0 +1,171 @@
+{
+  "schema": "multischolar.omics_publication_coverage",
+  "schema_version": "1.0.0",
+  "coverage_id": "multischolar.omics_publication_coverage.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "capability_inventory": {
+    "path": "tests/testdata/omics-capabilities.json",
+    "sha256": "f202356edcdc3a812f0721e6092bc6d7007e9b752e13ad28a9f725f14fc1bf77",
+    "inventory_version": "2026-08-22.2"
+  },
+  "full_workflows": [
+    {
+      "capability_id": "proteomics.diann.peptide.dia.v1",
+      "format_id": "proteomics.diann",
+      "support_status": "scientifically_supported",
+      "e2e_lanes": ["prot_dia", "prot_dia_limpa"],
+      "treatment": "full_workflow_repair_and_publication_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-065",
+      "runtime_owner_ticket_ids": ["OMICS-ART-070", "OMICS-ART-071", "OMICS-ART-072"],
+      "decision_owner_ticket_id": "OMICS-ART-078",
+      "minimum_independent_projects": 3
+    },
+    {
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "format_id": "proteomics.maxquant",
+      "support_status": "scientifically_supported",
+      "e2e_lanes": ["prot_lfq"],
+      "treatment": "full_workflow_repair_and_publication_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-065",
+      "runtime_owner_ticket_ids": ["OMICS-ART-073"],
+      "decision_owner_ticket_id": "OMICS-ART-079",
+      "minimum_independent_projects": 3
+    },
+    {
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "format_id": "proteomics.fragpipe",
+      "support_status": "scientifically_supported",
+      "e2e_lanes": ["prot_lfq_fragpipe"],
+      "treatment": "full_workflow_repair_and_publication_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-065",
+      "runtime_owner_ticket_ids": ["OMICS-ART-073"],
+      "decision_owner_ticket_id": "OMICS-ART-079",
+      "minimum_independent_projects": 3
+    },
+    {
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "format_id": "proteomics.pd_tmt",
+      "support_status": "scientifically_supported",
+      "e2e_lanes": ["prot_tmt"],
+      "treatment": "full_workflow_repair_and_publication_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-065",
+      "runtime_owner_ticket_ids": ["OMICS-ART-074"],
+      "decision_owner_ticket_id": "OMICS-ART-079",
+      "minimum_independent_projects": 3
+    },
+    {
+      "capability_id": "metabolomics.custom.metabolite.standard.v1",
+      "format_id": "metabolomics.custom",
+      "support_status": "scientifically_supported",
+      "e2e_lanes": ["metab_lc", "metab_gc", "metab_combined"],
+      "treatment": "full_workflow_repair_and_publication_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-066",
+      "runtime_owner_ticket_ids": ["OMICS-ART-075"],
+      "decision_owner_ticket_id": "OMICS-ART-080",
+      "minimum_independent_projects": 3
+    },
+    {
+      "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+      "format_id": "lipidomics.lipidsearch",
+      "support_status": "scientifically_supported",
+      "e2e_lanes": ["lipid_canonical"],
+      "treatment": "full_workflow_repair_and_publication_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-067",
+      "runtime_owner_ticket_ids": ["OMICS-ART-076"],
+      "decision_owner_ticket_id": "OMICS-ART-081",
+      "minimum_independent_projects": 3
+    }
+  ],
+  "reader_boundaries": [
+    {
+      "capability_id": "metabolomics.msdial.metabolite.standard.v1",
+      "format_id": "metabolomics.msdial",
+      "support_status": "reader_characterized",
+      "verified_boundary": ["import", "design"],
+      "treatment": "boundary_only_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-066",
+      "runtime_owner_ticket_id": "OMICS-ART-075",
+      "decision_owner_ticket_id": "OMICS-ART-080",
+      "full_workflow_promotion_authority": false
+    },
+    {
+      "capability_id": "lipidomics.msdial.lipid.standard.v1",
+      "format_id": "lipidomics.msdial",
+      "support_status": "reader_characterized",
+      "verified_boundary": ["import", "design"],
+      "treatment": "boundary_only_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-067",
+      "runtime_owner_ticket_id": "OMICS-ART-076",
+      "decision_owner_ticket_id": "OMICS-ART-081",
+      "full_workflow_promotion_authority": false
+    },
+    {
+      "capability_id": "lipidomics.custom.lipid.standard.v1",
+      "format_id": "lipidomics.custom",
+      "support_status": "reader_characterized",
+      "verified_boundary": ["import", "design"],
+      "treatment": "boundary_only_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-067",
+      "runtime_owner_ticket_id": "OMICS-ART-076",
+      "decision_owner_ticket_id": "OMICS-ART-081",
+      "full_workflow_promotion_authority": false
+    }
+  ],
+  "excluded_capabilities": [
+    {
+      "capability_id": "proteomics.spectronaut.protein.lfq.v1",
+      "format_id": "proteomics.spectronaut",
+      "support_status": "advertised_unverified",
+      "reason": "representative fixture and complete route evidence absent",
+      "positive_benchmark_authority": false
+    },
+    {
+      "capability_id": "proteomics.spectronaut.peptide.lfq.v1",
+      "format_id": "proteomics.spectronaut",
+      "support_status": "advertised_unverified",
+      "reason": "representative fixture and complete route evidence absent",
+      "positive_benchmark_authority": false
+    }
+  ],
+  "excluded_formats": [
+    {"format_id": "metabolomics.progenesis", "support_status": "detection_only"},
+    {"format_id": "metabolomics.xcms", "support_status": "detection_only"},
+    {"format_id": "metabolomics.compound_discoverer", "support_status": "detection_only"},
+    {"format_id": "lipidomics.progenesis", "support_status": "detection_only"},
+    {"format_id": "lipidomics.xcms", "support_status": "detection_only"},
+    {"format_id": "lipidomics.compound_discoverer", "support_status": "detection_only"}
+  ],
+  "auxiliary_surfaces": [
+    {
+      "surface_id": "phosphosite.api",
+      "treatment": "historical_candidate_api_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-068",
+      "runtime_owner_ticket_id": "OMICS-ART-077",
+      "decision_owner_ticket_id": "OMICS-ART-082",
+      "workflow_backend_promotion_authority": false
+    },
+    {
+      "surface_id": "multiomics.api",
+      "treatment": "historical_candidate_api_benchmark",
+      "workload_owner_ticket_id": "OMICS-ART-068",
+      "runtime_owner_ticket_id": "OMICS-ART-077",
+      "decision_owner_ticket_id": "OMICS-ART-082",
+      "workflow_backend_promotion_authority": false
+    }
+  ],
+  "placeholder_surfaces": [
+    {"surface_id": "transcriptomics.ui", "treatment": "excluded_until_implemented"},
+    {"surface_id": "integration.ui", "treatment": "excluded_until_implemented"}
+  ],
+  "counts": {
+    "full_workflows": 6,
+    "reader_boundaries": 3,
+    "excluded_capabilities": 2,
+    "excluded_formats": 6,
+    "auxiliary_surfaces": 2,
+    "placeholder_surfaces": 2,
+    "inventory_capabilities": 11,
+    "inventory_formats": 16
+  },
+  "unknown_or_unowned_policy": "reject"
+}

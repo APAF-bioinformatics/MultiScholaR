@@ -1,0 +1,190 @@
+{
+  "schema": "multischolar.omics_publication_lipidomics_workload",
+  "schema_version": "1.0.0",
+  "contract_id": "lipidomics.custom.mixed_lc.representative.v1",
+  "owner_ticket_id": "OMICS-ART-067",
+  "status": "frozen",
+  "workload_id": "lipidomics.custom.lipid.standard.v1.mixed_lc.representative",
+  "workload_class": "representative",
+  "capability": {
+    "omic_type": "lipidomics",
+    "data_level": "lipid",
+    "acquisition_mode": "not_recorded",
+    "capability_id": "lipidomics.custom.lipid.standard.v1",
+    "input_format": "custom",
+    "support_tier": "reader_boundary",
+    "verified_stages": [
+      "import",
+      "design"
+    ]
+  },
+  "assay_profile": {
+    "profile_id": "mixed_lc",
+    "assays": [
+      "LCMS_Pos",
+      "LCMS_Neg"
+    ],
+    "payload_mode": "bundle",
+    "member_count": 2
+  },
+  "dimensions": {
+    "aggregate_feature_count": 30000,
+    "assay_feature_counts": {
+      "LCMS_Pos": 15000,
+      "LCMS_Neg": 15000
+    },
+    "sample_count": 24,
+    "assay_count": 2,
+    "quantity_count": 720000,
+    "payload_member_count": 2
+  },
+  "model_profile_id": "generated.parameters.custom.mixed_lc.representative.holdout.v1",
+  "parameter_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/parameters-v1.json",
+    "sha256": "e781f875a283032c8203b66043b1fa8fc1cb510af4e30d0d59f72c2bb5ffb313"
+  },
+  "source_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/sources-v1.json",
+    "sha256": "f19653e8a29c4d1f36a763b252e99d6ff5414a12a125b0295f0de80f370279a0"
+  },
+  "split_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/splits-v1.json",
+    "sha256": "69591dff5b67ebdd3ce607e1ce250b45bba5e464d80758251257b250e32f0abf"
+  },
+  "mapping_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/mapping-authorities-v1.json",
+    "sha256": "f0bb75f0d66013c50b2e9c189656ed4fa17ec0c91beb487b90cb533b214629d7"
+  },
+  "contract_mapping_id": "lipidomics.mapping.custom.mixed_lc",
+  "support_boundary": {
+    "path": "tests/testdata/omics-performance/lipidomics/support-boundaries-v1.json",
+    "sha256": "79658b40a47d6b5be6bcd7a18f169b3ad8ce27053289250389c20a9ad299186f"
+  },
+  "generator": {
+    "mode": "generated",
+    "source_bindings": [
+      {
+        "path": "tools/profiling/omics_publication_protocol.R",
+        "sha256": "45b00788f8cbcc3746900d2dbe9d477b86a8da69175184145846ea0e6a55d822"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_contracts.R",
+        "sha256": "13c909b891332f7fe75ed5e967e1c7c06c402996498c55faba5c5fdbce9e1c4a"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_model.R",
+        "sha256": "fc759afc428f1a12fd5919f97f17a43e0af7fedfd765de2e09460390a18d6ae7"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_serializers.R",
+        "sha256": "9b7e24dffe88cc340bdfcfc318adcd4470bb9e6b89eac63475f1e1d1cff6dad6"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_truth.R",
+        "sha256": "df1c6578b45f51adf5802b7ac2b807450e27a312949fa3fae5878c442b7d0158"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_authorities.R",
+        "sha256": "9b728adf2379be319d407fcc67268ac9ba89d5efcd24464bcc1c2b3b74b643b9"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_sources.R",
+        "sha256": "64ed35947af38eb35c073f758af58fcc3b24e6c68bf17f0e39f7b8f13221abb4"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_governance.R",
+        "sha256": "929409aca3d0fd4a0e8b5a623421202e0cf4b079fd5e9bae85e6961d06fe5b4d"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_fixtures.R",
+        "sha256": "68bdfd5dc1e593d77cc408220ccc39bd8774befecf537242c6b2328d1a2c7f4e"
+      },
+      {
+        "path": "tools/profiling/omics_publication_workload_lipidomics.R",
+        "sha256": "17d126cd69b2c662f653c5fbba020abaa73da9d01fb1beb6af748b6423a842b8"
+      }
+    ],
+    "chunk_rows": 5000,
+    "output_members": [
+      "custom_lcms_pos.tsv",
+      "custom_lcms_neg.tsv"
+    ],
+    "truth_filename": "truth.json",
+    "fixture_payloads": [],
+    "fixture_truth": null
+  },
+  "rng": {
+    "kind": "L'Ecuyer-CMRG",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "seed_family_id": "generated.holdout.300000-399999.v1",
+    "seed": 330402,
+    "streams": {
+      "hierarchy": 330502,
+      "feature_offsets": 330602,
+      "class_residual": 330702,
+      "batch": 330802,
+      "residual": 330902,
+      "mcar": 331002,
+      "mar": 331102,
+      "mnar": 331202
+    }
+  },
+  "truth_contract": {
+    "schema_id": "lipidomics.truth.v1",
+    "oracle_method": "independent_online_generated_truth",
+    "validated_domains": [
+      "payload",
+      "mapping",
+      "assay_identity",
+      "dimensions",
+      "quantities",
+      "missingness",
+      "effects",
+      "design",
+      "lipid_classes",
+      "isomer_like_relations"
+    ],
+    "independent_of_package_reader": true,
+    "support_widening_allowed": false
+  },
+  "execution": {
+    "preparation_processes": 2,
+    "process_isolation": "fresh_vanilla_R",
+    "candidate_loaded": false,
+    "historical_pilot_required": false,
+    "swap_allowed": false,
+    "timeout_seconds": 900,
+    "expected_peak_bytes": 11520000
+  },
+  "privacy": {
+    "classification": "public_generated",
+    "private_source_opened": false,
+    "payload_tracked": false,
+    "direct_identifiers_present": false,
+    "cross_omic_values_reused": false
+  },
+  "claim_scope": {
+    "evidence_class": "public_generated",
+    "verified_stages": [
+      "import",
+      "design"
+    ],
+    "scientific_authority": false,
+    "performance_authority": true,
+    "cross_project_authority": false,
+    "vendor_authority": false,
+    "gc_vendor_authority": false,
+    "three_file_workflow_authority": false,
+    "promotion_authority": false,
+    "limitations": [
+      "Project-specific evidence without independent real-project sources.",
+      "Generated evidence cannot widen the declared route support boundary."
+    ]
+  },
+  "expected_digests": {
+    "payload_set_sha256": "d0592c9d86f6659c4872f49be0dbb2e37abc31af11f4837515b2334e5976a50b",
+    "truth_sha256": "2b12d8405360a7f8acbdea88e3fb84d53a7e4b3d548daf5d3fe6df9217d4a941"
+  },
+  "publication_authority": false
+}

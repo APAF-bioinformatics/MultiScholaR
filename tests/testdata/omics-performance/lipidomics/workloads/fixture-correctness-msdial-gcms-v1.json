@@ -1,0 +1,158 @@
+{
+  "schema": "multischolar.omics_publication_lipidomics_workload",
+  "schema_version": "1.0.0",
+  "contract_id": "lipidomics.msdial.gcms.fixture_correctness.v1",
+  "owner_ticket_id": "OMICS-ART-067",
+  "status": "frozen",
+  "workload_id": "lipidomics.msdial.lipid.standard.v1.gcms.fixture_correctness",
+  "workload_class": "fixture_correctness",
+  "capability": {
+    "omic_type": "lipidomics",
+    "data_level": "lipid",
+    "acquisition_mode": "not_recorded",
+    "capability_id": "lipidomics.msdial.lipid.standard.v1",
+    "input_format": "msdial",
+    "support_tier": "reader_boundary",
+    "verified_stages": [
+      "import",
+      "design"
+    ]
+  },
+  "assay_profile": {
+    "profile_id": "gcms",
+    "assays": [
+      "GCMS"
+    ],
+    "payload_mode": "single",
+    "member_count": 1
+  },
+  "dimensions": {
+    "aggregate_feature_count": 12,
+    "assay_feature_counts": {
+      "GCMS": 12
+    },
+    "sample_count": 6,
+    "assay_count": 1,
+    "quantity_count": 72,
+    "payload_member_count": 1
+  },
+  "model_profile_id": "generated.parameters.msdial.gcms.fixture_correctness.fixture.v1",
+  "parameter_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/parameters-v1.json",
+    "sha256": "e781f875a283032c8203b66043b1fa8fc1cb510af4e30d0d59f72c2bb5ffb313"
+  },
+  "source_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/sources-v1.json",
+    "sha256": "f19653e8a29c4d1f36a763b252e99d6ff5414a12a125b0295f0de80f370279a0"
+  },
+  "split_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/splits-v1.json",
+    "sha256": "69591dff5b67ebdd3ce607e1ce250b45bba5e464d80758251257b250e32f0abf"
+  },
+  "mapping_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/mapping-authorities-v1.json",
+    "sha256": "f0bb75f0d66013c50b2e9c189656ed4fa17ec0c91beb487b90cb533b214629d7"
+  },
+  "contract_mapping_id": "lipidomics.mapping.msdial.gcms",
+  "support_boundary": {
+    "path": "tests/testdata/omics-performance/lipidomics/support-boundaries-v1.json",
+    "sha256": "79658b40a47d6b5be6bcd7a18f169b3ad8ce27053289250389c20a9ad299186f"
+  },
+  "generator": {
+    "mode": "fixture_replay",
+    "source_bindings": [
+      {
+        "path": "tests/testdata/omics-performance/lipidomics/parameters-v1.json",
+        "sha256": "e781f875a283032c8203b66043b1fa8fc1cb510af4e30d0d59f72c2bb5ffb313"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_model.R",
+        "sha256": "fc759afc428f1a12fd5919f97f17a43e0af7fedfd765de2e09460390a18d6ae7"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_serializers.R",
+        "sha256": "9b7e24dffe88cc340bdfcfc318adcd4470bb9e6b89eac63475f1e1d1cff6dad6"
+      }
+    ],
+    "chunk_rows": null,
+    "output_members": [
+      "msdial_gcms.csv"
+    ],
+    "truth_filename": "truth.json",
+    "fixture_payloads": [
+      {
+        "path": "tests/testdata/omics-performance/lipidomics/fixtures/msdial-gcms/payload/msdial_gcms.csv",
+        "sha256": "ac9b9549f5d7de96d44a49f48bbe9bfd2a29c7e32484fc28aef78501eca5ceae"
+      }
+    ],
+    "fixture_truth": {
+      "path": "tests/testdata/omics-performance/lipidomics/fixtures/msdial-gcms/truth.json",
+      "sha256": "0d502c303eeedc91c34d57aec4c021c2e47364a4622f7699a06b0386f03fef36"
+    }
+  },
+  "rng": {
+    "kind": "L'Ecuyer-CMRG",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "seed_family_id": "fixture.no_rng.msdial.gcms.v1",
+    "seed": null,
+    "streams": []
+  },
+  "truth_contract": {
+    "schema_id": "lipidomics.truth.v1",
+    "oracle_method": "generated_reader_schema_truth",
+    "validated_domains": [
+      "payload",
+      "mapping",
+      "assay_identity",
+      "dimensions",
+      "quantities",
+      "missingness",
+      "effects",
+      "design",
+      "lipid_classes",
+      "isomer_like_relations"
+    ],
+    "independent_of_package_reader": true,
+    "support_widening_allowed": false
+  },
+  "execution": {
+    "preparation_processes": 2,
+    "process_isolation": "fresh_vanilla_R",
+    "candidate_loaded": false,
+    "historical_pilot_required": false,
+    "swap_allowed": false,
+    "timeout_seconds": 900,
+    "expected_peak_bytes": 1152
+  },
+  "privacy": {
+    "classification": "public_generated",
+    "private_source_opened": false,
+    "payload_tracked": false,
+    "direct_identifiers_present": false,
+    "cross_omic_values_reused": false
+  },
+  "claim_scope": {
+    "evidence_class": "generated_reader_characterization",
+    "verified_stages": [
+      "import",
+      "design"
+    ],
+    "scientific_authority": false,
+    "performance_authority": false,
+    "cross_project_authority": false,
+    "vendor_authority": false,
+    "gc_vendor_authority": false,
+    "three_file_workflow_authority": false,
+    "promotion_authority": false,
+    "limitations": [
+      "Project-specific evidence without independent real-project sources.",
+      "Generated evidence cannot widen the declared route support boundary."
+    ]
+  },
+  "expected_digests": {
+    "payload_set_sha256": "cc4392de28ca7dbf09d282f35b8dd5e66876656141e84c5294765d0a4ff514b6",
+    "truth_sha256": "0d502c303eeedc91c34d57aec4c021c2e47364a4622f7699a06b0386f03fef36"
+  },
+  "publication_authority": false
+}

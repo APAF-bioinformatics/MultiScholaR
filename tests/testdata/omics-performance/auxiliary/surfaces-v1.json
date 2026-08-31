@@ -1,0 +1,59 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_surfaces",
+  "schema_version": "1.0.0",
+  "surfaces_id": "multischolar.omics_publication_auxiliary_surfaces.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "capability_binding": {
+    "path": "tests/testdata/omics-capabilities.json",
+    "sha256": "f202356edcdc3a812f0721e6092bc6d7007e9b752e13ad28a9f725f14fc1bf77"
+  },
+  "coverage_binding": {
+    "path": "tests/testdata/omics-performance/coverage-v1.json",
+    "sha256": "40d25d9405793b4489f63a80762e531b53997eea0070838eba6cd02e63e36020"
+  },
+  "surfaces": [
+    {
+      "surface_id": "phosphosite.api",
+      "surface_type": "auxiliary_exported_api",
+      "primary_entry_point": "processMultisiteEvidence",
+      "compatibility_entry_points": [
+        "addColumnsToEvidenceTbl",
+        "getMaxProb",
+        "getBestPosition",
+        "chooseBestPhosphositeAccession",
+        "removePeptidesWithoutAbundances",
+        "filterPeptideAndExtractProbabilities",
+        "addPeptideStartAndEnd",
+        "addPhosphositesPositionsString",
+        "addXMerStrings",
+        "filterByScoreAndGetSimilarPeptides",
+        "allPhosphositesPivotLonger",
+        "groupParalogPeptides",
+        "allPhosphositesPivotWider",
+        "uniquePhosphositesSummariseLongList",
+        "uniquePhosphositesSummariseWideList"
+      ],
+      "claim_scope": "compatibility_and_performance_only"
+    },
+    {
+      "surface_id": "multiomics.api",
+      "surface_type": "auxiliary_exported_api",
+      "primary_entry_point": "runMetabolomicsPathwayEnrichment",
+      "compatibility_entry_points": [
+        "plotMofaWeights",
+        "runMetabolomicsEnrichmentAnalysis",
+        "runKeggEnrichment",
+        "runReactomeEnrichment",
+        "runOneStringDbRankEnrichmentMofa",
+        "retrieveStringDBEnrichmentResults"
+      ],
+      "claim_scope": "compatibility_and_performance_only"
+    }
+  ],
+  "workflow_capability_creation_allowed": false,
+  "artifact_state_ownership_allowed": false,
+  "automatic_backend_decision_allowed": false,
+  "unknown_policy": "reject",
+  "publication_authority": false
+}

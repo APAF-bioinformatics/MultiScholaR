@@ -1,0 +1,38 @@
+{
+  "schema": "multischolar.omics_publication_proteomics_exclusions",
+  "schema_version": "1.0.0",
+  "exclusions_id": "multischolar.omics_publication_proteomics_exclusions.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-065",
+  "coverage_binding": {
+    "path": "tests/testdata/omics-performance/coverage-v1.json",
+    "sha256": "40d25d9405793b4489f63a80762e531b53997eea0070838eba6cd02e63e36020"
+  },
+  "capability_binding": {
+    "path": "tests/testdata/omics-capabilities.json",
+    "sha256": "f202356edcdc3a812f0721e6092bc6d7007e9b752e13ad28a9f725f14fc1bf77"
+  },
+  "excluded_capabilities": [
+    {
+      "capability_id": "proteomics.spectronaut.protein.lfq.v1",
+      "format_id": "proteomics.spectronaut",
+      "support_status": "advertised_unverified",
+      "reason": "No representative fixture or complete scientifically verified route exists.",
+      "positive_contract_count": 0,
+      "serializer_dispatch": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    },
+    {
+      "capability_id": "proteomics.spectronaut.peptide.lfq.v1",
+      "format_id": "proteomics.spectronaut",
+      "support_status": "advertised_unverified",
+      "reason": "No representative fixture or complete scientifically verified route exists.",
+      "positive_contract_count": 0,
+      "serializer_dispatch": false,
+      "performance_authority": false,
+      "promotion_authority": false
+    }
+  ],
+  "unknown_policy": "reject",
+  "publication_authority": false
+}

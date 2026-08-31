@@ -1,0 +1,545 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apaf-bioinformatics.github.io/MultiScholaR/schemas/omics-auto-policy-receipt-v2.json",
+  "title": "MultiScholaR Omics Auto Policy Receipt V2",
+  "description": "Additive transition successor preserving non-promotional legacy current routing while requiring exact pre-ingress bytes for proposed, confirmatory, and final receipts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "schema_predecessor",
+    "receipt_id",
+    "receipt_kind",
+    "owner_ticket_id",
+    "capability_id",
+    "platforms",
+    "size_measure",
+    "threshold_bytes",
+    "below_threshold",
+    "at_or_above_threshold",
+    "decision",
+    "claim_scope",
+    "authority_bindings",
+    "evidence_bindings",
+    "role_bindings",
+    "rollback",
+    "digest_contract",
+    "receipt_digest"
+  ],
+  "properties": {
+    "schema": {
+      "const": "multischolar.omics_auto_policy_receipt"
+    },
+    "schema_version": {
+      "const": "2.0.0"
+    },
+    "receipt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "receipt_kind": {
+      "enum": [
+        "reconciled_current",
+        "proposed_pilot",
+        "confirmatory_decision",
+        "final_installed"
+      ]
+    },
+    "owner_ticket_id": {
+      "type": "string",
+      "pattern": "^OMICS-ART-[0-9]{3}$"
+    },
+    "capability_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "capability_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "descriptor_digest": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "platforms": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "size_measure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "measure_id",
+        "unit",
+        "exact",
+        "available_before_full_parse"
+      ],
+      "properties": {
+        "measure_id": {
+          "enum": [
+            "legacy_r_object_size_x2.v1",
+            "total_uncompressed_input_bytes_v1"
+          ]
+        },
+        "unit": {
+          "const": "byte"
+        },
+        "exact": {
+          "type": "boolean"
+        },
+        "available_before_full_parse": {
+          "type": "boolean"
+        }
+      }
+    },
+    "threshold_bytes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "below_threshold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backend",
+        "rollout"
+      ],
+      "properties": {
+        "backend": {
+          "const": "memory"
+        },
+        "rollout": {
+          "const": "none"
+        }
+      }
+    },
+    "at_or_above_threshold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backend",
+        "rollout"
+      ],
+      "properties": {
+        "backend": {
+          "enum": [
+            "memory",
+            "artifact"
+          ]
+        },
+        "rollout": {
+          "enum": [
+            "none",
+            "dual_write",
+            "read_through",
+            "evict"
+          ]
+        }
+      }
+    },
+    "decision": {
+      "enum": [
+        "engineering_current_baseline",
+        "proposed_pilot",
+        "confirmed_promote",
+        "confirmed_no_promotion",
+        "final_installed"
+      ]
+    },
+    "terminal_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "claim_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "support_tier",
+        "project_scope",
+        "host_scope",
+        "publication_authority"
+      ],
+      "properties": {
+        "support_tier": {
+          "enum": [
+            "scientifically_supported",
+            "reader_characterized"
+          ]
+        },
+        "project_scope": {
+          "enum": [
+            "project_specific",
+            "cross_project"
+          ]
+        },
+        "host_scope": {
+          "enum": [
+            "primary_host",
+            "validated_linux_hosts"
+          ]
+        },
+        "publication_authority": {
+          "type": "boolean"
+        }
+      }
+    },
+    "authority_bindings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "evidence_bindings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "project_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "pilot_split_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "holdout_split_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "threshold_grid_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "estimand_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "candidate_revision": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "role_bindings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "role_id",
+          "principal_id",
+          "handoff_digest"
+        ],
+        "properties": {
+          "role_id": {
+            "type": "string"
+          },
+          "principal_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "handoff_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "gate_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "gate_id",
+          "status",
+          "evidence_digest"
+        ],
+        "properties": {
+          "gate_id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "passed",
+              "failed",
+              "unavailable"
+            ]
+          },
+          "evidence_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "new_work_backend",
+        "existing_artifact_mode",
+        "implicit_memory_migration",
+        "delete_artifacts"
+      ],
+      "properties": {
+        "new_work_backend": {
+          "const": "memory"
+        },
+        "existing_artifact_mode": {
+          "const": "read_only"
+        },
+        "implicit_memory_migration": {
+          "const": false
+        },
+        "delete_artifacts": {
+          "const": false
+        }
+      }
+    },
+    "digest_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "canonicalization",
+        "excluded_field"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "sha256"
+        },
+        "canonicalization": {
+          "const": "canonical_json_sorted_keys_utf8_v1"
+        },
+        "excluded_field": {
+          "const": "receipt_digest"
+        }
+      }
+    },
+    "receipt_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "schema_predecessor": {
+      "$ref": "#/$defs/binding"
+    }
+  },
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding_id",
+        "path_or_uri",
+        "sha256"
+      ],
+      "properties": {
+        "binding_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path_or_uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "enum": [
+              "confirmed_promote",
+              "final_installed"
+            ]
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "then": {
+        "properties": {
+          "threshold_bytes": {
+            "type": "integer"
+          },
+          "at_or_above_threshold": {
+            "properties": {
+              "backend": {
+                "const": "artifact"
+              },
+              "rollout": {
+                "const": "evict"
+              }
+            }
+          },
+          "claim_scope": {
+            "properties": {
+              "publication_authority": {
+                "const": true
+              }
+            }
+          }
+        },
+        "required": [
+          "project_ids",
+          "pilot_split_id",
+          "holdout_split_id",
+          "threshold_grid_id",
+          "estimand_ids",
+          "candidate_revision",
+          "gate_results"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "confirmed_no_promotion"
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "then": {
+        "properties": {
+          "at_or_above_threshold": {
+            "properties": {
+              "backend": {
+                "const": "memory"
+              },
+              "rollout": {
+                "const": "none"
+              }
+            }
+          }
+        },
+        "required": [
+          "terminal_reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "size_measure": {
+            "properties": {
+              "measure_id": {
+                "const": "legacy_r_object_size_x2.v1"
+              }
+            },
+            "required": [
+              "measure_id"
+            ]
+          }
+        },
+        "required": [
+          "size_measure"
+        ]
+      },
+      "then": {
+        "properties": {
+          "receipt_kind": {
+            "const": "reconciled_current"
+          },
+          "owner_ticket_id": {
+            "const": "OMICS-ART-069"
+          },
+          "decision": {
+            "const": "engineering_current_baseline"
+          },
+          "size_measure": {
+            "properties": {
+              "exact": {
+                "const": false
+              },
+              "available_before_full_parse": {
+                "const": false
+              }
+            }
+          },
+          "claim_scope": {
+            "properties": {
+              "publication_authority": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "size_measure": {
+            "properties": {
+              "measure_id": {
+                "const": "total_uncompressed_input_bytes_v1"
+              }
+            },
+            "required": [
+              "measure_id"
+            ]
+          }
+        },
+        "required": [
+          "size_measure"
+        ]
+      },
+      "then": {
+        "properties": {
+          "size_measure": {
+            "properties": {
+              "exact": {
+                "const": true
+              },
+              "available_before_full_parse": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

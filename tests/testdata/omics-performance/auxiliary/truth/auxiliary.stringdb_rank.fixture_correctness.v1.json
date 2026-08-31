@@ -1,0 +1,62 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_truth",
+  "schema_version": "1.0.0",
+  "truth_id": "auxiliary.stringdb_rank.fixture_correctness.v1.truth",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "workload_id": "auxiliary.stringdb_rank.fixture_correctness.v1",
+  "route_id": "stringdb_rank",
+  "workload_class": "fixture_correctness",
+  "contract_basis_sha256": "5b48948a1141ee767c4e12952f2a492bca7c8b141b5139f2516f0f14eedb8d09",
+  "payload_sha256": "c8329a5cee700f5125c72c4d6eb2fb30eab08acdd8c9660373fa66b464cd9db8",
+  "dimensions": {
+    "evidence_row_count": 0,
+    "feature_count": 1000,
+    "sample_count": 20,
+    "measured_sample_count": 0,
+    "layer_count": 3,
+    "response_row_count": 5,
+    "primary_work_units": 1000,
+    "sample_scaling_measured": false
+  },
+  "facts": {
+    "feature_count": 1000,
+    "layer_feature_counts": {
+      "proteome": 334,
+      "metabolome_lc": 333,
+      "metabolome_gc": 333
+    },
+    "missing_weight_count": 22,
+    "duplicate_feature_count": 31,
+    "tied_weight_count": 78,
+    "contextual_sample_count": 20,
+    "measured_sample_count": 0,
+    "sample_union_count": 30,
+    "sample_intersection_count": 15,
+    "sample_union_sha256": "4627d6760bd27c8ea1f1d99ed207ed5396440302d283134aaa311e10970b158a",
+    "sample_intersection_sha256": "4e6680a34c65e063e1935784c5afa40e4e3baf7c39c91a44c54d37598087ad29",
+    "top_weight_ids": [],
+    "top_weight_ids_sha256": [],
+    "enrichment_join_cardinality": [],
+    "response_row_counts": {
+      "stringdb": 5
+    },
+    "response_sha256": {
+      "stringdb": "77741840534753653de79057a2f1781af97a92ed186ccc2a6f54d1f112acdede"
+    },
+    "sample_scaling_performance_claim": false,
+    "mofa_fitting_or_inference_claim": false,
+    "service_behaviour_claim": false,
+    "exact_order_required": true
+  },
+  "oracle": {
+    "implementation": "independent_generator_cardinality_and_order_oracle",
+    "package_reader_used": false,
+    "package_export_used": false,
+    "historical_result_used": false,
+    "candidate_result_used": false
+  },
+  "scientific_authority": false,
+  "promotion_authority": false,
+  "publication_authority": false
+}

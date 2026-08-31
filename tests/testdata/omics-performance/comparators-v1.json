@@ -1,0 +1,155 @@
+{
+  "schema": "multischolar.omics_publication_comparators",
+  "schema_version": "1.0.0",
+  "authority_id": "multischolar.omics_publication_comparators.2026-08-28.v2",
+  "owner_ticket_id": "OMICS-ART-064",
+  "status": "fixed_revisions_verified_candidate_pending",
+  "common_environment": {
+    "environment_id": "multischolar.common_r_4_6_bioc_3_23.2026-08-27.v1",
+    "r_version": "4.6.1",
+    "platform": "x86_64-pc-linux-gnu",
+    "lockfile": {
+      "path": "renv.lock",
+      "sha256": "a47d8671404ec0ec95eabb5c17554c607f5c973330a226d793c9002e8af70efe"
+    },
+    "lock_scope": {
+      "path": "tools/profiling/omics-publication-lock-scope-v1.json",
+      "sha256": "2a0a21d3ef64a535820e604f9ec9ef0d865d1704f7cf44d833e3328dd45e42d7"
+    },
+    "repositories": {
+      "path": "tools/profiling/omics-publication-repositories-v1.json",
+      "sha256": "d6a2928ec4e7d4ccb078272c17feed8b3cfc249f3348146f43166faafa4201b7"
+    },
+    "system_dependencies": {
+      "path": "tools/profiling/omics-publication-system-dependencies-v1.json",
+      "sha256": "eada74dec565b6e42434c8264c19b929ff05b7eaf62a0d64b1ce56afa61fc759"
+    },
+    "restore_evidence": {
+      "status": "verified",
+      "restore_repetitions": 2,
+      "receipt_sha256": [
+        "3c3da21687eb2b433d4679431ace0d83721bb5bcd67e4ecda2ba4c96d8d09e7f",
+        "63f60c48740fa64ce9d4975e9a6c9457f1c5aaf460985e00226a771516d3b3dd"
+      ],
+        "reproducibility_sha256": "af8f95dadc4a2fd1f5251b501dd309e2f25ed68378f4277195b491d4325f12a9"
+    },
+    "restore_policy": {
+      "ambient_user_library": false,
+      "common_lock_required": true,
+      "restore_repetitions": 2,
+      "renv_sandbox_required": true,
+      "source_packages_required": true,
+      "optional_packages_unavailable": [],
+      "every_declared_suggest_required": true,
+      "incompatibility_outcome": "incomparable_dependency_environment"
+    }
+  },
+  "comparators": [
+    {
+      "comparator_id": "historical_janitor",
+      "role": "historical_release",
+      "revision": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017",
+      "status": "verified",
+      "source_identity": {
+        "revision": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017",
+        "tree_oid": "ffda8c1d65c764d669bf6ec350a793917f6c2e3e",
+        "archive_sha256": "37f02e612d48f12de6f46e455048012071a8996f751b7ad0add5ebdc8b8a50b9",
+        "tracked_file_count": 2600,
+        "tracked_path_digest": "7c8190e7811ebf7c5b34437b76889eacc2e33b42667ebbb5f4538c8b43626446"
+      },
+      "backend_envelopes": ["memory"],
+      "claim_classes": ["release_effect"],
+      "build_receipts": [
+        {
+          "evidence_id": "historical_janitor.1.4",
+          "evidence_type": "clean_build_receipt",
+          "sha256": "31e05dd40584aa8aceba96315d6696b86c20451969cee60a9a5e02cb96e311be"
+        },
+        {
+          "evidence_id": "historical_janitor.2.1",
+          "evidence_type": "clean_build_receipt",
+          "sha256": "dce38cecf4b78d5ee6e494c44af2ade5973d6b4f1865be27c94abc421ba2441f"
+        },
+        {
+          "evidence_id": "historical_janitor.build_pair.v1",
+          "evidence_type": "build_pair_reproducibility",
+          "sha256": "daf17e6d763a9234d47691011ba41e60b7e69c1fd730603a5ad9435455e177e2"
+        }
+      ],
+      "execution_authority": false
+    },
+    {
+      "comparator_id": "pre_repair_performance",
+      "role": "pre_repair_canary",
+      "revision": "56725e90c5fda97835775f5f8f57c02703b53120",
+      "status": "verified",
+      "source_identity": {
+        "revision": "56725e90c5fda97835775f5f8f57c02703b53120",
+        "tree_oid": "6cbeafc87b7829609d566fac45d7e26438a98c91",
+        "archive_sha256": "c0348e33d936d981b72e2385a87f2eb14f1e95030e092d07c39bf11f1cfeab7f",
+        "tracked_file_count": 2840,
+        "tracked_path_digest": "d4b8e4acc8b1a1203d64a9c06fb90833a02bb37a76c7168ac038e6981b7ea307"
+      },
+      "backend_envelopes": ["memory", "artifact"],
+      "claim_classes": ["repair_effect", "release_effect"],
+      "build_receipts": [
+        {
+          "evidence_id": "pre_repair_performance.1.1",
+          "evidence_type": "clean_build_receipt",
+          "sha256": "4988d4f4994812ef3c34b5327bbbc4c0fd438ebe2f92373d4ded9814947477ec"
+        },
+        {
+          "evidence_id": "pre_repair_performance.2.1",
+          "evidence_type": "clean_build_receipt",
+          "sha256": "ca11f3216ebc0a8379adc657dcb87347bf5fe6268d86be34ffd96b9e35a9fcc8"
+        },
+        {
+          "evidence_id": "pre_repair_performance.build_pair.v1",
+          "evidence_type": "build_pair_reproducibility",
+          "sha256": "844ba4bd75803a27f8e3c27ae4e9e3968f5d0e0c092b7c74f5c2bf572ee8f2d3"
+        }
+      ],
+      "execution_authority": false
+    },
+    {
+      "comparator_id": "candidate",
+      "role": "future_candidate",
+      "revision": null,
+      "status": "pending_omics_art_077",
+      "source_identity": null,
+      "backend_envelopes": ["memory", "artifact", "proposed_auto"],
+      "claim_classes": ["release_effect", "backend_effect", "repair_effect"],
+      "build_receipts": [],
+      "execution_authority": false
+    }
+  ],
+  "comparison_routes": [
+    {
+      "comparison_id": "release_effect.historical_memory_vs_candidate_auto",
+      "claim_class": "release_effect",
+      "numerator": "candidate::proposed_auto",
+      "denominator": "historical_janitor::memory"
+    },
+    {
+      "comparison_id": "backend_effect.candidate_artifact_vs_memory",
+      "claim_class": "backend_effect",
+      "numerator": "candidate::artifact",
+      "denominator": "candidate::memory"
+    },
+    {
+      "comparison_id": "repair_effect.candidate_vs_pre_repair_artifact",
+      "claim_class": "repair_effect",
+      "numerator": "candidate::artifact",
+      "denominator": "pre_repair_performance::artifact"
+    }
+  ],
+  "execution_authority": false,
+  "promotion_authority": false,
+  "immutability": {
+    "fixed_worktrees_read_only": true,
+    "candidate_successor_required": true,
+    "source_edits_allowed": false,
+    "compatibility_shims_allowed": false,
+    "build_outside_measurement_required": true
+  }
+}

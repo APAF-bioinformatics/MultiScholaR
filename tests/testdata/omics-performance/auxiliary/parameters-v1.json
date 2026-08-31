@@ -1,0 +1,464 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_parameters",
+  "schema_version": "1.0.0",
+  "parameters_id": "multischolar.omics_publication_auxiliary_parameters.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "parameters": [
+    {
+      "parameter_id": "phosphosite_protein_pool_size",
+      "value": 10000,
+      "unit": "proteins",
+      "domain": {
+        "type": "integer_interval",
+        "minimum": 10,
+        "maximum": 1000000
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_peptide_length",
+      "value": 15,
+      "unit": "amino_acids",
+      "domain": {
+        "type": "integer_interval",
+        "minimum": 7,
+        "maximum": 45
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_ambiguous_accession_fraction",
+      "value": 0.080000000000000002,
+      "unit": "fraction_of_evidence_rows",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.40000000000000002
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_missing_accession_fraction",
+      "value": 0.02,
+      "unit": "fraction_of_evidence_rows",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.20000000000000001
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_contaminant_fraction",
+      "value": 0.01,
+      "unit": "fraction_of_evidence_rows",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.20000000000000001
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_reverse_fraction",
+      "value": 0.01,
+      "unit": "fraction_of_evidence_rows",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.20000000000000001
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_zero_abundance_fraction",
+      "value": 0.040000000000000001,
+      "unit": "fraction_of_evidence_rows",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_duplicate_fraction",
+      "value": 0.050000000000000003,
+      "unit": "fraction_of_evidence_rows",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_multisite_fraction",
+      "value": 0.25,
+      "unit": "fraction_of_evidence_rows",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.80000000000000004
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_high_confidence_fraction",
+      "value": 0.69999999999999996,
+      "unit": "fraction_of_evidence_rows",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0.10000000000000001,
+        "maximum": 1
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeFeaturePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "phosphosite_repeat_match_fraction",
+      "value": 0.029999999999999999,
+      "unit": "fraction_of_proteins",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.29999999999999999
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "phosphosite.api",
+      "consumer": "auxPublicationPhosphositeProteinPlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "multiomics_layer_count",
+      "value": 3,
+      "unit": "layers",
+      "domain": {
+        "type": "integer_interval",
+        "minimum": 3,
+        "maximum": 12
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "multiomics.api",
+      "consumer": "auxPublicationMultiomicsPlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "multiomics_sample_overlap_fraction",
+      "value": 0.75,
+      "unit": "fraction_of_samples",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0.10000000000000001,
+        "maximum": 1
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "multiomics.api",
+      "consumer": "auxPublicationMultiomicsPlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "multiomics_missing_weight_fraction",
+      "value": 0.02,
+      "unit": "fraction_of_feature_weights",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "multiomics.api",
+      "consumer": "auxPublicationMultiomicsPlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "multiomics_duplicate_feature_fraction",
+      "value": 0.029999999999999999,
+      "unit": "fraction_of_feature_ids",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "multiomics.api",
+      "consumer": "auxPublicationMultiomicsPlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "multiomics_tied_weight_fraction",
+      "value": 0.080000000000000002,
+      "unit": "fraction_of_feature_weights",
+      "domain": {
+        "type": "numeric_interval",
+        "minimum": 0,
+        "maximum": 0.5
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "multiomics.api",
+      "consumer": "auxPublicationMultiomicsPlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "multiomics_response_pathway_count",
+      "value": 250,
+      "unit": "pathways_per_service",
+      "domain": {
+        "type": "integer_interval",
+        "minimum": 5,
+        "maximum": 100000
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "multiomics.api",
+      "consumer": "auxPublicationResponsePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    },
+    {
+      "parameter_id": "multiomics_response_identifier_multiplicity",
+      "value": 4,
+      "unit": "identifiers_per_pathway",
+      "domain": {
+        "type": "integer_interval",
+        "minimum": 1,
+        "maximum": 1000
+      },
+      "origin": "methodological_design",
+      "source_binding": null,
+      "surface_id": "multiomics.api",
+      "consumer": "auxPublicationResponsePlan",
+      "allowed_claim_vocabulary": [
+        "declared_synthetic",
+        "mechanistic_simulation"
+      ],
+      "limitations": [
+        "Declared synthetic design parameter; no empirical biological, instrument, cohort, or service-behaviour claim."
+      ]
+    }
+  ],
+  "consumer_registry": [
+    {
+      "parameter_id": "phosphosite_protein_pool_size",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_peptide_length",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_ambiguous_accession_fraction",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_missing_accession_fraction",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_contaminant_fraction",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_reverse_fraction",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_zero_abundance_fraction",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_duplicate_fraction",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_multisite_fraction",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_high_confidence_fraction",
+      "consumer": "auxPublicationPhosphositeFeaturePlan"
+    },
+    {
+      "parameter_id": "phosphosite_repeat_match_fraction",
+      "consumer": "auxPublicationPhosphositeProteinPlan"
+    },
+    {
+      "parameter_id": "multiomics_layer_count",
+      "consumer": "auxPublicationMultiomicsPlan"
+    },
+    {
+      "parameter_id": "multiomics_sample_overlap_fraction",
+      "consumer": "auxPublicationMultiomicsPlan"
+    },
+    {
+      "parameter_id": "multiomics_missing_weight_fraction",
+      "consumer": "auxPublicationMultiomicsPlan"
+    },
+    {
+      "parameter_id": "multiomics_duplicate_feature_fraction",
+      "consumer": "auxPublicationMultiomicsPlan"
+    },
+    {
+      "parameter_id": "multiomics_tied_weight_fraction",
+      "consumer": "auxPublicationMultiomicsPlan"
+    },
+    {
+      "parameter_id": "multiomics_response_pathway_count",
+      "consumer": "auxPublicationResponsePlan"
+    },
+    {
+      "parameter_id": "multiomics_response_identifier_multiplicity",
+      "consumer": "auxPublicationResponsePlan"
+    }
+  ],
+  "generated_counts_as_real": false,
+  "scientific_authority": false,
+  "publication_authority": false
+}

@@ -1,0 +1,217 @@
+{
+  "schema": "multischolar.omics_publication_estimands",
+  "schema_version": "1.0.0",
+  "estimands_id": "multischolar.omics_publication_estimands.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "primary_import_work_unit": {
+    "work_unit_id": "validated_input_byte",
+    "unit": "byte",
+    "count_source": "total_uncompressed_input_bytes_v1",
+    "backend_invariant": true
+  },
+  "effect_classes": {
+    "release_effect": "historical_memory_vs_candidate_proposed_auto_end_user_release",
+    "backend_effect": "candidate_memory_vs_candidate_artifact_matched_science",
+    "repair_effect": "pre_repair_artifact_vs_candidate_artifact_matched_operations"
+  },
+  "phase_definitions": [
+    {
+      "phase_id": "import_and_settle",
+      "start_marker": "measured_worker_import_start",
+      "stop_marker": "settled_payload_free_marker",
+      "included_operations": [
+        "input_open",
+        "parse",
+        "canonicalize",
+        "import_validation",
+        "design_when_declared_by_workload",
+        "artifact_encode_commit_publish_when_artifact",
+        "memory_state_publish_when_memory",
+        "compatibility_products_declared_by_estimand",
+        "source_handoff_and_resource_release"
+      ],
+      "excluded_operations": [
+        "package_installation",
+        "payload_generation",
+        "independent_scientific_oracle_construction",
+        "independent_full_hydration_parity_worker",
+        "publication_analysis_and_figures"
+      ],
+      "artifact_precondition": "no_preexisting_current_generation_for_import_estimand",
+      "cache_precondition": "protocol_cache_stratum",
+      "primary_work_unit_id": "validated_input_byte",
+      "secondary_work_unit_ids": ["canonical_quantitative_value", "canonical_feature"],
+      "allowed_effect_classes": ["release_effect", "backend_effect", "repair_effect"],
+      "terminal_failures": ["parse_failed", "scientific_mismatch", "commit_failed", "resource_leak", "timeout", "oom"]
+    },
+    {
+      "phase_id": "scientific_stage",
+      "start_marker": "stage_hydration_lease_acquired",
+      "stop_marker": "next_stage_settled_and_previous_lease_released",
+      "included_operations": [
+        "exact_current_stage_hydration",
+        "existing_r_s4_scientific_transform",
+        "s4_and_scientific_validation",
+        "next_stage_commit_or_memory_publish",
+        "previous_stage_release"
+      ],
+      "excluded_operations": [
+        "initial_import",
+        "unrelated_stage_work",
+        "independent_oracle_worker",
+        "figure_generation"
+      ],
+      "artifact_precondition": "exact_parent_generation_current",
+      "cache_precondition": "empty_or_declared_bounded_stage_cache",
+      "primary_work_unit_id": "validated_input_byte",
+      "secondary_work_unit_ids": ["stage_input_feature", "stage_input_quantitative_value"],
+      "allowed_effect_classes": ["backend_effect", "repair_effect"],
+      "terminal_failures": ["hydration_failed", "scientific_mismatch", "stage_commit_failed", "resource_leak", "timeout", "oom"]
+    },
+    {
+      "phase_id": "complete_workflow",
+      "start_marker": "measured_worker_import_start",
+      "stop_marker": "final_export_complete_and_all_resources_settled",
+      "included_operations": [
+        "import_and_design",
+        "all_capability_reachable_scientific_stages",
+        "session_roundtrip",
+        "reports_and_exports",
+        "final_s4_validation",
+        "resource_release"
+      ],
+      "excluded_operations": [
+        "package_installation",
+        "payload_generation",
+        "independent_oracle_worker",
+        "publication_analysis_and_figures",
+        "external_network_latency"
+      ],
+      "artifact_precondition": "none_for_new_project",
+      "cache_precondition": "protocol_cache_stratum",
+      "primary_work_unit_id": "validated_input_byte",
+      "secondary_work_unit_ids": ["final_feature", "final_quantitative_value"],
+      "allowed_effect_classes": ["release_effect", "backend_effect"],
+      "terminal_failures": ["workflow_failed", "scientific_mismatch", "report_or_export_failed", "resource_leak", "timeout", "oom"]
+    },
+    {
+      "phase_id": "bounded_query",
+      "start_marker": "query_suite_after_warmup_start",
+      "stop_marker": "final_measured_query_result_released",
+      "included_operations": ["query_open", "parameter_bind", "execute", "fetch_bounded_result", "digest_result", "result_release"],
+      "excluded_operations": ["artifact_construction", "project_import", "query_warmups", "publication_analysis"],
+      "artifact_precondition": "validated_closed_project_artifacts_prepared_in_separate_setup_phase",
+      "cache_precondition": "declared_query_cache_stratum",
+      "primary_work_unit_id": "returned_result_byte",
+      "secondary_work_unit_ids": ["returned_row", "query_operation"],
+      "allowed_effect_classes": ["backend_effect", "repair_effect"],
+      "terminal_failures": ["query_mismatch", "query_bound_exceeded", "resource_leak", "timeout", "oom"]
+    },
+    {
+      "phase_id": "closed_project_resume",
+      "start_marker": "fresh_process_resume_request",
+      "stop_marker": "payload_free_ui_ready_or_memory_session_ready",
+      "included_operations": ["project_discovery", "receipt_and_registry_validation", "lean_state_bootstrap", "ui_ready_marker", "resource_release"],
+      "excluded_operations": ["project_creation", "artifact_construction", "explicit_scientific_payload_read", "independent_oracle_worker"],
+      "artifact_precondition": "validated_closed_project_prepared_in_separate_setup_phase",
+      "cache_precondition": "declared_resume_cache_stratum",
+      "primary_work_unit_id": "resume_operation",
+      "secondary_work_unit_ids": ["validated_generation", "validated_metadata_byte"],
+      "allowed_effect_classes": ["backend_effect", "repair_effect"],
+      "terminal_failures": ["resume_mismatch", "eager_payload_retention", "resource_leak", "timeout", "oom"]
+    },
+    {
+      "phase_id": "auxiliary_api_call",
+      "start_marker": "validated_api_input_ready",
+      "stop_marker": "api_output_validated_and_resources_released",
+      "included_operations": ["local_api_algorithm", "output_validation", "resource_release"],
+      "excluded_operations": ["payload_generation", "live_network_latency", "publication_analysis"],
+      "artifact_precondition": "not_applicable",
+      "cache_precondition": "declared_local_response_fixture",
+      "primary_work_unit_id": "validated_input_byte",
+      "secondary_work_unit_ids": ["input_row", "join_edge", "layer_feature"],
+      "allowed_effect_classes": ["release_effect"],
+      "terminal_failures": ["api_output_mismatch", "resource_leak", "timeout", "oom"]
+    }
+  ],
+  "capability_phase_assignments": [
+    {
+      "subject_id": "proteomics.diann.peptide.dia.v1",
+      "complete_workflow": true,
+      "phase_ids": ["import_and_settle", "scientific_stage", "complete_workflow", "bounded_query", "closed_project_resume"],
+      "scientific_stage_ids": ["design", "peptide_qc", "protein_rollup_qc", "normalization_ruv", "session", "differential_abundance", "enrichment", "summary_report_export"]
+    },
+    {
+      "subject_id": "proteomics.maxquant.protein.lfq.v1",
+      "complete_workflow": true,
+      "phase_ids": ["import_and_settle", "scientific_stage", "complete_workflow", "bounded_query", "closed_project_resume"],
+      "scientific_stage_ids": ["design", "protein_qc_bypass", "normalization", "session", "differential_abundance", "enrichment", "summary_report_export"]
+    },
+    {
+      "subject_id": "proteomics.fragpipe.protein.lfq.v1",
+      "complete_workflow": true,
+      "phase_ids": ["import_and_settle", "scientific_stage", "complete_workflow", "bounded_query", "closed_project_resume"],
+      "scientific_stage_ids": ["design", "protein_qc_bypass", "normalization", "session", "differential_abundance", "enrichment", "summary_report_export"]
+    },
+    {
+      "subject_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "complete_workflow": true,
+      "phase_ids": ["import_and_settle", "scientific_stage", "complete_workflow", "bounded_query", "closed_project_resume"],
+      "scientific_stage_ids": ["design", "protein_qc_bypass", "normalization", "session", "differential_abundance", "enrichment", "summary_report_export"]
+    },
+    {
+      "subject_id": "metabolomics.custom.metabolite.standard.v1",
+      "complete_workflow": true,
+      "phase_ids": ["import_and_settle", "scientific_stage", "complete_workflow", "bounded_query", "closed_project_resume"],
+      "scientific_stage_ids": ["design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"]
+    },
+    {
+      "subject_id": "lipidomics.lipidsearch.lipid.standard.v1",
+      "complete_workflow": true,
+      "phase_ids": ["import_and_settle", "scientific_stage", "complete_workflow", "bounded_query", "closed_project_resume"],
+      "scientific_stage_ids": ["design", "qc", "normalization_ruv", "session", "differential_abundance", "summary_report_export"]
+    },
+    {
+      "subject_id": "metabolomics.msdial.metabolite.standard.v1",
+      "complete_workflow": false,
+      "phase_ids": ["import_and_settle", "bounded_query", "closed_project_resume"],
+      "scientific_stage_ids": ["design"]
+    },
+    {
+      "subject_id": "lipidomics.msdial.lipid.standard.v1",
+      "complete_workflow": false,
+      "phase_ids": ["import_and_settle", "bounded_query", "closed_project_resume"],
+      "scientific_stage_ids": ["design"]
+    },
+    {
+      "subject_id": "lipidomics.custom.lipid.standard.v1",
+      "complete_workflow": false,
+      "phase_ids": ["import_and_settle", "bounded_query", "closed_project_resume"],
+      "scientific_stage_ids": ["design"]
+    },
+    {
+      "subject_id": "phosphosite.api",
+      "complete_workflow": false,
+      "phase_ids": ["auxiliary_api_call"],
+      "scientific_stage_ids": []
+    },
+    {
+      "subject_id": "multiomics.api",
+      "complete_workflow": false,
+      "phase_ids": ["auxiliary_api_call"],
+      "scientific_stage_ids": []
+    }
+  ],
+  "concrete_id_rule": {
+    "format": "{subject_id}.{project_id}.{phase_id}.{stage_id_or_none}.{effect_class}.v1",
+    "materialize_before_candidate": true,
+    "unknown_phase_or_work_unit": "reject"
+  },
+  "consumers": [
+    "tools/profiling/run_omics_publication_benchmark.R",
+    "tools/profiling/omics_publication_statistics.R",
+    "tools/publication/omics_performance_figures.R",
+    "tools/publication/omics_performance_tables.R",
+    "tests/testdata/omics-performance/policy-receipt-schema-v1.json"
+  ]
+}

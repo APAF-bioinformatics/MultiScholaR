@@ -1,0 +1,139 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_responses",
+  "schema_version": "1.0.0",
+  "responses_id": "multischolar.omics_publication_auxiliary_responses.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "responses": [
+    {
+      "service_id": "stringdb",
+      "request": {
+        "request_id": "stringdb.synthetic.request.v1",
+        "schema": "multischolar.synthetic_string_rank_request/1.0.0",
+        "service_version": "contract_fixture_v1",
+        "identifier_namespace": "synthetic_protein_id"
+      },
+      "response": {
+        "response_id": "stringdb.synthetic.response.v1",
+        "schema": "multischolar.synthetic_string_enrichment_response/1.0.0",
+        "service_version": "contract_fixture_v1",
+        "result_fields": [
+          "termDescription",
+          "enrichmentScore",
+          "falseDiscoveryRate",
+          "genesMapped",
+          "mappedIDs",
+          "comparison"
+        ],
+        "row_count": 5,
+        "content_origin": "repository_generated_schema_fixture"
+      },
+      "request_response_sha256": "cd759f437ff5f8f166833b9b0fff858f2f39001a35dfff75526bf1f967c2063d",
+      "redistribution_status": "self_generated_no_external_content",
+      "service_behaviour_authority": false,
+      "biological_authority": false,
+      "local_transform_performance_authority": true,
+      "live_probe_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "service_id": "kegg",
+      "request": {
+        "request_id": "kegg.synthetic.request.v1",
+        "schema": "multischolar.synthetic_kegg_rank_request/1.0.0",
+        "service_version": "contract_fixture_v1",
+        "identifier_namespace": "synthetic_chebi_id"
+      },
+      "response": {
+        "response_id": "kegg.synthetic.response.v1",
+        "schema": "multischolar.synthetic_kegg_enrichment_response/1.0.0",
+        "service_version": "contract_fixture_v1",
+        "result_fields": [
+          "termDescription",
+          "enrichmentScore",
+          "falseDiscoveryRate",
+          "genesMapped",
+          "mappedIDs",
+          "comparison"
+        ],
+        "row_count": 5,
+        "content_origin": "repository_generated_schema_fixture"
+      },
+      "request_response_sha256": "5b2eae16f9dd85449fdc7ed073021d524dbb2dffe4b103bc1062c5ca113f28c5",
+      "redistribution_status": "self_generated_no_external_content",
+      "service_behaviour_authority": false,
+      "biological_authority": false,
+      "local_transform_performance_authority": true,
+      "live_probe_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "service_id": "reactome",
+      "request": {
+        "request_id": "reactome.synthetic.request.v1",
+        "schema": "multischolar.synthetic_reactome_rank_request/1.0.0",
+        "service_version": "contract_fixture_v1",
+        "identifier_namespace": "synthetic_chebi_id"
+      },
+      "response": {
+        "response_id": "reactome.synthetic.response.v1",
+        "schema": "multischolar.synthetic_reactome_enrichment_response/1.0.0",
+        "service_version": "contract_fixture_v1",
+        "result_fields": [
+          "termDescription",
+          "enrichmentScore",
+          "falseDiscoveryRate",
+          "genesMapped",
+          "mappedIDs",
+          "comparison"
+        ],
+        "row_count": 5,
+        "content_origin": "repository_generated_schema_fixture"
+      },
+      "request_response_sha256": "cf36f8693e2ef4fbc72e22a20965e6ceb679d7e4ccd077b3d2fda083d82856de",
+      "redistribution_status": "self_generated_no_external_content",
+      "service_behaviour_authority": false,
+      "biological_authority": false,
+      "local_transform_performance_authority": true,
+      "live_probe_allowed": false,
+      "promotion_authority": false
+    },
+    {
+      "service_id": "metabolomics_pathway",
+      "request": {
+        "request_id": "metabolomics_pathway.synthetic.request.v1",
+        "schema": "multischolar.synthetic_metabolite_rank_request/1.0.0",
+        "service_version": "contract_fixture_v1",
+        "identifier_namespace": "synthetic_chebi_id"
+      },
+      "response": {
+        "response_id": "metabolomics_pathway.synthetic.response.v1",
+        "schema": "multischolar.synthetic_metabolite_enrichment_response/1.0.0",
+        "service_version": "contract_fixture_v1",
+        "result_fields": [
+          "termDescription",
+          "enrichmentScore",
+          "falseDiscoveryRate",
+          "genesMapped",
+          "mappedIDs",
+          "comparison"
+        ],
+        "row_count": 5,
+        "content_origin": "repository_generated_schema_fixture"
+      },
+      "request_response_sha256": "3313869105485637a11282f565659812d8443a97e4de09d2017617f566aa5ae7",
+      "redistribution_status": "self_generated_no_external_content",
+      "service_behaviour_authority": false,
+      "biological_authority": false,
+      "local_transform_performance_authority": true,
+      "live_probe_allowed": false,
+      "promotion_authority": false
+    }
+  ],
+  "primary_network_allowed": false,
+  "live_checks_separate": true,
+  "live_checks_promotional": false,
+  "generic_cross_service_fixture_allowed": false,
+  "unknown_policy": "reject",
+  "publication_authority": false
+}

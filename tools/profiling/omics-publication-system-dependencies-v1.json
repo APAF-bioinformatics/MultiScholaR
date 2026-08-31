@@ -1,0 +1,88 @@
+{
+  "schema": "multischolar.omics_publication_system_dependencies",
+  "schema_version": "1.0.0",
+  "system_authority_id": "multischolar.omics_publication_system_dependencies.2026-08-27.v1",
+  "owner_ticket_id": "OMICS-ART-064",
+  "captured_at": "2026-08-27T14:55:00.000Z",
+  "status": "host_scoped_frozen",
+  "host_scope": {
+    "kernel": "7.2.0-1-cachyos",
+    "machine": "x86_64",
+    "distribution": "CachyOS rolling",
+    "libc": "glibc 2.44",
+    "r_version": "4.6.1",
+    "r_platform": "x86_64-pc-linux-gnu"
+  },
+  "package_manager": {
+    "name": "pacman",
+    "installed_package_count": 1658,
+    "name_inventory_sha256": "fdb603da6e7ffda228344cf1a9f7837bbe83bc63d88fb7ce42e6d0108b483c25",
+    "name_version_inventory_sha256": "301b7382c8305028b581605e9e92abfe650ead0b24842e2884cfb00e612b64d0"
+  },
+  "selected_packages": [
+    {"name": "gcc", "version": "16.2.1+r23+gd564253eb6c8-1"},
+    {"name": "glibc", "version": "2.44+r24+g16be1518495f-1"},
+    {"name": "make", "version": "4.4.1-3.1"},
+    {"name": "cmake", "version": "4.4.2-1.1"},
+    {"name": "pkgconf", "version": "3.0.5-1.1"},
+    {"name": "pandoc-cli", "version": "3.10.2-1"},
+    {"name": "git", "version": "2.55.0-1.1"},
+    {"name": "curl", "version": "8.21.0-1"},
+    {"name": "openssl", "version": "3.6.3-1.1"},
+    {"name": "libxml2", "version": "2.15.3-1.1"},
+    {"name": "fontconfig", "version": "2:2.18.3-1.1"},
+    {"name": "freetype2", "version": "2.14.3-1.1"},
+    {"name": "harfbuzz", "version": "14.3.1-1.1"},
+    {"name": "fribidi", "version": "1.0.16-2.1"},
+    {"name": "cairo", "version": "1.18.4-1.1"},
+    {"name": "libpng", "version": "1.6.58-2.1"},
+    {"name": "libjpeg-turbo", "version": "3.2.0-2"},
+    {"name": "libtiff", "version": "4.7.2-1.1"},
+    {"name": "imagemagick", "version": "7.1.2.29-2.1"},
+    {"name": "libgit2", "version": "1:1.9.7-1.1"},
+    {"name": "sqlite", "version": "3.53.4-1"},
+    {"name": "zlib-ng-compat", "version": "2.3.3-2"},
+    {"name": "bzip2", "version": "1.0.8-6.1"},
+    {"name": "xz", "version": "5.8.3-2"},
+    {"name": "icu", "version": "78.3-1.1"},
+    {"name": "blas", "version": "3.12.1-2.1"},
+    {"name": "lapack", "version": "3.12.1-2.1"}
+  ],
+  "missing_optional_packages": [
+    "udunits",
+    "gdal",
+    "geos",
+    "proj",
+    "openblas"
+  ],
+  "commands": [
+    {"path": "/usr/bin/R", "version": "4.6.1", "sha256": "606e731b4136c0306f66d56e4c1d2d2fd3a1de99d3787f8344af15ff5758b5bb"},
+    {"path": "/usr/bin/gcc", "version": "16.2.1", "sha256": "c348a945846fa0e76c17c4df61f326b5323b5b527f432abb1f1f5ed787e2e68a"},
+    {"path": "/usr/bin/g++", "version": "16.2.1", "sha256": "ec99e5202f3f819997a480cb3cbc95505e07213be0ffe6a51f8900b91a5b716a"},
+    {"path": "/usr/bin/gfortran", "version": "16.2.1", "sha256": "c6f6838587e4dfe890200badbde00bad8fee59c79144d3cdf28ecd78c6ac6e88"},
+    {"path": "/usr/bin/cmake", "version": "4.4.2", "sha256": "f1dbcafdc743406dcbd376d6f094c8606c672d14f7a8cec08af7817cd1461289"},
+    {"path": "/usr/bin/make", "version": "4.4.1", "sha256": "0052cc9e1280ad0874744623d7241afa01f689be9c0d627056876bb254af5c51"},
+    {"path": "/usr/bin/git", "version": "2.55.0", "sha256": "292115a21c70326a0fa239e6d9bdee32f750cbd23d12fdef2e518ad4b451a8b3"},
+    {"path": "/usr/bin/pandoc", "version": "3.10.2", "sha256": "2f233e93f5f59dabde2eeae6b4667821a62a211d27df3efabfb7c045a62f8e01"}
+  ],
+  "native_libraries": [
+    {"path": "/usr/lib/libblas.so.3.12.0", "sha256": "f55be1fca60044a3611ad918a9049c5429be30310c34d11f31727ea62b010fe5"},
+    {"path": "/usr/lib/liblapack.so.3.12.0", "sha256": "3e0ccfb24b99a6c506e952bb1a5146445a3e1f0f242af2c23367a42de677edfb"},
+    {"path": "/usr/lib/libc.so.6", "sha256": "4c8eb6d2e4c3459f5100e44330067db455b7cb873742d8d8f820ee5d6a142080"},
+    {"path": "/usr/lib/libstdc++.so.6", "sha256": "7913c46122fd82b6de363b3ab5c01c727730604e9685ad9103323a2b3d43c12d"},
+    {"path": "/usr/lib/libgfortran.so.5", "sha256": "177d6a3e08fff3ad7a3095a2a44f2d048977196c12d815c4cc9ff54e10165152"}
+  ],
+  "r_build": {
+    "cc": "gcc",
+    "cxx": "g++ -std=gnu++20",
+    "blas": "/usr/lib/libblas.so.3.12.0",
+    "lapack": "/usr/lib/liblapack.so.3.12.0"
+  },
+  "policy": {
+    "host_generalization": false,
+    "exact_inventory_required": true,
+    "missing_optional_is_not_installed": true,
+    "ambient_system_drift_invalidates_build": true,
+    "system_incompatibility_outcome": "incomparable_dependency_environment"
+  }
+}

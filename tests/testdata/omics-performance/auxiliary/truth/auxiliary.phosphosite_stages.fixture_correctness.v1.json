@@ -1,0 +1,69 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_truth",
+  "schema_version": "1.0.0",
+  "truth_id": "auxiliary.phosphosite_stages.fixture_correctness.v1.truth",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "workload_id": "auxiliary.phosphosite_stages.fixture_correctness.v1",
+  "route_id": "phosphosite_stages",
+  "workload_class": "fixture_correctness",
+  "contract_basis_sha256": "274b4b8c6ff529c96826053b537bfaf75f7b59b292e2a7ec8a685df4b93033af",
+  "payload_sha256": "31b286373118145724db68d96a016d52dccf29e60c05678a4aeba07d390fa649",
+  "dimensions": {
+    "evidence_row_count": 20,
+    "feature_count": 20,
+    "sample_count": 4,
+    "measured_sample_count": 4,
+    "layer_count": 1,
+    "response_row_count": 0,
+    "primary_work_units": 20,
+    "sample_scaling_measured": true
+  },
+  "facts": {
+    "evidence_row_count": 20,
+    "protein_count": 10,
+    "accession_category_counts": {
+      "single": 18,
+      "ambiguous": 2,
+      "missing": 0,
+      "contaminant": 0,
+      "reverse": 0
+    },
+    "duplicate_evidence_count": 1,
+    "multisite_evidence_count": 6,
+    "high_confidence_evidence_count": 13,
+    "zero_abundance_evidence_count": 1,
+    "repeated_peptide_protein_count": 1,
+    "expected_accession_rows": 22,
+    "expected_after_abundance_filter": 19,
+    "expected_site_probability_rows": 20,
+    "expected_score_filtered_rows": 15,
+    "expected_long_rows": 60,
+    "measured_sample_count": 4,
+    "input_column_order": [
+      "leading_proteins",
+      "phospho_sty_probabilities",
+      "phospho_sty",
+      "sequence",
+      "experiment",
+      "reporter intensity corrected_1",
+      "reporter intensity corrected_2",
+      "reporter intensity corrected_3",
+      "reporter intensity corrected_4"
+    ],
+    "known_deprecations": [
+      "purrr.cross2"
+    ],
+    "exact_order_required": true
+  },
+  "oracle": {
+    "implementation": "independent_generator_cardinality_and_order_oracle",
+    "package_reader_used": false,
+    "package_export_used": false,
+    "historical_result_used": false,
+    "candidate_result_used": false
+  },
+  "scientific_authority": false,
+  "promotion_authority": false,
+  "publication_authority": false
+}

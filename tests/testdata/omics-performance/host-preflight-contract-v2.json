@@ -1,0 +1,61 @@
+{
+  "schema": "multischolar.omics_publication_host_preflight_contract",
+  "schema_version": "1.0.0",
+  "preflight_contract_id": "multischolar.omics_publication_host_preflight.2026-08-27.v2",
+  "owner_ticket_id": "OMICS-ART-063",
+  "platform": "Linux",
+  "required_cgroup_version": 2,
+  "required_controllers": ["cpu", "io", "memory", "pids"],
+  "required_host_metadata": [
+    "cpu_topology",
+    "cpu_affinity",
+    "numa_topology",
+    "storage_filesystem",
+    "compiler",
+    "blas_lapack",
+    "thermal",
+    "cpu_frequency"
+  ],
+  "owned_transient_unit": {
+    "manager": "systemd_user",
+    "unit_type": "service",
+    "memory_accounting": true,
+    "io_accounting": true,
+    "single_worker_per_unit": true,
+    "collect_after_exit": true
+  },
+  "preflight_rules": {
+    "minimum_available_memory_rule": "max(8589934592, 2 * declared_expected_peak_bytes)",
+    "minimum_available_disk_rule": "max(107374182400, 2 * maximum_temporary_bytes_per_run)",
+    "swap_rule": "swap_may_exist_but_current_and_dwell_activity_must_equal_zero",
+    "maximum_load_per_logical_core": 0.10,
+    "thermal_rule": "no_kernel_throttle_and_below_host_rated_maximum",
+    "maximum_cpu_frequency_drift_fraction": 0.05,
+    "filesystem_rule": "healthy_writable_local_or_declared_benchmark_filesystem",
+    "stale_owned_units": 0,
+    "cleanup_receipt_required": true
+  },
+  "mid_run_abort_rules": [
+    "owned_cgroup_disappeared",
+    "unexpected_pid_entered_owned_cgroup",
+    "swap_activity_nonzero",
+    "host_memory_margin_breached",
+    "disk_margin_breached",
+    "thermal_throttle_detected",
+    "cpu_frequency_drift_exceeded",
+    "unexpected_load_exceeded",
+    "hard_budget_exceeded",
+    "privacy_boundary_breached"
+  ],
+  "certification": {
+    "fallback_polling_authorizes_publication": false,
+    "shared_ci_authorizes_publication": false,
+    "owned_cgroup_observed_required": true,
+    "memory_cpu_io_accounting_required": true,
+    "smaps_pss_uss_rss_crosscheck_required": true,
+    "five_second_retained_dwell_required": true,
+    "zero_active_resource_state_required": true,
+    "zero_swap_during_retained_dwell_required": true
+  },
+  "unavailable_outcome": "host_not_publication_certified"
+}

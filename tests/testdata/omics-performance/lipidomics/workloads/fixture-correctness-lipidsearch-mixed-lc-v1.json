@@ -1,0 +1,179 @@
+{
+  "schema": "multischolar.omics_publication_lipidomics_workload",
+  "schema_version": "1.0.0",
+  "contract_id": "lipidomics.lipidsearch.mixed_lc.fixture_correctness.v1",
+  "owner_ticket_id": "OMICS-ART-067",
+  "status": "frozen",
+  "workload_id": "lipidomics.lipidsearch.lipid.standard.v1.mixed_lc.fixture_correctness",
+  "workload_class": "fixture_correctness",
+  "capability": {
+    "omic_type": "lipidomics",
+    "data_level": "lipid",
+    "acquisition_mode": "not_recorded",
+    "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+    "input_format": "lipidsearch",
+    "support_tier": "full_workflow",
+    "verified_stages": [
+      "import",
+      "design",
+      "qc",
+      "normalization_ruv",
+      "session",
+      "differential_abundance",
+      "summary_report_export"
+    ]
+  },
+  "assay_profile": {
+    "profile_id": "mixed_lc",
+    "assays": [
+      "LCMS_Pos",
+      "LCMS_Neg"
+    ],
+    "payload_mode": "bundle",
+    "member_count": 2
+  },
+  "dimensions": {
+    "aggregate_feature_count": 20,
+    "assay_feature_counts": {
+      "LCMS_Pos": 10,
+      "LCMS_Neg": 10
+    },
+    "sample_count": 6,
+    "assay_count": 2,
+    "quantity_count": 120,
+    "payload_member_count": 2
+  },
+  "model_profile_id": "generated.parameters.lipidsearch.mixed_lc.fixture_correctness.fixture.v1",
+  "parameter_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/parameters-v1.json",
+    "sha256": "e781f875a283032c8203b66043b1fa8fc1cb510af4e30d0d59f72c2bb5ffb313"
+  },
+  "source_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/sources-v1.json",
+    "sha256": "f19653e8a29c4d1f36a763b252e99d6ff5414a12a125b0295f0de80f370279a0"
+  },
+  "split_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/splits-v1.json",
+    "sha256": "69591dff5b67ebdd3ce607e1ce250b45bba5e464d80758251257b250e32f0abf"
+  },
+  "mapping_authority": {
+    "path": "tests/testdata/omics-performance/lipidomics/mapping-authorities-v1.json",
+    "sha256": "f0bb75f0d66013c50b2e9c189656ed4fa17ec0c91beb487b90cb533b214629d7"
+  },
+  "contract_mapping_id": "lipidomics.mapping.lipidsearch.mixed_lc",
+  "support_boundary": {
+    "path": "tests/testdata/omics-performance/lipidomics/support-boundaries-v1.json",
+    "sha256": "79658b40a47d6b5be6bcd7a18f169b3ad8ce27053289250389c20a9ad299186f"
+  },
+  "generator": {
+    "mode": "fixture_replay",
+    "source_bindings": [
+      {
+        "path": "tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_pos.txt",
+        "sha256": "c23154c95596cc055c5acfe9c14de4f9e2ca0d3b4821455f398595b957f8b0e4"
+      },
+      {
+        "path": "tests/testdata/e2e/lipid_canonical/lipidsearch_lcms_neg.txt",
+        "sha256": "14b100d399ffe23d381de9e5da4953a8e13cc07bb2916ad00abf3722cbd4d15f"
+      },
+      {
+        "path": "tests/testdata/e2e/lipid_canonical/README.md",
+        "sha256": "56e66458f08dd159320b5b68aa1a72622492c506305086e38b21f9374341c296"
+      },
+      {
+        "path": "tools/profiling/omics_publication_lipidomics_fixtures.R",
+        "sha256": "68bdfd5dc1e593d77cc408220ccc39bd8774befecf537242c6b2328d1a2c7f4e"
+      }
+    ],
+    "chunk_rows": null,
+    "output_members": [
+      "lipidsearch_lcms_pos.txt",
+      "lipidsearch_lcms_neg.txt"
+    ],
+    "truth_filename": "truth.json",
+    "fixture_payloads": [
+      {
+        "path": "tests/testdata/omics-performance/lipidomics/fixtures/lipidsearch-mixed_lc/payload/lipidsearch_lcms_pos.txt",
+        "sha256": "7ef25b8200f3f5d4b0e3fab4f26b4685b2e5bd113fc3ee69b305e570b3e835a7"
+      },
+      {
+        "path": "tests/testdata/omics-performance/lipidomics/fixtures/lipidsearch-mixed_lc/payload/lipidsearch_lcms_neg.txt",
+        "sha256": "2da8d228b96c75cb0d98aeb7cae21b445f501318c062b7b2682542e03879a252"
+      }
+    ],
+    "fixture_truth": {
+      "path": "tests/testdata/omics-performance/lipidomics/fixtures/lipidsearch-mixed_lc/truth.json",
+      "sha256": "bd44626f16405ca755f647029ac7522b5e524ab2850791b2a74e2b09e6d71d82"
+    }
+  },
+  "rng": {
+    "kind": "L'Ecuyer-CMRG",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "seed_family_id": "fixture.no_rng.lipidsearch.mixed_lc.v1",
+    "seed": null,
+    "streams": []
+  },
+  "truth_contract": {
+    "schema_id": "lipidomics.truth.v1",
+    "oracle_method": "direct_raw_table_arithmetic_and_reviewed_e2e_authority",
+    "validated_domains": [
+      "payload",
+      "mapping",
+      "assay_identity",
+      "dimensions",
+      "quantities",
+      "missingness",
+      "effects",
+      "design",
+      "lipid_classes",
+      "isomer_like_relations"
+    ],
+    "independent_of_package_reader": true,
+    "support_widening_allowed": false
+  },
+  "execution": {
+    "preparation_processes": 2,
+    "process_isolation": "fresh_vanilla_R",
+    "candidate_loaded": false,
+    "historical_pilot_required": false,
+    "swap_allowed": false,
+    "timeout_seconds": 900,
+    "expected_peak_bytes": 1920
+  },
+  "privacy": {
+    "classification": "public_fixture",
+    "private_source_opened": false,
+    "payload_tracked": false,
+    "direct_identifiers_present": false,
+    "cross_omic_values_reused": false
+  },
+  "claim_scope": {
+    "evidence_class": "reviewed_fixture_correctness",
+    "verified_stages": [
+      "import",
+      "design",
+      "qc",
+      "normalization_ruv",
+      "session",
+      "differential_abundance",
+      "summary_report_export"
+    ],
+    "scientific_authority": true,
+    "performance_authority": false,
+    "cross_project_authority": false,
+    "vendor_authority": true,
+    "gc_vendor_authority": false,
+    "three_file_workflow_authority": false,
+    "promotion_authority": false,
+    "limitations": [
+      "Project-specific evidence without independent real-project sources.",
+      "Generated evidence cannot widen the declared route support boundary."
+    ]
+  },
+  "expected_digests": {
+    "payload_set_sha256": "858e71754feae2aa2ec9529abbf74ef13137c743d72f2a38146dd5c0aae48f99",
+    "truth_sha256": "bd44626f16405ca755f647029ac7522b5e524ab2850791b2a74e2b09e6d71d82"
+  },
+  "publication_authority": false
+}

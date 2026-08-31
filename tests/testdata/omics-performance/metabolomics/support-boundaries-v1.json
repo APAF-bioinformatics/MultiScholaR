@@ -1,0 +1,38 @@
+{
+  "schema": "multischolar.omics_publication_metabolomics_support_boundaries",
+  "schema_version": "1.0.0",
+  "boundary_id": "multischolar.omics_publication_metabolomics_boundaries.2026-08-28.v1",
+  "owner_ticket_id": "OMICS-ART-066",
+  "coverage_binding": {
+    "path": "tests/testdata/omics-performance/coverage-v1.json",
+    "sha256": "40d25d9405793b4489f63a80762e531b53997eea0070838eba6cd02e63e36020"
+  },
+  "capability_binding": {
+    "path": "tests/testdata/omics-capabilities.json",
+    "sha256": "f202356edcdc3a812f0721e6092bc6d7007e9b752e13ad28a9f725f14fc1bf77"
+  },
+  "routes": [
+    {
+      "route": "custom",
+      "capability_id": "metabolomics.custom.metabolite.standard.v1",
+      "support_tier": "full_workflow",
+      "verified_stages": [
+        "import", "design", "qc", "normalization_ruv", "session",
+        "differential_abundance", "summary_report_export"
+      ],
+      "full_workflow_claim_allowed": true,
+      "generated_scope": "declared_custom_mapping_truth_and_scaling_only"
+    },
+    {
+      "route": "msdial",
+      "capability_id": "metabolomics.msdial.metabolite.standard.v1",
+      "support_tier": "reader_boundary",
+      "verified_stages": ["import", "design"],
+      "full_workflow_claim_allowed": false,
+      "generated_scope": "exact_msdial_reader_schema_and_import_design_truth_only"
+    }
+  ],
+  "reachable_stage_claim_allowed": false,
+  "unknown_policy": "reject",
+  "publication_authority": false
+}

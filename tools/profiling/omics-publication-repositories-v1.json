@@ -1,0 +1,122 @@
+{
+  "schema": "multischolar.omics_publication_repositories",
+  "schema_version": "1.0.0",
+  "repository_authority_id": "multischolar.omics_publication_repositories.2026-08-27.v1",
+  "owner_ticket_id": "OMICS-ART-064",
+  "captured_at": "2026-08-27T14:49:00.000Z",
+  "status": "frozen",
+  "r_version": "4.6.1",
+  "bioconductor_version": "3.23",
+  "cran_snapshot_date": "2026-08-26",
+  "repositories": [
+    {
+      "repository_id": "CRAN",
+      "type": "cran_source_snapshot",
+      "url": "https://packagemanager.posit.co/cran/2026-08-26",
+      "index_path": "src/contrib/PACKAGES.gz",
+      "index_sha256": "3c09cd741dfc23110ee2c5dba4e437bf6c3bd6c766e2a9f52313ca07fe668326"
+    },
+    {
+      "repository_id": "BioCsoft",
+      "type": "bioconductor_source",
+      "url": "https://bioconductor.org/packages/3.23/bioc",
+      "index_path": "src/contrib/PACKAGES.gz",
+      "index_sha256": "35a9fb246698c44e4232850cf4c359e223caa93e0626a49ddfb76d143c4abe4d"
+    },
+    {
+      "repository_id": "BioCann",
+      "type": "bioconductor_annotation",
+      "url": "https://bioconductor.org/packages/3.23/data/annotation",
+      "index_path": "src/contrib/PACKAGES.gz",
+      "index_sha256": "f138660beafb88571bd786a5f86883b08b232d0b4f83b4bc0382dc95319cae6c"
+    },
+    {
+      "repository_id": "BioCexp",
+      "type": "bioconductor_experiment",
+      "url": "https://bioconductor.org/packages/3.23/data/experiment",
+      "index_path": "src/contrib/PACKAGES.gz",
+      "index_sha256": "7a0266c4459b8b42fa24336ba973de05d9584c2c93f570cea660b3807857fca2"
+    },
+    {
+      "repository_id": "BioCworkflows",
+      "type": "bioconductor_workflows",
+      "url": "https://bioconductor.org/packages/3.23/workflows",
+      "index_path": "src/contrib/PACKAGES.gz",
+      "index_sha256": "917788e892690cd956e53a6a924508ba51a033e4ca5e46b8ab79404f5c3befb8"
+    },
+    {
+      "repository_id": "BioCbooks",
+      "type": "bioconductor_books",
+      "url": "https://bioconductor.org/packages/3.23/books",
+      "index_path": "src/contrib/PACKAGES.gz",
+      "index_sha256": "125e11d176aa4ce8044bfd55814d7db93fc325580ddac0120ea7b4c5fdeaad04"
+    }
+  ],
+  "remotes": [
+    {
+      "package": "RUVIIIC",
+      "repository": "cran/RUVIIIC",
+      "commit": "c534151f6b2265b36294ff630f4dd13c2e86a9fa",
+      "archive_url": "https://api.github.com/repos/cran/RUVIIIC/tarball/c534151f6b2265b36294ff630f4dd13c2e86a9fa",
+      "archive_sha256": "5e2f1b42ce144db5a2515e65f933a43f212bb02dd66f16e4c4eb930da7d825f8"
+    },
+    {
+      "package": "GlimmaV2",
+      "repository": "APAF-bioinformatics/GlimmaV2",
+      "commit": "743af0944957ce2515b17b38d329506edd06ca5a",
+      "archive_url": "https://api.github.com/repos/APAF-bioinformatics/GlimmaV2/tarball/743af0944957ce2515b17b38d329506edd06ca5a",
+      "archive_sha256": "3ce74f0c6f47e2319f28b32b4cf3f10128ec0b610d222a58518cabcd0505f4c4"
+    }
+  ],
+  "external_build_inputs": [
+    {
+      "input_id": "libv8-static-12.4.254.21-rocky-8-amd64",
+      "consumer_package": "V8",
+      "consumer_version": "8.2.0",
+      "role": "omics_report_and_lock_schema_verification",
+      "url": "https://github.com/jeroen/build-v8-static/releases/download/12.4.254.21/v8-rocky-8-amd64.tar.gz",
+      "size_bytes": 19512263,
+      "sha256": "85de4fda7c5dde682792a54572fa03108479fe0b84762d2b1d5beef675577493",
+      "published_digest_source": "github_release_asset_metadata",
+      "published_at": "2025-08-23T23:10:27Z",
+      "verification": "sha256_before_extraction",
+      "measured_worker_load_allowed": false
+    },
+    {
+      "input_id": "renv-bootstrap-1.2.3",
+      "consumer_package": "renv",
+      "consumer_version": "1.2.3",
+      "role": "common_environment_bootstrap",
+      "url": "https://packagemanager.posit.co/cran/2026-08-26/src/contrib/Archive/renv/renv_1.2.3.tar.gz",
+      "size_bytes": 1375285,
+      "sha256": "670719f57c532d292c1dd793f8fa7d06e2d6f91205dc90dd947e7e8c05a5ae06",
+      "published_digest_source": "frozen_repository_archive_capture",
+      "captured_at": "2026-08-27T16:17:00.000Z",
+      "verification": "sha256_before_install",
+      "measured_worker_load_allowed": false
+    },
+    {
+      "input_id": "libarrow-linux-x86_64-24.0.0",
+      "consumer_package": "arrow",
+      "consumer_version": "24.0.0",
+      "role": "arrow_cpp_runtime",
+      "url": "https://github.com/apache/arrow/releases/download/apache-arrow-24.0.0/r-libarrow-linux-x86_64-24.0.0.zip",
+      "size_bytes": 43868290,
+      "sha256": "88d227deb516ef6177cf03b6fedfb3337a9fcea7a7336801d1a184879ad582d1",
+      "sha512": "298dbbfcb34c291ec7b44a207660e647fbe180d8643c0f59f01a48e2c1561ec999a39ac43ab3e7968885400ec2cdbdd09cdb2a3fcf765454b5cdf61c38bf408e",
+      "published_digest_source": "github_release_asset_metadata_and_arrow_source_checksum",
+      "published_at": "2026-04-21T07:39:37Z",
+      "verification": "sha256_and_sha512_before_install",
+      "measured_worker_load_allowed": true
+    }
+  ],
+  "policy": {
+    "latest_urls_allowed": false,
+    "branch_remotes_allowed": false,
+    "source_packages_required": true,
+    "index_digest_required": true,
+    "remote_archive_digest_required": true,
+    "external_build_input_digest_required": true,
+    "offline_missing_package_outcome": "incomparable_dependency_environment"
+  }
+}

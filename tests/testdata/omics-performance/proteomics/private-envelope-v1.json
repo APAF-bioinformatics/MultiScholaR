@@ -1,0 +1,40 @@
+{
+  "schema": "multischolar.omics_publication_proteomics_private_envelope",
+  "schema_version": "1.0.0",
+  "owner_ticket_id": "OMICS-ART-065",
+  "status": "private_report_admissible_fasta_unconfirmed",
+  "salt_id": "068f0237f29ec7c7d7f7cc5fcc24a635b0250722a1906636d326e3bfb51c38c8",
+  "report": {
+    "role": "private_diann_report",
+    "row_count": 80170,
+    "column_count": 60,
+    "byte_size": 71000019,
+    "unique_run_count": 12,
+    "unique_protein_group_count": 5164,
+    "unique_peptide_count": 10809,
+    "nonempty_quantity_count": 80170,
+    "required_schema_complete": true,
+    "salted_source_fingerprint": "41f306cb4a9a5fb26cf08c856be73d58531cbf79ce4572dc2b39ccefa143a4d7"
+  },
+  "fasta": {
+    "role": "private_corresponding_fasta",
+    "byte_size": 29896165,
+    "record_count": 50597,
+    "unique_header_token_count": 50597,
+    "duplicate_header_token_count": 0,
+    "sequence_line_count": 409066,
+    "invalid_sequence_line_count": 0,
+    "empty_record_count": 0,
+    "terminal_newline": false,
+    "syntax_valid": true,
+    "completeness_status": "unconfirmed_download",
+    "completeness_reason": "source_filename_has_crdownload_extension",
+    "salted_source_fingerprint": "20da33e312f952806cccbee417d81683587821133be788fc06a6da601bfc3de6"
+  },
+  "private_paths_retained": false,
+  "identifiers_values_sequences_retained": false,
+  "distribution_retained": false,
+  "full_workflow_project_authority": false,
+  "claim_scope": "private_project_specific_import_scale_non_promotional",
+  "publication_authority": false
+}

@@ -1,0 +1,128 @@
+{
+  "schema": "multischolar.omics_publication_metabolomics_fixture_truth",
+  "schema_version": "1.0.0",
+  "owner_ticket_id": "OMICS-ART-066",
+  "truth_id": "metabolomics.custom.metabolite.standard.v1.gcms.fixture_correctness.truth",
+  "workload_id": "metabolomics.custom.metabolite.standard.v1.gcms.fixture_correctness",
+  "workload_class": "fixture_correctness",
+  "capability": {
+    "omic_type": "metabolomics",
+    "data_level": "metabolite",
+    "acquisition_mode": "not_recorded",
+    "capability_id": "metabolomics.custom.metabolite.standard.v1",
+    "input_format": "custom",
+    "support_tier": "full_workflow",
+    "verified_stages": [
+      "import",
+      "design",
+      "qc",
+      "normalization_ruv",
+      "session",
+      "differential_abundance",
+      "summary_report_export"
+    ]
+  },
+  "assay_profile": {
+    "profile_id": "gcms",
+    "assays": [
+      "GCMS"
+    ],
+    "payload_mode": "single",
+    "member_count": 1
+  },
+  "payload": {
+    "members": [
+      {
+        "filename": "custom.tsv",
+        "sha256": "5a12d6a87db572d76677836926517eb12e843bafdf252ac12d0aa8fb165de08f",
+        "size_bytes": 381
+      }
+    ],
+    "member_count": 1,
+    "payload_set_sha256": "2c7f49ba5d3bd6e0cce41ce9ca7ac852821fa7d79e70fca90deca8eb95bf257b",
+    "size_bytes": 381
+  },
+  "source_review_bindings": [
+    {
+      "path": "tests/testdata/e2e/metab_gc/README.md",
+      "sha256": "e31e07f9b458db35f8a843f455d1a568a0950d261f08e8eb7aceae4e46b82e3f"
+    }
+  ],
+  "dimensions": {
+    "aggregate_feature_count": 3,
+    "assay_feature_counts": {
+      "GCMS": 3
+    },
+    "sample_count": 6,
+    "assay_count": 1,
+    "quantity_count": 18,
+    "payload_member_count": 1
+  },
+  "expected_import": {
+    "member_count": 1,
+    "aggregate_feature_count": 3,
+    "assay_feature_counts": {
+      "GCMS": 3
+    },
+    "sample_count": 6,
+    "quantity_count": 18,
+    "quantity_na_count": 0,
+    "quantity_sum": 194159.60000000001,
+    "numerical_tolerance": 1.9415959999999999e-07
+  },
+  "effects": {
+    "effect_log2": 0.98446646187039732,
+    "minimum_sign_agreement": 1,
+    "median_margin_fraction": 0,
+    "up_count": 1,
+    "down_count": 1,
+    "unaffected_count": 1,
+    "up_feature_ids": [
+      1
+    ],
+    "down_feature_ids": [
+      2
+    ],
+    "assignment_sha256": "8cca183a37d647efdd8d3b22592f97def232b099cbdfc5c6c3e107385ac2ed8b"
+  },
+  "design": {
+    "sample_ids": [
+      "METAB_S001",
+      "METAB_S002",
+      "METAB_S003",
+      "METAB_S004",
+      "METAB_S005",
+      "METAB_S006"
+    ],
+    "control_ids": [
+      "METAB_S001",
+      "METAB_S002",
+      "METAB_S003"
+    ],
+    "treatment_ids": [
+      "METAB_S004",
+      "METAB_S005",
+      "METAB_S006"
+    ]
+  },
+  "mapping": {
+    "route": "custom",
+    "source": "explicit_user_mapping_contract",
+    "fallback_allowed": false
+  },
+  "oracle_method": "direct_raw_table_arithmetic_and_reviewed_e2e_authority",
+  "verified_stages": [
+    "import",
+    "design",
+    "qc",
+    "normalization_ruv",
+    "session",
+    "differential_abundance",
+    "summary_report_export"
+  ],
+  "limitations": [
+    "Fixture values establish reviewed correctness, not scale.",
+    "MS-DIAL evidence cannot widen its reader-characterized boundary."
+  ],
+  "publication_authority": false
+}

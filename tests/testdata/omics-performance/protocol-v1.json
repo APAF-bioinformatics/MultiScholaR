@@ -1,0 +1,219 @@
+{
+  "schema": "multischolar.omics_publication_protocol",
+  "schema_version": "1.0.0",
+  "protocol_id": "multischolar.omics_publication_protocol.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "status": "frozen_governance_no_results",
+  "authorities": {
+    "normative_plan": {
+      "path": "docs/qa/omics-performance-publication-repair-plan.md",
+      "sha256": "e7575bcbff64171685c5fd05a9c5827636d518a3cbcad376e07b08574e8abe64"
+    },
+    "ticket_plan": {
+      "path": "tickets/openai/02-OMICS-PERFORMANCE-PUBLICATION-PLAN.md",
+      "sha256": "50ffbe8d25ed0003008b6bcb5644b7f5a5328f20978d36a70dae80170c118bef"
+    },
+    "capability_inventory": {
+      "path": "tests/testdata/omics-capabilities.json",
+      "sha256": "f202356edcdc3a812f0721e6092bc6d7007e9b752e13ad28a9f725f14fc1bf77",
+      "inventory_version": "2026-08-22.2"
+    },
+    "current_policy_reconciliation": {
+      "path": "tests/testdata/omics-performance/current-policy-reconciliation-v1.json",
+      "schema": "multischolar.current_policy_reconciliation",
+      "schema_version": "1.0.0"
+    },
+    "governance_manifest": {
+      "path": "tests/testdata/omics-performance/governance-manifest-v1.json",
+      "schema": "multischolar.omics_publication_governance_manifest",
+      "schema_version": "1.0.0"
+    }
+  },
+  "comparators": [
+    {
+      "comparator_id": "historical_janitor",
+      "revision": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017",
+      "backend": "memory",
+      "claim_class": "release_effect"
+    },
+    {
+      "comparator_id": "pre_repair_performance",
+      "revision": "56725e90c5fda97835775f5f8f57c02703b53120",
+      "backend": "artifact_or_memory_as_declared",
+      "claim_class": "repair_effect"
+    },
+    {
+      "comparator_id": "candidate",
+      "revision": null,
+      "freeze_owner_ticket_id": "OMICS-ART-077",
+      "backends": ["memory", "artifact", "proposed_auto"],
+      "claim_class": "backend_effect"
+    }
+  ],
+  "governance_records": [
+    {"path": "tests/testdata/omics-performance/coverage-v1.json", "schema": "multischolar.omics_publication_coverage", "schema_version": "1.0.0"},
+    {"path": "tests/testdata/omics-performance/roles-v1.json", "schema": "multischolar.omics_publication_roles", "schema_version": "1.0.0"},
+    {"path": "tests/testdata/omics-performance/projects-v1.json", "schema": "multischolar.omics_publication_projects", "schema_version": "1.0.0"},
+    {"path": "tests/testdata/omics-performance/estimands-v1.json", "schema": "multischolar.omics_publication_estimands", "schema_version": "1.0.0"},
+    {"path": "tests/testdata/omics-performance/splits-v1.json", "schema": "multischolar.omics_publication_splits", "schema_version": "1.0.0"},
+    {"path": "tests/testdata/omics-performance/threshold-grid-v1.json", "schema": "multischolar.omics_publication_threshold_grid", "schema_version": "1.0.0"},
+    {"path": "tests/testdata/omics-performance/retry-policy-v1.json", "schema": "multischolar.omics_publication_retry_policy", "schema_version": "1.0.0"},
+    {"path": "tests/testdata/omics-performance/campaign-matrix-v1.json", "schema": "multischolar.omics_publication_campaign_matrix", "schema_version": "1.0.0"},
+    {"path": "tests/testdata/omics-performance/campaign-budget-v1.json", "schema": "multischolar.omics_publication_campaign_budget", "schema_version": "1.0.0"},
+    {"path": "tests/testdata/omics-performance/policy-receipt-schema-v1.json", "schema": "json_schema", "schema_version": "2020-12"}
+  ],
+  "claim_classes": {
+    "release_effect": "End-user historical release comparison; not causal backend evidence.",
+    "backend_effect": "Matched candidate memory versus artifact under identical science and dependencies.",
+    "repair_effect": "Matched pre-repair artifact versus repaired artifact where operations are comparable."
+  },
+  "workload_classes": [
+    {
+      "workload_class": "fixture_correctness",
+      "purpose": "scientific_and_parser_parity",
+      "performance_promotion_authority": false
+    },
+    {
+      "workload_class": "representative",
+      "purpose": "ordinary_operational_characterization",
+      "performance_promotion_authority": false
+    },
+    {
+      "workload_class": "operational_heavy",
+      "purpose": "primary_performance_decision",
+      "performance_promotion_authority": true
+    },
+    {
+      "workload_class": "stress",
+      "purpose": "boundary_characterization",
+      "performance_promotion_authority": false
+    }
+  ],
+  "independence": {
+    "machine_repeatability_unit": "fresh_process_pair_within_project",
+    "external_applicability_unit": "independently_sourced_project",
+    "hardware_applicability_unit": "host",
+    "minimum_projects_per_cross_project_claim": 3,
+    "minimum_total_primary_pairs": 30,
+    "minimum_pairs_per_project": 10,
+    "minimum_primary_sessions": 3,
+    "generated_workload_counts_as_real_project": false,
+    "insufficient_project_outcome": "project_specific_non_promotional"
+  },
+  "replication": {
+    "primary_pair_count": null,
+    "minimum_primary_pair_count": 30,
+    "maximum_primary_pair_count": 60,
+    "pair_count_status": "pending_omics_art_063_precision_successor",
+    "precision_selection_owner_ticket_id": "OMICS-ART-063",
+    "underprecision_at_maximum_outcome": "underpowered_non_promotional",
+    "warmup_runs_per_backend_project_estimand": 2,
+    "secondary_host_pairs_per_promoted_capability": 10,
+    "randomization_seed": 106229,
+    "counterbalance": "equal_A_B_and_B_A_within_complete_schedule",
+    "single_concurrency": true,
+    "fresh_process_per_attempt": true,
+    "optional_stopping": false
+  },
+  "cache_policy": {
+    "primary": "standardized_warm_input",
+    "first_open": "separate_stratum",
+    "cold_label_requires_verified_page_cache_drop": true,
+    "cold_uncontrolled_promotion_authority": false
+  },
+  "host_policy": {
+    "primary_platform": "Linux",
+    "primary_requires_cgroup_v2": true,
+    "shared_ci_performance_authority": false,
+    "secondary_host_required_for_platform_general_claim": true,
+    "thread_default": 1,
+    "thread_scaling_is_separate": true
+  },
+  "primary_endpoints": [
+    "peak_cgroup_charged_memory_bytes",
+    "retained_cgroup_charged_memory_bytes",
+    "peak_cgroup_anonymous_memory_bytes",
+    "retained_cgroup_anonymous_memory_bytes",
+    "elapsed_seconds",
+    "cpu_usage_seconds",
+    "primary_work_units_per_wall_second",
+    "primary_work_units_per_cpu_second"
+  ],
+  "secondary_endpoints": [
+    "process_tree_pss_bytes",
+    "process_tree_uss_bytes",
+    "process_tree_rss_bytes",
+    "cgroup_file_memory_bytes",
+    "cgroup_kernel_memory_bytes",
+    "cgroup_swap_bytes",
+    "io_read_bytes",
+    "io_write_bytes",
+    "artifact_disk_bytes",
+    "bounded_query_p50_seconds",
+    "bounded_query_p95_seconds",
+    "bounded_query_p99_seconds",
+    "resume_elapsed_seconds"
+  ],
+  "statistics": {
+    "ratio_scale": "log",
+    "within_project_resampling_unit": "process_pair",
+    "cross_project_resampling": "hierarchical_project_then_pair",
+    "bootstrap_resamples": 10000,
+    "analysis_seed": 106231,
+    "confidence_level": 0.95,
+    "p_values_primary": false,
+    "secondary_multiplicity_method": "Holm",
+    "generic_outlier_removal": false,
+    "report_all_attempts": true
+  },
+  "promotion_gates": {
+    "minimum_peak_charged_memory_reduction_fraction": 0.30,
+    "minimum_peak_charged_memory_reduction_lower_confidence_bound": 0.20,
+    "minimum_retained_charged_memory_reduction_fraction": 0.40,
+    "minimum_retained_charged_memory_reduction_lower_confidence_bound": 0.30,
+    "maximum_wall_time_geometric_mean_ratio": 0.95,
+    "maximum_wall_time_ratio_upper_confidence_bound": 1.00,
+    "minimum_wall_throughput_geometric_mean_ratio": 1.05,
+    "minimum_wall_throughput_ratio_lower_confidence_bound": 1.00,
+    "minimum_cpu_efficiency_ratio_lower_confidence_bound": 1.00,
+    "maximum_query_p95_ratio_upper_confidence_bound": 1.10,
+    "maximum_committed_artifact_to_input_bytes_ratio": 1.35,
+    "maximum_peak_disk_to_input_bytes_ratio": 2.20,
+    "maximum_final_file_count_ratio": 4.00,
+    "minimum_resume_memory_reduction_fraction": 0.50,
+    "all_scientific_and_lifecycle_gates_required": true
+  },
+  "privacy": {
+    "allowed_evidence_classes": [
+      "public_real",
+      "private_calibrated",
+      "public_generated",
+      "fixture_correctness"
+    ],
+    "private_paths_retained": false,
+    "private_identifiers_retained": false,
+    "private_sequences_retained": false,
+    "private_row_values_retained": false,
+    "generated_establishes_vendor_support": false,
+    "generated_establishes_biological_validity": false
+  },
+  "terminal_outcomes": [
+    "passed_all_gates",
+    "scientific_parity_failed",
+    "performance_gate_failed",
+    "insufficient_independent_projects",
+    "no_stable_adaptive_threshold",
+    "incomparable_dependency_environment",
+    "campaign_invalid_infrastructure_budget",
+    "campaign_safely_aborted",
+    "privacy_or_binding_failed",
+    "independent_review_unavailable"
+  ],
+  "amendment_policy": {
+    "versioned_successor_required": true,
+    "mutate_frozen_record": false,
+    "candidate_result_may_change_protocol": false,
+    "candidate_result_may_reduce_workload_or_repetitions": false,
+    "runtime_behavior_changed_by_this_protocol": false
+  }
+}

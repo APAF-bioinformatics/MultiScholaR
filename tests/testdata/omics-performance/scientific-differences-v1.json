@@ -1,0 +1,161 @@
+{
+  "schema": "multischolar.omics_publication_scientific_differences",
+  "schema_version": "1.0.0",
+  "difference_authority_id": "multischolar.omics_publication_scientific_differences.2026-08-28.v2",
+  "owner_ticket_id": "OMICS-ART-064",
+  "status": "fixed_revision_inventory_complete_candidate_pending",
+  "revisions": {
+    "historical_janitor": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017",
+    "pre_repair_performance": "56725e90c5fda97835775f5f8f57c02703b53120"
+  },
+  "inventory": {
+    "range_id": "historical_janitor_to_pre_repair_performance",
+    "base_revision": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017",
+    "head_revision": "56725e90c5fda97835775f5f8f57c02703b53120",
+    "commit_order": "git_rev_list_reverse",
+    "commit_count": 71,
+    "commit_set_sha256": "200665a9c5c3ab1bb0f49bc26a2e8a836d40463ceab434b1df3e67a286baf227",
+    "changed_path_count": 428,
+    "name_status_sha256": "92e30163d9202c85003e7de904b1b1e7d7ca63b1befe3ff9d1ee66c30fae28ef"
+  },
+  "records": [
+    {
+      "difference_id": "peptide_contaminant_provenance",
+      "category": "scientific",
+      "files": [
+        "R/func_prot_qc_peptide_methods.R",
+        "R/func_prot_qc_exclusion_helpers.R",
+        "inst/extdata/contaminants/README.md"
+      ],
+      "review_status": "reviewed",
+      "file_scope": "focal_owners_not_exhaustive",
+      "expected_scientific_impact": "Contaminant exclusion can differ because manifests are schema-validated, source-bound, and fail closed instead of accepting ambiguous provenance.",
+      "claim_scope": "release_effect_only",
+      "evidence": [
+        "commit:1414727a00ce8fa8bda86a3f8f464bcc65b7d4a6",
+        "tests:test-prot-02u-qc-peptide-contaminant-manifests.R"
+      ]
+    },
+    {
+      "difference_id": "protein_identity_counts_and_na_preservation",
+      "category": "correctness",
+      "files": [
+        "R/func_prot_qc_filtering_progress_helpers.R",
+        "R/func_prot_rollup_count_helpers.R",
+        "R/func_prot_s4_missingness.R",
+        "R/func_prot_s4_norm_methods.R"
+      ],
+      "review_status": "reviewed",
+      "file_scope": "focal_owners_not_exhaustive",
+      "expected_scientific_impact": "Protein and peptide counts now use the declared active identity column and peptide NA preservation aligns by explicit protein and sample identifiers; historical QC counts or missingness can therefore differ.",
+      "claim_scope": "release_effect_only",
+      "evidence": [
+        "commit:97245bdaade908c833de91e4beeb4a3faee922e6",
+        "tests:test-prot-02f-qc-protein-rollup-shared.R",
+        "tests:test-prot-s4-missingness-direct-shared.R"
+      ]
+    },
+    {
+      "difference_id": "verified_format_refusal",
+      "category": "correctness",
+      "files": [
+        "R/utils_workflow_format_support.R",
+        "R/mod_prot_import_detection_helpers.R",
+        "R/mod_prot_import_processing_helpers.R",
+        "R/mod_prot_import_server_helpers.R",
+        "R/mod_prot_import_ui.R",
+        "R/mod_metab_import_processing_helpers.R",
+        "R/mod_metab_import_server_helpers.R",
+        "R/mod_metab_import_ui.R",
+        "R/mod_lipid_import_processing_helpers.R",
+        "R/mod_lipid_import_selection_helpers.R",
+        "R/mod_lipid_import_ui_helpers.R"
+      ],
+      "review_status": "reviewed",
+      "file_scope": "focal_owners_not_exhaustive",
+      "expected_scientific_impact": "Unverified or detection-only formats now fail closed, so some historical imports may become explicit unsupported outcomes rather than producing potentially invalid science.",
+      "claim_scope": "release_effect_and_support_boundary_only",
+      "evidence": [
+        "commit:8971162019739956ffeb196dea32e172de5c436f",
+        "tests:test-omics-format-support.R",
+        "tests:test-omics-workflow-capabilities.R"
+      ]
+    },
+    {
+      "difference_id": "artifact_storage_and_resource_lifecycle",
+      "category": "storage_runtime",
+      "files": [
+        "R/utils_artifact_store.R",
+        "R/utils_project_duckdb.R",
+        "R/utils_artifact_resource_lifecycle.R",
+        "R/utils_artifact_payload_eviction.R",
+        "R/utils_artifact_settled_resume.R",
+        "R/utils_workflow_state_artifacts.R",
+        "R/mod_prot_artifact_stage_worker_helpers.R",
+        "R/mod_metab_readthrough_helpers.R",
+        "R/mod_lipid_readthrough_helpers.R"
+      ],
+      "review_status": "reviewed",
+      "file_scope": "focal_owners_not_exhaustive",
+      "expected_scientific_impact": "No scientific difference is permitted for matched candidate memory and artifact envelopes; these changes affect persistence, query, resume, ownership, and memory only.",
+      "claim_scope": "backend_effect_or_repair_effect_with_exact_candidate_parity",
+      "evidence": [
+        "commit-range:8dd4b9340f5769ab970ea9bcc6cead04a2ae59da..56725e90c5fda97835775f5f8f57c02703b53120",
+        "tests:test-omics-artifact-extension-contract.R",
+        "tests:test-omics-artifact-session-lifecycle.R"
+      ]
+    },
+    {
+      "difference_id": "workflow_state_and_ui_ownership",
+      "category": "state_runtime",
+      "files": [
+        "R/utils_workflow_state.R",
+        "R/utils_workflow_state_compat.R",
+        "R/utils_artifact_paths.R",
+        "R/utils_workflow_capabilities.R",
+        "R/utils_workflow_context.R",
+        "R/mod_proteomics.R",
+        "R/mod_metabolomics.R",
+        "R/mod_lipidomics.R"
+      ],
+      "review_status": "reviewed",
+      "file_scope": "focal_owners_not_exhaustive",
+      "expected_scientific_impact": "State ownership, report paths, progress holders, and UI/session plumbing changed; these changes cannot be described as backend scientific effects.",
+      "claim_scope": "release_effect_or_non_scientific_operational_context",
+      "evidence": [
+        "commit:7c2a529fade3fccea53e550a49a2fc207c768cf5",
+        "commit:c51d4dec3d03010f4d31a40a123db660b30d1d4d"
+      ]
+    },
+    {
+      "difference_id": "documentation_ci_and_test_evidence",
+      "category": "test_only",
+      "files": [
+        ".github/workflows/module-ci.yml",
+        "man/",
+        "tests/testdata/omics-parity/",
+        "tests/testthat/",
+        "tools/ci/",
+        "tools/profiling/"
+      ],
+      "review_status": "reviewed",
+      "file_scope": "focal_owners_not_exhaustive",
+      "expected_scientific_impact": "No direct runtime scientific effect; these files define evidence, support, CI, documentation, workload, and benchmark behavior.",
+      "claim_scope": "evidence_only",
+      "evidence": [
+        "inventory:historical_janitor_to_pre_repair_performance"
+      ]
+    }
+  ],
+  "candidate_amendment": {
+    "owner_ticket_id": "OMICS-ART-077",
+    "status": "required",
+    "successor_required": true,
+    "predecessor_difference_authority_id": "multischolar.omics_publication_scientific_differences.2026-08-28.v2",
+    "required_revision_span": "pre_repair_performance_to_candidate",
+    "freeze_binding": "scientific_differences",
+    "exact_candidate_memory_artifact_parity_required": true
+  },
+  "matched_candidate_rule": "exact_science_required",
+  "promotion_authority": false
+}

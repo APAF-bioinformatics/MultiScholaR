@@ -1,0 +1,151 @@
+{
+  "schema": "multischolar.omics_publication_projects",
+  "schema_version": "1.0.0",
+  "projects_id": "multischolar.omics_publication_projects.2026-08-26.v1",
+  "owner_ticket_id": "OMICS-ART-062",
+  "minimum_real_project_authorities_per_cross_project_claim": 3,
+  "generated_payload_counts_as_real_project": false,
+  "aggregate_calibrated_generated_payload_counts_as_real_project": false,
+  "source_receipt_required_fields": [
+    "source_id",
+    "project_id",
+    "capability_id",
+    "owner_id",
+    "independence_owner_id",
+    "license_or_use_authority",
+    "privacy_class",
+    "source_kind",
+    "schema_id",
+    "byte_or_aggregate_receipt_digest",
+    "selection_rule_id",
+    "exclusion_rule_id",
+    "support_tier"
+  ],
+  "full_workflow_claims": [
+    {
+      "capability_id": "proteomics.diann.peptide.dia.v1",
+      "workload_owner_ticket_id": "OMICS-ART-065",
+      "current_real_project_authorities": [
+        {
+          "source_id": "private.dia.cotton_report.v1",
+          "project_id": "private.dia.cotton.v1",
+          "source_kind": "private_real",
+          "privacy_class": "private_calibrated",
+          "dimensions": {"rows": 80170, "columns": 60, "bytes": 71000019},
+          "path_retained": false,
+          "identifier_or_value_retained": false,
+          "receipt_status": "privacy_review_and_salted_binding_pending"
+        }
+      ],
+      "verified_real_project_count": 0,
+      "required_real_project_count": 3,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "private_project_specific_non_promotional",
+      "promotion_eligible": false
+    },
+    {
+      "capability_id": "proteomics.maxquant.protein.lfq.v1",
+      "workload_owner_ticket_id": "OMICS-ART-065",
+      "current_real_project_authorities": [],
+      "verified_real_project_count": 0,
+      "required_real_project_count": 3,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "fixture_and_generated_only_non_promotional",
+      "promotion_eligible": false
+    },
+    {
+      "capability_id": "proteomics.fragpipe.protein.lfq.v1",
+      "workload_owner_ticket_id": "OMICS-ART-065",
+      "current_real_project_authorities": [],
+      "verified_real_project_count": 0,
+      "required_real_project_count": 3,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "fixture_and_generated_only_non_promotional",
+      "promotion_eligible": false
+    },
+    {
+      "capability_id": "proteomics.pd_tmt.protein.tmt.v1",
+      "workload_owner_ticket_id": "OMICS-ART-065",
+      "current_real_project_authorities": [],
+      "verified_real_project_count": 0,
+      "required_real_project_count": 3,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "fixture_and_generated_only_non_promotional",
+      "promotion_eligible": false
+    },
+    {
+      "capability_id": "metabolomics.custom.metabolite.standard.v1",
+      "workload_owner_ticket_id": "OMICS-ART-066",
+      "current_real_project_authorities": [],
+      "verified_real_project_count": 0,
+      "required_real_project_count": 3,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "fixture_and_generated_only_non_promotional",
+      "promotion_eligible": false
+    },
+    {
+      "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+      "workload_owner_ticket_id": "OMICS-ART-067",
+      "current_real_project_authorities": [],
+      "verified_real_project_count": 0,
+      "required_real_project_count": 3,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "current_claim_scope": "fixture_and_generated_only_non_promotional",
+      "promotion_eligible": false
+    }
+  ],
+  "reader_boundary_claims": [
+    {
+      "capability_id": "metabolomics.msdial.metabolite.standard.v1",
+      "workload_owner_ticket_id": "OMICS-ART-066",
+      "verified_boundary": ["import", "design"],
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "full_workflow_promotion_eligible": false
+    },
+    {
+      "capability_id": "lipidomics.msdial.lipid.standard.v1",
+      "workload_owner_ticket_id": "OMICS-ART-067",
+      "verified_boundary": ["import", "design"],
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "full_workflow_promotion_eligible": false
+    },
+    {
+      "capability_id": "lipidomics.custom.lipid.standard.v1",
+      "workload_owner_ticket_id": "OMICS-ART-067",
+      "verified_boundary": ["import", "design"],
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "full_workflow_promotion_eligible": false
+    }
+  ],
+  "auxiliary_claims": [
+    {
+      "surface_id": "phosphosite.api",
+      "workload_owner_ticket_id": "OMICS-ART-068",
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "workflow_promotion_eligible": false
+    },
+    {
+      "surface_id": "multiomics.api",
+      "workload_owner_ticket_id": "OMICS-ART-068",
+      "verified_real_project_count": 0,
+      "cross_project_claim_status": "insufficient_independent_projects",
+      "workflow_promotion_eligible": false
+    }
+  ],
+  "fixture_authority": {
+    "purpose": "scientific_and_parser_correctness_only",
+    "counts_as_independent_operational_project": false,
+    "root": "tests/testdata/e2e",
+    "maximum_current_data_fixture_bytes": 7204
+  },
+  "successor_policy": {
+    "owner_tickets": ["OMICS-ART-065", "OMICS-ART-066", "OMICS-ART-067", "OMICS-ART-068"],
+    "additive_successor_required": true,
+    "candidate_access_before_successor": false,
+    "promotion_with_insufficient_projects": false
+  }
+}

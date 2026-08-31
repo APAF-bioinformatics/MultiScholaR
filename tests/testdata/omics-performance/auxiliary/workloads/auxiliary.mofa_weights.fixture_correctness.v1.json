@@ -1,0 +1,128 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_workload",
+  "schema_version": "1.0.0",
+  "contract_id": "auxiliary.mofa_weights.fixture_correctness.v1.contract",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "workload_id": "auxiliary.mofa_weights.fixture_correctness.v1",
+  "workload_class": "fixture_correctness",
+  "route": {
+    "route_id": "mofa_weights",
+    "surface_id": "multiomics.api",
+    "primary_entry_point": "plotMofaWeights",
+    "measured_boundary": "weight_ranking_plot_object_and_file_products",
+    "service_ids": [],
+    "performance_work_unit": "feature_weights_ranked",
+    "orchestration_compatibility_binding": "frozen_mofa_model_double",
+    "fitting_or_inference_claim": false
+  },
+  "dimensions": {
+    "evidence_row_count": 0,
+    "feature_count": 1000,
+    "sample_count": 20,
+    "measured_sample_count": 0,
+    "layer_count": 3,
+    "response_row_count": 0,
+    "primary_work_units": 1000,
+    "sample_scaling_measured": false
+  },
+  "parameter_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/parameters-v1.json",
+    "sha256": "e77d2b83aca6a253e528903f043f9bd6efb143bca9379057545163e478be944c"
+  },
+  "source_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/sources-v1.json",
+    "sha256": "8338c1752e2d93820891a02e0c475c4254b7ae334385a748a6d93bba751f4dc5"
+  },
+  "response_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/responses-v1.json",
+    "sha256": "d67e23333fd08e8c6789fed2d5d0de34e654f00ab37803ad4e82583901cfb71a"
+  },
+  "split_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/splits-v1.json",
+    "sha256": "763d229feec841166520f16efa6b13d709f985b9762f39d7d6e08e849373f374"
+  },
+  "surface_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/surfaces-v1.json",
+    "sha256": "d6361f28e7d9566b6ddda217cd5238e49b207e931dc89fba38c6b825745b5e7e"
+  },
+  "assignment": {
+    "assignment_id": "auxiliary.mofa_weights.fixture_correctness.fixture",
+    "route_id": "mofa_weights",
+    "surface_id": "multiomics.api",
+    "workload_class": "fixture_correctness",
+    "split_role": "fixture",
+    "source_id": "generated.source.mofa_weights.fixture_correctness.fixture.v1",
+    "project_id": "generated.project.mofa_weights.fixture_correctness.fixture.v1",
+    "independence_owner_id": "generated.owner.mofa_weights.fixture_correctness.fixture.v1",
+    "response_profile_id": "generated.response.mofa_weights.fixture_correctness.fixture.v1",
+    "generator_parameter_profile_id": "generated.parameters.mofa_weights.fixture_correctness.fixture.v1",
+    "seed_family_id": "fixture.no_rng.mofa_weights.v1",
+    "seed": null,
+    "generated_counts_as_real": false,
+    "promotion_authority": false
+  },
+  "generator": {
+    "mode": "repository_generated",
+    "source_bindings": [
+      {
+        "path": "tools/profiling/omics_publication_auxiliary_contracts.R",
+        "sha256": "7aab1c02650b1345fba0b2f8a45089af70395a9560388415d2adb2c32707437f"
+      },
+      {
+        "path": "tools/profiling/omics_publication_auxiliary_model.R",
+        "sha256": "9e829eb036355f0fd720251e06b065f7eaeaead63c0928239b41654873e1bc95"
+      },
+      {
+        "path": "tools/profiling/omics_publication_auxiliary_truth.R",
+        "sha256": "0db5e5a2097b49eb3d92f6add148e6904ac56fab8514c5606b46e827f99c1eb3"
+      },
+      {
+        "path": "tools/profiling/omics_publication_workload_auxiliary.R",
+        "sha256": "cf3fa7c18409e49d003aeb8b51f866b7bb15f88ab31979437ec6d5010859d3bf"
+      }
+    ],
+    "payload_filename": "payload.rds",
+    "truth_filename": "truth.json",
+    "generated_outside_measurement": true
+  },
+  "rng": {
+    "kind": "L'Ecuyer-CMRG",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "seed_family_id": "fixture.no_rng.mofa_weights.v1",
+    "seed": null
+  },
+  "execution": {
+    "process_isolation": "fresh_vanilla_R",
+    "candidate_loaded": false,
+    "historical_pilot_required": false,
+    "swap_allowed": false,
+    "timeout_seconds": 900,
+    "network_allowed": false
+  },
+  "truth_contract": {
+    "schema_id": "auxiliary.truth.v1",
+    "oracle_method": "independent_generated_truth",
+    "exact_order_required": true,
+    "service_behaviour_authority": false,
+    "biological_authority": false,
+    "mofa_fitting_authority": false
+  },
+  "claim_scope": {
+    "evidence_class": "public_generated",
+    "compatibility_authority": true,
+    "local_performance_authority": true,
+    "cross_project_authority": false,
+    "workflow_authority": false,
+    "artifact_authority": false,
+    "backend_policy_authority": false,
+    "biological_authority": false,
+    "promotion_authority": false
+  },
+  "expected_digests": {
+    "payload_sha256": "1fd26de8193f642235aa878342cd33b4cbf3e467ca1829ff531ff2c4c39516c2",
+    "truth_sha256": "bf6fd2b90d0d54e02ff558b6b25039c2a7cd514d8fc516425e0da373bd483a75"
+  },
+  "publication_authority": false
+}

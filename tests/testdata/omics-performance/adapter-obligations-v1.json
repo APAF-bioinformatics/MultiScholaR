@@ -1,0 +1,152 @@
+{
+  "schema": "multischolar.omics_adapter_obligations",
+  "schema_version": "1.0.0",
+  "obligations_id": "multischolar.omics_adapter_obligations.2026-08-30.v1",
+  "owner_ticket_id": "OMICS-ART-069",
+  "status": "implementation_pending",
+  "access_authority": {
+    "path": "tools/refactor/omics-payload-access-owners-v1.json",
+    "sha256": "7db6f3eb049f35bca1aa8d1e904620496ffbf63a7929017992ac1c2059e5b1fa"
+  },
+  "discovery_digest": "f2ddc72c2b8c1c80cc19bb126ee432299002542185f40de531eb34c2cec30faa",
+  "obligations": [
+    {
+      "ticket_id": "OMICS-ART-069",
+      "owner_role": "shared_lifecycle",
+      "owned_access_count": 4,
+      "consumer_access_count": 0,
+      "paths": [
+        "R/utils_artifact_payload_eviction.R",
+        "R/utils_artifact_settlement_contract.R"
+      ],
+      "status": "shared_implementation_complete",
+      "candidate_freeze_closed": false
+    },
+    {
+      "ticket_id": "OMICS-ART-070",
+      "owner_role": "dia_commit",
+      "owned_access_count": 7,
+      "consumer_access_count": 0,
+      "paths": [
+        "R/mod_prot_artifact_eviction_helpers.R",
+        "R/mod_prot_artifact_readthrough_helpers.R",
+        "R/mod_prot_design_artifact_helpers.R",
+        "R/mod_prot_import_artifact_helpers.R"
+      ],
+      "status": "adapter_implementation_pending",
+      "candidate_freeze_closed": false
+    },
+    {
+      "ticket_id": "OMICS-ART-071",
+      "owner_role": "dia_ingress",
+      "owned_access_count": 7,
+      "consumer_access_count": 0,
+      "paths": [
+        "R/mod_prot_import_organism_helpers.R",
+        "R/mod_prot_import_processing_helpers.R"
+      ],
+      "status": "adapter_implementation_pending",
+      "candidate_freeze_closed": false
+    },
+    {
+      "ticket_id": "OMICS-ART-072",
+      "owner_role": "dia_consumer",
+      "owned_access_count": 10,
+      "consumer_access_count": 0,
+      "paths": [
+        "R/mod_prot_context_adapter_helpers.R",
+        "R/mod_prot_da_session_helpers.R",
+        "R/mod_prot_design_builder_helpers.R",
+        "R/mod_prot_design_builder_server_helpers.R",
+        "R/mod_prot_design_builder_state_helpers.R",
+        "R/mod_prot_design_import_helpers.R",
+        "R/mod_prot_design_state_helpers.R",
+        "R/mod_prot_qc_protein_s4.R",
+        "R/mod_prot_summary_artifact_helpers.R"
+      ],
+      "status": "adapter_implementation_pending",
+      "candidate_freeze_closed": false
+    },
+    {
+      "ticket_id": "OMICS-ART-073",
+      "owner_role": "nondia_shared_lifecycle",
+      "owned_access_count": 9,
+      "consumer_access_count": 0,
+      "paths": [
+        "R/mod_prot_nondia_design_artifact_helpers.R",
+        "R/mod_prot_nondia_eviction_helpers.R",
+        "R/mod_prot_nondia_import_artifact_helpers.R",
+        "R/mod_prot_nondia_readthrough_helpers.R"
+      ],
+      "status": "adapter_implementation_pending",
+      "candidate_freeze_closed": false
+    },
+    {
+      "ticket_id": "OMICS-ART-074",
+      "owner_role": "pd_tmt_consumer",
+      "owned_access_count": 0,
+      "consumer_access_count": 9,
+      "paths": [
+        "R/mod_prot_nondia_design_artifact_helpers.R",
+        "R/mod_prot_nondia_eviction_helpers.R",
+        "R/mod_prot_nondia_import_artifact_helpers.R",
+        "R/mod_prot_nondia_readthrough_helpers.R"
+      ],
+      "status": "adapter_implementation_pending",
+      "candidate_freeze_closed": false
+    },
+    {
+      "ticket_id": "OMICS-ART-075",
+      "owner_role": "metabolomics_adapter",
+      "owned_access_count": 18,
+      "consumer_access_count": 0,
+      "paths": [
+        "R/mod_metab_design.R",
+        "R/mod_metab_design_artifact_helpers.R",
+        "R/mod_metab_design_builder_server.R",
+        "R/mod_metab_design_import_helpers.R",
+        "R/mod_metab_eviction_helpers.R",
+        "R/mod_metab_import_artifact_helpers.R",
+        "R/mod_metab_import_processing_helpers.R",
+        "R/mod_metab_readthrough_helpers.R",
+        "R/mod_metab_summary_artifact_helpers.R"
+      ],
+      "status": "adapter_implementation_pending",
+      "candidate_freeze_closed": false
+    },
+    {
+      "ticket_id": "OMICS-ART-076",
+      "owner_role": "lipidomics_adapter",
+      "owned_access_count": 20,
+      "consumer_access_count": 0,
+      "paths": [
+        "R/mod_lipid_design_artifact_helpers.R",
+        "R/mod_lipid_design_builder_helpers.R",
+        "R/mod_lipid_design_builder_state_helpers.R",
+        "R/mod_lipid_design_import_helpers.R",
+        "R/mod_lipid_design_preview_helpers.R",
+        "R/mod_lipid_eviction_helpers.R",
+        "R/mod_lipid_import_artifact_helpers.R",
+        "R/mod_lipid_import_processing_helpers.R",
+        "R/mod_lipid_readthrough_helpers.R",
+        "R/mod_lipid_summary_state_helpers.R"
+      ],
+      "status": "adapter_implementation_pending",
+      "candidate_freeze_closed": false
+    }
+  ],
+  "adoption_ticket_ids": [
+    "OMICS-ART-070",
+    "OMICS-ART-071",
+    "OMICS-ART-072",
+    "OMICS-ART-073",
+    "OMICS-ART-074",
+    "OMICS-ART-075",
+    "OMICS-ART-076"
+  ],
+  "candidate_consumer_ticket_id": "OMICS-ART-077",
+  "all_production_keys_owned": true,
+  "all_adapter_obligations_closed": false,
+  "candidate_freeze_allowed": false,
+  "publication_authority": false
+}
