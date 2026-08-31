@@ -7,7 +7,7 @@ diaRepairGatePath <- function() {
         "tests",
         "testdata",
         "omics-performance",
-        "dia-repair-gates-v3.json"
+        "dia-repair-gates-v4.json"
     )
 }
 
@@ -19,9 +19,9 @@ diaRepairReadGates <- function(path = diaRepairGatePath()) {
     )
     if (!is.list(gates) || !setequal(names(gates), required) ||
         !identical(gates$schema, "multischolar.dia_commit_repair_gates") ||
-        !identical(gates$schema_version, "1.2.0") ||
+        !identical(gates$schema_version, "1.3.0") ||
         !identical(gates$owner_ticket_id, "OMICS-ART-070") ||
-        !identical(gates$status, "frozen_after_invalid_v2_peak_estimand")) {
+        !identical(gates$status, "frozen_after_validated_owned_load_floor")) {
         diaRepairAbort("DIA repair gate contract header is invalid")
     }
     design <- gates$design
@@ -59,7 +59,7 @@ diaRepairReadGates <- function(path = diaRepairGatePath()) {
             0.5
         ) && identical(
             as.numeric(design$host_safety$owned_workload_load_allowance),
-            3
+            4
         ) && identical(
             as.numeric(design$host_safety$readiness_timeout_seconds),
             900
@@ -83,7 +83,8 @@ diaRepairReadGates <- function(path = diaRepairGatePath()) {
             gates$comparison$peak_scope,
             "complete_owned_cgroup_lifecycle"
         ) &&
-        identical(gates$comparison$manual_garbage_collection_allowed, FALSE)
+        identical(gates$comparison$manual_garbage_collection_allowed, FALSE) &&
+        diaRepairPredecessorGateValid(gates)
     authority_valid <- identical(
         gates$decision$automatic_policy_authority,
         FALSE

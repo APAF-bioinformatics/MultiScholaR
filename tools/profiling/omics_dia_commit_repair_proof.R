@@ -31,6 +31,67 @@ diaRepairDesignProof <- function(object, salt) {
     )
 }
 
+diaRepairComparableGateContract <- function(gates) {
+    comparison_fields <- c(
+        "effect_class", "denominator_arm", "numerator_arm", "phase_start",
+        "phase_stop", "peak_scope", "owned_process_tree",
+        "parity_workers_included", "manual_garbage_collection_allowed"
+    )
+    design <- gates$design
+    design$host_safety$owned_workload_load_allowance <- NULL
+    list(
+        schema = gates$schema,
+        owner_ticket_id = gates$owner_ticket_id,
+        comparison = gates$comparison[comparison_fields],
+        design = design,
+        gates = gates$gates,
+        absolute_gates = gates$absolute_gates,
+        decision = gates$decision
+    )
+}
+
+diaRepairPredecessorGateValid <- function(gates) {
+    comparison <- gates$comparison
+    expected_path <- file.path(
+        "tests", "testdata", "omics-performance", "dia-repair-gates-v3.json"
+    )
+    if (!identical(comparison$predecessor_gate_path, expected_path) ||
+        !identical(
+            publicationFileDigest(expected_path),
+            comparison$predecessor_gate_sha256
+        )) {
+        return(FALSE)
+    }
+    predecessor <- publicationReadJson(expected_path)
+    identical(predecessor$gate_id, comparison$predecessor_gate_id) &&
+        identical(
+            predecessor$design$host_safety$owned_workload_load_allowance,
+            3L
+        ) && identical(
+            gates$design$host_safety$owned_workload_load_allowance,
+            4L
+        ) && identical(
+            diaRepairComparableGateContract(predecessor),
+            diaRepairComparableGateContract(gates)
+        )
+}
+
+diaRepairResumeGateBindingValid <- function(binding, gates) {
+    if (!is.list(binding)) return(FALSE)
+    current <- identical(binding$gate_id, gates$gate_id) && identical(
+        binding$sha256,
+        publicationFileDigest(diaRepairGatePath())
+    )
+    predecessor <- identical(
+        binding$gate_id,
+        gates$comparison$predecessor_gate_id
+    ) && identical(
+        binding$sha256,
+        gates$comparison$predecessor_gate_sha256
+    )
+    isTRUE(current) || isTRUE(predecessor && diaRepairPredecessorGateValid(gates))
+}
+
 diaRepairCompletePairRecords <- function(records) {
     groups <- split(records, vapply(records, `[[`, character(1), "pair_id"))
     complete <- Filter(function(pair) {

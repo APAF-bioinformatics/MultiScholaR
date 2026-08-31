@@ -295,11 +295,7 @@ diaRepairResumeEvidence <- function(args, gates, source_size, salt) {
     }
     diaRepairRunnerRequire(args, "prior_result")
     prior <- publicationReadJson(args$prior_result)
-    gate_valid <- identical(prior$gate_binding$gate_id, gates$gate_id) &&
-        identical(
-            prior$gate_binding$sha256,
-            publicationFileDigest(diaRepairGatePath())
-        )
+    gate_valid <- diaRepairResumeGateBindingValid(prior$gate_binding, gates)
     source_valid <- identical(
         as.numeric(prior$source_binding$exact_input_bytes),
         source_size

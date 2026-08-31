@@ -57,13 +57,17 @@ diaRepairTestRecords <- function(elapsed_ratio = 0.9) {
     records
 }
 
-test_that("DIA repair successor gates use the complete owned peak", {
+test_that("DIA repair successor preserves gates and corrects owned load", {
     gates <- diaRepairReadGates()
 
-    expect_identical(gates$status, "frozen_after_invalid_v2_peak_estimand")
+    expect_identical(gates$status, "frozen_after_validated_owned_load_floor")
     expect_identical(
         gates$comparison$predecessor_gate_id,
-        "multischolar.dia_commit_repair.2026-08-31.v2"
+        "multischolar.dia_commit_repair.2026-08-31.v3"
+    )
+    expect_identical(
+        gates$comparison$predecessor_gate_sha256,
+        publicationFileDigest(gates$comparison$predecessor_gate_path)
     )
     expect_identical(
         gates$comparison$phase_start,
@@ -80,6 +84,10 @@ test_that("DIA repair successor gates use the complete owned peak", {
         70L
     )
     expect_identical(gates$design$maximum_idle_cpu_activity_seconds, 0.001)
+    expect_identical(
+        gates$design$host_safety$owned_workload_load_allowance,
+        4L
+    )
     expect_identical(gates$comparison$manual_garbage_collection_allowed, FALSE)
     expect_false(gates$decision$automatic_policy_authority)
     expect_false(gates$decision$publication_authority)
@@ -96,6 +104,19 @@ test_that("DIA repair successor gates use the complete owned peak", {
             "final_logical_disk_bytes"
         )
     )
+})
+
+test_that("DIA repair resume accepts only the bound equivalent predecessor", {
+    gates <- diaRepairReadGates()
+    predecessor <- list(
+        gate_id = gates$comparison$predecessor_gate_id,
+        sha256 = gates$comparison$predecessor_gate_sha256
+    )
+
+    expect_true(diaRepairPredecessorGateValid(gates))
+    expect_true(diaRepairResumeGateBindingValid(predecessor, gates))
+    predecessor$sha256 <- strrep("0", 64L)
+    expect_false(diaRepairResumeGateBindingValid(predecessor, gates))
 })
 
 test_that("DIA repair schedule is pair session and order balanced", {
