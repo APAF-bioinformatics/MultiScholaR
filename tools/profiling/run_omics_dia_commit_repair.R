@@ -368,8 +368,20 @@ diaRepairCampaignMain <- function(args) {
     resumed <- diaRepairResumeEvidence(args, gates, source_size, salt)
     dir.create(args$output_root, recursive = TRUE, showWarnings = FALSE)
     host <- diaRepairHostPreflight(args$output_root, gates)
+    initial_readiness <- NULL
+    failed_checks <- names(host$preflight$checks)[
+        !unlist(host$preflight$checks, use.names = FALSE)
+    ]
+    if (!isTRUE(host$preflight$certified) &&
+        identical(failed_checks, "load")) {
+        initial_readiness <- diaRepairWaitForReadiness(host$host, gates)
+        if (isTRUE(initial_readiness$ready)) {
+            host <- diaRepairHostPreflight(args$output_root, gates)
+        }
+    }
     if (!isTRUE(host$preflight$certified)) {
         result <- diaRepairUnavailableResult(args, gates, host)
+        result$initial_readiness <- initial_readiness
         publicationWriteJson(result, args$result)
         return(invisible(0L))
     }
@@ -459,6 +471,7 @@ diaRepairCampaignMain <- function(args) {
             certified = host$preflight$certified,
             sha256 = publicationObjectDigest(host$preflight)
         ),
+        initial_readiness = initial_readiness,
         schedule = split(schedule, seq_len(nrow(schedule))),
         resumed_from = resumed$binding,
         records = records,
