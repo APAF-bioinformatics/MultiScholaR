@@ -674,7 +674,8 @@ diaRepairExecution <- function() {
         retained_window_seconds = 2,
         retention_acknowledgement = "fifo_v1",
         maximum_boundary_bracket_seconds = 0.5,
-        retained_boundary_tolerance_ms = 100
+        retained_boundary_tolerance_ms = 100,
+        zero_swap_required = TRUE
     )
 }
 

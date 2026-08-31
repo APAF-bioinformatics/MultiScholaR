@@ -521,7 +521,7 @@ test_that("publication tooling cannot mutate host power policy", {
 
 test_that("dynamic frequency successor binds every shared consumer", {
     record <- publicationReadJson(
-        "tests/testdata/omics-performance/dynamic-frequency-successor-v2.json"
+        "tests/testdata/omics-performance/dynamic-frequency-successor-v3.json"
     )
     expect_identical(
         record$schema,
@@ -602,6 +602,23 @@ test_that("incomplete cgroup teardown snapshots are not sampled", {
         elapsed_seconds = 1,
         disk = list(logical_bytes = 0, allocated_bytes = 0, file_count = 0)
     ))
+})
+
+test_that("zero-swap workloads receive an owned cgroup limit", {
+    expect_identical(
+        publicationCgroupExtraProperties(list(zero_swap_required = TRUE)),
+        "--property=MemorySwapMax=0"
+    )
+    expect_setequal(
+        publicationCgroupExtraProperties(list(
+            memory_max_bytes = 128 * 1024^2,
+            zero_swap_required = TRUE
+        )),
+        c(
+            "--property=MemoryMax=134217728",
+            "--property=MemorySwapMax=0"
+        )
+    )
 })
 
 test_that("PID ancestry distinguishes owned workers from injected processes", {

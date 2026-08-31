@@ -554,17 +554,24 @@ publicationAcknowledgeRetention <- function(path) {
 }
 
 publicationCgroupExtraProperties <- function(execution) {
-    if (is.null(execution$memory_max_bytes)) return(character())
-    if (!publicationScalarNumber(execution$memory_max_bytes, positive = TRUE)) {
-        publicationAbort(
-            "Fault-injection memory limit is invalid",
-            "multischolar_publication_cgroup_error"
+    properties <- character()
+    if (!is.null(execution$memory_max_bytes)) {
+        if (!publicationScalarNumber(execution$memory_max_bytes, positive = TRUE)) {
+            publicationAbort(
+                "Fault-injection memory limit is invalid",
+                "multischolar_publication_cgroup_error"
+            )
+        }
+        properties <- c(
+            properties,
+            paste0("--property=MemoryMax=", execution$memory_max_bytes)
         )
     }
-    c(
-        paste0("--property=MemoryMax=", execution$memory_max_bytes),
-        "--property=MemorySwapMax=0"
-    )
+    if (isTRUE(execution$zero_swap_required) ||
+        !is.null(execution$memory_max_bytes)) {
+        properties <- c(properties, "--property=MemorySwapMax=0")
+    }
+    properties
 }
 
 publicationPrepareCgroupMeasurement <- function(
