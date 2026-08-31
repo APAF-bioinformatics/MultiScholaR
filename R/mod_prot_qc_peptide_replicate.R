@@ -78,6 +78,9 @@ runPeptideReplicateRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
+  }
   revertedS4 <- revertProtDiaPeptideQcState(workflowData, previousState)
   logInfoFn(paste("Reverted replicate filter to", previousState))
 
@@ -128,6 +131,16 @@ runPeptideReplicateApplyStep <- function(workflowData,
                                          logInfoFn = logger::log_info,
                                          nowFn = Sys.time) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "replicate_filter",
+      list(replicateGroupColumn = replicateGroupColumn)
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   currentS4 <- workflowData$state_manager$getState()
   shiny::req(currentS4)
 
@@ -206,14 +219,18 @@ updatePeptideReplicateOutputs <- function(output,
                                           updateProteinFilteringFn = updateProteinFiltering) {
   output$replicate_results <- renderTextFn(replicateResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = replicateResult$filteredS4@peptide_data,
-    step_name = "7_replicate_filtered",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(replicateResult$plot_png)) {
+    protDiaQcPlotGrid(replicateResult$plot_png)
+  } else {
+    updateProteinFilteringFn(
+      data = replicateResult$filteredS4@peptide_data,
+      step_name = "7_replicate_filtered",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   replicatePlot(plotGrid)
 
   invisible(plotGrid)

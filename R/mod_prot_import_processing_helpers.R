@@ -122,8 +122,9 @@ applyProtImportResultToWorkflow <- function(
   workflowData$data_format <- format
   workflowData$data_type <- dataImportResult$data_type
   workflowData$column_mapping <- dataImportResult$column_mapping
+  workflowData$artifact_import_summary <- protDiaImportSummary(dataImportResult)
 
-  if (isTRUE(sanitizeNames)) {
+  if (isTRUE(sanitizeNames) && !protDiaImportIsDeferred(dataImportResult)) {
     logInfo("Sanitizing sample names using janitor::make_clean_names()...")
     sanitizeRunNames(
       workflowData = workflowData
@@ -165,20 +166,27 @@ finalizeProtImportSetupState <- function(
   run_col <- dataImportResult$column_mapping$run_col
   protein_col <- dataImportResult$column_mapping$protein_col
   peptide_col <- dataImportResult$column_mapping$peptide_col
+  summary <- protDiaImportSummary(dataImportResult)
 
-  n_runs <- if (!is.null(run_col) && run_col %in% names(dataImportResult$data)) {
+  n_runs <- if (!is.null(summary)) {
+    length(summary$run_values)
+  } else if (!is.null(run_col) && run_col %in% names(dataImportResult$data)) {
     length(unique(dataImportResult$data[[run_col]]))
   } else {
     NA
   }
 
-  n_proteins <- if (!is.null(protein_col) && protein_col %in% names(dataImportResult$data)) {
+  n_proteins <- if (!is.null(summary)) {
+    summary$protein_count
+  } else if (!is.null(protein_col) && protein_col %in% names(dataImportResult$data)) {
     length(unique(dataImportResult$data[[protein_col]]))
   } else {
     NA
   }
 
-  n_peptides <- if (!is.null(peptide_col) && peptide_col %in% names(dataImportResult$data)) {
+  n_peptides <- if (!is.null(summary)) {
+    summary$peptide_count
+  } else if (!is.null(peptide_col) && peptide_col %in% names(dataImportResult$data)) {
     length(unique(dataImportResult$data[[peptide_col]]))
   } else {
     NA
@@ -209,7 +217,7 @@ finalizeProtImportSetupState <- function(
     fasta_file = fastaFilename,
     taxon_id = taxonId,
     organism = organismName,
-    n_rows = nrow(dataImportResult$data),
+    n_rows = protDiaImportRowCount(dataImportResult),
     n_runs = n_runs,
     n_proteins = n_proteins,
     n_peptides = n_peptides
@@ -339,7 +347,7 @@ completeProtImportSuccessState <- function(
   messageFn("[mod_prot_import] Data import completed successfully!")
   messageFn(sprintf(
     "[mod_prot_import] Rows: %d, Proteins: %s, Format: %s",
-    nrow(dataImportResult$data),
+    protDiaImportRowCount(dataImportResult),
     workflowData$processing_log$setup_import$n_proteins,
     format
   ))

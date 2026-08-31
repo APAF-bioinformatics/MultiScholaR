@@ -13,12 +13,16 @@ diaArtifact009Paths <- function(root, project_id = "dia-artifact-009") {
         source_dir = file.path(root, "source"),
         results_dir = file.path(root, "results")
     )
-    dir.create(paths$source_dir, recursive = TRUE)
-    dir.create(paths$results_dir, recursive = TRUE)
+    dir.create(paths$source_dir, recursive = TRUE, showWarnings = FALSE)
+    dir.create(paths$results_dir, recursive = TRUE, showWarnings = FALSE)
     paths
 }
 
-diaArtifact009Workflow <- function(root, backend = "artifact") {
+diaArtifact009Workflow <- function(
+    root,
+    backend = "artifact",
+    rollout = "dual_write"
+) {
     paths <- diaArtifact009Paths(root)
     workflow <- new.env(parent = emptyenv())
     workflow$workflow_context <- createWorkflowContext(
@@ -27,7 +31,7 @@ diaArtifact009Workflow <- function(root, backend = "artifact") {
         "dia-study",
         storage_policy = list(
             requested_backend = backend,
-            requested_rollout = "dual_write",
+            requested_rollout = rollout,
             migration_requested = identical(backend, "artifact"),
             project_id = paths$project_id
         )
@@ -130,6 +134,205 @@ test_that("DIA-NN TSV and Parquet imports have one portable scientific shape", {
     )
 })
 
+test_that("DIA evict ingress publishes refs without parent table hydration", {
+    diaArtifact009SkipDependencies()
+    root <- withr::local_tempdir(pattern = "dia-artifact-071-ingress-")
+    source <- testthat::test_path("..", "testdata", "e2e", "prot_dia", "report.tsv")
+    workflow <- diaArtifact009Workflow(root, rollout = "evict")
+    memory <- suppressMessages(importDIANNData(source))
+
+    staged <- stageProtDiaImportArtifacts(
+        workflow,
+        source,
+        "diann",
+        hydrate_parent = NULL
+    )
+    expect_true(staged$ok)
+    expect_true(staged$pending_stage$bounded_streaming)
+    expect_identical(
+        staged$pending_stage$stage$refs$canonical_data$codec$id,
+        "multischolar.rectangular_streaming"
+    )
+    expect_false(staged$preflight$complete_payload_materialized)
+    expect_identical(
+        staged$preflight$source_size_bytes,
+        as.numeric(file.info(source)$size)
+    )
+    expect_true(staged$result$parent_hydration_deferred)
+    expect_null(staged$result$data)
+    summary <- protDiaValidateImportSummary(staged$result$import_summary)
+    expect_identical(summary$rows, as.numeric(nrow(memory$data)))
+    expect_identical(summary$columns, as.integer(ncol(memory$data)))
+    expect_identical(
+        unlist(summary$column_names, use.names = FALSE),
+        names(memory$data)
+    )
+    expect_setequal(
+        unlist(summary$run_values, use.names = FALSE),
+        unique(memory$data$Run)
+    )
+
+    applyProtImportResultToWorkflow(
+        workflow,
+        staged$result,
+        "diann",
+        fastaPath = "fixture.fasta",
+        prepareArtifactContext = function(...) invisible(NULL)
+    )
+    expect_null(workflow$data_tbl)
+    expect_null(workflow$data_cln)
+    expect_identical(workflow$artifact_import_summary, summary)
+    published <- persistProtDiaImportArtifacts(
+        workflow,
+        staged$result,
+        source,
+        pending_stage = staged$pending_stage,
+        worker_attempted = TRUE
+    )
+    expect_true(published$committed)
+    expect_true(protDiaWorkflowPayloadAvailable(workflow, "data_tbl"))
+    expect_identical(
+        resolveProtDiaWorkflowTable(workflow, "data_tbl"),
+        memory$data
+    )
+})
+
+test_that("DIA ingress rejects invalid schema before worker staging", {
+    diaArtifact009SkipDependencies()
+    source <- tempfile(fileext = ".tsv")
+    withr::defer(unlink(source, force = TRUE))
+    writeLines("Protein.Group\tRun\tPrecursor.Quantity", source)
+
+    expect_error(
+        protDiaIngressPreflight(source),
+        class = "multischolar_invalid_prot_dia_ingress_schema"
+    )
+})
+
+test_that("deferred DIA design runs in a payload-isolated worker", {
+    diaArtifact009SkipDependencies()
+    root <- withr::local_tempdir(pattern = "dia-artifact-072-design-worker-")
+    paths <- diaArtifact009Paths(root)
+    source <- testthat::test_path("..", "testdata", "e2e", "prot_dia", "report.tsv")
+    workflow <- diaArtifact009Workflow(root, rollout = "evict")
+    staged <- stageProtDiaImportArtifacts(workflow, source, "diann")
+    applyProtImportResultToWorkflow(
+        workflow,
+        staged$result,
+        "diann",
+        "fixture.fasta",
+        prepareArtifactContext = function(...) invisible(NULL)
+    )
+    expect_true(persistProtDiaImportArtifacts(
+        workflow,
+        staged$result,
+        source,
+        pending_stage = staged$pending_stage,
+        worker_attempted = TRUE
+    )$committed)
+    workflow$config_list <- list(
+        globalParameters = list(workflow_type = "DIA"),
+        srlQvalueProteotypicPeptideClean = list(
+            input_matrix_column_ids = unlist(
+                staged$result$import_summary$column_names,
+                use.names = FALSE
+            )
+        )
+    )
+    input <- protDiaDeferredDesignInput(workflow)
+    runs <- input$Run
+    results <- list(
+        data_cln = input,
+        design_matrix = data.frame(
+            Run = runs,
+            group = sub("_.*", "", runs),
+            replicates = seq_along(runs),
+            tech_rep_group = runs,
+            stringsAsFactors = FALSE
+        ),
+        contrasts_tbl = data.frame(
+            contrasts = "groupKO-groupWT",
+            friendly_names = "KO_vs_WT",
+            full_format = "KO_vs_WT=groupKO-groupWT",
+            stringsAsFactors = FALSE
+        ),
+        config_list = workflow$config_list
+    )
+    worker <- runProtDiaDeferredDesignProcess(protDiaDeferredDesignSpec(
+        workflow,
+        results,
+        paths,
+        "dia-study"
+    ))
+    applyProtDiaDeferredDesignResult(workflow, worker)
+
+    expect_false(identical(worker$worker_pid, as.integer(Sys.getpid())))
+    expect_false(worker$complete_payload_returned)
+    expect_null(workflow$data_tbl)
+    expect_null(workflow$data_cln)
+    expect_s3_class(workflow$state_manager, "ArtifactWorkflowState")
+    expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+    qc <- runPeptideQvalueApplyStep(workflow, 0.01, 0.01, TRUE)
+    expect_true(nzchar(qc$resultText))
+    expect_true(is.raw(qc$plot_png))
+    expect_gt(length(qc$plot_png), 0L)
+    expect_identical(workflow$state_manager$getCurrentStateName(), "qvalue_filtered")
+    expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+
+    peptide <- workflow$state_manager$getState()
+    protein_groups <- c("PG1", "PG1", "PG2")
+    protein_table <- data.frame(
+        Protein.Group = protein_groups,
+        matrix(
+            seq_len(length(protein_groups) * length(runs)),
+            nrow = length(protein_groups),
+            dimnames = list(NULL, runs)
+        ),
+        check.names = FALSE
+    )
+    protein <- ProteinQuantitativeData(
+        protein_quant_table = protein_table,
+        protein_id_column = "Protein.Group",
+        protein_id_table = .proteinIdTableFromPeptideLineage(
+            peptide,
+            protein_groups
+        ),
+        design_matrix = peptide@design_matrix,
+        sample_id = peptide@sample_id,
+        group_id = peptide@group_id,
+        technical_replicate_id = peptide@technical_replicate_id,
+        args = peptide@args
+    )
+    protein <- saveProtProteinQcState(
+        workflow,
+        workflow$state_manager,
+        peptide,
+        protein,
+        "protein_rollup",
+        "protein_s4_created",
+        list(rollup_method = "test_fixture"),
+        "Created test protein state",
+        transformation_type = "aggregation"
+    )
+    previous_manager <- workflow$state_manager
+    state_export <- previous_manager$exportState()
+    workflow$state_manager <- newProtDiaSettledStateManager(
+        workflow,
+        state_export = state_export
+    )
+    previous_manager$close()
+
+    deduplicated <- runProteinDuplicateRemovalStep(workflow, "mean")
+    expect_true(nzchar(deduplicated$resultText))
+    expect_true(is.raw(deduplicated$plot_png))
+    expect_false("deduplicatedS4" %in% names(deduplicated))
+    expect_identical(
+        workflow$state_manager$getCurrentStateName(),
+        "duplicates_removed"
+    )
+    expect_identical(workflow$state_manager$getCacheInfo()$entries, 0L)
+})
+
 test_that("DIA-NN import dual-write records provenance without owning source paths", {
     diaArtifact009SkipDependencies()
     root <- tempfile("dia-artifact-009-import-")
@@ -228,6 +431,19 @@ test_that("DIA-NN design dual-write captures refs and exact S4 independently", {
     expect_identical(workflow$state_manager$getState("raw_data_s4"), object)
     expect_identical(output$state_manifest$current_state, "raw_data_s4")
     expect_true(length(output$state_metadata$artifact_refs) > 0L)
+    verification <- output$hydration_verification
+    expect_true(verification$valid)
+    expect_identical(verification$mode, "inline_exact")
+    expect_true(identical(
+        verification$verifier_pid,
+        as.integer(Sys.getpid())
+    ))
+    expect_identical(
+        verification$expected_digest,
+        verification$hydrated_digest
+    )
+    expect_match(verification$manifest_semantic_digest, "^[0-9a-f]{64}$")
+    expect_false(verification$complete_payload_returned)
     expect_identical(
         diaArtifact009ReadRef(workflow$workflow_context, output$refs$cleaned_data),
         workflow$data_cln
@@ -248,6 +464,25 @@ test_that("DIA-NN design dual-write captures refs and exact S4 independently", {
         diaArtifact009ReadRef(workflow$workflow_context, output$refs$sequences),
         workflow$aa_seq_tbl_final
     )
+})
+
+test_that("DIA exact S4 proof is independent of ALTREP representation", {
+    diaArtifact009SkipDependencies()
+    root <- withr::local_tempdir(pattern = "dia-artifact-009-digest-")
+    workflow <- diaArtifact009Workflow(root)
+    imported <- diaArtifact009Import(
+        workflow,
+        testthat::test_path("..", "testdata", "e2e", "prot_dia", "report.tsv")
+    )
+    object <- diaArtifact009Design(workflow)
+    hydrated <- hydrateDiaS4Artifact(dehydrateDiaS4Artifact(object))
+
+    expect_identical(hydrated, object)
+    expect_identical(
+        artifactExactS4HydrationDigest(hydrated),
+        artifactExactS4HydrationDigest(object)
+    )
+    expect_identical(imported$memory, workflow$data_cln)
 })
 
 test_that("artifact-mode import and design state cannot be overridden by globals", {
@@ -441,6 +676,59 @@ test_that("independent hydration failure precedes artifact state registration", 
     )
     expect_identical(manager$exportState(), initial)
     expect_false(manager$hasState("raw_data_s4"))
+})
+
+test_that("DIA worker proof failure precedes state registration", {
+    diaArtifact009SkipDependencies()
+    root <- withr::local_tempdir(pattern = "dia-artifact-009-worker-failure-")
+    source <- testthat::test_path("..", "testdata", "e2e", "prot_dia", "report.tsv")
+    workflow <- diaArtifact009Workflow(root)
+    imported <- diaArtifact009Import(workflow, source)
+    expect_true(persistProtDiaImportArtifacts(
+        workflow,
+        imported$result,
+        source
+    )$ok)
+    object <- diaArtifact009Design(workflow)
+    state_before <- workflow$state_manager$exportState()
+    failing_factory <- function(..., verify_hydration_fn) {
+        newWorkflowState(
+            ...,
+            verify_hydration_fn = function(
+                store,
+                manifest,
+                expected_object,
+                hydrate_fn
+            ) {
+                if (is.null(expected_object)) {
+                    return(verifyProtDiaArtifactStateInWorker(
+                        store,
+                        manifest,
+                        expected_object,
+                        hydrate_fn
+                    ))
+                }
+                rlang::abort("injected process-bound parity failure")
+            }
+        )
+    }
+    output <- persistProtDiaDesignArtifacts(
+        workflow,
+        manager_factory = failing_factory,
+        log_warn = \(...) invisible(NULL)
+    )
+
+    expect_false(output$ok)
+    expect_identical(workflow$state_manager$exportState(), state_before)
+    expect_identical(workflow$state_manager$getState("raw_data_s4"), object)
+    session <- diaArtifact009Registry(workflow$workflow_context)
+    identity <- workflow$workflow_context$getIdentity()
+    states <- projectRegistryQuery(
+        session,
+        "states",
+        filters = list(workflow_id = identity$workflow_id)
+    )
+    expect_false(any(states$logical_name == "raw_data_s4"))
 })
 
 test_that("memory and non-DIA lanes cannot initialize the DIA canary registry", {

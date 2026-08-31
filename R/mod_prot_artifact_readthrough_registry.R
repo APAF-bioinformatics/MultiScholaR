@@ -22,6 +22,9 @@ protDiaArtifactReadthroughAdapter <- function() {
         owner_label = "DIA-NN",
         default_omic_label = "proteomics",
         abort_fn = protDiaArtifactAbort,
+        compatible_descriptor_contracts = list(
+            artifactStageDescriptorContract(artifactDiaWorkflowDescriptorV1())
+        ),
         conditions = c(
             corrupt_manifest = "multischolar_corrupt_prot_dia_artifact_manifest",
             invalid_context = "multischolar_invalid_prot_dia_artifact_context",

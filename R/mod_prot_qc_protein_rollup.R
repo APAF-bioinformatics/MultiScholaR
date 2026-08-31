@@ -251,6 +251,16 @@ runProteinIqRollupApplyStep <- function(workflowData,
                                         sleepFn = Sys.sleep,
                                         maxWait = 30) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "protein_iq_rollup",
+      list(experimentPaths = experimentPaths, maxWait = maxWait)
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
 
   currentState <- workflowStateCurrentName(workflowData$state_manager)
   peptideS4 <- workflowData$state_manager$getState(currentState)
@@ -472,6 +482,16 @@ runProteinLimpaRollupApplyStep <- function(workflowData,
                                            captureCheckpointFn = .capture_checkpoint,
                                            logInfoFn = logger::log_info) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "protein_limpa_rollup",
+      list(experimentPaths = experimentPaths)
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
 
   currentState <- workflowStateCurrentName(workflowData$state_manager)
   selectedPeptideS4 <- workflowData$state_manager$getState(currentState)
@@ -572,16 +592,20 @@ updateProteinIqRollupOutputs <- function(output,
                                          workflowData = NULL) {
   output$iq_rollup_results <- renderTextFn(iqRollupResult$resultText)
 
-  plotGrid <- protDiaProteinQcUpdateFiltering(
-    update_fn = updateProteinFilteringFn,
-    workflow_data = workflowData,
-    data = iqRollupResult$proteinObj@protein_quant_table,
-    step_name = "9_protein_s4_created",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(iqRollupResult$plot_png)) {
+    protDiaQcPlotGrid(iqRollupResult$plot_png)
+  } else {
+    protDiaProteinQcUpdateFiltering(
+      update_fn = updateProteinFilteringFn,
+      workflow_data = workflowData,
+      data = iqRollupResult$proteinObj@protein_quant_table,
+      step_name = "9_protein_s4_created",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   iqRollupPlot(plotGrid)
 
   invisible(plotGrid)
@@ -667,6 +691,9 @@ runProteinIqRollupRevertStep <- function(workflowData) {
 
   if (length(previousState) == 0 || is.na(previousState)) {
     stop("No previous peptide state to revert to.")
+  }
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
   }
 
   revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)

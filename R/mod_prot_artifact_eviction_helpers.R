@@ -215,7 +215,7 @@ evictProtDiaWorkflowPayloads <- function(
     readiness_fn = protDiaEvictionReadiness,
     clear_fn = setProtDiaWorkflowField,
     release_cache_fn = workflowStateReleaseHydrationCache,
-    gc_fn = \() gc(full = TRUE)
+    gc_fn = NULL
 ) {
     result <- evictArtifactWorkflowPayloads(
         workflow_data,
@@ -225,7 +225,6 @@ evictProtDiaWorkflowPayloads <- function(
         clear_fn,
         release_cache_fn
     )
-    if (isTRUE(result$evicted)) invisible(gc_fn())
     result
 }
 
@@ -264,36 +263,95 @@ verifyProtDiaReadthroughForEviction <- function(
     experiment_paths,
     experiment_label,
     storage_policy = NULL,
-    resource_policy = NULL
+    resource_policy = NULL,
+    parity_process_fn = runProtDiaReadthroughParityProcess,
+    parity_failure_stage = NULL
 ) {
-    prepared <- createProtDiaResumeContext(
-        experiment_paths,
-        experiment_label,
-        storage_policy
-    )
-    if (!isTRUE(prepared$enabled)) return(prepared)
-    bundle <- hydrateProtDiaResumeBundle(
-        prepared$context,
-        resource_policy,
-        retain_source_payloads = FALSE
-    )
-    on.exit(bundle$state_manager$close(), add = TRUE)
+    result <- if (protDiaStageParityAvailable(workflow_data) &&
+        is.null(parity_failure_stage)) {
+        verifyProtDiaBoundedStageParity(workflow_data, resource_policy)
+    } else {
+        parity_process_fn(protDiaParityWorkerSpec(
+            experiment_paths,
+            experiment_label,
+            storage_policy,
+            resource_policy,
+            failure_stage = parity_failure_stage
+        ))
+    }
     workflow_data$artifact_readthrough_refs <- list(
-        import = bundle$evidence$import$refs,
-        design = bundle$evidence$design$refs
+        import = result$import_refs,
+        design = result$design_refs
     )
-    readthrough <- recordProtDiaReadthroughProof(workflow_data, bundle)
+    workflow_data$artifact_readthrough_proof <- result$proof
+    workflow_data$artifact_compatibility_checkpoint <-
+        result$compatibility_checkpoint
     list(
         enabled = TRUE,
         ok = TRUE,
         resumed = FALSE,
         verified = TRUE,
         reason = "artifact_readthrough_verified_for_eviction",
-        project_id = bundle$evidence$identity$project_id,
-        import_run_id = bundle$evidence$import$run_id,
-        design_run_id = bundle$evidence$design$run_id,
-        state_generation_id = bundle$evidence$current_state$generation_id,
-        compatibility_checkpoint = readthrough$compatibility_checkpoint
+        project_id = result$project_id,
+        import_run_id = result$import_run_id,
+        design_run_id = result$design_run_id,
+        state_generation_id = result$state_generation_id,
+        compatibility_checkpoint = result$compatibility_checkpoint,
+        parity_worker_pid = result$worker_pid,
+        complete_payload_returned = FALSE,
+        parity_reused = isTRUE(result$parity_reused)
+    )
+}
+
+newProtDiaSettledStateManagerFromContext <- function(
+    context,
+    resource_policy = NULL,
+    state_export = NULL
+) {
+    if (!is.list(state_export)) {
+        protDiaArtifactAbort(
+            "DIA-NN settlement lacks a committed state export",
+            "multischolar_missing_prot_dia_settled_state"
+        )
+    }
+    identity <- context$getIdentity()
+    store <- newArtifactStore(context$getPaths(), identity$project_id)
+    bootstrap <- artifactWorkflowStateBootstrapFromExport(store, state_export)
+    decision <- context$getStorageDecision()
+    descriptor <- if (identical(decision$capability_version, "1.0.0")) {
+        artifactDiaWorkflowDescriptorV1()
+    } else {
+        artifactDiaWorkflowDescriptor()
+    }
+    newWorkflowState(
+        workflow_context = context,
+        resource_policy = resource_policy,
+        workflow_descriptor = descriptor,
+        descriptor_catalogue = if (identical(
+            descriptor$descriptor_version,
+            artifactDiaWorkflowDescriptor()$descriptor_version
+        )) {
+            artifactWorkflowDescriptorCatalogue()
+        } else {
+            NULL
+        },
+        codec_catalogue = artifactS4CodecCatalogue(),
+        settled_bootstrap = bootstrap
+    )
+}
+
+newProtDiaSettledStateManager <- function(
+    workflow_data,
+    resource_policy = NULL,
+    state_export = NULL
+) {
+    if (is.null(state_export)) {
+        state_export <- workflow_data$artifact_stage_results$design$state_manifest
+    }
+    newProtDiaSettledStateManagerFromContext(
+        workflow_data$workflow_context,
+        resource_policy,
+        state_export
     )
 }
 
@@ -304,7 +362,9 @@ settleProtDiaArtifactWorkflowSafely <- function(
     storage_policy = NULL,
     resource_policy = NULL,
     rollout_fn = \(context) context$getStorageDecision()$effective_rollout,
-    log_warn = logger::log_warn
+    log_warn = logger::log_warn,
+    parity_process_fn = runProtDiaReadthroughParityProcess,
+    parity_failure_stage = NULL
 ) {
     rollout <- protDiaEvictionRollout(workflow_data, rollout_fn)
     if (!identical(rollout, "evict")) {
@@ -323,7 +383,9 @@ settleProtDiaArtifactWorkflowSafely <- function(
                     experiment_paths,
                     experiment_label,
                     storage_policy,
-                    resource_policy
+                    resource_policy,
+                    parity_process_fn,
+                    parity_failure_stage
                 )
             } else {
                 verification <- list(verified = TRUE)
@@ -331,10 +393,32 @@ settleProtDiaArtifactWorkflowSafely <- function(
             if (!isTRUE(verification$verified)) {
                 verification
             } else {
-                evictProtDiaWorkflowPayloads(
+                settled_manager <- newProtDiaSettledStateManager(
+                    workflow_data,
+                    resource_policy
+                )
+                manager_installed <- FALSE
+                on.exit({
+                    if (!manager_installed) {
+                        try(settled_manager$close(), silent = TRUE)
+                    }
+                }, add = TRUE)
+                previous_manager <- workflow_data$state_manager
+                eviction <- evictProtDiaWorkflowPayloads(
                     workflow_data,
                     rollout_fn = rollout_fn
                 )
+                workflow_data$state_manager <- settled_manager
+                manager_installed <- TRUE
+                if (inherits(previous_manager, "ArtifactWorkflowState")) {
+                    try(previous_manager$close(), silent = TRUE)
+                }
+                eviction$parity_worker_pid <- verification$parity_worker_pid
+                eviction$complete_payload_returned <-
+                    verification$complete_payload_returned
+                eviction$parity_reused <- verification$parity_reused
+                eviction$state_manager_replaced <- TRUE
+                eviction
             }
         },
         error = \(error) {
@@ -355,14 +439,25 @@ settleProtDiaArtifactWorkflowSafely <- function(
     recordProtDiaArtifactResult(workflow_data, "eviction", result)
 }
 
+protDiaWorkflowPayloadRef <- function(workflow_data, name) {
+    refs <- workflow_data$artifact_readthrough_refs
+    if (identical(name, "data_tbl") && is.list(refs$import$canonical_data)) {
+        return(refs$import$canonical_data)
+    }
+    if (identical(name, "data_cln") && is.list(refs$design$cleaned_data)) {
+        return(refs$design$cleaned_data)
+    }
+    stages <- workflow_data$artifact_stage_results
+    if (identical(name, "data_cln") && is.list(stages$design$refs$cleaned_data)) {
+        return(stages$design$refs$cleaned_data)
+    }
+    stages$import$refs$canonical_data
+}
+
 protDiaWorkflowPayloadAvailable <- function(workflow_data, name) {
     if (!name %in% PROT_DIA_EVICT_FIELDS) return(!is.null(workflow_data[[name]]))
     if (!is.null(workflow_data[[name]])) return(TRUE)
-    refs <- workflow_data$artifact_readthrough_refs
-    if (identical(name, "data_tbl")) {
-        return(is.list(refs$import$canonical_data))
-    }
-    is.list(refs$design$cleaned_data)
+    is.list(protDiaWorkflowPayloadRef(workflow_data, name))
 }
 
 protDiaWorkflowPayloadMarker <- function(workflow_data, name) {
@@ -382,12 +477,7 @@ resolveProtDiaWorkflowTable <- function(workflow_data, name) {
         name,
         protDiaPayloadEvictionContract(),
         ref_fn = \(owner, field) {
-            refs <- owner$artifact_readthrough_refs
-            if (identical(field, "data_tbl")) {
-                refs$import$canonical_data
-            } else {
-                refs$design$cleaned_data
-            }
+            protDiaWorkflowPayloadRef(owner, field)
         },
         read_fn = protDiaArtifactReadTable
     )

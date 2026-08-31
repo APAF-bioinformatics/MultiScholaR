@@ -76,6 +76,16 @@ runProteinDuplicateRemovalStep <- function(workflowData,
                                           aggregationResolverFn = base::get,
                                           logInfoFn = logger::log_info) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "protein_duplicate_aggregation",
+      list(aggregationMethod = aggregationMethod)
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
 
   selectedS4 <- workflowData$state_manager$getState()
   shiny::req(selectedS4)
@@ -161,16 +171,20 @@ updateProteinDuplicateRemovalOutputs <- function(output,
                                                  workflowData = NULL) {
   output$duplicate_removal_results <- renderTextFn(duplicateRemovalResult$resultText)
 
-  plotGrid <- protDiaProteinQcUpdateFiltering(
-    update_fn = updateProteinFilteringFn,
-    workflow_data = workflowData,
-    data = duplicateRemovalResult$deduplicatedS4@protein_quant_table,
-    step_name = "12_duplicates_removed",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(duplicateRemovalResult$plot_png)) {
+    protDiaQcPlotGrid(duplicateRemovalResult$plot_png)
+  } else {
+    protDiaProteinQcUpdateFiltering(
+      update_fn = updateProteinFilteringFn,
+      workflow_data = workflowData,
+      data = duplicateRemovalResult$deduplicatedS4@protein_quant_table,
+      step_name = "12_duplicates_removed",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   duplicateRemovalPlot(plotGrid)
 
   invisible(plotGrid)
@@ -246,6 +260,9 @@ runProteinDuplicateRemovalRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
+  }
   revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)
 
   list(

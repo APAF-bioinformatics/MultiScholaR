@@ -13,9 +13,11 @@ newWorkflowState <- function(
     dehydrate_fn = dehydrateDiaS4Artifact,
     validate_bundle_fn = validateDiaS4Bundle,
     hydrate_fn = hydrateDiaS4Artifact,
+    verify_hydration_fn = artifactWorkflowStateVerifyHydrationInline,
     workflow_descriptor = NULL,
     descriptor_catalogue = NULL,
-    codec_catalogue = NULL
+    codec_catalogue = NULL,
+    settled_bootstrap = NULL
 ) {
     memory <- is.null(workflow_context) ||
         !inherits(workflow_context, "WorkflowContext") ||
@@ -89,6 +91,8 @@ newWorkflowState <- function(
         dehydrate_fn = dehydrate_fn,
         validate_bundle_fn = validate_bundle_fn,
         hydrate_fn = hydrate_fn,
-        descriptor_contract = descriptor_contract
+        verify_hydration_fn = verify_hydration_fn,
+        descriptor_contract = descriptor_contract,
+        settled_bootstrap = settled_bootstrap
     )
 }

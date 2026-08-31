@@ -32,6 +32,7 @@ protDiaArtifactWorkerSpec <- function(
     source_path = NULL,
     use_precursor_norm = TRUE,
     sanitize_names = FALSE,
+    bounded_streaming = FALSE,
     failure_stage = NULL
 ) {
     spec <- list(
@@ -42,6 +43,7 @@ protDiaArtifactWorkerSpec <- function(
         source_path = source_path,
         use_precursor_norm = use_precursor_norm,
         sanitize_names = sanitize_names,
+        bounded_streaming = bounded_streaming,
         failure_stage = failure_stage
     )
     artifactResourceDataOnly(spec, "DIA-NN stage worker specification")
@@ -59,7 +61,9 @@ validateProtDiaArtifactWorkerSpec <- function(spec, mode) {
         is.list(spec$stage$identity) &&
         workflowCapabilityScalarString(spec$stage$run_id) &&
         workflowCapabilityScalarString(spec$stage$action_id) &&
-        workflowCapabilityScalarString(spec$stage$generation_id)
+        workflowCapabilityScalarString(spec$stage$generation_id) &&
+        is.logical(spec$bounded_streaming) &&
+        length(spec$bounded_streaming) == 1L && !is.na(spec$bounded_streaming)
     if (!isTRUE(valid)) {
         protDiaArtifactAbort(
             "DIA-NN artifact worker specification is malformed",
@@ -84,9 +88,76 @@ sanitizeProtDiaArtifactImport <- function(data_import_result) {
     data_import_result
 }
 
+protDiaArtifactImportSummary <- function(imported) {
+    data <- imported$data
+    mapping <- imported$column_mapping
+    list(
+        rows = as.numeric(nrow(data)),
+        columns = as.integer(ncol(data)),
+        column_names = as.list(names(data)),
+        run_values = as.list(unique(as.character(data[[mapping$run_col]]))),
+        protein_count = as.numeric(length(unique(data[[mapping$protein_col]]))),
+        peptide_count = as.numeric(length(unique(data[[mapping$peptide_col]])))
+    )
+}
+
 runProtDiaArtifactWriterWorker <- function(spec) {
     spec <- validateProtDiaArtifactWorkerSpec(spec, "writer")
     protDiaArtifactWorkerFailure(spec$failure_stage, "before_import")
+    if (isTRUE(spec$bounded_streaming)) {
+        output_path <- tempfile("prot-dia-streaming-", fileext = ".parquet")
+        on.exit(unlink(output_path, force = TRUE), add = TRUE)
+        streamed <- writeProtDiaStreamingParquet(
+            spec$source_path,
+            output_path,
+            use_precursor_norm = spec$use_precursor_norm,
+            sanitize_names = spec$sanitize_names
+        )
+        encoded <- encodeArtifactStreamingParquet(
+            output_path,
+            owner = paste(
+                spec$stage$descriptor$descriptor_id,
+                "import",
+                "canonical_data",
+                sep = "."
+            )
+        )
+        protDiaArtifactWorkerFailure(spec$failure_stage, "after_import")
+        ref <- artifactStorePublishStreamingParquet(
+            spec$stage$store,
+            encoded,
+            logical_key = list(
+                project_id = spec$stage$identity$project_id,
+                omic_type = spec$stage$identity$omic_type,
+                workflow_slug = spec$stage$identity$workflow_slug,
+                stage_id = "import",
+                state_role = "canonical_data",
+                generation_id = spec$stage$generation_id
+            ),
+            provenance_ids = c(spec$stage$run_id, spec$stage$action_id),
+            verification = "deferred_exact"
+        )
+        protDiaArtifactWorkerFailure(spec$failure_stage, "after_write")
+        if (identical(spec$failure_stage, "hard_exit_after_write")) {
+            quit(save = "no", status = 70L, runLast = FALSE)
+        }
+        source <- protDiaArtifactSourceMetadata(spec$source_path)
+        result <- list(
+            ok = TRUE,
+            mode = "writer",
+            worker_pid = as.integer(Sys.getpid()),
+            refs = list(canonical_data = unclass(ref)),
+            exact_digests = list(canonical_data = NULL),
+            data_type = "peptide",
+            column_mapping = streamed$column_mapping,
+            import_summary = streamed$import_summary,
+            source = source,
+            bounded_streaming = TRUE
+        )
+        protDiaArtifactWorkerFailure(spec$failure_stage, "before_result")
+        artifactResourceDataOnly(result, "DIA-NN streaming writer result")
+        return(result)
+    }
     imported <- importDIANNData(
         spec$source_path,
         use_precursor_norm = spec$use_precursor_norm
@@ -116,7 +187,9 @@ runProtDiaArtifactWriterWorker <- function(spec) {
         exact_digests = exact_digests,
         data_type = imported$data_type,
         column_mapping = imported$column_mapping,
-        source = source
+        import_summary = protDiaArtifactImportSummary(imported),
+        source = source,
+        bounded_streaming = FALSE
     )
     protDiaArtifactWorkerFailure(spec$failure_stage, "before_result")
     artifactResourceDataOnly(result, "DIA-NN stage writer result")
@@ -131,12 +204,34 @@ runProtDiaArtifactVerifierWorker <- function(spec) {
         \(ref) artifactStoreVerifyExactRef(spec$stage$store, ref)
     )
     names(proofs) <- names(spec$stage$refs)
+    if (isTRUE(spec$bounded_streaming)) {
+        imported <- importDIANNData(
+            spec$source_path,
+            use_precursor_norm = spec$use_precursor_norm
+        )
+        if (isTRUE(spec$sanitize_names)) {
+            imported <- sanitizeProtDiaArtifactImport(imported)
+        }
+        oracle_digest <- artifactExactHydrationDigest(imported$data)
+        if (!identical(
+            proofs$canonical_data$hydration_digest,
+            oracle_digest
+        )) {
+            protDiaArtifactAbort(
+                "streaming DIA-NN hydration differs from the public importer",
+                "multischolar_inexact_prot_dia_streaming_import"
+            )
+        }
+    } else {
+        oracle_digest <- NULL
+    }
     protDiaArtifactWorkerFailure(spec$failure_stage, "after_verify")
     result <- list(
         ok = TRUE,
         mode = "verifier",
         worker_pid = as.integer(Sys.getpid()),
-        proofs = proofs
+        proofs = proofs,
+        oracle_digest = oracle_digest
     )
     artifactResourceDataOnly(result, "DIA-NN stage verifier result")
     result
@@ -248,7 +343,8 @@ runProtDiaArtifactStageProcess <- function(spec, timeout_ms = 600000L) {
             sprintf("DIA-NN artifact %s worker failed", spec$mode),
             "multischolar_prot_dia_worker_process_failed",
             worker_status = as.integer(process$status),
-            worker_error_class = result$error_class %||% character()
+            worker_error_class = result$error_class %||% character(),
+            worker_error_message = result$error_message %||% NULL
         )
     }
     result
@@ -281,6 +377,11 @@ newProtDiaArtifactPendingStage <- function(stage, writer, verifier,
                                            use_precursor_norm, sanitize_names) {
     stage$refs <- writer$refs
     stage$exact_digests <- writer$exact_digests
+    for (role in names(stage$exact_digests)) {
+        if (is.null(stage$exact_digests[[role]])) {
+            stage$exact_digests[[role]] <- verifier$proofs[[role]]$hydration_digest
+        }
+    }
     pending <- list(
         schema = .PROT_DIA_PENDING_STAGE_SCHEMA,
         schema_version = .PROT_DIA_PENDING_STAGE_VERSION,
@@ -296,8 +397,10 @@ newProtDiaArtifactPendingStage <- function(stage, writer, verifier,
             parent_pid = as.integer(Sys.getpid()),
             writer_pid = writer$worker_pid,
             verifier_pid = verifier$worker_pid
-        )
+        ),
+        bounded_streaming = isTRUE(writer$bounded_streaming)
     )
+    pending$import_summary <- writer$import_summary
     validateProtDiaArtifactPendingStage(pending)
 }
 
@@ -312,7 +415,8 @@ validateProtDiaArtifactPendingStage <- function(pending) {
         identical(pending$stage$stage_id, "import") &&
         is.list(pending$stage$refs) &&
         identical(names(pending$stage$refs), names(pending$proofs)) &&
-        length(pending$stage$refs) > 0L
+        length(pending$stage$refs) > 0L &&
+        is.list(pending$import_summary)
     if (isTRUE(valid)) {
         valid <- all(vapply(names(pending$stage$refs), \(role) {
             ref <- artifactStoreNormalizeRef(pending$stage$refs[[role]])
@@ -413,8 +517,13 @@ stageProtDiaImportArtifacts <- function(
     resource_policy = NULL,
     timeout_ms = 600000L,
     writer_failure_stage = NULL,
-    verifier_failure_stage = NULL
+    verifier_failure_stage = NULL,
+    hydrate_parent = NULL
 ) {
+    preflight <- protDiaIngressPreflight(
+        source_path,
+        use_precursor_norm = use_precursor_norm
+    )
     prepared <- prepareProtDiaArtifactContext(
         workflow_data,
         format = format,
@@ -432,6 +541,10 @@ stageProtDiaImportArtifacts <- function(
         prepared$context,
         resource_policy
     )
+    bounded_streaming <- identical(
+        prepared$context$getStorageDecision()$effective_rollout,
+        "evict"
+    )
     caller_owns_stage <- FALSE
     on.exit({
         if (!caller_owns_stage) {
@@ -444,13 +557,19 @@ stageProtDiaImportArtifacts <- function(
         source_path = source_path,
         use_precursor_norm = use_precursor_norm,
         sanitize_names = sanitize_names,
+        bounded_streaming = bounded_streaming,
         failure_stage = writer_failure_stage
     ), timeout_ms)
+    validateProtDiaIngressBinding(preflight, writer)
     verifier_stage <- stage
     verifier_stage$refs <- writer$refs
     verifier <- runProtDiaArtifactStageProcess(protDiaArtifactWorkerSpec(
         mode = "verifier",
         stage = verifier_stage,
+        source_path = source_path,
+        use_precursor_norm = use_precursor_norm,
+        sanitize_names = sanitize_names,
+        bounded_streaming = bounded_streaming,
         failure_stage = verifier_failure_stage
     ), timeout_ms)
     pending <- newProtDiaArtifactPendingStage(
@@ -460,11 +579,30 @@ stageProtDiaImportArtifacts <- function(
         use_precursor_norm,
         sanitize_names
     )
-    tables <- readProtDiaArtifactStage(stage$store, pending$stage)
+    if (is.null(hydrate_parent)) {
+        hydrate_parent <- !identical(
+            prepared$context$getStorageDecision()$effective_rollout,
+            "evict"
+        )
+    }
+    if (!is.logical(hydrate_parent) || length(hydrate_parent) != 1L ||
+        is.na(hydrate_parent)) {
+        protDiaArtifactAbort(
+            "DIA-NN parent hydration mode is invalid",
+            "multischolar_invalid_prot_dia_ingress_mode"
+        )
+    }
+    tables <- if (isTRUE(hydrate_parent)) {
+        readProtDiaArtifactStage(stage$store, pending$stage)
+    } else {
+        list(canonical_data = NULL)
+    }
     imported <- list(
         data = tables$canonical_data,
         data_type = writer$data_type,
-        column_mapping = writer$column_mapping
+        column_mapping = writer$column_mapping,
+        import_summary = writer$import_summary,
+        parent_hydration_deferred = !isTRUE(hydrate_parent)
     )
     caller_owns_stage <- TRUE
     list(
@@ -473,7 +611,8 @@ stageProtDiaImportArtifacts <- function(
         ok = TRUE,
         result = imported,
         pending_stage = pending,
-        process_evidence = pending$process_evidence
+        process_evidence = pending$process_evidence,
+        preflight = preflight
     )
 }
 
@@ -487,6 +626,7 @@ stageProtDiaImportArtifactsSafely <- function(
     timeout_ms = 600000L,
     writer_failure_stage = NULL,
     verifier_failure_stage = NULL,
+    hydrate_parent = NULL,
     log_warn = logger::log_warn
 ) {
     result <- tryCatch(
@@ -499,7 +639,8 @@ stageProtDiaImportArtifactsSafely <- function(
             resource_policy = resource_policy,
             timeout_ms = timeout_ms,
             writer_failure_stage = writer_failure_stage,
-            verifier_failure_stage = verifier_failure_stage
+            verifier_failure_stage = verifier_failure_stage,
+            hydrate_parent = hydrate_parent
         ),
         error = \(error) {
             log_warn(paste(
@@ -557,6 +698,10 @@ publishProtDiaArtifactWorkerStage <- function(workflow_data, pending_stage) {
         generation_id = stage$generation_id,
         refs = stage$refs,
         committed = TRUE,
-        process_evidence = pending$process_evidence
+        process_evidence = pending$process_evidence,
+        hydration_proofs = pending$proofs,
+        exact_digests = pending$stage$exact_digests,
+        import_summary = pending$import_summary,
+        column_mapping = pending$parameters$column_mapping
     )
 }

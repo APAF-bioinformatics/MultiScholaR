@@ -69,6 +69,7 @@ newWorkflowCapability <- function(
     artifact_eligible = FALSE,
     auto_eligible = FALSE,
     maximum_artifact_rollout = NULL,
+    explicit_maximum_artifact_rollout = maximum_artifact_rollout,
     capability_version = "1.0.0"
 ) {
     list(
@@ -77,7 +78,8 @@ newWorkflowCapability <- function(
         identity = identity,
         artifact_eligible = isTRUE(artifact_eligible),
         auto_eligible = isTRUE(auto_eligible),
-        maximum_artifact_rollout = maximum_artifact_rollout
+        maximum_artifact_rollout = maximum_artifact_rollout,
+        explicit_maximum_artifact_rollout = explicit_maximum_artifact_rollout
     )
 }
 
@@ -458,9 +460,14 @@ resolveWorkflowBackend <- function(
         }
         return(result("memory", "none", reason))
     }
+    maximum_rollout <- if (identical(requested_backend, "artifact")) {
+        capability$explicit_maximum_artifact_rollout
+    } else {
+        capability$maximum_artifact_rollout
+    }
     rollout <- workflowEffectiveRollout(
         requested_rollout,
-        capability$maximum_artifact_rollout,
+        maximum_rollout,
         forced = identical(requested_backend, "artifact")
     )
     reason <- if (identical(requested_backend, "artifact")) {

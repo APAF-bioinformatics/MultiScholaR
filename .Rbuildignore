@@ -9,10 +9,17 @@
 ^\.Rproj\.user$
 ^\.aiignore$
 ^\.renvignore$
+^\.Rprofile$
 ^\.agents$
 ^\.codex$
 ^\.goyoke$
 ^\.refactor-fidelity-audit$
+^\.omics-publication-.*$
+^AGENTS\.md$
+^conventions$
+^docs/qa$
+^manuscript$
+^1\.2\.3$
 ^defaults$
 ^data$
 ^dev$

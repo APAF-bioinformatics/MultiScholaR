@@ -7,7 +7,6 @@
 
 # User-specific files
 .Ruserdata
-.Rprofile
 .ticket-config.json
 /debug/
 
@@ -65,8 +64,9 @@ data-raw/*.csv
 /tmp/
 /tools/refactor/__pycache__/
 .renv-paths/
-/renv/
-renv.lock
+/.omics-publication-comparators/
+/.omics-publication-workloads/
+/.omics-publication-renv-cache/
 /Workbooks/proteomics/
 /manuscript/
 /.refactor-fidelity-audit/

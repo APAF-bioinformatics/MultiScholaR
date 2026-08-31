@@ -15,11 +15,20 @@ protDiaArtifactAbort <- function(message, class, ...) {
 }
 
 protDiaArtifactIdentityMatches <- function(identity) {
-    artifactStageIdentityMatches(identity, artifactDiaWorkflowDescriptor())
+    artifactStageIdentityMatches(identity, artifactDiaWorkflowDescriptor()) ||
+        artifactStageIdentityMatches(identity, artifactDiaWorkflowDescriptorV1())
 }
 
 protDiaArtifactCoordinatorOwned <- function(workflow_data) {
-    artifactStageCoordinatorOwned(workflow_data, artifactDiaWorkflowDescriptor())
+    context <- tryCatch(workflow_data$workflow_context, error = function(...) NULL)
+    if (!inherits(context, "WorkflowContext") || !context$isBound()) return(FALSE)
+    decision <- context$getStorageDecision()
+    descriptor <- if (identical(decision$capability_version, "1.0.0")) {
+        artifactDiaWorkflowDescriptorV1()
+    } else {
+        artifactDiaWorkflowDescriptor()
+    }
+    artifactStageCoordinatorOwned(workflow_data, descriptor)
 }
 
 prepareProtDiaArtifactContext <- function(

@@ -201,6 +201,11 @@ test_that("DIA eviction releases duplicate tables and preserves every reader", {
         rollout_fn = \(...) "evict"
     )
     expect_true(current_settlement$evicted)
+    expect_false(current_settlement$complete_payload_returned)
+    expect_false(identical(
+        current_settlement$parity_worker_pid,
+        as.integer(Sys.getpid())
+    ))
     expect_null(built$workflow$data_tbl)
     expect_null(built$workflow$data_cln)
     expectDiaArtifact011StateExact(
@@ -315,7 +320,8 @@ test_that("DIA eviction releases duplicate tables and preserves every reader", {
         settled_workflow$artifact_readthrough_proof$readthrough_mode,
         "settled"
     )
-    expect_identical(settled_workflow$state_manager$getCacheInfo()$entries, 1L)
+    expect_null(settled_bundle$state_object)
+    expect_identical(settled_workflow$state_manager$getCacheInfo()$entries, 0L)
     expectDiaArtifact011StateExact(
         built$object,
         settled_workflow$state_manager$getState()
@@ -343,6 +349,81 @@ test_that("DIA eviction releases duplicate tables and preserves every reader", {
         ),
         class = "multischolar_artifact_hash_mismatch"
     )
+})
+
+test_that("DIA parity failure preserves sources and descriptor v1 remains readable", {
+    diaArtifact011SkipDependencies()
+    root <- withr::local_tempdir(pattern = "dia-artifact-070-parity-failure-")
+    built <- diaArtifact011Build(root)
+    source_before <- lapply(
+        PROT_DIA_EVICT_FIELDS,
+        \(name) built$workflow[[name]]
+    )
+    names(source_before) <- PROT_DIA_EVICT_FIELDS
+    result <- settleProtDiaArtifactWorkflowSafely(
+        built$workflow,
+        built$paths,
+        "dia-eviction-study",
+        storage_policy = built$workflow$workflow_context$getStoragePolicy(),
+        rollout_fn = \(...) "evict",
+        parity_failure_stage = "after_hydration",
+        log_warn = \(...) NULL
+    )
+    expect_false(result$ok)
+    expect_false(result$evicted)
+    for (name in PROT_DIA_EVICT_FIELDS) {
+        expect_identical(built$workflow[[name]], source_before[[name]])
+    }
+
+    predecessor <- artifactDiaWorkflowDescriptorV1()
+    current <- artifactDiaWorkflowDescriptor()
+    expect_identical(
+        predecessor$descriptor_digest,
+        "673b5d93149e17f08f2153ccde37ba10899ccf97548dc42b7e16a9e129dd5c6d"
+    )
+    expect_true(all(vapply(
+        predecessor$stages,
+        \(stage) identical(stage$maximum_rollout, "dual_write"),
+        logical(1)
+    )))
+    expect_true(all(vapply(
+        current$stages,
+        \(stage) identical(stage$maximum_rollout, "evict"),
+        logical(1)
+    )))
+    expect_false(current$certification$auto_eligible)
+})
+
+test_that("DIA settlement does not depend on explicit garbage collection", {
+    sources <- unlist(lapply(c(
+        testthat::test_path(
+            "..", "..", "R", "mod_prot_artifact_eviction_helpers.R"
+        ),
+        testthat::test_path(
+            "..", "..", "R", "mod_prot_artifact_settlement_helpers.R"
+        )
+    ), readLines, warn = FALSE), use.names = FALSE)
+    expect_false(any(grepl("gc(", sources, fixed = TRUE)))
+})
+
+test_that("installed DIA parity workers register lazy S4 metadata", {
+    source <- readLines(
+        testthat::test_path(
+            "..",
+            "..",
+            "R",
+            "mod_prot_artifact_settlement_helpers.R"
+        ),
+        warn = FALSE
+    )
+    expressions <- c(
+        protDiaParityWorkerExpression(FALSE),
+        protDiaS4ParityWorkerExpression(FALSE)
+    )
+
+    expect_true(all(grepl("lazyLoad", expressions, fixed = TRUE)))
+    expect_true(all(grepl("cacheMetaData", expressions, fixed = TRUE)))
+    expect_true(any(grepl("cacheMetaData", source, fixed = TRUE)))
 })
 
 test_that("completed DIA annotation may be represented by an explicit absence", {

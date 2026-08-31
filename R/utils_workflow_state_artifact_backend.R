@@ -23,12 +23,15 @@ ArtifactWorkflowState <- R6::R6Class(
             dehydrate_fn = dehydrateDiaS4Artifact,
             validate_bundle_fn = validateDiaS4Bundle,
             hydrate_fn = hydrateDiaS4Artifact,
+            verify_hydration_fn =
+                artifactWorkflowStateVerifyHydrationInline,
             descriptor_contract = NULL,
             settled_bootstrap = NULL
         ) {
             context <- artifactWorkflowStateValidateContext(workflow_context)
             if (!is.function(dehydrate_fn) || !is.function(validate_bundle_fn) ||
-                !is.function(hydrate_fn)) {
+                !is.function(hydrate_fn) ||
+                !is.function(verify_hydration_fn)) {
                 artifactWorkflowStateAbort(
                     "artifact WorkflowState codec adapter is invalid",
                     "multischolar_invalid_artifact_state_codec"
@@ -46,12 +49,14 @@ ArtifactWorkflowState <- R6::R6Class(
             private$dehydrate_fn <- dehydrate_fn
             private$validate_bundle_fn <- validate_bundle_fn
             private$hydrate_fn <- hydrate_fn
+            private$verify_hydration_fn <- verify_hydration_fn
             self$audit_enabled <- isTRUE(audit_enabled)
             private$observers <- list()
             private$next_observer_id <- 0L
             private$cache_generation_id <- NULL
             private$cache_object <- NULL
             private$hydration_count <- 0L
+            private$last_hydration_verification <- NULL
             private$closed <- FALSE
             private$process_id <- as.integer(Sys.getpid())
             if (!is.null(settled_bootstrap)) {
@@ -110,6 +115,9 @@ ArtifactWorkflowState <- R6::R6Class(
                 )
             }
             state_name
+        },
+        getLastHydrationVerification = function() {
+            private$last_hydration_verification
         },
         commitState = function(
             state_name,
@@ -416,6 +424,8 @@ ArtifactWorkflowState <- R6::R6Class(
         dehydrate_fn = NULL,
         validate_bundle_fn = NULL,
         hydrate_fn = NULL,
+        verify_hydration_fn = NULL,
+        last_hydration_verification = NULL,
         closed = FALSE,
         process_id = NULL,
         settled_metadata = NULL,
@@ -776,8 +786,16 @@ ArtifactWorkflowState <- R6::R6Class(
                 audit_metadata
             )
             manifest_path <- artifactWorkflowStateWriteManifest(private$store, manifest)
-            artifactWorkflowStateVerifyHydration(private$store, manifest, state_object,
-                private$hydrate_fn)
+            hydration_verification <- private$verify_hydration_fn(
+                private$store,
+                manifest,
+                state_object,
+                private$hydrate_fn
+            )
+            artifactResourceDataOnly(
+                hydration_verification,
+                "artifact hydration verification proof"
+            )
             metrics <- artifactWorkflowStateDataMetrics(private$store, data, state_object)
             artifactWorkflowStateInvokeRegistryFailure(
                 failure_injector,
@@ -842,6 +860,7 @@ ArtifactWorkflowState <- R6::R6Class(
                 )
             })
             private$refresh()
+            private$last_hydration_verification <- hydration_verification
             private$setCache(generation_id, state_object)
             private$notifyLastEvent()
             list(
@@ -854,6 +873,7 @@ ArtifactWorkflowState <- R6::R6Class(
                     persistence_hint
                 ),
                 metrics = metrics,
+                hydration_verification = hydration_verification,
                 idempotent = FALSE
             )
         },

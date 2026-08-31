@@ -90,6 +90,20 @@ runProteinReplicateFilterApplyStep <- function(workflowData,
                                                isTestModeFn = is_test_mode,
                                                nowFn = Sys.time) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "protein_replicate_filter",
+      list(
+        experimentPaths = experimentPaths,
+        groupingVariable = groupingVariable,
+        parallelCores = parallelCores
+      )
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   currentS4 <- workflowData$state_manager$getState()
   shiny::req(currentS4)
 
@@ -203,16 +217,20 @@ updateProteinReplicateFilterOutputs <- function(output,
                                                 workflowData = NULL) {
   output$protein_replicate_filter_results <- renderTextFn(replicateFilterResult$resultText)
 
-  plotGrid <- protDiaProteinQcUpdateFiltering(
-    update_fn = updateProteinFilteringFn,
-    workflow_data = workflowData,
-    data = replicateFilterResult$filteredS4@protein_quant_table,
-    step_name = "13_protein_replicate_filtered",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(replicateFilterResult$plot_png)) {
+    protDiaQcPlotGrid(replicateFilterResult$plot_png)
+  } else {
+    protDiaProteinQcUpdateFiltering(
+      update_fn = updateProteinFilteringFn,
+      workflow_data = workflowData,
+      data = replicateFilterResult$filteredS4@protein_quant_table,
+      step_name = "13_protein_replicate_filtered",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   proteinReplicateFilterPlot(plotGrid)
 
   invisible(plotGrid)
@@ -308,6 +326,9 @@ runProteinReplicateFilterRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
+  }
   revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)
 
   list(

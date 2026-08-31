@@ -128,6 +128,21 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
                                                logInfoFn = logger::log_info,
                                                nowFn = Sys.time) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "protein_intensity_filter",
+      list(
+        useStrictMode = useStrictMode,
+        minRepsPerGroup = minRepsPerGroup,
+        minGroups = minGroups,
+        intensityCutoffPercentile = intensityCutoffPercentile
+      )
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   selectedS4 <- workflowData$state_manager$getState()
   shiny::req(selectedS4)
   currentS4 <- selectedS4
@@ -262,16 +277,20 @@ updateProteinIntensityFilterOutputs <- function(output,
                                                 workflowData = NULL) {
   output$protein_intensity_filter_results <- renderTextFn(intensityFilterResult$resultText)
 
-  plotGrid <- protDiaProteinQcUpdateFiltering(
-    update_fn = updateProteinFilteringFn,
-    workflow_data = workflowData,
-    data = intensityFilterResult$filteredS4@protein_quant_table,
-    step_name = "11_protein_intensity_filtered",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(intensityFilterResult$plot_png)) {
+    protDiaQcPlotGrid(intensityFilterResult$plot_png)
+  } else {
+    protDiaProteinQcUpdateFiltering(
+      update_fn = updateProteinFilteringFn,
+      workflow_data = workflowData,
+      data = intensityFilterResult$filteredS4@protein_quant_table,
+      step_name = "11_protein_intensity_filtered",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   proteinIntensityFilterPlot(plotGrid)
 
   invisible(plotGrid)
@@ -350,6 +369,9 @@ runProteinIntensityFilterRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
+  }
   revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)
 
   list(

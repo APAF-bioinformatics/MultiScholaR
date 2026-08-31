@@ -610,6 +610,8 @@ completeProtNormCorrelationWorkflow <- function(
 
   messageFn(completionMessage)
 
+  workflowStateReleaseHydrationCache(workflowData$state_manager)
+
   invisible(correlation_metrics)
 }
 

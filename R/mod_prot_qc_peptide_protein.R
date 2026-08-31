@@ -85,6 +85,19 @@ runProteinPeptideApplyStep <- function(workflowData,
                                        logInfoFn = logger::log_info,
                                        nowFn = Sys.time) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "protein_evidence_filter",
+      list(
+        minPeptidesPerProtein = minPeptidesPerProtein,
+        minPeptidoformsPerProtein = minPeptidoformsPerProtein
+      )
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   currentS4 <- workflowData$state_manager$getState()
   shiny::req(currentS4)
 
@@ -178,14 +191,18 @@ updateProteinPeptideOutputs <- function(output,
                                         updateProteinFilteringFn = updateProteinFiltering) {
   output$protein_peptida_results <- renderTextFn(proteinPeptideResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = proteinPeptideResult$filteredS4@peptide_data,
-    step_name = "3_protein_peptide_filtered",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(proteinPeptideResult$plot_png)) {
+    protDiaQcPlotGrid(proteinPeptideResult$plot_png)
+  } else {
+    updateProteinFilteringFn(
+      data = proteinPeptideResult$filteredS4@peptide_data,
+      step_name = "3_protein_peptide_filtered",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   proteinPeptidePlot(plotGrid)
 
   invisible(plotGrid)
@@ -258,6 +275,9 @@ runProteinPeptideRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
+  }
   revertedS4 <- revertProtDiaPeptideQcState(workflowData, previousState)
   logInfoFn(paste("Reverted protein peptide filter to", previousState))
 

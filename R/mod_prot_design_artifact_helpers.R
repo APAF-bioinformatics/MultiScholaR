@@ -189,7 +189,8 @@ protDiaArtifactNewDesignStateManager <- function(prepared, manager_factory) {
         workflow_context = prepared$context,
         workflow_descriptor = artifactDiaWorkflowDescriptor(),
         descriptor_catalogue = artifactWorkflowDescriptorCatalogue(),
-        codec_catalogue = artifactS4CodecCatalogue()
+        codec_catalogue = artifactS4CodecCatalogue(),
+        verify_hydration_fn = artifactWorkflowStateVerifyHydrationInline
     )
 }
 
@@ -214,16 +215,22 @@ protDiaArtifactSaveDesignState <- function(
     } else {
         save_state_fn(manager, state_name, state_object, audit)
     }
-    hydrated <- manager$getState(state_name)
-    if (!identical(hydrated, state_object)) {
+    hydration_verification <- manager$getLastHydrationVerification()
+    if (!is.list(hydration_verification) ||
+        !isTRUE(hydration_verification$valid) ||
+        !identical(
+            hydration_verification$expected_digest,
+            hydration_verification$hydrated_digest
+        ) || isTRUE(hydration_verification$complete_payload_returned)) {
         protDiaArtifactAbort(
-            "DIA-NN design artifact differs from its memory checkpoint",
-            "multischolar_inexact_prot_dia_artifact_hydration"
+            "DIA-NN design artifact lacks an exact process-bound parity proof",
+            "multischolar_inexact_prot_dia_s4_parity"
         )
     }
     list(
         state_manifest = manager$exportState(),
-        state_metadata = manager$getStateMetadata(state_name)
+        state_metadata = manager$getStateMetadata(state_name),
+        hydration_verification = hydration_verification
     )
 }
 

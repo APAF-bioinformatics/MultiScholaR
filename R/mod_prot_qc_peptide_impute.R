@@ -128,6 +128,19 @@ runPeptideImputationStep <- function(workflow_data,
                                      proportionMissingValues,
                                      exclusionColumn = NULL,
                                      updateConfigParameterFn = updateConfigParameter) {
+  if (protDiaQcWorkerEligible(workflow_data)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflow_data,
+      "imputation",
+      list(
+        proportionMissingValues = proportionMissingValues,
+        exclusionColumn = exclusionColumn
+      )
+    ))
+    result <- applyProtDiaQcWorkerResult(workflow_data, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   current_s4 <- workflow_data$state_manager$getState()
   shiny::req(current_s4)
 
@@ -263,6 +276,9 @@ runPeptideImputationRevertStep <- function(workflow_data) {
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflow_data)) {
+    return(runProtDiaQcRevert(workflow_data, previousState))
+  }
   revertedS4 <- revertProtDiaPeptideQcState(workflow_data, previousState)
   logger::log_info(paste("Reverted imputation to", previousState))
 
@@ -276,14 +292,18 @@ runPeptideImputationRevertStep <- function(workflow_data) {
 updatePeptideImputationOutputs <- function(output, imputationPlot, imputationResult, omicType, experimentLabel) {
   output$imputation_results <- renderText(imputationResult$resultText)
 
-  plotGrid <- updateProteinFiltering(
-    data = imputationResult$imputedS4@peptide_data,
-    step_name = "8_imputed",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(imputationResult$plot_png)) {
+    protDiaQcPlotGrid(imputationResult$plot_png)
+  } else {
+    updateProteinFiltering(
+      data = imputationResult$imputedS4@peptide_data,
+      step_name = "8_imputed",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   imputationPlot(plotGrid)
 
   invisible(plotGrid)

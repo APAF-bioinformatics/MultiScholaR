@@ -161,6 +161,9 @@ runPeptideIntensityRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
+  }
   revertedS4 <- revertProtDiaPeptideQcState(workflowData, previousState)
   logger::log_info(paste("Reverted intensity filtering to", previousState))
 
@@ -209,6 +212,21 @@ runPeptideIntensityApplyStep <- function(workflowData,
                                          logInfoFn = logger::log_info,
                                          nowFn = Sys.time) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "intensity_filter",
+      list(
+        useStrictMode = useStrictMode,
+        minRepsPerGroup = minRepsPerGroup,
+        minGroups = minGroups,
+        intensityCutoffPercentile = intensityCutoffPercentile
+      )
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   currentS4 <- workflowData$state_manager$getState()
   shiny::req(currentS4)
 
@@ -324,14 +342,18 @@ updatePeptideIntensityOutputs <- function(output,
                                           updateProteinFilteringFn = updateProteinFiltering) {
   output$intensity_results <- renderTextFn(intensityResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = intensityResult$filteredS4@peptide_data,
-    step_name = "5_intensity_filtered",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(intensityResult$plot_png)) {
+    protDiaQcPlotGrid(intensityResult$plot_png)
+  } else {
+    updateProteinFilteringFn(
+      data = intensityResult$filteredS4@peptide_data,
+      step_name = "5_intensity_filtered",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   intensityPlot(plotGrid)
 
   invisible(plotGrid)

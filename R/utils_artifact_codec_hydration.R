@@ -43,6 +43,15 @@ artifactExpectedPhysicalSchema <- function(metadata) {
 }
 
 artifactValidateRectangularMetadata <- function(metadata) {
+    if (is.list(metadata) && identical(
+        metadata$codec,
+        list(
+            id = .artifactStreamingCodec,
+            version = .artifactStreamingCodecVersion
+        )
+    )) {
+        return(validateArtifactStreamingMetadata(metadata))
+    }
     if (!is.list(metadata) || !workflowCapabilityScalarString(metadata$kind) ||
         !metadata$kind %in% c("data.frame", "matrix")) {
         artifactMetadataAbort("artifact rectangular metadata is malformed")

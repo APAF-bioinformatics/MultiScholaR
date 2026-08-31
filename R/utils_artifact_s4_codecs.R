@@ -54,6 +54,102 @@ artifactDiaBundleSemanticInput <- function(metadata) {
     input
 }
 
+artifactExactAttributeDigestDescriptor <- function(value, owner) {
+    if (is.null(value)) return(list(names = NULL, values = list()))
+    attribute_names <- names(value)
+    attribute_order <- order(attribute_names, method = "radix")
+    value <- value[attribute_order]
+    attribute_names <- attribute_names[attribute_order]
+    values <- lapply(seq_along(value), function(index) {
+        artifactExactValueDigestDescriptor(
+            value[[index]],
+            artifactNodeOwner(owner, attribute_names, index)
+        )
+    })
+    list(names = unname(attribute_names), values = unname(values))
+}
+
+artifactExactValueDigestDescriptor <- function(value, owner) {
+    if (is.null(value)) return(list(kind = "null"))
+    if (isS4(value)) {
+        artifactCodecAbort(
+            sprintf("nested S4 value '%s' requires its own exact codec", owner),
+            "multischolar_artifact_externalization_required",
+            owner = owner
+        )
+    }
+    value_names <- names(value)
+    value_attributes <- attributes(value)
+    attributes(value) <- NULL
+    if (is.atomic(value)) {
+        materialized <- vector(typeof(value), length(value))
+        materialized[] <- value
+        return(list(
+            kind = "atomic",
+            storage_type = typeof(materialized),
+            length = length(materialized),
+            content_digest = digest::digest(
+                materialized,
+                algo = .artifactHashAlgorithm,
+                serialize = TRUE,
+                ascii = FALSE,
+                serializeVersion = 3L
+            ),
+            attributes = artifactExactAttributeDigestDescriptor(
+                value_attributes,
+                paste0(owner, "@attributes")
+            )
+        ))
+    }
+    if (is.list(value)) {
+        values <- lapply(seq_along(value), function(index) {
+            artifactExactValueDigestDescriptor(
+                value[[index]],
+                artifactNodeOwner(owner, value_names, index)
+            )
+        })
+        return(list(
+            kind = "list",
+            values = unname(values),
+            attributes = artifactExactAttributeDigestDescriptor(
+                value_attributes,
+                paste0(owner, "@attributes")
+            )
+        ))
+    }
+    artifactCodecAbort(
+        sprintf("artifact value '%s' has no exact digest representation", owner),
+        "multischolar_invalid_artifact_hydration_digest",
+        owner = owner
+    )
+}
+
+artifactExactS4HydrationDigest <- function(value) {
+    if (!isS4(value) || length(class(value)) != 1L) {
+        artifactCodecAbort(
+            "exact S4 hydration digest requires one supported S4 object",
+            "multischolar_invalid_artifact_hydration_digest"
+        )
+    }
+    class_name <- class(value)[[1L]]
+    codec <- artifactDiaCodecDescriptor(class_name)
+    slot_names <- methods::slotNames(value)
+    slots <- lapply(slot_names, function(slot_name) {
+        artifactExactValueDigestDescriptor(
+            methods::slot(value, slot_name),
+            paste0(class_name, "@", slot_name)
+        )
+    })
+    artifactSemanticDigest(list(
+        schema = "multischolar.exact_s4_hydration_digest",
+        schema_version = 1L,
+        codec = codec,
+        class_name = class_name,
+        slot_names = slot_names,
+        slots = unname(slots)
+    ))
+}
+
 artifactInlineCharacter <- function(value) {
     missing <- is.na(value)
     value[missing] <- ""
@@ -677,7 +773,9 @@ artifactCodecForBundle <- function(catalogue, codec_ids, bundle) {
 artifactCodecAdapter <- function(descriptor, catalogue) {
     descriptor <- validateArtifactWorkflowDescriptor(descriptor)
     validateArtifactCodecCatalogue(catalogue)
-    codec_ids <- names(descriptor$codecs)
+    codec_ids <- names(Filter(function(codec) {
+        identical(codec$payload_schema_id, "multischolar.rectangular")
+    }, descriptor$codecs))
     for (codec_id in codec_ids) {
         declared <- descriptor$codecs[[codec_id]]
         available <- catalogue$codecs[[codec_id]]

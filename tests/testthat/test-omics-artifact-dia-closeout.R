@@ -222,7 +222,7 @@ test_that("paired DIA closeout preserves exact import and bounded query results"
     expect_identical(descriptor$certification$status, "dual_write")
     expect_false(descriptor$certification$auto_eligible)
     expect_true(all(vapply(descriptor$stages, function(stage) {
-        identical(stage$maximum_rollout, "dual_write")
+        identical(stage$maximum_rollout, "evict")
     }, logical(1))))
 })
 

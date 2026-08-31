@@ -24,9 +24,15 @@ recordProtImportImportedData <- function(
     , logInfo = logger::log_info
     , messageFn = message
 ) {
-  logInfo(sprintf("Data imported successfully. Rows: %d", nrow(dataImportResult$data)))
-  captureCheckpoint(dataImportResult, "cp01", "raw_imported")
-  messageFn(sprintf("[mod_prot_import] Data imported: %d rows", nrow(dataImportResult$data)))
+  row_count <- protDiaImportRowCount(dataImportResult)
+  logInfo(sprintf("Data imported successfully. Rows: %d", row_count))
+  checkpoint <- if (protDiaImportIsDeferred(dataImportResult)) {
+    dataImportResult$import_summary
+  } else {
+    dataImportResult
+  }
+  captureCheckpoint(checkpoint, "cp01", "raw_imported")
+  messageFn(sprintf("[mod_prot_import] Data imported: %d rows", row_count))
 
   invisible(dataImportResult)
 }

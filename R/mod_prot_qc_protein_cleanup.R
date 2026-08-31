@@ -111,6 +111,19 @@ runProteinAccessionCleanupStep <- function(workflowData,
                                            existsFn = exists,
                                            getFn = get) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "protein_accession_cleanup",
+      list(
+        delimiter = delimiter,
+        aggregationMethod = aggregationMethod
+      )
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   currentS4 <- workflowData$state_manager$getState()
   shiny::req(currentS4)
 
@@ -291,16 +304,20 @@ updateProteinAccessionCleanupOutputs <- function(output,
                                                  workflowData = NULL) {
   output$accession_cleanup_results <- renderTextFn(cleanupResult$resultText)
 
-  plotGrid <- protDiaProteinQcUpdateFiltering(
-    update_fn = updateProteinFilteringFn,
-    workflow_data = workflowData,
-    data = cleanupResult$cleanedS4@protein_quant_table,
-    step_name = "10_protein_accession_cleaned",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(cleanupResult$plot_png)) {
+    protDiaQcPlotGrid(cleanupResult$plot_png)
+  } else {
+    protDiaProteinQcUpdateFiltering(
+      update_fn = updateProteinFilteringFn,
+      workflow_data = workflowData,
+      data = cleanupResult$cleanedS4@protein_quant_table,
+      step_name = "10_protein_accession_cleaned",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   accessionCleanupPlot(plotGrid)
 
   invisible(plotGrid)
@@ -375,6 +392,9 @@ runProteinAccessionCleanupRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
+  }
   revertedS4 <- revertProtDiaProteinQcState(workflowData, previousState)
 
   list(

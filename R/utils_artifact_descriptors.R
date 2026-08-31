@@ -504,6 +504,15 @@ artifactDescriptorMaximumRollout <- function(descriptor) {
     .WORKFLOW_ARTIFACT_ROLLOUTS[[min(c(stage_ranks, certification_rank))]]
 }
 
+artifactDescriptorExplicitMaximumRollout <- function(descriptor) {
+    descriptor <- validateArtifactWorkflowDescriptor(descriptor)
+    stage_ranks <- match(
+        vapply(descriptor$stages, `[[`, character(1), "maximum_rollout"),
+        .WORKFLOW_ARTIFACT_ROLLOUTS
+    )
+    .WORKFLOW_ARTIFACT_ROLLOUTS[[min(stage_ranks)]]
+}
+
 artifactDescriptorCapabilities <- function(catalogue) {
     lapply(artifactDescriptorCatalogueValues(catalogue), function(descriptor) {
         maximum <- artifactDescriptorMaximumRollout(descriptor)
@@ -513,13 +522,15 @@ artifactDescriptorCapabilities <- function(catalogue) {
             artifact_eligible = !is.null(maximum),
             auto_eligible = isTRUE(descriptor$certification$auto_eligible),
             maximum_artifact_rollout = maximum,
+            explicit_maximum_artifact_rollout =
+                artifactDescriptorExplicitMaximumRollout(descriptor),
             capability_version = descriptor$descriptor_version
         )
     })
 }
 
-artifactDiaWorkflowCodecDeclarations <- function() {
-    list(
+artifactDiaWorkflowCodecDeclarations <- function(include_streaming = FALSE) {
+    codecs <- list(
         "multischolar.s4.peptide_quantitative_data.diann" = list(
             codec_id = "multischolar.s4.peptide_quantitative_data.diann",
             codec_version = 1L,
@@ -535,15 +546,31 @@ artifactDiaWorkflowCodecDeclarations <- function() {
             payload_schema_version = 1L
         )
     )
+    if (isTRUE(include_streaming)) {
+        streaming_codec <- "multischolar.rectangular_streaming"
+        codecs[[streaming_codec]] <- list(
+            codec_id = streaming_codec,
+            codec_version = 1L,
+            class_name = "data.frame",
+            payload_schema_id = "multischolar.parquet_table",
+            payload_schema_version = 1L
+        )
+    }
+    codecs
 }
 
-artifactDiaWorkflowDescriptor <- function() {
+artifactDiaWorkflowDescriptorDefinition <- function(
+    descriptor_version,
+    maximum_rollout
+) {
     owner <- "proteomics.diann.peptide.dia.v1"
-    codecs <- artifactDiaWorkflowCodecDeclarations()
+    codecs <- artifactDiaWorkflowCodecDeclarations(
+        include_streaming = !identical(descriptor_version, "1.0.0")
+    )
     query <- "proteomics.diann.import.preview.v1"
     newArtifactWorkflowDescriptor(
         descriptor_id = owner,
-        descriptor_version = "1.0.0",
+        descriptor_version = descriptor_version,
         identity = workflowCapabilityIdentity(
             "proteomics", "proteomics.gui", "DIA", "prot_dia",
             "diann", "peptide", "dia"
@@ -554,7 +581,7 @@ artifactDiaWorkflowDescriptor <- function() {
                 state_roles = c("canonical_data"),
                 codec_ids = names(codecs),
                 query_operation_ids = query,
-                maximum_rollout = "dual_write"
+                maximum_rollout = maximum_rollout
             ),
             design = list(
                 stage_id = "design",
@@ -564,7 +591,7 @@ artifactDiaWorkflowDescriptor <- function() {
                 ),
                 codec_ids = names(codecs),
                 query_operation_ids = character(),
-                maximum_rollout = "dual_write"
+                maximum_rollout = maximum_rollout
             )
         ),
         codecs = codecs,
@@ -642,6 +669,14 @@ artifactDiaWorkflowDescriptor <- function() {
             auto_eligible = FALSE
         )
     )
+}
+
+artifactDiaWorkflowDescriptorV1 <- function() {
+    artifactDiaWorkflowDescriptorDefinition("1.0.0", "dual_write")
+}
+
+artifactDiaWorkflowDescriptor <- function() {
+    artifactDiaWorkflowDescriptorDefinition("1.1.0", "evict")
 }
 
 .ARTIFACT_WORKFLOW_DESCRIPTOR_CATALOGUE <- newArtifactDescriptorCatalogue(

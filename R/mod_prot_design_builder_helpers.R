@@ -86,6 +86,15 @@ runProtDesignBuilderSaveFlow <- function(
   }
 
   tryCatch({
+    if (!is.null(protDiaDeferredWorkflowSummary(workflowData))) {
+      return(runProtDiaDeferredDesignSaveFlow(
+        results,
+        workflowData,
+        experimentPaths,
+        session,
+        qcTrigger
+      ))
+    }
     persistProtDesignBuilderArtifacts(
       results = results,
       workflowData = workflowData,
@@ -202,7 +211,9 @@ registerProtDesignBuilderModule <- function(
     builderServerFn = NULL,
     reactiveFn = shiny::reactive,
     reactiveValFn = shiny::reactiveVal,
-    payloadResolverFn = resolveProtDiaWorkflowTable
+    payloadResolverFn = function(owner, name) {
+      resolveProtDesignBuilderPayload(owner)
+    }
 ) {
   if (isTRUE(builderServerExists)) {
     if (is.null(builderServerFn)) {

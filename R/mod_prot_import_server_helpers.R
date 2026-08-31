@@ -318,6 +318,11 @@ registerProtImportObservers <- function(
           sanitize_names = input$sanitize_names %||% FALSE,
           log_warn = logWarn
         )
+        if (isTRUE(input$mixed_species_fasta) &&
+            isTRUE(artifact_import$ok) &&
+            protDiaImportIsDeferred(artifact_import$result)) {
+          artifact_import <- protDiaHydrateDeferredImport(artifact_import)
+        }
         pending_stage <- artifact_import$pending_stage %||% NULL
         artifact_stage_committed <- FALSE
         on.exit({

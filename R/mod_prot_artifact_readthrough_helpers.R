@@ -79,7 +79,11 @@ protDiaArtifactNormalizedRefs <- function(refs) {
     artifactStageNormalizedRefs(refs)
 }
 
-protDiaArtifactValidateStateEvidence <- function(manager, evidence, state_object) {
+protDiaArtifactValidateStateEvidence <- function(
+    manager,
+    evidence,
+    state_object = NULL
+) {
     metadata <- manager$getStateMetadata()
     audit <- metadata$audit_metadata
     expected_refs <- protDiaArtifactNormalizedRefs(evidence$design$refs)
@@ -103,9 +107,12 @@ protDiaArtifactValidateStateEvidence <- function(manager, evidence, state_object
         ) && identical(
             audit$parent_import_semantic_digest,
             evidence$import$refs$canonical_data$hash_policy$semantic$digest
-        ) && identical(actual_refs, expected_refs) && isS4(state_object) &&
-        identical(class(state_object)[[1L]], "PeptideQuantitativeData") &&
-        identical(methods::validObject(state_object, test = TRUE), TRUE)
+        ) && identical(actual_refs, expected_refs)
+    if (!is.null(state_object)) {
+        valid <- valid && isS4(state_object) &&
+            identical(class(state_object)[[1L]], "PeptideQuantitativeData") &&
+            identical(methods::validObject(state_object, test = TRUE), TRUE)
+    }
     if (!isTRUE(valid)) {
         protDiaArtifactAbort(
             "DIA-NN current S4 state does not match its committed design run",
@@ -161,15 +168,9 @@ protDiaArtifactValidateScientificTables <- function(
     invisible(TRUE)
 }
 
-protDiaArtifactValidateSettledScientificTables <- function(
-    state_object,
-    config,
-    design_tables
-) {
-    expected_args <- protDiaArtifactMetadataTable(state_object@args, "args")
-    valid <- identical(design_tables$design_matrix, state_object@design_matrix) &&
-        identical(design_tables$args, expected_args) &&
-        identical(config, state_object@args)
+protDiaArtifactValidateSettledScientificTables <- function(config, design_tables) {
+    expected_args <- protDiaArtifactMetadataTable(config, "args")
+    valid <- identical(design_tables$args, expected_args)
     if (!isTRUE(valid)) {
         protDiaArtifactAbort(
             "DIA-NN settled metadata differs from the current scientific S4 state",
@@ -184,11 +185,24 @@ protDiaArtifactColumnMapping <- function(parameters) {
 }
 
 newProtDiaArtifactStateManager <- function(context, resource_policy = NULL) {
+    decision <- context$getStorageDecision()
+    descriptor <- if (identical(decision$capability_version, "1.0.0")) {
+        artifactDiaWorkflowDescriptorV1()
+    } else {
+        artifactDiaWorkflowDescriptor()
+    }
     newWorkflowState(
         workflow_context = context,
         resource_policy = resource_policy,
-        workflow_descriptor = artifactDiaWorkflowDescriptor(),
-        descriptor_catalogue = artifactWorkflowDescriptorCatalogue(),
+        workflow_descriptor = descriptor,
+        descriptor_catalogue = if (identical(
+            descriptor$descriptor_version,
+            artifactDiaWorkflowDescriptor()$descriptor_version
+        )) {
+            artifactWorkflowDescriptorCatalogue()
+        } else {
+            NULL
+        },
         codec_catalogue = artifactS4CodecCatalogue()
     )
 }
@@ -232,16 +246,19 @@ hydrateProtDiaResumeBundle <- function(
     on.exit({
         if (manager_owned) try(manager$close(), silent = TRUE)
     }, add = TRUE)
-    state_object <- manager$getState()
+    state_object <- if (isTRUE(retain_source_payloads)) manager$getState() else NULL
     protDiaArtifactValidateStateEvidence(manager, evidence, state_object)
     config <- manager$getStateConfig()
     if (isTRUE(retain_source_payloads)) {
         protDiaArtifactValidateScientificTables(state_object, config, design_tables)
     } else {
-        protDiaArtifactValidateSettledScientificTables(
-            state_object,
-            config,
-            design_tables
+        protDiaArtifactValidateSettledScientificTables(config, design_tables)
+        state_export <- manager$exportState()
+        manager$close()
+        manager <- newProtDiaSettledStateManagerFromContext(
+            context,
+            resource_policy,
+            state_export
         )
     }
     parameters <- evidence$design$parameters

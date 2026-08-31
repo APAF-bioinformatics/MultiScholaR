@@ -258,15 +258,19 @@ saveProtDiaPeptideQcArtifactState <- function(
         )
     }
     parent_generation_id <- manager$getCurrentGenerationId()
-    hint <- protDiaPeptideQcSelectionHint(
-        before,
-        after,
-        stage_id,
-        state_name,
-        audit_parameters,
-        status,
-        transformation_type
-    )
+    hint <- if (isTRUE(workflow_data$artifact_worker_force_materialization)) {
+        NULL
+    } else {
+        protDiaPeptideQcSelectionHint(
+            before,
+            after,
+            stage_id,
+            state_name,
+            audit_parameters,
+            status,
+            transformation_type
+        )
+    }
     record <- protDiaPeptideQcCurrentAuditRecord(after)
     artifactStoreInvokeFailure(
         failure_injector,

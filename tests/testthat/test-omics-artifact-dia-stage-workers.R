@@ -96,7 +96,14 @@ test_that("DIA-NN import stages write, verify, hydrate, then publish exactly", {
     expect_true(staged$enabled)
     expect_true(staged$attempted)
     expect_true(staged$ok)
-    expect_identical(staged$result, expected)
+    expect_identical(staged$result$data, expected$data)
+    expect_identical(staged$result$data_type, expected$data_type)
+    expect_identical(staged$result$column_mapping, expected$column_mapping)
+    expect_false(staged$result$parent_hydration_deferred)
+    expect_identical(
+        protDiaValidateImportSummary(staged$result$import_summary)$rows,
+        as.numeric(nrow(expected$data))
+    )
     expect_silent(artifactResourceDataOnly(staged$pending_stage))
     process_ids <- unlist(staged$process_evidence, use.names = FALSE)
     expect_length(unique(process_ids), 3L)

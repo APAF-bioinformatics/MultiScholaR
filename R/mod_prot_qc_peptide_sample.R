@@ -77,6 +77,16 @@ runPeptideSampleApplyStep <- function(workflowData,
                                       logInfoFn = logger::log_info,
                                       nowFn = Sys.time) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "sample_filter",
+      list(minPeptidesPerSample = minPeptidesPerSample)
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   currentS4 <- workflowData$state_manager$getState()
   shiny::req(currentS4)
 
@@ -189,14 +199,18 @@ updatePeptideSampleOutputs <- function(output,
                                        updateProteinFilteringFn = updateProteinFiltering) {
   output$sample_results <- renderTextFn(sampleResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = sampleResult$filteredS4@peptide_data,
-    step_name = "6_sample_filtered",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(sampleResult$plot_png)) {
+    protDiaQcPlotGrid(sampleResult$plot_png)
+  } else {
+    updateProteinFilteringFn(
+      data = sampleResult$filteredS4@peptide_data,
+      step_name = "6_sample_filtered",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   samplePlot(plotGrid)
 
   invisible(plotGrid)
@@ -264,6 +278,9 @@ runPeptideSampleRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
+  }
   revertedS4 <- revertProtDiaPeptideQcState(workflowData, previousState)
   logInfoFn(paste("Reverted sample filter to", previousState))
 

@@ -622,7 +622,7 @@ releaseProtNormArtifactStageObjects <- function(norm_data) {
     if (!inherits(manager, "ArtifactWorkflowState")) return(invisible(FALSE))
     norm_data$normalized_protein_obj <- NULL
     norm_data$ruv_normalized_obj <- NULL
-    invisible(TRUE)
+    workflowStateReleaseHydrationCache(manager)
 }
 
 resolveProtNormStateObject <- function(

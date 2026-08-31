@@ -791,7 +791,7 @@ test_that("stage adapters expose only validated ordinary scientific inputs", {
     expect_identical(legacy_calls, 1L)
 })
 
-test_that("only immutable descriptor-backed tuples are dual-write certified", {
+test_that("only immutable descriptor-backed tuples are artifact certified", {
     production <- mergeWorkflowDescriptorCapabilities()
     descriptors <- artifactDescriptorCatalogueValues(
         artifactWorkflowDescriptorCatalogue()
@@ -814,8 +814,11 @@ test_that("only immutable descriptor-backed tuples are dual-write certified", {
     eligible <- Filter(\(capability) capability$artifact_eligible, production)
     eligible_ids <- vapply(eligible, `[[`, character(1), "capability_id")
     expect_setequal(unname(eligible_ids), unname(descriptor_ids))
-    expect_true(all(vapply(eligible, function(capability) {
-        identical(capability$maximum_artifact_rollout, "dual_write") &&
+    expect_true(all(vapply(eligible, \(capability) {
+        match(
+            capability$maximum_artifact_rollout,
+            .WORKFLOW_ARTIFACT_ROLLOUTS
+        ) >= match("dual_write", .WORKFLOW_ARTIFACT_ROLLOUTS) &&
             !isTRUE(capability$auto_eligible)
     }, logical(1))))
     unsupported <- Filter(\(capability) !capability$artifact_eligible, production)

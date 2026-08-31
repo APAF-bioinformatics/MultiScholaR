@@ -1,0 +1,195 @@
+{
+  "schema": "multischolar.omics_auto_policy_receipt_envelope",
+  "schema_version": "1.0.0",
+  "envelope_id": "multischolar.omics_auto_policy_receipt_envelope.2026-08-30.v1",
+  "owner_ticket_id": "OMICS-ART-069",
+  "generated_from": {
+    "binding_id": "current_policy_reconciliation",
+    "path_or_uri": "tests/testdata/omics-performance/current-policy-reconciliation-v1.json",
+    "sha256": "05ca110ebf97ee62d900b11a25fa0b342d75631612b7726b23ad2a43833e397a"
+  },
+  "receipt_schema": {
+    "binding_id": "policy_receipt_schema_v2",
+    "path_or_uri": "tests/testdata/omics-performance/policy-receipt-schema-v2.json",
+    "sha256": "7756a5ebef5007446f9170a61c568ff644468bb41e2c05fd4a1f521e178f4395"
+  },
+  "consumer_contract_digest": "97a7bcdcd9f74dd87de7a6e038bc49272330a591b60148078ea6fea905448735",
+  "receipts": [
+    {
+      "schema": "multischolar.omics_auto_policy_receipt",
+      "schema_version": "2.0.0",
+      "schema_predecessor": {
+        "binding_id": "policy_receipt_schema_v1",
+        "path_or_uri": "tests/testdata/omics-performance/policy-receipt-schema-v1.json",
+        "sha256": "20ed982ddfbd4bb0720d4c1ca908bba0754d861028b3329e3c6314fa4fa3c386"
+      },
+      "receipt_id": "multischolar.omics_auto_policy_receipt.current.metabolomics.custom.metabolite.standard.v1.v2",
+      "receipt_kind": "reconciled_current",
+      "owner_ticket_id": "OMICS-ART-069",
+      "capability_id": "metabolomics.custom.metabolite.standard.v1",
+      "capability_version": null,
+      "descriptor_digest": "8e611dc20cea7d60656a1979c3bf3f959dcdfa2dacc7d2812907d72a659b3872",
+      "platforms": [
+        "Linux"
+      ],
+      "size_measure": {
+        "measure_id": "legacy_r_object_size_x2.v1",
+        "unit": "byte",
+        "exact": false,
+        "available_before_full_parse": false
+      },
+      "threshold_bytes": 33554432,
+      "below_threshold": {
+        "backend": "memory",
+        "rollout": "none"
+      },
+      "at_or_above_threshold": {
+        "backend": "artifact",
+        "rollout": "evict"
+      },
+      "decision": "engineering_current_baseline",
+      "terminal_reason": "legacy_transition_preserves_current_routing_until_final_receipt",
+      "claim_scope": {
+        "support_tier": "scientifically_supported",
+        "project_scope": "project_specific",
+        "host_scope": "primary_host",
+        "publication_authority": false
+      },
+      "authority_bindings": [
+        {
+          "binding_id": "current_policy_reconciliation",
+          "path_or_uri": "tests/testdata/omics-performance/current-policy-reconciliation-v1.json",
+          "sha256": "05ca110ebf97ee62d900b11a25fa0b342d75631612b7726b23ad2a43833e397a"
+        },
+        {
+          "binding_id": "legacy_runtime_source",
+          "path_or_uri": "R/utils_artifact_payload_eviction.R",
+          "sha256": "9b13d4f0c154ecc7f9deb7b9b1665977d0cb7ffd4c7ffc89032c012d383518da"
+        },
+        {
+          "binding_id": "descriptor_source",
+          "path_or_uri": "R/utils_artifact_metab_descriptors.R",
+          "sha256": "5115ce9449fcf3d0932fd871781883d6d747210d1d2c066df3f3178905655cbf"
+        }
+      ],
+      "evidence_bindings": [
+        {
+          "binding_id": "scale_workload",
+          "path_or_uri": "tests/testdata/omics-parity/metabolomics/workloads/mixed-public-scale-v1.json",
+          "sha256": "4cce7a2c15a8e6c292033b4bb9d3271d86be7d3b042ce6e57004894b4a89df1f"
+        }
+      ],
+      "role_bindings": [
+        {
+          "role_id": "runtime_policy_implementation",
+          "principal_id": "OMICS-ART-069",
+          "handoff_digest": "05ca110ebf97ee62d900b11a25fa0b342d75631612b7726b23ad2a43833e397a"
+        }
+      ],
+      "rollback": {
+        "new_work_backend": "memory",
+        "existing_artifact_mode": "read_only",
+        "implicit_memory_migration": false,
+        "delete_artifacts": false
+      },
+      "digest_contract": {
+        "algorithm": "sha256",
+        "canonicalization": "canonical_json_sorted_keys_utf8_v1",
+        "excluded_field": "receipt_digest"
+      },
+      "receipt_digest": "9589614fa9436cc28ac3fc1ad8f0d2d2e55c46e213d9a5579674bf88b71322fa"
+    },
+    {
+      "schema": "multischolar.omics_auto_policy_receipt",
+      "schema_version": "2.0.0",
+      "schema_predecessor": {
+        "binding_id": "policy_receipt_schema_v1",
+        "path_or_uri": "tests/testdata/omics-performance/policy-receipt-schema-v1.json",
+        "sha256": "20ed982ddfbd4bb0720d4c1ca908bba0754d861028b3329e3c6314fa4fa3c386"
+      },
+      "receipt_id": "multischolar.omics_auto_policy_receipt.current.lipidomics.lipidsearch.lipid.standard.v1.v2",
+      "receipt_kind": "reconciled_current",
+      "owner_ticket_id": "OMICS-ART-069",
+      "capability_id": "lipidomics.lipidsearch.lipid.standard.v1",
+      "capability_version": null,
+      "descriptor_digest": "6750a613c9a2c7ed2a37f24012937240c10c728b3583a6dc3aa583d6dd39db88",
+      "platforms": [
+        "Linux"
+      ],
+      "size_measure": {
+        "measure_id": "legacy_r_object_size_x2.v1",
+        "unit": "byte",
+        "exact": false,
+        "available_before_full_parse": false
+      },
+      "threshold_bytes": 33554432,
+      "below_threshold": {
+        "backend": "memory",
+        "rollout": "none"
+      },
+      "at_or_above_threshold": {
+        "backend": "artifact",
+        "rollout": "evict"
+      },
+      "decision": "engineering_current_baseline",
+      "terminal_reason": "legacy_transition_preserves_current_routing_until_final_receipt",
+      "claim_scope": {
+        "support_tier": "scientifically_supported",
+        "project_scope": "project_specific",
+        "host_scope": "primary_host",
+        "publication_authority": false
+      },
+      "authority_bindings": [
+        {
+          "binding_id": "current_policy_reconciliation",
+          "path_or_uri": "tests/testdata/omics-performance/current-policy-reconciliation-v1.json",
+          "sha256": "05ca110ebf97ee62d900b11a25fa0b342d75631612b7726b23ad2a43833e397a"
+        },
+        {
+          "binding_id": "legacy_runtime_source",
+          "path_or_uri": "R/utils_artifact_payload_eviction.R",
+          "sha256": "9b13d4f0c154ecc7f9deb7b9b1665977d0cb7ffd4c7ffc89032c012d383518da"
+        },
+        {
+          "binding_id": "descriptor_source",
+          "path_or_uri": "R/utils_artifact_lipid_descriptors.R",
+          "sha256": "d1544cd5b25c117bf9312b88f32a863041c327ff130dc804e26fd77e293d241c"
+        }
+      ],
+      "evidence_bindings": [
+        {
+          "binding_id": "scale_workload",
+          "path_or_uri": "tests/testdata/omics-parity/lipidomics/workloads/mixed-public-scale-v1.json",
+          "sha256": "1860da11c171a389805c72b65cc068729b5b5ca6da0d7181e3dfc2cb2782e42a"
+        }
+      ],
+      "role_bindings": [
+        {
+          "role_id": "runtime_policy_implementation",
+          "principal_id": "OMICS-ART-069",
+          "handoff_digest": "05ca110ebf97ee62d900b11a25fa0b342d75631612b7726b23ad2a43833e397a"
+        }
+      ],
+      "rollback": {
+        "new_work_backend": "memory",
+        "existing_artifact_mode": "read_only",
+        "implicit_memory_migration": false,
+        "delete_artifacts": false
+      },
+      "digest_contract": {
+        "algorithm": "sha256",
+        "canonicalization": "canonical_json_sorted_keys_utf8_v1",
+        "excluded_field": "receipt_digest"
+      },
+      "receipt_digest": "cde172665f24309481f55eb1a27bc5e7703cff668976e9cb4c2bd974d29a195f"
+    }
+  ],
+  "generation_contract": {
+    "generator_path": "tools/profiling/generate_omics_policy_receipt.R",
+    "generator_sha256": "230436aa0856cec87116a25822dc8c934381a36bc65df3893edc9aae79cf918b",
+    "copied_values_allowed": false,
+    "additive_schema_successor": true,
+    "production_defaults_changed": false
+  },
+  "envelope_digest": "117f256cb1affe7e96121d606524d689b75706c0ec15d63412eef58f4b0f667d"
+}

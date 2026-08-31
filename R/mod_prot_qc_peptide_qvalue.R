@@ -87,6 +87,22 @@ runPeptideQvalueApplyStep <- function(workflowData,
                                       globalPGQvalueThreshold = .diaNnIdentificationQvalueCutoff,
                                       confidenceProvenanceMode = "diann_main_report") {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "qvalue_filter",
+      list(
+        qvalueThreshold = qvalueThreshold,
+        globalQvalueThreshold = globalQvalueThreshold,
+        proteotypicOnly = proteotypicOnly,
+        globalPGQvalueThreshold = globalPGQvalueThreshold,
+        confidenceProvenanceMode = confidenceProvenanceMode
+      )
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   currentS4 <- workflowData$state_manager$getState()
   shiny::req(currentS4)
 
@@ -258,14 +274,18 @@ updatePeptideQvalueOutputs <- function(output,
                                        updateProteinFilteringFn = updateProteinFiltering) {
   output$qvalue_results <- renderTextFn(qvalueResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = qvalueResult$filteredS4@peptide_data,
-    step_name = "2_qval_filtered",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(qvalueResult$plot_png)) {
+    protDiaQcPlotGrid(qvalueResult$plot_png)
+  } else {
+    updateProteinFilteringFn(
+      data = qvalueResult$filteredS4@peptide_data,
+      step_name = "2_qval_filtered",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   qvaluePlot(plotGrid)
 
   invisible(plotGrid)
@@ -335,6 +355,9 @@ runPeptideQvalueRevertStep <- function(workflowData,
   history <- workflowData$state_manager$getHistory()
   if (!(revertStateName %in% history)) {
     stop(sprintf("Cannot revert: '%s' state not found in history.", revertStateName))
+  }
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, revertStateName))
   }
 
   revertedS4 <- revertProtDiaPeptideQcState(workflowData, revertStateName)

@@ -371,29 +371,41 @@ artifactStoreVerifyExactRef <- function(store, ref) {
         bytes = unname(as.numeric(file.info(payload_path)$size))
     )
     validateArtifactRefPayload(ref, store$project_root, shape)
+    streaming <- identical(
+        sidecar$codec_metadata$codec,
+        list(
+            id = .artifactStreamingCodec,
+            version = .artifactStreamingCodecVersion
+        )
+    )
+    if (isTRUE(streaming)) {
+        verifyArtifactStreamingPayload(payload, sidecar$codec_metadata)
+    }
     hydrated <- decodeArtifactRectangular(payload, sidecar$codec_metadata)
     payload <- NULL
-    stable_key <- sidecar$codec_metadata$stable_key$logical_columns
-    if (length(stable_key) == 0L) stable_key <- NULL
-    reencoded <- if (identical(sidecar$codec_metadata$kind, "matrix")) {
-        encodeArtifactMatrix(hydrated, sidecar$codec_metadata$owner)
-    } else {
-        encodeArtifactTable(
-            hydrated,
-            stable_key = stable_key,
-            owner = sidecar$codec_metadata$owner
-        )
-    }
-    reencoded_metadata <- artifactStoreNormalizeCodecMetadata(reencoded$metadata)
-    metadata_fields <- setdiff(names(reencoded_metadata), "semantic_digest")
-    if (!identical(
-        reencoded_metadata[metadata_fields],
-        sidecar$codec_metadata[metadata_fields]
-    )) {
-        artifactStoreAbort(
-            "artifact verification codec metadata is not an exact fixed point",
-            "multischolar_artifact_validation_failed"
-        )
+    if (!isTRUE(streaming)) {
+        stable_key <- sidecar$codec_metadata$stable_key$logical_columns
+        if (length(stable_key) == 0L) stable_key <- NULL
+        reencoded <- if (identical(sidecar$codec_metadata$kind, "matrix")) {
+            encodeArtifactMatrix(hydrated, sidecar$codec_metadata$owner)
+        } else {
+            encodeArtifactTable(
+                hydrated,
+                stable_key = stable_key,
+                owner = sidecar$codec_metadata$owner
+            )
+        }
+        reencoded_metadata <- artifactStoreNormalizeCodecMetadata(reencoded$metadata)
+        metadata_fields <- setdiff(names(reencoded_metadata), "semantic_digest")
+        if (!identical(
+            reencoded_metadata[metadata_fields],
+            sidecar$codec_metadata[metadata_fields]
+        )) {
+            artifactStoreAbort(
+                "artifact verification codec metadata is not an exact fixed point",
+                "multischolar_artifact_validation_failed"
+            )
+        }
     }
     hydrated_shape <- c(rows = nrow(hydrated), columns = ncol(hydrated))
     expected_shape <- c(rows = ref$shape$rows, columns = ref$shape$columns)

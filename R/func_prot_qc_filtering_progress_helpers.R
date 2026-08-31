@@ -106,12 +106,6 @@ updateProteinFiltering <- function(data, step_name,
   # Get the current filtering_progress object
   filtering_progress <- get("filtering_progress", envir = progress_env)
 
-  # DEBUG66: Memory check
-  message("--- DEBUG66 [updatePeptideFiltering]: Entry ---")
-  message(sprintf("   [updatePeptideFiltering] Step Name: %s", step_name))
-  message(sprintf("   [updatePeptideFiltering] filtering_progress size: %s", format(object.size(filtering_progress), units = "auto")))
-  gc()
-
   # Path derivation and save_plots logic
   derived_time_dir <- NULL
   save_plots <- FALSE

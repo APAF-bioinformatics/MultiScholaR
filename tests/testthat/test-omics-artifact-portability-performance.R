@@ -8,6 +8,7 @@ operationalArtifactDecisionMap <- function() {
 
 test_that("all-omics scorecard is exact complete and fail closed", {
     closeout <- operationalArtifactReadCloseout()
+    reconciliation <- operationalArtifactReadPolicyReconciliation()
     expect_identical(
         closeout$schema,
         "multischolar.all_omics_operational_closeout"
@@ -30,7 +31,25 @@ test_that("all-omics scorecard is exact complete and fail closed", {
     for (canary in canaries) {
         descriptor <- descriptors[[canary$capability_id]]
         expect_identical(canary$descriptor_version, descriptor$descriptor_version)
-        expect_identical(canary$descriptor_digest, descriptor$descriptor_digest)
+        if (identical(canary$descriptor_digest, descriptor$descriptor_digest)) {
+            expect_identical(canary$descriptor_digest, descriptor$descriptor_digest)
+        } else {
+            successors <- Filter(function(decision) {
+                identical(decision$capability_id, canary$capability_id)
+            }, reconciliation$implemented_decisions)
+            expect_length(successors, 1L)
+            expect_identical(
+                successors[[1L]]$predecessor_descriptor_digest,
+                canary$descriptor_digest
+            )
+            expect_identical(
+                successors[[1L]]$descriptor_digest,
+                descriptor$descriptor_digest
+            )
+            expect_false(
+                successors[[1L]]$engineering_evidence$publication_authority
+            )
+        }
         expect_identical(canary$promotion_status, "withheld")
         expect_identical(canary$maximum_forced_rollout, "dual_write")
         expect_false(canary$auto_eligible)

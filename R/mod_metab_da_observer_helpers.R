@@ -542,11 +542,15 @@ runMetabDaLoadSessionObserverShell <- function(
     tryCatch(
         {
             debugLog("  STEP 5: Reading RDS file...")
-            sessionData <- readArtifactOrLegacy(
-                legacy_path = sessionFile,
-                workflow_data = workflowData,
-                read_rds = readSessionData
-            )
+            sessionData <- if (metabQcWorkflowData(workflowData)) {
+                readArtifactOrLegacy(
+                    legacy_path = sessionFile,
+                    workflow_data = workflowData,
+                    read_rds = readSessionData
+                )
+            } else {
+                readSessionData(sessionFile)
+            }
             debugLog("  STEP 5: RDS loaded successfully")
             debugLog("    names(session_data): ", paste(names(sessionData), collapse = ", "))
 

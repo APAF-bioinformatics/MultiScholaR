@@ -103,6 +103,16 @@ runPeptideRollupApplyStep <- function(workflowData,
                                       logInfoFn = logger::log_info,
                                       nowFn = Sys.time) {
   shiny::req(workflowData$state_manager)
+  if (protDiaQcWorkerEligible(workflowData)) {
+    worker <- runProtDiaQcProcess(protDiaQcWorkerSpec(
+      workflowData,
+      "precursor_rollup",
+      list()
+    ))
+    result <- applyProtDiaQcWorkerResult(workflowData, worker)
+    result$plot_png <- worker$plot_png
+    return(result)
+  }
   currentS4 <- workflowData$state_manager$getState()
   shiny::req(currentS4)
 
@@ -162,14 +172,18 @@ updatePeptideRollupOutputs <- function(output,
                                        updateProteinFilteringFn = updateProteinFiltering) {
   output$rollup_results <- renderTextFn(rollupResult$resultText)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = rollupResult$rolledUpS4@peptide_data,
-    step_name = "4_precursor_rollup",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- if (is.raw(rollupResult$plot_png)) {
+    protDiaQcPlotGrid(rollupResult$plot_png)
+  } else {
+    updateProteinFilteringFn(
+      data = rollupResult$rolledUpS4@peptide_data,
+      step_name = "4_precursor_rollup",
+      omic_type = omicType,
+      experiment_label = experimentLabel,
+      return_grid = TRUE,
+      overwrite = TRUE
+    )
+  }
   rollupPlot(plotGrid)
 
   invisible(plotGrid)
@@ -233,6 +247,9 @@ runPeptideRollupRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
+  if (protDiaQcWorkerEligible(workflowData)) {
+    return(runProtDiaQcRevert(workflowData, previousState))
+  }
   revertedS4 <- revertProtDiaPeptideQcState(workflowData, previousState)
   logInfoFn(paste("Reverted precursor rollup to", previousState))
 

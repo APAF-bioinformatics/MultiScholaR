@@ -178,11 +178,28 @@ artifactPayloadSettledRegistryPolicy <- function(resource_policy = NULL) {
 }
 
 artifactPayloadAutoPromotionGate <- function() {
-    list(minimum_projected_source_bytes = 32 * 1024^2)
+    receipts <- workflowPolicyLegacyReceipts()
+    thresholds <- unique(vapply(
+        receipts,
+        `[[`,
+        numeric(1),
+        "threshold_bytes"
+    ))
+    list(
+        minimum_projected_source_bytes = if (length(thresholds) == 1L) {
+            thresholds[[1L]]
+        } else {
+            Inf
+        }
+    )
 }
 
 artifactPayloadAutoPlatformEligible <- function() {
-    identical(Sys.info()[["sysname"]], "Linux")
+    receipts <- workflowPolicyLegacyReceipts()
+    platform <- Sys.info()[["sysname"]]
+    length(receipts) > 0L && all(vapply(receipts, function(receipt) {
+        platform %in% unlist(receipt$platforms, use.names = FALSE)
+    }, logical(1)))
 }
 
 artifactPayloadProjectedSourceBytes <- function(source_payload) {
@@ -198,17 +215,32 @@ artifactPayloadAdaptiveCapabilities <- function(
     capabilities <- mergeWorkflowDescriptorCapabilities(
         descriptor_catalogue = descriptor_catalogue
     )
-    gate <- artifactPayloadAutoPromotionGate()
-    eligible <- artifactPayloadAutoPlatformEligible() &&
-        artifactPayloadProjectedSourceBytes(source_payload) >=
-            gate$minimum_projected_source_bytes
     matches <- vapply(
         capabilities,
         \(capability) identical(capability$capability_id, capability_id),
         logical(1)
     )
     if (sum(matches) == 1L) {
-        capabilities[[which(matches)]]$auto_eligible <- isTRUE(eligible)
+        descriptors <- artifactDescriptorCatalogueValues(descriptor_catalogue)
+        descriptor_matches <- vapply(descriptors, function(descriptor) {
+            identical(descriptor$descriptor_id, capability_id)
+        }, logical(1))
+        descriptor_digest <- if (sum(descriptor_matches) == 1L) {
+            descriptors[[which(descriptor_matches)]]$descriptor_digest
+        } else {
+            NULL
+        }
+        decision <- workflowPolicyResolve(
+            workflowPolicyLoadEnvelope(),
+            capability_id = capability_id,
+            measure_id = "legacy_r_object_size_x2.v1",
+            measure_bytes = artifactPayloadProjectedSourceBytes(source_payload),
+            descriptor_digest = descriptor_digest
+        )
+        capabilities[[which(matches)]]$auto_eligible <- identical(
+            decision$effective_backend,
+            "artifact"
+        ) && identical(decision$effective_rollout, "evict")
     }
     capabilities
 }

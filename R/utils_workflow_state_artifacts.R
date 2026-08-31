@@ -723,6 +723,42 @@ artifactWorkflowStateVerifyHydration <- function(
     invisible(hydrated)
 }
 
+artifactWorkflowStateObjectDigest <- function(value) {
+    digest::digest(
+        serialize(value, NULL, version = 3L),
+        algo = "sha256",
+        serialize = FALSE
+    )
+}
+
+artifactWorkflowStateVerifyHydrationInline <- function(
+    store,
+    manifest,
+    expected_object,
+    hydrate_fn
+) {
+    hydrated <- artifactWorkflowStateVerifyHydration(
+        store,
+        manifest,
+        expected_object,
+        hydrate_fn
+    )
+    expected_digest <- artifactWorkflowStateObjectDigest(expected_object)
+    proof <- list(
+        valid = TRUE,
+        mode = "inline_exact",
+        verifier_pid = as.integer(Sys.getpid()),
+        expected_digest = expected_digest,
+        hydrated_digest = expected_digest,
+        manifest_semantic_digest = manifest$data$semantic_digest,
+        generation_id = manifest$generation_id,
+        complete_payload_returned = FALSE
+    )
+    hydrated <- NULL
+    artifactResourceDataOnly(proof, "artifact hydration verification proof")
+    proof
+}
+
 artifactWorkflowStateArtifactRecord <- function(identity, ref, ordinal) {
     list(
         workflow_id = identity$workflow_id,

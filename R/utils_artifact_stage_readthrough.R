@@ -35,14 +35,20 @@ newArtifactStageReadthroughAdapter <- function(
     owner_label,
     default_omic_label,
     abort_fn,
-    conditions
+    conditions,
+    compatible_descriptor_contracts = list()
 ) {
     descriptor <- validateArtifactWorkflowDescriptor(descriptor)
     valid <- workflowCapabilityScalarString(owner_label) &&
         workflowCapabilityScalarString(default_omic_label) &&
         is.function(abort_fn) && is.character(conditions) &&
         identical(names(conditions), .ARTIFACT_STAGE_READTHROUGH_CONDITIONS) &&
-        all(nzchar(conditions))
+        all(nzchar(conditions)) && is.list(compatible_descriptor_contracts) &&
+        all(vapply(
+            compatible_descriptor_contracts,
+            is.list,
+            logical(1)
+        ))
     if (!isTRUE(valid)) {
         artifactStagePersistenceAbort(
             "artifact read-through adapter is malformed",
@@ -55,7 +61,8 @@ newArtifactStageReadthroughAdapter <- function(
             owner_label = owner_label,
             default_omic_label = default_omic_label,
             abort_fn = abort_fn,
-            conditions = conditions
+            conditions = conditions,
+            compatible_descriptor_contracts = compatible_descriptor_contracts
         ),
         class = "ArtifactStageReadthroughAdapter"
     )
@@ -71,7 +78,7 @@ validateArtifactStageReadthroughAdapter <- function(adapter) {
             names(adapter),
             c(
                 "descriptor", "owner_label", "default_omic_label",
-                "abort_fn", "conditions"
+                "abort_fn", "conditions", "compatible_descriptor_contracts"
             )
         )
     if (!isTRUE(valid)) {
@@ -302,16 +309,20 @@ artifactStageValidateDescriptorPin <- function(adapter, store) {
     }
     pin <- artifactStoreReadJson(store, relative)
     version <- workflowStateVersionValue(pin$schema_version)
+    contracts <- c(
+        list(artifactStageDescriptorContract(adapter$descriptor)),
+        adapter$compatible_descriptor_contracts
+    )
+    contract_valid <- any(vapply(contracts, \(contract) {
+        identical(pin$contract, contract)
+    }, logical(1)))
     valid <- identical(pin$schema, ARTIFACT_DESCRIPTOR_PIN_SCHEMA) &&
         identical(version, ARTIFACT_DESCRIPTOR_PIN_VERSION) &&
         identical(pin$project_id, store$project_id) &&
         identical(
             pin$workflow_id,
             adapter$descriptor$identity$workflow_id
-        ) && identical(
-            pin$contract,
-            artifactStageDescriptorContract(adapter$descriptor)
-        )
+        ) && contract_valid
     if (!isTRUE(valid)) {
         artifactStageReadthroughAbort(
             adapter,

@@ -15,6 +15,16 @@ operationalArtifactReadCloseout <- function() {
     )
 }
 
+operationalArtifactReadPolicyReconciliation <- function() {
+    jsonlite::read_json(
+        operationalArtifactRepoPath(
+            "tests", "testdata", "omics-performance",
+            "current-policy-reconciliation-v1.json"
+        ),
+        simplifyVector = FALSE
+    )
+}
+
 operationalArtifactSkipDependencies <- function() {
     for (package in c("arrow", "DBI", "duckdb", "filelock")) {
         testthat::skip_if_not_installed(package)
