@@ -60,10 +60,10 @@ diaRepairTestRecords <- function(elapsed_ratio = 0.9) {
 test_that("DIA repair successor preserves gates and corrects owned load", {
     gates <- diaRepairReadGates()
 
-    expect_identical(gates$status, "frozen_after_validated_owned_load_floor")
+    expect_identical(gates$status, "frozen_after_shared_thermal_envelope_alignment")
     expect_identical(
         gates$comparison$predecessor_gate_id,
-        "multischolar.dia_commit_repair.2026-08-31.v3"
+        "multischolar.dia_commit_repair.2026-09-01.v4"
     )
     expect_identical(
         gates$comparison$predecessor_gate_sha256,
@@ -81,7 +81,7 @@ test_that("DIA repair successor preserves gates and corrects owned load", {
     expect_identical(gates$design$required_sessions, 3L)
     expect_identical(
         gates$design$host_safety$maximum_prelaunch_thermal_celsius,
-        70L
+        85L
     )
     expect_identical(gates$design$maximum_idle_cpu_activity_seconds, 0.001)
     expect_identical(

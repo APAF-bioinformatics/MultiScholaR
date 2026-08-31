@@ -38,7 +38,7 @@ diaRepairComparableGateContract <- function(gates) {
         "parity_workers_included", "manual_garbage_collection_allowed"
     )
     design <- gates$design
-    design$host_safety$owned_workload_load_allowance <- NULL
+    design$host_safety$maximum_prelaunch_thermal_celsius <- NULL
     list(
         schema = gates$schema,
         owner_ticket_id = gates$owner_ticket_id,
@@ -53,7 +53,7 @@ diaRepairComparableGateContract <- function(gates) {
 diaRepairPredecessorGateValid <- function(gates) {
     comparison <- gates$comparison
     expected_path <- file.path(
-        "tests", "testdata", "omics-performance", "dia-repair-gates-v3.json"
+        "tests", "testdata", "omics-performance", "dia-repair-gates-v4.json"
     )
     if (!identical(comparison$predecessor_gate_path, expected_path) ||
         !identical(
@@ -65,11 +65,11 @@ diaRepairPredecessorGateValid <- function(gates) {
     predecessor <- publicationReadJson(expected_path)
     identical(predecessor$gate_id, comparison$predecessor_gate_id) &&
         identical(
-            predecessor$design$host_safety$owned_workload_load_allowance,
-            3L
+            predecessor$design$host_safety$maximum_prelaunch_thermal_celsius,
+            70L
         ) && identical(
-            gates$design$host_safety$owned_workload_load_allowance,
-            4L
+            gates$design$host_safety$maximum_prelaunch_thermal_celsius,
+            85L
         ) && identical(
             diaRepairComparableGateContract(predecessor),
             diaRepairComparableGateContract(gates)

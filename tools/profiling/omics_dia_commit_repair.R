@@ -7,7 +7,7 @@ diaRepairGatePath <- function() {
         "tests",
         "testdata",
         "omics-performance",
-        "dia-repair-gates-v4.json"
+        "dia-repair-gates-v5.json"
     )
 }
 
@@ -19,9 +19,9 @@ diaRepairReadGates <- function(path = diaRepairGatePath()) {
     )
     if (!is.list(gates) || !setequal(names(gates), required) ||
         !identical(gates$schema, "multischolar.dia_commit_repair_gates") ||
-        !identical(gates$schema_version, "1.3.0") ||
+        !identical(gates$schema_version, "1.4.0") ||
         !identical(gates$owner_ticket_id, "OMICS-ART-070") ||
-        !identical(gates$status, "frozen_after_validated_owned_load_floor")) {
+        !identical(gates$status, "frozen_after_shared_thermal_envelope_alignment")) {
         diaRepairAbort("DIA repair gate contract header is invalid")
     }
     design <- gates$design
@@ -51,7 +51,7 @@ diaRepairReadGates <- function(path = diaRepairGatePath()) {
             as.numeric(
                 design$host_safety$maximum_prelaunch_thermal_celsius
             ),
-            70
+            85
         ) && identical(
             as.numeric(
                 design$host_safety$maximum_runtime_load_per_logical_core
