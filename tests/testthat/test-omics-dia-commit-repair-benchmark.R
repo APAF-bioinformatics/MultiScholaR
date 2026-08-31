@@ -150,6 +150,18 @@ test_that("DIA repair evaluation requires every frozen gate", {
     expect_false(elapsed$passed)
 })
 
+test_that("DIA repair resume retains only complete valid pairs", {
+    records <- diaRepairTestRecords()[seq_len(68L)]
+    records[[68L]]$measurement$status <- "failed"
+    records[[68L]]$measurement$publication_certifiable <- FALSE
+
+    retained <- diaRepairCompletePairRecords(records)
+    pair_ids <- unique(vapply(retained, `[[`, character(1), "pair_id"))
+
+    expect_length(retained, 66L)
+    expect_identical(pair_ids, sprintf("dia-repair-pair-%03d", 1:33))
+})
+
 test_that("DIA repair evidence code cannot hide memory with manual GC", {
     paths <- testthat::test_path(
         "..",

@@ -31,6 +31,27 @@ diaRepairDesignProof <- function(object, salt) {
     )
 }
 
+diaRepairCompletePairRecords <- function(records) {
+    groups <- split(records, vapply(records, `[[`, character(1), "pair_id"))
+    complete <- Filter(function(pair) {
+        arms <- vapply(pair, `[[`, character(1), "arm")
+        proofs <- lapply(pair, function(record) {
+            record$measurement$worker$scientific_proof
+        })
+        length(pair) == 2L && setequal(
+            arms,
+            c("pre_repair_artifact", "candidate_artifact")
+        ) && all(vapply(pair, function(record) {
+            measurement <- record$measurement
+            identical(measurement$status, "passed") &&
+                isTRUE(measurement$publication_certifiable) &&
+                isTRUE(measurement$cleanup$valid)
+        }, logical(1))) && all(vapply(proofs, is.list, logical(1))) &&
+            identical(proofs[[1L]], proofs[[2L]])
+    }, groups)
+    unlist(complete, recursive = FALSE, use.names = FALSE)
+}
+
 diaRepairProofWorker <- function(package_library, run_dir, arm, salt) {
     .libPaths(c(package_library, .libPaths()))
     namespace <- loadNamespace("MultiScholaR", lib.loc = package_library)

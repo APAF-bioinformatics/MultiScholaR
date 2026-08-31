@@ -51,6 +51,7 @@ diaRepairRunnerDefaults <- function() {
         pre_revision = NULL,
         candidate_revision = NULL,
         salt_file = NULL,
+        prior_result = NULL,
         pairs = 2L,
         arm = NULL,
         run_dir = NULL,
@@ -288,6 +289,60 @@ diaRepairUnavailableResult <- function(args, gates, host) {
     )
 }
 
+diaRepairResumeEvidence <- function(args, gates, source_size, salt) {
+    if (!identical(args$mode, "resume")) {
+        return(list(records = list(), completed_pair_ids = character()))
+    }
+    diaRepairRunnerRequire(args, "prior_result")
+    prior <- publicationReadJson(args$prior_result)
+    gate_valid <- identical(prior$gate_binding$gate_id, gates$gate_id) &&
+        identical(
+            prior$gate_binding$sha256,
+            publicationFileDigest(diaRepairGatePath())
+        )
+    source_valid <- identical(
+        as.numeric(prior$source_binding$exact_input_bytes),
+        source_size
+    ) && identical(
+        prior$source_binding$salted_source_fingerprint,
+        diaRepairSaltedDigest(publicationFileDigest(args$source), salt)
+    )
+    pre_binding <- prior$comparator_bindings$pre_repair_artifact
+    candidate_binding <- prior$comparator_bindings$candidate_artifact
+    comparator_valid <- identical(pre_binding$revision, args$pre_revision) &&
+        identical(candidate_binding$revision, args$candidate_revision) &&
+        identical(
+            pre_binding$installed_package_sha256,
+            diaRepairDirectoryDigest(file.path(args$pre_library, "MultiScholaR"))
+        ) && identical(
+            candidate_binding$installed_package_sha256,
+            diaRepairDirectoryDigest(file.path(
+                args$candidate_library,
+                "MultiScholaR"
+            ))
+        )
+    if (!is.list(prior$records) || !gate_valid || !source_valid ||
+        !comparator_valid || isTRUE(prior$automatic_policy_authority) ||
+        isTRUE(prior$publication_authority)) {
+        diaRepairAbort("DIA repair resume evidence is invalid")
+    }
+    records <- diaRepairCompletePairRecords(prior$records)
+    completed <- unique(vapply(records, `[[`, character(1), "pair_id"))
+    expected_prefix <- sprintf("dia-repair-pair-%03d", seq_along(completed))
+    if (!identical(sort(completed, method = "radix"), expected_prefix)) {
+        diaRepairAbort("DIA repair resume pairs are not one complete prefix")
+    }
+    list(
+        records = records,
+        completed_pair_ids = completed,
+        binding = list(
+            path = normalizePath(args$prior_result),
+            sha256 = publicationFileDigest(args$prior_result),
+            retained_complete_pairs = length(completed)
+        )
+    )
+}
+
 diaRepairCampaignMain <- function(args) {
     diaRepairRunnerRequire(args, c(
         "source", "output_root", "result", "pre_library",
@@ -295,7 +350,7 @@ diaRepairCampaignMain <- function(args) {
         "salt_file"
     ))
     gates <- diaRepairReadGates()
-    if (identical(args$mode, "campaign") &&
+    if (args$mode %in% c("campaign", "resume") &&
         !identical(as.integer(args$pairs), 36L)) {
         diaRepairAbort("Confirmatory DIA repair campaign requires 36 pairs")
     }
@@ -310,6 +365,7 @@ diaRepairCampaignMain <- function(args) {
         diaRepairAbort("DIA repair source is unavailable")
     }
     salt <- diaRepairEvidenceSalt(args$salt_file)
+    resumed <- diaRepairResumeEvidence(args, gates, source_size, salt)
     dir.create(args$output_root, recursive = TRUE, showWarnings = FALSE)
     host <- diaRepairHostPreflight(args$output_root, gates)
     if (!isTRUE(host$preflight$certified)) {
@@ -319,9 +375,14 @@ diaRepairCampaignMain <- function(args) {
     }
     session_count <- if (args$pairs %% 3L == 0L) 3L else 1L
     schedule <- diaRepairSchedule(args$pairs, session_count)
-    records <- vector("list", nrow(schedule))
+    pending <- schedule[
+        !schedule$pair_id %in% resumed$completed_pair_ids,
+        ,
+        drop = FALSE
+    ]
+    records <- resumed$records
     readiness_failure <- NULL
-    for (index in seq_len(nrow(schedule))) {
+    for (index in seq_len(nrow(pending))) {
         readiness <- diaRepairWaitForReadiness(host$host, gates)
         if (!isTRUE(readiness$ready)) {
             readiness_failure <- readiness
@@ -334,23 +395,23 @@ diaRepairCampaignMain <- function(args) {
             readiness$baseline_one_minute_load
         )
         diaRepairWarmInput(args$source)
-        records[[index]] <- diaRepairRunArm(
-            schedule[index, , drop = FALSE],
+        record <- diaRepairRunArm(
+            pending[index, , drop = FALSE],
             args,
             host,
             limits,
             salt,
             readiness
         )
-        measurement <- records[[index]]$measurement
+        records[[length(records) + 1L]] <- record
+        measurement <- record$measurement
         terminal_failure <- isTRUE(measurement$safety_aborted) ||
             isTRUE(measurement$timed_out) ||
             !identical(as.integer(measurement$exit_status), 0L)
         if (terminal_failure) break
     }
-    records <- Filter(Negate(is.null), records)
     evaluation <- diaRepairEvaluate(records, gates)
-    mode_status <- if (identical(args$mode, "campaign")) {
+    mode_status <- if (args$mode %in% c("campaign", "resume")) {
         evaluation$status
     } else if (!is.null(readiness_failure)) {
         "pilot_readiness_timeout"
@@ -399,6 +460,7 @@ diaRepairCampaignMain <- function(args) {
             sha256 = publicationObjectDigest(host$preflight)
         ),
         schedule = split(schedule, seq_len(nrow(schedule))),
+        resumed_from = resumed$binding,
         records = records,
         readiness_failure = readiness_failure,
         evaluation = evaluation,
@@ -409,7 +471,7 @@ diaRepairCampaignMain <- function(args) {
         publication_authority = FALSE
     )
     publicationWriteJson(result, args$result)
-    invisible(if (identical(args$mode, "campaign") &&
+    invisible(if (args$mode %in% c("campaign", "resume") &&
         !identical(evaluation$status, "passed")) 1L else 0L)
 }
 
@@ -503,7 +565,7 @@ diaRepairRunnerMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
         diaRepairProofMain(args)
     } else if (identical(args$mode, "diagnostic")) {
         diaRepairDiagnosticMain(args)
-    } else if (args$mode %in% c("pilot", "campaign")) {
+    } else if (args$mode %in% c("pilot", "campaign", "resume")) {
         diaRepairCampaignMain(args)
     } else {
         diaRepairAbort("DIA repair runner mode is invalid")
