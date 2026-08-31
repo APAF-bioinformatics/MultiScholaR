@@ -74,6 +74,13 @@ publicationSampleCgroup <- function(
 ) {
     snapshot <- publicationCgroupSnapshot(cgroup_path)
     if (is.null(snapshot)) return(NULL)
+    required <- c(
+        snapshot$memory$current_bytes,
+        snapshot$memory$peak_bytes,
+        snapshot$memory$swap_current_bytes,
+        snapshot$cpu$usage_usec
+    )
+    if (length(required) != 4L || any(!is.finite(required))) return(NULL)
     snapshot$elapsed_seconds <- elapsed_seconds
     snapshot$disk <- disk
     snapshot
@@ -162,6 +169,8 @@ publicationRetainedTrace <- function(samples) {
     })
 }
 
+.PUBLICATION_RETAINED_CPU_TOLERANCE_SECONDS <- 0.001
+
 publicationRetainedDiagnostics <- function(samples) {
     trace <- publicationRetainedTrace(samples)
     elapsed <- vapply(samples, `[[`, numeric(1), "elapsed_seconds")
@@ -196,12 +205,12 @@ publicationRetainedDiagnostics <- function(samples) {
         io_read_activity_bytes = io_read_activity,
         io_write_activity_bytes = io_write_activity,
         background_activity_observed = {
-            activity <- c(
-                cpu_activity,
-                io_read_activity,
-                io_write_activity
-            )
-            any(!is.finite(activity)) || any(activity != 0)
+            activity <- c(cpu_activity, io_read_activity, io_write_activity)
+            invalid <- any(!is.finite(activity))
+            cpu_active <- is.finite(cpu_activity) &&
+                cpu_activity > .PUBLICATION_RETAINED_CPU_TOLERANCE_SECONDS
+            io_active <- any(c(io_read_activity, io_write_activity) != 0)
+            invalid || cpu_active || io_active
         },
         maximum_swap_bytes = publicationMetricMaximum(
             samples,

@@ -21,7 +21,7 @@ diaRepairTestRecords <- function(elapsed_ratio = 0.9) {
         current_state = "raw_data_s4"
     )
     pre <- list(
-        phase_peak_charged_memory_bytes = 100,
+        peak_charged_memory_bytes = 100,
         retained_charged_memory_bytes = 100,
         elapsed_seconds = 100,
         primary_work_units_per_wall_second = 100,
@@ -31,7 +31,7 @@ diaRepairTestRecords <- function(elapsed_ratio = 0.9) {
         final_logical_disk_bytes = 100
     )
     candidate <- list(
-        phase_peak_charged_memory_bytes = 80,
+        peak_charged_memory_bytes = 80,
         retained_charged_memory_bytes = 80,
         elapsed_seconds = 100 * elapsed_ratio,
         primary_work_units_per_wall_second = 110,
@@ -57,19 +57,36 @@ diaRepairTestRecords <- function(elapsed_ratio = 0.9) {
     records
 }
 
-test_that("DIA repair gates are frozen before any pilot evidence", {
+test_that("DIA repair successor gates use the complete owned peak", {
     gates <- diaRepairReadGates()
 
-    expect_identical(gates$status, "frozen_before_pilot_measurement")
+    expect_identical(gates$status, "frozen_after_invalid_v2_peak_estimand")
+    expect_identical(
+        gates$comparison$predecessor_gate_id,
+        "multischolar.dia_commit_repair.2026-08-31.v2"
+    )
+    expect_identical(
+        gates$comparison$phase_start,
+        "import_artifact_staging_start"
+    )
+    expect_identical(
+        gates$comparison$peak_scope,
+        "complete_owned_cgroup_lifecycle"
+    )
     expect_identical(gates$design$required_pairs, 36L)
     expect_identical(gates$design$required_sessions, 3L)
+    expect_identical(
+        gates$design$host_safety$maximum_prelaunch_thermal_celsius,
+        70L
+    )
+    expect_identical(gates$design$maximum_idle_cpu_activity_seconds, 0.001)
     expect_identical(gates$comparison$manual_garbage_collection_allowed, FALSE)
     expect_false(gates$decision$automatic_policy_authority)
     expect_false(gates$decision$publication_authority)
     expect_setequal(
         vapply(gates$gates, `[[`, character(1), "metric"),
         c(
-            "phase_peak_charged_memory_bytes",
+            "peak_charged_memory_bytes",
             "retained_charged_memory_bytes",
             "elapsed_seconds",
             "primary_work_units_per_wall_second",
@@ -139,7 +156,11 @@ test_that("DIA repair evidence code cannot hide memory with manual GC", {
         "..",
         "tools",
         "profiling",
-        c("omics_dia_commit_repair.R", "run_omics_dia_commit_repair.R")
+        c(
+            "omics_dia_commit_repair.R",
+            "omics_dia_commit_repair_proof.R",
+            "run_omics_dia_commit_repair.R"
+        )
     )
     sources <- unlist(lapply(paths, readLines, warn = FALSE), use.names = FALSE)
 

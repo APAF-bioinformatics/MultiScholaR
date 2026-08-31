@@ -26,7 +26,8 @@ for (source_file in c(
     "omics_publication_linux_resources.R",
     "omics_publication_retained_resources.R",
     "omics_publication_host_safety.R",
-    "omics_dia_commit_repair.R"
+    "omics_dia_commit_repair.R",
+    "omics_dia_commit_repair_proof.R"
 )) {
     source(
         file.path(
@@ -426,10 +427,82 @@ diaRepairWorkerMain <- function(args) {
     )
 }
 
+diaRepairProofMain <- function(args) {
+    diaRepairRunnerRequire(args, c("arm", "run_dir", "package_library"))
+    salt <- Sys.getenv("MULTISCHOLAR_DIA_REPAIR_SALT", unset = "")
+    proof <- diaRepairProofWorker(
+        args$package_library,
+        args$run_dir,
+        args$arm,
+        salt
+    )
+    publicationWriteJson(
+        proof,
+        file.path(args$run_dir, "scientific-proof.json")
+    )
+    invisible(0L)
+}
+
+diaRepairDiagnosticMain <- function(args) {
+    diaRepairRunnerRequire(args, c(
+        "source", "result", "arm", "run_dir", "package_library",
+        "salt_file"
+    ))
+    salt <- diaRepairEvidenceSalt(args$salt_file)
+    .libPaths(c(args$package_library, .libPaths()))
+    namespace <- loadNamespace("MultiScholaR", lib.loc = args$package_library)
+    paths <- diaRepairWorkflowPaths(args$run_dir)
+    on.exit(unlink(paths$base_dir, recursive = TRUE, force = TRUE), add = TRUE)
+    rollout <- if (identical(args$arm, "candidate_artifact")) {
+        "evict"
+    } else {
+        "dual_write"
+    }
+    workflow <- diaRepairNewWorkflow(namespace, paths, rollout)
+    imported <- suppressMessages(diaRepairPrepareImport(
+        namespace,
+        workflow,
+        args$source
+    ))
+    prepared <- suppressMessages(diaRepairPrepareDesign(
+        namespace,
+        workflow,
+        imported,
+        paths
+    ))
+    commit <- suppressMessages(diaRepairRunCommit(
+        namespace,
+        workflow,
+        paths,
+        prepared
+    ))
+    proof <- diaRepairProofWorker(
+        args$package_library,
+        args$run_dir,
+        args$arm,
+        salt
+    )
+    publicationWriteJson(list(
+        status = "diagnostic_non_authoritative",
+        arm = args$arm,
+        proof = proof,
+        complete_payload_returned = isTRUE(
+            commit$design$hydration_verification$complete_payload_returned
+        ) || isTRUE(commit$settlement$complete_payload_returned),
+        promotion_authority = FALSE,
+        publication_authority = FALSE
+    ), args$result)
+    invisible(0L)
+}
+
 diaRepairRunnerMain <- function(argv = commandArgs(trailingOnly = TRUE)) {
     args <- diaRepairRunnerArgs(argv)
     if (identical(args$mode, "worker")) {
         diaRepairWorkerMain(args)
+    } else if (identical(args$mode, "proof")) {
+        diaRepairProofMain(args)
+    } else if (identical(args$mode, "diagnostic")) {
+        diaRepairDiagnosticMain(args)
     } else if (args$mode %in% c("pilot", "campaign")) {
         diaRepairCampaignMain(args)
     } else {

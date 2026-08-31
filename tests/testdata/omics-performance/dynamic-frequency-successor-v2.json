@@ -1,0 +1,125 @@
+{
+  "schema": "multischolar.omics_publication_dynamic_frequency_successor",
+  "schema_version": "1.1.0",
+  "successor_id": "multischolar.omics_publication.dynamic_frequency.2026-08-31.v2",
+  "owner_ticket_id": "OMICS-ART-085",
+  "status": "runtime_sampling_race_repaired",
+  "authority_predecessor": {
+    "path": "tests/testdata/omics-performance/dynamic-frequency-successor-v1.json",
+    "sha256": "903be3c590ee3ae9c607e0ba4c43d41dcec460a81d54f6d8d9c9b70e2b793df1",
+    "immutable": true
+  },
+  "predecessor": {
+    "path": "tests/testdata/omics-performance/host-preflight-contract-v2.json",
+    "sha256": "4d95546438091bc3d0333443edb60135823c2b8d21bbb68834d6ab3273601c19",
+    "immutable": true
+  },
+  "successor": {
+    "path": "tests/testdata/omics-performance/host-preflight-contract-v3.json",
+    "sha256": "8e4c4b4f2ba0fc05e641eda159db052925c2eaa79be2ab6ee52db802335ee50a"
+  },
+  "semantics": {
+    "power_policy": "observe_do_not_modify",
+    "power_policy_mutation_allowed": false,
+    "governor_stability_required": true,
+    "frequency_telemetry_required": true,
+    "idle_to_load_frequency_drift_aborts": false,
+    "current_load_ceiling_per_logical_core": 0.1,
+    "load_decision_window": "one_minute",
+    "longer_load_windows": "recorded_non_decision_context",
+    "safety_trace_interval_seconds": 1,
+    "aborted_pilot_dimension_decision_allowed": false
+  },
+  "implementation_bindings": [
+    {
+      "path": "tools/profiling/omics_publication_protocol.R",
+      "sha256": "016467d97004f63bbf0c3953f1e5e52b22a5dfb52e5ab71f34b91c8e901564b8"
+    },
+    {
+      "path": "tools/profiling/omics_publication_host_safety.R",
+      "sha256": "83c0793da4a537747fc3695ed897deac3f79bba55390d1e1f0da688dac42f87c"
+    },
+    {
+      "path": "tools/profiling/omics_publication_linux_resources.R",
+      "sha256": "0e5c00149d5ebdb983dc5ac3bfc23c42c4dd5402d302d400672671ecf789b1cf"
+    },
+    {
+      "path": "tools/profiling/omics_publication_measure_spec.R",
+      "sha256": "83277cf1ec8b2bc4a79ff87745d6c944ccda917eeb982f862197b5e2f0b24f83"
+    },
+    {
+      "path": "tools/profiling/omics_publication_proteomics_pilot.R",
+      "sha256": "f9ef377c297bfa18654b199ffed408e6b9be72a9e5d238def51e5299bb40e000"
+    },
+    {
+      "path": "tools/profiling/omics_publication_metabolomics_pilot.R",
+      "sha256": "69d7e5a86d4dc7285eb5c9ff5b6dede0d21e7e573211febc674c198a1ebf36c6"
+    },
+    {
+      "path": "tools/profiling/omics_publication_lipidomics_pilot.R",
+      "sha256": "e669c52082cbde8f9e2e5766d418cee76f2db83c5798294d695e9666e248a492"
+    },
+    {
+      "path": "tools/profiling/run_omics_publication_proteomics_pilot.R",
+      "sha256": "347942d1d4a5ab21377da268c7ec471b273c267924e19746f95826ca4650d887"
+    },
+    {
+      "path": "tools/profiling/run_omics_publication_metabolomics_pilot.R",
+      "sha256": "1be243c92618c7b4a6667ab25ee1c9055e916e9d2b323ab45f00087a22ee8be4"
+    },
+    {
+      "path": "tools/profiling/run_omics_publication_lipidomics_pilot.R",
+      "sha256": "92d412a83038b88c3983448dc5983633e3b6c7c6bf2b90f906b43e3d1f17cc3a"
+    }
+  ],
+  "kernel_transitions": [
+    {
+      "path": "tools/profiling/omics_publication_protocol.R",
+      "predecessor_sha256": "4351aa5c14819943bf22519dfdec2045952a8ab009568b2334d9fa3c02a7ee7d",
+      "current_sha256": "016467d97004f63bbf0c3953f1e5e52b22a5dfb52e5ab71f34b91c8e901564b8"
+    },
+    {
+      "path": "tools/profiling/omics_publication_measure_spec.R",
+      "predecessor_sha256": "9fc4f3021f2858d4a851d70550b410e5bc71fa10af3d5405c327aadb174c2f61",
+      "current_sha256": "83277cf1ec8b2bc4a79ff87745d6c944ccda917eeb982f862197b5e2f0b24f83"
+    },
+    {
+      "path": "tools/profiling/omics_publication_linux_resources.R",
+      "predecessor_sha256": "483f4327d6564a2ffe46bbd44bed8f7150ec735341f1fd4279eee220a4c2f498",
+      "current_sha256": "0e5c00149d5ebdb983dc5ac3bfc23c42c4dd5402d302d400672671ecf789b1cf"
+    },
+    {
+      "path": "tools/profiling/omics_publication_host_safety.R",
+      "predecessor_sha256": "18c9216edab6dd3c0b5c968e5f30f98d30a85e3421c12c7492dd868614b3875d",
+      "current_sha256": "83c0793da4a537747fc3695ed897deac3f79bba55390d1e1f0da688dac42f87c"
+    }
+  ],
+  "excluded_attempts": [
+    {
+      "attempt_id": "dia-repair-v1-invalid",
+      "correct_terminal_state": "invalid_unmatched_phase_and_thermal_carryover",
+      "dimension_decision_allowed": false
+    },
+    {
+      "attempt_id": "dia-repair-v2-invalid",
+      "correct_terminal_state": "invalid_phase_peak_estimand",
+      "dimension_decision_allowed": false
+    }
+  ],
+  "consumer_scopes": [
+    "proteomics_historical_pilot",
+    "metabolomics_historical_pilot",
+    "lipidomics_historical_pilot",
+    "generic_candidate_measure_spec",
+    "dia_repair_campaign_v3"
+  ],
+  "downstream_obligations": {
+    "paired_timing_governor_identity_required": true,
+    "paired_timing_frequency_summary_required": true,
+    "memory_estimands_separate_from_timing": true,
+    "incomplete_atomic_disk_samples_reuse_last_complete_sample": true
+  },
+  "performance_authority": false,
+  "promotion_authority": false,
+  "publication_authority": false
+}

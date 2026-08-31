@@ -25,7 +25,8 @@ publication_tool_files <- c(
     "omics_publication_schedule.R",
     "omics_publication_campaign_state.R",
     "omics_publication_statistics.R",
-    "omics_dia_commit_repair.R"
+    "omics_dia_commit_repair.R",
+    "omics_dia_commit_repair_proof.R"
 )
 publication_tool_paths <- testthat::test_path(
     "..",

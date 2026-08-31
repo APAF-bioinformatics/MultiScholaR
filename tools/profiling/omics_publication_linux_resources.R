@@ -340,7 +340,7 @@ publicationDirectoryMetrics <- function(
     files <- files[file.exists(files) & !dir.exists(files)]
     sizes <- if (length(files)) as.numeric(file.info(files)$size) else numeric()
     prefix <- paste0(normalizePath(path, mustWork = TRUE), .Platform$file.sep)
-    relative <- if (length(files)) sub(prefix, "", normalizePath(files), fixed = TRUE) else
+    relative <- if (length(files)) sub(prefix, "", files, fixed = TRUE) else
         character()
     category_names <- vapply(categories, `[[`, character(1), "category")
     logical_bytes <- stats::setNames(as.list(rep(0, length(categories))), category_names)
@@ -684,7 +684,14 @@ publicationRunCgroupSampling <- function(
     repeat {
         elapsed <- proc.time()[["elapsed"]] - prepared$started
         if (elapsed - last_disk_elapsed >= disk_interval / 1000) {
-            last_disk <- publicationDirectoryMetrics(run_dir, disk_categories)
+            observed_disk <- publicationDirectoryMetrics(
+                run_dir,
+                disk_categories
+            )
+            disk_complete <- publicationScalarNumber(
+                observed_disk$logical_bytes
+            ) && publicationScalarNumber(observed_disk$allocated_bytes)
+            if (isTRUE(disk_complete)) last_disk <- observed_disk
             last_disk_elapsed <- elapsed
         }
         sample <- publicationSampleCgroup(

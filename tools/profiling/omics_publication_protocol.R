@@ -215,7 +215,7 @@ publicationKernelSourceBindings <- function() {
 }
 
 publicationDynamicFrequencySuccessorPath <- function() {
-    "tests/testdata/omics-performance/dynamic-frequency-successor-v1.json"
+    "tests/testdata/omics-performance/dynamic-frequency-successor-v2.json"
 }
 
 publicationBindingMatchesCurrentOrSuccessor <- function(binding) {

@@ -7,7 +7,7 @@ diaRepairGatePath <- function() {
         "tests",
         "testdata",
         "omics-performance",
-        "dia-repair-gates-v1.json"
+        "dia-repair-gates-v3.json"
     )
 }
 
@@ -19,9 +19,9 @@ diaRepairReadGates <- function(path = diaRepairGatePath()) {
     )
     if (!is.list(gates) || !setequal(names(gates), required) ||
         !identical(gates$schema, "multischolar.dia_commit_repair_gates") ||
-        !identical(gates$schema_version, "1.0.0") ||
+        !identical(gates$schema_version, "1.2.0") ||
         !identical(gates$owner_ticket_id, "OMICS-ART-070") ||
-        !identical(gates$status, "frozen_before_pilot_measurement")) {
+        !identical(gates$status, "frozen_after_invalid_v2_peak_estimand")) {
         diaRepairAbort("DIA repair gate contract header is invalid")
     }
     design <- gates$design
@@ -32,6 +32,7 @@ diaRepairReadGates <- function(path = diaRepairGatePath()) {
         identical(as.integer(design$sampling_interval_ms), 20L) &&
         identical(as.numeric(design$retained_dwell_seconds), 5) &&
         identical(as.numeric(design$retained_window_seconds), 2) &&
+        identical(as.numeric(design$maximum_idle_cpu_activity_seconds), 0.001) &&
         identical(as.integer(design$resamples), 10000L) &&
         identical(as.numeric(design$confidence_level), 0.95) &&
         is.list(design$host_safety) &&
@@ -46,6 +47,11 @@ diaRepairReadGates <- function(path = diaRepairGatePath()) {
                 design$host_safety$maximum_prelaunch_load_per_logical_core
             ),
             0.35
+        ) && identical(
+            as.numeric(
+                design$host_safety$maximum_prelaunch_thermal_celsius
+            ),
+            70
         ) && identical(
             as.numeric(
                 design$host_safety$maximum_runtime_load_per_logical_core
@@ -73,6 +79,10 @@ diaRepairReadGates <- function(path = diaRepairGatePath()) {
         all(is.finite(thresholds) & thresholds > 0)
     comparison_valid <- isTRUE(gates$comparison$owned_process_tree) &&
         isTRUE(gates$comparison$parity_workers_included) &&
+        identical(
+            gates$comparison$peak_scope,
+            "complete_owned_cgroup_lifecycle"
+        ) &&
         identical(gates$comparison$manual_garbage_collection_allowed, FALSE)
     authority_valid <- identical(
         gates$decision$automatic_policy_authority,
@@ -290,11 +300,13 @@ diaRepairPrepareImport <- function(namespace, workflow, source_path) {
         diaRepairAbort("DIA repair import staging failed")
     }
     imported <- staged$result
+    workflow$dia_repair_import_worker_timings <- staged$worker_timings
     workflow$data_tbl <- imported$data
     workflow$data_cln <- imported$data
     workflow$data_format <- "diann"
     workflow$data_type <- imported$data_type
     workflow$column_mapping <- imported$column_mapping
+    workflow$artifact_import_summary <- imported$import_summary
     workflow$state_manager$setWorkflowType("DIA")
     published <- persist_import(
         workflow,
@@ -310,8 +322,13 @@ diaRepairPrepareImport <- function(namespace, workflow, source_path) {
     invisible(imported)
 }
 
-diaRepairPrepareDesign <- function(namespace, workflow) {
-    runs <- unique(workflow$data_cln$Run)
+diaRepairPrepareDesign <- function(namespace, workflow, imported, paths) {
+    deferred <- isTRUE(imported$parent_hydration_deferred)
+    runs <- if (deferred) {
+        unlist(imported$import_summary$run_values, use.names = FALSE)
+    } else {
+        unique(workflow$data_cln$Run)
+    }
     workflow$design_matrix <- data.frame(
         Run = runs,
         group = sub("_.*", "", runs),
@@ -330,6 +347,43 @@ diaRepairPrepareDesign <- function(namespace, workflow) {
     )
     workflow$uniprot_dat_cln <- NULL
     workflow$aa_seq_tbl_final <- NULL
+    if (deferred) {
+        design_input <- diaRepairNamespaceValue(
+            namespace,
+            "protDiaDeferredDesignInput"
+        )(workflow)
+        results <- list(
+            data_cln = design_input,
+            design_matrix = workflow$design_matrix,
+            contrasts_tbl = workflow$contrasts_tbl,
+            config_list = workflow$config_list
+        )
+        specification <- diaRepairNamespaceValue(
+            namespace,
+            "protDiaDeferredDesignSpec"
+        )(
+            workflow,
+            results,
+            paths,
+            "dia-repair-canary"
+        )
+        worker <- diaRepairNamespaceValue(
+            namespace,
+            "runProtDiaDeferredDesignProcess"
+        )(specification)
+        settlement <- diaRepairNamespaceValue(
+            namespace,
+            "applyProtDiaDeferredDesignResult"
+        )(workflow, worker)
+        return(list(
+            deferred = TRUE,
+            design = worker$design_result,
+            settlement = c(
+                settlement,
+                list(parity_worker_pid = worker$worker_pid)
+            )
+        ))
+    }
     constructor <- diaRepairNamespaceValue(
         namespace,
         "PeptideQuantitativeDataDiann"
@@ -346,15 +400,23 @@ diaRepairPrepareDesign <- function(namespace, workflow) {
         workflow$config_list,
         "DIA repair benchmark memory checkpoint."
     )
-    workflow$dia_repair_expected_digest <- diaRepairStableDigest(object)
-    workflow$dia_repair_expected_valid_s4 <- identical(
-        methods::validObject(object, test = TRUE),
-        TRUE
+    compatibility <- list(
+        data_cln = workflow$data_cln,
+        design_matrix = workflow$design_matrix,
+        contrasts_tbl = workflow$contrasts_tbl,
+        config_list = workflow$config_list
     )
-    invisible(object)
+    diaRepairNamespaceValue(
+        namespace,
+        "persistProtDesignBuilderArtifacts"
+    )(compatibility, workflow, paths$source_dir)
+    list(deferred = FALSE, object = object)
 }
 
-diaRepairRunCommit <- function(namespace, workflow, paths) {
+diaRepairRunCommit <- function(namespace, workflow, paths, prepared_design) {
+    if (isTRUE(prepared_design$deferred)) {
+        return(prepared_design[c("design", "settlement")])
+    }
     persist_design <- diaRepairNamespaceValue(
         namespace,
         "persistProtDiaDesignArtifacts"
@@ -380,34 +442,6 @@ diaRepairRunCommit <- function(namespace, workflow, paths) {
         diaRepairAbort("DIA repair settlement did not release source fields")
     }
     list(design = design, settlement = settlement)
-}
-
-diaRepairScientificProof <- function(workflow, commit, salt) {
-    verification <- commit$design$hydration_verification
-    process_parity <- if (is.null(verification)) {
-        TRUE
-    } else {
-        isTRUE(verification$valid) &&
-            identical(
-                verification$expected_digest,
-                verification$hydrated_digest
-            ) && !isTRUE(verification$complete_payload_returned)
-    }
-    if (!isTRUE(workflow$dia_repair_expected_valid_s4) ||
-        !isTRUE(process_parity)) {
-        diaRepairAbort("DIA repair benchmark produced an invalid S4 state")
-    }
-    list(
-        salted_state_digest = diaRepairSaltedDigest(
-            workflow$dia_repair_expected_digest,
-            salt
-        ),
-        s4_class = "PeptideQuantitativeData",
-        valid_s4 = TRUE,
-        source_fields_released = is.null(workflow$data_tbl) &&
-            is.null(workflow$data_cln),
-        current_state = workflow$state_manager$getCurrentStateName()
-    )
 }
 
 diaRepairPhaseSnapshot <- function() {
@@ -481,6 +515,20 @@ diaRepairRetentionState <- function(dwell_seconds, arrow_pool_bytes) {
     )
 }
 
+diaRepairComponentTimer <- function(operation) {
+    started <- proc.time()
+    value <- operation()
+    finished <- proc.time()
+    list(
+        value = value,
+        elapsed_seconds = unname(finished[["elapsed"]] - started[["elapsed"]]),
+        process_cpu_seconds = unname(
+            sum(finished[c("user.self", "sys.self")]) -
+                sum(started[c("user.self", "sys.self")])
+        )
+    )
+}
+
 diaRepairWorker <- function(
     source_path,
     run_dir,
@@ -499,8 +547,6 @@ diaRepairWorker <- function(
         "dual_write"
     }
     workflow <- diaRepairNewWorkflow(namespace, paths, rollout)
-    suppressMessages(diaRepairPrepareImport(namespace, workflow, source_path))
-    diaRepairPrepareDesign(namespace, workflow)
     acknowledgement_path <- file.path(run_dir, "retention-sampled.fifo")
     fifo_result <- processx::run(
         "mkfifo",
@@ -512,11 +558,43 @@ diaRepairWorker <- function(
     started <- proc.time()[["elapsed"]]
     cpu_started <- sum(proc.time()[c("user.self", "sys.self")])
     diaRepairWriteBoundary(run_dir, "measured_worker_start")
-    commit <- suppressMessages(diaRepairRunCommit(namespace, workflow, paths))
+    import_component <- diaRepairComponentTimer(function() {
+        suppressMessages(diaRepairPrepareImport(
+            namespace,
+            workflow,
+            source_path
+        ))
+    })
+    imported <- import_component$value
+    design_component <- diaRepairComponentTimer(function() {
+        suppressMessages(diaRepairPrepareDesign(
+            namespace,
+            workflow,
+            imported,
+            paths
+        ))
+    })
+    prepared_design <- design_component$value
+    commit_component <- diaRepairComponentTimer(function() {
+        suppressMessages(diaRepairRunCommit(
+            namespace,
+            workflow,
+            paths,
+            prepared_design
+        ))
+    })
+    commit <- commit_component$value
     phase_elapsed <- proc.time()[["elapsed"]] - started
     phase_cpu <- sum(proc.time()[c("user.self", "sys.self")]) - cpu_started
     diaRepairWriteBoundary(run_dir, "measured_worker_stop")
-    proof <- diaRepairScientificProof(workflow, commit, salt)
+    proof <- diaRepairScientificProof(
+        workflow,
+        commit,
+        salt,
+        package_library,
+        run_dir,
+        arm
+    )
     payload_free_state_manager <- inherits(
         workflow$state_manager,
         "ArtifactWorkflowState"
@@ -532,6 +610,17 @@ diaRepairWorker <- function(
         arm = arm,
         phase_elapsed_seconds = phase_elapsed,
         phase_cpu_seconds = phase_cpu,
+        phase_components = list(
+            import = import_component[c(
+                "elapsed_seconds", "process_cpu_seconds"
+            )] |> c(workflow$dia_repair_import_worker_timings),
+            design = design_component[c(
+                "elapsed_seconds", "process_cpu_seconds"
+            )],
+            commit = commit_component[c(
+                "elapsed_seconds", "process_cpu_seconds"
+            )]
+        ),
         work_unit_id = "validated_input_byte",
         work_count = as.numeric(file.info(source_path)$size),
         scientific_proof = proof,
@@ -654,21 +743,29 @@ diaRepairWaitForReadiness <- function(host, gates) {
     safety <- gates$design$host_safety
     maximum_load <- host$cpu$logical_cores *
         safety$maximum_prelaunch_load_per_logical_core
+    maximum_thermal <- safety$maximum_prelaunch_thermal_celsius
     started <- proc.time()[["elapsed"]]
     observations <- list()
     repeat {
         load <- as.numeric(unlist(publicationLoadAverage(), use.names = FALSE))
+        thermal <- publicationThermalState()
         elapsed <- proc.time()[["elapsed"]] - started
         observations[[length(observations) + 1L]] <- list(
             elapsed_seconds = elapsed,
-            one_minute_load = load[[1L]]
+            one_minute_load = load[[1L]],
+            maximum_thermal_celsius = thermal$maximum_celsius
         )
+        thermal_ready <- isTRUE(thermal$available) &&
+            publicationScalarNumber(thermal$maximum_celsius) &&
+            thermal$maximum_celsius <= maximum_thermal
         if (length(load) == 3L && all(is.finite(load)) &&
-            load[[1L]] <= maximum_load) {
+            load[[1L]] <= maximum_load && thermal_ready) {
             return(list(
                 ready = TRUE,
                 baseline_one_minute_load = load[[1L]],
                 maximum_prelaunch_load = maximum_load,
+                baseline_maximum_thermal_celsius = thermal$maximum_celsius,
+                maximum_prelaunch_thermal_celsius = maximum_thermal,
                 waited_seconds = elapsed,
                 observations = observations
             ))
@@ -678,6 +775,8 @@ diaRepairWaitForReadiness <- function(host, gates) {
                 ready = FALSE,
                 baseline_one_minute_load = load[[1L]],
                 maximum_prelaunch_load = maximum_load,
+                baseline_maximum_thermal_celsius = thermal$maximum_celsius,
+                maximum_prelaunch_thermal_celsius = maximum_thermal,
                 waited_seconds = elapsed,
                 observations = observations
             ))

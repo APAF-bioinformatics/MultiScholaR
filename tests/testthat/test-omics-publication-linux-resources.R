@@ -521,7 +521,7 @@ test_that("publication tooling cannot mutate host power policy", {
 
 test_that("dynamic frequency successor binds every shared consumer", {
     record <- publicationReadJson(
-        "tests/testdata/omics-performance/dynamic-frequency-successor-v1.json"
+        "tests/testdata/omics-performance/dynamic-frequency-successor-v2.json"
     )
     expect_identical(
         record$schema,
@@ -580,6 +580,28 @@ test_that("retained windows exclude post-dwell work and retain trace provenance"
     expect_equal(diagnostics$charged_memory_slope_bytes_per_second, 0)
     expect_match(diagnostics$trace_sha256, "^[0-9a-f]{64}$")
     expect_length(diagnostics$trace, length(retained))
+
+    jittered <- retained
+    jittered[[length(jittered)]]$cpu$usage_usec <-
+        jittered[[1L]]$cpu$usage_usec + 6
+    expect_false(
+        publicationRetainedDiagnostics(jittered)$background_activity_observed
+    )
+    jittered[[length(jittered)]]$cpu$usage_usec <-
+        jittered[[1L]]$cpu$usage_usec + 2000
+    expect_true(
+        publicationRetainedDiagnostics(jittered)$background_activity_observed
+    )
+})
+
+test_that("incomplete cgroup teardown snapshots are not sampled", {
+    path <- withr::local_tempdir()
+
+    expect_null(publicationSampleCgroup(
+        path,
+        elapsed_seconds = 1,
+        disk = list(logical_bytes = 0, allocated_bytes = 0, file_count = 0)
+    ))
 })
 
 test_that("PID ancestry distinguishes owned workers from injected processes", {
@@ -690,10 +712,10 @@ test_that("timeout crash cgroup loss and OOM cannot remain certifiable", {
         nonfinite_samples[[index]]$smaps$pss_bytes <- NA_real_
     }
     nonfinite <- measure(values = nonfinite_samples)
-    background_samples <- publicationGovernanceCopy(samples)
-    for (index in seq_along(background_samples)) {
-        background_samples[[index]]$cpu$usage_usec <- 1000 + index
-    }
+        background_samples <- publicationGovernanceCopy(samples)
+        for (index in seq_along(background_samples)) {
+            background_samples[[index]]$cpu$usage_usec <- 1000 + index * 100L
+        }
     background <- measure(values = background_samples)
     swapped_samples <- lapply(seq(0, 5, by = 0.05),
         \(elapsed) publicationMeasurementSampleFixture(
