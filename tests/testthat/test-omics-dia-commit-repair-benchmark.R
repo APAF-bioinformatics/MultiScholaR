@@ -119,6 +119,13 @@ test_that("DIA repair resume accepts only the bound equivalent predecessor", {
     expect_false(diaRepairResumeGateBindingValid(predecessor, gates))
 })
 
+test_that("DIA repair readiness reserves absolute runtime load headroom", {
+    gates <- diaRepairReadGates()
+    host <- list(cpu = list(logical_cores = 16L))
+
+    expect_identical(diaRepairPrelaunchMaximumLoad(host, gates), 4)
+})
+
 test_that("DIA repair schedule is pair session and order balanced", {
     schedule <- diaRepairSchedule()
 

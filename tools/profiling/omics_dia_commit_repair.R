@@ -743,8 +743,7 @@ diaRepairRuntimeSafetyLimits <- function(
 
 diaRepairWaitForReadiness <- function(host, gates) {
     safety <- gates$design$host_safety
-    maximum_load <- host$cpu$logical_cores *
-        safety$maximum_prelaunch_load_per_logical_core
+    maximum_load <- diaRepairPrelaunchMaximumLoad(host, gates)
     maximum_thermal <- safety$maximum_prelaunch_thermal_celsius
     started <- proc.time()[["elapsed"]]
     observations <- list()

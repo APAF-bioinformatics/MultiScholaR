@@ -92,6 +92,16 @@ diaRepairResumeGateBindingValid <- function(binding, gates) {
     isTRUE(current) || isTRUE(predecessor && diaRepairPredecessorGateValid(gates))
 }
 
+diaRepairPrelaunchMaximumLoad <- function(host, gates) {
+    safety <- gates$design$host_safety
+    declared_limit <- host$cpu$logical_cores *
+        safety$maximum_prelaunch_load_per_logical_core
+    runtime_headroom <- host$cpu$logical_cores *
+        safety$maximum_runtime_load_per_logical_core -
+        safety$owned_workload_load_allowance
+    min(declared_limit, runtime_headroom)
+}
+
 diaRepairCompletePairRecords <- function(records) {
     groups <- split(records, vapply(records, `[[`, character(1), "pair_id"))
     complete <- Filter(function(pair) {
