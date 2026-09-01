@@ -122,6 +122,7 @@ Collate:
     'utils_artifact_stage_adapters.R'
     'utils_artifact_stage_persistence.R'
     'utils_artifact_stage_readthrough.R'
+    'utils_artifact_stage_restore.R'
     'utils_artifact_settled_resume.R'
     'utils_artifact_payload_eviction.R'
     'func_general_design.R'
