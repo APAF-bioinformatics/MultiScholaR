@@ -234,6 +234,40 @@ verifyProtNonDiaReadthroughForEviction <- function(
     )
 }
 
+#' Construct a payload-free non-DIA settled state manager
+#'
+#' @param workflow_data Mutable proteomics workflow state.
+#' @param descriptor Exact supported workflow descriptor.
+#' @param resource_policy Optional registry resource policy.
+#'
+#' @return A closed-registry artifact state manager with no hydration cache.
+#' @noRd
+newProtNonDiaSettledStateManager <- function(
+    workflow_data,
+    descriptor,
+    resource_policy = NULL
+) {
+    state_export <- workflow_data$artifact_stage_results$design$state_manifest
+    if (!is.list(state_export)) {
+        protNonDiaArtifactAbort(
+            "non-DIA settlement lacks a committed state export",
+            "multischolar_missing_prot_nondia_settled_state"
+        )
+    }
+    context <- workflow_data$workflow_context
+    identity <- context$getIdentity()
+    store <- newArtifactStore(context$getPaths(), identity$project_id)
+    bootstrap <- artifactWorkflowStateBootstrapFromExport(store, state_export)
+    newWorkflowState(
+        workflow_context = context,
+        resource_policy = resource_policy,
+        workflow_descriptor = descriptor,
+        descriptor_catalogue = artifactWorkflowDescriptorCatalogue(),
+        codec_catalogue = artifactS4CodecCatalogue(),
+        settled_bootstrap = bootstrap
+    )
+}
+
 #' Settle one current non-DIA workflow when eviction is certified
 #' @param workflow_data Mutable proteomics workflow state.
 #' @param experiment_paths Workflow project paths.
@@ -281,11 +315,33 @@ settleProtNonDiaArtifactWorkflowSafely <- function(
             if (!isTRUE(verification$verified)) {
                 verification
             } else {
-                evictProtNonDiaWorkflowPayloads(
+                settled_manager <- newProtNonDiaSettledStateManager(
+                    workflow_data,
+                    descriptor,
+                    resource_policy
+                )
+                manager_installed <- FALSE
+                on.exit({
+                    if (!manager_installed) {
+                        try(settled_manager$close(), silent = TRUE)
+                    }
+                }, add = TRUE)
+                result <- evictProtNonDiaWorkflowPayloads(
                     workflow_data,
                     descriptor,
                     rollout_fn
                 )
+                if (isTRUE(result$evicted)) {
+                    previous_manager <- workflow_data$state_manager
+                    workflow_data$state_manager <- settled_manager
+                    manager_installed <- TRUE
+                    if (inherits(previous_manager, "ArtifactWorkflowState")) {
+                        try(previous_manager$close(), silent = TRUE)
+                    }
+                    result$state_manager_replaced <- TRUE
+                    result$complete_payload_returned <- FALSE
+                }
+                result
             }
         },
         error = \(error) {

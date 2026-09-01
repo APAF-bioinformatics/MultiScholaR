@@ -614,8 +614,18 @@ test_that("current-session settlement is tuple-bound and defaults retain memory"
         )
         expect_true(result$evicted)
         expect_identical(result$descriptor_id, built$capability_id)
+        expect_true(result$state_manager_replaced)
+        expect_false(result$complete_payload_returned)
         expect_null(built$workflow$data_tbl)
         expect_null(built$workflow$data_cln)
+        expect_s3_class(
+            built$workflow$state_manager,
+            "ArtifactWorkflowState"
+        )
+        expect_identical(
+            built$workflow$state_manager$getCacheInfo()$entries,
+            0L
+        )
         expectNondiaArtifact050StateExact(
             built$object,
             built$workflow$state_manager$getState()

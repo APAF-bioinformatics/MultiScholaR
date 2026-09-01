@@ -450,7 +450,11 @@ runProtNonDiaDesignVerifier <- function(
 #'
 #' @return A payload-free child result.
 #' @noRd
-runProtNonDiaDesignFork <- function(operation, owner) {
+runProtNonDiaDesignFork <- function(
+    operation,
+    owner,
+    timeout_ms = 900000L
+) {
     job <- parallel::mcparallel(
         tryCatch(
             operation(),
@@ -464,8 +468,24 @@ runProtNonDiaDesignFork <- function(operation, owner) {
         mc.set.seed = FALSE,
         silent = TRUE
     )
-    collected <- parallel::mccollect(job, wait = TRUE)
-    result <- collected[[1L]]
+    deadline <- proc.time()[["elapsed"]] + as.numeric(timeout_ms) / 1000
+    result <- NULL
+    repeat {
+        collected <- parallel::mccollect(job, wait = FALSE)
+        if (!is.null(collected)) {
+            result <- unname(collected)[[1L]]
+            break
+        }
+        if (proc.time()[["elapsed"]] >= deadline) {
+            tools::pskill(job$pid, signal = 15L)
+            parallel::mccollect(job, wait = TRUE)
+            protNonDiaArtifactAbort(
+                paste(owner, "exceeded its timeout"),
+                "multischolar_prot_nondia_design_worker_failed"
+            )
+        }
+        Sys.sleep(0.05)
+    }
     if (inherits(result, "try-error") || !is.list(result) ||
         !isTRUE(result$ok)) {
         error_class <- if (is.list(result)) {
@@ -490,6 +510,42 @@ runProtNonDiaDesignFork <- function(operation, owner) {
     }
     artifactResourceDataOnly(result, owner)
     result
+}
+
+#' Roll back an unverified non-DIA design state
+#'
+#' @param workflow_data Mutable proteomics workflow state.
+#' @param stage Pending design stage.
+#'
+#' @return `FALSE`, invisibly.
+#' @noRd
+rollbackProtNonDiaDesignVerification <- function(workflow_data, stage) {
+    try(
+        artifactStageUpdateStatus(
+            workflow_data$workflow_context,
+            stage,
+            completed = FALSE,
+            abort_fn = protNonDiaArtifactAbort
+        ),
+        silent = TRUE
+    )
+    descriptor <- protNonDiaReadthroughDescriptor(
+        stage$descriptor$descriptor_id
+    )
+    manager <- tryCatch(
+        newProtNonDiaResumeStateManager(
+            workflow_data$workflow_context,
+            descriptor
+        ),
+        error = identity
+    )
+    if (inherits(manager, "ArtifactWorkflowState")) {
+        on.exit(manager$close(), add = TRUE)
+        if (isTRUE(manager$hasState("initial"))) {
+            try(manager$revertToState("initial"), silent = TRUE)
+        }
+    }
+    invisible(FALSE)
 }
 
 #' Persist and verify one non-DIA design in separate processes
@@ -519,11 +575,8 @@ persistProtNonDiaDesignArtifactsProcessCore <- function(
         error = identity
     )
     if (inherits(verifier, "error")) {
-        protNonDiaArtifactFailDesignStage(
-            workflow_data$workflow_context,
-            writer$stage,
-            verifier
-        )
+        rollbackProtNonDiaDesignVerification(workflow_data, writer$stage)
+        stop(verifier)
     }
     artifactStageUpdateStatus(
         workflow_data$workflow_context,
