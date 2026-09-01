@@ -95,14 +95,18 @@ protTmtIngressPreflight <- function(source_path) {
 #' @noRd
 protTmtIngressSelect <- function(connection, source_path, preflight) {
     source_literal <- as.character(DBI::dbQuoteString(connection, source_path))
+    source_table <- protNonDiaIngressQuote(
+        connection,
+        ".multischolar_tmt_source"
+    )
     source_order <- protNonDiaIngressQuote(connection, ".source_row")
-    source_query <- paste0(
-        "(SELECT row_number() OVER ()::BIGINT AS ", source_order,
+    DBI::dbExecute(connection, paste0(
+        "CREATE TEMP TABLE ", source_table, " AS SELECT ",
+        "row_number() OVER ()::BIGINT AS ", source_order,
         ", * FROM read_csv(",
         source_literal, ", delim = chr(9), header = true, auto_detect = true, ",
-        "sample_size = -1, nullstr = ['', 'NA'], strict_mode = true)) ",
-        "AS tmt_source"
-    )
+        "sample_size = -1, nullstr = ['', 'NA'], strict_mode = true)"
+    ))
     values <- vapply(seq_along(preflight$quantity_columns), \(index) {
         paste0(
             "(", index, ", ",
@@ -141,7 +145,7 @@ protTmtIngressSelect <- function(connection, source_path, preflight) {
             ", unpivoted.ordinal)::BIGINT AS ",
             protNonDiaIngressQuote(connection, .artifactRowOrderColumn),
             ", ", paste(projections, collapse = ", "), " FROM ",
-            source_query, " CROSS JOIN LATERAL (VALUES ",
+            source_table, " CROSS JOIN LATERAL (VALUES ",
             paste(values, collapse = ", "),
             ") AS unpivoted(ordinal, run, abundance) ORDER BY ",
             source_order, ", unpivoted.ordinal"
@@ -161,7 +165,6 @@ protTmtIngressSelect <- function(connection, source_path, preflight) {
 #' @param output_path Destination Parquet path.
 #' @param row_group_rows Parquet row-group size.
 #' @param memory_limit_bytes DuckDB memory limit.
-#' @param threads Bounded DuckDB scan threads.
 #'
 #' @return Source binding, mapping, and output path.
 #' @noRd
@@ -169,8 +172,7 @@ writeProtTmtStreamingParquet <- function(
     source_path,
     output_path,
     row_group_rows = 65536L,
-    memory_limit_bytes = 128 * 1024^2,
-    threads = 2L
+    memory_limit_bytes = 128 * 1024^2
 ) {
     preflight <- protTmtIngressPreflight(source_path)
     database <- tempfile("prot-tmt-streaming-", fileext = ".duckdb")
@@ -182,10 +184,7 @@ writeProtTmtStreamingParquet <- function(
     )
     connection <- DBI::dbConnect(duckdb::duckdb(database, shared_home = FALSE))
     on.exit(DBI::dbDisconnect(connection, shutdown = TRUE), add = TRUE)
-    DBI::dbExecute(
-        connection,
-        paste0("SET threads = ", as.integer(threads))
-    )
+    DBI::dbExecute(connection, "SET threads = 1")
     DBI::dbExecute(connection, "SET preserve_insertion_order = true")
     DBI::dbExecute(
         connection,
