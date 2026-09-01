@@ -261,6 +261,14 @@ writeProtNonDiaStreamingParquet <- function(
     row_group_rows = 65536L,
     memory_limit_bytes = 128 * 1024^2
 ) {
+    if (identical(format, "pd_tmt")) {
+        return(writeProtTmtStreamingParquet(
+            source_path,
+            output_path,
+            row_group_rows,
+            memory_limit_bytes
+        ))
+    }
     preflight <- protNonDiaIngressPreflight(
         source_path,
         format,

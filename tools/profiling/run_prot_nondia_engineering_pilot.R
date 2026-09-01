@@ -85,9 +85,19 @@ protNonDiaPilotImporter <- function(namespace, format) {
     name <- switch(format,
         maxquant = "importMaxQuantData",
         fragpipe = "importFragPipeData",
+        pd_tmt = "importProteomeDiscovererTMTData",
         stop("non-DIA pilot format is unsupported", call. = FALSE)
     )
     protNonDiaPilotNamespaceValue(namespace, name)
+}
+
+protNonDiaPilotWorkflowType <- function(format) {
+    if (identical(format, "pd_tmt")) "TMT" else "LFQ"
+}
+
+protNonDiaPilotCapabilityId <- function(format) {
+    level <- if (identical(format, "pd_tmt")) "tmt" else "lfq"
+    paste("proteomics", format, "protein", level, "v1", sep = ".")
 }
 
 protNonDiaPilotPaths <- function(run_dir, format) {
@@ -159,7 +169,9 @@ protNonDiaPilotImport <- function(namespace, workflow, args) {
     workflow$data_format <- args$format
     workflow$data_type <- imported$data_type
     workflow$column_mapping <- imported$column_mapping
-    workflow$state_manager$setWorkflowType("LFQ")
+    workflow$state_manager$setWorkflowType(
+        protNonDiaPilotWorkflowType(args$format)
+    )
     persist_import <- protNonDiaPilotNamespaceValue(
         namespace,
         "persistProtNonDiaImportArtifacts"
@@ -183,6 +195,7 @@ protNonDiaPilotImport <- function(namespace, workflow, args) {
 
 protNonDiaPilotDesign <- function(namespace, workflow) {
     mapping <- workflow$column_mapping
+    workflow_type <- protNonDiaPilotWorkflowType(workflow$data_format)
     runs <- unique(as.character(workflow$data_cln[[mapping$run_col]]))
     group <- rep(c("A", "B"), length.out = length(runs))
     workflow$design_matrix <- data.frame(
@@ -192,7 +205,7 @@ protNonDiaPilotDesign <- function(namespace, workflow) {
         stringsAsFactors = FALSE
     )
     workflow$config_list <- list(
-        globalParameters = list(workflow_type = "LFQ")
+        globalParameters = list(workflow_type = workflow_type)
     )
     workflow$contrasts_tbl <- data.frame(
         contrasts = "groupB-groupA",
@@ -218,7 +231,7 @@ protNonDiaPilotDesign <- function(namespace, workflow) {
         "buildProtDesignStateCheckpoint"
     )(
         workflow,
-        "LFQ",
+        workflow_type,
         "non-DIA engineering pilot",
         validateColumnMapping = TRUE
     ))
@@ -281,9 +294,7 @@ protNonDiaPilotWorker <- function(args) {
     imported <- protNonDiaPilotImport(namespace, workflow, args)
     design <- protNonDiaPilotDesign(namespace, workflow)
     state_digest <- protNonDiaPilotStateDigest(design$object)
-    capability_id <- paste0(
-        "proteomics.", args$format, ".protein.lfq.v1"
-    )
+    capability_id <- protNonDiaPilotCapabilityId(args$format)
     descriptor <- protNonDiaPilotNamespaceValue(
         namespace,
         "protNonDiaReadthroughDescriptor"
@@ -515,7 +526,11 @@ protNonDiaPilotCampaign <- function(args) {
     result <- list(
         schema = "multischolar.prot_nondia_engineering_pilot",
         schema_version = "1.0.0",
-        owner_ticket_id = "OMICS-ART-073",
+        owner_ticket_id = if (identical(args$format, "pd_tmt")) {
+            "OMICS-ART-074"
+        } else {
+            "OMICS-ART-073"
+        },
         status = if (valid && length(digests) == 1L) "passed" else "failed",
         format = args$format,
         source_bytes = unname(as.numeric(file.info(args$source)$size)),

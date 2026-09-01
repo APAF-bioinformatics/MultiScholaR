@@ -21,9 +21,9 @@ protNonDiaWorkerParserParameters <- function(
     parser_parameters = NULL
 ) {
     spec <- protNonDiaArtifactImportSpec(format)
-    if (is.null(spec) || !format %in% c("maxquant", "fragpipe")) {
+    if (is.null(spec) || !format %in% c("maxquant", "fragpipe", "pd_tmt")) {
         protNonDiaArtifactAbort(
-            "non-DIA import worker requires a supported LFQ format",
+            "non-DIA import worker requires a supported exact format",
             "multischolar_invalid_prot_nondia_worker_format"
         )
     }
@@ -114,7 +114,7 @@ validateProtNonDiaArtifactWorkerSpec <- function(spec, mode) {
         is.list(spec$stage) && identical(spec$stage$stage_id, "import") &&
         workflowCapabilityScalarString(spec$source_path) &&
         file.exists(spec$source_path) &&
-        spec$format %in% c("maxquant", "fragpipe") &&
+        spec$format %in% c("maxquant", "fragpipe", "pd_tmt") &&
         is.logical(spec$sanitize_names) && length(spec$sanitize_names) == 1L &&
         !is.na(spec$sanitize_names)
     if (!isTRUE(valid)) {
@@ -162,6 +162,9 @@ protNonDiaArtifactWorkerImport <- function(spec) {
         fragpipe = do.call(
             importFragPipeData,
             c(list(filepath = spec$source_path), spec$parser_parameters)
+        ),
+        pd_tmt = importProteomeDiscovererTMTData(
+            spec$source_path
         )
     )
     if (isTRUE(spec$sanitize_names)) {
@@ -623,7 +626,7 @@ validateProtNonDiaArtifactPendingStage <- function(pending) {
     pending
 }
 
-#' Stage one MaxQuant or FragPipe import outside the parent process
+#' Stage one supported non-DIA import outside the parent process
 #'
 #' @param workflow_data Mutable proteomics workflow state.
 #' @param source_path Exact source file.
@@ -648,12 +651,12 @@ stageProtNonDiaImportArtifacts <- function(
     writer_failure_stage = NULL,
     verifier_failure_stage = NULL
 ) {
-    if (!format %in% c("maxquant", "fragpipe")) {
+    if (!format %in% c("maxquant", "fragpipe", "pd_tmt")) {
         return(list(
             enabled = FALSE,
             attempted = FALSE,
             ok = TRUE,
-            reason = "not_supported_nondia_lfq_worker"
+            reason = "not_supported_nondia_worker"
         ))
     }
     parameters <- protNonDiaWorkerParserParameters(format, parser_parameters)

@@ -646,9 +646,9 @@ test_that("public generated workloads meet independent source-graph stage gates"
             format,
             prepared$prepared$payload_path,
             project_id = paste0("nondia-050-gate-", format),
-            worker_owned = format %in% c("maxquant", "fragpipe")
+            worker_owned = format %in% c("maxquant", "fragpipe", "pd_tmt")
         )
-        if (format %in% c("maxquant", "fragpipe")) {
+        if (format %in% c("maxquant", "fragpipe", "pd_tmt")) {
             expect_true(
                 isTRUE(
                     built$import_result$process_evidence$distinct_workers

@@ -291,16 +291,13 @@ test_that("supported non-DIA imports dual-write exact portable provenance", {
     }
 })
 
-test_that("MaxQuant and FragPipe imports stage in payload-free workers", {
+test_that("supported non-DIA imports stage in payload-free workers", {
     nondiaArtifact023SkipDependencies()
     testthat::skip_if_not_installed("processx")
     withr::local_options(list(
         multischolar.prot_nondia.import_worker_mode = "fork"
     ))
-    scenarios <- Filter(
-        \(scenario) scenario$format %in% c("maxquant", "fragpipe"),
-        nondiaArtifact023Scenarios()
-    )
+    scenarios <- nondiaArtifact023Scenarios()
 
     for (scenario in scenarios) {
         root <- tempfile(paste0("nondia-worker-", scenario$format, "-"))
@@ -351,6 +348,83 @@ test_that("MaxQuant and FragPipe imports stage in payload-free workers", {
             expected$data
         )
     }
+})
+
+test_that("PD-TMT streaming preserves reviewed reporter layouts exactly", {
+    nondiaArtifact023SkipDependencies()
+    channels <- c(
+        "126", "127N", "127C", "128N", "128C", "129N", "129C",
+        "130N", "130C", "131N", "131C", "132N", "132C", "133N",
+        "133C", "134N", "134C", "135N"
+    )
+    for (channel_count in c(6L, 10L, 16L, 18L)) {
+        source <- tempfile("pd-tmt-layout-", fileext = ".tsv")
+        output <- tempfile("pd-tmt-layout-", fileext = ".parquet")
+        data <- data.frame(
+            Annotated.Sequence = c("PEPTIDEAK", "PEPTIDEBK"),
+            Master.Protein.Accessions = c("P00001", "P00002"),
+            check.names = FALSE,
+            stringsAsFactors = FALSE
+        )
+        quantities <- as.data.frame(
+            matrix(seq_len(2L * channel_count), nrow = 2L),
+            check.names = FALSE
+        )
+        names(quantities) <- sprintf(
+            "Abundance: F%d: %s, SAMPLE_%02d",
+            seq_len(channel_count),
+            channels[seq_len(channel_count)],
+            seq_len(channel_count)
+        )
+        utils::write.table(
+            cbind(data, quantities),
+            source,
+            sep = "\t",
+            quote = FALSE,
+            row.names = FALSE
+        )
+        expected <- suppressMessages(importProteomeDiscovererTMTData(source))
+        streamed <- writeProtTmtStreamingParquet(source, output)
+        actual <- as.data.frame(arrow::read_parquet(output))
+        actual[[.artifactRowOrderColumn]] <- NULL
+
+        expect_identical(actual, as.data.frame(expected$data))
+        expect_identical(streamed$column_mapping, expected$column_mapping)
+        expect_identical(
+            unique(actual$Run),
+            unique(as.character(expected$data$Run))
+        )
+    }
+})
+
+test_that("PD-TMT malformed streaming input fails before publication", {
+    nondiaArtifact023SkipDependencies()
+    scenario <- Filter(
+        \(candidate) identical(candidate$format, "pd_tmt"),
+        nondiaArtifact023Scenarios()
+    )[[1L]]
+    root <- withr::local_tempdir(pattern = "pd-tmt-malformed-")
+    workflow <- nondiaArtifact023Workflow(root, scenario)
+    source <- file.path(root, "malformed.tsv")
+    lines <- readLines(nondiaArtifact023RepoPath(scenario$fixture_path))
+    lines[[2L]] <- sub("\t[0-9.]+", "\tnot-a-number", lines[[2L]])
+    writeLines(lines, source)
+
+    staged <- stageProtNonDiaImportArtifactsSafely(
+        workflow,
+        source,
+        "pd_tmt",
+        log_warn = \(...) invisible(NULL)
+    )
+    expect_false(staged$ok)
+    expect_true(staged$attempted)
+    expect_null(staged$pending_stage)
+    expect_false(dir.exists(file.path(
+        root,
+        ".multischolar",
+        "artifacts",
+        "canonical"
+    )))
 })
 
 test_that("non-DIA import worker failures discard unpublished generations", {
