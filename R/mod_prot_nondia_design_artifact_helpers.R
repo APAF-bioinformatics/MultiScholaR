@@ -690,13 +690,21 @@ persistProtNonDiaDesignArtifactsCore <- function(
     c(list(enabled = TRUE, ok = TRUE), stage, state_result)
 }
 
+#' Resolve the non-DIA design persistence process model
+#'
+#' @return Either `"inline"` or `"fork"`.
+#' @noRd
+protNonDiaDesignWorkerMode <- function() {
+    requested <- getOption(
+        "multischolar.prot_nondia.design_worker_mode",
+        "inline"
+    )
+    match.arg(requested, c("inline", "fork"))
+}
+
 #' Safely dual-write a completed non-DIA proteomics design
 #'
-#' @param workflow_data Mutable proteomics workflow state.
-#' @param state_name Completed memory state name.
-#' @param failure_injector Optional artifact failure injector used by tests.
-#' @param manager_factory Workflow state manager constructor.
-#' @param save_state_fn Optional state writer injected by tests.
+#' @inheritParams persistProtNonDiaDesignArtifactsCore
 #' @param log_warn Warning logger used for additive artifact failures.
 #'
 #' @return The recorded design persistence result, invisibly.
@@ -710,6 +718,7 @@ persistProtNonDiaDesignArtifacts <- function(
     log_warn = logger::log_warn
 ) {
     process_owned <- workflow_data$data_format %in% c("maxquant", "fragpipe") &&
+        identical(protNonDiaDesignWorkerMode(), "fork") &&
         identical(.Platform$OS.type, "unix") &&
         is.null(failure_injector) &&
         identical(manager_factory, newWorkflowState) &&

@@ -179,14 +179,37 @@ protNonDiaArtifactWorkerImport <- function(spec) {
 runProtNonDiaArtifactWriterWorker <- function(spec) {
     spec <- validateProtNonDiaArtifactWorkerSpec(spec, "writer")
     protNonDiaArtifactWorkerFailure(spec$failure_stage, "before_import")
-    imported <- protNonDiaArtifactWorkerImport(spec)
+    output_path <- tempfile("prot-nondia-streaming-", fileext = ".parquet")
+    on.exit(unlink(output_path, force = TRUE), add = TRUE)
+    streamed <- writeProtNonDiaStreamingParquet(
+        spec$source_path,
+        output_path,
+        spec$format,
+        spec$parser_parameters
+    )
+    encoded <- encodeArtifactStreamingParquet(
+        output_path,
+        owner = paste(
+            spec$stage$descriptor$descriptor_id,
+            "import",
+            "canonical_data",
+            sep = "."
+        )
+    )
     protNonDiaArtifactWorkerFailure(spec$failure_stage, "after_import")
-    exact_digest <- artifactExactHydrationDigest(imported$data)
-    refs <- artifactStageWriteRefs(
-        spec$stage,
-        list(canonical_data = imported$data),
+    ref <- artifactStorePublishStreamingParquet(
+        spec$stage$store,
+        encoded,
+        logical_key = list(
+            project_id = spec$stage$identity$project_id,
+            omic_type = spec$stage$identity$omic_type,
+            workflow_slug = spec$stage$identity$workflow_slug,
+            stage_id = "import",
+            state_role = "canonical_data",
+            generation_id = spec$stage$generation_id
+        ),
+        provenance_ids = c(spec$stage$run_id, spec$stage$action_id),
         verification = "deferred_exact",
-        abort_fn = protNonDiaArtifactAbort
     )
     protNonDiaArtifactWorkerFailure(spec$failure_stage, "after_write")
     if (identical(spec$failure_stage, "hard_exit_after_write")) {
@@ -196,14 +219,15 @@ runProtNonDiaArtifactWriterWorker <- function(spec) {
         ok = TRUE,
         mode = "writer",
         worker_pid = as.integer(Sys.getpid()),
-        refs = lapply(refs, unclass),
-        exact_digests = list(canonical_data = exact_digest),
-        data_type = imported$data_type,
-        column_mapping = imported$column_mapping,
+        refs = list(canonical_data = unclass(ref)),
+        exact_digests = list(canonical_data = NULL),
+        data_type = "protein",
+        column_mapping = streamed$column_mapping,
         source = protNonDiaArtifactSourceMetadata(
             spec$source_path,
             spec$format
-        )
+        ),
+        bounded_streaming = TRUE
     )
     protNonDiaArtifactWorkerFailure(spec$failure_stage, "before_result")
     artifactResourceDataOnly(result, "non-DIA import writer result")
@@ -220,30 +244,22 @@ runProtNonDiaArtifactVerifierWorker <- function(spec) {
     spec <- validateProtNonDiaArtifactWorkerSpec(spec, "verifier")
     protNonDiaArtifactWorkerFailure(spec$failure_stage, "before_verify")
     proofs <- lapply(spec$stage$refs, \(ref) {
-        artifactStoreVerifyExactRef(spec$stage$store, ref)
+        artifactStoreVerifyStreamingRef(
+            spec$stage$store,
+            ref,
+            verify_semantic = FALSE
+        )
     })
     names(proofs) <- names(spec$stage$refs)
-    adapter <- protNonDiaArtifactReadthroughAdapter(spec$stage$descriptor)
-    hydrated <- artifactStageReadTable(
-        adapter,
-        spec$stage$store,
-        spec$stage$refs$canonical_data
-    )
-    oracle_digest <- artifactExactHydrationDigest(hydrated)
-    expected_digest <- spec$stage$exact_digests$canonical_data
-    if (!identical(oracle_digest, expected_digest)) {
-        protNonDiaArtifactAbort(
-            "non-DIA worker artifact differs from the reviewed importer",
-            "multischolar_inexact_prot_nondia_worker_hydration"
-        )
-    }
+    oracle_digest <- spec$stage$refs$canonical_data$hash_policy$semantic$digest
     protNonDiaArtifactWorkerFailure(spec$failure_stage, "after_verify")
     result <- list(
         ok = TRUE,
         mode = "verifier",
         worker_pid = as.integer(Sys.getpid()),
         proofs = proofs,
-        oracle_digest = oracle_digest
+        oracle_digest = oracle_digest,
+        bounded_streaming = TRUE
     )
     artifactResourceDataOnly(result, "non-DIA import verifier result")
     result
@@ -329,7 +345,7 @@ protNonDiaArtifactWorkerExpression <- function(source_tree) {
 #'
 #' @return A payload-free worker result.
 #' @noRd
-runProtNonDiaArtifactStageProcess <- function(spec, timeout_ms = 600000L) {
+runProtNonDiaArtifactStageProcessx <- function(spec, timeout_ms = 600000L) {
     if (!requireNamespace("processx", quietly = TRUE)) {
         protNonDiaArtifactAbort(
             "non-DIA artifact workers require package 'processx'",
@@ -382,6 +398,100 @@ runProtNonDiaArtifactStageProcess <- function(spec, timeout_ms = 600000L) {
     result
 }
 
+#' Run one non-DIA import worker in a fork child
+#'
+#' @param spec Worker specification.
+#' @param timeout_ms Worker timeout in milliseconds.
+#'
+#' @return A payload-free worker result.
+#' @noRd
+runProtNonDiaArtifactStageFork <- function(spec, timeout_ms = 600000L) {
+    spec <- validateProtNonDiaArtifactWorkerSpec(spec, spec$mode)
+    job <- parallel::mcparallel(
+        tryCatch(
+            switch(spec$mode,
+                writer = runProtNonDiaArtifactWriterWorker(spec),
+                verifier = runProtNonDiaArtifactVerifierWorker(spec)
+            ),
+            error = \(error) list(
+                ok = FALSE,
+                mode = spec$mode,
+                worker_pid = as.integer(Sys.getpid()),
+                error_class = class(error),
+                error_message = conditionMessage(error)
+            )
+        ),
+        mc.set.seed = FALSE,
+        silent = TRUE
+    )
+    deadline <- proc.time()[["elapsed"]] + as.numeric(timeout_ms) / 1000
+    result <- NULL
+    repeat {
+        collected <- parallel::mccollect(job, wait = FALSE)
+        if (!is.null(collected)) {
+            result <- unname(collected)[[1L]]
+            break
+        }
+        if (proc.time()[["elapsed"]] >= deadline) {
+            tools::pskill(job$pid, signal = 15L)
+            parallel::mccollect(job, wait = TRUE)
+            protNonDiaArtifactAbort(
+                paste("non-DIA", spec$mode, "worker exceeded its timeout"),
+                "multischolar_prot_nondia_worker_process_failed"
+            )
+        }
+        Sys.sleep(0.05)
+    }
+    if (!is.list(result) || !isTRUE(result$ok)) {
+        error_class <- if (is.list(result)) {
+            result$error_class %||% character()
+        } else {
+            class(result)
+        }
+        protNonDiaArtifactAbort(
+            paste("non-DIA artifact", spec$mode, "worker failed"),
+            unique(c(
+                error_class,
+                "multischolar_prot_nondia_worker_process_failed"
+            )),
+            worker_error_message = if (is.list(result)) {
+                result$error_message %||% NULL
+            } else {
+                as.character(result)
+            }
+        )
+    }
+    artifactResourceDataOnly(result, "non-DIA fork worker result")
+    result
+}
+
+#' Resolve the non-DIA import worker process model
+#'
+#' @return Either `"fork"` on Linux or `"process"` elsewhere.
+#' @noRd
+protNonDiaArtifactWorkerMode <- function() {
+    requested <- getOption(
+        "multischolar.prot_nondia.import_worker_mode",
+        if (identical(Sys.info()[["sysname"]], "Linux")) "fork" else "process"
+    )
+    match.arg(requested, c("fork", "process"))
+}
+
+#' Run one non-DIA import worker with the platform process model
+#'
+#' @param spec Worker specification.
+#' @param timeout_ms Worker timeout in milliseconds.
+#'
+#' @return A payload-free worker result.
+#' @noRd
+runProtNonDiaArtifactStageProcess <- function(spec, timeout_ms = 600000L) {
+    if (identical(protNonDiaArtifactWorkerMode(), "fork")) {
+        runProtNonDiaArtifactStageFork(spec, timeout_ms)
+    } else {
+        runProtNonDiaArtifactStageProcessx(spec, timeout_ms)
+    }
+}
+
 #' Prepare a payload-free non-DIA worker stage
 #'
 #' @param prepared Prepared exact-tuple context.
@@ -425,7 +535,7 @@ newProtNonDiaArtifactPendingStage <- function(
     sanitize_names
 ) {
     stage$refs <- writer$refs
-    stage$exact_digests <- writer$exact_digests
+    stage$exact_digests <- list(canonical_data = verifier$oracle_digest)
     pending <- list(
         schema = .PROT_NONDIA_PENDING_STAGE_SCHEMA,
         schema_version = 1L,
@@ -568,18 +678,34 @@ stageProtNonDiaImportArtifacts <- function(
         parameters,
         sanitize_names
     )
-    adapter <- protNonDiaArtifactReadthroughAdapter(prepared$descriptor)
-    imported <- list(
-        data = artifactStageReadTable(
-            adapter,
-            stage$store,
-            pending$stage$refs$canonical_data
-        ),
-        data_type = writer$data_type,
-        column_mapping = writer$column_mapping
-    )
-    caller_owns_stage <- TRUE
-    list(
+    imported <- protNonDiaArtifactWorkerImport(protNonDiaArtifactWorkerSpec(
+        "writer",
+        stage,
+        source_path,
+        format,
+        parameters,
+        sanitize_names
+    ))
+    ref <- pending$stage$refs$canonical_data
+    shape_valid <- identical(
+        as.numeric(ref$shape$rows),
+        as.numeric(nrow(imported$data))
+    ) &&
+        identical(as.integer(ref$shape$columns), as.integer(ncol(imported$data)))
+    if (!isTRUE(shape_valid)) {
+        protNonDiaArtifactAbort(
+            "streamed non-DIA shape differs from the reviewed importer",
+            "multischolar_inexact_prot_nondia_worker_hydration"
+        )
+    }
+    if (!identical(imported$column_mapping, writer$column_mapping)) {
+        protNonDiaArtifactAbort(
+            "streamed non-DIA mapping differs from the reviewed importer",
+            "multischolar_inexact_prot_nondia_import_metadata"
+        )
+    }
+    pending$process_evidence$parser_parent_pid <- as.integer(Sys.getpid())
+    list_result <- list(
         enabled = TRUE,
         attempted = TRUE,
         ok = TRUE,
@@ -587,6 +713,8 @@ stageProtNonDiaImportArtifacts <- function(
         pending_stage = pending,
         process_evidence = pending$process_evidence
     )
+    caller_owns_stage <- TRUE
+    list_result
 }
 
 #' Safely stage one non-DIA LFQ artifact import

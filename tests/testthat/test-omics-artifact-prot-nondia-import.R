@@ -405,6 +405,11 @@ test_that("supported non-DIA design checkpoints dual-write and hydrate exactly",
         )$ok)
         object <- nondiaArtifact023Design(workflow, imported$workflow_type)
         memory_before <- workflow$state_manager$exportState()
+        if (scenario$format %in% c("maxquant", "fragpipe")) {
+            withr::local_options(list(
+                multischolar.prot_nondia.design_worker_mode = "fork"
+            ))
+        }
         output <- persistProtDesignArtifacts(
             workflow,
             log_warn = function(...) NULL

@@ -391,6 +391,7 @@ Collate:
     'mod_prot_nondia_readthrough_helpers.R'
     'mod_prot_artifact_resume_dispatch.R'
     'mod_prot_artifact_stage_worker_helpers.R'
+    'mod_prot_nondia_ingress_helpers.R'
     'mod_prot_nondia_stage_worker_helpers.R'
     'mod_prot_dia_ingress_helpers.R'
     'mod_prot_dia_design_worker_helpers.R'
