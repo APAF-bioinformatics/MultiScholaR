@@ -985,7 +985,11 @@ e2e_switch_workflow_tab <- function(driver, omic, tab_value, timeout = .E2E_BROW
   invisible(driver)
 }
 
-e2e_click_process_import <- function(driver, omic) {
+e2e_click_process_import <- function(
+    driver,
+    omic,
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
+) {
   test_id <- switch(
     omic,
     proteomics = "prot-import-process",
@@ -993,7 +997,7 @@ e2e_click_process_import <- function(driver, omic) {
     lipidomics = "lipid-import-process",
     stop(sprintf("Unsupported omic: %s", omic), call. = FALSE)
   )
-  e2e_click_testid(driver, test_id)
+  e2e_click_testid(driver, test_id, timeout = timeout)
 }
 
 e2e_click_norm_export <- function(driver, omic) {

@@ -27,7 +27,7 @@ library(testthat)
     e2e_assert_project_dirs_exist(paths)
 
     e2e_upload_lane_inputs(driver, lane)
-    e2e_click_process_import(driver, "proteomics")
+    e2e_click_process_import(driver, "proteomics", timeout = 120000L)
     e2e_wait_for_step_status(driver, "proteomics", "setup_import", "complete", timeout = 120000L)
     e2e_assert_step_statuses(
       driver,

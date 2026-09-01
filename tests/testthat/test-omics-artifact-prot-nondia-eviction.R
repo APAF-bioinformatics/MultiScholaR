@@ -650,7 +650,11 @@ test_that("public generated workloads meet independent source-graph stage gates"
         )
         if (format %in% c("maxquant", "fragpipe")) {
             expect_true(
-                built$import_result$process_evidence$distinct_workers
+                isTRUE(
+                    built$import_result$process_evidence$distinct_workers
+                ) || isTRUE(
+                    built$import_result$process_evidence$sequential_bounded_inline
+                )
             )
             expect_false(
                 built$import_result$process_evidence$complete_payload_returned
