@@ -280,6 +280,279 @@ protNonDiaArtifactFailDesignStage <- function(context, stage, state_error) {
     stop(state_error)
 }
 
+#' Digest one non-DIA scientific checkpoint exactly
+#'
+#' @param object Validated protein S4 checkpoint.
+#' @param descriptor Exact non-DIA workflow descriptor.
+#' @param state_name Exact state role.
+#'
+#' @return A SHA-256 digest string.
+#' @noRd
+protNonDiaDesignStateDigest <- function(object, descriptor, state_name) {
+    slot_names <- methods::slotNames(object)
+    slot_digests <- vapply(slot_names, \(slot_name) {
+        value <- methods::slot(object, slot_name)
+        if (is.data.frame(value)) return(artifactExactHydrationDigest(value))
+        digest::digest(
+            value,
+            algo = "sha256",
+            serialize = TRUE,
+            ascii = FALSE,
+            serializeVersion = 3L
+        )
+    }, character(1))
+    artifactSemanticDigest(list(
+        descriptor_id = descriptor$descriptor_id,
+        descriptor_version = descriptor$descriptor_version,
+        state_name = state_name,
+        class_name = class(object)[[1L]],
+        slot_names = slot_names,
+        slot_classes = vapply(slot_names, \(slot_name) {
+            class(methods::slot(object, slot_name))[[1L]]
+        }, character(1)),
+        slot_digests = slot_digests
+    ))
+}
+
+#' Write one non-DIA design checkpoint without hydration
+#'
+#' @param workflow_data Mutable proteomics workflow state.
+#' @param state_name Completed memory state name.
+#'
+#' @return A payload-free pending design result.
+#' @noRd
+runProtNonDiaDesignWriter <- function(workflow_data, state_name) {
+    prepared <- prepareProtNonDiaArtifactContext(workflow_data)
+    checkpoint <- protNonDiaArtifactMemoryCheckpoint(
+        workflow_data,
+        state_name,
+        prepared
+    )
+    stage <- protNonDiaArtifactWriteDesignStage(
+        prepared,
+        workflow_data,
+        state_name,
+        checkpoint,
+        failure_injector = NULL
+    )
+    manager <- protNonDiaArtifactNewDesignStateManager(
+        prepared,
+        newWorkflowState
+    )
+    on.exit(manager$close(), add = TRUE)
+    spec <- protNonDiaArtifactImportSpec(workflow_data$data_format)
+    manager$setWorkflowType(spec$workflow_type)
+    audit <- protNonDiaArtifactStateAudit(stage)
+    state_error <- tryCatch(
+        {
+            manager$saveState(
+                state_name = state_name,
+                s4_data_object = checkpoint$state_object,
+                config_object = workflow_data$config_list,
+                description = sprintf(
+                    "%s non-DIA protein design worker checkpoint.",
+                    spec$workflow_type
+                ),
+                audit_metadata = audit
+            )
+            NULL
+        },
+        error = identity
+    )
+    if (inherits(state_error, "error")) {
+        protNonDiaArtifactFailDesignStage(
+            prepared$context,
+            stage,
+            state_error
+        )
+    }
+    result <- list(
+        ok = TRUE,
+        worker_pid = as.integer(Sys.getpid()),
+        stage = stage,
+        state_manifest = manager$exportState(),
+        state_metadata = manager$getStateMetadata(state_name),
+        expected_state_digest = protNonDiaDesignStateDigest(
+            checkpoint$state_object,
+            prepared$descriptor,
+            state_name
+        ),
+        complete_payload_returned = FALSE
+    )
+    artifactResourceDataOnly(result, "non-DIA design writer result")
+    result
+}
+
+#' Independently hydrate one non-DIA design checkpoint
+#'
+#' @param workflow_data Mutable proteomics workflow state.
+#' @param state_name Expected current state name.
+#' @param expected_digest Exact writer-side scientific digest.
+#'
+#' @return A payload-free hydration proof.
+#' @noRd
+runProtNonDiaDesignVerifier <- function(
+    workflow_data,
+    state_name,
+    expected_digest
+) {
+    prepared <- prepareProtNonDiaArtifactContext(workflow_data)
+    manager <- protNonDiaArtifactNewDesignStateManager(
+        prepared,
+        newWorkflowState
+    )
+    on.exit(manager$close(), add = TRUE)
+    hydrated <- manager$getState(state_name)
+    artifactValidateProteomicsNonDiaProteinState(
+        hydrated,
+        artifactProteomicsNonDiaCodecRole(
+            prepared$descriptor$descriptor_id,
+            state_name,
+            prepared$descriptor$descriptor_version
+        ),
+        state_name
+    )
+    hydrated_digest <- protNonDiaDesignStateDigest(
+        hydrated,
+        prepared$descriptor,
+        state_name
+    )
+    if (!identical(hydrated_digest, expected_digest)) {
+        protNonDiaArtifactAbort(
+            sprintf(
+                paste(
+                    "non-DIA design verifier differs from the memory",
+                    "checkpoint (%s != %s)"
+                ),
+                hydrated_digest,
+                expected_digest
+            ),
+            "multischolar_inexact_prot_nondia_artifact_hydration"
+        )
+    }
+    manager$releaseCache()
+    result <- list(
+        ok = TRUE,
+        worker_pid = as.integer(Sys.getpid()),
+        state_name = state_name,
+        hydrated_digest = hydrated_digest,
+        valid_s4 = identical(methods::validObject(hydrated, test = TRUE), TRUE),
+        complete_payload_returned = FALSE
+    )
+    artifactResourceDataOnly(result, "non-DIA design verifier result")
+    result
+}
+
+#' Run one non-DIA design operation in a fork child
+#'
+#' @param operation Zero-argument child operation.
+#' @param owner Human-readable process owner.
+#'
+#' @return A payload-free child result.
+#' @noRd
+runProtNonDiaDesignFork <- function(operation, owner) {
+    job <- parallel::mcparallel(
+        tryCatch(
+            operation(),
+            error = \(error) list(
+                ok = FALSE,
+                worker_pid = as.integer(Sys.getpid()),
+                error_class = class(error),
+                error_message = conditionMessage(error)
+            )
+        ),
+        mc.set.seed = FALSE,
+        silent = TRUE
+    )
+    collected <- parallel::mccollect(job, wait = TRUE)
+    result <- collected[[1L]]
+    if (inherits(result, "try-error") || !is.list(result) ||
+        !isTRUE(result$ok)) {
+        error_class <- if (is.list(result)) {
+            result$error_class %||% character()
+        } else {
+            class(result)
+        }
+        error_message <- if (is.list(result)) {
+            result$error_message %||% as.character(result)
+        } else {
+            as.character(result)
+        }
+        protNonDiaArtifactAbort(
+            paste(owner, "failed"),
+            unique(c(
+                error_class,
+                "multischolar_prot_nondia_design_worker_failed"
+            )),
+            worker_error_class = error_class,
+            worker_error_message = error_message
+        )
+    }
+    artifactResourceDataOnly(result, owner)
+    result
+}
+
+#' Persist and verify one non-DIA design in separate processes
+#'
+#' @param workflow_data Mutable proteomics workflow state.
+#' @param state_name Completed memory state name.
+#'
+#' @return A committed payload-free design result.
+#' @noRd
+persistProtNonDiaDesignArtifactsProcessCore <- function(
+    workflow_data,
+    state_name
+) {
+    writer <- runProtNonDiaDesignFork(
+        \() runProtNonDiaDesignWriter(workflow_data, state_name),
+        "non-DIA design writer"
+    )
+    verifier <- tryCatch(
+        runProtNonDiaDesignFork(
+            \() runProtNonDiaDesignVerifier(
+                workflow_data,
+                state_name,
+                writer$expected_state_digest
+            ),
+            "non-DIA design verifier"
+        ),
+        error = identity
+    )
+    if (inherits(verifier, "error")) {
+        protNonDiaArtifactFailDesignStage(
+            workflow_data$workflow_context,
+            writer$stage,
+            verifier
+        )
+    }
+    artifactStageUpdateStatus(
+        workflow_data$workflow_context,
+        writer$stage,
+        completed = TRUE,
+        abort_fn = protNonDiaArtifactAbort
+    )
+    writer$stage$committed <- TRUE
+    c(
+        list(enabled = TRUE, ok = TRUE),
+        writer$stage,
+        list(
+            state_manifest = writer$state_manifest,
+            state_metadata = writer$state_metadata,
+            process_evidence = list(
+                writer_pid = writer$worker_pid,
+                verifier_pid = verifier$worker_pid,
+                distinct_workers = !identical(
+                    writer$worker_pid,
+                    verifier$worker_pid
+                ),
+                valid_s4 = verifier$valid_s4,
+                exact_digest = verifier$hydrated_digest,
+                complete_payload_returned = FALSE
+            )
+        )
+    )
+}
+
 #' Execute non-DIA design dual-write transaction mechanics
 #'
 #' @param workflow_data Mutable proteomics workflow state.
@@ -383,16 +656,28 @@ persistProtNonDiaDesignArtifacts <- function(
     save_state_fn = NULL,
     log_warn = logger::log_warn
 ) {
+    process_owned <- workflow_data$data_format %in% c("maxquant", "fragpipe") &&
+        identical(.Platform$OS.type, "unix") &&
+        is.null(failure_injector) &&
+        identical(manager_factory, newWorkflowState) &&
+        is.null(save_state_fn)
     runArtifactStageSafely(
         workflow_data,
         "design",
-        \() persistProtNonDiaDesignArtifactsCore(
-            workflow_data,
-            state_name,
-            failure_injector,
-            manager_factory,
-            save_state_fn
-        ),
+        if (isTRUE(process_owned)) {
+            \() persistProtNonDiaDesignArtifactsProcessCore(
+                workflow_data,
+                state_name
+            )
+        } else {
+            \() persistProtNonDiaDesignArtifactsCore(
+                workflow_data,
+                state_name,
+                failure_injector,
+                manager_factory,
+                save_state_fn
+            )
+        },
         "non-DIA proteomics",
         log_warn
     )

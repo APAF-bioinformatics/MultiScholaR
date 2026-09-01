@@ -291,6 +291,106 @@ test_that("supported non-DIA imports dual-write exact portable provenance", {
     }
 })
 
+test_that("MaxQuant and FragPipe imports stage in payload-free workers", {
+    nondiaArtifact023SkipDependencies()
+    testthat::skip_if_not_installed("processx")
+    scenarios <- Filter(
+        \(scenario) scenario$format %in% c("maxquant", "fragpipe"),
+        nondiaArtifact023Scenarios()
+    )
+
+    for (scenario in scenarios) {
+        root <- tempfile(paste0("nondia-worker-", scenario$format, "-"))
+        dir.create(root)
+        withr::defer(unlink(root, recursive = TRUE, force = TRUE))
+        workflow <- nondiaArtifact023Workflow(root, scenario)
+        source <- nondiaArtifact023RepoPath(scenario$fixture_path)
+        expected <- suppressMessages(
+            nondiaArtifact023Importer(scenario$format)(source)
+        )
+
+        staged <- suppressMessages(stageProtNonDiaImportArtifacts(
+            workflow,
+            source,
+            scenario$format
+        ))
+        expect_true(staged$ok, info = scenario$format)
+        expect_true(staged$process_evidence$distinct_workers)
+        expect_false(staged$process_evidence$complete_payload_returned)
+        expect_identical(staged$result, expected)
+        expect_null(workflow$artifact_stage_results)
+
+        workflow$data_tbl <- staged$result$data
+        workflow$data_cln <- staged$result$data
+        workflow$data_format <- scenario$format
+        workflow$data_type <- staged$result$data_type
+        workflow$column_mapping <- staged$result$column_mapping
+        workflow$state_manager$setWorkflowType(
+            if (identical(scenario$format, "pd_tmt")) "TMT" else "LFQ"
+        )
+        committed <- persistProtNonDiaImportArtifacts(
+            workflow,
+            staged$result,
+            source,
+            pending_stage = staged$pending_stage,
+            worker_attempted = TRUE
+        )
+        expect_true(committed$committed)
+        expect_identical(
+            workflow$artifact_stage_results$import$process_evidence,
+            staged$process_evidence
+        )
+        expect_identical(
+            nondiaArtifact023ReadRef(
+                workflow$workflow_context,
+                committed$refs$canonical_data
+            ),
+            expected$data
+        )
+    }
+})
+
+test_that("non-DIA import worker failures discard unpublished generations", {
+    nondiaArtifact023SkipDependencies()
+    testthat::skip_if_not_installed("processx")
+    scenario <- Filter(
+        \(candidate) identical(candidate$format, "maxquant"),
+        nondiaArtifact023Scenarios()
+    )[[1L]]
+
+    for (failure in list(
+        list(writer_failure_stage = "after_write"),
+        list(verifier_failure_stage = "after_verify")
+    )) {
+        root <- tempfile("nondia-worker-failure-")
+        dir.create(root)
+        withr::defer(unlink(root, recursive = TRUE, force = TRUE))
+        workflow <- nondiaArtifact023Workflow(root, scenario)
+        source <- nondiaArtifact023RepoPath(scenario$fixture_path)
+        result <- suppressMessages(do.call(
+            stageProtNonDiaImportArtifactsSafely,
+            c(list(
+                workflow_data = workflow,
+                source_path = source,
+                format = scenario$format,
+                log_warn = \(...) invisible(NULL)
+            ), failure)
+        ))
+
+        expect_false(result$ok)
+        expect_true(result$attempted)
+        expect_null(result$result)
+        audit <- workflow$artifact_stage_results$import_worker
+        expect_null(audit$result)
+        expect_false(isTRUE(audit$ok))
+        expect_length(list.files(
+            file.path(root, "artifacts", "intents"),
+            all.files = TRUE,
+            no.. = TRUE
+        ), 0L)
+    }
+})
+
 test_that("supported non-DIA design checkpoints dual-write and hydrate exactly", {
     nondiaArtifact023SkipDependencies()
     for (scenario in nondiaArtifact023Scenarios()) {
@@ -312,6 +412,13 @@ test_that("supported non-DIA design checkpoints dual-write and hydrate exactly",
         expect_true(output$enabled, info = scenario$scenario_id)
         expect_true(output$ok, info = scenario$scenario_id)
         expect_true(output$committed, info = scenario$scenario_id)
+        if (scenario$format %in% c("maxquant", "fragpipe")) {
+            expect_true(output$process_evidence$distinct_workers)
+            expect_true(output$process_evidence$valid_s4)
+            expect_false(output$process_evidence$complete_payload_returned)
+        } else {
+            expect_null(output$process_evidence)
+        }
         expect_setequal(names(output$refs), c(
             "cleaned_data", "design_matrix", "contrasts", "args",
             "annotations", "sequences"

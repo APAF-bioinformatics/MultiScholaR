@@ -247,12 +247,29 @@ persistProtNonDiaImportArtifacts <- function(
     sanitize_names = FALSE,
     retain_source_uri = FALSE,
     failure_injector = NULL,
+    pending_stage = NULL,
+    worker_attempted = !is.null(pending_stage),
     log_warn = logger::log_warn
 ) {
     runArtifactStageSafely(
         workflow_data,
         "import",
         \() {
+            if (isTRUE(worker_attempted)) {
+                if (is.null(pending_stage)) {
+                    return(list(
+                        enabled = TRUE,
+                        ok = FALSE,
+                        stage_id = "import",
+                        reason = "artifact_worker_failed_no_retry",
+                        committed = FALSE
+                    ))
+                }
+                return(publishProtNonDiaArtifactWorkerStage(
+                    workflow_data,
+                    pending_stage
+                ))
+            }
             format <- workflow_data$data_format
             spec <- protNonDiaArtifactImportSpec(format)
             prepared <- prepareProtNonDiaArtifactContext(workflow_data)
@@ -357,6 +374,8 @@ persistProtImportArtifacts <- function(
         sanitize_names,
         retain_source_uri,
         failure_injector,
+        pending_stage,
+        worker_attempted,
         log_warn
     )
 }

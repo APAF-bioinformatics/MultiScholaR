@@ -226,7 +226,7 @@ registerProtImportObservers <- function(
     resolveFilenameFn = resolveProtImportInputFilename,
     finalizeSetupStateFn = finalizeProtImportSetupState,
     completeSuccessStateFn = completeProtImportSuccessState,
-    stageImportArtifactsFn = stageProtDiaImportArtifactsSafely,
+    stageImportArtifactsFn = stageProtImportArtifactsSafely,
     discardStagedArtifactsFn = discardProtDiaArtifactWorkerStage,
     persistImportArtifactsFn = persistProtImportArtifacts,
     observeEventFn = shiny::observeEvent,
@@ -316,6 +316,7 @@ registerProtImportObservers <- function(
           format = format,
           use_precursor_norm = input$diann_use_precursor_norm %||% TRUE,
           sanitize_names = input$sanitize_names %||% FALSE,
+          parser_parameters = protImportArtifactParserParameters(format, input),
           log_warn = logWarn
         )
         if (isTRUE(input$mixed_species_fasta) &&

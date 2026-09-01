@@ -99,7 +99,8 @@ nondiaArtifact050Build <- function(
     format,
     source_path,
     project_id = paste0("nondia-050-", format),
-    label = "eviction-study"
+    label = "eviction-study",
+    worker_owned = FALSE
 ) {
     paths <- nondiaArtifact050Paths(root, project_id, label)
     source <- file.path(paths$source_dir, basename(source_path))
@@ -116,7 +117,20 @@ nondiaArtifact050Build <- function(
             project_id = project_id
         )
     )
-    imported <- suppressMessages(nondiaArtifact050Importer(format)(source))
+    staged <- if (isTRUE(worker_owned)) {
+        suppressMessages(stageProtNonDiaImportArtifacts(
+            workflow,
+            source,
+            format
+        ))
+    } else {
+        NULL
+    }
+    imported <- if (is.list(staged) && isTRUE(staged$ok)) {
+        staged$result
+    } else {
+        suppressMessages(nondiaArtifact050Importer(format)(source))
+    }
     workflow$data_tbl <- imported$data
     workflow$data_cln <- imported$data
     workflow$data_format <- format
@@ -124,7 +138,13 @@ nondiaArtifact050Build <- function(
     workflow$column_mapping <- imported$column_mapping
     workflow_type <- nondiaArtifact050WorkflowType(format)
     workflow$state_manager$setWorkflowType(workflow_type)
-    import_result <- persistProtNonDiaImportArtifacts(workflow, imported, source)
+    import_result <- persistProtNonDiaImportArtifacts(
+        workflow,
+        imported,
+        source,
+        pending_stage = staged$pending_stage %||% NULL,
+        worker_attempted = isTRUE(staged$attempted)
+    )
     stopifnot(isTRUE(import_result$ok))
     runs <- unique(as.character(
         workflow$data_cln[[workflow$column_mapping$run_col]]
@@ -615,8 +635,17 @@ test_that("public generated workloads meet independent source-graph stage gates"
             root,
             format,
             prepared$prepared$payload_path,
-            project_id = paste0("nondia-050-gate-", format)
+            project_id = paste0("nondia-050-gate-", format),
+            worker_owned = format %in% c("maxquant", "fragpipe")
         )
+        if (format %in% c("maxquant", "fragpipe")) {
+            expect_true(
+                built$import_result$process_evidence$distinct_workers
+            )
+            expect_false(
+                built$import_result$process_evidence$complete_payload_returned
+            )
+        }
         resumed <- nondiaArtifact050Resume(built)
         workflow <- resumed$workflow
         withr::defer(workflow$state_manager$close())
