@@ -259,7 +259,7 @@ writeProtNonDiaStreamingParquet <- function(
     format,
     parser_parameters,
     row_group_rows = 65536L,
-    memory_limit_bytes = 512 * 1024^2
+    memory_limit_bytes = 128 * 1024^2
 ) {
     preflight <- protNonDiaIngressPreflight(
         source_path,

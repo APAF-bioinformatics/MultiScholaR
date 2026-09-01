@@ -505,8 +505,13 @@ protNonDiaPilotCampaign <- function(args) {
             isTRUE(record$worker$source_fields_released)
     }, logical(1)))
     digests <- unique(vapply(records, \(record) {
-        record$worker$state_digest
+        if (is.list(record$worker)) {
+            record$worker$state_digest %||% NA_character_
+        } else {
+            NA_character_
+        }
     }, character(1)))
+    digests <- digests[!is.na(digests)]
     result <- list(
         schema = "multischolar.prot_nondia_engineering_pilot",
         schema_version = "1.0.0",
@@ -516,13 +521,13 @@ protNonDiaPilotCampaign <- function(args) {
         source_bytes = unname(as.numeric(file.info(args$source)$size)),
         repetitions = args$repetitions,
         records = records,
-        ratios = lapply(c(
+        ratios = if (isTRUE(valid)) lapply(c(
             "peak_charged_memory_bytes",
             "retained_charged_memory_bytes",
             "elapsed_seconds",
             "peak_logical_disk_bytes",
             "final_logical_disk_bytes"
-        ), \(metric) protNonDiaPilotRatio(records, metric)),
+        ), \(metric) protNonDiaPilotRatio(records, metric)) else list(),
         scientific_parity = length(digests) == 1L,
         publication_certifiable = all(vapply(records, \(record) {
             isTRUE(record$measurement$publication_certifiable)

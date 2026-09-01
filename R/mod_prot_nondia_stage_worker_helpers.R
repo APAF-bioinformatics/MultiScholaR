@@ -467,14 +467,29 @@ runProtNonDiaArtifactStageFork <- function(spec, timeout_ms = 600000L) {
 
 #' Resolve the non-DIA import worker process model
 #'
-#' @return Either `"fork"` on Linux or `"process"` elsewhere.
+#' @return One of `"inline"`, `"fork"`, or `"process"`.
 #' @noRd
 protNonDiaArtifactWorkerMode <- function() {
     requested <- getOption(
         "multischolar.prot_nondia.import_worker_mode",
-        if (identical(Sys.info()[["sysname"]], "Linux")) "fork" else "process"
+        "inline"
     )
-    match.arg(requested, c("fork", "process"))
+    match.arg(requested, c("inline", "fork", "process"))
+}
+
+#' Run bounded non-DIA import stages sequentially in the parent
+#'
+#' @param spec Worker specification.
+#'
+#' @return A payload-free stage result.
+#' @noRd
+runProtNonDiaArtifactStageInline <- function(spec) {
+    result <- switch(spec$mode,
+        writer = runProtNonDiaArtifactWriterWorker(spec),
+        verifier = runProtNonDiaArtifactVerifierWorker(spec)
+    )
+    artifactResourceDataOnly(result, "non-DIA inline stage result")
+    result
 }
 
 #' Run one non-DIA import worker with the platform process model
@@ -485,7 +500,10 @@ protNonDiaArtifactWorkerMode <- function() {
 #' @return A payload-free worker result.
 #' @noRd
 runProtNonDiaArtifactStageProcess <- function(spec, timeout_ms = 600000L) {
-    if (identical(protNonDiaArtifactWorkerMode(), "fork")) {
+    mode <- protNonDiaArtifactWorkerMode()
+    if (identical(mode, "inline")) {
+        runProtNonDiaArtifactStageInline(spec)
+    } else if (identical(mode, "fork")) {
         runProtNonDiaArtifactStageFork(spec, timeout_ms)
     } else {
         runProtNonDiaArtifactStageProcessx(spec, timeout_ms)
@@ -564,6 +582,10 @@ newProtNonDiaArtifactPendingStage <- function(
                 writer$worker_pid,
                 verifier$worker_pid
             ),
+            sequential_bounded_inline = identical(
+                writer$worker_pid,
+                verifier$worker_pid
+            ),
             complete_payload_returned = FALSE,
             oracle_digest = verifier$oracle_digest
         )
@@ -584,7 +606,8 @@ validateProtNonDiaArtifactPendingStage <- function(pending) {
         is.list(pending$stage) && identical(pending$stage$stage_id, "import") &&
         identical(names(pending$stage$refs), "canonical_data") &&
         identical(names(pending$proofs), "canonical_data") &&
-        isTRUE(pending$process_evidence$distinct_workers) &&
+        (isTRUE(pending$process_evidence$distinct_workers) ||
+            isTRUE(pending$process_evidence$sequential_bounded_inline)) &&
         identical(pending$process_evidence$complete_payload_returned, FALSE) &&
         identical(
             pending$process_evidence$oracle_digest,
@@ -678,33 +701,17 @@ stageProtNonDiaImportArtifacts <- function(
         parameters,
         sanitize_names
     )
-    imported <- protNonDiaArtifactWorkerImport(protNonDiaArtifactWorkerSpec(
-        "writer",
-        stage,
-        source_path,
-        format,
-        parameters,
-        sanitize_names
-    ))
-    ref <- pending$stage$refs$canonical_data
-    shape_valid <- identical(
-        as.numeric(ref$shape$rows),
-        as.numeric(nrow(imported$data))
-    ) &&
-        identical(as.integer(ref$shape$columns), as.integer(ncol(imported$data)))
-    if (!isTRUE(shape_valid)) {
-        protNonDiaArtifactAbort(
-            "streamed non-DIA shape differs from the reviewed importer",
-            "multischolar_inexact_prot_nondia_worker_hydration"
-        )
-    }
-    if (!identical(imported$column_mapping, writer$column_mapping)) {
-        protNonDiaArtifactAbort(
-            "streamed non-DIA mapping differs from the reviewed importer",
-            "multischolar_inexact_prot_nondia_import_metadata"
-        )
-    }
-    pending$process_evidence$parser_parent_pid <- as.integer(Sys.getpid())
+    adapter <- protNonDiaArtifactReadthroughAdapter(prepared$descriptor)
+    imported <- list(
+        data = artifactStageReadTable(
+            adapter,
+            stage$store,
+            pending$stage$refs$canonical_data
+        ),
+        data_type = writer$data_type,
+        column_mapping = writer$column_mapping
+    )
+    pending$process_evidence$hydration_parent_pid <- as.integer(Sys.getpid())
     list_result <- list(
         enabled = TRUE,
         attempted = TRUE,

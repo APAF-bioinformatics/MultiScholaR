@@ -294,6 +294,9 @@ test_that("supported non-DIA imports dual-write exact portable provenance", {
 test_that("MaxQuant and FragPipe imports stage in payload-free workers", {
     nondiaArtifact023SkipDependencies()
     testthat::skip_if_not_installed("processx")
+    withr::local_options(list(
+        multischolar.prot_nondia.import_worker_mode = "fork"
+    ))
     scenarios <- Filter(
         \(scenario) scenario$format %in% c("maxquant", "fragpipe"),
         nondiaArtifact023Scenarios()
