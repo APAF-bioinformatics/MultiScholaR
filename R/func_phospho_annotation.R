@@ -305,13 +305,13 @@ filterPeptideAndExtractProbabilities <- function(evidence_tbl_cleaned, accession
         {{num_phospho_site_col}},
         phosphositeProbabilityDetails
       ),
-      best_phos_prob = purrr::map(phosphosite_details, "probability")
+      best_phos_prob = purrr::map(.data$phosphosite_details, "probability")
     ) %>%
     dplyr::filter( map_lgl(best_phos_prob, ~{length(.) > 0} )) %>%
     dplyr::mutate(
       best_phos_pos = purrr::map2(
         {{phospho_site_prob_col}},
-        phosphosite_details,
+        .data$phosphosite_details,
         \(peptide, details) {
           if (stringr::str_detect(peptide, "p")) {
             stop(paste0(
@@ -391,10 +391,10 @@ addPhosphositesPositionsString <- function(peptide_start_and_end ) {
     ) %>%
     mutate( best_phos_pos_string = map_chr(best_phos_pos, ~paste(., collapse=";") )) %>%
     mutate(
-      temp_check_pos = map(phosphosite_position_details, "pairs"),
-      check_pos = map(phosphosite_position_details, "positions"),
+      temp_check_pos = map(.data$phosphosite_position_details, "pairs"),
+      check_pos = map(.data$phosphosite_position_details, "positions"),
       protein_site_positions = map_chr(
-        phosphosite_position_details,
+        .data$phosphosite_position_details,
         "position_string"
       ),
       best_phos_prob_string = map_chr(
@@ -402,7 +402,7 @@ addPhosphositesPositionsString <- function(peptide_start_and_end ) {
         ~paste(., collapse = ";")
       )
     ) %>%
-    dplyr::select(-phosphosite_position_details)
+    dplyr::select(-dplyr::all_of("phosphosite_position_details"))
 
   return( phosphosite_pos_string_tbl)
 
