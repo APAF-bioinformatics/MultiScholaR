@@ -1,7 +1,7 @@
 {
   "schema": "multischolar.omics_payload_access_owners",
   "schema_version": "1.0.0",
-  "authority_id": "multischolar.omics_payload_access_owners.2026-08-30.v1",
+  "authority_id": "multischolar.omics_payload_access_owners.2026-09-02.v2",
   "owner_ticket_id": "OMICS-ART-069",
   "discovery_digest": "f2ddc72c2b8c1c80cc19bb126ee432299002542185f40de531eb34c2cec30faa",
   "owners": [
@@ -1019,7 +1019,7 @@
         "R/utils_artifact_settlement_contract.R"
       ],
       "status": "shared_implementation_complete",
-      "candidate_freeze_closed": false
+      "candidate_freeze_closed": true
     },
     {
       "ticket_id": "OMICS-ART-070",
@@ -1033,7 +1033,7 @@
         "R/mod_prot_import_artifact_helpers.R"
       ],
       "status": "adapter_implementation_complete",
-      "candidate_freeze_closed": false
+      "candidate_freeze_closed": true
     },
     {
       "ticket_id": "OMICS-ART-071",
@@ -1045,7 +1045,7 @@
         "R/mod_prot_import_processing_helpers.R"
       ],
       "status": "adapter_implementation_complete",
-      "candidate_freeze_closed": false
+      "candidate_freeze_closed": true
     },
     {
       "ticket_id": "OMICS-ART-072",
@@ -1066,7 +1066,7 @@
         "R/mod_prot_summary_artifact_helpers.R"
       ],
       "status": "adapter_implementation_complete",
-      "candidate_freeze_closed": false
+      "candidate_freeze_closed": true
     },
     {
       "ticket_id": "OMICS-ART-073",
@@ -1079,8 +1079,8 @@
         "R/mod_prot_nondia_import_artifact_helpers.R",
         "R/mod_prot_nondia_readthrough_helpers.R"
       ],
-      "status": "adapter_implementation_pending",
-      "candidate_freeze_closed": false
+      "status": "adapter_implementation_complete",
+      "candidate_freeze_closed": true
     },
     {
       "ticket_id": "OMICS-ART-074",
@@ -1093,8 +1093,8 @@
         "R/mod_prot_nondia_import_artifact_helpers.R",
         "R/mod_prot_nondia_readthrough_helpers.R"
       ],
-      "status": "adapter_implementation_pending",
-      "candidate_freeze_closed": false
+      "status": "adapter_implementation_complete",
+      "candidate_freeze_closed": true
     },
     {
       "ticket_id": "OMICS-ART-075",
@@ -1112,8 +1112,8 @@
         "R/mod_metab_readthrough_helpers.R",
         "R/mod_metab_summary_artifact_helpers.R"
       ],
-      "status": "adapter_implementation_pending",
-      "candidate_freeze_closed": false
+      "status": "adapter_implementation_complete",
+      "candidate_freeze_closed": true
     },
     {
       "ticket_id": "OMICS-ART-076",
@@ -1132,10 +1132,10 @@
         "R/mod_lipid_readthrough_helpers.R",
         "R/mod_lipid_summary_state_helpers.R"
       ],
-      "status": "adapter_implementation_pending",
-      "candidate_freeze_closed": false
+      "status": "adapter_implementation_complete",
+      "candidate_freeze_closed": true
     }
   ],
   "unknown_policy": "reject",
-  "candidate_freeze_authority": false
+  "candidate_freeze_authority": true
 }

@@ -29,7 +29,6 @@ test_that("current candidate freeze readiness fails closed", {
         "project_source_authority_incomplete",
         "split_successor_candidate_access_denied",
         "campaign_budget_execution_unauthorized",
-        "payload_access_freeze_authority_pending",
         "auxiliary_candidate_access_denied",
         "proteomics_candidate_access_denied",
         "metabolomics_candidate_access_denied",
