@@ -9,6 +9,14 @@
 .METAB_IMPORT_PENDING_STAGE_SCHEMA <-
     "multischolar.metabolomics_pending_import_stage"
 
+#' Test whether the custom streaming canary is enabled
+#'
+#' @return A scalar logical. Production remains on the reviewed public reader.
+#' @noRd
+metabImportStreamingEnabled <- function() {
+    isTRUE(getOption("multischolar.metabolomics.streaming_import", FALSE))
+}
+
 #' Resolve one custom metabolomics source delimiter
 #'
 #' @param source_path Existing custom tabular source.
@@ -136,19 +144,14 @@ metabImportStreamingPreflight <- function(
 metabImportStreamingSelect <- function(connection, source_path, preflight) {
     delimiter <- metabImportStreamingDelimiter(source_path)
     source_literal <- as.character(DBI::dbQuoteString(connection, source_path))
-    source_table <- metabImportStreamingQuote(
-        connection,
-        ".multischolar_metab_source"
-    )
     source_order <- metabImportStreamingQuote(connection, ".source_row")
-    DBI::dbExecute(connection, paste0(
-        "CREATE TEMP TABLE ", source_table, " AS SELECT ",
-        "row_number() OVER ()::BIGINT AS ", source_order,
+    source_query <- paste0(
+        "(SELECT row_number() OVER ()::BIGINT AS ", source_order,
         ", * FROM read_csv(", source_literal,
         ", delim = ", as.character(DBI::dbQuoteString(connection, delimiter)),
         ", header = true, auto_detect = true, sample_size = -1, ",
-        "nullstr = ['', 'NA'], strict_mode = true)"
-    ))
+        "nullstr = ['', 'NA'], strict_mode = true)) AS metab_source"
+    )
     projections <- vapply(seq_along(preflight$columns), \(index) {
         source_name <- preflight$columns[[index]]
         output_name <- preflight$output_names[[index]]
@@ -167,7 +170,7 @@ metabImportStreamingSelect <- function(connection, source_path, preflight) {
             connection,
             .artifactRowOrderColumn
         ), ", ", paste(projections, collapse = ", "), " FROM ",
-        source_table, " ORDER BY ", source_order
+        source_query, " ORDER BY ", source_order
     )
 }
 
@@ -330,6 +333,209 @@ metabImportStageAssayRef <- function(
         provenance_ids = c(stage$run_id, stage$action_id),
         verification = "deferred_exact"
     )
+}
+
+#' Write and verify all custom assay refs in one bounded worker
+#'
+#' @param stage Prepared import stage.
+#' @param sources Ordered custom assay sources.
+#' @param roles Exact artifact roles.
+#' @param column_mapping Established mapping.
+#' @param sanitize_names Whether sample names are sanitized.
+#'
+#' @return Payload-free writer evidence and refs.
+#' @noRd
+runMetabImportAssayWriter <- function(
+    stage,
+    sources,
+    roles,
+    column_mapping,
+    sanitize_names
+) {
+    refs <- lapply(seq_along(sources), \(index) {
+        metabImportStageAssayRef(
+            stage,
+            roles[[index]],
+            sources[[index]],
+            column_mapping,
+            sanitize_names
+        )
+    })
+    names(refs) <- unname(roles)
+    proofs <- lapply(refs, \(ref) {
+        artifactStoreVerifyStreamingRef(
+            stage$store,
+            ref,
+            verify_semantic = FALSE
+        )
+    })
+    list(
+        ok = TRUE,
+        worker_pid = as.integer(Sys.getpid()),
+        refs = lapply(refs, unclass),
+        proofs = proofs,
+        complete_payload_returned = FALSE
+    )
+}
+
+#' Resolve the custom metabolomics writer process mode
+#'
+#' @return One of `"inline"` or `"fork"`.
+#' @noRd
+metabImportWriterMode <- function() {
+    match.arg(
+        getOption("multischolar.metabolomics.import_worker_mode", "inline"),
+        c("inline", "fork")
+    )
+}
+
+#' Run the custom assay writer in its bounded process model
+#'
+#' @inheritParams runMetabImportAssayWriter
+#' @param timeout_ms Worker timeout in milliseconds.
+#'
+#' @return Payload-free writer evidence and refs.
+#' @noRd
+runMetabImportAssayWriterProcess <- function(
+    stage,
+    sources,
+    roles,
+    column_mapping,
+    sanitize_names,
+    timeout_ms = 600000L
+) {
+    if (identical(metabImportWriterMode(), "inline")) {
+        return(runMetabImportAssayWriter(
+            stage,
+            sources,
+            roles,
+            column_mapping,
+            sanitize_names
+        ))
+    }
+    job <- parallel::mcparallel(
+        tryCatch(
+            runMetabImportAssayWriter(
+                stage,
+                sources,
+                roles,
+                column_mapping,
+                sanitize_names
+            ),
+            error = \(error) list(
+                ok = FALSE,
+                worker_pid = as.integer(Sys.getpid()),
+                error_class = class(error),
+                error_message = conditionMessage(error)
+            )
+        ),
+        mc.set.seed = FALSE,
+        silent = TRUE
+    )
+    deadline <- proc.time()[["elapsed"]] + as.numeric(timeout_ms) / 1000
+    result <- NULL
+    repeat {
+        collected <- parallel::mccollect(job, wait = FALSE)
+        if (!is.null(collected)) {
+            result <- unname(collected)[[1L]]
+            break
+        }
+        if (proc.time()[["elapsed"]] >= deadline) {
+            tools::pskill(job$pid, signal = 15L)
+            parallel::mccollect(job, wait = TRUE)
+            metabArtifactAbort(
+                "metabolomics import writer exceeded its timeout",
+                "multischolar_metabolomics_worker_failed"
+            )
+        }
+        Sys.sleep(0.05)
+    }
+    if (!is.list(result) || !isTRUE(result$ok)) {
+        metabArtifactAbort(
+            "metabolomics import writer failed",
+            "multischolar_metabolomics_worker_failed",
+            worker_error_class = result$error_class %||% class(result),
+            worker_error_message = result$error_message %||% NULL
+        )
+    }
+    artifactResourceDataOnly(result, "metabolomics writer result")
+    result
+}
+
+#' Hydrate one verified streaming assay through bounded DuckDB
+#'
+#' @param stage Prepared import stage.
+#' @param ref Verified immutable assay ref.
+#' @param memory_limit_bytes DuckDB memory limit.
+#'
+#' @return Exact base data frame represented by the artifact.
+#' @noRd
+metabImportReadStreamingRef <- function(
+    stage,
+    ref,
+    memory_limit_bytes = 128 * 1024^2
+) {
+    validated <- artifactStageValidateStoredRef(
+        metabArtifactReadthroughAdapter(),
+        stage$store,
+        ref
+    )
+    metadata <- validateArtifactStreamingMetadata(
+        validated$sidecar$codec_metadata
+    )
+    payload_path <- artifactStoreResolveFile(
+        stage$store,
+        validated$ref$relative_path,
+        must_exist = TRUE
+    )
+    if (!identical(
+        artifactByteDigest(payload_path),
+        validated$ref$hash_policy$byte$digest
+    )) {
+        metabArtifactAbort(
+            "metabolomics streaming payload byte digest differs",
+            "multischolar_metabolomics_streaming_digest_mismatch"
+        )
+    }
+    database <- tempfile("metab-hydration-", fileext = ".duckdb")
+    connection <- DBI::dbConnect(duckdb::duckdb(database, shared_home = FALSE))
+    on.exit({
+        DBI::dbDisconnect(connection, shutdown = TRUE)
+        unlink(database, force = TRUE)
+    }, add = TRUE)
+    DBI::dbExecute(connection, "SET threads = 1")
+    DBI::dbExecute(
+        connection,
+        paste0("SET memory_limit = '", as.integer(memory_limit_bytes), "B'")
+    )
+    payload_literal <- as.character(DBI::dbQuoteString(connection, payload_path))
+    query <- paste0(
+        "SELECT * FROM read_parquet(", payload_literal, ") ORDER BY ",
+        metabImportStreamingQuote(connection, .artifactRowOrderColumn)
+    )
+    result <- DBI::dbSendQuery(connection, query)
+    on.exit(DBI::dbClearResult(result), add = TRUE)
+    value <- DBI::dbFetch(result)
+    row_order <- as.numeric(value[[.artifactRowOrderColumn]])
+    value[[.artifactRowOrderColumn]] <- NULL
+    expected_order <- as.numeric(seq_len(nrow(value)))
+    descriptors <- stats::setNames(metadata$columns, metadata$logical_names)
+    for (column in names(descriptors)) {
+        value[[column]] <- artifactDecodeColumn(value, descriptors[[column]])
+    }
+    valid <- identical(row_order, expected_order) &&
+        identical(names(value), metadata$logical_names) &&
+        identical(nrow(value), as.integer(metadata$dimensions$rows)) &&
+        identical(ncol(value), as.integer(metadata$dimensions$columns))
+    if (!isTRUE(valid)) {
+        metabArtifactAbort(
+            "metabolomics streaming hydration shape or order differs",
+            "multischolar_metabolomics_streaming_shape_mismatch"
+        )
+    }
+    class(value) <- metadata$data_frame_class
+    attr(value, "row.names") <- c(NA_integer_, -nrow(value))
+    value
 }
 
 #' Build a validated pending custom metabolomics import generation
@@ -497,29 +703,19 @@ stageMetabImportArtifacts <- function(
         }
     }, add = TRUE)
     roles <- metabArtifactAssayRoles(names(sources))
-    assay_refs <- lapply(seq_along(sources), \(index) {
-        metabImportStageAssayRef(
-            stage,
-            roles[[index]],
-            sources[[index]],
-            column_mapping,
-            sanitize_names
-        )
-    })
-    names(assay_refs) <- unname(roles)
-    proofs <- lapply(assay_refs, \(ref) {
-        artifactStoreVerifyStreamingRef(
-            stage$store,
-            ref,
-            verify_semantic = FALSE
-        )
-    })
+    writer <- runMetabImportAssayWriterProcess(
+        stage,
+        sources,
+        roles,
+        column_mapping,
+        sanitize_names
+    )
+    if (identical(writer$worker_pid, as.integer(Sys.getpid()))) {
+        artifactReleaseTransientMemory(full = TRUE)
+    }
+    assay_refs <- writer$refs
     assays <- lapply(assay_refs, \(ref) {
-        artifactStageReadTable(
-            metabArtifactReadthroughAdapter(),
-            stage$store,
-            ref
-        )
+        metabImportReadStreamingRef(stage, ref)
     })
     names(assays) <- names(sources)
     workflow_payload <- list(
@@ -572,7 +768,13 @@ stageMetabImportArtifacts <- function(
         manifest,
         refs
     )
-    pending$process_evidence$proofs <- proofs
+    pending$process_evidence$writer_pid <- writer$worker_pid
+    pending$process_evidence$verifier_pid <- writer$worker_pid
+    pending$process_evidence$distinct_writer <- !identical(
+        writer$worker_pid,
+        as.integer(Sys.getpid())
+    )
+    pending$process_evidence$proofs <- writer$proofs
     result <- list(
         enabled = TRUE,
         attempted = TRUE,

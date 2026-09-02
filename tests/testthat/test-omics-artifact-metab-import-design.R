@@ -461,6 +461,9 @@ test_that("installed legacy auto routing remains post-parse compatible", {
 })
 
 test_that("explicit artifact processing consumes one staged custom payload", {
+    withr::local_options(list(
+        multischolar.metabolomics.streaming_import = TRUE
+    ))
     root <- withr::local_tempdir(pattern = "metab075-processing-")
     built <- .metab031Workflow(root)
     source <- .metab031RepoPath(

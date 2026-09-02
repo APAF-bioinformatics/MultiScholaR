@@ -709,7 +709,7 @@ runMetabImportProcessing <- function(
           "artifact"
         )))
       stagedImport <- if (identical(detectedFormat, "custom") &&
-          isTRUE(artifactStageEligible)) {
+          isTRUE(artifactStageEligible) && metabImportStreamingEnabled()) {
         stageArtifactFn(
           workflow_data = workflowData,
           assay1_file = assay1File,
@@ -772,6 +772,11 @@ runMetabImportProcessing <- function(
       }
 
       workflowPayload <- coerceWorkflowPayloadFn(workflowPayload)
+      if (isTRUE(assay1Deferred) && !isTRUE(stagedImport$attempted)) {
+        resolvedAssay1Data <- NULL
+        workflowPayloadArgs$assay1Data <- NULL
+        artifactReleaseTransientMemory(full = TRUE)
+      }
       artifactResult <- writeImportArtifactsFn(
         workflowPayload = workflowPayload,
         experimentPaths = experimentPaths
