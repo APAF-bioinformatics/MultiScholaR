@@ -321,17 +321,20 @@ test_that("all auxiliary negative contracts reject at admission", {
     }, logical(1))))
 })
 
-test_that("auxiliary manifest fails closed into optimization handoff", {
+test_that("auxiliary manifest completes workloads but blocks candidate freeze", {
     manifest <- .publicationAuxRecord("manifest-v1.json")
 
     expect_silent(auxPublicationValidateManifest(manifest))
-    expect_identical(manifest$status, "optimization_required_incomplete")
-    expect_length(manifest$workloads, 10L)
-    expect_length(manifest$missing_workloads, 10L)
+    expect_identical(
+        manifest$status,
+        "workload_matrix_complete_candidate_freeze_blocked"
+    )
+    expect_length(manifest$workloads, 20L)
+    expect_length(manifest$missing_workloads, 0L)
     expect_true(manifest$fixture_matrix_complete)
-    expect_false(manifest$representative_matrix_complete)
-    expect_false(manifest$heavy_matrix_complete)
-    expect_false(manifest$stress_matrix_complete)
+    expect_true(manifest$representative_matrix_complete)
+    expect_true(manifest$heavy_matrix_complete)
+    expect_true(manifest$stress_matrix_complete)
     expect_false(manifest$candidate_access_allowed)
     expect_false(manifest$confirmatory_benchmark_allowed)
 
@@ -340,8 +343,12 @@ test_that("auxiliary manifest fails closed into optimization handoff", {
     }, manifest$route_readiness)[[1L]]
     expect_identical(
         phosphosite$representative_status,
-        "historical_timeout_optimization_required"
+        "candidate_exact_historical_timeout_resolved"
     )
-    expect_true(phosphosite$optimization_handoff_allowed)
+    expect_identical(
+        phosphosite$operational_heavy_status,
+        "frozen_host_capacity_blocked"
+    )
+    expect_false(phosphosite$optimization_handoff_allowed)
     expect_false(phosphosite$confirmation_allowed)
 })

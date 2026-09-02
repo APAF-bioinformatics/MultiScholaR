@@ -1,0 +1,65 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_truth",
+  "schema_version": "1.0.0",
+  "truth_id": "auxiliary.metabolite_pathway.operational_heavy.v1.truth",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "workload_id": "auxiliary.metabolite_pathway.operational_heavy.v1",
+  "route_id": "metabolite_pathway",
+  "workload_class": "operational_heavy",
+  "contract_basis_sha256": "db5350b4b5f2c3bc7030fda4c7f5ad559a2538d7b5b0f462c81f3eb017233f95",
+  "payload_sha256": "90ab17eefadd62a96ae5ea4b5259ae79db83117438dfaa381d56c9f6f9a6a3a1",
+  "dimensions": {
+    "evidence_row_count": 0,
+    "feature_count": 100000,
+    "sample_count": 200,
+    "measured_sample_count": 1,
+    "layer_count": 3,
+    "response_row_count": 25000,
+    "primary_work_units": 100000,
+    "sample_scaling_measured": false
+  },
+  "facts": {
+    "feature_count": 100000,
+    "layer_feature_counts": {
+      "proteome": 33334,
+      "metabolome_lc": 33333,
+      "metabolome_gc": 33333
+    },
+    "missing_weight_count": 2000,
+    "duplicate_feature_count": 3000,
+    "tied_weight_count": 8000,
+    "contextual_sample_count": 200,
+    "measured_sample_count": 1,
+    "sample_union_count": 300,
+    "sample_intersection_count": 150,
+    "sample_union_sha256": "cb81c30207664e7280fc810b89e64117d09cbb6e58745b42d61775f4a41bfbc4",
+    "sample_intersection_sha256": "b7efff3f92ee5c6a635040ff456518f5b76c2a667ffc9f58adfe2865979a5a4a",
+    "top_weight_ids": [],
+    "top_weight_ids_sha256": [],
+    "enrichment_join_cardinality": {
+      "metabolome_lc": 35337,
+      "metabolome_gc": 35335
+    },
+    "response_row_counts": {
+      "metabolomics_pathway": 25000
+    },
+    "response_sha256": {
+      "metabolomics_pathway": "7eabab9abfba04d4e83e3a05042950dd0a79282a529e02b189fad46c2b978fda"
+    },
+    "sample_scaling_performance_claim": false,
+    "mofa_fitting_or_inference_claim": false,
+    "service_behaviour_claim": false,
+    "exact_order_required": true
+  },
+  "oracle": {
+    "implementation": "independent_generator_cardinality_and_order_oracle",
+    "package_reader_used": false,
+    "package_export_used": false,
+    "historical_result_used": false,
+    "candidate_result_used": false
+  },
+  "scientific_authority": false,
+  "promotion_authority": false,
+  "publication_authority": false
+}

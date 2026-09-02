@@ -3,7 +3,7 @@
   "schema_version": "1.0.0",
   "manifest_id": "multischolar.omics_publication_auxiliary_manifest.2026-08-30.v1",
   "owner_ticket_id": "OMICS-ART-068",
-  "status": "optimization_required_incomplete",
+  "status": "workload_matrix_complete_candidate_freeze_blocked",
   "surfaces": {
     "path": "tests/testdata/omics-performance/auxiliary/surfaces-v1.json",
     "sha256": "d6361f28e7d9566b6ddda217cd5238e49b207e931dc89fba38c6b825745b5e7e"
@@ -62,6 +62,34 @@
       "promotion_authority": false
     },
     {
+      "workload_id": "auxiliary.metabolite_enrichment.operational_heavy.v1",
+      "route_id": "metabolite_enrichment",
+      "surface_id": "multiomics.api",
+      "workload_class": "operational_heavy",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.metabolite_enrichment.operational_heavy.v1.json",
+        "sha256": "5509fafbf3e7434faf07b34a62be39a0ab1091e9d6b6fe5655becbdb0ef72a0a"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.metabolite_enrichment.operational_heavy.v1.json",
+        "sha256": "442e0e1eb29c14cea5d1995d2b3bf32189996fde9fbcd9149e79af8fb6de6da6"
+      },
+      "payload_sha256": "a17fec9cac71803c87bd491105576709a630b5fcb03a8b6e3813a2e46f6a90ea",
+      "dimensions": {
+        "evidence_row_count": 0,
+        "feature_count": 100000,
+        "sample_count": 200,
+        "measured_sample_count": 1,
+        "layer_count": 3,
+        "response_row_count": 25000,
+        "primary_work_units": 100000,
+        "sample_scaling_measured": false
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
+    },
+    {
       "workload_id": "auxiliary.metabolite_enrichment.representative.v1",
       "route_id": "metabolite_enrichment",
       "surface_id": "multiomics.api",
@@ -83,6 +111,34 @@
         "layer_count": 3,
         "response_row_count": 10000,
         "primary_work_units": 50000,
+        "sample_scaling_measured": false
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
+    },
+    {
+      "workload_id": "auxiliary.metabolite_enrichment.stress.v1",
+      "route_id": "metabolite_enrichment",
+      "surface_id": "multiomics.api",
+      "workload_class": "stress",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.metabolite_enrichment.stress.v1.json",
+        "sha256": "fd45aa733578f7d884b6a083bf915577d548353392dea7bd2b5b01ad29b88673"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.metabolite_enrichment.stress.v1.json",
+        "sha256": "d06a2acdf989468a7ae61661a82177733bfdc3f01de6f1db4ae830301256f4e2"
+      },
+      "payload_sha256": "e75b3f7030f115a26e1ea204aa033d7e17ecba1f671e9beee0470063b25011f5",
+      "dimensions": {
+        "evidence_row_count": 0,
+        "feature_count": 250000,
+        "sample_count": 400,
+        "measured_sample_count": 1,
+        "layer_count": 3,
+        "response_row_count": 50000,
+        "primary_work_units": 250000,
         "sample_scaling_measured": false
       },
       "exact_truth_validated": true,
@@ -118,6 +174,34 @@
       "promotion_authority": false
     },
     {
+      "workload_id": "auxiliary.metabolite_pathway.operational_heavy.v1",
+      "route_id": "metabolite_pathway",
+      "surface_id": "multiomics.api",
+      "workload_class": "operational_heavy",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.metabolite_pathway.operational_heavy.v1.json",
+        "sha256": "f226c60898338aca7a308171120cd0244192e0b41e7d5ba6758ce175dd52c1b9"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.metabolite_pathway.operational_heavy.v1.json",
+        "sha256": "82b04759b988689e7053f3191ef724252b969e21fcbff3fe32840ab8c3e199ec"
+      },
+      "payload_sha256": "90ab17eefadd62a96ae5ea4b5259ae79db83117438dfaa381d56c9f6f9a6a3a1",
+      "dimensions": {
+        "evidence_row_count": 0,
+        "feature_count": 100000,
+        "sample_count": 200,
+        "measured_sample_count": 1,
+        "layer_count": 3,
+        "response_row_count": 25000,
+        "primary_work_units": 100000,
+        "sample_scaling_measured": false
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
+    },
+    {
       "workload_id": "auxiliary.metabolite_pathway.representative.v1",
       "route_id": "metabolite_pathway",
       "surface_id": "multiomics.api",
@@ -139,6 +223,34 @@
         "layer_count": 3,
         "response_row_count": 10000,
         "primary_work_units": 50000,
+        "sample_scaling_measured": false
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
+    },
+    {
+      "workload_id": "auxiliary.metabolite_pathway.stress.v1",
+      "route_id": "metabolite_pathway",
+      "surface_id": "multiomics.api",
+      "workload_class": "stress",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.metabolite_pathway.stress.v1.json",
+        "sha256": "b4de64dc402873d43ba88edc6ec8af0ca01606e39487ae0af118c55efa3f9d13"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.metabolite_pathway.stress.v1.json",
+        "sha256": "2f77cd75b53c967ca5a64e9ebc0af4202e1bad0e433fb39435b63d14405b8147"
+      },
+      "payload_sha256": "ec9de873f98b600c2ebe35ec491a4c7f44de0540afe76bd2676391c74380cfc8",
+      "dimensions": {
+        "evidence_row_count": 0,
+        "feature_count": 250000,
+        "sample_count": 400,
+        "measured_sample_count": 1,
+        "layer_count": 3,
+        "response_row_count": 50000,
+        "primary_work_units": 250000,
         "sample_scaling_measured": false
       },
       "exact_truth_validated": true,
@@ -174,6 +286,34 @@
       "promotion_authority": false
     },
     {
+      "workload_id": "auxiliary.mofa_weights.operational_heavy.v1",
+      "route_id": "mofa_weights",
+      "surface_id": "multiomics.api",
+      "workload_class": "operational_heavy",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.mofa_weights.operational_heavy.v1.json",
+        "sha256": "0146ab604c992e1459ee560c6751830bb974cc6d27f1b502935abcb97fd48c47"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.mofa_weights.operational_heavy.v1.json",
+        "sha256": "acbf5c64d3b075e17f530860f180840411892c7b5692ee6be4acb886621113b9"
+      },
+      "payload_sha256": "a72aa54c18bb45ceb2ac26b48373a21ef61a21906047fc608d047a452a6467d9",
+      "dimensions": {
+        "evidence_row_count": 0,
+        "feature_count": 100000,
+        "sample_count": 200,
+        "measured_sample_count": 0,
+        "layer_count": 3,
+        "response_row_count": 0,
+        "primary_work_units": 100000,
+        "sample_scaling_measured": false
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
+    },
+    {
       "workload_id": "auxiliary.mofa_weights.representative.v1",
       "route_id": "mofa_weights",
       "surface_id": "multiomics.api",
@@ -195,6 +335,34 @@
         "layer_count": 3,
         "response_row_count": 0,
         "primary_work_units": 50000,
+        "sample_scaling_measured": false
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
+    },
+    {
+      "workload_id": "auxiliary.mofa_weights.stress.v1",
+      "route_id": "mofa_weights",
+      "surface_id": "multiomics.api",
+      "workload_class": "stress",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.mofa_weights.stress.v1.json",
+        "sha256": "0ea92f7e96d7d42ebe25c4ad8d7fc5f9ed572247934274feaa71902e2825d1cb"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.mofa_weights.stress.v1.json",
+        "sha256": "36223fc06f72a0b2d5b93e981b5362a55d34ac33e43c0ba5795de9003b936c5e"
+      },
+      "payload_sha256": "a92d0645bf275e3dd25d4cf6344f0fab3283b1a4e4572e811dfca30cd12480d9",
+      "dimensions": {
+        "evidence_row_count": 0,
+        "feature_count": 250000,
+        "sample_count": 400,
+        "measured_sample_count": 0,
+        "layer_count": 3,
+        "response_row_count": 0,
+        "primary_work_units": 250000,
         "sample_scaling_measured": false
       },
       "exact_truth_validated": true,
@@ -230,6 +398,34 @@
       "promotion_authority": false
     },
     {
+      "workload_id": "auxiliary.phosphosite_stages.operational_heavy.v1",
+      "route_id": "phosphosite_stages",
+      "surface_id": "phosphosite.api",
+      "workload_class": "operational_heavy",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.phosphosite_stages.operational_heavy.v1.json",
+        "sha256": "7924e7f0fc6cf4802b31a688f085bcea9de8b1f15a63e913a2a20ab563ec966a"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.phosphosite_stages.operational_heavy.v1.json",
+        "sha256": "d4fee9af83089aa21a96999d5c3082d4564bb46a2ca648375fdb7d780b1869c2"
+      },
+      "payload_sha256": "f5765dc7ca0adaffc1329efa5580863a373bc71828ef7487e249aa9d8999d8fc",
+      "dimensions": {
+        "evidence_row_count": 1000000,
+        "feature_count": 1000000,
+        "sample_count": 64,
+        "measured_sample_count": 64,
+        "layer_count": 1,
+        "response_row_count": 0,
+        "primary_work_units": 1000000,
+        "sample_scaling_measured": true
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
+    },
+    {
       "workload_id": "auxiliary.phosphosite_stages.representative.v1",
       "route_id": "phosphosite_stages",
       "surface_id": "phosphosite.api",
@@ -251,6 +447,34 @@
         "layer_count": 1,
         "response_row_count": 0,
         "primary_work_units": 100000,
+        "sample_scaling_measured": true
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
+    },
+    {
+      "workload_id": "auxiliary.phosphosite_stages.stress.v1",
+      "route_id": "phosphosite_stages",
+      "surface_id": "phosphosite.api",
+      "workload_class": "stress",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.phosphosite_stages.stress.v1.json",
+        "sha256": "4870065d5bf98bf4199ad46f5cf5165c0ea511aa1613ee2d5bb515bf441a3c2e"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.phosphosite_stages.stress.v1.json",
+        "sha256": "f2a84408a69a1fc02a5dd768f4d274ae855268e365b744a8d253719146e08799"
+      },
+      "payload_sha256": "7c62e37df5437aac6b5ce2401a1b99216f8db2f58522bd51e98912858a5d9917",
+      "dimensions": {
+        "evidence_row_count": 2000000,
+        "feature_count": 2000000,
+        "sample_count": 96,
+        "measured_sample_count": 96,
+        "layer_count": 1,
+        "response_row_count": 0,
+        "primary_work_units": 2000000,
         "sample_scaling_measured": true
       },
       "exact_truth_validated": true,
@@ -286,6 +510,34 @@
       "promotion_authority": false
     },
     {
+      "workload_id": "auxiliary.stringdb_rank.operational_heavy.v1",
+      "route_id": "stringdb_rank",
+      "surface_id": "multiomics.api",
+      "workload_class": "operational_heavy",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.stringdb_rank.operational_heavy.v1.json",
+        "sha256": "978300584b7324edece54742156ed49f19fee6fba5e4a33cf40644aa1642cd97"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.stringdb_rank.operational_heavy.v1.json",
+        "sha256": "30244f102bc0af80d5701e7f8d2d315e9de6b12fca18cac75a947ba33687f84d"
+      },
+      "payload_sha256": "cc7ed3fcf1bea4f6766b02224e1cec417ab2afe4631c63eb3e692d83f88e00ff",
+      "dimensions": {
+        "evidence_row_count": 0,
+        "feature_count": 100000,
+        "sample_count": 200,
+        "measured_sample_count": 0,
+        "layer_count": 3,
+        "response_row_count": 25000,
+        "primary_work_units": 100000,
+        "sample_scaling_measured": false
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
+    },
+    {
       "workload_id": "auxiliary.stringdb_rank.representative.v1",
       "route_id": "stringdb_rank",
       "surface_id": "multiomics.api",
@@ -312,16 +564,44 @@
       "exact_truth_validated": true,
       "candidate_loaded": false,
       "promotion_authority": false
+    },
+    {
+      "workload_id": "auxiliary.stringdb_rank.stress.v1",
+      "route_id": "stringdb_rank",
+      "surface_id": "multiomics.api",
+      "workload_class": "stress",
+      "contract": {
+        "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.stringdb_rank.stress.v1.json",
+        "sha256": "aecbda68a7a431f0a7154c499247f5a89ddefb6e793eedebc78f798f85ee7c83"
+      },
+      "truth": {
+        "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.stringdb_rank.stress.v1.json",
+        "sha256": "329c07403e1be69eb1459f60343bec4408ca94d44aa628b1b1d8f65c3c7d0e39"
+      },
+      "payload_sha256": "f3230257a59765fdb238cc4589d0fa55716c888e30f7d0ab300293ccf316e9be",
+      "dimensions": {
+        "evidence_row_count": 0,
+        "feature_count": 250000,
+        "sample_count": 400,
+        "measured_sample_count": 0,
+        "layer_count": 3,
+        "response_row_count": 50000,
+        "primary_work_units": 250000,
+        "sample_scaling_measured": false
+      },
+      "exact_truth_validated": true,
+      "candidate_loaded": false,
+      "promotion_authority": false
     }
   ],
   "route_readiness": [
     {
       "route_id": "phosphosite_stages",
       "fixture_status": "exact_comparator_parity",
-      "representative_status": "historical_timeout_optimization_required",
-      "operational_heavy_status": "not_generated_after_timeout",
-      "stress_status": "not_generated_after_timeout",
-      "optimization_handoff_allowed": true,
+      "representative_status": "candidate_exact_historical_timeout_resolved",
+      "operational_heavy_status": "frozen_host_capacity_blocked",
+      "stress_status": "generated_characterization_only",
+      "optimization_handoff_allowed": false,
       "confirmation_allowed": false,
       "promotion_authority": false
     },
@@ -329,9 +609,9 @@
       "route_id": "mofa_weights",
       "fixture_status": "exact_comparator_parity",
       "representative_status": "exact_comparator_parity",
-      "operational_heavy_status": "pilot_pending",
-      "stress_status": "generation_pending",
-      "optimization_handoff_allowed": true,
+      "operational_heavy_status": "candidate_exact_truth",
+      "stress_status": "generated_characterization_only",
+      "optimization_handoff_allowed": false,
       "confirmation_allowed": false,
       "promotion_authority": false
     },
@@ -339,19 +619,19 @@
       "route_id": "metabolite_enrichment",
       "fixture_status": "exact_comparator_parity",
       "representative_status": "exact_comparator_parity",
-      "operational_heavy_status": "pilot_pending",
-      "stress_status": "generation_pending",
-      "optimization_handoff_allowed": true,
+      "operational_heavy_status": "candidate_exact_truth",
+      "stress_status": "generated_characterization_only",
+      "optimization_handoff_allowed": false,
       "confirmation_allowed": false,
       "promotion_authority": false
     },
     {
       "route_id": "metabolite_pathway",
       "fixture_status": "exact_comparator_parity",
-      "representative_status": "exact_comparator_parity",
-      "operational_heavy_status": "pilot_pending",
-      "stress_status": "generation_pending",
-      "optimization_handoff_allowed": true,
+      "representative_status": "exact_candidate_historical_parity",
+      "operational_heavy_status": "candidate_exact_truth",
+      "stress_status": "generated_characterization_only",
+      "optimization_handoff_allowed": false,
       "confirmation_allowed": false,
       "promotion_authority": false
     },
@@ -359,30 +639,19 @@
       "route_id": "stringdb_rank",
       "fixture_status": "exact_comparator_parity",
       "representative_status": "exact_comparator_parity",
-      "operational_heavy_status": "pilot_pending",
-      "stress_status": "generation_pending",
-      "optimization_handoff_allowed": true,
+      "operational_heavy_status": "candidate_exact_truth",
+      "stress_status": "generated_characterization_only",
+      "optimization_handoff_allowed": false,
       "confirmation_allowed": false,
       "promotion_authority": false
     }
   ],
-  "missing_workloads": [
-    "auxiliary.phosphosite_stages.operational_heavy.v1",
-    "auxiliary.phosphosite_stages.stress.v1",
-    "auxiliary.mofa_weights.operational_heavy.v1",
-    "auxiliary.mofa_weights.stress.v1",
-    "auxiliary.metabolite_enrichment.operational_heavy.v1",
-    "auxiliary.metabolite_enrichment.stress.v1",
-    "auxiliary.metabolite_pathway.operational_heavy.v1",
-    "auxiliary.metabolite_pathway.stress.v1",
-    "auxiliary.stringdb_rank.operational_heavy.v1",
-    "auxiliary.stringdb_rank.stress.v1"
-  ],
+  "missing_workloads": [],
   "source_minimum_satisfied": false,
   "fixture_matrix_complete": true,
-  "representative_matrix_complete": false,
-  "heavy_matrix_complete": false,
-  "stress_matrix_complete": false,
+  "representative_matrix_complete": true,
+  "heavy_matrix_complete": true,
+  "stress_matrix_complete": true,
   "candidate_access_allowed": false,
   "confirmatory_benchmark_allowed": false,
   "publication_authority": false

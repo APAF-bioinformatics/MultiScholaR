@@ -1,0 +1,67 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_truth",
+  "schema_version": "1.0.0",
+  "truth_id": "auxiliary.metabolite_enrichment.stress.v1.truth",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "workload_id": "auxiliary.metabolite_enrichment.stress.v1",
+  "route_id": "metabolite_enrichment",
+  "workload_class": "stress",
+  "contract_basis_sha256": "2fdb5f86cbace64d49d975dc880d1b590d7f025859b52c73eb275849867bce68",
+  "payload_sha256": "e75b3f7030f115a26e1ea204aa033d7e17ecba1f671e9beee0470063b25011f5",
+  "dimensions": {
+    "evidence_row_count": 0,
+    "feature_count": 250000,
+    "sample_count": 400,
+    "measured_sample_count": 1,
+    "layer_count": 3,
+    "response_row_count": 50000,
+    "primary_work_units": 250000,
+    "sample_scaling_measured": false
+  },
+  "facts": {
+    "feature_count": 250000,
+    "layer_feature_counts": {
+      "proteome": 83334,
+      "metabolome_lc": 83333,
+      "metabolome_gc": 83333
+    },
+    "missing_weight_count": 5000,
+    "duplicate_feature_count": 7500,
+    "tied_weight_count": 20000,
+    "contextual_sample_count": 400,
+    "measured_sample_count": 1,
+    "sample_union_count": 600,
+    "sample_intersection_count": 300,
+    "sample_union_sha256": "f306f6b6edcb25f5406ba6041cfeeb7fd25e4559b4a2c663185f888ad09c8f6f",
+    "sample_intersection_sha256": "89b50a8fc825dd2633c90dea5cac32a0c1a872740fcf7fb4d364d770ef845be6",
+    "top_weight_ids": [],
+    "top_weight_ids_sha256": [],
+    "enrichment_join_cardinality": {
+      "metabolome_lc": 88337,
+      "metabolome_gc": 88335
+    },
+    "response_row_counts": {
+      "kegg": 50000,
+      "reactome": 50000
+    },
+    "response_sha256": {
+      "kegg": "98a13fbeca5c224354a9bcaad4a5374d0a615adb609fbd371cae7b232ad97517",
+      "reactome": "9d9f76dd0282ff53ee1be660f2d6dc60679cec73027ea289989b092573ab57fe"
+    },
+    "sample_scaling_performance_claim": false,
+    "mofa_fitting_or_inference_claim": false,
+    "service_behaviour_claim": false,
+    "exact_order_required": true
+  },
+  "oracle": {
+    "implementation": "independent_generator_cardinality_and_order_oracle",
+    "package_reader_used": false,
+    "package_export_used": false,
+    "historical_result_used": false,
+    "candidate_result_used": false
+  },
+  "scientific_authority": false,
+  "promotion_authority": false,
+  "publication_authority": false
+}

@@ -534,7 +534,8 @@ publicationComparatorFreezeCandidate <- function(
     revision,
     source_identity,
     package_sha256,
-    bindings
+    bindings,
+    readiness
 ) {
     if (identical(
         authority$schema,
@@ -552,6 +553,10 @@ publicationComparatorFreezeCandidate <- function(
         publicationComparatorAbort("Candidate package digest is invalid")
     }
     publicationValidateCandidateFreezeBindings(bindings)
+    publicationValidateCandidateFreezeReadiness(readiness)
+    if (!isTRUE(readiness$candidate_freeze_allowed)) {
+        publicationComparatorAbort("Candidate freeze readiness is blocked")
+    }
     list(
         schema = "multischolar.omics_publication_candidate_freeze_successor",
         schema_version = "1.0.0",
@@ -563,6 +568,7 @@ publicationComparatorFreezeCandidate <- function(
         package_sha256 = package_sha256,
         bindings = bindings,
         binding_sha256 = publicationObjectDigest(bindings),
+        readiness = readiness,
         frozen_once = TRUE,
         promotion_authority = FALSE
     )
@@ -571,8 +577,164 @@ publicationComparatorFreezeCandidate <- function(
 publicationCandidateFreezeBindingNames <- function() {
     c(
         "build", "library", "native", "dependency_environment",
-        "protocol", "workloads", "analysis", "scientific_differences"
+        "protocol", "comparators", "workloads", "analysis",
+        "scientific_differences", "payload_access", "policy_receipts",
+        "handoff", "roles", "projects", "estimands", "splits",
+        "threshold_grid", "campaign_budget", "retry_policy", "blind_labels"
     )
+}
+
+publicationCandidateFreezeReadinessPaths <- function() {
+    c(
+        roles = "tests/testdata/omics-performance/roles-v1.json",
+        projects = "tests/testdata/omics-performance/projects-v1.json",
+        splits = "tests/testdata/omics-performance/splits-v1.json",
+        campaign_budget = paste0(
+            "tests/testdata/omics-performance/campaign-budget-v1.json"
+        ),
+        payload_access = "tools/refactor/omics-payload-access-owners-v1.json",
+        auxiliary = paste0(
+            "tests/testdata/omics-performance/auxiliary/manifest-v1.json"
+        ),
+        proteomics = paste0(
+            "tests/testdata/omics-performance/proteomics/",
+            "governance-successor-v1.json"
+        ),
+        metabolomics = paste0(
+            "tests/testdata/omics-performance/metabolomics/",
+            "governance-successor-v1.json"
+        ),
+        lipidomics = paste0(
+            "tests/testdata/omics-performance/lipidomics/",
+            "governance-successor-v1.json"
+        ),
+        policy_receipts = paste0(
+            "tests/testdata/omics-performance/proposed-policy-receipts-v1.json"
+        ),
+        handoff = "tests/testdata/omics-performance/handoff-v1.json",
+        blind_labels = "tests/testdata/omics-performance/blind-labels-v1.json"
+    )
+}
+
+publicationCandidateReadinessBinding <- function(path) {
+    available <- file.exists(publicationPath(path))
+    list(
+        path = path,
+        sha256 = if (available) publicationFileDigest(path) else NULL,
+        available = available
+    )
+}
+
+publicationCandidateFreezeBlockers <- function(records) {
+    blockers <- character()
+    roles <- records$roles
+    principal_complete <- all(vapply(roles$roles, \(role) {
+        publicationScalarString(role$principal_id)
+    }, logical(1)))
+    if (!principal_complete) blockers <- c(blockers, "role_principals_incomplete")
+    if (!isTRUE(roles$readiness$runtime_implementation_authorized)) {
+        blockers <- c(blockers, "runtime_implementation_review_missing")
+    }
+    if (!isTRUE(roles$readiness$campaign_execution_authorized)) {
+        blockers <- c(blockers, "campaign_role_handoff_missing")
+    }
+    projects <- records$projects
+    project_counts <- c(
+        vapply(projects$full_workflow_claims, \(claim) {
+            claim$verified_real_project_count >= claim$required_real_project_count
+        }, logical(1)),
+        vapply(projects$auxiliary_claims, \(claim) {
+            claim$verified_real_project_count >=
+                projects$minimum_real_project_authorities_per_cross_project_claim
+        }, logical(1))
+    )
+    if (!all(project_counts)) {
+        blockers <- c(blockers, "project_source_authority_incomplete")
+    }
+    if (!isTRUE(records$splits$readiness$candidate_access_allowed)) {
+        blockers <- c(blockers, "split_successor_candidate_access_denied")
+    }
+    if (!isTRUE(records$campaign_budget$current_status$execution_authorized)) {
+        blockers <- c(blockers, "campaign_budget_execution_unauthorized")
+    }
+    if (!isTRUE(records$payload_access$candidate_freeze_authority)) {
+        blockers <- c(blockers, "payload_access_freeze_authority_pending")
+    }
+    for (name in c("auxiliary", "proteomics", "metabolomics", "lipidomics")) {
+        if (!isTRUE(records[[name]]$candidate_access_allowed)) {
+            blockers <- c(blockers, paste0(name, "_candidate_access_denied"))
+        }
+    }
+    unavailable <- names(records)[!vapply(records, is.list, logical(1))]
+    c(blockers, paste0(unavailable, "_authority_missing"))
+}
+
+publicationBuildCandidateFreezeReadiness <- function() {
+    paths <- publicationCandidateFreezeReadinessPaths()
+    bindings <- lapply(paths, publicationCandidateReadinessBinding)
+    records <- lapply(bindings, \(binding) {
+        if (!isTRUE(binding$available)) return(FALSE)
+        publicationReadJson(binding$path)
+    })
+    blockers <- unique(publicationCandidateFreezeBlockers(records))
+    record <- list(
+        schema = "multischolar.omics_publication_candidate_freeze_readiness",
+        schema_version = "1.0.0",
+        owner_ticket_id = "OMICS-ART-077",
+        status = if (length(blockers)) "blocked" else "ready",
+        authority_bindings = bindings,
+        blockers = as.list(blockers),
+        candidate_freeze_allowed = !length(blockers),
+        promotion_authority = FALSE
+    )
+    record$readiness_digest <- publicationObjectDigest(record)
+    record
+}
+
+publicationValidateCandidateFreezeReadiness <- function(record) {
+    publicationRequireNames(record, c(
+        "schema", "schema_version", "owner_ticket_id", "status",
+        "authority_bindings", "blockers", "candidate_freeze_allowed",
+        "promotion_authority", "readiness_digest"
+    ), "Candidate freeze readiness")
+    basis <- record
+    basis$readiness_digest <- NULL
+    bindings_valid <- length(record$authority_bindings) > 0L && all(vapply(
+        record$authority_bindings,
+        \(binding) {
+            publicationRequireNames(
+                binding,
+                c("path", "sha256", "available"),
+                "Candidate readiness binding"
+            )
+            publicationScalarString(binding$path) &&
+                is.logical(binding$available) && length(binding$available) == 1L &&
+                identical(
+                    isTRUE(binding$available),
+                    publicationComparatorShaValid(binding$sha256)
+                ) && if (isTRUE(binding$available)) {
+                    file.exists(publicationPath(binding$path)) && identical(
+                        binding$sha256,
+                        publicationFileDigest(binding$path)
+                    )
+                } else {
+                    !file.exists(publicationPath(binding$path))
+                }
+        },
+        logical(1)
+    ))
+    allowed <- !length(record$blockers)
+    valid <- identical(
+        record$schema,
+        "multischolar.omics_publication_candidate_freeze_readiness"
+    ) && identical(record$schema_version, "1.0.0") &&
+        identical(record$owner_ticket_id, "OMICS-ART-077") &&
+        identical(record$status, if (allowed) "ready" else "blocked") &&
+        identical(isTRUE(record$candidate_freeze_allowed), allowed) &&
+        bindings_valid && !isTRUE(record$promotion_authority) &&
+        identical(record$readiness_digest, publicationObjectDigest(basis))
+    if (!valid) publicationComparatorAbort("Candidate freeze readiness differs")
+    invisible(record)
 }
 
 publicationValidateCandidateFreezeBindings <- function(bindings) {
@@ -601,10 +763,12 @@ publicationValidateCandidateFreezeSuccessor <- function(
         "schema", "schema_version", "owner_ticket_id",
         "predecessor_authority_id", "predecessor_sha256",
         "candidate_revision", "source_identity", "package_sha256",
-        "bindings", "binding_sha256", "frozen_once", "promotion_authority"
+        "bindings", "binding_sha256", "readiness", "frozen_once",
+        "promotion_authority"
     ), "Candidate freeze successor")
     publicationValidateCandidateFreezeBindings(record$bindings)
     publicationValidateCandidateFreezeBindings(current_bindings)
+    publicationValidateCandidateFreezeReadiness(record$readiness)
     valid <- identical(
         record$schema,
         "multischolar.omics_publication_candidate_freeze_successor"
@@ -627,6 +791,7 @@ publicationValidateCandidateFreezeSuccessor <- function(
             publicationObjectDigest(current_bindings),
             record$binding_sha256
         ) &&
+        isTRUE(record$readiness$candidate_freeze_allowed) &&
         isTRUE(record$frozen_once) && !isTRUE(record$promotion_authority)
     if (!valid) publicationComparatorAbort("Candidate freeze successor differs")
     invisible(record)

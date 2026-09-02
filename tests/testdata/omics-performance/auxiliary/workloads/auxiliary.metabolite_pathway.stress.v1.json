@@ -1,0 +1,130 @@
+{
+  "schema": "multischolar.omics_publication_auxiliary_workload",
+  "schema_version": "1.0.0",
+  "contract_id": "auxiliary.metabolite_pathway.stress.v1.contract",
+  "owner_ticket_id": "OMICS-ART-068",
+  "status": "frozen_pre_candidate",
+  "workload_id": "auxiliary.metabolite_pathway.stress.v1",
+  "workload_class": "stress",
+  "route": {
+    "route_id": "metabolite_pathway",
+    "surface_id": "multiomics.api",
+    "primary_entry_point": "runMetabolomicsPathwayEnrichment",
+    "measured_boundary": "local_assay_combine_identifier_map_and_write",
+    "service_ids": [
+      "metabolomics_pathway"
+    ],
+    "performance_work_unit": "mapped_identifiers_processed",
+    "orchestration_compatibility_binding": "metabolomics_pathway_immutable_local_response",
+    "fitting_or_inference_claim": false
+  },
+  "dimensions": {
+    "evidence_row_count": 0,
+    "feature_count": 250000,
+    "sample_count": 400,
+    "measured_sample_count": 1,
+    "layer_count": 3,
+    "response_row_count": 50000,
+    "primary_work_units": 250000,
+    "sample_scaling_measured": false
+  },
+  "parameter_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/parameters-v1.json",
+    "sha256": "e77d2b83aca6a253e528903f043f9bd6efb143bca9379057545163e478be944c"
+  },
+  "source_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/sources-v1.json",
+    "sha256": "8338c1752e2d93820891a02e0c475c4254b7ae334385a748a6d93bba751f4dc5"
+  },
+  "response_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/responses-v1.json",
+    "sha256": "d67e23333fd08e8c6789fed2d5d0de34e654f00ab37803ad4e82583901cfb71a"
+  },
+  "split_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/splits-v1.json",
+    "sha256": "763d229feec841166520f16efa6b13d709f985b9762f39d7d6e08e849373f374"
+  },
+  "surface_authority": {
+    "path": "tests/testdata/omics-performance/auxiliary/surfaces-v1.json",
+    "sha256": "d6361f28e7d9566b6ddda217cd5238e49b207e931dc89fba38c6b825745b5e7e"
+  },
+  "assignment": {
+    "assignment_id": "auxiliary.metabolite_pathway.stress.stress",
+    "route_id": "metabolite_pathway",
+    "surface_id": "multiomics.api",
+    "workload_class": "stress",
+    "split_role": "stress",
+    "source_id": "generated.source.metabolite_pathway.stress.stress.v1",
+    "project_id": "generated.project.metabolite_pathway.stress.stress.v1",
+    "independence_owner_id": "generated.owner.metabolite_pathway.stress.stress.v1",
+    "response_profile_id": "generated.response.metabolite_pathway.stress.stress.v1",
+    "generator_parameter_profile_id": "generated.parameters.metabolite_pathway.stress.stress.v1",
+    "seed_family_id": "generated.stress.400000-499999.v1",
+    "seed": 400404,
+    "generated_counts_as_real": false,
+    "promotion_authority": false
+  },
+  "generator": {
+    "mode": "repository_generated",
+    "source_bindings": [
+      {
+        "path": "tools/profiling/omics_publication_auxiliary_contracts.R",
+        "sha256": "7aab1c02650b1345fba0b2f8a45089af70395a9560388415d2adb2c32707437f"
+      },
+      {
+        "path": "tools/profiling/omics_publication_auxiliary_model.R",
+        "sha256": "9e829eb036355f0fd720251e06b065f7eaeaead63c0928239b41654873e1bc95"
+      },
+      {
+        "path": "tools/profiling/omics_publication_auxiliary_truth.R",
+        "sha256": "4a9690e866a3955cd3f09e8d79f8b092f13c3f90541d8fa1b8cc6df132328773"
+      },
+      {
+        "path": "tools/profiling/omics_publication_workload_auxiliary.R",
+        "sha256": "cf3fa7c18409e49d003aeb8b51f866b7bb15f88ab31979437ec6d5010859d3bf"
+      }
+    ],
+    "payload_filename": "payload.rds",
+    "truth_filename": "truth.json",
+    "generated_outside_measurement": true
+  },
+  "rng": {
+    "kind": "L'Ecuyer-CMRG",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "seed_family_id": "generated.stress.400000-499999.v1",
+    "seed": 400404
+  },
+  "execution": {
+    "process_isolation": "fresh_vanilla_R",
+    "candidate_loaded": false,
+    "historical_pilot_required": false,
+    "swap_allowed": false,
+    "timeout_seconds": 900,
+    "network_allowed": false
+  },
+  "truth_contract": {
+    "schema_id": "auxiliary.truth.v1",
+    "oracle_method": "independent_generated_truth",
+    "exact_order_required": true,
+    "service_behaviour_authority": false,
+    "biological_authority": false,
+    "mofa_fitting_authority": false
+  },
+  "claim_scope": {
+    "evidence_class": "public_generated",
+    "compatibility_authority": true,
+    "local_performance_authority": true,
+    "cross_project_authority": false,
+    "workflow_authority": false,
+    "artifact_authority": false,
+    "backend_policy_authority": false,
+    "biological_authority": false,
+    "promotion_authority": false
+  },
+  "expected_digests": {
+    "payload_sha256": "ec9de873f98b600c2ebe35ec491a4c7f44de0540afe76bd2676391c74380cfc8",
+    "truth_sha256": "2f77cd75b53c967ca5a64e9ebc0af4202e1bad0e433fb39435b63d14405b8147"
+  },
+  "publication_authority": false
+}

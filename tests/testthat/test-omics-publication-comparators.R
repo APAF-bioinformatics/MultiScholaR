@@ -268,12 +268,29 @@ test_that("candidate freeze is additive source-bound and non-promotional", {
         as.list(rep(digest, length(publicationCandidateFreezeBindingNames()))),
         publicationCandidateFreezeBindingNames()
     )
+    readiness_path <- "tests/testdata/omics-performance/protocol-v1.json"
+    readiness <- list(
+        schema = "multischolar.omics_publication_candidate_freeze_readiness",
+        schema_version = "1.0.0",
+        owner_ticket_id = "OMICS-ART-077",
+        status = "ready",
+        authority_bindings = list(list(
+            path = readiness_path,
+            sha256 = publicationFileDigest(readiness_path),
+            available = TRUE
+        )),
+        blockers = list(),
+        candidate_freeze_allowed = TRUE,
+        promotion_authority = FALSE
+    )
+    readiness$readiness_digest <- publicationObjectDigest(readiness)
     successor <- publicationComparatorFreezeCandidate(
         authority,
         revision,
         publicationComparatorSourceIdentity(revision),
         digest,
-        bindings
+        bindings,
+        readiness
     )
 
     expect_silent(publicationValidateCandidateFreezeSuccessor(
@@ -317,7 +334,8 @@ test_that("candidate freeze is additive source-bound and non-promotional", {
             revision,
             publicationComparatorSourceIdentity(revision),
             digest,
-            bindings
+            bindings,
+            readiness
         ),
         class = "multischolar_publication_comparator_error"
     )

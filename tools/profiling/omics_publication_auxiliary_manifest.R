@@ -46,10 +46,10 @@ auxPublicationRouteReadiness <- function() {
         list(
             route_id = "phosphosite_stages",
             fixture_status = "exact_comparator_parity",
-            representative_status = "historical_timeout_optimization_required",
-            operational_heavy_status = "not_generated_after_timeout",
-            stress_status = "not_generated_after_timeout",
-            optimization_handoff_allowed = TRUE,
+            representative_status = "candidate_exact_historical_timeout_resolved",
+            operational_heavy_status = "frozen_host_capacity_blocked",
+            stress_status = "generated_characterization_only",
+            optimization_handoff_allowed = FALSE,
             confirmation_allowed = FALSE,
             promotion_authority = FALSE
         ),
@@ -57,9 +57,9 @@ auxPublicationRouteReadiness <- function() {
             route_id = "mofa_weights",
             fixture_status = "exact_comparator_parity",
             representative_status = "exact_comparator_parity",
-            operational_heavy_status = "pilot_pending",
-            stress_status = "generation_pending",
-            optimization_handoff_allowed = TRUE,
+            operational_heavy_status = "candidate_exact_truth",
+            stress_status = "generated_characterization_only",
+            optimization_handoff_allowed = FALSE,
             confirmation_allowed = FALSE,
             promotion_authority = FALSE
         ),
@@ -67,19 +67,19 @@ auxPublicationRouteReadiness <- function() {
             route_id = "metabolite_enrichment",
             fixture_status = "exact_comparator_parity",
             representative_status = "exact_comparator_parity",
-            operational_heavy_status = "pilot_pending",
-            stress_status = "generation_pending",
-            optimization_handoff_allowed = TRUE,
+            operational_heavy_status = "candidate_exact_truth",
+            stress_status = "generated_characterization_only",
+            optimization_handoff_allowed = FALSE,
             confirmation_allowed = FALSE,
             promotion_authority = FALSE
         ),
         list(
             route_id = "metabolite_pathway",
             fixture_status = "exact_comparator_parity",
-            representative_status = "exact_comparator_parity",
-            operational_heavy_status = "pilot_pending",
-            stress_status = "generation_pending",
-            optimization_handoff_allowed = TRUE,
+            representative_status = "exact_candidate_historical_parity",
+            operational_heavy_status = "candidate_exact_truth",
+            stress_status = "generated_characterization_only",
+            optimization_handoff_allowed = FALSE,
             confirmation_allowed = FALSE,
             promotion_authority = FALSE
         ),
@@ -87,9 +87,9 @@ auxPublicationRouteReadiness <- function() {
             route_id = "stringdb_rank",
             fixture_status = "exact_comparator_parity",
             representative_status = "exact_comparator_parity",
-            operational_heavy_status = "pilot_pending",
-            stress_status = "generation_pending",
-            optimization_handoff_allowed = TRUE,
+            operational_heavy_status = "candidate_exact_truth",
+            stress_status = "generated_characterization_only",
+            optimization_handoff_allowed = FALSE,
             confirmation_allowed = FALSE,
             promotion_authority = FALSE
         )
@@ -115,7 +115,7 @@ auxPublicationBuildManifest <- function() {
             "multischolar.omics_publication_auxiliary_manifest.2026-08-30.v1"
         ),
         owner_ticket_id = .AUX_PUBLICATION_OWNER,
-        status = "optimization_required_incomplete",
+        status = "workload_matrix_complete_candidate_freeze_blocked",
         surfaces = auxPublicationBinding(paste0(
             "tests/testdata/omics-performance/auxiliary/surfaces-v1.json"
         )),
@@ -143,9 +143,9 @@ auxPublicationBuildManifest <- function() {
         missing_workloads = auxPublicationMissingWorkloads(entries),
         source_minimum_satisfied = FALSE,
         fixture_matrix_complete = TRUE,
-        representative_matrix_complete = FALSE,
-        heavy_matrix_complete = FALSE,
-        stress_matrix_complete = FALSE,
+        representative_matrix_complete = TRUE,
+        heavy_matrix_complete = TRUE,
+        stress_matrix_complete = TRUE,
         candidate_access_allowed = FALSE,
         confirmatory_benchmark_allowed = FALSE,
         publication_authority = FALSE
@@ -194,21 +194,24 @@ auxPublicationValidateManifest <- function(record) {
         "multischolar.omics_publication_auxiliary_manifest"
     ) && identical(record$schema_version, .AUX_PUBLICATION_VERSION) &&
         identical(record$owner_ticket_id, .AUX_PUBLICATION_OWNER) &&
-        identical(record$status, "optimization_required_incomplete") &&
+        identical(
+            record$status,
+            "workload_matrix_complete_candidate_freeze_blocked"
+        ) &&
         identical(
             publicationObjectDigest(record$workloads),
             publicationObjectDigest(expected_entries)
-        ) && length(ids) == 10L && !anyDuplicated(ids) && entries_valid &&
+        ) && length(ids) == 20L && !anyDuplicated(ids) && entries_valid &&
         identical(readiness_ids, names(auxPublicationRoutes())) &&
         identical(
             record$missing_workloads,
             auxPublicationMissingWorkloads(record$workloads)
-        ) && length(record$missing_workloads) == 10L &&
+        ) && !length(record$missing_workloads) &&
         !isTRUE(record$source_minimum_satisfied) &&
         isTRUE(record$fixture_matrix_complete) &&
-        !isTRUE(record$representative_matrix_complete) &&
-        !isTRUE(record$heavy_matrix_complete) &&
-        !isTRUE(record$stress_matrix_complete) &&
+        isTRUE(record$representative_matrix_complete) &&
+        isTRUE(record$heavy_matrix_complete) &&
+        isTRUE(record$stress_matrix_complete) &&
         !isTRUE(record$candidate_access_allowed) &&
         !isTRUE(record$confirmatory_benchmark_allowed) &&
         !isTRUE(record$publication_authority)
@@ -223,17 +226,17 @@ auxPublicationBuildOptimizationHandoff <- function(manifest_path) {
         schema = "multischolar.omics_publication_auxiliary_handoff",
         schema_version = .AUX_PUBLICATION_VERSION,
         owner_ticket_id = .AUX_PUBLICATION_OWNER,
-        status = "optimization_required",
+        status = "workload_matrix_complete_candidate_freeze_blocked",
         manifest = list(
             path = manifest_path,
             sha256 = publicationFileDigest(manifest_path)
         ),
         consumer_ticket_id = "OMICS-ART-077",
         confirmatory_consumer_ticket_id = "OMICS-ART-082",
-        optimization_inputs_allowed = TRUE,
+        optimization_inputs_allowed = FALSE,
         confirmatory_inputs_allowed = FALSE,
         phosphosite_required_outcome = paste0(
-            "complete_100k_representative_within_900_seconds_before_heavy_pilot"
+            "complete_100k_representative_within_900_seconds_passed"
         ),
         workload_floor_reduction_allowed = FALSE,
         source_minimum_satisfied = FALSE,
