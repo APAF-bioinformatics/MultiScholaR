@@ -14,6 +14,7 @@ metab037Context <- function(root, project_id) {
     ]]
     capability$artifact_eligible <- TRUE
     capability$maximum_artifact_rollout <- "dual_write"
+    capability$explicit_maximum_artifact_rollout <- "dual_write"
     context <- createWorkflowContext(
         list(
             base_dir = root,
