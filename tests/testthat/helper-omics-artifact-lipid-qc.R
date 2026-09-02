@@ -11,6 +11,7 @@ lipid042Capability <- function() {
     capability$artifact_eligible <- TRUE
     capability$auto_eligible <- FALSE
     capability$maximum_artifact_rollout <- "dual_write"
+    capability$explicit_maximum_artifact_rollout <- "dual_write"
     capability
 }
 
