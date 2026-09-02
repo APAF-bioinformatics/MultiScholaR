@@ -154,6 +154,7 @@ importLipidMSDIALData <- function(
 #' @param lipid_id_column Column to use as lipid ID (default: auto-detect).
 #' @param annotation_column Column containing lipid annotations (default: auto-detect).
 #' @param skip_rows Number of header rows to skip (default: 0).
+#' @param n_max Maximum data rows to read. Defaults to all rows.
 #'
 #' @return A list containing the imported data and metadata.
 #'
@@ -164,7 +165,8 @@ importLipidSearchData <- function(
   filepath,
   lipid_id_column = NULL,
   annotation_column = NULL,
-  skip_rows = 0
+  skip_rows = 0,
+  n_max = Inf
 ) {
     logger::log_info(paste("Starting LipidSearch import from:", filepath))
 
@@ -182,6 +184,7 @@ importLipidSearchData <- function(
                 filepath,
                 delim = delim,
                 skip = skip_rows,
+                n_max = n_max,
                 show_col_types = FALSE
             )
         },
@@ -258,4 +261,3 @@ importLipidSearchData <- function(
         is_pattern = defaults$is_pattern
     ))
 }
-

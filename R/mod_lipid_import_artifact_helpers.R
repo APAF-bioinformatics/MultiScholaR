@@ -41,17 +41,26 @@ prepareLipidArtifactContext <- function(
         !identical(context$getStaticIdentity()$omic_type, "lipidomics")) {
         return(list(enabled = FALSE, reason = "not_lipidomics_context"))
     }
+    capabilities <- if (inherits(context, "WorkflowContext") &&
+        context$isBound()) {
+        mergeWorkflowDescriptorCapabilities(
+            descriptor_catalogue = descriptor_catalogue
+        )
+    } else {
+        # Installed legacy receipts remain authoritative until OMICS-ART-081.
+        artifactPayloadAdaptiveCapabilities(
+            descriptor_catalogue,
+            spec$capability_id,
+            workflow_data$data_tbl
+        )
+    }
     prepared <- prepareArtifactStageContext(
         workflow_data,
         workflow_type = spec$workflow_type,
         input_format = format,
         data_level = data_type,
         descriptor_catalogue = descriptor_catalogue,
-        capabilities = artifactPayloadAdaptiveCapabilities(
-            descriptor_catalogue,
-            spec$capability_id,
-            workflow_data$data_tbl
-        )
+        capabilities = capabilities
     )
     if (isTRUE(prepared$enabled) &&
         !identical(prepared$descriptor$descriptor_id, spec$capability_id)) {

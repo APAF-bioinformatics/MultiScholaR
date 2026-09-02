@@ -327,6 +327,7 @@ Collate:
     'mod_lipid_design_builder_display_helpers.R'
     'mod_lipid_design_builder_action_helpers.R'
     'mod_lipid_import_artifact_helpers.R'
+    'mod_lipid_preingress_helpers.R'
     'mod_lipid_design_artifact_helpers.R'
     'mod_lipid_readthrough_registry.R'
     'mod_lipid_readthrough_helpers.R'

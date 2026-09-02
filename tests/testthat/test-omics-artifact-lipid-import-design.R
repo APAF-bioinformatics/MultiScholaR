@@ -59,6 +59,36 @@
     decodeArtifactRectangular(payload, sidecar$codec_metadata)
 }
 
+.lipid076ExactEnvelope <- function() {
+    envelope <- jsonlite::read_json(
+        .lipid040RepoPath(
+            "inst", "extdata", "omics-auto-policy-receipts-v2.json"
+        ),
+        simplifyVector = FALSE
+    )
+    receipt <- Filter(\(candidate) identical(
+        candidate$capability_id,
+        "lipidomics.lipidsearch.lipid.standard.v1"
+    ), envelope$receipts)[[1L]]
+    receipt$receipt_id <- "test.lipidomics.lipidsearch.preingress.v1"
+    receipt$receipt_kind <- "proposed_pilot"
+    receipt$owner_ticket_id <- "OMICS-ART-076"
+    receipt$decision <- "proposed_pilot"
+    receipt$size_measure <- list(
+        measure_id = "total_uncompressed_input_bytes_v1",
+        unit = "byte",
+        exact = TRUE,
+        available_before_full_parse = TRUE
+    )
+    receipt$threshold_bytes <- 1
+    receipt$receipt_digest <- NULL
+    receipt$receipt_digest <- workflowPolicyObjectDigest(receipt)
+    envelope$receipts <- list(receipt)
+    envelope$envelope_digest <- NULL
+    envelope$envelope_digest <- workflowPolicyObjectDigest(envelope)
+    envelope
+}
+
 .lipid040FixturePayload <- function(kind = c("lc", "gc", "mixed")) {
     kind <- match.arg(kind)
     specifications <- switch(kind,
@@ -253,6 +283,107 @@ test_that("only reviewed LipidSearch receives an evict descriptor", {
     expect_identical(lipidsearch$support_status, "scientifically_supported")
     expect_identical(custom$support_status, "reader_characterized")
     expect_identical(msdial$support_status, "reader_characterized")
+})
+
+test_that("exact LipidSearch auto routing binds before the full reader", {
+    root <- withr::local_tempdir(pattern = "lipid076-preingress-")
+    built <- .lipid040Workflow(root, backend = "auto")
+    source <- file.path(root, "source", "lipidsearch.txt")
+    expect_true(file.copy(
+        .lipid040RepoPath(paste0(
+            "tests/testdata/e2e/lipid_canonical/",
+            "lipidsearch_lcms_pos.txt"
+        )),
+        source
+    ))
+    observed_n_max <- NULL
+    withr::local_options(list(
+        MultiScholaR.lipidomics.preingress_envelope =
+            .lipid076ExactEnvelope()
+    ))
+    preview <- loadLipidImportAssayPreview(
+        source,
+        vendorFormat = "lipidsearch",
+        workflowData = built$workflow,
+        importLipidSearch = \(path, n_max = Inf) {
+            observed_n_max <<- n_max
+            importLipidSearchData(path, n_max = n_max)
+        }
+    )
+
+    expect_true(preview$deferred)
+    expect_identical(observed_n_max, 1000L)
+    expect_true(built$workflow$workflow_context$isBound())
+    expect_identical(
+        built$workflow$workflow_context$getStorageDecision()$effective_backend,
+        "artifact"
+    )
+    expect_identical(
+        preview$preIngress$outcome$token$measure$bytes,
+        unname(as.numeric(file.info(source)$size))
+    )
+    expect_false(preview$preIngress$outcome$token$probe_evidence[[
+        "complete_payload_materialized"
+    ]])
+})
+
+test_that("installed LipidSearch auto policy remains post-parse compatible", {
+    root <- withr::local_tempdir(pattern = "lipid076-legacy-auto-")
+    built <- .lipid040Workflow(root, backend = "auto")
+    source <- .lipid040RepoPath(paste0(
+        "tests/testdata/e2e/lipid_canonical/",
+        "lipidsearch_lcms_pos.txt"
+    ))
+    preview <- loadLipidImportAssayPreview(
+        source,
+        vendorFormat = "lipidsearch",
+        workflowData = built$workflow
+    )
+    expect_false(preview$deferred)
+    expect_identical(
+        preview$preIngress$status,
+        "installed_legacy_policy_deferred"
+    )
+    expect_false(built$workflow$workflow_context$isBound())
+    expect_gt(nrow(preview$assayData), 0L)
+})
+
+test_that("deferred LipidSearch processing preserves the public payload", {
+    root <- withr::local_tempdir(pattern = "lipid076-processing-")
+    built <- .lipid040Workflow(root)
+    source <- .lipid040RepoPath(paste0(
+        "tests/testdata/e2e/lipid_canonical/",
+        "lipidsearch_lcms_pos.txt"
+    ))
+    preview <- loadLipidImportAssayPreview(
+        source,
+        vendorFormat = "lipidsearch",
+        workflowData = built$workflow
+    )
+    result <- runLipidImportProcessing(
+        workflowData = built$workflow,
+        assay1Name = "LCMS_Pos",
+        assay1Data = preview$assayData,
+        assay1File = source,
+        vendorFormat = "lipidsearch",
+        detectedFormat = "lipidsearch",
+        lipidIdCol = "LipidName",
+        annotationCol = "LipidClass",
+        sampleColumns = preview$importResult$sample_columns,
+        isPattern = "",
+        sanitizeNames = FALSE,
+        experimentPaths = built$paths,
+        writeImportArtifacts = \(...) list(written = FALSE),
+        notify = \(...) invisible(NULL),
+        removeNotify = \(...) invisible(NULL),
+        assay1Deferred = preview$deferred
+    )
+    expected <- importLipidSearchData(source)$data
+
+    expect_identical(result$status, "success")
+    expect_true(result$artifactStageResult$committed)
+    expect_identical(result$assayList$LCMS_Pos, expected)
+    expect_identical(built$workflow$data_tbl$LCMS_Pos, expected)
 })
 
 test_that("reviewed LipidSearch assays dual-write exact independent provenance", {

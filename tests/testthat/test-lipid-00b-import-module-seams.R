@@ -1128,6 +1128,46 @@ test_that("registerLipidImportProcessObserver preserves the process observer she
   expect_true(process_args$sanitizeNames)
 })
 
+test_that("successful lipidomics processing releases module-local payloads", {
+  input <- list(
+    process_import = 1L,
+    assay1_name = "LCMS_Pos",
+    assay2_name = "",
+    vendor_format = "lipidsearch",
+    is_pattern = "",
+    sanitize_names = FALSE
+  )
+  local_data <- new.env(parent = emptyenv())
+  local_data$assay1_data <- data.frame(lipid_id = "L1", sample_a = 1)
+  local_data$assay1_import_result <- list(data = local_data$assay1_data)
+  local_data$assay1_deferred <- TRUE
+  local_data$assay2_file <- NULL
+  local_data$assay2_data <- data.frame(lipid_id = "L2", sample_a = 2)
+  local_data$assay2_import_result <- list(data = local_data$assay2_data)
+  local_data$detected_format <- "lipidsearch"
+  local_data$format_confidence <- 1
+
+  registerLipidImportProcessObserver(
+    input = input,
+    workflowData = new.env(parent = emptyenv()),
+    localData = local_data,
+    getLipidIdCol = \() "lipid_id",
+    getAnnotationCol = \() NULL,
+    getSampleColumns = \() "sample_a",
+    handleProcessRequest = \(...) list(status = "success"),
+    observeEvent = \(event, handler) {
+      force(handler)
+      invisible(NULL)
+    }
+  )
+
+  expect_null(local_data$assay1_data)
+  expect_null(local_data$assay1_import_result)
+  expect_null(local_data$assay2_data)
+  expect_null(local_data$assay2_import_result)
+  expect_false(local_data$assay1_deferred)
+})
+
 test_that("handleLipidImportValidationSummaryRender preserves the validation summary payload", {
   assay1_data <- data.frame(
     lipid_id = c("L1", "L2"),
@@ -2096,16 +2136,23 @@ test_that("initializeLipidImportLocalData preserves the seeded reactive-values p
       "assay1_file",
       "assay1_data",
       "assay1_import_result",
+      "assay1_deferred",
       "assay2_file",
       "assay2_data",
       "assay2_import_result",
       "detected_format",
       "format_confidence",
-      "all_headers"
+      "all_headers",
+      "preingress"
     ),
     ignore.order = FALSE
   )
-  expect_true(all(vapply(captured, is.null, logical(1))))
+  expect_false(captured$assay1_deferred)
+  expect_true(all(vapply(
+    captured[setdiff(names(captured), "assay1_deferred")],
+    is.null,
+    logical(1)
+  )))
 })
 
 test_that("emitLipidImportModuleServerEntryDiagnostics preserves entry-phase and module-phase logging", {

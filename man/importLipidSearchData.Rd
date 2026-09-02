@@ -8,7 +8,8 @@ importLipidSearchData(
   filepath,
   lipid_id_column = NULL,
   annotation_column = NULL,
-  skip_rows = 0
+  skip_rows = 0,
+  n_max = Inf
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ importLipidSearchData(
 \item{annotation_column}{Column containing lipid annotations (default: auto-detect).}
 
 \item{skip_rows}{Number of header rows to skip (default: 0).}
+
+\item{n_max}{Maximum data rows to read. Defaults to all rows.}
 }
 \value{
 A list containing the imported data and metadata.

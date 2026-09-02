@@ -237,12 +237,14 @@ initializeLipidImportLocalData <- function(
     assay1_file = NULL,
     assay1_data = NULL,
     assay1_import_result = NULL,
+    assay1_deferred = FALSE,
     assay2_file = NULL,
     assay2_data = NULL,
     assay2_import_result = NULL,
     detected_format = NULL,
     format_confidence = NULL,
-    all_headers = NULL
+    all_headers = NULL,
+    preingress = NULL
   )
 }
 
@@ -646,7 +648,23 @@ runLipidImportProcessing <- function(
   removeNotify = shiny::removeNotification,
   logError = logger::log_error,
   formatConfidence = NULL,
-  resolveFormatSupport = resolveWorkflowFormatSupport
+  resolveFormatSupport = resolveWorkflowFormatSupport,
+  assay1Deferred = FALSE,
+  importDeferredAssay = function(
+      path,
+      format,
+      lipid_id_column,
+      annotation_column
+  ) {
+    switch(format,
+      lipidsearch = importLipidSearchData(
+        path,
+        lipid_id_column = lipid_id_column,
+        annotation_column = annotation_column
+      )$data,
+      stop("deferred lipidomics reader is unsupported", call. = FALSE)
+    )
+  }
 ) {
   format_decision <- resolveFormatSupport(
     omicType = "lipidomics",
@@ -670,9 +688,20 @@ runLipidImportProcessing <- function(
         assay2File = assay2File
       )
 
+      resolvedAssay1Data <- if (isTRUE(assay1Deferred)) {
+        importDeferredAssay(
+          assay1File,
+          detectedFormat,
+          lipidIdCol,
+          annotationCol
+        )
+      } else {
+        assay1Data
+      }
+
       assemble_args <- list(
         assay1Name = assay1Name,
-        assay1Data = assay1Data,
+        assay1Data = resolvedAssay1Data,
         assay2File = assay2File,
         assay2Name = assay2Name,
         dataFormat = detectedFormat,
@@ -713,6 +742,11 @@ runLipidImportProcessing <- function(
         sampleColumns = sampleColumns,
         isPattern = isPattern
       )
+      if (isTRUE(assay1Deferred)) {
+        resolvedAssay1Data <- NULL
+        assemble_args$assay1Data <- NULL
+        artifactReleaseTransientMemory(full = TRUE)
+      }
       artifact_result <- writeImportArtifacts(
         assayList = assay_list,
         columnMapping = column_mapping,

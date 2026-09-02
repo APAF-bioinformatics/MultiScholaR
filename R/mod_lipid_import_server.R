@@ -26,7 +26,8 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
       output = output,
       session = session,
       localData = local_data,
-      volumes = volumes
+      volumes = volumes,
+      workflowData = workflow_data
     )
 
     setupLipidImportStandardFileInputs(
@@ -34,7 +35,8 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
       input = input,
       output = output,
       session = session,
-      localData = local_data
+      localData = local_data,
+      workflowData = workflow_data
     )
 
     column_selection_reactives <- buildLipidImportColumnSelectionReactives(

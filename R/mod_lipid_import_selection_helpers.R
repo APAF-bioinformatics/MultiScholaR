@@ -25,7 +25,10 @@ loadLipidImportAssayPreview <- function(
   importLipidSearch = importLipidSearchData,
   logInfo = logger::log_info,
   vendorFormat = NULL,
-  resolveFormatSupport = resolveWorkflowFormatSupport
+  resolveFormatSupport = resolveWorkflowFormatSupport,
+  workflowData = NULL,
+  preIngressResolver = resolveLipidPreIngress,
+  previewRows = 1000L
 ) {
   headers <- readHeaders(assay1File)
 
@@ -49,10 +52,32 @@ loadLipidImportAssayPreview <- function(
   format_info$observed_format <- observed_format
   format_info$format <- decision$format
   format_info$support_status <- decision$support_status
+  pre_ingress <- if (!is.null(workflowData) &&
+      inherits(workflowData$workflow_context, "WorkflowContext")) {
+    preIngressResolver(
+      workflowData$workflow_context,
+      assay1File,
+      decision$format,
+      headers
+    )
+  } else {
+    list(
+      status = "not_requested",
+      defer_full_import = FALSE,
+      outcome = NULL
+    )
+  }
 
   import_result <- switch(decision$format,
     "msdial" = importMsdial(assay1File),
-    "lipidsearch" = importLipidSearch(assay1File),
+    "lipidsearch" = {
+      args <- list(assay1File)
+      if (isTRUE(pre_ingress$defer_full_import) &&
+          lipidImportFunctionAcceptsArg(importLipidSearch, "n_max")) {
+        args$n_max <- as.integer(previewRows)
+      }
+      do.call(importLipidSearch, args)
+    },
     "custom" = importMsdial(assay1File),
     workflowFormatSupportAbort(
       sprintf("No reader is registered for lipidomics format '%s'", decision$format),
@@ -77,6 +102,8 @@ loadLipidImportAssayPreview <- function(
     formatConfidence = format_info$confidence,
     importResult = import_result,
     assayData = import_result$data,
+    deferred = isTRUE(pre_ingress$defer_full_import),
+    preIngress = pre_ingress,
     updates = list(
       lipidId = list(
         choices = headers,
@@ -101,7 +128,8 @@ handleLipidImportDataPreviewLoad <- function(
   loadPreview = loadLipidImportAssayPreview,
   applyPreview = applyLipidImportPreviewToModuleState,
   handleImportError = handleLipidImportDataImportError,
-  vendorFormat = NULL
+  vendorFormat = NULL,
+  workflowData = NULL
 ) {
   shiny::req(localData$assay1_file)
 
@@ -111,6 +139,10 @@ handleLipidImportDataPreviewLoad <- function(
       if (!is.null(vendorFormat) &&
           lipidImportFunctionAcceptsArg(loadPreview, "vendorFormat")) {
         previewArgs$vendorFormat <- vendorFormat
+      }
+      if (!is.null(workflowData) &&
+          lipidImportFunctionAcceptsArg(loadPreview, "workflowData")) {
+        previewArgs$workflowData <- workflowData
       }
       importPreview <- do.call(loadPreview, previewArgs)
 
@@ -130,7 +162,8 @@ buildLipidImportAssay1SelectedCallback <- function(
   session,
   localData,
   runPreviewLoad = handleLipidImportDataPreviewLoad,
-  vendorFormat = NULL
+  vendorFormat = NULL,
+  workflowData = NULL
 ) {
   force(session)
   force(localData)
@@ -150,6 +183,10 @@ buildLipidImportAssay1SelectedCallback <- function(
         vendorFormat
       }
     }
+    if (!is.null(workflowData) &&
+        lipidImportFunctionAcceptsArg(runPreviewLoad, "workflowData")) {
+      previewArgs$workflowData <- workflowData
+    }
     do.call(runPreviewLoad, previewArgs)
   }
 }
@@ -166,6 +203,8 @@ applyLipidImportPreviewToModuleState <- function(
   localData$format_confidence <- importPreview$formatConfidence
   localData$assay1_import_result <- importPreview$importResult
   localData$assay1_data <- importPreview$assayData
+  localData$assay1_deferred <- isTRUE(importPreview$deferred)
+  localData$preingress <- importPreview$preIngress
 
   updateSelectInput(
     session,
@@ -313,6 +352,7 @@ setupLipidImportShinyFileInputs <- function(
   session,
   localData,
   volumes,
+  workflowData = NULL,
   prepareVolumes = prepareLipidImportShinyFileVolumes,
   buildAssay1Selected = buildLipidImportAssay1SelectedCallback,
   registerInputs = registerLipidImportShinyFileInputs
@@ -329,6 +369,12 @@ setupLipidImportShinyFileInputs <- function(
   )
   if (lipidImportFunctionAcceptsArg(buildAssay1Selected, "vendorFormat")) {
     assay1SelectedArgs$vendorFormat <- function() input$vendor_format
+  }
+  if (!is.null(workflowData) && lipidImportFunctionAcceptsArg(
+      buildAssay1Selected,
+      "workflowData"
+  )) {
+    assay1SelectedArgs$workflowData <- workflowData
   }
 
   registerInputs(
@@ -409,6 +455,7 @@ setupLipidImportStandardFileInputs <- function(
   output,
   session,
   localData,
+  workflowData = NULL,
   buildAssay1Selected = buildLipidImportAssay1SelectedCallback,
   registerInputs = registerLipidImportStandardFileInputs
 ) {
@@ -422,6 +469,12 @@ setupLipidImportStandardFileInputs <- function(
   )
   if (lipidImportFunctionAcceptsArg(buildAssay1Selected, "vendorFormat")) {
     assay1SelectedArgs$vendorFormat <- function() input$vendor_format
+  }
+  if (!is.null(workflowData) && lipidImportFunctionAcceptsArg(
+      buildAssay1Selected,
+      "workflowData"
+  )) {
+    assay1SelectedArgs$workflowData <- workflowData
   }
 
   registerInputs(
@@ -446,7 +499,7 @@ registerLipidImportProcessObserver <- function(
   observeEvent = shiny::observeEvent
 ) {
   observeEvent(input$process_import, {
-    handleProcessRequest(
+    request_args <- list(
       workflowData = workflowData,
       assay1Name = input$assay1_name,
       assay1Data = localData$assay1_data,
@@ -463,6 +516,21 @@ registerLipidImportProcessObserver <- function(
       sanitizeNames = input$sanitize_names,
       experimentPaths = experimentPaths
     )
+    if (lipidImportFunctionAcceptsArg(
+        handleProcessRequest,
+        "assay1Deferred"
+    )) {
+      request_args$assay1Deferred <- isTRUE(localData$assay1_deferred)
+    }
+    result <- do.call(handleProcessRequest, request_args)
+    if (is.list(result) && identical(result$status, "success")) {
+      localData$assay1_data <- NULL
+      localData$assay1_import_result <- NULL
+      localData$assay2_data <- NULL
+      localData$assay2_import_result <- NULL
+      localData$assay1_deferred <- FALSE
+    }
+    invisible(result)
   })
 }
 
@@ -482,7 +550,8 @@ handleLipidImportProcessRequest <- function(
   sanitizeNames,
   experimentPaths = NULL,
   processImport = runLipidImportProcessing,
-  formatConfidence = NULL
+  formatConfidence = NULL,
+  assay1Deferred = FALSE
 ) {
   shiny::req(assay1Data)
   shiny::req(lipidIdCol)
@@ -506,6 +575,9 @@ handleLipidImportProcessRequest <- function(
   }
   if (lipidImportFunctionAcceptsArg(processImport, "assay1File")) {
     process_args$assay1File <- assay1File
+  }
+  if (lipidImportFunctionAcceptsArg(processImport, "assay1Deferred")) {
+    process_args$assay1Deferred <- isTRUE(assay1Deferred)
   }
   if (lipidImportFunctionAcceptsArg(processImport, "experimentPaths")) {
     process_args$experimentPaths <- experimentPaths
