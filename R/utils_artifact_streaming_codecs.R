@@ -123,7 +123,20 @@ artifactStreamingWriterSettings <- function(rows) {
     )
 }
 
-encodeArtifactStreamingParquet <- function(path, owner = "streaming table") {
+encodeArtifactStreamingParquet <- function(
+    path,
+    owner = "streaming table",
+    data_frame_class = c("tbl_df", "tbl", "data.frame")
+) {
+    if (!is.character(data_frame_class) || !length(data_frame_class) ||
+        anyNA(data_frame_class) || any(!nzchar(data_frame_class)) ||
+        !"data.frame" %in% data_frame_class) {
+        artifactCodecAbort(
+            "streaming data-frame class is invalid",
+            "multischolar_invalid_artifact_metadata",
+            owner = owner
+        )
+    }
     payload <- arrow::read_parquet(path, as_data_frame = FALSE)
     fields <- payload$schema$fields
     field_names <- vapply(fields, `[[`, character(1), "name")
@@ -150,7 +163,7 @@ encodeArtifactStreamingParquet <- function(path, owner = "streaming table") {
         kind = "data.frame",
         owner = owner,
         dimensions = list(rows = rows, columns = length(descriptors)),
-        data_frame_class = c("tbl_df", "tbl", "data.frame"),
+        data_frame_class = data_frame_class,
         logical_names = logical_names,
         row_names = list(kind = "automatic", value = NULL),
         columns = descriptors,

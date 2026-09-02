@@ -350,7 +350,10 @@ prepareMetabImportAssaySelectionState <- function(
       )
     },
     vendorFormat = NULL,
-    resolveFormatSupportFn = resolveWorkflowFormatSupport
+    resolveFormatSupportFn = resolveWorkflowFormatSupport,
+    deferFullImport = FALSE,
+    workflowData = NULL,
+    preIngressResolverFn = resolveMetabPreIngress
 ) {
   headers <- readHeadersFn(assay1File)
 
@@ -374,6 +377,23 @@ prepareMetabImportAssaySelectionState <- function(
   formatInfo$observed_format <- observedFormat
   formatInfo$format <- decision$format
   formatInfo$support_status <- decision$support_status
+  preIngress <- if (!is.null(workflowData) &&
+      inherits(workflowData$workflow_context, "WorkflowContext")) {
+    preIngressResolverFn(
+      workflowData$workflow_context,
+      assay1File,
+      decision$format,
+      headers
+    )
+  } else {
+    list(
+      status = "not_requested",
+      defer_full_import = FALSE,
+      outcome = NULL
+    )
+  }
+  deferFullImport <- isTRUE(deferFullImport) ||
+    isTRUE(preIngress$defer_full_import)
 
   importFn <- importers[[decision$format]]
   if (is.null(importFn) && identical(decision$format, "custom")) {
@@ -390,7 +410,39 @@ prepareMetabImportAssaySelectionState <- function(
     )
   }
 
-  importResult <- importFn(assay1File)
+  importResult <- if (isTRUE(deferFullImport) &&
+      identical(decision$format, "custom")) {
+    defaults <- getMetabolomicsColumnDefaults("custom")
+    emptyColumns <- stats::setNames(
+      rep(list(character()), length(headers)),
+      headers
+    )
+    list(
+      data = as.data.frame(
+        emptyColumns,
+        check.names = FALSE,
+        stringsAsFactors = FALSE
+      ),
+      headers = headers,
+      detected_columns = list(
+        metabolite_id = findMetabMatchingColumn(
+          headers,
+          defaults$metabolite_id
+        ),
+        annotation = findMetabMatchingColumn(
+          headers,
+          defaults$annotation
+        )
+      ),
+      sample_columns = character(),
+      annotation_columns = headers,
+      format = "custom",
+      is_pattern = defaults$is_pattern,
+      deferred = TRUE
+    )
+  } else {
+    importFn(assay1File)
+  }
 
   list(
     headers = headers,
@@ -400,6 +452,8 @@ prepareMetabImportAssaySelectionState <- function(
     selectedMetaboliteId = importResult$detected_columns$metabolite_id,
     annotationChoices = c("(None)" = "", headers),
     selectedAnnotation = importResult$detected_columns$annotation,
+    deferred = isTRUE(importResult$deferred),
+    preIngress = preIngress,
     isPattern = if (!is.null(importResult$is_pattern) && !is.na(importResult$is_pattern)) {
       importResult$is_pattern
     } else {
@@ -421,6 +475,8 @@ applyMetabImportAssaySelectionState <- function(
   localData$format_confidence <- importState$formatInfo$confidence
   localData$assay1_import_result <- importState$importResult
   localData$assay1_data <- importState$importResult$data
+  localData$assay1_deferred <- isTRUE(importState$deferred)
+  localData$preingress <- importState$preIngress
 
   updateSelectInputFn(
     session,
@@ -527,7 +583,9 @@ runMetabImportAssaySelection <- function(
     prepareImportStateFn = prepareMetabImportAssaySelectionState,
     applyImportStateFn = applyMetabImportAssaySelectionState,
     finalizeErrorFn = finalizeMetabImportAssaySelectionError,
-    vendorFormat = NULL
+    vendorFormat = NULL,
+    deferFullImport = FALSE,
+    workflowData = NULL
 ) {
   reqFn(assay1File)
 
@@ -537,6 +595,18 @@ runMetabImportAssaySelection <- function(
       if (!is.null(vendorFormat) &&
           metabImportFunctionAcceptsArg(prepareImportStateFn, "vendorFormat")) {
         prepareArgs$vendorFormat <- vendorFormat
+      }
+      if (metabImportFunctionAcceptsArg(
+          prepareImportStateFn,
+          "deferFullImport"
+      )) {
+        prepareArgs$deferFullImport <- isTRUE(deferFullImport)
+      }
+      if (!is.null(workflowData) && metabImportFunctionAcceptsArg(
+          prepareImportStateFn,
+          "workflowData"
+      )) {
+        prepareArgs$workflowData <- workflowData
       }
       importState <- do.call(prepareImportStateFn, prepareArgs)
 
@@ -581,7 +651,11 @@ runMetabImportProcessing <- function(
     sprintfFn = sprintf,
     lengthFn = length,
     formatConfidence = NULL,
-    resolveFormatSupportFn = resolveWorkflowFormatSupport
+    resolveFormatSupportFn = resolveWorkflowFormatSupport,
+    assay1Deferred = FALSE,
+    importAssayFn = importMetabMSDIALData,
+    stageArtifactFn = stageMetabImportArtifactsSafely,
+    discardPendingFn = discardMetabImportPendingStage
 ) {
   formatDecision <- resolveFormatSupportFn(
     omicType = "metabolomics",
@@ -611,9 +685,64 @@ runMetabImportProcessing <- function(
         logInfoFn("Sanitizing sample names in metabolomics data...")
       }
 
+      columnMapping <- list(
+        metabolite_id_col = metaboliteCol,
+        annotation_col = if (!is.null(annotationCol) && nzchar(annotationCol)) {
+          annotationCol
+        } else {
+          NULL
+        },
+        sample_columns = sampleCols,
+        is_pattern = if (!is.null(isPattern) && nzchar(isPattern)) {
+          isPattern
+        } else {
+          NA_character_
+        }
+      )
+      context <- workflowData$workflow_context
+      artifactStageEligible <- inherits(context, "WorkflowContext") &&
+        ((context$isBound() && identical(
+          context$getStorageDecision()$effective_backend,
+          "artifact"
+        )) || (!context$isBound() && identical(
+          context$getStoragePolicy()$requested_backend,
+          "artifact"
+        )))
+      stagedImport <- if (identical(detectedFormat, "custom") &&
+          isTRUE(artifactStageEligible)) {
+        stageArtifactFn(
+          workflow_data = workflowData,
+          assay1_file = assay1File,
+          assay1_name = assay1Name,
+          assay2_file = assay2File,
+          assay2_name = assay2Name,
+          column_mapping = columnMapping,
+          sanitize_names = isTRUEFn(sanitizeNames)
+        )
+      } else {
+        list(
+          enabled = FALSE,
+          attempted = FALSE,
+          ok = TRUE,
+          reason = "metabolomics_streaming_stage_not_selected"
+        )
+      }
+      pendingStage <- stagedImport$pending_stage %||% NULL
+      artifactStageCommitted <- FALSE
+      on.exit({
+        if (!artifactStageCommitted && !is.null(pendingStage)) {
+          try(discardPendingFn(pendingStage$stage), silent = TRUE)
+        }
+      }, add = TRUE)
+
+      resolvedAssay1Data <- assay1Data
+      if (isTRUE(assay1Deferred) &&
+          !(isTRUE(stagedImport$ok) && isTRUE(stagedImport$attempted))) {
+        resolvedAssay1Data <- importAssayFn(assay1File)$data
+      }
       workflowPayloadArgs <- list(
         assay1Name = assay1Name,
-        assay1Data = assay1Data,
+        assay1Data = resolvedAssay1Data,
         assay2File = assay2File,
         assay2Name = assay2Name,
         vendorFormat = vendorFormat,
@@ -627,7 +756,12 @@ runMetabImportProcessing <- function(
       if (metabImportFunctionAcceptsArg(buildWorkflowPayloadFn, "assay1File")) {
         workflowPayloadArgs$assay1File <- assay1File
       }
-      workflowPayload <- do.call(buildWorkflowPayloadFn, workflowPayloadArgs)
+      workflowPayload <- if (isTRUE(stagedImport$ok) &&
+          isTRUE(stagedImport$attempted)) {
+        stagedImport$result
+      } else {
+        do.call(buildWorkflowPayloadFn, workflowPayloadArgs)
+      }
 
       validationResult <- validateWorkflowPayloadFn(workflowPayload)
       if (!isTRUE(validationResult$valid)) {
@@ -659,10 +793,16 @@ runMetabImportProcessing <- function(
         workflowData = workflowData,
         workflowPayload = workflowPayload
       )
-      artifactStageResult <- persistArtifactFn(
+      persistArgs <- list(
         workflow_data = workflowData,
         workflow_payload = workflowPayload
       )
+      if (metabImportFunctionAcceptsArg(persistArtifactFn, "pending_stage")) {
+        persistArgs$pending_stage <- pendingStage
+        persistArgs$worker_attempted <- isTRUE(stagedImport$attempted)
+      }
+      artifactStageResult <- do.call(persistArtifactFn, persistArgs)
+      artifactStageCommitted <- isTRUE(artifactStageResult$committed)
       workflowData$processing_log$setup_import$artifact_stage <-
         artifactStageResult
       finalizeResult <- finalizeFeedbackFn(status = "success")
@@ -673,6 +813,7 @@ runMetabImportProcessing <- function(
         validationResult = validationResult,
         artifactResult = artifactResult,
         artifactStageResult = artifactStageResult,
+        stagedImport = stagedImport,
         applyResult = applyResult,
         finalizeResult = finalizeResult
       ))

@@ -193,6 +193,36 @@
     openProjectRegistryReadOnly(registry)
 }
 
+.metab075ExactEnvelope <- function() {
+    envelope <- jsonlite::read_json(
+        .metab031RepoPath(
+            "inst", "extdata", "omics-auto-policy-receipts-v2.json"
+        ),
+        simplifyVector = FALSE
+    )
+    receipt <- Filter(\(candidate) identical(
+        candidate$capability_id,
+        "metabolomics.custom.metabolite.standard.v1"
+    ), envelope$receipts)[[1L]]
+    receipt$receipt_id <- "test.metabolomics.custom.preingress.v1"
+    receipt$receipt_kind <- "proposed_pilot"
+    receipt$owner_ticket_id <- "OMICS-ART-075"
+    receipt$decision <- "proposed_pilot"
+    receipt$size_measure <- list(
+        measure_id = "total_uncompressed_input_bytes_v1",
+        unit = "byte",
+        exact = TRUE,
+        available_before_full_parse = TRUE
+    )
+    receipt$threshold_bytes <- 1
+    receipt$receipt_digest <- NULL
+    receipt$receipt_digest <- workflowPolicyObjectDigest(receipt)
+    envelope$receipts <- list(receipt)
+    envelope$envelope_digest <- NULL
+    envelope$envelope_digest <- workflowPolicyObjectDigest(envelope)
+    envelope
+}
+
 test_that("only custom metabolomics receives an evict descriptor", {
     descriptor <- artifactMetabolomicsWorkflowDescriptor()
     expect_identical(
@@ -279,6 +309,200 @@ test_that("reviewed custom assays dual-write exact independent provenance", {
         expect_identical(sources$format_id, "custom.column_mapped_tabular")
         closeProjectRegistry(session)
     }
+})
+
+test_that("reviewed custom assays stream into payload-free pending stages", {
+    for (kind in c("lc", "gc", "mixed")) {
+        root <- withr::local_tempdir(pattern = paste0("metab075-", kind, "-"))
+        built <- .metab031Workflow(root)
+        expected <- .metab031FixturePayload(kind)
+        sources <- unlist(expected$assaySourceFiles, use.names = TRUE)
+        expected$assayList <- lapply(sources, \(source) {
+            importMetabMSDIALData(source)$data
+        })
+        expected <- coerceMetabImportWorkflowPayloadSamples(expected)
+        staged <- stageMetabImportArtifacts(
+            built$workflow,
+            assay1_file = sources[[1L]],
+            assay1_name = names(sources)[[1L]],
+            assay2_file = if (length(sources) > 1L) sources[[2L]] else NULL,
+            assay2_name = if (length(sources) > 1L) names(sources)[[2L]] else NULL,
+            column_mapping = expected$columnMapping
+        )
+
+        expect_true(staged$ok, info = kind)
+        expect_true(staged$attempted, info = kind)
+        expect_identical(staged$result$assayList, expected$assayList, info = kind)
+        expect_identical(
+            staged$result$columnMapping,
+            expected$columnMapping,
+            info = kind
+        )
+        expect_false(
+            staged$process_evidence$complete_source_materialized,
+            info = kind
+        )
+        expect_false(
+            staged$process_evidence$complete_encoded_payload_returned,
+            info = kind
+        )
+        expect_silent(artifactResourceDataOnly(
+            staged$pending_stage,
+            "metabolomics test pending stage"
+        ))
+
+        applyMetabImportWorkflowPayload(
+            built$workflow,
+            staged$result,
+            logInfo = \(...) invisible(NULL)
+        )
+        committed <- persistMetabImportArtifacts(
+            built$workflow,
+            staged$result,
+            pending_stage = staged$pending_stage,
+            worker_attempted = TRUE,
+            log_warn = \(...) invisible(NULL)
+        )
+        expect_true(committed$committed, info = kind)
+        expect_identical(names(committed$assay_refs), names(expected$assayList))
+        for (assay_name in names(expected$assayList)) {
+            expect_identical(
+                .metab031ReadTable(
+                    built$workflow$workflow_context,
+                    committed$assay_refs[[assay_name]]
+                ),
+                expected$assayList[[assay_name]],
+                info = paste(kind, assay_name)
+            )
+        }
+    }
+})
+
+test_that("explicit custom selection defers full assay materialization", {
+    source <- .metab031RepoPath(
+        "tests/testdata/e2e/metab_lc/lcms_pos_features.tsv"
+    )
+    importer_calls <- 0L
+    state <- prepareMetabImportAssaySelectionState(
+        source,
+        vendorFormat = "custom",
+        deferFullImport = TRUE,
+        defaultImporter = \(...) {
+            importer_calls <<- importer_calls + 1L
+            stop("full importer must remain deferred")
+        }
+    )
+    expect_true(state$deferred)
+    expect_identical(importer_calls, 0L)
+    expect_identical(nrow(state$importResult$data), 0L)
+    expect_identical(names(state$importResult$data), state$headers)
+})
+
+test_that("exact custom auto routing binds before the full reader", {
+    root <- withr::local_tempdir(pattern = "metab075-preingress-")
+    built <- .metab031Workflow(root, backend = "auto")
+    source <- file.path(root, "source", "custom.tsv")
+    expect_true(file.copy(
+        .metab031RepoPath(
+            "tests/testdata/e2e/metab_lc/lcms_pos_features.tsv"
+        ),
+        source
+    ))
+    importer_calls <- 0L
+    withr::local_options(list(
+        MultiScholaR.metabolomics.preingress_envelope =
+            .metab075ExactEnvelope()
+    ))
+    state <- prepareMetabImportAssaySelectionState(
+        source,
+        vendorFormat = "custom",
+        workflowData = built$workflow,
+        defaultImporter = \(...) {
+            importer_calls <<- importer_calls + 1L
+            stop("full importer must remain deferred")
+        }
+    )
+
+    expect_true(state$deferred)
+    expect_identical(importer_calls, 0L)
+    expect_true(built$workflow$workflow_context$isBound())
+    decision <- built$workflow$workflow_context$getStorageDecision()
+    expect_identical(decision$effective_backend, "artifact")
+    expect_identical(decision$effective_rollout, "evict")
+    expect_identical(
+        state$preIngress$outcome$token$measure$bytes,
+        unname(as.numeric(file.info(source)$size))
+    )
+    expect_false(
+        state$preIngress$outcome$token$probe_evidence[[
+            "complete_payload_materialized"
+        ]]
+    )
+})
+
+test_that("installed legacy auto routing remains post-parse compatible", {
+    root <- withr::local_tempdir(pattern = "metab075-legacy-auto-")
+    built <- .metab031Workflow(root, backend = "auto")
+    source <- .metab031RepoPath(
+        "tests/testdata/e2e/metab_lc/lcms_pos_features.tsv"
+    )
+    state <- prepareMetabImportAssaySelectionState(
+        source,
+        vendorFormat = "custom",
+        workflowData = built$workflow
+    )
+    expect_false(state$deferred)
+    expect_identical(
+        state$preIngress$status,
+        "installed_legacy_policy_deferred"
+    )
+    expect_false(built$workflow$workflow_context$isBound())
+    expect_gt(nrow(state$importResult$data), 0L)
+})
+
+test_that("explicit artifact processing consumes one staged custom payload", {
+    root <- withr::local_tempdir(pattern = "metab075-processing-")
+    built <- .metab031Workflow(root)
+    source <- .metab031RepoPath(
+        "tests/testdata/e2e/metab_lc/lcms_pos_features.tsv"
+    )
+    selection <- prepareMetabImportAssaySelectionState(
+        source,
+        vendorFormat = "custom",
+        workflowData = built$workflow
+    )
+    samples <- grep("^(WT|KO)_", selection$headers, value = TRUE)
+    result <- runMetabImportProcessing(
+        assay1Data = selection$importResult$data,
+        assay1Name = "LCMS_Pos",
+        assay1File = source,
+        assay2File = NULL,
+        assay2Name = NULL,
+        vendorFormat = "custom",
+        detectedFormat = "custom",
+        sanitizeNames = FALSE,
+        isPattern = "",
+        getMetaboliteIdColFn = \() "Feature.Name",
+        getAnnotationColFn = \() "Feature.Name",
+        getSampleColumnsFn = \() samples,
+        workflowData = built$workflow,
+        reqFn = \(...) invisible(TRUE),
+        showNotificationFn = \(...) invisible(NULL),
+        writeImportArtifactsFn = \(...) list(written = FALSE),
+        finalizeFeedbackFn = \(...) list(status = "success"),
+        assay1Deferred = selection$deferred
+    )
+
+    expect_identical(result$status, "success")
+    expect_true(result$stagedImport$attempted)
+    expect_true(result$artifactStageResult$committed)
+    expect_identical(
+        built$workflow$data_tbl,
+        result$workflowPayload$assayList
+    )
+    expect_false(
+        result$stagedImport$process_evidence$complete_source_materialized
+    )
 })
 
 test_that("metabolomics design dual-write hydrates exact S4 and dependencies", {

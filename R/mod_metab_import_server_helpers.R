@@ -218,7 +218,8 @@ setupMetabImportAssaySelectionCallback <- function(
     localData,
     session,
     runAssaySelectionFn = runMetabImportAssaySelection,
-    input = NULL
+    input = NULL,
+    workflowData = NULL
 ) {
   function() {
     runArgs <- list(
@@ -229,6 +230,24 @@ setupMetabImportAssaySelectionCallback <- function(
     if (!is.null(input) &&
         metabImportServerFunctionAcceptsArg(runAssaySelectionFn, "vendorFormat")) {
       runArgs$vendorFormat <- input$vendor_format
+    }
+    if (!is.null(workflowData) &&
+        metabImportServerFunctionAcceptsArg(
+          runAssaySelectionFn,
+          "deferFullImport"
+        )) {
+      context <- workflowData$workflow_context
+      runArgs$deferFullImport <- inherits(context, "WorkflowContext") &&
+        !context$isBound() && identical(
+          context$getStoragePolicy()$requested_backend,
+          "artifact"
+        ) && identical(input$vendor_format, "custom")
+    }
+    if (!is.null(workflowData) && metabImportServerFunctionAcceptsArg(
+        runAssaySelectionFn,
+        "workflowData"
+    )) {
+      runArgs$workflowData <- workflowData
     }
     do.call(runAssaySelectionFn, runArgs)
   }
@@ -265,7 +284,18 @@ setupMetabImportProcessingObserver <- function(
     if (metabImportServerFunctionAcceptsArg(runProcessingFn, "experimentPaths")) {
       processingArgs$experimentPaths <- experimentPaths
     }
-    do.call(runProcessingFn, processingArgs)
+    if (metabImportServerFunctionAcceptsArg(runProcessingFn, "assay1Deferred")) {
+      processingArgs$assay1Deferred <- isTRUE(localData$assay1_deferred)
+    }
+    result <- do.call(runProcessingFn, processingArgs)
+    if (is.list(result) && identical(result$status, "success")) {
+      localData$assay1_data <- NULL
+      localData$assay1_import_result <- NULL
+      localData$assay2_data <- NULL
+      localData$assay2_import_result <- NULL
+      localData$assay1_deferred <- FALSE
+    }
+    invisible(result)
   })
 
   invisible(NULL)
@@ -308,12 +338,14 @@ runMetabImportModuleServerShell <- function(
     assay1_file = NULL,
     assay1_data = NULL,
     assay1_import_result = NULL,
+    assay1_deferred = FALSE,
     assay2_file = NULL,
     assay2_data = NULL,
     assay2_import_result = NULL,
     detected_format = NULL,
     format_confidence = NULL,
-    all_headers = NULL
+    all_headers = NULL,
+    preingress = NULL
   )
 
   assaySelectionArgs <- list(
@@ -322,6 +354,12 @@ runMetabImportModuleServerShell <- function(
   )
   if (metabImportServerFunctionAcceptsArg(setupAssaySelectionCallbackFn, "input")) {
     assaySelectionArgs$input <- input
+  }
+  if (metabImportServerFunctionAcceptsArg(
+      setupAssaySelectionCallbackFn,
+      "workflowData"
+  )) {
+    assaySelectionArgs$workflowData <- workflowData
   }
   importData <- do.call(setupAssaySelectionCallbackFn, assaySelectionArgs)
 

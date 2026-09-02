@@ -939,6 +939,52 @@ test_that("metabolomics process-import observer setup seam preserves current inp
   expect_identical(run_calls[[1]]$workflowData, workflow_data)
 })
 
+test_that("successful metabolomics processing releases module-local payloads", {
+  input <- new.env(parent = emptyenv())
+  input$process_import <- 0L
+  input$assay1_name <- "Assay_1"
+  input$assay2_name <- "Assay_2"
+  input$vendor_format <- "custom"
+  input$sanitize_names <- FALSE
+  input$is_pattern <- ""
+  local_data <- new.env(parent = emptyenv())
+  local_data$assay1_file <- "assay1.tsv"
+  local_data$assay1_data <- data.frame(feature = "A")
+  local_data$assay1_import_result <- list(data = local_data$assay1_data)
+  local_data$assay1_deferred <- TRUE
+  local_data$assay2_file <- NULL
+  local_data$assay2_data <- data.frame(feature = "B")
+  local_data$assay2_import_result <- list(data = local_data$assay2_data)
+  local_data$detected_format <- "custom"
+  local_data$format_confidence <- 1
+  handler <- NULL
+
+  setupMetabImportProcessingObserver(
+    input = input,
+    localData = local_data,
+    columnAccessors = list(
+      getMetaboliteIdCol = \() "feature",
+      getAnnotationCol = \() NULL,
+      getSampleColumns = \() "sample"
+    ),
+    workflowData = new.env(parent = emptyenv()),
+    observeEventFn = \(eventExpr, handlerExpr) {
+      handler_env <- parent.frame()
+      handler_expr <- substitute(handlerExpr)
+      handler <<- \() eval(handler_expr, envir = handler_env)
+      invisible(NULL)
+    },
+    runProcessingFn = \(...) list(status = "success")
+  )
+  handler()
+
+  expect_null(local_data$assay1_data)
+  expect_null(local_data$assay1_import_result)
+  expect_null(local_data$assay2_data)
+  expect_null(local_data$assay2_import_result)
+  expect_false(local_data$assay1_deferred)
+})
+
 test_that("metabolomics file-loaded output setup seam preserves current data lookup and unsuspended registration", {
   local_data <- new.env(parent = emptyenv())
   local_data$assay1_data <- NULL
