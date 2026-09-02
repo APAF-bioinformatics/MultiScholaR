@@ -745,7 +745,7 @@ runLipidImportProcessing <- function(
       if (isTRUE(assay1Deferred)) {
         resolvedAssay1Data <- NULL
         assemble_args$assay1Data <- NULL
-        artifactReleaseTransientMemory(full = TRUE)
+        artifactReleaseTransientMemory()
       }
       artifact_result <- writeImportArtifacts(
         assayList = assay_list,

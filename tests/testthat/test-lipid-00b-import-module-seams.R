@@ -1174,7 +1174,7 @@ test_that("successful lipidomics processing releases module-local payloads", {
   expect_null(local_data$assay2_data)
   expect_null(local_data$assay2_import_result)
   expect_false(local_data$assay1_deferred)
-  expect_identical(release_calls, TRUE)
+  expect_identical(release_calls, FALSE)
 })
 
 test_that("handleLipidImportValidationSummaryRender preserves the validation summary payload", {

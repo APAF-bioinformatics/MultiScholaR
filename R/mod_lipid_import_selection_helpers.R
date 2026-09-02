@@ -532,7 +532,7 @@ registerLipidImportProcessObserver <- function(
       localData$assay1_deferred <- FALSE
       if (isTRUE(request_args$assay1Deferred)) {
         result$assayList <- NULL
-        releaseMemory(full = TRUE)
+        releaseMemory()
       }
     }
     invisible(result)

@@ -169,7 +169,7 @@ lipidPilotImport <- function(namespace, workflow, args) {
     payload <- memory_import$payload
     if (candidate) {
         memory_import$selection_payload <- NULL
-        lipidPilotValue(namespace, "artifactReleaseTransientMemory")(full = TRUE)
+        lipidPilotValue(namespace, "artifactReleaseTransientMemory")()
     }
     lipidPilotValue(namespace, "applyLipidImportResultToWorkflow")(
         workflowData = workflow,
@@ -316,9 +316,7 @@ lipidPilotWorker <- function(args) {
     imported$staged <- NULL
     design$object <- NULL
     if (identical(args$arm, "candidate_artifact")) {
-        lipidPilotValue(namespace, "artifactReleaseTransientMemory")(
-            full = TRUE
-        )
+        lipidPilotValue(namespace, "artifactReleaseTransientMemory")()
     }
     result <- list(
         status = "passed",
