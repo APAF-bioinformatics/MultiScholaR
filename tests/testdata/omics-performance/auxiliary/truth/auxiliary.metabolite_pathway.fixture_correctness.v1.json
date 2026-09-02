@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.metabolite_pathway.fixture_correctness.v1",
   "route_id": "metabolite_pathway",
   "workload_class": "fixture_correctness",
-  "contract_basis_sha256": "2d1afdafcaaacd3abc35b73a3151a49c8b46bc9e3b7016b04814e41ad70de4da",
+  "contract_basis_sha256": "663dc8e560084900513ef591e244fad20398884b8528bb77a2768948ed876f09",
   "payload_sha256": "6e63f4039194ee879adf74d164985e6c61f68aaddbc1bb8eabb6f944cac28d63",
   "dimensions": {
     "evidence_row_count": 0,

@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.metabolite_enrichment.representative.v1",
   "route_id": "metabolite_enrichment",
   "workload_class": "representative",
-  "contract_basis_sha256": "73f479ac02152fe42aa766a7fbe35e9db887136c994965ca73f9c01eab66f1d0",
+  "contract_basis_sha256": "1d0aa3524c9dfdafa42604bf13f0d7afea1d166cdc7ef46344e3056e55d2f455",
   "payload_sha256": "87e80f2281847e0837aa882b5adec904087ec463b1b12759f15d1d997b5fe2f0",
   "dimensions": {
     "evidence_row_count": 0,

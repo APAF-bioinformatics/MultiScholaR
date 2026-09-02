@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.metabolite_pathway.representative.v1",
   "route_id": "metabolite_pathway",
   "workload_class": "representative",
-  "contract_basis_sha256": "38360cddf13c5edd934e352b8371910b5777382279864d78c34ae14b70b96fd6",
+  "contract_basis_sha256": "cb38ecf5392fd751a3862d795f1a51a4dbc5d00628ab2620d4f119db35ecc56f",
   "payload_sha256": "eadae3b41618eec454eaeb84971a72a0ea049265a113f24f01e9c0aa3f91ea69",
   "dimensions": {
     "evidence_row_count": 0,

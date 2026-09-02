@@ -46,6 +46,9 @@ auxPublicationPhosphositeTruth <- function(payload, dimensions) {
     )
     rescued[is.na(rescued)] <- FALSE
     filtered_rows <- sum(mapping_valid & rescued)
+    filtered_evidence_rows <- length(unique(mapping_rows[
+        mapping_valid & rescued
+    ]))
     list(
         evidence_row_count = as.integer(nrow(payload$evidence)),
         protein_count = as.integer(nrow(payload$proteins)),
@@ -66,6 +69,9 @@ auxPublicationPhosphositeTruth <- function(payload, dimensions) {
         expected_score_filtered_rows = as.integer(filtered_rows),
         expected_long_rows = as.numeric(
             filtered_rows * dimensions$measured_sample_count
+        ),
+        expected_paralog_rows = as.numeric(
+            filtered_evidence_rows * dimensions$measured_sample_count
         ),
         measured_sample_count = as.integer(dimensions$measured_sample_count),
         input_column_order = as.list(names(payload$evidence)),
@@ -273,7 +279,7 @@ auxPublicationValidatePhosphositeResult <- function(result, truth) {
             as.numeric(expected$expected_long_rows)
         ) && identical(
             as.numeric(stages$paralog),
-            as.numeric(expected$expected_long_rows)
+            as.numeric(expected$expected_paralog_rows)
         )
     if (!valid) auxPublicationAbort("phosphosite stage result differs")
     invisible(result)

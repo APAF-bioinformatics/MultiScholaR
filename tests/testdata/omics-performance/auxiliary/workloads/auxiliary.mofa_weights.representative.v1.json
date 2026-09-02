@@ -75,7 +75,7 @@
       },
       {
         "path": "tools/profiling/omics_publication_auxiliary_truth.R",
-        "sha256": "0db5e5a2097b49eb3d92f6add148e6904ac56fab8514c5606b46e827f99c1eb3"
+        "sha256": "4a9690e866a3955cd3f09e8d79f8b092f13c3f90541d8fa1b8cc6df132328773"
       },
       {
         "path": "tools/profiling/omics_publication_workload_auxiliary.R",
@@ -122,7 +122,7 @@
   },
   "expected_digests": {
     "payload_sha256": "618bad4ac873e8ee3e9a179e06d0f1a3bebd16ed1e974f761fe76661dc395216",
-    "truth_sha256": "44e059925644ec45b86d016a9fff2510b4e67d2b8915f3d7b8bd570289e6021b"
+    "truth_sha256": "9590c5e500e140bc1dcbaa1c8ec3a3c10c65b4ab46e38859cd9fe2621426282a"
   },
   "publication_authority": false
 }

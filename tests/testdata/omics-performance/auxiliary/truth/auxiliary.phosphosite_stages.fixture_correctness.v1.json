@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.phosphosite_stages.fixture_correctness.v1",
   "route_id": "phosphosite_stages",
   "workload_class": "fixture_correctness",
-  "contract_basis_sha256": "274b4b8c6ff529c96826053b537bfaf75f7b59b292e2a7ec8a685df4b93033af",
+  "contract_basis_sha256": "18efae4432a7d3930df7bc20a550e90c363c4439cb657f7a08c5a42ba9c3bdd2",
   "payload_sha256": "31b286373118145724db68d96a016d52dccf29e60c05678a4aeba07d390fa649",
   "dimensions": {
     "evidence_row_count": 20,
@@ -39,6 +39,7 @@
     "expected_site_probability_rows": 20,
     "expected_score_filtered_rows": 15,
     "expected_long_rows": 60,
+    "expected_paralog_rows": 60,
     "measured_sample_count": 4,
     "input_column_order": [
       "leading_proteins",

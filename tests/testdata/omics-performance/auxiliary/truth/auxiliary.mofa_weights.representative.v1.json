@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.mofa_weights.representative.v1",
   "route_id": "mofa_weights",
   "workload_class": "representative",
-  "contract_basis_sha256": "3089833a59bba00e5a8040fbbf80d020b2fb1f2564af9997bad87ebc0fc190f8",
+  "contract_basis_sha256": "be40faf5cc851acadd65410f2e942b5475f1050d80d321df7f57c550eb27ea7e",
   "payload_sha256": "618bad4ac873e8ee3e9a179e06d0f1a3bebd16ed1e974f761fe76661dc395216",
   "dimensions": {
     "evidence_row_count": 0,

@@ -40,11 +40,11 @@
       "workload_class": "fixture_correctness",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.metabolite_enrichment.fixture_correctness.v1.json",
-        "sha256": "0882f6ff8f703cb304cb236203f18fc472fa805277829b1f856e825490c27d00"
+        "sha256": "a36aeefe00c2845d76bb8ae4c10ee5e7cd0748460890828b6523238b6223b82b"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.metabolite_enrichment.fixture_correctness.v1.json",
-        "sha256": "2ba66e4095e6da9390cd017c990ed7bd816e4947ecf25ac07e5a45b2f54746a7"
+        "sha256": "bf69c9dd6e4110302a915f19dad2ee72340236e7a1215190a317a65fc5fbed52"
       },
       "payload_sha256": "a8f7fd7604d011e927ae4759214881832f11d7a74f8dcd6672b054c2ea7eb252",
       "dimensions": {
@@ -68,11 +68,11 @@
       "workload_class": "representative",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.metabolite_enrichment.representative.v1.json",
-        "sha256": "7cd8d648072445551c3553206f747e3f744f7cca04867469ba8af286cbad4422"
+        "sha256": "63ad308554fb7350454b9f1f98ddf55f3391ae36f10ab129199c64b31824f021"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.metabolite_enrichment.representative.v1.json",
-        "sha256": "6ff64f183eadc871b41a3b1e415539c265907142b44b657542d4cac51759ede2"
+        "sha256": "7fd37d533e421fbbb7604534232f289a1bc79602b696f6bcb5e973cbb4f1de6f"
       },
       "payload_sha256": "87e80f2281847e0837aa882b5adec904087ec463b1b12759f15d1d997b5fe2f0",
       "dimensions": {
@@ -96,11 +96,11 @@
       "workload_class": "fixture_correctness",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.metabolite_pathway.fixture_correctness.v1.json",
-        "sha256": "f7dd6ef7f6e383c4cc4f1b8e551bdccb81542a3942442abfef57e1772db840fa"
+        "sha256": "c1244f0f3c928cf994ceb9517d8c254cce2e64430c527493c92b88f871cf673b"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.metabolite_pathway.fixture_correctness.v1.json",
-        "sha256": "4a3b48cbdd360a40af2e042203f93580e730a50d3fce3b40bcf9b84a185d121f"
+        "sha256": "56998c51aeb6a28c1d72d9305e26c99850d59de8483435a63b71f6a2541e542d"
       },
       "payload_sha256": "6e63f4039194ee879adf74d164985e6c61f68aaddbc1bb8eabb6f944cac28d63",
       "dimensions": {
@@ -124,11 +124,11 @@
       "workload_class": "representative",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.metabolite_pathway.representative.v1.json",
-        "sha256": "d9a6fac3c046ca8a78a4feebdb6f530cec52c41640950755867842ebc500c0f2"
+        "sha256": "8b88db7323ba5ff9a47b28c56ee27cc49bb19a4004a4dec5f939e539e1919589"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.metabolite_pathway.representative.v1.json",
-        "sha256": "ba8edc8624d4d474ae8aed2e6d0c7005f1270c1ec6216f20be272ea7da207079"
+        "sha256": "121361ba1105e841c22da5485403b0cffd67e2e7320a62af6b5a9950357cd9c7"
       },
       "payload_sha256": "eadae3b41618eec454eaeb84971a72a0ea049265a113f24f01e9c0aa3f91ea69",
       "dimensions": {
@@ -152,11 +152,11 @@
       "workload_class": "fixture_correctness",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.mofa_weights.fixture_correctness.v1.json",
-        "sha256": "188bbdd4a9aa4fd47e744ad35fad8bc6ad348638ec3c8178ae0f87a8d0d5a44e"
+        "sha256": "25b5368f90a5035496e9817065ca1651ee54e56adb5d5e421a9aa5cef255fe48"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.mofa_weights.fixture_correctness.v1.json",
-        "sha256": "bf6fd2b90d0d54e02ff558b6b25039c2a7cd514d8fc516425e0da373bd483a75"
+        "sha256": "938b373099d3a18cfd27653b5ccf81c4973db6b75bc9895e73aef91d7b471865"
       },
       "payload_sha256": "1fd26de8193f642235aa878342cd33b4cbf3e467ca1829ff531ff2c4c39516c2",
       "dimensions": {
@@ -180,11 +180,11 @@
       "workload_class": "representative",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.mofa_weights.representative.v1.json",
-        "sha256": "7005902b1bd1d234936ae5e3c4718a258e6858e3634407346bc3e5c73f1d68a0"
+        "sha256": "f2e4102ca2faecc94ddd5da12c9bf96613541a4d24db8672cc5800890f9795f4"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.mofa_weights.representative.v1.json",
-        "sha256": "44e059925644ec45b86d016a9fff2510b4e67d2b8915f3d7b8bd570289e6021b"
+        "sha256": "9590c5e500e140bc1dcbaa1c8ec3a3c10c65b4ab46e38859cd9fe2621426282a"
       },
       "payload_sha256": "618bad4ac873e8ee3e9a179e06d0f1a3bebd16ed1e974f761fe76661dc395216",
       "dimensions": {
@@ -208,11 +208,11 @@
       "workload_class": "fixture_correctness",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.phosphosite_stages.fixture_correctness.v1.json",
-        "sha256": "210d3996049d9343b22cea2958984768ffcd87440477486aca6f4924c17be5fe"
+        "sha256": "d6bc62326dfdcad7e10b6efc222aa4471a26c880e14f8194ebc4727452fee5a8"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.phosphosite_stages.fixture_correctness.v1.json",
-        "sha256": "2f50793ce027901de95a3b6ab2f98026cf584a9220cc976d7f8c1ffcd1159018"
+        "sha256": "a5eac551e6c7ccca0a52f309f6ab1783ff7d167f0aa0c7e42b3a74c7d7bac060"
       },
       "payload_sha256": "31b286373118145724db68d96a016d52dccf29e60c05678a4aeba07d390fa649",
       "dimensions": {
@@ -236,11 +236,11 @@
       "workload_class": "representative",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.phosphosite_stages.representative.v1.json",
-        "sha256": "c6a36e7e11e957d32230121132a4803b3406cc2fd4e1051a4dbe505d00c9c183"
+        "sha256": "feb0e6366742ea73efd18fcb2d67e08af9cffc5eb69b57217f2965cc140e8f25"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.phosphosite_stages.representative.v1.json",
-        "sha256": "669086ce1f3012bf7305d74d551bd8c66168a511b3172ce7df3013ab05fed4c4"
+        "sha256": "4baf72fb661627455c7cb2de66f318602d684de8022d6053e1ec6d52b67467ad"
       },
       "payload_sha256": "dcfdcadf425cd19838ad33b7cdd21e34afeb060def1a3e53c52abe1a156b34cc",
       "dimensions": {
@@ -264,11 +264,11 @@
       "workload_class": "fixture_correctness",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.stringdb_rank.fixture_correctness.v1.json",
-        "sha256": "7dc850dc86dfb76524034a001baf39699860c03aebaae5cbd57523331b7a7978"
+        "sha256": "444eac16e7619be723a5f9cc10f85bc264e1b29c0183d6d0fb5d25057fadd860"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.stringdb_rank.fixture_correctness.v1.json",
-        "sha256": "e855a716794fd7aca366b46e2a6914bc95272c05f06535c4562d2a145ab9ddd3"
+        "sha256": "c9936db8a0866e4a1604a34f186eb929500e3258c33e0898b6067cffb3ec308d"
       },
       "payload_sha256": "c8329a5cee700f5125c72c4d6eb2fb30eab08acdd8c9660373fa66b464cd9db8",
       "dimensions": {
@@ -292,11 +292,11 @@
       "workload_class": "representative",
       "contract": {
         "path": "tests/testdata/omics-performance/auxiliary/workloads/auxiliary.stringdb_rank.representative.v1.json",
-        "sha256": "1f35b92e2af8a49628f0c553a5bfaf5b16864c3cdcc8a106ddf508231cb3f98f"
+        "sha256": "9f10670cfeb6b8cd26835bf21dda786637502c7da91f4eb917e98f7c760e01d1"
       },
       "truth": {
         "path": "tests/testdata/omics-performance/auxiliary/truth/auxiliary.stringdb_rank.representative.v1.json",
-        "sha256": "bc9f50d8ac91a7c2738e5447fe48f2ceac390d672b5b4d31624e0cc7f335a752"
+        "sha256": "b88dc38cbe5b1fc94f16562f4231e682ac185df91e080f2ee62bbeba6a182a6a"
       },
       "payload_sha256": "557ad8a649284fbe1dfdfc0aaf11e956fc189b3cd1a56c2ee76dda8afe98a9da",
       "dimensions": {

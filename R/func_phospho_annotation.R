@@ -60,30 +60,38 @@ addColumnsToEvidenceTbl <- function(evidence_tbl, phospho_site_prob_col = phosph
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export
 getMaxProb <- function(phosphopeptide, num_sites=1) {
+  phosphositeProbabilityDetails(phosphopeptide, num_sites)$probability
+}
 
-  pass_thresh <- str_match_all( phosphopeptide,
-                                "\\((\\d+\\.*\\d*)\\)") %>%
-    .[[1]]  %>%
-    .[,2] %>%
-    as.numeric
-
-  # Try to preserve the order in which the probability is listed in the peptide,
-  # while using sort to find the top 'num_sites'
-
-  if( length(pass_thresh) == 0 ) {
-    return( c())
+phosphositeProbabilityDetails <- function(phosphopeptide, num_sites = 1) {
+  matches <- stringr::str_match_all(
+    phosphopeptide,
+    "\\((\\d+\\.*\\d*)\\)"
+  )[[1L]]
+  probabilities <- as.numeric(matches[, 2L])
+  if (!length(probabilities)) {
+    return(list(probability = NULL, position = numeric()))
   }
-
-  # Sort from maximum to minimum and then take the first few numbers according to number of sites required
-  # Please ensure decreasing is set to TRUE.
-  top_site_index <-  sort.int(pass_thresh,
-                              index.return=TRUE,
-                              decreasing=TRUE)$ix[seq_len(num_sites)]
-
-
-  pass_thresh[sort( top_site_index)]  %>%
-    keep( ~{!is.na(.)}  )
-
+  selected <- sort.int(
+    probabilities,
+    index.return = TRUE,
+    decreasing = TRUE
+  )$ix[seq_len(num_sites)]
+  best <- probabilities[sort(selected)]
+  best <- best[!is.na(best)]
+  selected_positions <- which(probabilities %in% best)
+  marked_peptide <- stringr::str_replace_all(
+    phosphopeptide,
+    "\\(\\d+\\.*\\d*\\)",
+    "p"
+  )
+  marked_locations <- stringr::str_locate_all(marked_peptide, "p")[[1L]]
+  marked_positions <- marked_locations[, 1L]
+  clean_positions <- marked_positions - seq_along(marked_positions)
+  list(
+    probability = best,
+    position = clean_positions[selected_positions]
+  )
 }
 
 
@@ -103,36 +111,10 @@ getMaxProbFutureMap <- function(phosphopeptide, num_sites=1 ) {
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export
 getBestPosition <- function(phosphopeptide, num_sites=1 ) {
-
- if(str_detect(phosphopeptide, "p" ) ) {
-   stop("Input phosphopetide string should not have little 'p' as characters.")
- }
-
-
-pass_thresh <- str_match_all( phosphopeptide,
-                "\\((\\d+\\.*\\d*)\\)") %>%
-                          .[[1]]  %>%
-                          .[,2] %>%
-                          as.numeric
-
- prob_list <- getMaxProb(phosphopeptide, num_sites)
-
- ## I might need to fix this line as if we have two poisition sharing the same maximum score,
- ## we currently only use the first one as best position
- selected_pos <- which( pass_thresh %in% prob_list)
-
- little_p_position <- str_replace_all( phosphopeptide,
-                                       "\\(\\d+\\.*\\d*\\)", "p" ) %>%
-                      str_locate_all("p") %>%
-                      .[[1]] %>%
-                      .[,1]
-
-  to_adj_pos <- seq_along( little_p_position)
-
-  clean_pos <- little_p_position - to_adj_pos
-
-  return( clean_pos[selected_pos] )
-
+  if (stringr::str_detect(phosphopeptide, "p")) {
+    stop("Input phosphopetide string should not have little 'p' as characters.")
+  }
+  phosphositeProbabilityDetails(phosphopeptide, num_sites)$position
 }
 
 
@@ -156,34 +138,41 @@ getBestPositionFutureMap <- function(phosphopeptide, num_sites=1  ) {
 #' @export
 #' @param peptide_start_position,site_relative_position Runtime inputs used by this function; see the usage section for accepted values.
 getPosString <-  function(peptide_start_position, site_relative_position) {
+  phosphositePositionDetails(
+    peptide_start_position,
+    site_relative_position
+  )$position_string
+}
 
-  a <- peptide_start_position
-  b <- site_relative_position
-
-  pos_group <- cross2( a, b) %>%
-    map_dbl( ~{sum(unlist(.))-1} )
-
-  pos_mat <-  matrix( pos_group,
-                      ncol= length(b),
-                      nrow= length(a),
-                      byrow=FALSE)
-
-  # print( pos_mat)
-
-  if ( length( a) > 1) {
-    pos_string <- list()
-
-    for( i in seq_len(nrow(pos_mat)) ) {
-      pos_string <- c( pos_string, paste0( "(", paste(  pos_mat[i,], collapse=";"), ")"  ) )
-    }
-    return( paste( pos_string, collapse="|") )
-
+phosphositePositionDetails <- function(
+    peptide_start_position,
+    site_relative_position
+) {
+  starts <- peptide_start_position
+  sites <- site_relative_position
+  start_values <- rep(starts, times = length(sites))
+  site_values <- rep(sites, each = length(starts))
+  pairs <- Map(\(start, site) list(start, site), start_values, site_values)
+  positions <- as.numeric(start_values + site_values - 1)
+  position_matrix <- matrix(
+    positions,
+    ncol = length(sites),
+    nrow = length(starts),
+    byrow = FALSE
+  )
+  position_string <- if (length(starts) > 1L) {
+    rows <- vapply(seq_len(nrow(position_matrix)), \(index) {
+      paste0("(", paste(position_matrix[index, ], collapse = ";"), ")")
+    }, character(1))
+    paste(rows, collapse = "|")
   } else {
-
-    pos_string <-  paste(  pos_mat[1,], collapse=";")
-    return( pos_string )
+    paste(position_matrix[1L, ], collapse = ";")
   }
-
+  list(
+    pairs = pairs,
+    positions = positions,
+    position_string = position_string
+  )
 }
 
 
@@ -237,29 +226,17 @@ getXMerString <- function(seq, uniprot_acc, position, padding_length=7 ) {
 #' @export
 getXMersList <-  function(seq, uniprot_acc,
                           peptide_start_position, site_relative_position, padding_length=7 ) {
-
-  a <- peptide_start_position
-  b <- site_relative_position
-
-  pos_group <- cross2( a, b) %>%
-    map_dbl( ~{sum(unlist(.))-1} )
-
-  pos_mat <-  matrix( pos_group,
-                      ncol= length(b),
-                      nrow= length(a),
-                      byrow=FALSE)
-
-  # print( uniprot_acc)
-  # print( pos_mat)
-  # print(as.vector(pos_mat[1,] ) )
-  # print( paste( "peptide_start_position = ", paste( peptide_start_position, collapse=";")))
-  # print( paste( "site_relative_position = ", paste( site_relative_position, collapse=";")))
-  my_Xmers_list <- purrr::map_chr( as.vector(pos_mat[1,] ),
-                                ~{getXMerString(seq, uniprot_acc, ., padding_length=padding_length)}) %>%
-    paste( collapse=";")
-
-  return( my_Xmers_list )
-
+  positions <- peptide_start_position[[1L]] + site_relative_position - 1
+  purrr::map_chr(
+    positions,
+    \(position) getXMerString(
+      seq,
+      uniprot_acc,
+      position,
+      padding_length = padding_length
+    )
+  ) |>
+    paste(collapse = ";")
 }
 
 
@@ -322,11 +299,30 @@ filterPeptideAndExtractProbabilities <- function(evidence_tbl_cleaned, accession
     dplyr::filter( {{num_phospho_site_col}} >=1) %>%
     ## Remove REV_ and CON_
     dplyr::filter( !str_detect( {{accession_col}}, "^REV__|^CON__" )  ) %>%
-    dplyr::mutate( best_phos_prob = getMaxProbFutureMap({{phospho_site_prob_col}},
-                                                        {{num_phospho_site_col}})) %>%
+    dplyr::mutate(
+      phosphosite_details = furrr::future_map2(
+        {{phospho_site_prob_col}},
+        {{num_phospho_site_col}},
+        phosphositeProbabilityDetails
+      ),
+      best_phos_prob = purrr::map(phosphosite_details, "probability")
+    ) %>%
     dplyr::filter( map_lgl(best_phos_prob, ~{length(.) > 0} )) %>%
-    dplyr::mutate( best_phos_pos = getBestPositionFutureMap({{phospho_site_prob_col}},
-                                                            {{num_phospho_site_col}})) %>%
+    dplyr::mutate(
+      best_phos_pos = purrr::map2(
+        {{phospho_site_prob_col}},
+        phosphosite_details,
+        \(peptide, details) {
+          if (stringr::str_detect(peptide, "p")) {
+            stop(paste0(
+              "Input phosphopetide string should not have little 'p' ",
+              "as characters."
+            ))
+          }
+          details$position
+        }
+      )
+    ) %>%
     ## Avoid cases where there are multiple positions having the same top scores
     dplyr::filter( map2_lgl(best_phos_prob, best_phos_pos, ~{length(.x) == length(.y)} )) %>%
     left_join( accession_gene_name_tbl, by="evidence_id") %>%
@@ -383,11 +379,30 @@ addPeptideStartAndEnd <- function(sites_probability_tbl, aa_seq_tbl ) {
 addPhosphositesPositionsString <- function(peptide_start_and_end ) {
 
   phosphosite_pos_string_tbl <- peptide_start_and_end %>%
+    mutate(
+      phosphosite_position_details = map2(
+        peptide_location,
+        best_phos_pos,
+        \(location, position) phosphositePositionDetails(
+          location[, "start"],
+          position
+        )
+      )
+    ) %>%
     mutate( best_phos_pos_string = map_chr(best_phos_pos, ~paste(., collapse=";") )) %>%
-    mutate( temp_check_pos =  map2(peptide_location, best_phos_pos, ~{cross2( .x[,"start"] , .y) } )   ) %>%
-    mutate( check_pos =  purrr::map(temp_check_pos, ~{ map_dbl(., function(x){sum(unlist(x)) -1} )}   ) ) %>%
-    mutate( protein_site_positions = map2_chr(peptide_location, best_phos_pos, ~{getPosString(.x[, "start"] , .y) } )  )  %>%
-    mutate( best_phos_prob_string = map_chr(best_phos_prob, ~paste(., collapse=";") ))
+    mutate(
+      temp_check_pos = map(phosphosite_position_details, "pairs"),
+      check_pos = map(phosphosite_position_details, "positions"),
+      protein_site_positions = map_chr(
+        phosphosite_position_details,
+        "position_string"
+      ),
+      best_phos_prob_string = map_chr(
+        best_phos_prob,
+        ~paste(., collapse = ";")
+      )
+    ) %>%
+    dplyr::select(-phosphosite_position_details)
 
   return( phosphosite_pos_string_tbl)
 
@@ -610,43 +625,46 @@ allPhosphositesPivotWider <- function(all_phos_sites_long_tbl,
 #' @export
 uniquePhosphositesSummariseLongList <- function(all_phos_sites_long_tbl,
                                                 additional_cols = c("experiment") ) {
-
-  ## Summarise the input table with a summarisation function
-  group_summary <- function( input_tbl, additional_cols, method=mean ) {
-
-    usual_columns <- c( "uniprot_acc",  "gene_names", "protein_site_positions",  "phos_15mer_seq", "replicate" )
-
-    cols_to_use <- usual_columns
-
-    if ( !is.na( additional_cols) & additional_cols != "" ) {
-      cols_to_use <- c( usual_columns, additional_cols)
-    }
-
-    temp_tbl <- input_tbl %>%
-      group_by( across({{ cols_to_use }}) ) %>%
-      # uniprot_acc, gene_names, protein_site_positions, phos_15mer_seq, experiment, replicate
-      summarise( value =  method( value) ,
-                 maxquant_row_ids= paste0(evidence_id, collapse=";") ) %>%
-      ungroup  %>%
-      mutate( replicate = toupper(replicate))
-
-
-    output_tbl <- temp_tbl
-    if ( !is.na( additional_cols) & additional_cols != "" ) {
-
-      output_tbl <- temp_tbl %>%
-      mutate_at(  additional_cols, toupper)
-
-    }
-
-    return( output_tbl)
+  usual_columns <- c(
+    "uniprot_acc", "gene_names", "protein_site_positions",
+    "phos_15mer_seq", "replicate"
+  )
+  cols_to_use <- usual_columns
+  if (!is.na(additional_cols) & additional_cols != "") {
+    cols_to_use <- c(usual_columns, additional_cols)
   }
-
-  summary_funcs <- list( mean=mean, median=median, sum=sum)
-
-  summarised_long_tbl_list <- purrr::map( summary_funcs, ~group_summary(all_phos_sites_long_tbl, additional_cols, .))
-
-  return( summarised_long_tbl_list)
+  summarised <- all_phos_sites_long_tbl |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(cols_to_use))) |>
+    dplyr::summarise(
+      mean_value = mean(value),
+      median_value = stats::median(value),
+      sum_value = sum(value),
+      maxquant_row_ids = paste0(evidence_id, collapse = ";"),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(replicate = toupper(replicate))
+  if (!is.na(additional_cols) & additional_cols != "") {
+    summarised <- summarised |>
+      dplyr::mutate(dplyr::across(
+        dplyr::all_of(additional_cols),
+        toupper
+      ))
+  }
+  value_columns <- c(
+    mean = "mean_value",
+    median = "median_value",
+    sum = "sum_value"
+  )
+  lapply(value_columns, \(value_column) {
+    output <- summarised |>
+      dplyr::select(
+        dplyr::all_of(cols_to_use),
+        dplyr::all_of(value_column),
+        maxquant_row_ids
+      )
+    names(output)[names(output) == value_column] <- "value"
+    output
+  })
 }
 
 
@@ -693,21 +711,20 @@ uniquePhosphositesSummariseWideList <- function(summarised_long_tbl_list,
 
     ## Summarize MaxQuant evidence IDs from different multiplex experiment
     clean_maxquant_ids <- function(input_tab ) {
-      maxquant_ids_tbl <- input_tab  %>%
-        group_by( sites_id) %>%
-        summarise( maxquant_row_ids = paste(maxquant_row_ids, collapse=",")  ) %>%
-        ungroup()
-
-
-      values_tbl <- input_tab %>%
-        dplyr::select(-maxquant_row_ids) %>%
-        group_by( sites_id) %>%
-        summarise_all( ~sum(., na.rm=TRUE)) %>%
-        ungroup()
-
-      output_tab <- values_tbl %>%
-        left_join( maxquant_ids_tbl, by="sites_id") %>%
-        relocate( maxquant_row_ids, .after="sites_id")
+      value_columns <- setdiff(
+        names(input_tab),
+        c("sites_id", "maxquant_row_ids")
+      )
+      output_tab <- input_tab |>
+        dplyr::group_by(sites_id) |>
+        dplyr::summarise(
+          maxquant_row_ids = paste(maxquant_row_ids, collapse = ","),
+          dplyr::across(
+            dplyr::all_of(value_columns),
+            \(value) sum(value, na.rm = TRUE)
+          ),
+          .groups = "drop"
+        )
 
       colnames( output_tab) <- colnames( output_tab ) %>%
         toupper( ) %>%

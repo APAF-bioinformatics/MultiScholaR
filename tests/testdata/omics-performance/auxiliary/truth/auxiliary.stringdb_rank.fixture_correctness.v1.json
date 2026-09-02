@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.stringdb_rank.fixture_correctness.v1",
   "route_id": "stringdb_rank",
   "workload_class": "fixture_correctness",
-  "contract_basis_sha256": "5b48948a1141ee767c4e12952f2a492bca7c8b141b5139f2516f0f14eedb8d09",
+  "contract_basis_sha256": "58765010c3b86eba27b1c2a5a992c1c40ca80456e0194b7c3000292d06f1bfa3",
   "payload_sha256": "c8329a5cee700f5125c72c4d6eb2fb30eab08acdd8c9660373fa66b464cd9db8",
   "dimensions": {
     "evidence_row_count": 0,

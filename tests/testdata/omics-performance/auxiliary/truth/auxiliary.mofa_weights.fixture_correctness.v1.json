@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.mofa_weights.fixture_correctness.v1",
   "route_id": "mofa_weights",
   "workload_class": "fixture_correctness",
-  "contract_basis_sha256": "535b0c6e47fff7724799afe1a20e2510957a55b6eae62bd3d0876f9a8e406ee3",
+  "contract_basis_sha256": "5156a607781ee0358e365d1648eed3a35f0a9feecda8fe7dda33236878dc1025",
   "payload_sha256": "1fd26de8193f642235aa878342cd33b4cbf3e467ca1829ff531ff2c4c39516c2",
   "dimensions": {
     "evidence_row_count": 0,

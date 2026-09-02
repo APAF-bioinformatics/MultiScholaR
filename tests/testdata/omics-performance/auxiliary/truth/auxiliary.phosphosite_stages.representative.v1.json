@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.phosphosite_stages.representative.v1",
   "route_id": "phosphosite_stages",
   "workload_class": "representative",
-  "contract_basis_sha256": "81cf8366575dcc5e88698f9b7a85f24fa95f7d8b9cb30ca03dc45c4ee613a733",
+  "contract_basis_sha256": "3e311f9295fcc9223619da7fea32701fee2f64a800555e682c48106424ba6dc1",
   "payload_sha256": "dcfdcadf425cd19838ad33b7cdd21e34afeb060def1a3e53c52abe1a156b34cc",
   "dimensions": {
     "evidence_row_count": 100000,
@@ -39,6 +39,7 @@
     "expected_site_probability_rows": 99871,
     "expected_score_filtered_rows": 75621,
     "expected_long_rows": 1814904,
+    "expected_paralog_rows": 1680264,
     "measured_sample_count": 24,
     "input_column_order": [
       "leading_proteins",

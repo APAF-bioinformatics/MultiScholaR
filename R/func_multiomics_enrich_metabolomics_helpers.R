@@ -143,6 +143,67 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   return(combined_results)
 }
 
+multiomicsFirstLookup <- function(keys, values) {
+  keep <- !is.na(keys) & nzchar(keys) & !duplicated(keys)
+  entries <- as.list(as.character(values[keep]))
+  names(entries) <- keys[keep]
+  list2env(entries, envir = new.env(hash = TRUE, parent = emptyenv()))
+}
+
+multiomicsLookupValue <- function(lookup, key) {
+  get0(
+    key,
+    envir = lookup,
+    mode = "character",
+    inherits = FALSE,
+    ifnotfound = NA_character_
+  )
+}
+
+multiomicsPathwayNameLookups <- function(all_names_mapping, kegg_to_chebi) {
+  list(
+    kegg_to_chebi = multiomicsFirstLookup(
+      kegg_to_chebi$kegg_id,
+      kegg_to_chebi$chebi_id
+    ),
+    assay_chebi = multiomicsFirstLookup(
+      paste(all_names_mapping$assay, all_names_mapping$chebi_id, sep = "\r"),
+      all_names_mapping$metabolite
+    ),
+    chebi = multiomicsFirstLookup(
+      all_names_mapping$chebi_id,
+      all_names_mapping$metabolite
+    )
+  )
+}
+
+multiomicsMapPathwayIds <- function(id_string, assay_type, lookups) {
+  if (is.null(id_string) || !length(id_string) ||
+      isTRUE(is.na(id_string[[1L]])) || identical(id_string[[1L]], "")) {
+    return(NA_character_)
+  }
+  ids <- unlist(strsplit(as.character(id_string), split = ",|/"))
+  names_vec <- vapply(ids, \(id) {
+    if (is.na(id) || !nzchar(id)) return(NA_character_)
+    chebi_id <- if (startsWith(id, "cpd:")) {
+      multiomicsLookupValue(lookups$kegg_to_chebi, id)
+    } else if (startsWith(id, "CHEBI:")) {
+      id
+    } else {
+      return(id)
+    }
+    if (is.na(chebi_id)) return(id)
+    assay_name <- multiomicsLookupValue(
+      lookups$assay_chebi,
+      paste(assay_type, chebi_id, sep = "\r")
+    )
+    if (!is.na(assay_name)) return(assay_name)
+    fallback <- multiomicsLookupValue(lookups$chebi, chebi_id)
+    if (is.na(fallback)) id else fallback
+  }, character(1))
+  paste(names_vec[!is.na(names_vec)], collapse = ", ")
+}
+
 
 # ----------------------------------------------------------------------------
 # runMetabolomicsPathwayEnrichment
@@ -283,68 +344,20 @@ runMetabolomicsPathwayEnrichment <- function(weights,
       message("   runMetabolomicsPathwayEnrichment WARNING: mappedIDs column missing! Adding empty mappedNames.")
       combined_results$mappedNames <- rep(NA_character_, nrow(combined_results))
     } else {
-      map_ids_to_names <- function(id_string, assay_type) {
-        if (is.null(id_string) || length(id_string) == 0 ||
-            isTRUE(is.na(id_string[1])) || id_string[1] == "") {
-          return(NA_character_)
-        }
-
-        ids <- unlist(strsplit(as.character(id_string), split = ",|/"))
-        names_vec <- character(length(ids))
-
-        for (i in seq_along(ids)) {
-          id <- ids[i]
-          if (isTRUE(is.na(id)) || id == "") {
-            names_vec[i] <- NA_character_
-            next
-          }
-
-          if (grepl("^cpd:", id)) {
-            kegg_matches <- kegg_to_chebi |> dplyr::filter(kegg_id == id)
-            if (nrow(kegg_matches) > 0) {
-              chebi_id <- kegg_matches$chebi_id[1]
-              chebi_matches <- all_names_mapping |>
-                dplyr::filter(chebi_id == !!chebi_id & assay == !!assay_type)
-
-              if (nrow(chebi_matches) > 0) {
-                names_vec[i] <- chebi_matches$metabolite[1]
-              } else {
-                chebi_matches <- all_names_mapping |> dplyr::filter(chebi_id == !!chebi_id)
-                if (nrow(chebi_matches) > 0) {
-                  names_vec[i] <- chebi_matches$metabolite[1]
-                } else {
-                  names_vec[i] <- id
-                }
-              }
-            } else {
-              names_vec[i] <- id
-            }
-          } else if (grepl("^CHEBI:", id)) {
-            chebi_matches <- all_names_mapping |>
-              dplyr::filter(chebi_id == !!id & assay == !!assay_type)
-
-            if (nrow(chebi_matches) > 0) {
-              names_vec[i] <- chebi_matches$metabolite[1]
-            } else {
-              chebi_matches <- all_names_mapping |> dplyr::filter(chebi_id == !!id)
-              if (nrow(chebi_matches) > 0) {
-                names_vec[i] <- chebi_matches$metabolite[1]
-              } else {
-                names_vec[i] <- id
-              }
-            }
-          } else {
-            names_vec[i] <- id
-          }
-        }
-
-        paste(names_vec[!is.na(names_vec)], collapse = ", ")
-      }
-
-      combined_results <- combined_results |>
-        dplyr::rowwise() |>
-        dplyr::mutate(mappedNames = map_ids_to_names(mappedIDs, assay)) |>
-        dplyr::ungroup()
+      lookups <- multiomicsPathwayNameLookups(
+        all_names_mapping,
+        kegg_to_chebi
+      )
+      combined_results$mappedNames <- purrr::map2_chr(
+        combined_results$mappedIDs,
+        combined_results$assay,
+        \(id_string, assay_type) multiomicsMapPathwayIds(
+          id_string,
+          assay_type,
+          lookups
+        )
+      )
+      combined_results <- tibble::as_tibble(combined_results)
     }
   }
   
@@ -360,4 +373,3 @@ runMetabolomicsPathwayEnrichment <- function(weights,
 
 
 # ----------------------------------------------------------------------------
-

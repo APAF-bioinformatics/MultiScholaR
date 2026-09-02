@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.stringdb_rank.representative.v1",
   "route_id": "stringdb_rank",
   "workload_class": "representative",
-  "contract_basis_sha256": "625c30ca7998c0c8496726d72939b52a9851ec4844cd68c92fc93267f4ec0685",
+  "contract_basis_sha256": "6f13a4840d499548ea15216695d1964922ba357f6a2264b2b06b03558d116b6e",
   "payload_sha256": "557ad8a649284fbe1dfdfc0aaf11e956fc189b3cd1a56c2ee76dda8afe98a9da",
   "dimensions": {
     "evidence_row_count": 0,

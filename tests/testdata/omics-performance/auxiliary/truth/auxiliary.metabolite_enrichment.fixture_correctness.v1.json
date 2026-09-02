@@ -7,7 +7,7 @@
   "workload_id": "auxiliary.metabolite_enrichment.fixture_correctness.v1",
   "route_id": "metabolite_enrichment",
   "workload_class": "fixture_correctness",
-  "contract_basis_sha256": "95e2d220b8c90da250ba5cb62948f99ddc689c2fa9d4bd0a11973499e631f919",
+  "contract_basis_sha256": "2653ab4a9bd0f759a4652996d79c8213d0a5840bb48e9b72cf2ffd5ca40dfbb3",
   "payload_sha256": "a8f7fd7604d011e927ae4759214881832f11d7a74f8dcd6672b054c2ea7eb252",
   "dimensions": {
     "evidence_row_count": 0,
