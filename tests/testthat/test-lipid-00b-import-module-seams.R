@@ -1146,6 +1146,7 @@ test_that("successful lipidomics processing releases module-local payloads", {
   local_data$assay2_import_result <- list(data = local_data$assay2_data)
   local_data$detected_format <- "lipidsearch"
   local_data$format_confidence <- 1
+  release_calls <- logical()
 
   registerLipidImportProcessObserver(
     input = input,
@@ -1154,10 +1155,17 @@ test_that("successful lipidomics processing releases module-local payloads", {
     getLipidIdCol = \() "lipid_id",
     getAnnotationCol = \() NULL,
     getSampleColumns = \() "sample_a",
-    handleProcessRequest = \(...) list(status = "success"),
+    handleProcessRequest = \(...) list(
+      status = "success",
+      assayList = list(local_data$assay1_data)
+    ),
     observeEvent = \(event, handler) {
       force(handler)
       invisible(NULL)
+    },
+    releaseMemory = \(full = FALSE) {
+      release_calls <<- c(release_calls, full)
+      invisible(TRUE)
     }
   )
 
@@ -1166,6 +1174,7 @@ test_that("successful lipidomics processing releases module-local payloads", {
   expect_null(local_data$assay2_data)
   expect_null(local_data$assay2_import_result)
   expect_false(local_data$assay1_deferred)
+  expect_identical(release_calls, TRUE)
 })
 
 test_that("handleLipidImportValidationSummaryRender preserves the validation summary payload", {

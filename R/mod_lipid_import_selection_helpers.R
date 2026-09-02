@@ -496,7 +496,8 @@ registerLipidImportProcessObserver <- function(
   getSampleColumns,
   experimentPaths = NULL,
   handleProcessRequest = handleLipidImportProcessRequest,
-  observeEvent = shiny::observeEvent
+  observeEvent = shiny::observeEvent,
+  releaseMemory = artifactReleaseTransientMemory
 ) {
   observeEvent(input$process_import, {
     request_args <- list(
@@ -529,6 +530,10 @@ registerLipidImportProcessObserver <- function(
       localData$assay2_data <- NULL
       localData$assay2_import_result <- NULL
       localData$assay1_deferred <- FALSE
+      if (isTRUE(request_args$assay1Deferred)) {
+        result$assayList <- NULL
+        releaseMemory(full = TRUE)
+      }
     }
     invisible(result)
   })
