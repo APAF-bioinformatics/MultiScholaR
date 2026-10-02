@@ -246,7 +246,9 @@ mod_prot_norm_ui <- function(id) {
           )
           , "prot-norm-export-session"
         ),
-        shiny::helpText("Save filtered data and contrasts for later DE analysis")
+        shiny::helpText("Save filtered data and contrasts for later DE analysis"),
+        shiny::downloadButton(ns("export_s4_compatibility"), "Export S4 compatibility RDS"),
+        shiny::helpText("Optional export for older tools; requires a guarded session.")
       )
     ),
     

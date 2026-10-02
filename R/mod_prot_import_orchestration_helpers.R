@@ -284,6 +284,7 @@ applyProtImportWorkflowWithStatus <- function(
     , showNotification = shiny::showNotification
     , sanitizeRunNames = sanitizeProtImportRunNames
     , processFasta = processFastaFile
+    , deferFasta = FALSE
 ) {
   updateStatus("Storing imported data...")
 
@@ -301,6 +302,8 @@ applyProtImportWorkflowWithStatus <- function(
     , showNotification = showNotification
     , sanitizeRunNames = sanitizeRunNames
   )
+
+  if (isTRUE(deferFasta)) return(invisible(NULL))
 
   updateStatus("Processing FASTA file...")
 
@@ -379,4 +382,3 @@ runProtImportProcessingSafely <- function(
     }
   )
 }
-

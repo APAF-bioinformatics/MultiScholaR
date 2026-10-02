@@ -1,0 +1,707 @@
+{
+  "schema": "multischolar.dia_gate_records.v2",
+  "version": "2.6",
+  "scope_amendment": {
+    "approved_by": "user",
+    "response": "yep",
+    "date": "2026-09-18",
+    "prior_registry_sha256": "54427c295a012cda4e1a549daf1a20d7a6b061845d93e1be11f7710e2617c4ba",
+    "change": "small histories remain resident; prospective qs2 gate covers only frozen large recipes"
+  },
+  "authority": {
+    "baseline_source_commit": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017",
+    "scenario_sha256": "cfdf7da2fc5a6123da269f85011550d8ffd2e8a611de071e0cd1a52a6f35d152",
+    "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+    "frozen_representative_report_sha256": "2414125be92a11fbe4342fdf354e0214915e30592bec66f3e9d6a984f9290841",
+    "frozen_memory_max_bytes": 8589934592,
+    "frozen_swap_max_bytes": 0,
+    "frozen_runtime_max_seconds": 900,
+    "frozen_boundary": "installed DIA IQ GUI startup through required scientific outputs, complete legacy session, publication and restore"
+  },
+  "gates": [
+    {
+      "gate": "G0:iq",
+      "scope_version": "frozen-v1",
+      "route": "iq",
+      "outcome": "held",
+      "qualified_control_build": null,
+      "qualified_control_input_sha256": null,
+      "qualified_control_receipt": null,
+      "reason": "untouched janitor small journey failed a required Protein.Group consumer; corrected representative journey OOM-killed at the frozen 8 GiB limit; frozen small default-QC input cannot satisfy the 500 distinct-peptide cutoff; the earlier 11 GiB reduced diagnostic did not complete and no reduced input substitutes for this frozen control",
+      "evidence": [
+        {
+          "member": "browser-smoke.FAORgA",
+          "build": "untouched janitor c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017, b0-install-RNROup",
+          "input_sha256": "a8d1c758e061386332bb0cc949091f91517c2ebcf86db87fe0c8db33cc411105",
+          "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+          "boundary": "installed small IQ GUI through protein creation",
+          "result": "failed_required_Protein.Group_consumer",
+          "receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.FAORgA/smoke-receipt.json",
+          "finite_completion_denominator": false
+        },
+        {
+          "member": "browser-smoke.bQWqlM",
+          "build": "corrected pre-storage VEqJKP, janitor c7c12851 plus runtime patch 9c762b9f8f72051a72aacd89608e06ca2222965a8601392d6d214f6764981038",
+          "input_sha256": "2414125be92a11fbe4342fdf354e0214915e30592bec66f3e9d6a984f9290841",
+          "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+          "boundary": "default-QC representative installed GUI with 8 GiB/zero swap/900-second service",
+          "result": "oom-kill",
+          "memory_peak_bytes": 8589934592,
+          "swap_peak_bytes": 0,
+          "receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.bQWqlM/terminal-properties.txt",
+          "finite_completion_denominator": false
+        },
+        {
+          "member": "browser-smoke.qchLuu",
+          "build": "installed lc00wd, janitor c7c12851 plus runtime patch 95fd659e0f8a79cda0c7c7e2a9d5c102bfe3af721ab4b76ed2e72227dcb96135",
+          "input_sha256": "a8d1c758e061386332bb0cc949091f91517c2ebcf86db87fe0c8db33cc411105",
+          "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+          "boundary": "tiny default-QC installed GUI, separate 5 GiB diagnostic cap",
+          "result": "scientifically_ineligible_header_only_IQ_input",
+          "receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.qchLuu/smoke-receipt.json",
+          "finite_completion_denominator": false
+        },
+        {
+          "member": "browser-smoke.EJlArx",
+          "build": "installed lc00wd, janitor c7c12851 plus runtime patch 95fd659e0f8a79cda0c7c7e2a9d5c102bfe3af721ab4b76ed2e72227dcb96135",
+          "input_sha256": "855abc455f5eaaaf8b617753bf7899ba418d575f234d61505960fd03b28a6ae0",
+          "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+          "boundary": "user-requested 960000-row/24-sample/one-form diagnostic, 10 GiB peak stop and 11 GiB hard cap; full DA/Summary journey not completed",
+          "result": "guard_stopped_before_full_completion",
+          "memory_peak_bytes": 10757476352,
+          "swap_peak_bytes": 0,
+          "receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.EJlArx/guard-stop.txt",
+          "input_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.4OZChD/halved-diagnostic-inputs.json",
+          "finite_completion_denominator": false
+        }
+      ],
+      "promotion_authorized": false
+    },
+    {
+      "gate": "G0:iq",
+      "scope_version": "reduced-development-v2",
+      "route": "iq",
+      "outcome": "accepted",
+      "acceptance_scope": "downstream standalone DIA IQ saved-entity development and exact-scope control comparisons only; not frozen-v1 G0, G2/G4 performance acceptance, GUI integration, Limpa or another omic",
+      "qualified_control_build": "installed MultiScholaR 0.5.0 at browser-smoke.lc00wd/library; janitor c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017 plus runtime patch 95fd659e0f8a79cda0c7c7e2a9d5c102bfe3af721ab4b76ed2e72227dcb96135; not pristine janitor B0",
+      "qualified_control_input_sha256": {
+        "report": "855abc455f5eaaaf8b617753bf7899ba418d575f234d61505960fd03b28a6ae0",
+        "design": "acff81ff68ee02aff56f54b7e11d40c47ea2b43bf1b9ba2aa592f75d91bce18e",
+        "fasta": "352b56704c330f3e59646101df2c52a469e5ebe17da652fdd0d3ea85e672f6d4"
+      },
+      "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+      "protocol_scope_note": "frozen-v1 scientific GUI actions and output oracle reused; v2 reduces input and raises only this development-control service memory cap; frozen-v1 protocol and stress gate remain unchanged",
+      "boundary": "fresh installed DIA IQ GUI startup through default-QC peptide/protein steps, real IQ, cyclicloess, RUV/correlation Skip, DA and views, automatic IQ/QC and Summary files, complete 16-state legacy session, required publication copies and separate untimed full-session/output verifier",
+      "workload": {
+        "precursor_rows": 960000,
+        "samples": 24,
+        "control_samples": 12,
+        "treated_samples": 12,
+        "source_protein_groups": 10000,
+        "source_stripped_peptides": 40000,
+        "precursor_forms_per_peptide": 1,
+        "technical_replicate_pairs_preserved": true,
+        "qc_settings": "packaged GUI defaults",
+        "normalization": "cyclicloess",
+        "ruv": "Skip",
+        "correlation": "Skip",
+        "da_design": "~0+group",
+        "da_qvalue": 0.05,
+        "da_treat_lfc": 0
+      },
+      "service_limits": {
+        "memory_max_bytes": 17179869184,
+        "memory_swap_max_bytes": 0,
+        "runtime_max_seconds": 900,
+        "peak_early_stop_bytes": 16642998272,
+        "host_mem_available_min_bytes": 2147483648,
+        "optional_cache_max_bytes": 67108864
+      },
+      "observed": {
+        "elapsed_completion_seconds": 793.817321,
+        "combined_cgroup_peak_bytes": 12765577216,
+        "cgroup_swap_peak_bytes": 0,
+        "cpu_usage_nsec": 1691107886000,
+        "iq_qc_required_files": 108,
+        "summary_required_files": 13,
+        "copied_selected_figure_files": 11,
+        "historical_session_states": 16,
+        "final_proteins": 8020,
+        "final_samples": 24,
+        "da_rows": 8020,
+        "heatmap_rows": 50,
+        "heatmap_clusters": 4
+      },
+      "qualified_control_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.rzEEWj/smoke-receipt.json",
+      "service_interval_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.rzEEWj/terminal-interval.json",
+      "independent_output_verifier_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.Mq2n1b/verification-receipt.json",
+      "input_derivation_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.4OZChD/halved-diagnostic-inputs.json",
+      "finite_observed_completion": true,
+      "qualified_seven_block_performance_denominator": false,
+      "performance_rule": "retain frozen >=10% elapsed and combined-peak improvement, immediate-comparator non-regression and seven independent matched blocks; this single revised control supplies no point or uncertainty performance acceptance and cannot be compared against OOM/timeout controls",
+      "science_limit": "same-installed-method DA replay and full legacy-session/output integrity checks passed; independent IQ scientific agreement and all normalization/RUV/correlation treatments remain future gates",
+      "host_memory_note": "host swap use rose during the member; attribution to this service alone is unproven and no zero-host-swap claim is made",
+      "standalone_development_authorized": true,
+      "gui_integration_authorized": false,
+      "performance_promotion_authorized": false,
+      "promotion_authorized": false
+    },
+    {
+      "gate": "G1:iq",
+      "scope_version": "standalone-utility-v1",
+      "route": "iq",
+      "outcome": "accepted",
+      "required_gate": {
+        "gate": "G0:iq",
+        "scope_version": "reduced-development-v2"
+      },
+      "acceptance_scope": "standalone DIA IQ immutable metadata lookup, complete RDS checkpoint save/hydrate, durable recovery, bounded optional cache and resource release; no GUI integration or performance/scientific promotion",
+      "qualified_build": {
+        "package": "MultiScholaR",
+        "version": "0.5.0",
+        "git_parent": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017",
+        "installed_library": "/tmp/multischolar-dia008.APxrbx/library",
+        "installed_rdb_sha256": "a5ef768af6bc73e84952652fe359f4e18b5c5c818354a6dd4bdcf1ee96339b9b",
+        "installed_rdx_sha256": "64c3abddce1c264da1cab2e9e3c7a887bb48ffe13fc27999a36ccb7a126dacf8",
+        "namespace_sha256": "9dc606a759229234e12f5a0b55879af5b7230a42f1177a4d86fa1e088879ccc5",
+        "utility_source_sha256": "f0d4b0bfbf2e580f603135ddbdec2a4e852f976aaf55862b26b133c0bfa904c9",
+        "installed_test_sha256": "85efe759e6fe93c018d4d17d2db39193abdb4a90b323753a6e986ad5331185bf"
+      },
+      "compatibility_control": {
+        "kind": "pristine B0 installed package surface only; not a performance denominator",
+        "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/b0-install-RNROup/library",
+        "exports_each": 624,
+        "loaded_namespaces_each": 188,
+        "exports_equal": true,
+        "loaded_namespaces_equal": true,
+        "workflow_state_surface_equal": true,
+        "s4_class_signatures_equal": true,
+        "s4_generic_method_signatures_equal": true,
+        "r_dependency_fields_equal": true,
+        "package_native_routines_each": 0
+      },
+      "capabilities": {
+        "metadata_lookup": true,
+        "complete_rds_save_hydrate": true,
+        "durable_acceptance_and_recovery": true,
+        "process_loss_reopen": true,
+        "optional_cache_max_bytes": 67108864,
+        "default_cache_max_bytes": 0,
+        "explicit_release_and_idempotent_close": true,
+        "cross_project_scope_rejection": true,
+        "nonportable_resource_rejection": true,
+        "installed_s4_dispatch": true,
+        "legacy_workflow_state_round_trip": true,
+        "digest_native_hashing_exercised": true
+      },
+      "installed_probe": {
+        "artifact_files": 6,
+        "artifact_bytes": 11226,
+        "resident_cache_bytes": 19048,
+        "payload_reads": 1,
+        "payload_decodes": 1,
+        "cache_hits": 1,
+        "open_resources": 0
+      },
+      "verification": {
+        "source_workflow_checkpoint_saved_passed": 1102,
+        "source_workflow_checkpoint_saved_skipped": 2,
+        "installed_expectations_passed": 22,
+        "existing_workflow_regressions_passed": 1371,
+        "failures": 0,
+        "warnings": 0,
+        "skips_note": "installed-only member passed separately; explicit cgroup fixture preflight remains external DIA-003 service evidence and cannot support large performance acceptance"
+      },
+      "receipt": "/tmp/multischolar-dia008.APxrbx/installed-receipt.json",
+      "receipt_sha256": "ffed6798365dc97bfda148e9c2d4dd3cd24e2e0542c31dfccb71bea986c55742",
+      "evidence": "docs/qa/dia-saved-entities/utility-correctness.md",
+      "standalone_development_authorized": true,
+      "gui_integration_authorized": false,
+      "performance_promotion_authorized": false,
+      "scientific_promotion_authorized": false,
+      "promotion_authorized": false
+    },
+    {
+      "gate": "G2_history:iq",
+      "scope_version": "standalone-rds-history-v1",
+      "route": "iq",
+      "outcome": "held",
+      "required_gates": [
+        {
+          "gate": "G0:iq",
+          "scope_version": "reduced-development-v2"
+        },
+        {
+          "gate": "G1:iq",
+          "scope_version": "standalone-utility-v1"
+        }
+      ],
+      "tested_build": {
+        "package": "MultiScholaR",
+        "version": "0.5.0",
+        "library": "/tmp/multischolar-dia008.APxrbx/library",
+        "git_parent": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017"
+      },
+      "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+      "scenario_sha256": "cfdf7da2fc5a6123da269f85011550d8ffd2e8a611de071e0cd1a52a6f35d152",
+      "boundary": "fresh installed utility service through resident or complete-RDS checkpoint history, reverts, branch, mandatory self-contained legacy export and teardown; separate verifier excluded",
+      "service_limits": {
+        "memory_max_bytes": 8589934592,
+        "memory_swap_max_bytes": 0,
+        "runtime_max_seconds": 900,
+        "optional_cache_max_bytes": 67108864,
+        "timed_cache_max_bytes": 0
+      },
+      "small_pair": {
+        "status": "valid_single_pair_not_qualified_performance_evidence",
+        "recipe": "small",
+        "variant": "independent",
+        "resident_member": "browser-smoke.8AgxOs",
+        "resident_verifier": "browser-smoke.mEVNAu",
+        "saved_member": "browser-smoke.p86LNg",
+        "saved_verifier": "browser-smoke.Mfnr9e",
+        "legacy_sha256": "11ba4a8e491e6c3183c3b8b719c352b1c58abbca4886450382a6acf56f6e3f8a",
+        "resident": {
+          "retained_heap_bytes": 1290720,
+          "elapsed_seconds": 9.984373,
+          "cpu_seconds": 9.684578,
+          "combined_peak_bytes": 980799488,
+          "swap_peak_bytes": 0,
+          "export_heap_bytes": 567242728
+        },
+        "saved": {
+          "retained_heap_bytes": 1673184,
+          "elapsed_seconds": 10.162222,
+          "cpu_seconds": 9.773679,
+          "combined_peak_bytes": 980606976,
+          "swap_peak_bytes": 0,
+          "export_heap_bytes": 568427152,
+          "max_save_seconds": 0.047,
+          "max_cold_revert_seconds": 0.013,
+          "payload_read_bytes": 159481,
+          "cgroup_write_bytes": 9183232
+        },
+        "ratios": {
+          "retained_heap": 1.29631833,
+          "elapsed": 1.01781274,
+          "cpu": 1.0092003,
+          "combined_peak": 0.99980372
+        },
+        "retained_heap_threshold": 0.7,
+        "point_result": "retained-memory threshold missed on low-history case",
+        "uncertainty_result": "not_available_one_pair"
+      },
+      "failed_evidence": [
+        {
+          "member": "browser-smoke.wPAQoh",
+          "stage": "first resident separate verifier",
+          "result": "instrumentation_list_vector_mismatch",
+          "replacement": "browser-smoke.mEVNAu passed against the unchanged resident member"
+        },
+        {
+          "member": "browser-smoke.J2E6ME",
+          "stage": "representative resident before history allocation",
+          "result": "fixture_root_validation_failed",
+          "memory_peak_bytes": 981671936,
+          "swap_peak_bytes": 0,
+          "receipt_sha256": "6310afb286e42d268b22f13fea55c2f8dd0d6cf2012c3789f92cc2d824d7c394"
+        },
+        {
+          "member": "browser-smoke.EdRHMW",
+          "stage": "one allowed representative correction before history allocation",
+          "result": "same_fixture_root_validation_failed_due_cached_here_root",
+          "memory_peak_bytes": 981409792,
+          "swap_peak_bytes": 0,
+          "receipt_sha256": "a1b24bfdf90ea03f49e9115227a218654e9766714e742747d01973c341b79326"
+        }
+      ],
+      "recorded_session_pilot": {
+        "status": "completed_diagnostic_not_gate",
+        "source_session_sha256": "4671bdfab031cd880ab2bd2b414c4625cc30902a247e7d60f1c8dc11411a50c3",
+        "prepared_manifest_sha256": "9c472341105affdca5c1dc785fe40ae156a30e67b7ee10dc317f4c55a3d2cb7d",
+        "preparation": "browser-smoke.SxedsH",
+        "native_pair": [
+          "browser-smoke.7gKQqw",
+          "browser-smoke.L3HQL7"
+        ],
+        "native_verifiers": [
+          "browser-smoke.0DJYOj",
+          "browser-smoke.eXi56N"
+        ],
+        "native_retained_heap_bytes": [
+          1158701616,
+          54924280
+        ],
+        "native_elapsed_seconds": [
+          112.279177,
+          147.70738
+        ],
+        "codec_pair": [
+          "browser-smoke.lEzkAq",
+          "browser-smoke.XK1SeJ"
+        ],
+        "codec_verifiers": [
+          "browser-smoke.DlNKAt",
+          "browser-smoke.d2Vk4R"
+        ],
+        "codec_elapsed_seconds": [
+          130.020567,
+          104.501935
+        ],
+        "codec_combined_peak_bytes": [
+          4449955840,
+          2904547328
+        ],
+        "codec_settings": "qs2 0.2.2, level 3, shuffle true, two threads, checksum validation true",
+        "legacy_export_sha256": "281d077ca4dd88d76f033e3528d1394bfe8ce37dcf8fd5248c2c6c4c43f9e96f",
+        "failed_preparations_preserved": [
+          "browser-smoke.K0PFvb",
+          "browser-smoke.ylC72n"
+        ],
+        "qualified_pairs_for_frozen_gate": 0,
+        "promotion_authorized": false,
+        "limitation": "recorded-state replay single pairs; not the frozen matrix, seven-block uncertainty, complete forward science or GUI integration"
+      },
+      "reason": "the required representative/tall/wide/annotation/cycles, shared-metadata and retained-alias matrix and seven independent paired blocks were not executed after the representative pilot exhausted its one correction; the only valid small pair missed the retained-heap point threshold",
+      "history_gui_integration_authorized": false,
+      "independent_product_experiments_authorized_by_g1": true,
+      "parquet_duckdb_evaluated": false,
+      "performance_promotion_authorized": false,
+      "promotion_authorized": false,
+      "evidence": "docs/qa/dia-saved-entities/checkpoint-results.md"
+    },
+    {
+      "gate": "G2:iq",
+      "scope_version": "standalone-consumers-v1",
+      "route": "iq",
+      "outcome": "held",
+      "required_gate": {
+        "gate": "G2_history:iq",
+        "scope_version": "standalone-rds-history-v1",
+        "observed_outcome": "held"
+      },
+      "reason": "required history prerequisite and seven-pair large/composed evidence are absent; the valid small history pair misses retained-memory threshold, Parquet/DuckDB is 3.93 times slower, and safe publication is 7.5 times slower on its small comparison",
+      "available_evidence": {
+        "history": "docs/qa/dia-saved-entities/checkpoint-results.md",
+        "projection": "docs/qa/dia-saved-entities/projection-decision.md",
+        "consumers": "docs/qa/dia-saved-entities/consumer-results.md",
+        "qc_da_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/consumers.8fb4c763403c0/completion.json",
+        "projection_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/consumers.943656aeee8a8/completion.json",
+        "export_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/consumers.96844733c70ed/completion.json"
+      },
+      "policies": {
+        "history": "resident WorkflowState remains default; saved cold history not adopted",
+        "qc_products": "internal correctness proof only; not GUI-active",
+        "da_products": "internal correctness proof only; not GUI-active",
+        "selective_tables": "Parquet/DuckDB not adopted for default or GUI consumers",
+        "legacy_export": "existing GUI double serialization remains default; safe publisher not GUI-active"
+      },
+      "qualified_pairs": 0,
+      "required_pairs": 7,
+      "composed_mode_executed": false,
+      "composed_mode_reason": "self-gating run refused because G2_history:iq is held and component builds/boundaries are unmatched",
+      "limpa_inherited": false,
+      "gui_integration_authorized": false,
+      "science_replay_authorized": false,
+      "performance_promotion_authorized": false,
+      "promotion_authorized": false
+    },
+    {
+      "gate": "G0:limpa",
+      "scope_version": "frozen-v1",
+      "route": "limpa",
+      "outcome": "held",
+      "qualified_control_build": null,
+      "qualified_control_input_sha256": null,
+      "qualified_control_receipt": null,
+      "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+      "boundary": "real Limpa installed GUI and its separate scientific/output control, owned by DIA-017",
+      "reason": "Limpa execution and qualification have not started; IQ evidence is not inherited",
+      "inherits_iq_evidence": false,
+      "promotion_authorized": false
+    },
+    {
+      "gate": "G2_history:iq",
+      "scope_version": "standalone-qs2-history-v2",
+      "route": "iq",
+      "owner": "DIA-009",
+      "outcome": "held",
+      "predecessor_scope": "standalone-rds-history-v1",
+      "required_gates": [
+        {
+          "gate": "G0:iq",
+          "scope_version": "reduced-development-v2"
+        },
+        {
+          "gate": "G1:iq",
+          "scope_version": "standalone-utility-v1"
+        }
+      ],
+      "selected_candidate": {
+        "codec": "qs2",
+        "version": "0.2.2",
+        "compress_level": 3,
+        "shuffle": true,
+        "nthreads": 2,
+        "validate_checksum": true
+      },
+      "required_comparator": "resident history with genuine sharing and held aliases on the same installed build and matched workload",
+      "required_boundary": "startup, forward/revert/reset, writes, validation, cold hydration, full legacy export/copies and teardown; independent output verifier",
+      "required_coverage": "unchanged frozen history workload matrix, including shared allocations, independent mutations and retained aliases; missing or invalid controls hold their scope",
+      "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+      "criteria": {
+        "retained_heap_ratio_max": 0.7,
+        "sequence_elapsed_ratio_max": 1.1,
+        "sequence_cpu_ratio_max": 1.1,
+        "save_max_seconds": 30,
+        "cold_revert_max_seconds": 30,
+        "retained_heap_measurement": "unique live R allocations across all owners after standardized GC, excluding freed objects; never sum object.size across aliases",
+        "scope": "qualified history workloads; capacity-only failures excluded from finite-ratio acceptance"
+      },
+      "service_limits": {
+        "memory_max_bytes": 8589934592,
+        "memory_swap_max_bytes": 0,
+        "runtime_max_seconds": 900,
+        "optional_cache_max_bytes": 67108864
+      },
+      "uncertainty_method": {
+        "method": "paired log-ratio Student-t one-sided upper confidence bound",
+        "confidence": 0.95,
+        "df": 6,
+        "assumptions": "independent blocks; approximately normal block log ratios; retain raw pairs; obvious violations hold instead of switching estimator"
+      },
+      "qualified_pairs": 0,
+      "required_pairs": 7,
+      "qualified_control_build": null,
+      "qualified_control_receipt": null,
+      "reason": "prepared-input small resident/qs2 pilot completed with exact S4/history exports but unfavorable retained-heap ratios 2.0563 (independent) and 2.1633 (shared); one diagnostic pair per variant is not seven-block qualification. Large coverage remains unexecuted and integration held",
+      "small_pilot": {
+        "prepared_input_directory": "browser-smoke.9mS7xn",
+        "prepared_manifest_sha256": "9792ae30888904f9f89343e45740a047138534b9f1c43af35b58242e40cb6828",
+        "resident_members": ["BPSuff", "u59LY9", "7a6DWf"],
+        "qs2_members": ["QpX5Sy", "96R9k6", "JZVWES"],
+        "separate_verifiers_passed": 6,
+        "fixture_generation_excluded": true,
+        "outcome": "unfavorable_small_pilot_not_formal_gate",
+        "large_matrix_executed": false,
+        "performance_claim": false
+      },
+      "available_evidence": {
+        "checkpoint_pilot": "docs/qa/dia-saved-entities/checkpoint-results.md",
+        "utility_correctness": "tickets/openai/DIA-006.md"
+      },
+      "promotion_authorized": false,
+      "gui_integration_authorized": false
+    },
+    {
+      "gate": "G2_history:iq",
+      "scope_version": "standalone-qs2-large-history-v3",
+      "route": "iq",
+      "owner": "DIA-009",
+      "outcome": "held",
+      "peak_diagnostic": {
+        "owner_revision": "1.7",
+        "diagnostic_members": ["aXp1sF", "OnECDB"],
+        "diagnostic_verifiers": ["6xG4oY", "L2nS5j"],
+        "finding": "receipt object hashing allocates 83,789,512 temporary bytes after export; startup file charges and observer overhead vary; exact historical peak difference is not uniquely attributed",
+        "correction": "same state/current hashes run before the existing export GC; no omitted work, extra GC, package or format change",
+        "corrected_members": ["NTJET8", "bmh5p6"],
+        "corrected_verifiers": ["I1VI3R", "vu3cCD"],
+        "corrected_elapsed_ratio": 1.161833223942094,
+        "corrected_cpu_ratio": 1.1728526408702993,
+        "corrected_peak_ratio": 1.0833771008403361,
+        "corrected_retained_heap_ratio": 0.15036501127689808,
+        "paired_exports_identical": true,
+        "all_swap_peaks_zero": true,
+        "qualified_speedup": false,
+        "decision": "bounded diagnostic/correction complete; timing point criteria still fail and shared-history requirement remains unmet; hold integration"
+      },
+      "predecessor_scope": "standalone-qs2-history-v2",
+      "required_gates": [
+        {
+          "gate": "G0:iq",
+          "scope_version": "reduced-development-v2"
+        },
+        {
+          "gate": "G1:iq",
+          "scope_version": "standalone-utility-v1"
+        }
+      ],
+      "selected_candidate": {
+        "codec": "qs2",
+        "version": "0.2.2",
+        "compress_level": 3,
+        "shuffle": true,
+        "nthreads": 2,
+        "validate_checksum": true
+      },
+      "required_comparator": "resident history with genuine sharing and held aliases on the same installed build and matched workload",
+      "required_boundary": "startup, forward/revert/reset, writes, validation, cold hydration, full legacy export/copies and teardown; independent output verifier",
+      "required_coverage": "representative, tall, wide, annotation_heavy and cycles, each with independent mutations, genuine sharing and retained-alias negatives; small history remains resident with no qs2 performance claim",
+      "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+      "criteria": {
+        "retained_heap_ratio_max": 0.7,
+        "sequence_elapsed_ratio_max": 1.1,
+        "sequence_cpu_ratio_max": 1.1,
+        "save_max_seconds": 30,
+        "cold_revert_max_seconds": 30,
+        "retained_heap_measurement": "unique live R allocations across all owners after standardized GC, excluding freed objects; never sum object.size across aliases",
+        "scope": "qualified history workloads; capacity-only failures excluded from finite-ratio acceptance"
+      },
+      "service_limits": {
+        "memory_max_bytes": 8589934592,
+        "memory_swap_max_bytes": 0,
+        "runtime_max_seconds": 900,
+        "optional_cache_max_bytes": 67108864
+      },
+      "uncertainty_method": {
+        "method": "paired log-ratio Student-t one-sided upper confidence bound",
+        "confidence": 0.95,
+        "df": 6,
+        "assumptions": "independent blocks; approximately normal block log ratios; retain raw pairs; obvious violations hold instead of switching estimator"
+      },
+      "qualified_pairs": 0,
+      "required_pairs": 7,
+      "qualified_control_build": null,
+      "qualified_control_receipt": null,
+      "reason": "representative large-history pilot preserves exact exports but shared retained-heap ratio 0.9810 misses <=0.70; independent ratio 0.1502 is promising ownership evidence only. Peaks increase 6.13%/11.20%; one pair per variant cannot establish uncertainty or qualify speedup. Remaining large matrix held",
+      "available_evidence": {
+        "checkpoint_pilot": "docs/qa/dia-saved-entities/checkpoint-results.md",
+        "utility_correctness": "tickets/openai/DIA-006.md"
+      },
+      "promotion_authorized": false,
+      "gui_integration_authorized": false,
+      "approval": {
+        "date": "2026-09-18",
+        "response": "yep",
+        "scope": "small histories stay resident; qs2 qualification applies only to the five existing large recipes; numerical gates and limits unchanged"
+      },
+      "qs2_recipe_ids": [
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "cycles"
+      ],
+      "resident_recipe_ids": [
+        "small"
+      ],
+      "pilot_plan": {
+        "recipe": "representative",
+        "preparations": 1,
+        "pairs_per_variant": 1,
+        "variants": [
+          "independent",
+          "shared_metadata",
+          "retained_alias"
+        ],
+        "separate_verifier": true,
+        "status": "complete_shared_variant_unfavorable",
+        "correction_budget_reset": false
+      },
+      "representative_pilot": {
+        "prepared_directory": "browser-smoke.NfDV1s",
+        "prepared_manifest_sha256": "332a0881478482e0f36bcb870395d9125d91bac8105a5694f6fa7d0f08ac4b16",
+        "resident_members": ["yENEcU", "CZDsdb", "Wua4SY"],
+        "qs2_members": ["hrSFZg", "NdonKT", "TPnBq2"],
+        "verifiers": ["IHH3P4", "RhwRor", "z76mhs", "l5Dv5B", "GRvILP", "yzIlq2"],
+        "independent_retained_heap_ratio": 0.1501910631529448,
+        "shared_retained_heap_ratio": 0.9809618599500012,
+        "paired_legacy_exports_identical": true,
+        "all_swap_peaks_zero": true,
+        "input_data_cache_bytes_at_each_launch": 0,
+        "remainder_matrix_executed": false,
+        "qualified_speedup": false
+      }
+    },
+    {
+      "gate": "G2:iq",
+      "scope_version": "standalone-consumers-v2",
+      "route": "iq",
+      "owner": "DIA-015",
+      "outcome": "held",
+      "predecessor_scope": "standalone-consumers-v1",
+      "predecessor_required_gate": {
+        "gate": "G2_history:iq",
+        "scope_version": "standalone-qs2-history-v2",
+        "observed_outcome": "held"
+      },
+      "required_gate": {
+        "gate": "G2_history:iq",
+        "scope_version": "standalone-qs2-large-history-v3",
+        "observed_outcome": "held"
+      },
+      "predecessor_required_adapter": {
+        "ticket": "DIA-013",
+        "revision": "1.5",
+        "required_status": "completed",
+        "observed_status": "pending"
+      },
+      "required_adapter": {
+        "ticket": "DIA-013",
+        "revision": "1.6",
+        "required_status": "completed",
+        "observed_status": "completed"
+      },
+      "adapter_decision": {
+        "outcome": "not_adopted",
+        "scope": "installed fastduckdb for small/wide DA full-population inputs and one bounded precursor range; existing defaults retained",
+        "independent_blocks_per_case": 7,
+        "timed_members": 63,
+        "independent_verifiers": 63,
+        "all_results_exact": true,
+        "all_swap_peaks_zero": true,
+        "receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/reader-screen.2d29555578cb1d/screen.json",
+        "receipt_sha256": "856e956b2df3158e8c31cff40a4bd2d61e456e3a30b58d22615602de28cbbcd9",
+        "gui_adoption": false,
+        "resident_replacement": false
+      },
+      "sequential_qc_pilot": {
+        "scope": "DIA-009 revision 1.8 and DIA-019 revision 1.3; three real peptide-QC stages only",
+        "outcome": "pilot_complete_joint_peak_target_not_met",
+        "build": "browser-smoke.2Oee9H/library",
+        "input_manifest_sha256": "48d4fd263644b5061431be5bf85b45176258cfc2613c1851223eeee8d539e915",
+        "final_members": ["lqocOp", "PtTlgg", "1ofbKE"],
+        "independent_verifiers": ["9kkv71", "PGbMot", "C0SrZR"],
+        "c_over_resident": {"elapsed": 0.7529344720723675, "cpu": 0.7684435220583036, "peak": 0.9982271358904664},
+        "all_science_and_outputs_verified": true,
+        "all_swap_peaks_zero": true,
+        "infrastructure_invalid_member_preserved": "M6mn66",
+        "invalid_replacements_used": 1,
+        "uncertainty_qualified": false,
+        "long_horizon_qualified": false,
+        "gui_adoption": false,
+        "evidence": "docs/qa/dia-saved-entities/checkpoint-results.md"
+      },
+      "reason": "The verified three-step pilot demonstrates throughput and earlier scoped history-ownership relief, but not the required combined-peak reduction; full history, composition, scientific replay and GUI qualifications remain held. DIA-013 fastduckdb reader remains not adopted.",
+      "available_evidence": {
+        "history": "docs/qa/dia-saved-entities/checkpoint-results.md",
+        "reader": "docs/qa/dia-saved-entities/projection-decision.md",
+        "current_handoff": "docs/qa/dia-saved-entities/consumer-results.md",
+        "reader_qualification_sha256": "d8caba96bd256095ab6b1ea85e9717d0431777d5263d6ef11a74710e8c5b11ac"
+      },
+      "reader_evidence_scope": "five-action recorded precursor native-I/O bundle versus whole-table RDS only; one-off held, small/wide not adopted; not a production adapter or projected-only peak",
+      "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+      "service_limits": {
+        "memory_max_bytes": 8589934592,
+        "memory_swap_max_bytes": 0,
+        "runtime_max_seconds": 900,
+        "optional_cache_max_bytes": 67108864
+      },
+      "qualified_pairs": 0,
+      "required_pairs": 7,
+      "composed_mode_executed": false,
+      "limpa_inherited": false,
+      "gui_integration_authorized": false,
+      "science_replay_authorized": false,
+      "performance_promotion_authorized": false,
+      "promotion_authorized": false
+    }
+  ],
+  "promotion_authorized": false,
+  "predecessor": {
+    "version": "2.4",
+    "sha256": "fb70d6f27d94278b966d292f89ea62b8e36c0af4dc33a13fb6526e58fe99b1bb",
+    "preserved_in": "docs/qa/dia-saved-entities/policy-predecessor-20260918.json"
+  }
+}

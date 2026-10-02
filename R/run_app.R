@@ -59,6 +59,13 @@ run_app <- function(
     shiny::addResourcePath("www", shiny_resource_path)
   }
   
+  execution <- list(...)$workflow_execution
+  application_server <- app_server
+  if (!is.null(execution)) {
+    checkWorkflowApplication(execution)
+    application_server <- workflowManagedServer(execution)
+  }
+
   # Combine with user-provided onStart if any
   combined_onStart <- function() {
     if (!is.null(onStart)) {
@@ -69,7 +76,7 @@ run_app <- function(
   with_golem_options(
     app = shiny::shinyApp(
       ui = app_ui,
-      server = app_server,
+      server = application_server,
       onStart = combined_onStart,
       options = options, 
       enableBookmarking = enableBookmarking, 

@@ -190,7 +190,7 @@ loadProtDesignImportedConfigAndTables <- function(
     designFile,
     dataClnFile,
     contrastFile,
-    readConfig = readConfigFile,
+    readConfig = readProtGuiConfig,
     readTabular = function(path) vroom::vroom(path, show_col_types = FALSE),
     systemFileFn = system.file,
     fileExists = file.exists,
@@ -294,7 +294,7 @@ initializeProtDesignImportedWorkflowState <- function(
     organismName
 ) {
   workflowData$design_matrix <- importedDesign
-  workflowData$data_cln <- importedDataCln
+  workflowData <- setDIAOwnedPayload(workflowData, "data_cln", importedDataCln)
   workflowData$contrasts_tbl <- importedContrasts
 
   if (!is.null(importedContrasts)) {
@@ -692,4 +692,3 @@ initializeProtDesignImportBootstrap <- function(
     importFastaPath = reactiveValFn(NULL)
   )
 }
-

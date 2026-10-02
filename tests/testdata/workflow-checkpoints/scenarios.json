@@ -1,0 +1,651 @@
+{
+  "schema": "multischolar.workflow_checkpoint_recipes.v1",
+  "version": "1.0",
+  "baseline": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017",
+  "routes": {
+    "iq": "first",
+    "limpa": "recipes only until DIA-017 real execution; identity doubles not science"
+  },
+  "small_default": "small",
+  "max_chunk_rows": 200000,
+  "recipes": [
+    {
+      "id": "small",
+      "n_proteins": 64,
+      "n_samples": 12,
+      "peptides_per_protein": 3,
+      "forms_per_peptide": 2,
+      "history_depth": 6,
+      "annotation_chars": 48,
+      "seed": 902001,
+      "purpose": "ordinary correctness; not representative performance",
+      "precursor_rows": 4608,
+      "protein_numeric_bytes": 6144,
+      "preflight": "passed_small_tests_and_guarded_service",
+      "frozen_for_timing": true,
+      "control_qualified": false
+    },
+    {
+      "id": "representative",
+      "n_proteins": 10000,
+      "n_samples": 48,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 14,
+      "annotation_chars": 96,
+      "seed": 902002,
+      "purpose": "plausible deep DIA precursor workload; shape proxy, not empirical representativeness",
+      "precursor_rows": 3840000,
+      "protein_numeric_bytes": 3840000,
+      "preflight": "passed_preliminary_resource_receipt",
+      "frozen_for_timing": true,
+      "control_qualified": false
+    },
+    {
+      "id": "tall",
+      "n_proteins": 12000,
+      "n_samples": 24,
+      "peptides_per_protein": 6,
+      "forms_per_peptide": 2,
+      "history_depth": 14,
+      "annotation_chars": 96,
+      "seed": 902003,
+      "purpose": "tall precursor stress",
+      "precursor_rows": 3456000,
+      "protein_numeric_bytes": 2304000,
+      "preflight": "passed_resource_preflight",
+      "frozen_for_timing": true,
+      "control_qualified": false
+    },
+    {
+      "id": "wide",
+      "n_proteins": 8000,
+      "n_samples": 256,
+      "peptides_per_protein": 2,
+      "forms_per_peptide": 2,
+      "history_depth": 14,
+      "annotation_chars": 96,
+      "seed": 902004,
+      "purpose": "many-sample correlation/PCA and lookup stress",
+      "precursor_rows": 8192000,
+      "protein_numeric_bytes": 16384000,
+      "preflight": "passed_resource_preflight",
+      "frozen_for_timing": true,
+      "control_qualified": false
+    },
+    {
+      "id": "annotation_heavy",
+      "n_proteins": 10000,
+      "n_samples": 48,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 14,
+      "annotation_chars": 2048,
+      "seed": 902005,
+      "purpose": "high-entropy annotation/component-sharing stress",
+      "precursor_rows": 3840000,
+      "protein_numeric_bytes": 3840000,
+      "preflight": "passed_resource_preflight",
+      "frozen_for_timing": true,
+      "control_qualified": false
+    },
+    {
+      "id": "cycles",
+      "n_proteins": 10000,
+      "n_samples": 48,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 14,
+      "annotation_chars": 96,
+      "seed": 902006,
+      "cycles": 10,
+      "purpose": "ten repeated normalize/revert/style/export cycles, not independent replicates",
+      "precursor_rows": 3840000,
+      "protein_numeric_bytes": 3840000,
+      "preflight": "passed_resource_preflight",
+      "frozen_for_timing": true,
+      "control_qualified": false
+    },
+    {
+      "id": "capacity",
+      "n_proteins": 20000,
+      "n_samples": 512,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 24,
+      "annotation_chars": 256,
+      "seed": 902007,
+      "purpose": "capacity-only stress; not an empirical proteome/population or finite-speedup control",
+      "precursor_rows": 81920000,
+      "protein_numeric_bytes": 81920000,
+      "preflight": "failed_oom_capacity_only",
+      "frozen_for_timing": false,
+      "control_qualified": false,
+      "disposition": "Retain declared oversized case and OOM evidence; never use aborted duration as a finite denominator."
+    }
+  ],
+  "scenario_matrix": [
+    {
+      "id": "C01",
+      "scenario": "Save, close/reopen, hydrate each supported S4 class",
+      "expected": "Exact object and metadata round-trip; usable S4 dispatch",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C02",
+      "scenario": "Find by method/design/assay/source factors",
+      "expected": "Correct match/no-match/ambiguity; zero payload reads",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C03",
+      "scenario": "Small versus large objects; zero optional cache",
+      "expected": "Correct uncached behavior; no silent cap increase",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C04",
+      "scenario": "Unchanged/shared metadata versus changed quantities",
+      "expected": "Memory accounting distinguishes shared allocations; changed science never hits an old product",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C05",
+      "scenario": "Row/column subsets, reordering, duplicate selectors and patches",
+      "expected": "Defined selector semantics, exact IDs/order and safe cache invalidation",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C06",
+      "scenario": "Factors/ordered factors, names, row names, annotations and nested args",
+      "expected": "Preservation under the codec; explicit unsupported-value errors",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C07",
+      "scenario": "NA, NaN, infinities, zero, all-missing and constant features",
+      "expected": "Preserve values and existing unavailable-panel/rejection behavior",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C08",
+      "scenario": "Forward history, immediate revert, deep revert, reset and reapply",
+      "expected": "Same state/history semantics; only requested state hydrated",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C09",
+      "scenario": "Revert then create a new branch of history",
+      "expected": "Old required history remains recoverable; no stale active refs",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C10",
+      "scenario": "Cache hit, eviction, reload and changed style",
+      "expected": "No refit on valid hits; correct invalidation; byte ceiling respected",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C11",
+      "scenario": "Original owners released versus deliberately retained aliases",
+      "expected": "Memory savings occur only when all relevant references are released",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C12",
+      "scenario": "Many checkpoints and metadata matches",
+      "expected": "Bounded metadata lookup and resident cache; no full-history hydrate",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C13",
+      "scenario": "Failed save, corruption, truncation, missing payload or invalid codec",
+      "expected": "Classed failure; previous active state/history remains usable",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C14",
+      "scenario": "Process exit during save or before acknowledgement",
+      "expected": "Persistent recovery and idempotent retry in a fresh process",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C15",
+      "scenario": "Cancellation and project replacement",
+      "expected": "Stale results cannot activate/publish into the replacement project",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C16",
+      "scenario": "Two stores/projects and conflicting writers",
+      "expected": "No cross-project reuse; reject or serialize conflicts explicitly",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C17",
+      "scenario": "Permission failure and disk-full injection",
+      "expected": "No falsely accepted checkpoint, lost previous output or orphaned authority",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C18",
+      "scenario": "Complete legacy export and timestamped/latest outputs",
+      "expected": "Full historical contents and consumer compatibility; export peak included",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C19",
+      "scenario": "Ten normalize/revert/style/export cycles in one process",
+      "expected": "Resources/cache bounds checked each cycle; retain every RSS-guard failure",
+      "recipes": [
+        "cycles"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C20",
+      "scenario": "Restart with no resident cache",
+      "expected": "Cold restore cost and compatibility measured independently of cache hits",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C21",
+      "scenario": "Same DA request, fit/result reuse and changed contrast",
+      "expected": "No fitting on a fully compatible result hit; correct invalidation/recomputation at each statistical layer",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C22",
+      "scenario": "Changed design, weights, sample order or tested feature population",
+      "expected": "Reject incompatible fits/results even when dimensions or filenames match",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C23",
+      "scenario": "Plot style-only change, scientific change and asset hit",
+      "expected": "Separate zero-fit, zero-source-hydration and zero-render expectations according to the actual hit level",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C24",
+      "scenario": "DA result pages, volcano projections and heatmap selections",
+      "expected": "Correct ordered values and full-population statistics; actual bounded reads for capable codecs",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C25",
+      "scenario": "One-off access versus frequent reuse; hit/miss mixtures",
+      "expected": "Include initial production/persistence, lookup, cold read, invalidation and eviction costs",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    },
+    {
+      "id": "C26",
+      "scenario": "Combined consumer sequence",
+      "expected": "Saving for one consumer cannot shift more cost or peak memory into another consumer without reporting it",
+      "recipes": [
+        "small",
+        "representative",
+        "tall",
+        "wide",
+        "annotation_heavy",
+        "capacity"
+      ],
+      "execution": "not_run",
+      "fixture_variants": [
+        "independently_changed",
+        "shared_metadata_only",
+        "retained_alias"
+      ],
+      "owner": "DIA-002"
+    }
+  ],
+  "predecessor": {
+    "version": "0.1-preflight",
+    "sha256": "54f64237b6d4ae554bfa26b199a5988844d507279ea2a60f2fb8029b10d539ea",
+    "preserved_in": "docs/qa/dia-saved-entities/fixtures.md#freeze-predecessors"
+  },
+  "freeze_scope": "Dimensions, seeds and scenario construction only. No scientific/performance gate accepted; capacity OOM remains held.",
+  "fixture_construction_contract": "docs/qa/dia-saved-entities/fixtures.md#scenario-fixture-construction-contract"
+}

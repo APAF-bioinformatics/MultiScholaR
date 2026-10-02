@@ -1306,6 +1306,37 @@ test_that("generateProtNormCompositeQcFigure saves the composite when generated"
   expect_equal(saved$height, 8)
 })
 
+test_that("composite export restores the caller's last plot on success and failure", {
+  original <- ggplot2::get_last_plot()
+  withr::defer(ggplot2::set_last_plot(original))
+  prior_plot <- ggplot2::ggplot(data.frame(x = 1), ggplot2::aes(x, x)) + ggplot2::geom_point()
+  composite <- ggplot2::ggplot(data.frame(x = 2), ggplot2::aes(x, x)) + ggplot2::geom_point()
+  for (prior in list(NULL, prior_plot)) {
+    for (failure in c("none", "generation", "save")) {
+      ggplot2::set_last_plot(prior)
+      saved <- FALSE
+      messages <- character()
+      generateProtNormCompositeQcFigure("automatic", tempdir(), "proteomics",
+        resolveInputsFn = function(...) list(plotFiles = "saved.png", ncol = 1,
+          rowLabels = list(), columnLabels = NULL),
+        generateCompositeFn = function(...) {
+          ggplot2::set_last_plot(composite)
+          if (failure == "generation") stop("generation failed")
+          list(plot = composite, width = 12, height = 8)
+        },
+        savePlotFn = function(plot, ...) {
+          expect_identical(plot, composite)
+          if (failure == "save") stop("save failed")
+          saved <<- TRUE
+        },
+        messageFn = function(value) messages <<- c(messages, value))
+      expect_identical(ggplot2::get_last_plot(), prior)
+      expect_identical(saved, failure == "none")
+      if (failure != "none") expect_true(any(grepl(paste(failure, "failed"), messages)))
+    }
+  }
+})
+
 test_that("finalizeProtNormWorkflowState clears composite state and marks RUV complete", {
   norm_data <- new.env(parent = emptyenv())
   norm_data$QC_composite_figure <- "grid_obj"
@@ -1562,7 +1593,7 @@ test_that("updateProtNormFinalFilteringPlot and updateProtNormFinalQcPlot store 
     omicType = "proteomics",
     experimentLabel = "exp1",
     updateProteinFilteringFn = function(data, step_name, omic_type, experiment_label, return_grid, overwrite) {
-      expect_equal(data, final_s4@protein_quant_table)
+      expect_equal(data, final_s4)
       expect_equal(step_name, "12_correlation_filtered")
       expect_equal(omic_type, "proteomics")
       expect_equal(experiment_label, "exp1")

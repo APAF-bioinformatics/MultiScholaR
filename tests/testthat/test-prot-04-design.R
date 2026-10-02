@@ -492,7 +492,7 @@ test_that("peptide negative-control selection forwards the peptide matrix and re
       )
       c(P1 = TRUE, P2 = FALSE)
     },
-    .env = method_env
+    .env = environment()
   )
 
   controls <- getNegCtrlProtAnovaPeptides(
@@ -605,7 +605,7 @@ test_that("peptide negative-control optimization keeps the best percentage and a
       adaptive_calls <<- c(adaptive_calls, sample_size)
       2L
     },
-    .env = method_env
+    .env = environment()
   )
 
   n_wd_warnings <- 0L
@@ -3053,7 +3053,7 @@ test_that("mod_prot_design_builder_server wires the public builder entry seam in
       call_log <<- c(call_log, "builderEntryShell")
       "builder-results"
     },
-    .env = environment(mod_prot_design_builder_server)
+    .env = environment()
   )
 
   result <- mod_prot_design_builder_server(
@@ -3098,7 +3098,7 @@ test_that("mod_prot_design_builder_server passes callback seeds opaquely through
       call_log <<- c(call_log, "builderEntryShell")
       "builder-results"
     },
-    .env = environment(mod_prot_design_builder_server)
+    .env = environment()
   )
 
   result <- mod_prot_design_builder_server(
@@ -5829,7 +5829,7 @@ test_that("mod_prot_design_server wires the wrapper helper seams in order", {
       call_log <<- c(call_log, "builderObserver")
       invisible(NULL)
     },
-    .env = environment(mod_prot_design_server)
+    .env = environment()
   )
 
   testServer(
@@ -5916,7 +5916,7 @@ test_that("mod_prot_design_server forwards the wrapper entry id into moduleServe
       call_log <<- c(call_log, "builderObserver")
       invisible(NULL)
     },
-    .env = environment(mod_prot_design_server)
+    .env = environment()
   )
   local_mocked_bindings(
     moduleServer = function(id, module, ...) {
@@ -5996,7 +5996,7 @@ test_that("mod_prot_design_server forwards NULL optional inputs through the wrap
       call_log <<- c(call_log, "builderObserver")
       invisible(NULL)
     },
-    .env = environment(mod_prot_design_server)
+    .env = environment()
   )
 
   testServer(
@@ -6080,7 +6080,7 @@ test_that("mod_prot_design_server preserves bootstrap import handoff objects acr
       call_log <<- c(call_log, "builderObserver")
       invisible(NULL)
     },
-    .env = environment(mod_prot_design_server)
+    .env = environment()
   )
 
   testServer(
@@ -6165,7 +6165,7 @@ test_that("mod_prot_design_server reuses moduleServer IO objects across wrapper 
       call_log <<- c(call_log, "builderObserver")
       invisible(NULL)
     },
-    .env = environment(mod_prot_design_server)
+    .env = environment()
   )
 
   testServer(
@@ -6248,7 +6248,7 @@ test_that("mod_prot_design_server forwards the exact qc trigger callback through
       call_log <<- c(call_log, "builderObserver")
       invisible(NULL)
     },
-    .env = environment(mod_prot_design_server)
+    .env = environment()
   )
 
   testServer(
@@ -6336,7 +6336,7 @@ test_that("mod_prot_design_server passes callback seeds opaquely through wrapper
       call_log <<- c(call_log, "builderObserver")
       invisible(NULL)
     },
-    .env = environment(mod_prot_design_server)
+    .env = environment()
   )
 
   testServer(
@@ -6483,7 +6483,7 @@ test_that("mod_prot_design_server keeps the wrapper entry logging ordered around
       call_log <<- c(call_log, "builderObserver")
       invisible(NULL)
     },
-    .env = environment(mod_prot_design_server)
+    .env = environment()
   )
   local_mocked_bindings(
     moduleServer = function(id, module, ...) {
@@ -7134,7 +7134,7 @@ test_that("mod_prot_design_server passes the exact volumes callback seed opaquel
       call_log <<- c(call_log, "builderObserver")
       invisible(NULL)
     },
-    .env = environment(mod_prot_design_server)
+    .env = environment()
   )
 
   testServer(

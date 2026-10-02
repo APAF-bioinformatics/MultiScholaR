@@ -64,14 +64,23 @@ completeProtSummaryWorkflowArgsSave <- function(output,
       dirCreateFn(integrationDir, recursive = TRUE, showWarnings = FALSE)
     }
 
-    s4Filename <- sprintf("%s_%s_final_s4.RDS", omicType, experimentLabel)
+    native_session <- identical(omicType, "proteomics") &&
+      isDIANativeSession(workflowData$state_manager)
+    s4Filename <- if (native_session) sprintf("%s_%s_final.msdia.tar", omicType, experimentLabel) else
+      sprintf("%s_%s_final_s4.RDS", omicType, experimentLabel)
     s4Filepath <- file.path(integrationDir, s4Filename)
 
-    saveRDSFn(finalS4Object, s4Filepath)
+    if (native_session) {
+      refreshDIANativeSummaryArchive(workflowData, projectDirs[[omicType]]$source_dir)
+      copyDIANativeSessionArtifact(projectDirs[[omicType]]$source_dir, s4Filepath)
+    } else {
+      saveRDSFn(finalS4Object, s4Filepath)
+    }
     catFn(
-      sprintf("SESSION SUMMARY: Saved Integration S4 object to: %s\n", s4Filepath)
+      sprintf("SESSION SUMMARY: Saved Integration artifact to: %s\n", s4Filepath)
     )
-    showNotificationFn("Saved Integration S4 Object", type = "message")
+    showNotificationFn(if (native_session) "Saved Integration artifact" else
+      "Saved Integration S4 Object", type = "message")
 
     values$workflow_args_saved <- TRUE
     showNotificationFn("Study parameters saved successfully", type = "message")
@@ -245,4 +254,3 @@ completeProtSummarySessionStateExport <- function(projectDirs,
     FALSE
   })
 }
-

@@ -79,9 +79,12 @@ buildProtQcPeptideTab <- function(moduleSpec, ns) {
   }
 }
 
-runProtQcPeptideSubmodule <- function(moduleSpec, workflow_data, omic_type, experiment_label) {
+runProtQcPeptideSubmodule <- function(moduleSpec, workflow_data, omic_type, experiment_label,
+                                    experiment_paths = NULL) {
   if (exists(moduleSpec$serverFn)) {
-    get(moduleSpec$serverFn)(moduleSpec$id, workflow_data, omic_type, experiment_label)
+    arguments <- list(moduleSpec$id, workflow_data, omic_type, experiment_label)
+    if (!is.null(experiment_paths)) arguments$experiment_paths <- experiment_paths
+    do.call(get(moduleSpec$serverFn), arguments)
   }
 }
 
@@ -117,7 +120,8 @@ mod_prot_qc_peptide_server <- function(id, workflow_data, experiment_paths, omic
           moduleSpec = moduleSpec,
           workflow_data = workflow_data,
           omic_type = omic_type,
-          experiment_label = experiment_label
+          experiment_label = experiment_label,
+          experiment_paths = experiment_paths
         )
       }
     } else {

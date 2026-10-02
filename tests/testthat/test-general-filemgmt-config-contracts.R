@@ -80,7 +80,7 @@ test_that("readConfigFile normalizes parsed config entries and forwards file_typ
       cluster_library_call <<- list(cluster = cluster, packages = packages)
       invisible(NULL)
     },
-    .env = environment(readConfigFile)
+    .package = "MultiScholaR"
   )
 
   supports_file_type <- "file_type" %in% names(formals(readConfigFile))
@@ -149,6 +149,25 @@ test_that("readConfigFile normalizes parsed config entries and forwards file_typ
   expect_equal(config_list$deAnalysisParameters$da_q_val_thresh, 0.2)
   expect_true(config_list$deAnalysisParameters$eBayes_trend)
   expect_false(config_list$deAnalysisParameters$eBayes_robust)
+})
+
+test_that("configuration can defer pools without changing scientific settings", {
+  path <- system.file("config", "config.ini", package = "MultiScholaR")
+  expect_true(nzchar(path))
+  called <- FALSE
+  config <- testthat::with_mocked_bindings(readConfigFile(path, create_workers = FALSE),
+    new_cluster = function(...) { called <<- TRUE; stop("unexpected pool") })
+  expect_false(called)
+  sections <- c("rollUpPrecursorToPeptide", "peptideIntensityFiltering",
+    "filterMinNumPeptidesPerProtein", "filterMinNumPeptidesPerSample",
+    "removePeptidesWithOnlyOneReplicate", "peptideMissingValueImputation",
+    "removeProteinsWithOnlyOneReplicate")
+  for (section in sections) {
+    expect_identical(config[[section]]$core_utilisation,
+      newDIAWorkerSpec(as.numeric(config$globalParameters$number_of_cpus)))
+  }
+  expect_error(readConfigFile(path, create_workers = NA), class = "saved_entity_invalid")
+  expect_true(formals(readConfigFile)$create_workers)
 })
 
 test_that("readConfigFileSection updates either a full section or one parameter", {

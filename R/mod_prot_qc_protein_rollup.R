@@ -240,7 +240,20 @@ runProteinIqRollupApplyStep <- function(workflowData,
   shiny::req(workflowData$state_manager)
 
   currentState <- workflowData$state_manager$current_state
-  peptideS4 <- workflowData$state_manager$getState(currentState)
+  reference_mode <- usesDIAReferenceStates(workflowData$state_manager)
+  if (reference_mode) {
+    pending <- resumeDIAProteinAction(workflowData, "protein_s4_created")
+    if (!is.null(pending)) return(pending)
+    assertDIAExportReady(workflowData$state_manager)
+    science_request <- workflowExportPaths(experimentPaths$source_dir, basename(tempfile("iq-science-")))
+    experimentPaths$peptide_qc_dir <- file.path(science_request$request_dir, "peptide")
+    experimentPaths$protein_qc_dir <- file.path(science_request$request_dir, "protein")
+    dir.create(experimentPaths$peptide_qc_dir)
+    dir.create(experimentPaths$protein_qc_dir)
+  }
+  peptideS4 <- if (reference_mode) readDIAExecutionComponents(workflowData$state_manager,
+    fields = "design_matrix") else workflowData$state_manager$getState(currentState)
+  predecessor <- getDIACurrentReference(workflowData$state_manager)
   shiny::req(peptideS4)
 
   logInfoFn("Protein Processing: Starting IQ rollup from peptide state")
@@ -283,6 +296,13 @@ runProteinIqRollupApplyStep <- function(workflowData,
     Alias = paste0("S_", sprintf("%03d", seq_along(originalSamples)))
   )
 
+  if (reference_mode) {
+    peptideReference <- readDIAStateMetadata(workflowData$state_manager)$data$components$peptide_data
+    writeDIAIQInput(workflowData$state_manager, peptideReference, peptideValuesImputedFile,
+      sampleMapping, sampleColumn, intensityColumn, writeTsvFn)
+    peptideLineageForIq <- readDIAProteinLineage(
+      workflowData$state_manager, peptideReference, proteinColumn)
+  } else {
   peptideDataForIq <- peptideS4@peptide_data
   peptideDataForIq$Q.Value <- 0.0009
   peptideDataForIq$PG.Q.Value <- 0.009
@@ -294,6 +314,9 @@ runProteinIqRollupApplyStep <- function(workflowData,
   peptideDataForIq[[sampleColumn]] <- sampleMapping$Alias[sampleIndex]
 
   writeTsvFn(peptideDataForIq, peptideValuesImputedFile)
+  peptideDataForIq <- sampleIndex <- NULL
+
+  }
 
   iqOutputFile <- file.path(experimentPaths$protein_qc_dir, "iq_output_file.txt")
 
@@ -334,6 +357,7 @@ runProteinIqRollupApplyStep <- function(workflowData,
   })
   colnames(proteinLog2QuantAliased) <- restoredCols
   proteinLog2Quant <- proteinLog2QuantAliased
+  proteinLog2QuantAliased <- NULL
 
   if (!proteinColumn %in% names(proteinLog2Quant)) {
     stop(
@@ -375,16 +399,22 @@ runProteinIqRollupApplyStep <- function(workflowData,
   proteinObj <- createProteinDataFn(
     protein_quant_table = proteinLog2Quant,
     protein_id_column = proteinColumn,
-    protein_id_table = .proteinIdTableFromPeptideLineage(
-      peptideS4,
-      proteinLog2Quant[[proteinColumn]]
-    ),
+    protein_id_table = if (reference_mode) {
+      lineage_view <- peptideS4
+      lineage_view@args$protein_accession_provenance <- peptideLineageForIq
+      .proteinIdTableFromPeptideLineage(lineage_view, proteinLog2Quant[[proteinColumn]])
+    } else .proteinIdTableFromPeptideLineage(peptideS4, proteinLog2Quant[[proteinColumn]]),
     design_matrix = finalDesignMatrix,
     sample_id = sampleColumn,
     group_id = groupColumn,
     technical_replicate_id = replicateColumn,
     args = peptideS4@args
   )
+
+  if (reference_mode) {
+    attr(proteinObj, "dia_component_source") <- attr(peptideS4, "dia_component_source")
+    attr(proteinObj, "dia_execution_fields") <- c("protein_quant_table", "protein_id_table", "design_matrix")
+  }
 
   iqStateConfig <- list(
       iq_output_file = iqOutputFile,
@@ -416,6 +446,8 @@ runProteinIqRollupApplyStep <- function(workflowData,
     transformation_type = "aggregation"
   )
 
+  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
+  peptideS4 <- proteinLog2Quant <- NULL
   captureCheckpointFn(proteinObj, "cp03", "rolled_up_protein")
 
   proteinCount <- proteinObj@protein_quant_table |>
@@ -436,10 +468,10 @@ runProteinIqRollupApplyStep <- function(workflowData,
     "\nReady for protein accession cleanup."
   )
 
-  list(
+  finishDIAProteinAction(workflowData, list(
     proteinObj = proteinObj,
     resultText = resultText
-  )
+  ), "proteinObj")
 }
 
 runProteinLimpaRollupApplyStep <- function(workflowData,
@@ -451,6 +483,10 @@ runProteinLimpaRollupApplyStep <- function(workflowData,
                                            captureCheckpointFn = .capture_checkpoint,
                                            logInfoFn = logger::log_info) {
   shiny::req(workflowData$state_manager)
+  if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+    cli::cli_abort("the capacity trial qualifies IQ only; Limpa remains held",
+      class = "saved_entity_scope")
+  }
 
   currentState <- workflowData$state_manager$current_state
   peptideS4 <- workflowData$state_manager$getState(currentState)
@@ -523,16 +559,10 @@ updateProteinIqRollupOutputs <- function(output,
                                          experimentLabel,
                                          renderTextFn = shiny::renderText,
                                          updateProteinFilteringFn = updateProteinFiltering) {
-  output$iq_rollup_results <- renderTextFn(iqRollupResult$resultText)
+  output$iq_rollup_results <- renderPeptideQcResultText(iqRollupResult$resultText, renderTextFn)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = iqRollupResult$proteinObj@protein_quant_table,
-    step_name = "9_protein_s4_created",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- publishDIAProteinProgress(iqRollupResult, "9_protein_s4_created", omicType,
+    experimentLabel, updateProteinFilteringFn, iqRollupResult$proteinObj)
   iqRollupPlot(plotGrid)
 
   invisible(plotGrid)
@@ -550,6 +580,7 @@ runProteinIqRollupApplyObserver <- function(workflowData,
                                             removeNotificationFn = shiny::removeNotification,
                                             logInfoFn = logger::log_info,
                                             logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Running IQ protein rollup & creating S4 object...",
     id = "iq_rollup_working",
@@ -593,6 +624,7 @@ runProteinIqRollupApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runProteinIqRollupRevertStep <- function(workflowData) {
@@ -614,7 +646,7 @@ runProteinIqRollupRevertStep <- function(workflowData) {
     stop("No previous peptide state to revert to.")
   }
 
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, previousState)
 
   list(
     previousState = previousState,
@@ -630,9 +662,10 @@ runProteinIqRollupRevertObserver <- function(workflowData,
                                              showNotificationFn = shiny::showNotification,
                                              logInfoFn = logger::log_info,
                                              logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$iq_rollup_results <- renderTextFn(revertResult$resultText)
+    output$iq_rollup_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     logInfoFn(paste("Reverted IQ rollup to", revertResult$previousState))
     showNotificationFn("Reverted successfully", type = "message")
 
@@ -650,6 +683,7 @@ runProteinIqRollupRevertObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 bindProteinIqRollupPlot <- function(output, iqRollupPlot) {
@@ -663,10 +697,27 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
   shiny::moduleServer(id, function(input, output, session) {
     
     iq_rollup_plot <- shiny::reactiveVal(NULL)
+    shiny::observeEvent(workflow_data$state_manager, {
+      if (isDIANativeSession(workflow_data$state_manager)) {
+        shiny::updateRadioButtons(session, "rollup_method", selected = "iq")
+        shinyjs::disable("rollup_method")
+      } else {
+        if (identical(workflow_data$dia_quantification_method, "limpa")) {
+          shiny::updateRadioButtons(session, "rollup_method", selected = "limpa")
+        }
+        shinyjs::enable("rollup_method")
+      }
+    }, ignoreNULL = TRUE)
     
     # Step 1: Protein Rollup (chunk 17)
     shiny::observeEvent(input$apply_iq_rollup, {
       rollupMethod <- input$rollup_method %||% "iq"
+      if ((isDIANativeSession(workflow_data$state_manager) || isDIANativeDefaultEnabled()) &&
+          !is.null(workflow_data$dia_quantification_method) &&
+          !identical(rollupMethod, workflow_data$dia_quantification_method)) {
+        shiny::showNotification("Reset the project and choose the DIA quantification route before import.", type = "error")
+        return(invisible(NULL))
+      }
       applyStepFn <- if (identical(rollupMethod, "limpa")) {
         runProteinLimpaRollupApplyStep
       } else {

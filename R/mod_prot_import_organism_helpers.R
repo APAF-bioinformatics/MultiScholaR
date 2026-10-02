@@ -94,11 +94,13 @@ analyzeProtImportMixedSpeciesData <- function(
     localData$organism_mapping <- organism_mapping
 
     protein_col <- dataImportResult$column_mapping$protein_col
-    if (is.null(protein_col) || !(protein_col %in% names(dataImportResult$data))) {
+    if (is.null(protein_col) || is.null(dataImportResult$import_summary) &&
+        !(protein_col %in% names(dataImportResult$data))) {
       return(FALSE)
     }
 
-    protein_ids <- unique(dataImportResult$data[[protein_col]])
+    protein_ids <- if (!is.null(dataImportResult$import_summary)) dataImportResult$protein_ids else
+      unique(dataImportResult$data[[protein_col]])
     organism_dist <- analyzeDistribution(protein_ids, organism_mapping)
     localData$organism_distribution <- organism_dist
     workflowData$organism_distribution <- organism_dist
@@ -179,11 +181,12 @@ filterProtImportDataToOrganism <- function(
   organism_proteins_clean <- unique(normalizeUniprot(organism_proteins, remove_isoform = TRUE))
   protein_col <- workflowData$column_mapping$protein_col
 
-  if (is.null(protein_col) || is.null(workflowData$data_tbl)) {
+  table <- getDIAOwnedPayload(workflowData, "data_tbl")
+  if (is.null(protein_col) || is.null(table)) {
     return(invisible(NULL))
   }
 
-  original_count <- nrow(workflowData$data_tbl)
+  original_count <- nrow(table)
 
   filterByOrganism <- function(proteinIds) {
     ids <- unlist(strsplit(as.character(proteinIds), ";"))
@@ -191,15 +194,17 @@ filterProtImportDataToOrganism <- function(
     any(ids_clean %in% organism_proteins_clean)
   }
 
-  keep_rows <- sapply(workflowData$data_tbl[[protein_col]], filterByOrganism)
-  workflowData$data_tbl <- workflowData$data_tbl[keep_rows, ]
+  keep_rows <- sapply(table[[protein_col]], filterByOrganism)
+  table <- table[keep_rows, ]
+  workflowData <- setDIAOwnedPayload(workflowData, "data_tbl", table)
 
   if (!is.null(workflowData$data_cln)) {
-    keep_rows_cln <- sapply(workflowData$data_cln[[protein_col]], filterByOrganism)
-    workflowData$data_cln <- workflowData$data_cln[keep_rows_cln, ]
+    cleaned <- getDIAOwnedPayload(workflowData, "data_cln")
+    keep_rows_cln <- sapply(cleaned[[protein_col]], filterByOrganism)
+    workflowData <- setDIAOwnedPayload(workflowData, "data_cln", cleaned[keep_rows_cln, ])
   }
 
-  filtered_count <- nrow(workflowData$data_tbl)
+  filtered_count <- nrow(table)
   removed_count <- original_count - filtered_count
 
   logInfo(sprintf(
@@ -317,4 +322,3 @@ confirmProtImportOrganismSelection <- function(
 
   TRUE
 }
-

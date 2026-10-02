@@ -472,10 +472,37 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
         da_data = volcano_data,
         experiment_paths = list(da_output_dir = tempdir())
       )
+      expect_identical(volcano_args$static$show_labels, TRUE)
+      expect_identical(volcano_args$static$n_labels, 5)
+      label_cases <- list(
+        list(NULL, NULL, TRUE, 10),
+        list(FALSE, 0, FALSE, 0),
+        list(TRUE, 3, TRUE, 3),
+        list(NULL, 3, TRUE, 3),
+        list(FALSE, NULL, FALSE, 10)
+      )
+      for (label_case in label_cases) {
+        da_server_volcano_render_handler(
+          input = list(volcano_contrast = "B_vs_A", da_q_val_thresh = 0.05,
+            treat_lfc_cutoff = 1, volcano_show_labels = label_case[[1L]],
+            volcano_label_top_n = label_case[[2L]]),
+          output = volcano_output, session = list(), ns = function(id) id,
+          da_data = volcano_data, experiment_paths = list(da_output_dir = tempdir())
+        )
+        expect_identical(volcano_args$static$show_labels, label_case[[3L]])
+        expect_identical(volcano_args$static$n_labels, label_case[[4L]])
+      }
     }
   )
   expect_identical(volcano_output$volcano_glimma, "interactive-volcano")
   expect_identical(volcano_output$volcano_plot_static, "static-volcano")
+  # A renderer-only assertion misses a UI bound to a different output name.
+  volcano_ui <- as.character(mod_prot_da_ui("binding_probe"))
+  for (output_id in c("volcano_glimma", "volcano_plot_static")) {
+    expect_true(exists(output_id, envir = volcano_output, inherits = FALSE))
+    expect_match(volcano_ui, paste0('id="binding_probe-', output_id, '"'), fixed = TRUE)
+  }
+  expect_false(grepl('id="binding_probe-volcano_static"', volcano_ui, fixed = TRUE))
   expect_identical(volcano_args$interactive$selected_contrast, "B_vs_A")
   expect_identical(volcano_args$static$lfc_threshold, 1)
 })

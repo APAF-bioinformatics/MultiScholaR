@@ -53,6 +53,7 @@ setMethod(
       message(sprintf("   outputDaResultsAllContrasts: Writing files for contrast: %s", contrast_name))
 
       contrast_result <- da_results_list_all_contrasts[[contrast_name]]
+      contrast_result <- readDIAContrastOutput(contrast_result)
 
       if (!is.null(contrast_result$da_proteins_long)) {
         # Clean contrast name for safe filename
@@ -250,6 +251,9 @@ setMethod(
 
         for (contrast_name in names(da_results_list_all_contrasts)) {
           contrast_result <- da_results_list_all_contrasts[[contrast_name]]
+          columns <- if (identical(contrast_result$schema, "dia.contrast_reference.v1"))
+            intersect(c("comparison", "log2FC", "fdr_qvalue", "gene_names", "gene_name"), contrast_result$columns) else NULL
+          contrast_result <- readDIAContrastOutput(contrast_result, "da_proteins_long", columns)
 
           if (!is.null(contrast_result$da_proteins_long)) {
             # Recreate the volcano plot
@@ -314,6 +318,7 @@ setMethod(
 
         for (contrast_name in names(da_results_list_all_contrasts)) {
           contrast_result <- da_results_list_all_contrasts[[contrast_name]]
+          contrast_result <- readDIAContrastOutput(contrast_result, "num_sig_da_molecules_first_go")
 
           # Check for num_sig_da_molecules_first_go in the result
           if (!is.null(contrast_result$num_sig_da_molecules_first_go)) {

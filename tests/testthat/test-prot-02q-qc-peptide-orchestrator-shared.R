@@ -64,13 +64,14 @@ withSharedProtPeptideSubmoduleMocks <- function(server_env, captured) {
 
   record_server <- function(name) {
     force(name)
-    function(id, workflowData, omicType, experimentLabel) {
+    function(id, workflowData, omicType, experimentLabel, experiment_paths = NULL) {
       captured$server_calls[[length(captured$server_calls) + 1L]] <- list(
         name = name,
         id = id,
         workflowData = workflowData,
         omicType = omicType,
-        experimentLabel = experimentLabel
+        experimentLabel = experimentLabel,
+        experiment_paths = experiment_paths
       )
       invisible(NULL)
     }
@@ -194,6 +195,9 @@ test_that("proteomics peptide QC orchestrator preserves DIA server fan-out", {
   )
 
   expect_identical(captured$module_id, "peptide-qc")
+  expect_true(all(vapply(captured$server_calls, function(call) {
+    identical(call$experiment_paths, list(peptide_qc_dir = tempdir()))
+  }, logical(1))))
   expect_identical(
     vapply(captured$server_calls, `[[`, character(1), "name"),
     c(

@@ -45,6 +45,7 @@
 }
 
 .tokenizeProteinAccessions <- function(protein_text) {
+  if (!length(protein_text)) return(vector("list", 0L))
   protein_text <- ifelse(is.na(protein_text), "", as.character(protein_text))
   lapply(strsplit(protein_text, "[;,]", perl = TRUE), function(tokens) {
     tokens <- trimws(tokens)
@@ -177,11 +178,28 @@ classifyPeptideBiologicalExclusions <- function(
   )
 
   manifest <- readPeptideContaminantManifest(contaminant_manifest)
+  classifyPeptideBiologicalExclusionsResolved(input_table, protein_id_column,
+    protein_ids_column, manifest, exclude_decoys, exclude_contaminants)
+}
+
+#' Apply the existing biological-exclusion rules with already validated manifest data.
+#' @param input_table,protein_id_column,protein_ids_column Existing native inputs.
+#' @param manifest Parsed immutable manifest including its original provenance.
+#' @param exclude_decoys,exclude_contaminants Validated native exclusion switches.
+#' @return The same annotated rows, ledger, summary and manifest as the public wrapper.
+#' @noRd
+classifyPeptideBiologicalExclusionsResolved <- function(input_table, protein_id_column,
+    protein_ids_column, manifest, exclude_decoys, exclude_contaminants) {
   provenance_columns <- unique(c(
     protein_id_column,
     if (protein_ids_column %in% names(input_table)) protein_ids_column else character()
   ))
-  combined_ids <- if (nrow(input_table)) {
+  text_provenance <- all(vapply(input_table[provenance_columns],
+    \(column) is.null(dim(column)) && (is.character(column) || is.factor(column)), logical(1)))
+  # A semicolon boundary between columns cannot create a tag spanning columns.
+  # For normal DIA text IDs, classify each distinct column value and OR its row
+  # signals. Keep historical matrix coercion for non-text standalone inputs.
+  combined_ids <- if (nrow(input_table) && !text_provenance) {
     apply(
       input_table[provenance_columns],
       1L,
@@ -225,14 +243,32 @@ classifyPeptideBiologicalExclusions <- function(
     ignore.case = TRUE,
     perl = TRUE
   )
+  if (text_provenance) {
+    decoy_tag <- contaminant_tag <- rep(FALSE, nrow(input_table))
+    for (column in provenance_columns) {
+      values <- as.character(input_table[[column]])
+      distinct <- unique(values)
+      positions <- match(values, distinct)
+      decoy_tag <- decoy_tag | grepl("(^|[;,[:space:]])(?:REV__|DECOY_)",
+        distinct, ignore.case = TRUE, perl = TRUE)[positions]
+      contaminant_tag <- contaminant_tag | grepl("(^|[;,[:space:]])(?:CON__|CONTAMINANT_|cRAP-)",
+        distinct, ignore.case = TRUE, perl = TRUE)[positions]
+    }
+  }
 
   manifest_id_text <- if (protein_ids_column %in% names(input_table)) {
     input_table[[protein_ids_column]]
   } else {
     input_table[[protein_id_column]]
   }
-  tokenised <- .tokenizeProteinAccessions(manifest_id_text)
-  manifest_match_count <- integer(nrow(input_table))
+  token_positions <- NULL
+  if (is.null(dim(manifest_id_text)) && (is.character(manifest_id_text) || is.factor(manifest_id_text))) {
+    text <- ifelse(is.na(manifest_id_text), "", as.character(manifest_id_text))
+    distinct <- unique(unname(text))
+    if (length(distinct) < length(text)) token_positions <- match(text, distinct)
+  }
+  tokenised <- .tokenizeProteinAccessions(if (is.null(token_positions)) manifest_id_text else distinct)
+  manifest_match_count <- integer(if (is.null(token_positions)) nrow(input_table) else length(tokenised))
   manifest_token_count <- lengths(tokenised)
   if (length(manifest$accessions)) {
     manifest_match_count <- vapply(tokenised, function(tokens) {
@@ -242,6 +278,16 @@ classifyPeptideBiologicalExclusions <- function(
       canonical_tokens <- sub("-[0-9]+$", "", tokens)
       sum(tokens %in% manifest$accessions | canonical_tokens %in% manifest$accessions)
     }, integer(1))
+  }
+  if (!is.null(token_positions)) {
+    manifest_token_count <- manifest_token_count[token_positions]
+    names(manifest_token_count) <- names(manifest_id_text)
+    if (length(manifest$accessions)) {
+      manifest_match_count <- manifest_match_count[token_positions]
+      names(manifest_match_count) <- names(manifest_id_text)
+    } else {
+      manifest_match_count <- integer(nrow(input_table))
+    }
   }
   manifest_any <- manifest_match_count > 0L
   manifest_all <- manifest_any & manifest_match_count == manifest_token_count

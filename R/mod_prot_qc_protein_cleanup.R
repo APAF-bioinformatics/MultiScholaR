@@ -124,8 +124,15 @@ runProteinAccessionCleanupStep <- function(workflowData,
                                            saveRdsFn = saveRDS,
                                            existsFn = exists,
                                            getFn = get) {
+  if (usesDIAReferenceStates(workflowData$state_manager) &&
+      identical(workflowData$state_manager$current_state, "protein_accession_cleaned")) {
+    pending <- resumeDIAProteinAction(workflowData, "protein_accession_cleaned")
+    if (!is.null(pending)) return(pending)
+  }
+
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
+  currentS4 <- readDIAProteinScience(workflowData$state_manager)
+  predecessor <- getDIACurrentReference(workflowData$state_manager)
   shiny::req(currentS4)
 
   logInfoFn(sprintf(
@@ -189,7 +196,8 @@ runProteinAccessionCleanupStep <- function(workflowData,
     workflowData$accession_cleanup_results
 
   tryCatch({
-    if (existsFn("experiment_paths", envir = .GlobalEnv, inherits = FALSE)) {
+    if (!usesDIAReferenceStates(workflowData$state_manager) &&
+        existsFn("experiment_paths", envir = .GlobalEnv, inherits = FALSE)) {
       experimentPaths <- getFn("experiment_paths", envir = .GlobalEnv)
       if (!is.null(experimentPaths$source_dir)) {
         accessionCleanupFile <- file.path(
@@ -216,6 +224,7 @@ runProteinAccessionCleanupStep <- function(workflowData,
     proteinsAfter
   ))
 
+  cleanedS4 <- inheritDIAExecutionSource(cleanedS4, workflowData$state_manager, predecessor)
   workflowData$state_manager$saveState(
     state_name = "protein_accession_cleaned",
     s4_data_object = cleanedS4,
@@ -232,6 +241,8 @@ runProteinAccessionCleanupStep <- function(workflowData,
     }
   )
 
+  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
+  currentS4 <- NULL
   proteinCount <- cleanedS4@protein_quant_table |>
     dplyr::distinct(!!rlang::sym(proteinKeyAfter)) |>
     nrow()
@@ -257,11 +268,11 @@ runProteinAccessionCleanupStep <- function(workflowData,
     )
   }
 
-  list(
+  finishDIAProteinAction(workflowData, list(
     cleanedS4 = cleanedS4,
     cleanupApplied = cleanupApplied,
     resultText = resultText
-  )
+  ), "cleanedS4")
 }
 
 updateProteinAccessionCleanupOutputs <- function(output,
@@ -271,16 +282,10 @@ updateProteinAccessionCleanupOutputs <- function(output,
                                                  experimentLabel,
                                                  renderTextFn = shiny::renderText,
                                                  updateProteinFilteringFn = updateProteinFiltering) {
-  output$accession_cleanup_results <- renderTextFn(cleanupResult$resultText)
+  output$accession_cleanup_results <- renderPeptideQcResultText(cleanupResult$resultText, renderTextFn)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = cleanupResult$cleanedS4@protein_quant_table,
-    step_name = "10_protein_accession_cleaned",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- publishDIAProteinProgress(cleanupResult, "10_protein_accession_cleaned", omicType,
+    experimentLabel, updateProteinFilteringFn, cleanupResult$cleanedS4)
   accessionCleanupPlot(plotGrid)
 
   invisible(plotGrid)
@@ -299,6 +304,7 @@ runProteinAccessionCleanupApplyObserver <- function(workflowData,
                                                     removeNotificationFn = shiny::removeNotification,
                                                     logInfoFn = logger::log_info,
                                                     logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Applying protein accession cleanup...",
     id = "accession_cleanup_working",
@@ -340,6 +346,7 @@ runProteinAccessionCleanupApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runProteinAccessionCleanupRevertStep <- function(workflowData) {
@@ -351,7 +358,7 @@ runProteinAccessionCleanupRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, previousState)
 
   list(
     previousState = previousState,
@@ -367,9 +374,10 @@ runProteinAccessionCleanupRevertObserver <- function(workflowData,
                                                      showNotificationFn = shiny::showNotification,
                                                      logInfoFn = logger::log_info,
                                                      logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$accession_cleanup_results <- renderTextFn(revertResult$resultText)
+    output$accession_cleanup_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     logInfoFn(paste("Reverted accession cleanup to", revertResult$previousState))
     showNotificationFn("Reverted successfully", type = "message")
 
@@ -386,6 +394,7 @@ runProteinAccessionCleanupRevertObserver <- function(workflowData,
       status = "error",
       errorMessage = errorMessage
     )
+  })
   })
 }
 

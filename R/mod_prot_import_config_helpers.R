@@ -1,3 +1,12 @@
+#' Read configuration without eager pools only in an owned DIA GUI session.
+#' @param file,file_type Existing configuration-reader arguments.
+#' @return Unchanged configuration with portable workers for the DIA adapter.
+#' @noRd
+readProtGuiConfig <- function(file, file_type = "ini") {
+  readConfigFile(file = file, file_type = file_type,
+    create_workers = is.null(getDIAActiveManager()))
+}
+
 loadProtImportConfiguration <- function(
     configPath = NULL
     , experimentPaths
@@ -154,4 +163,3 @@ loadProtImportOptionalMappings <- function(
     , uniparcMapping = workflowData$uniparc_mapping
   ))
 }
-

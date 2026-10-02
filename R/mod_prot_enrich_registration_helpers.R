@@ -329,6 +329,19 @@ registerProtEnrichSelectedTabObserver <- function(selectedTabFn,
     catFn(sprintf("   enrichment_tab_observer Step: Selected tab = %s\n", selectedTab))
 
     if (!is.null(selectedTab) && selectedTab == "enrichment") {
+      references <- workflowData$da_analysis_results_list
+      if (isDIAResultManifest(references)) {
+        enrichmentData$current_s4_object <- references$source
+        enrichmentData$da_results_data <- references
+        enrichmentData$contrasts_available <- references$contrasts$friendly_names
+        choices <- stats::setNames(references$contrasts$friendly_names, references$contrasts$friendly_names)
+        updateSelectInputFn(session, "selected_contrast", choices = choices)
+        observerState$initialized <- TRUE
+        observerState$source <- "component_references"
+        observerState$contrastChoices <- choices
+        return(invisible(observerState))
+      }
+
       catFn("=== ENRICHMENT TAB CLICKED ===\n")
       catFn(sprintf(
         "   ENRICHMENT TAB Step: workflow_data$state_manager is NULL = %s\n",
@@ -487,6 +500,15 @@ registerProtEnrichDaResultsObserver <- function(workflowData,
     catFn("*** ENRICHMENT: DE results detected - updating contrasts ***\n")
 
     daResultsList <- workflowData$da_analysis_results_list
+    if (isDIAResultManifest(daResultsList)) {
+      enrichmentData$current_s4_object <- daResultsList$source
+      enrichmentData$da_results_data <- daResultsList
+      enrichmentData$contrasts_available <- daResultsList$contrasts$friendly_names
+      choices <- stats::setNames(daResultsList$contrasts$friendly_names, daResultsList$contrasts$friendly_names)
+      updateSelectInputFn(session, "selected_contrast", choices = choices)
+      return(invisible(list(hasResults = TRUE, currentS4Stored = FALSE,
+        source = "component_references", contrastChoices = choices)))
+    }
     observerState <- list(
       hasResults = FALSE,
       currentS4Stored = FALSE,

@@ -29,6 +29,13 @@ test_that("processFastaFile preserves standard UniProt FASTA parsing and metadat
     fasta_path
   )
 
+  reader <- vroom::vroom
+  testthat::local_mocked_bindings(vroom = function(..., n_max = Inf) {
+    expect_identical(n_max, 1L)
+    value <- reader(..., n_max = n_max)
+    expect_identical(nrow(value), 1L)
+    value
+  }, .package = "vroom")
   result <- processFastaFile(
     fasta_file_path = fasta_path,
     fasta_meta_file = meta_path,
@@ -86,6 +93,13 @@ test_that("processFastaFile preserves non-standard FASTA parsing and external ma
     stringsAsFactors = FALSE
   )
 
+  reader <- vroom::vroom
+  testthat::local_mocked_bindings(vroom = function(..., n_max = Inf) {
+    expect_identical(n_max, 1L)
+    value <- reader(..., n_max = n_max)
+    expect_identical(nrow(value), 1L)
+    value
+  }, .package = "vroom")
   result <- processFastaFile(
     fasta_file_path = fasta_path,
     uniprot_search_results = uniprot_search_results,

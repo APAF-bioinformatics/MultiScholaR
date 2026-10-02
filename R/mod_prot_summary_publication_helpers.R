@@ -101,6 +101,7 @@ runProtSummaryPublicationCopy <- function(output,
                                           showNotificationFn = shiny::showNotification,
                                           timestampFn = Sys.time,
                                           catFn = cat) {
+  assertDIAExportReady(getDIAActiveManager())
   if (!existsFn("project_dirs", envir = .GlobalEnv, inherits = FALSE)) {
     catFn("   SESSION SUMMARY: Setting project_dirs in global environment\n")
     assignFn("project_dirs", projectDirs, envir = .GlobalEnv)
@@ -251,4 +252,3 @@ completeProtSummaryGithubPush <- function(output,
     FALSE
   })
 }
-

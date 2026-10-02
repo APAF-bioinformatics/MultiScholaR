@@ -287,6 +287,10 @@ registerProtImportObservers <- function(
 
     runProcessingSafelyFn(
       runProcessing = function() {
+        initializeDIANativeImport(workflowData, experimentPaths, session, format,
+          input$dia_quantification_method %||% "iq")
+        withDIAStateScope(workflowData$state_manager, function() {
+        registerDIAInputFiles(workflowData$state_manager, c(search_results_path, fasta_path))
         data_import_result <- readDataWithStatusFn(
           format = format,
           searchResultsPath = search_results_path,
@@ -305,7 +309,7 @@ registerProtImportObservers <- function(
           messageFn = messageFn
         )
 
-        applyWorkflowWithStatusFn(
+        apply_arguments <- list(
           workflowData = workflowData,
           dataImportResult = data_import_result,
           format = format,
@@ -322,6 +326,20 @@ registerProtImportObservers <- function(
           sanitizeRunNames = sanitizeRunNamesFn,
           processFasta = processFastaFn
         )
+        manager <- getDIAActiveManager()
+        candidate <- inherits(manager, "DIAStateAdapter") && identical(format, "diann")
+        if (candidate) apply_arguments$deferFasta <- TRUE
+        do.call(applyWorkflowWithStatusFn, apply_arguments)
+        apply_arguments <- NULL
+        if (candidate) {
+          data_import_result <- getDIAImportMetadata(manager)
+          releaseDIAWorkingReference(manager, workflowData$data_tbl)
+          observeDIAOwnerBoundary(manager$.context, "import_table_released_before_fasta")
+          updateStatusFn("Processing FASTA file...")
+          processFastaDataFn(workflowData = workflowData, fastaPath = fasta_path,
+            organismName = input$organism_name, experimentPaths = experimentPaths,
+            processFasta = processFastaFn, logInfo = logInfo, logWarn = logWarn)
+        }
 
         runMixedSpeciesAnalysisIfNeededFn(
           workflowData = workflowData,
@@ -386,6 +404,7 @@ registerProtImportObservers <- function(
           logInfo = logInfo
         )
 
+        completeDIAInputFiles(workflowData$state_manager)
         finalizeProcessingFn(
           workflowData = workflowData,
           localData = localData,
@@ -395,6 +414,7 @@ registerProtImportObservers <- function(
         )
 
         invisible(data_import_result)
+        })
       },
       workflowData = workflowData,
       localData = localData,

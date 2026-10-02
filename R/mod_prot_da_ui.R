@@ -78,6 +78,14 @@ mod_prot_da_sidebar_ui <- function(ns) {
     shiny::helpText("Contrasts defined in design matrix"),
     shiny::br(),
 
+    # Optional external native archive or historical RDS; no selection uses latest.
+    if (requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()) {
+      shinyFiles::shinyFilesButton(ns("session_archive"), "Choose saved session (optional)",
+        "Choose DIA session", multiple = FALSE)
+    } else {
+      shiny::fileInput(ns("session_archive_standard"), "Saved session (optional):",
+        accept = c(".msdia.tar", ".rds", ".RDS"))
+    },
     # Load filtered session button
     testid(
       shiny::actionButton(
@@ -89,7 +97,7 @@ mod_prot_da_sidebar_ui <- function(ns) {
       )
       , "prot-da-load-session"
     ),
-    shiny::helpText("Load previously exported filtered data for DA analysis"),
+    shiny::helpText("Load the latest session, a portable native DIA archive, or a historical RDS session."),
     shiny::br(),
 
     # Main action button
@@ -167,7 +175,7 @@ mod_prot_da_volcano_tab_ui <- function(ns) {
       condition = "input.volcano_interactive == false",
       ns = ns,
       shinyjqui::jqui_resizable(
-        shiny::plotOutput(ns("volcano_static"), height = "600px")
+        shiny::plotOutput(ns("volcano_plot_static"), height = "600px")
       )
     )
   )

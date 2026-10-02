@@ -78,7 +78,7 @@ runPeptideReplicateRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, previousState)
   logInfoFn(paste("Reverted replicate filter to", previousState))
 
   list(
@@ -94,9 +94,10 @@ runPeptideReplicateRevertObserver <- function(workflowData,
                                               renderTextFn = shiny::renderText,
                                               showNotificationFn = shiny::showNotification,
                                               logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$replicate_results <- renderTextFn(revertResult$resultText)
+    output$replicate_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     showNotificationFn("Reverted successfully", type = "message")
 
     list(
@@ -113,6 +114,7 @@ runPeptideReplicateRevertObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 .peptideReplicateSummaryFromObject <- function(object) {
@@ -127,8 +129,14 @@ runPeptideReplicateApplyStep <- function(workflowData,
                                          removePeptidesWithOnlyOneReplicateFn = removePeptidesWithOnlyOneReplicate,
                                          logInfoFn = logger::log_info,
                                          nowFn = Sys.time) {
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    return(runDIAReferencePeptideGroups(workflowData, "removePeptidesWithOnlyOneReplicate",
+      list(replicate_group_column = replicateGroupColumn), "replicate_filtered", "Applied distinct-run replicate support filter (supported in any group)"))
+  }
+
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
+  currentS4 <- getDIAExecutionState(workflowData$state_manager, "removePeptidesWithOnlyOneReplicate")
+  predecessor <- getDIACurrentReference(workflowData$state_manager)
   shiny::req(currentS4)
 
   logInfoFn(sprintf(
@@ -173,6 +181,8 @@ runPeptideReplicateApplyStep <- function(workflowData,
     now = nowFn()
   )
 
+  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
+  currentS4 <- NULL
   proteinCount <- .countPeptideProteinGroups(filteredS4)
 
   resultText <- paste(
@@ -202,17 +212,21 @@ updatePeptideReplicateOutputs <- function(output,
                                           omicType,
                                           experimentLabel,
                                           renderTextFn = shiny::renderText,
-                                          updateProteinFilteringFn = updateProteinFiltering) {
-  output$replicate_results <- renderTextFn(replicateResult$resultText)
+                                          updateProteinFilteringFn = updateProteinFiltering, projectDirs = NULL) {
+  output$replicate_results <- renderPeptideQcResultText(replicateResult$resultText, renderTextFn)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = replicateResult$filteredS4@peptide_data,
+  plot_arguments <- list(
+    data = replicateResult$filteringSummary %||% replicateResult$filteredS4@peptide_data,
     step_name = "7_replicate_filtered",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,
     overwrite = TRUE
   )
+  if (!is.null(projectDirs)) plot_arguments$project_dirs <- projectDirs
+  plotGrid <- if (!is.null(replicateResult$stateReference)) {
+    publishDIAQvalueOutput(getDIAActiveManager(), replicateResult, plot_arguments, updateProteinFilteringFn)
+  } else do.call(updateProteinFilteringFn, plot_arguments)
   replicatePlot(plotGrid)
 
   invisible(plotGrid)
@@ -229,7 +243,8 @@ runPeptideReplicateApplyObserver <- function(workflowData,
                                              showNotificationFn = shiny::showNotification,
                                              removeNotificationFn = shiny::removeNotification,
                                              logInfoFn = logger::log_info,
-                                             logErrorFn = logger::log_error) {
+                                             logErrorFn = logger::log_error, experimentPaths = NULL) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Applying replicate filter...",
     id = "replicate_working",
@@ -242,13 +257,19 @@ runPeptideReplicateApplyObserver <- function(workflowData,
       replicateGroupColumn = replicateGroupColumn
     )
 
-    plotGrid <- updateOutputsFn(
+    output_arguments <- list(
       output = output,
       replicatePlot = replicatePlot,
       replicateResult = replicateResult,
       omicType = omicType,
       experimentLabel = experimentLabel
     )
+    if (!is.null(experimentPaths)) {
+      output_arguments$projectDirs <- stats::setNames(
+        list(experimentPaths), paste(omicType, experimentLabel, sep = "_")
+      )
+    }
+    plotGrid <- do.call(updateOutputsFn, output_arguments)
 
     logInfoFn("Replicate filter applied successfully")
     removeNotificationFn("replicate_working")
@@ -270,16 +291,17 @@ runPeptideReplicateApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
-mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, experiment_label, experiment_paths = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     
     replicate_plot <- shiny::reactiveVal(NULL)
     
     # Step 6: Replicate Filter (chunk 15)
     shiny::observeEvent(input$apply_replicate_filter, {
-      runPeptideReplicateApplyObserver(
+      apply_arguments <- list(
         workflowData = workflow_data,
         replicateGroupColumn = input$replicate_group_column,
         output = output,
@@ -287,6 +309,8 @@ mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, e
         omicType = omic_type,
         experimentLabel = experiment_label
       )
+      if (!is.null(experiment_paths)) apply_arguments$experimentPaths <- experiment_paths
+      do.call(runPeptideReplicateApplyObserver, apply_arguments)
     })
     
     # Revert Replicate Filter

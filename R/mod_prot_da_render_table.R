@@ -5,6 +5,14 @@ da_server_table_render_handler <- function(input, output, session, da_data) {
 
     tryCatch(
       {
+        if (isDIAResultManifest(da_data$da_results_list)) {
+          page <- readDIAResultPage(da_data$da_results_list, input$table_contrast,
+            input$table_significance, input$da_q_val_thresh, input$treat_lfc_cutoff,
+            limit = input$table_max_rows)
+          return(DT::datatable(page$data, options = list(pageLength = 25, scrollX = TRUE,
+            dom = "Bfrtip", buttons = c("copy", "csv", "excel")), extensions = "Buttons") |>
+            DT::formatRound(columns = c("log2FC", "raw_pvalue", "fdr_qvalue"), digits = 4))
+        }
         # Get DA results from the new format
         if (!is.null(da_data$da_results_list$da_proteins_long)) {
           # Debug: Show available contrasts in data vs selected contrast
@@ -83,6 +91,14 @@ da_server_table_render_handler <- function(input, output, session, da_data) {
 
     tryCatch(
       {
+        if (isDIAResultManifest(da_data$da_results_list)) {
+          counts <- readDIAResultPage(da_data$da_results_list, input$table_contrast,
+            qvalue = input$da_q_val_thresh, lfc = input$treat_lfc_cutoff, limit = 1L)$counts
+          return(paste(sprintf("Total genes: %d", counts$total),
+            sprintf("Significant (q < %.3f): %d", input$da_q_val_thresh, counts$significant),
+            sprintf("Up-regulated: %d", counts$up), sprintf("Down-regulated: %d", counts$down),
+            sprintf("Fold-change cutoff: %.2f", input$treat_lfc_cutoff), sep = "\n"))
+        }
         if (!is.null(da_data$da_results_list$da_proteins_long)) {
           # Filter for selected contrast
           current_results <- da_data$da_results_list$da_proteins_long |>

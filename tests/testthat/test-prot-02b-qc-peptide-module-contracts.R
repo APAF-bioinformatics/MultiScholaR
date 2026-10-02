@@ -2,6 +2,96 @@
 library(testthat)
 library(shiny)
 
+test_that("all peptide Apply observers pass the current project to their output adapter", {
+  observers <- c(qvalue = "runPeptideQvalueApplyObserver", protein = "runProteinPeptideApplyObserver",
+    rollup = "runPeptideRollupApplyObserver", intensity = "runPeptideIntensityApplyObserver",
+    sample = "runPeptideSampleApplyObserver", replicate = "runPeptideReplicateApplyObserver",
+    impute = "runPeptideImputationApplyObserver")
+  for (suffix in names(observers)) {
+    fn <- get(observers[[suffix]], envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    required <- names(formals(fn))[vapply(formals(fn), function(value) identical(value, quote(expr = )), logical(1))]
+    args <- stats::setNames(rep(list(NULL), length(required)), required)
+    for (name in intersect(names(formals(fn)), c("runApplyStepFn", "runImputationStepFn",
+      "showNotificationFn", "removeNotificationFn", "logInfoFn"))) args[[name]] <- function(...) list()
+    args$logErrorFn <- function(error) stop(error)
+    captured <- NULL
+    args$updateOutputsFn <- function(...) { captured <<- list(...); "grid" }
+    args$omicType <- "proteomics"
+    args$experimentLabel <- "A"
+    args$experimentPaths <- list(time_dir = "/fixture/A", publication_graphs_dir = "/fixture/A")
+    result <- do.call(fn, args)
+    expect_identical(result$status, "success")
+    expect_identical(captured$projectDirs, list(proteomics_A = args$experimentPaths))
+    args$experimentPaths <- NULL
+    result <- do.call(fn, args)
+    expect_identical(result$status, "success")
+    expect_false("projectDirs" %in% names(captured))
+  }
+})
+
+test_that("all peptide output adapters forward only their explicit project paths", {
+  specs <- list(
+    c("qvalue", "updatePeptideQvalueOutputs", "qvaluePlot", "qvalueResult", "filteredS4"),
+    c("protein", "updateProteinPeptideOutputs", "proteinPeptidePlot", "proteinPeptideResult", "filteredS4"),
+    c("rollup", "updatePeptideRollupOutputs", "rollupPlot", "rollupResult", "rolledUpS4"),
+    c("intensity", "updatePeptideIntensityOutputs", "intensityPlot", "intensityResult", "filteredS4"),
+    c("sample", "updatePeptideSampleOutputs", "samplePlot", "sampleResult", "filteredS4"),
+    c("replicate", "updatePeptideReplicateOutputs", "replicatePlot", "replicateResult", "filteredS4"),
+    c("impute", "updatePeptideImputationOutputs", "imputationPlot", "imputationResult", "imputedS4")
+  )
+  methods::setClass("DiaPlotPathFixture", slots = c(peptide_data = "data.frame"))
+  withr::defer(methods::removeClass("DiaPlotPathFixture"))
+  object <- methods::new("DiaPlotPathFixture", peptide_data = data.frame(value = 1))
+  for (spec in specs) {
+    local <- new.env(parent = baseenv())
+    sys.source(test_path("..", "..", "R", paste0("mod_prot_qc_peptide_", spec[[1]], ".R")), local)
+    local$renderPeptideQcResultText <- get("renderPeptideQcResultText",
+      envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    captured <- NULL
+    local$updateProteinFiltering <- function(...) { captured <<- list(...); "grid" }
+    local$renderText <- identity
+    fn <- local[[spec[[2]]]]
+    result <- list(resultText = "unchanged")
+    result[[spec[[5]]]] <- object
+    args <- list(output = new.env(), omicType = "proteomics", experimentLabel = "project A")
+    args[[spec[[3]]]] <- function(...) NULL
+    args[[spec[[4]]]] <- result
+    if ("renderTextFn" %in% names(formals(fn))) args$renderTextFn <- identity
+    for (project in c("A", "B")) {
+      paths <- stats::setNames(list(list(time_dir = paste0("/fixture/", project),
+        publication_graphs_dir = paste0("/fixture/", project))), "proteomics_project A")
+      args$projectDirs <- paths
+      do.call(fn, args)
+      expect_identical(captured$project_dirs, paths)
+      expect_identical(captured$data, object@peptide_data)
+      expect_true(captured$return_grid)
+    }
+    args$projectDirs <- NULL
+    do.call(fn, args)
+    expect_false("project_dirs" %in% names(captured))
+  }
+})
+
+test_that("Q-value plotting writes its required composites without global project paths", {
+  root <- withr::local_tempdir()
+  paths <- list(time_dir = root, publication_graphs_dir = root)
+  old_exists <- exists("filtering_progress", envir = .GlobalEnv, inherits = FALSE)
+  old <- if (old_exists) get("filtering_progress", envir = .GlobalEnv) else NULL
+  assign("filtering_progress", methods::new("FilteringProgress"), envir = .GlobalEnv)
+  withr::defer({
+    if (old_exists) assign("filtering_progress", old, envir = .GlobalEnv)
+    else rm("filtering_progress", envir = .GlobalEnv)
+  })
+  data <- data.frame(Protein.Ids = c("p1", "p1", "p2", "p2"),
+    Stripped.Sequence = c("AA", "AA", "BB", "BB"), Run = c("a", "b", "a", "b"))
+  updateProteinFiltering(data, "2_qval_filtered", omic_type = "proteomics",
+    experiment_label = "path_fixture", project_dirs = list(proteomics_path_fixture = paths),
+    return_grid = TRUE, overwrite = TRUE)
+  files <- file.path(root, paste0("2_qval_filtered_combined_plots.", c("png", "pdf")))
+  expect_true(all(file.exists(files)))
+  expect_true(all(file.size(files) > 0))
+})
+
 skipIfMissingProtQcPeptideRefactorHelpers <- function() {
   package_namespace <- asNamespace("MultiScholaR")
   required_symbols <- c(
@@ -136,13 +226,14 @@ test_that("mod_prot_qc_peptide_server forwards DIA orchestration to available su
     },
     get = function(x, pos = -1, envir = as.environment(pos), mode = "any", inherits = TRUE) {
       if (x %in% server_fn_names) {
-        function(id, workflowData, omicType, experimentLabel) {
+        function(id, workflowData, omicType, experimentLabel, experiment_paths = NULL) {
           call_log <<- c(call_log, x)
           call_args[[x]] <<- list(
             id = id,
             workflowData = workflowData,
             omicType = omicType,
-            experimentLabel = experimentLabel
+            experimentLabel = experimentLabel,
+            experiment_paths = experiment_paths
           )
           invisible(NULL)
         }
@@ -186,6 +277,9 @@ test_that("mod_prot_qc_peptide_server forwards DIA orchestration to available su
   expect_identical(call_args$mod_prot_qc_peptide_qvalue_server$workflowData, workflow_data)
   expect_identical(call_args$mod_prot_qc_peptide_qvalue_server$omicType, "proteomics")
   expect_identical(call_args$mod_prot_qc_peptide_qvalue_server$experimentLabel, "DIA Experiment")
+  expect_true(all(vapply(call_args, function(call) {
+    identical(call$experiment_paths, list(results_dir = tempdir()))
+  }, logical(1))))
 })
 
 test_that("mod_prot_qc_peptide_server skips peptide submodules for non-DIA workflows", {

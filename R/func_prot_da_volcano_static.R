@@ -26,6 +26,11 @@ generateProtDAVolcanoStatic <- function(
   show_labels = TRUE,
   n_labels = 10
 ) {
+  prior_plot <- ggplot2::get_last_plot()
+  on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
+  if (isDIAResultManifest(da_results_list)) {
+    da_results_list <- readDIAResultDisplay(da_results_list, selected_contrast, expression = FALSE)
+  }
   if (is.null(da_results_list) || is.null(da_results_list$da_proteins_long)) {
     return(NULL)
   }
@@ -86,6 +91,26 @@ generateProtDAVolcanoStatic <- function(
       )
     )
 
+  renderProtDAVolcanoData(plot_data, comparison_to_search, da_q_val_thresh,
+    lfc_threshold, show_labels, n_labels)
+}
+
+#' Render prepared volcano rows without retaining the source DA result.
+#' @param plot_data Selected contrast rows and existing display columns.
+#' @param comparison_to_search Contrast label.
+#' @param da_q_val_thresh,lfc_threshold Existing significance cutoffs.
+#' @param show_labels,n_labels Existing label settings.
+#' @return Native ggplot with data-only producer environments.
+#' @noRd
+renderProtDAVolcanoData <- function(plot_data, comparison_to_search, da_q_val_thresh,
+  lfc_threshold, show_labels, n_labels) {
+  # Force even unused label arguments so promises cannot retain the caller frame.
+  force(plot_data)
+  force(comparison_to_search)
+  force(da_q_val_thresh)
+  force(lfc_threshold)
+  force(show_labels)
+  force(n_labels)
   # Define colors
   volcano_colors <- c("Up" = "#d9534f", "Down" = "#5bc0de", "NS" = "grey70")
 

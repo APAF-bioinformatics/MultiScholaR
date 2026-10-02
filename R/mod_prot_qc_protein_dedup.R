@@ -75,9 +75,16 @@ runProteinDuplicateRemovalStep <- function(workflowData,
                                           aggregationMethod,
                                           aggregationResolverFn = base::get,
                                           logInfoFn = logger::log_info) {
+  if (usesDIAReferenceStates(workflowData$state_manager) &&
+      identical(workflowData$state_manager$current_state, "duplicates_removed")) {
+    pending <- resumeDIAProteinAction(workflowData, "duplicates_removed")
+    if (!is.null(pending)) return(pending)
+  }
+
   shiny::req(workflowData$state_manager)
 
-  currentS4 <- workflowData$state_manager$getState()
+  currentS4 <- readDIAProteinScience(workflowData$state_manager)
+  predecessor <- getDIACurrentReference(workflowData$state_manager)
   shiny::req(currentS4)
 
   logInfoFn(sprintf(
@@ -86,11 +93,11 @@ runProteinDuplicateRemovalStep <- function(workflowData,
   ))
 
   duplicates <- currentS4@protein_quant_table |>
-    dplyr::group_by(Protein.Ids) |>
+    dplyr::group_by(.data[[currentS4@protein_id_column]]) |>
     dplyr::filter(dplyr::n() > 1) |>
-    dplyr::select(Protein.Ids) |>
+    dplyr::select(dplyr::all_of(currentS4@protein_id_column)) |>
     dplyr::distinct() |>
-    dplyr::pull(Protein.Ids)
+    dplyr::pull(dplyr::all_of(currentS4@protein_id_column))
 
   aggregationFn <- aggregationResolverFn(aggregationMethod)
   proteinIdColumn <- if (isS4(currentS4) &&
@@ -120,6 +127,7 @@ runProteinDuplicateRemovalStep <- function(workflowData,
     ) |>
     dplyr::ungroup()
 
+  currentS4 <- inheritDIAExecutionSource(currentS4, workflowData$state_manager, predecessor)
   workflowData$state_manager$saveState(
     state_name = "duplicates_removed",
     s4_data_object = currentS4,
@@ -131,8 +139,9 @@ runProteinDuplicateRemovalStep <- function(workflowData,
     description = "Removed duplicate proteins by aggregation"
   )
 
+  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
   proteinCount <- currentS4@protein_quant_table |>
-    dplyr::distinct(Protein.Ids) |>
+    dplyr::distinct(.data[[currentS4@protein_id_column]]) |>
     nrow()
 
   resultText <- paste(
@@ -144,11 +153,11 @@ runProteinDuplicateRemovalStep <- function(workflowData,
     "State saved as: 'duplicates_removed'\n"
   )
 
-  list(
+  finishDIAProteinAction(workflowData, list(
     deduplicatedS4 = currentS4,
     duplicates = duplicates,
     resultText = resultText
-  )
+  ), "deduplicatedS4")
 }
 
 updateProteinDuplicateRemovalOutputs <- function(output,
@@ -158,16 +167,10 @@ updateProteinDuplicateRemovalOutputs <- function(output,
                                                  experimentLabel,
                                                  renderTextFn = shiny::renderText,
                                                  updateProteinFilteringFn = updateProteinFiltering) {
-  output$duplicate_removal_results <- renderTextFn(duplicateRemovalResult$resultText)
+  output$duplicate_removal_results <- renderPeptideQcResultText(duplicateRemovalResult$resultText, renderTextFn)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = duplicateRemovalResult$deduplicatedS4@protein_quant_table,
-    step_name = "12_duplicates_removed",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- publishDIAProteinProgress(duplicateRemovalResult, "12_duplicates_removed", omicType,
+    experimentLabel, updateProteinFilteringFn, duplicateRemovalResult$deduplicatedS4)
   duplicateRemovalPlot(plotGrid)
 
   invisible(plotGrid)
@@ -185,6 +188,7 @@ runProteinDuplicateRemovalApplyObserver <- function(workflowData,
                                                     removeNotificationFn = shiny::removeNotification,
                                                     logInfoFn = logger::log_info,
                                                     logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Removing duplicate proteins...",
     id = "duplicate_removal_working",
@@ -228,6 +232,7 @@ runProteinDuplicateRemovalApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runProteinDuplicateRemovalRevertStep <- function(workflowData) {
@@ -239,7 +244,7 @@ runProteinDuplicateRemovalRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, previousState)
 
   list(
     previousState = previousState,
@@ -255,9 +260,10 @@ runProteinDuplicateRemovalRevertObserver <- function(workflowData,
                                                      showNotificationFn = shiny::showNotification,
                                                      logInfoFn = logger::log_info,
                                                      logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$duplicate_removal_results <- renderTextFn(revertResult$resultText)
+    output$duplicate_removal_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     logInfoFn(paste("Reverted duplicate removal to", revertResult$previousState))
     showNotificationFn("Reverted successfully", type = "message")
 
@@ -274,6 +280,7 @@ runProteinDuplicateRemovalRevertObserver <- function(workflowData,
       status = "error",
       errorMessage = errorMessage
     )
+  })
   })
 }
 

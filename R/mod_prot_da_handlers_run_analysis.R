@@ -1,6 +1,7 @@
 # Handler 3: DA Analysis Execution
 da_server_run_analysis_handler <- function(input, output, session, ns, da_data, workflow_data, experiment_paths) {
   shiny::observeEvent(input$run_da_analysis, {
+    withDIAStateScope(getDIAActiveManager(), function() {
     cat("=== STARTING DIFFERENTIAL EXPRESSION ANALYSIS ===\n")
 
     if (is.null(da_data$current_s4_object)) {
@@ -16,6 +17,10 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
 
     tryCatch(
       {
+        if (usesDIAReferenceStates(workflow_data$state_manager)) {
+          return(runDIAReferenceDaAnalysis(input, output, session, da_data, workflow_data, experiment_paths))
+        }
+        assertDIAExportReady(workflow_data$state_manager)
         shiny::withProgress(message = "Running DE analysis...", value = 0, {
           # Step 1: Prepare contrasts table for analysis
           shiny::incProgress(0.2, detail = "Preparing contrasts for analysis...")
@@ -199,7 +204,9 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
                   if (!is.null(current_data_state)) {
                     # CRITICAL FIX: Use the correct 'saveState' method instead of non-existent 'updateState'
                     # Retrieve existing config and description to preserve them
-                    existing_state_info <- workflow_data$state_manager$states[[current_data_state]]
+                    existing_state_info <- getDIAStateRecord(workflow_data$state_manager, current_data_state)
+                    predecessor <- if (inherits(workflow_data$state_manager, "DIAStateAdapter"))
+                      workflow_data$state_manager$.context$snapshot$states[[current_data_state]] else NULL
 
                     workflow_data$state_manager$saveState(
                       state_name = current_data_state,
@@ -207,6 +214,8 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
                       config_object = existing_state_info$config,
                       description = existing_state_info$description
                     )
+                    releaseDIAWorkingReference(workflow_data$state_manager, predecessor)
+                    existing_state_info <- NULL
                     cat(sprintf("   DA ANALYSIS Step: Updated state '%s' with DA UI parameters\n", current_data_state))
                   }
                 },
@@ -526,5 +535,6 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
     )
 
     shiny::removeNotification("da_working")
+    })
   })
 }

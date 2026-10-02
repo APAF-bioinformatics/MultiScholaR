@@ -12,6 +12,21 @@
   if (is.null(value) || length(value) == 0L) default else value
 }
 
+#' Encode one audit-key column without ifelse's full-length branch copies.
+#' @param column Original identity or canonical table column.
+#' @return The historical byte-length-prefixed strings, in original order.
+#' @noRd
+encodePeptideQcKeyColumn <- function(column) {
+  if (is.atomic(column) && !is.object(column) && is.null(dim(column))) {
+    encoded <- as.character(column)
+    if (anyNA(column)) encoded[is.na(column)] <- "<NA>"
+  } else {
+    # Preserve whole-column method dispatch/recycling for classed or nested data.
+    encoded <- ifelse(is.na(column), "<NA>", as.character(column))
+  }
+  paste0(nchar(encoded, type = "bytes"), ":", encoded)
+}
+
 .peptideQcCanonicalise <- function(value) {
   if (is.environment(value) || is.function(value) || identical(typeof(value), "externalptr")) {
     return(sprintf("<%s>", typeof(value)))
@@ -29,10 +44,7 @@
     if (nrow(value) > 1L && ncol(value) > 0L) {
       row_keys <- do.call(
         paste,
-        c(lapply(value, function(column) {
-          encoded <- ifelse(is.na(column), "<NA>", as.character(column))
-          paste0(nchar(encoded, type = "bytes"), ":", encoded)
-        }), sep = "\u001f")
+        c(lapply(value, encodePeptideQcKeyColumn), sep = "\u001f")
       )
       value <- value[order(row_keys, method = "radix"), , drop = FALSE]
     }
@@ -259,10 +271,7 @@
 .peptideQcIdentityKey <- function(data, columns = names(data)) {
   if (nrow(data) == 0L) return(character(0))
   columns <- columns[columns %in% names(data)]
-  do.call(paste, c(lapply(data[columns], function(value) {
-    value <- ifelse(is.na(value), "<NA>", as.character(value))
-    paste0(nchar(value, type = "bytes"), ":", value)
-  }), sep = "\u001f"))
+  do.call(paste, c(lapply(data[columns], encodePeptideQcKeyColumn), sep = "\u001f"))
 }
 
 .peptideQcConfidenceFailureReasons <- function(data, params) {

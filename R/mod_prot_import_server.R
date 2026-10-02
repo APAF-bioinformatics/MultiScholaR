@@ -81,7 +81,7 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
       loadConfigurationFn = loadProtImportConfiguration,
       storeConfigurationFn = storeProtImportConfiguration,
       loadOptionalMappingsFn = loadProtImportOptionalMappings,
-      readConfigFn = readConfigFile,
+      readConfigFn = readProtGuiConfig,
       getDefaultConfigFn = getDefaultProteomicsConfig,
       readOptionalMappingFn = readProtImportOptionalMapping,
       fileExistsFn = file.exists,

@@ -80,8 +80,10 @@ mod_prot_qc_peptide_impute_ui <- function(id) {
 .peptideImputationAuditSummary <- function(imputed_s4,
                                            proportion_missing_values,
                                            exclusion_column = NULL) {
+  component <- isDIAComponentCheckpoint(imputed_s4)
   section <- tryCatch(
-    imputed_s4@args$peptideMissingValueImputation,
+    if (component) imputed_s4$slots$args$peptideMissingValueImputation else
+      imputed_s4@args$peptideMissingValueImputation,
     error = function(error) NULL
   )
   if (!is.list(section)) {
@@ -94,7 +96,7 @@ mod_prot_qc_peptide_impute_ui <- function(id) {
   value_or <- function(value, fallback) {
     if (is.null(value) || length(value) == 0L) fallback else value
   }
-  imputed_count <- if ("is_imputed" %in% names(imputed_s4@peptide_data)) {
+  imputed_count <- if (component) summary$imputed_rows %||% NA_integer_ else if ("is_imputed" %in% names(imputed_s4@peptide_data)) {
     sum(imputed_s4@peptide_data$is_imputed %in% TRUE)
   } else {
     NA_integer_
@@ -120,7 +122,7 @@ mod_prot_qc_peptide_impute_ui <- function(id) {
     missing_not_imputed_rows = value_or(summary$missing_not_imputed_rows, NA_integer_),
     imputed_rows = value_or(summary$imputed_rows, as.integer(imputed_count)),
     input_rows = value_or(summary$input_rows, NA_integer_),
-    output_rows = value_or(summary$output_rows, nrow(imputed_s4@peptide_data))
+    output_rows = value_or(summary$output_rows, if (component) imputed_s4$dimensions$rows else nrow(imputed_s4@peptide_data))
   )
 }
 
@@ -128,7 +130,13 @@ runPeptideImputationStep <- function(workflow_data,
                                      proportionMissingValues,
                                      exclusionColumn = NULL,
                                      updateConfigParameterFn = updateConfigParameter) {
-  current_s4 <- workflow_data$state_manager$getState()
+  if (usesDIAReferenceStates(workflow_data$state_manager)) {
+    return(runDIAReferencePeptideGroups(workflow_data, "peptideMissingValueImputation",
+      list(proportion_missing_values = proportionMissingValues, exclusion_column = exclusionColumn), "imputed", "Applied missing value imputation using technical replicates"))
+  }
+
+  current_s4 <- getDIAExecutionState(workflow_data$state_manager, "peptideMissingValueImputation")
+  predecessor <- getDIACurrentReference(workflow_data$state_manager)
   shiny::req(current_s4)
 
   if (length(exclusionColumn) == 0L || is.na(exclusionColumn[[1L]]) ||
@@ -216,6 +224,8 @@ runPeptideImputationStep <- function(workflow_data,
   )
 
   # --- TESTTHAT CHECKPOINT CP02 (see test-prot-02-qc-filtering.R) ---
+  releaseDIAWorkingReference(workflow_data$state_manager, predecessor)
+  current_s4 <- NULL
   .capture_checkpoint(imputed_s4, "cp02", "qc_filtered_peptide")
   # --- END CP02 ---
 
@@ -262,7 +272,7 @@ runPeptideImputationRevertStep <- function(workflow_data) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflow_data$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflow_data$state_manager, previousState)
   logger::log_info(paste("Reverted imputation to", previousState))
 
   list(
@@ -272,17 +282,21 @@ runPeptideImputationRevertStep <- function(workflow_data) {
   )
 }
 
-updatePeptideImputationOutputs <- function(output, imputationPlot, imputationResult, omicType, experimentLabel) {
-  output$imputation_results <- renderText(imputationResult$resultText)
+updatePeptideImputationOutputs <- function(output, imputationPlot, imputationResult, omicType, experimentLabel, projectDirs = NULL) {
+  output$imputation_results <- renderPeptideQcResultText(imputationResult$resultText, renderText)
 
-  plotGrid <- updateProteinFiltering(
-    data = imputationResult$imputedS4@peptide_data,
+  plot_arguments <- list(
+    data = imputationResult$filteringSummary %||% imputationResult$imputedS4@peptide_data,
     step_name = "8_imputed",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,
     overwrite = TRUE
   )
+  if (!is.null(projectDirs)) plot_arguments$project_dirs <- projectDirs
+  plotGrid <- if (!is.null(imputationResult$stateReference)) {
+    publishDIAQvalueOutput(getDIAActiveManager(), imputationResult, plot_arguments, updateProteinFiltering)
+  } else do.call(updateProteinFiltering, plot_arguments)
   imputationPlot(plotGrid)
 
   invisible(plotGrid)
@@ -300,7 +314,8 @@ runPeptideImputationApplyObserver <- function(workflow_data,
                                               showNotificationFn = shiny::showNotification,
                                               removeNotificationFn = shiny::removeNotification,
                                               logInfoFn = logger::log_info,
-                                              logErrorFn = logger::log_error) {
+                                              logErrorFn = logger::log_error, experimentPaths = NULL) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Applying missing value imputation...",
     id = "imputation_working",
@@ -318,13 +333,19 @@ runPeptideImputationApplyObserver <- function(workflow_data,
     }
     imputationResult <- do.call(runImputationStepFn, run_arguments)
 
-    plotGrid <- updateOutputsFn(
+    output_arguments <- list(
       output = output,
       imputationPlot = imputationPlot,
       imputationResult = imputationResult,
       omicType = omicType,
       experimentLabel = experimentLabel
     )
+    if (!is.null(experimentPaths)) {
+      output_arguments$projectDirs <- stats::setNames(
+        list(experimentPaths), paste(omicType, experimentLabel, sep = "_")
+      )
+    }
+    plotGrid <- do.call(updateOutputsFn, output_arguments)
 
     logInfoFn("Missing value imputation applied successfully")
     removeNotificationFn("imputation_working")
@@ -349,6 +370,7 @@ runPeptideImputationApplyObserver <- function(workflow_data,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runPeptideImputationRevertObserver <- function(workflow_data,
@@ -357,9 +379,10 @@ runPeptideImputationRevertObserver <- function(workflow_data,
                                                renderTextFn = shiny::renderText,
                                                showNotificationFn = shiny::showNotification,
                                                logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflow_data = workflow_data)
-    output$imputation_results <- renderTextFn(revertResult$resultText)
+    output$imputation_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     showNotificationFn("Reverted successfully", type = "message")
 
     list(
@@ -376,6 +399,7 @@ runPeptideImputationRevertObserver <- function(workflow_data,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 bindPeptideImputationPlot <- function(output, imputationPlot) {
@@ -385,7 +409,7 @@ bindPeptideImputationPlot <- function(output, imputationPlot) {
   })
 }
 
-mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, experiment_label, experiment_paths = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     
     imputation_plot <- shiny::reactiveVal(NULL)
@@ -407,6 +431,7 @@ mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, expe
           nzchar(trimws(as.character(input$exclusion_column[[1L]])))) {
         apply_arguments$exclusionColumn <- input$exclusion_column
       }
+      if (!is.null(experiment_paths)) apply_arguments$experimentPaths <- experiment_paths
       do.call(runPeptideImputationApplyObserver, apply_arguments)
     })
     

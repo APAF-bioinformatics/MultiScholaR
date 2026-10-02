@@ -1,0 +1,124 @@
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+Loading required package: shiny
+Running application in test mode.
+
+Listening on http://127.0.0.1:6658
+   app_server: shinyFiles package is available
+   app_server: Created volumes. Type = character, class = character
+   app_server: volumes length = 1
+   app_server: Volume names: Computer
+--- Initializing server module for: proteomics ---
+   Looking for server function: mod_proteomics_server
+   Calling server function for proteomics
+--- Entering mod_prot_import_server ---
+   mod_prot_import_server Arg: id = setup_import
+   mod_prot_import_server Step: Inside moduleServer function
+--- Entering mod_prot_design_server ---
+   mod_prot_design_server Arg: id = design_matrix
+   mod_prot_design_server Step: Inside moduleServer function
+=== NORMALIZATION MODULE SERVER STARTED ===
+Module ID: normalization
+workflow_data is NULL: FALSE
+Current state at module start: initial
+   Workflow data stored for proteomics
+--- Entering dynamic_tabs renderUI ---
+   Selected omics: proteomics
+   Processing omic: proteomics
+   [proteomics] Starting UI module load
+   [proteomics] Looking for function: mod_proteomics_ui
+   [proteomics] Function exists check: TRUE
+   [proteomics] Function retrieved. Type: closure, Class: function
+   [proteomics] Function formals:
+   [proteomics] Calling function with id: proteomics_workflow
+   [proteomics] Function call completed. Result type: list, class: shiny.tag.list   [proteomics] Function call completed. Result type: list, class: list
+   Total tab items created: 1
+--- Exiting dynamic_tabs renderUI ---
+[mod_prot_import] Mixed species FASTA disabled - organism inputs enabled
+========================================
+[mod_prot_import] Starting data import process
+========================================
+[mod_prot_import] Search results: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.nDqUl6/report.tsv
+[mod_prot_import] FASTA file: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.nDqUl6/proteins.fasta
+[mod_prot_import] Detected format: diann
+[mod_prot_import] Reading DIANN data...
+[mod_prot_import] Data imported: 7680000 rows
+[mod_prot_import] Storing imported data...
+[mod_prot_import] Sanitizing sample names...
+Warning: Unknown or uninitialised column: `schema`.
+[mod_prot_import] Processing FASTA file...
+Reading FASTA file...
+Processing non-standard FASTA format...
+Reading FASTA file with seqinr...
+
+Processing 10000 non-standard FASTA entries...
+
+Binding rows and creating final table...
+Writing results...
+[mod_prot_import] Loading configuration...
+[mod_prot_import] Loading configuration
+DEBUG66: readConfigFile() called with file = /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.5TcekA/dia_baseline_smoke/scripts/proteomics/config.ini
+DEBUG66: file exists = TRUE
+DEBUG66: read.config() completed, config_list names = globalParameters, srlQvalueProteotypicPeptideClean, peptideIntensityFiltering, filterMinNumPeptidesPerSample, removePeptidesWithOnlyOneReplicate, peptideMissingValueImputation, filterMinNumPeptidesPerProtein, chooseBestProteinAccession, removeRowsWithMissingValuesPercent, removeProteinsWithOnlyOneReplicate, metaboliteIntensityFiltering, proteinTechRepCorrelation, pearsonCorForSamplePairs, plotRle, normaliseBetweenSamples, ruvIII_C_Varying, deAnalysisParameters
+DEBUG66: config_list class = list, length = 17
+DEBUG66: Processing deAnalysisParameters section
+DEBUG66: deAnalysisParameters keys = args_group_pattern, plots_format, formula_string, treat_lfc_cutoff, eBayes_trend, eBayes_robust, de_q_val_thresh, args_row_id
+DEBUG66: deAnalysisParameters processing complete
+DEBUG66: readConfigFile() returning successfully
+[mod_prot_import] Finalizing import...
+[mod_prot_import] Finalizing import
+========================================
+[mod_prot_import] Data import completed successfully!
+[mod_prot_import] Rows: 7680000, Proteins: 10000, Format: diann
+========================================
+Warning: Error in duckdb_result: Invalid Error: IO Error: Failed to create directory "/tmp/RtmplaBR8b/duckdb/temp": No such file or directory
+ℹ Context: rapi_execute
+ℹ Error type: INVALID
+  134: <Anonymous>
+  133: signalCondition
+  132: signal_abort
+  131: rlang::abort
+  130: rethrow_error_from_rapi
+  129: handlers[[1L]]
+  128: <Anonymous>
+  127: signalCondition
+  126: signal_abort
+  125: rlang::abort
+  124: <Anonymous>
+  123: rapi_execute
+  116: rethrow_rapi_execute
+  115: duckdb_execute
+  114: duckdb_result
+  113: .local
+  112: dbSendQuery
+  110: dbSendStatement
+  108: DBI::dbExecute
+  106: write_fn
+  105: saveWorkflowTable
+  104: saveWorkflowTableQuery
+  103: transformDIADesignTable
+  102: buildSaveResultsPayload
+  101: runSaveResultsObserverShell
+  100: operation
+   99: withDIAStateScope
+   98: observe
+   97: <observer:observeEvent(input$save_results)>
+   14: <Anonymous>
+   12: <Anonymous>
+   11: <Anonymous>
+   10: base::do.call
+    9: base::saveRDS
+    8: base::withCallingHandlers
+    7: doTryCatch
+    6: tryCatchOne
+    5: tryCatchList
+    2: tryCatchList
+    1: base::tryCatch

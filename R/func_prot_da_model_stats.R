@@ -212,6 +212,198 @@ runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA
 #' The contrast string consists of variable that each consist of concatenating the column name (e.g. group) and the string representing the group type (e.g. A) in the design matrix.
 #' @param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
 #' @param formula_string A formula string representing the experimental design. e.g. ("~ 0 + group")
+#' Fit the existing uncontrasted limma model and retain its effective provenance.
+#' @param data_subset Ordered feature-by-sample matrix.
+#' @param design_m Existing model matrix, including historical weight handling.
+#' @param design_matrix Original ordered sample metadata.
+#' @param samples_in_model Ordered model samples.
+#' @param duplicateCorrelationFn,lmFitFn Existing limma operations.
+#' @param counterFn Optional operation counter used only by standalone proof.
+#' @param messageFn Existing diagnostic sink.
+#' @return Explicit uncontrasted fit artifact; never the public moderated fit.eb.
+#' @noRd
+fitProtDaBaseModel <- function(data_subset, design_m, design_matrix,
+    samples_in_model, duplicateCorrelationFn = limma::duplicateCorrelation,
+    lmFitFn = limma::lmFit, counterFn = \(operation) invisible(NULL),
+    messageFn = message) {
+  has_replicates <- "replicates" %in% colnames(design_matrix)
+  block <- NULL
+  duplicate_correlation <- NULL
+  if (has_replicates) {
+    design_subset <- design_matrix[samples_in_model, , drop = FALSE]
+    block <- paste(design_subset$group, design_subset$replicates, sep = "_")
+  }
+  uses_duplicate_correlation <- !is.null(block) && any(duplicated(block))
+  if (uses_duplicate_correlation) {
+    messageFn("   runTestsContrasts: Detected technical replicates. Calculating duplicateCorrelation...")
+    messageFn(sprintf(
+      "   runTestsContrasts: Block defined by group_replicates. %d unique blocks for %d samples.",
+      length(unique(block)), length(block)
+    ))
+    counterFn("duplicateCorrelation")
+    duplicate_correlation <- duplicateCorrelationFn(data_subset,
+      design = design_m, block = block)
+    messageFn(sprintf("   runTestsContrasts: Consensus correlation = %.4f",
+      duplicate_correlation$consensus.correlation))
+    messageFn("   runTestsContrasts: Running lmFit with duplicateCorrelation...")
+    counterFn("lmFit")
+    fit <- lmFitFn(data_subset, design = design_m, block = block,
+      correlation = duplicate_correlation$consensus.correlation)
+  } else {
+    messageFn(if (has_replicates)
+      "   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit..." else
+      "   runTestsContrasts: 'replicates' column not found. Running standard lmFit...")
+    counterFn("lmFit")
+    fit <- lmFitFn(data_subset, design = design_m)
+  }
+  list(schema = "prot_da_base_fit_v1", fit = fit,
+    sample_ids = colnames(data_subset), feature_ids = rownames(data_subset),
+    design_columns = colnames(design_m), block = block,
+    uses_duplicate_correlation = uses_duplicate_correlation,
+    consensus_correlation = if (is.null(duplicate_correlation)) NA_real_ else
+      duplicate_correlation$consensus.correlation)
+}
+
+#' Apply the existing contrast, moderation and optional TREAT sequence.
+#' @param base_fit_artifact Artifact returned by fitProtDaBaseModel.
+#' @param contrast_matrix Existing limma contrast matrix.
+#' @param treat_lfc_cutoff Existing TREAT cutoff or NA.
+#' @param eBayes_trend,eBayes_robust Existing moderation settings.
+#' @param contrastsFitFn,eBayesFn,treatFn Existing limma operations.
+#' @param counterFn Optional standalone operation counter.
+#' @param messageFn Existing diagnostic sink.
+#' @return Explicit contrasted/moderated state and unchanged public fit.eb value.
+#' @noRd
+applyProtDaContrastModel <- function(base_fit_artifact, contrast_matrix,
+    treat_lfc_cutoff = NA, eBayes_trend = FALSE, eBayes_robust = FALSE,
+    contrastsFitFn = limma::contrasts.fit, eBayesFn = limma::eBayes,
+    treatFn = limma::treat, counterFn = \(operation) invisible(NULL),
+    messageFn = message) {
+  if (!is.list(base_fit_artifact) ||
+      !identical(base_fit_artifact$schema, "prot_da_base_fit_v1") ||
+      is.null(base_fit_artifact$fit) || !is.matrix(contrast_matrix)) {
+    cli::cli_abort("invalid DA base-fit artifact", class = "saved_entity_invalid")
+  }
+  messageFn("   runTestsContrasts: Running contrasts.fit...")
+  counterFn("contrasts.fit")
+  contrasted_fit <- contrastsFitFn(base_fit_artifact$fit, contrasts = contrast_matrix)
+  messageFn("   runTestsContrasts: Running eBayes...")
+  counterFn("eBayes")
+  moderated_fit <- eBayesFn(contrasted_fit, trend = eBayes_trend,
+    robust = eBayes_robust)
+  treat_applied <- !is.na(treat_lfc_cutoff)
+  public_fit <- moderated_fit
+  if (treat_applied) {
+    messageFn("   runTestsContrasts: Running treat analysis...")
+    counterFn("treat")
+    public_fit <- treatFn(moderated_fit, lfc = as.double(treat_lfc_cutoff))
+  }
+  list(schema = "prot_da_contrast_model_v1",
+    base_fit_entity = NA_character_, contrast_matrix = contrast_matrix,
+    contrasted_fit = contrasted_fit, moderated_fit = moderated_fit,
+    public_fit = public_fit, treat_applied = treat_applied,
+    treat_lfc_cutoff = treat_lfc_cutoff,
+    eBayes_trend = eBayes_trend, eBayes_robust = eBayes_robust)
+}
+
+#' Apply the existing qvalue fallback and BH populations to one full table.
+#' @param table Full topTable/topTreat output.
+#' @param p_value_name,q_value_name,fdr_value_name Output column names.
+#' @param qvalueFn,pAdjustFn Existing adjustment functions.
+#' @param counterFn Optional standalone operation counter.
+#' @param messageFn Existing diagnostic sink.
+#' @return Adjusted table and whether qvalue used its historical fallback.
+#' @noRd
+adjustProtDaResultTable <- function(table, p_value_name, q_value_name,
+    fdr_value_name, qvalueFn = qvalue::qvalue, pAdjustFn = stats::p.adjust,
+    counterFn = \(operation) invisible(NULL), messageFn = message) {
+  if (!is.data.frame(table) || !"P.Value" %in% names(table)) {
+    cli::cli_abort("invalid limma result table", class = "saved_entity_invalid")
+  }
+  for (name in c(p_value_name, q_value_name, fdr_value_name)) {
+    if (!is.character(name) || length(name) != 1L || is.na(name) || !nzchar(name)) {
+      cli::cli_abort("invalid DA result column", class = "saved_entity_invalid")
+    }
+  }
+  valid <- which(!is.na(table$P.Value) & is.finite(table$P.Value))
+  p_values <- table$P.Value[valid]
+  q_values <- rep(NA_real_, nrow(table))
+  qvalue_failed <- FALSE
+  use_qvalue <- length(p_values) >= 3L && !all(p_values == 0) && !all(p_values == 1)
+  if (length(p_values) && use_qvalue) {
+    q_values[valid] <- tryCatch({
+      counterFn("qvalue")
+      qvalueFn(p_values)$q
+    }, error = function(error) {
+      qvalue_failed <<- TRUE
+      messageFn(sprintf("      Warning: qvalue() failed during computation: %s",
+        conditionMessage(error)))
+      counterFn("p.adjust:qvalue_fallback")
+      pAdjustFn(p_values, method = "BH")
+    })
+  } else if (length(p_values)) {
+    qvalue_failed <- TRUE
+    counterFn("p.adjust:qvalue_fallback")
+    q_values[valid] <- pAdjustFn(p_values, method = "BH")
+  }
+  fdr_values <- rep(NA_real_, nrow(table))
+  if (length(p_values)) {
+    counterFn("p.adjust:fdr")
+    fdr_values[valid] <- pAdjustFn(p_values, method = "BH")
+  }
+  table[[q_value_name]] <- q_values
+  table[[fdr_value_name]] <- fdr_values
+  names(table)[names(table) == "P.Value"] <- p_value_name
+  list(table = table, qvalue_failed = qvalue_failed,
+    valid_p_value_mask = seq_len(nrow(table)) %in% valid)
+}
+
+#' Build full-population contrast result tables from a reusable contrast model.
+#' @param contrast_artifact Artifact returned by applyProtDaContrastModel.
+#' @param contrast_strings Ordered contrast definitions.
+#' @param p_value_name,q_value_name,fdr_value_name Output column names.
+#' @param topTableFn,topTreatFn,qvalueFn,pAdjustFn Existing operations.
+#' @param counterFn Optional standalone operation counter.
+#' @param messageFn Existing diagnostic sink.
+#' @return Named full result tables, warnings and finite-p-value masks.
+#' @noRd
+buildProtDaResultTables <- function(contrast_artifact, contrast_strings,
+    p_value_name = "raw_pvalue", q_value_name = "fdr_qvalue",
+    fdr_value_name = "fdr_value_bh_adjustment",
+    topTableFn = limma::topTable, topTreatFn = limma::topTreat,
+    qvalueFn = qvalue::qvalue, pAdjustFn = stats::p.adjust,
+    counterFn = \(operation) invisible(NULL), messageFn = message) {
+  if (!is.list(contrast_artifact) ||
+      !identical(contrast_artifact$schema, "prot_da_contrast_model_v1") ||
+      is.null(contrast_artifact$public_fit) || !is.character(contrast_strings) ||
+      !length(contrast_strings) || anyNA(contrast_strings)) {
+    cli::cli_abort("invalid DA contrast artifact", class = "saved_entity_invalid")
+  }
+  results <- vector("list", length(contrast_strings))
+  warnings <- list()
+  masks <- vector("list", length(contrast_strings))
+  for (index in seq_along(contrast_strings)) {
+    contrast <- contrast_strings[[index]]
+    if (isTRUE(contrast_artifact$treat_applied)) {
+      counterFn("topTreat")
+      table <- topTreatFn(contrast_artifact$public_fit, coef = contrast, n = Inf)
+    } else {
+      counterFn("topTable")
+      table <- topTableFn(contrast_artifact$public_fit, coef = contrast, number = Inf)
+    }
+    adjusted <- adjustProtDaResultTable(table, p_value_name, q_value_name,
+      fdr_value_name, qvalueFn, pAdjustFn, counterFn, messageFn)
+    results[[index]] <- adjusted$table
+    masks[[index]] <- adjusted$valid_p_value_mask
+    if (isTRUE(adjusted$qvalue_failed)) warnings[[contrast]] <- TRUE
+  }
+  names(results) <- contrast_strings
+  names(masks) <- contrast_strings
+  list(schema = "prot_da_result_tables_v1", results = results,
+    qvalue_warnings = warnings, valid_p_value_masks = masks,
+    fit.eb = contrast_artifact$public_fit)
+}
+
 #' @param p_value_column The name of the raw p-value column (tidyverse style).
 #' @param q_value_column The name of the q-value column (tidyverse style).
 #' @param fdr_value_column The name of the fdr-value column (tidyverse style).
@@ -277,61 +469,31 @@ runTestsContrasts <- function(data,
   # design_m was created from design_matrix (the metadata dataframe)
   samples_in_model <- rownames(design_m)
 
-  # Check if we have replicates column
-  has_replicates <- "replicates" %in% colnames(design_matrix)
+  base_fit_artifact <- fitDIAExecutionBaseModel(data_subset, design_m,
+    design_matrix, samples_in_model, formula_string, weights)
 
-  fit <- NULL
-
-  if (has_replicates) {
-    # Extract replicates for the samples in the model, maintaining order
-    # We assume design_matrix rownames are the sample IDs (which was set in helper/wrapper functions)
-    design_matrix_subset <- design_matrix[samples_in_model, ]
-
-    # Construct blocking factor: Biological Replicate ID (e.g. "Control_1")
-    # This identifies the biological unit that is technically replicated
-    # Combining group + replicate number gives unique biological ID
-    # Use paste0 to ensure character vector
-    block <- paste(design_matrix_subset$group, design_matrix_subset$replicates, sep = "_")
-
-    # Check if there are any technical replicates (duplicated blocks)
-    if (any(duplicated(block))) {
-      message("   runTestsContrasts: Detected technical replicates. Calculating duplicateCorrelation...")
-      message(sprintf(
-        "   runTestsContrasts: Block defined by group_replicates. %d unique blocks for %d samples.",
-        length(unique(block)), length(block)
-      ))
-
-      # Calculate consensus correlation
-      # Note: duplicateCorrelation can be slow for large datasets
-      dup_cor <- duplicateCorrelation(data_subset, design = design_m, block = block)
-
-      message(sprintf("   runTestsContrasts: Consensus correlation = %.4f", dup_cor$consensus.correlation))
-
-      # Run lmFit with correlation and block
-      message("   runTestsContrasts: Running lmFit with duplicateCorrelation...")
-      fit <- lmFit(data_subset, design = design_m, block = block, correlation = dup_cor$consensus.correlation)
-    } else {
-      message("   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...")
-      fit <- lmFit(data_subset, design = design_m)
-    }
-  } else {
-    message("   runTestsContrasts: 'replicates' column not found. Running standard lmFit...")
-    fit <- lmFit(data_subset, design = design_m)
+  saved_manager <- getDIAActiveManager()
+  saved_identity <- NULL
+  if (usesDIAReferenceStates(saved_manager) && isTRUE(saved_manager$.context$da_reference_execution)) {
+    saved_identity <- newWorkflowDiaResultIdentity(saved_manager$.context$da_base_fit_reference,
+      contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust,
+      paste("full-population-qvalue-BH-v1", rlang::as_name(rlang::ensym(p_value_column)),
+        rlang::as_name(rlang::ensym(q_value_column)), rlang::as_name(rlang::ensym(fdr_value_column)), sep = ":"),
+      saved_manager$.context$software)
+    saved_result <- resolveWorkflowDiaResult(saved_manager$.context$store, saved_identity)
+    if (identical(saved_result$status, "hit")) return(saved_result$value$value$public_result)
   }
 
-  message("   runTestsContrasts: Running contrasts.fit...")
-  cfit <- contrasts.fit(fit, contrasts = contr.matrix)
-
-  message("   runTestsContrasts: Running eBayes...")
-  eb.fit <- eBayes(cfit, trend = eBayes_trend, robust = eBayes_robust)
+  contrast_artifact <- applyProtDaContrastModel(base_fit_artifact, contr.matrix,
+    treat_lfc_cutoff = treat_lfc_cutoff, eBayes_trend = eBayes_trend,
+    eBayes_robust = eBayes_robust, contrastsFitFn = contrasts.fit,
+    eBayesFn = eBayes, treatFn = treat)
+  eb.fit <- contrast_artifact$moderated_fit
 
   # Run treat or standard analysis
-  t.fit <- NA
+  t.fit <- contrast_artifact$public_fit
   result_tables <- NA
   if (!is.na(treat_lfc_cutoff)) {
-    message("   runTestsContrasts: Running treat analysis...")
-    t.fit <- treat(eb.fit, lfc = as.double(treat_lfc_cutoff))
-
     message(sprintf("   runTestsContrasts: Processing %d contrasts with topTreat...", length(contrast_strings)))
     # Track qvalue failures for user notification
     qvalue_failures <- list()
@@ -451,7 +613,6 @@ runTestsContrasts <- function(data,
     )
   } else {
     message("   runTestsContrasts: Running standard analysis...")
-    t.fit <- eb.fit
 
     message(sprintf("   runTestsContrasts: Processing %d contrasts with topTable...", length(contrast_strings)))
     # Track qvalue failures for user notification
@@ -574,5 +735,12 @@ runTestsContrasts <- function(data,
 
   names(result_tables) <- contrast_strings
   message("--- Exiting runTestsContrasts ---")
-  return(list(results = result_tables, fit.eb = t.fit, qvalue_warnings = qvalue_failures))
+  result <- list(results = result_tables, fit.eb = t.fit, qvalue_warnings = qvalue_failures)
+  if (!is.null(saved_identity)) {
+    saved_reference <- saveWorkflowDiaResult(saved_manager$.context$store,
+      list(schema = "prot_da_result_tables_v1", results = result_tables, public_result = result),
+      basename(tempfile("dia-contrasted-fit-")), saved_identity)
+    rootDIAProduct(saved_manager, saved_reference, list(saved_manager$.context$da_base_fit_reference))
+  }
+  return(result)
 }

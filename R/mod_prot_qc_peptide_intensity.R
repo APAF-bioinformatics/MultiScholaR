@@ -121,8 +121,6 @@ buildPeptideIntensityThresholdPreview <- function(workflowData,
                                                  minGroups,
                                                  updateMissingValueParametersFn = updateMissingValueParameters) {
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
-  shiny::req(currentS4)
   validate_preview_count <- function(value, name) {
     numeric_value <- suppressWarnings(as.numeric(value))
     if (length(numeric_value) != 1L || is.na(numeric_value) ||
@@ -161,7 +159,7 @@ runPeptideIntensityRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, previousState)
   logger::log_info(paste("Reverted intensity filtering to", previousState))
 
   list(
@@ -177,9 +175,10 @@ runPeptideIntensityRevertObserver <- function(workflowData,
                                               renderTextFn = shiny::renderText,
                                               showNotificationFn = shiny::showNotification,
                                               logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$intensity_results <- renderTextFn(revertResult$resultText)
+    output$intensity_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     showNotificationFn("Reverted successfully", type = "message")
 
     list(
@@ -196,6 +195,7 @@ runPeptideIntensityRevertObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runPeptideIntensityApplyStep <- function(workflowData,
@@ -208,8 +208,14 @@ runPeptideIntensityApplyStep <- function(workflowData,
                                          peptideIntensityFilteringFn = peptideIntensityFiltering,
                                          logInfoFn = logger::log_info,
                                          nowFn = Sys.time) {
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    return(runDIAReferencePeptideGroups(workflowData, "peptideIntensityFiltering",
+      list(strict_mode = useStrictMode, min_reps_per_group = minRepsPerGroup, min_groups = minGroups, peptides_intensity_cutoff_percentile = intensityCutoffPercentile, grouping_variable = "group"), "intensity_filtered", "Applied peptide intensity filter"))
+  }
+
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
+  currentS4 <- getDIAExecutionState(workflowData$state_manager, "peptideIntensityFiltering")
+  predecessor <- getDIACurrentReference(workflowData$state_manager)
   shiny::req(currentS4)
 
   if (useStrictMode) {
@@ -281,6 +287,8 @@ runPeptideIntensityApplyStep <- function(workflowData,
     now = nowFn()
   )
 
+  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
+  currentS4 <- NULL
   proteinCount <- .countPeptideProteinGroups(filteredS4)
 
   resultText <- paste(
@@ -320,17 +328,21 @@ updatePeptideIntensityOutputs <- function(output,
                                           omicType,
                                           experimentLabel,
                                           renderTextFn = shiny::renderText,
-                                          updateProteinFilteringFn = updateProteinFiltering) {
-  output$intensity_results <- renderTextFn(intensityResult$resultText)
+                                          updateProteinFilteringFn = updateProteinFiltering, projectDirs = NULL) {
+  output$intensity_results <- renderPeptideQcResultText(intensityResult$resultText, renderTextFn)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = intensityResult$filteredS4@peptide_data,
+  plot_arguments <- list(
+    data = intensityResult$filteringSummary %||% intensityResult$filteredS4@peptide_data,
     step_name = "5_intensity_filtered",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,
     overwrite = TRUE
   )
+  if (!is.null(projectDirs)) plot_arguments$project_dirs <- projectDirs
+  plotGrid <- if (!is.null(intensityResult$stateReference)) {
+    publishDIAQvalueOutput(getDIAActiveManager(), intensityResult, plot_arguments, updateProteinFilteringFn)
+  } else do.call(updateProteinFilteringFn, plot_arguments)
   intensityPlot(plotGrid)
 
   invisible(plotGrid)
@@ -349,7 +361,8 @@ runPeptideIntensityApplyObserver <- function(workflowData,
                                              updateOutputsFn = updatePeptideIntensityOutputs,
                                              showNotificationFn = shiny::showNotification,
                                              removeNotificationFn = shiny::removeNotification,
-                                             logErrorFn = logger::log_error) {
+                                             logErrorFn = logger::log_error, experimentPaths = NULL) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Applying intensity filter...",
     id = "intensity_working",
@@ -365,13 +378,19 @@ runPeptideIntensityApplyObserver <- function(workflowData,
       intensityCutoffPercentile = intensityCutoffPercentile
     )
 
-    plotGrid <- updateOutputsFn(
+    output_arguments <- list(
       output = output,
       intensityPlot = intensityPlot,
       intensityResult = intensityResult,
       omicType = omicType,
       experimentLabel = experimentLabel
     )
+    if (!is.null(experimentPaths)) {
+      output_arguments$projectDirs <- stats::setNames(
+        list(experimentPaths), paste(omicType, experimentLabel, sep = "_")
+      )
+    }
+    plotGrid <- do.call(updateOutputsFn, output_arguments)
 
     removeNotificationFn("intensity_working")
     showNotificationFn("Intensity filter applied successfully", type = "message")
@@ -392,6 +411,7 @@ runPeptideIntensityApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 setupPeptideIntensityServerBootstrap <- function(input,
@@ -408,7 +428,7 @@ setupPeptideIntensityServerBootstrap <- function(input,
                                                  observeEventFn = shiny::observeEvent,
                                                  renderPlotFn = shiny::renderPlot,
                                                  reqFn = shiny::req,
-                                                 gridDrawFn = grid::grid.draw) {
+                                                 gridDrawFn = grid::grid.draw, experimentPaths = NULL) {
   thresholdPreview <- reactiveFn({
     buildThresholdPreviewFn(
       workflowData = workflowData,
@@ -426,7 +446,7 @@ setupPeptideIntensityServerBootstrap <- function(input,
   })
 
   observeEventFn(input$apply_intensity_filter, {
-    runApplyObserverFn(
+    apply_arguments <- list(
       workflowData = workflowData,
       useStrictMode = isTRUE(input$use_strict_mode),
       minRepsPerGroup = input$min_reps_per_group,
@@ -437,6 +457,8 @@ setupPeptideIntensityServerBootstrap <- function(input,
       omicType = omicType,
       experimentLabel = experimentLabel
     )
+    if (!is.null(experimentPaths)) apply_arguments$experimentPaths <- experimentPaths
+    do.call(runApplyObserverFn, apply_arguments)
   })
 
   observeEventFn(input$revert_intensity, {
@@ -457,11 +479,11 @@ setupPeptideIntensityServerBootstrap <- function(input,
   )
 }
 
-mod_prot_qc_peptide_intensity_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_peptide_intensity_server <- function(id, workflow_data, omic_type, experiment_label, experiment_paths = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     intensity_plot <- shiny::reactiveVal(NULL)
 
-    setupPeptideIntensityServerBootstrap(
+    apply_arguments <- list(
       input = input,
       output = output,
       workflowData = workflow_data,
@@ -469,5 +491,7 @@ mod_prot_qc_peptide_intensity_server <- function(id, workflow_data, omic_type, e
       omicType = omic_type,
       experimentLabel = experiment_label
     )
+    if (!is.null(experiment_paths)) apply_arguments$experimentPaths <- experiment_paths
+    do.call(setupPeptideIntensityServerBootstrap, apply_arguments)
   })
 }

@@ -4,12 +4,19 @@
 \alias{readConfigFile}
 \title{Read the config file and return the list of parameters}
 \usage{
-readConfigFile(file = file.path(source_dir, "config.ini"), file_type = "ini")
+readConfigFile(
+  file = file.path(source_dir, "config.ini"),
+  file_type = "ini",
+  create_workers = TRUE
+)
 }
 \arguments{
 \item{file}{The file path to the config file}
 
 \item{file_type}{The type of the file (default: "ini")}
+
+\item{create_workers}{Create the historical parallel pool immediately. FALSE
+records portable worker specifications for an explicitly owned GUI action.}
 }
 \description{
 Read the config file and return the list of parameters

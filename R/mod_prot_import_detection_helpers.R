@@ -1,3 +1,15 @@
+#' Inspect Parquet schema without reading columns or retaining an open file.
+#' @param path Parquet file being inspected.
+#' @param col_select Existing internal reader callback argument; unused for headers.
+#' @return Arrow schema supporting the existing names() header contract.
+#' @noRd
+readProtImportParquetSchema <- function(path, col_select = NULL) {
+  stream <- arrow::ReadableFile$create(path)
+  on.exit(stream$close(), add = TRUE)
+  reader <- arrow::ParquetFileReader$create(stream)
+  reader$GetSchema()
+}
+
 readProtImportHeaders <- function(
     filePath
     , unzipList = function(path) unzip(path, list = TRUE)
@@ -5,7 +17,7 @@ readProtImportHeaders <- function(
     , fileExt = tools::file_ext
     , requireNamespaceFn = requireNamespace
     , readExcel = readxl::read_excel
-    , readParquet = arrow::read_parquet
+    , readParquet = readProtImportParquetSchema
     , readLinesFn = readLines
     , tempfileFn = tempfile
     , dirCreate = dir.create
@@ -146,4 +158,3 @@ resolveActiveProtImportFormat <- function(formatOverride, detectedFormat) {
 
   formatOverride
 }
-

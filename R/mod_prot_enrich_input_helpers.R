@@ -295,6 +295,8 @@ persistProtEnrichOrganismFilterMetadata <- function(workflowData,
 }
 
 resolveProtEnrichCurrentS4Object <- function(workflowData, daResultsList) {
+  if (isDIAResultManifest(daResultsList)) return(list(
+    currentS4 = daResultsList$source, source = "component_references"))
   currentS4 <- NULL
   sourceLabel <- NULL
 

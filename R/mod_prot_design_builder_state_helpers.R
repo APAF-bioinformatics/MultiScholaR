@@ -59,7 +59,10 @@ buildProtDesignSaveResultsPayload <- function(
     }
 
     assignedRuns <- designMatrixFinal$Run
-    dataClnFinal <- dataCln |>
+    dataClnFinal <- if (usesDIAReferenceStates(getDIAActiveManager())) {
+        transformDIADesignTable(getDIAActiveManager(), dataCln, samples = assignedRuns,
+            strip_parser = length(getDIAImportMetadata(getDIAActiveManager())$numeric_columns) > 0L)
+    } else dataCln |>
         dplyr::filter(Run %in% assignedRuns)
 
     configListFinal <- configList
@@ -87,6 +90,14 @@ runProtDesignSaveResultsObserverShell <- function(
     buildSaveResultsPayload = buildProtDesignSaveResultsPayload,
     showNotification = shiny::showNotification
 ) {
+    manager <- getDIAActiveManager()
+    if (inherits(manager, "DIAStateAdapter") && inherits(dataCln, "spec_tbl_df") &&
+        length(getDIAImportMetadata(manager)$numeric_columns)) {
+        # The legacy numeric mutate also removes reader-only metadata. Defer
+        # that metadata-only reconstruction to this required table consumer;
+        # the imported reference retains its validated parser diagnostics.
+        dataCln <- dplyr::mutate(dataCln)
+    }
     finalResult <- buildSaveResultsPayload(
         designMatrix = designMatrix,
         currentRemovedSamples = currentRemovedSamples,
@@ -104,6 +115,10 @@ runProtDesignSaveResultsObserverShell <- function(
         return(NULL)
     }
 
+    if (inherits(getDIAActiveManager(), "DIAStateAdapter")) {
+        finalResult$data_reference <- saveDIAOwnedValue(finalResult$data_cln, "design-assigned")
+        finalResult["data_cln"] <- list(NULL)
+    }
     resultSetter(finalResult)
 
     showNotification(
@@ -127,15 +142,18 @@ registerProtDesignSaveResultsObserver <- function(
     runSaveResultsObserverShell = runProtDesignSaveResultsObserverShell
 ) {
     observeEventFn(input$save_results, {
+        withDIAStateScope(getDIAActiveManager(), function() {
         runSaveResultsObserverShell(
             designMatrix = designMatrix(),
             currentRemovedSamples = removedSamples(),
-            dataCln = dataCln(),
+            dataCln = if (usesDIAReferenceStates(getDIAActiveManager()))
+                getDIAReactiveReference(dataCln) else dataCln(),
             contrastData = contrastData(),
             configList = configList(),
             formulaString = input$formula_string,
             resultSetter = resultRv
         )
+        })
     })
 }
 
@@ -258,7 +276,7 @@ applyProtDesignResetState <- function(
 ) {
     if (scope == "all" || scope == "sample_names") {
         designMatrixSetter(initialState$design_matrix)
-        dataClnSetter(initialState$data_cln)
+        dataClnSetter(initialState$data_reference %||% initialState$data_cln)
     }
     if (scope == "all" || scope == "removed_samples") {
         removedSamplesSetter(applyRemovedSamplesUpdateFn(
@@ -359,4 +377,3 @@ buildProtDesignInitialState <- function(
         )
     )
 }
-

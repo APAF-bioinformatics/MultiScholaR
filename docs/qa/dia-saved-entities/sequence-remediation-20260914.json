@@ -1,0 +1,89 @@
+{
+  "schema": "em.ticket_series_evidence_audit.result.v1",
+  "mode": "audit_and_repair",
+  "scope": {
+    "ticket_ids": [
+      "DIA-005",
+      "DIA-006"
+    ],
+    "files": [
+      "tickets/openai/DIA-005.md",
+      "tickets/openai/DIA-006.md",
+      "tickets/openai/01-DIA-SAVED-ENTITIES-PLAN.md",
+      "tickets/openai/tickets-index.json"
+    ],
+    "claim_classes": [
+      "documentation_or_graph_integrity"
+    ]
+  },
+  "authority": {
+    "route_valid": true,
+    "artifacts": [
+      {
+        "path": "docs/qa/reversion-document.md",
+        "sha256": "df170a631156a7077392465c1af27ee8af2f0ab0b168fd0f2002c8c05ab4b2de"
+      },
+      {
+        "path": "docs/qa/dia-saved-entities/sequence-predecessor-20260914.json",
+        "sha256": "ddad2f454941a6cb91da3fb2fcf59c332023ba0bfd94e11c05fc8ff8fde63822"
+      }
+    ],
+    "approval": "user: yes; early standalone DIA-005/006, no gate waiver"
+  },
+  "findings": [
+    {
+      "id": "DIA-SEQ-01",
+      "register": "sequence-finding-20260914.md",
+      "state": "closed_for_sequencing_only"
+    }
+  ],
+  "repairs": [
+    {
+      "id": "DIA-SEQ-01",
+      "change": "005 depends on 001/002; 006 still depends on 005; remove development-time G0 only; route index 005/006 before open 003/004; retain downstream gates"
+    }
+  ],
+  "tests": [
+    {
+      "ticket": "DIA-005",
+      "valid": true,
+      "status_consistent": true
+    },
+    {
+      "ticket": "DIA-006",
+      "valid": true,
+      "status_consistent": true
+    }
+  ],
+  "graph": {
+    "duplicates": [],
+    "missing": [],
+    "cycles": []
+  },
+  "evidence_layers": [
+    {
+      "layer": "documentation_or_graph_integrity",
+      "result": "validated amendment; not scientific or performance evidence"
+    }
+  ],
+  "formal_verification": {
+    "used": false,
+    "obligations": [],
+    "limits": [
+      "No empirical claim follows from dependency graph checks."
+    ]
+  },
+  "closeout": {
+    "implementation_verified": true,
+    "execution_complete": true,
+    "decision_supported": true,
+    "promotion_authorized": false,
+    "claim_scope": "User-approved sequencing amendment only; DIA-005 runtime implementation remains in progress."
+  },
+  "blockers": [],
+  "deviations": [
+    "Preserved current dirty worktree and all failed evidence; no runtime gates or thresholds changed.",
+    "Standalone JSON Schema validator was unavailable (Python jsonschema missing); no dependency was installed. Ticket validators and dependency graph checks passed; result structure was inspected against the supplied schema."
+  ],
+  "next_action": "Complete DIA-005 standalone validation, then DIA-006 save/hydrate. Resume baseline qualification before gated downstream consumers."
+}

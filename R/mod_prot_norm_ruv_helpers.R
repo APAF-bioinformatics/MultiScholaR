@@ -292,7 +292,7 @@ applyProtNormRuvCorrectionStep <- function(
   )
 
   captureCheckpointFn(ruv_corrected_s4, "cp06", "ruv_corrected")
-  normData$ruv_normalized_obj <- ruv_corrected_s4
+  normData <- setDIAOwnedPayload(normData, "ruv_normalized_obj", ruv_corrected_s4)
   messageFn("*** STEP 4: RUV-III correction completed ***")
 
   ruv_corrected_s4
@@ -308,7 +308,7 @@ finalizeProtNormRuvCleanupStep <- function(
   removeRowsWithMissingValuesPercentFn = removeRowsWithMissingValuesPercent,
   countDistinctProteinsFn = function(s4Object) {
     s4Object@protein_quant_table |>
-      dplyr::distinct(Protein.Ids) |>
+      dplyr::distinct(.data[[s4Object@protein_id_column]]) |>
       nrow()
   },
   updateProteinFilteringFn = updateProteinFiltering,
@@ -341,7 +341,7 @@ finalizeProtNormRuvCleanupStep <- function(
 
   tryCatch({
     filtering_plot <- updateProteinFilteringFn(
-      data = ruv_corrected_s4_clean@protein_quant_table,
+      data = ruv_corrected_s4_clean,
       step_name = "11_RUV_filtered",
       omic_type = omicType,
       experiment_label = experimentLabel,
@@ -372,7 +372,7 @@ finalizeProtNormRuvCleanupStep <- function(
     best_percentage
   )
 
-  normData$ruv_normalized_obj <- ruv_corrected_s4_clean
+  normData <- setDIAOwnedPayload(normData, "ruv_normalized_obj", ruv_corrected_s4_clean)
   messageFn("*** STEP 5: Missing values cleanup completed ***")
   messageFn("*** STEP 5: Saving state to R6 state manager ***")
 

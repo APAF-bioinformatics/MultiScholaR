@@ -1,0 +1,229 @@
+{
+  "schema": "wfx-adapter-proof-status-v1",
+  "ticket": "WFX-004",
+  "status": "eight_comparisons_complete_wide_handoff_pending",
+  "artifacts": [
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR/R/utils_workflow_execution.R",
+      "sha256": "a55bd03d33574e24b1923b72cd244d49698abc2821c41bed88bb7e5bdacf097d"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR/R/utils_workflow_dia_qc_rollup.R",
+      "sha256": "734efb63585cb83a1f09d507eb4011b3db7aa54c54044dc6fa28c27050708f4a"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-workflow-execution-adapters.R",
+      "sha256": "4513b067a06246a165ee323836b264449dadac74dcd3ff23197831adb460efa8"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/browser-smoke.Wnwu1F/library/MultiScholaR/R/MultiScholaR.rdb",
+      "sha256": "2431d27a30c32ee655901e9f7df26c315fa7f38f4c397ec762911f9557385da7"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/browser-smoke.xvjBRz/reader-tests.rds",
+      "sha256": "1c76c48bd3d19c5a7f253049ae5501fd18bea2bd982400b7fce54bbc85b3b658"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/adapter-lifecycle-1/lifecycle-tests.rds",
+      "sha256": "12072228fb598d502179b1d0fda8412975aa42dac682654e7dd6b8aec625efbb"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/adapter-lifecycle-1/adapter-lifecycle.json",
+      "sha256": "0498b9531e73793dbc5b46db556ff726a3142cc5d90b1762fc903dcd1bce678c"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/dependencies.json",
+      "sha256": "0ca351a1fc35973122224f29c590b4553de3cf218a4b60a5858ddd1e21f4fadc"
+    }
+  ],
+  "science": [
+    {
+      "test": "compute-only sample filtering matches frozen native science",
+      "passed": 50,
+      "failed": 0,
+      "error": false,
+      "skipped": false
+    },
+    {
+      "test": "compute-only P14 preserves native quantities and head ownership",
+      "passed": 4,
+      "failed": 0,
+      "error": false,
+      "skipped": false
+    },
+    {
+      "test": "both scientific adapters use guarded controller acceptance and publication",
+      "passed": 0,
+      "failed": 0,
+      "error": false,
+      "skipped": true
+    }
+  ],
+  "lifecycle": [
+    {
+      "test": "compute-only sample filtering matches frozen native science",
+      "passed": 0,
+      "failed": 0,
+      "error": false,
+      "skipped": true
+    },
+    {
+      "test": "compute-only P14 preserves native quantities and head ownership",
+      "passed": 0,
+      "failed": 0,
+      "error": false,
+      "skipped": true
+    },
+    {
+      "test": "both scientific adapters use guarded controller acceptance and publication",
+      "passed": 22,
+      "failed": 0,
+      "error": false,
+      "skipped": false
+    }
+  ],
+  "unchanged_compute_bodies": [
+    true,
+    true
+  ],
+  "budgets": {
+    "preflights": 2,
+    "correction_rechecks": 2,
+    "timed_members": 0,
+    "maximum_timed_members": 8,
+    "additional_preflights_authorized_by_continuation": 1,
+    "additional_correction_rechecks": 1,
+    "comparison_launch_attempts": 1,
+    "timed_measurements": 8,
+    "unattempted_planned_members": 0,
+    "invalid_primary_attempts": 1,
+    "authorized_primary_replacements": 1
+  },
+  "remaining": [
+    "Full retained wide-annotation worker-handoff verification; inline counts may exceed the 8 MiB message bound",
+    "Final ticket acceptance review; no further performance retries authorized"
+  ],
+  "limits": [
+    "54 compute-only and 22 managed assertions prove only the exercised synthetic fixture domain",
+    "Scientific compute bodies are identical between tested z87fP4 and final Wnwu1F build",
+    "No full-size/performance/GUI-default claim",
+    "Runtime unsigned/private API and real-corpus release holds remain"
+  ],
+  "promotion_authorized": false,
+  "default_routes_changed": false,
+  "current_artifacts": [
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/comparison-plan.rds",
+      "sha256": "dcb7510deb651fff51e372acb75941cd293d093ee4abe379c86ed0d4e835b567"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/comparison-plan.json",
+      "sha256": "00b79d68c96f8723f4feaf4667ba0bf7edc0fc5e5bdc07d94f70ccd876be35da"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/filter-control-1/member-launch.json",
+      "sha256": "d046d37d072ea745cacffbd8a4ea6b1d6b21f5256582725251a31fa9d9ab7ff0"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/browser-smoke.cjU1Y8/library/MultiScholaR/R/MultiScholaR.rdb",
+      "sha256": "710960df95d00e1a2d9b48f08fdeeaf64624878627b03aa42db00112f2f7ba79"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/browser-smoke.TySuiJ/library/MultiScholaR/R/MultiScholaR.rdb",
+      "sha256": "473776a53902c552bc38973412cbda3563992d11d0cc52a6a3b657bc3ad34ab4"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/browser-smoke.fLSruP/adapter-regressions.rds",
+      "sha256": "8bd916a6d2fed959dc1e80fac9b9278823ed6ef660f3a4980f4ab1d53cd04a86"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/browser-smoke.wftnMg/adapter-regressions.rds",
+      "sha256": "c732e66616a4a080bd3e9c4430243e64d3c829ea7f65859ae5bc46426ff1984c"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/browser-smoke.wftnMg/reader-tests.rds",
+      "sha256": "1786794cc53fd785043ab42f93841fa97d4f61a3885068329dd3da7b20dec378"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/browser-smoke.Tnrdta/filter-input.rds",
+      "sha256": "745212d93b41262b841605d4f66fead2d583ae88a399f6a7051448bf26ec182f"
+    }
+  ],
+  "latest_verification": {
+    "domain_assertions": 27,
+    "affected_regression_assertions": 1079,
+    "failed": 0,
+    "errors": 0,
+    "native_oracle_sources_unchanged": true
+  },
+  "parameter_envelope": "Only minimum_peptides_per_sample permits 256 KiB of native arguments; fixture/rollup bounds, 1 MiB process request and all memory/scientific thresholds unchanged.",
+  "launch_note": "First comparison attempt failed in launchWorkflowApplication host check, before creating A/C/W and before science/timing. It is not a finite denominator or a capacity-only pass.",
+  "harness_sources": [
+    {
+      "path": "/tmp/wfx004-freeze-plan.R",
+      "sha256": "097ddeba27c5b7d1613f897ff38e6033d78d7eb7f53a9d3e56ac1a1f9145e727",
+      "content": "args <- commandArgs(TRUE)\nrepo <- args[[1L]]\nroot <- args[[2L]]\ncontrol <- args[[3L]]\ncandidate <- args[[4L]]\nfilter <- readRDS(args[[5L]])\nmanifest_path <- file.path(repo,\"tests/testdata/workflow-execution/qualification.json\")\nmanifest <- jsonlite::read_json(manifest_path)\nprimary <- manifest$cases$primary\nsha <- function(path) digest::digest(file=path,algo=\"sha256\")\nstopifnot(identical(sha(file.path(primary$store_directory,\"dia-state-head.rds\")), primary$source_head_sha256))\nplan <- list(schema=1L, goal=\"integration_non_regression\", source_manifest=sha(manifest_path),\n    test_sha256=sha(file.path(repo,\"tests/testthat/test-workflow-execution-adapters.R\")),\n    helper_sha256=sha(file.path(repo,\"tests/testthat/helper-workflow-bulk-rollup.R\")),\n    libraries=list(control=list(path=control,sha256=sha(file.path(control,\"MultiScholaR/R/MultiScholaR.rdb\"))),\n        candidate=list(path=candidate,sha256=sha(file.path(candidate,\"MultiScholaR/R/MultiScholaR.rdb\")))),\n    policy=manifest$resource_policy, members=list(), promotion_authorized=FALSE)\nfor (cell in c(\"filter\",\"primary\")) for (i in 1:4) {\n    arm <- c(\"control\",\"candidate\",\"candidate\",\"control\")[[i]]\n    rep <- c(1L,1L,2L,2L)[[i]]\n    id <- paste(cell,arm,rep,sep=\"-\")\n    path <- file.path(root,id)\n    stopifnot(!dir.exists(path));dir.create(path)\n    input <- if (cell==\"filter\") filter else list(source_store=primary$store_directory,\n        source_head_sha256=primary$source_head_sha256,input_entity_id=primary$reference$entity_id,parameters=list())\n    request <- c(list(schema=1L,cell=cell,arm=arm,rep=rep,manifest_sha256=plan$source_manifest),input)\n    saveRDS(request,file.path(path,\"timed-member.rds\"))\n    plan$members[[length(plan$members)+1L]] <- list(id=id,cell=cell,arm=arm,rep=rep,\n        root=path,request_sha256=sha(file.path(path,\"timed-member.rds\")),library=plan$libraries[[arm]])\n}\nsaveRDS(plan,file.path(root,\"comparison-plan.rds\"))\njsonlite::write_json(plan,file.path(root,\"comparison-plan.json\"),auto_unbox=TRUE,pretty=TRUE)\n"
+    },
+    {
+      "path": "/tmp/wfx004-run-member.R",
+      "sha256": "a6045da7ff4e0bfbb85780d912c6810debefd7bf2d86024bc80454006ba2e141",
+      "content": "args <- commandArgs(TRUE)\nplan <- readRDS(args[[1L]])\nmember <- Filter(function(x) identical(x$id,args[[2L]]),plan$members)[[1L]]\nrepo <- args[[3L]]\nsha <- function(path) digest::digest(file=path,algo=\"sha256\")\nstopifnot(identical(sha(file.path(member$library$path,\"MultiScholaR/R/MultiScholaR.rdb\")),member$library$sha256),\n    identical(sha(file.path(member$root,\"timed-member.rds\")),member$request_sha256),\n    identical(sha(file.path(repo,\"tests/testthat/test-workflow-execution-adapters.R\")),plan$test_sha256),\n    identical(sha(file.path(repo,\"tests/testthat/helper-workflow-bulk-rollup.R\")),plan$helper_sha256))\n.libPaths(c(member$library$path,.libPaths()))\nns <- asNamespace(\"MultiScholaR\")\nstopifnot(identical(normalizePath(getNamespaceInfo(ns,\"path\")),normalizePath(file.path(member$library$path,\"MultiScholaR\"))))\nreceipt <- list(status=\"starting\",member=member,plan_sha256=sha(args[[1L]]))\npath <- file.path(member$root,\"member-launch.json\")\nstopifnot(!file.exists(path))\ntryCatch({\n    config <- get(\"launchWorkflowApplication\",ns)(member$root,diagnostic=FALSE,mode=\"adapters\",test_root=repo)\n    receipt$status <- \"launched\"\n    receipt$config <- config\n},error=function(error){receipt$status<<-\"failed\";receipt$error<<-conditionMessage(error)},\nfinally=jsonlite::write_json(receipt,path,auto_unbox=TRUE,pretty=TRUE))\nif (receipt$status != \"launched\") stop(receipt$error)\n"
+    },
+    {
+      "path": "/tmp/wfx004-wait-member.py",
+      "sha256": "b08bef133d4da30c72c3d93fd5831ca291e5b2af4949db6159e5fc6c990cb11c",
+      "content": "import json,subprocess,sys,time,pathlib\nroot=pathlib.Path(sys.argv[1]); launch=json.loads((root/'member-launch.json').read_text()); config=launch['config']; unit=config['controller_unit']\nstarted=time.monotonic(); terminal={}\nwhile time.monotonic()-started < 1860:\n    p=subprocess.run(['systemctl','--user','show',unit,'--property=LoadState,ActiveState,SubState,Result,MainPID'],text=True,capture_output=True)\n    terminal=dict(line.split('=',1) for line in p.stdout.splitlines() if '=' in line)\n    if terminal.get('ActiveState') in ('inactive','failed') or terminal.get('LoadState')=='not-found': break\n    time.sleep(.25)\nelse:\n    subprocess.run(['systemctl','--user','stop',unit],check=False)\n    terminal['observer_timeout']=True\ngroup=pathlib.Path('/sys/fs/cgroup')/config['control_group'].lstrip('/')\nfor name in ('memory.peak','memory.stat','cpu.stat','io.stat'):\n    try: terminal[name]= (group/name).read_text()\n    except OSError as error: terminal[name]= {'unavailable': str(error)}\n(root/'member-terminal.json').write_text(json.dumps(terminal,indent=2)+'\\n')\nsubprocess.run(['systemctl','--user','stop',config['slice']],check=False)\nprint(json.dumps({'root':str(root),'terminal':terminal}))\nif terminal.get('ActiveState')=='failed' or terminal.get('observer_timeout') or not (root/'member-result.rds').exists(): sys.exit(1)\n"
+    },
+    {
+      "path": "/tmp/wfx004-freeze-control.R",
+      "sha256": "d8ab0c651a693e8f41791814f52384e8848f392b98cb719a070457fadee27db9",
+      "content": "args <- commandArgs(TRUE)\nsource <- file.path(args[[1L]], \"R/utils_workflow_dia_qc_rollup.R\")\nhelper <- file.path(args[[2L]], \"tests/testthat/helper-workflow-bulk-rollup.R\")\nextract <- function(path, name) {\n    code <- parse(path, keep.source = TRUE)\n    for (i in seq_along(code)) {\n        expr <- code[[i]]\n        if (is.call(expr) && identical(expr[[1L]], as.name(\"<-\")) &&\n            identical(expr[[2L]], as.name(name))) return(list(expr = expr, span = attr(code,\"srcref\")[[i]]))\n    }\n    stop(\"missing frozen control function\")\n}\ncontrol <- extract(helper,\"computeWFXNativeFilterControl\")$expr\ncontrol[[2L]] <- as.name(\"computeDIAReferenceSampleFilter\")\nold <- extract(source,\"computeDIAReferenceSampleFilter\")\nlines <- readLines(source)\nlines <- c(lines[seq_len(old$span[[1L]]-1L)], deparse(control, width.cutoff=100L),\n    if (old$span[[3L]] < length(lines)) lines[seq.int(old$span[[3L]]+1L,length(lines))])\n# Only the control invokes explicit accepted P14 without the new admission-estimate query.\ntext <- paste(lines, collapse=\"\\n\")\nneedle <- 'computeDIARelationalRollup(manager$.context$store, input, persist, profile = \"P14\", worker_cap = worker_cap)'\nstopifnot(length(gregexpr(needle,text,fixed=TRUE)[[1L]]) == 1L, grepl(needle,text,fixed=TRUE))\ntext <- sub(needle, 'computeDIARelationalRollup(manager$.context$store, input, persist, profile = \"P14\", worker_cap = NULL)', text,fixed=TRUE)\nwriteLines(text,source)\ninvisible(parse(source))\n"
+    }
+  ],
+  "startup_policy_bytes": 4294967296,
+  "filter_comparison": {
+    "decision": "inconclusive",
+    "members": [
+      {
+        "arm": "control",
+        "rep": 1,
+        "seconds": 19.019,
+        "peak_bytes": 2649477120
+      },
+      {
+        "arm": "candidate",
+        "rep": 1,
+        "seconds": 18.489,
+        "peak_bytes": 2590134272
+      },
+      {
+        "arm": "candidate",
+        "rep": 2,
+        "seconds": 28.084,
+        "peak_bytes": 2588135424
+      },
+      {
+        "arm": "control",
+        "rep": 2,
+        "seconds": 18.508,
+        "peak_bytes": 2610913280
+      }
+    ],
+    "science": true,
+    "required_outputs": true,
+    "input_unchanged": true,
+    "measurement_valid": true
+  },
+  "primary_comparison": {
+    "decision": "integration_non_regression",
+    "valid_measurements": 4,
+    "science": true,
+    "required_outputs": true,
+    "input_unchanged": true
+  },
+  "comparison_report": "docs/qa/workflow-execution/wfx-004-comparison-20261002.json",
+  "rollback": {
+    "status": "passed",
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/browser-smoke.aZdseq/adapter-rollback.rds"
+  }
+}

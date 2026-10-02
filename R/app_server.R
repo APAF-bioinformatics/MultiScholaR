@@ -25,6 +25,16 @@
 #' @import shinyFiles
 #' @noRd
 app_server <- function(input, output, session) {
+  execution <- session$userData$workflow_execution
+  if (inherits(execution, "WorkflowExecutionApplication")) {
+    execution$sessions <- execution$sessions + 1L
+    session$onSessionEnded(function() {
+      execution$sessions <- execution$sessions - 1L
+      if (execution$sessions == 0L) {
+        for (owner in execution$controllers) closeWorkflowExecutionController(owner)
+      }
+    })
+  }
   # Initialize the logger for Shiny
   # Note: setup_shiny_logger should be exported or available in the package
   if (exists("setup_shiny_logger")) {

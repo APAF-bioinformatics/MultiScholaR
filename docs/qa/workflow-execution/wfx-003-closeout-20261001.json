@@ -1,0 +1,120 @@
+{
+  "schema": "wfx-execution-closeout-v1",
+  "ticket": "WFX-003",
+  "status": "verified",
+  "artifacts": [
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-workflow-saved-recovery.R",
+      "sha256": "c2c7dd3c64d690dc70b8b1cc5dad6c68cf085419239c11f265a37640491a9d2f"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR/tests/testthat/test-workflow-execution.R",
+      "sha256": "5da508c240c662daaa62faeaeed7f3428fb24dea1959e47503a0d3b620424dae"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR/R/utils_workflow_execution.R",
+      "sha256": "b35b98fda3a3926a1ff4b23f12927f378d9188a2409eab71da84567d60ef30bd"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-003/browser-smoke.iR0a6x/library/MultiScholaR/R/MultiScholaR.rdb",
+      "sha256": "e91ba914fb2188d452fd8be85ea362c1f197e40f5a4d1c3a0c424f2b93724970"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-003/repair-resources-1/lifecycle-tests.rds",
+      "sha256": "81f52b4295161c9319fc1b8f03858f83f6038e9c3fe849c247cef1fd38a64814"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-003/browser-smoke.8KFdOV/affected-regressions.rds",
+      "sha256": "af2fd65dd602b2675d37699456c25c85b3b687c707c79f65a04c74137e3cf9c3"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-003/browser-smoke.eFSIIs/affected-regressions.rds",
+      "sha256": "75ec17565e1031b9520d0297eaf5073408647fd8669e491184d91f41255046e1"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-003/browser-smoke.FqyIDO/wfx003-rollback.json",
+      "sha256": "ef3d88a76cb5a6e0adb9768f9e36e85d83e6cfc8bcef3c86b6ec8f04e8557b99"
+    },
+    {
+      "path": "/tmp/wfx003-recovery-input/tests/testthat/test-workflow-saved-installed.R",
+      "sha256": "cd83bc1d7686524db87696da0b17b370be7b48c6fbabb6f917d451d2d5a045ab",
+      "content": "workflow_test_mode <- \"resources\"\nworkflow_test_root <- \"/home/doktersmol/Projects/APAF/MultiScholaR\"\nworkflow_test_application <- list(config = list(\n    library = dirname(getNamespaceInfo(asNamespace(\"MultiScholaR\"), \"path\")),\n    root = dirname(Sys.getenv(\"MULTISCHOLAR_DIA008_RECEIPT\"))))\ntest_that(\"affected saved-entity regressions preserve existing boundaries\", {\n    skip_if(!exists(\"workflow_test_mode\") || workflow_test_mode != \"resources\", \"final installed suite only\")\n    library <- workflow_test_application$config$library\n    result <- callr::r(function(library, root) {\n        .libPaths(c(library, .libPaths()))\n        ns <- asNamespace(\"MultiScholaR\")\n        stopifnot(identical(normalizePath(getNamespaceInfo(ns, \"path\")),\n            normalizePath(file.path(library, \"MultiScholaR\"))))\n        env <- new.env(parent = ns)\n        sys.source(file.path(root, \"tests/testthat/helper-workflow-checkpoint-fixtures.R\"), env)\n        names <- paste0(\"test-workflow-saved-\", c(\"resources\", \"recovery\", \"identity\", \"projection\", \"exports\"), \".R\")\n        results <- lapply(names, function(name) {\n            results <- testthat::test_file(file.path(root, \"tests/testthat\", name), env = env,\n                load_helpers = FALSE, package = \"MultiScholaR\", load_package = \"installed\",\n                reporter = \"summary\", stop_on_failure = FALSE)\n            results <- as.data.frame(results)\n            list(file = name, passed = sum(results$passed), failed = sum(results$failed),\n                errors = sum(results$error), details = results)\n        })\n        list(results = results)\n    }, args = list(library, workflow_test_root), timeout = 180)\n    saveRDS(result, file.path(workflow_test_application$config$root, \"affected-regressions.rds\"))\n    for (item in result$results) {\n        expect_identical(item$failed, 0L, info = item$file)\n        expect_identical(item$errors, 0L, info = item$file)\n    }\n})\n"
+    },
+    {
+      "path": "/tmp/wfx003-recovery-correction-input/tests/testthat/test-workflow-saved-installed.R",
+      "sha256": "d0ce8a2cb01dab2203b1a4d5e4d5c5d2a362eff18fca8bfb4411a3c1a6b12891",
+      "content": "workflow_test_mode <- \"resources\"\nworkflow_test_root <- \"/home/doktersmol/Projects/APAF/MultiScholaR\"\nworkflow_test_application <- list(config = list(\n    library = dirname(getNamespaceInfo(asNamespace(\"MultiScholaR\"), \"path\")),\n    root = dirname(Sys.getenv(\"MULTISCHOLAR_DIA008_RECEIPT\"))))\ntest_that(\"affected saved-entity regressions preserve existing boundaries\", {\n    skip_if(!exists(\"workflow_test_mode\") || workflow_test_mode != \"resources\", \"final installed suite only\")\n    library <- workflow_test_application$config$library\n    result <- callr::r(function(library, root) {\n        .libPaths(c(library, .libPaths()))\n        ns <- asNamespace(\"MultiScholaR\")\n        stopifnot(identical(normalizePath(getNamespaceInfo(ns, \"path\")),\n            normalizePath(file.path(library, \"MultiScholaR\"))))\n        env <- new.env(parent = ns)\n        sys.source(file.path(root, \"tests/testthat/helper-workflow-checkpoint-fixtures.R\"), env)\n        names <- paste0(\"test-workflow-saved-\", c(\"projection\", \"exports\"), \".R\")\n        results <- lapply(names, function(name) {\n            results <- testthat::test_file(file.path(root, \"tests/testthat\", name), env = env,\n                load_helpers = FALSE, package = \"MultiScholaR\", load_package = \"installed\",\n                reporter = \"summary\", stop_on_failure = FALSE)\n            results <- as.data.frame(results)\n            list(file = name, passed = sum(results$passed), failed = sum(results$failed),\n                errors = sum(results$error), details = results)\n        })\n        list(results = results)\n    }, args = list(library, workflow_test_root), timeout = 180)\n    saveRDS(result, file.path(workflow_test_application$config$root, \"affected-regressions.rds\"))\n    for (item in result$results) {\n        expect_identical(item$failed, 0L, info = item$file)\n        expect_identical(item$errors, 0L, info = item$file)\n    }\n})\n"
+    },
+    {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR/tests/testdata/workflow-checkpoints/scenarios.json",
+      "sha256": "cfdf7da2fc5a6123da269f85011550d8ffd2e8a611de071e0cd1a52a6f35d152"
+    }
+  ],
+  "regressions": [
+    {
+      "file": "test-workflow-saved-resources.R",
+      "passed": 293,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "file": "test-workflow-saved-recovery.R",
+      "passed": 108,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "file": "test-workflow-saved-identity.R",
+      "passed": 73,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "file": "test-workflow-saved-projection.R",
+      "passed": 406,
+      "failed": 0,
+      "errors": 0
+    },
+    {
+      "file": "test-workflow-saved-exports.R",
+      "passed": 255,
+      "failed": 0,
+      "errors": 0
+    }
+  ],
+  "lifecycle": {
+    "artifact": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-003/repair-resources-1/lifecycle-tests.rds",
+    "assertions": 192,
+    "failed": 0,
+    "errors": 0,
+    "reuse_reason": "Application code unchanged; only subprocess test loading and regression failure allowance changed."
+  },
+  "rollback": {
+    "status": "passed",
+    "reuse_reason": "No checkpoint or publication format changes."
+  },
+  "attempts": [
+    {
+      "id": "browser-smoke.8KFdOV",
+      "status": "failed",
+      "accepted_subset": [
+        "resources",
+        "recovery",
+        "identity"
+      ],
+      "failure": "Projection/export fixture input omitted scenarios.json; raw errors retained."
+    },
+    {
+      "id": "browser-smoke.eFSIIs",
+      "status": "passed",
+      "scope": [
+        "projection",
+        "exports"
+      ],
+      "correction": "Supplied the identical 40 KiB checkpoint fixture directory; no test assertions/deadlines changed."
+    }
+  ],
+  "claim_scope": "Managed Linux diagnostic execution boundary only; no scientific adapter or automatic GUI routing qualification.",
+  "promotion_authorized": false,
+  "default_routes_changed": false
+}

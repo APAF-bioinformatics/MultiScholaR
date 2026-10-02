@@ -147,8 +147,11 @@ countProteinsPerRun <- function(data) {
              arrange(Run))
     }
     if ("protein_quant_table" %in% slotNames(data)) {
+      run_cols <- as.character(data@design_matrix[[data@sample_id]])
       data <- data@protein_quant_table
-      run_cols <- setdiff(names(data), "Protein.Ids")
+      if (!all(run_cols %in% names(data))) {
+        stop("Declared sample columns must be in the protein data table")
+      }
       
       # For each run (column), count non-NA values
       result <- data.frame(
@@ -249,4 +252,3 @@ count_num_samples <- function( input_table
 
   num_samples[[1,1]]
 }
-

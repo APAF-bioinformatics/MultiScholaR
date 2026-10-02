@@ -480,7 +480,7 @@ test_that("updateProteinAccessionCleanupOutputs refreshes result text and plot g
   expect_identical(output$accession_cleanup_results, "cleanup complete")
   expect_identical(plot_grid, "plot_grid")
   expect_identical(captured$plot, "plot_grid")
-  expect_identical(captured$args$data, cleanup_state@protein_quant_table)
+  expect_identical(captured$args$data, cleanup_state)
   expect_identical(captured$args$step_name, "10_protein_accession_cleaned")
   expect_identical(captured$args$omic_type, "proteomics")
   expect_identical(captured$args$experiment_label, "DIA Experiment")
@@ -911,7 +911,8 @@ test_that("runProteinDuplicateRemovalStep aggregates duplicates and saves state"
   if (!methods::isClass("FakeProteinDedupState")) {
     methods::setClass(
       "FakeProteinDedupState",
-      slots = c(protein_quant_table = "data.frame")
+      slots = c(protein_quant_table = "data.frame", protein_id_column = "character"),
+      prototype = list(protein_id_column = "Protein.Ids")
     )
   }
 
@@ -981,7 +982,8 @@ test_that("updateProteinDuplicateRemovalOutputs refreshes results text and plot 
   if (!methods::isClass("FakeProteinDedupState")) {
     methods::setClass(
       "FakeProteinDedupState",
-      slots = c(protein_quant_table = "data.frame")
+      slots = c(protein_quant_table = "data.frame", protein_id_column = "character"),
+      prototype = list(protein_id_column = "Protein.Ids")
     )
   }
 
@@ -1034,7 +1036,7 @@ test_that("updateProteinDuplicateRemovalOutputs refreshes results text and plot 
   expect_identical(output$duplicate_removal_results, "duplicate removal complete")
   expect_identical(plot_grid, "plot_grid")
   expect_identical(captured$plot, "plot_grid")
-  expect_identical(captured$args$data, duplicate_result$deduplicatedS4@protein_quant_table)
+  expect_identical(captured$args$data, duplicate_result$deduplicatedS4)
   expect_identical(captured$args$step_name, "12_duplicates_removed")
   expect_identical(captured$args$omic_type, "proteomics")
   expect_identical(captured$args$experiment_label, "DIA Experiment")
@@ -1465,7 +1467,8 @@ test_that("runProteinIntensityFilterApplyStep applies flexible-mode updates and 
   if (!methods::isClass("FakeProteinIntensityState")) {
     methods::setClass(
       "FakeProteinIntensityState",
-      slots = c(protein_quant_table = "data.frame", args = "list")
+      slots = c(protein_quant_table = "data.frame", args = "list", protein_id_column = "character"),
+      prototype = list(protein_id_column = "Protein.Ids")
     )
   }
 
@@ -1596,7 +1599,8 @@ test_that("runProteinIntensityFilterApplyStep applies strict-mode zero cutoffs b
   if (!methods::isClass("FakeProteinIntensityState")) {
     methods::setClass(
       "FakeProteinIntensityState",
-      slots = c(protein_quant_table = "data.frame", args = "list")
+      slots = c(protein_quant_table = "data.frame", args = "list", protein_id_column = "character"),
+      prototype = list(protein_id_column = "Protein.Ids")
     )
   }
 
@@ -1692,7 +1696,8 @@ test_that("updateProteinIntensityFilterOutputs refreshes result text and plot gr
   if (!methods::isClass("FakeProteinIntensityState")) {
     methods::setClass(
       "FakeProteinIntensityState",
-      slots = c(protein_quant_table = "data.frame", args = "list")
+      slots = c(protein_quant_table = "data.frame", args = "list", protein_id_column = "character"),
+      prototype = list(protein_id_column = "Protein.Ids")
     )
   }
 
@@ -1740,7 +1745,7 @@ test_that("updateProteinIntensityFilterOutputs refreshes result text and plot gr
   expect_identical(output$protein_intensity_filter_results, "protein intensity complete")
   expect_identical(plot_grid, "plot_grid")
   expect_identical(captured$plot, "plot_grid")
-  expect_identical(captured$args$data$Protein.Ids, c("P1", "P2"))
+  expect_identical(captured$args$data@protein_quant_table$Protein.Ids, c("P1", "P2"))
   expect_identical(captured$args$step_name, "11_protein_intensity_filtered")
   expect_identical(captured$args$omic_type, "proteomics")
   expect_identical(captured$args$experiment_label, "DIA Experiment")
@@ -2195,7 +2200,8 @@ test_that("runProteinReplicateFilterApplyStep saves the filtered state and QC pa
   if (!methods::isClass("FakeProteinReplicateState")) {
     methods::setClass(
       "FakeProteinReplicateState",
-      slots = c(protein_quant_table = "data.frame")
+      slots = c(protein_quant_table = "data.frame", protein_id_column = "character"),
+      prototype = list(protein_id_column = "Protein.Ids")
     )
   }
 
@@ -2322,7 +2328,8 @@ test_that("runProteinReplicateFilterApplyStep uses local execution in test mode"
   if (!methods::isClass("FakeProteinReplicateState")) {
     methods::setClass(
       "FakeProteinReplicateState",
-      slots = c(protein_quant_table = "data.frame")
+      slots = c(protein_quant_table = "data.frame", protein_id_column = "character"),
+      prototype = list(protein_id_column = "Protein.Ids")
     )
   }
 
@@ -2374,7 +2381,8 @@ test_that("updateProteinReplicateFilterOutputs refreshes result text and plot gr
   if (!methods::isClass("FakeProteinReplicateState")) {
     methods::setClass(
       "FakeProteinReplicateState",
-      slots = c(protein_quant_table = "data.frame")
+      slots = c(protein_quant_table = "data.frame", protein_id_column = "character"),
+      prototype = list(protein_id_column = "Protein.Ids")
     )
   }
 
@@ -2422,7 +2430,7 @@ test_that("updateProteinReplicateFilterOutputs refreshes result text and plot gr
   expect_identical(output$protein_replicate_filter_results, "protein replicate complete")
   expect_identical(plot_grid, "plot_grid")
   expect_identical(captured$plot, "plot_grid")
-  expect_identical(captured$args$data$Protein.Ids, c("P1", "P2"))
+  expect_identical(captured$args$data@protein_quant_table$Protein.Ids, c("P1", "P2"))
   expect_identical(captured$args$step_name, "13_protein_replicate_filtered")
   expect_identical(captured$args$omic_type, "proteomics")
   expect_identical(captured$args$experiment_label, "DIA Experiment")
@@ -2924,8 +2932,13 @@ test_that("runProteinIqRollupApplyStep saves the protein S4 state and restores s
       slots = c(
         peptide_data = "data.frame",
         design_matrix = "data.frame",
-        args = "list"
-      )
+        args = "list",
+        protein_id_column = "character", peptide_sequence_column = "character",
+        sample_id = "character", group_id = "character", technical_replicate_id = "character"
+      ),
+      prototype = list(protein_id_column = "Protein.Ids",
+        peptide_sequence_column = "Stripped.Sequence", sample_id = "Run",
+        group_id = "group", technical_replicate_id = "replicates")
     )
   }
   if (!methods::isClass("FakeProteinIqOutputState")) {
@@ -2933,8 +2946,9 @@ test_that("runProteinIqRollupApplyStep saves the protein S4 state and restores s
       "FakeProteinIqOutputState",
       slots = c(
         protein_quant_table = "data.frame",
-        design_matrix = "data.frame"
-      )
+        design_matrix = "data.frame", protein_id_column = "character", args = "list"
+      ),
+      prototype = list(protein_id_column = "Protein.Ids", args = list())
     )
   }
 
@@ -3213,8 +3227,9 @@ test_that("updateProteinIqRollupOutputs refreshes result text and plot grid", {
       "FakeProteinIqOutputState",
       slots = c(
         protein_quant_table = "data.frame",
-        design_matrix = "data.frame"
-      )
+        design_matrix = "data.frame", protein_id_column = "character", args = "list"
+      ),
+      prototype = list(protein_id_column = "Protein.Ids", args = list())
     )
   }
 
@@ -3256,7 +3271,7 @@ test_that("updateProteinIqRollupOutputs refreshes result text and plot grid", {
   expect_identical(output$iq_rollup_results, "IQ rollup complete")
   expect_identical(plot_grid, "plot_grid")
   expect_identical(captured$plot, "plot_grid")
-  expect_identical(captured$args$data, protein_state@protein_quant_table)
+  expect_identical(captured$args$data, protein_state)
   expect_identical(captured$args$step_name, "9_protein_s4_created")
   expect_identical(captured$args$omic_type, "proteomics")
   expect_identical(captured$args$experiment_label, "DIA Experiment")

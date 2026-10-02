@@ -27,7 +27,9 @@ collectProtNormExportSessionData <- function(
   current_state_name <- workflowData$state_manager$current_state
   current_s4_object <- workflowData$state_manager$getState(current_state_name)
   r6_complete_states <- tryCatch(
-    workflowData$state_manager$states,
+    if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+      materializeDIAStates(workflowData$state_manager$.context, share_immutable = TRUE)
+    } else workflowData$state_manager$states,
     error = function(e) NULL
   )
   if (is.null(r6_complete_states)) {
@@ -79,7 +81,7 @@ collectProtNormExportSessionData <- function(
     r6_complete_states = r6_complete_states,
     r6_state_history = r6_state_history,
     current_s4_object = current_s4_object,
-    correlation_filtered_s4 = normData$correlation_filtered_obj,
+    correlation_filtered_s4 = getDIAOwnedPayload(normData, "correlation_filtered_obj"),
     contrasts_tbl = workflowData$contrasts_tbl,
     design_matrix = workflowData$design_matrix,
     config_list = workflowData$config_list,
@@ -101,7 +103,9 @@ collectProtNormExportSessionData <- function(
     qc_params = workflowData$qc_params,
     protein_counts = workflowData$protein_counts,
     mixed_species_analysis = workflowData$mixed_species_analysis,
-    final_protein_count = length(unique(current_s4_object@protein_quant_table$Protein.Ids)),
+    final_protein_count = length(unique(
+      current_s4_object@protein_quant_table[[current_s4_object@protein_id_column]]
+    )),
     final_sample_count = length(setdiff(
       colnames(current_s4_object@protein_quant_table),
       current_s4_object@protein_id_column
@@ -179,7 +183,8 @@ saveProtNormExportMetadataFiles <- function(
   sourceDir,
   saveRdsFn = saveRDS,
   fileExistsFn = file.exists,
-  messageFn = message
+  messageFn = message,
+  strict = FALSE
 ) {
   tryCatch({
     if (!is.null(sessionData$accession_cleanup_results)) {
@@ -228,6 +233,7 @@ saveProtNormExportMetadataFiles <- function(
     }
   }, error = function(e) {
     messageFn(sprintf("*** WARNING: Some metadata files could not be saved: %s ***", e$message))
+    if (strict) stop(e)
   })
 
   invisible(NULL)
@@ -241,18 +247,25 @@ saveProtNormExportArtifacts <- function(
   saveRdsFn = saveRDS,
   writeLinesFn = writeLines,
   fileExistsFn = file.exists,
-  messageFn = message
+  messageFn = message,
+  publicationRequest = NULL
 ) {
-  timestamp_str <- formatTimeFn(timeFn(), "%Y%m%d_%H%M%S")
+  timestamp_str <- if (is.null(publicationRequest)) formatTimeFn(timeFn(), "%Y%m%d_%H%M%S") else
+    publicationRequest$timestamp
   session_filename <- sprintf("filtered_session_data_%s.rds", timestamp_str)
   session_filepath <- file.path(sourceDir, session_filename)
 
-  saveRdsFn(sessionData, session_filepath)
-  messageFn(sprintf("*** EXPORT: Session data saved to: %s ***", session_filepath))
-
   latest_filename <- "filtered_session_data_latest.rds"
   latest_filepath <- file.path(sourceDir, latest_filename)
-  saveRdsFn(sessionData, latest_filepath)
+  publication <- NULL
+  if (is.null(publicationRequest)) {
+    saveRdsFn(sessionData, session_filepath)
+    saveRdsFn(sessionData, latest_filepath)
+  } else {
+    publication <- runWorkflowLegacyExport(sessionData, sourceDir,
+      publicationRequest$request_id, timestamp_str, serializeFn = saveRdsFn)
+  }
+  messageFn(sprintf("*** EXPORT: Session data saved to: %s ***", session_filepath))
   messageFn(sprintf("*** EXPORT: Latest version saved to: %s ***", latest_filepath))
 
   saveProtNormExportMetadataFiles(
@@ -260,7 +273,8 @@ saveProtNormExportArtifacts <- function(
     sourceDir = sourceDir,
     saveRdsFn = saveRdsFn,
     fileExistsFn = fileExistsFn,
-    messageFn = messageFn
+    messageFn = messageFn,
+    strict = !is.null(publicationRequest)
   )
 
   summary_content <- buildProtNormExportSummaryContent(
@@ -272,12 +286,14 @@ saveProtNormExportArtifacts <- function(
   summary_filepath <- file.path(sourceDir, "filtered_session_summary.txt")
   writeLinesFn(summary_content, summary_filepath)
 
-  list(
+  artifacts <- list(
     sessionFilename = session_filename,
     sessionFilepath = session_filepath,
     latestFilepath = latest_filepath,
     summaryFilepath = summary_filepath
   )
+  if (!is.null(publication)) artifacts$publication <- publication
+  artifacts
 }
 
 runProtNormExportSessionWorkflow <- function(
@@ -289,8 +305,52 @@ runProtNormExportSessionWorkflow <- function(
   incProgressFn = shiny::incProgress,
   collectSessionDataFn = collectProtNormExportSessionData,
   saveExportArtifactsFn = saveProtNormExportArtifacts,
-  messageFn = message
+  messageFn = message,
+  serializeSessionFn = saveRDS
 ) {
+  manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager
+  withDIAStateScope(manager, function() {
+  candidate <- inherits(manager, "DIAStateAdapter")
+  on.exit(if (candidate) {
+    manager$.context$working <- new.env(parent = emptyenv())
+  }, add = TRUE)
+  if (isDIANativeSession(manager)) return(withProgressFn(message = "Exporting native DIA session...", value = 0, {
+    incProgressFn(0.2, detail = "Packaging committed checkpoints without hydrating history...")
+    collected <- collectDIANativeSessionMetadata(workflowData, normData, input)
+    prepare_outputs <- function(metadata, request) {
+      saveProtNormExportMetadataFiles(metadata, sourceDir, messageFn = messageFn, strict = TRUE)
+      for (field in c("aa_seq_tbl_final", "uniprot_dat_cln")) {
+        value <- metadata[[field]]
+        if (is.data.frame(value) && nrow(value) > 0L) {
+          saveRDS(value, file.path(sourceDir, paste0(field, ".RDS")))
+        }
+      }
+      summary <- buildProtNormExportSummaryContent(metadata, request$archive_name,
+        timeFn = function() metadata$export_timestamp)
+      writeLines(summary, file.path(sourceDir, "filtered_session_summary.txt"))
+      files <- file.path(sourceDir, c("accession_cleanup_results.RDS", "qc_params.RDS",
+        "fasta_metadata.RDS", "ruv_optimization_results.RDS", "mixed_species_analysis.RDS",
+        "aa_seq_tbl_final.RDS", "uniprot_dat_cln.RDS", "filtered_session_summary.txt"))
+      syncWorkflowExportPaths(c(files[file.exists(files)], sourceDir), sourceDir)
+    }
+    result <- runDIANativeSessionExport(manager, collected$metadata, sourceDir,
+      extra_references = collected$references,
+      dependencies = collectDIANativeGuiFiles(manager, collected$metadata),
+      prepare_outputs = prepare_outputs)
+    publication <- result$publication
+    incProgressFn(0.8, detail = "Export complete")
+    list(sessionData = NULL, exportArtifacts = list(
+      sessionFilename = basename(publication$archive_path), sessionFilepath = publication$archive_path,
+      latestFilepath = publication$latest_path, summaryFilepath = file.path(sourceDir, "filtered_session_summary.txt"),
+      publication = publication))
+  }))
+  if (candidate) return(withProgressFn(message = "Exporting filtered session data...", value = 0, {
+    incProgressFn(0.2, detail = "Gathering data and publishing outputs...")
+    result <- runDIAOwnedSessionExport(manager, workflowData, normData,
+      input, sourceDir, collectSessionDataFn, saveExportArtifactsFn, serializeSessionFn)
+    incProgressFn(0.8, detail = "Export complete")
+    result
+  }))
   withProgressFn(message = "Exporting filtered session data...", value = 0, {
     incProgressFn(0.2, detail = "Gathering data...")
     session_data <- collectSessionDataFn(
@@ -311,7 +371,8 @@ runProtNormExportSessionWorkflow <- function(
     incProgressFn(0.1, detail = "Saving metadata files...")
     incProgressFn(0.1, detail = "Creating summary...")
 
-    list(sessionData = session_data, exportArtifacts = export_artifacts)
+    list(sessionData = if (candidate) NULL else session_data, exportArtifacts = export_artifacts)
+  })
   })
 }
 
@@ -381,7 +442,7 @@ revertProtNormStateManagerToPreNormalization <- function(
     )
 
     if (!is.null(previous_state)) {
-      reverted_s4 <- workflowData$state_manager$revertToState(previous_state)
+      reverted_s4 <- selectDIAStateReference(workflowData$state_manager, previous_state)
       messageFn(sprintf(
         "*** RESET: Reverted R6 state manager to '%s' (actual previous state) ***",
         previous_state
@@ -400,12 +461,13 @@ resetProtNormReactiveState <- function(
   normData,
   workflowData
 ) {
+  normData$normalization_input_reference <- NULL
   normData$normalization_complete <- FALSE
   normData$ruv_complete <- FALSE
   normData$correlation_filtering_complete <- FALSE
-  normData$normalized_protein_obj <- NULL
-  normData$ruv_normalized_obj <- NULL
-  normData$correlation_filtered_obj <- NULL
+  normData <- setDIAOwnedPayload(normData, "normalized_protein_obj", NULL)
+  normData <- setDIAOwnedPayload(normData, "ruv_normalized_obj", NULL)
+  normData <- setDIAOwnedPayload(normData, "correlation_filtered_obj", NULL)
   normData$best_k <- NULL
   normData$control_genes_index <- NULL
   normData$correlation_vector <- NULL
@@ -434,6 +496,10 @@ resetProtNormReactiveState <- function(
   )
 
   workflowData$ruv_normalised_for_da_analysis_obj <- NULL
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    workflowData$da_analysis_results_list <- NULL
+    workflowData$state_update_trigger <- Sys.time()
+  }
   updated_status <- workflowData$tab_status
   updated_status$normalization <- "pending"
   updated_status$differential_expression <- "disabled"

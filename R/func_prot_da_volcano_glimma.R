@@ -65,6 +65,9 @@ generateProtDAVolcanoPlotGlimma <- function(
 
   logger::log_info(sprintf("   selected_contrast = %s", as.character(selected_contrast)[1]))
 
+  if (isDIAResultManifest(da_results_list)) {
+    da_results_list <- readDIAResultDisplay(da_results_list, selected_contrast, expression = TRUE)
+  }
   if (is.null(da_results_list) || is.null(da_results_list$da_proteins_long)) {
     logger::log_warn("   No DA results available")
     return(NULL)
@@ -146,7 +149,7 @@ generateProtDAVolcanoPlotGlimma <- function(
   # Prepare annotation data
   plot_data <- contrast_data |>
     dplyr::mutate(
-      best_uniprot_acc = purrr::map_chr(as.character(Protein.Ids), \(x) {
+      best_uniprot_acc = purrr::map_chr(as.character(.data[[args_row_id]]), \(x) {
         # Robustly handle FASTA/UniProt/NCBI headers
         # Remove common prefix like '>'
         x_cln <- gsub("^>", "", x)
@@ -208,12 +211,11 @@ generateProtDAVolcanoPlotGlimma <- function(
       )
     )
 
-  # Remove rows with Inf/NA plotting metrics AND ensure Protein.Ids are unique for rownames
+  # Quantitative identity is the declared key; accessions remain annotations.
   plot_data <- plot_data |>
     dplyr::filter(!is.infinite(negLog10FDR), !is.na(negLog10FDR), !is.na(logFC)) |>
-    # Ensure Protein.Ids is not blank
-    dplyr::filter(!is.na(Protein.Ids), Protein.Ids != "") |>
-    dplyr::distinct(Protein.Ids, .keep_all = TRUE)
+    dplyr::filter(!is.na(.data[[args_row_id]]), .data[[args_row_id]] != "") |>
+    dplyr::distinct(.data[[args_row_id]], .keep_all = TRUE)
 
 
   if (nrow(plot_data) == 0) {
@@ -230,19 +232,20 @@ generateProtDAVolcanoPlotGlimma <- function(
 
     if (args_row_id %in% names(counts_df)) {
       # 1. Ensure exact match between plot_data and counts_df
-      common_prots <- intersect(plot_data$Protein.Ids, counts_df[[args_row_id]])
-      plot_data <- plot_data |> dplyr::filter(Protein.Ids %in% common_prots)
+      common_prots <- intersect(plot_data[[args_row_id]], counts_df[[args_row_id]])
+      plot_data <- plot_data |> dplyr::filter(.data[[args_row_id]] %in% common_prots)
 
       counts_df <- counts_df |> dplyr::filter(!!sym(args_row_id) %in% common_prots)
 
       # 2. Ensure exact row order mapped to plot_data
-      match_idx <- match(plot_data$Protein.Ids, counts_df[[args_row_id]])
+      match_idx <- match(plot_data[[args_row_id]], counts_df[[args_row_id]])
       counts_df <- counts_df[match_idx, , drop = FALSE]
 
       # 3. Avoid tibble rownames crash by ensuring it's a data.frame and reset rownames first
       counts_df <- as.data.frame(counts_df, check.names = FALSE)
       rownames(counts_df) <- NULL
       counts_mat <- counts_df |> tibble::column_to_rownames(args_row_id) |> as.matrix()
+      rm(counts_df)
 
       this_design <- da_results_list$theObject@design_matrix
       sample_id_col <- da_results_list$theObject@sample_id
@@ -292,75 +295,16 @@ generateProtDAVolcanoPlotGlimma <- function(
 
       # Sync plot_data to available proteins in counts (defensive)
       # Coerce both to character for matching
-      available_ids <- intersect(as.character(plot_data$Protein.Ids), as.character(rownames(counts_mat)))
-      plot_data <- plot_data |> dplyr::filter(as.character(Protein.Ids) %in% available_ids)
-      counts_mat <- counts_mat[as.character(plot_data$Protein.Ids), , drop = FALSE]
+      available_ids <- intersect(as.character(plot_data[[args_row_id]]), as.character(rownames(counts_mat)))
+      plot_data <- plot_data |> dplyr::filter(as.character(.data[[args_row_id]]) %in% available_ids)
+      counts_mat <- counts_mat[as.character(plot_data[[args_row_id]]), , drop = FALSE]
 
       logger::log_info(sprintf("   Glimma: Synchronized %d proteins with expression data", nrow(counts_mat)))
     }
   }
 
   # Build Clean Annotation Dataframe
-  clean_anno <- data.frame(
-    Protein_Ids = as.character(plot_data$Protein.Ids),
-    gene = ifelse(is.na(plot_data$gene_name) | plot_data$gene_name == "",
-                  gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids)),
-                  as.character(plot_data$gene_name)),
-    gene_name = ifelse(is.na(plot_data$gene_name) | plot_data$gene_name == "",
-                       gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids)),
-                       as.character(plot_data$gene_name)),
-    FDR = signif(as.numeric(plot_data$FDR), 4),
-    stringsAsFactors = FALSE
-  )
-
-  # Check for UniProt accession in mapping table if available
-  if ("best_uniprot_acc" %in% names(plot_data)) {
-    clean_anno$UniProt <- sapply(as.character(plot_data$best_uniprot_acc), function(x) {
-      if (is.na(x) || x == "") return("")
-      if (grepl("\\|", x)) {
-        parts <- strsplit(as.character(x), "\\|")[[1]]
-        if (length(parts) >= 2) return(parts[2])
-      }
-      return(as.character(x))
-    })
-  } else {
-    clean_anno$UniProt <- gsub("^lcl\\|", "", as.character(plot_data$Protein.Ids))
-  }
-
-  # Add other display columns from display_columns argument
-  purrr::walk(display_columns, function(col) {
-    col_cln <- gsub("\\.", "_", col)
-    if (col %in% names(plot_data) && !(col_cln %in% names(clean_anno))) {
-      clean_anno[[col_cln]] <- as.character(plot_data[[col]])
-    }
-  })
-
-  clean_anno[is.na(clean_anno)] <- ""
-  rownames(clean_anno) <- as.character(plot_data$Protein.Ids)
-
-  # Unify stats and annotations into a single display_df for Glimma
-  display_df <- clean_anno |>
-    dplyr::mutate(
-      logFC = signif(as.numeric(plot_data$logFC), 4),
-      negLog10FDR = signif(as.numeric(plot_data$negLog10FDR), 4)
-    ) |>
-    dplyr::rename_with(~ gsub("[\\. ]", "_", .))
-
-  # Ensure Protein_Ids is first and IN the columns to display
-  if ("Protein_Ids" %in% names(display_df)) {
-    display_df <- display_df |> dplyr::relocate(Protein_Ids)
-  }
-
-  display_cols_final <- colnames(display_df)
-
-  # FINAL CLEANING for Glimma table stability
-  # Glimma table can fail if there are NAs or non-atomic types in the anno dataframe
-  logger::log_info("FINAL CLEANING for Glimma table stability")
-  display_df <- as.data.frame(display_df)
-  for (col in names(display_df)) {
-    display_df[[col]] <- as.character(display_df[[col]])
-    display_df[[col]][is.na(display_df[[col]])] <- ""
-  }
+  # Build only the annotation table actually passed to Glimma below.
 
   # 4. Prepare Final Data for Glimma
   # EXACT Pattern from PDI Working Workflow
@@ -384,7 +328,7 @@ generateProtDAVolcanoPlotGlimma <- function(
 
   # Sync counts_mat rows to plot_data exactly
   if (!is.null(counts_mat)) {
-    counts_mat <- counts_mat[as.character(plot_data$Protein.Ids), , drop = FALSE]
+    counts_mat <- counts_mat[as.character(plot_data[[args_row_id]]), , drop = FALSE]
   }
 
   logger::log_info(sprintf("   Glimma: Calling glimmaXY with %d proteins and %d samples",
@@ -417,7 +361,23 @@ generateProtDAVolcanoPlotGlimma <- function(
   # Using htmlwidgets::prependContent allows this to work in Shiny and standalone
   css_fix <- "<style> .dataTables_wrapper { overflow-x: auto !important; } .dataTables_scroll { display: table !important; width: auto !important; min-width: 100% !important; } .dataTables_scrollHead, .dataTables_scrollBody, .dataTables_scrollHeadInner, .dataTables_scrollHeadInner > table, .dataTables_scrollBody > table { display: contents !important; } .dataTables_scrollBody thead { display: none !important; } .dataTable th, .dataTable td { white-space: nowrap !important; } </style>"
   widget <- htmlwidgets::prependContent(widget, htmltools::HTML(css_fix))
+  widget <- deferProtGlimmaTableRows(widget)
 
   logger::log_info("--- Exiting generateProtDAVolcanoPlotGlimma ---")
   return(widget)
+}
+
+#' Defer creation of off-page Glimma table rows without changing its data.
+#' @param widget Existing Glimma widget, including its complete counts and annotations.
+#' @return Widget with a per-table rendering option; global defaults are unchanged.
+#' @noRd
+deferProtGlimmaTableRows <- function(widget) {
+  # Glimma appends the table synchronously, then initializes DataTables in jQuery
+  # ready. This hook runs between those operations; DataTables reads the attribute.
+  htmlwidgets::onRender(widget, "function(el) {
+    var tables = el.querySelectorAll('.controlContainer table');
+    for (var i = 0; i < tables.length; i++) {
+      tables[i].setAttribute('data-defer-render', 'true');
+    }
+  }")
 }

@@ -1,0 +1,1874 @@
+# DIA-025 experimental adapter. Ordinary WorkflowState remains unchanged.
+
+#' Mark an internal state-publication boundary for deterministic failure checks.
+#' @param phase Named boundary, never a scientific callback.
+#' @return NULL invisibly.
+#' @noRd
+diaStateBoundary <- function(phase) invisible(NULL)
+
+#' Observe an active ownership boundary without inspecting scientific payloads.
+#' @param context Existing private DIA owner.
+#' @param stage Fixed operation boundary label.
+#' @return NULL invisibly; the optional observer belongs to this session only.
+#' @noRd
+observeDIAOwnerBoundary <- function(context, stage) {
+    if (is.function(context$on_owner_boundary)) context$on_owner_boundary(stage)
+    invisible(NULL)
+}
+
+#' Prepare one record using the proven per-section runtime portability policy.
+#' @param record Complete legacy history record.
+#' @return Portable record with unchanged scientific data and worker counts.
+#' @noRd
+prepareDIAStateRecord <- function(record) {
+    if (!is.list(record) || is.null(names(record)) || anyDuplicated(names(record)) ||
+        !"data" %in% names(record)) {
+        cli::cli_abort("invalid DIA state record", class = "saved_entity_invalid")
+    }
+    record <- mapDIAStateConfig(record, function(config) {
+        for (section in names(config)) {
+            value <- config[[section]]
+            if (!is.list(value) || !inherits(value$core_utilisation, "multidplyr_cluster")) next
+            config[[section]] <- splitDIAWorkerConfig(stats::setNames(list(value), section))$config[[section]]
+        }
+        config
+    })
+    prepareDIAWorkflowHistory(list(state = record))[[1L]]
+}
+
+#' Save an immutable record through the existing checkpoint codec and limits.
+#' @param context Private adapter owner.
+#' @param value Complete record or small reference manifest.
+#' @param label Logical identity, not a filesystem path.
+#' @param codec Existing codec; scientific records use qs2.
+#' @return Accepted immutable descriptor.
+#' @noRd
+saveDIAStateValue <- function(context, value, label, codec = "qs2") {
+    checkWorkflowEntityStore(context$store)
+    observeDIAOwnerBoundary(context, paste0("save_begin:", label))
+    reference <- saveWorkflowCheckpoint(context$store, value,
+        basename(tempfile("dia-state-")),
+        list(input = context$store$identity$incarnation, design = "record-owned",
+            parameters = label, selectors = "complete-record",
+            software = as.character(utils::packageVersion("MultiScholaR"))),
+        list(class = class(value), shape = as.integer(dim(value)), factors = list()), codec = codec)
+    context$writes <- context$writes + 1L
+    releaseDIACheckpointFilePages(context, reference)
+    # A write's input is already owned by this action. Reuse it until delivery,
+    # rather than decoding a second copy immediately after serializing it.
+    if (context$scope_depth > 0L && identical(codec, "qs2")) {
+        assign(reference$entity_id, value, context$working)
+    }
+    observeDIAOwnerBoundary(context, paste0("save_complete:", label))
+    reference
+}
+
+#' Commit one metadata-only head after all its referenced records are durable.
+#' @param context Private adapter owner.
+#' @param snapshot References, topology and bounded metadata; never scientific values.
+#' @return NULL invisibly; earlier durable heads remain recoverable on failure.
+#' @noRd
+publishDIAStateHead <- function(context, snapshot) {
+    lease <- acquireWorkflowMutationLease(context$store)
+    on.exit(if (!is.null(lease)) filelock::unlock(lease), add = TRUE)
+    current <- workflowExecutionHead(context$store)
+    if (!is.null(context$head) && !identical(current, context$head))
+        cli::cli_abort("workflow head changed before mutation", class = "workflow_execution_stale")
+    reference <- saveDIAStateValue(context, snapshot, "state-head", codec = "rds")
+    temporary <- tempfile("dia-head-", tmpdir = context$store$directory)
+    saveRDS(reference, temporary, compress = FALSE, version = 3)
+    syncSavedWorkflowPaths(context$store, c(temporary, context$store$directory))
+    prepareWorkflowHeadAcceptance(context, reference)
+    diaStateBoundary("before_head_publication")
+    checkWorkflowEntityStore(context$store)
+    if (!file.rename(temporary, context$head_path)) {
+        cli::cli_abort("DIA state head publication failed", class = "saved_entity_write")
+    }
+    syncSavedWorkflowPaths(context$store, c(context$head_path, context$store$directory))
+    diaStateBoundary("after_head_publication")
+    context$snapshot <- snapshot
+    context$head <- reference
+    finishWorkflowHeadAcceptance(context)
+    if (is.function(context$on_commit)) context$on_commit()
+    invisible(NULL)
+}
+
+#' Resolve one record, sharing only within an explicitly owned action scope.
+#' @param context Private adapter owner.
+#' @param reference Immutable descriptor.
+#' @return Complete record; missing/corrupt payloads are errors.
+#' @noRd
+resolveDIAStateValue <- function(context, reference) {
+    checkWorkflowEntityStore(context$store)
+    key <- reference$entity_id
+    if (context$scope_depth > 0L && exists(key, context$working, inherits = FALSE)) {
+        return(get(key, context$working, inherits = FALSE))
+    }
+    value <- hydrateSavedWorkflowCheckpoint(context$store, reference)
+    releaseDIACheckpointFilePages(context, reference)
+    context$hydrates <- context$hydrates + 1L
+    if (context$scope_depth > 0L) assign(key, value, context$working)
+    value
+}
+
+#' Release pages of one consumed native-session checkpoint, never the file.
+#' @param context Current owner with a durably saved or validated/decoded record.
+#' @param reference That record's immutable descriptor.
+#' @return NULL invisibly; ordinary/legacy routes retain their existing I/O.
+#' @noRd
+releaseDIACheckpointFilePages <- function(context, reference) {
+    if (!identical(context$session_format, "native_v1")) return(invisible(NULL))
+    releaseDIANativeFileCache(file.path(context$store$directory, reference$payload$relative_path),
+        file.path(context$store$directory, "checkpoint-io.log"))
+    invisible(NULL)
+}
+
+#' Read the current checkpoint descriptor without loading its scientific data.
+#' @param manager Existing native or experimental state manager.
+#' @return Current immutable descriptor or NULL, without hydration.
+#' @noRd
+getDIACurrentReference <- function(manager) {
+    if (!inherits(manager, "DIAStateAdapter")) return(NULL)
+    manager$.context$snapshot$states[[manager$current_state]]
+}
+
+#' Identify the experimental component checkpoint path.
+#' @param manager Session-owned state adapter.
+#' @return TRUE only after explicit native DIA activation.
+#' @noRd
+usesDIAReferenceStates <- function(manager) {
+    inherits(manager, "DIAStateAdapter") && isTRUE(manager$.context$reference_states)
+}
+
+#' Obtain a checkpoint reference without loading its record or assay.
+#' @param manager Session owner.
+#' @param state_name Existing state name; NULL selects the current state.
+#' @return Immutable descriptor or NULL.
+#' @noRd
+getDIAStateReference <- function(manager, state_name = NULL) {
+    if (!inherits(manager, "DIAStateAdapter")) return(NULL)
+    if (is.null(state_name)) state_name <- manager$current_state
+    manager$.context$snapshot$states[[state_name]]
+}
+
+#' Recognize supported reference-backed checkpoint generations.
+#' @param value Decoded bounded checkpoint specification.
+#' @return TRUE for supported component metadata.
+#' @noRd
+isDIAComponentCheckpoint <- function(value) {
+    is.list(value) && isTRUE(value[["schema", exact = TRUE]] %in%
+        c("dia.component_checkpoint.v1", "dia.component_checkpoint.v2"))
+}
+
+#' Read only a component checkpoint's bounded record.
+#' @param manager Session owner.
+#' @param reference Immutable state descriptor.
+#' @return Record containing component descriptors, never an assay.
+#' @noRd
+readDIAStateMetadata <- function(manager, reference = NULL) {
+    if (is.null(reference)) reference <- getDIAStateReference(manager)
+    if (is.null(reference)) return(NULL)
+    if (!identical(reference$payload$codec, "rds") || reference$payload$bytes > 8388608) {
+        cli::cli_abort("state requires explicit legacy conversion", class = "saved_entity_unsupported")
+    }
+    record <- resolveDIAStateValue(manager$.context, reference)
+    if (!isDIAComponentCheckpoint(record$data)) {
+        cli::cli_abort("state has no component metadata", class = "saved_entity_corrupt")
+    }
+    spec <- record$data
+    required <- if (identical(spec$class, "PeptideQuantitativeData")) c("peptide_data", "design_matrix") else
+        if (identical(spec$class, "ProteinQuantitativeData")) c("protein_quant_table", "design_matrix") else NULL
+    if (is.null(required) || !all(required %in% names(spec$components)) ||
+        !all(vapply(spec$components[required], isSavedWorkflowReference, logical(1)))) {
+        cli::cli_abort("component checkpoint is incomplete", class = "saved_entity_corrupt")
+    }
+    record
+}
+
+#' Assemble one explicitly requested compatibility table using bounded reads.
+#' @param context Current owner.
+#' @param reference Table descriptor.
+#' @return Original data frame; intermediate batches are released on each iteration.
+#' @noRd
+materializeDIATable <- function(context, reference, selected_columns = NULL,
+    scope = NULL, relation = NULL, filter_column = NULL, filter_value = NULL) {
+    if (is.null(scope)) {
+        scope <- newWorkflowTableReadScope(context$store, reference,
+            reader = if (is.null(selected_columns)) "arrow" else "fastduckdb")
+        on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    }
+    metadata <- scope$metadata
+    predicate <- NULL
+    if (!is.null(relation)) {
+        quoted <- as.character(DBI::dbQuoteIdentifier(scope$connection, relation))
+        column <- as.character(DBI::dbQuoteIdentifier(scope$connection, filter_column))
+        filter_parameters <- as.list(filter_value[!is.na(filter_value)])
+        predicate <- if (length(filter_parameters) == 1L) paste0(column, " = ?") else
+            if (length(filter_parameters)) paste0(column, " IN (",
+                paste(rep("?", length(filter_parameters)), collapse = ","), ")") else "FALSE"
+        if (anyNA(filter_value)) predicate <- paste0("(", predicate, " OR ", column, " IS NULL)")
+        metadata$rows <- as.integer(DBI::dbGetQuery(scope$connection,
+            paste0("SELECT count(*) AS n FROM ", quoted, " WHERE ", predicate),
+            params = filter_parameters)$n)
+    }
+    if (is.null(selected_columns)) selected_columns <- metadata$columns
+    if (!is.character(selected_columns) || anyDuplicated(selected_columns) ||
+        !all(selected_columns %in% metadata$columns)) {
+        cli::cli_abort("invalid scientific table projection", class = "saved_entity_invalid")
+    }
+    metadata$columns <- selected_columns
+    metadata$column_metadata <- metadata$column_metadata[selected_columns]
+    columns <- lapply(metadata$column_metadata, \(spec) {
+        if (!is.null(spec$levels)) factor(rep(NA_character_, metadata$rows),
+            levels = spec$levels, ordered = isTRUE(spec$ordered)) else vector(spec$typeof, metadata$rows)
+    })
+    row_names <- if (isTRUE(metadata$automatic_row_names)) NULL else character(metadata$rows)
+    source_positions <- if (is.null(relation)) NULL else integer(metadata$rows)
+    if (!metadata$rows) {
+        for (name in intersect(names(metadata$name_columns), names(columns))) names(columns[[name]]) <- character()
+    }
+    blocks <- split(metadata$columns, ceiling(seq_along(metadata$columns) / 64L))
+    for (block in blocks) {
+    query <- if (is.null(relation)) NULL else paste0(
+        "SELECT \".multischolar_order\" AS \".source_order\", ",
+        paste(DBI::dbQuoteIdentifier(scope$connection,
+            workflowTableStorageColumns(scope$metadata, block)), collapse = ", "),
+        " FROM ", quoted, " WHERE ", predicate, " ORDER BY \".multischolar_order\"")
+    streamSavedWorkflowTable(scope, block, function(data, offset, source_names) {
+        if (!nrow(data)) return(invisible(NULL))
+        at <- seq.int(offset + 1L, offset + nrow(data))
+        for (name in names(data)) {
+            columns[[name]][at] <<- data[[name]]
+            if (name %in% names(metadata$name_columns)) names(columns[[name]])[at] <<- names(data[[name]])
+        }
+        if (!is.null(row_names)) row_names[at] <<- source_names
+        if (!is.null(source_positions)) source_positions[at] <<- attr(data, "dia_source_order")
+        invisible(NULL)
+    }, query = query, params = if (is.null(relation)) NULL else filter_parameters,
+        expected_rows = metadata$rows)
+    }
+    for (name in metadata$columns) {
+        spec <- metadata$column_metadata[[name]]
+        if (is.null(spec$levels) && length(spec$class)) class(columns[[name]]) <- spec$class
+        for (attribute in names(spec$attributes)) attr(columns[[name]], attribute) <- spec$attributes[[attribute]]
+        columns[[name]] <- restoreWorkflowAttributeOrder(columns[[name]], spec$attribute_order)
+    }
+    for (attribute in names(metadata$attributes)) attr(columns, attribute) <- metadata$attributes[[attribute]]
+    if (!is.null(row_names) && identical(metadata$row_index_type, "integer")) {
+        row_names <- as.integer(row_names)
+        if (anyNA(row_names)) cli::cli_abort("invalid integer row names", class = "saved_entity_corrupt")
+    }
+    attr(columns, "row.names") <- row_names %||% .set_row_names(metadata$rows)
+    class(columns) <- metadata$class
+    columns <- restoreWorkflowAttributeOrder(columns, metadata$attribute_order)
+    if (!is.null(source_positions)) attr(columns, "dia_source_order") <- source_positions
+    columns
+}
+
+#' Open only declared components for an existing R scientific kernel.
+#' @param manager Current session owner.
+#' @param reference Immutable component checkpoint; defaults to the selected state.
+#' @param fields Required scientific tables, never history or support ledgers.
+#' @param columns Optional named per-table projections.
+#' @return Transient S4 execution view carrying its immutable source descriptor.
+#' @noRd
+readDIAExecutionComponents <- function(manager, reference = NULL,
+    fields = c("protein_quant_table", "design_matrix", "protein_id_table"), columns = list()) {
+    if (is.null(reference)) reference <- getDIAStateReference(manager)
+    record <- readDIAStateMetadata(manager, reference)
+    spec <- record$data
+    slots <- spec$slots
+    for (field in names(spec$components)) {
+        component <- spec$components[[field]]
+        if (field %in% fields) {
+            slots[[field]] <- if (isWorkflowTableReference(component))
+                materializeDIATable(manager$.context, component, columns[[field]]) else
+                resolveDIAStateValue(manager$.context, component)
+        } else if (isWorkflowTableReference(component)) {
+            scope <- newWorkflowTableReadScope(manager$.context$store, component, metadata_only = TRUE)
+            slots[[field]] <- tryCatch(readSavedWorkflowTablePrototype(scope),
+                finally = releaseWorkflowTableReadScope(scope))
+        }
+    }
+    object <- do.call(methods::new, c(list(Class = spec$class), slots))
+    attr(object, "dia_component_source") <- reference
+    attr(object, "dia_execution_fields") <- intersect(fields, names(spec$components))
+    object
+}
+
+#' Persist a scientific result as reusable components and bounded metadata.
+#' @param manager Current owner.
+#' @param object Already-owned scientific result, never obtained via compatibility hydration.
+#' @return Component checkpoint specification for the existing state-head commit.
+#' @noRd
+checkpointDIAExecutionResult <- function(manager, object) {
+    context <- manager$.context
+    source <- attr(object, "dia_component_source", exact = TRUE)
+    previous <- if (isSavedWorkflowReference(source)) readDIAStateMetadata(manager, source)$data else NULL
+    slots <- stats::setNames(lapply(methods::slotNames(object),
+        \(field) methods::slot(object, field)), methods::slotNames(object))
+    rememberDIAWorkers(context, slots$args)
+    slots$args <- prepareDIAStateRecord(list(data = NULL, config = slots$args))$config
+    components <- previous$components %||% list()
+    components <- components[intersect(names(components), names(slots))]
+    support <- previous$support %||% list()
+    loaded <- attr(object, "dia_execution_fields", exact = TRUE)
+    for (field in names(slots)) {
+        value <- slots[[field]]
+        table <- is.data.frame(value) && ncol(value) > 0L
+        sizeable <- is.matrix(value) && length(value) > 0L
+        if (!table && !sizeable) next
+        if (!is.null(previous) && field %in% names(previous$components) &&
+            !field %in% loaded && !nrow(value)) {
+            slots[[field]] <- NULL
+            next
+        }
+        components[[field]] <- if (table) saveDIATableComponent(context, value) else
+            saveDIAStateValue(context, value, paste0("component:", field))
+        slots[[field]] <- NULL
+    }
+    for (section in names(slots$args)) {
+        values <- slots$args[[section]]
+        if (is.data.frame(values) && ncol(values) > 0L) {
+            support$.arguments[[section]] <- saveDIATableComponent(context, values)
+            slots$args[section] <- list(NULL)
+            next
+        }
+        if (!is.list(values) || is.data.frame(values)) next
+        if (!identical(values, previous$slots$args[[section]])) support[[section]] <- NULL
+        for (field in names(values)) {
+            value <- values[[field]]
+            if (!(is.data.frame(value) && ncol(value) > 0L) &&
+                as.numeric(object.size(value)) < 65536) next
+            support[[section]][[field]] <- if (is.data.frame(value) && ncol(value) > 0L)
+                saveDIATableComponent(context, value) else
+                saveDIAStateValue(context, value, paste0("support:", section, ":", field))
+            slots$args[[section]][field] <- list(NULL)
+        }
+    }
+    assay_field <- if (methods::is(object, "PeptideQuantitativeData")) "peptide_data" else
+        "protein_quant_table"
+    assay <- methods::slot(object, assay_field)
+    list(schema = "dia.component_checkpoint.v2", class = class(object)[[1L]],
+        slots = slots, components = components, support = support,
+        products = previous$products %||% list(),
+        dependencies = collectDIANativeReferences(list(source, previous$dependencies, previous$components,
+            previous$support, previous$products)),
+        dimensions = list(rows = nrow(assay), columns = names(assay),
+            samples = nrow(methods::slot(object, "design_matrix"))),
+        metadata = if (methods::is(object, "ProteinQuantitativeData"))
+            describeDIAProteinState(object) else NULL)
+}
+
+#' Resolve a protein scientific view while leaving public getState compatible.
+#' @param manager Current owner.
+#' @param state_name Optional state name.
+#' @return Transient quantities, annotations and design required by protein kernels.
+#' @noRd
+readDIAProteinScience <- function(manager, state_name = NULL) {
+    if (!usesDIAReferenceStates(manager)) return(if (is.null(state_name)) manager$getState() else manager$getState(state_name))
+    assertDIAExportReady(manager)
+    readDIAExecutionComponents(manager, getDIAStateReference(manager, state_name))
+}
+
+#' Carry an explicit scientific source across native kernels that construct a new S4.
+#' @param object Newly calculated protein object.
+#' @param manager,source Owning session and immutable input checkpoint.
+#' @return The transient result with component provenance, never a hydrated predecessor.
+#' @noRd
+inheritDIAExecutionSource <- function(object, manager, source) {
+    if (!usesDIAReferenceStates(manager)) return(object)
+    attr(object, "dia_component_source") <- source
+    attr(object, "dia_execution_fields") <- c("protein_quant_table", "design_matrix", "protein_id_table")
+    object
+}
+
+#' Reconstruct a complete legacy record only at a compatibility boundary.
+#' @param context Current owner.
+#' @param reference State descriptor.
+#' @return Original record and S4 data for public getState/history/export callers.
+#' @noRd
+materializeDIAStateRecord <- function(context, reference) {
+    record <- resolveDIAStateValue(context, reference)
+    if (isS4(record$data) || isDIAComponentCheckpoint(record$data)) {
+        context$full_s4_reads <- context$full_s4_reads + 1L
+    }
+    if (!isDIAComponentCheckpoint(record$data)) return(record)
+    spec <- record$data
+    slots <- spec$slots
+    for (field in names(spec$components)) {
+        component <- spec$components[[field]]
+        slots[[field]] <- if (isWorkflowTableReference(component))
+            materializeDIATable(context, component) else resolveDIAStateValue(context, component)
+    }
+    for (section in names(spec$support)) {
+        for (field in names(spec$support[[section]])) {
+            component <- spec$support[[section]][[field]]
+            value <- if (isWorkflowTableReference(component))
+                materializeDIATable(context, component) else resolveDIAStateValue(context, component)
+            if (section == ".arguments") slots$args[field] <- list(value) else
+                slots$args[[section]][field] <- list(value)
+        }
+    }
+    record$data <- do.call(methods::new, c(list(Class = spec$class), slots))
+    record
+}
+
+#' Commit a component result using the same durable state head and topology.
+#' @param manager Existing state owner.
+#' @param state_name,checkpoint,config,description Accepted scientific result and provenance.
+#' @param timestamp Original timestamp or the commit time.
+#' @return Immutable state reference.
+#' @noRd
+commitDIAReferenceState <- function(manager, state_name, checkpoint, config, description,
+    timestamp = Sys.time()) {
+    assertWorkflowController()
+    checkSavedEntityString(state_name, "state_name")
+    if (!usesDIAReferenceStates(manager) || !isDIAComponentCheckpoint(checkpoint)) {
+        cli::cli_abort("invalid component checkpoint", class = "saved_entity_scope")
+    }
+    context <- manager$.context
+    dependencies <- expandWorkflowTableReferences(context$store, collectDIANativeReferences(list(
+        checkpoint$components, checkpoint$support, checkpoint$products, checkpoint$dependencies)))
+    for (reference in dependencies) validateSavedWorkflowReference(context$store, reference, payload = FALSE)
+    native <- context$native
+    native$current_state <- context$snapshot$current_state
+    native$state_history <- context$snapshot$state_history
+    on.exit({ native$states <- native$audit_records <- list() }, add = TRUE)
+    native$saveState(state_name, NULL, config, description)
+    record <- native$states[[state_name]]
+    record$timestamp <- timestamp
+    record$data <- checkpoint
+    record$s4_class <- checkpoint$class
+    if (as.numeric(object.size(record)) > 8388608) {
+        cli::cli_abort("component checkpoint metadata exceeds limits", class = "saved_entity_limit")
+    }
+    reference <- saveDIAStateValue(context, record, state_name, codec = "rds")
+    snapshot <- context$snapshot
+    for (field in intersect(c("iq_output_file", "peptide_input_file"), names(config))) {
+        path <- config[[field]]
+        if (is.character(path) && length(path) == 1L && !is.na(path)) {
+            dependency <- c(list(source = path,
+                destination = paste("execution", field, basename(path), sep = "/")), describeDIANativeFile(path))
+            snapshot$file_dependencies[[field]] <- dependency
+            snapshot$file_dependencies[[paste0(field, "_", substr(reference$entity_id, 1L, 16L))]] <- dependency
+        }
+    }
+    snapshot$states[[state_name]] <- reference
+    snapshot$component_dependencies[[state_name]] <- dependencies
+    snapshot$reference_states <- TRUE
+    if (!is.null(checkpoint$metadata)) snapshot$state_metadata[[state_name]] <- checkpoint$metadata
+    snapshot$current_state <- state_name
+    snapshot$state_history <- native$state_history
+    snapshot$sizes[[state_name]] <- list(rows = checkpoint$dimensions$rows,
+        columns = length(checkpoint$dimensions$columns),
+        note = "component dimensions; no assay hydration or R heap-size estimate")
+    publishDIAStateHead(context, snapshot)
+    if (is.function(context$store$progress)) context$store$progress(
+        paste0("commit:", state_name), 1, 1, reference$entity_id, "checkpoint")
+    reference
+}
+
+#' Persist or reuse an exact DIA table component in the existing registry.
+#' @param context Current owner.
+#' @param table Complete table already owned by a parser or scientific operation.
+#' @return Table descriptor, never a second resident table owner.
+#' @noRd
+saveDIATableComponent <- function(context, table) {
+    table <- prepareDIAParserTable(table)
+    metadata <- workflowSavedTableMetadata(table, ".rownames", 3L)
+    # Equivalent attribute orders and ALTREP representations have the same
+    # scientific values. Hash the codec contract and individual column values.
+    column_hashes <- vapply(table, function(value) {
+        element_names <- names(value)
+        if (!is.null(attributes(value))) attributes(value) <- NULL
+        digest::digest(list(value = value, names = element_names), algo = "sha256", serializeVersion = 2L)
+    }, character(1))
+    content <- digest::digest(list(metadata = metadata, columns = column_hashes,
+        row_names = if (isTRUE(metadata$automatic_row_names)) NULL else rownames(table)),
+        algo = "sha256", serializeVersion = 2L)
+    identity <- newSavedWorkflowScientificIdentity(content,
+        "component-owned", "DIA-table-codec-v2", "all-ordered-rows-and-columns", context$software)
+    hit <- resolveSavedWorkflowEntity(context$store, "result_table", identity, hydrate = FALSE)
+    if (identical(hit$status, "hit")) return(hit$reference)
+    reference <- saveWorkflowTable(context$store, table, basename(tempfile("dia-table-")),
+        identity, ".rownames", metadata_version = 3L)
+    context$writes <- context$writes + 1L
+    reference
+}
+
+#' Apply existing design renames, selection and numeric conversion to saved rows.
+#' @param manager,reference Current owner and immutable assay table.
+#' @param samples Ordered design sample names, or NULL for no selection.
+#' @param rename Named original-to-new sample names, applied in their given order.
+#' @param numeric_columns Existing DIA quantities requiring numeric conversion.
+#' @param strip_parser Match the design builder's existing dplyr reconstruction.
+#' @return New table reference, or the unchanged reference when nothing changes.
+#' @noRd
+transformDIADesignTable <- function(manager, reference, samples = NULL, rename = NULL,
+    numeric_columns = character(), strip_parser = FALSE) {
+    context <- manager$.context
+    identity <- newSavedWorkflowScientificIdentity(reference$entity_id,
+        digest::digest(samples, algo = "sha256"),
+        digest::digest(list(rename, numeric_columns, strip_parser), algo = "sha256"),
+        "DIA-design-ordered-transform", context$software)
+    hit <- resolveSavedWorkflowEntity(context$store, "result_table", identity, hydrate = FALSE)
+    if (identical(hit$status, "hit")) return(hit$reference)
+    if (is.null(samples) && !length(rename) && !length(numeric_columns) && !strip_parser) {
+        validateSavedWorkflowReference(context$store, reference, payload = FALSE)
+        return(reference)
+    }
+    scope <- newWorkflowTableReadScope(context$store, reference, reader = "arrow", metadata_only = TRUE)
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    metadata <- scope$metadata
+    if (!all(numeric_columns %in% metadata$columns))
+        cli::cli_abort("design conversion column is missing", class = "saved_entity_invalid")
+    numeric_columns <- numeric_columns[!vapply(numeric_columns, function(name) {
+        column <- metadata$column_metadata[[name]]
+        identical(column$typeof, "double") && identical(column$class, "numeric") &&
+            !length(column$attributes) && !name %in% names(metadata$name_columns)
+    }, logical(1))]
+    if (length(rename)) {
+        same <- !is.na(rename) & !is.na(names(rename)) & unname(rename) == names(rename)
+        rename <- rename[!same]
+    }
+    if (strip_parser && identical(metadata$class, c("spec_tbl_df", "tbl_df", "tbl", "data.frame"))) {
+        metadata$class <- c("tbl_df", "tbl", "data.frame")
+        metadata$attributes[c("spec", "problems")] <- NULL
+        if (!is.null(metadata$attribute_order)) metadata$attribute_order <-
+            c("names", "row.names", "class", names(metadata$attributes))
+    }
+    if (!is.null(samples) && !length(rename)) {
+        imported <- getDIAImportMetadata(manager)
+        if (identical(imported$reference_id, scope$physical_reference$entity_id)) {
+            observed <- as.character(imported$samples$Run)
+        } else {
+            releaseWorkflowTableReadScope(scope)
+            scope <- newWorkflowTableReadScope(context$store, reference, reader = "arrow")
+            observed <- character()
+            streamSavedWorkflowTable(scope, "Run", function(data, offset, row_names) {
+                observed <<- unique(c(observed, as.character(data$Run)))
+                if (as.numeric(object.size(observed)) > 8388608)
+                    cli::cli_abort("sample catalogue exceeds metadata limits", class = "saved_entity_limit")
+            })
+        }
+        if (all(observed %in% as.character(samples))) samples <- NULL
+    }
+    if (is.null(samples) && !length(rename) && !length(numeric_columns)) {
+        result <- saveWorkflowTableComponent(scope, metadata, basename(tempfile("dia-design-metadata-")), identity)
+        return(result)
+    }
+    releaseWorkflowTableReadScope(scope)
+    scope <- newWorkflowTableReadScope(context$store, reference, reader = "arrow")
+    if (!metadata$schema %in% c(2L, 3L))
+        cli::cli_abort("design streaming requires the component table codec", class = "saved_entity_unsupported")
+    metadata$schema <- 3L
+    metadata$codec <- "parquet_duckdb_v3"
+    metadata$rows <- NULL
+    metadata$name_columns <- metadata$name_columns[setdiff(names(metadata$name_columns), numeric_columns)]
+    for (column in numeric_columns) metadata$column_metadata[[column]] <- list(
+        typeof = "double", class = "numeric", levels = NULL, ordered = FALSE, attributes = list())
+    result <- saveWorkflowTable(context$store, NULL, basename(tempfile("dia-design-")),
+        identity, metadata$key_column, metadata = metadata, write_fn = function(path, restoration) {
+            writer <- openWorkflowTableWriter(path, restoration, context$store$progress)
+            on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+            streamWorkflowTableRows(scope, scope$metadata$columns, function(data, offset, row_names) {
+                for (index in seq_along(rename)) {
+                    selected <- !is.na(data$Run) & data$Run == names(rename)[[index]]
+                    data$Run[selected] <- unname(rename[[index]])
+                }
+                for (column in numeric_columns) data[[column]] <- suppressWarnings(as.numeric(data[[column]]))
+                keep <- if (is.null(samples)) seq_len(nrow(data)) else which(data$Run %in% samples)
+                appendWorkflowTableWriter(writer, data, keep)
+            })
+            finishWorkflowTableWriter(writer)
+        })
+    context$writes <- context$writes + 1L
+    result
+}
+
+#' Stream the required cleaned-data TSV from the accepted table.
+#' @param manager,reference Current owner and table.
+#' @param path Existing design artifact destination.
+#' @return Destination invisibly, after all batches and the database lease close.
+#' @noRd
+writeDIADesignTable <- function(manager, reference, path, write_fn = NULL) {
+    scope <- newWorkflowTableReadScope(manager$.context$store, reference,
+        reader = if (reference$metadata$shape[[2L]] > 64L) "duckdb" else "arrow")
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    temporary <- tempfile(".data-cln-", tmpdir = dirname(path))
+    on.exit(unlink(temporary), add = TRUE)
+    output_owner <- list2env(list(path = temporary, advised_bytes = 0), parent = emptyenv())
+    consume <- function(data, offset, row_names) {
+        if (is.null(write_fn)) {
+            utils::write.table(data, file = temporary, sep = "\t", row.names = FALSE, quote = FALSE,
+                col.names = offset == 0L, append = offset != 0L)
+        } else write_fn(data, temporary, append = offset > 0L, col_names = offset == 0L)
+        releaseWorkflowWrittenPrefix(output_owner)
+    }
+    streamWorkflowTableRows(scope, scope$metadata$columns, consume)
+    syncWorkflowExportPaths(temporary, dirname(path))
+    releaseWorkflowWrittenPrefix(output_owner, final = TRUE)
+    if (!file.rename(temporary, path)) cli::cli_abort("cannot publish cleaned table", class = "saved_entity_write")
+    syncWorkflowExportPaths(c(path, dirname(path)), dirname(path))
+    invisible(path)
+}
+
+#' Read only the distinct protein identifiers needed by design annotations.
+#' @param manager,reference Current owner and accepted table.
+#' @param column Declared protein identifier column.
+#' @return Small projected identifier table in first-observed order.
+#' @noRd
+readDIAAnnotationIdentifiers <- function(manager, reference, column) {
+    scope <- newWorkflowTableReadScope(manager$.context$store, reference, reader = "arrow")
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    values <- readSavedWorkflowTablePrototype(scope)[[column]]
+    streamSavedWorkflowTable(scope, column, function(data, offset, row_names) {
+        incoming <- data[[column]]
+        at <- which(!duplicated(incoming) & is.na(match(incoming, values)))
+        values <<- c(values, incoming[at])
+        if (length(values) > 10000L || as.numeric(object.size(values)) > 67108864)
+            cli::cli_abort("annotation identifiers exceed read limits", class = "saved_entity_limit")
+    })
+    result <- stats::setNames(list(values), column)
+    attr(result, "row.names") <- .set_row_names(length(values))
+    class(result) <- "data.frame"
+    metadata <- scope$metadata
+    metadata$columns <- column
+    metadata$column_metadata <- metadata$column_metadata[column]
+    metadata$name_columns <- metadata$name_columns[intersect(names(metadata$name_columns), column)]
+    result <- completeWorkflowTableBatch(result, metadata)
+    attr(result, "row.names") <- .set_row_names(length(values))
+    result
+}
+
+#' Create the initial peptide checkpoint from a saved assay and a small design.
+#' @param manager Current owner.
+#' @param reference Parsed and selected assay table.
+#' @param design,args Existing design and effective configuration.
+#' @return Component checkpoint specification; no assay payload is reconstructed.
+#' @noRd
+newDIAPeptideCheckpoint <- function(manager, reference, design, args) {
+    context <- manager$.context
+    scope <- newWorkflowTableReadScope(context$store, reference, metadata_only = TRUE)
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    empty <- readSavedWorkflowTablePrototype(scope)
+    rememberDIAWorkers(context, args)
+    args <- prepareDIAStateRecord(list(data = NULL, config = args))$config
+    prototype <- PeptideQuantitativeDataDiann(empty, design,
+        technical_replicate_id = "tech_rep_group", args = args)
+    slots <- stats::setNames(lapply(methods::slotNames(prototype),
+        \(name) methods::slot(prototype, name)), methods::slotNames(prototype))
+    slots[c("peptide_data", "design_matrix")] <- NULL
+    list(schema = "dia.component_checkpoint.v2", class = "PeptideQuantitativeData",
+        slots = slots, components = list(peptide_data = reference,
+            design_matrix = saveDIATableComponent(context, design)), support = list(),
+        dimensions = list(rows = scope$metadata$rows, columns = scope$metadata$columns))
+}
+
+#' Select a saved state without invoking the public materializing Revert result.
+#' @param manager Existing owner.
+#' @param state_name Existing state name.
+#' @return Selected descriptor, or the ordinary legacy result on other routes.
+#' @noRd
+selectDIAStateReference <- function(manager, state_name) {
+    if (!usesDIAReferenceStates(manager)) return(manager$revertToState(state_name))
+    reference <- getDIAStateReference(manager, state_name)
+    if (is.null(reference)) cli::cli_abort("state does not exist", class = "saved_entity_missing")
+    snapshot <- manager$.context$snapshot
+    index <- match(state_name, unlist(snapshot$state_history))
+    if (is.na(index)) cli::cli_abort("state is outside selected history", class = "saved_entity_scope")
+    snapshot$state_history <- snapshot$state_history[seq_len(index)]
+    snapshot$current_state <- state_name
+    publishDIAStateHead(manager$.context, snapshot)
+    reference
+}
+
+#' Release a consumed predecessor after its successor is durably current.
+#' @param manager Existing native or experimental state manager.
+#' @param reference Immutable predecessor descriptor captured before the action.
+#' @return TRUE invisibly if its working binding was removed; no durable data changes.
+#' @noRd
+releaseDIAWorkingReference <- function(manager, reference) {
+    if (!inherits(manager, "DIAStateAdapter") || is.null(reference)) return(invisible(FALSE))
+    context <- manager$.context
+    checkWorkflowEntityStore(context$store)
+    if (!isSavedWorkflowReference(reference) || !identical(reference$owner, context$store$identity)) {
+        cli::cli_abort("consumed DIA reference has a different owner", class = "saved_entity_scope")
+    }
+    current <- context$snapshot$states[[context$snapshot$current_state]]
+    key <- reference$entity_id
+    # A failed commit or same-generation call must not evict the active input.
+    if (identical(key, current$entity_id) || !exists(key, context$working, inherits = FALSE)) {
+        return(invisible(FALSE))
+    }
+    rm(list = key, envir = context$working)
+    observeDIAOwnerBoundary(context, "consumed_reference_released")
+    invisible(TRUE)
+}
+
+#' Materialize a legacy list explicitly, never for ordinary GUI metadata checks.
+#' @param context Private adapter owner.
+#' @param share_immutable Reuse exactly equal immutable tables within an export.
+#' @return Ordinary complete list with original names and records.
+#' @noRd
+materializeDIAStates <- function(context, share_immutable = FALSE) {
+    context$full_reads <- context$full_reads + 1L
+    tables <- list()
+    if (share_immutable) context$export_shared_tables <- 0L
+    lapply(context$snapshot$states, function(reference) {
+        record <- materializeDIAStateRecord(context, reference)
+        if (!share_immutable || !isS4(record$data)) return(record)
+        for (field in intersect(c("peptide_data", "protein_quant_table", "design_matrix",
+            "protein_id_table"), methods::slotNames(record$data))) {
+            table <- methods::slot(record$data, field)
+            if (hasMutableWorkflowEntityOwner(table)) next
+            previous <- tables[[field]]
+            matches <- which(vapply(previous, \(value)
+                identical(dim(value), dim(table)) && identical(value, table), logical(1)))
+            if (length(matches)) {
+                methods::slot(record$data, field) <- previous[[matches[[1L]]]]
+                context$export_shared_tables <- context$export_shared_tables + 1L
+            } else tables[[field]] <<- c(previous, list(table))
+        }
+        # Replace, rather than additionally retain, the export's decoded copy.
+        if (context$scope_depth > 0L) assign(reference$entity_id, record, context$working)
+        record
+    })
+}
+
+#' Persist a whole public history replacement before accepting any of it.
+#' @param context Private adapter owner.
+#' @param records Ordinary complete legacy list, including the empty list.
+#' @param topology Optional already validated current/history fields for atomic session restore.
+#' @return NULL invisibly; current/history fields retain normal separate-assignment semantics.
+#' @noRd
+replaceDIAStates <- function(context, records, topology = NULL) {
+    if (!is.list(records) || length(records) &&
+        (is.null(names(records)) || anyNA(names(records)) || any(!nzchar(names(records))) ||
+            anyDuplicated(names(records)))) {
+        cli::cli_abort("invalid DIA history replacement", class = "saved_entity_invalid")
+    }
+    snapshot <- context$snapshot
+    references <- lapply(names(records), function(name) {
+        saveDIAStateValue(context, prepareDIAStateRecord(records[[name]]), name)
+    })
+    snapshot$states <- stats::setNames(references, names(records))
+    if (!is.null(topology)) snapshot[names(topology)] <- topology
+    publishDIAStateHead(context, snapshot)
+    invisible(NULL)
+}
+
+#' Create the experimental compatible state facade over the original R6 bookkeeping.
+#' @param store Existing project-owned store with zero optional payload cache.
+#' @param native Ordinary WorkflowState; newly constructed by default.
+#' @param reopen Read this store's previously accepted private head when TRUE.
+#' @return Internal state facade; complete legacy exports, not this environment, are portable.
+#' @noRd
+newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
+    checkWorkflowEntityStore(store)
+    if (store$max_cache_bytes != 0 || !is.logical(reopen) || length(reopen) != 1L || is.na(reopen)) {
+        cli::cli_abort("invalid DIA state adapter policy", class = "saved_entity_invalid")
+    }
+    if (is.null(native)) native <- WorkflowState$new()
+    context <- new.env(parent = emptyenv())
+    context$store <- store
+    context$native <- native
+    context$head_path <- file.path(store$directory, "dia-state-head.rds")
+    context$head <- NULL
+    context$working <- new.env(parent = emptyenv())
+    context$scope_depth <- 0L
+    context$on_owner_boundary <- NULL
+    context$reclaim_enabled <- FALSE
+    context$input_file_leases <- list()
+    context$input_files_ready <- FALSE
+    context$reclaim_pending <- context$reclaim_last <- context$reclaim_result <- NULL
+    context$borrowed_workers <- context$owned_workers <- list()
+    context$writes <- context$hydrates <- context$full_reads <- 0L
+    context$full_s4_reads <- 0L
+    binary <- system.file("R", "MultiScholaR.rdb", package = "MultiScholaR")
+    context$software <- if (nzchar(binary)) digest::digest(file = binary, algo = "sha256") else
+        digest::digest(list(as.character(utils::packageVersion("MultiScholaR")),
+            body(newDIAStateAdapter)), algo = "sha256")
+    producer_packages <- c("iq", "limma", "ruv", "mixOmics", "qvalue", "matrixStats", "statmod",
+        "dplyr", "tidyr", "arrow", "duckdb", "ggplot2", "gridExtra", "ComplexHeatmap", "dynamicTreeCut", "Glimma")
+    versions <- stats::setNames(lapply(producer_packages, function(package) {
+        tryCatch(as.character(utils::packageVersion(package)), error = function(error) NA_character_)
+    }), producer_packages)
+    context$software <- digest::digest(list(package_binary = context$software,
+        native_libraries = workflowNativeLibraryIdentity(), R = R.version[c("major", "minor", "platform")], producer_packages = versions,
+        numerical_libraries = extSoftVersion()[intersect(c("BLAS", "LAPACK"), names(extSoftVersion()))]), algo = "sha256")
+    context$snapshot <- list(identity = store$identity, states = list(), audit = list(),
+        current_state = native$current_state, state_history = native$state_history,
+        workflow_type = native$workflow_type, audit_enabled = native$audit_enabled)
+    if (isTRUE(reopen)) {
+        if (!file.exists(context$head_path) || file.size(context$head_path) > 65536) {
+            cli::cli_abort("DIA state head is missing or oversized", class = "saved_entity_missing")
+        }
+        context$head <- readRDS(context$head_path)
+        snapshot <- resolveDIAStateValue(context, context$head)
+        if (!identical(snapshot$identity, store$identity) || !is.list(snapshot$states) ||
+            !is.list(snapshot$audit) || !(is.list(snapshot$state_history) ||
+                is.character(snapshot$state_history))) {
+            cli::cli_abort("DIA state head identity differs", class = "saved_entity_scope")
+        }
+        context$snapshot <- snapshot
+        context$reference_states <- isTRUE(snapshot$reference_states)
+        # Rebuild only the bounded index from accepted roots, never from orphan stages.
+        for (reference in collectDIANativeReferences(list(context$head, snapshot))) {
+            registerSavedWorkflowMetadata(store, reference)
+        }
+        snapshot <- NULL
+    } else {
+        if (file.exists(context$head_path)) {
+            cli::cli_abort("DIA state head already exists; reopen explicitly", class = "saved_entity_conflict")
+        }
+        replaceDIAStates(context, native$states)
+        if (length(native$audit_records)) {
+            snapshot <- context$snapshot
+            snapshot$audit <- lapply(native$audit_records, \(record) list(reference =
+                saveDIAStateValue(context, record, "audit"), field = NULL))
+            publishDIAStateHead(context, snapshot)
+            snapshot <- NULL
+        }
+    }
+    native$states <- native$audit_records <- list()
+    adapter <- new.env(parent = emptyenv())
+    class(adapter) <- c("DIAStateAdapter", "environment")
+    adapter$.context <- context
+    makeActiveBinding("states", function(value) {
+        if (missing(value)) return(materializeDIAStates(context))
+        replaceDIAStates(context, value)
+    }, adapter)
+    for (field in c("current_state", "state_history", "workflow_type", "audit_enabled")) {
+        bindDIAStateMetadata(adapter, context, field)
+    }
+    makeActiveBinding("audit_records", function(value) {
+        if (missing(value)) return(adapter$getAuditRecords())
+        if (!is.list(value)) cli::cli_abort("invalid DIA audit replacement", class = "saved_entity_invalid")
+        snapshot <- context$snapshot
+        snapshot$audit <- lapply(value, \(record) list(reference =
+            saveDIAStateValue(context, record, "audit"), field = NULL))
+        publishDIAStateHead(context, snapshot)
+    }, adapter)
+    adapter$getState <- function(state_name = NULL) {
+        if (is.null(state_name)) state_name <- context$snapshot$current_state
+        reference <- context$snapshot$states[[state_name]]
+        if (is.null(reference)) return(NULL)
+        materializeDIAStateRecord(context, reference)$data
+    }
+    adapter$saveState <- function(state_name, s4_data_object, config_object, description,
+        audit_metadata = NULL) {
+        if (usesDIAReferenceStates(adapter) && isS4(s4_data_object)) {
+            checkpoint <- checkpointDIAExecutionResult(adapter, s4_data_object)
+            return(invisible(commitDIAReferenceState(adapter, state_name, checkpoint,
+                config_object, description)))
+        }
+        saveDIAStateRecord(context, state_name, s4_data_object, config_object, description, audit_metadata)
+    }
+    adapter$revertToState <- function(state_name) {
+        if (!is.null(context$store$execution_owner)) cancelWorkflowAction(context$store$execution_owner, "reverted")
+        reference <- context$snapshot$states[[state_name]]
+        if (is.null(reference)) stop("State not found: ", state_name)
+        record <- materializeDIAStateRecord(context, reference)
+        snapshot <- context$snapshot
+        index <- which(snapshot$state_history == state_name)
+        snapshot$state_history <- snapshot$state_history[1:index]
+        snapshot$current_state <- state_name
+        publishDIAStateHead(context, snapshot)
+        record$data
+    }
+    adapter$getHistory <- function() unlist(context$snapshot$state_history)
+    adapter$getStateAudit <- function(state_name = NULL) {
+        if (is.null(state_name)) state_name <- context$snapshot$current_state
+        reference <- context$snapshot$states[[state_name]]
+        metadata <- if (!is.null(reference)) resolveDIAStateValue(context, reference)$audit_metadata
+        if (is.null(metadata)) list(provenance_status = "legacy_untracked_state") else metadata
+    }
+    adapter$getAuditRecords <- function() lapply(context$snapshot$audit, function(entry) {
+        value <- resolveDIAStateValue(context, entry$reference)
+        if (is.null(entry$field)) value else value[[entry$field]]
+    })
+    adapter$setWorkflowType <- function(type) {
+        if (!identical(type, "DIA")) {
+            cli::cli_abort("experimental saved state requires DIA IQ", class = "saved_entity_scope")
+        }
+        adapter$workflow_type <- type
+    }
+    adapter
+}
+
+#' Bind one scalar/topology field without capturing an assay-bearing call frame.
+#' @param adapter,context Facade and private owner.
+#' @param field Exact existing public metadata field.
+#' @return NULL invisibly.
+#' @noRd
+bindDIAStateMetadata <- function(adapter, context, field) {
+    force(field)
+    makeActiveBinding(field, function(value) {
+        if (missing(value)) return(context$snapshot[[field]])
+        if (field == "state_history" && !(is.list(value) || is.character(value)) ||
+            field == "audit_enabled" && (!is.logical(value) || length(value) != 1L || is.na(value)) ||
+            field %in% c("current_state", "workflow_type") &&
+                (!is.character(value) || length(value) != 1L || is.na(value))) {
+            cli::cli_abort("invalid DIA state metadata", class = "saved_entity_invalid")
+        }
+        snapshot <- context$snapshot
+        snapshot[[field]] <- value
+        publishDIAStateHead(context, snapshot)
+    }, adapter)
+    invisible(NULL)
+}
+
+#' Reuse native state bookkeeping, persisting before the facade advances.
+#' @param context Private owner.
+#' @param state_name,s4_data_object,config_object,description,audit_metadata Existing saveState inputs.
+#' @return NULL invisibly.
+#' @noRd
+saveDIAStateRecord <- function(context, state_name, s4_data_object, config_object, description,
+    audit_metadata = NULL) {
+    checkSavedEntityString(state_name, "state_name")
+    checkWorkflowEntityStore(context$store)
+    native <- context$native
+    snapshot <- context$snapshot
+    native$current_state <- snapshot$current_state
+    native$state_history <- snapshot$state_history
+    native$audit_enabled <- snapshot$audit_enabled
+    on.exit({ native$states <- native$audit_records <- list() }, add = TRUE)
+    native$saveState(state_name, s4_data_object, config_object, description, audit_metadata)
+    if (isS4(s4_data_object)) rememberDIAWorkers(context, methods::slot(s4_data_object, "args"))
+    rememberDIAWorkers(context, config_object)
+    record <- prepareDIAStateRecord(native$states[[state_name]])
+    reference <- saveDIAStateValue(context, record, state_name)
+    snapshot$states[[state_name]] <- reference
+    dependency_fields <- if (identical(context$session_format, "native_v1"))
+        intersect(c("iq_output_file", "peptide_input_file"), names(record$config)) else character()
+    for (field in dependency_fields) {
+        path <- record$config[[field]]
+        if (is.character(path) && length(path) == 1L && !is.na(path)) {
+            description <- describeDIANativeFile(path)
+            snapshot$file_dependencies[[field]] <- c(list(source = path,
+                destination = paste("execution", field, basename(path), sep = "/")), description)
+        }
+    }
+    if (isS4(record$data)) {
+        field <- if (methods::is(record$data, "PeptideQuantitativeData")) "peptide_data" else "protein_quant_table"
+        table <- methods::slot(record$data, field)
+        snapshot$sizes[[state_name]] <- list(s4_object_size_bytes = as.numeric(object.size(record$data)),
+            table_object_size_bytes = as.numeric(object.size(table)), rows = nrow(table), columns = ncol(table),
+            note = "object.size of owned values, not unique whole-process heap or RSS")
+        if (methods::is(record$data, "ProteinQuantitativeData")) {
+            snapshot$state_metadata[[state_name]] <- describeDIAProteinState(record$data)
+        }
+    }
+    snapshot$current_state <- native$current_state
+    snapshot$state_history <- native$state_history
+    id <- record$audit_metadata$record_id
+    if (!is.null(id)) snapshot$audit[[id]] <- list(reference = reference, field = "audit_metadata")
+    publishDIAStateHead(context, snapshot)
+    invisible(NULL)
+}
+
+#' Capture export scalars while the accepted protein state is already available.
+#' @param object Existing protein S4; no new assay read is performed.
+#' @return Plain bounded metadata, never a table, worker or model.
+#' @noRd
+describeDIAProteinState <- function(object) {
+    args <- methods::slot(object, "args")
+    global <- args$globalParameters
+    table <- methods::slot(object, "protein_quant_table")
+    text <- function(value) if (is.character(value) && length(value) == 1L && !is.na(value)) value else NULL
+    list(proteins = length(unique(table[[methods::slot(object, "protein_id_column")]])),
+        samples = nrow(methods::slot(object, "design_matrix")),
+        workflow_type = text(global$workflow_type), report_template = text(global$report_template),
+        use_limpa = isTRUE(global$use_limpa) || !is.null(args$proteinMissingValueImputationLimpa) ||
+            !is.null(args$limpa_dpc_quant_results))
+}
+
+#' Run one action/export with a scoped decode map, released even on failure.
+#' @param manager Native or experimental state manager.
+#' @param operation Zero-argument existing action.
+#' @return The operation's original result.
+#' @noRd
+withDIAStateScope <- function(manager, operation) {
+    if (!inherits(manager, "DIAStateAdapter")) return(operation())
+    context <- manager$.context
+    checkWorkflowEntityStore(context$store)
+    action <- beginWorkflowTableAction(context$store)
+    on.exit(endWorkflowTableAction(context$store, action), add = TRUE)
+    context$scope_depth <- context$scope_depth + 1L
+    completed <- FALSE
+    on.exit({
+        if (!completed) context$reclaim_pending <- NULL
+        context$scope_depth <- if (isTRUE(context$store$closed)) 0L else context$scope_depth - 1L
+        if (context$scope_depth == 0L) {
+            tryCatch(observeDIAOwnerBoundary(context, "operation_release"),
+                finally = { context$working <- new.env(parent = emptyenv()) })
+            observeDIAOwnerBoundary(context, "operation_released")
+        }
+    }, add = TRUE)
+    observeDIAOwnerBoundary(context, "operation_enter")
+    result <- withVisible(operation())
+    completed <- TRUE
+    if (result$visible) result$value else invisible(result$value)
+}
+
+#' Read one legacy record without materializing the complete history.
+#' @param manager Native or experimental state manager.
+#' @param name Requested logical state.
+#' @return Complete record or NULL, as ordinary list extraction would return.
+#' @noRd
+getDIAStateRecord <- function(manager, name) {
+    if (!inherits(manager, "DIAStateAdapter")) return(manager$states[[name]])
+    reference <- manager$.context$snapshot$states[[name]]
+    if (is.null(reference)) return(NULL)
+    materializeDIAStateRecord(manager$.context, reference)
+}
+
+#' Inspect existence without triggering full-list compatibility hydration.
+#' @param manager Native or experimental state manager.
+#' @param name Logical state.
+#' @return TRUE if a record exists, including an inactive branch record.
+#' @noRd
+hasDIAState <- function(manager, name) {
+    if (!inherits(manager, "DIAStateAdapter")) return(!is.null(manager$states[[name]]))
+    !is.null(manager$.context$snapshot$states[[name]])
+}
+
+#' Report bounded ownership counters without hydrating history.
+#' @param manager Experimental state manager.
+#' @return Scalar counts and store information; not a whole-heap census.
+#' @noRd
+diaStateOwnership <- function(manager) {
+    context <- manager$.context
+    list(states = length(context$snapshot$states), audits = length(context$snapshot$audit),
+        state_sizes = context$snapshot$sizes,
+        working_records = length(ls(context$working, all.names = TRUE)),
+        native_records = length(context$native$states), native_audits = length(context$native$audit_records),
+        writes = context$writes, hydrates = context$hydrates, full_reads = context$full_reads,
+        full_s4_reads = context$full_s4_reads, reference_states = isTRUE(context$reference_states),
+        component_states = length(context$snapshot$component_dependencies),
+        store = workflowEntityCacheInfo(context$store))
+}
+
+#' Release the internal adapter without deleting accepted files or other owners.
+#' @param manager Experimental state manager.
+#' @return NULL invisibly.
+#' @noRd
+closeDIAStateAdapter <- function(manager) {
+    if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
+    context <- manager$.context
+    for (cancel in context$callbacks) if (is.function(cancel)) cancel()
+    context$callbacks <- list()
+    context$on_commit <- NULL
+    context$on_owner_boundary <- NULL
+    context$reclaim_enabled <- FALSE
+    context$reclaim_pending <- context$reclaim_last <- context$reclaim_result <- NULL
+    context$scope_depth <- 0L
+    context$owned_export <- context$export_pending <- NULL
+    context$import_metadata_cache <- NULL
+    context$working <- new.env(parent = emptyenv())
+    context$native$states <- context$native$audit_records <- list()
+    if (length(context$owned_workers)) {
+        for (cluster in context$owned_workers) stopDIAWorkerCluster(cluster)
+        context$owned_workers <- list()
+    }
+    context$borrowed_workers <- list()
+    closeWorkflowEntityStore(context$store)
+    invisible(NULL)
+}
+
+#' Find only this Shiny session's explicitly enabled experimental manager.
+#' @return Internal manager or NULL; never a global live handle.
+#' @noRd
+getDIAActiveManager <- function() {
+    session <- shiny::getDefaultReactiveDomain()
+    if (is.null(session)) return(NULL)
+    manager <- session$userData$dia_capacity_manager
+    if (inherits(manager, "DIAStateAdapter")) manager else NULL
+}
+
+#' Bind a saved section's exact worker count only at scientific execution.
+#' @param manager Native or experimental manager.
+#' @param section Existing scientific configuration section.
+#' @param state_name Optional historical state; NULL means current.
+#' @return Executable S4; generic hydration itself never starts workers.
+#' @noRd
+getDIAExecutionState <- function(manager, section, state_name = NULL) {
+    if (usesDIAReferenceStates(manager)) cli::cli_abort(
+        "component actions must request their declared scientific inputs",
+        class = "saved_entity_unsupported")
+    object <- if (is.null(state_name)) manager$getState() else manager$getState(state_name)
+    bindDIAExecutionObject(manager, object, section)
+}
+
+#' Bind an already resolved state or roll-up envelope to its existing backend.
+#' @param manager Existing state owner.
+#' @param object Hydrated S4, without changing its scientific slots.
+#' @param section Existing scientific configuration section.
+#' @return Executable S4 using the same recorded worker policy.
+#' @noRd
+bindDIAExecutionObject <- function(manager, object, section) {
+    if (!inherits(manager, "DIAStateAdapter") || is.null(object)) return(object)
+    args <- methods::slot(object, "args")
+    # Rebind only declared execution-file roles on a transient execution copy.
+    # Stored historical arguments retain their original provenance paths.
+    dependencies <- manager$.context$native_dependencies
+    for (entry in dependencies) for (name in names(args)) {
+        if (!is.list(args[[name]])) next
+        for (field in intersect(c("iq_output_file", "peptide_input_file"), names(args[[name]]))) {
+            if (identical(args[[name]][[field]], entry$source_provenance)) {
+                if (!identical(workflowTableFileIdentity(entry$path), entry$file_identity)) {
+                    cli::cli_abort("restored execution dependency changed", class = "saved_entity_corrupt")
+                }
+                args[[name]][[field]] <- entry$path
+            }
+        }
+    }
+    if (length(dependencies)) methods::slot(object, "args") <- args
+    spec <- args[[section]]$core_utilisation
+    if (!inherits(spec, "DIAWorkerSpec")) return(object)
+    if (!identical(spec, newDIAWorkerSpec(spec$workers))) {
+        cli::cli_abort("invalid DIA worker specification", class = "saved_entity_invalid")
+    }
+    context <- manager$.context
+    # These validated scientific helpers already execute in-process. The SQL
+    # rollup also does not consume the historical multidplyr pool.
+    local_sections <- c("peptideIntensityFiltering", "filterMinNumPeptidesPerProtein",
+        "filterMinNumPeptidesPerSample", "removePeptidesWithOnlyOneReplicate",
+        "peptideMissingValueImputation", "removeProteinsWithOnlyOneReplicate")
+    if (section %in% local_sections ||
+        identical(section, "rollUpPrecursorToPeptide") && isTRUE(context$sql_rollup)) {
+        args[[section]]$core_utilisation <- NA
+        methods::slot(object, "args") <- args
+        return(object)
+    }
+    key <- as.character(spec$workers)
+    cluster <- context$borrowed_workers[[key]]
+    alive <- function(cluster) !is.null(cluster) &&
+        all(vapply(cluster, \(worker) worker$is_alive(), logical(1)))
+    if (!alive(cluster)) {
+        cluster <- context$owned_workers[[key]]
+        if (!alive(cluster)) {
+            cluster <- startDIAWorkerCluster(spec)
+            context$owned_workers[[key]] <- cluster
+        }
+    }
+    args[[section]] <- bindDIAWorkerConfig(stats::setNames(list(args[[section]]), section), cluster)[[section]]
+    methods::slot(object, "args") <- args
+    object
+}
+
+#' Remember borrowed configuration workers without persisting or taking ownership.
+#' @param context Private manager owner.
+#' @param config Existing configuration list.
+#' @return NULL invisibly.
+#' @noRd
+rememberDIAWorkers <- function(context, config) {
+    for (section in names(config)) {
+        value <- config[[section]]
+        if (!is.list(value) || !inherits(value$core_utilisation, "multidplyr_cluster")) next
+        cluster <- value$core_utilisation
+        context$borrowed_workers[[as.character(length(cluster))]] <- cluster
+    }
+    invisible(NULL)
+}
+
+#' Store a named GUI payload using the same whole-record codec, not a new backend.
+#' @param value Existing table, S4 or design-builder result.
+#' @param label Named current consumer role.
+#' @param manager Session manager; NULL preserves the native value outside a trial.
+#' @return Private descriptor, or the untouched value on the native path.
+#' @noRd
+saveDIAOwnedValue <- function(value, label, manager = NULL) {
+    if (is.null(manager)) manager <- getDIAActiveManager()
+    if (!inherits(manager, "DIAStateAdapter")) return(value)
+    if (is.null(value)) {
+        if (usesDIAReferenceStates(manager) && !is.null(manager$.context$snapshot$gui_references[[label]])) {
+            snapshot <- manager$.context$snapshot
+            snapshot$gui_references[[label]] <- NULL
+            publishDIAStateHead(manager$.context, snapshot)
+        }
+        return(NULL)
+    }
+    if (isSavedWorkflowReference(value)) {
+        validateSavedWorkflowReference(manager$.context$store, value, payload = FALSE)
+        if (usesDIAReferenceStates(manager) && !identical(manager$.context$snapshot$gui_references[[label]], value)) {
+            snapshot <- manager$.context$snapshot
+            snapshot$gui_references[[label]] <- value
+            publishDIAStateHead(manager$.context, snapshot)
+        }
+        return(value)
+    }
+    if (usesDIAReferenceStates(manager) && is.data.frame(value)) {
+        reference <- saveDIATableComponent(manager$.context, value)
+        snapshot <- manager$.context$snapshot
+        snapshot$gui_references[[label]] <- reference
+        publishDIAStateHead(manager$.context, snapshot)
+        return(reference)
+    }
+    if (usesDIAReferenceStates(manager) && isS4(value)) {
+        checkpoint <- checkpointDIAExecutionResult(manager, value)
+        reference <- saveDIAStateValue(manager$.context,
+            list(data = checkpoint, config = NULL, description = label), paste0("owner:", label), codec = "rds")
+        snapshot <- manager$.context$snapshot
+        snapshot$owned_components[[reference$entity_id]] <- collectDIANativeReferences(
+            list(reference, checkpoint$components, checkpoint$support, checkpoint$products, checkpoint$dependencies))
+        snapshot$gui_references[[label]] <- reference
+        publishDIAStateHead(manager$.context, snapshot)
+        return(reference)
+    }
+    if (is.list(value) && !is.data.frame(value) && !is.null(value$config_list)) {
+        rememberDIAWorkers(manager$.context, value$config_list)
+        value$config_list <- prepareDIAStateRecord(list(data = NULL, config = value$config_list))$config
+    }
+    if (is.list(value) && !is.data.frame(value)) {
+        for (field in intersect(names(value), c("data_cln", "design_matrix"))) {
+            value[[field]] <- prepareDIAParserTable(value[[field]])
+        }
+    }
+    if (isS4(value)) rememberDIAWorkers(manager$.context, methods::slot(value, "args"))
+    record <- prepareDIAStateRecord(list(data = value, config = NULL, description = label))
+    saveDIAStateValue(manager$.context, record, paste0("owner:", label))
+}
+
+#' Resolve a private owner reference without altering the caller's stored value.
+#' @param value Native value or saved reference.
+#' @param manager Session manager; NULL resolves the current session.
+#' @return Original scientific value, never a descriptor disguised as an S4.
+#' @noRd
+resolveDIAOwnedValue <- function(value, manager = NULL) {
+    if (!isSavedWorkflowReference(value)) return(value)
+    if (is.null(manager)) manager <- getDIAActiveManager()
+    if (!inherits(manager, "DIAStateAdapter")) {
+        cli::cli_abort("saved GUI payload has no owning DIA session", class = "saved_entity_scope")
+    }
+    if (isWorkflowTableReference(value)) {
+        return(materializeDIATable(manager$.context, value))
+    }
+    if (usesDIAReferenceStates(manager) && identical(value$payload$codec, "rds")) {
+        return(readDIAExecutionComponents(manager, value))
+    }
+    resolveDIAStateValue(manager$.context, value)$data
+}
+
+#' Return a saved GUI reference before a scientific product is looked up.
+#' @param owner,name Existing GUI owner and payload field.
+#' @return Reference in component mode, original payload on legacy paths.
+#' @noRd
+getDIAOwnedInput <- function(owner, name) {
+    if (usesDIAReferenceStates(getDIAActiveManager())) owner[[name]] else getDIAOwnedPayload(owner, name)
+}
+
+#' Read an inventoried GUI payload holder, preserving ordinary callers.
+#' @param owner Existing reactiveValues, environment or list.
+#' @param name Existing field name.
+#' @return Original payload.
+#' @noRd
+getDIAOwnedPayload <- function(owner, name) resolveDIAOwnedValue(owner[[name]])
+
+#' Update one inventoried GUI payload holder after durable storage succeeds.
+#' @param owner Existing mutable GUI owner.
+#' @param name Existing field name.
+#' @param value Original payload, or NULL to clear the holder.
+#' @return Updated owner invisibly, preserving list as well as mutable-owner semantics.
+#' @noRd
+setDIAOwnedPayload <- function(owner, name, value) {
+    manager <- getDIAActiveManager()
+    previous <- owner[[name]]
+    reference <- saveDIAOwnedValue(value, name, manager)
+    owner[[name]] <- reference
+    releaseDIAReplacedOwner(manager, previous, reference)
+    invisible(owner)
+}
+
+#' Evict only a successfully replaced, same-project working binding.
+#' @param manager Current DIA manager or NULL on the ordinary path.
+#' @param previous,reference Previous and newly installed owner values.
+#' @return NULL invisibly; durable files and other reference aliases are untouched.
+#' @noRd
+releaseDIAReplacedOwner <- function(manager, previous, reference) {
+    if (inherits(manager, "DIAStateAdapter") && isSavedWorkflowReference(previous) &&
+        identical(previous$owner, manager$.context$store$identity) &&
+        !identical(previous, reference)) {
+        releaseDIAWorkingReference(manager, previous)
+    }
+    invisible(NULL)
+}
+
+#' Keep a design-builder reactive value cold without changing its get/set contract.
+#' @param value Initial native value.
+#' @param label Existing consumer role.
+#' @param reactiveValFn Existing constructor, injectable by module tests.
+#' @param snapshot_field Optional existing-session dependency root for native restore.
+#' @return Function whose getter returns the original payload.
+#' @noRd
+newDIASavedReactiveVal <- function(value, label, reactiveValFn = shiny::reactiveVal,
+    snapshot_field = NULL) {
+    manager <- getDIAActiveManager()
+    reference <- reactiveValFn(saveDIAOwnedValue(value, label, manager))
+    value <- NULL
+    result <- function(value) {
+        manager <- getDIAActiveManager()
+        if (missing(value)) return(resolveDIAOwnedValue(reference(), manager))
+        previous <- shiny::isolate(reference())
+        next_reference <- saveDIAOwnedValue(value, label, manager)
+        if (inherits(manager, "DIAStateAdapter") && !is.null(snapshot_field) &&
+            !identical(manager$.context$snapshot[[snapshot_field]], next_reference)) {
+            snapshot <- manager$.context$snapshot
+            snapshot[[snapshot_field]] <- next_reference
+            publishDIAStateHead(manager$.context, snapshot)
+        }
+        reference(next_reference)
+        releaseDIAReplacedOwner(manager, previous, next_reference)
+        invisible(NULL)
+    }
+    # Internal reference access avoids hydration for metadata-only consumers.
+    attr(result, "dia_reference") <- reference
+    result
+}
+
+#' Read an internal reactive reference without hydrating its payload.
+#' @param value Existing getter with optional private reference accessor.
+#' @return Saved descriptor or unchanged native getter result.
+#' @noRd
+getDIAReactiveReference <- function(value) {
+    reference <- attr(value, "dia_reference", exact = TRUE)
+    if (is.function(reference)) reference() else value()
+}
+
+#' Construct a session-owned adapter only for the explicit capacity harness option.
+#' @param native Existing WorkflowState created by the application.
+#' @param paths Existing experiment paths.
+#' @param session Existing Shiny session.
+#' @param workflow_data Existing reactive state bus for the bounded metadata trigger.
+#' @return Original manager unless the named experiment is explicitly selected.
+#' @noRd
+initializeDIACapacitySession <- function(native, paths, session, workflow_data) {
+    trial <- getOption("multischolar.dia_capacity_trial")
+    if (is.null(trial)) return(native)
+    if (!identical(trial$scope, "full-journey-capacity-v1") || !identical(trial$route, "iq") ||
+        !identical(trial$treatment, "qs2_duckdb") || !is.character(trial$receipt_dir) ||
+        length(trial$receipt_dir) != 1L || !dir.exists(trial$receipt_dir)) {
+        cli::cli_abort("invalid experimental DIA activation", class = "saved_entity_scope")
+    }
+    root <- normalizePath(paths$source_dir, mustWork = TRUE)
+    receipt_dir <- normalizePath(trial$receipt_dir, mustWork = TRUE)
+    if (!startsWith(root, paste0(receipt_dir, "/"))) {
+        cli::cli_abort("DIA trial project escapes request", class = "saved_entity_scope")
+    }
+    previous <- session$userData$dia_capacity_manager
+    if (inherits(previous, "DIAStateAdapter")) closeDIAStateAdapter(previous)
+    # The callbacks below capture this frame; do not retain a retired manager.
+    previous <- NULL
+    # A replacement in the same project path is still a new incarnation. Retain
+    # the previous immutable store for recovery; never overwrite its marker/head.
+    state_root <- tempfile(".dia-capacity-", tmpdir = root)
+    if (!dir.create(state_root)) {
+        cli::cli_abort("cannot create DIA capacity storage", class = "saved_entity_write")
+    }
+    store <- newWorkflowEntityStore(state_root, "DIA-IQ-capacity", "DIA", max_cache_bytes = 0)
+    manager <- newDIAStateAdapter(store, native)
+    manager$.context$sql_rollup <- TRUE
+    manager$.context$session_format <- if (identical(trial$session_format, "native_v1")) "native_v1" else "legacy"
+    manager$.context$reference_states <- identical(manager$.context$session_format, "native_v1")
+    manager$.context$experiment_paths <- paths
+    if (!is.null(trial$reclaim_memory) && (!is.logical(trial$reclaim_memory) ||
+        length(trial$reclaim_memory) != 1L || is.na(trial$reclaim_memory)))
+        cli::cli_abort("invalid experimental reclamation policy", class = "saved_entity_scope")
+    manager$.context$reclaim_enabled <- isTRUE(trial$reclaim_memory) && manager$.context$reference_states
+    attachDIAStateSession(manager, session, workflow_data, receipt_dir, trial$scope)
+}
+
+#' Attach one adapter lifetime to existing Shiny flush and project boundaries.
+#' @param manager Adapter containing descriptors, never a resident history.
+#' @param session,workflow_data Existing session and reactive data bus.
+#' @param receipt_dir Optional existing harness-only receipt destination.
+#' @param scope Existing diagnostic scope label.
+#' @return Attached manager.
+#' @noRd
+attachDIAStateSession <- function(manager, session, workflow_data, receipt_dir = NULL,
+    scope = "full-journey-capacity-v1") {
+    manager$.context$on_commit <- function() {
+        workflow_data$state_update_trigger <- Sys.time()
+    }
+    session$userData$dia_capacity_manager <- manager
+    manager$.context$store$progress <- if (is.null(receipt_dir)) NULL else
+        newWorkflowProgressObserver(receipt_dir, function() manager$.context$snapshot$current_state)
+    owner_events <- 0L
+    manager$.context$on_owner_boundary <- if (is.null(receipt_dir)) NULL else function(stage) {
+        if (owner_events >= 4096L) return(invisible(NULL))
+        owner_events <<- owner_events + 1L
+        context <- manager$.context
+        info <- list(stage = stage, time = as.numeric(Sys.time()),
+            current_state = context$snapshot$current_state, scope_depth = context$scope_depth,
+            working_records = length(ls(context$working, all.names = TRUE)),
+            writes = context$writes, hydrates = context$hydrates,
+            open_resources = context$store$open_resources,
+            truncated = owner_events == 4096L)
+        connection <- file(file.path(receipt_dir, "gui-owner-phases.jsonl"), open = "a")
+        on.exit(close(connection), add = TRUE)
+        writeLines(jsonlite::toJSON(info, auto_unbox = TRUE, digits = NA), connection)
+    }
+    write_receipt <- function(stage) {
+        if (is.null(receipt_dir)) return(invisible(NULL))
+        info <- diaStateOwnership(manager)
+        info$stage <- stage
+        info$current_state <- manager$current_state
+        info$state_names <- names(manager$.context$snapshot$states)
+        info$gui_assay_holders <- stats::setNames(lapply(c("data_tbl", "data_cln",
+            "ruv_normalised_for_da_analysis_obj"), function(field) {
+            value <- shiny::isolate(workflow_data[[field]])
+            list(reference = isSavedWorkflowReference(value),
+                resident_assay = is.data.frame(value) || isS4(value))
+        }), c("data_tbl", "data_cln", "ruv_normalised_for_da_analysis_obj"))
+        info$reclamation <- list(enabled = manager$.context$reclaim_enabled,
+            pending = manager$.context$reclaim_pending, last = manager$.context$reclaim_result)
+        info$scope <- scope
+        info$store_directory <- manager$.context$store$directory
+        info$time <- as.numeric(Sys.time())
+        writeLines(jsonlite::toJSON(info, auto_unbox = TRUE, null = "null", digits = NA),
+            file.path(receipt_dir, "gui-state-latest.json"))
+        connection <- file(file.path(receipt_dir, "gui-state-phases.jsonl"), open = "a")
+        on.exit(close(connection), add = TRUE)
+        writeLines(jsonlite::toJSON(info, auto_unbox = TRUE, null = "null", digits = NA), connection)
+    }
+    # A flush is a delivery boundary, not an ownership scope for heavy payloads.
+    callbacks <- list()
+    callbacks$before <- session$onFlush(function() {
+        observeDIAOwnerBoundary(manager$.context, "flush_begin")
+    }, once = FALSE)
+    callbacks$after <- session$onFlushed(function() {
+        if (!identical(session$userData$dia_capacity_manager, manager) ||
+            isTRUE(manager$.context$store$closed)) return(invisible(NULL))
+        context <- manager$.context
+        if (context$scope_depth != 0L || context$store$open_resources != 0L ||
+            !is.null(context$store$table_action)) return(invisible(NULL))
+        context$working <- new.env(parent = emptyenv())
+        reclaimDIACompletedMemory(manager)
+        releaseDIAInputFiles(manager)
+        write_receipt("outputs_delivered")
+    }, once = FALSE)
+    callbacks$end <- session$onSessionEnded(function() {
+        write_receipt("session_end")
+        closeDIAStateAdapter(manager)
+        session$userData$dia_capacity_manager <- NULL
+    })
+    manager$.context$callbacks <- callbacks
+    write_receipt("initialized")
+    manager
+}
+
+#' Persist the tested rollup projection while its preceding scientific result exists.
+#' @param manager Native or experimental state owner.
+#' @param object Current complete scientific result.
+#' @return NULL invisibly; no-op outside the explicit SQL trial.
+#' @noRd
+prepareDIACapacityRollupInput <- function(manager, object) {
+    if (!inherits(manager, "DIAStateAdapter") || !isTRUE(manager$.context$sql_rollup)) {
+        return(invisible(NULL))
+    }
+    context <- manager$.context
+    reference <- context$snapshot$states[[manager$current_state]]
+    input <- saveWorkflowPrecursorRollupInput(context$store, object,
+        basename(tempfile("dia-rollup-")), list(input = reference$payload$sha256,
+            design = "checkpoint-owned", parameters = "native-rollup-contract",
+            selectors = "complete-population-rollup-columns",
+            software = as.character(utils::packageVersion("MultiScholaR"))))
+    context$rollup_input <- list(source = reference$entity_id, input = input)
+    if (identical(manager$audit_enabled, FALSE)) {
+        envelope <- object
+        methods::slot(envelope, "peptide_data") <- methods::slot(envelope, "peptide_data")[0, , drop = FALSE]
+        envelope <- prepareDIAStateRecord(list(data = envelope, config = NULL,
+            source = reference$entity_id, description = "rollup non-assay envelope"))
+        context$rollup_input$envelope <- saveDIAStateValue(context, envelope,
+            "rollup-envelope", codec = "rds")
+    }
+    # Auxiliary preparation follows the scientific commit; it does not add a
+    # scientific state and remains available after project reopen/revert.
+    snapshot <- context$snapshot
+    snapshot$rollup_input <- context$rollup_input
+    publishDIAStateHead(context, snapshot)
+    invisible(NULL)
+}
+
+#' Resolve only the matching non-assay predecessor when auditing is disabled.
+#' @param manager Existing DIA adapter.
+#' @param source_id Predecessor identity bound to the computed result.
+#' @return Executable S4 envelope, or NULL for the unchanged full-state path.
+#' @noRd
+getDIARollupEnvelope <- function(manager, source_id) {
+    if (!inherits(manager, "DIAStateAdapter") || !identical(manager$audit_enabled, FALSE)) return(NULL)
+    context <- manager$.context
+    reference <- context$snapshot$states[[manager$current_state]]
+    preparation <- context$rollup_input %||% context$snapshot$rollup_input
+    if (!identical(reference$entity_id, source_id)) {
+        cli::cli_abort("rollup predecessor changed during execution", class = "saved_entity_scope")
+    }
+    if (is.null(preparation$envelope)) return(NULL)
+    if (!identical(preparation$source, source_id)) {
+        cli::cli_abort("rollup envelope generation differs", class = "saved_entity_scope")
+    }
+    envelope <- resolveDIAStateValue(context, preparation$envelope)
+    if (!identical(envelope$source, source_id) ||
+        !methods::is(envelope$data, "PeptideQuantitativeData") ||
+        nrow(methods::slot(envelope$data, "peptide_data")) != 0L) {
+        cli::cli_abort("rollup envelope is invalid", class = "saved_entity_corrupt")
+    }
+    bindDIAExecutionObject(manager, envelope$data, "rollUpPrecursorToPeptide")
+}
+
+#' Execute the existing saved rollup, closing its query before audit hydration.
+#' @param manager Experimental state owner.
+#' @return Original rollup result shape; no database lease survives.
+#' @noRd
+computeDIACapacityRollup <- function(manager) {
+    context <- manager$.context
+    reference <- context$snapshot$states[[manager$current_state]]
+    if (is.null(context$rollup_input)) context$rollup_input <- context$snapshot$rollup_input
+    if (!identical(context$rollup_input$source, reference$entity_id)) {
+        # Revert/skipped-predecessor paths remain usable; their extra read is measured.
+        prepareDIACapacityRollupInput(manager, manager$getState())
+    }
+    result <- computeSavedWorkflowPrecursorRollup(context$store, context$rollup_input$input)
+    if (context$store$open_resources != 0L) {
+        cli::cli_abort("DIA rollup retained a database lease", class = "saved_entity_resource")
+    }
+    if (!identical(context$snapshot$states[[manager$current_state]]$entity_id, reference$entity_id)) {
+        cli::cli_abort("rollup predecessor changed during execution", class = "saved_entity_scope")
+    }
+    result$source_entity_id <- reference$entity_id
+    result
+}
+
+#' Atomically accept validated external session history without retaining its payloads.
+#' @param manager Experimental state owner.
+#' @param records Complete ordinary legacy history, already externally validated.
+#' @param history,current Original active topology.
+#' @return NULL invisibly; save failure leaves the previous accepted head intact.
+#' @noRd
+restoreDIAStateSession <- function(manager, records, history, current) {
+    if (!is.list(records) || !is.character(current) || length(current) != 1L ||
+        !current %in% names(records) || !all(unlist(history) %in% names(records))) {
+        cli::cli_abort("invalid restored DIA topology", class = "saved_entity_invalid")
+    }
+    replaceDIAStates(manager$.context, records,
+        list(state_history = history, current_state = current))
+    invisible(NULL)
+}
+
+#' Run confidence predicates and global evidence over an accepted saved assay.
+#' @param workflow Existing GUI owner.
+#' @param qvalue,global_qvalue,proteotypic,global_pg,mode Existing fixed confidence contract.
+#' @param now_fn Existing clock seam.
+#' @return References and bounded progress summaries, with all database resources released.
+#' @noRd
+runDIAReferenceQvalue <- function(workflow, qvalue, global_qvalue, proteotypic,
+    global_pg, mode, now_fn) {
+    manager <- workflow$state_manager
+    context <- manager$.context
+    if (isTRUE(manager$audit_enabled)) {
+        cli::cli_abort("reference confidence filtering requires the declared audit-off route",
+            class = "saved_entity_unsupported")
+    }
+    before <- readDIAStateMetadata(manager)
+    pending <- resumeDIAQvalueOutput(manager, before)
+    if (!is.null(pending)) {
+        workflow$qc_params <- pending$qcParams
+        return(pending)
+    }
+    checkpoint <- before$data
+    checkpoint$dependencies <- collectDIANativeReferences(list(getDIAStateReference(manager),
+        checkpoint$dependencies, checkpoint$components, checkpoint$support, checkpoint$products))
+    source <- checkpoint$components$peptide_data
+    scope <- newWorkflowTableReadScope(context$store, source, reader = "arrow")
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    columns <- scope$metadata$columns
+    empty <- readSavedWorkflowTablePrototype(scope)
+    design <- materializeDIATable(context, checkpoint$components$design_matrix)
+    slots <- checkpoint$slots
+    slots$peptide_data <- empty
+    slots$design_matrix <- design
+    prototype <- do.call(methods::new, c(list(Class = checkpoint$class), slots))
+    local_state <- WorkflowState$new(audit_enabled = FALSE)
+    local_state$saveState("raw_data_s4", prototype, before$config, before$description)
+    local_workflow <- list2env(list(state_manager = local_state, qc_params = workflow$qc_params),
+        parent = emptyenv())
+    # The existing R method supplies parameter resolution, validation and output
+    # schema on zero rows. Real populations below use the exact declared rules.
+    template <- runPeptideQvalueApplyStep(local_workflow, qvalue, global_qvalue, proteotypic,
+        nowFn = now_fn, globalPGQvalueThreshold = global_pg, confidenceProvenanceMode = mode)
+    result_object <- template$filteredS4
+    params <- result_object@args$srlQvalueProteotypicPeptideClean
+    protein <- checkpoint$slots$protein_id_column
+    peptide <- checkpoint$slots$peptide_sequence_column
+    confidence <- unlist(params$confidence_metric_columns, use.names = FALSE)
+    retained <- unique(c(params$input_matrix_column_ids, protein, peptide, "Modified.Sequence"))
+    retained <- unique(c(retained[retained %in% names(empty) | retained == slots$norm_quantity_column],
+        confidence[confidence %in% names(empty)]))
+    produced <- produceDIAConfidenceTables(scope, retained, params, slots,
+        result_object@peptide_data, params$biological_exclusion_ledger, context$software)
+    result <- produced$reference
+    ledger <- produced$ledger
+    summary <- produced$summary
+    classification_status <- summary$classification_status
+    releaseWorkflowTableReadScope(scope)
+    accepted_scope <- newWorkflowTableReadScope(context$store, result, reader = "arrow")
+    on.exit(releaseWorkflowTableReadScope(accepted_scope), add = TRUE)
+    counted <- summarizeSavedDIAFiltering(accepted_scope, prototype, protein, produced$counts)
+    checkpoint$dependencies <- collectDIANativeReferences(list(checkpoint$dependencies,
+        produced$dependencies, counted$dependencies))
+    sample_ids <- counted$runs
+    probe <- empty[rep(NA_integer_, length(sample_ids)), , drop = FALSE]
+    probe[[slots$sample_id]] <- sample_ids
+    prototype@peptide_data <- probe
+    cleaned_design <- cleanDesignMatrixPeptide(prototype)@design_matrix
+    progress <- counted$summary
+    proteins <- counted$proteins
+    releaseWorkflowTableReadScope(accepted_scope)
+    checkpoint$slots$args <- result_object@args
+    checkpoint$slots$args$srlQvalueProteotypicPeptideClean$biological_exclusion_summary <- summary
+    checkpoint$slots$args$srlQvalueProteotypicPeptideClean["biological_exclusion_ledger"] <- list(NULL)
+    checkpoint$support$srlQvalueProteotypicPeptideClean <- list(biological_exclusion_ledger = ledger)
+    checkpoint$components$peptide_data <- result
+    checkpoint$components$design_matrix <- saveDIATableComponent(context, cleaned_design)
+    checkpoint$dimensions <- list(rows = summary$biological_rows, columns = names(result_object@peptide_data))
+    config <- local_state$states$qvalue_filtered$config
+    text <- sub("Proteins remaining: 0", paste("Proteins remaining:", proteins), template$resultText, fixed = TRUE)
+    text <- sub("Decoy/contaminant rows excluded: 0", paste("Decoy/contaminant rows excluded:",
+        summary$excluded_rows), text, fixed = TRUE)
+    text <- sub(params$biological_exclusion_summary$classification_status,
+        classification_status, text, fixed = TRUE)
+    prior <- if (exists("filtering_progress", envir = .GlobalEnv, inherits = FALSE))
+        get("filtering_progress", envir = .GlobalEnv) else NULL
+    prior_slots <- if (methods::is(prior, "FilteringProgress")) stats::setNames(
+        lapply(methods::slotNames(prior), \(name) methods::slot(prior, name)), methods::slotNames(prior)) else NULL
+    product <- list(filteringSummary = progress, resultText = text, priorProgress = prior_slots,
+        qcParams = local_workflow$qc_params)
+    if (as.numeric(object.size(product)) > 67108864) {
+        cli::cli_abort("Q-value progress exceeds product limits", class = "saved_entity_limit")
+    }
+    identity <- newSavedWorkflowScientificIdentity(result$entity_id,
+        checkpoint$components$design_matrix$entity_id, digest::digest(params, algo = "sha256"),
+        "qvalue-progress", context$software)
+    checkpoint$products$qvalue_progress <- saveWorkflowConsumerEntity(context$store,
+        newSavedWorkflowScientificProduct(product, "dia-qvalue-progress"),
+        basename(tempfile("dia-qvalue-progress-")), identity, "scientific_product")
+    reference <- commitDIAReferenceState(manager, "qvalue_filtered", checkpoint, config,
+        "Applied Q-value and proteotypic peptide filter", timestamp = now_fn())
+    workflow$qc_params <- local_workflow$qc_params
+    c(list(stateReference = reference), product)
+}
+
+
+#' Mark a newly completed expensive publication for one post-delivery release.
+#' @param manager,reference Current adapter and accepted scientific reference.
+#' @param request_id,label Existing durable output request identity and group.
+#' @return TRUE when marked; repeated completed-journal reads must not call this.
+#' @noRd
+requestDIAReclamation <- function(manager, reference, request_id, label) {
+    context <- manager$.context
+    if (!isTRUE(context$reclaim_enabled) || isTRUE(context$store$closed) ||
+        !label %in% c("import", "design", "qc", "normalization")) return(invisible(FALSE))
+    checkSavedEntityString(request_id, "reclamation request")
+    token <- list(incarnation = context$store$identity$incarnation,
+        state = reference$entity_id, request = request_id, label = label)
+    if (identical(token, context$reclaim_last)) return(invisible(FALSE))
+    context$reclaim_pending <- token
+    invisible(TRUE)
+}
+
+#' Consume a completed-action request only when actual resource owners are idle.
+#' @param manager Existing adapter; this helper never mutates scientific heads.
+#' @return Bounded status; failures preserve scientific/output completion.
+#' @noRd
+reclaimDIACompletedMemory <- function(manager) {
+    context <- manager$.context
+    pending <- context$reclaim_pending
+    if (!isTRUE(context$reclaim_enabled) || isTRUE(context$store$closed) || is.null(pending))
+        return(invisible(list(status = "not_requested")))
+    current <- if (identical(pending$label, "import")) context$snapshot$gui_references$data_tbl else
+        context$snapshot$states[[context$snapshot$current_state]]
+    if (!identical(pending$incarnation, context$store$identity$incarnation) ||
+        !identical(pending$state, current$entity_id)) {
+        context$reclaim_pending <- NULL
+        return(invisible(list(status = "superseded")))
+    }
+    if (context$scope_depth != 0L || context$store$open_resources != 0L ||
+        !is.null(context$store$table_action) || length(ls(context$working, all.names = TRUE)) ||
+        length(context$owned_workers) || length(context$borrowed_workers)) {
+        return(invisible(list(status = "busy")))
+    }
+    context$reclaim_pending <- NULL
+    context$reclaim_last <- pending
+    result <- tryCatch(reclaimWorkflowMemory(), workflow_reclaim_error = function(error) {
+        logger::log_warn(paste("Optional memory reclamation failed:", conditionMessage(error)))
+        list(status = "failed")
+    })
+    context$reclaim_result <- c(pending, result)
+    invisible(result)
+}
+
+#' Register immutable source-file identities for one managed import.
+#' @param manager Current adapter; ordinary workflows remain unchanged.
+#' @param paths Explicit report/FASTA paths consumed by this import.
+#' @return NULL invisibly; no file contents are read or copied.
+#' @noRd
+registerDIAInputFiles <- function(manager, paths) {
+    if (!usesDIAReferenceStates(manager)) return(invisible(NULL))
+    paths <- unique(paths[file.exists(paths)])
+    if (length(paths) > 16L) cli::cli_abort("import file leases exceed limits", class = "saved_entity_limit")
+    manager$.context$input_file_leases <- lapply(paths, workflowTableFileIdentity)
+    manager$.context$input_files_ready <- FALSE
+    invisible(NULL)
+}
+
+#' Mark consumed input files after successful parsing and durable table handoff.
+#' @param manager Current managed import owner.
+#' @return NULL invisibly; actual release waits for idle delivery.
+#' @noRd
+completeDIAInputFiles <- function(manager) {
+    if (!usesDIAReferenceStates(manager)) return(invisible(NULL))
+    for (identity in manager$.context$input_file_leases) {
+        if (!identical(identity, workflowTableFileIdentity(identity$path)))
+            cli::cli_abort("source file changed during import", class = "saved_entity_corrupt")
+    }
+    manager$.context$input_files_ready <- TRUE
+    reference <- manager$.context$snapshot$gui_references$data_tbl
+    if (!is.null(reference)) requestDIAReclamation(manager, reference,
+        paste0("import-", reference$entity_id), "import")
+    invisible(NULL)
+}
+
+#' Release consumed source-file cache after parser/scientific scopes have returned.
+#' @param manager Current adapter, checked by its session delivery callback.
+#' @return NULL invisibly; originals and accepted checkpoints remain unchanged.
+#' @noRd
+releaseDIAInputFiles <- function(manager) {
+    context <- manager$.context
+    if (!isTRUE(context$input_files_ready) || context$scope_depth != 0L ||
+        context$store$open_resources != 0L || !is.null(context$store$table_action)) return(invisible(NULL))
+    leases <- context$input_file_leases
+    context$input_files_ready <- FALSE
+    context$input_file_leases <- list()
+    for (identity in leases) {
+        if (file.exists(identity$path) && identical(identity, workflowTableFileIdentity(identity$path)))
+            releaseWorkflowFilePages(identity$path)
+    }
+    invisible(NULL)
+}
+
+#' Apply native confidence predicates and exclusions to one bounded projected batch.
+#' @param data,positions Scientific rows and their current source ordinals.
+#' @param retained Existing output columns; count-only projections may omit quantities.
+#' @param params,slots Resolved native confidence parameters and column roles.
+#' @param manifest Already parsed native manifest with unchanged provenance.
+#' @return Native exclusion result for confidence-valid rows.
+#' @noRd
+classifyDIAConfidenceBatch <- function(data, positions, retained, params, slots, manifest) {
+    if (!slots$norm_quantity_column %in% names(data) && slots$raw_quantity_column %in% names(data))
+        data[[slots$norm_quantity_column]] <- data[[slots$raw_quantity_column]]
+    mask <- rep(TRUE, nrow(data))
+    for (metric in names(params$confidence_metric_columns)) {
+        column <- params$confidence_metric_columns[[metric]]
+        if (column %in% names(data)) mask <- mask & if (metric == "proteotypic")
+            data[[column]] == 1 else data[[column]] <= 0.01
+    }
+    data <- dplyr::mutate(data, .source_row_id = .env$positions)
+    data <- dplyr::filter(data, .env$mask)
+    data <- dplyr::select(data, dplyr::all_of(unique(c(".source_row_id", intersect(retained, names(data))))))
+    classifyPeptideBiologicalExclusionsResolved(data, slots$protein_id_column, "Protein.Ids", manifest,
+        params$exclude_decoys, params$exclude_contaminants)
+}
+
+#' Produce first-QC tables with native complete-protein evidence and ordered streaming.
+#' @param scope Current assay lease.
+#' @param retained Existing scientific output population/column selection.
+#' @param params,slots Resolved native parameters and roles.
+#' @param result_prototype,ledger_prototype Native zero-row output schemas.
+#' @param software Current numerical software identity.
+#' @return Durable accepted/ledger references, exact summary and index dependencies.
+#' @noRd
+produceDIAConfidenceTables <- function(scope, retained, params, slots,
+    result_prototype, ledger_prototype, software) {
+    manifest <- params$contaminant_manifest_provenance
+    protein <- slots$protein_id_column
+    peptide <- slots$peptide_sequence_column
+    flags <- .findPeptideExclusionColumns(retained, c("Decoy", "Reverse", "Is.Decoy", "IsDecoy",
+        "Contaminant", "Potential.contaminant", "Potential.Contaminant", "Is.Contaminant", "IsContaminant"))
+    columns <- intersect(scope$metadata$columns, unique(c(protein, peptide, "Modified.Sequence",
+        "Protein.Ids", flags, unlist(params$confidence_metric_columns, use.names = FALSE))))
+    cursor <- openWorkflowTableGroups(scope, columns, protein)
+    on.exit(cursor$close(), add = TRUE)
+    dependencies <- cursor$dependencies
+    evidence <- list()
+    summary <- NULL
+    count_fields <- c("input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows",
+        "excluded_rows", "biological_rows")
+    repeat {
+        part <- cursor$next_group()
+        if (is.null(part)) break
+        positions <- attr(part, "workflow_source_order")
+        attr(part, "workflow_source_order") <- NULL
+        classified <- classifyDIAConfidenceBatch(part, positions, retained, params, slots, manifest)
+        if (is.null(summary)) summary <- classified$summary else {
+            for (field in count_fields) summary[[field]] <- summary[[field]] + classified$summary[[field]]
+            if (classified$summary$classification_status == "classified_from_available_signals")
+                summary$classification_status <- "classified_from_available_signals"
+        }
+        counted <- .calculateProteinIdentificationEvidence(classified$analysis_data,
+            protein_id_column = protein, peptide_sequence_column = peptide,
+            modified_peptide_sequence_column = "Modified.Sequence")
+        # The lookup's key values are matched back to the untouched source column.
+        if (is.factor(counted[[protein]])) counted[[protein]] <- as.character(counted[[protein]])
+        evidence[[length(evidence) + 1L]] <- counted
+        if (as.numeric(object.size(evidence)) > 67108864)
+            cli::cli_abort("identification evidence exceeds lookup limits", class = "saved_entity_limit")
+        part <- classified <- counted <- NULL
+    }
+    cursor$close()
+    evidence <- dplyr::bind_rows(evidence)
+    if (as.numeric(object.size(evidence)) > 67108864 || anyDuplicated(evidence[[protein]]))
+        cli::cli_abort("identification evidence is not a bounded unique lookup", class = "saved_entity_limit")
+    output_metadata <- workflowSavedTableMetadata(result_prototype, ".rownames", 3L)
+    ledger_metadata <- workflowSavedTableMetadata(ledger_prototype, ".rownames", 3L)
+    output_metadata$rows <- summary$biological_rows
+    ledger_metadata$rows <- summary$excluded_rows
+    if (!inherits(ledger_prototype, "tbl_df")) {
+        ledger_metadata$automatic_row_names <- FALSE
+        ledger_metadata$row_name_column <- ".multischolar_row_key"
+        ledger_metadata$row_index_type <- "integer"
+    }
+    directory <- workflowTableBatchDirectory(scope)
+    accepted_writer <- openWorkflowTableWriter(tempfile("accepted-", directory, fileext = ".parquet"), output_metadata, scope$store$progress)
+    assign("confidence_data", accepted_writer, scope$writers)
+    ledger_writer <- openWorkflowTableWriter(tempfile("excluded-", directory, fileext = ".parquet"), ledger_metadata, scope$store$progress)
+    assign("confidence_ledger", ledger_writer, scope$writers)
+    counts <- newDIAFilteringAccumulator(result_prototype, protein)
+    qvalid_rows <- 0L
+    input_columns <- intersect(unique(c(retained, slots$raw_quantity_column)), scope$metadata$columns)
+    streamSavedWorkflowTable(scope, input_columns, function(data, offset, row_names) {
+        classified <- classifyDIAConfidenceBatch(data, offset + seq_len(nrow(data)), retained, params, slots, manifest)
+        keep <- !classified$classified_data$exclude_from_biological_analysis
+        accepted <- classified$analysis_data
+        at <- match(accepted[[protein]], evidence[[protein]])
+        for (field in .proteinIdentificationEvidenceColumns) accepted[[field]] <- evidence[[field]][at]
+        accepted <- completeWorkflowTableBatch(accepted, output_metadata)
+        ledger <- classified$exclusion_ledger
+        if (!isTRUE(ledger_metadata$automatic_row_names))
+            attr(ledger, "row.names") <- as.integer(qvalid_rows + which(!keep))
+        ledger <- completeWorkflowTableBatch(ledger, ledger_metadata)
+        counts$push(accepted)
+        appendWorkflowTableWriter(accepted_writer, accepted)
+        appendWorkflowTableWriter(ledger_writer, ledger)
+        qvalid_rows <<- qvalid_rows + length(keep)
+    })
+    if (!identical(readPeptideContaminantManifest(params$contaminant_manifest), manifest))
+        cli::cli_abort("contaminant manifest changed during filtering", class = "saved_entity_corrupt")
+    identity <- newSavedWorkflowScientificIdentity(scope$reference$entity_id, "confidence-population",
+        digest::digest(params, algo = "sha256"), "confidence-stream-v1", software)
+    accepted <- finishWorkflowTableBatch(scope, "confidence_data", identity)
+    ledger <- finishWorkflowTableBatch(scope, "confidence_ledger", identity)
+    list(reference = accepted, ledger = ledger, summary = summary, dependencies = dependencies,
+        counts = counts$finish())
+}

@@ -528,6 +528,11 @@ runProtEnrichAnalysisBody <- function(input,
                                       incProgressFn = shiny::incProgress,
                                       globalEnv = .GlobalEnv,
                                       catFn = cat) {
+  if (isDIAResultManifest(enrichmentData$da_results_data)) {
+    cli::cli_abort("active enrichment requires an explicit compatibility export for this native DIA session",
+      class = "saved_entity_unsupported")
+  }
+
   selectedContrast <- input$selected_contrast
 
   incProgressFn(0.2, detail = "Transforming DE data...")

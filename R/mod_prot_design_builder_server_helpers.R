@@ -28,15 +28,17 @@ registerProtDesignInitialStateSyncObserver <- function(
     logInfoFn = logger::log_info
 ) {
     observer <- observeFn({
+        withDIAStateScope(getDIAActiveManager(), function() {
         state <- initialState()
         reqFn(state)
 
-        if (hasBatchColumnFn(state$data_cln)) {
+        batch_source <- state$sample_metadata %||% state$data_cln
+        if (hasBatchColumnFn(batch_source)) {
             logInfoFn(
                 "Design Matrix: 'Batch' column detected. Auto-assigning to batch column."
             )
 
-            batchAssignments <- buildBatchAssignmentsFn(state$data_cln)
+            batchAssignments <- buildBatchAssignmentsFn(batch_source)
             state$design_matrix <- mergeBatchAssignmentsFn(
                 state$design_matrix,
                 batchAssignments
@@ -51,7 +53,7 @@ registerProtDesignInitialStateSyncObserver <- function(
         }
 
         designMatrix(state$design_matrix)
-        dataClnReactive(state$data_cln)
+        dataClnReactive(state$data_reference %||% state$data_cln)
         groups(state$groups)
         factors(state$factors)
         contrasts(state$contrasts)
@@ -89,18 +91,20 @@ registerProtDesignInitialStateSyncObserver <- function(
             selected = ""
         )
         updateTextInputFn(session, "formula_string", value = state$formula)
+        })
     })
 
-    bindEventFn(observer, dataTbl(), input$reset_changes)
+    bindEventFn(observer, getDIAReactiveReference(dataTbl), input$reset_changes)
 }
 
 createProtDesignBuilderState <- function(
     reactiveValFn = shiny::reactiveVal
 ) {
     list(
-        resultRv = reactiveValFn(NULL),
+        resultRv = newDIASavedReactiveVal(NULL, "design-result", reactiveValFn),
         designMatrix = reactiveValFn(NULL),
-        dataClnReactive = reactiveValFn(NULL),
+        dataClnReactive = newDIASavedReactiveVal(NULL, "design-cleaned-data", reactiveValFn,
+            snapshot_field = "design_current"),
         groups = reactiveValFn(NULL),
         factors = reactiveValFn(NULL),
         contrasts = reactiveValFn(NULL),
@@ -140,6 +144,15 @@ createProtDesignInitialStateReactive <- function(
     reqFn = shiny::req
 ) {
     reactiveFn({
+        manager <- getDIAActiveManager()
+        reference <- if (inherits(manager, "DIAStateAdapter")) getDIAReactiveReference(dataTbl) else NULL
+        if (isSavedWorkflowReference(reference)) {
+            reqFn(reference)
+            reqFn(configList())
+            return(withDIAStateScope(manager, function() {
+                buildDIAReferenceDesignState(manager, reference, configList(), columnMapping())
+            }))
+        }
         reqFn(dataTbl())
         reqFn(configList())
         buildInitialState(
@@ -148,6 +161,57 @@ createProtDesignInitialStateReactive <- function(
             columnMapping = columnMapping()
         )
     })
+}
+
+#' Initialize the private DIA design from bounded metadata and immutable data.
+#' @param manager Current session owner.
+#' @param reference Imported-table reference.
+#' @param config_list,column_mapping Existing configuration and mapped columns.
+#' @return Initial design metadata with an explicit data reference, never an assay.
+#' @noRd
+buildDIAReferenceDesignState <- function(manager, reference, config_list, column_mapping) {
+    context <- manager$.context
+    validateSavedWorkflowReference(context$store, reference, payload = FALSE)
+    metadata <- getDIAImportMetadata(manager)
+    if (!identical(metadata$reference_id, reference$entity_id) ||
+        !identical(metadata$column_mapping, column_mapping)) {
+        if (usesDIAReferenceStates(manager) && isWorkflowTableReference(reference)) {
+            cli::cli_abort("saved import metadata is missing or mismatched", class = "saved_entity_corrupt")
+        }
+        # Older validated native sessions have no import summary. Derive it once,
+        # in this operation, rather than forcing future metadata events to read.
+        table <- resolveDIAOwnedValue(reference, manager)
+        metadata <- recordDIAImportMetadata(manager, table,
+            list(data = table, data_type = "peptide", column_mapping = column_mapping), reference)
+        table <- NULL
+    }
+    initial <- context$snapshot$design_initial
+    if (!identical(initial$source_reference, reference) ||
+        !identical(initial$column_mapping, column_mapping)) {
+        cleaned_reference <- reference
+        if (length(metadata$needs_numeric)) {
+            if (usesDIAReferenceStates(manager)) {
+                cleaned_reference <- transformDIADesignTable(manager, reference,
+                    numeric_columns = metadata$needs_numeric, strip_parser = TRUE)
+            } else {
+                converted <- buildProtDesignInitialState(resolveDIAOwnedValue(reference, manager),
+                    config_list, column_mapping)
+                cleaned_reference <- saveDIAOwnedValue(converted$data_cln, "design-numeric", manager)
+                converted <- NULL
+            }
+        }
+        initial <- list(source_reference = reference, column_mapping = column_mapping,
+            data_reference = cleaned_reference)
+        snapshot <- context$snapshot
+        snapshot$design_initial <- initial
+        publishDIAStateHead(context, snapshot)
+        releaseDIAReplacedOwner(manager, reference, cleaned_reference)
+    }
+    state <- buildProtDesignInitialState(metadata$samples, config_list, list())
+    state["data_cln"] <- list(NULL)
+    state$data_reference <- initial$data_reference
+    state$sample_metadata <- metadata$samples
+    state
 }
 
 initializeProtDesignBuilderServerState <- function(
@@ -583,4 +647,3 @@ runProtDesignBuilderServerEntryShell <- function(
         )
     })
 }
-

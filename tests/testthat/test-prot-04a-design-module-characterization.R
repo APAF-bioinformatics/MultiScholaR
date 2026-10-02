@@ -1293,7 +1293,7 @@ test_that("prot design import helpers preserve fallback and bootstrap edge branc
       }
       list(aa_seq_tbl_final = processed_fasta, fasta_metadata = processed_metadata)
     },
-    .env = asNamespace("MultiScholaR")
+    .env = environment()
   )
   shiny::withReactiveDomain(session, {
     expect_identical(
@@ -1422,7 +1422,7 @@ test_that("prot design state checkpoint helpers preserve DIA/TMT state and post-
     PeptideQuantitativeDataDiann = function(...) structure(list(...), class = "mock_peptide_s4"),
     ProteinQuantitativeData = function(...) structure(list(...), class = "mock_protein_s4"),
     .capture_checkpoint = function(...) invisible(NULL),
-    .env = asNamespace("MultiScholaR")
+    .env = environment()
   )
 
   dia_state <- build_checkpoint(
@@ -1469,7 +1469,7 @@ test_that("prot design state checkpoint helpers preserve DIA/TMT state and post-
 
   local_mocked_bindings(
     getUniprotAnnotationsFull = function(...) data.frame(Protein.Ids = "P1", Gene = "GENE1"),
-    .env = asNamespace("MultiScholaR")
+    .env = environment()
   )
   session <- shiny::MockShinySession$new()
   shiny::withReactiveDomain(session, {
@@ -1538,7 +1538,7 @@ test_that("prot design builder host helpers preserve persistence, preview, and o
       "raw_data_s4"
     },
     completeProtDesignPostCheckpoint = function(...) flow_calls <<- c(flow_calls, "complete"),
-    .env = asNamespace("MultiScholaR")
+    .env = environment()
   )
   session <- shiny::MockShinySession$new()
   shiny::withReactiveDomain(session, {

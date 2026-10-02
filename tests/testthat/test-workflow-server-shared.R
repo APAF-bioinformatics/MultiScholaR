@@ -43,8 +43,8 @@ localNamespaceBindings <- function(env, bindings, .local_envir = parent.frame())
 
 makeWorkflowStateStub <- function(default_type = "DIA") {
   list(
-    new = function() {
-      list(workflow_type = default_type)
+    new = function(audit_enabled = TRUE) {
+      list(workflow_type = default_type, audit_enabled = audit_enabled)
     }
   )
 }
@@ -197,6 +197,7 @@ test_that("proteomics workflow server wires modules and advances workflow state"
       expect_equal(captured$calls$import$id, "setup_import")
       expect_equal(captured$calls$design$id, "design_matrix")
       expect_equal(captured$calls$qc$id, "quality_control")
+      expect_false(workflow_data$state_manager$audit_enabled)
       expect_equal(captured$calls$norm$id, "normalization")
       expect_equal(captured$calls$da$id, "differential_expression")
       expect_equal(captured$calls$enrich$id, "enrichment_analysis")

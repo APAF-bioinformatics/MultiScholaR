@@ -1,0 +1,24 @@
+{
+  "schema": "multischolar.dia_gui_capacity.v1",
+  "scope": "full-journey-capacity-v1",
+  "route": "iq",
+  "evidence_kind": "capacity_only",
+  "promotion_authorized": false,
+  "protocol_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+  "treatment": "qs2_duckdb",
+  "settings": {"qc_defaults": true, "normalization": "cyclicloess", "ruv": "skip", "correlation": "skip", "formula": "~ 0 + group", "q_value": 0.05, "treat_lfc": 0},
+  "attempts": {"members_per_selection": 1, "corrections_total": 1, "infrastructure_replacements_total": 1, "stop_on_valid_failure": true},
+  "run_order": ["small:resident", "small:qs2_duckdb", "oom_reference:qs2_duckdb", "report_1gb:qs2_duckdb", "report_2gb:qs2_duckdb"],
+  "recipes": [
+    {"id": "small", "n_proteins": 256, "n_samples": 12, "peptides_per_protein": 4, "forms_per_peptide": 2, "history_depth": 16, "annotation_chars": 96, "seed": 902025, "precursor_rows": 24576},
+    {"id": "report_1gb", "n_proteins": 10000, "n_samples": 48, "peptides_per_protein": 8, "forms_per_peptide": 2, "history_depth": 16, "annotation_chars": 96, "seed": 902002, "precursor_rows": 7680000},
+    {"id": "report_2gb", "n_proteins": 10000, "n_samples": 48, "peptides_per_protein": 16, "forms_per_peptide": 2, "history_depth": 16, "annotation_chars": 96, "seed": 902002, "precursor_rows": 15360000}
+  ],
+  "reference": {
+    "id": "oom_reference",
+    "files": {"report": "representative/report.tsv", "fasta": "browser-smoke.tJ6U1c/proteins.fasta", "design": "browser-smoke.tJ6U1c/design.tsv"},
+    "sha256": {"report": "2414125be92a11fbe4342fdf354e0214915e30592bec66f3e9d6a984f9290841", "fasta": "352b56704c330f3e59646101df2c52a469e5ebe17da652fdd0d3ea85e672f6d4", "design": "4fbd08901905c1339af58ab619d75fade53655484153d627bd7cd39a45bfe6e5"},
+    "failed_members": ["browser-smoke.bQWqlM", "browser-smoke.zqsj4M"]
+  },
+  "size_definition": "Report bytes on disk; record actual decoded S4 size and numeric matrix size separately. Approximate size classes are not exact byte targets or empirical representativeness claims."
+}

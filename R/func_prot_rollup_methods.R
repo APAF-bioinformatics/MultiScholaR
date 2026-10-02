@@ -69,41 +69,79 @@
   })
 }
 
+#' Aggregate complete precursor groups once, retaining the existing numerical contract.
+#' @param prepared Validated native rollup columns.
+#' @param core_utilisation Existing optional multidplyr cluster.
+#' @return Data and missingness counts sharing the same group population.
+#' @noRd
 .rollupSummarisePrepared <- function(prepared, core_utilisation) {
   grouped <- prepared |>
-    dplyr::group_by(
-      .data$.rollup_sample,
-      .data$.rollup_protein,
-      .data$.rollup_peptide
-    )
-
+    dplyr::group_by(.data$.rollup_sample, .data$.rollup_protein, .data$.rollup_peptide)
   if (inherits(core_utilisation, "multidplyr_cluster")) {
-    multidplyr::cluster_assign(
-      core_utilisation,
-      .rollupSumObservedOrNA = .rollupSumObservedOrNA
-    )
-    grouped <- grouped |>
-      multidplyr::partition(core_utilisation)
+    missingness <- grouped |>
+      dplyr::summarise(
+        .raw_observed = sum(!is.na(.data$.rollup_raw)),
+        .raw_missing = sum(is.na(.data$.rollup_raw)),
+        .normalised_observed = sum(!is.na(.data$.rollup_normalised)),
+        .normalised_missing = sum(is.na(.data$.rollup_normalised)), .groups = "drop")
+    multidplyr::cluster_assign(core_utilisation, .rollupSumObservedOrNA = .rollupSumObservedOrNA)
+    output <- grouped |>
+      multidplyr::partition(core_utilisation) |>
+      dplyr::summarise(
+        Peptide.RawQuantity = .rollupSumObservedOrNA(.data$.rollup_raw),
+        Peptide.Normalised = .rollupSumObservedOrNA(.data$.rollup_normalised),
+        peptidoform_count = length(unique(stats::na.omit(.data$.rollup_modified)))) |>
+      dplyr::collect() |>
+      dplyr::ungroup()
+    return(list(data = output, missingness = missingness))
   }
-
-  output <- grouped |>
-    dplyr::summarise(
-      Peptide.RawQuantity = .rollupSumObservedOrNA(.data$.rollup_raw),
-      Peptide.Normalised = .rollupSumObservedOrNA(.data$.rollup_normalised),
-      peptidoform_count = length(unique(stats::na.omit(.data$.rollup_modified)))
-    )
-
-  if (inherits(core_utilisation, "multidplyr_cluster")) {
-    output <- dplyr::collect(output)
+  keys <- dplyr::group_keys(grouped)
+  groups <- dplyr::group_indices(grouped)
+  group_rows <- dplyr::group_rows(grouped)
+  grouped <- NULL
+  raw_observed <- !is.na(prepared$.rollup_raw)
+  normalised_observed <- !is.na(prepared$.rollup_normalised)
+  observed <- cbind(raw_observed = as.integer(raw_observed),
+    normalised_observed = as.integer(normalised_observed))
+  sums <- if (nrow(prepared)) rowsum(observed, groups, reorder = TRUE) else
+    matrix(numeric(), nrow = 0L, ncol = 2L, dimnames = list(NULL, colnames(observed)))
+  raw_values <- prepared$.rollup_raw
+  normalised_values <- prepared$.rollup_normalised
+  # Use the original R summation, including its accumulation precision. A
+  # last-bit difference can change a subsequent ceiling/threshold decision.
+  raw_totals <- vapply(group_rows, function(at) sum(raw_values[at], na.rm = TRUE), numeric(1))
+  normalised_totals <- vapply(group_rows, function(at) sum(normalised_values[at], na.rm = TRUE), numeric(1))
+  sizes <- tabulate(groups, nbins = nrow(keys))
+  missingness <- keys
+  missingness$.raw_observed <- as.integer(sums[, "raw_observed"])
+  missingness$.raw_missing <- sizes - missingness$.raw_observed
+  missingness$.normalised_observed <- as.integer(sums[, "normalised_observed"])
+  missingness$.normalised_missing <- sizes - missingness$.normalised_observed
+  quantity <- function(total, observed, source) {
+    total <- unname(total)
+    total[observed == 0L] <- NA_real_
+    # Native sum(integer) remains integer unless an all-missing group or overflow
+    # promotes the common output type to double.
+    if (is.integer(source) && length(total) && all(observed > 0L) &&
+        all(total <= .Machine$integer.max)) as.integer(total) else as.numeric(total)
   }
+  output <- keys
+  output$Peptide.RawQuantity <- quantity(raw_totals, missingness$.raw_observed, prepared$.rollup_raw)
+  output$Peptide.Normalised <- quantity(normalised_totals, missingness$.normalised_observed,
+    prepared$.rollup_normalised)
+  forms <- data.frame(group = groups, modified = prepared$.rollup_modified, stringsAsFactors = FALSE)
+  unique_forms <- !is.na(forms$modified) & !duplicated(forms)
+  output$peptidoform_count <- tabulate(groups[unique_forms], nbins = nrow(keys))
+  list(data = output, missingness = missingness)
+}
 
-  output |>
-    dplyr::ungroup() |>
-    dplyr::arrange(
-      .data$.rollup_sample,
-      .data$.rollup_protein,
-      .data$.rollup_peptide
-    )
+#' Collapse distinct accession strings with the existing token and ordering rules.
+#' @param values Protein accession observations, possibly repeated across samples.
+#' @return Native semicolon-separated annotation.
+#' @noRd
+collapseRollupProteinIds <- function(values) {
+  tokens <- trimws(unlist(strsplit(unique(as.character(values)), ";", fixed = TRUE)))
+  paste(sort(unique(tokens[!is.na(tokens) & nzchar(tokens)])), collapse = ";")
 }
 
 # ----------------------------------------------------------------------------
@@ -232,8 +270,7 @@ rollUpPrecursorToPeptideHelper <- function(input_table,
     )
   }
 
-  duplicate_rows <- duplicated(input_table[identity_columns]) |
-    duplicated(input_table[identity_columns], fromLast = TRUE)
+  duplicate_rows <- duplicated(input_table[identity_columns])
   if (any(duplicate_rows)) {
     duplicate_examples <- .rollupDuplicateExamples(input_table, identity_columns)
     stop(
@@ -259,21 +296,10 @@ rollUpPrecursorToPeptideHelper <- function(input_table,
     check.names = FALSE
   )
 
-  missingness <- prepared |>
-    dplyr::group_by(
-      .data$.rollup_sample,
-      .data$.rollup_protein,
-      .data$.rollup_peptide
-    ) |>
-    dplyr::summarise(
-      .raw_observed = sum(!is.na(.data$.rollup_raw)),
-      .raw_missing = sum(is.na(.data$.rollup_raw)),
-      .normalised_observed = sum(!is.na(.data$.rollup_normalised)),
-      .normalised_missing = sum(is.na(.data$.rollup_normalised)),
-      .groups = "drop"
-    )
-
-  peptide_normalised_tbl <- .rollupSummarisePrepared(prepared, core_utilisation)
+  aggregated <- .rollupSummarisePrepared(prepared, core_utilisation)
+  peptide_normalised_tbl <- aggregated$data
+  missingness <- aggregated$missingness
+  aggregated <- NULL
   names(peptide_normalised_tbl)[names(peptide_normalised_tbl) == ".rollup_sample"] <- sample_id_str
   names(peptide_normalised_tbl)[names(peptide_normalised_tbl) == ".rollup_protein"] <- protein_id_str
   names(peptide_normalised_tbl)[names(peptide_normalised_tbl) == ".rollup_peptide"] <- peptide_sequence_str
@@ -296,11 +322,7 @@ rollUpPrecursorToPeptideHelper <- function(input_table,
       ) |>
       dplyr::distinct()
 
-    conflicting_evidence <- frozen_evidence |>
-      dplyr::count(.data[[protein_id_str]], name = ".evidence_rows") |>
-      dplyr::filter(.data$.evidence_rows != 1L)
-
-    if (nrow(conflicting_evidence) > 0L) {
+    if (anyDuplicated(frozen_evidence[[protein_id_str]])) {
       stop(
         "rollUpPrecursorToPeptideHelper: conflicting frozen identification evidence for one or more protein groups.",
         call. = FALSE
@@ -315,17 +337,10 @@ rollUpPrecursorToPeptideHelper <- function(input_table,
   # accession provenance for annotation and reporting, but never substituted
   # for that active grouping key.
   if (protein_id_str != "Protein.Ids" && "Protein.Ids" %in% input_names) {
-    collapse_protein_ids <- function(values) {
-      tokens <- unlist(strsplit(as.character(values), ";", fixed = TRUE))
-      tokens <- trimws(tokens)
-      tokens <- tokens[!is.na(tokens) & nzchar(tokens)]
-      paste(sort(unique(tokens)), collapse = ";")
-    }
-
     protein_id_annotations <- input_table |>
       dplyr::group_by(.data[[protein_id_str]]) |>
       dplyr::summarise(
-        Protein.Ids = collapse_protein_ids(.data$Protein.Ids),
+        Protein.Ids = collapseRollupProteinIds(.data$Protein.Ids),
         .groups = "drop"
       )
 
@@ -345,7 +360,7 @@ rollUpPrecursorToPeptideHelper <- function(input_table,
     active_protein_key = protein_id_str,
     precursor_identity_mode = identity_mode,
     input_precursor_rows = nrow(input_table),
-    unique_precursor_identities = nrow(unique(input_table[identity_columns])),
+    unique_precursor_identities = nrow(input_table),
     output_stripped_peptide_identities = nrow(peptide_normalised_tbl),
     raw_partial_missing_outputs = sum(
       missingness$.raw_observed > 0L & missingness$.raw_missing > 0L

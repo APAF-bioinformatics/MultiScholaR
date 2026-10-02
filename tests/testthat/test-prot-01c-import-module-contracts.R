@@ -326,6 +326,34 @@ test_that("buildProtImportFormatSpecificOptionsUi renders per-format controls", 
   expect_match(fallbackHtml, "Format-specific options not available")
 })
 
+test_that("Parquet header inspection reads only schema and closes its stream", {
+  table <- data.frame("Protein.Group" = c("p1", "p2"), "Run space" = c("a", "b"),
+    quantity = c(NA_real_, Inf), check.names = FALSE)
+  path <- withr::local_tempfile(fileext = ".parquet")
+  arrow::write_parquet(table, path)
+  original <- arrow::ReadableFile
+  observed <- new.env(parent = emptyenv())
+  # Keep the native R6 constructor used by Arrow's C++ factory; spy only on create.
+  reader_factory <- list2env(base::as.list.environment(original, all.names = TRUE),
+    parent = parent.env(original))
+  class(reader_factory) <- class(original)
+  reader_factory$create <- function(path) {
+    observed$stream <- original$create(path)
+    observed$stream
+  }
+  testthat::local_mocked_bindings(
+    read_parquet = function(...) stop("table read forbidden for header inspection"),
+    ReadableFile = reader_factory, .package = "arrow")
+  expect_identical(readProtImportHeaders(path), names(table))
+  expect_error(observed$stream$Read(1L), "closed")
+  testthat::with_mocked_bindings({
+    expect_error(readProtImportHeaders(path), "injected schema failure")
+    expect_error(observed$stream$Read(1L), "closed")
+  }, ParquetFileReader = list(create = function(...) {
+    list(GetSchema = function() stop("injected schema failure"))
+  }), .package = "arrow")
+})
+
 test_that("readProtImportHeaders reads plain, parquet, and zip/xlsx headers", {
   plainFile <- tempfile(fileext = ".tsv")
   writeLines(c("Protein.Group\tRun\tIntensity", "P1\tS1\t10"), plainFile)
@@ -2256,7 +2284,7 @@ test_that("mod_prot_import_server stores successful import side effects", {
         processFastaFile = function(...) {
           mockFastaResult()
         },
-        readConfigFile = function(file) {
+        readProtGuiConfig = function(file) {
           expect_equal(file, fixture$configPath)
           configStub
         },

@@ -1,7 +1,14 @@
 #' Internal session loading handler for Proteomics DA module
 #' @keywords internal
 da_server_load_session_handler <- function(input, output, session, da_data, workflow_data, experiment_paths) {
+  native_volumes <- NULL
+  if (requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()) {
+    native_volumes <- shinyFiles::getVolumes()
+    shinyFiles::shinyFileChoose(input, "session_archive", roots = native_volumes, session = session,
+      filetypes = c("tar", "rds", "RDS"))
+  }
   shiny::observeEvent(input$load_filtered_session, {
+    withDIAStateScope(getDIAActiveManager(), function() {
     cat("=== LOAD FILTERED SESSION BUTTON CLICKED (DA) ===\n")
 
     tryCatch(
@@ -12,7 +19,18 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
           stop("Could not find the source directory to load session data.")
         }
 
-        latest_session_file <- file.path(source_dir, "filtered_session_data_latest.rds")
+        selected_session <- NULL
+        if (!is.null(native_volumes) && !is.null(input$session_archive)) {
+          selected <- shinyFiles::parseFilePaths(native_volumes, input$session_archive)
+          if (nrow(selected) == 1L) selected_session <- as.character(selected$datapath[[1L]])
+        } else if (!is.null(input$session_archive_standard$datapath)) {
+          selected_session <- input$session_archive_standard$datapath
+        }
+        native_pointer <- file.path(source_dir, "filtered_session_latest.json")
+        native_requested <- !is.null(selected_session) && grepl("[.]msdia[.]tar$", selected_session) ||
+          is.null(selected_session) && file.exists(native_pointer)
+        latest_session_file <- if (!is.null(selected_session)) selected_session else if (native_requested)
+          native_pointer else file.path(source_dir, "filtered_session_data_latest.rds")
 
         if (!file.exists(latest_session_file)) {
           stop("No exported session data found. Please export session data from the Normalization tab first.")
@@ -21,8 +39,28 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
         shiny::withProgress(message = "Loading filtered session data...", value = 0, {
           # Step 1: Load session data
           shiny::incProgress(0.3, detail = "Reading session file...")
-          session_data <- readRDS(latest_session_file)
-          validateProtDaFilteredSession(session_data, source_dir = source_dir)
+          if (native_requested) {
+            session_data <- if (is.null(selected_session))
+              resolveDIANativeOwnedExport(workflow_data$state_manager, native_pointer) else NULL
+            if (is.null(session_data)) {
+              archive <- if (is.null(selected_session)) readDIANativeLatestPath(native_pointer) else selected_session
+              imported <- openDIANativeSession(archive, source_dir)
+              session_data <- adoptDIANativeSession(imported, workflow_data, session, source_dir, experiment_paths)
+            }
+            owned_generation <- TRUE
+          } else {
+            session_data <- resolveDIAOwnedExport(workflow_data$state_manager, latest_session_file)
+            owned_generation <- !is.null(session_data)
+            if (!owned_generation) session_data <- readRDS(latest_session_file)
+          }
+          validateProtDaFilteredSession(session_data, source_dir = source_dir, manager = workflow_data$state_manager)
+          if (!owned_generation && ingestDIANativeLegacySession(session_data,
+              workflow_data, session, source_dir, experiment_paths)) {
+            owned_generation <- TRUE
+            session_data$current_s4_object <- getDIAStateReference(workflow_data$state_manager)
+            session_data$correlation_filtered_s4 <- getDIAStateReference(workflow_data$state_manager, "correlation_filtered")
+            session_data$r6_complete_states <- NULL
+          }
 
           cat("*** LOAD: Session data loaded successfully ***\n")
           cat(sprintf("*** LOAD: Export timestamp: %s ***\n", session_data$export_timestamp))
@@ -49,14 +87,26 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
             r6_state_history <- names(r6_complete_states)
           }
 
-          workflow_data$state_manager$states <- r6_complete_states
-          workflow_data$state_manager$state_history <- r6_state_history
-          workflow_data$state_manager$current_state <- session_data$r6_current_state_name
+          if (owned_generation) {
+            cat("*** LOAD DA: Verified owned generation; existing history retained ***\n")
+          } else if (inherits(workflow_data$state_manager, "DIAStateAdapter")) {
+            restoreDIAStateSession(workflow_data$state_manager, r6_complete_states,
+              r6_state_history, session_data$r6_current_state_name)
+          } else {
+            workflow_data$state_manager$states <- r6_complete_states
+            workflow_data$state_manager$state_history <- r6_state_history
+            workflow_data$state_manager$current_state <- session_data$r6_current_state_name
+          }
 
           cat("*** LOAD DA: R6 state manager completely restored ***\n")
-          cat(sprintf("*** LOAD DA: Restored %d states ***\n", length(r6_complete_states)))
+          cat(sprintf("*** LOAD DA: Restored %d states ***\n", if (owned_generation)
+            length(workflow_data$state_manager$.context$snapshot$states) else length(r6_complete_states)))
           cat(sprintf("*** LOAD DA: State history: %s ***\n", paste(unlist(r6_state_history), collapse = " -> ")))
           cat(sprintf("*** LOAD DA: Current state set to: %s ***\n", session_data$r6_current_state_name))
+          if (inherits(workflow_data$state_manager, "DIAStateAdapter")) {
+            r6_complete_states <- NULL
+            session_data$r6_complete_states <- NULL
+          }
 
           # Step 3: Restore workflow data
           shiny::incProgress(0.2, detail = "Restoring workflow data...")
@@ -91,10 +141,14 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
             }
           }
 
+          # Formula access is metadata-only for native component sessions.
+          loaded_args <- if (isSavedWorkflowReference(session_data$current_s4_object))
+            readDIAStateMetadata(workflow_data$state_manager, session_data$current_s4_object)$data$slots$args else
+            session_data$current_s4_object@args
           # Extract formula from S4 object
-          if (!is.null(session_data$current_s4_object) && "deAnalysisParameters" %in% names(session_data$current_s4_object@args)) {
-            if ("formula_string" %in% names(session_data$current_s4_object@args$deAnalysisParameters)) {
-              formula_from_s4 <- session_data$current_s4_object@args$deAnalysisParameters$formula_string
+          if (!is.null(session_data$current_s4_object) && "deAnalysisParameters" %in% names(loaded_args)) {
+            if ("formula_string" %in% names(loaded_args$deAnalysisParameters)) {
+              formula_from_s4 <- loaded_args$deAnalysisParameters$formula_string
               da_data$formula_from_s4 <- formula_from_s4
 
               # Update UI with formula from S4
@@ -115,7 +169,10 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
               # Try to load uniprot_dat_cln.RDS from scripts directory
               scripts_uniprot_path <- file.path(source_dir, "uniprot_dat_cln.RDS")
 
-              if (file.exists(scripts_uniprot_path)) {
+              if (native_requested && is.data.frame(session_data$uniprot_dat_cln)) {
+                workflow_data$uniprot_dat_cln <- session_data$uniprot_dat_cln
+                assign("uniprot_dat_cln", session_data$uniprot_dat_cln, envir = .GlobalEnv)
+              } else if (file.exists(scripts_uniprot_path)) {
                 cat(sprintf("*** LOAD: Found uniprot_dat_cln.RDS at %s ***\n", scripts_uniprot_path))
 
                 uniprot_dat_cln <- readRDS(scripts_uniprot_path)
@@ -239,6 +296,30 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
           workflow_data$tab_status <- updated_status
 
           # Trigger state update for other modules
+          manager <- workflow_data$state_manager
+          if (usesDIAReferenceStates(manager) && !is.null(manager$.context$snapshot$da_results)) {
+            results <- resolveDIAStateValue(manager$.context, manager$.context$snapshot$da_results)
+            if (!isDIAResultManifest(results)) stop("Native DA result metadata is invalid")
+            current_components <- readDIAStateMetadata(manager)$data$components
+            tested_components <- readDIAStateMetadata(manager, results$source)$data$components
+            matching <- identical(current_components[c("protein_quant_table", "design_matrix", "protein_id_table")],
+              tested_components[c("protein_quant_table", "design_matrix", "protein_id_table")])
+            if (matching) {
+            da_data$da_results_list <- results
+            da_data$analysis_complete <- TRUE
+            workflow_data$da_analysis_results_list <- results
+            choices <- stats::setNames(results$contrasts$friendly_names, results$contrasts$friendly_names)
+            for (name in c("volcano_contrast", "heatmap_contrast", "table_contrast"))
+              shiny::updateSelectInput(session, name, choices = choices)
+            shiny::updateTextAreaInput(session, "formula_string", value = results$parameters$formula)
+            shiny::updateNumericInput(session, "da_q_val_thresh", value = results$parameters$qvalue)
+            shiny::updateNumericInput(session, "treat_lfc_cutoff", value = results$parameters$lfc)
+            } else {
+              da_data$da_results_list <- NULL
+              da_data$analysis_complete <- FALSE
+              workflow_data$da_analysis_results_list <- NULL
+            }
+          }
           workflow_data$state_update_trigger <- Sys.time()
         })
 
@@ -273,5 +354,6 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
         )
       }
     )
+    })
   })
 }

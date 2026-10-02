@@ -271,7 +271,7 @@ renderProtNormRuvCanonicalCorrelationPlot <- function(
     cancor_plot <- getCanonicalCorrelationPlotFn(normData$ruv_optimization_result)
 
     if (!is.null(cancor_plot)) {
-      cancor_plot
+      if (inherits(cancor_plot, "grob")) grid::grid.draw(cancor_plot) else cancor_plot
     } else {
       plotNewFn()
       textFn(0.5, 0.5, "Run normalization to generate RUV canonical correlation plot", cex = 1.2)

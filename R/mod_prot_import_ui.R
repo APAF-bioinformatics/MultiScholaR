@@ -60,6 +60,11 @@ mod_prot_import_ui <- function(id) {
                                   "Proteome Discoverer TMT" = "pd_tmt"),
                         selected = "auto",
                         inline = TRUE),
+            shiny::radioButtons(ns("dia_quantification_method"),
+                        "DIA-NN protein quantification (choose before import):",
+                        choices = c("IQ MaxLFQ" = "iq", "limpa DPC-Quant" = "limpa"),
+                        selected = "iq", inline = TRUE),
+            shiny::helpText("Native DIA-IQ sessions keep this route fixed until a new project/import. Other formats are unchanged."),
             
             shiny::h4("Step 2: Import FASTA File"),
             shiny::div(

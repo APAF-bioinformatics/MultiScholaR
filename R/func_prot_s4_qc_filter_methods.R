@@ -77,6 +77,15 @@ setMethod(
       NA
     )
 
+    # Restored GUI results describe a backend, not a live process pool. A pool
+    # created here belongs to this call; an explicitly supplied pool does not.
+    worker_spec <- NULL
+    if (inherits(core_utilisation, "DIAWorkerSpec")) {
+      worker_spec <- core_utilisation
+      core_utilisation <- startDIAWorkerCluster(worker_spec)
+      on.exit(stopDIAWorkerCluster(core_utilisation), add = TRUE)
+    }
+
     theObject <- updateParamInObject(theObject, "grouping_variable")
     theObject <- updateParamInObject(theObject, "core_utilisation")
 
@@ -110,6 +119,9 @@ setMethod(
 
     updated_object <- theObject
 
+    if (!is.null(worker_spec)) {
+      updated_object@args$removeProteinsWithOnlyOneReplicate$core_utilisation <- worker_spec
+    }
     return(updated_object)
   }
 )
@@ -717,4 +729,3 @@ setMethod(
     return(theObject)
   }
 )
-

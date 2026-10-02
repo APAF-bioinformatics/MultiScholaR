@@ -189,7 +189,8 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
   flush.console()
 
   suppressMessages({
-    fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE, progress = FALSE)
+    fasta_file_raw <- vroom::vroom(fasta_file_path, delim = "\n", col_names = FALSE,
+                                  n_max = 1L, progress = FALSE)
   })
   first_line <- fasta_file_raw$X1[1]
 
@@ -262,4 +263,3 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
     ))
   }
 }
-

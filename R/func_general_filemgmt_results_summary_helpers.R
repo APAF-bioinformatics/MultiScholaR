@@ -323,10 +323,26 @@ copyToResultsSummary <- function(omic_type,
     )
 
     if (omic_type == "proteomics") {
+        composite_pdf <- file.path(current_paths$feature_qc_dir, "composite_QC_figure.pdf")
+        composite_png <- file.path(current_paths$feature_qc_dir, "composite_QC_figure.png")
+        if (!file.exists(composite_pdf)) {
+            composite_pdf <- file.path(current_paths$feature_qc_dir,
+                "proteomics_composite_QC_figure.pdf")
+        }
+        if (!file.exists(composite_png)) {
+            composite_png <- file.path(current_paths$feature_qc_dir,
+                "proteomics_composite_QC_figure.png")
+        }
+        correlation_plot <- file.path(current_paths$time_dir,
+            "12_correlation_filtered_combined_plots.png")
+        if (file.exists(correlation_plot)) {
+            files_to_copy <- c(files_to_copy, list(list(source = correlation_plot,
+                dest = "QC_figures", is_dir = FALSE,
+                display_name = "Correlation Filtered Plots")))
+        }
         files_to_copy <- c(files_to_copy, list(
-            list(source = file.path(current_paths$time_dir, "12_correlation_filtered_combined_plots.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Correlation Filtered Plots"),
-            list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.pdf"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PDF)", new_name = paste0(omic_type, "_composite_QC_figure.pdf")),
-            list(source = file.path(current_paths$feature_qc_dir, "composite_QC_figure.png"), dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = paste0(omic_type, "_composite_QC_figure.png")),
+            list(source = composite_pdf, dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PDF)", new_name = paste0(omic_type, "_composite_QC_figure.pdf")),
+            list(source = composite_png, dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = paste0(omic_type, "_composite_QC_figure.png")),
             list(source = file.path(current_paths$publication_graphs_dir, "Interactive_Volcano_Plots"), dest = "Publication_figures/Interactive_Volcano_Plots", is_dir = TRUE, display_name = "Interactive Volcano Plots"),
             list(source = file.path(current_paths$publication_graphs_dir, "NumSigDaMolecules"), dest = "Publication_figures/NumSigDaMolecules", is_dir = TRUE, display_name = "Num Sig DA Molecules"),
             list(source = file.path(current_paths$publication_graphs_dir, "Volcano_Plots"), dest = "Publication_figures/Volcano_Plots", is_dir = TRUE, display_name = "Volcano Plots"),
@@ -382,6 +398,12 @@ copyToResultsSummary <- function(omic_type,
                 list(source = ruv_rds_path, dest = "Publication_tables", is_dir = FALSE, display_name = "Normalized Results RDS", new_name = "normalised_results.RDS")
             ))
             cat("COPY: Warning - neither RUV nor normalized files found, attempting RUV paths\n")
+        }
+        if (isDIANativeSession(getDIAActiveManager())) {
+            files_to_copy <- Filter(\(entry) !entry$source %in% c(ruv_rds_path, norm_rds_path),
+                files_to_copy)
+            copyDIANativeSessionArtifact(current_paths$source_dir,
+                file.path(current_paths$results_summary_dir, "Publication_tables", "filtered_session.msdia.tar"))
         }
     } else if (omic_type == "metabolomics") {
         cat("COPY: Adding metabolomics-specific files\n")

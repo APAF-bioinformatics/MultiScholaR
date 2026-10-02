@@ -4,7 +4,8 @@ library(testthat)
 if (!methods::isClass("FakeSharedProteinReplicateState")) {
   methods::setClass(
     "FakeSharedProteinReplicateState",
-    slots = c(protein_quant_table = "data.frame")
+    slots = c(protein_quant_table = "data.frame", protein_id_column = "character"),
+    prototype = list(protein_id_column = "Protein.Ids")
   )
 }
 
@@ -123,6 +124,11 @@ withSharedProteinReplicatePackageMocks <- function(server_env,
   )
 
   testthat::local_mocked_bindings(
+    new_cluster = function(n) {
+      captured$requested_workers <- n
+      structure(list(requested_workers = n), class = "fixture_cluster")
+    },
+    is_test_mode = function() FALSE,
     removeProteinsWithOnlyOneReplicate = function(theObject,
                                                   core_utilisation,
                                                   grouping_variable) {
@@ -136,7 +142,8 @@ withSharedProteinReplicatePackageMocks <- function(server_env,
       }
       filtered_state
     },
-    .env = server_env
+    .package = "MultiScholaR",
+    .env = parent.frame()
   )
 }
 
@@ -211,7 +218,8 @@ withSharedProteinReplicateUiMocks <- function(server_env,
       captured$drawn_plot <- value
       invisible(NULL)
     },
-    .env = server_env
+    .package = "MultiScholaR",
+    .env = mock_frame
   )
 
   testthat::local_mocked_bindings(
@@ -278,6 +286,7 @@ test_that("proteomics protein replicate module preserves successful apply behavi
   )
 
   expect_identical(captured$filter_input$theObject, current_state)
+  expect_identical(captured$requested_workers, 3)
   expect_identical(captured$filter_input$grouping_variable, "group")
   expect_identical(workflow_data$qc_params$protein_qc$replicate_filter$grouping_variable, "group")
   expect_identical(workflow_data$qc_params$protein_qc$replicate_filter$parallel_cores, 3)
@@ -360,6 +369,7 @@ test_that("proteomics protein replicate module preserves fallback output and qc-
     captured$save_state$config_object$output_file,
     "remove_proteins_with_only_one_rep.tsv"
   )
+  expect_identical(captured$requested_workers, 2)
   expect_true(any(grepl("Could not save QC parameters file", captured$log_warn, fixed = TRUE)))
   expect_match(captured$output$protein_replicate_filter_results, "Output file: remove_proteins_with_only_one_rep.tsv", fixed = TRUE)
 })

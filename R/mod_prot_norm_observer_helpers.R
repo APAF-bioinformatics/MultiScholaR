@@ -144,6 +144,59 @@ runProtNormModuleServerShell <- function(
   }
 
   normData <- createReactiveStateFn()
+  output$export_s4_compatibility <- shiny::downloadHandler(
+    filename = function() paste0(omicType, "_", experimentLabel, "_final_s4.RDS"),
+    content = function(file) {
+      names <- resolveProtNormCorrelationResultFilenames(normData$ruv_optimization_result,
+        workflowData$ruv_optimization_result)
+      canonical <- file.path(experimentPaths$protein_qc_dir, names$rdsFilename)
+      exportDIAS4Compatibility(workflowData$state_manager, canonical)
+      if (!file.copy(canonical, file, overwrite = TRUE)) stop("Could not deliver compatibility export")
+      if (!is.null(experimentPaths$integration_dir)) {
+        destination <- file.path(experimentPaths$integration_dir,
+          paste0(omicType, "_", experimentLabel, "_final_s4.RDS"))
+        if (!file.copy(canonical, destination, overwrite = TRUE)) stop("Could not publish compatibility Integration file")
+      }
+    }
+  )
+
+
+  shiny::observeEvent(workflowData$native_session_restored, {
+    manager <- workflowData$state_manager
+    if (!usesDIAReferenceStates(manager)) return(invisible(NULL))
+    withDIAStateScope(manager, function() {
+      context <- manager$.context
+      extra <- context$native_extra_references %||% list()
+      metadata <- if (!is.null(context$native_metadata_reference))
+        resolveDIAStateValue(context, context$native_metadata_reference) else list()
+      normData$normalization_input_reference <- extra$normalization_input_reference %||%
+        getDIAStateReference(manager, "protein_replicate_filtered")
+      normData$normalized_protein_obj <- extra$normalized_protein_obj %||% getDIAStateReference(manager, "normalized")
+      normData$ruv_normalized_obj <- extra$ruv_normalized_obj %||%
+        getDIAStateReference(manager, "ruv_corrected") %||% getDIAStateReference(manager, "normalized")
+      normData$correlation_filtered_obj <- getDIAStateReference(manager, "correlation_filtered")
+      active_history <- manager$getHistory()
+      normalized_active <- any(c("normalized", "ruv_corrected", "correlation_filtered") %in% active_history)
+      normData$normalization_complete <- normalized_active && !is.null(normData$normalized_protein_obj)
+      normData$ruv_complete <- normalized_active && !is.null(normData$ruv_normalized_obj)
+      normData$correlation_filtering_complete <- "correlation_filtered" %in% active_history &&
+        !is.null(normData$correlation_filtered_obj)
+      if (!normalized_active) normData$normalized_protein_obj <- normData$ruv_normalized_obj <- NULL
+      if (!"correlation_filtered" %in% active_history) normData$correlation_filtered_obj <- NULL
+      ruv <- metadata$ruv_optimization_result
+      if (!is.null(ruv$best_cancor_plot) && !inherits(ruv$best_cancor_plot, "grob"))
+        ruv$best_cancor_plot <- ggplot2::ggplotGrob(stripProtNormQcPlotOwners(ruv$best_cancor_plot))
+      normData$ruv_optimization_result <- ruv
+      normData$best_k <- metadata$ruv_k
+      normData$control_genes_index <- ruv$best_control_genes_index
+      normData$correlation_threshold <- metadata$correlation_threshold
+      normData$pre_norm_qc_generated <- FALSE
+      normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1L
+      if (!is.null(metadata$normalization_method)) shiny::updateSelectInput(session, "norm_method",
+        selected = metadata$normalization_method)
+      invisible(NULL)
+    })
+  }, ignoreInit = TRUE)
 
   getPlotAesthetics <- function() {
     getPlotAestheticsFn(input$color_variable, input$shape_variable)
@@ -165,7 +218,7 @@ runProtNormModuleServerShell <- function(
   generatePostNormalizationQc <- function(normalizedS4) {
     normData$qc_plot_paths <- generatePostNormalizationQcArtifactsFn(
       normalizedS4 = normalizedS4,
-      qcDir = experimentPaths$protein_qc_dir,
+      qcDir = normData$publication_paths$protein_qc_dir %||% experimentPaths$protein_qc_dir,
       aesthetics = getPlotAesthetics(),
       qcPlotPaths = normData$qc_plot_paths
     )
@@ -176,7 +229,7 @@ runProtNormModuleServerShell <- function(
   generateRuvCorrectedQc <- function(ruvCorrectedS4) {
     normData$qc_plot_paths <- generateRuvCorrectedQcArtifactsFn(
       ruvCorrectedS4 = ruvCorrectedS4,
-      qcDir = experimentPaths$protein_qc_dir,
+      qcDir = normData$publication_paths$protein_qc_dir %||% experimentPaths$protein_qc_dir,
       aesthetics = getPlotAesthetics(),
       qcPlotPaths = normData$qc_plot_paths
     )

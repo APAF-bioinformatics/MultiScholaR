@@ -197,7 +197,14 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
     }, ignoreNULL = TRUE, once = TRUE) # Run only once when triggered
     
     # Final step: update tab status when the final state is reached
-    shiny::observeEvent(workflow_data$state_manager$states$protein_replicate_filtered, {
+    shiny::observeEvent({
+      if (inherits(workflow_data$state_manager, "DIAStateAdapter")) {
+        workflow_data$state_update_trigger
+        if (hasDIAState(workflow_data$state_manager, "protein_replicate_filtered")) TRUE else NULL
+      } else {
+        workflow_data$state_manager$states$protein_replicate_filtered
+      }
+    }, {
       # This observer is triggered when the final protein state is reached.
       # It can be used to update the UI or perform final actions.
       logger::log_info("Final protein state reached. Quality Control module is ready.")

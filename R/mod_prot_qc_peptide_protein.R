@@ -84,8 +84,16 @@ runProteinPeptideApplyStep <- function(workflowData,
                                        filterMinNumPeptidesPerProteinFn = filterMinNumPeptidesPerProtein,
                                        logInfoFn = logger::log_info,
                                        nowFn = Sys.time) {
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    return(runDIAReferencePeptideGroups(workflowData, "filterMinNumPeptidesPerProtein",
+      list(num_peptides_per_protein_thresh = minPeptidesPerProtein, num_peptidoforms_per_protein_thresh = minPeptidoformsPerProtein), "protein_peptide_filtered", "Applied minimum peptides per protein filter"))
+  }
+
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
+  predecessor <- if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+    workflowData$state_manager$.context$snapshot$states[[workflowData$state_manager$current_state]]
+  } else NULL
+  currentS4 <- getDIAExecutionState(workflowData$state_manager, "filterMinNumPeptidesPerProtein")
   shiny::req(currentS4)
 
   logInfoFn(sprintf(
@@ -151,6 +159,9 @@ runProteinPeptideApplyStep <- function(workflowData,
     now = nowFn()
   )
 
+  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
+  currentS4 <- NULL
+  prepareDIACapacityRollupInput(workflowData$state_manager, filteredS4)
   proteinCount <- .countPeptideProteinGroups(filteredS4)
 
   resultText <- paste(
@@ -174,17 +185,21 @@ updateProteinPeptideOutputs <- function(output,
                                         omicType,
                                         experimentLabel,
                                         renderTextFn = renderText,
-                                        updateProteinFilteringFn = updateProteinFiltering) {
-  output$protein_peptida_results <- renderTextFn(proteinPeptideResult$resultText)
+                                        updateProteinFilteringFn = updateProteinFiltering, projectDirs = NULL) {
+  output$protein_peptida_results <- renderPeptideQcResultText(proteinPeptideResult$resultText, renderTextFn)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = proteinPeptideResult$filteredS4@peptide_data,
+  plot_arguments <- list(
+    data = proteinPeptideResult$filteringSummary %||% proteinPeptideResult$filteredS4@peptide_data,
     step_name = "3_protein_peptide_filtered",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,
     overwrite = TRUE
   )
+  if (!is.null(projectDirs)) plot_arguments$project_dirs <- projectDirs
+  plotGrid <- if (!is.null(proteinPeptideResult$stateReference)) {
+    publishDIAQvalueOutput(getDIAActiveManager(), proteinPeptideResult, plot_arguments, updateProteinFilteringFn)
+  } else do.call(updateProteinFilteringFn, plot_arguments)
   proteinPeptidePlot(plotGrid)
 
   invisible(plotGrid)
@@ -202,7 +217,8 @@ runProteinPeptideApplyObserver <- function(workflowData,
                                            showNotificationFn = shiny::showNotification,
                                            removeNotificationFn = shiny::removeNotification,
                                            logInfoFn = logger::log_info,
-                                           logErrorFn = logger::log_error) {
+                                           logErrorFn = logger::log_error, experimentPaths = NULL) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Applying protein peptide count filter...",
     id = "protein_peptide_working",
@@ -216,13 +232,19 @@ runProteinPeptideApplyObserver <- function(workflowData,
       minPeptidoformsPerProtein = minPeptidoformsPerProtein
     )
 
-    plotGrid <- updateOutputsFn(
+    output_arguments <- list(
       output = output,
       proteinPeptidePlot = proteinPeptidePlot,
       proteinPeptideResult = proteinPeptideResult,
       omicType = omicType,
       experimentLabel = experimentLabel
     )
+    if (!is.null(experimentPaths)) {
+      output_arguments$projectDirs <- stats::setNames(
+        list(experimentPaths), paste(omicType, experimentLabel, sep = "_")
+      )
+    }
+    plotGrid <- do.call(updateOutputsFn, output_arguments)
 
     logInfoFn("Protein peptide count filter applied successfully")
     removeNotificationFn("protein_peptide_working")
@@ -247,6 +269,7 @@ runProteinPeptideApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runProteinPeptideRevertStep <- function(workflowData,
@@ -257,7 +280,7 @@ runProteinPeptideRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, previousState)
   logInfoFn(paste("Reverted protein peptide filter to", previousState))
 
   list(
@@ -273,9 +296,10 @@ runProteinPeptideRevertObserver <- function(workflowData,
                                             renderTextFn = shiny::renderText,
                                             showNotificationFn = shiny::showNotification,
                                             logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$protein_peptida_results <- renderTextFn(revertResult$resultText)
+    output$protein_peptida_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     showNotificationFn("Reverted successfully", type = "message")
 
     list(
@@ -292,16 +316,17 @@ runProteinPeptideRevertObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
-mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, experiment_label, experiment_paths = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     
     protein_peptide_plot <- shiny::reactiveVal(NULL)
     
     # Step 4: Protein Peptide Count Filter (chunk 13)
     shiny::observeEvent(input$apply_protein_peptide_filter, {
-      runProteinPeptideApplyObserver(
+      apply_arguments <- list(
         workflowData = workflow_data,
         minPeptidesPerProtein = input$min_peptides_per_protein,
         minPeptidoformsPerProtein = input$min_peptidoforms_per_protein,
@@ -310,6 +335,8 @@ mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, exp
         omicType = omic_type,
         experimentLabel = experiment_label
       )
+      if (!is.null(experiment_paths)) apply_arguments$experimentPaths <- experiment_paths
+      do.call(runProteinPeptideApplyObserver, apply_arguments)
     })
     
     # Revert Protein Peptide Filter

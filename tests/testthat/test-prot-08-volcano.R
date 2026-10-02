@@ -249,6 +249,39 @@ test_that("generateProtDAVolcanoPlotGlimma preserves fuzzy, prefix, and UniProt 
   expect_prot_glimma_widget(prefix_result)
 })
 
+test_that("Glimma aligns protein groups without collapsing shared accession annotations", {
+  rows <- build_prot_volcano_long(ids = c("shared", "shared", "P4", "P2"))
+  rows$Protein.Group <- c("G3", "G1", "G4", "G2")
+  quant <- data.frame(Protein.Group = c("G2", "G1", "G4", "G3"),
+    "Sample B" = c(22, 12, 42, 32), "Sample A" = c(21, 11, 41, 31), check.names = FALSE)
+  object <- methods::new("ProteinQuantitativeData", protein_quant_table = quant,
+    protein_id_column = "Protein.Group", sample_id = "Run", group_id = "group",
+    design_matrix = data.frame(Run = c("Sample A", "Sample B"), group = c("Control", "Treatment")))
+  original <- serialize(list(rows, object), NULL)
+  captured <- NULL
+  original_glimma <- Glimma::glimmaXY
+  localProtVolcanoBinding(asNamespace("Glimma"), "glimmaXY", function(...) {
+    captured <<- list(...)
+    original_glimma(...)
+  })
+  result <- generateProtDAVolcanoPlotGlimma(list(da_proteins_long = rows, theObject = object),
+    selected_contrast = "T_vs_C", args_row_id = "Protein.Group")
+  expect_prot_glimma_widget(result)
+  expect_identical(rownames(captured$counts), rows$Protein.Group)
+  expect_equal(nrow(result$x$data$table), 4)
+  expect_length(result$x$data$table$gene, 4)
+  expect_false(anyDuplicated(result$x$data$table$gene) > 0L)
+  expected <- as.matrix(quant[match(rows$Protein.Group, quant$Protein.Group), c("Sample B", "Sample A")])
+  rownames(expected) <- rows$Protein.Group
+  expect_identical(captured$counts, expected)
+  expect_identical(as.character(captured$groups), c("Treatment", "Control"))
+  expect_identical(captured$anno$Protein_Ids, rows$Protein.Ids)
+  expect_identical(captured$anno$Protein_Group, rows$Protein.Group)
+  expect_identical(captured$x, rows$log2FC)
+  expect_identical(captured$transform.counts, "none")
+  expect_identical(serialize(list(rows, object), NULL), original)
+})
+
 test_that("generateProtDAVolcanoPlotGlimma preserves S4 count synchronization paths", {
   protein_object <- methods::new(
     "MockProtDaVolcanoObject",
@@ -414,12 +447,6 @@ test_that("generateProtDAVolcanoStatic preserves guard, contrast parsing, and no
   )
   expect_s3_class(parsed_plot, "ggplot")
   expect_identical(parsed_plot$labels$title, "Volcano Plot: Dose")
-
-  localProtVolcanoBinding(
-    parent.env(environment(generateProtDAVolcanoStatic)),
-    "fixed",
-    stringr::fixed
-  )
 
   expect_null(generateProtDAVolcanoStatic(
     list(da_proteins_long = build_prot_volcano_long("available")),

@@ -72,8 +72,13 @@ applyProtDesignBulkRenameUpdates <- function(
         originalName <- selectedSamples[[i]]
         newName <- newNames[[i]]
         updatedDesignMatrix$Run[updatedDesignMatrix$Run == originalName] <- newName
-        updatedDataCln$Run[updatedDataCln$Run == originalName] <- newName
+        if (!usesDIAReferenceStates(getDIAActiveManager())) {
+            updatedDataCln$Run[updatedDataCln$Run == originalName] <- newName
+        }
     }
+    if (usesDIAReferenceStates(getDIAActiveManager())) updatedDataCln <-
+        transformDIADesignTable(getDIAActiveManager(), dataCln,
+            rename = stats::setNames(newNames, selectedSamples))
 
     list(
         designMatrix = updatedDesignMatrix,
@@ -91,7 +96,10 @@ applyProtDesignSingleRenameUpdate <- function(
     updatedDataCln <- dataCln
 
     updatedDesignMatrix$Run[updatedDesignMatrix$Run == originalName] <- newName
-    updatedDataCln$Run[updatedDataCln$Run == originalName] <- newName
+    if (usesDIAReferenceStates(getDIAActiveManager())) {
+        updatedDataCln <- transformDIADesignTable(getDIAActiveManager(), dataCln,
+            rename = stats::setNames(newName, originalName))
+    } else updatedDataCln$Run[updatedDataCln$Run == originalName] <- newName
 
     list(
         designMatrix = updatedDesignMatrix,
@@ -110,11 +118,13 @@ registerProtDesignRenameSampleObserver <- function(
     updateTextInputFn = shiny::updateTextInput
 ) {
     observeEventFn(input$rename_sample, {
+        withDIAStateScope(getDIAActiveManager(), function() {
         reqFn(input$sample_to_rename, input$new_sample_name)
 
         renameUpdate <- applySingleRenameUpdateFn(
             designMatrix = designMatrix(),
-            dataCln = dataCln(),
+            dataCln = if (usesDIAReferenceStates(getDIAActiveManager()))
+                getDIAReactiveReference(dataCln) else dataCln(),
             originalName = input$sample_to_rename,
             newName = input$new_sample_name
         )
@@ -122,6 +132,7 @@ registerProtDesignRenameSampleObserver <- function(
         designMatrix(renameUpdate$designMatrix)
         dataCln(renameUpdate$dataCln)
         updateTextInputFn(session, "new_sample_name", value = "")
+        })
     })
 }
 
@@ -135,11 +146,13 @@ registerProtDesignBulkRenameObserver <- function(
     applyBulkRenameUpdatesFn = applyProtDesignBulkRenameUpdates
 ) {
     observeEventFn(input$bulk_rename, {
+        withDIAStateScope(getDIAActiveManager(), function() {
         reqFn(input$samples_to_transform)
 
         renameUpdates <- applyBulkRenameUpdatesFn(
             designMatrix = designMatrix(),
-            dataCln = dataCln(),
+            dataCln = if (usesDIAReferenceStates(getDIAActiveManager()))
+                getDIAReactiveReference(dataCln) else dataCln(),
             selectedSamples = input$samples_to_transform,
             newNames = transformSampleNamesFn(
                 selectedSamples = input$samples_to_transform,
@@ -151,6 +164,7 @@ registerProtDesignBulkRenameObserver <- function(
 
         designMatrix(renameUpdates$designMatrix)
         dataCln(renameUpdates$dataCln)
+        })
     })
 }
 

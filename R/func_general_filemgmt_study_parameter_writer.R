@@ -32,10 +32,15 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
 
     # Extract parameters from S4 object @args if provided
     s4_params <- list()
+    component_parameters <- isSavedWorkflowReference(final_s4_object) &&
+        usesDIAReferenceStates(workflow_data$state_manager)
+    if (component_parameters) s4_params <- readDIAStateMetadata(
+        workflow_data$state_manager, final_s4_object)$data$slots$args
     # Check if final_s4_object has @args slot
     s4_has_args <- tryCatch(
         {
-            !is.null(final_s4_object) && isS4(final_s4_object) && !is.null(final_s4_object@args)
+            component_parameters || (!is.null(final_s4_object) && isS4(final_s4_object) &&
+                !is.null(final_s4_object@args))
         },
         error = function(e) {
             FALSE
@@ -47,7 +52,7 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
 
         tryCatch(
             {
-                s4_params <- final_s4_object@args
+                if (!component_parameters) s4_params <- final_s4_object@args
                 cat(sprintf("WORKFLOW ARGS: Found %d function groups in S4 @args\n", length(s4_params)))
 
                 # Log the function groups for debugging

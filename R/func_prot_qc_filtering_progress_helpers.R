@@ -1,3 +1,14 @@
+#' Render scalar QC text without retaining the transformation result's S4 payload.
+#' @param text Completed result text.
+#' @param render_text_fn Existing injectable Shiny renderer.
+#' @return A render function owning only the forced scalar text.
+#' @noRd
+renderPeptideQcResultText <- function(text, render_text_fn) {
+  force(text)
+  force(render_text_fn)
+  render_text_fn(text)
+}
+
 # ----------------------------------------------------------------------------
 # updateProteinFiltering
 # ----------------------------------------------------------------------------
@@ -164,7 +175,8 @@ updateProteinFiltering <- function(data, step_name,
   }
 
   # Determine if we\'re working with protein_quant_table
-  is_protein_quant <- if (methods::is(data, "S4")) {
+  saved_summary <- inherits(data, "DIAFilteringSummary")
+  is_protein_quant <- if (saved_summary) data$is_protein_quant else if (isS4(data)) {
     "protein_quant_table" %in% slotNames(data)
   } else {
     # For data frames, check if it looks like a protein quant table
@@ -176,8 +188,8 @@ updateProteinFiltering <- function(data, step_name,
   }
 
   # Calculate protein metrics (always done)
-  protein_count <- countUniqueProteins(data)
-  proteins_per_run <- countProteinsPerRun(data)
+  protein_count <- if (saved_summary) data$proteins else countUniqueProteins(data)
+  proteins_per_run <- if (saved_summary) data$proteins_per_run else countProteinsPerRun(data)
 
   # Ensure consistent data types in proteins_per_run
   proteins_per_run$Run <- as.character(proteins_per_run$Run)
@@ -196,9 +208,9 @@ updateProteinFiltering <- function(data, step_name,
 
     if (!is_protein_quant) {
       # Update peptide metrics only for peptide data
-      filtering_progress@total_peptides[idx] <- calcTotalPeptides(data)
-      peptides_per_protein <- calcPeptidesPerProtein(data)
-      peptides_per_run <- countPeptidesPerRun(data)
+      filtering_progress@total_peptides[idx] <- if (saved_summary) data$total_peptides else calcTotalPeptides(data)
+      peptides_per_protein <- if (saved_summary) data$peptides_per_protein else calcPeptidesPerProtein(data)
+      peptides_per_run <- if (saved_summary) data$peptides_per_run else countPeptidesPerRun(data)
 
       # Ensure consistent data types
       peptides_per_protein$Protein.Ids <- as.character(peptides_per_protein$Protein.Ids)
@@ -222,11 +234,11 @@ updateProteinFiltering <- function(data, step_name,
       # Add peptide metrics only for peptide data
       filtering_progress@total_peptides <- c(
         filtering_progress@total_peptides,
-        calcTotalPeptides(data)
+        if (saved_summary) data$total_peptides else calcTotalPeptides(data)
       )
 
-      peptides_per_protein <- calcPeptidesPerProtein(data)
-      peptides_per_run <- countPeptidesPerRun(data)
+      peptides_per_protein <- if (saved_summary) data$peptides_per_protein else calcPeptidesPerProtein(data)
+      peptides_per_run <- if (saved_summary) data$peptides_per_run else countPeptidesPerRun(data)
 
       # Ensure consistent data types
       peptides_per_protein$Protein.Ids <- as.character(peptides_per_protein$Protein.Ids)
@@ -654,3 +666,149 @@ updateProteinFiltering <- function(data, step_name,
   }
 }
 
+#' Calculate existing peptide progress counts from one accepted SQL population.
+#' @param connection Action-owned database lease.
+#' @param relation Internal relation name containing the accepted biological rows.
+#' @return Bounded display quantities with the same populations as the R counters.
+#' @noRd
+summarizeDIAFilteringQuery <- function(connection, relation) {
+    relation <- as.character(DBI::dbQuoteIdentifier(connection, relation))
+    count <- function(columns) as.integer(DBI::dbGetQuery(connection,
+        paste0("SELECT count(*) AS n FROM (SELECT DISTINCT ",
+            paste(DBI::dbQuoteIdentifier(connection, columns), collapse = ", "),
+            " FROM ", relation, ")"))$n)
+    grouped <- function(group, value, name) {
+        group <- as.character(DBI::dbQuoteIdentifier(connection, group))
+        value <- as.character(DBI::dbQuoteIdentifier(connection, value))
+        sql <- paste0("SELECT ", group, ", CAST(count(DISTINCT ", value,
+            ") + CASE WHEN count(*) > count(", value, ") THEN 1 ELSE 0 END AS INTEGER) AS ",
+            DBI::dbQuoteIdentifier(connection, name), " FROM ", relation,
+            " GROUP BY ", group, " ORDER BY ", group, " NULLS LAST")
+        rows <- DBI::dbGetQuery(connection, paste0("SELECT count(*) AS n FROM (", sql, ")"))$n
+        if (rows > 10000L) {
+            cli::cli_abort("progress product exceeds read limits", class = "saved_entity_limit")
+        }
+        result <- DBI::dbGetQuery(connection, paste0("SELECT * FROM (", sql, ") LIMIT 10000"))
+        if (as.numeric(object.size(result)) > 67108864) {
+            cli::cli_abort("progress product exceeds read limits", class = "saved_entity_limit")
+        }
+        result
+    }
+    structure(list(is_protein_quant = FALSE, proteins = count("Protein.Ids"),
+        proteins_per_run = grouped("Run", "Protein.Ids", "n_proteins"),
+        total_peptides = count(c("Protein.Ids", "Stripped.Sequence")),
+        peptides_per_protein = grouped("Protein.Ids", "Stripped.Sequence", "n_peptides"),
+        peptides_per_run = grouped("Run", "Stripped.Sequence", "n_peptides")),
+        class = "DIAFilteringSummary")
+}
+
+#' Accumulate exact peptide display populations while accepted rows are produced.
+#' @param prototype Zero-row logical table preserving identifier types.
+#' @param protein_column Active protein role, distinct from Protein.Ids display identity.
+#' @return Private bounded accumulator with push and finish methods.
+#' @noRd
+newDIAFilteringAccumulator <- function(prototype, protein_column) {
+    fields <- unique(c("Run", "Protein.Ids", "Stripped.Sequence", protein_column))
+    if (!all(fields %in% names(prototype)))
+        cli::cli_abort("progress columns are absent", class = "saved_entity_invalid")
+    state <- new.env(parent = emptyenv())
+    state$values <- lapply(prototype[fields], function(x) { names(x) <- NULL; x[0] })
+    state$proteins <- state$peptides <- list()
+    state$pairs <- numeric()
+    state$rows <- 0
+    state$push <- function(data) {
+        if (!nrow(data)) return(invisible(NULL))
+        if (nrow(data) > 10000L) cli::cli_abort("summary batch exceeds read limit", class = "saved_entity_limit")
+        codes <- lapply(fields, function(field) {
+            value <- data[[field]]
+            fresh <- unique(value[is.na(match(value, state$values[[field]]))])
+            state$values[[field]] <- c(state$values[[field]], fresh)
+            names(state$values[[field]]) <- NULL
+            match(value, state$values[[field]])
+        })
+        names(codes) <- fields
+        sizes <- lengths(state$values)
+        if (sizes[["Run"]] > 10000L || sizes[["Protein.Ids"]] > 10000L ||
+            as.numeric(object.size(state$values)) > 33554432)
+            cli::cli_abort("summary dictionary exceeds limits", class = "saved_entity_limit")
+        protein_capacity <- max(1, 2^ceiling(log2(max(1L, sizes[["Protein.Ids"]]))))
+        peptide_capacity <- max(1, 2^ceiling(log2(max(1L, sizes[["Stripped.Sequence"]]))))
+        if ((sizes[["Run"]] + 2) * (protein_capacity + peptide_capacity) +
+            3 * (length(state$pairs) + nrow(data)) * 8 +
+            2 * as.numeric(object.size(state$values)) > 268435456)
+            cli::cli_abort("summary workspace exceeds 256 MiB", class = "saved_entity_limit")
+        state$pairs <- unique(c(state$pairs,
+            codes$Protein.Ids + (codes$Stripped.Sequence - 1) * 10000))
+        for (run in unique(codes$Run)) {
+            selected <- which(codes$Run == run)
+            if (length(state$proteins) < run) {
+                length(state$proteins) <- run
+                length(state$peptides) <- run
+            }
+            protein_seen <- state$proteins[[run]]
+            peptide_seen <- state$peptides[[run]]
+            if (length(protein_seen) < protein_capacity)
+                protein_seen <- c(protein_seen, raw(protein_capacity - length(protein_seen)))
+            if (length(peptide_seen) < peptide_capacity)
+                peptide_seen <- c(peptide_seen, raw(peptide_capacity - length(peptide_seen)))
+            protein_seen[codes$Protein.Ids[selected]] <- as.raw(1L)
+            peptide_seen[codes$Stripped.Sequence[selected]] <- as.raw(1L)
+            state$proteins[[run]] <- protein_seen
+            state$peptides[[run]] <- peptide_seen
+        }
+        state$rows <- state$rows + nrow(data)
+        invisible(NULL)
+    }
+    state$finish <- function() {
+        runs <- state$values$Run
+        proteins <- as.character(state$values$Protein.Ids)
+        per_protein <- data.frame(Protein.Ids = proteins,
+            n_peptides = tabulate(as.integer((state$pairs - 1) %% 10000 + 1), nbins = length(proteins)))
+        per_protein <- dplyr::arrange(per_protein, .data$Protein.Ids)
+        per_run <- function(values, name) {
+            out <- data.frame(Run = as.character(runs), count = vapply(values,
+                function(x) as.integer(sum(as.integer(x))), integer(1)))
+            names(out)[[2L]] <- name
+            dplyr::arrange(out, .data$Run)
+        }
+        list(summary = structure(list(is_protein_quant = FALSE, proteins = length(proteins),
+            proteins_per_run = per_run(state$proteins, "n_proteins"),
+            total_peptides = length(state$pairs), peptides_per_protein = per_protein,
+            peptides_per_run = per_run(state$peptides, "n_peptides")), class = "DIAFilteringSummary"),
+            runs = runs, proteins = length(state$values[[protein_column]]), rows = state$rows)
+    }
+    state
+}
+
+#' Resolve exact peptide progress once per immutable table and column contract.
+#' @param scope Accepted peptide-table lease.
+#' @param prototype Compatibility parameter; no scientific object is read.
+#' @param protein_column Active protein identity for the scalar handoff count.
+#' @param counted Optional counts accumulated by the accepted-table producer.
+#' @return Bounded progress and explicit product/input dependencies.
+#' @noRd
+summarizeSavedDIAFiltering <- function(scope, prototype, protein_column, counted = NULL) {
+    fields <- unique(c("Run", "Protein.Ids", "Stripped.Sequence", protein_column))
+    identity <- newSavedWorkflowScientificIdentity(scope$physical_reference$entity_id,
+        "observed-rows", digest::digest(list(fields, scope$metadata$column_metadata[fields]), algo = "sha256"),
+        "peptide-filtering-counts-v1", digest::digest(list(body(newDIAFilteringAccumulator),
+            R.version[c("major", "minor", "platform")]), algo = "sha256"))
+    hit <- resolveSavedWorkflowEntity(scope$store, "scientific_product", identity)
+    if (identical(hit$status, "hit")) {
+        counted <- hit$value$value
+        reference <- hit$reference
+    } else {
+        if (is.null(counted)) {
+            accumulator <- newDIAFilteringAccumulator(readSavedWorkflowTablePrototype(scope), protein_column)
+            streamSavedWorkflowTable(scope, fields, function(data, offset, row_names) accumulator$push(data))
+            counted <- accumulator$finish()
+        }
+        if (counted$rows != scope$metadata$rows || as.numeric(object.size(counted)) > 67108864)
+            cli::cli_abort("summary population or size differs", class = "saved_entity_corrupt")
+        reference <- saveWorkflowConsumerEntity(scope$store,
+            newSavedWorkflowScientificProduct(counted, "dia-filtering-counts"),
+            basename(tempfile("dia-counts-")), identity, "scientific_product")
+    }
+    counted$dependencies <- list(reference, scope$physical_reference)
+    counted
+}

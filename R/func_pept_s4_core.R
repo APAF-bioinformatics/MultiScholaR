@@ -99,7 +99,17 @@ PeptideQuantitativeData <- setClass("PeptideQuantitativeData"
                                          stop("Peptide sequence column must be in the peptide data table")
                                        }
 
-                                       if(!object@q_value_column %in% colnames(object@peptide_data) ) {
+                                       # Precursor confidence is not aggregated into peptide q-values.
+                                       # Recognize the existing rollup provenance, not merely a missing column.
+                                       rollup <- object@args$rollUpPrecursorToPeptide$rollup_summary
+                                       is_rolled <- is.list(rollup) &&
+                                         identical(rollup$aggregation_rule,
+                                           "linear_sum_modified_unmodified_and_charge_states") &&
+                                         identical(rollup$active_protein_key, object@protein_id_column) &&
+                                         identical(object@raw_quantity_column, "Peptide.RawQuantity") &&
+                                         all(c("Peptide.RawQuantity", object@norm_quantity_column,
+                                           object@sample_id) %in% names(object@peptide_data))
+                                       if(!is_rolled && !object@q_value_column %in% colnames(object@peptide_data) ) {
                                          stop("Q value column must be in the peptide data table")
                                        }
 

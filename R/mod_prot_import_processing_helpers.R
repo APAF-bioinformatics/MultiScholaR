@@ -76,6 +76,86 @@ importProtImportDataByFormat <- function(
   })
 }
 
+#' Apply the existing run-name mapping before a durable GUI handoff.
+#' @param table Imported table; all non-Run values and attributes are retained.
+#' @param run_col Configured run column.
+#' @param make_clean_names Existing sanitizer, injectable for parity tests.
+#' @return Table and number of unique names; NULL count means no run column.
+#' @noRd
+sanitizeProtImportTable <- function(table, run_col, make_clean_names = janitor::make_clean_names) {
+    if (is.null(run_col) || !run_col %in% names(table)) return(list(data = table, count = NULL))
+    original <- unique(as.character(table[[run_col]]))
+    mapping <- stats::setNames(make_clean_names(original), original)
+    table[[run_col]] <- mapping[as.character(table[[run_col]])]
+    list(data = table, count = length(original))
+}
+
+#' Describe import results without retaining the source table in the summary.
+#' @param result Existing public import result.
+#' @return Small counts used by the existing setup log and completion message.
+#' @noRd
+describeProtImportData <- function(result) {
+    count <- function(column) {
+        if (is.null(column) || !column %in% names(result$data)) return(NA)
+        length(unique(result$data[[column]]))
+    }
+    list(n_rows = nrow(result$data), n_runs = count(result$column_mapping$run_col),
+        n_proteins = count(result$column_mapping$protein_col),
+        n_peptides = count(result$column_mapping$peptide_col))
+}
+
+#' Store bounded import/design metadata beside its immutable source reference.
+#' @param manager Active DIA manager.
+#' @param table Sanitized imported table, already validated for persistence.
+#' @param result Original import result; used only to preserve original counts.
+#' @param reference Committed imported-table reference.
+#' @return Bounded metadata, with no abundance columns or parser pointers.
+#' @noRd
+recordDIAImportMetadata <- function(manager, table, result, reference) {
+    mapping <- result$column_mapping
+    columns <- intersect(c(mapping$run_col, "Batch"), names(table))
+    samples <- dplyr::distinct(table[, columns, drop = FALSE])
+    samples <- structure(lapply(samples, identity), names = names(samples), class = "data.frame",
+        row.names = .set_row_names(nrow(samples)))
+    quantities <- unique(Filter(Negate(is.null), mapping[c("norm_quantity_col", "raw_quantity_col", "quantity_col")]))
+    quantities <- unlist(quantities, use.names = FALSE)
+    quantities <- quantities[quantities %in% names(table)]
+    metadata <- list(data = NULL, reference_id = reference$entity_id, data_type = result$data_type,
+        column_mapping = mapping, import_summary = describeProtImportData(result),
+        samples = samples, numeric_columns = quantities,
+        needs_numeric = quantities[vapply(table[quantities], function(column)
+            !is.double(column) || !is.null(attributes(column)), logical(1))],
+        protein_ids = if (!is.null(mapping$protein_col) && mapping$protein_col %in% names(table))
+            unique(table[[mapping$protein_col]]) else NULL)
+    if (as.numeric(object.size(metadata)) > manager$.context$store$max_metadata_bytes) {
+        cli::cli_abort("DIA import metadata exceeds its bounded allowance", class = "saved_entity_limit")
+    }
+    snapshot <- manager$.context$snapshot
+    snapshot$import_metadata <- saveDIAStateValue(manager$.context, metadata,
+        "import-metadata", codec = "rds")
+    publishDIAStateHead(manager$.context, snapshot)
+    manager$.context$import_metadata_cache <- list(reference = snapshot$import_metadata, value = metadata)
+    metadata
+}
+
+#' Read the bounded import summary without reading its source assay.
+#' @param manager Current DIA owner.
+#' @return Metadata or NULL; only this immutable bounded record is retained.
+#' @noRd
+getDIAImportMetadata <- function(manager) {
+    context <- manager$.context
+    reference <- context$snapshot$import_metadata
+    if (is.null(reference)) return(NULL)
+    cached <- context$import_metadata_cache
+    if (identical(cached$reference, reference)) return(cached$value)
+    metadata <- resolveDIAStateValue(context, reference)
+    if (as.numeric(object.size(metadata)) > context$store$max_metadata_bytes) {
+        cli::cli_abort("DIA import metadata exceeds its bounded allowance", class = "saved_entity_limit")
+    }
+    context$import_metadata_cache <- list(reference = reference, value = metadata)
+    metadata
+}
+
 sanitizeProtImportRunNames <- function(
     workflowData
     , runCol
@@ -83,17 +163,15 @@ sanitizeProtImportRunNames <- function(
     , logInfo = logger::log_info
     , showNotification = shiny::showNotification
 ) {
-  if (is.null(runCol) || !(runCol %in% names(workflowData$data_tbl))) {
+  table <- getDIAOwnedPayload(workflowData, "data_tbl")
+  if (is.null(runCol) || !(runCol %in% names(table))) {
     return(FALSE)
   }
 
-  original_runs <- unique(as.character(workflowData$data_tbl[[runCol]]))
-  clean_runs <- makeCleanNames(original_runs)
-  name_mapping <- stats::setNames(clean_runs, original_runs)
+  sanitized <- sanitizeProtImportTable(table, runCol, makeCleanNames)
+  workflowData <- setDIAOwnedPayload(workflowData, "data_tbl", sanitized$data)
 
-  workflowData$data_tbl[[runCol]] <- name_mapping[as.character(workflowData$data_tbl[[runCol]])]
-
-  logInfo(sprintf("Sanitized %d unique sample names.", length(original_runs)))
+  logInfo(sprintf("Sanitized %d unique sample names.", sanitized$count))
   showNotification("Sample names sanitized for R compatibility.", type = "message")
 
   TRUE
@@ -109,12 +187,28 @@ applyProtImportResultToWorkflow <- function(
     , showNotification = shiny::showNotification
     , sanitizeRunNames = sanitizeProtImportRunNames
 ) {
-  workflowData$data_tbl <- dataImportResult$data
+  manager <- getDIAActiveManager()
+  candidate <- inherits(manager, "DIAStateAdapter") && identical(format, "diann")
+  if (candidate) {
+    table <- prepareDIAParserTable(dataImportResult$data)
+    if (isTRUE(sanitizeNames)) {
+      sanitized <- sanitizeProtImportTable(table, dataImportResult$column_mapping$run_col)
+      table <- sanitized$data
+      if (!is.null(sanitized$count)) {
+        logInfo(sprintf("Sanitized %d unique sample names.", sanitized$count))
+        showNotification("Sample names sanitized for R compatibility.", type = "message")
+      }
+      sanitized <- NULL
+    }
+    workflowData <- setDIAOwnedPayload(workflowData, "data_tbl", table)
+    recordDIAImportMetadata(manager, table, dataImportResult, workflowData$data_tbl)
+    table <- NULL
+  } else workflowData <- setDIAOwnedPayload(workflowData, "data_tbl", dataImportResult$data)
   workflowData$data_format <- format
   workflowData$data_type <- dataImportResult$data_type
   workflowData$column_mapping <- dataImportResult$column_mapping
 
-  if (isTRUE(sanitizeNames)) {
+  if (isTRUE(sanitizeNames) && !candidate) {
     logInfo("Sanitizing sample names using janitor::make_clean_names()...")
     sanitizeRunNames(
       workflowData = workflowData
@@ -148,27 +242,7 @@ finalizeProtImportSetupState <- function(
     , mixedSpeciesFasta = FALSE
     , now = Sys.time
 ) {
-  run_col <- dataImportResult$column_mapping$run_col
-  protein_col <- dataImportResult$column_mapping$protein_col
-  peptide_col <- dataImportResult$column_mapping$peptide_col
-
-  n_runs <- if (!is.null(run_col) && run_col %in% names(dataImportResult$data)) {
-    length(unique(dataImportResult$data[[run_col]]))
-  } else {
-    NA
-  }
-
-  n_proteins <- if (!is.null(protein_col) && protein_col %in% names(dataImportResult$data)) {
-    length(unique(dataImportResult$data[[protein_col]]))
-  } else {
-    NA
-  }
-
-  n_peptides <- if (!is.null(peptide_col) && peptide_col %in% names(dataImportResult$data)) {
-    length(unique(dataImportResult$data[[peptide_col]]))
-  } else {
-    NA
-  }
+  summary <- dataImportResult$import_summary %||% describeProtImportData(dataImportResult)
 
   workflowData$taxon_id <- taxonId
   workflowData$organism_name <- organismName
@@ -195,10 +269,10 @@ finalizeProtImportSetupState <- function(
     fasta_file = fastaFilename,
     taxon_id = taxonId,
     organism = organismName,
-    n_rows = nrow(dataImportResult$data),
-    n_runs = n_runs,
-    n_proteins = n_proteins,
-    n_peptides = n_peptides
+    n_rows = summary$n_rows,
+    n_runs = summary$n_runs,
+    n_proteins = summary$n_proteins,
+    n_peptides = summary$n_peptides
   )
 
   invisible(workflowData$processing_log$setup_import)
@@ -319,7 +393,7 @@ completeProtImportSuccessState <- function(
   messageFn("[mod_prot_import] Data import completed successfully!")
   messageFn(sprintf(
     "[mod_prot_import] Rows: %d, Proteins: %s, Format: %s",
-    nrow(dataImportResult$data),
+    dataImportResult$import_summary$n_rows %||% nrow(dataImportResult$data),
     workflowData$processing_log$setup_import$n_proteins,
     format
   ))

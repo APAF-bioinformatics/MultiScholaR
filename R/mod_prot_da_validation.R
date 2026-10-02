@@ -69,7 +69,7 @@ protDaContrastTerms <- function(contrast_string) {
   terms[!grepl("^[0-9.]+$", terms)]
 }
 
-validateProtDaFilteredSession <- function(session_data, source_dir = NULL) {
+validateProtDaFilteredSession <- function(session_data, source_dir = NULL, manager = NULL) {
   if (!is.null(source_dir) && !dir.exists(source_dir)) {
     stop("Could not find the source directory to load session data.", call. = FALSE)
   }
@@ -78,7 +78,10 @@ validateProtDaFilteredSession <- function(session_data, source_dir = NULL) {
   }
 
   object <- session_data$current_s4_object
-  if (is.null(object) || !isS4(object) || !methods::is(object, "ProteinQuantitativeData")) {
+  if (isSavedWorkflowReference(object) && usesDIAReferenceStates(manager)) {
+    metadata <- readDIAStateMetadata(manager, object)$data
+    if (!identical(metadata$class, "ProteinQuantitativeData")) stop("Filtered session is not a protein state.")
+  } else if (is.null(object) || !isS4(object) || !methods::is(object, "ProteinQuantitativeData")) {
     stop("Filtered session data does not contain a ProteinQuantitativeData object.", call. = FALSE)
   }
   if (!is.data.frame(session_data$design_matrix) || nrow(session_data$design_matrix) == 0L) {

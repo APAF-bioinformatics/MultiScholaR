@@ -8,9 +8,17 @@ buildProtDesignStateCheckpoint <- function(
     dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
   logger::log_info("Created tech_rep_group column for proper technical replicate identification")
 
+  if (workflowType == "DIA" && usesDIAReferenceStates(workflowData$state_manager)) {
+    checkpoint <- newDIAPeptideCheckpoint(workflowData$state_manager, workflowData$data_cln,
+      workflowData$design_matrix, workflowData$config_list)
+    commitDIAReferenceState(workflowData$state_manager, "raw_data_s4", checkpoint,
+      checkpoint$slots$args, "Initial Peptide S4 object created after design matrix.")
+    return("raw_data_s4")
+  }
+
   if (workflowType == "DIA") {
     s4Object <- PeptideQuantitativeDataDiann(
-      peptide_data = workflowData$data_cln,
+      peptide_data = getDIAOwnedPayload(workflowData, "data_cln"),
       design_matrix = workflowData$design_matrix,
       technical_replicate_id = "tech_rep_group",
       args = workflowData$config_list
@@ -32,13 +40,13 @@ buildProtDesignStateCheckpoint <- function(
         workflowData$column_mapping$run_col,
         workflowData$column_mapping$quantity_col
       )
-      missingCols <- requiredCols[!requiredCols %in% names(workflowData$data_cln)]
+      missingCols <- requiredCols[!requiredCols %in% names(getDIAOwnedPayload(workflowData, "data_cln"))]
       if (length(missingCols) > 0) {
         stop(paste("Missing required columns in data_cln:", paste(missingCols, collapse = ", ")))
       }
     }
 
-    proteinQuantTableWide <- workflowData$data_cln |>
+    proteinQuantTableWide <- getDIAOwnedPayload(workflowData, "data_cln") |>
       tidyr::pivot_wider(
         id_cols = !!sym(workflowData$column_mapping$protein_col),
         names_from = !!sym(workflowData$column_mapping$run_col),
@@ -49,7 +57,7 @@ buildProtDesignStateCheckpoint <- function(
       "%s %s: Pivoted data from %d rows (long) to %d rows (wide)",
       workflowType,
       actionLabel,
-      nrow(workflowData$data_cln),
+      nrow(getDIAOwnedPayload(workflowData, "data_cln")),
       nrow(proteinQuantTableWide)
     ))
     logger::log_info(sprintf(
@@ -160,7 +168,9 @@ completeProtDesignPostCheckpoint <- function(
     }
 
     uniprotDatCln <- getUniprotAnnotationsFull(
-      data_tbl = workflowData$data_cln,
+      data_tbl = if (usesDIAReferenceStates(workflowData$state_manager))
+        readDIAAnnotationIdentifiers(workflowData$state_manager, workflowData$data_cln, proteinColumn) else
+        getDIAOwnedPayload(workflowData, "data_cln"),
       protein_id_column = proteinColumn,
       cache_dir = uniprotCacheDir,
       taxon_id = workflowData$taxon_id,
@@ -219,4 +229,3 @@ completeProtDesignPostCheckpoint <- function(
   }
   shiny::showNotification(successMessage, type = "message")
 }
-

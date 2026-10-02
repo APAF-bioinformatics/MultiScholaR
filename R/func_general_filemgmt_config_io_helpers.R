@@ -1,3 +1,101 @@
+#' Describe the standard DIA configuration-reader worker backend without handles.
+#' @param workers Number of workers from the existing cluster.
+#' @return Portable, versioned worker specification; not an executable backend.
+#' @noRd
+newDIAWorkerSpec <- function(workers) {
+    if (!is.numeric(workers) || length(workers) != 1L || is.na(workers) ||
+        !is.finite(workers) || workers < 1 || workers > .Machine$integer.max ||
+        workers != as.integer(workers)) {
+        cli::cli_abort("invalid DIA worker count", class = "saved_entity_invalid")
+    }
+    structure(list(schema = 1L, backend = "multidplyr", workers = as.integer(workers),
+        packages = c("tidyverse", "glue", "rlang", "lazyeval")), class = "DIAWorkerSpec")
+}
+
+#' Split standard DIA configuration from its caller-owned cluster.
+#' @param config Configuration produced by readConfigFile for the DIA workflow.
+#' @return List with portable config and a borrowed runtime cluster (possibly NULL).
+#'   Only config is persisted. Scientific settings and the original are unchanged.
+#' @noRd
+splitDIAWorkerConfig <- function(config) {
+    if (!is.list(config) || is.null(names(config)) || anyDuplicated(names(config))) {
+        cli::cli_abort("invalid DIA configuration", class = "saved_entity_invalid")
+    }
+    runtime <- NULL
+    for (section in names(config)) {
+        if (!is.list(config[[section]])) next
+        cluster <- config[[section]][["core_utilisation"]]
+        if (!inherits(cluster, "multidplyr_cluster")) next
+        if (!is.null(runtime) && !identical(runtime, cluster)) {
+            cli::cli_abort("DIA configuration contains distinct worker clusters",
+                class = "saved_entity_unsupported")
+        }
+        runtime <- cluster
+        spec <- newDIAWorkerSpec(length(cluster))
+        configured <- config$globalParameters$number_of_cpus
+        if (!is.null(configured) && !identical(as.numeric(configured), as.numeric(spec$workers))) {
+            cli::cli_abort("DIA worker count differs from configuration",
+                class = "saved_entity_conflict")
+        }
+        config[[section]][["core_utilisation"]] <- spec
+    }
+    list(config = config, runtime = runtime)
+}
+
+#' Bind portable DIA settings to one explicitly supplied live execution backend.
+#' @param config Portable config from splitDIAWorkerConfig.
+#' @param cluster Caller-owned live multidplyr cluster; never created here.
+#' @return Executable configuration, with unchanged scientific parameters.
+#' @noRd
+bindDIAWorkerConfig <- function(config, cluster) {
+    if (!is.list(config) || is.null(names(config)) || anyDuplicated(names(config))) {
+        cli::cli_abort("invalid DIA configuration", class = "saved_entity_invalid")
+    }
+    for (section in names(config)) {
+        if (!is.list(config[[section]])) next
+        spec <- config[[section]][["core_utilisation"]]
+        if (!inherits(spec, "DIAWorkerSpec")) next
+        if (!identical(spec, newDIAWorkerSpec(spec$workers))) {
+            cli::cli_abort("invalid DIA worker specification", class = "saved_entity_invalid")
+        }
+        if (!inherits(cluster, "multidplyr_cluster") || length(cluster) != spec$workers ||
+            !all(vapply(cluster, \(worker) worker$is_alive(), logical(1)))) {
+            cli::cli_abort("DIA execution requires a live cluster with the saved worker count",
+                class = "saved_entity_resource")
+        }
+        config[[section]][["core_utilisation"]] <- cluster
+    }
+    config
+}
+
+#' Start the standard DIA backend explicitly, never as part of hydration.
+#' @param spec Portable specification from splitDIAWorkerConfig.
+#' @return Live cluster owned by the caller, who must call stopDIAWorkerCluster.
+#' @noRd
+startDIAWorkerCluster <- function(spec) {
+    if (!inherits(spec, "DIAWorkerSpec") || !identical(spec, newDIAWorkerSpec(spec$workers))) {
+        cli::cli_abort("invalid DIA worker specification", class = "saved_entity_invalid")
+    }
+    cluster <- multidplyr::new_cluster(spec$workers)
+    ready <- FALSE
+    on.exit(if (!ready) stopDIAWorkerCluster(cluster), add = TRUE)
+    # Match the historical worker search path without attaching packages in the
+    # GUI/caller. Worker-side attachment is required by legacy partition helpers.
+    multidplyr::cluster_send(cluster,
+        lapply(!!spec$packages, base::library, character.only = TRUE))
+    ready <- TRUE
+    cluster
+}
+
+#' Release a DIA cluster that the caller owns, including failed startup cleanup.
+#' @param cluster Cluster returned by startDIAWorkerCluster, never a borrowed one.
+#' @return NULL invisibly.
+#' @noRd
+stopDIAWorkerCluster <- function(cluster) {
+    for (worker in cluster) worker$kill()
+    invisible(NULL)
+}
+
 # ----------------------------------------------------------------------------
 # readConfigFile
 # ----------------------------------------------------------------------------
@@ -5,8 +103,14 @@
 #' @description Read the config file and return the list of parameters
 #' @param file The file path to the config file
 #' @param file_type The type of the file (default: "ini")
+#' @param create_workers Create the historical parallel pool immediately. FALSE
+#'   records portable worker specifications for an explicitly owned GUI action.
 #' @export
-readConfigFile <- function(file = file.path(source_dir, "config.ini"), file_type = "ini") {
+readConfigFile <- function(file = file.path(source_dir, "config.ini"), file_type = "ini",
+                           create_workers = TRUE) {
+    if (!is.logical(create_workers) || length(create_workers) != 1L || is.na(create_workers)) {
+        cli::cli_abort("create_workers must be TRUE or FALSE", class = "saved_entity_invalid")
+    }
     message(sprintf("DEBUG66: readConfigFile() called with file = %s", file))
     message(sprintf("DEBUG66: file exists = %s", file.exists(file)))
 
@@ -28,8 +132,13 @@ readConfigFile <- function(file = file.path(source_dir, "config.ini"), file_type
                 "Read globalParameters: number_of_cpus = ",
                 config_list$globalParameters$number_of_cpus
             ))
-            core_utilisation <- new_cluster(config_list$globalParameters$number_of_cpus)
-            cluster_library(core_utilisation, c("tidyverse", "glue", "rlang", "lazyeval"))
+            core_utilisation <- if (create_workers) {
+                cluster <- new_cluster(config_list$globalParameters$number_of_cpus)
+                cluster_library(cluster, c("tidyverse", "glue", "rlang", "lazyeval"))
+                cluster
+            } else {
+                newDIAWorkerSpec(as.numeric(config_list$globalParameters$number_of_cpus))
+            }
 
             list_of_multithreaded_functions <- c(
                 "rollUpPrecursorToPeptide",
@@ -799,4 +908,3 @@ createStudyParametersFile <- function(workflow_name,
         }
     )
 }
-

@@ -1,0 +1,2 @@
+# The DuckDB extension is a separate installed artifact, built by configure.
+OBJECTS = init.o workflow_memory.o

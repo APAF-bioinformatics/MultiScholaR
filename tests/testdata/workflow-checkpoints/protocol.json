@@ -1,0 +1,90 @@
+{
+  "schema": "multischolar.dia_measurement_protocol.v1",
+  "version": "1.0",
+  "source_control": "c7c12851ea4d9e96f91df0e1f9e7b91c2eb51017",
+  "status": "frozen_for_iq_control_preparation",
+  "approval": {
+    "status": "approved",
+    "approved_by": "user",
+    "recorded_at": "2026-09-12T14:09:32+10:00",
+    "response": "Yes that allowance is fine",
+    "scope": "Intermediate G2 history allowance only: >=30% lower retained heap, <=10% total elapsed/CPU overhead, <=30s individual save or cold revert; final G4 unchanged."
+  },
+  "independence_unit": "fresh installed-package journey process tree and project for each independent replicate",
+  "pairing_block": "same recipe seed/settings/dependencies/host/boundary; original control and treatment each fresh, serial",
+  "repetitions": 7,
+  "member_order": "alternate control/candidate then candidate/control by block index; no prewarming outside boundary",
+  "paired_summary": "geometric mean of within-block candidate/control ratios (mean log ratios); no pooling shapes or routes",
+  "uncertainty_method": {
+    "method": "paired log-ratio Student-t one-sided upper confidence bound",
+    "confidence": 0.95,
+    "df": 6,
+    "assumptions": "independent blocks; approximately normal block log ratios; retain raw pairs; obvious violations hold instead of switching estimator"
+  },
+  "decision_rule": "all required point and upper-bound ratios must meet their thresholds, with science/files/limits valid; point miss fails, uncertainty-only miss holds",
+  "borderline_rule": "point threshold met but upper confidence bound exceeds threshold -> held; no extra favorable reruns",
+  "non_regression_rule": "G4: candidate/matched immediate accepted comparator <=1.00 for both point and upper-bound elapsed and combined peak; no margin. The standalone G2 history experiment uses its explicitly approved 1.10 elapsed/CPU ceilings; that allowance is not GUI or consumer-wide acceptance.",
+  "combined_peak_definition": {
+    "metric": "fresh service cgroup v2 memory.peak",
+    "units": "bytes",
+    "membership": "GUI process, reusable worker if adopted, driver and descendants under one service",
+    "interval": "process startup through all required outputs/acknowledgement and teardown",
+    "shared_memory": "charged once by cgroup accounting; do not add RSS",
+    "file_cache": "include cache and kernel charges reported by same cgroup; separate host page-cache condition recorded",
+    "driver": "included identically for paired journeys",
+    "exclusions": "fixture generation and independent output oracle excluded from timed service; their own preflight accounted separately"
+  },
+  "g2": {
+    "retained_heap_ratio_max": 0.7,
+    "sequence_elapsed_ratio_max": 1.1,
+    "sequence_cpu_ratio_max": 1.1,
+    "save_max_seconds": 30,
+    "cold_revert_max_seconds": 30,
+    "retained_heap_measurement": "unique live R allocations across all owners after standardized GC, excluding freed objects; never sum object.size across aliases",
+    "scope": "qualified history workloads; capacity-only failures excluded from finite-ratio acceptance"
+  },
+  "g4": {
+    "elapsed_ratio_max": 0.9,
+    "combined_peak_ratio_max": 0.9,
+    "immediate_comparator_ratio_max": 1,
+    "required": "complete independent IQ then real Limpa journey; startup, full-history legacy RDS, copies, automatic outputs and included restore boundary"
+  },
+  "service_limits": {
+    "memory_max_bytes": 8589934592,
+    "memory_swap_max_bytes": 0,
+    "runtime_max_seconds": 900,
+    "optional_cache_max_bytes": 67108864
+  },
+  "run_budget": {
+    "qualified_blocks_per_build_recipe_route": 7,
+    "diagnostic_profiles_per_case": 1,
+    "fixture_preflights_per_recipe": 1
+  },
+  "retry_rule": "one replacement only for independently documented infrastructure-invalid block, preserving failed receipt; no retry of valid unfavorable outcomes",
+  "correction_budget": {
+    "design_corrections_per_failed_pilot": 1,
+    "requires": "measured attribution, scoped owner, new build ID; rerun only invalidated evidence"
+  },
+  "invalid_baseline_rule": "OOM/timeout/missing science or outputs cannot be a finite denominator; capacity-only observations labeled separately",
+  "missing_metric_rule": "required absent/nonfinite metrics -> held; never zero, impute or omit",
+  "boundaries": {
+    "baseline": "DIA-003 binds original browser actions and required-file inventory before timing",
+    "histories": "include initial save and realistic forward/revert/reset/reapply; include full export separately and in composed sequence",
+    "consumers": "resident vs full RDS vs small saved product vs selective read; creation cost and misses included",
+    "cold_state": "fresh process, empty optional cache, disjoint project; filesystem cache condition explicitly paired, not asserted cold from restart alone"
+  },
+  "routes": {
+    "iq": {
+      "status": "protocol frozen; installed control and G0 qualification still required"
+    },
+    "limpa": {
+      "status": "held until DIA-017",
+      "inherits_iq_evidence": false
+    }
+  },
+  "predecessor": {
+    "version": "0.1-proposed",
+    "sha256": "48a9ec2434744673e9e1f6007c653f429f89826f8072ce864df14913d75cda5a",
+    "preserved_in": "docs/qa/dia-saved-entities/fixtures.md#freeze-predecessors"
+  }
+}

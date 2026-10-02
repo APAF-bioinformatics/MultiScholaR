@@ -224,9 +224,9 @@ loadProtNormImageAsPlot <- function(filePath, messageFn = message) {
   tryCatch({
     img <- png::readPNG(filePath)
     g <- grid::rasterGrob(img, interpolate = TRUE)
-    ggplot2::ggplot() +
+    stripProtNormQcPlotOwners(ggplot2::ggplot() +
       ggplot2::annotation_custom(g, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) +
-      ggplot2::theme_void()
+      ggplot2::theme_void())
   }, error = function(e) {
     messageFn(sprintf("   [generateCompositeFromFiles] Could not load image: %s", filePath))
     ggplot2::ggplot() + ggplot2::theme_void()
@@ -348,6 +348,7 @@ regenerateProtNormQcForAestheticChange <- function(
   generateRuvCorrectedQcFn,
   messageFn = message
 ) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   if (normData$pre_norm_qc_generated) {
     messageFn("Regenerating pre-normalization QC plots with new aesthetics...")
     tryCatch({
@@ -360,7 +361,7 @@ regenerateProtNormQcForAestheticChange <- function(
   if (normData$normalization_complete && !is.null(normData$normalized_protein_obj)) {
     messageFn("Regenerating post-normalization QC plots with new aesthetics...")
     tryCatch({
-      generatePostNormalizationQcFn(normData$normalized_protein_obj)
+      generatePostNormalizationQcFn(getDIAOwnedInput(normData, "normalized_protein_obj"))
     }, error = function(e) {
       messageFn(paste("Error regenerating post-normalization QC:", e$message))
     })
@@ -369,13 +370,14 @@ regenerateProtNormQcForAestheticChange <- function(
   if (normData$ruv_complete && !is.null(normData$ruv_normalized_obj)) {
     messageFn("Regenerating RUV-corrected QC plots with new aesthetics...")
     tryCatch({
-      generateRuvCorrectedQcFn(normData$ruv_normalized_obj)
+      generateRuvCorrectedQcFn(getDIAOwnedInput(normData, "ruv_normalized_obj"))
     }, error = function(e) {
       messageFn(paste("Error regenerating RUV-corrected QC:", e$message))
     })
   }
 
   invisible(NULL)
+  })
 }
 
 initializeProtNormQcPlotPaths <- function(qcPlotPaths = NULL) {
@@ -404,6 +406,28 @@ saveProtNormQcPlotArtifact <- function(
   }
 
   artifactPath <- file.path(qcDir, filename)
+  manager <- getDIAActiveManager()
+  product_reference <- attr(plotObject, "dia_product_reference", exact = TRUE)
+  if (usesDIAReferenceStates(manager) && isSavedWorkflowReference(product_reference)) {
+    dimensions <- as.integer(c(width, height) * dpi)
+    aesthetics <- attr(plotObject, "dia_render_aesthetics", exact = TRUE)
+    aesthetics <- aesthetics[!vapply(aesthetics, is.null, logical(1))]
+    identity <- newSavedWorkflowRenderIdentity(product_reference,
+      c(aesthetics, list(dpi = dpi)),
+      "png", dimensions, manager$.context$software)
+    hit <- resolveSavedWorkflowAsset(manager$.context$store, product_reference, identity)
+    if (identical(hit$status, "hit")) {
+      writeBin(hit$value$bytes, artifactPath)
+      return(artifactPath)
+    }
+    savePlotFn(artifactPath, plotObject, width = width, height = height, dpi = dpi)
+    asset <- newSavedWorkflowRenderedAsset(readBin(artifactPath, "raw", n = file.size(artifactPath)),
+      "image/png", dimensions)
+    reference <- saveWorkflowDiaQcAsset(manager$.context$store, asset,
+      basename(tempfile("dia-qc-image-")), identity)
+    rootDIAProduct(manager, reference, list(product_reference))
+    return(artifactPath)
+  }
   savePlotFn(artifactPath, plotObject, width = width, height = height, dpi = dpi)
   artifactPath
 }
@@ -471,4 +495,3 @@ buildProtNormCorrelationPlot <- function(
     exclude_pool_samples = TRUE
   )
 }
-

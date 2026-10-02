@@ -1,4 +1,5 @@
 Package: MultiScholaR
+Config/MultiScholaR/DIA-output-policy: native_first_v1
 Title: Interactive Multi-Omics Analysis with Best Modular, Reproducible Workflows
 Version: 0.5.0
 Authors@R: c(
@@ -23,6 +24,10 @@ Description: A comprehensive R package providing an end-to-end graphical user in
     through standardized, citable workflows.
 License: LGPL (>= 3) + file LICENSE
 Encoding: UTF-8
+NeedsCompilation: yes
+SystemRequirements: GNU coreutils sync (file-specific fsync, for experimental
+    saved-entity storage on Linux); GNU tar, bash and GNU coreutils dd/sha256sum
+    (bounded streaming I/O for experimental native DIA archives on Linux)
 Depends: R (>= 4.1.0)
 Roxygen: list(markdown = TRUE)
 Collate: 
@@ -369,6 +374,16 @@ Collate:
     'utils_shiny_logging.R'
     'utils_test_mode.R'
     'utils_workflow_state.R'
+    'utils_workflow_saved_entities.R'
+    'utils_workflow_execution.R'
+    'utils_workflow_saved_table_codec.R'
+    'utils_workflow_dia_qc_rollup.R'
+    'utils_workflow_dia_relational_rollup.R'
+    'utils_workflow_dia_products.R'
+    'utils_workflow_dia_da.R'
+    'utils_workflow_saved_exports.R'
+    'utils_workflow_dia_state.R'
+    'utils_workflow_dia_sessions.R'
     'zzz.R'
 Suggests:
     AnnotationDbi,
@@ -384,6 +399,8 @@ Suggests:
     testthat (>= 3.0.0),
     covr,
     dynamicTreeCut,
+    fastduckdb (>= 0.1.0),
+    nanoarrow (>= 0.9.0),
     GlimmaV2,
     GO.db,
     GSEABase,
@@ -392,6 +409,7 @@ Suggests:
     mixOmics,
     MOFA2,
     progress,
+    qs2 (>= 0.2.2),
     Rcpp,
     RcppEigen,
     RSpectra,
@@ -418,10 +436,15 @@ Imports:
     ComplexHeatmap,
     configr,
     cowplot,
+    DBI,
     devtools,
     DT,
     digest,
     dplyr,
+    duckdb,
+    duckplyr (>= 1.2.1),
+    filelock (>= 1.0.3),
+    parallel,
     forcats,
     furrr,
     future,
@@ -501,5 +524,6 @@ Imports:
     magick
 Remotes:
     cran/RUVIIIC,
-    APAF-bioinformatics/GlimmaV2
+    APAF-bioinformatics/GlimmaV2,
+    APAF-bioinformatics/fast_duckdb/fastduckdb@d78511504fbdb89fbf34bc26b22b3ff1524b0555
 Config/roxygen2/version: 8.0.0

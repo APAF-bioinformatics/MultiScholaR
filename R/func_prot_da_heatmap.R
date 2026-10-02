@@ -52,6 +52,51 @@ generateProtDAHeatmap <- function(
   cut_height = 0.5,
   min_cluster_size = 3
 ) {
+  if (isDIAResultManifest(da_results_list)) {
+    return(generateDIAReferenceHeatmap(da_results_list, selected_contrast,
+      list(top_n_genes = top_n_genes, clustering_method = clustering_method,
+        distance_method = distance_method, cluster_rows = cluster_rows, cluster_cols = cluster_cols,
+        scale_data = scale_data, da_q_val_thresh = da_q_val_thresh, qvalue_column = qvalue_column,
+        log2fc_column = log2fc_column, tree_cut_method = tree_cut_method,
+        n_clusters = n_clusters, cut_height = cut_height, min_cluster_size = min_cluster_size),
+      color_scheme, show_gene_names))
+  }
+  product <- do.call(computeProtDAHeatmapProduct, c(list(da_results_list = da_results_list,
+    selected_contrast = selected_contrast), list(top_n_genes = top_n_genes, clustering_method = clustering_method,
+      distance_method = distance_method, cluster_rows = cluster_rows, cluster_cols = cluster_cols,
+      scale_data = scale_data, da_q_val_thresh = da_q_val_thresh, qvalue_column = qvalue_column,
+      log2fc_column = log2fc_column, tree_cut_method = tree_cut_method,
+      n_clusters = n_clusters, cut_height = cut_height, min_cluster_size = min_cluster_size)))
+  if (is.null(product)) return(NULL)
+  renderProtDAHeatmapProduct(product, color_scheme, show_gene_names)
+}
+
+#' Compute the unchanged heatmap selection, scaling and clustering independently of style.
+#' @param da_results_list,selected_contrast Existing selected result and expression inputs.
+#' @param top_n_genes,clustering_method,distance_method,cluster_rows,cluster_cols,scale_data Existing numerical choices.
+#' @param color_scheme,show_gene_names Retained call compatibility; rendering is separate.
+#' @param da_q_val_thresh,qvalue_column,log2fc_column,tree_cut_method,n_clusters,cut_height,min_cluster_size Existing selection and tree-cut settings.
+#' @return Selected expression, design and clustering product; never a full assay owner.
+#' @noRd
+computeProtDAHeatmapProduct <- function(
+  da_results_list,
+  selected_contrast = NULL,
+  top_n_genes = 50,
+  clustering_method = "ward.D2",
+  distance_method = "euclidean",
+  cluster_rows = TRUE,
+  cluster_cols = TRUE,
+  scale_data = "row",
+  color_scheme = "RdBu",
+  show_gene_names = FALSE,
+  da_q_val_thresh = 0.05,
+  qvalue_column = "fdr_qvalue",
+  log2fc_column = "log2FC",
+  tree_cut_method = "none",
+  n_clusters = 4,
+  cut_height = 0.5,
+  min_cluster_size = 3
+) {
   logger::log_info("--- Entering generateProtDAHeatmap ---")
   logger::log_info(sprintf("   selected_contrast = %s, top_n_genes = %d", selected_contrast, top_n_genes))
 
@@ -135,20 +180,6 @@ generateProtDAHeatmap <- function(
   expr_matrix[is.na(expr_matrix)] <- 0
   expr_matrix[is.infinite(expr_matrix)] <- 0
 
-  # Build row labels (gene names if requested)
-  if (show_gene_names) {
-    # Try to map protein IDs to gene names from DA results
-    if ("gene_names" %in% names(top_proteins)) {
-      id_to_name <- stats::setNames(top_proteins$gene_names, top_proteins[[protein_id_col]])
-      row_labels <- id_to_name[rownames(expr_matrix)]
-      row_labels[is.na(row_labels)] <- rownames(expr_matrix)[is.na(row_labels)]
-    } else {
-      row_labels <- rownames(expr_matrix)
-    }
-  } else {
-    row_labels <- rownames(expr_matrix)
-  }
-
   # Calculate clustering
   row_clust <- NULL
   col_clust <- NULL
@@ -205,6 +236,43 @@ generateProtDAHeatmap <- function(
     )
   }
 
+  product <- list(expr_matrix = expr_matrix, top_proteins = top_proteins,
+    protein_id_col = protein_id_col, design = theObject@design_matrix,
+    sample_id = theObject@sample_id, group_id = theObject@group_id,
+    row_clust = row_clust, col_clust = col_clust, row_clusters = row_clusters,
+    cluster_rows = cluster_rows, cluster_cols = cluster_cols, selected_contrast = selected_contrast)
+  product
+}
+
+#' Render the existing heatmap from selected expression and saved clustering.
+#' @param product Accepted heatmap scientific product.
+#' @param color_scheme,show_gene_names Existing render-only choices.
+#' @return Existing plot and cluster handoff; no clustering is recalculated.
+#' @noRd
+renderProtDAHeatmapProduct <- function(product, color_scheme, show_gene_names) {
+  expr_matrix <- product$expr_matrix
+  top_proteins <- product$top_proteins
+  protein_id_col <- product$protein_id_col
+  row_clust <- product$row_clust
+  col_clust <- product$col_clust
+  row_clusters <- product$row_clusters
+  cluster_rows <- product$cluster_rows
+  cluster_cols <- product$cluster_cols
+  selected_contrast <- product$selected_contrast
+  # Build row labels (gene names if requested)
+  if (show_gene_names) {
+    # Try to map protein IDs to gene names from DA results
+    if ("gene_names" %in% names(top_proteins)) {
+      id_to_name <- stats::setNames(top_proteins$gene_names, top_proteins[[protein_id_col]])
+      row_labels <- id_to_name[rownames(expr_matrix)]
+      row_labels[is.na(row_labels)] <- rownames(expr_matrix)[is.na(row_labels)]
+    } else {
+      row_labels <- rownames(expr_matrix)
+    }
+  } else {
+    row_labels <- rownames(expr_matrix)
+  }
+
   # Color palette using circlize for proper scaling
   color_fn <- switch(color_scheme,
     "RdBu" = circlize::colorRamp2(c(-2, 0, 2), c("blue", "white", "red")),
@@ -217,9 +285,9 @@ generateProtDAHeatmap <- function(
   )
 
   # Get column annotations (groups)
-  dm <- theObject@design_matrix
-  rownames(dm) <- dm[[theObject@sample_id]]
-  col_groups <- dm[colnames(expr_matrix), theObject@group_id]
+  dm <- product$design
+  rownames(dm) <- dm[[product$sample_id]]
+  col_groups <- dm[colnames(expr_matrix), product$group_id]
 
   # Generate dynamic group colors
   unique_groups <- unique(col_groups)

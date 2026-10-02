@@ -67,6 +67,7 @@ data-raw/*.csv
 .renv-paths/
 /renv/
 renv.lock
+/inst/duckdb/
 /Workbooks/proteomics/
 /.refactor-fidelity-audit/
 /.bug-hunter/
@@ -75,3 +76,19 @@ renv.lock
 /qc-plots.pdf
 tests/testthat/Rplots.pdf
 tests/testthat/qc-plots.pdf
+
+# Local tickets, planning records and embedded ticket snapshots
+/tickets/
+/docs/qa/*ticket-*
+/docs/qa/workflow-execution/perf-*
+/docs/qa/workflow-execution/wfx-*-audit-*
+/docs/qa/workflow-execution/wfx-*-remediation-*
+/docs/qa/dia-saved-entities/coverage.json
+/docs/qa/dia-saved-entities/*-predecessor-*.json
+
+# Generated native and Python artifacts
+/src/*.o
+/src/*.so
+/src/*.dll
+__pycache__/
+*.pyc

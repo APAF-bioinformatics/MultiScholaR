@@ -22,3 +22,5 @@
 ^tests/testthat/_e2e_artifacts$
 ^tests/testthat/cache$
 ^tests/testthat/results$
+
+^inst/duckdb$

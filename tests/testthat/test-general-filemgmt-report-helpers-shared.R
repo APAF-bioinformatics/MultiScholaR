@@ -228,11 +228,54 @@ test_that("copyToResultsSummary backs up and copies proteomics report artifacts"
   expect_true(file.exists(file.path(paths$results_summary_dir, "Study_report", "design_matrix.tab")))
   expect_true(file.exists(file.path(paths$source_dir, basename(current_rmd))))
 
+  # Automatic protein QC names are prefixed; correlation Skip creates no plot.
+  expect_true(file.rename(file.path(paths$feature_qc_dir, "composite_QC_figure.pdf"),
+    file.path(paths$feature_qc_dir, "proteomics_composite_QC_figure.pdf")))
+  expect_true(file.rename(file.path(paths$feature_qc_dir, "composite_QC_figure.png"),
+    file.path(paths$feature_qc_dir, "proteomics_composite_QC_figure.png")))
+  expect_true(file.rename(file.path(paths$time_dir, "12_correlation_filtered_combined_plots.png"),
+    file.path(paths$time_dir, "correlation_skipped_fixture.png")))
+  failures <- NULL
+  suppressWarnings(suppressMessages(capture.output(
+    failures <- copy_helper(omic_type = "proteomics", experiment_label = "Project42",
+      contrasts_tbl = contrasts_tbl, design_matrix = design_matrix,
+      force = TRUE, current_rmd = current_rmd)
+  )))
+  expect_length(failures, 0)
+  expect_true(file.exists(file.path(paths$results_summary_dir, "QC_figures",
+    "proteomics_composite_QC_figure.pdf")))
+  expect_true(file.exists(file.path(paths$results_summary_dir, "QC_figures",
+    "proteomics_composite_QC_figure.png")))
+
   backup_dirs <- list.dirs(file.path(root, "results_summary"), full.names = TRUE, recursive = FALSE)
   backup_dirs <- backup_dirs[grepl("proteomics_Project42_backup_", basename(backup_dirs), fixed = TRUE)]
   expect_length(backup_dirs, 1)
   expect_true(file.exists(file.path(backup_dirs[[1]], "existing.txt")))
   expect_true(file.exists(file.path(backup_dirs[[1]], "backup_info.txt")))
+
+  native_copy <- NULL
+  native_helper <- makeFunctionWithOverrides(copy_helper, list(
+    isDIANativeSession = function(...) TRUE,
+    getDIAActiveManager = function() NULL,
+    copyDIANativeSessionArtifact = function(source_dir, destination) {
+      native_copy <<- c(source = source_dir, destination = destination)
+      writeLines("portable archive copy seam", destination)
+      destination
+    }
+  ))
+  suppressWarnings(suppressMessages(capture.output(
+    failures <- native_helper(omic_type = "proteomics", experiment_label = "Project42",
+      contrasts_tbl = contrasts_tbl, design_matrix = design_matrix,
+      force = TRUE, current_rmd = current_rmd)
+  )))
+  expect_length(failures, 0)
+  expect_identical(unname(native_copy[["source"]]), paths$source_dir)
+  expect_identical(basename(native_copy[["destination"]]), "filtered_session.msdia.tar")
+  expect_true(file.exists(native_copy[["destination"]]))
+  expect_false(file.exists(file.path(paths$results_summary_dir, "Publication_tables",
+    "ruv_normalised_results.RDS")))
+  expect_true(file.exists(file.path(paths$results_summary_dir, "Publication_tables",
+    "RUV_normalised_results.tsv")))
 })
 
 test_that("copyToResultsSummary loads fallback source tables and reports copy failures", {

@@ -102,13 +102,27 @@ runPeptideRollupApplyStep <- function(workflowData,
                                       rollupFn = rollUpPrecursorToPeptide,
                                       logInfoFn = logger::log_info,
                                       nowFn = Sys.time) {
+  if (usesDIAReferenceStates(workflowData$state_manager)) return(runDIAReferencePrecursorRollup(workflowData))
+
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
+  manager <- workflowData$state_manager
+  predecessor <- getDIACurrentReference(manager)
+  sql_rollup <- inherits(manager, "DIAStateAdapter") && isTRUE(manager$.context$sql_rollup)
+  if (sql_rollup) {
+    rollup_result <- computeDIACapacityRollup(manager)
+  }
+  currentS4 <- if (sql_rollup) getDIARollupEnvelope(manager, rollup_result$source_entity_id) else NULL
+  if (is.null(currentS4)) currentS4 <- getDIAExecutionState(manager, "rollUpPrecursorToPeptide")
   shiny::req(currentS4)
 
   logInfoFn("QC Step: Applying precursor rollup")
 
-  rolledUpS4 <- rollupFn(currentS4)
+  if (sql_rollup) {
+    rollupFn <- applySavedWorkflowPrecursorRollup
+    rolledUpS4 <- rollupFn(currentS4, rollup_result = rollup_result)
+  } else {
+    rolledUpS4 <- rollupFn(currentS4)
+  }
 
   if (is.null(workflowData$qc_params)) {
     workflowData$qc_params <- list()
@@ -136,6 +150,8 @@ runPeptideRollupApplyStep <- function(workflowData,
     transformation_type = "aggregation"
   )
 
+  releaseDIAWorkingReference(manager, predecessor)
+  currentS4 <- rollup_result <- NULL
   proteinCount <- .countPeptideProteinGroups(rolledUpS4)
 
   resultText <- paste(
@@ -158,17 +174,21 @@ updatePeptideRollupOutputs <- function(output,
                                        omicType,
                                        experimentLabel,
                                        renderTextFn = shiny::renderText,
-                                       updateProteinFilteringFn = updateProteinFiltering) {
-  output$rollup_results <- renderTextFn(rollupResult$resultText)
+                                       updateProteinFilteringFn = updateProteinFiltering, projectDirs = NULL) {
+  output$rollup_results <- renderPeptideQcResultText(rollupResult$resultText, renderTextFn)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = rollupResult$rolledUpS4@peptide_data,
+  plot_arguments <- list(
+    data = rollupResult$filteringSummary %||% rollupResult$rolledUpS4@peptide_data,
     step_name = "4_precursor_rollup",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,
     overwrite = TRUE
   )
+  if (!is.null(projectDirs)) plot_arguments$project_dirs <- projectDirs
+  plotGrid <- if (!is.null(rollupResult$stateReference)) {
+    publishDIAQvalueOutput(getDIAActiveManager(), rollupResult, plot_arguments, updateProteinFilteringFn)
+  } else do.call(updateProteinFilteringFn, plot_arguments)
   rollupPlot(plotGrid)
 
   invisible(plotGrid)
@@ -184,7 +204,8 @@ runPeptideRollupApplyObserver <- function(workflowData,
                                           showNotificationFn = shiny::showNotification,
                                           removeNotificationFn = shiny::removeNotification,
                                           logInfoFn = logger::log_info,
-                                          logErrorFn = logger::log_error) {
+                                          logErrorFn = logger::log_error, experimentPaths = NULL) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Applying precursor rollup...",
     id = "rollup_working",
@@ -194,13 +215,19 @@ runPeptideRollupApplyObserver <- function(workflowData,
   tryCatch({
     rollupResult <- runApplyStepFn(workflowData = workflowData)
 
-    plotGrid <- updateOutputsFn(
+    output_arguments <- list(
       output = output,
       rollupPlot = rollupPlot,
       rollupResult = rollupResult,
       omicType = omicType,
       experimentLabel = experimentLabel
     )
+    if (!is.null(experimentPaths)) {
+      output_arguments$projectDirs <- stats::setNames(
+        list(experimentPaths), paste(omicType, experimentLabel, sep = "_")
+      )
+    }
+    plotGrid <- do.call(updateOutputsFn, output_arguments)
 
     logInfoFn("Precursor rollup applied successfully")
     removeNotificationFn("rollup_working")
@@ -222,6 +249,7 @@ runPeptideRollupApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runPeptideRollupRevertStep <- function(workflowData,
@@ -232,7 +260,7 @@ runPeptideRollupRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, previousState)
   logInfoFn(paste("Reverted precursor rollup to", previousState))
 
   list(
@@ -248,9 +276,10 @@ runPeptideRollupRevertObserver <- function(workflowData,
                                            renderTextFn = shiny::renderText,
                                            showNotificationFn = shiny::showNotification,
                                            logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$rollup_results <- renderTextFn(revertResult$resultText)
+    output$rollup_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     showNotificationFn("Reverted successfully", type = "message")
 
     list(
@@ -267,22 +296,25 @@ runPeptideRollupRevertObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
-mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, experiment_label, experiment_paths = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     
     rollup_plot <- shiny::reactiveVal(NULL)
     
     # Step 2: Precursor Rollup (chunk 11)
     shiny::observeEvent(input$apply_rollup, {
-      runPeptideRollupApplyObserver(
+      apply_arguments <- list(
         workflowData = workflow_data,
         output = output,
         rollupPlot = rollup_plot,
         omicType = omic_type,
         experimentLabel = experiment_label
       )
+      if (!is.null(experiment_paths)) apply_arguments$experimentPaths <- experiment_paths
+      do.call(runPeptideRollupApplyObserver, apply_arguments)
     })
     
     # Revert Precursor Rollup

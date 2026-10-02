@@ -20,6 +20,8 @@ resolveProtSummaryFinalS4State <- function(workflowData,
   dataStateUsed <- purrr::detect(dataStates, ~ .x %in% availableStates)
 
   if (!is.null(dataStateUsed)) {
+    if (usesDIAReferenceStates(stateManager)) return(list(
+      finalS4Object = getDIAStateReference(stateManager, dataStateUsed), dataStateUsed = dataStateUsed))
     finalS4Object <- stateManager$getState(dataStateUsed)
   }
 
@@ -195,18 +197,21 @@ resolveProtSummaryReportTemplate <- function(workflowData,
     )
     currentS4 <- finalS4State$finalS4Object
     dataStateUsed <- finalS4State$dataStateUsed
+    summaryArgs <- if (isSavedWorkflowReference(currentS4))
+      readDIAStateMetadata(workflowData$state_manager, currentS4)$data$slots$args else
+      tryCatch(currentS4@args, error = function(e) NULL)
     workflowTypeFromS4 <- tryCatch(
-      currentS4@args$globalParameters$workflow_type,
+      summaryArgs$globalParameters$workflow_type,
       error = function(e) NULL
     )
     reportTemplateFromS4 <- tryCatch(
-      currentS4@args$globalParameters$report_template,
+      summaryArgs$globalParameters$report_template,
       error = function(e) NULL
     )
     useLimpaFromS4 <- tryCatch(
-      isTRUE(currentS4@args$globalParameters$use_limpa) ||
-        !is.null(currentS4@args$limpa_dpc_quant_results) ||
-        !is.null(currentS4@args$proteinMissingValueImputationLimpa),
+      isTRUE(summaryArgs$globalParameters$use_limpa) ||
+        !is.null(summaryArgs$limpa_dpc_quant_results) ||
+        !is.null(summaryArgs$proteinMissingValueImputationLimpa),
       error = function(e) FALSE
     )
 

@@ -33,7 +33,8 @@ saveProtNormCorrelationResults <- function(
   messagePrefix = "*** CORRELATION STEP 4",
   writeTsvFn = readr::write_tsv,
   saveRdsFn = saveRDS,
-  messageFn = message
+  messageFn = message,
+  compatibilityExport = !isDIANativeSession(getDIAActiveManager())
 ) {
   file_names <- resolveProtNormCorrelationResultFilenames(
     normRuvOptimizationResult = normRuvOptimizationResult,
@@ -48,16 +49,19 @@ saveProtNormCorrelationResults <- function(
       file.path(experimentPaths$protein_qc_dir, file_names$tsvFilename)
     )
 
-    saveRdsFn(
-      finalS4ForDe,
-      file.path(experimentPaths$protein_qc_dir, file_names$rdsFilename)
-    )
+    if (isTRUE(compatibilityExport)) {
+      saveRdsFn(
+        finalS4ForDe,
+        file.path(experimentPaths$protein_qc_dir, file_names$rdsFilename)
+      )
+    } else {
+      file_names$rdsFilename <- NULL
+    }
 
     messageFn(sprintf(
-      "%s: Saved files: %s, %s ***",
+      "%s: Saved files: %s ***",
       messagePrefix,
-      file_names$tsvFilename,
-      file_names$rdsFilename
+      paste(c(file_names$tsvFilename, file_names$rdsFilename), collapse = ", ")
     ))
   }
 
@@ -76,7 +80,7 @@ updateProtNormFinalFilteringPlot <- function(
   final_filtering_plot <- tryCatch({
     messageFn("   [mod_prot_norm] Calling updateProteinFiltering...")
     result <- updateProteinFilteringFn(
-      data = finalS4ForDe@protein_quant_table,
+      data = finalS4ForDe,
       step_name = "12_correlation_filtered",
       omic_type = omicType,
       experiment_label = experimentLabel,
@@ -131,7 +135,29 @@ finalizeProtNormCorrelationWorkflowState <- function(
   messageFn = message,
   catFn = cat
 ) {
-  workflowData$ruv_normalised_for_da_analysis_obj <- finalS4ForDe
+  if (isSavedWorkflowReference(finalS4ForDe) && usesDIAReferenceStates(workflowData$state_manager)) {
+    manager <- workflowData$state_manager
+    checkpoint <- readDIAStateMetadata(manager, finalS4ForDe)$data
+    config <- if (skipped) list(min_pearson_correlation_threshold = 0, skipped = TRUE) else
+      list(min_pearson_correlation_threshold = correlationThreshold)
+    accepted <- if (manager$current_state == "correlation_filtered") readDIAStateMetadata(manager) else NULL
+    if (is.null(accepted) || !identical(accepted$data$components, checkpoint$components) ||
+        !identical(accepted$config, config)) {
+      commitDIAReferenceState(manager, "correlation_filtered", checkpoint, config,
+        if (skipped) "Skipped final sample correlation filter" else "Applied final sample correlation filter (chunk 28)")
+    }
+    workflowData$ruv_normalised_for_da_analysis_obj <- getDIAStateReference(manager)
+    workflowData$state_update_trigger <- timeFn()
+    status <- workflowData$tab_status
+    status$normalization <- "complete"
+    status$differential_expression <- "pending"
+    workflowData$tab_status <- status
+    workflowData$protein_counts$final_for_de <- checkpoint$metadata$proteins
+    return(list(finalProteinCount = checkpoint$metadata$proteins,
+      finalSampleCount = length(setdiff(checkpoint$dimensions$columns, checkpoint$slots$protein_id_column))))
+  }
+  workflowData$ruv_normalised_for_da_analysis_obj <- saveDIAOwnedValue(finalS4ForDe,
+    "final-correlation", workflowData$state_manager)
 
   config_object <- if (skipped) {
     list(min_pearson_correlation_threshold = 0, skipped = TRUE)
@@ -185,7 +211,9 @@ finalizeProtNormCorrelationWorkflowState <- function(
   }
   catFn(exit_label)
 
-  final_protein_count <- length(unique(finalS4ForDe@protein_quant_table$Protein.Ids))
+  final_protein_count <- length(unique(
+    finalS4ForDe@protein_quant_table[[finalS4ForDe@protein_id_column]]
+  ))
   final_sample_count <- length(setdiff(
     colnames(finalS4ForDe@protein_quant_table),
     finalS4ForDe@protein_id_column
@@ -323,7 +351,7 @@ runProtNormCorrelationFilterStep <- function(
     as.numeric(difftime(end_time_step2, start_time_step2, units = "secs"))
   ))
 
-  normData$correlation_filtered_obj <- final_s4_for_de
+  normData <- setDIAOwnedPayload(normData, "correlation_filtered_obj", final_s4_for_de)
   messageFn("*** CORRELATION STEP 2: Correlation filtering applied ***")
   messageFn("*** CORRELATION STEP 2: Running garbage collection ***")
   gcFn()
@@ -341,7 +369,7 @@ prepareProtNormSkippedCorrelationState <- function(
 
   normData$correlation_vector <- NULL
   normData$correlation_threshold <- NULL
-  normData$correlation_filtered_obj <- ruvS4
+  normData <- setDIAOwnedPayload(normData, "correlation_filtered_obj", ruvS4)
 
   messageFn("*** SKIP CORRELATION: Object passed through without filtering ***")
   gcFn()
@@ -557,4 +585,3 @@ handleProtNormCorrelationError <- function(
 
   invisible(NULL)
 }
-

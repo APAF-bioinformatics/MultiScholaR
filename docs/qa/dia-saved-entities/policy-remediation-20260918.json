@@ -1,0 +1,357 @@
+{
+  "schema": "em.ticket_series_evidence_audit.result.v1",
+  "mode": "audit_and_repair",
+  "scope": {
+    "ticket_ids": [
+      "DIA-009",
+      "DIA-013",
+      "DIA-014",
+      "DIA-015",
+      "DIA-016",
+      "DIA-018",
+      "DIA-019",
+      "DIA-020",
+      "DIA-021",
+      "DIA-022",
+      "DIA-023",
+      "DIA-024"
+    ],
+    "files": [
+      "tickets/openai/01-DIA-SAVED-ENTITIES-PLAN.md",
+      "tickets/openai/tickets-index.json",
+      "tickets/openai/DIA-009.md",
+      "tickets/openai/DIA-013.md",
+      "tickets/openai/DIA-014.md",
+      "tickets/openai/DIA-015.md",
+      "tickets/openai/DIA-016.md",
+      "tickets/openai/DIA-018.md",
+      "tickets/openai/DIA-019.md",
+      "tickets/openai/DIA-020.md",
+      "tickets/openai/DIA-021.md",
+      "tickets/openai/DIA-022.md",
+      "tickets/openai/DIA-023.md",
+      "tickets/openai/DIA-024.md",
+      "docs/qa/dia-saved-entities/consumer-results.md",
+      "docs/qa/dia-saved-entities/gates.json"
+    ],
+    "claim_classes": [
+      "documentation_or_graph_integrity",
+      "prospective execution contracts"
+    ]
+  },
+  "authority": {
+    "route_valid": true,
+    "artifacts": [
+      {
+        "actual_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+        "exists": true,
+        "expected_sha256": "517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379",
+        "matches": true,
+        "path": "tests/testdata/workflow-checkpoints/protocol.json"
+      },
+      {
+        "actual_sha256": "cfdf7da2fc5a6123da269f85011550d8ffd2e8a611de071e0cd1a52a6f35d152",
+        "exists": true,
+        "expected_sha256": "cfdf7da2fc5a6123da269f85011550d8ffd2e8a611de071e0cd1a52a6f35d152",
+        "matches": true,
+        "path": "tests/testdata/workflow-checkpoints/scenarios.json"
+      }
+    ],
+    "predecessor": "docs/qa/dia-saved-entities/policy-predecessor-20260918.json",
+    "finding_register": "docs/qa/dia-saved-entities/policy-findings-20260918.md"
+  },
+  "findings": [
+    {
+      "id": "DIA-NEXT-01",
+      "severity": "high",
+      "source": "policy-findings-20260918.md",
+      "state": "documentation_repaired; empirical gates remain held"
+    },
+    {
+      "id": "DIA-NEXT-02",
+      "severity": "high",
+      "source": "policy-findings-20260918.md",
+      "state": "planning_contract_repaired; adapter implementation pending"
+    },
+    {
+      "id": "DIA-NEXT-03",
+      "severity": "high",
+      "source": "policy-findings-20260918.md",
+      "state": "planning_contract_repaired; natural-use and composition proof outstanding"
+    },
+    {
+      "id": "DIA-NEXT-04",
+      "severity": "high",
+      "source": "policy-findings-20260918.md",
+      "state": "planning_contract_repaired; matched qs2/resident qualification outstanding"
+    },
+    {
+      "id": "DIA-NEXT-05",
+      "severity": "medium",
+      "source": "policy-findings-20260918.md",
+      "state": "planning_contract_repaired; gated audit subtask not executed"
+    }
+  ],
+  "repairs": [
+    {
+      "finding_id": "DIA-NEXT-01",
+      "files": [
+        "tickets/openai/01-DIA-SAVED-ENTITIES-PLAN.md",
+        "tickets/openai/DIA-015.md",
+        "docs/qa/dia-saved-entities/consumer-results.md",
+        "docs/qa/dia-saved-entities/gates.json"
+      ],
+      "result": "Current policy/evidence refreshed; two prospective held successor scopes appended, all six old gate records preserved exactly as JSON values; old consumer text retained."
+    },
+    {
+      "finding_id": "DIA-NEXT-02",
+      "files": [
+        "tickets/openai/DIA-013.md",
+        "tickets/openai/DIA-014.md",
+        "tickets/openai/tickets-index.json"
+      ],
+      "result": "Revision 1.4 reader experiment remains complete historical evidence; new revision 1.5 adapter work is pending with unchecked criteria. DIA-014 predecessor correctness remains complete; DIA-015 directly depends on DIA-013."
+    },
+    {
+      "finding_id": "DIA-NEXT-03",
+      "files": [
+        "tickets/openai/DIA-015.md",
+        "tickets/openai/DIA-016.md",
+        "tickets/openai/DIA-018.md",
+        "tickets/openai/DIA-020.md",
+        "tickets/openai/DIA-021.md",
+        "tickets/openai/DIA-022.md",
+        "tickets/openai/DIA-023.md",
+        "tickets/openai/DIA-024.md"
+      ],
+      "result": "Natural immutable-artifact reuse, resident/current comparators, projected-only claims, full producer/output/restore cost and selected-policy scope handoffs made explicit; final science/GUI gates unchanged."
+    },
+    {
+      "finding_id": "DIA-NEXT-04",
+      "files": [
+        "tickets/openai/DIA-009.md",
+        "docs/qa/dia-saved-entities/gates.json"
+      ],
+      "result": "Matched resident/selected qs2 candidate, genuine sharing/aliases, forward/revert/reset and full export required under unchanged frozen criteria; DIA-009 remains next and held."
+    },
+    {
+      "finding_id": "DIA-NEXT-05",
+      "files": [
+        "tickets/openai/DIA-019.md"
+      ],
+      "result": "Named separate gated subtask limited to identical within-record digest reuse, exact substantive audit/science preservation, complete Apply comparison and affected-evidence refresh. Existing PQC tickets/contracts unchanged."
+    }
+  ],
+  "tests": [
+    {
+      "name": "ticket_workflow_validation",
+      "result": "passed",
+      "tickets": [
+        {
+          "id": "DIA-009",
+          "status": "blocked",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-013",
+          "status": "pending",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-014",
+          "status": "completed",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-015",
+          "status": "blocked",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-016",
+          "status": "pending",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-018",
+          "status": "pending",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-019",
+          "status": "pending",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-020",
+          "status": "pending",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-021",
+          "status": "pending",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-022",
+          "status": "pending",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-023",
+          "status": "pending",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        },
+        {
+          "id": "DIA-024",
+          "status": "pending",
+          "consistent": true,
+          "valid": true,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "read_only_inventory",
+      "result": "passed",
+      "command": "python3 /home/doktersmol/.codex/skills/audit-evidence-contracts/scripts/audit_inventory.py --repo /home/doktersmol/Projects/APAF/MultiScholaR --tickets-dir tickets/openai --index tickets/openai/tickets-index.json --ticket DIA-009 --ticket DIA-013 --ticket DIA-014 --ticket DIA-015 --ticket DIA-016 --ticket DIA-018 --ticket DIA-019 --ticket DIA-020 --ticket DIA-021 --ticket DIA-022 --ticket DIA-023 --ticket DIA-024 --doc tickets/openai/01-DIA-SAVED-ENTITIES-PLAN.md --doc docs/qa/dia-saved-entities/consumer-results.md --doc docs/qa/dia-saved-entities/policy-findings-20260918.md --authority tests/testdata/workflow-checkpoints/protocol.json=517edccb0906165698f3c1f165dfe7d961a17910d93363a60e843fa466c62379 --authority tests/testdata/workflow-checkpoints/scenarios.json=cfdf7da2fc5a6123da269f85011550d8ffd2e8a611de071e0cd1a52a6f35d152"
+    },
+    {
+      "name": "predecessor_integrity",
+      "result": "passed",
+      "snapshot_files_verified": 16
+    },
+    {
+      "name": "gate_preservation",
+      "result": "passed",
+      "historical_records_unchanged": 6,
+      "new_records": 2,
+      "new_records_outcome": "held",
+      "numerical_authority_changed": false
+    },
+    {
+      "name": "checklist_preservation",
+      "result": "passed",
+      "old_checked_items_unchanged": true,
+      "new_unchecked_items": 15
+    },
+    {
+      "name": "historical_consumer_decision",
+      "result": "passed",
+      "original_body_retained": true
+    },
+    {
+      "name": "runtime_and_protocol_protection",
+      "result": "passed",
+      "before": {
+        "files": 688,
+        "sha256": "4da68e22c6094cf1883285fcbaf0f5e6cc5a3823cac97368c4de7bcdb5e66ce3"
+      },
+      "after": {
+        "files": 688,
+        "sha256": "4da68e22c6094cf1883285fcbaf0f5e6cc5a3823cac97368c4de7bcdb5e66ce3"
+      }
+    },
+    {
+      "name": "git_diff_check",
+      "result": "passed"
+    },
+    {
+      "name": "runtime_science_performance",
+      "result": "not_run",
+      "reason": "documentation-only amendment; no new application or benchmark evidence claimed"
+    },
+    {
+      "name": "audit_result_schema",
+      "result": "passed",
+      "method": "complete supplied-schema vocabulary checked in tool session; no external validator installed"
+    },
+    {
+      "name": "index_change_isolation",
+      "result": "passed",
+      "allowed_changes": [
+        "DIA-013 completed -> pending",
+        "DIA-015 adds DIA-013 dependency"
+      ]
+    }
+  ],
+  "graph": {
+    "cycles": [],
+    "duplicates": [],
+    "missing": [],
+    "ticket_count": 32
+  },
+  "documentation": {
+    "ambiguous_links": [],
+    "document_count": 15,
+    "link_count": 279,
+    "missing_links": []
+  },
+  "evidence_layers": [
+    {
+      "layer": "documentation_or_graph_integrity",
+      "established": true
+    },
+    {
+      "layer": "controlled_incremental_utility",
+      "established": false,
+      "note": "Existing results referenced within their original scope; no new empirical claim."
+    }
+  ],
+  "formal_verification": {
+    "used": false,
+    "obligations": [],
+    "limits": [
+      "No scientific, performance or external-generalization result follows from document validation."
+    ]
+  },
+  "closeout": {
+    "implementation_verified": false,
+    "execution_complete": true,
+    "decision_supported": true,
+    "promotion_authorized": false,
+    "claim_scope": "Approved documentation/graph amendment only; future adapter, history and audit work are not implemented or qualified by this record."
+  },
+  "blockers": [
+    "G2_history:iq/standalone-qs2-history-v2 held pending matched resident/qs2 qualification",
+    "DIA-013 revision 1.5 package adapter pending",
+    "G2:iq/standalone-consumers-v2 held; scientific and GUI gates remain unchanged"
+  ],
+  "deviations": [
+    {
+      "kind": "read_only_inspection",
+      "detail": "An initial jq probe assumed the older sequence snapshot's files field was an array; it is an object. Corrected inspection only; no state changed or empirical run was retried."
+    },
+    {
+      "kind": "direct_consistency_fallout",
+      "detail": "Added held standalone-consumers-v2 as well as the approved held qs2-history scope because historical consumer-v1 explicitly requires old RDS history. This preserves the historical record instead of silently changing its meaning."
+    },
+    {
+      "kind": "validation_dependency",
+      "detail": "Python jsonschema was unavailable (ModuleNotFoundError); no dependency was installed. Validated the supplied schema's complete required/type/enum/const/items/properties/additionalProperties vocabulary in the tool session instead."
+    }
+  ],
+  "next_action": "Select DIA-009 explicitly for the next bounded implementation item; then DIA-013 adapter continuation, DIA-015 composition, and the unchanged scientific/GUI gate sequence. Do not start these from this documentation closeout."
+}

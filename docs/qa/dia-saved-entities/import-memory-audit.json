@@ -1,0 +1,57 @@
+{
+  "schema": "em.ticket_series_evidence_audit.result.v1",
+  "mode": "audit_only",
+  "scope": {
+    "ticket_ids": ["DIA-025"],
+    "files": ["R/func_prot_import_readers.R", "R/mod_prot_import_server_helpers.R", "R/mod_prot_import_processing_helpers.R", "R/mod_prot_import_orchestration_helpers.R", "R/mod_prot_import_ui_helpers.R", "R/mod_prot_import_detection_helpers.R", "R/mod_prot_import_config_helpers.R", "R/mod_prot_design_builder_server_helpers.R", "R/mod_prot_design_builder_state_helpers.R", "R/func_prot_annotation_fasta_processing_helpers.R", "R/utils_workflow_dia_state.R", "R/utils_workflow_saved_entities.R", "R/mod_prot_norm_ruv_helpers.R"],
+    "claim_classes": ["implementation_conformance", "runtime_behavior", "claim_limits"]
+  },
+  "authority": {
+    "route_valid": true,
+    "dirty_worktree_preserved": true,
+    "artifacts": [
+      {"build": "xz9cb6", "rdb_sha256": "74a7dc9b50821e49e1a6d8c9a4366bdcc879997d61d06a9876acd55387404a08"},
+      {"member": "iGvvnA", "input_member": "570cC2", "samples": 500, "report_bytes": 5792259275, "observed_guard_peak_bytes": 16916217856, "swap_bytes": 0, "completed": false},
+      {"member": "8WgDVe", "input_member": "OQADra", "samples": 300, "report_bytes": 3475378370, "observed_guard_peak_bytes": 16684773376, "swap_bytes": 0, "completed": false},
+      {"path": "R/utils_workflow_dia_state.R", "sha256": "5ba9ad1967973c20ae0e88c92affcf202ab258484611ca47ab1876d5eaa54674", "matches_installed_source": true},
+      {"path": "R/func_prot_import_readers.R", "sha256": "3bb7685adb6630e8f9784f91a53dcd51e2c4fa4d729c66cdca8c1df228a12efd", "matches_installed_source": true},
+      {"path": "R/mod_prot_import_server_helpers.R", "sha256": "bdc7757962114e528233e1fdee284ec07c3a5e5b086f0c3112a4e1f6a6966dc3", "matches_installed_source": true},
+      {"path": "R/mod_prot_import_processing_helpers.R", "sha256": "9fe2f8387ad07dd5fb2212857850205598bf03af96b75c6647dbdec0c9375680", "matches_installed_source": true},
+      {"path": "R/mod_prot_design_builder_server_helpers.R", "sha256": "4bdcd89b927dad3c1f3a5ad0934a1dc5825be382d408f0144c08203fa9d68a9d", "matches_installed_source": true},
+      {"path": "R/mod_prot_design_builder_state_helpers.R", "sha256": "5a062d22499fee7e57bdb3942e4a81ac4641583b554144077a64fe9e4bf5bba2", "matches_installed_source": true},
+      {"path": "R/func_prot_annotation_fasta_processing_helpers.R", "sha256": "4f0b906bc6322da59e1bb93cc1520f2f7ede8f7abe19b702f2a34e11082226cd", "matches_installed_source": true}
+    ]
+  },
+  "findings": [
+    {"id": "DIA-IMPORT-01", "severity": "high", "finding": "Whole-flush working map pins superseded saved owners; nested scopes do not release them.", "evidence": ["R/utils_workflow_dia_state.R:47", "R/utils_workflow_dia_state.R:585", "R/utils_workflow_dia_state.R:676", "tiny callback/scope probe"], "smallest_repair": "Release consumed working owners after durable success while preserving live aliases and recovery references.", "closure_evidence": "Active-action owner bounds, failed-save rollback and restore/revert parity; measured complete-action peak.", "blocked_state": "implementation"},
+    {"id": "DIA-IMPORT-02", "severity": "high", "finding": "Import uses a complete R table; parser portability forces materialization; Parquet header discovery reads a full table.", "evidence": ["R/func_prot_import_readers.R:18", "R/utils_workflow_saved_entities.R:798", "R/mod_prot_import_detection_helpers.R:43", "installed readr 2.2.0/vroom 1.7.1 function bodies"], "smallest_repair": "Separate metadata discovery and bounded ingestion from whole-table compatibility hydration.", "closure_evidence": "Parser, type, ordering, missing/nonfinite and raw-input preservation plus measured import memory.", "blocked_state": "implementation"},
+    {"id": "DIA-IMPORT-03", "severity": "high", "finding": "Import saves before sanitization, saves again, and retains the original result through FASTA/configuration.", "evidence": ["R/mod_prot_import_processing_helpers.R:114", "R/mod_prot_import_processing_helpers.R:95", "R/mod_prot_import_server_helpers.R:292", "8WgDVe two owner:data_tbl descriptors"], "smallest_repair": "Normalize and compute small metadata before the necessary durable handoff; release the consumed full result.", "closure_evidence": "Exact sanitization/attributes/logs and fewer unnecessary full writes without extra scientific checkpoints.", "blocked_state": "implementation"},
+    {"id": "DIA-IMPORT-04", "severity": "high", "finding": "Design initialization embeds a full assay in a metadata bundle and saves it again as cleaned data.", "evidence": ["R/mod_prot_design_builder_server_helpers.R:151", "R/mod_prot_design_builder_state_helpers.R:344", "R/mod_prot_design_builder_server_helpers.R:54", "8WgDVe design-initial and design-cleaned-data descriptors"], "smallest_repair": "Reuse an immutable table reference with separately bounded design metadata and explicit export dependencies.", "closure_evidence": "Reset/edit/save/revert/portable-restore parity and no resave for unchanged-holder installation.", "blocked_state": "implementation"},
+    {"id": "DIA-IMPORT-05", "severity": "medium", "finding": "Status/summary/design metadata consumers request full payloads instead of metadata; same-flush identity reuse mitigates duplicate decodes but not whole-table demand.", "evidence": ["R/mod_prot_import_server_helpers.R:165", "R/mod_prot_import_server_helpers.R:173", "R/mod_prot_import_ui_helpers.R:22"], "smallest_repair": "Use reference existence and bounded summaries for metadata-only consumers.", "closure_evidence": "Zero full decodes during metadata/style/status invalidation with identical UI content.", "blocked_state": "implementation"},
+    {"id": "DIA-IMPORT-06", "severity": "high", "finding": "Whole-checkpoint writes and integrity reads retain file-backed pages outside the native-export-only I/O repair.", "evidence": ["R/utils_workflow_saved_entities.R:714", "R/utils_workflow_saved_entities.R:863", "iGvvnA and 8WgDVe memory-samples.tsv"], "smallest_repair": "Remove redundant I/O first; measure file-specific residency handling while preserving integrity and durability.", "closure_evidence": "Combined peak, file/process attribution and elapsed/read-I/O tradeoff on unchanged workload.", "blocked_state": "decision"},
+    {"id": "DIA-IMPORT-07", "severity": "low", "finding": "FASTA duplicates reads/output representations and keeps a global alias, but the measured annotation is only 4.54 MiB.", "evidence": ["R/func_prot_annotation_fasta_processing_helpers.R:192", "R/mod_prot_import_processing_helpers.R:271", "8WgDVe retained annotation/metadata objects"], "smallest_repair": "Bound header inspection; consider source-validated parser reuse only when its cost warrants it.", "closure_evidence": "FASTA variant/mapping parity and a separately measured FASTA benefit.", "blocked_state": "decision"},
+    {"id": "DIA-IMPORT-08", "severity": "high", "finding": "After-flush ownership snapshots miss the active interval that fails, leaving stale zero counters.", "evidence": ["R/utils_workflow_dia_state.R:679", "both last GUI receipts versus committed owner inventories"], "smallest_repair": "Add bounded scalar substage observations using the existing diagnostic path.", "closure_evidence": "Intra-action success/failure observations with retained pre-stop owner counts and no large logging overhead.", "blocked_state": "decision"}
+  ],
+  "repairs": [],
+  "tests": [
+    {"name": "source identity comparison", "result": "passed", "scope": "seven critical source files match installed xz9cb6 snapshot"},
+    {"name": "bounded descriptor inventory", "result": "completed", "scope": "small descriptors only, no large payload decoding", "large_import_design_records_300": 4, "compressed_payload_bytes_300": 2067290210},
+    {"name": "tiny active-owner control-flow probe", "result": "reproduced", "rows_per_table": 2, "storage_doubled": true, "records_after_replacement": 2, "records_after_nested_scope": 3, "outer_depth": 1, "old_record_still_reachable": true, "records_after_flush": 0, "performance_evidence": false},
+    {"name": "bounded FASTA object inspection", "result": "completed", "sequences": 10000, "annotation_object_bytes": 4762520, "metadata_object_bytes": 2472, "rss_measurement": false},
+    {"name": "sanitization attribute example", "result": "reproduced", "values_unchanged": true, "names_attached": true},
+    {"name": "installed parser function inspection", "result": "confirmed", "readr_version": "2.2.0", "vroom_version": "1.7.1", "behavior": "problems() defaults to full materialization"},
+    {"name": "previously running 96-sample verifier completion", "result": "passed", "member": "GjvReR", "states": 16, "tolerance": 1e-12, "peak_bytes": 6113869824, "swap_bytes": 0, "new_audit_run": false},
+    {"name": "audit artifact mechanical checks", "result": "passed", "scope": "JSON parse, required fields, critical types/enums, unique finding IDs, audit-only flags and whitespace", "full_json_schema_engine": "unavailable; no dependency installed"}
+  ],
+  "graph": {"duplicates": [], "missing": [], "cycles": [], "assessed": false, "scope_note": "Full ticket graph is outside this implementation audit; producer-consumer routing is documented in the companion report."},
+  "evidence_layers": [
+    {"layer": "implementation_conformance", "status": "defects_confirmed", "limits": "Control-flow and source inspection do not quantify RSS savings."},
+    {"layer": "runtime_behavior", "status": "retained_capacity_failures", "limits": "No per-function peak allocation trace or unique-allocation census."},
+    {"layer": "controlled_incremental_utility", "status": "not_established_by_audit", "limits": "No repair or new matched experiment performed."}
+  ],
+  "formal_verification": {"used": false, "obligations": [], "limits": ["Tiny deterministic reproduction is not a formal proof or a large-workload memory benchmark."]},
+  "closeout": {"implementation_verified": false, "execution_complete": false, "decision_supported": true, "promotion_authorized": false, "claim_scope": "Audit supports a bounded active-owner/import-design correction. It does not establish exact peak shares, a completed larger workflow, or that one defect explains every stage."},
+  "blockers": ["Import/design active-owner release is not bounded at the actual consumption boundary.", "Large-run per-function/unique-allocation attribution remains unmeasured.", "No repair or post-repair science/performance evidence exists for these findings."],
+  "deviations": ["No runtime or harness edits or new large jobs in this audit.", "Only additive audit artifacts are written; previous failed evidence and the dirty worktree are preserved."],
+  "next_action": "Review the bounded consumed-owner and metadata-consumer corrections in DIA-025; require intra-action ownership, scientific/restore parity and complete measured peak before promotion. No automatic implementation is authorized by this audit."
+}

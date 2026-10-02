@@ -5,7 +5,12 @@ persistProtDesignBuilderArtifacts <- function(results, workflowData, sourceDir) 
 
   dataClnPath <- file.path(sourceDir, "data_cln.tab")
   logger::log_info(paste("Writing cleaned data to:", dataClnPath))
-  utils::write.table(results$data_cln, file = dataClnPath, sep = "\t", row.names = FALSE, quote = FALSE)
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    writeDIADesignTable(workflowData$state_manager, results$data_reference, dataClnPath)
+  } else {
+    utils::write.table(resolveDIAOwnedValue(results$data_reference %||% results$data_cln),
+      file = dataClnPath, sep = "\t", row.names = FALSE, quote = FALSE)
+  }
 
   if (!is.null(results$contrasts_tbl) && nrow(results$contrasts_tbl) > 0) {
     contrastPath <- file.path(sourceDir, "contrast_strings.tab")
@@ -47,7 +52,8 @@ persistProtDesignBuilderArtifacts <- function(results, workflowData, sourceDir) 
 
 hydrateProtDesignBuilderResults <- function(results, workflowData) {
   workflowData$design_matrix <- results$design_matrix
-  workflowData$data_cln <- results$data_cln
+  workflowData <- setDIAOwnedPayload(workflowData, "data_cln",
+    results$data_reference %||% results$data_cln)
   workflowData$contrasts_tbl <- results$contrasts_tbl
   workflowData$config_list <- results$config_list
 
@@ -97,6 +103,11 @@ runProtDesignBuilderSaveFlow <- function(
       debugQcTrigger = TRUE
     )
 
+    manager <- workflowData$state_manager
+    if (usesDIAReferenceStates(manager)) {
+      reference <- getDIAStateReference(manager)
+      requestDIAReclamation(manager, reference, paste0("design-", reference$entity_id), "design")
+    }
     TRUE
   }, error = function(e) {
     msg <- paste("Error saving design matrix results:", e$message)
@@ -196,9 +207,12 @@ registerProtDesignBuilderModule <- function(
       builderServerFn <- mod_prot_design_builder_server
     }
 
+    data_reference <- reactiveFn(workflowData$data_tbl)
+    data_provider <- function() resolveDIAOwnedValue(data_reference())
+    attr(data_provider, "dia_reference") <- data_reference
     return(builderServerFn(
       moduleId,
-      data_tbl = reactiveFn(workflowData$data_tbl),
+      data_tbl = data_provider,
       config_list = reactiveFn(workflowData$config_list),
       column_mapping = reactiveFn(workflowData$column_mapping)
     ))
@@ -217,7 +231,8 @@ registerProtDesignBuilderResultsObserver <- function(
     reqFn = shiny::req,
     runBuilderObserverShell = runProtDesignBuilderObserverShell
 ) {
-  observeEventFn(builderResultsRv(), {
+  observeEventFn(getDIAReactiveReference(builderResultsRv), {
+    withDIAStateScope(workflowData$state_manager, function() {
     results <- builderResultsRv()
     reqFn(results)
 
@@ -228,6 +243,6 @@ registerProtDesignBuilderResultsObserver <- function(
       session = session,
       qcTrigger = qcTrigger
     )
+    })
   }, ignoreNULL = TRUE)
 }
-

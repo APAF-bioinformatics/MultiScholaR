@@ -221,7 +221,7 @@ test_that("ProteinQuantitativeData chooseBestProteinAccession covers accession c
         stringsAsFactors = FALSE
       )
     },
-    .env = method_env
+    .env = environment()
   )
 
   accession_method <- methods::selectMethod("chooseBestProteinAccession", "ProteinQuantitativeData")
@@ -280,7 +280,7 @@ test_that("protein accession cleanup preserves DIA Protein.Group quantification"
         stringsAsFactors = FALSE
       )
     },
-    .env = method_env
+    .env = environment()
   )
 
   original_quant <- protein_object@protein_quant_table
@@ -355,7 +355,7 @@ test_that("createGridQC GridPlotData method assembles plot sections and save pat
       captured$filename <- filename
       invisible(filename)
     },
-    .env = method_env
+    .env = environment()
   )
 
   output_dir <- tempfile("grid-qc-")

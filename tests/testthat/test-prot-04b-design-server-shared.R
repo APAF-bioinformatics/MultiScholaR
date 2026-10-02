@@ -68,7 +68,7 @@ test_that("proteomics design module server preserves public shell wiring", {
         )
         "builder-results-rv"
       },
-      .env = server_env
+      .env = environment()
     )
   } else if (exists("mod_prot_design_builder_server", envir = server_env, inherits = FALSE)) {
     local_mocked_bindings(
@@ -76,7 +76,7 @@ test_that("proteomics design module server preserves public shell wiring", {
         captured$builder_registered <- TRUE
         function() NULL
       },
-      .env = server_env
+      .env = environment()
     )
   }
 

@@ -1,0 +1,2245 @@
+#' Build bounded R restoration metadata for one supported data frame.
+#' @param table Plain data frame.
+#' @param key_column Existing unique key column or .rownames.
+#' @param metadata_version Explicit restoration format; legacy version 1 is unchanged.
+#' @return Safe metadata embedded in the Parquet schema.
+#' @noRd
+workflowSavedTableMetadata <- function(table, key_column, metadata_version = 1L) {
+    if (!metadata_version %in% c(1L, 2L, 3L)) {
+        cli::cli_abort("unsupported table metadata version", class = "saved_entity_unsupported")
+    }
+    supported_class <- identical(class(table), "data.frame") ||
+        metadata_version %in% c(2L, 3L) && (identical(class(table), c("tbl_df", "tbl", "data.frame")) ||
+            identical(class(table), c("spec_tbl_df", "tbl_df", "tbl", "data.frame")))
+    if (!supported_class || !ncol(table) ||
+        anyDuplicated(names(table)) || any(grepl("^\\.multischolar_", names(table))) ||
+        any(names(table) %in% c(".source_order", ".request_order")) ||
+        !is.character(key_column) || length(key_column) != 1L || is.na(key_column) ||
+        !key_column %in% c(".rownames", names(table))) {
+        cli::cli_abort("unsupported saved table schema", class = "saved_entity_invalid")
+    }
+    supported <- vapply(table, \(column) is.factor(column) ||
+        typeof(column) %in% c("logical", "integer", "double", "character"), logical(1))
+    if (!all(supported)) {
+        cli::cli_abort("saved table contains an unsupported column type",
+            class = "saved_entity_unsupported")
+    }
+    native_rows <- .row_names_info(table, type = 0L)
+    automatic_key <- identical(key_column, ".rownames") && (!nrow(table) ||
+        is.integer(native_rows) && length(native_rows) == 2L && is.na(native_rows[[1L]]) && native_rows[[2L]] < 0L)
+    key <- if (automatic_key) character() else if (identical(key_column, ".rownames")) rownames(table) else table[[key_column]]
+    if (!automatic_key && (is.factor(key) || !(is.character(key) || is.integer(key) || is.double(key)) ||
+        length(key) != nrow(table) || anyNA(key) || anyDuplicated(key))) {
+        cli::cli_abort("saved table key must be complete and unique",
+            class = "saved_entity_invalid")
+    }
+    column_metadata <- lapply(table, function(column) {
+        if (metadata_version %in% c(2L, 3L) && (!is.null(dim(column)) ||
+            !is.null(attr(column, "class", exact = TRUE)) &&
+            !identical(class(column), "factor") &&
+            !identical(class(column), c("ordered", "factor")))) {
+            cli::cli_abort("version 2 requires plain atomic or factor columns",
+                class = "saved_entity_unsupported")
+        }
+        extra <- attributes(column)
+        extra[c("names", "class", "levels")] <- NULL
+        if (is.null(extra)) extra <- list()
+        checkSavedMetadataTree(extra)
+        spec <- list(typeof = typeof(column), class = class(column),
+            levels = if (is.factor(column)) levels(column) else NULL,
+            ordered = is.ordered(column), attributes = extra)
+        if (metadata_version %in% c(2L, 3L)) spec$attribute_order <- names(attributes(column)) %||% character()
+        spec
+    })
+    table_attributes <- attributes(table)
+    table_attributes[c("names", "row.names", "class")] <- NULL
+    if (is.null(table_attributes)) table_attributes <- list()
+    checkWorkflowTableAttributes(table_attributes)
+    metadata <- list(schema = 1L, codec = "parquet_duckdb_v1",
+        columns = names(table), rows = nrow(table), key_column = key_column,
+        key_type = typeof(key), row_names = if (metadata_version == 1L) rownames(table) else NULL,
+        class = class(table), attributes = table_attributes,
+        column_metadata = column_metadata)
+    if (metadata_version %in% c(2L, 3L)) {
+        native_names <- .row_names_info(table, type = 0L)
+        automatic <- !nrow(table) || is.integer(native_names) && length(native_names) == 2L &&
+            is.na(native_names[[1L]]) && native_names[[2L]] < 0L
+        named_columns <- names(table)[vapply(table, \(column) !is.null(names(column)), logical(1))]
+        metadata$schema <- metadata_version
+        metadata$codec <- paste0("parquet_duckdb_v", metadata_version)
+        metadata$row_names <- NULL
+        metadata$automatic_row_names <- automatic
+        metadata$row_index_type <- typeof(native_names)
+        metadata$attribute_order <- names(attributes(table))
+        metadata["row_name_column"] <- list(if (automatic) NULL else if (key_column == ".rownames")
+            ".multischolar_row_key" else ".multischolar_row_names")
+        metadata$name_columns <- stats::setNames(
+            paste0(".multischolar_names_", seq_along(named_columns)), named_columns)
+        if (!length(named_columns)) metadata$name_columns <- stats::setNames(character(), character())
+    }
+    if (as.numeric(object.size(metadata)) > 8 * 1024^2) {
+        cli::cli_abort("saved table metadata exceeds 8 MiB", class = "saved_entity_limit")
+    }
+    metadata
+}
+
+#' Validate the table attributes used by DIA, including portable readr schemas.
+#' @param attributes Table attributes with names, row names and class removed.
+#' @return TRUE invisibly; executable values and live parser pointers are rejected.
+#' @noRd
+checkWorkflowTableAttributes <- function(attributes) {
+    spec <- attributes$spec
+    if (!is.null(spec)) {
+        if (!identical(class(spec), "col_spec") ||
+            !all(c("cols", "default") %in% names(spec)) ||
+            !all(names(spec) %in% c("cols", "default", "skip", "delim")) || anyDuplicated(names(spec))) {
+            cli::cli_abort("unsupported parser schema", class = "saved_entity_unsupported")
+        }
+        for (collector in c(spec$cols, list(spec$default))) {
+            if (length(class(collector)) != 2L || !inherits(collector, "collector") ||
+                !startsWith(class(collector)[[1L]], "collector_")) {
+                cli::cli_abort("unsupported parser collector", class = "saved_entity_unsupported")
+            }
+            checkSavedMetadataTree(unclass(collector))
+        }
+        checkSavedMetadataTree(unclass(spec)[setdiff(names(spec), c("cols", "default"))])
+        attributes$spec <- NULL
+    }
+    problems <- attributes$problems
+    if (!is.null(problems)) {
+        if (!identical(problems, methods::new("externalptr"))) {
+            if (!is.data.frame(problems) || !all(vapply(problems,
+                \(column) is.atomic(column) && is.null(attributes(column)), logical(1)))) {
+                cli::cli_abort("parser diagnostics must be portable", class = "saved_entity_unsupported")
+            }
+        }
+        attributes$problems <- NULL
+    }
+    checkSavedMetadataTree(attributes)
+    invisible(TRUE)
+}
+
+#' Write one table and its bounded R metadata to a Parquet file.
+#' @param table Plain data frame.
+#' @param key_column Existing unique key column or .rownames.
+#' @param path Fresh staged Parquet path.
+#' @param metadata_version Explicit restoration format; defaults to version 1.
+#' @param metadata Optional metadata already constructed by the save action.
+#' @return Restoration metadata invisibly.
+#' @noRd
+writeSavedWorkflowParquet <- function(table, key_column, path, metadata_version = 1L,
+    metadata = NULL, progress = NULL) {
+    if (is.null(metadata)) metadata <- workflowSavedTableMetadata(table, key_column, metadata_version)
+    writer <- openWorkflowTableWriter(path, metadata, progress)
+    on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+    for (start in seq.int(1L, max(1L, nrow(table)), by = 10000L)) {
+        at <- if (nrow(table)) seq.int(start, min(nrow(table), start + 9999L)) else integer()
+        appendWorkflowTableWriter(writer, table, at)
+    }
+    finishWorkflowTableWriter(writer)
+    invisible(metadata)
+}
+
+#' Check the installed incremental writer API and qualified native build.
+#' @param backend Requested writer mode; only direct R columns are qualified.
+#' @return Source-bound capability metadata; release eligibility remains held.
+#' @noRd
+workflowFastWriterInfo <- function(backend = "fast_r") {
+    fail <- function() cli::cli_abort(
+        "direct writer requires the qualified incremental fastduckdb build",
+        class = "saved_entity_unsupported")
+    if (!requireNamespace("fastduckdb", quietly = TRUE) ||
+        !"parquet_writer_capabilities" %in% getNamespaceExports("fastduckdb")) fail()
+    path <- system.file("duckdb", "linux_amd64", "manifest.rds", package = "MultiScholaR")
+    if (!nzchar(path) || file.size(path) > 65536) fail()
+    manifest <- readRDS(path)
+    actual <- fastduckdb::parquet_writer_capabilities()
+    expected <- manifest$fastduckdb
+    if (!identical(manifest$schema, 3L) || is.null(expected) ||
+        !identical(actual$api, "incremental-parquet-v2") || !isTRUE(actual$supported) ||
+        !identical(backend, "fast_r") || !identical(actual$input_modes, "r_columns") ||
+        !identical(actual$max_threads, 8L) || !identical(actual$max_batch_rows, 10000L) ||
+        !identical(actual$max_batch_bytes, 67108864) ||
+        !identical(actual, expected$capability)) fail()
+    required <- c("R/fastduckdb.rdb", "R/fastduckdb.rdx", "NAMESPACE")
+    if (!identical(names(expected$files), required)) fail()
+    paths <- file.path(system.file(package = "fastduckdb"), required)
+    if (any(!file.exists(paths))) fail()
+    hashes <- stats::setNames(vapply(paths, function(path)
+        digest::digest(file = path, algo = "sha256"), character(1)), required)
+    if (!identical(hashes, expected$files)) fail()
+    binary <- getLoadedDLLs()[["fastduckdb"]][["path"]]
+    if (!identical(digest::digest(file = binary, algo = "sha256"), expected$binary_sha256)) fail()
+    list(capability = actual, binary_sha256 = expected$binary_sha256,
+        runtime_release_status = manifest$runtime_release_status)
+}
+
+#' Open one incremental Parquet writer with the existing physical codec.
+#' @param path Owned, fresh staged file.
+#' @param metadata Exact restoration schema; v3 derives its row count from the footer.
+#' @param progress Optional scalar-only observer supplied by the action owner.
+#' @param backend Explicit qualified writer; ordinary callers retain Arrow.
+#' @param optimization Private measured writer candidate; ordinary callers use none.
+#' @return Private writer; callers must finish or abort it.
+#' @noRd
+openWorkflowTableWriter <- function(path, metadata, progress = NULL, backend = "arrow",
+    optimization = "none") {
+    if (file.exists(path)) cli::cli_abort("table writer destination exists", class = "saved_entity_conflict")
+    if (!backend %in% c("arrow", "fast_arrow", "fast_r")) cli::cli_abort("unsupported table writer")
+    if (!optimization %in% c("none", "metadata", "batch") ||
+        optimization != "none" && backend != "fast_r") cli::cli_abort("unsupported writer optimization")
+    if (backend != "arrow") workflowFastWriterInfo(backend)
+    if (backend == "fast_arrow" && !requireNamespace("nanoarrow", quietly = TRUE))
+        cli::cli_abort("direct Arrow writer requires nanoarrow", class = "saved_entity_unsupported")
+    writer <- new.env(parent = emptyenv())
+    writer$path <- path
+    writer$backend <- backend
+    writer$optimization <- optimization
+    writer$schema_metadata <- NULL
+    writer$write_path <- NULL
+    writer$metadata <- metadata
+    writer$rows <- 0L
+    writer$written_rows <- 0L
+    writer$progress <- progress
+    writer$advised_bytes <- 0
+    writer$output <- writer$sink <- NULL
+    writer$pending <- list()
+    writer$pending_rows <- writer$pending_bytes <- 0
+    writer$closed <- FALSE
+    writer
+}
+
+#' Encode a bounded row range without making a whole-table Arrow copy.
+#' @param writer Existing incremental writer.
+#' @param table Already-owned scientific table.
+#' @param at Ordered source rows for this batch.
+#' @return NULL invisibly.
+#' @noRd
+appendWorkflowTableWriter <- function(writer, table, at = seq_len(nrow(table))) {
+    if (isTRUE(writer$closed) || length(at) > 10000L) cli::cli_abort("invalid table writer batch")
+    metadata <- writer$metadata
+    storage <- if (writer$optimization == "batch" && identical(at, seq_len(nrow(table))))
+        lapply(table[metadata$columns], identity) else lapply(table[metadata$columns], function(column) {
+        if (is.null(dim(column))) column[at] else column[at, , drop = FALSE]
+    })
+    if (as.numeric(object.size(storage)) > 67108864) cli::cli_abort("table production batch exceeds limits")
+    n <- length(at)
+    storage$.multischolar_order <- as.integer(writer$rows + seq_len(n))
+    source_names <- if (metadata$key_column != ".rownames" && isTRUE(metadata$automatic_row_names)) NULL else
+        if (isTRUE(metadata$automatic_row_names)) as.character(storage$.multischolar_order) else
+        if (metadata$schema == 1L) metadata$row_names[at] else rownames(table)[at]
+    if (metadata$key_column == ".rownames") storage$.multischolar_row_key <- source_names
+    if (metadata$schema %in% c(2L, 3L)) {
+        if (!is.null(metadata$row_name_column)) storage[[metadata$row_name_column]] <- source_names
+        for (column in names(metadata$name_columns)) {
+            storage[[metadata$name_columns[[column]]]] <- names(table[[column]])[at]
+        }
+    }
+    attr(storage, "row.names") <- .set_row_names(n)
+    class(storage) <- "data.frame"
+    schema_metadata <- writer$schema_metadata
+    if (is.null(schema_metadata)) {
+        encoded_metadata <- metadata
+        if (metadata$schema == 3L) encoded_metadata["rows"] <- list(NULL)
+        # The workflow codec owns restoration, including row-sized R names.
+        schema_metadata <- list(multischolar_table =
+            jsonlite::base64_enc(serialize(encoded_metadata, NULL, version = 3)))
+        if (writer$optimization == "metadata") writer$schema_metadata <- schema_metadata
+    }
+    if (writer$backend == "fast_r") {
+        if (is.null(writer$output)) {
+            writer$output <- fastduckdb::open_parquet_writer_fast(storage[0, , drop = FALSE],
+                writer$path, metadata = schema_metadata, n_threads = 8L)
+            updateWorkflowFastWriter(writer, fastduckdb::flush_parquet_writer_fast(writer$output))
+        }
+        if (n) updateWorkflowFastWriter(writer, fastduckdb::append_parquet_writer_fast(writer$output, storage))
+        writer$rows <- writer$rows + n
+        return(invisible(NULL))
+    }
+    arrow_table <- arrow::Table$create(storage)
+    encoded_table <- arrow_table$ReplaceSchemaMetadata(schema_metadata)
+    arrow_table <- encoded_table
+    if (writer$backend == "fast_arrow") {
+        if (is.null(writer$output)) {
+            writer$output <- fastduckdb::open_parquet_writer_fast(
+                nanoarrow::as_nanoarrow_array_stream(arrow_table), writer$path, n_threads = 8L)
+            updateWorkflowFastWriter(writer, fastduckdb::flush_parquet_writer_fast(writer$output))
+        }
+        if (n) updateWorkflowFastWriter(writer, fastduckdb::append_parquet_writer_fast(writer$output,
+            nanoarrow::as_nanoarrow_array_stream(arrow_table), owner = arrow_table,
+            logical_bytes = arrow_table$nbytes()))
+        writer$rows <- writer$rows + n
+        return(invisible(NULL))
+    }
+    if (is.null(writer$output)) {
+        writer$sink <- arrow::FileOutputStream$create(writer$path)
+        writer$output <- arrow::ParquetFileWriter$create(arrow_table$schema, writer$sink,
+            properties = arrow::ParquetWriterProperties$create(names(storage), compression = "snappy"))
+    }
+    # Read batches stay bounded independently of Parquet row groups. Arrow
+    # concatenation retains chunks rather than collecting another R table.
+    if (n) {
+        if (writer$pending_rows && (writer$pending_rows + n > 122880L ||
+            writer$pending_bytes + arrow_table$nbytes() > 33554432)) {
+            flushWorkflowTableWriter(writer)
+        }
+        writer$pending[[length(writer$pending) + 1L]] <- arrow_table
+        writer$pending_rows <- writer$pending_rows + n
+        writer$pending_bytes <- writer$pending_bytes + arrow_table$nbytes()
+        if (writer$pending_bytes >= 33554432) flushWorkflowTableWriter(writer)
+    }
+    writer$rows <- writer$rows + n
+    invisible(NULL)
+}
+
+#' Apply native writer counters while keeping progress and file-cache ownership unchanged.
+#' @param writer Existing private table writer.
+#' @param info Scalar native-writer counters and its current physical path.
+#' @return NULL invisibly.
+#' @noRd
+updateWorkflowFastWriter <- function(writer, info) {
+    previous <- writer$written_rows
+    writer$written_rows <- as.integer(info$written_rows)
+    writer$pending_rows <- as.integer(info$pending_rows)
+    writer$pending_bytes <- info$pending_bytes
+    writer$write_path <- if (isTRUE(info$closed)) writer$path else info$temporary_path
+    if (writer$written_rows > previous) {
+        if (is.function(writer$progress)) writer$progress("table_written", writer$written_rows,
+            if (writer$metadata$schema == 3L) NA_real_ else writer$metadata$rows,
+            basename(dirname(writer$path)), "rows")
+        releaseWorkflowWrittenPrefix(writer)
+    }
+    invisible(NULL)
+}
+
+#' Flush one bounded Arrow row group without reconstructing an R table.
+#' @param writer Private incremental writer.
+#' @return NULL invisibly.
+#' @noRd
+flushWorkflowTableWriter <- function(writer) {
+    if (writer$backend %in% c("fast_arrow", "fast_r")) {
+        updateWorkflowFastWriter(writer, fastduckdb::flush_parquet_writer_fast(writer$output))
+        return(invisible(NULL))
+    }
+    if (!writer$pending_rows) return(invisible(NULL))
+    combined <- do.call(arrow::concat_tables, c(writer$pending, list(unify_schemas = FALSE)))
+    writer$output$WriteTable(combined, chunk_size = writer$pending_rows)
+    writer$written_rows <- writer$written_rows + writer$pending_rows
+    if (is.function(writer$progress)) writer$progress("table_written", writer$written_rows,
+        if (writer$metadata$schema == 3L) NA_real_ else writer$metadata$rows,
+        basename(dirname(writer$path)), "rows")
+    writer$pending <- list()
+    writer$pending_rows <- writer$pending_bytes <- 0
+    releaseWorkflowWrittenPrefix(writer)
+    invisible(NULL)
+}
+
+#' Close and check an incremental table without reading its payload.
+#' @param writer Existing private writer.
+#' @return Footer row count and restoration metadata.
+#' @noRd
+finishWorkflowTableWriter <- function(writer) {
+    if (!writer$closed) {
+        if (is.null(writer$output)) cli::cli_abort("table writer has no schema", class = "saved_entity_write")
+        flushWorkflowTableWriter(writer)
+        if (writer$backend %in% c("fast_arrow", "fast_r")) {
+            updateWorkflowFastWriter(writer, fastduckdb::close_parquet_writer_fast(writer$output))
+        } else {
+            writer$output$Close()
+            writer$sink$close()
+        }
+        writer$output <- writer$sink <- NULL
+        writer$closed <- TRUE
+        writer$progress <- NULL
+        releaseWorkflowWrittenPrefix(writer, final = TRUE)
+    }
+    metadata <- readSavedWorkflowTableMetadata(writer$path)
+    if (metadata$rows != writer$rows) cli::cli_abort("table writer row count differs", class = "saved_entity_corrupt")
+    metadata
+}
+
+#' Close an interrupted writer and remove only its incomplete staged payload.
+#' @param writer Existing private writer.
+#' @return NULL invisibly; completed staged payloads remain recoverable.
+#' @noRd
+abortWorkflowTableWriter <- function(writer) {
+    if (isTRUE(writer$closed)) return(invisible(NULL))
+    writer$pending <- list()
+    writer$pending_rows <- writer$pending_bytes <- 0
+    if (!is.null(writer$output)) {
+        if (writer$backend %in% c("fast_arrow", "fast_r"))
+            try(fastduckdb::abort_parquet_writer_fast(writer$output), silent = TRUE) else
+            try(writer$output$Close(), silent = TRUE)
+    }
+    owned_destination <- identical(writer$backend, "arrow") && !is.null(writer$sink)
+    if (!is.null(writer$sink)) try(writer$sink$close(), silent = TRUE)
+    writer$output <- writer$sink <- NULL
+    writer$closed <- TRUE
+    writer$progress <- NULL
+    # Native abort owns its private temporary; a final destination may belong to another writer.
+    if (owned_destination) unlink(writer$path)
+    invisible(NULL)
+}
+
+#' Read and validate only the bounded Parquet schema metadata.
+#' @param path Validated owned Parquet file.
+#' @return Restoration metadata without collecting table rows.
+#' @noRd
+readSavedWorkflowTableMetadata <- function(path) {
+    reader <- tryCatch(arrow::ParquetFileReader$create(path),
+        error = function(error) cli::cli_abort("Parquet schema cannot be read",
+            class = "saved_entity_corrupt", parent = error))
+    on.exit(try(reader$.unsafe_delete(), silent = TRUE), add = TRUE)
+    schema <- reader$GetSchema()
+    encoded <- schema$metadata$multischolar_table
+    if (!is.character(encoded) || length(encoded) != 1L || is.na(encoded) ||
+        nchar(encoded, type = "bytes") > 16 * 1024^2) {
+        cli::cli_abort("Parquet restoration metadata is missing or oversized",
+            class = "saved_entity_corrupt")
+    }
+    metadata <- tryCatch(unserialize(jsonlite::base64_dec(encoded)),
+        error = function(error) cli::cli_abort("Parquet restoration metadata is invalid",
+            class = "saved_entity_corrupt", parent = error))
+    if (is.list(metadata) && identical(metadata$schema, 3L)) {
+        if (!is.null(metadata$rows)) cli::cli_abort("streaming row count must come from the footer",
+            class = "saved_entity_corrupt")
+        metadata$rows <- as.integer(reader$num_rows)
+    }
+    required <- c("schema", "codec", "columns", "rows", "key_column", "key_type",
+        "row_names", "class", "attributes", "column_metadata")
+    version_two <- is.list(metadata) && metadata$schema %in% c(2L, 3L)
+    if (version_two) required <- c(setdiff(required, "row_names"),
+        "automatic_row_names", "row_name_column", "name_columns")
+    if (version_two && "row_index_type" %in% names(metadata)) {
+        required <- c(required, "row_index_type")
+        if (!is.character(metadata$row_index_type) || length(metadata$row_index_type) != 1L ||
+            !metadata$row_index_type %in% c("integer", "character")) {
+            cli::cli_abort("invalid row-name restoration type", class = "saved_entity_corrupt")
+        }
+    }
+    if (version_two && "attribute_order" %in% names(metadata)) {
+        required <- c(required, "attribute_order")
+        order <- metadata$attribute_order
+        if (!is.character(order) || anyNA(order) || anyDuplicated(order) ||
+            !setequal(order, c("names", "row.names", "class", names(metadata$attributes)))) {
+            cli::cli_abort("invalid table attribute ordering", class = "saved_entity_corrupt")
+        }
+    }
+    if (!is.list(metadata) || !identical(sort(names(metadata)), sort(required)) ||
+        !metadata$schema %in% c(1L, 2L, 3L) ||
+        !identical(metadata$codec, paste0("parquet_duckdb_v", metadata$schema)) ||
+        !(identical(metadata$class, "data.frame") || version_two &&
+            (identical(metadata$class, c("tbl_df", "tbl", "data.frame")) ||
+                identical(metadata$class, c("spec_tbl_df", "tbl_df", "tbl", "data.frame")))) ||
+        !is.character(metadata$columns) || anyDuplicated(metadata$columns) ||
+        !is.numeric(metadata$rows) || length(metadata$rows) != 1L ||
+        metadata$rows < 0 || !version_two && length(metadata$row_names) != metadata$rows ||
+        !identical(names(metadata$column_metadata), metadata$columns)) {
+        cli::cli_abort("Parquet restoration metadata differs from its schema",
+            class = "saved_entity_corrupt")
+    }
+    if (version_two) {
+        extras <- c(metadata$row_name_column, unname(metadata$name_columns))
+        if (!is.logical(metadata$automatic_row_names) || length(metadata$automatic_row_names) != 1L ||
+            is.na(metadata$automatic_row_names) ||
+            !is.character(metadata$name_columns) || anyNA(metadata$name_columns) ||
+            anyDuplicated(names(metadata$name_columns)) ||
+            !all(names(metadata$name_columns) %in% metadata$columns) ||
+            !all(grepl("^\\.multischolar_names_[0-9]+$", metadata$name_columns)) ||
+            !is.null(metadata$row_name_column) &&
+                !metadata$row_name_column %in% c(".multischolar_row_key", ".multischolar_row_names") ||
+            !isTRUE(metadata$automatic_row_names) && is.null(metadata$row_name_column) ||
+            anyDuplicated(extras) || !all(extras %in% schema$names) ||
+            as.numeric(object.size(metadata)) > 8 * 1024^2) {
+            cli::cli_abort("invalid version 2 table metadata", class = "saved_entity_corrupt")
+        }
+    }
+    checkWorkflowTableAttributes(metadata$attributes)
+    metadata
+}
+
+#' Capture the identity of a validated owned table during one read action.
+#' @param path Accepted Parquet path.
+#' @return File identity used to detect replacement or mutation within the action.
+#' @noRd
+workflowTableFileIdentity <- function(path) {
+    link <- Sys.readlink(path)
+    info <- file.info(path)
+    if (!file.exists(path) || !is.na(link) && nzchar(link) || nrow(info) != 1L ||
+        is.na(info$size) || isTRUE(info$isdir)) {
+        cli::cli_abort("saved table changed during read", class = "saved_entity_corrupt")
+    }
+    list(path = normalizePath(path, mustWork = TRUE), size = info$size,
+        mtime = info$mtime, ctime = info$ctime, mode = info$mode)
+}
+
+#' Open one validated Parquet/DuckDB read action.
+#' @param store Open saved-entity store.
+#' @param reference Accepted Parquet table descriptor.
+#' @param reader Explicit duckdb (default) or optional fastduckdb reader.
+#' @return Scoped read owner; releaseWorkflowTableReadScope must be called.
+#' @noRd
+newWorkflowTableReadScope <- function(store, reference, reader = "duckdb", metadata_only = FALSE) {
+    checkWorkflowEntityStore(store)
+    requested_reference <- reference
+    component <- readWorkflowTableComponent(store, reference)
+    if (!is.null(component)) reference <- component$source
+    if (!is.character(reader) || length(reader) != 1L || is.na(reader) ||
+        !reader %in% c("duckdb", "fastduckdb", "arrow")) {
+        cli::cli_abort("unsupported table reader", class = "saved_entity_unsupported")
+    }
+    if (reader == "fastduckdb" && !requireNamespace("fastduckdb", quietly = TRUE)) {
+        cli::cli_abort("optional fastduckdb reader is unavailable", class = "saved_entity_unsupported")
+    }
+    if (!is.list(reference) || !is.list(reference$payload) ||
+        !identical(reference$payload$codec, "parquet_duckdb")) {
+        cli::cli_abort("table read scope requires a Parquet descriptor",
+            class = "saved_entity_unsupported")
+    }
+    if (!identical(reference$owner, store$identity)) {
+        cli::cli_abort("table belongs to another store", class = "saved_entity_scope")
+    }
+    relative <- reference$payload$relative_path
+    checkSavedEntityPath(store, relative)
+    if (!grepl("^entities/[A-Za-z0-9_-]{1,80}/payload\\.parquet$", relative)) {
+        cli::cli_abort("invalid table payload path", class = "saved_entity_path")
+    }
+    path <- file.path(store$directory, relative)
+    action <- beginWorkflowTableAction(store)
+    ready <- FALSE
+    on.exit(if (!ready) endWorkflowTableAction(store, action), add = TRUE)
+    before <- workflowTableFileIdentity(path)
+    validateSavedWorkflowReference(store, reference, payload = !metadata_only)
+    if (!identical(before, workflowTableFileIdentity(path))) {
+        cli::cli_abort("saved table changed during validation",
+            class = "saved_entity_corrupt")
+    }
+    metadata <- readSavedWorkflowTableMetadata(path)
+    physical_metadata <- metadata
+    if (!is.null(component)) {
+        checkWorkflowTableRestoration(component$metadata, physical_metadata)
+        metadata <- component$metadata
+    }
+    if (!identical(before, workflowTableFileIdentity(path))) {
+        cli::cli_abort("saved table changed during metadata read",
+            class = "saved_entity_corrupt")
+    }
+    if (!isTRUE(all.equal(as.numeric(metadata$rows), as.numeric(reference$metadata$shape[[1L]])))) {
+        cli::cli_abort("table footer differs from descriptor", class = "saved_entity_corrupt")
+    }
+    if (!metadata_only && reader == "duckdb" && is.null(action$spill)) {
+        pending <- file.path(store$directory, ".pending")
+        checkSavedEntityPath(store, ".pending")
+        if (!dir.exists(pending) && !dir.create(pending)) cli::cli_abort("cannot create table staging directory")
+        action$spill <- tempfile("table-spill-", tmpdir = pending)
+        if (!dir.create(action$spill)) cli::cli_abort("cannot create table spill directory")
+    }
+    if (reader == "duckdb" && !metadata_only && is.null(action$connection)) {
+        action$connection <- DBI::dbConnect(duckdb::duckdb(shared_home = FALSE,
+            config = list(temp_directory = "")), dbdir = ":memory:")
+        DBI::dbExecute(action$connection, "SET memory_limit = '1GB'")
+        DBI::dbExecute(action$connection, "SET threads = 2")
+        DBI::dbExecute(action$connection, "SET max_temp_directory_size = '0B'")
+        DBI::dbExecute(action$connection, "SET temp_directory = ''")
+    }
+    connection <- if (reader == "duckdb" && !metadata_only) action$connection else NULL
+    spill <- action$spill
+    scope <- new.env(parent = emptyenv())
+    scope$store <- store
+    scope$reference <- requested_reference
+    scope$physical_reference <- reference
+    scope$physical_metadata <- physical_metadata
+    scope$path <- path
+    scope$file_identity <- before
+    scope$metadata <- metadata
+    scope$connection <- connection
+    scope$spill_directory <- spill
+    scope$reader <- reader
+    scope$metadata_only <- metadata_only
+    scope$action <- action
+    scope$writers <- new.env(parent = emptyenv())
+    scope$readers <- new.env(parent = emptyenv())
+    action$scopes <- action$scopes + 1L
+    scope$released <- FALSE
+    store$open_resources <- store$open_resources + 1L
+    ready <- TRUE
+    scope
+}
+
+#' Refuse reuse after project replacement or table mutation.
+#' @param scope Active table read owner.
+#' @return TRUE invisibly.
+#' @noRd
+checkWorkflowTableReadScope <- function(scope) {
+    if (!is.environment(scope) || isTRUE(scope$released) ||
+        !is.environment(scope$store) ||
+        identical(scope$reader, "duckdb") && !isTRUE(scope$metadata_only) && is.null(scope$connection)) {
+        cli::cli_abort("table read scope is closed", class = "saved_entity_scope")
+    }
+    checkWorkflowEntityStore(scope$store)
+    if (!identical(scope$file_identity, workflowTableFileIdentity(scope$path))) {
+        cli::cli_abort("saved table changed during read", class = "saved_entity_corrupt")
+    }
+    invisible(TRUE)
+}
+
+#' Release one table action and fail if its source changed before delivery.
+#' @param scope Table read owner.
+#' @return TRUE invisibly; repeated release is harmless.
+#' @noRd
+releaseWorkflowTableReadScope <- function(scope) {
+    if (!is.environment(scope) || is.null(scope$released)) {
+        cli::cli_abort("invalid table read scope", class = "saved_entity_invalid")
+    }
+    if (isTRUE(scope$released)) return(invisible(TRUE))
+    validity <- tryCatch(checkWorkflowTableReadScope(scope), error = \(error) error)
+    observeWorkflowTableScratch(scope)
+    for (cursor in as.list(scope$readers, all.names = TRUE)) cursor$close()
+    scope$readers <- NULL
+    for (writer in as.list(scope$writers, all.names = TRUE)) abortWorkflowTableWriter(writer)
+    scope$writers <- NULL
+    scope$connection <- NULL
+    scope$spill_directory <- NULL
+    scope$action$scopes <- scope$action$scopes - 1L
+    # Close a borrowed database as soon as the last table scope releases it.
+    if (scope$action$scopes == 0L && !is.null(scope$action$connection)) {
+        DBI::dbDisconnect(scope$action$connection, shutdown = TRUE)
+        scope$action$connection <- NULL
+    }
+    scope$metadata <- NULL
+    scope$reference <- NULL
+    scope$released <- TRUE
+    scope$store$open_resources <- scope$store$open_resources - 1L
+    endWorkflowTableAction(scope$store, scope$action)
+    scope$action <- NULL
+    scope$store <- NULL
+    if (inherits(validity, "error")) stop(validity)
+    invisible(TRUE)
+}
+
+#' Save one selective table through the existing durable request lifecycle.
+#' @param store Shared saved-entity store.
+#' @param table Plain data frame.
+#' @param request_id Idempotent request identity.
+#' @param identity Complete scientific identity.
+#' @param key_column Existing unique key or .rownames.
+#' @param factors Bounded typed lookup factors.
+#' @param metadata_version Explicit table restoration format; legacy version 1 remains default.
+#' @param metadata,write_fn Internal bounded producer metadata and staged writer.
+#' @return Accepted result_table descriptor using parquet_duckdb.
+#' @noRd
+saveWorkflowTable <- function(store, table, request_id, identity, key_column,
+                              factors = list(), metadata_version = 1L,
+                              metadata = NULL, write_fn = NULL) {
+    checkWorkflowEntityStore(store)
+    newSavedWorkflowScientificIdentity(identity$input, identity$design,
+        identity$parameters, identity$selectors, identity$software)
+    checkSavedWorkflowFactors(factors)
+    if (is.null(metadata)) metadata <- workflowSavedTableMetadata(table, key_column, metadata_version)
+    relative <- savedWorkflowRequestPath(store, request_id)
+    for (name in c("entities", ".pending")) {
+        checkSavedEntityPath(store, name)
+        path <- file.path(store$directory, name)
+        if (!dir.exists(path) && !dir.create(path)) {
+            cli::cli_abort("cannot create table storage directory",
+                class = "saved_entity_write")
+        }
+    }
+    staging <- tempfile(paste0(request_id, "-"),
+        tmpdir = file.path(store$directory, ".pending"))
+    if (!dir.create(staging)) {
+        cli::cli_abort("cannot stage table request", class = "saved_entity_write")
+    }
+    payload <- file.path(staging, "payload.parquet")
+    savedWorkflowStorageBoundary("before_write")
+    if (is.null(write_fn)) {
+        writeSavedWorkflowParquet(table, key_column, payload, metadata_version, metadata, store$progress)
+    } else {
+        write_fn(payload, metadata)
+        produced <- readSavedWorkflowTableMetadata(payload)
+        if (identical(metadata$schema, 3L) && is.null(metadata$rows)) metadata$rows <- produced$rows
+        if (!identical(produced, metadata)) {
+            cli::cli_abort("produced table metadata differs", class = "saved_entity_corrupt")
+        }
+    }
+    savedWorkflowStorageBoundary("after_payload")
+    payload_info <- file.info(payload)
+    store$io_counts$payload_hashes <- store$io_counts$payload_hashes + 1L
+    store$io_counts$payload_hash_bytes <- store$io_counts$payload_hash_bytes + as.numeric(payload_info$size)
+    record <- newSavedWorkflowDescriptor(store, "result_table", identity,
+        list(relative_path = paste0(relative, "/payload.parquet"),
+            bytes = as.numeric(payload_info$size),
+            sha256 = hashWorkflowOwnedFile(store, payload),
+            codec = "parquet_duckdb"),
+        list(class = metadata$class, shape = as.integer(c(metadata$rows, length(metadata$columns))),
+            factors = factors))
+    saveRDS(record, file.path(staging, "descriptor.rds"), version = 3)
+    commit <- list(schema = 1L, entity_id = record$entity_id,
+        descriptor_sha256 = digest::digest(file = file.path(staging, "descriptor.rds"),
+            algo = "sha256"))
+    jsonlite::write_json(commit, file.path(staging, "commit.json"), auto_unbox = TRUE)
+    savedWorkflowStorageBoundary("after_descriptor")
+    existing <- recoverSavedWorkflowRequest(store, request_id)
+    if (!is.null(existing)) {
+        if (!identical(existing, record)) {
+            cli::cli_abort("same table request has different content",
+                class = "saved_entity_conflict")
+        }
+        discardRedundantWorkflowStage(store, staging, record)
+        return(existing)
+    }
+    if (store$count >= store$max_entries ||
+        store$metadata_bytes + as.numeric(object.size(record)) + 512 >
+            store$max_metadata_bytes) {
+        cli::cli_abort("metadata index is full", class = "saved_entity_limit")
+    }
+    paths <- c(payload, file.path(staging, "descriptor.rds"),
+        file.path(staging, "commit.json"))
+    syncSavedWorkflowPaths(store, c(paths, staging, dirname(staging),
+        file.path(store$directory, "store.json"), store$directory,
+        dirname(store$directory), file.path(store$directory, "entities")))
+    destination <- file.path(store$directory, relative)
+    if (!file.rename(staging, destination)) {
+        existing <- recoverSavedWorkflowRequest(store, request_id)
+        if (!identical(existing, record)) {
+            cli::cli_abort("concurrent table request conflict",
+                class = "saved_entity_conflict")
+        }
+        discardRedundantWorkflowStage(store, staging, record)
+        return(existing)
+    }
+    savedWorkflowStorageBoundary("after_rename")
+    syncSavedWorkflowPaths(store, c(destination, dirname(destination), dirname(staging)))
+    savedWorkflowStorageBoundary("after_commit")
+    registerSavedWorkflowMetadata(store, record)
+    rememberWorkflowPayloadValidation(store, record)
+    store$io_counts$output_bytes <- store$io_counts$output_bytes + record$payload$bytes
+    releaseWorkflowStoreFilePages(store, file.path(store$directory, record$payload$relative_path))
+    record
+}
+
+#' Persist an action-owned SQL result directly through the existing table commit.
+#' @param scope Open table read scope owning the database lease.
+#' @param sql Internal query returning physical codec columns in declared row order.
+#' @param metadata Restoration metadata for the result, including its row count.
+#' @param request_id,identity Existing durable request and scientific identity.
+#' @return Immutable table descriptor, with no collected result retained in R.
+#' @noRd
+saveWorkflowTableQuery <- function(scope, sql, metadata, request_id, identity) {
+    checkWorkflowTableReadScope(scope)
+    if (is.null(scope$connection) || !metadata$schema %in% c(2L, 3L)) {
+        cli::cli_abort("query production requires the scoped version 2 codec",
+            class = "saved_entity_unsupported")
+    }
+    writer <- function(path, restoration) {
+        checkWorkflowTableReadScope(scope)
+        encoded_metadata <- restoration
+        if (identical(restoration$schema, 3L)) encoded_metadata["rows"] <- list(NULL)
+        encoded <- jsonlite::base64_enc(serialize(encoded_metadata, NULL, version = 3))
+        DBI::dbExecute(scope$connection, paste0("COPY (", sql, ") TO ",
+            DBI::dbQuoteString(scope$connection, path),
+            " (FORMAT PARQUET, COMPRESSION SNAPPY, KV_METADATA {multischolar_table: ",
+            DBI::dbQuoteString(scope$connection, encoded), "})"))
+        size <- readSavedWorkflowTableMetadata(path)$rows
+        if (!is.null(restoration$rows) && !isTRUE(size == restoration$rows)) {
+            cli::cli_abort("produced table row count differs", class = "saved_entity_corrupt")
+        }
+    }
+    saveWorkflowTable(scope$store, NULL, request_id, identity, metadata$key_column,
+        metadata = metadata, write_fn = writer)
+}
+
+#' Stage a bounded R-produced batch using the existing physical table codec.
+#' @param scope Action-owned database and spill directory.
+#' @param name Trusted internal SQL table name.
+#' @param batch Bounded scientific result or support table.
+#' @param offset Number of already staged rows.
+#' @param key_column Existing unique key, avoiding redundant generated string keys.
+#' @return Updated row count; no batch is retained by the owner.
+#' @noRd
+appendWorkflowTableBatch <- function(scope, name, batch, offset = 0L, key_column = ".rownames") {
+    checkWorkflowTableReadScope(scope)
+    if (!is.data.frame(batch) || nrow(batch) > 10000L || ncol(batch) > 64L ||
+        as.numeric(object.size(batch)) > 67108864) {
+        cli::cli_abort("table production batch exceeds limits", class = "saved_entity_limit")
+    }
+    writer <- get0(name, scope$writers, inherits = FALSE)
+    if (is.null(writer)) {
+        metadata <- workflowSavedTableMetadata(batch, key_column, 3L)
+        writer <- openWorkflowTableWriter(tempfile("producer-", tmpdir = workflowTableBatchDirectory(scope),
+            fileext = ".parquet"), metadata, scope$store$progress)
+        assign(name, writer, scope$writers)
+    }
+    if (offset != writer$rows) cli::cli_abort("table producer offset differs", class = "saved_entity_invalid")
+    appendWorkflowTableWriter(writer, batch)
+    scope$store$io_counts$batches_written <- scope$store$io_counts$batches_written + 1L
+    writer$rows
+}
+
+#' Commit a produced stream directly, without copying or registering a temporary SQL table.
+#' @param scope Existing action with a database lease.
+#' @param name Exact name passed to appendWorkflowTableBatch.
+#' @param identity Complete input/parameter/software identity of the producing action.
+#' @return Accepted immutable table descriptor.
+#' @noRd
+finishWorkflowTableBatch <- function(scope, name, identity) {
+    writer <- get(name, scope$writers, inherits = FALSE)
+    metadata <- finishWorkflowTableWriter(writer)
+    source <- writer$path
+    scope$store$io_counts$staged_bytes <- scope$store$io_counts$staged_bytes + file.size(source)
+    identity$selectors <- digest::digest(list(identity$selectors, name, "batch-product-v1"), algo = "sha256")
+    reference <- saveWorkflowTable(scope$store, NULL, basename(tempfile("table-batch-")),
+        identity, metadata$key_column, metadata = metadata,
+        write_fn = function(path, restoration) {
+            if (!file.rename(source, path)) cli::cli_abort("cannot publish staged batch table", class = "saved_entity_write")
+        })
+    rm(list = name, envir = scope$writers)
+    reference
+}
+
+#' Restore supported R column types and attributes after DuckDB collection.
+#' @param data Collected data frame.
+#' @param metadata Validated table metadata.
+#' @param columns Requested original columns.
+#' @return Restored data frame.
+#' @noRd
+restoreSavedWorkflowTable <- function(data, metadata, columns) {
+    result <- unclass(data[columns])
+    for (name in columns) {
+        spec <- metadata$column_metadata[[name]]
+        value <- result[[name]]
+        if (!is.null(spec$levels)) {
+            value <- factor(value, levels = spec$levels, ordered = isTRUE(spec$ordered))
+        } else {
+            value <- switch(spec$typeof,
+                logical = as.logical(value), integer = as.integer(value),
+                double = as.double(value), character = as.character(value), value)
+            if (length(spec$class)) class(value) <- spec$class
+        }
+        for (attribute in names(spec$attributes)) {
+            attr(value, attribute) <- spec$attributes[[attribute]]
+        }
+        result[[name]] <- value
+    }
+    if (metadata$schema %in% c(2L, 3L)) {
+        for (name in intersect(columns, names(metadata$name_columns))) {
+            names(result[[name]]) <- data[[metadata$name_columns[[name]]]]
+        }
+        for (name in columns) result[[name]] <- restoreWorkflowAttributeOrder(result[[name]],
+            metadata$column_metadata[[name]]$attribute_order)
+    }
+    for (attribute in names(metadata$attributes)) {
+        attr(result, attribute) <- metadata$attributes[[attribute]]
+    }
+    class(result) <- metadata$class
+    restoreWorkflowAttributeOrder(result, metadata$attribute_order)
+}
+
+#' Preserve recorded R attribute order at a supported codec boundary.
+#' @param value Restored atomic vector or data frame.
+#' @param order Optional bounded attribute names from version-two metadata.
+#' @return The same scientific value and attributes in their original order.
+#' @noRd
+restoreWorkflowAttributeOrder <- function(value, order) {
+    if (is.null(order)) return(value)
+    if (!is.character(order) || anyNA(order) || anyDuplicated(order) || length(order) > 64L) {
+        cli::cli_abort("invalid restoration attribute order", class = "saved_entity_corrupt")
+    }
+    attributes <- attributes(value)
+    # attributes() expands compact automatic row names; keep their signed form.
+    if (is.data.frame(value)) attributes$row.names <- .row_names_info(value, type = 0L)
+    if (!setequal(names(attributes), order)) {
+        cli::cli_abort("restored attributes differ from their schema", class = "saved_entity_corrupt")
+    }
+    attributes(value) <- if (length(order)) attributes[order] else NULL
+    value
+}
+
+#' Include row-sized restoration fields only for the requested columns.
+#' @param metadata Validated restoration metadata.
+#' @param columns Requested logical columns.
+#' @return Physical column names; no payload is read.
+#' @noRd
+workflowTableStorageColumns <- function(metadata, columns) {
+    unique(c(columns, metadata$row_name_column,
+        unname(metadata$name_columns[intersect(names(metadata$name_columns), columns)])))
+}
+
+#' Recover source row names from legacy metadata or selected row data.
+#' @param data Collected physical columns.
+#' @param metadata Validated restoration metadata.
+#' @param source_order Selected original row indices, including missing selectors.
+#' @return Character source row names, independent of result-container row names.
+#' @noRd
+workflowTableSourceRowNames <- function(data, metadata, source_order) {
+    if (identical(metadata$schema, 1L)) return(metadata$row_names[as.integer(source_order)])
+    if (isTRUE(metadata$automatic_row_names)) return(as.character(source_order))
+    as.character(data[[metadata$row_name_column]])
+}
+
+#' Restore the declared row-name representation for a projected table.
+#' @param data Restored bounded table.
+#' @param metadata Existing codec restoration contract.
+#' @param source_row_names Valid, unique source row names.
+#' @return Table with its original integer or character row-name storage.
+#' @noRd
+restoreWorkflowTableRowNames <- function(data, metadata, source_row_names) {
+    if (inherits(data, "tbl_df")) {
+        attr(data, "row.names") <- .set_row_names(nrow(data))
+    } else if (!isTRUE(metadata$automatic_row_names) &&
+        identical(metadata$row_index_type, "integer")) {
+        rows <- suppressWarnings(as.integer(source_row_names))
+        if (anyNA(rows)) cli::cli_abort("invalid integer row names", class = "saved_entity_corrupt")
+        attr(data, "row.names") <- rows
+    } else {
+        rownames(data) <- source_row_names
+    }
+    data
+}
+
+#' Query one owned Parquet table with bounded projection and ordered selection.
+#' @param store Shared saved-entity store.
+#' @param reference Trusted parquet_duckdb descriptor.
+#' @param columns Existing original columns to collect.
+#' @param keys Optional ordered key selectors; duplicates are preserved.
+#' @param offset,limit Bounded page request used when keys are absent.
+#' @param max_rows,max_columns,max_bytes Hard collection ceilings.
+#' @param scope Optional owner shared by reads in one action.
+#' @param reader Explicit reader, or NULL to use the supplied scope/default DuckDB.
+#' @return Data, source order, missing selectors and measured collection scope.
+#' @noRd
+readSavedWorkflowTable <- function(store, reference, columns, keys = NULL,
+    offset = 0L, limit = 100L, max_rows = 10000L, max_columns = 64L,
+    max_bytes = 67108864, scope = NULL, reader = NULL) {
+    if (!isWorkflowTableReference(reference)) {
+        cli::cli_abort("table projection is unavailable for this codec",
+            class = "saved_entity_unsupported")
+    }
+    if (is.null(reader)) reader <- if (is.null(scope)) "duckdb" else scope$reader
+    if (identical(reader, "fastduckdb") && !is.null(keys)) {
+        cli::cli_abort("fast reader does not support key lookup", class = "saved_entity_unsupported")
+    }
+    if (is.null(scope)) {
+        scope <- newWorkflowTableReadScope(store, reference, reader)
+        on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    }
+    checkWorkflowTableReadScope(scope)
+    if (!identical(scope$store, store) || !identical(scope$reference, reference) ||
+        !identical(scope$reader, reader)) {
+        cli::cli_abort("table read scope differs from request", class = "saved_entity_scope")
+    }
+    path <- scope$path
+    metadata <- scope$metadata
+    scalar_integer <- function(value, minimum) is.numeric(value) &&
+        length(value) == 1L && !is.na(value) && is.finite(value) &&
+        value >= minimum && value == floor(value)
+    if (!is.character(columns) || !length(columns) || anyNA(columns) ||
+        anyDuplicated(columns) || !all(columns %in% metadata$columns) ||
+        length(columns) > max_columns || !scalar_integer(offset, 0L) ||
+        !scalar_integer(limit, 1L) || !scalar_integer(max_rows, 1L) ||
+        !scalar_integer(max_columns, 1L) || !is.numeric(max_bytes) ||
+        length(max_bytes) != 1L || !is.finite(max_bytes) || max_bytes < 1 ||
+        limit > max_rows || !is.null(keys) &&
+            (!is.atomic(keys) || anyNA(keys) || length(keys) > max_rows)) {
+        cli::cli_abort("invalid or oversized saved table request",
+            class = "saved_entity_limit")
+    }
+    physical_columns <- workflowTableStorageColumns(metadata, columns)
+    if (identical(reader, "fastduckdb")) {
+        supported <- vapply(metadata$column_metadata[columns], function(spec) {
+            plain <- switch(spec$typeof, double = "numeric", integer = "integer",
+                logical = "logical", character = "character", NA_character_)
+            (identical(spec$class, plain) || identical(spec$class, "factor") ||
+                identical(spec$class, c("ordered", "factor"))) && is.null(spec$attributes$dim)
+        }, logical(1))
+        if (!all(supported)) {
+            cli::cli_abort("fast reader does not support the requested column classes",
+                class = "saved_entity_unsupported")
+        }
+        # The pinned native cache is process-wide and entry-, not byte-bounded.
+        # Do not retain its footers between calls; action R metadata stays owned.
+        collected <- tryCatch(fastduckdb::read_parquet_fast(path,
+            columns = c(".multischolar_order", physical_columns),
+            n_threads = 2L, lazy_strings = FALSE,
+            filter = list(.multischolar_order = c(offset + 1, offset + limit))),
+            finally = fastduckdb::clear_parquet_cache())
+        if (is.unsorted(collected$.multischolar_order)) {
+            collected <- collected[order(collected$.multischolar_order), , drop = FALSE]
+        }
+        names(collected)[names(collected) == ".multischolar_order"] <- ".source_order"
+        requested_keys <- NULL
+    } else {
+        connection <- scope$connection
+        quote_id <- \(name) as.character(DBI::dbQuoteIdentifier(connection, name))
+        quoted_columns <- vapply(physical_columns, quote_id, character(1))
+        select_sql <- paste(quoted_columns, collapse = ", ")
+        joined_select_sql <- paste(paste0("t.", quoted_columns), collapse = ", ")
+        order_column <- quote_id(".multischolar_order")
+        source_order_alias <- quote_id(".source_order")
+        request_order_alias <- quote_id(".request_order")
+        key_column <- if (identical(metadata$key_column, ".rownames"))
+            ".multischolar_row_key" else metadata$key_column
+        quoted_key <- quote_id(key_column)
+        if (is.null(keys)) {
+            sql <- paste0("SELECT ", order_column, " AS ", source_order_alias, ", ", select_sql,
+                " FROM read_parquet(?) WHERE ", order_column, " >= ? AND ", order_column, " <= ?")
+            parameters <- list(path, as.double(offset) + 1, as.double(offset) + limit)
+            collected <- DBI::dbGetQuery(connection, sql, params = parameters)
+            if (is.unsorted(collected[[source_order_alias]]))
+                collected <- collected[order(collected[[source_order_alias]]), , drop = FALSE]
+            requested_keys <- NULL
+        } else {
+            placeholders <- paste(rep("(?, ?)", length(keys)), collapse = ", ")
+            sql <- paste0("WITH requested(ord, requested_key) AS (VALUES ",
+                placeholders, ") SELECT requested.ord AS ", request_order_alias, ", t.",
+                order_column, " AS ", source_order_alias, ", ", joined_select_sql,
+                " FROM requested LEFT JOIN read_parquet(?) AS t ON t.", quoted_key,
+                " = requested.requested_key ORDER BY requested.ord")
+            parameters <- unlist(lapply(seq_along(keys), \(index)
+                list(as.integer(index), keys[[index]])), recursive = FALSE)
+            parameters[[length(parameters) + 1L]] <- path
+            collected <- DBI::dbGetQuery(connection, sql, params = parameters)
+            requested_keys <- keys
+        }
+    }
+    source_order <- collected$.source_order
+    found <- !is.na(source_order)
+    data <- restoreSavedWorkflowTable(collected, metadata, columns)
+    source_row_names <- workflowTableSourceRowNames(collected, metadata, source_order)
+    if (is.null(keys) && !anyDuplicated(source_row_names) && !anyNA(source_row_names)) {
+        data <- restoreWorkflowTableRowNames(data, metadata, source_row_names)
+    }
+    bytes <- as.numeric(object.size(data))
+    if (bytes > max_bytes) {
+        cli::cli_abort("collected saved table exceeds byte ceiling",
+            class = "saved_entity_limit")
+    }
+    checkWorkflowTableReadScope(scope)
+    store$table_reads <- store$table_reads + 1L
+    store$table_rows <- store$table_rows + nrow(data)
+    store$table_columns <- store$table_columns + ncol(data)
+    store$table_bytes <- store$table_bytes + bytes
+    list(data = data, requested_keys = requested_keys, found = found,
+        source_row_names = source_row_names, source_order = source_order,
+        selected_columns = columns, collected_bytes = bytes,
+        source_rows = metadata$rows, source_columns = length(metadata$columns),
+        codec = "parquet_duckdb", projected = TRUE)
+}
+
+#' Select DIA heatmap rows from already adjusted full-population statistics.
+#' @param store,reference Accepted table owner and descriptor.
+#' @param columns Existing feature identifier and normalized sample columns.
+#' @param top_n Number of ordered features to return.
+#' @param scope Optional shared table read action.
+#' @param max_bytes Collection ceiling, unchanged from other table reads.
+#' @return Exact ordered table projection without statistical recomputation.
+#' @noRd
+readSavedWorkflowDiaHeatmapTable <- function(store, reference, columns, top_n,
+    scope = NULL, max_bytes = 67108864) {
+    if (is.null(scope)) {
+        scope <- newWorkflowTableReadScope(store, reference)
+        on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    }
+    checkWorkflowTableReadScope(scope)
+    if (identical(scope$reader, "fastduckdb")) {
+        cli::cli_abort("fast reader does not support ranked heatmap queries",
+            class = "saved_entity_unsupported")
+    }
+    if (!identical(scope$store, store) || !identical(scope$reference, reference)) {
+        cli::cli_abort("table read scope differs from request", class = "saved_entity_scope")
+    }
+    metadata <- scope$metadata
+    if (!is.character(columns) || !length(columns) || anyNA(columns) ||
+        anyDuplicated(columns) || length(columns) > 64L ||
+        !all(columns %in% metadata$columns) ||
+        !all(c("fdr_qvalue", "logFC") %in% metadata$columns) ||
+        !identical(metadata$column_metadata$fdr_qvalue$typeof, "double") ||
+        !identical(metadata$column_metadata$logFC$typeof, "double") ||
+        !is.numeric(top_n) || length(top_n) != 1L || is.na(top_n) ||
+        !is.finite(top_n) || top_n < 1 || top_n != floor(top_n) || top_n > 10000L ||
+        !is.numeric(max_bytes) || length(max_bytes) != 1L ||
+        !is.finite(max_bytes) || max_bytes < 1) {
+        cli::cli_abort("invalid DIA heatmap table request", class = "saved_entity_limit")
+    }
+    connection <- scope$connection
+    physical_columns <- workflowTableStorageColumns(metadata, columns)
+    quoted <- as.character(DBI::dbQuoteIdentifier(connection, physical_columns))
+    order_column <- as.character(DBI::dbQuoteIdentifier(connection, ".multischolar_order"))
+    sql <- paste0("SELECT ", order_column, " AS ",
+        as.character(DBI::dbQuoteIdentifier(connection, ".source_order")), ", ",
+        paste(quoted, collapse = ", "), " FROM read_parquet(?) ORDER BY ",
+        as.character(DBI::dbQuoteIdentifier(connection, "fdr_qvalue")),
+        " ASC NULLS LAST, ABS(",
+        as.character(DBI::dbQuoteIdentifier(connection, "logFC")),
+        ") DESC NULLS LAST, ", order_column, " ASC LIMIT ?")
+    collected <- DBI::dbGetQuery(connection, sql,
+        params = list(scope$path, as.integer(top_n)))
+    source_order <- collected$.source_order
+    data <- restoreSavedWorkflowTable(collected, metadata, columns)
+    source_row_names <- workflowTableSourceRowNames(collected, metadata, source_order)
+    data <- restoreWorkflowTableRowNames(data, metadata, source_row_names)
+    bytes <- as.numeric(object.size(data))
+    if (bytes > max_bytes) {
+        cli::cli_abort("collected saved table exceeds byte ceiling",
+            class = "saved_entity_limit")
+    }
+    checkWorkflowTableReadScope(scope)
+    store$table_reads <- store$table_reads + 1L
+    store$table_rows <- store$table_rows + nrow(data)
+    store$table_columns <- store$table_columns + ncol(data)
+    store$table_bytes <- store$table_bytes + bytes
+    list(data = data, source_row_names = source_row_names,
+        source_order = source_order, collected_bytes = bytes,
+        full_population_rows = metadata$rows, statistics_recomputed = FALSE)
+}
+
+#' Reject abundance-only projection as a Limpa model input.
+#' @param store Shared saved-entity store.
+#' @param reference Candidate table reference.
+#' @return Never returns; DIA-017 must supply a complete aligned EList codec.
+#' @noRd
+readSavedWorkflowLimpaModelInput <- function(store, reference) {
+    validateSavedWorkflowReference(store, reference)
+    cli::cli_abort(paste("Limpa model input requires the complete aligned EList",
+        "including genes and uncertainty support; table projection is incompatible"),
+        class = "saved_entity_unsupported")
+}
+
+#' Restore only the declared schema without scanning assay rows.
+#' @param scope Existing validated table lease.
+#' @return Zero-row table with original types and bounded attributes.
+#' @noRd
+readSavedWorkflowTablePrototype <- function(scope) {
+    checkWorkflowTableReadScope(scope)
+    metadata <- scope$metadata
+    data <- lapply(metadata$column_metadata, function(spec) vector(spec$typeof, 0L))
+    for (name in workflowTableStorageColumns(metadata, character())) data[[name]] <- character()
+    for (name in unname(metadata$name_columns)) data[[name]] <- character()
+    attr(data, "row.names") <- .set_row_names(0L)
+    class(data) <- "data.frame"
+    data <- restoreSavedWorkflowTable(data, metadata, metadata$columns)
+    attr(data, "row.names") <- .set_row_names(0L)
+    data
+}
+
+#' Own one Arrow cursor, coalescing sparse selections before R conversion.
+#' @param scope Validated table scope, which also owns cursor cleanup.
+#' @param columns Logical projected columns.
+#' @param source_rows Optional increasing physical ordinals.
+#' @return Cursor with fetch and close methods; fetch returns at most 10000 rows.
+#' @noRd
+openWorkflowArrowCursor <- function(scope, columns, source_rows = NULL) {
+    checkWorkflowTableReadScope(scope)
+    dataset <- arrow::open_dataset(scope$path, format = "parquet")
+    scanner <- reader <- NULL
+    cursor <- new.env(parent = emptyenv())
+    cursor$closed <- FALSE
+    cursor$tail <- NULL
+    cursor$id <- basename(tempfile("arrow-cursor-"))
+    cursor$close <- function() {
+        if (cursor$closed) return(invisible(NULL))
+        cursor$closed <- TRUE
+        cursor$tail <- NULL
+        if (!is.null(reader)) reader$.unsafe_delete()
+        if (!is.null(scanner)) scanner$.unsafe_delete()
+        dataset$.unsafe_delete()
+        if (!is.null(scope$readers) && exists(cursor$id, scope$readers, inherits = FALSE))
+            rm(list = cursor$id, envir = scope$readers)
+        invisible(NULL)
+    }
+    ready <- FALSE
+    on.exit(if (!ready) cursor$close(), add = TRUE)
+    scanner <- arrow::Scanner$create(dataset,
+        projection = unique(c(".multischolar_order", workflowTableStorageColumns(scope$metadata, columns))),
+        filter = workflowTableRowFilter(source_rows), batch_size = 10000L, use_threads = FALSE,
+        fragment_scan_options = arrow::ParquetFragmentScanOptions$create(pre_buffer = FALSE))
+    reader <- scanner$ToRecordBatchReader()
+    cursor$fetch <- function() {
+        if (cursor$closed) return(NULL)
+        checkWorkflowTableReadScope(scope)
+        pieces <- vector("list", 1024L)
+        count <- rows <- bytes <- 0L
+        repeat {
+            batch <- cursor$tail
+            cursor$tail <- NULL
+            if (is.null(batch)) batch <- reader$read_next_batch()
+            if (is.null(batch)) break
+            if (!batch$num_rows) next
+            if (count && bytes + batch$nbytes() > 33554432) {
+                cursor$tail <- batch
+                break
+            }
+            take <- min(batch$num_rows, 10000L - rows)
+            if (take < batch$num_rows) cursor$tail <- batch$Slice(take, batch$num_rows - take)
+            count <- count + 1L
+            pieces[[count]] <- if (take == batch$num_rows) batch else batch$Slice(0L, take)
+            rows <- rows + take
+            bytes <- bytes + pieces[[count]]$nbytes()
+            if (is.null(source_rows) || rows == 10000L || count == length(pieces) || bytes >= 33554432) break
+        }
+        if (!count) { cursor$close(); return(NULL) }
+        value <- if (count == 1L) as.data.frame(pieces[[1L]]) else
+            as.data.frame(do.call(arrow::Table$create, pieces[seq_len(count)]))
+        names(value)[names(value) == ".multischolar_order"] <- ".source_order"
+        value
+    }
+    assign(cursor$id, cursor, scope$readers)
+    scope$store$io_counts$sequential_streams <- scope$store$io_counts$sequential_streams + 1L
+    ready <- TRUE
+    cursor
+}
+
+#' Restore one bounded cursor batch and account for its delivered rows.
+#' @param scope,columns Validated source and logical projection.
+#' @param part Physical bounded batch including source ordinals.
+#' @return Logical data and source row names.
+#' @noRd
+restoreWorkflowCursorBatch <- function(scope, columns, part) {
+    checkWorkflowTableReadScope(scope)
+    if (nrow(part) > 10000L || as.numeric(object.size(part)) > 67108864)
+        cli::cli_abort("table batch exceeds read limits", class = "saved_entity_limit")
+    row_names <- workflowTableSourceRowNames(part, scope$metadata, part$.source_order)
+    data <- restoreSavedWorkflowTable(part, scope$metadata, columns)
+    data <- restoreWorkflowTableRowNames(data, scope$metadata, row_names)
+    bytes <- as.numeric(object.size(data))
+    if (bytes > 67108864) cli::cli_abort("table batch exceeds read limits", class = "saved_entity_limit")
+    scope$store$table_reads <- scope$store$table_reads + 1L
+    scope$store$table_rows <- scope$store$table_rows + nrow(data)
+    scope$store$table_columns <- scope$store$table_columns + ncol(data)
+    scope$store$table_bytes <- scope$store$table_bytes + bytes
+    list(data = data, row_names = row_names)
+}
+
+#' Consume one ordered table cursor in bounded batches without retaining them.
+#' @param scope Existing validated table lease.
+#' @param columns Ordered logical columns, within the existing 64-column read limit.
+#' @param consume Callback receiving data, zero-based offset and source row names.
+#' @param source_rows Optional strictly increasing physical row ordinals; selection is pushed down.
+#' @return Row count invisibly; the cursor is closed on completion and failure.
+#' @noRd
+streamSavedWorkflowTable <- function(scope, columns, consume, query = NULL, params = NULL,
+    expected_rows = NULL, source_rows = NULL) {
+    checkWorkflowTableReadScope(scope)
+    metadata <- scope$metadata
+    if (!is.function(consume) || !length(columns) || length(columns) > 64L ||
+        anyDuplicated(columns) || !all(columns %in% metadata$columns)) {
+        cli::cli_abort("invalid table stream", class = "saved_entity_limit")
+    }
+    physical <- workflowTableStorageColumns(metadata, columns)
+    if (!is.null(source_rows)) {
+        if (!is.null(query) || !is.numeric(source_rows) || anyNA(source_rows) ||
+            any(source_rows < 1 | source_rows > metadata$rows | source_rows != floor(source_rows)) ||
+            is.unsorted(source_rows, strictly = TRUE))
+            cli::cli_abort("invalid table row selection", class = "saved_entity_limit")
+        expected_rows <- length(source_rows)
+    }
+    if (is.null(expected_rows)) expected_rows <- metadata$rows
+    if (is.null(query) && is.null(source_rows) && identical(scope$reader, "fastduckdb")) {
+        for (offset in seq.int(0L, max(0L, expected_rows - 1L), by = 10000L)) {
+            if (!expected_rows) {
+                data <- readSavedWorkflowTablePrototype(scope)[columns]
+                consume(data, 0L, character())
+            } else {
+                page <- readSavedWorkflowTable(scope$store, scope$reference, columns,
+                    offset = offset, limit = min(10000L, expected_rows - offset),
+                    reader = "fastduckdb", scope = scope)
+                consume(page$data, offset, page$source_row_names)
+                scope$store$io_counts$fast_reads <- scope$store$io_counts$fast_reads + 1L
+            }
+        }
+        return(invisible(expected_rows))
+    }
+    if (is.null(query)) {
+        cursor <- openWorkflowArrowCursor(scope, columns, source_rows)
+        on.exit(cursor$close(), add = TRUE)
+        fetch <- cursor$fetch
+    } else {
+        con <- scope$connection
+        if (is.null(con)) cli::cli_abort("SQL stream requires an explicit query lease")
+        result <- DBI::dbSendQuery(con, query)
+        on.exit(DBI::dbClearResult(result), add = TRUE)
+        if (length(params)) DBI::dbBind(result, params)
+        scope$store$io_counts$query_streams <- scope$store$io_counts$query_streams + 1L
+        fetch <- function() DBI::dbFetch(result, n = 10000L)
+    }
+    offset <- 0L
+    repeat {
+        part <- fetch()
+        if (is.null(part) || !is.null(query) && !nrow(part)) {
+            if (!offset) consume(readSavedWorkflowTablePrototype(scope)[columns], 0L, character())
+            break
+        }
+        if (!nrow(part)) next
+        expected_order <- seq.int(offset + 1L, offset + nrow(part))
+        if (!is.null(source_rows)) expected_order <- source_rows[expected_order]
+        if (is.null(query) && !identical(as.integer(part$.source_order),
+            as.integer(expected_order))) {
+            cli::cli_abort("sequential table order differs", class = "saved_entity_corrupt")
+        }
+        restored <- restoreWorkflowCursorBatch(scope, columns, part)
+        data <- restored$data
+        row_names <- restored$row_names
+        restored <- NULL
+        if (!is.null(query) || !is.null(source_rows))
+            attr(data, "dia_source_order") <- as.integer(part$.source_order)
+        consume(data, offset, row_names)
+        offset <- offset + nrow(data)
+        if (is.function(scope$store$progress)) scope$store$progress("table_read", offset,
+            expected_rows, scope$physical_reference$entity_id, "rows")
+        if (!nrow(data)) break
+        data <- part <- NULL
+    }
+    if (offset != expected_rows) cli::cli_abort("table stream is incomplete", class = "saved_entity_corrupt")
+    invisible(offset)
+}
+
+#' Push ordinal selection into Parquet before materializing scientific columns in R.
+#' @param rows Increasing physical ordinals, or NULL for the complete input.
+#' @return Arrow filter expression with bounded range-expression complexity.
+#' @noRd
+workflowTableRowFilter <- function(rows) {
+    if (is.null(rows)) return(TRUE)
+    if (!length(rows)) return(arrow::Expression$scalar(FALSE))
+    field <- arrow::Expression$field_ref(".multischolar_order")
+    starts <- c(1L, which(diff(rows) != 1L) + 1L)
+    if (length(starts) > 1024L) return(arrow::Expression$create("is_in", field,
+        options = list(value_set = arrow::Array$create(rows), skip_nulls = FALSE)))
+    ends <- c(starts[-1L] - 1L, length(rows))
+    filters <- lapply(seq_along(starts), function(i) arrow::Expression$create("and_kleene",
+        arrow::Expression$create("greater_equal", field, rows[[starts[[i]]]]),
+        arrow::Expression$create("less_equal", field, rows[[ends[[i]]]])))
+    while (length(filters) > 1L) {
+        filters <- lapply(seq.int(1L, length(filters), by = 2L), function(i) {
+            if (i == length(filters)) filters[[i]] else
+                arrow::Expression$create("or_kleene", filters[[i]], filters[[i + 1L]])
+        })
+    }
+    filters[[1L]]
+}
+
+#' Allocate one declared scientific group, without retaining fetch batches.
+#' @param metadata,columns Restoration schema and explicit projection.
+#' @param rows Exact complete-group row count supplied by the grouping query.
+#' @return Private assembly buffer.
+#' @noRd
+newWorkflowTableBuffer <- function(metadata, columns, rows) {
+    buffer <- new.env(parent = emptyenv())
+    buffer$metadata <- metadata
+    buffer$columns <- stats::setNames(lapply(metadata$column_metadata[columns], function(spec) {
+        if (!is.null(spec$levels)) factor(rep(NA_character_, rows), levels = spec$levels,
+            ordered = isTRUE(spec$ordered)) else vector(spec$typeof, rows)
+    }), columns)
+    for (name in intersect(columns, names(metadata$name_columns))) names(buffer$columns[[name]]) <- character(rows)
+    buffer$row_names <- if (isTRUE(metadata$automatic_row_names)) NULL else character(rows)
+    buffer$positions <- integer(rows)
+    buffer$filled <- 0L
+    buffer$rows <- rows
+    buffer
+}
+
+#' Copy one bounded physical batch into its final scientific-group allocation.
+#' @param buffer Existing exact-size buffer.
+#' @param physical Physical rows from the validated cursor.
+#' @return NULL invisibly.
+#' @noRd
+fillWorkflowTableBuffer <- function(buffer, physical) {
+    metadata <- buffer$metadata
+    columns <- names(buffer$columns)
+    data <- restoreSavedWorkflowTable(physical, metadata, columns)
+    at <- seq.int(buffer$filled + 1L, buffer$filled + nrow(physical))
+    assignWorkflowTableBuffer(buffer, data, at, as.integer(physical$.source_order),
+        if (!is.null(buffer$row_names)) workflowTableSourceRowNames(physical, metadata, physical$.source_order))
+    invisible(NULL)
+}
+
+#' Fill a private scientific buffer without copying its full destination per batch.
+#' @param buffer Existing exclusively owned assembly buffer.
+#' @param data Restored bounded table batch.
+#' @param at Unique destination positions supplied by the validated reader.
+#' @param source_order Original physical row ordinals for this batch.
+#' @param row_names Original row names when the schema requires them.
+#' @return NULL invisibly; the buffer owns the completed assignments.
+#' @noRd
+assignWorkflowTableBuffer <- function(buffer, data, at, source_order, row_names = NULL) {
+    # Transfer each vector out of its container before replacement. Nested
+    # environment/list subassignment otherwise duplicates the whole cohort.
+    columns <- buffer$columns
+    buffer$columns <- NULL
+    for (name in names(columns)) {
+        column <- columns[[name]]
+        columns[name] <- list(NULL)
+        column[at] <- data[[name]]
+        if (name %in% names(buffer$metadata$name_columns)) {
+            column_names <- names(column)
+            names(column) <- NULL
+            column_names[at] <- names(data[[name]])
+            names(column) <- column_names
+            column_names <- NULL
+        }
+        columns[[name]] <- column
+        column <- NULL
+    }
+    buffer$columns <- columns
+    columns <- NULL
+    positions <- buffer$positions
+    buffer$positions <- NULL
+    positions[at] <- source_order
+    buffer$positions <- positions
+    positions <- NULL
+    if (!is.null(buffer$row_names)) {
+        stored_names <- buffer$row_names
+        buffer$row_names <- NULL
+        stored_names[at] <- row_names
+        buffer$row_names <- stored_names
+        stored_names <- NULL
+    }
+    buffer$filled <- buffer$filled + length(at)
+    invisible(NULL)
+}
+
+#' Deliver the complete group and release its assembly owner.
+#' @param buffer Filled exact-size buffer.
+#' @return Original table classes/attributes and an explicit source-row mapping.
+#' @noRd
+finishWorkflowTableBuffer <- function(buffer) {
+    if (buffer$filled != buffer$rows) cli::cli_abort("scientific group is incomplete", class = "saved_entity_corrupt")
+    metadata <- buffer$metadata
+    columns <- buffer$columns
+    for (name in names(columns)) {
+        spec <- metadata$column_metadata[[name]]
+        if (is.null(spec$levels) && length(spec$class)) class(columns[[name]]) <- spec$class
+        for (attribute in names(spec$attributes)) attr(columns[[name]], attribute) <- spec$attributes[[attribute]]
+        columns[[name]] <- restoreWorkflowAttributeOrder(columns[[name]], spec$attribute_order)
+    }
+    for (attribute in names(metadata$attributes)) attr(columns, attribute) <- metadata$attributes[[attribute]]
+    row_names <- buffer$row_names
+    if (!is.null(row_names) && identical(metadata$row_index_type, "integer")) row_names <- as.integer(row_names)
+    attr(columns, "row.names") <- row_names %||% .set_row_names(buffer$rows)
+    class(columns) <- metadata$class
+    columns <- restoreWorkflowAttributeOrder(columns, metadata$attribute_order)
+    attr(columns, "workflow_source_order") <- buffer$positions
+    buffer$columns <- buffer$positions <- buffer$row_names <- NULL
+    columns
+}
+
+#' Deliver physically contiguous scientific groups from one forward cursor.
+#' @param scope,columns Existing lease and logical projection, including group.
+#' @param group Group identity column.
+#' @param directory Validated complete-group boundaries in physical order.
+#' @param dependencies Existing index and source references.
+#' @return Complete-group iterator retaining at most one read batch and one group output.
+#' @noRd
+openWorkflowContiguousGroups <- function(scope, columns, group, directory, dependencies) {
+    reader <- openWorkflowArrowCursor(scope, columns)
+    iterator <- new.env(parent = emptyenv())
+    iterator$dependencies <- dependencies
+    iterator$at <- 1L
+    iterator$loaded <- iterator$delivered <- 0L
+    iterator$pending <- iterator$source <- iterator$row_names <- NULL
+    iterator$pending_at <- 1L
+    iterator$closed <- FALSE
+    iterator$close <- function() {
+        iterator$closed <- TRUE
+        iterator$pending <- iterator$source <- iterator$row_names <- NULL
+        reader$close()
+        invisible(NULL)
+    }
+    iterator$next_group <- function() {
+        if (iterator$closed) return(NULL)
+        checkWorkflowTableReadScope(scope)
+        if (iterator$at > nrow(directory)) {
+            if (iterator$delivered != scope$metadata$rows)
+                cli::cli_abort("contiguous groups are incomplete", class = "saved_entity_corrupt")
+            iterator$close()
+            return(NULL)
+        }
+        sizes <- directory$size[seq.int(iterator$at, nrow(directory))]
+        count <- max(1L, sum(cumsum(as.double(sizes)) <= 10000L))
+        rows <- sum(sizes[seq_len(count)])
+        if (rows * workflowProjectedRowBytes(scope$metadata, columns) > 67108864)
+            cli::cli_abort("complete scientific group exceeds 64 MiB", class = "saved_entity_limit")
+        buffer <- newWorkflowTableBuffer(scope$metadata, columns, rows)
+        while (buffer$filled < rows) {
+            if (is.null(iterator$pending) || iterator$pending_at > nrow(iterator$pending)) {
+                physical <- reader$fetch()
+                if (is.null(physical) || !identical(as.integer(physical$.source_order),
+                    seq.int(iterator$loaded + 1L, length.out = nrow(physical))))
+                    cli::cli_abort("contiguous source is incomplete", class = "saved_entity_corrupt")
+                restored <- restoreWorkflowCursorBatch(scope, columns, physical)
+                expected <- findInterval(physical$.source_order, directory$first_order)
+                if (!identical(match(restored$data[[group]], directory$value), as.integer(expected)))
+                    cli::cli_abort("contiguous group identity differs", class = "saved_entity_corrupt")
+                iterator$pending <- restored$data
+                iterator$source <- as.integer(physical$.source_order)
+                iterator$row_names <- restored$row_names
+                iterator$loaded <- iterator$loaded + nrow(physical)
+                iterator$pending_at <- 1L
+                restored <- physical <- NULL
+            }
+            take <- min(rows - buffer$filled, nrow(iterator$pending) - iterator$pending_at + 1L)
+            from <- seq.int(iterator$pending_at, length.out = take)
+            to <- seq.int(buffer$filled + 1L, length.out = take)
+            for (column in columns) {
+                buffer$columns[[column]][to] <- iterator$pending[[column]][from]
+                if (column %in% names(scope$metadata$name_columns))
+                    names(buffer$columns[[column]])[to] <- names(iterator$pending[[column]])[from]
+            }
+            buffer$positions[to] <- iterator$source[from]
+            if (!is.null(buffer$row_names)) buffer$row_names[to] <- iterator$row_names[from]
+            buffer$filled <- buffer$filled + take
+            iterator$pending_at <- iterator$pending_at + take
+            if (as.numeric(object.size(buffer$columns)) > 67108864)
+                cli::cli_abort("scientific group exceeds 64 MiB", class = "saved_entity_limit")
+        }
+        iterator$at <- iterator$at + count
+        iterator$delivered <- iterator$delivered + rows
+        if (is.function(scope$store$progress)) scope$store$progress("input_groups", iterator$at - 1L,
+            nrow(directory), scope$physical_reference$entity_id, paste0("groups:", group))
+        value <- finishWorkflowTableBuffer(buffer)
+        if (as.numeric(object.size(value)) > 67108864)
+            cli::cli_abort("scientific group exceeds 64 MiB", class = "saved_entity_limit")
+        value
+    }
+    iterator
+}
+
+#' Open one projected cursor for complete independence groups, without copying the assay.
+#' @param scope Existing SQL action lease.
+#' @param columns Required scientific columns, at most 64 per fetch.
+#' @param group Existing grouping column; NULL values remain one complete group.
+#' @param group_order First-observation order, or native key order for ordered producers.
+#' @return Iterator with next_group() and close(); callers must close on failure.
+#' @noRd
+openWorkflowTableGroups <- function(scope, columns, group, group_order = "first") {
+    checkWorkflowTableReadScope(scope)
+    if (!is.character(columns) || !length(columns) || anyDuplicated(columns) ||
+        length(columns) > 64L || !all(c(columns, group) %in% scope$metadata$columns) ||
+        !group_order %in% c("first", "key"))
+        cli::cli_abort("invalid scientific group projection", class = "saved_entity_limit")
+    index <- saveWorkflowGroupIndex(scope, group)
+    directory <- readWorkflowIndexDirectory(scope$store, index$value$groups)
+    required <- c("group_id", "value", "size", "start", "first_order")
+    if (!is.data.frame(directory) || !identical(names(directory), required) ||
+        anyNA(directory[c("group_id", "size", "start", "first_order")]) ||
+        !identical(directory$group_id, seq_len(nrow(directory))) || any(directory$size < 1L) ||
+        anyDuplicated(directory$value) || sum(as.double(directory$size)) != scope$metadata$rows ||
+        !isTRUE(all.equal(directory$start, if (nrow(directory))
+            1L + cumsum(c(0L, utils::head(directory$size, -1L))) else integer())))
+        cli::cli_abort("group directory is invalid", class = "saved_entity_corrupt")
+    if (group_order == "key" && nrow(directory)) directory <- directory[
+        order(directory$value, method = "radix", na.last = TRUE), , drop = FALSE]
+    contiguous_starts <- if (nrow(directory)) 1 + cumsum(c(0, utils::head(directory$size, -1L))) else numeric()
+    if (nrow(directory) && group %in% columns &&
+        identical(as.integer(directory$first_order), as.integer(contiguous_starts))) {
+        return(openWorkflowContiguousGroups(scope, columns, group, directory,
+            list(index$reference, index$value$groups, index$value$positions, scope$physical_reference)))
+    }
+    iterator <- new.env(parent = emptyenv())
+    iterator$dependencies <- list(index$reference, index$value$groups, index$value$positions,
+        scope$physical_reference)
+    iterator$at <- 1L
+    iterator$delivered_groups <- 0L
+    iterator$cohort <- NULL
+    iterator$cohort_at <- 1L
+    iterator$cohort_groups <- integer()
+    iterator$closed <- FALSE
+    iterator$empty_delivered <- FALSE
+    iterator$close <- function() {
+        iterator$cohort <- NULL
+        iterator$closed <- TRUE
+        invisible(NULL)
+    }
+    row_bytes <- workflowProjectedRowBytes(scope$metadata, columns)
+    iterator$next_group <- function() {
+        if (iterator$closed) return(NULL)
+        checkWorkflowTableReadScope(scope)
+        if (!nrow(directory)) {
+            iterator$close()
+            value <- readSavedWorkflowTablePrototype(scope)[columns]
+            attr(value, "workflow_source_order") <- integer()
+            return(value)
+        }
+        if (is.null(iterator$cohort) || iterator$cohort_at > length(iterator$cohort_groups)) {
+            iterator$cohort <- NULL
+            if (iterator$at > nrow(directory)) { iterator$close(); return(NULL) }
+            remaining <- seq.int(iterator$at, nrow(directory))
+            sizes <- directory$size[remaining]
+            if (sizes[[1L]] * row_bytes > 67108864)
+                cli::cli_abort("complete scientific group exceeds 64 MiB", class = "saved_entity_limit")
+            take <- max(1L, sum(cumsum(as.double(sizes)) * row_bytes <= 268435456))
+            selected <- remaining[seq_len(take)]
+            if (any(directory$size[selected] * row_bytes > 67108864))
+                cli::cli_abort("complete scientific group exceeds 64 MiB", class = "saved_entity_limit")
+            iterator$cohort <- readWorkflowGroupCohort(scope, columns, index$value$positions,
+                directory[selected, , drop = FALSE])
+            iterator$cohort_groups <- directory$size[selected]
+            iterator$cohort_at <- 1L
+            iterator$row_at <- 1L
+            iterator$at <- iterator$at + take
+        }
+        remaining <- seq.int(iterator$cohort_at, length(iterator$cohort_groups))
+        count <- max(1L, sum(cumsum(iterator$cohort_groups[remaining]) <= 10000L))
+        rows <- sum(iterator$cohort_groups[remaining[seq_len(count)]])
+        at <- seq.int(iterator$row_at, length.out = rows)
+        positions <- attr(iterator$cohort, "workflow_source_order")[at]
+        value <- iterator$cohort[at, , drop = FALSE]
+        if (isTRUE(scope$metadata$automatic_row_names)) attr(value, "row.names") <- .set_row_names(rows)
+        attr(value, "workflow_source_order") <- positions
+        if (as.numeric(object.size(value)) > 67108864)
+            cli::cli_abort("scientific group exceeds 64 MiB", class = "saved_entity_limit")
+        iterator$cohort_at <- iterator$cohort_at + count
+        iterator$row_at <- iterator$row_at + rows
+        iterator$delivered_groups <- iterator$delivered_groups + count
+        if (is.function(scope$store$progress)) scope$store$progress("input_groups", iterator$delivered_groups,
+            nrow(directory), scope$physical_reference$entity_id, paste0("groups:", group))
+        value
+    }
+    iterator
+}
+
+#' Complete an output batch from its declared schema, retaining original attributes.
+#' @param data Bounded provided columns; omitted columns represent newly generated missing values.
+#' @param metadata Final scientific restoration contract.
+#' @return One bounded complete row batch.
+#' @noRd
+completeWorkflowTableBatch <- function(data, metadata) {
+    out <- stats::setNames(lapply(metadata$columns, function(name) {
+        spec <- metadata$column_metadata[[name]]
+        value <- data[[name]]
+        if (is.null(value)) value <- if (!is.null(spec$levels)) factor(rep(NA_character_, nrow(data)),
+            levels = spec$levels, ordered = isTRUE(spec$ordered)) else rep(switch(spec$typeof,
+                integer = NA_integer_, double = NA_real_, logical = NA, character = NA_character_), nrow(data))
+        if (is.null(spec$levels) && length(spec$class)) class(value) <- spec$class
+        for (attribute in names(spec$attributes)) attr(value, attribute) <- spec$attributes[[attribute]]
+        if (name %in% names(metadata$name_columns)) {
+            if (is.null(names(value))) names(value) <- rep(NA_character_, length(value))
+        } else names(value) <- NULL
+        restoreWorkflowAttributeOrder(value, spec$attribute_order)
+    }), metadata$columns)
+    for (attribute in names(metadata$attributes)) attr(out, attribute) <- metadata$attributes[[attribute]]
+    attr(out, "row.names") <- if (isTRUE(metadata$automatic_row_names)) .set_row_names(nrow(data)) else
+        .row_names_info(data, type = 0L)
+    class(out) <- metadata$class
+    restoreWorkflowAttributeOrder(out, metadata$attribute_order)
+}
+
+#' Recognize an unchanged table from a complete row map and logical schema.
+#' @param scope Existing source lease.
+#' @param map_path Saved observed-row map with no generated rows.
+#' @param metadata Proposed output restoration contract.
+#' @param source_column Stable source ordinal in the map.
+#' @return TRUE only when every source row and scientific attribute is unchanged.
+#' @noRd
+workflowTableChangesAreIdentity <- function(scope, map_path, metadata, source_column) {
+    map_scope <- newWorkflowTableReadScope(scope$store, map_path, reader = "arrow", metadata_only = TRUE)
+    mapping <- map_scope$metadata
+    releaseWorkflowTableReadScope(map_scope)
+    if (!identical(mapping$columns, source_column) || mapping$rows != scope$metadata$rows) return(FALSE)
+    logical_metadata <- function(value) {
+        value[c("schema", "codec", "row_names", "row_name_column")] <- NULL
+        value$name_columns <- names(value$name_columns)
+        value
+    }
+    if (!identical(logical_metadata(scope$metadata), logical_metadata(metadata))) return(FALSE)
+    cursor <- openWorkflowOrderedRows(scope$store, map_path, source_column, source_column)
+    on.exit(cursor$close(), add = TRUE)
+    offset <- 0L
+    repeat {
+        part <- cursor$next_batch()
+        if (is.null(part)) break
+        expected <- offset + seq_len(nrow(part))
+        if (!identical(as.integer(part[[source_column]]), expected)) return(FALSE)
+        offset <- offset + nrow(part)
+    }
+    offset == scope$metadata$rows
+}
+
+#' Merge a narrow row/change map with one sequential source pass into final Parquet.
+#' @param scope Existing validated source lease.
+#' @param map_path,generated_path Saved action-owned tables; generated rows may be absent.
+#' @param metadata Final scientific schema and exact row count.
+#' @param path Fresh final staging file.
+#' @param source_column Stable source-row column in the map.
+#' @param generated_order Declared ordering columns for appended rows.
+#' @return NULL invisibly; only bounded cursor batches overlap the writer.
+#' @noRd
+writeWorkflowTableChanges <- function(scope, map_path, generated_path, metadata, path,
+    source_column, generated_order = character(), consume = NULL) {
+    map_scope <- newWorkflowTableReadScope(scope$store, map_path, reader = "arrow", metadata_only = TRUE)
+    map_metadata <- map_scope$metadata
+    releaseWorkflowTableReadScope(map_scope)
+    map <- openWorkflowOrderedRows(scope$store, map_path, map_metadata$columns, source_column)
+    on.exit(map$close(), add = TRUE)
+    writer <- openWorkflowTableWriter(path, metadata, scope$store$progress)
+    on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+    next_map <- map$next_batch
+    mapping <- next_map()
+    at <- 1L
+    previous <- 0L
+    changes <- intersect(setdiff(map_metadata$columns,
+        c(source_column, generated_order)), metadata$columns)
+    streamWorkflowTableRows(scope, scope$metadata$columns, function(data, offset, source_names) {
+        if (!nrow(data)) return(invisible(NULL))
+        out <- completeWorkflowTableBatch(data, metadata)
+        keep <- rep(FALSE, nrow(data))
+        repeat {
+            if (is.null(mapping) || mapping[[source_column]][[at]] > offset + nrow(data)) break
+            stop_at <- min(nrow(mapping), max(which(mapping[[source_column]] <= offset + nrow(data))))
+            selected <- seq.int(at, stop_at)
+            positions <- as.integer(mapping[[source_column]][selected])
+            if (anyNA(positions) || is.unsorted(c(previous, positions), strictly = TRUE) ||
+                positions[[1L]] <= offset) cli::cli_abort("invalid source-row change map", class = "saved_entity_corrupt")
+            local <- positions - offset
+            keep[local] <- TRUE
+            for (name in changes) {
+                out[[name]][local] <- mapping[[name]][selected]
+                if (name %in% names(metadata$name_columns)) names(out[[name]])[local] <- names(mapping[[name]])[selected]
+            }
+            previous <<- utils::tail(positions, 1L)
+            at <<- stop_at + 1L
+            if (at > nrow(mapping)) {
+                mapping <<- next_map()
+                at <<- 1L
+            }
+        }
+        if (!is.null(consume)) consume(out[keep, , drop = FALSE])
+        appendWorkflowTableWriter(writer, out, which(keep))
+        invisible(NULL)
+    })
+    if (!is.null(mapping)) cli::cli_abort("change map refers beyond the source", class = "saved_entity_corrupt")
+    map$close()
+    if (!is.null(generated_path)) {
+        generated_scope <- newWorkflowTableReadScope(scope$store, generated_path, reader = "arrow", metadata_only = TRUE)
+        generated_metadata <- generated_scope$metadata
+        releaseWorkflowTableReadScope(generated_scope)
+        generated <- openWorkflowOrderedRows(scope$store, generated_path, generated_metadata$columns,
+            c(generated_order, ".multischolar_order"))
+        on.exit(generated$close(), add = TRUE)
+        repeat {
+            data <- generated$next_batch()
+            if (is.null(data)) break
+            data <- completeWorkflowTableBatch(data, metadata)
+            if (!is.null(consume)) consume(data)
+            appendWorkflowTableWriter(writer, data)
+        }
+    }
+    if (is.null(writer$output)) appendWorkflowTableWriter(writer,
+        completeWorkflowTableBatch(readSavedWorkflowTablePrototype(scope), metadata))
+    finishWorkflowTableWriter(writer)
+    invisible(NULL)
+}
+
+#' Stream wide output rows from bounded column/range reads.
+#' @param scope Existing source lease, which may also own a SQL result cursor.
+#' @param columns Ordered scientific output columns.
+#' @param consume Callback receiving one complete bounded row batch.
+#' @return Total consumed rows invisibly.
+#' @noRd
+streamWorkflowTableRows <- function(scope, columns, consume) {
+    if (length(columns) <= 64L) return(streamSavedWorkflowTable(scope, columns, consume))
+    projected <- newWorkflowTableReadScope(scope$store, scope$reference, reader = "fastduckdb")
+    on.exit(releaseWorkflowTableReadScope(projected), add = TRUE)
+    blocks <- split(columns, ceiling(seq_along(columns) / 64L))
+    for (offset in seq.int(0L, max(0L, scope$metadata$rows - 1L), by = 10000L)) {
+        values <- list()
+        for (block in blocks) {
+            page <- readSavedWorkflowTable(scope$store, scope$reference, block,
+                offset = offset, limit = 10000L, scope = projected, reader = "fastduckdb")
+            values[block] <- unclass(page$data)[block]
+            scope$store$io_counts$fast_reads <- scope$store$io_counts$fast_reads + 1L
+        }
+        attr(values, "row.names") <- .row_names_info(page$data, type = 0L)
+        class(values) <- "data.frame"
+        metadata <- scope$metadata
+        metadata$columns <- columns
+        data <- completeWorkflowTableBatch(values, metadata)
+        if (as.numeric(object.size(data)) > 67108864) cli::cli_abort("wide output batch exceeds byte limits")
+        consume(data, offset, page$source_row_names)
+    }
+    invisible(scope$metadata$rows)
+}
+
+#' Observe bounded scratch-file sizes without reading or capturing their contents.
+#' @param scope Current table lease.
+#' @return NULL invisibly; this is sampled disk size, not cumulative physical I/O.
+#' @noRd
+observeWorkflowTableScratch <- function(scope) {
+    root <- scope$spill_directory
+    if (is.null(root) || !dir.exists(root)) return(invisible(NULL))
+    files <- list.files(root, full.names = TRUE, recursive = FALSE, all.files = TRUE, no.. = TRUE)
+    if (length(files) > scope$store$max_entries) cli::cli_abort("table scratch inventory exceeds limits")
+    sizes <- file.info(files)$size
+    scope$store$io_counts$max_scratch_bytes <- max(scope$store$io_counts$max_scratch_bytes %||% 0,
+        sum(sizes, na.rm = TRUE))
+    invisible(NULL)
+}
+
+#' Identify an immutable logical table component stored with the existing RDS codec.
+#' @param reference Saved descriptor, or another value.
+#' @return TRUE only for the explicit bounded table-component class.
+#' @noRd
+isWorkflowTableComponent <- function(reference) {
+    isSavedWorkflowReference(reference) && identical(reference$kind, "result_table") &&
+        identical(reference$payload$codec, "rds") &&
+        identical(reference$metadata$class, "WorkflowTableComponent")
+}
+
+#' Identify physical and logical tables without hydrating either payload.
+#' @param reference Saved descriptor, or another value.
+#' @return TRUE for supported table references.
+#' @noRd
+isWorkflowTableReference <- function(reference) {
+    isSavedWorkflowReference(reference) && (identical(reference$payload$codec, "parquet_duckdb") ||
+        isWorkflowTableComponent(reference))
+}
+
+#' Validate a logical restoration overlay without changing physical column storage.
+#' @param metadata Effective restoration metadata.
+#' @param physical Immutable Parquet restoration metadata.
+#' @return TRUE; value/schema changes require a new physical table.
+#' @noRd
+checkWorkflowTableRestoration <- function(metadata, physical) {
+    mutable <- c("class", "attributes", "attribute_order", "columns", "column_metadata", "name_columns")
+    if (!is.list(metadata) || !identical(names(metadata), names(physical)) ||
+        !identical(metadata[setdiff(names(metadata), mutable)], physical[setdiff(names(physical), mutable)]) ||
+        !is.character(metadata$columns) || !length(metadata$columns) || anyDuplicated(metadata$columns) ||
+        !all(metadata$columns %in% physical$columns) ||
+        !identical(metadata$column_metadata, physical$column_metadata[metadata$columns]) ||
+        !identical(metadata$name_columns, physical$name_columns[intersect(names(physical$name_columns), metadata$columns)]) ||
+        !any(vapply(list("data.frame", c("tbl_df", "tbl", "data.frame"),
+            c("spec_tbl_df", "tbl_df", "tbl", "data.frame")), identical, logical(1), metadata$class)) ||
+        as.numeric(object.size(metadata)) > 8388608) {
+        cli::cli_abort("logical table metadata changes physical storage", class = "saved_entity_corrupt")
+    }
+    checkWorkflowTableAttributes(metadata$attributes)
+    if (!is.null(metadata$attribute_order) &&
+        !setequal(metadata$attribute_order, c("names", "row.names", "class", names(metadata$attributes))))
+        cli::cli_abort("logical table attribute order differs", class = "saved_entity_corrupt")
+    invisible(TRUE)
+}
+
+#' Read only a bounded logical binding; physical assay bytes remain untouched.
+#' @param store Open entity store.
+#' @param reference Physical or logical table descriptor.
+#' @return Canonical physical reference and effective metadata, or NULL for physical data.
+#' @noRd
+readWorkflowTableComponent <- function(store, reference) {
+    if (!isWorkflowTableComponent(reference)) return(NULL)
+    if (reference$payload$bytes > 8388608)
+        cli::cli_abort("logical table component exceeds metadata limits", class = "saved_entity_limit")
+    value <- hydrateSavedWorkflowEntity(store, reference)
+    if (!identical(names(value), c("schema", "source", "metadata_raw", "indexes")) ||
+        !identical(value$schema, "workflow.table_component.v1") ||
+        !isSavedWorkflowReference(value$source) ||
+        !identical(value$source$payload$codec, "parquet_duckdb") ||
+        !identical(value$source$owner, store$identity) || !is.raw(value$metadata_raw) ||
+        length(value$metadata_raw) > 8388608 || !is.list(value$indexes)) {
+        cli::cli_abort("logical table component is invalid", class = "saved_entity_corrupt")
+    }
+    metadata <- tryCatch(unserialize(value$metadata_raw), error = function(error)
+        cli::cli_abort("logical table metadata cannot be decoded", class = "saved_entity_corrupt", parent = error))
+    if (!is.list(metadata) || !identical(as.integer(c(metadata$rows, length(metadata$columns))), as.integer(reference$metadata$shape)))
+        cli::cli_abort("logical table dimensions differ", class = "saved_entity_corrupt")
+    list(source = value$source, metadata = metadata, indexes = value$indexes)
+}
+
+#' Save a metadata-only table change without duplicating the physical assay.
+#' @param scope Existing metadata/read lease.
+#' @param metadata Effective restoration metadata with unchanged physical schema.
+#' @param request_id,identity Existing durable request and scientific identity.
+#' @return Existing table or a small immutable logical-component descriptor.
+#' @noRd
+saveWorkflowTableComponent <- function(scope, metadata, request_id, identity) {
+    checkWorkflowTableReadScope(scope)
+    checkWorkflowTableRestoration(metadata, scope$physical_metadata)
+    if (identical(metadata, scope$metadata)) return(scope$reference)
+    if (identical(metadata, scope$physical_metadata)) return(scope$physical_reference)
+    identity$input <- scope$physical_reference$entity_id
+    identity$design <- "physical-table"
+    identity$parameters <- digest::digest(metadata, algo = "sha256")
+    identity$selectors <- "logical-table-restoration-v1"
+    hit <- resolveSavedWorkflowEntity(scope$store, "result_table", identity, hydrate = FALSE)
+    if (identical(hit$status, "hit")) return(hit$reference)
+    value <- structure(list(schema = "workflow.table_component.v1", source = scope$physical_reference,
+        metadata_raw = serialize(metadata, NULL, version = 3), indexes = list()), class = "WorkflowTableComponent")
+    if (as.numeric(object.size(value)) > 8388608)
+        cli::cli_abort("logical table component exceeds metadata limits", class = "saved_entity_limit")
+    saveWorkflowEntity(scope$store, value, request_id, identity,
+        list(class = class(value), shape = as.integer(c(metadata$rows, length(metadata$columns))), factors = list()),
+        kind = "result_table", codec = "rds")
+}
+
+#' Expand logical table dependencies without hydrating any assay.
+#' @param store Open store.
+#' @param references Identity-keyed saved descriptor list.
+#' @return Descriptor closure including each canonical physical table and indexes.
+#' @noRd
+expandWorkflowTableReferences <- function(store, references) {
+    for (reference in references) {
+        component <- readWorkflowTableComponent(store, reference)
+        if (is.null(component)) next
+        for (child in c(list(component$source), component$indexes)) {
+            validateSavedWorkflowReference(store, child, payload = FALSE)
+            previous <- references[[child$entity_id]]
+            if (!is.null(previous) && !identical(previous, child))
+                cli::cli_abort("conflicting table dependency", class = "saved_entity_corrupt")
+            references[[child$entity_id]] <- child
+        }
+    }
+    if (length(references) > store$max_entries || as.numeric(object.size(references)) > store$max_metadata_bytes)
+        cli::cli_abort("table dependency closure exceeds metadata limits", class = "saved_entity_limit")
+    references
+}
+
+#' Estimate fixed per-row group storage before allocating projected buffers.
+#' @param metadata Validated restoration metadata.
+#' @param columns Required scientific columns.
+#' @return Conservative fixed-width bytes; strings are also checked after each fetch.
+#' @noRd
+workflowProjectedRowBytes <- function(metadata, columns) {
+    sizes <- vapply(metadata$column_metadata[columns], function(column)
+        if (column$typeof %in% c("integer", "logical")) 4 else 8, numeric(1))
+    sum(sizes) + 8 * sum(columns %in% names(metadata$name_columns)) +
+        if (isTRUE(metadata$automatic_row_names)) 12 else 20
+}
+
+#' Persist a reusable group-to-source-ordinal index without sorting assay values.
+#' @param scope Source lease; only the grouping column is scanned.
+#' @param group Exact column defining complete independent groups.
+#' @return Small index product and its immutable descriptor.
+#' @noRd
+saveWorkflowGroupIndex <- function(scope, group) {
+    checkWorkflowTableReadScope(scope)
+    checkSavedEntityString(group, "group column")
+    if (!group %in% scope$metadata$columns) cli::cli_abort("group column is missing")
+    identity <- newSavedWorkflowScientificIdentity(scope$physical_reference$entity_id,
+        "physical-row-population", digest::digest(list(group, scope$metadata$column_metadata[[group]]), algo = "sha256"),
+        "stable-group-ordinals-v1", digest::digest(list(body(saveWorkflowGroupIndex),
+            R.version[c("major", "minor", "platform")]), algo = "sha256"))
+    hit <- resolveSavedWorkflowEntity(scope$store, "scientific_product", identity)
+    if (identical(hit$status, "hit")) {
+        value <- hit$value$value
+        if (!identical(value$source_id, scope$physical_reference$entity_id) ||
+            !identical(value$group, group)) cli::cli_abort("group index identity differs", class = "saved_entity_corrupt")
+        return(list(reference = hit$reference, value = value))
+    }
+    rows <- scope$metadata$rows
+    if (20 * as.double(rows) + 33554432 > 536870912)
+        cli::cli_abort("group index workspace exceeds 512 MiB", class = "saved_entity_limit")
+    codes <- integer(rows)
+    values <- readSavedWorkflowTablePrototype(scope)[[group]]
+    names(values) <- NULL
+    streamSavedWorkflowTable(scope, group, function(data, offset, row_names) {
+        incoming <- data[[group]]
+        fresh <- unique(incoming[is.na(match(incoming, values))])
+        values <<- c(values, fresh)
+        names(values) <<- NULL
+        if (as.numeric(object.size(values)) > 33554432)
+            cli::cli_abort("group dictionary exceeds 32 MiB", class = "saved_entity_limit")
+        if (nrow(data)) codes[seq.int(offset + 1L, length.out = nrow(data))] <<- match(incoming, values)
+    })
+    if (any(codes == 0L) || anyNA(codes)) cli::cli_abort("group index source coverage differs", class = "saved_entity_corrupt")
+    positions <- order(codes, method = "radix")
+    counts <- tabulate(codes, nbins = length(values))
+    starts <- if (length(counts)) 1L + cumsum(c(0L, utils::head(counts, -1L))) else integer()
+    directory <- data.frame(group_id = seq_along(values), value = values, size = counts,
+        start = starts, first_order = positions[starts])
+    group_identity <- identity
+    group_identity$selectors <- "stable-group-directory-v1"
+    groups <- saveWorkflowTable(scope$store, directory, basename(tempfile("table-groups-")),
+        group_identity, "group_id", metadata_version = 3L)
+    prototype <- data.frame(source_order = integer())
+    metadata <- workflowSavedTableMetadata(prototype, "source_order", 3L)
+    metadata$rows <- rows
+    position_identity <- identity
+    position_identity$selectors <- "stable-group-positions-v1"
+    ordinals <- saveWorkflowTable(scope$store, NULL, basename(tempfile("table-positions-")),
+        position_identity, "source_order", metadata = metadata, write_fn = function(path, restoration) {
+            writer <- openWorkflowTableWriter(path, restoration, scope$store$progress)
+            on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+            for (start in seq.int(1L, max(1L, rows), by = 10000L)) {
+                at <- if (rows) seq.int(start, min(rows, start + 9999L)) else integer()
+                appendWorkflowTableWriter(writer, data.frame(source_order = positions[at]))
+            }
+            finishWorkflowTableWriter(writer)
+        })
+    codes <- positions <- directory <- values <- NULL
+    value <- list(source_id = scope$physical_reference$entity_id, group = group,
+        groups = groups, positions = ordinals)
+    reference <- saveWorkflowConsumerEntity(scope$store,
+        newSavedWorkflowScientificProduct(value, "ordered-table-groups"),
+        basename(tempfile("table-group-index-")), identity, "scientific_product")
+    list(reference = reference, value = value)
+}
+
+#' Read a bounded index directory, never its assay or full ordinal payload.
+#' @param store Open store.
+#' @param reference Group directory descriptor.
+#' @return Small typed directory.
+#' @noRd
+readWorkflowIndexDirectory <- function(store, reference) {
+    scope <- newWorkflowTableReadScope(store, reference, reader = "arrow")
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    if (scope$metadata$rows * 32 > 33554432)
+        cli::cli_abort("group directory exceeds 32 MiB", class = "saved_entity_limit")
+    parts <- list()
+    bytes <- 0
+    streamSavedWorkflowTable(scope, scope$metadata$columns, function(data, offset, row_names) {
+        bytes <<- bytes + as.numeric(object.size(data))
+        if (bytes > 33554432) cli::cli_abort("group directory exceeds 32 MiB", class = "saved_entity_limit")
+        parts[[length(parts) + 1L]] <<- data
+    })
+    do.call(rbind, parts)
+}
+
+#' Gather complete groups through pushed-down ordinal selections.
+#' @param scope Source lease.
+#' @param columns Scientific projection.
+#' @param positions Saved group-to-source-ordinal table.
+#' @param groups Admitted rows from the small group directory, in execution order.
+#' @return Group-contiguous data with stable source identities.
+#' @noRd
+readWorkflowGroupCohort <- function(scope, columns, positions, groups) {
+    rows <- sum(groups$size)
+    if (as.double(rows) * workflowProjectedRowBytes(scope$metadata, columns) > 268435456)
+        cli::cli_abort("group cohort exceeds 256 MiB", class = "saved_entity_limit")
+    selected_rows <- integer(rows)
+    index_scope <- newWorkflowTableReadScope(scope$store, positions, reader = "arrow")
+    on.exit(releaseWorkflowTableReadScope(index_scope), add = TRUE)
+    target <- 0L
+    starts <- sizes <- integer(nrow(groups))
+    ranges <- 0L
+    for (group in seq_len(nrow(groups))) {
+        if (ranges && groups$start[[group]] == starts[[ranges]] + sizes[[ranges]]) {
+            sizes[[ranges]] <- sizes[[ranges]] + groups$size[[group]]
+        } else {
+            ranges <- ranges + 1L
+            starts[[ranges]] <- groups$start[[group]]
+            sizes[[ranges]] <- groups$size[[group]]
+        }
+    }
+    # Scan selected index ranges once in physical order, mapping them back to
+    # requested group order. Never reopen/decompress a row group per fetch batch.
+    index_rows <- unlist(lapply(seq_len(ranges), function(range)
+        seq.int(starts[[range]], length.out = sizes[[range]])), use.names = FALSE)
+    index_order <- order(index_rows, method = "radix")
+    streamSavedWorkflowTable(index_scope, "source_order", function(data, offset, row_names) {
+        page <- data$source_order
+        if (anyNA(page) || any(page < 1L | page > scope$metadata$rows) || anyDuplicated(page))
+            cli::cli_abort("group ordinal index is invalid", class = "saved_entity_corrupt")
+        selected_rows[index_order[offset + seq_along(page)]] <<- page
+        target <<- target + length(page)
+    }, source_rows = index_rows[index_order])
+    index_rows <- index_order <- NULL
+    releaseWorkflowTableReadScope(index_scope)
+    if (target != rows) cli::cli_abort("group index is incomplete", class = "saved_entity_corrupt")
+    if (anyDuplicated(selected_rows))
+        cli::cli_abort("group ordinal index repeats source rows", class = "saved_entity_corrupt")
+    destinations <- order(selected_rows, method = "radix")
+    physical_rows <- selected_rows[destinations]
+    selected_rows <- NULL
+    buffer <- newWorkflowTableBuffer(scope$metadata, columns, rows)
+    unchecked_bytes <- 0
+    streamSavedWorkflowTable(scope, columns, function(data, offset, row_names) {
+        source <- attr(data, "dia_source_order")
+        keep <- seq_len(nrow(data))
+        at <- destinations[offset + keep]
+        assignWorkflowTableBuffer(buffer, data, at, source[keep], row_names[keep])
+        unchecked_bytes <<- unchecked_bytes + as.numeric(object.size(data[keep, , drop = FALSE]))
+        if (unchecked_bytes >= 16777216) {
+            if (as.numeric(object.size(buffer$columns)) > 268435456)
+                cli::cli_abort("group cohort exceeds 256 MiB", class = "saved_entity_limit")
+            unchecked_bytes <<- 0
+        }
+    }, source_rows = physical_rows)
+    destinations <- physical_rows <- NULL
+    if (as.numeric(object.size(buffer$columns)) > 268435456)
+        cli::cli_abort("group cohort exceeds 256 MiB", class = "saved_entity_limit")
+    finishWorkflowTableBuffer(buffer)
+}
+
+#' Persist a narrow stable ordering index within an explicit memory allowance.
+#' @param scope Existing table lease.
+#' @param columns Required sort keys; the physical ordinal is the stable tie-breaker.
+#' @return Scientific product containing an optional permutation-table reference.
+#' @noRd
+saveWorkflowOrderIndex <- function(scope, columns) {
+    checkWorkflowTableReadScope(scope)
+    columns <- setdiff(columns, ".multischolar_order")
+    if (!all(columns %in% scope$metadata$columns) || anyDuplicated(columns))
+        cli::cli_abort("ordering key is absent", class = "saved_entity_invalid")
+    identity <- newSavedWorkflowScientificIdentity(scope$physical_reference$entity_id,
+        "physical-row-order", digest::digest(list(columns, scope$metadata$column_metadata[columns]), algo = "sha256"),
+        "stable-table-order-v1", digest::digest(list(body(saveWorkflowOrderIndex),
+            R.version[c("major", "minor", "platform")]), algo = "sha256"))
+    hit <- resolveSavedWorkflowEntity(scope$store, "scientific_product", identity)
+    if (identical(hit$status, "hit")) {
+        value <- hit$value$value
+        if (!identical(value$source_id, scope$physical_reference$entity_id) ||
+            !identical(value$columns, columns) ||
+            !is.null(value$positions) && !isWorkflowTableReference(value$positions))
+            cli::cli_abort("ordering index identity differs", class = "saved_entity_corrupt")
+        return(list(reference = hit$reference, value = value))
+    }
+    if (isTRUE(scope$metadata_only) && length(columns)) {
+        scope <- newWorkflowTableReadScope(scope$store, scope$reference, reader = "arrow")
+        on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    }
+    rows <- scope$metadata$rows
+    fixed <- sum(vapply(scope$metadata$column_metadata[columns], function(spec)
+        if (spec$typeof %in% c("integer", "logical")) 4 else 8, numeric(1)))
+    reserve <- as.double(rows) * 12 + 33554432
+    if (as.double(rows) * fixed + reserve > 536870912)
+        cli::cli_abort("ordering workspace exceeds 512 MiB", class = "saved_entity_limit")
+    keys <- lapply(scope$metadata$column_metadata[columns], function(spec)
+        if (!is.null(spec$levels)) factor(rep(NA_character_, rows), levels = spec$levels,
+            ordered = isTRUE(spec$ordered)) else vector(spec$typeof, rows))
+    unchecked <- 0
+    if (length(columns)) streamSavedWorkflowTable(scope, columns, function(data, offset, row_names) {
+        at <- offset + seq_len(nrow(data))
+        for (column in columns) keys[[column]][at] <<- data[[column]]
+        unchecked <<- unchecked + as.numeric(object.size(data))
+        if (unchecked >= 16777216) {
+            if (as.numeric(object.size(keys)) + reserve > 536870912)
+                cli::cli_abort("ordering workspace exceeds 512 MiB", class = "saved_entity_limit")
+            unchecked <<- 0
+        }
+    })
+    if (as.numeric(object.size(keys)) + reserve > 536870912)
+        cli::cli_abort("ordering workspace exceeds 512 MiB", class = "saved_entity_limit")
+    positions <- if (length(keys)) do.call(order, c(unname(keys), list(method = "radix", na.last = TRUE))) else seq_len(rows)
+    keys <- NULL
+    unchanged <- TRUE
+    for (start in seq.int(1L, max(1L, rows), by = 10000L)) {
+        at <- if (rows) seq.int(start, min(rows, start + 9999L)) else integer()
+        if (!identical(as.integer(positions[at]), at)) { unchanged <- FALSE; break }
+    }
+    ordinal <- NULL
+    if (!unchanged) {
+        metadata <- workflowSavedTableMetadata(data.frame(source_order = integer()), "source_order", 3L)
+        metadata$rows <- rows
+        table_identity <- identity
+        table_identity$selectors <- "stable-table-order-positions-v1"
+        ordinal <- saveWorkflowTable(scope$store, NULL, basename(tempfile("table-order-")),
+            table_identity, "source_order", metadata = metadata, write_fn = function(path, restoration) {
+                writer <- openWorkflowTableWriter(path, restoration, scope$store$progress)
+                on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+                for (start in seq.int(1L, max(1L, rows), by = 10000L)) {
+                    at <- if (rows) seq.int(start, min(rows, start + 9999L)) else integer()
+                    appendWorkflowTableWriter(writer, data.frame(source_order = positions[at]))
+                }
+                finishWorkflowTableWriter(writer)
+            })
+    }
+    positions <- NULL
+    value <- list(source_id = scope$physical_reference$entity_id, columns = columns, positions = ordinal)
+    reference <- saveWorkflowConsumerEntity(scope$store,
+        newSavedWorkflowScientificProduct(value, "ordered-table-rows"), basename(tempfile("table-order-product-")),
+        identity, "scientific_product")
+    list(reference = reference, value = value)
+}
+
+#' Read an ordered table through bounded cohorts, never a whole-result SQL sort.
+#' @param store Existing owner.
+#' @param reference Saved input, including a committed change/ledger table.
+#' @param columns Projected fields.
+#' @param order_columns Native ordering keys.
+#' @return Iterator with next_batch(), dependencies and idempotent close().
+#' @noRd
+openWorkflowOrderedRows <- function(store, reference, columns, order_columns) {
+    scope <- newWorkflowTableReadScope(store, reference, reader = "arrow")
+    ready <- FALSE
+    on.exit(if (!ready) releaseWorkflowTableReadScope(scope), add = TRUE)
+    index <- saveWorkflowOrderIndex(scope, order_columns)
+    iterator <- new.env(parent = emptyenv())
+    iterator$dependencies <- Filter(Negate(is.null), list(reference, index$reference, index$value$positions))
+    iterator$cohort <- NULL
+    iterator$cohort_at <- 1L
+    iterator$offset <- 0L
+    iterator$closed <- FALSE
+    direct <- if (is.null(index$value$positions)) openWorkflowArrowCursor(scope, columns) else NULL
+    iterator$close <- function() {
+        if (!iterator$closed) {
+            iterator$cohort <- NULL
+            if (!is.null(direct)) direct$close()
+            releaseWorkflowTableReadScope(scope)
+            iterator$closed <- TRUE
+        }
+        invisible(NULL)
+    }
+    iterator$next_batch <- function() {
+        if (iterator$closed) return(NULL)
+        if (is.null(index$value$positions)) {
+            if (iterator$offset >= scope$metadata$rows) { iterator$close(); return(NULL) }
+            part <- direct$fetch()
+            if (is.null(part) || !identical(as.integer(part$.source_order),
+                seq.int(iterator$offset + 1L, length.out = nrow(part))))
+                cli::cli_abort("ordered cursor source is incomplete", class = "saved_entity_corrupt")
+            iterator$offset <- iterator$offset + nrow(part)
+            return(restoreWorkflowCursorBatch(scope, columns, part)$data)
+        }
+        if (is.null(iterator$cohort) || iterator$cohort_at > nrow(iterator$cohort)) {
+            iterator$cohort <- NULL
+            if (iterator$offset >= scope$metadata$rows) { iterator$close(); return(NULL) }
+            count <- as.integer(min(scope$metadata$rows - iterator$offset,
+                floor(268435456 / workflowProjectedRowBytes(scope$metadata, columns))))
+            if (count < 1L) cli::cli_abort("ordered row exceeds workspace", class = "saved_entity_limit")
+            iterator$cohort <- readWorkflowGroupCohort(scope, columns, index$value$positions,
+                data.frame(size = count, start = iterator$offset + 1L))
+            iterator$offset <- iterator$offset + count
+            iterator$cohort_at <- 1L
+        }
+        at <- seq.int(iterator$cohort_at, min(nrow(iterator$cohort), iterator$cohort_at + 9999L))
+        part <- iterator$cohort[at, , drop = FALSE]
+        attr(part, "workflow_source_order") <- NULL
+        iterator$cohort_at <- utils::tail(at, 1L) + 1L
+        part
+    }
+    ready <- TRUE
+    iterator
+}
+
+#' Allocate an owned staging directory for final batch products, separate from engine spill.
+#' @param scope Active action lease.
+#' @return Directory removed after its writers close or commit.
+#' @noRd
+workflowTableBatchDirectory <- function(scope) {
+    checkWorkflowTableReadScope(scope)
+    if (is.null(scope$action$batch_directory)) {
+        path <- tempfile("table-batches-", tmpdir = file.path(scope$store$directory, ".pending"))
+        if (!dir.create(path)) cli::cli_abort("cannot create table batch staging", class = "saved_entity_write")
+        scope$action$batch_directory <- path
+    }
+    scope$action$batch_directory
+}
+
+#' Read a bounded ordered selection of physical row ordinals without a global sort.
+#' @param store,reference Existing table owner and immutable descriptor.
+#' @param columns At most 64 projected fields.
+#' @param ordinals At most 10,000 one-based source ordinals, preserving duplicates.
+#' @return Typed data in exactly requested order.
+#' @noRd
+readWorkflowSelectedOrdinals <- function(store, reference, columns, ordinals) {
+    scope <- newWorkflowTableReadScope(store, reference, reader = "duckdb")
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    if (!is.numeric(ordinals) || length(ordinals) > 10000L || anyNA(ordinals) ||
+        any(!is.finite(ordinals) | ordinals != floor(ordinals) | ordinals < 1 | ordinals > scope$metadata$rows) ||
+        !is.character(columns) || !length(columns) || length(columns) > 64L ||
+        !all(columns %in% scope$metadata$columns))
+        cli::cli_abort("invalid ordinal projection", class = "saved_entity_limit")
+    if (!length(ordinals)) return(readSavedWorkflowTablePrototype(scope)[columns])
+    physical <- workflowTableStorageColumns(scope$metadata, columns)
+    q <- function(value) as.character(DBI::dbQuoteIdentifier(scope$connection, value))
+    selected <- unique(ordinals)
+    query <- paste0('SELECT ".multischolar_order" AS ".source_order", ',
+        paste(q(physical), collapse = ", "), ' FROM read_parquet(?) WHERE ".multischolar_order" IN (',
+        paste(rep("?", length(selected)), collapse = ","), ")")
+    data <- DBI::dbGetQuery(scope$connection, query, params = c(list(scope$path), as.list(selected)))
+    at <- match(ordinals, data$.source_order)
+    if (anyNA(at) || anyDuplicated(data$.source_order))
+        cli::cli_abort("ordinal projection differs from source", class = "saved_entity_corrupt")
+    data <- restoreSavedWorkflowTable(data[at, , drop = FALSE], scope$metadata, columns)
+    if (as.numeric(object.size(data)) > 67108864)
+        cli::cli_abort("ordinal projection exceeds 64 MiB", class = "saved_entity_limit")
+    data
+}

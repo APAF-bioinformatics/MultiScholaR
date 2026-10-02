@@ -1,0 +1,202 @@
+{
+  "schema": "multischolar.dia_ruv_pearson_diagnostic.v1",
+  "scope": "ruv-pearson-memory-v1",
+  "runtime_rdb_sha256": "153db129f2911ff008dbeda2a77b8d229c0816c726d2d9e368e71b7be9e32044",
+  "export_repair_rdb_sha256": "8769e614e8b8126c3ed1ccaa6d491fbf857ffad65c988fa595e3cd33f2301a76",
+  "integrated_candidate_rdb_sha256": "060455e405f7b7dbd5ee723b2f3e3ba8eff9dc4a4f4833f575ff463696e240d0",
+  "final_launch_headroom_bytes": 17179869184,
+  "native_first_96_rdb_sha256": [
+    "f529ddc96a9bc22883b2f984ba97edb156bd32284cf1add528cbbadfe0725399",
+    "c859941275a7ff2e1986aea235ff0be622a9fdd49d26558979da99c67d5be3de"
+  ],
+  "native_first_300_rdb_sha256": [
+    "fd69f611d68392b6583187ef0004021f4a589dbb0cac895d7bae165cb42f99db",
+    "1dbc963d9eedfc8eba2b168df928cf470b14e04a4e2928ccf781dba7f2814e7b",
+    "c55102a392a3384021f979af0536d734a2863350a5321472ffecad9cbfd7f7c8",
+    "66aa767cdcc7f7f4628815c758e829d1085b4379864ae009af067f51e2244968",
+    "941dc2a7f94175c40139d58e660839ae038ee709d840936871f23ae56810749c"
+  ],
+  "native_session_rdb_sha256": [
+    "b6c7ef9aff9546d2dbb758931be6d7095277dc613919ca4f50e7dd9190f6c187",
+    "74a7dc9b50821e49e1a6d8c9a4366bdcc879997d61d06a9876acd55387404a08",
+    "7fdc052b1fd48e70e0822898e9c734f18564af935899f580d5504018be720592",
+    "060455e405f7b7dbd5ee723b2f3e3ba8eff9dc4a4f4833f575ff463696e240d0",
+    "c859941275a7ff2e1986aea235ff0be622a9fdd49d26558979da99c67d5be3de",
+    "f529ddc96a9bc22883b2f984ba97edb156bd32284cf1add528cbbadfe0725399",
+    "058687245763b7ad5927d7c1e825eb900531eb293e6ce0ec64eb51dd2a7fc660",
+    "a91ed1e91c743d8d4734ead86573827e5ef619f84574c5e76246f07dc9e49ef4",
+    "fd69f611d68392b6583187ef0004021f4a589dbb0cac895d7bae165cb42f99db",
+    "1dbc963d9eedfc8eba2b168df928cf470b14e04a4e2928ccf781dba7f2814e7b",
+    "c55102a392a3384021f979af0536d734a2863350a5321472ffecad9cbfd7f7c8",
+    "66aa767cdcc7f7f4628815c758e829d1085b4379864ae009af067f51e2244968",
+    "941dc2a7f94175c40139d58e660839ae038ee709d840936871f23ae56810749c"
+  ],
+  "reference_first_qc_rdb_sha256": [
+    "0eb8cefabb09f6848f642407f098c3e3b56a0a87c75d65d95ee3a34909c76de4",
+    "8a460a1d76c9c1c7be5692c419dca86e5d8297432a994b4dbf5ec2227b246212"
+  ],
+  "anonymous_memory_probe": false,
+  "promotion_authorized": false,
+  "settings": {
+    "qc_defaults": true,
+    "normalization": "cyclicloess",
+    "ruv": "automatic",
+    "percentage_min": 1,
+    "percentage_max": 20,
+    "separation_metric": "max_difference",
+    "k_penalty_weight": 0.5,
+    "adaptive_k_penalty": true,
+    "grouping_variable": "group",
+    "correlation": "apply",
+    "correlation_threshold": 0.5
+  },
+  "limits": {
+    "memory_max_bytes": 19327352832,
+    "early_stop_bytes": 18790481920,
+    "swap_max_bytes": 0,
+    "runtime_max_seconds": 3600,
+    "launch_headroom_bytes": 21474836480,
+    "host_stop_bytes": 2147483648
+  },
+  "stress_96": {
+    "runtime_rdb_sha256": "74a7dc9b50821e49e1a6d8c9a4366bdcc879997d61d06a9876acd55387404a08",
+    "recipe": {
+      "id": "ruv_1gb",
+      "n_proteins": 10000,
+      "n_samples": 96,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 16,
+      "annotation_chars": 96,
+      "seed": 902002,
+      "precursor_rows": 7680000
+    },
+    "limits": {
+      "memory_max_bytes": 17179869184,
+      "early_stop_bytes": 16642998272,
+      "swap_max_bytes": 0,
+      "runtime_max_seconds": 3600,
+      "launch_headroom_bytes": 19327352832,
+      "host_stop_bytes": 2147483648
+    }
+  },
+  "stress_300": {
+    "runtime_rdb_sha256": "74a7dc9b50821e49e1a6d8c9a4366bdcc879997d61d06a9876acd55387404a08",
+    "recipe": {
+      "id": "ruv_300",
+      "n_proteins": 10000,
+      "n_samples": 300,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 16,
+      "annotation_chars": 96,
+      "seed": 902002,
+      "precursor_rows": 24000000
+    },
+    "limits": {
+      "memory_max_bytes": 17179869184,
+      "early_stop_bytes": 16642998272,
+      "swap_max_bytes": 0,
+      "runtime_max_seconds": 3600,
+      "launch_headroom_bytes": 19327352832,
+      "host_stop_bytes": 2147483648
+    }
+  },
+  "stress_500": {
+    "runtime_rdb_sha256": "74a7dc9b50821e49e1a6d8c9a4366bdcc879997d61d06a9876acd55387404a08",
+    "recipe": {
+      "id": "ruv_500",
+      "n_proteins": 10000,
+      "n_samples": 500,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 16,
+      "annotation_chars": 96,
+      "seed": 902002,
+      "precursor_rows": 40000000
+    },
+    "limits": {
+      "memory_max_bytes": 17179869184,
+      "early_stop_bytes": 16642998272,
+      "swap_max_bytes": 0,
+      "runtime_max_seconds": 3600,
+      "launch_headroom_bytes": 19327352832,
+      "host_stop_bytes": 2147483648
+    }
+  },
+  "recipes": [
+    {
+      "id": "ruv_small",
+      "n_proteins": 1000,
+      "n_samples": 24,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 16,
+      "annotation_chars": 96,
+      "seed": 902002,
+      "precursor_rows": 192000
+    },
+    {
+      "id": "ruv_1gb",
+      "n_proteins": 10000,
+      "n_samples": 96,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 16,
+      "annotation_chars": 96,
+      "seed": 902002,
+      "precursor_rows": 7680000
+    },
+    {
+      "id": "ruv_2gb",
+      "n_proteins": 10000,
+      "n_samples": 192,
+      "peptides_per_protein": 4,
+      "forms_per_peptide": 2,
+      "history_depth": 16,
+      "annotation_chars": 96,
+      "seed": 902002,
+      "precursor_rows": 15360000
+    }
+  ],
+  "size_definition": "Approximate report bytes on disk, not numeric-matrix bytes. Sample count increases to stress RUVIII/Pearson; report actual surviving feature/sample dimensions separately.",
+  "attempts": {
+    "members_per_recipe": 1,
+    "correction_passes": 1,
+    "serial": true,
+    "stop_scaling_after_valid_failure": true
+  },
+  "extended_120_rdb_sha256": [
+    "c55102a392a3384021f979af0536d734a2863350a5321472ffecad9cbfd7f7c8",
+    "66aa767cdcc7f7f4628815c758e829d1085b4379864ae009af067f51e2244968",
+    "941dc2a7f94175c40139d58e660839ae038ee709d840936871f23ae56810749c"
+  ],
+  "native_library_bindings": {
+    "66aa767cdcc7f7f4628815c758e829d1085b4379864ae009af067f51e2244968": {
+      "MultiScholaR.so": "814422557e7704cea92701505064fc61e070f5e6b12e5838fba6727e8392e571"
+    },
+    "c55102a392a3384021f979af0536d734a2863350a5321472ffecad9cbfd7f7c8": {
+      "MultiScholaR.so": "def04822fb78abb395b099c218075b389ff6b18dd94b65dd58857d63362af15c"
+    },
+    "8a460a1d76c9c1c7be5692c419dca86e5d8297432a994b4dbf5ec2227b246212": {
+      "MultiScholaR.so": "19da9a0a6f61cc07a513417f3474800b46265a6b43649efab5275f5f8f299037"
+    },
+    "fd69f611d68392b6583187ef0004021f4a589dbb0cac895d7bae165cb42f99db": {
+      "MultiScholaR.so": "69ddf7237299ec580fc4f70cf4befd2379a4a837eee3bb6eaf0d8d89fd42ca76"
+    },
+    "1dbc963d9eedfc8eba2b168df928cf470b14e04a4e2928ccf781dba7f2814e7b": {
+      "MultiScholaR.so": "87f875e6a44653851882fc35759e6c44b2d6df323cff47d79b276cec4b89fa21"
+    },
+    "941dc2a7f94175c40139d58e660839ae038ee709d840936871f23ae56810749c": {
+      "MultiScholaR.so": "b4f660944514793e5961b784722850ab9767742bf73796b5d968dfc00f89f591"
+    }
+  },
+  "raw_replay_300": {
+    "source_member": "cuurUw",
+    "source_head_sha256": "731c49699bce051053258fb85ce2c94dea545079167db99a8e6a13dc0bdb4f39",
+    "runtime_rdb_sha256": "941dc2a7f94175c40139d58e660839ae038ee709d840936871f23ae56810749c",
+    "runtime_max_seconds": 5400,
+    "rows": 24000000,
+    "profiling": false
+  }
+}

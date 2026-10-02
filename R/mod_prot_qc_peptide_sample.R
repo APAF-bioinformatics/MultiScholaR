@@ -76,8 +76,14 @@ runPeptideSampleApplyStep <- function(workflowData,
                                       filterMinNumPeptidesPerSampleFn = filterMinNumPeptidesPerSample,
                                       logInfoFn = logger::log_info,
                                       nowFn = Sys.time) {
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    return(runDIAReferencePeptideGroups(workflowData, "filterMinNumPeptidesPerSample",
+      list(peptides_per_sample_cutoff = minPeptidesPerSample), "sample_filtered", "Applied minimum peptides per sample filter"))
+  }
+
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
+  currentS4 <- getDIAExecutionState(workflowData$state_manager, "filterMinNumPeptidesPerSample")
+  predecessor <- getDIACurrentReference(workflowData$state_manager)
   shiny::req(currentS4)
 
   logInfoFn(sprintf(
@@ -150,6 +156,8 @@ runPeptideSampleApplyStep <- function(workflowData,
     now = nowFn()
   )
 
+  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
+  currentS4 <- NULL
   proteinCount <- .countPeptideProteinGroups(filteredS4)
   runCount <- filteredS4@peptide_data |>
     dplyr::distinct(.data[[filteredS4@sample_id]]) |>
@@ -185,17 +193,21 @@ updatePeptideSampleOutputs <- function(output,
                                        omicType,
                                        experimentLabel,
                                        renderTextFn = shiny::renderText,
-                                       updateProteinFilteringFn = updateProteinFiltering) {
-  output$sample_results <- renderTextFn(sampleResult$resultText)
+                                       updateProteinFilteringFn = updateProteinFiltering, projectDirs = NULL) {
+  output$sample_results <- renderPeptideQcResultText(sampleResult$resultText, renderTextFn)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = sampleResult$filteredS4@peptide_data,
+  plot_arguments <- list(
+    data = sampleResult$filteringSummary %||% sampleResult$filteredS4@peptide_data,
     step_name = "6_sample_filtered",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,
     overwrite = TRUE
   )
+  if (!is.null(projectDirs)) plot_arguments$project_dirs <- projectDirs
+  plotGrid <- if (!is.null(sampleResult$stateReference)) {
+    publishDIAQvalueOutput(getDIAActiveManager(), sampleResult, plot_arguments, updateProteinFilteringFn)
+  } else do.call(updateProteinFilteringFn, plot_arguments)
   samplePlot(plotGrid)
 
   invisible(plotGrid)
@@ -212,7 +224,8 @@ runPeptideSampleApplyObserver <- function(workflowData,
                                           showNotificationFn = shiny::showNotification,
                                           removeNotificationFn = shiny::removeNotification,
                                           logInfoFn = logger::log_info,
-                                          logErrorFn = logger::log_error) {
+                                          logErrorFn = logger::log_error, experimentPaths = NULL) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Applying sample quality filter...",
     id = "sample_working",
@@ -225,13 +238,19 @@ runPeptideSampleApplyObserver <- function(workflowData,
       minPeptidesPerSample = minPeptidesPerSample
     )
 
-    plotGrid <- updateOutputsFn(
+    output_arguments <- list(
       output = output,
       samplePlot = samplePlot,
       sampleResult = sampleResult,
       omicType = omicType,
       experimentLabel = experimentLabel
     )
+    if (!is.null(experimentPaths)) {
+      output_arguments$projectDirs <- stats::setNames(
+        list(experimentPaths), paste(omicType, experimentLabel, sep = "_")
+      )
+    }
+    plotGrid <- do.call(updateOutputsFn, output_arguments)
 
     logInfoFn("Sample quality filter applied successfully")
     removeNotificationFn("sample_working")
@@ -253,6 +272,7 @@ runPeptideSampleApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runPeptideSampleRevertStep <- function(workflowData,
@@ -263,7 +283,7 @@ runPeptideSampleRevertStep <- function(workflowData,
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, previousState)
   logInfoFn(paste("Reverted sample filter to", previousState))
 
   list(
@@ -279,9 +299,10 @@ runPeptideSampleRevertObserver <- function(workflowData,
                                            renderTextFn = shiny::renderText,
                                            showNotificationFn = shiny::showNotification,
                                            logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$sample_results <- renderTextFn(revertResult$resultText)
+    output$sample_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     showNotificationFn("Reverted successfully", type = "message")
 
     list(
@@ -298,16 +319,17 @@ runPeptideSampleRevertObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
-mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, experiment_label, experiment_paths = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     
     sample_plot <- shiny::reactiveVal(NULL)
     
     # Step 5: Sample Quality Filter (chunk 14)
     shiny::observeEvent(input$apply_sample_filter, {
-      runPeptideSampleApplyObserver(
+      apply_arguments <- list(
         workflowData = workflow_data,
         minPeptidesPerSample = input$min_peptides_per_sample,
         output = output,
@@ -315,6 +337,8 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
         omicType = omic_type,
         experimentLabel = experiment_label
       )
+      if (!is.null(experiment_paths)) apply_arguments$experimentPaths <- experiment_paths
+      do.call(runPeptideSampleApplyObserver, apply_arguments)
     })
     
     # Revert Sample Filter

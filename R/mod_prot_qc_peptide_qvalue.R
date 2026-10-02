@@ -87,7 +87,14 @@ runPeptideQvalueApplyStep <- function(workflowData,
                                       globalPGQvalueThreshold = .diaNnIdentificationQvalueCutoff,
                                       confidenceProvenanceMode = "diann_main_report") {
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    return(runDIAReferenceQvalue(workflowData, qvalueThreshold, globalQvalueThreshold,
+      proteotypicOnly, globalPGQvalueThreshold, confidenceProvenanceMode, nowFn))
+  }
+  predecessor <- if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+    workflowData$state_manager$.context$snapshot$states[[workflowData$state_manager$current_state]]
+  } else NULL
+  currentS4 <- getDIAExecutionState(workflowData$state_manager, "srlQvalueProteotypicPeptideClean")
   shiny::req(currentS4)
 
   logInfoFn(sprintf("Q-value filter: S4 class = %s", class(currentS4)[1]))
@@ -213,6 +220,8 @@ runPeptideQvalueApplyStep <- function(workflowData,
     now = nowFn()
   )
 
+  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
+  currentS4 <- NULL
   proteinCount <- .countPeptideProteinGroups(filteredS4)
   exclusionSummary <- filteredS4@args$srlQvalueProteotypicPeptideClean$biological_exclusion_summary
   excludedRows <- if (is.data.frame(exclusionSummary) &&
@@ -254,17 +263,21 @@ updatePeptideQvalueOutputs <- function(output,
                                        omicType,
                                        experimentLabel,
                                        renderTextFn = shiny::renderText,
-                                       updateProteinFilteringFn = updateProteinFiltering) {
-  output$qvalue_results <- renderTextFn(qvalueResult$resultText)
-
-  plotGrid <- updateProteinFilteringFn(
-    data = qvalueResult$filteredS4@peptide_data,
+                                       updateProteinFilteringFn = updateProteinFiltering, projectDirs = NULL) {
+  plot_arguments <- list(
+    data = qvalueResult$filteringSummary %||% qvalueResult$filteredS4@peptide_data,
     step_name = "2_qval_filtered",
     omic_type = omicType,
     experiment_label = experimentLabel,
     return_grid = TRUE,
     overwrite = TRUE
   )
+  if (!is.null(projectDirs)) plot_arguments$project_dirs <- projectDirs
+  plotGrid <- if (!is.null(qvalueResult$stateReference) && !is.null(projectDirs)) {
+    publishDIAQvalueOutput(getDIAActiveManager(), qvalueResult, plot_arguments,
+      updateProteinFilteringFn)
+  } else do.call(updateProteinFilteringFn, plot_arguments)
+  output$qvalue_results <- renderPeptideQcResultText(qvalueResult$resultText, renderTextFn)
   qvaluePlot(plotGrid)
 
   invisible(plotGrid)
@@ -283,7 +296,8 @@ runPeptideQvalueApplyObserver <- function(workflowData,
                                           showNotificationFn = shiny::showNotification,
                                           removeNotificationFn = shiny::removeNotification,
                                           logInfoFn = logger::log_info,
-                                          logErrorFn = logger::log_error) {
+                                          logErrorFn = logger::log_error, experimentPaths = NULL) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Applying Q-value filter...",
     id = "qvalue_working",
@@ -298,13 +312,19 @@ runPeptideQvalueApplyObserver <- function(workflowData,
       proteotypicOnly = proteotypicOnly
     )
 
-    plotGrid <- updateOutputsFn(
+    output_arguments <- list(
       output = output,
       qvaluePlot = qvaluePlot,
       qvalueResult = qvalueResult,
       omicType = omicType,
       experimentLabel = experimentLabel
     )
+    if (!is.null(experimentPaths)) {
+      output_arguments$projectDirs <- stats::setNames(
+        list(experimentPaths), paste(omicType, experimentLabel, sep = "_")
+      )
+    }
+    plotGrid <- do.call(updateOutputsFn, output_arguments)
 
     logInfoFn("Q-value filter applied successfully")
     removeNotificationFn("qvalue_working")
@@ -326,6 +346,7 @@ runPeptideQvalueApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runPeptideQvalueRevertStep <- function(workflowData,
@@ -336,7 +357,7 @@ runPeptideQvalueRevertStep <- function(workflowData,
     stop(sprintf("Cannot revert: '%s' state not found in history.", revertStateName))
   }
 
-  revertedS4 <- workflowData$state_manager$revertToState(revertStateName)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, revertStateName)
   logInfoFn("Reverted to raw data state")
 
   list(
@@ -352,9 +373,10 @@ runPeptideQvalueRevertObserver <- function(workflowData,
                                            renderTextFn = shiny::renderText,
                                            showNotificationFn = shiny::showNotification,
                                            logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$qvalue_results <- renderTextFn(revertResult$resultText)
+    output$qvalue_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     showNotificationFn(revertResult$resultText, type = "message")
 
     list(
@@ -371,16 +393,17 @@ runPeptideQvalueRevertObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
-mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, experiment_label, experiment_paths = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     
     qvalue_plot <- shiny::reactiveVal(NULL)
     
     # Step 1: Q-Value Filter (chunk 10)
     shiny::observeEvent(input$apply_qvalue_filter, {
-      runPeptideQvalueApplyObserver(
+      apply_arguments <- list(
         workflowData = workflow_data,
         qvalueThreshold = .diaNnIdentificationQvalueCutoff,
         globalQvalueThreshold = .diaNnIdentificationQvalueCutoff,
@@ -390,6 +413,8 @@ mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, expe
         omicType = omic_type,
         experimentLabel = experiment_label
       )
+      if (!is.null(experiment_paths)) apply_arguments$experimentPaths <- experiment_paths
+      do.call(runPeptideQvalueApplyObserver, apply_arguments)
     })
     
     # Revert Q-Value Filter

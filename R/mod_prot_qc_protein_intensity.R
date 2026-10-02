@@ -127,8 +127,15 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
                                                removeRowsWithMissingValuesPercentFn = removeRowsWithMissingValuesPercent,
                                                logInfoFn = logger::log_info,
                                                nowFn = Sys.time) {
+  if (usesDIAReferenceStates(workflowData$state_manager) &&
+      identical(workflowData$state_manager$current_state, "protein_intensity_filtered")) {
+    pending <- resumeDIAProteinAction(workflowData, "protein_intensity_filtered")
+    if (!is.null(pending)) return(pending)
+  }
+
   shiny::req(workflowData$state_manager)
-  currentS4 <- workflowData$state_manager$getState()
+  currentS4 <- readDIAProteinScience(workflowData$state_manager)
+  predecessor <- getDIACurrentReference(workflowData$state_manager)
   shiny::req(currentS4)
 
   if (useStrictMode) {
@@ -182,6 +189,7 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
     timestamp = nowFn()
   )
 
+  filteredS4 <- inheritDIAExecutionSource(filteredS4, workflowData$state_manager, predecessor)
   workflowData$state_manager$saveState(
     state_name = "protein_intensity_filtered",
     s4_data_object = filteredS4,
@@ -200,8 +208,12 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
     }
   )
 
+  groupwise_cutoff <- currentS4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff
+  max_groups_cutoff <- currentS4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff
+  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
+  currentS4 <- NULL
   proteinCount <- filteredS4@protein_quant_table |>
-    dplyr::distinct(Protein.Ids) |>
+    dplyr::distinct(.data[[filteredS4@protein_id_column]]) |>
     nrow()
 
   resultText <- if (useStrictMode) {
@@ -225,21 +237,21 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
       sprintf("Min groups required: %d\n", minGroups),
       sprintf(
         "Groupwise %% cutoff: %.3f%% (calculated)\n",
-        currentS4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff
+        groupwise_cutoff
       ),
       sprintf(
         "Max groups %% cutoff: %.3f%% (calculated)\n",
-        currentS4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff
+        max_groups_cutoff
       ),
       sprintf("Intensity cutoff percentile: %.1f%%\n", intensityCutoffPercentile),
       "State saved as: 'protein_intensity_filtered'\n"
     )
   }
 
-  list(
+  finishDIAProteinAction(workflowData, list(
     filteredS4 = filteredS4,
     resultText = resultText
-  )
+  ), "filteredS4")
 }
 
 updateProteinIntensityFilterOutputs <- function(output,
@@ -249,16 +261,10 @@ updateProteinIntensityFilterOutputs <- function(output,
                                                 experimentLabel,
                                                 renderTextFn = shiny::renderText,
                                                 updateProteinFilteringFn = updateProteinFiltering) {
-  output$protein_intensity_filter_results <- renderTextFn(intensityFilterResult$resultText)
+  output$protein_intensity_filter_results <- renderPeptideQcResultText(intensityFilterResult$resultText, renderTextFn)
 
-  plotGrid <- updateProteinFilteringFn(
-    data = intensityFilterResult$filteredS4@protein_quant_table,
-    step_name = "11_protein_intensity_filtered",
-    omic_type = omicType,
-    experiment_label = experimentLabel,
-    return_grid = TRUE,
-    overwrite = TRUE
-  )
+  plotGrid <- publishDIAProteinProgress(intensityFilterResult, "11_protein_intensity_filtered", omicType,
+    experimentLabel, updateProteinFilteringFn, intensityFilterResult$filteredS4)
   proteinIntensityFilterPlot(plotGrid)
 
   invisible(plotGrid)
@@ -279,6 +285,7 @@ runProteinIntensityFilterApplyObserver <- function(workflowData,
                                                    removeNotificationFn = shiny::removeNotification,
                                                    logInfoFn = logger::log_info,
                                                    logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   showNotificationFn(
     "Applying protein intensity filter...",
     id = "protein_intensity_filter_working",
@@ -322,6 +329,7 @@ runProteinIntensityFilterApplyObserver <- function(workflowData,
       errorMessage = errorMessage
     )
   })
+  })
 }
 
 runProteinIntensityFilterRevertStep <- function(workflowData) {
@@ -333,7 +341,7 @@ runProteinIntensityFilterRevertStep <- function(workflowData) {
   }
 
   previousState <- history[length(history) - 1]
-  revertedS4 <- workflowData$state_manager$revertToState(previousState)
+  revertedS4 <- selectDIAStateReference(workflowData$state_manager, previousState)
 
   list(
     previousState = previousState,
@@ -349,9 +357,10 @@ runProteinIntensityFilterRevertObserver <- function(workflowData,
                                                     showNotificationFn = shiny::showNotification,
                                                     logInfoFn = logger::log_info,
                                                     logErrorFn = logger::log_error) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
     revertResult <- runRevertStepFn(workflowData = workflowData)
-    output$protein_intensity_filter_results <- renderTextFn(revertResult$resultText)
+    output$protein_intensity_filter_results <- renderPeptideQcResultText(revertResult$resultText, renderTextFn)
     logInfoFn(paste("Reverted protein intensity filter to", revertResult$previousState))
     showNotificationFn("Reverted successfully", type = "message")
 
@@ -368,6 +377,7 @@ runProteinIntensityFilterRevertObserver <- function(workflowData,
       status = "error",
       errorMessage = errorMessage
     )
+  })
   })
 }
 

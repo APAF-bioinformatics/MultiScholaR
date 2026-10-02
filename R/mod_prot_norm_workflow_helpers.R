@@ -8,7 +8,7 @@ prepareProtNormNormalizationRun <- function(
   reqFn(stateManager)
 
   current_state <- stateManager$current_state
-  current_s4 <- stateManager$getState(current_state)
+  current_s4 <- readDIAProteinScience(stateManager, current_state)
 
   if (is.null(current_s4)) {
     stop("No S4 object available for normalization")
@@ -42,7 +42,9 @@ runProtNormBetweenSamplesStep <- function(
   }
 
   normalized_s4 <- normaliseBetweenSamplesFn(currentS4, normalisation_method = normMethod)
-  normData$normalized_protein_obj <- normalized_s4
+  normalized_s4 <- inheritDIAExecutionSource(normalized_s4, getDIAActiveManager(),
+    attr(currentS4, "dia_component_source", exact = TRUE))
+  normData <- setDIAOwnedPayload(normData, "normalized_protein_obj", normalized_s4)
 
   captureCheckpointFn(normalized_s4, "cp05", "normalised")
 
@@ -100,7 +102,7 @@ applyProtNormSkippedRuvState <- function(
 ) {
   messageFn("*** RUV MODE: SKIP - Bypassing RUV-III correction ***")
 
-  normData$ruv_normalized_obj <- normalizedS4
+  normData <- setDIAOwnedPayload(normData, "ruv_normalized_obj", normalizedS4)
   normData$ruv_complete <- TRUE
   normData$best_k <- NA
   normData$control_genes_index <- NA
@@ -155,9 +157,9 @@ resolveProtNormStep6QcObject <- function(
     return(step5Object)
   }
 
-  if (!is.null(normData$ruv_normalized_obj)) {
+  if (!is.null(getDIAOwnedPayload(normData, "ruv_normalized_obj"))) {
     messageFn("*** STEP 6: Using fallback ruv_normalized_obj from norm_data ***")
-    return(normData$ruv_normalized_obj)
+    return(getDIAOwnedPayload(normData, "ruv_normalized_obj"))
   }
 
   messageFn("*** STEP 6: WARNING - No RUV corrected object available ***")
@@ -284,6 +286,10 @@ generateProtNormCompositeQcFigure <- function(
     return(invisible(NULL))
   }
 
+  # ggplot2 retains the last constructed plot independently of our GUI holders.
+  # Keep the caller's plot while releasing this export's raster composite on exit.
+  previous_plot <- ggplot2::get_last_plot()
+  on.exit(ggplot2::set_last_plot(previous_plot), add = TRUE)
   composite_inputs <- resolveInputsFn(ruvMode, qcDir)
 
   tryCatch({
@@ -381,6 +387,7 @@ runProtNormTabEntryWorkflow <- function(
   handlePreQcErrorFn = handleProtNormPreQcGenerationError,
   messageFn = message
 ) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   if (is.null(selectedTab) || selectedTab != "normalization") {
     return(invisible(FALSE))
   }
@@ -422,6 +429,7 @@ runProtNormTabEntryWorkflow <- function(
     TRUE
   }, error = function(e) {
     handlePreQcErrorFn(error = e)
+  })
   })
 }
 
@@ -469,6 +477,13 @@ runProtNormNormalizationWorkflow <- function(
   handleErrorFn = handleProtNormNormalizationError,
   messageFn = message
 ) {
+  if ((is.list(workflowData) || is.environment(workflowData)) &&
+      usesDIAReferenceStates(workflowData$state_manager)) {
+    return(tryCatch(runDIAReferenceNormalization(input, workflowData, normData, experimentPaths,
+      omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
+      getRuvGroupingVariableFn, showNotificationFn), error = function(e) handleErrorFn(error = e)))
+  }
+  withDIAStateScope(getDIAActiveManager(), function() {
   messageFn("=== NORMALIZATION BUTTON CLICKED ===")
   messageFn("Starting normalization workflow...")
 
@@ -480,6 +495,8 @@ runProtNormNormalizationWorkflow <- function(
       normData = normData
     )
     current_s4 <- run_context$currentS4
+    run_context <- NULL
+    input_reference <- getDIACurrentReference(getDIAActiveManager())
     ruv_corrected_s4_clean <- NULL
 
     withProgressFn(message = "Running normalization...", value = 0, {
@@ -496,6 +513,7 @@ runProtNormNormalizationWorkflow <- function(
         stop(paste("Step 1 (normalization) error:", e$message))
       })
 
+      current_s4 <- NULL
       incProgressFn(0.2, detail = "Generating post-normalization QC plots...")
 
       tryCatch({
@@ -566,6 +584,9 @@ runProtNormNormalizationWorkflow <- function(
         })
       }
 
+      normalized_s4 <- ruv_corrected_s4 <- NULL
+      releaseDIAWorkingReference(getDIAActiveManager(), input_reference)
+      releaseDIAWorkingReference(getDIAActiveManager(), normData$normalized_protein_obj)
       incProgressFn(0.2, detail = "Generating RUV-corrected QC plots...")
       messageFn("*** STEP 6: STARTING RUV-corrected QC plot generation ***")
 
@@ -573,6 +594,7 @@ runProtNormNormalizationWorkflow <- function(
         step5Object = ruv_corrected_s4_clean,
         normData = normData
       )
+      ruv_corrected_s4_clean <- NULL
 
       runStep6RuvQcFn(
         ruvMode = input$ruv_mode,
@@ -582,6 +604,8 @@ runProtNormNormalizationWorkflow <- function(
         generateRuvCorrectedQcFn = generateRuvCorrectedQcFn
       )
 
+      step6_object <- NULL
+      releaseDIAWorkingReference(getDIAActiveManager(), normData$ruv_normalized_obj)
       generateCompositeQcFigureFn(
         ruvMode = input$ruv_mode,
         qcDir = experimentPaths$protein_qc_dir,
@@ -603,6 +627,7 @@ runProtNormNormalizationWorkflow <- function(
   }, error = function(e) {
     handleErrorFn(error = e)
   })
+  })
 }
 
 runProtNormApplyCorrelationObserver <- function(
@@ -622,13 +647,21 @@ runProtNormApplyCorrelationObserver <- function(
   handleCorrelationErrorFn = handleProtNormCorrelationError,
   messageFn = message
 ) {
+  if ((is.list(workflowData) || is.environment(workflowData)) &&
+      usesDIAReferenceStates(workflowData$state_manager)) {
+    return(tryCatch(runDIAReferenceCorrelation(workflowData, normData, experimentPaths, output,
+      input$min_pearson_correlation_threshold, FALSE, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn),
+      error = function(e) handleCorrelationErrorFn(error = e,
+        logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
+  }
+  withDIAStateScope(getDIAActiveManager(), function() {
   messageFn("=== CORRELATION FILTERING BUTTON CLICKED (DEBUG66 ACTIVE) ===")
 
   checkMemoryUsageFn(threshold_gb = 8, context = "Correlation Filtering Start")
 
   tryCatch({
     ruv_s4 <- resolveCorrelationInputObjectFn(
-      ruvNormalizedObj = normData$ruv_normalized_obj,
+      ruvNormalizedObj = getDIAOwnedPayload(normData, "ruv_normalized_obj"),
       startMessage = "Starting Correlation Filter Flow",
       missingObjectMessage = "RUV correction must be completed before correlation filtering"
     )
@@ -644,6 +677,8 @@ runProtNormApplyCorrelationObserver <- function(
       getPlotAestheticsFn = getPlotAestheticsFn
     )
 
+    ruv_s4 <- NULL
+    releaseDIAWorkingReference(getDIAActiveManager(), normData$ruv_normalized_obj)
     completeCorrelationWorkflowFn(
       finalS4ForDe = final_s4_for_de,
       workflowData = workflowData,
@@ -664,6 +699,7 @@ runProtNormApplyCorrelationObserver <- function(
       notificationPrefix = "Error in correlation filtering:"
     )
   })
+  })
 }
 
 runProtNormSkipCorrelationObserver <- function(
@@ -681,13 +717,21 @@ runProtNormSkipCorrelationObserver <- function(
   handleCorrelationErrorFn = handleProtNormCorrelationError,
   messageFn = message
 ) {
+  if ((is.list(workflowData) || is.environment(workflowData)) &&
+      usesDIAReferenceStates(workflowData$state_manager)) {
+    return(tryCatch(runDIAReferenceCorrelation(workflowData, normData, experimentPaths, output,
+      0, TRUE, omicType, experimentLabel, function() NULL, getPlotAestheticsFn),
+      error = function(e) handleCorrelationErrorFn(error = e,
+        logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
+  }
+  withDIAStateScope(getDIAActiveManager(), function() {
   messageFn("=== SKIP CORRELATION FILTERING BUTTON CLICKED (DEBUG66 ACTIVE) ===")
 
   checkMemoryUsageFn(threshold_gb = 8, context = "Skip Correlation Filtering Start")
 
   tryCatch({
     ruv_s4 <- resolveCorrelationInputObjectFn(
-      ruvNormalizedObj = normData$ruv_normalized_obj,
+      ruvNormalizedObj = getDIAOwnedPayload(normData, "ruv_normalized_obj"),
       startMessage = "Skipping Correlation Filter Flow",
       missingObjectMessage = "RUV correction must be completed before proceeding"
     )
@@ -721,6 +765,7 @@ runProtNormSkipCorrelationObserver <- function(
       notificationPrefix = "Error in skipping correlation filtering:"
     )
   })
+  })
 }
 
 notifyProtNormExportSessionPrereqWarning <- function(
@@ -750,11 +795,12 @@ runProtNormExportObserver <- function(
   showNotificationFn = shiny::showNotification,
   messageFn = message
 ) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   messageFn("=== EXPORT FILTERED SESSION BUTTON CLICKED ===")
 
   if (!canExportFilteredSessionFn(
     correlationFilteringComplete = normData$correlation_filtering_complete,
-    correlationFilteredObj = normData$correlation_filtered_obj
+    correlationFilteredObj = getDIAOwnedInput(normData, "correlation_filtered_obj")
   )) {
     return(notifyExportPrereqFn())
   }
@@ -784,6 +830,7 @@ runProtNormExportObserver <- function(
   }, error = function(e) {
     handleExportErrorFn(e)
   })
+  })
 }
 
 runProtNormResetObserver <- function(
@@ -796,6 +843,7 @@ runProtNormResetObserver <- function(
   handleResetErrorFn = handleProtNormResetError,
   messageFn = message
 ) {
+  withDIAStateScope(getDIAActiveManager(), function() {
   messageFn("Resetting normalization...")
 
   tryCatch({
@@ -809,5 +857,5 @@ runProtNormResetObserver <- function(
   }, error = function(e) {
     handleResetErrorFn(e)
   })
+  })
 }
-

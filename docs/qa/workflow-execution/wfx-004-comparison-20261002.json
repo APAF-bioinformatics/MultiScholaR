@@ -1,0 +1,621 @@
+{
+  "schema": "wfx004-comparison-v1",
+  "status": "comparison_complete",
+  "plan_sha256": "8389025361059d0c2455f8e7814817d590c574a84f17ce62ec6d4a43ea2a2f02",
+  "members": [
+    {
+      "cell": "filter",
+      "arm": "control",
+      "rep": 1,
+      "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/filter-control-1-host4",
+      "result_sha256": "08781211db950bc6ef40c340caef18597348681bc25a222083d8722359027aa7",
+      "elapsed_seconds": 19.019,
+      "peak_bytes": 2649477120,
+      "science": true,
+      "required_outputs": true,
+      "input_unchanged": true,
+      "execution": {
+        "schema": 1,
+        "request_id": "wfx-7b92cadc9428bbbb7f25ada0dd359aa6",
+        "status": "complete",
+        "token": {
+          "request_id": "wfx-7b92cadc9428bbbb7f25ada0dd359aa6",
+          "incarnation": "2286b6578c7b109a9be3e3170401143779fa49e97ba3044e4221cb78c91f9ecf",
+          "input_ids": "be3ac05beb90956dc6098fdee479db7b9987cda2000d259d4ca9e8ccff639a8f",
+          "expected_head": "2fb3fe90dbaf83af9e32a6edbdaec66ff83fc2b56063bc6dcad35c4a9d6e66d3",
+          "generation": 1,
+          "controller_id": "3a620cb038a37e9103c2e2d99e7b831b3e9e56ada092136dd6f86ed264a04102",
+          "parameters": "66c221307dba09f5b168499c96acc90c06f48f88ba6d85f8d54a512155639755",
+          "execution": "d517ce332a130bff29d33cb5f91f5aa9700b182bb7fa88222a49699c2e4b8077"
+        },
+        "error": null,
+        "elapsed_seconds": 19.019,
+        "peak_bytes": 2649477120,
+        "whole_service_peak_bytes": 2649477120,
+        "monitor": {
+          "schema": 1,
+          "max_anon": 2591268864,
+          "max_file": 54661120,
+          "max_observation_interval": 0.0520000000000014,
+          "reason": null
+        },
+        "worker": {
+          "ActiveState": "active",
+          "SubState": "exited",
+          "MainPID": "0",
+          "Result": "success",
+          "ControlGroup": "",
+          "MemoryPeak": "926801920",
+          "MemorySwapPeak": "0",
+          "CPUUsageNSec": "6230309000",
+          "IOReadBytes": "38830080",
+          "IOWriteBytes": "31121408",
+          "MemoryMax": "14384447488",
+          "MemorySwapMax": "0",
+          "available": true
+        },
+        "threads": 8,
+        "browser_memory_included": false,
+        "accounting_delta": {
+          "cpu_seconds": 22.121474,
+          "read_bytes": 51019776,
+          "written_bytes": 97140736
+        },
+        "staged_bytes_at_teardown": 1617795,
+        "spill_attempts": "NA",
+        "spill_basis": "engine spill disabled; attempted spill is not independently counted",
+        "measurement_valid": true,
+        "cleanup": {
+          "worker_stopped": true,
+          "monitor_stopped": true
+        }
+      },
+      "fingerprints": 0
+    },
+    {
+      "cell": "filter",
+      "arm": "candidate",
+      "rep": 1,
+      "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/filter-candidate-1",
+      "result_sha256": "26c57b2ecc905052bb5684840badd7f0bbc8e0b6a292c4757e3ee2e87bc74378",
+      "elapsed_seconds": 18.489,
+      "peak_bytes": 2590134272,
+      "science": true,
+      "required_outputs": true,
+      "input_unchanged": true,
+      "execution": {
+        "schema": 1,
+        "request_id": "wfx-2bba580623ae9fbdff428b2ebd794157",
+        "status": "complete",
+        "token": {
+          "request_id": "wfx-2bba580623ae9fbdff428b2ebd794157",
+          "incarnation": "2286b6578c7b109a9be3e3170401143779fa49e97ba3044e4221cb78c91f9ecf",
+          "input_ids": "be3ac05beb90956dc6098fdee479db7b9987cda2000d259d4ca9e8ccff639a8f",
+          "expected_head": "2fb3fe90dbaf83af9e32a6edbdaec66ff83fc2b56063bc6dcad35c4a9d6e66d3",
+          "generation": 1,
+          "controller_id": "91768c2b6a5b15dc987ce19fa6c3b3bc201ce4c428e416cb779fa21a63aad98a",
+          "parameters": "66c221307dba09f5b168499c96acc90c06f48f88ba6d85f8d54a512155639755",
+          "execution": "73498a156f47400b2633852079fce8e8caf538757b1839b93499f27f5b77bb88"
+        },
+        "error": null,
+        "elapsed_seconds": 18.489,
+        "peak_bytes": 2590134272,
+        "whole_service_peak_bytes": 2590134272,
+        "monitor": {
+          "schema": 1,
+          "max_anon": 2577133568,
+          "max_file": 2920448,
+          "max_observation_interval": 0.0520000000000014,
+          "reason": null
+        },
+        "worker": {
+          "ActiveState": "active",
+          "SubState": "exited",
+          "MainPID": "0",
+          "Result": "success",
+          "ControlGroup": "",
+          "MemoryPeak": "871833600",
+          "MemorySwapPeak": "0",
+          "CPUUsageNSec": "6138114000",
+          "IOReadBytes": "507904",
+          "IOWriteBytes": "9043968",
+          "MemoryMax": "14389379072",
+          "MemorySwapMax": "0",
+          "available": true
+        },
+        "threads": 8,
+        "browser_memory_included": false,
+        "accounting_delta": {
+          "cpu_seconds": 21.645755,
+          "read_bytes": 540672,
+          "written_bytes": 40886272
+        },
+        "staged_bytes_at_teardown": 1618676,
+        "spill_attempts": "NA",
+        "spill_basis": "engine spill disabled; attempted spill is not independently counted",
+        "measurement_valid": true,
+        "cleanup": {
+          "worker_stopped": true,
+          "monitor_stopped": true
+        }
+      },
+      "fingerprints": 0
+    },
+    {
+      "cell": "filter",
+      "arm": "candidate",
+      "rep": 2,
+      "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/filter-candidate-2",
+      "result_sha256": "694c06721e71ee988d0f797a4a87507173ea5defa0469bb816b1e0e85027553a",
+      "elapsed_seconds": 28.084,
+      "peak_bytes": 2588135424,
+      "science": true,
+      "required_outputs": true,
+      "input_unchanged": true,
+      "execution": {
+        "schema": 1,
+        "request_id": "wfx-fd476afd6e3a455e3bc2fa4b8840fa96",
+        "status": "complete",
+        "token": {
+          "request_id": "wfx-fd476afd6e3a455e3bc2fa4b8840fa96",
+          "incarnation": "2286b6578c7b109a9be3e3170401143779fa49e97ba3044e4221cb78c91f9ecf",
+          "input_ids": "be3ac05beb90956dc6098fdee479db7b9987cda2000d259d4ca9e8ccff639a8f",
+          "expected_head": "2fb3fe90dbaf83af9e32a6edbdaec66ff83fc2b56063bc6dcad35c4a9d6e66d3",
+          "generation": 1,
+          "controller_id": "277cca280d3bc4256bcee154f72a92752acf20f0f61c2ea667dff9c8e40c9ac7",
+          "parameters": "66c221307dba09f5b168499c96acc90c06f48f88ba6d85f8d54a512155639755",
+          "execution": "73498a156f47400b2633852079fce8e8caf538757b1839b93499f27f5b77bb88"
+        },
+        "error": null,
+        "elapsed_seconds": 28.084,
+        "peak_bytes": 2588135424,
+        "whole_service_peak_bytes": 2588135424,
+        "monitor": {
+          "schema": 1,
+          "max_anon": 2575405056,
+          "max_file": 2920448,
+          "max_observation_interval": 0.0530000000000008,
+          "reason": null
+        },
+        "worker": {
+          "ActiveState": "active",
+          "SubState": "exited",
+          "MainPID": "0",
+          "Result": "success",
+          "ControlGroup": "",
+          "MemoryPeak": "870072320",
+          "MemorySwapPeak": "0",
+          "CPUUsageNSec": "9130434000",
+          "IOReadBytes": "507904",
+          "IOWriteBytes": "15802368",
+          "MemoryMax": "14388871168",
+          "MemorySwapMax": "0",
+          "available": true
+        },
+        "threads": 8,
+        "browser_memory_included": false,
+        "accounting_delta": {
+          "cpu_seconds": 33.799666,
+          "read_bytes": 540672,
+          "written_bytes": 49119232
+        },
+        "staged_bytes_at_teardown": 1618677,
+        "spill_attempts": "NA",
+        "spill_basis": "engine spill disabled; attempted spill is not independently counted",
+        "measurement_valid": true,
+        "cleanup": {
+          "worker_stopped": true,
+          "monitor_stopped": true
+        }
+      },
+      "fingerprints": 0
+    },
+    {
+      "cell": "filter",
+      "arm": "control",
+      "rep": 2,
+      "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/filter-control-2",
+      "result_sha256": "5820387ca2c11e4083463d6545b0eebce20d6858eaab62adba89917c97ae81a1",
+      "elapsed_seconds": 18.508,
+      "peak_bytes": 2610913280,
+      "science": true,
+      "required_outputs": true,
+      "input_unchanged": true,
+      "execution": {
+        "schema": 1,
+        "request_id": "wfx-21c8053e869137e3c222979a6dfb065c",
+        "status": "complete",
+        "token": {
+          "request_id": "wfx-21c8053e869137e3c222979a6dfb065c",
+          "incarnation": "2286b6578c7b109a9be3e3170401143779fa49e97ba3044e4221cb78c91f9ecf",
+          "input_ids": "be3ac05beb90956dc6098fdee479db7b9987cda2000d259d4ca9e8ccff639a8f",
+          "expected_head": "2fb3fe90dbaf83af9e32a6edbdaec66ff83fc2b56063bc6dcad35c4a9d6e66d3",
+          "generation": 1,
+          "controller_id": "3ccc53b301f7333ec5564becff236aa0728ffd929fa025aee1132a9e78643ef4",
+          "parameters": "66c221307dba09f5b168499c96acc90c06f48f88ba6d85f8d54a512155639755",
+          "execution": "d517ce332a130bff29d33cb5f91f5aa9700b182bb7fa88222a49699c2e4b8077"
+        },
+        "error": null,
+        "elapsed_seconds": 18.508,
+        "peak_bytes": 2610913280,
+        "whole_service_peak_bytes": 2610913280,
+        "monitor": {
+          "schema": 1,
+          "max_anon": 2597298176,
+          "max_file": 2916352,
+          "max_observation_interval": 0.0520000000000014,
+          "reason": null
+        },
+        "worker": {
+          "ActiveState": "active",
+          "SubState": "exited",
+          "MainPID": "0",
+          "Result": "success",
+          "ControlGroup": "",
+          "MemoryPeak": "892440576",
+          "MemorySwapPeak": "0",
+          "CPUUsageNSec": "6164477000",
+          "IOReadBytes": "507904",
+          "IOWriteBytes": "6291456",
+          "MemoryMax": "14388269056",
+          "MemorySwapMax": "0",
+          "available": true
+        },
+        "threads": 8,
+        "browser_memory_included": false,
+        "accounting_delta": {
+          "cpu_seconds": 21.655412,
+          "read_bytes": 540672,
+          "written_bytes": 33677312
+        },
+        "staged_bytes_at_teardown": 1617489,
+        "spill_attempts": "NA",
+        "spill_basis": "engine spill disabled; attempted spill is not independently counted",
+        "measurement_valid": true,
+        "cleanup": {
+          "worker_stopped": true,
+          "monitor_stopped": true
+        }
+      },
+      "fingerprints": 0
+    },
+    {
+      "cell": "primary",
+      "arm": "control",
+      "rep": 1,
+      "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/primary-control-1-reference-selection",
+      "result_sha256": "d46977bc04c9b2e18575da9b366486fd656bfe2e0c47f50eeab531974f927d76",
+      "elapsed_seconds": 118.06,
+      "peak_bytes": 8751722496,
+      "science": true,
+      "required_outputs": true,
+      "input_unchanged": true,
+      "execution": {
+        "schema": 1,
+        "request_id": "wfx-9f4d6eeac05d6d00205417b66bba6aff",
+        "status": "complete",
+        "token": {
+          "request_id": "wfx-9f4d6eeac05d6d00205417b66bba6aff",
+          "incarnation": "d4c31ee9122e5999714fdb58337e99b659cbc37af606a480955dd6b1f20f64e7",
+          "input_ids": "88caaa968230621fa9fb5f72c43a2b85cd2653e6998d2648922eb7e0c8c3b48c",
+          "expected_head": "0bb94f1f4e7e0f4f124a07760bde6a3bad234359be7d16271eef58e77e9d6619",
+          "generation": 1,
+          "controller_id": "853111b24b9158a42252bd34afcbc4221873528fdf2b51ec87157413006c91e1",
+          "parameters": "28df520b992b4a4bead0a7a527ee2f4fc64fbcc2892ab364f676113761cbeefc",
+          "execution": "d517ce332a130bff29d33cb5f91f5aa9700b182bb7fa88222a49699c2e4b8077"
+        },
+        "error": null,
+        "elapsed_seconds": 118.06,
+        "peak_bytes": 8751722496,
+        "whole_service_peak_bytes": 8751722496,
+        "monitor": {
+          "schema": 1,
+          "max_anon": 6629076992,
+          "max_file": 1224138752,
+          "max_observation_interval": 0.0790000000000006,
+          "reason": null
+        },
+        "worker": {
+          "ActiveState": "active",
+          "SubState": "exited",
+          "MainPID": "0",
+          "Result": "success",
+          "ControlGroup": "",
+          "MemoryPeak": "7029481472",
+          "MemorySwapPeak": "0",
+          "CPUUsageNSec": "245955456000",
+          "IOReadBytes": "3153420288",
+          "IOWriteBytes": "859381760",
+          "MemoryMax": "14382227456",
+          "MemorySwapMax": "0",
+          "available": true
+        },
+        "threads": 8,
+        "browser_memory_included": false,
+        "accounting_delta": {
+          "cpu_seconds": 309.273137,
+          "read_bytes": 4861419520,
+          "written_bytes": 882458624
+        },
+        "staged_bytes_at_teardown": 2421381,
+        "spill_attempts": "NA",
+        "spill_basis": "engine spill disabled; attempted spill is not independently counted",
+        "measurement_valid": true,
+        "cleanup": {
+          "worker_stopped": true,
+          "monitor_stopped": true
+        }
+      },
+      "fingerprints": 1200
+    },
+    {
+      "cell": "primary",
+      "arm": "candidate",
+      "rep": 1,
+      "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/primary-candidate-1",
+      "result_sha256": "2638c48ea87d77d702dd291c398fe9651e5d5bd2adb36efb21ac4816a16b1058",
+      "elapsed_seconds": 105.277,
+      "peak_bytes": 8786972672,
+      "science": true,
+      "required_outputs": true,
+      "input_unchanged": true,
+      "execution": {
+        "schema": 1,
+        "request_id": "wfx-ac822adddda63fb799996b90fa8dc199",
+        "status": "complete",
+        "token": {
+          "request_id": "wfx-ac822adddda63fb799996b90fa8dc199",
+          "incarnation": "d4c31ee9122e5999714fdb58337e99b659cbc37af606a480955dd6b1f20f64e7",
+          "input_ids": "88caaa968230621fa9fb5f72c43a2b85cd2653e6998d2648922eb7e0c8c3b48c",
+          "expected_head": "ba97a996812931946819b65f0d63d9489a7a90cd04ccab5d452a1030ba802d65",
+          "generation": 1,
+          "controller_id": "e90e019086914eac40c94e80b6217a9d3c2eefa7a51e62c867d761ed034f9d9a",
+          "parameters": "28df520b992b4a4bead0a7a527ee2f4fc64fbcc2892ab364f676113761cbeefc",
+          "execution": "73498a156f47400b2633852079fce8e8caf538757b1839b93499f27f5b77bb88"
+        },
+        "error": null,
+        "elapsed_seconds": 105.277,
+        "peak_bytes": 8786972672,
+        "whole_service_peak_bytes": 8786972672,
+        "monitor": {
+          "schema": 1,
+          "max_anon": 6697967616,
+          "max_file": 1217200128,
+          "max_observation_interval": 0.0680000000000049,
+          "reason": null
+        },
+        "worker": {
+          "ActiveState": "active",
+          "SubState": "exited",
+          "MainPID": "0",
+          "Result": "success",
+          "ControlGroup": "",
+          "MemoryPeak": "7065378816",
+          "MemorySwapPeak": "0",
+          "CPUUsageNSec": "231727369000",
+          "IOReadBytes": "5104943104",
+          "IOWriteBytes": "866254848",
+          "MemoryMax": "14386667520",
+          "MemorySwapMax": "0",
+          "available": true
+        },
+        "threads": 8,
+        "browser_memory_included": false,
+        "accounting_delta": {
+          "cpu_seconds": 286.754981,
+          "read_bytes": 6805143552,
+          "written_bytes": 889724928
+        },
+        "staged_bytes_at_teardown": 2421400,
+        "spill_attempts": "NA",
+        "spill_basis": "engine spill disabled; attempted spill is not independently counted",
+        "measurement_valid": true,
+        "cleanup": {
+          "worker_stopped": true,
+          "monitor_stopped": true
+        }
+      },
+      "fingerprints": 1200
+    },
+    {
+      "cell": "primary",
+      "arm": "candidate",
+      "rep": 2,
+      "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/primary-candidate-2",
+      "result_sha256": "003e4a5c178e6ae2fbff5d8c1f6eb7f72b072734b6e108e7b4eb5cf063214056",
+      "elapsed_seconds": 99.881,
+      "peak_bytes": 8914202624,
+      "science": true,
+      "required_outputs": true,
+      "input_unchanged": true,
+      "execution": {
+        "schema": 1,
+        "request_id": "wfx-bc19e3eae84055f8123cc689a1fdf61c",
+        "status": "complete",
+        "token": {
+          "request_id": "wfx-bc19e3eae84055f8123cc689a1fdf61c",
+          "incarnation": "d4c31ee9122e5999714fdb58337e99b659cbc37af606a480955dd6b1f20f64e7",
+          "input_ids": "88caaa968230621fa9fb5f72c43a2b85cd2653e6998d2648922eb7e0c8c3b48c",
+          "expected_head": "ddf7cdd28b450f248a2569c01947c4d3d7fe2f4f2faa93b13bbe7aeb7cc5d05b",
+          "generation": 1,
+          "controller_id": "b1e55a8a21788438c2df7669875f5d653a31274e2031734e7f572e7a5a7e0d58",
+          "parameters": "28df520b992b4a4bead0a7a527ee2f4fc64fbcc2892ab364f676113761cbeefc",
+          "execution": "73498a156f47400b2633852079fce8e8caf538757b1839b93499f27f5b77bb88"
+        },
+        "error": null,
+        "elapsed_seconds": 99.881,
+        "peak_bytes": 8914202624,
+        "whole_service_peak_bytes": 8914202624,
+        "monitor": {
+          "schema": 1,
+          "max_anon": 6738706432,
+          "max_file": 1219452928,
+          "max_observation_interval": 0.0679999999999978,
+          "reason": null
+        },
+        "worker": {
+          "ActiveState": "active",
+          "SubState": "exited",
+          "MainPID": "0",
+          "Result": "success",
+          "ControlGroup": "",
+          "MemoryPeak": "7195693056",
+          "MemorySwapPeak": "0",
+          "CPUUsageNSec": "231066031000",
+          "IOReadBytes": "5109022720",
+          "IOWriteBytes": "854573056",
+          "MemoryMax": "14385786880",
+          "MemorySwapMax": "0",
+          "available": true
+        },
+        "threads": 8,
+        "browser_memory_included": false,
+        "accounting_delta": {
+          "cpu_seconds": 279.966217,
+          "read_bytes": 6811566080,
+          "written_bytes": 879222784
+        },
+        "staged_bytes_at_teardown": 2421400,
+        "spill_attempts": "NA",
+        "spill_basis": "engine spill disabled; attempted spill is not independently counted",
+        "measurement_valid": true,
+        "cleanup": {
+          "worker_stopped": true,
+          "monitor_stopped": true
+        }
+      },
+      "fingerprints": 1200
+    },
+    {
+      "cell": "primary",
+      "arm": "control",
+      "rep": 2,
+      "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/wfx-004/primary-control-2",
+      "result_sha256": "394195d472eac10ffa871a9b8e7ce262b61e07b4e5b4809cf4e46b82fac03a00",
+      "elapsed_seconds": 90.613,
+      "peak_bytes": 8700387328,
+      "science": true,
+      "required_outputs": true,
+      "input_unchanged": true,
+      "execution": {
+        "schema": 1,
+        "request_id": "wfx-8553d137457a24e219a31052e164b397",
+        "status": "complete",
+        "token": {
+          "request_id": "wfx-8553d137457a24e219a31052e164b397",
+          "incarnation": "d4c31ee9122e5999714fdb58337e99b659cbc37af606a480955dd6b1f20f64e7",
+          "input_ids": "88caaa968230621fa9fb5f72c43a2b85cd2653e6998d2648922eb7e0c8c3b48c",
+          "expected_head": "215ed1f6c321c5475d5a1ec7c7ac0e788883499019975c297581a09e436f828c",
+          "generation": 1,
+          "controller_id": "793c9b60f478b0fc2347799ba39dac03d30349109b52e0280c85bd8de8fa6f73",
+          "parameters": "28df520b992b4a4bead0a7a527ee2f4fc64fbcc2892ab364f676113761cbeefc",
+          "execution": "d517ce332a130bff29d33cb5f91f5aa9700b182bb7fa88222a49699c2e4b8077"
+        },
+        "error": null,
+        "elapsed_seconds": 90.613,
+        "peak_bytes": 8700387328,
+        "whole_service_peak_bytes": 8700387328,
+        "monitor": {
+          "schema": 1,
+          "max_anon": 6678618112,
+          "max_file": 1215373312,
+          "max_observation_interval": 0.0659999999999989,
+          "reason": null
+        },
+        "worker": {
+          "ActiveState": "active",
+          "SubState": "exited",
+          "MainPID": "0",
+          "Result": "success",
+          "ControlGroup": "",
+          "MemoryPeak": "6981402624",
+          "MemorySwapPeak": "0",
+          "CPUUsageNSec": "211861274000",
+          "IOReadBytes": "5101486080",
+          "IOWriteBytes": "859226112",
+          "MemoryMax": "14385389568",
+          "MemorySwapMax": "0",
+          "available": true
+        },
+        "threads": 8,
+        "browser_memory_included": false,
+        "accounting_delta": {
+          "cpu_seconds": 255.443956,
+          "read_bytes": 6803488768,
+          "written_bytes": 882860032
+        },
+        "staged_bytes_at_teardown": 2420364,
+        "spill_attempts": "NA",
+        "spill_basis": "engine spill disabled; attempted spill is not independently counted",
+        "measurement_valid": true,
+        "cleanup": {
+          "worker_stopped": true,
+          "monitor_stopped": true
+        }
+      },
+      "fingerprints": 1200
+    }
+  ],
+  "cells": [
+    {
+      "cell": "filter",
+      "numerical_decision": "inconclusive",
+      "pairs": [
+        {
+          "rep": 1,
+          "peak_ratio": 0.977602053042073,
+          "time_ratio": 0.972133130027867,
+          "passes": true
+        },
+        {
+          "rep": 2,
+          "peak_ratio": 0.991275904805234,
+          "time_ratio": 1.51739788199697,
+          "passes": false
+        }
+      ]
+    },
+    {
+      "cell": "primary",
+      "numerical_decision": "integration_non_regression",
+      "pairs": [
+        {
+          "rep": 1,
+          "peak_ratio": 1.00402779864377,
+          "time_ratio": 0.89172454684059,
+          "passes": true
+        },
+        {
+          "rep": 2,
+          "peak_ratio": 1.02457537669753,
+          "time_ratio": 1.10228112963923,
+          "passes": true
+        }
+      ]
+    }
+  ],
+  "rollback": {
+    "filter": {
+      "status": "complete",
+      "rows_checked": 9000,
+      "source_head_sha256": "808a7e46867f424c09dadd37ff65da4cb8e4dc88531a76a85268f801d0bcb976",
+      "result": {
+        "hash": "89b52e3d9b9285373364833e075f4a83613d3ab78fd7c59e7a2b30e7c33845a1",
+        "history": ["initial", "protein_peptide_filtered", "sample_filtered"],
+        "pending": true
+      }
+    },
+    "primary": {
+      "status": "complete",
+      "rows_checked": 10000,
+      "source_head_sha256": "9e463ff0c89f0c081a7f967ff4c07cec9459d53acbec491564c80787759a2bab",
+      "result": {
+        "hash": "d0311fae7d07ee74045a14c82dd6edf655b40b33ca5a2ffae557b4f08bf45d8d",
+        "history": ["initial", "raw_data_s4", "qvalue_filtered", "protein_peptide_filtered", "precursor_rollup"],
+        "pending": true
+      }
+    }
+  },
+  "promotion_authorized": false,
+  "claim_scope": "Synthetic primary 24m/300 and filter 10k/4000 comparison only; full wide handoff remains unverified."
+}

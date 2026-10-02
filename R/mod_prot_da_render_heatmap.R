@@ -4,7 +4,7 @@ da_server_heatmap_render_handler <- function(input, output, session, ns, da_data
   shiny::observeEvent(list(input$heatmap_contrast, da_data$da_results_list), {
   shiny::req(input$heatmap_contrast, da_data$da_results_list)
 
-  plot_data_structure <- list(
+  plot_data_structure <- if (isDIAResultManifest(da_data$da_results_list)) da_data$da_results_list else list(
     da_proteins_long = da_data$da_results_list$da_proteins_long,
     theObject = da_data$da_results_list$theObject
   )
@@ -35,7 +35,7 @@ da_server_heatmap_render_handler <- function(input, output, session, ns, da_data
       {
         # Generate heatmap using new function
         # Create a compatible data structure for the plotting function
-        plot_data_structure <- list(
+        plot_data_structure <- if (isDIAResultManifest(da_data$da_results_list)) da_data$da_results_list else list(
           da_proteins_long = da_data$da_results_list$da_proteins_long,
           theObject = da_data$da_results_list$theObject
         )

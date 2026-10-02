@@ -9,7 +9,7 @@ da_server_volcano_render_handler <- function(input, output, session, ns, da_data
     da_results_list = da_data$da_results_list,
     selected_contrast = input$volcano_contrast,
     da_q_val_thresh = input$da_q_val_thresh,
-    args_row_id = da_data$current_s4_object@protein_id_column
+    args_row_id = diaGuiProteinKey(da_data$current_s4_object)
   ), "cp08", "volcano_input")
   }, ignoreInit = TRUE)
   # --- END CP08 ---
@@ -22,7 +22,7 @@ da_server_volcano_render_handler <- function(input, output, session, ns, da_data
       da_results_list = da_data$da_results_list,
       selected_contrast = input$volcano_contrast,
       da_q_val_thresh = input$da_q_val_thresh,
-      args_row_id = da_data$current_s4_object@protein_id_column,
+      args_row_id = diaGuiProteinKey(da_data$current_s4_object),
       output_dir = experiment_paths$da_output_dir
     )
   })
@@ -37,8 +37,8 @@ da_server_volcano_render_handler <- function(input, output, session, ns, da_data
       selected_contrast = input$volcano_contrast,
       da_q_val_thresh = input$da_q_val_thresh,
       lfc_threshold = input$treat_lfc_cutoff,
-      show_labels = input$volcano_show_labels,
-      n_labels = input$volcano_label_top_n
+      show_labels = if (is.null(input$volcano_show_labels)) TRUE else input$volcano_show_labels,
+      n_labels = if (is.null(input$volcano_label_top_n)) 10 else input$volcano_label_top_n
     )
   })
 }
