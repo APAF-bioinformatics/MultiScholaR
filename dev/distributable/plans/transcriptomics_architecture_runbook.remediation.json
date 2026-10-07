@@ -1,0 +1,157 @@
+{
+  "mode": "documentation_repair",
+  "audit": {
+    "path": "dev/distributable/plans/transcriptomics_architecture_runbook.audit.json",
+    "sha256": "21a33aa3f1c9fe163e0e15c0f96b84a486e6c8dfe8e01215d48668ebcbb5daab"
+  },
+  "runbook": {
+    "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+    "before_sha256": "520c151846ac020a561826074e3a3e2e79fe53f0a58bb932050d60417c91ccea",
+    "after_sha256": "ad71283cfae4c2a3c86e6d2c9c7f840d8879f4a390c5aa72997c8fa054e88f01"
+  },
+  "closures": [
+    {
+      "finding_id": "TR-A01",
+      "status": "documentation_gap_closed",
+      "evidence": [
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 113,
+          "text": "Missing design (TR-A01)"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 113,
+          "text": "six RPMI and six Sera"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 113,
+          "text": "authoritative sample-to-group"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 113,
+          "text": "missing metadata must not create"
+        }
+      ],
+      "runtime_qualification": "not executed; required cases remain specified in the runbook"
+    },
+    {
+      "finding_id": "TR-A02",
+      "status": "documentation_gap_closed",
+      "evidence": [
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 83,
+          "text": "Initial ingestion: the missing producer boundary (TR-A02)"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 18,
+          "text": "write_fn"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 97,
+          "text": "global GeneID uniqueness across batches"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 97,
+          "text": "No downstream computation may use partial"
+        }
+      ],
+      "runtime_qualification": "not executed; required cases remain specified in the runbook"
+    },
+    {
+      "finding_id": "TR-A03",
+      "status": "documentation_gap_closed",
+      "evidence": [
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 101,
+          "text": "Large annotation and filter-mask routing (TR-A03)"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 107,
+          "text": "9,999 / 10,000 / 10,001"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 17,
+          "text": "64 MiB"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 105,
+          "text": "multi-input relation binding"
+        }
+      ],
+      "runtime_qualification": "not executed; required cases remain specified in the runbook"
+    },
+    {
+      "finding_id": "TR-A04",
+      "status": "documentation_gap_closed",
+      "evidence": [
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 17,
+          "text": "streamWorkflowTableRows"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 77,
+          "text": "checks 64 MiB only after assembly"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 135,
+          "text": "64/65-column"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 77,
+          "text": "utils_workflow_dia_state.R"
+        }
+      ],
+      "runtime_qualification": "not executed; required cases remain specified in the runbook"
+    },
+    {
+      "finding_id": "TR-A05",
+      "status": "documentation_gap_closed",
+      "evidence": [
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 123,
+          "text": "Baseline and attribution first (TR-A05)"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 123,
+          "text": "Before selecting any performance adaptation"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 125,
+          "text": "Memory is the primary criterion"
+        },
+        {
+          "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+          "line": 123,
+          "text": "Separate profiling from timed comparisons"
+        }
+      ],
+      "runtime_qualification": "not executed; required cases remain specified in the runbook"
+    }
+  ],
+  "verification": {
+    "notebook_unchanged": true,
+    "original_audit_unchanged": true,
+    "tracked_source_diff_unchanged": true,
+    "all_13_chunks_mapped": true,
+    "local_links_resolve": true
+  },
+  "claim_scope": "Five runbook gaps repaired and checked against source; no importer, statistical adapter, GUI implementation or benchmark executed. Scientific and performance qualification remains future work."
+}

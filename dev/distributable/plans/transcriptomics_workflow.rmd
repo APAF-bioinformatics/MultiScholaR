@@ -1,0 +1,793 @@
+---
+title: "MultiScholaR Transcriptomics Analysis: RUVs & RUVIII Normalization and Differential Expression"
+subtitle: "Sepsis Transcriptomics Workshop (GSE152840 | Sera vs RPMI)"
+author: "APAF Bioinformatics"
+date: "2026-10-07"
+output:
+  html_notebook:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: show
+    theme: flatly
+---
+
+<!-- APAF Metadata
+last_verified_date: 2026-10-07
+apaf_approved: true
+apaf_version: 1.0.0
+apaf_org: APAF Bioinformatics
+-->
+
+# Executive Summary & Workflow Architecture
+
+This R Markdown workbook implements a rigorous transcriptomics analytical pipeline for the Sepsis Transcriptomics Workshop dataset (`GSE152840`). The pipeline leverages **MultiScholaR** logic primitives to achieve:
+
+1. **Proper CPM-based filtering** of low-expression genes via `edgeR::filterByExpr` and variance hygiene.
+2. **Systematic parameter optimization** via grid search over negative control candidate percentages ($5\% - 30\%$) and factor dimensions ($k$), scored using Canonical Correlation Analysis (CCA) separation and an adaptive penalty.
+3. **RUVSeq normalization** using the `RUVs` function across biological replicate groups, dynamically injecting the optimal number of unwanted variation covariates ($W_1, \dots, W_k$) into the linear model.
+4. **Differential expression analysis** under edgeR's quasi-likelihood (QL) framework testing the contrast `Sera_vs_RPMI = groupSera - groupRPMI`.
+5. **RUVIII normalization** producing batch-adjusted expression matrices (`transcriptomics_normalized_data.tsv`) formatted specifically for downstream multi-omics integration (e.g., MOFA2 / DIABLO).
+6. **Publication-quality visual diagnostics**, including multi-panel CCA curves, 6-panel normalization progression grids (PCA/RLE), volcano plots, summary barplots, and interactive Glimma HTML explorers.
+
+---
+
+# Setup & Directory Management
+
+```{r setup, message=FALSE, warning=FALSE}
+# Initialize pacman package manager
+if (!requireNamespace("pacman", quietly = TRUE)) {
+  install.packages("pacman")
+}
+library(pacman)
+
+# Load core dependencies
+p_load(
+  conflicted,
+  tidyverse,
+  patchwork,
+  viridis,
+  edgeR,
+  limma,
+  vroom,
+  RUVSeq,
+  ruv,
+  openxlsx,
+  cowplot,
+  ggrepel,
+  here
+)
+
+# Load Bioconductor interactive tools
+if (!requireNamespace("Glimma", quietly = TRUE)) {
+  if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+  BiocManager::install("Glimma", update = FALSE, ask = FALSE)
+}
+p_load(Glimma)
+
+# Explicitly resolve package namespace conflicts
+conflict_prefer("select", "dplyr")
+conflict_prefer("filter", "dplyr")
+conflict_prefer("rename", "dplyr")
+conflict_prefer("count", "dplyr")
+conflict_prefer("intersect", "base")
+conflict_prefer("setdiff", "base")
+conflicts_prefer(dplyr::first)
+
+# Base and relative directory setup (accommodates root or my_analysis working dirs)
+base_dir <- if (file.exists(file.path(here::here(), "my_analysis"))) {
+  file.path(here::here(), "my_analysis")
+} else {
+  here::here()
+}
+
+data_dir <- file.path(base_dir, "data", "transcriptomics")
+source_dir <- file.path(base_dir, "scripts", "transcriptomics")
+results_dir <- file.path(base_dir, "results", "transcriptomics")
+tmp_dir <- file.path(results_dir, "cache")
+de_output_dir <- file.path(results_dir, "de_genes")
+publication_graphs_dir <- file.path(results_dir, "publication_graphs")
+glimma_dir <- file.path(results_dir, "glimma_plots")
+
+# Ensure all destination directories exist
+target_dirs <- c(
+  data_dir,
+  source_dir,
+  results_dir,
+  tmp_dir,
+  de_output_dir,
+  publication_graphs_dir,
+  glimma_dir,
+  file.path(publication_graphs_dir, "Volcano_Plots"),
+  file.path(publication_graphs_dir, "NumSigDeMolecules"),
+  file.path(base_dir, "results", "Transcriptomics")
+)
+purrr::walk(target_dirs, ~dir.create(.x, recursive = TRUE, showWarnings = FALSE))
+
+cat("Base directory:", base_dir, "\n")
+cat("Results directory:", results_dir, "\n")
+```
+
+---
+
+# Data Ingestion & Experimental Design
+
+```{r load-data}
+# 1. Ingest raw gene count matrix
+counts_file <- file.path(data_dir, "GSE152840_gene_counts.txt")
+if (!file.exists(counts_file)) {
+  stop("Gene counts file not found at: ", counts_file)
+}
+counts_df <- vroom::vroom(counts_file, show_col_types = FALSE)
+
+# 2. Ingest experimental design matrix
+design_file <- file.path(source_dir, "design_matrix.tab")
+if (!file.exists(design_file)) {
+  # Auto-generate design matrix if not yet on disk
+  sample_cols <- colnames(counts_df)[-(1:2)]
+  design_matrix <- tibble::tibble(
+    Run = sample_cols,
+    group = rep(c("RPMI", "Sera"), each = 6),
+    replicates = rep(1:6, 2)
+  )
+  vroom::vroom_write(design_matrix, design_file)
+  vroom::vroom_write(design_matrix, file.path(data_dir, "design_matrix.tab"))
+} else {
+  design_matrix <- vroom::vroom(design_file, show_col_types = FALSE) |>
+    dplyr::mutate(
+      Run = as.character(Run),
+      group = factor(group, levels = c("RPMI", "Sera"))
+    )
+}
+
+# 3. Extract feature metadata and matrix
+feature_meta <- counts_df |>
+  dplyr::select(GeneID, GeneName) |>
+  dplyr::mutate(
+    GeneName = ifelse(is.na(GeneName) | GeneName == "", GeneID, GeneName)
+  )
+
+count_matrix <- as.matrix(counts_df[, -(1:2)])
+rownames(count_matrix) <- counts_df$GeneID
+count_matrix <- count_matrix[, design_matrix$Run]
+
+cat(sprintf("Loaded count matrix: %d genes across %d samples.\n", nrow(count_matrix), ncol(count_matrix)))
+print(knitr::kable(design_matrix, caption = "Experimental Design Matrix"))
+```
+
+---
+
+# Low-Expression Filtering via CPM (`filterByExpr`)
+
+We apply standard statistical filtering to remove genes that fail to achieve reliable count levels across replicates. We subsequently eliminate features with zero sample variance.
+
+```{r cpm-filtering}
+# Create preliminary DGEList
+dge_raw <- DGEList(counts = count_matrix, group = design_matrix$group)
+dge_raw <- calcNormFactors(dge_raw, method = "TMM")
+
+# Filter by expression across biological groups
+keep_expr <- edgeR::filterByExpr(dge_raw, group = design_matrix$group)
+count_matrix_filtered <- count_matrix[keep_expr, ]
+
+# Filter zero variance features
+gene_vars <- apply(count_matrix_filtered, 1, var)
+count_matrix_filtered <- count_matrix_filtered[gene_vars > 0, ]
+
+# Finalize filtered DGEList with recomputed TMM factors
+dge_filtered <- DGEList(counts = count_matrix_filtered, group = design_matrix$group)
+dge_filtered <- calcNormFactors(dge_filtered, method = "TMM")
+log_cpm_tmm <- cpm(dge_filtered, log = TRUE)
+
+cat(sprintf("Filtering complete: %d genes retained out of %d (%.2f%%).\n",
+            nrow(count_matrix_filtered), nrow(count_matrix),
+            100 * nrow(count_matrix_filtered) / nrow(count_matrix)))
+```
+
+---
+
+# MultiScholaR RUV Parameter Optimization (Grid Search)
+
+We systematically identify the optimal percentage of in silico negative controls and the optimal factor dimension ($k$). Candidates are ranked by least significance (highest $p$-value / lowest $F$-statistic) in a preliminary group-level GLM.
+
+```{r ruv-grid-search}
+# MultiScholaR helper primitives for Canonical Correlation Analysis (CCA)
+find_best_k <- function(cancor_p, max_k = 3L) {
+  df <- cancor_p$data
+  if (!is.null(max_k)) {
+    df <- df[df$K <= max_k, , drop = FALSE]
+  }
+  all_data <- df[df$featureset == "All", ]
+  ctrl_data <- df[df$featureset == "Control", ]
+  common_k <- intersect(all_data$K, ctrl_data$K)
+  if (length(common_k) == 0) return(1L)
+  diffs <- all_data$cc[match(common_k, all_data$K)] - ctrl_data$cc[match(common_k, ctrl_data$K)]
+  valid_diffs <- diffs[is.finite(diffs)]
+  if (length(valid_diffs) == 0) return(1L)
+  max_diff <- max(valid_diffs, na.rm = TRUE)
+  best_idx <- which(diffs == max_diff)
+  as.integer(common_k[best_idx[1]])
+}
+
+calc_separation_score <- function(cancor_p, metric = "max_difference", max_k = 3L) {
+  df <- cancor_p$data
+  if (!is.null(max_k)) {
+    df <- df[df$K <= max_k, , drop = FALSE]
+  }
+  all_data <- df[df$featureset == "All", ]
+  ctrl_data <- df[df$featureset == "Control", ]
+  common_k <- intersect(all_data$K, ctrl_data$K)
+  if (length(common_k) == 0) return(0)
+  diffs <- all_data$cc[match(common_k, all_data$K)] - ctrl_data$cc[match(common_k, ctrl_data$K)]
+  valid_diffs <- diffs[is.finite(diffs)]
+  if (length(valid_diffs) == 0) return(0)
+  switch(metric,
+    "max_difference" = max(valid_diffs, na.rm = TRUE),
+    "mean_difference" = mean(valid_diffs, na.rm = TRUE),
+    max(valid_diffs, na.rm = TRUE)
+  )
+}
+
+# Preliminary GLM to rank negative controls by least significance
+design_prelim <- model.matrix(~ group, data = design_matrix)
+dge_prelim <- estimateDisp(dge_filtered, design_prelim)
+fit_prelim <- glmQLFit(dge_prelim, design_prelim)
+lrt_prelim <- glmQLFTest(fit_prelim, coef = 2)
+tt_prelim <- topTags(lrt_prelim, n = nrow(dge_filtered), sort.by = "none")$table
+ordered_features_idx <- order(tt_prelim$PValue, decreasing = TRUE)
+
+# Optimization parameters
+total_features <- nrow(log_cpm_tmm)
+X_bio <- design_prelim[, -1, drop = FALSE]
+max_acceptable_k <- if (ncol(count_matrix) < 15) 3L else 4L
+k_penalty_weight <- 0.05
+percentage_range <- seq(5, 30, by = 5)
+
+# Grid search across negative control percentages
+grid_results <- purrr::map(percentage_range, function(pct) {
+  n_ctrl <- max(10, floor(total_features * (pct / 100)))
+  ctl_idx <- rep(FALSE, total_features)
+  ctl_idx[ordered_features_idx[seq_len(n_ctrl)]] <- TRUE
+
+  cancor_p <- tryCatch({
+    ruv::ruv_cancorplot(Y = t(log_cpm_tmm), X = X_bio, ctl = ctl_idx)
+  }, error = function(e) NULL)
+
+  if (is.null(cancor_p) || is.null(cancor_p$data)) return(NULL)
+
+  best_k <- find_best_k(cancor_p, max_k = max_acceptable_k)
+  sep_score <- calc_separation_score(cancor_p, "max_difference", max_k = max_acceptable_k)
+  
+  if (best_k <= max_acceptable_k) {
+    k_penalty <- if (max_acceptable_k <= 1) 0 else k_penalty_weight * (best_k - 1) / (max_acceptable_k - 1)
+  } else {
+    excess_k <- best_k - max_acceptable_k
+    k_penalty <- k_penalty_weight + (1 - k_penalty_weight) * (1 - exp(-excess_k))
+  }
+  k_penalty <- max(0, min(1, k_penalty))
+  comp_score <- sep_score * (1 - k_penalty)
+
+  list(
+    percentage = pct,
+    n_controls = n_ctrl,
+    best_k = best_k,
+    separation_score = sep_score,
+    k_penalty = k_penalty,
+    composite_score = comp_score,
+    cancor_plot = cancor_p,
+    ctl_idx = ctl_idx,
+    control_genes = rownames(log_cpm_tmm)[ctl_idx]
+  )
+}) |> purrr::compact()
+
+df_summary <- purrr::map_dfr(grid_results, function(r) {
+  tibble::tibble(
+    Percentage = r$percentage,
+    Num_Controls = r$n_controls,
+    Best_K = r$best_k,
+    Separation_Score = round(r$separation_score, 4),
+    K_Penalty = round(r$k_penalty, 4),
+    Composite_Score = round(r$composite_score, 4)
+  )
+})
+
+# Select best parameter set
+best_idx <- which.max(purrr::map_dbl(grid_results, "composite_score"))
+best_res <- grid_results[[best_idx]]
+best_k <- best_res$best_k
+best_control_genes <- best_res$control_genes
+
+message(sprintf(
+  "Optimal Mode: %d%% controls (n = %d), best_k = %d | Separation = %.4f, Composite = %.4f",
+  best_res$percentage, best_res$n_controls, best_res$best_k,
+  best_res$separation_score, best_res$composite_score
+))
+print(knitr::kable(df_summary, caption = "RUV Parameter Optimization Grid Results"))
+```
+
+---
+
+# Publication Canonical Correlation Diagnostics
+
+```{r plot-cca-diagnostics, fig.width=12, fig.height=5}
+format_cancor_plot <- function(opt_res, panel_label = "A") {
+  df <- opt_res$cancor_plot$data
+  best_k_val <- opt_res$best_k
+  best_pct_val <- opt_res$percentage
+  n_ctrl_val <- opt_res$n_controls
+  sep_val <- opt_res$separation_score
+  
+  ggplot(df, aes(x = K, y = cc, color = featureset, group = featureset)) +
+    geom_line(linewidth = 1.1) +
+    geom_point(size = 3) +
+    geom_vline(xintercept = best_k_val, linetype = "dashed", color = "#DC2626", linewidth = 0.8) +
+    annotate("text",
+      x = best_k_val + 0.15, y = 0.25,
+      label = sprintf("Optimal k = %d\n(Separation = %.3f)", best_k_val, sep_val),
+      hjust = 0, size = 3.5, fontface = "bold", color = "#DC2626"
+    ) +
+    scale_color_manual(values = c("All" = "#2563EB", "Control" = "#10B981")) +
+    scale_x_continuous(breaks = unique(df$K)) +
+    coord_cartesian(ylim = c(0, 1.05)) +
+    theme_bw(base_size = 11) +
+    labs(
+      title = sprintf("Panel %s: Canonical Correlation Analysis", panel_label),
+      subtitle = sprintf("Tested %d%% negative controls (n = %d) selected via ANOVA/GLM", best_pct_val, n_ctrl_val),
+      x = "Factor Dimensions (K)",
+      y = expression(paste("Squared Canonical Correlation (", cancor^2, ")")),
+      color = "Feature Set"
+    ) +
+    theme(plot.title = element_text(face = "bold"), legend.position = "right")
+}
+
+format_tuning_curve <- function(summary_df, opt_res, panel_label = "B") {
+  best_pct_val <- opt_res$percentage
+  best_score_val <- opt_res$composite_score
+  
+  score_y <- min(summary_df$Composite_Score) + 0.85 * diff(range(summary_df$Composite_Score))
+  text_x <- if (best_pct_val >= 20) best_pct_val - 1.5 else best_pct_val + 1.5
+  text_hjust <- if (best_pct_val >= 20) 1 else 0
+  
+  ggplot(summary_df, aes(x = Percentage, y = Composite_Score)) +
+    geom_line(color = "#475569", linewidth = 1) +
+    geom_point(aes(color = factor(Best_K)), size = 3) +
+    geom_vline(xintercept = best_pct_val, linetype = "dashed", color = "#DC2626", linewidth = 0.8) +
+    geom_point(data = summary_df[summary_df$Percentage == best_pct_val, ], color = "#DC2626", size = 4.5, shape = 18) +
+    annotate("text",
+      x = text_x, y = score_y,
+      label = sprintf("Optimal: %d%% controls\nComposite Score = %.3f", best_pct_val, best_score_val),
+      hjust = text_hjust, size = 3.2, fontface = "bold", color = "#DC2626"
+    ) +
+    scale_color_brewer(palette = "Set1", name = "Selected k") +
+    scale_x_continuous(breaks = summary_df$Percentage) +
+    theme_bw(base_size = 11) +
+    labs(
+      title = sprintf("Panel %s: Control Percentage Optimization", panel_label),
+      subtitle = "MultiScholaR Composite Score = Separation * (1 - k_penalty)",
+      x = "Negative Controls Selected from Invariant Features (%)",
+      y = "Composite Score"
+    ) +
+    theme(plot.title = element_text(face = "bold"), legend.position = "right")
+}
+
+p_cca_a <- format_cancor_plot(best_res, "A")
+p_cca_b <- format_tuning_curve(df_summary, best_res, "B")
+grid_cca <- cowplot::plot_grid(p_cca_a, p_cca_b, ncol = 2, labels = NULL)
+
+# Save multi-format exhibits
+purrr::walk(c(".png", ".pdf"), ~{
+  ggsave(file.path(publication_graphs_dir, paste0("canonical_correlation_panels", .x)),
+         grid_cca, width = 12, height = 5, dpi = 300)
+})
+
+# Save workbook summary
+wb <- openxlsx::createWorkbook()
+openxlsx::addWorksheet(wb, "Optimal_Parameters")
+openxlsx::addWorksheet(wb, "Grid_Optimization")
+opt_summary_tbl <- tibble::tibble(
+  Parameter = c("Optimal_K", "Optimal_Percentage", "Num_Negative_Controls", "Total_Features", "Separation_Score", "Composite_Score"),
+  Value = c(best_res$best_k, best_res$percentage, best_res$n_controls, total_features, round(best_res$separation_score, 4), round(best_res$composite_score, 4))
+)
+openxlsx::writeData(wb, "Optimal_Parameters", opt_summary_tbl)
+openxlsx::writeData(wb, "Grid_Optimization", df_summary)
+openxlsx::saveWorkbook(wb, file.path(publication_graphs_dir, "canonical_correlation_optimization_summary.xlsx"), overwrite = TRUE)
+
+grid_cca
+```
+
+---
+
+# RUVSeq Normalization (`RUVs`) & Covariate Estimation
+
+We execute `RUVSeq::RUVs` with replicate difference structure to extract $k = `r best_k`$ unwanted variation terms ($W_1, \dots, W_k$).
+
+```{r ruvs-normalization}
+# Create SeqExpressionSet
+set <- newSeqExpressionSet(
+  counts = as.matrix(round(count_matrix_filtered)),
+  phenoData = data.frame(design_matrix, row.names = design_matrix$Run)
+)
+differences <- makeGroups(design_matrix$group)
+
+# Execute RUVs
+set_ruvs <- RUVs(set, cIdx = best_control_genes, k = best_k, scIdx = differences)
+ruvs_pdata <- pData(set_ruvs)
+
+# Extract unwanted variation covariates W
+w_columns <- paste0("W_", seq_len(best_k))
+w_matrix <- ruvs_pdata[, w_columns, drop = FALSE]
+
+# Batch-corrected logCPM for visualization diagnostics
+design_groups_only <- model.matrix(~ group, data = ruvs_pdata)
+log_cpm_corrected <- limma::removeBatchEffect(
+  log_cpm_tmm,
+  covariates = w_matrix,
+  design = design_groups_only
+)
+
+# Export batch-adjusted matrix
+vroom::vroom_write(
+  as.data.frame(log_cpm_corrected) |> tibble::rownames_to_column("GeneID"),
+  file.path(results_dir, "ruv_normalised_log_values.tsv")
+)
+cat("Extracted RUVs covariates:", paste(colnames(w_matrix), collapse = ", "), "\n")
+```
+
+---
+
+# Multi-Stage Diagnostic Comparison (Raw vs TMM vs RUVs)
+
+```{r plot-norm-stages, fig.width=15, fig.height=9}
+generateRlePlot <- function(mat, title, design_df, group_col = "group") {
+  gene_medians <- apply(mat, 1, median)
+  rle_matrix <- sweep(mat, 1, gene_medians, "-")
+  rle_long <- as.data.frame(rle_matrix) |>
+    rownames_to_column("gene") |>
+    pivot_longer(cols = -gene, names_to = "Run", values_to = "rle_value") |>
+    left_join(design_df, by = "Run")
+  
+  whisker_limits <- rle_long |>
+    group_by(Run) |>
+    summarise(
+      q1 = quantile(rle_value, 0.25, na.rm = TRUE),
+      q3 = quantile(rle_value, 0.75, na.rm = TRUE),
+      iqr = q3 - q1,
+      upper_whisker = q3 + 1.5 * iqr,
+      lower_whisker = q1 - 1.5 * iqr,
+      .groups = "drop"
+    )
+  ylim_vals <- c(min(whisker_limits$lower_whisker), max(whisker_limits$upper_whisker))
+  buffer <- (ylim_vals[2] - ylim_vals[1]) * 0.05
+  ylim_vals <- c(ylim_vals[1] - buffer, ylim_vals[2] + buffer)
+  
+  ggplot(rle_long, aes(x = Run, y = rle_value, fill = .data[[group_col]])) +
+    geom_boxplot(outlier.shape = NA) +
+    coord_cartesian(ylim = ylim_vals) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(title = title, x = "Sample", y = "RLE", fill = "Group") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+}
+
+generatePcaPlot <- function(mat, title, design_df, group_col = "group") {
+  pca_res <- prcomp(t(mat))
+  var_explained <- summary(pca_res)$importance[2, ] * 100
+  pca_df <- as.data.frame(pca_res$x) |>
+    rownames_to_column("Run") |>
+    left_join(design_df, by = "Run")
+  
+  ggplot(pca_df, aes(x = PC1, y = PC2, color = .data[[group_col]])) +
+    geom_point(size = 3.5) +
+    labs(
+      title = title,
+      x = sprintf("PC1 (%.2f%%)", var_explained[1]),
+      y = sprintf("PC2 (%.2f%%)", var_explained[2]),
+      color = "Group"
+    ) +
+    theme_bw()
+}
+
+log_cpm_raw <- cpm(DGEList(counts = count_matrix_filtered), log = TRUE)
+
+p_pca_raw <- generatePcaPlot(log_cpm_raw, "PCA: Raw logCPM", design_matrix)
+p_pca_tmm <- generatePcaPlot(log_cpm_tmm, "PCA: After TMM", design_matrix)
+p_pca_ruvs <- generatePcaPlot(log_cpm_corrected, sprintf("PCA: After RUVs (k=%d)", best_k), design_matrix)
+
+p_rle_raw <- generateRlePlot(log_cpm_raw, "RLE: Raw logCPM", design_matrix)
+p_rle_tmm <- generateRlePlot(log_cpm_tmm, "RLE: After TMM", design_matrix)
+p_rle_ruvs <- generateRlePlot(log_cpm_corrected, sprintf("RLE: After RUVs (k=%d)", best_k), design_matrix)
+
+final_norm_grid <- (p_pca_raw | p_pca_tmm | p_pca_ruvs) / (p_rle_raw | p_rle_tmm | p_rle_ruvs) +
+  plot_annotation(
+    title = "Comparison of Transcriptomics Normalization Stages",
+    caption = "Top Row: PCA Plots. Bottom Row: RLE Plots."
+  ) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+
+purrr::walk(c(".png", ".pdf"), ~{
+  ggsave(file.path(publication_graphs_dir, paste0("normalization_comparison_grid", .x)),
+         final_norm_grid, width = 15, height = 9, dpi = 300)
+})
+
+final_norm_grid
+```
+
+---
+
+# Differential Expression Analysis with edgeR (Dynamic Model Update)
+
+We dynamically update the edgeR generalized linear model to incorporate the exact number of estimated unwanted variation terms ($W_1, \dots, W_k$).
+
+```{r edger-de-analysis}
+# Prepare DGEList with RUVs factors
+dge_final <- DGEList(counts = counts(set_ruvs), group = ruvs_pdata$group)
+dge_final <- calcNormFactors(dge_final, method = "TMM")
+
+# Dynamically construct linear model formula
+w_terms <- colnames(ruvs_pdata)[stringr::str_starts(colnames(ruvs_pdata), "W_")]
+design_formula_str <- paste("~ 0 + group", paste(w_terms, collapse = " + "), sep = " + ")
+cat("Dynamically updated linear model formula:", design_formula_str, "\n")
+
+design_final <- model.matrix(as.formula(design_formula_str), data = ruvs_pdata)
+colnames(design_final) <- make.names(colnames(design_final))
+
+# Fit Quasi-Likelihood negative binomial generalized linear model
+dge_final <- estimateDisp(dge_final, design_final, robust = TRUE)
+fit_final <- glmQLFit(dge_final, design_final, robust = TRUE)
+
+# Parse contrast specification from contrast_strings.tab
+contrast_file <- file.path(source_dir, "contrast_strings.tab")
+contrast_lines <- readLines(contrast_file)
+contrast_entry <- contrast_lines[!grepl("^contrast", contrast_lines) & nzchar(contrast_lines)][1]
+contrast_parts <- strsplit(contrast_entry, "=")[[1]]
+contrast_name <- trimws(contrast_parts[1])
+contrast_expr <- trimws(contrast_parts[2])
+
+contrasts_matrix <- makeContrasts(contrasts = contrast_expr, levels = design_final)
+colnames(contrasts_matrix) <- contrast_name
+cat("Design matrix levels:\n", paste(colnames(design_final), collapse = ", "), "\n")
+cat("Evaluated Contrast Matrix:\n")
+print(contrasts_matrix)
+
+# Run QL F-test
+lrt <- glmQLFTest(fit_final, contrast = contrasts_matrix[, contrast_name])
+top_genes <- topTags(lrt, n = Inf, sort.by = "PValue")$table
+
+# Merge gene annotation metadata
+top_genes_annotated <- top_genes |>
+  tibble::rownames_to_column("GeneID") |>
+  dplyr::left_join(feature_meta, by = "GeneID") |>
+  dplyr::mutate(DisplaySymbol = ifelse(!is.na(GeneName) & GeneName != "", GeneName, GeneID)) |>
+  dplyr::relocate(GeneID, GeneName, DisplaySymbol)
+
+# Save full DE output
+de_results_file <- file.path(de_output_dir, paste0("de_results_", contrast_name, ".csv"))
+write.csv(top_genes_annotated, de_results_file, row.names = FALSE)
+
+# Extract top 10 upregulated and top 10 downregulated genes
+top_up <- top_genes_annotated |>
+  filter(FDR < 0.05, logFC > 0) |>
+  arrange(FDR) |>
+  head(10) |>
+  mutate(regulation = "Upregulated")
+
+top_down <- top_genes_annotated |>
+  filter(FDR < 0.05, logFC < 0) |>
+  arrange(FDR) |>
+  head(10) |>
+  mutate(regulation = "Downregulated")
+
+top_de_combined <- bind_rows(top_up, top_down) |>
+  mutate(comparison = contrast_name)
+vroom::vroom_write(top_de_combined, file.path(de_output_dir, "top_de_genes.tsv"))
+
+cat(sprintf("DE testing complete: %d genes differentially expressed at FDR < 0.05 (%d up, %d down).\n",
+            sum(top_genes_annotated$FDR < 0.05),
+            sum(top_genes_annotated$FDR < 0.05 & top_genes_annotated$logFC > 0),
+            sum(top_genes_annotated$FDR < 0.05 & top_genes_annotated$logFC < 0)))
+print(knitr::kable(head(top_de_combined, 10), caption = "Top Significant Differentially Expressed Genes"))
+```
+
+---
+
+# Publication Volcano & Summary Bar Plots
+
+```{r plot-volcano-summary, fig.width=10, fig.height=6}
+generateVolcanoPlot <- function(de_df, title, fdr_thresh = 0.05, top_n = 20) {
+  df <- de_df |>
+    mutate(
+      significance = case_when(
+        FDR < fdr_thresh & logFC > 0 ~ "Upregulated",
+        FDR < fdr_thresh & logFC < 0 ~ "Downregulated",
+        TRUE ~ "Not Significant"
+      ),
+      significance = factor(significance, levels = c("Upregulated", "Downregulated", "Not Significant"))
+    )
+  
+  labels_df <- df |>
+    filter(significance != "Not Significant") |>
+    arrange(FDR) |>
+    head(top_n)
+  
+  ggplot(df, aes(x = logFC, y = -log10(FDR), color = significance)) +
+    geom_point(alpha = 0.6, size = 1.6) +
+    scale_color_manual(values = c("Upregulated" = "#EF4444", "Downregulated" = "#3B82F6", "Not Significant" = "#9CA3AF")) +
+    geom_hline(yintercept = -log10(fdr_thresh), linetype = "dashed", color = "black") +
+    geom_vline(xintercept = c(-1, 1), linetype = "dotted", color = "grey40") +
+    geom_text_repel(data = labels_df, aes(label = DisplaySymbol), size = 3.2, max.overlaps = 25) +
+    labs(
+      title = paste("Volcano Plot:", title),
+      subtitle = sprintf("Highlighted top %d significant genes by FDR", nrow(labels_df)),
+      x = expression(Log[2]~Fold~Change),
+      y = expression(-Log[10]~(FDR)),
+      color = "Significance"
+    ) +
+    theme_bw(base_size = 11) +
+    theme(legend.position = "bottom")
+}
+
+generateBarPlot <- function(de_df, title, fdr_thresh = 0.05) {
+  df <- de_df |>
+    mutate(
+      significance = case_when(
+        FDR < fdr_thresh & logFC > 0 ~ "Upregulated",
+        FDR < fdr_thresh & logFC < 0 ~ "Downregulated",
+        TRUE ~ "Not Significant"
+      ),
+      significance = factor(significance, levels = c("Upregulated", "Downregulated", "Not Significant"))
+    ) |>
+    count(significance, .drop = FALSE)
+  
+  ggplot(df, aes(x = significance, y = n, fill = significance)) +
+    geom_bar(stat = "identity", width = 0.55) +
+    geom_text(aes(label = n), vjust = -0.5, fontface = "bold", size = 3.5) +
+    scale_fill_manual(values = c("Upregulated" = "#EF4444", "Downregulated" = "#3B82F6", "Not Significant" = "#9CA3AF")) +
+    labs(
+      title = paste("Significance Summary:", title),
+      x = "Class",
+      y = "Gene Count"
+    ) +
+    theme_bw(base_size = 11) +
+    theme(legend.position = "none")
+}
+
+volcano_p <- generateVolcanoPlot(top_genes_annotated, contrast_name)
+bar_p <- generateBarPlot(top_genes_annotated, contrast_name)
+
+# Export graphics in both PDF and PNG
+purrr::walk(c(".png", ".pdf"), ~{
+  ggsave(file.path(publication_graphs_dir, "Volcano_Plots", paste0("volcano_plot_", contrast_name, .x)),
+         volcano_p, width = 8, height = 7, dpi = 300)
+  ggsave(file.path(publication_graphs_dir, "NumSigDeMolecules", paste0("summary_barplot_", contrast_name, .x)),
+         bar_p, width = 7, height = 5, dpi = 300)
+})
+
+cowplot::plot_grid(volcano_p, bar_p, rel_widths = c(1.3, 0.7))
+```
+
+---
+
+# Interactive Glimma Volcano Explorer
+
+```{r glimma-volcano, message=FALSE, warning=FALSE}
+glimma_anno <- top_genes_annotated |>
+  dplyr::select(GeneID, GeneName, DisplaySymbol) |>
+  tibble::column_to_rownames("GeneID")
+
+glimma_html_path <- file.path(glimma_dir, paste0(contrast_name, "_glimma_volcano.html"))
+tryCatch({
+  glimmaVolcano(
+    x = lrt,
+    main = paste(contrast_name, "(RUVs QL-FTest)"),
+    anno = glimma_anno,
+    display.columns = c("GeneID", "GeneName", "DisplaySymbol"),
+    lfc = 1,
+    fdr = 0.05,
+    html = glimma_html_path,
+    launch = FALSE
+  )
+  cat("Interactive Glimma volcano HTML report saved to:\n", glimma_html_path, "\n")
+}, error = function(e) {
+  warning("Glimma generation warning: ", e$message)
+})
+```
+
+---
+
+# RUVIII Normalization for Multi-Omics Factor Analysis (MOFA Integration)
+
+To support downstream cross-omics integration (e.g. MOFA2, DIABLO), this section runs `ruv::RUVIII` to generate a batch-adjusted expression matrix where technical replicate variation is explicitly removed.
+
+```{r ruviii-mofa-normalization, fig.width=11, fig.height=8}
+# 1. Biological replicate structure matrix M
+M <- ruv::replicate.matrix(as.character(design_matrix$group))
+
+# 2. Control features indicator mask
+ctl_mask <- rep(FALSE, nrow(log_cpm_tmm))
+ctl_mask[rownames(log_cpm_tmm) %in% best_control_genes] <- TRUE
+
+# 3. Fit RUVIII model
+res_ruviii <- ruv::RUVIII(Y = t(log_cpm_tmm), M = M, ctl = ctl_mask, k = best_k, return.info = TRUE)
+rnaseq_ruv_mat <- res_ruviii$newY
+
+# 4. Format normalized matrix with Run identifier
+rnaseq_sample_vs_rna_cln <- rnaseq_ruv_mat |>
+  as.data.frame() |>
+  tibble::rownames_to_column("Run")
+
+# 5. Export normalized data to standard transcriptomics results and MOFA input paths
+mofa_export_path_1 <- file.path(results_dir, "transcriptomics_normalized_data.tsv")
+mofa_export_path_2 <- file.path(base_dir, "results", "Transcriptomics", "transcriptomics_normalized_data.tsv")
+
+vroom::vroom_write(rnaseq_sample_vs_rna_cln, mofa_export_path_1)
+vroom::vroom_write(rnaseq_sample_vs_rna_cln, mofa_export_path_2)
+
+cat("RUVIII batch-adjusted normalized matrix exported for MOFA:\n")
+cat(" - Primary:", mofa_export_path_1, "\n")
+cat(" - Workshop Shared:", mofa_export_path_2, "\n")
+
+# 6. Pre vs Post RUVIII comparison diagnostics
+p_pca_post_ruviii <- generatePcaPlot(t(rnaseq_ruv_mat), "PCA: After RUVIII Normalization", design_matrix)
+p_rle_post_ruviii <- generateRlePlot(t(rnaseq_ruv_mat), "RLE: After RUVIII Normalization", design_matrix)
+
+ruviii_comparison_grid <- (p_pca_tmm | p_pca_post_ruviii) / (p_rle_tmm | p_rle_post_ruviii) +
+  plot_annotation(
+    title = "Pre vs Post RUVIII Normalization Diagnostics",
+    caption = "Left: After TMM (Pre-RUVIII). Right: After RUVIII."
+  ) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+
+purrr::walk(c(".png", ".pdf"), ~{
+  ggsave(file.path(publication_graphs_dir, paste0("ruviii_before_and_after", .x)),
+         ruviii_comparison_grid, width = 11, height = 8, dpi = 300)
+})
+
+ruviii_comparison_grid
+```
+
+---
+
+# Pipeline Provenance & Summary Report
+
+```{r pipeline-summary}
+summary_txt_path <- file.path(results_dir, "ruv_optimization_summary.txt")
+writeLines(
+  c(
+    "=== MultiScholaR RUV Parameter Optimization Summary ===",
+    paste("Timestamp:", Sys.time()),
+    "",
+    paste("Dataset: GSE152840 (Sepsis Transcriptomics Workshop)"),
+    paste("Total Features Analyzed:", total_features),
+    paste("Optimal In silico Negative Controls:", best_res$percentage, "% (n =", best_res$n_controls, ")"),
+    paste("Optimal Factor Dimensions (k):", best_res$best_k),
+    paste("CCA Separation Score:", round(best_res$separation_score, 4)),
+    paste("MultiScholaR Composite Score:", round(best_res$composite_score, 4)),
+    paste("Dynamic edgeR Model Formula:", design_formula_str),
+    paste("Evaluated Contrast:", contrast_entry),
+    paste("Differentially Expressed Genes (FDR < 0.05):", sum(top_genes_annotated$FDR < 0.05)),
+    "",
+    "--- Full Grid Search Summary ---"
+  ),
+  summary_txt_path
+)
+write.table(df_summary, file = summary_txt_path, append = TRUE, sep = "\t", row.names = FALSE, quote = FALSE)
+
+# Cache objects for subsequent scripts
+saveRDS(best_res, file = file.path(tmp_dir, "ruv_optimization_results.rds"))
+saveRDS(top_genes_annotated, file = file.path(tmp_dir, "de_results.rds"))
+
+cat("Pipeline summary written to:", summary_txt_path, "\n")
+cat("Cached R objects saved to:", tmp_dir, "\n")
+```
+
+---
+
+# Session Information
+
+```{r session-info}
+sessionInfo()
+```
+
+<!-- APAF Bioinformatics | analyse_transcriptomics_ruv.Rmd | Approved | 2026-10-07 -->

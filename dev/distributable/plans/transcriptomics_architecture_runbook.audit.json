@@ -1,0 +1,216 @@
+{
+  "schema": "em.ticket_series_evidence_audit.result.v1",
+  "mode": "audit_only",
+  "scope": {
+    "ticket_ids": [],
+    "files": [
+      "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+      "dev/distributable/plans/transcriptomics_workflow.rmd",
+      "R/utils_workflow_saved_table_codec.R",
+      "R/utils_workflow_saved_entities.R",
+      "R/utils_workflow_execution.R",
+      "R/utils_workflow_dia_relational_rollup.R",
+      "R/func_prot_norm_optimization_helpers.R"
+    ],
+    "claim_classes": [
+      "documentation_or_graph_integrity",
+      "implementation_conformance",
+      "semantic_or_construct_validity"
+    ]
+  },
+  "authority": {
+    "route_valid": true,
+    "artifacts": [
+      {
+        "path": "dev/distributable/plans/transcriptomics_architecture_runbook.md",
+        "sha256": "520c151846ac020a561826074e3a3e2e79fe53f0a58bb932050d60417c91ccea"
+      },
+      {
+        "path": "dev/distributable/plans/transcriptomics_workflow.rmd",
+        "sha256": "44d5f643946212c18cee10b5ebf77b1e7ebbe8d22ca37b40bafd08b5a0da652a"
+      },
+      {
+        "path": "R/utils_workflow_saved_table_codec.R",
+        "sha256": "f7a761ff66d0fc94d8201907705f67129cd25f91246505027942c3092256b8ab"
+      },
+      {
+        "path": "R/utils_workflow_saved_entities.R",
+        "sha256": "b2bbaec0e12b81863cf4b7867d8325f81f8d84107636490c6f1f50d7198a6622"
+      },
+      {
+        "path": "R/utils_workflow_execution.R",
+        "sha256": "1d8dde272d68438a6a418a86a779af8daf8fde3aee1d2eecc0474823f569b04a"
+      },
+      {
+        "path": "R/utils_workflow_dia_relational_rollup.R",
+        "sha256": "a1c07d986f0e72fe5d4b8df707408fdea602e3a56035a9455dfa677559d429ed"
+      },
+      {
+        "path": "R/func_prot_norm_optimization_helpers.R",
+        "sha256": "11b82d704e5551aa152aaee2cd48e7e1f2a62338e40643fb14044193da934a00"
+      }
+    ],
+    "git_head": "7a7e268fe78255b52edd67df7d04d53a10eb1f4a",
+    "dirty_worktree": true,
+    "user_scope": "Function mapping only; GUI excluded; audit does not authorize repairs"
+  },
+  "findings": [
+    {
+      "id": "TR-A01",
+      "severity": "high",
+      "title": "Missing-design fallback can silently assign the wrong biological groups",
+      "evidence": [
+        "transcriptomics_architecture_runbook.md:33,82,85 require ID validation but omit the missing-design branch",
+        "transcriptomics_workflow.rmd:126-137 assigns the first six sample columns to RPMI and the next six to Sera, without sample metadata"
+      ],
+      "impact": "A reordered 12-sample input can have unique, matching IDs while the treatment labels are wrong. Preserving the notebook algorithm is not sufficient scientific authority for that branch.",
+      "repair": "Explicitly map the design-file fallback. Require authoritative sample-to-group metadata for general use; retain the automatic labels only for an explicitly bound workshop fixture. Treat changing fallback behavior as an agreed correctness decision, separate from performance parity.",
+      "closure_evidence": "Runbook names the branch and decision. Before implementation acceptance, test reordered sample columns and missing design: no silent reassignment; supplied authoritative labels remain attached to their Run IDs.",
+      "blocked_state": "implementation"
+    },
+    {
+      "id": "TR-A02",
+      "severity": "medium",
+      "title": "Disk ingress lacks a concrete producer-to-codec mapping",
+      "evidence": [
+        "transcriptomics_architecture_runbook.md:33,71-74,94 prescribe disk ingress and staged writing",
+        "transcriptomics_workflow.rmd:121 reads the original text table through vroom",
+        "R/utils_workflow_saved_table_codec.R:542-555 newWorkflowTableReadScope requires an existing Parquet descriptor",
+        "R/utils_workflow_saved_table_codec.R:130 writeSavedWorkflowParquet takes an already materialized table"
+      ],
+      "impact": "The first text-to-owned-table boundary is not identified as missing adaptation work. Following the named read/write helpers alone can retain the original ingestion memory spike.",
+      "repair": "Name an explicit proposed text-ingestion adapter boundary, distinguish it from existing helpers, and specify bounded parsing or scoped engine ingestion into the existing staged codec with schema, original row ordinal, parse-failure and ownership requirements. Do not claim that an importer has already been qualified.",
+      "closure_evidence": "The map traces source text to staged encoded table to accepted reference without assuming a pre-existing reference. Future implementation proof covers bounded parsing, duplicate keys, type errors and cleanup after partial ingestion.",
+      "blocked_state": "implementation"
+    },
+    {
+      "id": "TR-A03",
+      "severity": "medium",
+      "title": "Gene-scale annotations and masks have no route above the lookup ceiling",
+      "evidence": [
+        "transcriptomics_architecture_runbook.md:18,34,44,74 map masks/lookups and bulk lookup loading without a large-lookup alternative",
+        "R/utils_workflow_saved_table_codec.R:3088-3093 workflowQueryWriteLookup refuses native tables above 10000 rows",
+        "Read-only R probe with 10001 GeneID rows returned saved_entity_limit: invalid native lookup table"
+      ],
+      "impact": "Larger gene annotation or feature-mask tables cannot use the suggested small-lookup path. Repeated calls with the same name also recreate the table rather than append it.",
+      "repair": "State the exact lookup row/byte ceilings and route larger masks/annotations through saved tables and scoped joins. Identify any necessary binding adaptation; do not raise the ceiling or repeatedly invoke CREATE TABLE as an implicit workaround.",
+      "closure_evidence": "Map includes below/at/above-limit cases and a separate durable-table route; future tests prove 10000/10001 rows, join cardinality, exact keys/order and no full-result collection.",
+      "blocked_state": "implementation"
+    },
+    {
+      "id": "TR-A04",
+      "severity": "medium",
+      "title": "Existing wide-table streaming helper is omitted",
+      "evidence": [
+        "transcriptomics_architecture_runbook.md:14,72 discusses the 64-column primitive and asks for column-stripe assembly",
+        "R/utils_workflow_saved_table_codec.R:2144-2165 streamWorkflowTableRows already reads wide tables in <=64-column blocks, assembles <=10000-row batches and checks a 64 MiB batch ceiling",
+        "Existing consumers: R/utils_workflow_dia_state.R:663,697; R/utils_workflow_dia_qc_rollup.R:838"
+      ],
+      "impact": "The instructions can lead to duplicating existing infrastructure and miss its whole-wide-batch byte limitation. Very wide sample-by-gene integration exports need byte-based admission even when row counts are small.",
+      "repair": "Map streamWorkflowTableRows as the first existing reuse candidate for wide outputs and matrix input assembly. Keep qualification of row identity and byte limits explicit. Separate this helper from the lower-level streamSavedWorkflowTable limit and mark very-wide overflow as a bounded adaptation decision.",
+      "closure_evidence": "Updated map names helper, existing consumers and limits; future focused checks cover 64/65 columns, complete row identity and the combined wide-batch byte ceiling.",
+      "blocked_state": "implementation"
+    },
+    {
+      "id": "TR-A05",
+      "severity": "medium",
+      "title": "Early optimization sequence lacks the required profiling gate",
+      "evidence": [
+        "transcriptomics_architecture_runbook.md:93-97 stages ingress, ownership and RLE changes; explicit profiling appears only before the final alternative-kernel step",
+        "AGENTS.md requires an identified measured cost before optimization",
+        "conventions/R.md Performance requires profiling before optimizing"
+      ],
+      "impact": "The candidate map is reasonable, but implementing stages 2-4 in the stated order without attribution can add persistence, scans or exact-quantile state without a meaningful memory benefit.",
+      "repair": "Keep this as a candidate map and add a small non-GUI baseline/attribution gate before choosing any performance adaptation. Select one mechanism from measured cost, then compare complete operations. Include import copies, simultaneous matrices, RLE long-table retention and quantile working state; do not authorize a new benchmark campaign in the runbook.",
+      "closure_evidence": "Sequence explicitly requires baseline attribution before candidate selection; future bounded comparison freezes input/build, memory-first criterion and allowed runtime tradeoff before outcomes.",
+      "blocked_state": "decision"
+    }
+  ],
+  "repairs": [],
+  "tests": [
+    {
+      "name": "Local links and notebook chunk coverage",
+      "result": "pass",
+      "local_links": 6,
+      "chunks": 13
+    },
+    {
+      "name": "10001-row native lookup guard",
+      "result": "confirmed refusal",
+      "condition": "saved_entity_limit",
+      "elapsed_seconds": 0.208
+    },
+    {
+      "name": "Notebook and runbook content hashes",
+      "result": "unchanged"
+    }
+  ],
+  "graph": {
+    "duplicates": [],
+    "missing": [],
+    "cycles": [],
+    "applicability": "No ticket graph; local documentation links checked"
+  },
+  "evidence_layers": [
+    {
+      "layer": "documentation_or_graph_integrity",
+      "result": "All 13 chunks and local links covered; five actionable gaps"
+    },
+    {
+      "layer": "implementation_conformance",
+      "result": "Inspected helpers and reproduced lookup refusal; no transcriptomics adapter executed"
+    },
+    {
+      "layer": "semantic_or_construct_validity",
+      "result": "Global-model and RUV/PCA cautions are sound; inferred group labels require explicit handling"
+    }
+  ],
+  "formal_verification": {
+    "used": false,
+    "obligations": [],
+    "limits": [
+      "Documentation audit; no mathematical proof or scientific/performance parity claim"
+    ]
+  },
+  "closeout": {
+    "implementation_verified": false,
+    "execution_complete": false,
+    "decision_supported": false,
+    "promotion_authorized": false,
+    "claim_scope": "Architecture direction sound; repair five runbook gaps before using it as direct implementation guidance. No GUI scope."
+  },
+  "blockers": [
+    "TR-A01",
+    "TR-A02",
+    "TR-A03",
+    "TR-A04",
+    "TR-A05"
+  ],
+  "deviations": [],
+  "next_action": "Repair only recorded runbook findings when authorized; retain this audit unchanged.",
+  "documentation": {
+    "primary_references": [
+      {
+        "url": "https://bioconductor.org/packages/release/bioc/vignettes/RUVSeq/inst/doc/RUVSeq.html",
+        "assessment": "RUVs supports groups with constant covariates of interest; not restricted to technical replicate labels"
+      },
+      {
+        "url": "https://cran.r-project.org/web/packages/ruv/ruv.pdf",
+        "assessment": "RUVIII orientation and newY return field verified"
+      },
+      {
+        "url": "https://duckdb.org/docs/current/guides/performance/how_to_tune_workloads",
+        "assessment": "Current resolved documentation; stable link returned redirect page to browser tool"
+      },
+      {
+        "url": "https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf",
+        "assessment": "Primary statistical reference reachable"
+      }
+    ],
+    "limitations": [
+      "No full notebook execution, data acquisition, package installation or performance run",
+      "No claim that biological grouping from the actual study is invalid; the unvalidated fallback is the finding",
+      "No source, notebook or runbook repairs made"
+    ]
+  }
+}
