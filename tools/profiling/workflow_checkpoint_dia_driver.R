@@ -793,7 +793,7 @@ runPerf107GuiScience <- function(driver, run_dir, application_root, inputs) {
         stop("GUI completion is not fully guarded")
     }
     heads <- list.files(run_dir, "^dia-state-head[.]rds$", recursive = TRUE,
-        full.names = TRUE)
+        full.names = TRUE, all.files = TRUE)
     heads <- heads[grepl("/.dia-gui-adoption-", heads, fixed = TRUE)]
     if (length(heads) != 1L) stop("adopted GUI state store is ambiguous")
     root <- dirname(dirname(heads))
