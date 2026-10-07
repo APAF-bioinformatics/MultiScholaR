@@ -767,6 +767,101 @@ saveWorkflowTableQuery <- function(scope, sql, metadata, request_id, identity) {
         metadata = metadata, write_fn = writer)
 }
 
+#' Configure one existing scoped connection for qualified bulk transforms.
+#' @param scope Physical saved-table lease owning a DuckDB connection.
+#' @return Immutable execution settings attached to the scope.
+#' @noRd
+configureWorkflowBulkQueryScope <- function(scope) {
+    checkWorkflowTableReadScope(scope)
+    assertWorkflowPhysicalTableScope(scope)
+    if (is.null(scope$connection)) cli::cli_abort(
+        "bulk query requires a scoped DuckDB connection",
+        class = "saved_entity_unsupported")
+    settings <- list(threads = 8L, engine_limit = "12GiB", spill = FALSE)
+    DBI::dbExecute(scope$connection, "SET threads = 8")
+    DBI::dbExecute(scope$connection, "SET memory_limit = '12GiB'")
+    DBI::dbExecute(scope$connection, "SET max_temp_directory_size = '0B'")
+    DBI::dbExecute(scope$connection, "SET temp_directory = ''")
+    scope$bulk_query_settings <- settings
+    settings
+}
+
+#' Collect bounded metadata from one bulk query, never an assay result.
+#' @param scope Configured physical DuckDB lease.
+#' @param sql Fixed internal query without a terminal semicolon.
+#' @param params Bound query parameters.
+#' @param max_rows,max_bytes Collection ceilings.
+#' @return Data frame admitted before R transfer, in query order. The engine
+#'   working set remains subject to the separate process guard.
+#' @noRd
+collectWorkflowBulkMetadata <- function(scope, sql, params = list(),
+    max_rows = 10000L, max_bytes = 8388608) {
+    checkWorkflowTableReadScope(scope)
+    if (is.null(scope$bulk_query_settings) || is.null(scope$connection) ||
+        !is.character(sql) || length(sql) != 1L || is.na(sql) || !nzchar(sql) ||
+        grepl(";[[:space:]]*$", sql) || !is.list(params) ||
+        !is.numeric(max_rows) || length(max_rows) != 1L || is.na(max_rows) ||
+        !is.finite(max_rows) || max_rows < 0 || max_rows != floor(max_rows) ||
+        max_rows > 10000L || !is.numeric(max_bytes) || length(max_bytes) != 1L ||
+        is.na(max_bytes) || !is.finite(max_bytes) || max_bytes < 1 || max_bytes > 67108864)
+        cli::cli_abort("invalid bulk metadata query", class = "saved_entity_limit")
+    bounded <- paste0("SELECT * FROM (", sql,
+        ") AS workflow_bounded_metadata LIMIT ", as.integer(max_rows) + 1L)
+    con <- scope$connection
+    quote <- \(x) as.character(DBI::dbQuoteIdentifier(con, x))
+    fields <- DBI::dbGetQuery(con, paste("DESCRIBE", bounded), params = params)
+    ordinal <- ".workflow_metadata_order"
+    supported <- c("BOOLEAN", "TINYINT", "SMALLINT", "INTEGER", "BIGINT", "HUGEINT",
+        "UTINYINT", "USMALLINT", "UINTEGER", "UBIGINT", "UHUGEINT", "FLOAT", "DOUBLE", "VARCHAR")
+    if (!nrow(fields) || nrow(fields) > 64L || anyDuplicated(fields$column_name) ||
+        ordinal %in% fields$column_name || !all(fields$column_type %in% supported))
+        cli::cli_abort("unsupported bulk metadata schema", class = "saved_entity_unsupported")
+    # Materialize only the bounded metadata, once. A second execution of the
+    # scientific aggregation for a size preflight would duplicate its cost.
+    table <- quote(basename(tempfile("workflow_metadata_")))
+    DBI::dbExecute(con, paste0("CREATE TEMP TABLE ", table,
+        " AS SELECT row_number() OVER () AS ", quote(ordinal), ", * FROM (", bounded, ")"),
+        params = params)
+    on.exit(DBI::dbExecute(con, paste("DROP TABLE", table)), add = TRUE)
+    # Include vectors, per-string allocation/alignment and container overhead.
+    # Counting repeated strings separately is deliberately conservative.
+    widths <- ifelse(fields$column_type == "VARCHAR", paste0(
+        "80 + coalesce(octet_length(encode(", quote(fields$column_name), ")), 0)"), "16")
+    overhead <- 4096 + 256 * nrow(fields) + sum(nchar(fields$column_name, type = "bytes"))
+    footprint <- DBI::dbGetQuery(con, paste0("SELECT count(*) AS rows, ", overhead,
+        " + coalesce(sum(", paste(widths, collapse = " + "), "),0) AS bytes FROM ", table))
+    if (footprint$rows > max_rows || footprint$bytes > max_bytes)
+        cli::cli_abort("bulk query metadata exceeds collection limits",
+            class = "saved_entity_limit")
+    value <- DBI::dbGetQuery(con, paste0("SELECT ",
+        paste(quote(fields$column_name), collapse = ","), " FROM ", table,
+        " ORDER BY ", quote(ordinal)))
+    if (nrow(value) > max_rows || as.numeric(object.size(value)) > max_bytes)
+        cli::cli_abort("bulk query metadata exceeds collection limits",
+            class = "saved_entity_limit")
+    value
+}
+
+#' Partition ordered independent groups without splitting a group.
+#' @param groups Ordered unique scientific group identifiers.
+#' @param batches Positive number of substantial target batches.
+#' @param max_groups Maximum supported metadata population.
+#' @return Stable list whose concatenation is exactly groups.
+#' @noRd
+partitionWorkflowCompleteGroups <- function(groups, batches, max_groups = 10000L) {
+    scalar <- function(x, minimum) is.numeric(x) && length(x) == 1L &&
+        !is.na(x) && is.finite(x) && x >= minimum && x == floor(x)
+    if (!is.atomic(groups) || !is.null(dim(groups)) ||
+        is.object(groups) && !is.factor(groups) || anyNA(groups) ||
+        anyDuplicated(groups) || !scalar(batches, 1L) || batches > .Machine$integer.max ||
+        !scalar(max_groups, 1L) ||
+        max_groups > 10000L || length(groups) > max_groups)
+        cli::cli_abort("invalid complete scientific groups", class = "saved_entity_limit")
+    if (!length(groups)) return(list(groups))
+    labels <- ceiling(seq_along(groups) * as.double(batches) / length(groups))
+    unname(split(groups, labels))
+}
+
 #' Stage a bounded R-produced batch using the existing physical table codec.
 #' @param scope Action-owned database and spill directory.
 #' @param name Trusted internal SQL table name.

@@ -1158,9 +1158,7 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
     assertWorkflowPhysicalTableScope(scope)
     con <- scope$connection
-    DBI::dbExecute(con, "SET threads = 8")
-    DBI::dbExecute(con, "SET memory_limit = '12GiB'")
-    DBI::dbExecute(con, "SET max_temp_directory_size = '0B'")
+    bulk_settings <- configureWorkflowBulkQueryScope(scope)
     q <- function(name) as.character(DBI::dbQuoteIdentifier(con, name))
     table <- paste0("read_parquet(", DBI::dbQuoteString(con, scope$path), ")")
     keys <- c(sample, protein, peptide)
@@ -1174,19 +1172,19 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
     if (nrow(DBI::dbGetQuery(con, paste("SELECT 1 FROM", table, "WHERE",
         paste(bad, collapse = " OR "), "LIMIT 1"))))
         cli::cli_abort("sample/protein/peptide identity is missing")
-    counts <- DBI::dbGetQuery(con, paste0("SELECT CAST(", q(sample), " AS VARCHAR) AS sample, ",
+    counts <- collectWorkflowBulkMetadata(scope, paste0("SELECT CAST(", q(sample), " AS VARCHAR) AS sample, ",
         "count(DISTINCT (", q(protein), ",", q(peptide), ")) AS identities, count(*) AS rows ",
-        "FROM ", table, " GROUP BY ", q(sample), " LIMIT 10001"))
-    if (nrow(counts) > 10000L || as.numeric(object.size(counts)) > 8388608)
-        cli::cli_abort("sample filter metadata exceeds qualified limits", class = "workflow_execution_unsupported")
+        "FROM ", table, " GROUP BY ", q(sample)), max_rows = 10000L,
+        max_bytes = 8388608)
     widths <- vapply(scope$metadata$columns, function(field) {
         spec <- scope$metadata$column_metadata[[field]]
         if (!is.null(spec$levels) || identical(spec$typeof, "character")) return(paste0(
             "coalesce(octet_length(encode(CAST(", q(field), " AS VARCHAR))),0) + 16"))
         "8"
     }, character(1))
-    width <- as.numeric(DBI::dbGetQuery(con, paste0("SELECT coalesce(max(",
-        paste(widths, collapse = " + "), "),0) AS n FROM ", table))$n)
+    width <- as.numeric(collectWorkflowBulkMetadata(scope, paste0("SELECT coalesce(max(",
+        paste(widths, collapse = " + "), "),0) AS n FROM ", table),
+        max_rows = 1L, max_bytes = 65536)$n)
     if (width > 67108864) cli::cli_abort("one filter row exceeds the bounded codec transfer",
         class = "workflow_execution_unsupported")
     estimate <- 768 * 1024^2 + 2 * min(scope$metadata$rows, 10000) * width +
@@ -1255,7 +1253,10 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
         support_table = saveDIATableComponent(manager$.context, support),
         removal_ledger = saveDIATableComponent(manager$.context, removal))
     list(checkpoint = checkpoint, reference = output, summary = summary,
-        dependencies = checkpoint$dependencies, counts = NULL, execution = list(admission = admission),
+        dependencies = checkpoint$dependencies, counts = NULL,
+        execution = list(admission = admission, bulk_query = list(settings = bulk_settings,
+            global_statistics = "single_complete_population_pass",
+            independence_unit = "sample_decision_no_batching")),
         state_name = "sample_filtered", description = "Applied sample quality filter",
         config = parameters, section = "filterMinNumPeptidesPerSample")
 }

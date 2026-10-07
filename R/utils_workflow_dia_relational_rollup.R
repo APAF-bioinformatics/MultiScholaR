@@ -68,9 +68,7 @@ newDIARelationalScope <- function(store, input, extension = NULL, profile = "P0"
     scope$action$connection <- scope$connection <- con
     scope$dia_rollup_profile <- settings
     scope$dia_rollup_extension <- artifact$manifest$binary_sha256
-    DBI::dbExecute(con, "SET threads = 8")
-    DBI::dbExecute(con, "SET memory_limit = '12GiB'")
-    DBI::dbExecute(con, "SET max_temp_directory_size = '0B'")
+    configureWorkflowBulkQueryScope(scope)
     DBI::dbExecute(con, paste("SET preserve_insertion_order =", if (settings$preserve_order) "true" else "false"))
     DBI::dbExecute(con, paste("LOAD", DBI::dbQuoteString(con, extension)))
     ready <- TRUE
@@ -219,7 +217,8 @@ prepareDIARelationalAggregate <- function(scope, input, arm) {
         DBI::dbExecute(con, paste0("CREATE TEMP VIEW qc_aggregated AS ", query))
     } else {
         stopifnot(arm == "D", as.character(utils::packageVersion("duckplyr")) == "1.2.1")
-        frame <- duckplyr::read_sql_duckdb("SELECT * FROM qc_prepared", con = scope$connection, prudence = "stingy")
+        frame <- duckplyr::read_sql_duckdb("SELECT * FROM qc_prepared",
+            con = scope$connection, prudence = "stingy")
         relation <- duckdb:::rel_from_altrep_df(frame, strict = FALSE, allow_materialized = FALSE)
         stopifnot(!is.null(relation))
         ref <- duckplyr::relexpr_reference
@@ -365,12 +364,11 @@ persistDIARelationalRollup <- function(scope, input, persist, rows, arm = "D") {
             " THEN ", seq_along(levels)), collapse = " "), " END")
     }, character(1))
     sample_order <- sub("a[.]", "", order[[1L]], fixed = FALSE)
-    sample_values <- DBI::dbGetQuery(con, paste0("SELECT DISTINCT ", q(roles$sample),
-        " FROM qc_input ORDER BY ", sample_order))[[1L]]
-    if (length(sample_values) > 10000L) cli::cli_abort("DIA sample count exceeds qualified limits")
+    sample_values <- collectWorkflowBulkMetadata(scope, paste0("SELECT DISTINCT ",
+        q(roles$sample), " FROM qc_input ORDER BY ", sample_order),
+        max_rows = 10000L, max_bytes = 8388608)[[1L]]
     batches <- scope$dia_rollup_profile$batches
-    selections <- if (!length(sample_values)) list(character()) else
-        split(sample_values, ceiling(seq_along(sample_values) * batches / length(sample_values)))
+    selections <- partitionWorkflowCompleteGroups(sample_values, batches)
     max_group_rows <- 0L
     intermediate_bytes <- 0
     intermediate_bytes_written <- 0
@@ -498,7 +496,10 @@ persistDIARelationalRollup <- function(scope, input, persist, rows, arm = "D") {
             writer_optimization = switch(profile, P15 = "metadata", P16 = "batch", "none"),
             writer_threads = if (profile %in% c("P13", "P14", "P15", "P16")) 8L else NA_integer_,
             evidence_rows = evidence_rows, evidence_payload_estimate = evidence_bytes,
-            exact_sum_sha256 = scope$dia_rollup_extension))
+            exact_sum_sha256 = scope$dia_rollup_extension,
+            independence_unit = "complete_sample",
+            global_validation = "completed_before_batching",
+            batch_sizes = as.integer(lengths(selections))))
 }
 
 #' Execute one bulk C/D operation through the common scientific/output boundary.
@@ -540,20 +541,20 @@ estimateDIARollupWorkingMemory <- function(scope, input, worker_cap) {
     groups <- paste0("SELECT ", paste(q(keys), collapse = ","),
         ", count(*) AS n, sum(32 + ", bytes(roles$modified), ") AS values_bytes, ",
         "max(256 + ", bytes(keys), ") AS key_bytes FROM qc_input GROUP BY ", paste(q(keys), collapse = ","))
-    stats <- DBI::dbGetQuery(con, paste0("SELECT ", q(roles$sample), " AS sample, count(*) AS groups, ",
+    stats <- collectWorkflowBulkMetadata(scope, paste0("SELECT ", q(roles$sample),
+        " AS sample, count(*) AS groups, ",
         "sum(n) AS rows, max(n) AS max_group_rows, max(values_bytes + key_bytes) AS max_group_bytes, ",
         "sum(values_bytes + key_bytes) AS state_bytes FROM (", groups, ") GROUP BY ",
-        q(roles$sample), " LIMIT 10001"))
-    if (nrow(stats) > 10000L) cli::cli_abort("rollup sample count exceeds qualified limits",
-        class = "workflow_execution_unsupported")
+        q(roles$sample)), max_rows = 10000L, max_bytes = 8388608)
     if (any(stats$max_group_bytes > 67108864)) cli::cli_abort(
         "indivisible rollup group exceeds 64 MiB qualified aggregate-state estimate",
         class = "workflow_execution_unsupported")
-    annotation_width <- if (length(input$annotation)) as.numeric(DBI::dbGetQuery(con,
+    annotation_width <- if (length(input$annotation)) as.numeric(collectWorkflowBulkMetadata(scope,
         paste0("SELECT coalesce(max(n),0) AS n FROM (SELECT ", q(roles$protein),
             ", sum(1 + ", bytes(input$annotation), ") AS n FROM (SELECT DISTINCT ",
             paste(q(c(roles$protein, input$annotation)), collapse = ","),
-            " FROM qc_input) GROUP BY ", q(roles$protein), ")"))$n) else 0
+            " FROM qc_input) GROUP BY ", q(roles$protein), ")"),
+        max_rows = 1L, max_bytes = 65536)$n) else 0
     # Upper bound any one of the three complete-sample batches by the largest ceil(N/3)
     # samples. Include hash/list slack, materialized joins/order, R transfers and writer headroom.
     n <- ceiling(nrow(stats) / 3)
