@@ -325,6 +325,7 @@ const char *workflowRegisterDIAOrderedSum(void *connection, const char *engine_l
     duckdb_scalar_function_set_function(function, dia_rsum_flat_input);
     duckdb_state status = duckdb_register_scalar_function(connection, function);
     duckdb_destroy_scalar_function(&function);
+    bool registered = status == DuckDBSuccess;
     duckdb_destroy_logical_type(&list);
     if (status == DuckDBSuccess) {
         duckdb_logical_type children[] = {quantity, quantity};
@@ -343,9 +344,11 @@ const char *workflowRegisterDIAOrderedSum(void *connection, const char *engine_l
         duckdb_destroy_logical_type(&pair);
     }
     duckdb_destroy_logical_type(&quantity);
-    if (status != DuckDBSuccess) return dia_abandon_engine(library, "DIA ordered sum registration failed");
+    if (!registered) return dia_abandon_engine(library, "DIA ordered sum registration failed");
+    /* A callback registered on this connection uses the pointers, so the
+     * engine reference is kept even when the paired registration failed. */
     if (retained_engine) dlclose(library); else retained_engine = library;
-    return NULL;
+    return status == DuckDBSuccess ? NULL : "DIA ordered sum registration failed";
 }
 #else
 const char *workflowRegisterDIAOrderedSum(void *connection, const char *engine_library) {

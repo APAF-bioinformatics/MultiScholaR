@@ -51,3 +51,11 @@ Terms agreed before launch: one attempt, 5-minute ceiling, existing guards; a ha
 | Preflight (`reader-check … gui-bulk-rollup:writer-r-preflight`) | exit 76 before launch: `run_workflow_checkpoint_proof.sh` refuses bulk-rollup selectors when host headroom is below 16 GiB (host `MemAvailable` ≈ 15.8 GiB). No member directory or systemd unit was created. |
 
 Outcome: setup refusal under the runner's own 16 GiB startup guard, not a scientific result. Per the agreed terms it is not retried and the runner is not changed. The five exact P14 cases fall back to CORE-004, whose acceptance now requires the installed rollup on the repaired provider to match the bound oracle.
+
+## Post-hoc audit follow-up (2026-10-08)
+
+The [post-hoc audit](../../../../tickets/openai/CORE-001-POSTHOC-AUDIT-20261008.md) findings were repaired as follows.
+
+- **P01, partial registration.** If `dia_r_sum` registers and `dia_paired_r_sum` then fails, the provider now keeps the engine reference and pointers, because a callback registered on that connection depends on them, and still returns the failure. Pointers are reset only when nothing was registered in the call. Verified by code review (fault injection is not possible from R); the rebuilt provider passes the repeated-registration test (9/9) and the native exact-sum suite (34/34), and the kernel body is unchanged.
+- **P02, regression scope.** Zero pre-existing tests in `test-workflow-bulk-relational.R` executed against the repaired provider: all 9 passes reported above come from the new repeated-registration test, and the file's three original tests are harness-gated. End-to-end rollup exactness on the repaired provider is therefore not yet evidenced; it is CORE-004's acceptance item.
+- **P03, P04, P05** are corrections to the plan, CORE-004 and the session memory, recorded in the remediation record.
