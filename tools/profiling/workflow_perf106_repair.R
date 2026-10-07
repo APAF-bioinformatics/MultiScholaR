@@ -1,6 +1,12 @@
 # Explicit v2 qualification coordinator; scientific work runs only in installed workers.
 args <- commandArgs(trailingOnly = TRUE)
-stopifnot(length(args) == 3L, args[[1L]] %in%
+# CORE stages accept a trailing --validate-only: bind and check everything, launch nothing.
+validate_only <- length(args) == 4L && identical(args[[4L]], "--validate-only")
+if (validate_only) args <- args[1:3]
+core <- length(args) == 3L &&
+    grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4])|011-overflow)$", args[[1L]])
+stopifnot(!validate_only || core)
+stopifnot(length(args) == 3L, core || args[[1L]] %in%
     c("preflight-1", "preflight-2", "correction-3", "correction-4", "screen", "confirmation",
         "p14", "p14-diagnostic", "runtime-screen", "runtime-full",
         "runtime-repair-screen", "runtime-repair-screen-recheck", "runtime-repair-full",
@@ -21,15 +27,16 @@ runtime_repair <- stage %in% c("runtime-repair-screen", "runtime-repair-screen-r
     "runtime-repair-full")
 runtime_comparison <- structural || cache_suite || batch || attribution || runtime_staged || runtime_repair || stage %in% c("runtime-screen", "runtime-full")
 profiling <- attribution || stage == "p14-diagnostic"
+uptime_clock <- runtime_comparison || core
 p14_stage <- stage %in% c("p14", "p14-diagnostic")
-timed <- runtime_comparison || stage %in% c("screen", "confirmation", "p14", "p14-diagnostic")
+timed <- core || runtime_comparison || stage %in% c("screen", "confirmation", "p14", "p14-diagnostic")
 member_seconds <- if (stage %in% c("confirmation", "p14", "runtime-full",
     "runtime-repair-full", "runtime-staged-full", "runtime-attribution-full", "runtime-batch-full",
     "cache-rollup", "cache-filters", "closure-filters", "structural-rollup", "structural-primary", "structural-wide",
     "ordered-rollup", "ordered-primary", "ordered-wide"))
     1800L else 300L
 operationClock <- function() {
-    if (p14_stage || runtime_comparison) as.numeric(strsplit(readLines("/proc/uptime", n = 1L), " ")[[1L]][[1L]]) else
+    if (p14_stage || uptime_clock) as.numeric(strsplit(readLines("/proc/uptime", n = 1L), " ")[[1L]][[1L]]) else
         proc.time()[["elapsed"]]
 }
 library_path <- normalizePath(args[[2L]])
@@ -39,7 +46,9 @@ repo <- normalizePath(".")
 loadNamespace("MultiScholaR")
 api <- function(name) get(name, asNamespace("MultiScholaR"))
 dir.create(root, recursive = TRUE, showWarnings = FALSE)
-stage_root <- file.path(root, stage)
+# A validate-only pass works in a private directory so it never claims the real stage.
+stage_root <- if (validate_only) file.path(tempfile("core-validate-"), stage) else file.path(root, stage)
+if (validate_only) dir.create(dirname(stage_root))
 stopifnot(!file.exists(stage_root), dir.create(stage_root))
 started <- Sys.time()
 stage_seconds <- if (startsWith(stage, "correction-")) 300L else 600L
@@ -67,6 +76,8 @@ if (runtime_comparison) files <- c(files, "tools/profiling/workflow_perf108.R",
         if (runtime_repair) "docs/qa/workflow-execution/perf-108/runtime-repair-bindings.rds" else
         "docs/qa/workflow-execution/perf-108/runtime-bindings.rds")
 if (structural) files <- c(files, "tools/profiling/workflow_perf108_structural.R")
+if (core) files <- c(files, "tools/profiling/workflow_perf108.R", "tools/profiling/workflow_core.R",
+    "docs/qa/workflow-execution/core/bindings.json", "docs/qa/workflow-execution/core/protocol.md")
 for (file in files) {
     target <- file.path(snapshot, file)
     dir.create(dirname(target), recursive = TRUE, showWarnings = FALSE)
@@ -78,7 +89,37 @@ helpers <- new.env(parent = baseenv())
 sys.source(file.path(snapshot, "tools/profiling/workflow_perf106.R"), helpers)
 if (runtime_comparison) sys.source(file.path(snapshot, "tools/profiling/workflow_perf108.R"), helpers)
 if (structural) sys.source(file.path(snapshot, "tools/profiling/workflow_perf108_structural.R"), helpers)
-if (timed) {
+if (core) sys.source(file.path(snapshot, "tools/profiling/workflow_core.R"), helpers)
+if (core) {
+    bindings_path <- file.path(snapshot, "docs/qa/workflow-execution/core/bindings.json")
+    bindings <- helpers$coreBindings(bindings_path)
+    cases <- helpers$coreCases(bindings, stage)
+    member_seconds <- helpers$coreMemberSeconds(stage)
+    frozen <- jsonlite::read_json(bindings_path)$harness
+    receipt$input_bindings_sha256 <- digest::digest(file = bindings_path, algo = "sha256")
+    receipt$build <- api("workflowExecutionBuildIdentity")()
+    stopifnot(identical(normalizePath(root), normalizePath(bindings$root)),
+        identical(digest::digest(file = file.path(snapshot, "docs/qa/workflow-execution/core/protocol.md"),
+            algo = "sha256"), bindings$protocol_sha256),
+        identical(unname(unlist(frozen$files)), vapply(file.path(repo, names(frozen$files)),
+            \(file) digest::digest(file = file, algo = "sha256"), character(1), USE.NAMES = FALSE)),
+        normalizePath(library_path) %in% normalizePath(vapply(cases, `[[`, character(1), "library")))
+    for (case in cases) stopifnot(identical(digest::digest(file = file.path(case$input$store,
+        "dia-state-head.rds"), algo = "sha256"), case$input$head_sha256), dir.exists(case$library))
+    # Plan precondition (user 2026-10-08): 12 GiB startup headroom and no other managed unit.
+    coreHostReady <- function() {
+        units <- system2("systemctl", c("--user", "list-units", "--state=active", "--no-legend",
+            "--plain", shQuote("multischolar*")), stdout = TRUE)
+        list(available = api("workflowHostAvailable")(), units = units[nzchar(trimws(units))])
+    }
+    receipt$host_at_start <- coreHostReady()
+    if (validate_only) {
+        cat("VALIDATED", stage, length(cases), "case(s); host", format(receipt$host_at_start$available / 1024^3,
+            digits = 3), "GiB available;", length(receipt$host_at_start$units), "active managed unit(s)\n")
+        unlink(dirname(stage_root), recursive = TRUE)
+        quit(save = "no", status = 0L)
+    }
+} else if (timed) {
     bindings_path <- if (runtime_comparison) file.path(snapshot,
         "docs/qa/workflow-execution/perf-108",
         if (closure) "closeout/bindings.rds" else if (ordered) "ordered-groups/bindings.rds" else
@@ -205,6 +246,14 @@ tryCatch({
         trace <- NULL
         if (timed) deadline <- Sys.time() + member_seconds
         if (Sys.time() >= deadline) stop("installed preflight ceiling exhausted")
+        if (core) {
+            host <- coreHostReady()
+            if (host$available < 12 * 1024^3 || length(host$units)) {
+                outer_guard <- "setup_refused"
+                stop("CORE setup refused: ", format(host$available / 1024^3, digits = 3),
+                    " GiB available, ", length(host$units), " active managed unit(s)")
+            }
+        }
         owned <- file.path(stage_root, case$id)
         stopifnot(dir.create(owned))
         member <- c(list(schema = 1L, programme = "perf106-repair-v2", preflight = !timed,
@@ -219,10 +268,10 @@ tryCatch({
         }
         saveRDS(member, file.path(owned, "timed-member.rds"))
         operation_started <- operationClock()
-        if (runtime_comparison || isTRUE(case$control) || p14_stage) {
+        if (core || runtime_comparison || isTRUE(case$control) || p14_stage) {
             # Load the frozen predecessor in a fresh launcher process; never
             # replace functions in either installed scientific namespace.
-            control_library <- if (runtime_comparison) case$library else if (isTRUE(case$control)) file.path(dirname(dirname(library_path)),
+            control_library <- if (core || runtime_comparison) case$library else if (isTRUE(case$control)) file.path(dirname(dirname(library_path)),
                 "browser-smoke.LGgIYq", "library") else library_path
             expression <- paste(
                 'a <- commandArgs(TRUE); .libPaths(c(a[[1L]], .libPaths()));',
@@ -236,7 +285,7 @@ tryCatch({
                     shQuote(c(control_library, owned, snapshot))))
             stopifnot(identical(status, 0L))
             config <- readRDS(file.path(owned, "application.rds"))
-            if (p14_stage || runtime_comparison) {
+            if (p14_stage || uptime_clock) {
                 operation_started <- readRDS(file.path(owned, "launcher-start.rds"))
                 deadline <- Sys.time() + member_seconds - (operationClock() - operation_started)
             }
@@ -244,7 +293,7 @@ tryCatch({
             mode = "adapters", test_root = snapshot)
         cat("START", case$id, config$controller_unit, "\n")
         active_slice <- config$slice
-        if (runtime_comparison) stopifnot(identical(config$build, case$expected_build))
+        if (core || runtime_comparison) stopifnot(identical(config$build, case$expected_build))
         if (p14_stage) stopifnot(identical(config$build, receipt$p14_builds[[case$role]]))
         group <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))
         outer_guard <- NULL
@@ -309,7 +358,7 @@ tryCatch({
                 lifecycle_passed = passed,
                 boundary = "managed launch through publication and controller/worker/monitor teardown; separate verifier excluded",
                 coordinator_excluded = "metadata-only launcher outside managed slice",
-                clock = if (p14_stage || runtime_comparison) "shared kernel uptime; namespace bootstrap excluded for both builds" else
+                clock = if (p14_stage || uptime_clock) "shared kernel uptime; namespace bootstrap excluded for both builds" else
                     "parent elapsed clock",
                 execution = if (!is.null(result)) result$execution else NULL)
             operation$measurement_valid <- isTRUE(result$execution$measurement_valid) &&
@@ -321,7 +370,7 @@ tryCatch({
             saveRDS(operation, operation_path)
             receipt$cases[[case$id]]$operation <- operation
             saveRDS(receipt, receipt_path)
-            if (operation$status == "complete" && passed) {
+            if ((operation$status == "complete" || core && case$expect_failure) && passed) {
                 if (profiling) {
                     request_dir <- file.path(owned, "project/.workflow-entities/.workflow-export",
                         operation$execution$request_id)
@@ -332,7 +381,7 @@ tryCatch({
                         file.size(file.path(request_dir, "worker-stack.out")) > 0,
                         file.exists(file.path(request_dir, "worker-allocations.out")))
                 }
-                selector <- if (closure) paste0("perf108:E", case$verification_slot) else if (ordered) paste0("perf108:W", switch(stage,
+                selector <- if (core) case$selector else if (closure) paste0("perf108:E", case$verification_slot) else if (ordered) paste0("perf108:W", switch(stage,
                     `ordered-screen` = "S", `ordered-rollup` = "R", `ordered-primary` = "P", `ordered-wide` = "W"),
                     case$verification_slot) else if (structural) paste0("perf108:Y", switch(stage,
                     `structural-screen` = "S", `structural-rollup` = "R", `structural-primary` = "P",
@@ -368,7 +417,11 @@ tryCatch({
         if (profiling && !passed) stop(paste("diagnostic case failed:", case$id))
         if (!passed && !timed) stop(paste("installed case failed:", case$id))
     }
-    if (structural) {
+    if (core) {
+        receipt$decision <- if (startsWith(stage, "core-lifecycle-")) helpers$coreLifecycleDecision(receipt, cases) else
+            helpers$coreDecision(receipt, cases, sub("core-", "", stage, fixed = TRUE))
+        saveRDS(receipt$decision, file.path(stage_root, "decision.rds"))
+    } else if (structural) {
         receipt$decision <- helpers$perf108StructuralDecision(receipt, cases)
         saveRDS(receipt$decision, file.path(stage_root, "decision.rds"))
     } else if (cache_suite) {

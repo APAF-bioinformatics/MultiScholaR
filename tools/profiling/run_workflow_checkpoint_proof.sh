@@ -220,7 +220,7 @@ if [[ "${1:-}" == "--service" ]]; then
         proof_sequence_selector="$6"
         set -- "${@:1:5}"
     elif [[ ( "$2" == recorded-qc || "$2" == reader-check ) && "$#" == 6 ]]; then
-        [[ ( "$2" == recorded-qc && ( "$6" == sequence-prepare || "$6" =~ ^sequence:(resident|qs2):(diagnostic|timing)$ || "$6" == sequence:qs2_duckdb:timing ) ) || ( "$2" == reader-check && ( "$6" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ || "$6" == sequence || "$6" == gui-capacity || "$6" == gui-capacity-verifier || "$6" == gui-diagnostic || "$6" == gui-passive || "$6" == gui-lifetime-repair || "$6" == gui-memory-repair || "$6" == gui-memory-verification || "$6" == gui-audit-repair || "$6" == gui-audit-diagnostic || "$6" == gui-audit-member || "$6" == gui-audit-toggle || "$6" == gui-sleep-guard || "$6" == gui-integration-repair || "$6" == gui-worker-member || "$6" == gui-export-member || "$6" == gui-sharing-repair || "$6" == gui-native-session || "$6" == gui-native-outputs || "$6" == gui-reference-first-qc || "$6" == gui-reference-core || "$6" == gui-reference-routing || "$6" == gui-ruv-pearson || "$6" == gui-export-history-member || "$6" == gui-iq-history-member || "$6" == gui-mechanism-preflight || "$6" == gui-rollup-profile || "$6" == gui-raw-replay:small || "$6" == gui-raw-replay:outputs || "$6" == gui-raw-replay:verify || "$6" == gui-cohort-profile || "$6" =~ ^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$ || "$6" =~ ^(gui-cohort-size:(256|768|768-threads8)|gui-impute-workers:(preflight|4|8))$ || "$6" =~ ^gui-cohort-threads:(1|2|4|8)$ || "$6" == gui-raw-replay:300 || "$6" == gui-rollup-profile-preflight || "$6" =~ ^gui-rollup-compare:(control|candidate)$ || "$6" =~ ^gui-(rollup|session)-performance:(control|candidate)$ || "$6" =~ ^gui-first-qc-verify:[A-Za-z0-9]{6}:[A-Za-z0-9]{6}$ || "$6" =~ ^gui-history-verify:[A-Za-z0-9]{6}(:[A-Za-z0-9]{6})?$ ) ) ]] || exit 2
+        [[ ( "$2" == recorded-qc && ( "$6" == sequence-prepare || "$6" =~ ^sequence:(resident|qs2):(diagnostic|timing)$ || "$6" == sequence:qs2_duckdb:timing ) ) || ( "$2" == reader-check && ( "$6" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ || "$6" == sequence || "$6" == gui-capacity || "$6" == gui-capacity-verifier || "$6" == gui-diagnostic || "$6" == gui-passive || "$6" == gui-lifetime-repair || "$6" == gui-memory-repair || "$6" == gui-memory-verification || "$6" == gui-audit-repair || "$6" == gui-audit-diagnostic || "$6" == gui-audit-member || "$6" == gui-audit-toggle || "$6" == gui-sleep-guard || "$6" == gui-integration-repair || "$6" == gui-worker-member || "$6" == gui-export-member || "$6" == gui-sharing-repair || "$6" == gui-native-session || "$6" == gui-native-outputs || "$6" == gui-reference-first-qc || "$6" == gui-reference-core || "$6" == gui-reference-routing || "$6" == gui-ruv-pearson || "$6" == gui-export-history-member || "$6" == gui-iq-history-member || "$6" == gui-mechanism-preflight || "$6" == gui-rollup-profile || "$6" == gui-raw-replay:small || "$6" == gui-raw-replay:outputs || "$6" == gui-raw-replay:verify || "$6" == gui-cohort-profile || "$6" =~ ^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$ || "$6" =~ ^(gui-cohort-size:(256|768|768-threads8)|gui-impute-workers:(preflight|4|8))$ || "$6" =~ ^gui-cohort-threads:(1|2|4|8)$ || "$6" == gui-raw-replay:300 || "$6" == gui-rollup-profile-preflight || "$6" =~ ^gui-rollup-compare:(control|candidate)$ || "$6" =~ ^gui-(rollup|session)-performance:(control|candidate)$ || "$6" =~ ^gui-first-qc-verify:[A-Za-z0-9]{6}:[A-Za-z0-9]{6}$ || "$6" =~ ^gui-history-verify:[A-Za-z0-9]{6}(:[A-Za-z0-9]{6})?$ || "$6" =~ ^core:((00[6-9]|01[0-4]):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$ ) ) ]] || exit 2
         proof_sequence_selector="$6"
         if [[ "$6" == gui-export-history-member || "$6" == gui-iq-history-member ]]; then
             proof_sequence_sampling=true
@@ -362,6 +362,21 @@ if [[ "${1:-}" == "--service" ]]; then
             exit 76
         fi
     fi
+    if [[ "$proof_sequence_selector" =~ ^core:((00[6-9]|01[0-4]):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$ ]]; then
+        # CORE verifiers share the bulk-rollup guards; their members run in the coordinator's slice.
+        proof_memory_max=17179869184
+        proof_stop_peak=16642998272
+        proof_min_host_available=2147483648
+        proof_runtime_max=300
+        proof_sequence_sampling=true
+        proof_process_sampling=true
+        proof_available="$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)"
+        # Startup headroom only (user 2026-10-08); the 16 GiB cap, early stop and 2 GiB floor still guard the run.
+        if [[ ! "$proof_available" =~ ^[0-9]+$ ]] || (( proof_available < 12884901888 )); then
+            echo "CORE refused: host headroom is below 12 GiB" >&2
+            exit 76
+        fi
+    fi
     if [[ "$proof_sequence_selector" == gui-raw-replay:300 || "$proof_sequence_selector" =~ ^(gui-cohort-size:(256|768|768-threads8)|gui-impute-workers:(preflight|4|8))$ ]]; then
         proof_memory_max=17179869184
         proof_stop_peak=16642998272
@@ -444,7 +459,8 @@ if [[ "${1:-}" == "--service" ]]; then
         git -C "$proof_repo" rev-parse HEAD | tee "$proof_run_dir/source-commit.txt"
         git -C "$proof_repo" archive HEAD | tar -x -C "$proof_run_dir/source"
         git -C "$proof_repo" diff --binary HEAD -- R src configure DESCRIPTION NAMESPACE man/readConfigFile.Rd | tee "$proof_run_dir/runtime.patch" >/dev/null
-        git -C "$proof_run_dir/source" apply "$proof_run_dir/runtime.patch"
+        # A clean tree yields an empty patch, which git refuses to apply.
+        if [[ -s "$proof_run_dir/runtime.patch" ]]; then git -C "$proof_run_dir/source" apply "$proof_run_dir/runtime.patch"; fi
         sha256sum "$proof_run_dir/runtime.patch" | tee "$proof_run_dir/runtime-patch.sha256"
         # Collate already includes these working-tree package files; an installed
         # proof must not silently omit them merely because they are untracked.
@@ -656,6 +672,16 @@ if [[ "${1:-}" == "--service" ]]; then
             done
         fi
     proof_command=(Rscript --vanilla "$proof_run_dir/source/tools/profiling/run_workflow_checkpoint_proof.R" "${proof_operation[@]}")
+    fi
+    if [[ "$proof_sequence_selector" =~ ^core:((00[6-9]|01[0-4]):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$ ]]; then
+        # The CORE verifier runs from a frozen copy of its harness, bindings and protocol.
+        checkpointSnapshotPerf101Sources "$(realpath -e -- "${proof_script_dir}/../..")" "$proof_run_dir/source"
+        for proof_source_file in tools/profiling/workflow_core.R tools/profiling/workflow_perf108.R \
+            docs/qa/workflow-execution/core/bindings.json docs/qa/workflow-execution/core/protocol.md; do
+            mkdir -p -- "$(dirname -- "$proof_run_dir/source/$proof_source_file")"
+            cp -- "${proof_script_dir}/../../$proof_source_file" "$proof_run_dir/source/$proof_source_file"
+        done
+        proof_command=(Rscript --vanilla "$proof_run_dir/source/tools/profiling/run_workflow_checkpoint_proof.R" "${proof_operation[@]}")
     fi
     if [[ "$proof_utility_diagnostics" == true ]]; then proof_command+=(--diagnostic-memory); fi
     if [[ "$proof_qvalue" == true ]]; then proof_command+=(qvalue); fi

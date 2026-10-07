@@ -336,7 +336,8 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
         request$operation %in% c("minimum_peptides_per_sample", "precursor_rollup"),
         request$variant %in% c("native", "physical", "selection", "p14"),
         is.character(request$fault), length(request$fault) == 1L,
-        request$fault %in% c("none", "publication", "worker_failure", "cancel", "worker_loss", "monitor_loss"))
+        request$fault %in% c("none", "publication", "worker_failure", "cancel", "worker_loss", "monitor_loss",
+            "after_aggregate"))
     sys.source(file.path(workflow_test_root, "tests/testthat/helper-workflow-bulk-rollup.R"),
         envir = environment())
     owned <- file.path(app$config$root, "project")
@@ -373,7 +374,7 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
         })
     before <- getDIAStateReference(manager)
     if (isTRUE(request$profile_worker) || identical(request$batch_count, 6L) ||
-        !is.null(request$structural_options)) {
+        !is.null(request$structural_options) || identical(request$fault, "after_aggregate")) {
         sys.source(file.path(workflow_test_root, "tools/profiling/workflow_perf106.R"),
             envir = environment())
         expression <- if (identical(request$batch_count, 6L)) paste(
@@ -386,6 +387,14 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
                 identical(request$operation, "precursor_rollup"))
             expression <- paste(if (ordered) "options(multischolar.perf108.ordered_groups=TRUE);" else
                 "options(multischolar.perf108.native_output=TRUE);",
+                "MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))")
+        }
+        if (identical(request$fault, "after_aggregate")) {
+            # CORE-004 lifecycle: fail inside the worker once the first aggregate COPY has completed.
+            stopifnot(identical(request$operation, "precursor_rollup"), !isTRUE(request$profile_worker))
+            expression <- paste("options(multischolar.dia_rollup_phase = function(label, fn) {",
+                "value <- fn(); if (identical(label, \"ordered_result_stage\"))",
+                "stop(\"CORE-004 forced failure after the aggregate stage\"); value });",
                 "MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))")
         }
         if (isTRUE(request$attribute_worker)) {
@@ -430,7 +439,7 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
     output_path <- file.path(app$config$root, "member-result.rds")
     # Persist the measured terminal outcome before any scientific verification.
     saveRDS(record, output_path)
-    failed_fixture <- request$fault %in% c("worker_failure", "worker_loss", "monitor_loss", "cancel")
+    failed_fixture <- request$fault %in% c("worker_failure", "worker_loss", "monitor_loss", "cancel", "after_aggregate")
     if (failed_fixture) {
         expect_identical(done$status, switch(request$fault, cancel = "cancelled",
             monitor_loss = "monitor_lost", "worker_failed"))
