@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "owner": "CORE series",
+  "created": "2026-10-08",
+  "purpose": "Pre-existing failures observed under the CORE source-test runner (pkgload::load_all with the control jEmE2F library first on .libPaths). A ticket reports these as baseline, not as regressions and not as passes. Any failure not listed here, or any change in a listed failure's message, is a new finding.",
+  "runner": "pkgload::load_all(export_all = TRUE, helpers = FALSE); testthat::test_file(load_package = 'none'); .libPaths(c(control library, default library))",
+  "verified_identical_at": [
+    "9df060f00a5d8e59b712d05c86d31c0165980035 (detached worktree, recovery file)",
+    "addcccc0 (recovery file)",
+    "68be46d1 and the runner before it (harness file)"
+  ],
+  "files": {
+    "tests/testthat/test-workflow-checkpoint-harness.R": {
+      "totals": {"tests": 61, "passed": 780, "failed": 2, "errors": 1},
+      "known": [
+        {"test": "reader runner validates fixed selectors and retains late failures", "kind": "error",
+         "signature": "The file does not exist: <repository>/R/MultiScholaR.rdb"},
+        {"test": "diagnostic profiling wraps only the app launch and refuses profile overwrite", "kind": "failure",
+         "signature": "sort(ls(base::environment(bindings$fixed_launch))) not identical to the expected binding set"},
+        {"test": "installed launch closure cannot capture source scientific objects", "kind": "failure",
+         "signature": "sort(ls(base::environment(launch))) not identical to the expected binding set"}
+      ],
+      "cause": "Tests written for an installed package: one reads the installed R/MultiScholaR.rdb, two inspect closure environments whose bindings differ under a source load. Not investigated further; outside CORE scope."
+    },
+    "tests/testthat/test-workflow-saved-recovery.R": {
+      "totals": {"tests": 10, "passed": 58, "failed": 4, "errors": 2},
+      "known": [
+        {"test": "SIGKILL at storage boundaries is recovered by a fresh R process", "kind": "failures", "count": 3,
+         "signature": "ready file absent; child not alive; exit status 1 instead of -9"},
+        {"test": "SIGKILL at storage boundaries is recovered by a fresh R process", "kind": "error",
+         "signature": "callr subprocess: shared object 'MultiScholaR.so' not found"},
+        {"test": "concurrent writers cannot overwrite an accepted request", "kind": "failure",
+         "signature": "all(file.exists(ready)) is FALSE"},
+        {"test": "concurrent writers cannot overwrite an accepted request", "kind": "error",
+         "signature": "callr subprocess: shared object 'MultiScholaR.so' not found"}
+      ],
+      "cause": "callr child processes cannot load the package's shared object under a source load; the same limitation WFX-003 recorded for standalone source-loaded subprocess cases."
+    }
+  }
+}
