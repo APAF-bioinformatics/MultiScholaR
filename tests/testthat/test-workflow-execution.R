@@ -1,4 +1,5 @@
-# Installed-only WFX-003 lifecycle suites. No implementation files are sourced.
+# WFX-003 lifecycle suites run installed only. The CORE-003 cases at the end also run
+# from source, with systemd, cgroup and application checks mocked.
 
 makeExecutionTestOwner <- function(application, label) {
     root <- file.path(application$config$root, label)
