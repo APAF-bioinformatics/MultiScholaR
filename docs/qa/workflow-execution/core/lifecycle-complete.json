@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "ticket": "CORE-004",
+  "stage": "core-lifecycle-complete",
+  "counted": true,
+  "attempt": 1,
+  "started": "2026-10-08T10:39:53+1100",
+  "finished": "2026-10-08T10:40:44+1100",
+  "stage_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/runtime/core-lifecycle-complete/stage.rds",
+  "stage_receipt_sha256": "3a82faf410ebf9c55b129a5ee7bf062d731e5cd4d24ae9d97a07c2523bef6d2a",
+  "bindings_sha256": "7c18432110699c39b8eca25c90506e5ba3aafe9242424952d59690602f8d0d4d",
+  "source_hashes": {
+    "tests/testthat/test-workflow-execution-adapters.R": "b6e45714dedc73e99cf3f6f78ad2c4e88b2ea070b564f4165448916f10912e7d",
+    "tools/profiling/workflow_perf106_repair.R": "94e13e461e66d856d3200cfa13a120e99ba77f8a2d5c81fe8418a1f863ac858c",
+    "tools/profiling/workflow_perf106.R": "a4d4ed234c780f44cdcd499e821d66dd7256378b494562a1c6a74c3c9a92b592",
+    "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
+    "tests/testthat/helper-workflow-bulk-rollup.R": "a68d08a0769c0223bcdc1bb4294b89c20e27586385cf5c84d0ffbfd6e8bfe089",
+    "tests/testdata/workflow-execution/qualification.json": "18f9b76d7c1e054151d2fd70ad517c5db26d7fca4c7a93040c30f7fb69061f4f",
+    "tests/testdata/workflow-checkpoints/scenarios.json": "cfdf7da2fc5a6123da269f85011550d8ffd2e8a611de071e0cd1a52a6f35d152",
+    "tickets/openai/verification/perf106-repair-protocol-v2.json": "34f4151c2c4e6b5fe34bcf20278b7f89c526cbef5903b5de669e3d186232787a",
+    "tools/profiling/workflow_perf108.R": "f1293a4e03fbe0fa9e6e7103901984ed92bdb86153e77d8d04de0b5d830e4bac",
+    "tools/profiling/workflow_core.R": "80673b4c9346514da24f8d89bbd56aac8da07f6f5da6d7e80c60be1a1c39848a",
+    "docs/qa/workflow-execution/core/bindings.json": "7c18432110699c39b8eca25c90506e5ba3aafe9242424952d59690602f8d0d4d",
+    "docs/qa/workflow-execution/core/protocol.md": "cae16bdcbdfb4fa1c421cf7f509df30fb424f32629a92f06063abd8689522ac9"
+  },
+  "build": "30d4d7fe173270155fa315463f4cef43cba6520895dfb180b03cde57a3909ec4",
+  "host_at_start": {
+    "mem_available_bytes": 14292627456,
+    "active_managed_units": 0
+  },
+  "decision": {
+    "status": "lifecycle_complete_observed",
+    "failing_rule": null,
+    "promotion_authorized": false
+  },
+  "operation": {
+    "status": "complete",
+    "measurement_valid": true,
+    "lifecycle_passed": true,
+    "peak_bytes": 2940121088,
+    "sampled_anon_bytes": 2853756928,
+    "sampled_file_bytes": 58327040,
+    "swap_bytes": 0,
+    "elapsed_seconds": 34.6000000000058,
+    "max_observation_interval": 0.0530000000000008,
+    "request_id": "wfx-edcc0a477c97493b7a14194e2b0e7eb7",
+    "cleanup": {
+      "worker_stopped": true,
+      "monitor_stopped": true,
+      "application_monitor_active": null
+    },
+    "clock": "shared kernel uptime; namespace bootstrap excluded for both builds",
+    "boundary": "managed launch through publication and controller/worker/monitor teardown; separate verifier excluded"
+  },
+  "verifier": {
+    "accepted": true,
+    "unit": "multischolar-dia003-browser-smoke.GiBsU9.service",
+    "invocation_id": "01a6538fda764bc4b850648492f0de9f",
+    "verification_sha256": "b863a1f05d14bcd3280e2d4eeac03b7b98f6f3f08df7fc239719860843dfb4ee",
+    "p14": {
+      "pages": 48,
+      "pages_match_screen_oracle": true,
+      "exact_sum_sha256": "a6ecc0e4ba13917ac6b4db85ccd8d287308513d7430410441a2946239f1bd579",
+      "query_owner": "fastduckdb_c",
+      "profile": "P14",
+      "engine_threads": 8,
+      "writer_backend": "fast_r",
+      "figures": 12
+    }
+  }
+}
