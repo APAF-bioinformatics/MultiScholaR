@@ -476,11 +476,12 @@ sourceExecutionJob <- function(owner) {
     job
 }
 
-withSourceExecutionServices <- function(code, monitor = FALSE, empty = TRUE) {
+withSourceExecutionServices <- function(code, monitor = FALSE, empty = TRUE,
+                                        worker = list(SubState = "exited", Result = "success")) {
     testthat::with_mocked_bindings(code,
         workflowServiceProperties = function(unit) if (grepl("monitor", unit))
             list(available = monitor, SubState = if (monitor) "running" else "dead") else
-            list(available = TRUE, SubState = "exited", Result = "success"),
+            c(list(available = TRUE), worker),
         workflowSystemd = function(...) invisible(NULL),
         workflowServiceEmpty = function(...) empty,
         workflowCgroupAccounting = function(...) list(),
@@ -517,6 +518,30 @@ test_that("a head recovery conflict holds every controller until acknowledged", 
     owner <- openSourceExecutionController(project$manager)
     expect_null(owner$control$active_request)
     expect_identical(workflowExecutionHead(store)$entity_id, project$heads[[3]]$entity_id)
+    closeWorkflowExecutionController(owner)
+})
+
+test_that("a conflict on a project without a durable head is acknowledged with NULL", {
+    project <- sourceExecutionProject("core003-headless", saves = 2L)
+    on.exit({ closeDIAStateAdapter(project$manager); unlink(project$root, recursive = TRUE) }, add = TRUE)
+    store <- project$store
+    id <- paste0("wfx-", strrep("c", 32))
+    paths <- workflowExportPaths(store$directory, id)
+    descriptor <- file.path(paths$request_dir, "proposed-head.rds")
+    saveRDS(project$heads[[2]], descriptor, compress = FALSE, version = 3)
+    writeWorkflowExportJournal(paths, list(schema = "multischolar.workflow_action.v1", request_id = id,
+        status = "committing", expected_head = project$heads[[1]]$entity_id,
+        proposed_descriptor_sha256 = digest::digest(file = descriptor, algo = "sha256")))
+    writeWorkflowExecutionControl(store, list(schema = 1L, incarnation = store$identity$incarnation,
+        generation = 0L, active_request = id))
+    unlink(file.path(store$directory, "dia-state-head.rds"))
+    expect_error(openSourceExecutionController(project$manager), class = "workflow_execution_conflict")
+    expect_null(readWorkflowExecutionJournal(paths)$conflict_head)
+    expect_error(acknowledgeWorkflowExecutionConflict(project$root, id, project$heads[[1]]$entity_id),
+        class = "workflow_execution_stale")
+    acknowledgeWorkflowExecutionConflict(project$root, id, NULL)
+    owner <- openSourceExecutionController(project$manager)
+    expect_null(owner$control$active_request)
     closeWorkflowExecutionController(owner)
 })
 
@@ -562,7 +587,11 @@ test_that("a worker result written before monitor loss is accepted with an inval
     writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "worker-result.rds"),
         list(schema = 1L, status = "complete", token = job$request$token))
     accepted <- NULL
-    receipt <- testthat::with_mocked_bindings(withSourceExecutionServices(pollWorkflowAction(owner)),
+    # Observed with systemd-run --user: a BindsTo stop garbage-collects the worker unit and
+    # `systemctl show` then exits 0 with these defaults (CORE-003 evidence, P01 probe).
+    collected <- list(LoadState = "not-found", ActiveState = "inactive", SubState = "dead", Result = "success")
+    receipt <- testthat::with_mocked_bindings(withSourceExecutionServices(pollWorkflowAction(owner),
+        worker = collected),
         acceptWorkflowActionResult = function(owner, message) {
             accepted <<- message
             finishWorkflowExecutionJob(owner, "complete")
@@ -581,8 +610,9 @@ test_that("an invalid guard payload is classified without a teardown error", {
     on.exit(closeWorkflowExecutionController(owner), add = TRUE, after = FALSE)
     payloads <- list(list(schema = 1L, reason = NULL), list(schema = 1L, reason = c("a", "b")),
         list(schema = 1L, reason = NA_character_), "memory_guard",
-        list(schema = 1L, reason = "memory_guard"))
-    expected <- c(rep("guard_payload_invalid", 4L), "memory_guard")
+        list(schema = 1L, reason = "complete"), list(schema = 1L, reason = "memory_guard"),
+        list(schema = 1L, reason = "injected_guard_stop"))
+    expected <- c(rep("guard_payload_invalid", 5L), "memory_guard", "injected_guard_stop")
     for (i in seq_along(payloads)) {
         job <- sourceExecutionJob(owner)
         saveRDS(payloads[[i]], file.path(job$paths$request_dir, "guard-stop.rds"))

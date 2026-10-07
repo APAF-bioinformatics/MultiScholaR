@@ -316,7 +316,8 @@ recoverWorkflowHeadAcceptance <- function(owner) {
 #' Release a recovery conflict after an operator has verified the durable head.
 #' @param root Project directory containing `.workflow-entities`.
 #' @param request_id Request recorded as `conflict` in its journal.
-#' @param head Entity id the operator verified as the current durable head.
+#' @param head Entity id the operator verified as the current durable head, or NULL
+#'   when the project has no durable head.
 #' @return The acknowledged journal, invisibly; the proposed head is never applied.
 #' @noRd
 acknowledgeWorkflowExecutionConflict <- function(root, request_id, head) {
@@ -331,8 +332,8 @@ acknowledgeWorkflowExecutionConflict <- function(root, request_id, head) {
     journal <- readWorkflowExecutionJournal(paths)
     if (!identical(control$active_request, request_id) || !identical(journal$status, "conflict"))
         cli::cli_abort("request {request_id} holds no recovery conflict", class = "workflow_execution_invalid")
-    if (!is.character(head) || length(head) != 1L || is.na(head) ||
-        !identical(workflowExecutionHead(store)$entity_id, head))
+    valid_head <- is.null(head) || is.character(head) && length(head) == 1L && !is.na(head)
+    if (!valid_head || !identical(workflowExecutionHead(store)$entity_id, head))
         cli::cli_abort("acknowledged head is not the durable head", class = "workflow_execution_stale")
     journal$acknowledged_head <- head
     writeWorkflowExportJournal(paths, journal)
@@ -931,12 +932,15 @@ closeWorkflowManagedApplication <- function(app) {
 
 #' Read a guard classification; a malformed payload is itself the classification.
 #' @param path Existing guard-stop file.
-#' @return One non-missing reason string.
+#' @return One stop reason written by a package monitor, or `"guard_payload_invalid"`.
 #' @noRd
 readWorkflowGuardReason <- function(path) {
+    # The complete set written by workflowMonitorMain's request and application scopes.
+    known <- c("memory_guard", "host_headroom", "nonworker_reservation", "invalid_worker_registration",
+        "invalid_monitor_snapshot", "invalid_guard_injection", "injected_guard_stop")
     guard <- tryCatch(readRDS(path), error = \(error) NULL)
     reason <- if (is.list(guard)) guard$reason
-    if (is.character(reason) && length(reason) == 1L && !is.na(reason) && nzchar(reason)) reason
+    if (is.character(reason) && length(reason) == 1L && reason %in% known) reason
     else "guard_payload_invalid"
 }
 
