@@ -83,6 +83,7 @@ newDIARelationalScope <- function(store, input, extension = NULL, profile = "P0"
 #' @return Selected input row count; creates only the qc_input view.
 #' @noRd
 validateDIARelationalInput <- function(scope, input, samples) {
+    assertWorkflowPhysicalTableScope(scope)
     con <- scope$connection
     q <- function(x) as.character(DBI::dbQuoteIdentifier(con, x))
     roles <- input$roles

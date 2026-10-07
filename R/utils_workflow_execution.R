@@ -410,7 +410,7 @@ workflowHostAvailable <- function() {
 #' @noRd
 workflowExecutionPolicy <- function(diagnostic = FALSE) {
     if (diagnostic) return(list(schema = 1L, diagnostic = TRUE, threads = 8L,
-        memory_max = 3 * 1024^3, early_stop = 2.9 * 1024^3, swap_max = 0,
+        memory_max = 4 * 1024^3, early_stop = 2.9 * 1024^3, swap_max = 0,
         growth_reserve = 128 * 1024^2, startup_headroom = 2 * 1024^3,
         host_floor = 2 * 1024^3, engine_limit = 12 * 1024^3, deadline = 90L,
         monitor_interval = 0.05))
@@ -521,7 +521,7 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
     saveRDS(config, config_path, compress = FALSE, version = 3)
     workflowLaunchService(config, config$controller_unit, "application", config_path,
         digest::digest(file = config_path, algo = "sha256"), deadline = if (mode == "adapters") { if (diagnostic) 300L else 1800L } else
-            if (diagnostic) 600L else 86400L)
+            if (mode == "resources" && diagnostic) 900L else if (diagnostic) 600L else 86400L)
     ready <- TRUE
     config
 }
@@ -672,9 +672,9 @@ workflowMonitorMain <- function(arguments) {
             }
         }
         if (!is.null(stop_reason)) {
-            workflowSystemd(c("stop", request$worker_unit), required = FALSE)
             writeWorkflowExecutionMessage(file.path(request$directory, "guard-stop.rds"),
                 list(schema = 1L, reason = stop_reason, current = current, host_available = host))
+            workflowSystemd(c("stop", request$worker_unit), required = FALSE)
             break
         }
         if (file.exists(file.path(request$directory, "monitor-done.rds"))) break
@@ -884,6 +884,18 @@ pollWorkflowAction <- function(owner) {
     state <- workflowServiceProperties(job$worker_unit)
     if (isTRUE(state$available) && state$SubState %in% c("running", "start")) return(list(status = "running"))
     result_path <- file.path(job$paths$request_dir, "worker-result.rds")
+    if (!file.exists(result_path) && !file.exists(guard)) {
+        # A worker may become terminal between two 50 ms monitor samples.
+        # Give that already-running monitor two intervals to publish its
+        # durable classification before treating the stop as an unguarded
+        # worker failure.
+        Sys.sleep(min(0.25, max(0.01, 2 * app$config$policy$monitor_interval)))
+        if (file.exists(guard))
+            return(finishWorkflowExecutionJob(owner, readRDS(guard)$reason))
+        monitor <- workflowServiceProperties(job$monitor_unit)
+        if (!isTRUE(monitor$available) || !monitor$SubState %in% c("running", "start"))
+            return(finishWorkflowExecutionJob(owner, "monitor_lost"))
+    }
     if (!isTRUE(state$available) || !identical(state$Result, "success") || !file.exists(result_path))
         return(finishWorkflowExecutionJob(owner, if (identical(state$Result, "oom-kill")) "memory_guard" else "worker_failed"))
     if (file.size(result_path) > 8388608) return(finishWorkflowExecutionJob(owner, "invalid_result"))
@@ -1115,6 +1127,7 @@ workflowCgroupAccounting <- function(group) {
     usage <- as.numeric(sub("^usage_usec ", "", grep("^usage_usec ", cpu, value = TRUE)))
     io <- readLines(file.path(group, "io.stat"), warn = FALSE)
     bytes <- function(key) {
+        if (!length(io)) return(0)
         values <- unlist(strsplit(io, " ", fixed = TRUE), use.names = FALSE)
         values <- values[startsWith(values, paste0(key, "="))]
         sum(as.numeric(sub(paste0("^", key, "="), "", values)))

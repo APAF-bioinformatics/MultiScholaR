@@ -193,6 +193,7 @@ generateDIAReferenceHeatmap <- function(manifest, contrast, parameters, color_sc
         color_scheme, show_gene_names))
     result_scope <- newWorkflowTableReadScope(manager$.context$store, selected$tables$da_proteins_long)
     on.exit(releaseWorkflowTableReadScope(result_scope), add = TRUE)
+    assertWorkflowPhysicalTableScope(result_scope)
     con <- result_scope$connection
     q <- \(value) as.character(DBI::dbQuoteIdentifier(con, value))
     columns <- intersect(unique(c(manifest$protein_id_column, "comparison", parameters$qvalue_column,
@@ -214,6 +215,7 @@ generateDIAReferenceHeatmap <- function(manifest, contrast, parameters, color_sc
     spec <- readDIAStateMetadata(manager, manifest$source)$data
     expression_scope <- newWorkflowTableReadScope(manager$.context$store, spec$components$protein_quant_table)
     on.exit(releaseWorkflowTableReadScope(expression_scope), add = TRUE)
+    assertWorkflowPhysicalTableScope(expression_scope)
     DBI::dbExecute(expression_scope$connection, paste0("CREATE TEMP VIEW dia_heatmap_expression AS SELECT * FROM read_parquet(",
         DBI::dbQuoteString(expression_scope$connection, expression_scope$path), ")"))
     quant <- materializeDIATable(manager$.context, spec$components$protein_quant_table,

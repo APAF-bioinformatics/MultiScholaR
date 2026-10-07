@@ -92,6 +92,7 @@ computeSavedWorkflowPrecursorRollup <- function(store, input, persist = NULL) {
     if (!is.null(persist)) return(persistIndexedWorkflowPrecursorRollup(store, input, persist))
     scope <- newWorkflowTableReadScope(store, input$reference)
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    assertWorkflowPhysicalTableScope(scope)
     connection <- scope$connection
     metadata <- scope$metadata
     roles <- input$roles
@@ -1117,6 +1118,8 @@ computeDIAReferencePrecursorRollup <- function(manager, reference, backend = "P1
     result <- if (identical(backend, "P14"))
         computeDIARelationalRollup(manager$.context$store, input, persist, profile = "P14", worker_cap = worker_cap) else
         computeSavedWorkflowPrecursorRollup(manager$.context$store, input, persist)
+    result$counts <- saveDIALargeFilteringCountsReference(manager$.context$store,
+        result, object@protein_id_column)
     checkpoint$dependencies <- collectDIANativeReferences(list(checkpoint$dependencies, result$dependencies))
     checkpoint$slots$args <- template@args
     checkpoint$slots$args$rollUpPrecursorToPeptide$rollup_summary <- result$summary
@@ -1153,6 +1156,7 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
     source <- checkpoint$components$peptide_data
     scope <- newWorkflowTableReadScope(manager$.context$store, source)
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    assertWorkflowPhysicalTableScope(scope)
     con <- scope$connection
     DBI::dbExecute(con, "SET threads = 8")
     DBI::dbExecute(con, "SET memory_limit = '12GiB'")

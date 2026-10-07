@@ -789,10 +789,19 @@ newDIAFilteringAccumulator <- function(prototype, protein_column) {
 #' @noRd
 summarizeSavedDIAFiltering <- function(scope, prototype, protein_column, counted = NULL) {
     fields <- unique(c("Run", "Protein.Ids", "Stripped.Sequence", protein_column))
-    identity <- newSavedWorkflowScientificIdentity(scope$physical_reference$entity_id,
+    identity <- newSavedWorkflowScientificIdentity(workflowTablePopulationId(scope),
         "observed-rows", digest::digest(list(fields, scope$metadata$column_metadata[fields]), algo = "sha256"),
-        "peptide-filtering-counts-v1", digest::digest(list(body(newDIAFilteringAccumulator),
+        "peptide-filtering-counts-v1", digest::digest(list(deparse(body(newDIAFilteringAccumulator),
+            control = c("keepInteger", "keepNA"), width.cutoff = 500L),
             R.version[c("major", "minor", "platform")]), algo = "sha256"))
+    if (isSavedWorkflowReference(counted)) {
+        supplied <- counted
+        hit <- resolveSavedWorkflowEntity(scope$store, "scientific_product", identity)
+        if (!identical(hit$status, "hit") || !identical(hit$reference, supplied))
+            cli::cli_abort("saved count reference differs from population",
+                class = "saved_entity_corrupt")
+        counted <- NULL
+    }
     hit <- resolveSavedWorkflowEntity(scope$store, "scientific_product", identity)
     if (identical(hit$status, "hit")) {
         counted <- hit$value$value
@@ -809,6 +818,23 @@ summarizeSavedDIAFiltering <- function(scope, prototype, protein_column, counted
             newSavedWorkflowScientificProduct(counted, "dia-filtering-counts"),
             basename(tempfile("dia-counts-")), identity, "scientific_product")
     }
-    counted$dependencies <- list(reference, scope$physical_reference)
+    counted$dependencies <- Filter(Negate(is.null), list(reference, scope$reference,
+        scope$physical_reference, if (!is.null(scope$view)) scope$view$rows$map))
     counted
+}
+
+#' Keep a large accepted filtering summary out of the worker result envelope.
+#' @param store Saved-entity owner.
+#' @param result Accepted table reference and producer-accumulated counts.
+#' @param protein_column Active protein identity used by progress.
+#' @return Inline counts when bounded, otherwise their durable product reference.
+#' @noRd
+saveDIALargeFilteringCountsReference <- function(store, result, protein_column) {
+    counted <- result$counts
+    if (is.null(counted) || as.numeric(object.size(counted)) <= 4 * 1024^2)
+        return(counted)
+    scope <- newWorkflowTableReadScope(store, result$reference, reader = "arrow")
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    saved <- summarizeSavedDIAFiltering(scope, NULL, protein_column, counted)
+    saved$dependencies[[1L]]
 }

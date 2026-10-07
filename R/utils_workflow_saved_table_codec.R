@@ -517,14 +517,16 @@ newWorkflowTableReadScope <- function(store, reference, reader = "duckdb", metad
     metadata <- readSavedWorkflowTableMetadata(path)
     physical_metadata <- metadata
     if (!is.null(component)) {
-        checkWorkflowTableRestoration(component$metadata, physical_metadata)
+        if (is.null(component$view))
+            checkWorkflowTableRestoration(component$metadata, physical_metadata)
         metadata <- component$metadata
     }
     if (!identical(before, workflowTableFileIdentity(path))) {
         cli::cli_abort("saved table changed during metadata read",
             class = "saved_entity_corrupt")
     }
-    if (!isTRUE(all.equal(as.numeric(metadata$rows), as.numeric(reference$metadata$shape[[1L]])))) {
+    if (!isTRUE(all.equal(as.numeric(physical_metadata$rows),
+        as.numeric(reference$metadata$shape[[1L]])))) {
         cli::cli_abort("table footer differs from descriptor", class = "saved_entity_corrupt")
     }
     if (!metadata_only && reader == "duckdb" && is.null(action$spill)) {
@@ -552,6 +554,11 @@ newWorkflowTableReadScope <- function(store, reference, reader = "duckdb", metad
     scope$path <- path
     scope$file_identity <- before
     scope$metadata <- metadata
+    scope$view <- component$view
+    scope$view_id <- if (is.null(component$view)) reference$entity_id else component$view$view_id
+    scope$map_path <- if (!is.null(component$view) && !is.null(component$view$rows$map))
+        file.path(store$directory, component$view$rows$map$payload$relative_path) else NULL
+    scope$map_file_identity <- if (!is.null(scope$map_path)) workflowTableFileIdentity(scope$map_path) else NULL
     scope$connection <- connection
     scope$spill_directory <- spill
     scope$reader <- reader
@@ -559,6 +566,7 @@ newWorkflowTableReadScope <- function(store, reference, reader = "duckdb", metad
     scope$action <- action
     scope$writers <- new.env(parent = emptyenv())
     scope$readers <- new.env(parent = emptyenv())
+    scope$view_scopes <- list()
     action$scopes <- action$scopes + 1L
     scope$released <- FALSE
     store$open_resources <- store$open_resources + 1L
@@ -580,6 +588,9 @@ checkWorkflowTableReadScope <- function(scope) {
     if (!identical(scope$file_identity, workflowTableFileIdentity(scope$path))) {
         cli::cli_abort("saved table changed during read", class = "saved_entity_corrupt")
     }
+    if (!is.null(scope$map_path) &&
+        !identical(scope$map_file_identity, workflowTableFileIdentity(scope$map_path)))
+        cli::cli_abort("selected row map changed during read", class = "saved_entity_corrupt")
     invisible(TRUE)
 }
 
@@ -593,6 +604,11 @@ releaseWorkflowTableReadScope <- function(scope) {
     }
     if (isTRUE(scope$released)) return(invisible(TRUE))
     validity <- tryCatch(checkWorkflowTableReadScope(scope), error = \(error) error)
+    for (child in scope$view_scopes) {
+        released <- tryCatch(releaseWorkflowTableReadScope(child), error = \(error) error)
+        if (inherits(released, "error") && !inherits(validity, "error")) validity <- released
+    }
+    scope$view_scopes <- NULL
     observeWorkflowTableScratch(scope)
     for (cursor in as.list(scope$readers, all.names = TRUE)) cursor$close()
     scope$readers <- NULL
@@ -608,6 +624,7 @@ releaseWorkflowTableReadScope <- function(scope) {
     }
     scope$metadata <- NULL
     scope$reference <- NULL
+    scope$view <- scope$map_path <- scope$map_file_identity <- NULL
     scope$released <- TRUE
     scope$store$open_resources <- scope$store$open_resources - 1L
     endWorkflowTableAction(scope$store, scope$action)
@@ -727,6 +744,7 @@ saveWorkflowTable <- function(store, table, request_id, identity, key_column,
 #' @noRd
 saveWorkflowTableQuery <- function(scope, sql, metadata, request_id, identity) {
     checkWorkflowTableReadScope(scope)
+    assertWorkflowPhysicalTableScope(scope)
     if (is.null(scope$connection) || !metadata$schema %in% c(2L, 3L)) {
         cli::cli_abort("query production requires the scoped version 2 codec",
             class = "saved_entity_unsupported")
@@ -944,6 +962,11 @@ readSavedWorkflowTable <- function(store, reference, columns, keys = NULL,
         cli::cli_abort("invalid or oversized saved table request",
             class = "saved_entity_limit")
     }
+    if (!is.null(scope$view)) {
+        if (!is.null(keys)) cli::cli_abort("key lookup on a selected table is unsupported",
+            class = "saved_entity_unsupported")
+        return(readWorkflowViewPage(scope, columns, offset, limit, max_bytes))
+    }
     physical_columns <- workflowTableStorageColumns(metadata, columns)
     if (identical(reader, "fastduckdb")) {
         supported <- vapply(metadata$column_metadata[columns], function(spec) {
@@ -960,9 +983,10 @@ readSavedWorkflowTable <- function(store, reference, columns, keys = NULL,
         # Do not retain its footers between calls; action R metadata stays owned.
         collected <- tryCatch(fastduckdb::read_parquet_fast(path,
             columns = c(".multischolar_order", physical_columns),
-            n_threads = 2L, lazy_strings = FALSE,
+            n_threads = scope$read_threads %||% 2L, lazy_strings = FALSE,
             filter = list(.multischolar_order = c(offset + 1, offset + limit))),
             finally = fastduckdb::clear_parquet_cache())
+        store$io_counts$fast_reads <- store$io_counts$fast_reads + 1L
         if (is.unsorted(collected$.multischolar_order)) {
             collected <- collected[order(collected$.multischolar_order), , drop = FALSE]
         }
@@ -1026,6 +1050,126 @@ readSavedWorkflowTable <- function(store, reference, columns, keys = NULL,
         codec = "parquet_duckdb", projected = TRUE)
 }
 
+#' Read one logical view page through its immutable physical ordinals.
+#' @param scope,columns,offset,limit,max_bytes Validated bounded page request.
+#' @return The ordinary projected-table page contract.
+#' @noRd
+readWorkflowViewPage <- function(scope, columns, offset, limit, max_bytes) {
+    count <- as.integer(min(limit, max(0, scope$metadata$rows - offset)))
+    at <- if (count) as.double(offset + seq_len(count)) else double()
+    if (!is.null(scope$view$rows$map) && count) {
+        map <- readWorkflowViewOrdinals(workflowViewChildScope(scope, "map"),
+            c("logical_ordinal", "source_ordinal"), at)$data
+        if (!identical(map$logical_ordinal, at))
+            cli::cli_abort("logical row map changed", class = "saved_entity_corrupt")
+        at <- map$source_ordinal
+    }
+    mapping <- scope$view$columns[match(columns, scope$view$columns$output), , drop = FALSE]
+    source_columns <- mapping$source
+    page <- readWorkflowViewOrdinals(workflowViewChildScope(scope, "source"), source_columns, at)
+    physical <- page$data
+    source_row_names <- page$source_row_names
+    names(physical) <- mapping$output
+    for (i in which(mapping$cast == "factor_to_character"))
+        physical[[i]] <- as.character(physical[[i]])
+    buffer <- newWorkflowTableBuffer(scope$metadata, columns, count)
+    assignWorkflowTableBuffer(buffer, physical, seq_len(count), as.integer(at),
+        source_row_names)
+    data <- finishWorkflowTableBuffer(buffer)
+    attr(data, "workflow_source_order") <- NULL
+    bytes <- as.numeric(object.size(data))
+    if (bytes > max_bytes)
+        cli::cli_abort("collected saved table exceeds byte ceiling", class = "saved_entity_limit")
+    checkWorkflowTableReadScope(scope)
+    scope$store$table_reads <- scope$store$table_reads + 1L
+    scope$store$table_rows <- scope$store$table_rows + count
+    scope$store$table_columns <- scope$store$table_columns + length(columns)
+    scope$store$table_bytes <- scope$store$table_bytes + bytes
+    list(data = data, requested_keys = NULL, found = rep(TRUE, count),
+        source_row_names = source_row_names, source_order = at,
+        selected_columns = columns, collected_bytes = bytes,
+        source_rows = scope$metadata$rows,
+        source_columns = length(scope$metadata$columns), codec = "parquet_duckdb",
+        projected = TRUE)
+}
+
+#' Retain a physical source/map lease for the lifetime of a logical read action.
+#' @param scope Logical view owner.
+#' @param role Physical source or row map.
+#' @return Existing child lease using the explicitly requested reader.
+#' @noRd
+workflowViewChildScope <- function(scope, role) {
+    checkWorkflowTableReadScope(scope)
+    if (is.null(scope$view) || !role %in% c("source", "map"))
+        cli::cli_abort("invalid logical reader owner", class = "saved_entity_scope")
+    child <- scope$view_scopes[[role]]
+    if (is.null(child)) {
+        reference <- if (role == "source") scope$physical_reference else scope$view$rows$map
+        child <- newWorkflowTableReadScope(scope$store, reference, reader = scope$reader)
+        if (scope$reader == "fastduckdb") child$read_threads <- 8L
+        scope$view_scopes[[role]] <- child
+    }
+    child
+}
+
+#' Gather a bounded, unique logical-page selection through existing physical readers.
+#' @param scope Physical source or map lease with the requested backend.
+#' @param columns Explicit projection, at most 64 fields.
+#' @param ordinals Unique physical positions, at most 10,000.
+#' @return Restored physical values and immutable source row names.
+#' @noRd
+readWorkflowViewOrdinals <- function(scope, columns, ordinals) {
+    checkWorkflowTableReadScope(scope)
+    if (length(ordinals) > 10000L || anyDuplicated(ordinals) ||
+        anyNA(ordinals) || any(!is.finite(ordinals) | ordinals < 1 |
+            ordinals > scope$metadata$rows | ordinals != floor(ordinals)) ||
+        !length(columns) || length(columns) > 64L || anyDuplicated(columns) ||
+        !all(columns %in% scope$metadata$columns))
+        cli::cli_abort("invalid logical-page ordinal gather", class = "saved_entity_limit")
+    if (!length(ordinals)) return(list(data = readSavedWorkflowTablePrototype(scope)[columns],
+        source_row_names = character()))
+    if (scope$reader == "duckdb") {
+        data <- readWorkflowSelectedOrdinals(scope$store, scope$reference, columns, ordinals,
+            scope = scope)
+        return(list(data = data, source_row_names = row.names(data)))
+    }
+    buffer <- newWorkflowTableBuffer(scope$metadata, columns, length(ordinals))
+    source_names <- character(length(ordinals))
+    fill <- function(data, positions, row_names) {
+        at <- match(positions, ordinals)
+        if (anyNA(at)) cli::cli_abort("logical gather returned unexpected rows",
+            class = "saved_entity_corrupt")
+        assignWorkflowTableBuffer(buffer, data, at, as.integer(positions), row_names)
+        source_names[at] <<- row_names
+        if (as.numeric(object.size(buffer$columns)) +
+            as.numeric(object.size(source_names)) > 67108864)
+            cli::cli_abort("logical-page gather exceeds 64 MiB", class = "saved_entity_limit")
+    }
+    ordered <- sort(as.integer(ordinals), method = "radix")
+    if (scope$reader == "fastduckdb") {
+        starts <- c(1L, which(diff(ordered) != 1L) + 1L)
+        ends <- c(starts[-1L] - 1L, length(ordered))
+        for (i in seq_along(starts)) {
+            page <- readSavedWorkflowTable(scope$store, scope$reference, columns,
+                offset = ordered[[starts[[i]]]] - 1L,
+                limit = ends[[i]] - starts[[i]] + 1L, scope = scope)
+            fill(page$data, page$source_order, page$source_row_names)
+        }
+    } else {
+        cursor <- openWorkflowArrowCursor(scope, columns, ordered)
+        on.exit(cursor$close(), add = TRUE)
+        repeat {
+            part <- cursor$fetch()
+            if (is.null(part)) break
+            restored <- restoreWorkflowCursorBatch(scope, columns, part)
+            fill(restored$data, part$.source_order, restored$row_names)
+        }
+    }
+    data <- finishWorkflowTableBuffer(buffer)
+    attr(data, "workflow_source_order") <- NULL
+    list(data = data, source_row_names = source_names)
+}
+
 #' Select DIA heatmap rows from already adjusted full-population statistics.
 #' @param store,reference Accepted table owner and descriptor.
 #' @param columns Existing feature identifier and normalized sample columns.
@@ -1041,6 +1185,7 @@ readSavedWorkflowDiaHeatmapTable <- function(store, reference, columns, top_n,
         on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
     }
     checkWorkflowTableReadScope(scope)
+    assertWorkflowPhysicalTableScope(scope)
     if (identical(scope$reader, "fastduckdb")) {
         cli::cli_abort("fast reader does not support ranked heatmap queries",
             class = "saved_entity_unsupported")
@@ -1130,6 +1275,7 @@ readSavedWorkflowTablePrototype <- function(scope) {
 #' @noRd
 openWorkflowArrowCursor <- function(scope, columns, source_rows = NULL) {
     checkWorkflowTableReadScope(scope)
+    assertWorkflowPhysicalTableScope(scope)
     dataset <- arrow::open_dataset(scope$path, format = "parquet")
     scanner <- reader <- NULL
     cursor <- new.env(parent = emptyenv())
@@ -1234,6 +1380,31 @@ streamSavedWorkflowTable <- function(scope, columns, consume, query = NULL, para
         expected_rows <- length(source_rows)
     }
     if (is.null(expected_rows)) expected_rows <- metadata$rows
+    if (!is.null(scope$view)) {
+        if (!is.null(query)) cli::cli_abort("physical SQL cannot stream a selected table",
+            class = "saved_entity_unsupported")
+        if (!expected_rows) {
+            consume(readSavedWorkflowTablePrototype(scope)[columns], 0L, character())
+        } else {
+            for (start in seq.int(1L, expected_rows, by = 10000L)) {
+                at <- seq.int(start, min(expected_rows, start + 9999L))
+                logical_rows <- if (is.null(source_rows)) at else source_rows[at]
+                pieces <- split(logical_rows, cumsum(c(1L, diff(logical_rows) != 1L)))
+                delivered <- 0L
+                for (piece in pieces) {
+                    page <- readSavedWorkflowTable(scope$store, scope$reference, columns,
+                        offset = piece[[1L]] - 1L, limit = length(piece), scope = scope)
+                    data <- page$data
+                    if (!is.null(source_rows))
+                        attr(data, "dia_source_order") <- as.integer(logical_rows[
+                            seq.int(delivered + 1L, delivered + nrow(data))])
+                    consume(data, start - 1L + delivered, page$source_row_names)
+                    delivered <- delivered + nrow(data)
+                }
+            }
+        }
+        return(invisible(expected_rows))
+    }
     if (is.null(query) && is.null(source_rows) && identical(scope$reader, "fastduckdb")) {
         for (offset in seq.int(0L, max(0L, expected_rows - 1L), by = 10000L)) {
             if (!expected_rows) {
@@ -1244,7 +1415,6 @@ streamSavedWorkflowTable <- function(scope, columns, consume, query = NULL, para
                     offset = offset, limit = min(10000L, expected_rows - offset),
                     reader = "fastduckdb", scope = scope)
                 consume(page$data, offset, page$source_row_names)
-                scope$store$io_counts$fast_reads <- scope$store$io_counts$fast_reads + 1L
             }
         }
         return(invisible(expected_rows))
@@ -1529,7 +1699,7 @@ openWorkflowTableGroups <- function(scope, columns, group, group_order = "first"
     if (group_order == "key" && nrow(directory)) directory <- directory[
         order(directory$value, method = "radix", na.last = TRUE), , drop = FALSE]
     contiguous_starts <- if (nrow(directory)) 1 + cumsum(c(0, utils::head(directory$size, -1L))) else numeric()
-    if (nrow(directory) && group %in% columns &&
+    if (is.null(scope$view) && nrow(directory) && group %in% columns &&
         identical(as.integer(directory$first_order), as.integer(contiguous_starts))) {
         return(openWorkflowContiguousGroups(scope, columns, group, directory,
             list(index$reference, index$value$groups, index$value$positions, scope$physical_reference)))
@@ -1746,7 +1916,6 @@ streamWorkflowTableRows <- function(scope, columns, consume) {
             page <- readSavedWorkflowTable(scope$store, scope$reference, block,
                 offset = offset, limit = 10000L, scope = projected, reader = "fastduckdb")
             values[block] <- unclass(page$data)[block]
-            scope$store$io_counts$fast_reads <- scope$store$io_counts$fast_reads + 1L
         }
         attr(values, "row.names") <- .row_names_info(page$data, type = 0L)
         class(values) <- "data.frame"
@@ -1828,8 +1997,14 @@ readWorkflowTableComponent <- function(store, reference) {
     if (reference$payload$bytes > 8388608)
         cli::cli_abort("logical table component exceeds metadata limits", class = "saved_entity_limit")
     value <- hydrateSavedWorkflowEntity(store, reference)
-    if (!identical(names(value), c("schema", "source", "metadata_raw", "indexes")) ||
-        !identical(value$schema, "workflow.table_component.v1") ||
+    version <- value$schema
+    if (!identical(version, "workflow.table_component.v1") &&
+        !identical(version, "workflow.table_component.v2"))
+        cli::cli_abort("unknown logical table version", class = "saved_entity_unsupported")
+    fields <- if (identical(version, "workflow.table_component.v1"))
+        c("schema", "source", "metadata_raw", "indexes") else
+        c("schema", "source", "rows", "columns", "metadata_raw", "view_id", "indexes")
+    if (!identical(names(value), fields) ||
         !isSavedWorkflowReference(value$source) ||
         !identical(value$source$payload$codec, "parquet_duckdb") ||
         !identical(value$source$owner, store$identity) || !is.raw(value$metadata_raw) ||
@@ -1840,7 +2015,181 @@ readWorkflowTableComponent <- function(store, reference) {
         cli::cli_abort("logical table metadata cannot be decoded", class = "saved_entity_corrupt", parent = error))
     if (!is.list(metadata) || !identical(as.integer(c(metadata$rows, length(metadata$columns))), as.integer(reference$metadata$shape)))
         cli::cli_abort("logical table dimensions differ", class = "saved_entity_corrupt")
-    list(source = value$source, metadata = metadata, indexes = value$indexes)
+    if (identical(version, "workflow.table_component.v1"))
+        return(list(source = value$source, metadata = metadata, indexes = value$indexes))
+    validateWorkflowTableView(store, reference, value, metadata)
+    list(source = value$source, metadata = metadata, indexes = value$indexes, view = value)
+}
+
+#' Hash the exact stored logical view tuple without reserializing metadata.
+#' @param source Physical table descriptor.
+#' @param rows Exact all/mapped row definition.
+#' @param columns Ordered output/source/cast mapping.
+#' @param metadata_raw Serialized logical restoration metadata bytes.
+#' @return Stable SHA256 across supported R readers.
+#' @noRd
+workflowTableViewId <- function(source, rows, columns, metadata_raw) {
+    count <- function(x) is.numeric(x) && length(x) == 1L && !is.na(x) &&
+        is.finite(x) && x >= 0 && x == floor(x) && x <= .Machine$integer.max
+    if (!isSavedWorkflowReference(source) || !is.list(rows) ||
+        !identical(names(rows), c("mode", "map", "count")) ||
+        !is.character(rows$mode) || length(rows$mode) != 1L ||
+        is.na(rows$mode) || !rows$mode %in% c("all", "mapped") ||
+        !is.null(rows$map) && !isSavedWorkflowReference(rows$map) ||
+        !count(rows$count) ||
+        !is.data.frame(columns) || !identical(names(columns), c("output", "source", "cast")) ||
+        !nrow(columns) || !is.raw(metadata_raw))
+        cli::cli_abort("invalid logical view identity input", class = "saved_entity_invalid")
+    tokens <- c("workflow.table_component.v2", source$entity_id, rows$mode,
+        if (is.null(rows$map)) "" else rows$map$entity_id,
+        sprintf("%.0f", rows$count), sprintf("%.0f", nrow(columns)),
+        as.vector(t(as.matrix(columns[c("output", "source", "cast")]))),
+        digest::digest(metadata_raw, algo = "sha256", serialize = FALSE))
+    if (!is.character(tokens) || anyNA(tokens) || !all(validUTF8(tokens)) ||
+        any(vapply(tokens, \(token) !identical(charToRaw(token), charToRaw(enc2utf8(token))),
+            logical(1))))
+        cli::cli_abort("logical view tokens must be valid UTF-8", class = "saved_entity_invalid")
+    framed <- do.call(c, lapply(tokens, \(token) c(
+        charToRaw(as.character(length(charToRaw(token)))), as.raw(58L), charToRaw(token))))
+    digest::digest(framed, algo = "sha256", serialize = FALSE)
+}
+
+#' Validate one physical row-map table through bounded reads only.
+#' @param store Owner of the immutable map.
+#' @param reference Physical two-double-column map descriptor.
+#' @param rows Expected logical output rows.
+#' @param source_rows Physical source rows and exact uniqueness domain.
+#' @return TRUE after dense logical and unique source ordinals are proven.
+#' @noRd
+validateWorkflowTableRowMap <- function(store, reference, rows, source_rows) {
+    if (!isWorkflowTableReference(reference) || isWorkflowTableComponent(reference) ||
+        !identical(reference$owner, store$identity) ||
+        as.double(source_rows) * 4 > 268435456)
+        cli::cli_abort("row map exceeds supported ownership or memory", class = "saved_entity_unsupported")
+    scope <- newWorkflowTableReadScope(store, reference, reader = "arrow")
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    names <- c("logical_ordinal", "source_ordinal")
+    specs <- scope$metadata$column_metadata
+    if (!identical(scope$metadata$columns, names) || !identical(scope$metadata$key_column, names[[1L]]) ||
+        scope$metadata$rows != rows || rows > source_rows ||
+        !all(vapply(specs, \(spec) identical(spec$typeof, "double") &&
+            identical(spec$class, "numeric") && is.null(spec$levels) &&
+            !length(spec$attributes), logical(1))))
+        cli::cli_abort("row map schema differs", class = "saved_entity_corrupt")
+    seen <- rep(FALSE, source_rows)
+    streamSavedWorkflowTable(scope, names, function(data, offset, row_names) {
+        expected <- as.double(offset + seq_len(nrow(data)))
+        physical <- data$source_ordinal
+        if (!identical(data$logical_ordinal, expected) || anyNA(physical) ||
+            any(!is.finite(physical) | physical != floor(physical) |
+                physical < 1 | physical > source_rows))
+            cli::cli_abort("row map ordinals differ", class = "saved_entity_corrupt")
+        at <- as.integer(physical)
+        if (anyDuplicated(at) || any(seen[at]))
+            cli::cli_abort("row map repeats a source row", class = "saved_entity_corrupt")
+        seen[at] <<- TRUE
+    })
+    invisible(TRUE)
+}
+
+#' Validate a v2 view against its immutable physical source and map.
+#' @param store,reference,view,metadata Owned descriptor, payload and restoration.
+#' @return TRUE with no scientific assay materialization.
+#' @noRd
+validateWorkflowTableView <- function(store, reference, view, metadata) {
+    rows <- view$rows
+    columns <- view$columns
+    if (!is.list(rows) || !identical(names(rows), c("mode", "map", "count")) ||
+        !identical(rows$mode, "all") && !identical(rows$mode, "mapped") ||
+        !is.numeric(rows$count) || length(rows$count) != 1L || is.na(rows$count) ||
+        !is.finite(rows$count) || rows$count < 0 || rows$count != floor(rows$count) ||
+        rows$count > .Machine$integer.max ||
+        !is.null(rows$map) && !isSavedWorkflowReference(rows$map) ||
+        !is.data.frame(columns) || !identical(names(columns), c("output", "source", "cast")) ||
+        !nrow(columns) || !all(vapply(columns, is.character, logical(1))) ||
+        anyNA(columns) || any(!nzchar(unlist(columns, use.names = FALSE))) ||
+        anyDuplicated(columns$output) || anyDuplicated(columns$source) ||
+        !all(columns$cast %in% c("identity", "factor_to_character")) ||
+        !is.character(view$view_id) || length(view$view_id) != 1L ||
+        !identical(view$view_id, workflowTableViewId(view$source, rows, columns, view$metadata_raw)) ||
+        !is.list(view$indexes) || length(view$indexes) > 32L ||
+        length(view$indexes) && (is.null(names(view$indexes)) || anyNA(names(view$indexes)) ||
+            anyDuplicated(names(view$indexes)) || !all(nzchar(names(view$indexes)))))
+        cli::cli_abort("logical view contract differs", class = "saved_entity_corrupt")
+    required <- c("schema", "codec", "columns", "rows", "key_column", "key_type",
+        "class", "attributes", "column_metadata", "automatic_row_names",
+        "row_name_column", "name_columns")
+    optional <- c("row_index_type", "attribute_order")
+    if (!identical(sort(names(metadata)), sort(c(required,
+        intersect(optional, names(metadata))))) ||
+        !identical(metadata$codec, paste0("parquet_duckdb_v", metadata$schema)) ||
+        !is.character(metadata$key_column) || length(metadata$key_column) != 1L ||
+        !metadata$key_column %in% c(".rownames", columns$output) ||
+        !is.character(metadata$key_type) || length(metadata$key_type) != 1L ||
+        !metadata$key_type %in% c("character", "integer", "double") ||
+        !is.list(metadata$attributes) || !is.list(metadata$column_metadata) ||
+        !identical(names(metadata$column_metadata), columns$output) ||
+        !is.logical(metadata$automatic_row_names) ||
+        length(metadata$automatic_row_names) != 1L || is.na(metadata$automatic_row_names) ||
+        !is.character(metadata$name_columns) || anyNA(metadata$name_columns) ||
+        anyDuplicated(names(metadata$name_columns)) ||
+        !all(names(metadata$name_columns) %in% columns$output) ||
+        anyDuplicated(unname(metadata$name_columns)) ||
+        !all(grepl("^\\.multischolar_names_[0-9]+$", metadata$name_columns)) ||
+        isTRUE(metadata$automatic_row_names) && !is.null(metadata$row_name_column) ||
+        !isTRUE(metadata$automatic_row_names) &&
+            !identical(metadata$row_name_column, if (metadata$key_column == ".rownames")
+                ".multischolar_row_key" else ".multischolar_row_names") ||
+        !is.null(metadata$row_index_type) &&
+            (!is.character(metadata$row_index_type) || length(metadata$row_index_type) != 1L ||
+                !metadata$row_index_type %in% c("integer", "character")) ||
+        !is.null(metadata$attribute_order) &&
+            (!is.character(metadata$attribute_order) || anyNA(metadata$attribute_order) ||
+                anyDuplicated(metadata$attribute_order) ||
+                !setequal(metadata$attribute_order,
+                    c("names", "row.names", "class", names(metadata$attributes)))))
+        cli::cli_abort("logical restoration metadata differs", class = "saved_entity_corrupt")
+    checkWorkflowTableAttributes(metadata$attributes)
+    if (length(view$indexes)) for (index in view$indexes) {
+        if (!isSavedWorkflowReference(index) || !identical(index$owner, store$identity))
+            cli::cli_abort("logical index belongs to another source", class = "saved_entity_corrupt")
+    }
+    validateSavedWorkflowReference(store, view$source, payload = TRUE)
+    physical <- readSavedWorkflowTableMetadata(file.path(store$directory, view$source$payload$relative_path))
+    if (rows$count > physical$rows || !identical(metadata$columns, columns$output) ||
+        metadata$rows != rows$count || !metadata$schema %in% c(2L, 3L) ||
+        !all(columns$source %in% physical$columns) ||
+        !any(vapply(list("data.frame", c("tbl_df", "tbl", "data.frame"),
+            c("spec_tbl_df", "tbl_df", "tbl", "data.frame")), identical, logical(1), metadata$class)) ||
+        as.numeric(object.size(metadata)) > 8388608)
+        cli::cli_abort("logical metadata differs from physical source", class = "saved_entity_corrupt")
+    for (at in seq_len(nrow(columns))) {
+        source <- columns$source[[at]]
+        target <- columns$output[[at]]
+        actual <- metadata$column_metadata[[target]]
+        original <- physical$column_metadata[[source]]
+        if (columns$cast[[at]] == "identity") {
+            if (!identical(actual, original) ||
+                (target %in% names(metadata$name_columns)) !=
+                    (source %in% names(physical$name_columns)))
+                cli::cli_abort("logical column metadata differs", class = "saved_entity_corrupt")
+        } else {
+            if (is.null(original$levels) || source %in% names(physical$name_columns) ||
+                !identical(actual$typeof, "character") || !identical(actual$class, "character") ||
+                !is.null(actual$levels) || isTRUE(actual$ordered) ||
+                length(actual$attributes) || target %in% names(metadata$name_columns))
+                cli::cli_abort("factor-to-character metadata differs", class = "saved_entity_corrupt")
+        }
+    }
+    if (rows$mode == "all") {
+        if (!is.null(rows$map) || rows$count != physical$rows)
+            cli::cli_abort("all-row view count differs", class = "saved_entity_corrupt")
+    } else {
+        if (is.null(rows$map) || identical(rows$map$entity_id, view$source$entity_id))
+            cli::cli_abort("mapped view has no row map", class = "saved_entity_corrupt")
+        validateWorkflowTableRowMap(store, rows$map, rows$count, physical$rows)
+    }
+    invisible(TRUE)
 }
 
 #' Save a metadata-only table change without duplicating the physical assay.
@@ -1851,6 +2200,13 @@ readWorkflowTableComponent <- function(store, reference) {
 #' @noRd
 saveWorkflowTableComponent <- function(scope, metadata, request_id, identity) {
     checkWorkflowTableReadScope(scope)
+    if (!is.null(scope$view)) {
+        checkWorkflowTableRestoration(metadata, scope$metadata)
+        columns <- metadata$columns
+        return(saveWorkflowTableSelection(scope, NULL,
+            data.frame(output = columns, source = columns,
+                cast = rep("identity", length(columns))), metadata, request_id, identity))
+    }
     checkWorkflowTableRestoration(metadata, scope$physical_metadata)
     if (identical(metadata, scope$metadata)) return(scope$reference)
     if (identical(metadata, scope$physical_metadata)) return(scope$physical_reference)
@@ -1869,6 +2225,158 @@ saveWorkflowTableComponent <- function(scope, metadata, request_id, identity) {
         kind = "result_table", codec = "rds")
 }
 
+#' Save a bounded v2 row/column selection over the canonical physical table.
+#' @param scope Existing logical or physical table lease.
+#' @param rows NULL for all input rows or a physical logical-position map reference.
+#' @param columns Ordered data frame with output/source/cast character fields.
+#' @param metadata Exact restoration metadata for the logical result.
+#' @param request_id,identity Existing durable request and producer identity.
+#' @return Small immutable component reference with its source/map dependencies.
+#' @noRd
+saveWorkflowTableSelection <- function(scope, rows, columns, metadata, request_id, identity) {
+    checkWorkflowTableReadScope(scope)
+    if (!is.data.frame(columns) || !identical(names(columns), c("output", "source", "cast")) ||
+        !nrow(columns) || !all(vapply(columns, is.character, logical(1))) || anyNA(columns) ||
+        any(!nzchar(unlist(columns, use.names = FALSE))) || anyDuplicated(columns$output) ||
+        anyDuplicated(columns$source) || !all(columns$source %in% scope$metadata$columns) ||
+        !all(columns$cast %in% c("identity", "factor_to_character")) ||
+        !is.list(metadata) || !metadata$schema %in% c(2L, 3L) ||
+        as.numeric(object.size(metadata)) > 8388608 ||
+        !is.character(request_id) || length(request_id) != 1L ||
+        !is.list(identity))
+        cli::cli_abort("invalid logical selection", class = "saved_entity_invalid")
+    if (any(vapply(seq_len(nrow(columns)), \(i)
+        columns$cast[[i]] == "factor_to_character" &&
+            is.null(scope$metadata$column_metadata[[columns$source[[i]]]]$levels), logical(1))))
+        cli::cli_abort("factor cast requires a factor input", class = "saved_entity_unsupported")
+    if (!is.null(scope$view) && isTRUE(scope$metadata$automatic_row_names) &&
+        !isTRUE(metadata$automatic_row_names) &&
+        (!identical(scope$view$rows$mode, "all") ||
+            !isTRUE(scope$physical_metadata$automatic_row_names)))
+        cli::cli_abort(paste("nested selection cannot retain these logical row names;",
+            "export the parent with saveWorkflowTablePhysicalExport first"),
+            class = "saved_entity_unsupported")
+    if (is.null(rows) && identical(metadata, scope$metadata) &&
+        identical(columns$output, columns$source) && all(columns$cast == "identity"))
+        return(scope$reference)
+    count <- if (is.null(rows)) scope$metadata$rows else {
+        map <- newWorkflowTableReadScope(scope$store, rows, reader = "arrow", metadata_only = TRUE)
+        on.exit(releaseWorkflowTableReadScope(map), add = TRUE)
+        n <- map$metadata$rows
+        releaseWorkflowTableReadScope(map)
+        validateWorkflowTableRowMap(scope$store, rows, n, scope$metadata$rows)
+        n
+    }
+    if (!identical(as.double(metadata$rows), as.double(count)) ||
+        !identical(metadata$columns, columns$output))
+        cli::cli_abort("logical selection metadata changes rows or columns",
+            class = "saved_entity_invalid")
+    mapping <- columns
+    if (!is.null(scope$view)) {
+        parent <- scope$view$columns
+        at <- match(columns$source, parent$output)
+        mapping$source <- parent$source[at]
+        mapping$cast[parent$cast[at] == "factor_to_character"] <- "factor_to_character"
+    }
+    row_map <- if (is.null(rows)) {
+        if (is.null(scope$view)) NULL else scope$view$rows$map
+    } else if (is.null(scope$view) || is.null(scope$view$rows$map)) rows else {
+        # Compose logical positions through two validated maps in one scoped SQL join.
+        sql_scope <- newWorkflowTableReadScope(scope$store, scope$physical_reference,
+            reader = "duckdb")
+        on.exit(releaseWorkflowTableReadScope(sql_scope), add = TRUE)
+        child <- newWorkflowTableReadScope(scope$store, rows, reader = "arrow", metadata_only = TRUE)
+        on.exit(releaseWorkflowTableReadScope(child), add = TRUE)
+        ancestor <- newWorkflowTableReadScope(scope$store, scope$view$rows$map,
+            reader = "arrow", metadata_only = TRUE)
+        on.exit(releaseWorkflowTableReadScope(ancestor), add = TRUE)
+        con <- sql_scope$connection
+        DBI::dbExecute(con, "SET threads = 8")
+        DBI::dbExecute(con, "SET memory_limit = '12GiB'")
+        DBI::dbExecute(con, "SET max_temp_directory_size = '0B'")
+        quote_path <- \(path) as.character(DBI::dbQuoteString(con, path))
+        query <- paste0('SELECT CAST(m."logical_ordinal" AS DOUBLE) AS "logical_ordinal", ',
+            'CAST(p."source_ordinal" AS DOUBLE) AS "source_ordinal", ',
+            'CAST(m."logical_ordinal" AS INTEGER) AS ".multischolar_order" ',
+            "FROM read_parquet(", quote_path(child$path), ") m JOIN read_parquet(",
+            quote_path(ancestor$path), ") p ON m.\"source_ordinal\" = p.\"logical_ordinal\"",
+            ' ORDER BY m."logical_ordinal"')
+        map_metadata <- workflowSavedTableMetadata(data.frame(
+            logical_ordinal = double(), source_ordinal = double()), "logical_ordinal", 3L)
+        map_metadata$rows <- count
+        map_identity <- newSavedWorkflowScientificIdentity(scope$view_id,
+            rows$entity_id, digest::digest(list(rows$entity_id,
+                scope$view$rows$map$entity_id), algo = "sha256"),
+            "composed-logical-ordinals-v2", identity$software)
+        row_map <- saveWorkflowTableQuery(sql_scope, query, map_metadata,
+            basename(tempfile("view-map-")), map_identity)
+        releaseWorkflowTableReadScope(child)
+        releaseWorkflowTableReadScope(ancestor)
+        releaseWorkflowTableReadScope(sql_scope)
+        validateWorkflowTableRowMap(scope$store, row_map, count,
+            scope$physical_metadata$rows)
+        row_map
+    }
+    if (!is.null(row_map)) validateWorkflowTableRowMap(scope$store, row_map,
+        count, scope$physical_metadata$rows)
+    row_spec <- list(mode = if (is.null(row_map)) "all" else "mapped",
+        map = row_map, count = as.double(count))
+    raw_metadata <- serialize(metadata, NULL, version = 3)
+    view_id <- workflowTableViewId(scope$physical_reference, row_spec, mapping, raw_metadata)
+    value <- structure(list(schema = "workflow.table_component.v2",
+        source = scope$physical_reference, rows = row_spec, columns = mapping,
+        metadata_raw = raw_metadata, view_id = view_id, indexes = list()),
+        class = "WorkflowTableComponent")
+    if (as.numeric(object.size(value)) > 8388608)
+        cli::cli_abort("logical selection exceeds metadata limits", class = "saved_entity_limit")
+    validateWorkflowTableView(scope$store, list(metadata = list(shape = c(count, nrow(mapping)))),
+        value, metadata)
+    identity$input <- scope$physical_reference$entity_id
+    identity$design <- "physical-table"
+    identity$parameters <- view_id
+    identity$selectors <- "workflow-table-selection-v2"
+    hit <- resolveSavedWorkflowEntity(scope$store, "result_table", identity, hydrate = FALSE)
+    if (identical(hit$status, "hit")) return(hit$reference)
+    saveWorkflowEntity(scope$store, value, request_id, identity,
+        list(class = class(value), shape = as.integer(c(count, nrow(mapping))), factors = list()),
+        kind = "result_table", codec = "rds")
+}
+
+#' Export a selected view as an ordinary physical table for older readers.
+#' @param scope Selected view lease.
+#' @param request_id,identity Durable request and producer identity.
+#' @return Accepted physical Parquet descriptor.
+#' @noRd
+saveWorkflowTablePhysicalExport <- function(scope, request_id, identity) {
+    checkWorkflowTableReadScope(scope)
+    if (is.null(scope$view) && identical(scope$metadata, scope$physical_metadata))
+        return(scope$physical_reference)
+    if (!scope$metadata$schema %in% c(2L, 3L))
+        cli::cli_abort("logical physical export requires version 2 or 3 restoration metadata",
+            class = "saved_entity_unsupported")
+    population <- if (is.null(scope$view)) digest::digest(list(
+        scope$physical_reference$entity_id, scope$metadata), algo = "sha256") else scope$view_id
+    identity$input <- population
+    identity$parameters <- digest::digest(list(population, "physical-export-v2"), algo = "sha256")
+    identity$selectors <- "workflow-table-physical-export-v2"
+    metadata <- scope$metadata
+    if (!metadata$key_column %in% c(".rownames", metadata$columns)) {
+        metadata$key_column <- ".rownames"
+        metadata$key_type <- "character"
+        if (!isTRUE(metadata$automatic_row_names)) metadata$row_name_column <- ".multischolar_row_key"
+    }
+    saveWorkflowTable(scope$store, NULL, request_id, identity,
+        metadata$key_column, metadata = metadata,
+        write_fn = function(path, metadata) {
+            writer <- openWorkflowTableWriter(path, metadata, scope$store$progress,
+                backend = "fast_r")
+            on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+            streamWorkflowTableRows(scope, metadata$columns, function(data, offset, row_names)
+                appendWorkflowTableWriter(writer, data))
+            finishWorkflowTableWriter(writer)
+        })
+}
+
 #' Expand logical table dependencies without hydrating any assay.
 #' @param store Open store.
 #' @param references Identity-keyed saved descriptor list.
@@ -1878,7 +2386,10 @@ expandWorkflowTableReferences <- function(store, references) {
     for (reference in references) {
         component <- readWorkflowTableComponent(store, reference)
         if (is.null(component)) next
-        for (child in c(list(component$source), component$indexes)) {
+        children <- c(list(component$source),
+            if (!is.null(component$view) && !is.null(component$view$rows$map))
+                list(component$view$rows$map) else list(), component$indexes)
+        for (child in children) {
             validateSavedWorkflowReference(store, child, payload = FALSE)
             previous <- references[[child$entity_id]]
             if (!is.null(previous) && !identical(previous, child))
@@ -1889,6 +2400,26 @@ expandWorkflowTableReferences <- function(store, references) {
     if (length(references) > store$max_entries || as.numeric(object.size(references)) > store$max_metadata_bytes)
         cli::cli_abort("table dependency closure exceeds metadata limits", class = "saved_entity_limit")
     references
+}
+
+#' Return the immutable population identity used for derived products.
+#' @param scope Validated table lease.
+#' @return Physical ID for v1; semantic logical view ID for v2.
+#' @noRd
+workflowTablePopulationId <- function(scope) {
+    if (is.null(scope$view)) scope$physical_reference$entity_id else scope$view_id
+}
+
+#' Refuse a direct physical SQL/file access to a selected logical population.
+#' @param scope Validated table scope.
+#' @return NULL invisibly for physical and legacy metadata-only views.
+#' @noRd
+assertWorkflowPhysicalTableScope <- function(scope) {
+    checkWorkflowTableReadScope(scope)
+    if (!is.null(scope$view))
+        cli::cli_abort("physical SQL consumer cannot read a selected table",
+            class = "saved_entity_unsupported")
+    invisible(NULL)
 }
 
 #' Estimate fixed per-row group storage before allocating projected buffers.
@@ -1912,14 +2443,16 @@ saveWorkflowGroupIndex <- function(scope, group) {
     checkWorkflowTableReadScope(scope)
     checkSavedEntityString(group, "group column")
     if (!group %in% scope$metadata$columns) cli::cli_abort("group column is missing")
-    identity <- newSavedWorkflowScientificIdentity(scope$physical_reference$entity_id,
+    population_id <- workflowTablePopulationId(scope)
+    identity <- newSavedWorkflowScientificIdentity(population_id,
         "physical-row-population", digest::digest(list(group, scope$metadata$column_metadata[[group]]), algo = "sha256"),
-        "stable-group-ordinals-v1", digest::digest(list(body(saveWorkflowGroupIndex),
+        "stable-group-ordinals-v1", digest::digest(list(deparse(body(saveWorkflowGroupIndex),
+            control = c("keepInteger", "keepNA"), width.cutoff = 500L),
             R.version[c("major", "minor", "platform")]), algo = "sha256"))
     hit <- resolveSavedWorkflowEntity(scope$store, "scientific_product", identity)
     if (identical(hit$status, "hit")) {
         value <- hit$value$value
-        if (!identical(value$source_id, scope$physical_reference$entity_id) ||
+        if (!identical(value$source_id, population_id) ||
             !identical(value$group, group)) cli::cli_abort("group index identity differs", class = "saved_entity_corrupt")
         return(list(reference = hit$reference, value = value))
     }
@@ -1964,7 +2497,7 @@ saveWorkflowGroupIndex <- function(scope, group) {
             finishWorkflowTableWriter(writer)
         })
     codes <- positions <- directory <- values <- NULL
-    value <- list(source_id = scope$physical_reference$entity_id, group = group,
+    value <- list(source_id = population_id, group = group,
         groups = groups, positions = ordinals)
     reference <- saveWorkflowConsumerEntity(scope$store,
         newSavedWorkflowScientificProduct(value, "ordered-table-groups"),
@@ -2068,14 +2601,16 @@ saveWorkflowOrderIndex <- function(scope, columns) {
     columns <- setdiff(columns, ".multischolar_order")
     if (!all(columns %in% scope$metadata$columns) || anyDuplicated(columns))
         cli::cli_abort("ordering key is absent", class = "saved_entity_invalid")
-    identity <- newSavedWorkflowScientificIdentity(scope$physical_reference$entity_id,
+    population_id <- workflowTablePopulationId(scope)
+    identity <- newSavedWorkflowScientificIdentity(population_id,
         "physical-row-order", digest::digest(list(columns, scope$metadata$column_metadata[columns]), algo = "sha256"),
-        "stable-table-order-v1", digest::digest(list(body(saveWorkflowOrderIndex),
+        "stable-table-order-v1", digest::digest(list(deparse(body(saveWorkflowOrderIndex),
+            control = c("keepInteger", "keepNA"), width.cutoff = 500L),
             R.version[c("major", "minor", "platform")]), algo = "sha256"))
     hit <- resolveSavedWorkflowEntity(scope$store, "scientific_product", identity)
     if (identical(hit$status, "hit")) {
         value <- hit$value$value
-        if (!identical(value$source_id, scope$physical_reference$entity_id) ||
+        if (!identical(value$source_id, population_id) ||
             !identical(value$columns, columns) ||
             !is.null(value$positions) && !isWorkflowTableReference(value$positions))
             cli::cli_abort("ordering index identity differs", class = "saved_entity_corrupt")
@@ -2132,7 +2667,7 @@ saveWorkflowOrderIndex <- function(scope, columns) {
             })
     }
     positions <- NULL
-    value <- list(source_id = scope$physical_reference$entity_id, columns = columns, positions = ordinal)
+    value <- list(source_id = population_id, columns = columns, positions = ordinal)
     reference <- saveWorkflowConsumerEntity(scope$store,
         newSavedWorkflowScientificProduct(value, "ordered-table-rows"), basename(tempfile("table-order-product-")),
         identity, "scientific_product")
@@ -2157,7 +2692,8 @@ openWorkflowOrderedRows <- function(store, reference, columns, order_columns) {
     iterator$cohort_at <- 1L
     iterator$offset <- 0L
     iterator$closed <- FALSE
-    direct <- if (is.null(index$value$positions)) openWorkflowArrowCursor(scope, columns) else NULL
+    direct <- if (is.null(index$value$positions) && is.null(scope$view))
+        openWorkflowArrowCursor(scope, columns) else NULL
     iterator$close <- function() {
         if (!iterator$closed) {
             iterator$cohort <- NULL
@@ -2171,6 +2707,13 @@ openWorkflowOrderedRows <- function(store, reference, columns, order_columns) {
         if (iterator$closed) return(NULL)
         if (is.null(index$value$positions)) {
             if (iterator$offset >= scope$metadata$rows) { iterator$close(); return(NULL) }
+            if (!is.null(scope$view)) {
+                page <- readSavedWorkflowTable(store, reference, columns,
+                    offset = iterator$offset,
+                    limit = min(10000L, scope$metadata$rows - iterator$offset), scope = scope)
+                iterator$offset <- iterator$offset + nrow(page$data)
+                return(page$data)
+            }
             part <- direct$fetch()
             if (is.null(part) || !identical(as.integer(part$.source_order),
                 seq.int(iterator$offset + 1L, length.out = nrow(part))))
@@ -2217,11 +2760,18 @@ workflowTableBatchDirectory <- function(scope) {
 #' @param store,reference Existing table owner and immutable descriptor.
 #' @param columns At most 64 projected fields.
 #' @param ordinals At most 10,000 one-based source ordinals, preserving duplicates.
+#' @param scope Optional existing physical DuckDB lease.
 #' @return Typed data in exactly requested order.
 #' @noRd
-readWorkflowSelectedOrdinals <- function(store, reference, columns, ordinals) {
-    scope <- newWorkflowTableReadScope(store, reference, reader = "duckdb")
-    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+readWorkflowSelectedOrdinals <- function(store, reference, columns, ordinals, scope = NULL) {
+    if (is.null(scope)) {
+        scope <- newWorkflowTableReadScope(store, reference, reader = "duckdb")
+        on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    }
+    if (!identical(scope$store, store) || !identical(scope$reference, reference) ||
+        !identical(scope$reader, "duckdb"))
+        cli::cli_abort("ordinal query scope differs", class = "saved_entity_scope")
+    assertWorkflowPhysicalTableScope(scope)
     if (!is.numeric(ordinals) || length(ordinals) > 10000L || anyNA(ordinals) ||
         any(!is.finite(ordinals) | ordinals != floor(ordinals) | ordinals < 1 | ordinals > scope$metadata$rows) ||
         !is.character(columns) || !length(columns) || length(columns) > 64L ||
@@ -2238,7 +2788,11 @@ readWorkflowSelectedOrdinals <- function(store, reference, columns, ordinals) {
     at <- match(ordinals, data$.source_order)
     if (anyNA(at) || anyDuplicated(data$.source_order))
         cli::cli_abort("ordinal projection differs from source", class = "saved_entity_corrupt")
-    data <- restoreSavedWorkflowTable(data[at, , drop = FALSE], scope$metadata, columns)
+    data <- data[at, , drop = FALSE]
+    source_names <- workflowTableSourceRowNames(data, scope$metadata, data$.source_order)
+    data <- restoreSavedWorkflowTable(data, scope$metadata, columns)
+    if (!anyDuplicated(source_names) && !anyNA(source_names))
+        data <- restoreWorkflowTableRowNames(data, scope$metadata, source_names)
     if (as.numeric(object.size(data)) > 67108864)
         cli::cli_abort("ordinal projection exceeds 64 MiB", class = "saved_entity_limit")
     data

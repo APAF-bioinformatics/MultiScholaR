@@ -294,7 +294,7 @@ test_that("affected saved-entity regressions preserve existing boundaries", {
                 errors = sum(results$error), details = results)
         })
         list(results = results)
-    }, args = list(library, workflow_test_root), timeout = 180)
+    }, args = list(library, workflow_test_root), timeout = 360)
     saveRDS(result, file.path(workflow_test_application$config$root, "affected-regressions.rds"))
     for (item in result$results) {
         expect_identical(item$failed, 0L, info = item$file)

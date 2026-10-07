@@ -188,10 +188,13 @@ readDIAStateMetadata <- function(manager, reference = NULL) {
 #' Assemble one explicitly requested compatibility table using bounded reads.
 #' @param context Current owner.
 #' @param reference Table descriptor.
+#' @param max_bytes Retained v2 compatibility allocation, at most 256 MiB;
+#'   one existing bounded read batch can overlap this allocation.
 #' @return Original data frame; intermediate batches are released on each iteration.
 #' @noRd
 materializeDIATable <- function(context, reference, selected_columns = NULL,
-    scope = NULL, relation = NULL, filter_column = NULL, filter_value = NULL) {
+    scope = NULL, relation = NULL, filter_column = NULL, filter_value = NULL,
+    max_bytes = 268435456) {
     if (is.null(scope)) {
         scope <- newWorkflowTableReadScope(context$store, reference,
             reader = if (is.null(selected_columns)) "arrow" else "fastduckdb")
@@ -200,6 +203,7 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
     metadata <- scope$metadata
     predicate <- NULL
     if (!is.null(relation)) {
+        assertWorkflowPhysicalTableScope(scope)
         quoted <- as.character(DBI::dbQuoteIdentifier(scope$connection, relation))
         column <- as.character(DBI::dbQuoteIdentifier(scope$connection, filter_column))
         filter_parameters <- as.list(filter_value[!is.na(filter_value)])
@@ -216,6 +220,13 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
         !all(selected_columns %in% metadata$columns)) {
         cli::cli_abort("invalid scientific table projection", class = "saved_entity_invalid")
     }
+    if (!is.numeric(max_bytes) || length(max_bytes) != 1L || is.na(max_bytes) ||
+        !is.finite(max_bytes) || max_bytes < 1 || max_bytes > 268435456)
+        cli::cli_abort("invalid selected S4 materialization limit", class = "saved_entity_limit")
+    fixed_bytes <- as.double(metadata$rows) * workflowProjectedRowBytes(metadata, selected_columns)
+    if (!is.null(scope$view) && fixed_bytes + as.numeric(object.size(metadata)) > max_bytes)
+        cli::cli_abort("selected S4 table exceeds its materialization limit",
+            class = "saved_entity_limit")
     metadata$columns <- selected_columns
     metadata$column_metadata <- metadata$column_metadata[selected_columns]
     columns <- lapply(metadata$column_metadata, \(spec) {
@@ -224,6 +235,15 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
     })
     row_names <- if (isTRUE(metadata$automatic_row_names)) NULL else character(metadata$rows)
     source_positions <- if (is.null(relation)) NULL else integer(metadata$rows)
+    retained_bytes <- max(fixed_bytes, as.numeric(object.size(columns)) +
+        as.numeric(object.size(row_names))) + as.numeric(object.size(metadata))
+    if (!is.null(scope$view) && retained_bytes > max_bytes)
+        cli::cli_abort("selected S4 table exceeds its materialization limit",
+            class = "saved_entity_limit")
+    # Charge strings per batch without assuming that strings shared between
+    # batches remain interned. Vector slots and restoration metadata are
+    # already reserved; this deliberately overestimates shared string storage.
+    string_bytes <- function(value) max(0, as.numeric(object.size(value)) - 8 * length(value))
     if (!metadata$rows) {
         for (name in intersect(names(metadata$name_columns), names(columns))) names(columns[[name]]) <- character()
     }
@@ -236,6 +256,18 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
         " FROM ", quoted, " WHERE ", predicate, " ORDER BY \".multischolar_order\"")
     streamSavedWorkflowTable(scope, block, function(data, offset, source_names) {
         if (!nrow(data)) return(invisible(NULL))
+        if (!is.null(scope$view)) {
+            incoming_bytes <- sum(vapply(data, function(column) {
+                if (is.character(column)) string_bytes(column) else
+                    if (!is.null(names(column))) string_bytes(names(column)) else 0
+            }, numeric(1)))
+            if (!is.null(row_names) && identical(block, blocks[[1L]]))
+                incoming_bytes <- incoming_bytes + string_bytes(source_names)
+            if (retained_bytes + incoming_bytes > max_bytes)
+                cli::cli_abort("selected S4 table exceeds its materialization limit",
+                    class = "saved_entity_limit")
+            retained_bytes <<- retained_bytes + incoming_bytes
+        }
         at <- seq.int(offset + 1L, offset + nrow(data))
         for (name in names(data)) {
             columns[[name]][at] <<- data[[name]]
@@ -246,6 +278,9 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
         invisible(NULL)
     }, query = query, params = if (is.null(relation)) NULL else filter_parameters,
         expected_rows = metadata$rows)
+    if (!is.null(scope$view) && as.numeric(object.size(columns)) > max_bytes)
+        cli::cli_abort("selected S4 table exceeds its materialization limit",
+            class = "saved_entity_limit")
     }
     for (name in metadata$columns) {
         spec <- metadata$column_metadata[[name]]
@@ -261,6 +296,9 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
     attr(columns, "row.names") <- row_names %||% .set_row_names(metadata$rows)
     class(columns) <- metadata$class
     columns <- restoreWorkflowAttributeOrder(columns, metadata$attribute_order)
+    if (!is.null(scope$view) && as.numeric(object.size(columns)) > max_bytes)
+        cli::cli_abort("selected S4 table exceeds its materialization limit",
+            class = "saved_entity_limit")
     if (!is.null(source_positions)) attr(columns, "dia_source_order") <- source_positions
     columns
 }

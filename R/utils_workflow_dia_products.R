@@ -445,7 +445,7 @@ readDIAProteinProgress <- function(manager, reference, summary = NULL) {
     scope <- newWorkflowTableReadScope(context$store, spec$components$protein_quant_table,
         reader = "arrow", metadata_only = TRUE)
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
-    identity <- newSavedWorkflowScientificIdentity(scope$physical_reference$entity_id,
+    identity <- newSavedWorkflowScientificIdentity(workflowTablePopulationId(scope),
         spec$components$design_matrix$entity_id, digest::digest(spec$slots[c("sample_id", "protein_id_column")],
             algo = "sha256"), "protein-filtering-counts-v1", context$software)
     hit <- resolveSavedWorkflowEntity(context$store, "scientific_product", identity)
@@ -457,6 +457,7 @@ readDIAProteinProgress <- function(manager, reference, summary = NULL) {
             cli::cli_abort("declared progress samples are invalid", class = "saved_entity_invalid")
         releaseWorkflowTableReadScope(scope)
         scope <- newWorkflowTableReadScope(context$store, spec$components$protein_quant_table)
+        assertWorkflowPhysicalTableScope(scope)
         unique_columns <- unique(columns)
         counts <- stats::setNames(integer(length(unique_columns)), unique_columns)
         for (block in split(unique_columns, ceiling(seq_along(unique_columns) / 64L))) {
