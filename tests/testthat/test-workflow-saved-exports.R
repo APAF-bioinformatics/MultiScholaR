@@ -792,3 +792,89 @@ test_that("owned snapshots remain independent of later source writes", {
     expect_identical(Sys.readlink(dangling), target)
     expect_false(file.exists(target))
 })
+
+test_that("latest publication resumes from latest.replacement after an interrupted rename", {
+    output <- withr::local_tempdir()
+    session <- makeExportSessionTemplate(makeSavedExportProtein(0L),
+        makeSavedExportProtein(1L))
+    latest <- file.path(output, "filtered_session_data_latest.rds")
+    saveRDS(list(previous = TRUE), latest)
+    lose_final_rename <- function(from, to) {
+        if (identical(basename(to), "filtered_session_data_latest.rds")) {
+            stop("lost between latest renames")
+        }
+        file.rename(from, to)
+    }
+    expect_error(runWorkflowLegacyExport(session, output, "retry-latest",
+        "20260916_160400", renameFn = lose_final_rename), "lost between latest renames")
+    replacement <- file.path(output, ".workflow-export", "retry-latest", "latest.replacement")
+    expect_true(file.exists(replacement))
+    completed <- runWorkflowLegacyExport(NULL, output, "retry-latest",
+        "20260916_160400", serializeFn = function(...) stop("must not serialize"))
+    expect_identical(completed$status, "complete")
+    expect_identical(completed$serialization_count, 1L)
+    expect_identical(digest::digest(file = latest, algo = "sha256"), completed$latest_sha256)
+    expect_false(file.exists(replacement))
+})
+
+test_that("an interrupted journal write never leaves an unparseable export journal", {
+    original_write <- jsonlite::write_json
+    for (target in c("outputs_pending", "complete")) {
+        output <- withr::local_tempdir()
+        session <- makeExportSessionTemplate(makeSavedExportProtein(0L),
+            makeSavedExportProtein(1L))
+        request <- paste0("journal-", sub("_", "-", target))
+        journal_path <- file.path(output, ".workflow-export", request, "journal.json")
+        interrupted <- FALSE
+        local({
+            testthat::local_mocked_bindings(write_json = function(x, path, ...) {
+                if (!interrupted && identical(x$status, target)) {
+                    interrupted <<- TRUE
+                    writeLines("{", path)
+                    stop("lost during journal write")
+                }
+                original_write(x, path, ...)
+            }, .package = "jsonlite")
+            expect_error(runWorkflowLegacyExport(session, output, request, "20260916_160500"),
+                "lost during journal write")
+        })
+        expect_true(interrupted, info = target)
+        if (file.exists(journal_path)) {
+            expect_no_error(jsonlite::read_json(journal_path))
+        }
+        expect_length(list.files(dirname(journal_path), pattern = "^journal-"), 0L)
+        completed <- runWorkflowLegacyExport(session, output, request, "20260916_160500")
+        expect_identical(completed$status, "complete", info = target)
+        expect_identical(jsonlite::read_json(journal_path)$status, "complete", info = target)
+    }
+})
+
+test_that("a retried action publication never publishes files from a failed attempt", {
+    root <- withr::local_tempdir()
+    source <- file.path(root, "source")
+    output <- file.path(root, "outputs")
+    dir.create(source)
+    dir.create(output)
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "stale-staging", "DIA"),
+        WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    manager$.context$experiment_paths <- list(source_dir = source)
+    manager$saveState("ready", makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small")), list(), "ready")
+    reference <- getDIAStateReference(manager)
+    failing <- function(paths) {
+        writeLines("partial", file.path(paths$protein_qc_dir, "stale.tsv"))
+        stop("producer failed")
+    }
+    expect_error(publishDIAActionOutputs(manager, reference, "normalization",
+        list(protein_qc_dir = output), failing), "producer failed")
+    succeeding <- function(paths) {
+        writeLines("accepted", file.path(paths$protein_qc_dir, "a.tsv"))
+        list(status = "ready")
+    }
+    result <- publishDIAActionOutputs(manager, reference, "normalization",
+        list(protein_qc_dir = output), succeeding)
+    expect_identical(result, list(status = "ready"))
+    expect_identical(readLines(file.path(output, "a.tsv")), "accepted")
+    expect_false(file.exists(file.path(output, "stale.tsv")))
+})

@@ -149,6 +149,8 @@ publishDIAActionOutputs <- function(manager, reference, label, destinations, pro
     was_complete <- identical(journal$status, "complete")
     writeWorkflowExportJournal(paths, journal)
     staged_root <- file.path(paths$request_dir, "files")
+    # Until an inventory is journaled, staged files belong to no accepted attempt.
+    if (is.null(journal$files)) unlink(staged_root, recursive = TRUE)
     staged <- stats::setNames(lapply(names(destinations), function(role) {
         checkSavedEntityString(role, "output role")
         path <- file.path(staged_root, role)
@@ -425,7 +427,11 @@ syncWorkflowExportPaths <- function(paths, root) {
 #' @noRd
 writeWorkflowExportJournal <- function(paths, journal) {
     temporary <- tempfile("journal-", tmpdir = paths$request_dir)
-    jsonlite::write_json(journal, temporary, auto_unbox = TRUE, pretty = TRUE, null = "null")
+    tryCatch(jsonlite::write_json(journal, temporary, auto_unbox = TRUE, pretty = TRUE, null = "null"),
+        error = function(error) {
+            unlink(temporary)
+            stop(error)
+        })
     syncWorkflowExportPaths(temporary, paths$root)
     journal_path <- file.path(paths$request_dir, "journal.json")
     if (!file.rename(temporary, journal_path)) {
@@ -557,13 +563,11 @@ stageWorkflowLegacyExport <- function(session_data, paths, request_id, timestamp
         staged_latest = staged_latest, latest_sha256 = latest_hash,
         additional = additions, serialization_count = 1L,
         scientific_checkpoint_count = 0L, promotion_authorized = FALSE)
-    journal_path <- file.path(paths$request_dir, "journal.json")
-    jsonlite::write_json(journal, journal_path, auto_unbox = TRUE,
-        pretty = TRUE, null = "null")
-    syncWorkflowExportPaths(c(staged_session, staged_latest, journal_path,
+    # Staged bytes are durable before the journal that names them is published.
+    syncWorkflowExportPaths(c(staged_session, staged_latest,
         paths$request_dir, paths$staging_root, paths$root,
         unlist(lapply(additions, `[[`, "staged"), use.names = FALSE)), paths$root)
-    journal
+    writeWorkflowExportJournal(paths, journal)
 }
 
 #' Publish or recover one staged export, with latest and completion last.
@@ -622,13 +626,14 @@ publishWorkflowLegacyExport <- function(paths, boundaryFn = workflowExportBounda
     }
     boundaryFn("before_latest_publication")
     latest_destination <- file.path(paths$root, "filtered_session_data_latest.rds")
-    if (file.exists(journal$staged_latest)) {
-        replacement <- file.path(paths$request_dir, "latest.replacement")
-        if (!isTRUE(renameFn(journal$staged_latest, replacement)) ||
-            !isTRUE(renameFn(replacement, latest_destination))) {
-            cli::cli_abort("latest session publication failed",
-                class = "saved_entity_write")
-        }
+    replacement <- file.path(paths$request_dir, "latest.replacement")
+    if (file.exists(journal$staged_latest) &&
+        !isTRUE(renameFn(journal$staged_latest, replacement))) {
+        cli::cli_abort("latest session publication failed", class = "saved_entity_write")
+    }
+    # A retry after loss between the two renames finds only the replacement.
+    if (file.exists(replacement) && !isTRUE(renameFn(replacement, latest_destination))) {
+        cli::cli_abort("latest session publication failed", class = "saved_entity_write")
     }
     if (!file.exists(latest_destination) ||
         !identical(digest::digest(file = latest_destination, algo = "sha256"),
@@ -640,14 +645,21 @@ publishWorkflowLegacyExport <- function(paths, boundaryFn = workflowExportBounda
     journal$timestamped_path <- session_destination
     journal$latest_path <- latest_destination
     journal$completed_at <- format(Sys.time(), tz = "UTC", usetz = TRUE)
-    jsonlite::write_json(journal, journal_path, auto_unbox = TRUE,
-        pretty = TRUE, null = "null")
+    syncWorkflowExportPaths(c(session_destination, latest_destination), paths$root)
+    writeWorkflowExportJournal(paths, journal)
     completion <- file.path(paths$root, paste0("export_complete_",
         journal$request_id, ".json"))
-    jsonlite::write_json(journal, completion, auto_unbox = TRUE,
-        pretty = TRUE, null = "null")
-    syncWorkflowExportPaths(c(session_destination, latest_destination,
-        journal_path, completion, paths$request_dir, paths$root), paths$root)
+    temporary <- tempfile(".export-complete-", tmpdir = paths$root)
+    tryCatch(jsonlite::write_json(journal, temporary, auto_unbox = TRUE, pretty = TRUE, null = "null"),
+        error = function(error) {
+            unlink(temporary)
+            stop(error)
+        })
+    syncWorkflowExportPaths(temporary, paths$root)
+    if (!file.rename(temporary, completion)) {
+        cli::cli_abort("export completion publication failed", class = "saved_entity_write")
+    }
+    syncWorkflowExportPaths(c(completion, paths$root), paths$root)
     journal
 }
 

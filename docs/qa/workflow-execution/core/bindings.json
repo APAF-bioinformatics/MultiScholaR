@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "owner": "CORE-001",
+  "created": "2026-10-08",
+  "authority": {
+    "plan": "tickets/openai/06-CORE-INFRA-PLAN.md",
+    "plan_sha256": "cc44b7fa3bdb76832b2153caa664fb034cf80ab01bfab735336c66c49010b179",
+    "agents_sha256": "719359c1ed2b4da7683b7ba3b52c4992d4eff102ff66eee8e8c10b6a4042e000"
+  },
+  "repository": {
+    "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
+    "tracked_tree_clean": true
+  },
+  "perf107": {
+    "paused_commit": "9df060f00a5d8e59b712d05c86d31c0165980035",
+    "status_index": "blocked",
+    "status_frontmatter": "blocked",
+    "consistent": true
+  },
+  "control": {
+    "source": "docs/qa/workflow-execution/perf-108/closeout/bindings.rds",
+    "source_sha256": "aececdecc8766c33a7b305d4a34c908718a52d9fdb82d68c4893a906dbfb9d2b",
+    "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-108/ordered-groups/browser-smoke.jEmE2F/library",
+    "build": "0c38dce1991718ea0ef6fa11e424d020cda4ea6e837bce4e04011fd360b626bd",
+    "exact_sum_sha256": "77905b6508f23911050929ced642e537e2f1266a0db158af30a3cfb8b2717f7f",
+    "versions": {
+      "MultiScholaR": "0.5.0",
+      "fastduckdb": "0.2.0",
+      "duckdb": "1.5.5",
+      "arrow": "24.0.0",
+      "nanoarrow": "0.9.0",
+      "duckplyr": "1.2.1"
+    }
+  },
+  "populations": {
+    "full_p14": {
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.BpSyxB/dia_baseline_smoke/scripts/proteomics/.checkpoint-replay/.workflow-entities",
+      "entity_id": "7d3ded02bb64fa226a4f0c07b167c5ad5e17d33be909732c469d6ab6f551e21e",
+      "payload_relative_path": "entities/dia-data-3b78a7f3c1672/payload.parquet",
+      "payload_sha256": "5b836b47a7d37ba1c726f41338909c98c47a91bb377a3d4fdd1b259975c83be8",
+      "payload_bytes": 1159271509,
+      "head_sha256": "5d64ca562669d94eea1677a1a03d5b410a8a81d8ea59add8cabd6065deb91353",
+      "rows": 24000000
+    },
+    "screen_p14": {
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.djt8ku/size-960000/.workflow-entities",
+      "entity_id": "5b6a36c58a74f6735bcb80a20331cc7a417c44aeafb67ebb4cc06fe2577c5f76",
+      "payload_relative_path": "entities/selection-960000/payload.parquet",
+      "payload_sha256": "e1c1cc32659c6aa3d0bd5b174adc9c61f97fe704183fce68be26a96b82b9f60d",
+      "payload_bytes": 36646708,
+      "head_sha256": "4c7b3e54884baa434d106de532fc4b4401b3b8ba7201bcc1c2dcaee358b32dcc",
+      "rows": 960000
+    },
+    "full_primary": {
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-pilot-v1/browser-smoke.Xu0y9g/primary/.workflow-entities",
+      "entity_id": "02d891ac05dc5b7c35f7d07221413aa1cf346919e088fd6c1bf0062c28eda566",
+      "payload_relative_path": "entities/perf106-primary/payload.parquet",
+      "payload_sha256": "f8b33c6c175be20e1bae80dc7c7ab0e14765420b8388600fc3978019bdf02ae1",
+      "payload_bytes": 191384576,
+      "head_sha256": "500eb59a3308bc33d38da0a1515430f7d7db130591b69062655250a8c528ea07",
+      "rows": 6225000,
+      "samples": 300,
+      "parameters": {
+        "peptides_per_sample_cutoff": 3000,
+        "inclusion_list": ["run_0076", "run_0077", "run_0078", "run_0079", "run_0080", "run_0081", "run_0082", "run_0083", "run_0084", "run_0085", "run_0086", "run_0087", "run_0088", "run_0089", "run_0090", "run_0091", "run_0092", "run_0093", "run_0094", "run_0095", "run_0096", "run_0097", "run_0098", "run_0099", "run_0100", "run_0101", "run_0102", "run_0103", "run_0104", "run_0105", "run_0106", "run_0107", "run_0108", "run_0109", "run_0110", "run_0111", "run_0112", "run_0113", "run_0114", "run_0115", "run_0116", "run_0117", "run_0118", "run_0119", "run_0120", "run_0121", "run_0122", "run_0123", "run_0124", "run_0125", "run_0126", "run_0127", "run_0128", "run_0129", "run_0130", "run_0131", "run_0132", "run_0133", "run_0134", "run_0135", "run_0136", "run_0137", "run_0138", "run_0139", "run_0140", "run_0141", "run_0142", "run_0143", "run_0144", "run_0145", "run_0146", "run_0147", "run_0148", "run_0149", "run_0150"]
+      }
+    }
+  },
+  "oracles": {
+    "p14": {
+      "receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.lxQvhv/bulk-rollup.json",
+      "receipt_sha256": "4079819ecb322122d128386d0f055ec1fb8d00f36779e845608a3646c2cc787e",
+      "full_pages": 1200,
+      "full_pages_sha256": "99be80f78bc256ba599242bef7c84548fecc8e2e0117d4eba0c8479bc89a600b",
+      "screen_pages": 48,
+      "screen_pages_sha256": "39044c33a156284b5531e5f071e3f4793476e608664422131f6ab1ced610bf19",
+      "full_summary_sha256": "4baaf4357f8b26670864053b1427bf82670416b2b2c5181b6d2535c7ac3309c2",
+      "samples": 300,
+      "screen_samples": 12
+    },
+    "filter_primary": {
+      "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-pilot-v1/repair-v2/confirmation/primary-native-1/verification.rds",
+      "sha256": "45988b72f7616b9d5c0e285ba5b5d0865077d50b8b3e185699a73daf3ecb8519"
+    }
+  },
+  "runtime_files": {
+    "bound": 45,
+    "matching": 45,
+    "mismatched": [],
+    "package_roots": [
+      "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-108/ordered-groups/browser-smoke.jEmE2F/library/MultiScholaR",
+      "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-108/ordered-groups/browser-smoke.jEmE2F/library/fastduckdb",
+      "/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6/duckdb",
+      "/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6/arrow",
+      "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-108/ordered-groups/browser-smoke.jEmE2F/library/nanoarrow",
+      "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-108/ordered-groups/browser-smoke.jEmE2F/library/duckplyr"
+    ]
+  },
+  "test_environment": {
+    "note": "The default user library lacks fastduckdb, duckplyr and nanoarrow; source tests run with .libPaths(c(control library, default library)) so dependencies resolve to the qualified runtime while MultiScholaR itself loads from source.",
+    "default_library": "/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6"
+  },
+  "excluded": {
+    "perf107_synthetic_corpus": "not a CORE population (audit CORE-A01)"
+  }
+}

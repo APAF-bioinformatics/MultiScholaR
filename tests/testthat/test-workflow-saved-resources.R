@@ -282,3 +282,26 @@ test_that("streamed writer progress does not treat prototype rows as output tota
     expect_false(progress$phase_complete)
     expect_null(writer$progress)
 })
+
+test_that("a failing cursor close still releases the scope, its action and connection", {
+    table <- data.frame(id = 1:3, value = c(1, 2, 3))
+    store <- newWorkflowEntityStore(withr::local_tempdir(), "release-fault", "DIA")
+    reference <- saveWorkflowTable(store, table, "release-fault",
+        newSavedWorkflowScientificIdentity(digest::digest(table, algo = "sha256"),
+            "release-fault-design-v1", "none", "release-fault", "MultiScholaR-release-test-v1"),
+        ".rownames")
+    scope <- newWorkflowTableReadScope(store, reference, "duckdb")
+    action <- scope$action
+    expect_false(is.null(action$connection))
+    closed <- character()
+    assign("a_failing", list(close = \() stop("cursor close failed")), envir = scope$readers)
+    assign("b_healthy", list(close = \() closed <<- c(closed, "b_healthy")), envir = scope$readers)
+    expect_error(releaseWorkflowTableReadScope(scope), "cursor close failed")
+    expect_true(scope$released)
+    expect_identical(closed, "b_healthy")
+    expect_identical(store$open_resources, 0L)
+    expect_null(store$table_action)
+    expect_null(action$connection)
+    expect_identical(action$scopes, 0L)
+    expect_invisible(releaseWorkflowTableReadScope(scope))
+})

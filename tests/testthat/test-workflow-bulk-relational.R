@@ -683,3 +683,24 @@ test_that("native fastduckdb rollup preserves its full input validation contract
     }), "owned native consumer cancellation")
     expect_identical(store$open_resources, 0L)
 })
+
+test_that("the exact-sum provider registers on repeated native scopes in one process", {
+    skip_if_not_installed("fastduckdb")
+    skip_if_not(identical(Sys.info()[["sysname"]], "Linux") &&
+        identical(Sys.info()[["machine"]], "x86_64") && isTRUE(.Machine$longdouble.digits == 64L),
+        "qualified Linux x86_64 long-double runtime only")
+    for (attempt in 1:3) {
+        scope <- fastduckdb::open_query_fast()
+        fastduckdb::register_query_native_fast(scope, "MultiScholaR", "dia_ordered_sum_v1")
+        value <- fastduckdb::query_data_fast(scope,
+            "SELECT dia_r_sum([1e16, 1, 1]::DOUBLE[]) AS x")$x
+        paired <- fastduckdb::query_data_fast(scope, paste(
+            "SELECT p.raw AS raw, p.normalised AS normalised FROM (SELECT dia_paired_r_sum(",
+            "[{'raw': 1e16, 'normalised': 2}, {'raw': 1, 'normalised': NULL},",
+            "{'raw': 1, 'normalised': 3}]) AS p)"))
+        fastduckdb::close_query_fast(scope)
+        expect_identical(value, sum(c(1e16, 1, 1)), info = paste("attempt", attempt))
+        expect_identical(paired$raw, sum(c(1e16, 1, 1)), info = paste("attempt", attempt))
+        expect_identical(paired$normalised, 5, info = paste("attempt", attempt))
+    }
+})

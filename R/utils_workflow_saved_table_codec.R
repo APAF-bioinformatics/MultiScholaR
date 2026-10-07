@@ -672,23 +672,30 @@ releaseWorkflowTableReadScope <- function(scope) {
         cli::cli_abort("invalid table read scope", class = "saved_entity_invalid")
     }
     if (isTRUE(scope$released)) return(invisible(TRUE))
+    # Every owned resource is released even when one close fails; the first
+    # failure (source validity first) is raised only after cleanup completes.
     validity <- tryCatch(checkWorkflowTableReadScope(scope), error = \(error) error)
-    for (child in scope$view_scopes) {
-        released <- tryCatch(releaseWorkflowTableReadScope(child), error = \(error) error)
-        if (inherits(released, "error") && !inherits(validity, "error")) validity <- released
+    keep <- function(expr) {
+        outcome <- tryCatch({
+            force(expr)
+            NULL
+        }, error = \(error) error)
+        if (inherits(outcome, "error") && !inherits(validity, "error")) validity <<- outcome
+        invisible(NULL)
     }
+    for (child in scope$view_scopes) keep(releaseWorkflowTableReadScope(child))
     scope$view_scopes <- NULL
-    observeWorkflowTableScratch(scope)
-    for (cursor in as.list(scope$readers, all.names = TRUE)) cursor$close()
+    keep(observeWorkflowTableScratch(scope))
+    for (cursor in as.list(scope$readers, all.names = TRUE)) keep(cursor$close())
     scope$readers <- NULL
-    for (writer in as.list(scope$writers, all.names = TRUE)) abortWorkflowTableWriter(writer)
+    for (writer in as.list(scope$writers, all.names = TRUE)) keep(abortWorkflowTableWriter(writer))
     scope$writers <- NULL
     scope$connection <- NULL
     scope$spill_directory <- NULL
     scope$action$scopes <- scope$action$scopes - 1L
     # Close a borrowed database as soon as the last table scope releases it.
     if (scope$action$scopes == 0L && !is.null(scope$action$connection)) {
-        workflowQueryDisconnect(scope$action$connection)
+        keep(workflowQueryDisconnect(scope$action$connection))
         scope$action$connection <- NULL
     }
     scope$metadata <- NULL
@@ -696,7 +703,7 @@ releaseWorkflowTableReadScope <- function(scope) {
     scope$view <- scope$map_path <- scope$map_file_identity <- NULL
     scope$released <- TRUE
     scope$store$open_resources <- scope$store$open_resources - 1L
-    endWorkflowTableAction(scope$store, scope$action)
+    keep(endWorkflowTableAction(scope$store, scope$action))
     scope$action <- NULL
     scope$store <- NULL
     if (inherits(validity, "error")) stop(validity)

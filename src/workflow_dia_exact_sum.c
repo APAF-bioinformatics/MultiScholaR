@@ -70,6 +70,52 @@ static __typeof__(&duckdb_vector_get_data) native_duckdb_vector_get_data;
 static __typeof__(&duckdb_vector_get_validity) native_duckdb_vector_get_validity;
 #define duckdb_vector_get_validity native_duckdb_vector_get_validity
 
+/* One engine reference is retained after the first successful registration;
+ * registered callbacks use the pointers below for the life of the process. */
+static void *retained_engine = NULL;
+
+static void dia_reset_engine_pointers(void) {
+    native_duckdb_create_data_chunk = NULL;
+    native_duckdb_destroy_data_chunk = NULL;
+    native_duckdb_data_chunk_set_size = NULL;
+    native_duckdb_vector_get_column_type = NULL;
+    native_duckdb_create_selection_vector = NULL;
+    native_duckdb_destroy_selection_vector = NULL;
+    native_duckdb_selection_vector_get_data_ptr = NULL;
+    native_duckdb_vector_copy_sel = NULL;
+    native_duckdb_vector_size = NULL;
+    native_duckdb_create_struct_type = NULL;
+    native_duckdb_struct_vector_get_child = NULL;
+    native_duckdb_create_list_type = NULL;
+    native_duckdb_create_logical_type = NULL;
+    native_duckdb_create_scalar_function = NULL;
+    native_duckdb_data_chunk_get_size = NULL;
+    native_duckdb_data_chunk_get_vector = NULL;
+    native_duckdb_destroy_logical_type = NULL;
+    native_duckdb_destroy_scalar_function = NULL;
+    native_duckdb_list_vector_get_child = NULL;
+    native_duckdb_register_scalar_function = NULL;
+    native_duckdb_scalar_function_add_parameter = NULL;
+    native_duckdb_scalar_function_set_error = NULL;
+    native_duckdb_scalar_function_set_function = NULL;
+    native_duckdb_scalar_function_set_name = NULL;
+    native_duckdb_scalar_function_set_return_type = NULL;
+    native_duckdb_scalar_function_set_special_handling = NULL;
+    native_duckdb_validity_row_is_valid = NULL;
+    native_duckdb_validity_set_row_invalid = NULL;
+    native_duckdb_vector_ensure_validity_writable = NULL;
+    native_duckdb_vector_get_data = NULL;
+    native_duckdb_vector_get_validity = NULL;
+}
+
+/* Drop this call's engine reference. Pointers are reset only when no earlier
+ * registration depends on them; a repeat call resolves identical addresses. */
+static const char *dia_abandon_engine(void *library, const char *message) {
+    if (!retained_engine) dia_reset_engine_pointers();
+    dlclose(library);
+    return message;
+}
+
 static void dia_rsum(duckdb_function_info info, duckdb_data_chunk input, duckdb_vector output) {
     duckdb_vector lists = duckdb_data_chunk_get_vector(input, 0);
     duckdb_vector child = duckdb_list_vector_get_child(lists);
@@ -203,68 +249,72 @@ static void dia_paired_rsum_flat_input(duckdb_function_info info, duckdb_data_ch
 const char *workflowRegisterDIAOrderedSum(void *connection, const char *engine_library) {
     void *library = dlopen(engine_library, RTLD_NOW | RTLD_LOCAL);
     if (!library) return "cannot retain the scoped DuckDB engine";
+    if (retained_engine && library != retained_engine) {
+        dlclose(library);
+        return "the scoped DuckDB engine changed within this process";
+    }
     native_duckdb_create_struct_type = (__typeof__(native_duckdb_create_struct_type))dlsym(library, "duckdb_create_struct_type");
-    if (!native_duckdb_create_struct_type) { dlclose(library); return "missing public C API: duckdb_create_struct_type"; }
+    if (!native_duckdb_create_struct_type) return dia_abandon_engine(library, "missing public C API: duckdb_create_struct_type");
     native_duckdb_struct_vector_get_child = (__typeof__(native_duckdb_struct_vector_get_child))dlsym(library, "duckdb_struct_vector_get_child");
-    if (!native_duckdb_struct_vector_get_child) { dlclose(library); return "missing public C API: duckdb_struct_vector_get_child"; }
+    if (!native_duckdb_struct_vector_get_child) return dia_abandon_engine(library, "missing public C API: duckdb_struct_vector_get_child");
     native_duckdb_create_list_type = (__typeof__(native_duckdb_create_list_type))dlsym(library, "duckdb_create_list_type");
-    if (!native_duckdb_create_list_type) { dlclose(library); return "missing public C API: duckdb_create_list_type"; }
+    if (!native_duckdb_create_list_type) return dia_abandon_engine(library, "missing public C API: duckdb_create_list_type");
     native_duckdb_create_logical_type = (__typeof__(native_duckdb_create_logical_type))dlsym(library, "duckdb_create_logical_type");
-    if (!native_duckdb_create_logical_type) { dlclose(library); return "missing public C API: duckdb_create_logical_type"; }
+    if (!native_duckdb_create_logical_type) return dia_abandon_engine(library, "missing public C API: duckdb_create_logical_type");
     native_duckdb_create_scalar_function = (__typeof__(native_duckdb_create_scalar_function))dlsym(library, "duckdb_create_scalar_function");
-    if (!native_duckdb_create_scalar_function) { dlclose(library); return "missing public C API: duckdb_create_scalar_function"; }
+    if (!native_duckdb_create_scalar_function) return dia_abandon_engine(library, "missing public C API: duckdb_create_scalar_function");
     native_duckdb_data_chunk_get_size = (__typeof__(native_duckdb_data_chunk_get_size))dlsym(library, "duckdb_data_chunk_get_size");
-    if (!native_duckdb_data_chunk_get_size) { dlclose(library); return "missing public C API: duckdb_data_chunk_get_size"; }
+    if (!native_duckdb_data_chunk_get_size) return dia_abandon_engine(library, "missing public C API: duckdb_data_chunk_get_size");
     native_duckdb_data_chunk_get_vector = (__typeof__(native_duckdb_data_chunk_get_vector))dlsym(library, "duckdb_data_chunk_get_vector");
-    if (!native_duckdb_data_chunk_get_vector) { dlclose(library); return "missing public C API: duckdb_data_chunk_get_vector"; }
+    if (!native_duckdb_data_chunk_get_vector) return dia_abandon_engine(library, "missing public C API: duckdb_data_chunk_get_vector");
     native_duckdb_destroy_logical_type = (__typeof__(native_duckdb_destroy_logical_type))dlsym(library, "duckdb_destroy_logical_type");
-    if (!native_duckdb_destroy_logical_type) { dlclose(library); return "missing public C API: duckdb_destroy_logical_type"; }
+    if (!native_duckdb_destroy_logical_type) return dia_abandon_engine(library, "missing public C API: duckdb_destroy_logical_type");
     native_duckdb_destroy_scalar_function = (__typeof__(native_duckdb_destroy_scalar_function))dlsym(library, "duckdb_destroy_scalar_function");
-    if (!native_duckdb_destroy_scalar_function) { dlclose(library); return "missing public C API: duckdb_destroy_scalar_function"; }
+    if (!native_duckdb_destroy_scalar_function) return dia_abandon_engine(library, "missing public C API: duckdb_destroy_scalar_function");
     native_duckdb_list_vector_get_child = (__typeof__(native_duckdb_list_vector_get_child))dlsym(library, "duckdb_list_vector_get_child");
-    if (!native_duckdb_list_vector_get_child) { dlclose(library); return "missing public C API: duckdb_list_vector_get_child"; }
+    if (!native_duckdb_list_vector_get_child) return dia_abandon_engine(library, "missing public C API: duckdb_list_vector_get_child");
     native_duckdb_register_scalar_function = (__typeof__(native_duckdb_register_scalar_function))dlsym(library, "duckdb_register_scalar_function");
-    if (!native_duckdb_register_scalar_function) { dlclose(library); return "missing public C API: duckdb_register_scalar_function"; }
+    if (!native_duckdb_register_scalar_function) return dia_abandon_engine(library, "missing public C API: duckdb_register_scalar_function");
     native_duckdb_scalar_function_add_parameter = (__typeof__(native_duckdb_scalar_function_add_parameter))dlsym(library, "duckdb_scalar_function_add_parameter");
-    if (!native_duckdb_scalar_function_add_parameter) { dlclose(library); return "missing public C API: duckdb_scalar_function_add_parameter"; }
+    if (!native_duckdb_scalar_function_add_parameter) return dia_abandon_engine(library, "missing public C API: duckdb_scalar_function_add_parameter");
     native_duckdb_scalar_function_set_error = (__typeof__(native_duckdb_scalar_function_set_error))dlsym(library, "duckdb_scalar_function_set_error");
-    if (!native_duckdb_scalar_function_set_error) { dlclose(library); return "missing public C API: duckdb_scalar_function_set_error"; }
+    if (!native_duckdb_scalar_function_set_error) return dia_abandon_engine(library, "missing public C API: duckdb_scalar_function_set_error");
     native_duckdb_scalar_function_set_function = (__typeof__(native_duckdb_scalar_function_set_function))dlsym(library, "duckdb_scalar_function_set_function");
-    if (!native_duckdb_scalar_function_set_function) { dlclose(library); return "missing public C API: duckdb_scalar_function_set_function"; }
+    if (!native_duckdb_scalar_function_set_function) return dia_abandon_engine(library, "missing public C API: duckdb_scalar_function_set_function");
     native_duckdb_scalar_function_set_name = (__typeof__(native_duckdb_scalar_function_set_name))dlsym(library, "duckdb_scalar_function_set_name");
-    if (!native_duckdb_scalar_function_set_name) { dlclose(library); return "missing public C API: duckdb_scalar_function_set_name"; }
+    if (!native_duckdb_scalar_function_set_name) return dia_abandon_engine(library, "missing public C API: duckdb_scalar_function_set_name");
     native_duckdb_scalar_function_set_return_type = (__typeof__(native_duckdb_scalar_function_set_return_type))dlsym(library, "duckdb_scalar_function_set_return_type");
-    if (!native_duckdb_scalar_function_set_return_type) { dlclose(library); return "missing public C API: duckdb_scalar_function_set_return_type"; }
+    if (!native_duckdb_scalar_function_set_return_type) return dia_abandon_engine(library, "missing public C API: duckdb_scalar_function_set_return_type");
     native_duckdb_scalar_function_set_special_handling = (__typeof__(native_duckdb_scalar_function_set_special_handling))dlsym(library, "duckdb_scalar_function_set_special_handling");
-    if (!native_duckdb_scalar_function_set_special_handling) { dlclose(library); return "missing public C API: duckdb_scalar_function_set_special_handling"; }
+    if (!native_duckdb_scalar_function_set_special_handling) return dia_abandon_engine(library, "missing public C API: duckdb_scalar_function_set_special_handling");
     native_duckdb_validity_row_is_valid = (__typeof__(native_duckdb_validity_row_is_valid))dlsym(library, "duckdb_validity_row_is_valid");
-    if (!native_duckdb_validity_row_is_valid) { dlclose(library); return "missing public C API: duckdb_validity_row_is_valid"; }
+    if (!native_duckdb_validity_row_is_valid) return dia_abandon_engine(library, "missing public C API: duckdb_validity_row_is_valid");
     native_duckdb_validity_set_row_invalid = (__typeof__(native_duckdb_validity_set_row_invalid))dlsym(library, "duckdb_validity_set_row_invalid");
-    if (!native_duckdb_validity_set_row_invalid) { dlclose(library); return "missing public C API: duckdb_validity_set_row_invalid"; }
+    if (!native_duckdb_validity_set_row_invalid) return dia_abandon_engine(library, "missing public C API: duckdb_validity_set_row_invalid");
     native_duckdb_vector_ensure_validity_writable = (__typeof__(native_duckdb_vector_ensure_validity_writable))dlsym(library, "duckdb_vector_ensure_validity_writable");
-    if (!native_duckdb_vector_ensure_validity_writable) { dlclose(library); return "missing public C API: duckdb_vector_ensure_validity_writable"; }
+    if (!native_duckdb_vector_ensure_validity_writable) return dia_abandon_engine(library, "missing public C API: duckdb_vector_ensure_validity_writable");
     native_duckdb_vector_get_data = (__typeof__(native_duckdb_vector_get_data))dlsym(library, "duckdb_vector_get_data");
-    if (!native_duckdb_vector_get_data) { dlclose(library); return "missing public C API: duckdb_vector_get_data"; }
+    if (!native_duckdb_vector_get_data) return dia_abandon_engine(library, "missing public C API: duckdb_vector_get_data");
     native_duckdb_vector_get_validity = (__typeof__(native_duckdb_vector_get_validity))dlsym(library, "duckdb_vector_get_validity");
-    if (!native_duckdb_vector_get_validity) { dlclose(library); return "missing public C API: duckdb_vector_get_validity"; }
+    if (!native_duckdb_vector_get_validity) return dia_abandon_engine(library, "missing public C API: duckdb_vector_get_validity");
     native_duckdb_create_data_chunk = (__typeof__(native_duckdb_create_data_chunk))dlsym(library, "duckdb_create_data_chunk");
-    if (!native_duckdb_create_data_chunk) { dlclose(library); return "missing public C API: duckdb_create_data_chunk"; }
+    if (!native_duckdb_create_data_chunk) return dia_abandon_engine(library, "missing public C API: duckdb_create_data_chunk");
     native_duckdb_destroy_data_chunk = (__typeof__(native_duckdb_destroy_data_chunk))dlsym(library, "duckdb_destroy_data_chunk");
-    if (!native_duckdb_destroy_data_chunk) { dlclose(library); return "missing public C API: duckdb_destroy_data_chunk"; }
+    if (!native_duckdb_destroy_data_chunk) return dia_abandon_engine(library, "missing public C API: duckdb_destroy_data_chunk");
     native_duckdb_data_chunk_set_size = (__typeof__(native_duckdb_data_chunk_set_size))dlsym(library, "duckdb_data_chunk_set_size");
-    if (!native_duckdb_data_chunk_set_size) { dlclose(library); return "missing public C API: duckdb_data_chunk_set_size"; }
+    if (!native_duckdb_data_chunk_set_size) return dia_abandon_engine(library, "missing public C API: duckdb_data_chunk_set_size");
     native_duckdb_vector_get_column_type = (__typeof__(native_duckdb_vector_get_column_type))dlsym(library, "duckdb_vector_get_column_type");
-    if (!native_duckdb_vector_get_column_type) { dlclose(library); return "missing public C API: duckdb_vector_get_column_type"; }
+    if (!native_duckdb_vector_get_column_type) return dia_abandon_engine(library, "missing public C API: duckdb_vector_get_column_type");
     native_duckdb_create_selection_vector = (__typeof__(native_duckdb_create_selection_vector))dlsym(library, "duckdb_create_selection_vector");
-    if (!native_duckdb_create_selection_vector) { dlclose(library); return "missing public C API: duckdb_create_selection_vector"; }
+    if (!native_duckdb_create_selection_vector) return dia_abandon_engine(library, "missing public C API: duckdb_create_selection_vector");
     native_duckdb_destroy_selection_vector = (__typeof__(native_duckdb_destroy_selection_vector))dlsym(library, "duckdb_destroy_selection_vector");
-    if (!native_duckdb_destroy_selection_vector) { dlclose(library); return "missing public C API: duckdb_destroy_selection_vector"; }
+    if (!native_duckdb_destroy_selection_vector) return dia_abandon_engine(library, "missing public C API: duckdb_destroy_selection_vector");
     native_duckdb_selection_vector_get_data_ptr = (__typeof__(native_duckdb_selection_vector_get_data_ptr))dlsym(library, "duckdb_selection_vector_get_data_ptr");
-    if (!native_duckdb_selection_vector_get_data_ptr) { dlclose(library); return "missing public C API: duckdb_selection_vector_get_data_ptr"; }
+    if (!native_duckdb_selection_vector_get_data_ptr) return dia_abandon_engine(library, "missing public C API: duckdb_selection_vector_get_data_ptr");
     native_duckdb_vector_copy_sel = (__typeof__(native_duckdb_vector_copy_sel))dlsym(library, "duckdb_vector_copy_sel");
-    if (!native_duckdb_vector_copy_sel) { dlclose(library); return "missing public C API: duckdb_vector_copy_sel"; }
+    if (!native_duckdb_vector_copy_sel) return dia_abandon_engine(library, "missing public C API: duckdb_vector_copy_sel");
     native_duckdb_vector_size = (__typeof__(native_duckdb_vector_size))dlsym(library, "duckdb_vector_size");
-    if (!native_duckdb_vector_size) { dlclose(library); return "missing public C API: duckdb_vector_size"; }
+    if (!native_duckdb_vector_size) return dia_abandon_engine(library, "missing public C API: duckdb_vector_size");
     duckdb_scalar_function function = duckdb_create_scalar_function();
     duckdb_logical_type quantity = duckdb_create_logical_type(DUCKDB_TYPE_DOUBLE);
     duckdb_logical_type list = duckdb_create_list_type(quantity);
@@ -293,8 +343,9 @@ const char *workflowRegisterDIAOrderedSum(void *connection, const char *engine_l
         duckdb_destroy_logical_type(&pair);
     }
     duckdb_destroy_logical_type(&quantity);
-    dlclose(library);
-    return status == DuckDBSuccess ? NULL : "DIA ordered sum registration failed";
+    if (status != DuckDBSuccess) return dia_abandon_engine(library, "DIA ordered sum registration failed");
+    if (retained_engine) dlclose(library); else retained_engine = library;
+    return NULL;
 }
 #else
 const char *workflowRegisterDIAOrderedSum(void *connection, const char *engine_library) {
