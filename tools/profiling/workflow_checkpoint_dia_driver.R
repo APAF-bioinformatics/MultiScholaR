@@ -3014,7 +3014,7 @@ validateCheckpointReaderInput <- function(operation, input_path, selection = NUL
     if (!operation %in% paste0("reader-", c("build", "check", "prepare", "inspect", "member", "verify")) ||
         !dir.exists(input_path)) stop("invalid reader operation or input directory")
     if (operation == "reader-check" && !is.null(selection) &&
-        !selection %in% c("gui-sharing-repair", "gui-export-history-member", "gui-iq-history-member", "gui-ruv-pearson", "gui-native-session", "gui-native-outputs", "gui-reference-first-qc", "gui-reference-core", "gui-reference-routing", "gui-mechanism-preflight", "gui-rollup-profile", "gui-rollup-profile-preflight", "gui-raw-replay:small", "gui-raw-replay:outputs", "gui-raw-replay:verify", "gui-cohort-profile", "gui-impute-workers:preflight", "gui-impute-workers:4", "gui-impute-workers:8", "gui-cohort-size:256", "gui-cohort-size:768", "gui-cohort-size:768-threads8", "gui-cohort-threads:1", "gui-cohort-threads:2", "gui-cohort-threads:4", "gui-cohort-threads:8", "gui-raw-replay:300") &&
+        !selection %in% c("perf101:D0", "perf101:D1", "perf101:D0R", "perf101:V", "gui-sharing-repair", "gui-export-history-member", "gui-iq-history-member", "gui-ruv-pearson", "gui-native-session", "gui-native-outputs", "gui-reference-first-qc", "gui-reference-core", "gui-reference-routing", "gui-mechanism-preflight", "gui-rollup-profile", "gui-rollup-profile-preflight", "gui-raw-replay:small", "gui-raw-replay:outputs", "gui-raw-replay:verify", "gui-cohort-profile", "gui-impute-workers:preflight", "gui-impute-workers:4", "gui-impute-workers:8", "gui-cohort-size:256", "gui-cohort-size:768", "gui-cohort-size:768-threads8", "gui-cohort-threads:1", "gui-cohort-threads:2", "gui-cohort-threads:4", "gui-cohort-threads:8", "gui-raw-replay:300") &&
         !grepl("^gui-(rollup|session)-performance:(control|candidate)$", selection) &&
         !grepl("^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$", selection) &&
         !grepl("^gui-rollup-compare:(control|candidate)$", selection) &&
@@ -3640,6 +3640,16 @@ runCheckpointReaderOperation <- function(operation, library_path, run_dir,
     on.exit(jsonlite::write_json(receipt, file.path(run_dir, "reader-operation.json"),
         auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), add = TRUE)
     tryCatch({
+        if (operation == "reader-check" && isTRUE(selection %in% c("perf101:D0", "perf101:D1", "perf101:D0R", "perf101:V"))) {
+            snapshot <- file.path(run_dir, "source")
+            receipt$execution_sources <- bindPerf101Sources(snapshot)
+            saveRDS(receipt$execution_sources, file.path(run_dir, "source-manifest.rds"))
+            diagnostic <- new.env(parent = asNamespace("MultiScholaR"))
+            sys.source(file.path(snapshot, "tools/profiling/workflow_perf101.R"), diagnostic)
+            value <- diagnostic$runPerf101Diagnostic(library_path, run_dir, snapshot, selection)
+            receipt$status <- "complete"
+            return(value)
+        }
         value <- switch(operation,
             "reader-build" = buildCheckpointReader(library_path, run_dir, input_path),
             "reader-check" = {
@@ -4119,4 +4129,22 @@ requestCheckpointDesignMemory <- function(driver, run_dir, label) {
         if (unname(proc.time()[["elapsed"]]) >= deadline) stop("memory diagnostic acknowledgement timed out")
         Sys.sleep(0.1)
     }
+}
+
+#' Bind the frozen source set used by a PERF-101 guarded process.
+#' @param snapshot Request-owned source directory created before service launch.
+#' @return Named SHA256 identities of the executed source and protocol bytes.
+#' @noRd
+bindPerf101Sources <- function(snapshot) {
+    required <- c("tools/profiling/run_workflow_checkpoint_proof.R",
+        "tools/profiling/run_workflow_checkpoint_proof.sh",
+        "tools/profiling/workflow_checkpoint_dia_driver.R", "tools/profiling/workflow_perf101.R",
+        "tests/testthat/helper-workflow-bulk-rollup.R",
+        "tests/testdata/workflow-execution/qualification.json",
+        "tickets/openai/verification/pilot-source-bindings.json",
+        "tickets/openai/verification/pilot-protocol.json", "R/func_prot_qc_peptide_methods.R")
+    paths <- file.path(snapshot, required)
+    if (!all(file.exists(paths))) stop("PERF-101 source snapshot is incomplete")
+    stats::setNames(vapply(paths, function(path) digest::digest(file = path,
+        algo = "sha256"), character(1)), required)
 }
