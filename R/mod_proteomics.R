@@ -98,6 +98,19 @@ mod_proteomics_ui <- function(id) {
   shiny::tagList(
     # Workflow progress indicator
     workflow_progress_section,
+    shiny::wellPanel(
+      shiny::h4("DIA peptide checkpoints"),
+      shiny::actionButton(ns("save_peptide_checkpoint"), "Save peptide checkpoint"),
+      if (requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()) {
+        shinyFiles::shinyFilesButton(ns("peptide_checkpoint_file"), "Choose checkpoint",
+          "Choose a peptide checkpoint", multiple = FALSE)
+      } else {
+        shiny::fileInput(ns("peptide_checkpoint_upload"), "Checkpoint archive", accept = ".msdia.tar")
+      },
+      shiny::actionButton(ns("open_peptide_checkpoint"), "Open peptide checkpoint"),
+      shiny::helpText("Save the selected peptide stage and its history. Open a checkpoint to resume peptide QC."),
+      shiny::verbatimTextOutput(ns("peptide_checkpoint_status"))
+    ),
 
     # Main tabset for workflow steps
     testid(
@@ -245,6 +258,44 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     }
 
     experiment_paths <- project_dirs[[paths_key]]
+    checkpoint_status <- shiny::reactiveVal("")
+    output$peptide_checkpoint_status <- shiny::renderText(checkpoint_status())
+    checkpoint_volumes <- NULL
+    if (requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()) {
+      checkpoint_volumes <- shinyFiles::getVolumes()
+      shinyFiles::shinyFileChoose(input, "peptide_checkpoint_file", roots = checkpoint_volumes,
+        session = session, filetypes = "tar")
+    }
+    shiny::observeEvent(input$save_peptide_checkpoint, {
+      tryCatch({
+        published <- saveDIAPeptideCheckpoint(workflow_data, session, experiment_paths)
+        checkpoint_status(paste("Checkpoint saved:", published$archive_path))
+      }, error = function(error) {
+        checkpoint_status(paste("Checkpoint save failed:", conditionMessage(error)))
+        logger::log_error(paste("Peptide checkpoint save failed:", conditionMessage(error)))
+      })
+    })
+    shiny::observeEvent(input$open_peptide_checkpoint, {
+      tryCatch({
+        path <- NULL
+        if (!is.null(checkpoint_volumes) && !is.null(input$peptide_checkpoint_file)) {
+          selected <- shinyFiles::parseFilePaths(checkpoint_volumes, input$peptide_checkpoint_file)
+          if (nrow(selected) == 1L) path <- as.character(selected$datapath[[1L]])
+        } else path <- input$peptide_checkpoint_upload$datapath
+        if (is.null(path) || !file.exists(path)) stop("choose a peptide checkpoint first")
+        state <- openDIAPeptideCheckpoint(path, workflow_data, session, experiment_paths)
+        status <- workflow_data$tab_status
+        status$setup_import <- "complete"
+        status$design_matrix <- "complete"
+        status$quality_control <- "in_progress"
+        workflow_data$tab_status <- status
+        shiny::updateTabsetPanel(session, "workflow_tabs", selected = "qc")
+        checkpoint_status(paste("Checkpoint opened:", state))
+      }, error = function(error) {
+        checkpoint_status(paste("Checkpoint open failed:", conditionMessage(error)))
+        logger::log_error(paste("Peptide checkpoint open failed:", conditionMessage(error)))
+      })
+    })
     workflow_data$state_manager <- initializeDIACapacitySession(
       workflow_data$state_manager, experiment_paths, session, workflow_data
     )

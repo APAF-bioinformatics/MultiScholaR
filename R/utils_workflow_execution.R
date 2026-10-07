@@ -710,6 +710,7 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
                 member_sha256 = digest::digest(file = member_path, algo = "sha256"),
                 deadline = member$deadline)
             config$allow_guard_injection <- isTRUE(member$guard_stop_test)
+            config$entry_fixture_test <- isTRUE(member$entry_fixture_test)
             workflowQualificationVariant(config, "minimum_peptides_per_sample")
         }
     }

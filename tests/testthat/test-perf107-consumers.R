@@ -57,6 +57,21 @@ test_that("physical filter and grouped consumers preserve inclusion and exclusio
             expect_true(harness$verifyPerf107ScientificState(manager$getState(entry[[1L]]),
                 entry[[2L]], entry[[3L]]))
         }
+        # A successful filter receipt is insufficient if a downstream consumer
+        # keeps the old design or presents the pre-imputation state as complete.
+        actual_imputed <- manager$getState("imputed")
+        stale_design <- actual_imputed
+        stale_design@design_matrix <- object@design_matrix
+        expect_error(harness$verifyPerf107ScientificState(stale_design,
+            native_imputed, "peptideMissingValueImputation"), "design_matrix")
+        skipped_imputation <- manager$getState("replicate_filtered")
+        expect_false(identical(skipped_imputation@peptide_data,
+            native_imputed@peptide_data))
+        expect_error(harness$verifyPerf107ScientificState(skipped_imputation,
+            native_imputed, "peptideMissingValueImputation"), "peptide_data")
+        # Check the positive again so a detector that rejects every input fails.
+        expect_true(harness$verifyPerf107ScientificState(actual_imputed,
+            native_imputed, "peptideMissingValueImputation"))
         closeDIAStateAdapter(manager)
     }
 })

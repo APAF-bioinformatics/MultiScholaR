@@ -216,7 +216,7 @@ if [[ "${1:-}" == "--service" ]]; then
         proof_memory_guard=true
     fi
     # Sequential QC extends the existing recorded operation, not a new service.
-    if [[ "$2" == reader-check && "$#" == 6 && "$6" =~ ^perf107:(B|C|D|L1|L2)$ ]]; then
+    if [[ "$2" == reader-check && "$#" == 6 && "$6" =~ ^perf107:(B|C|D|E|H|HF|S|L1|L2)$ ]]; then
         proof_sequence_selector="$6"
         set -- "${@:1:5}"
     elif [[ ( "$2" == recorded-qc || "$2" == reader-check ) && "$#" == 6 ]]; then
@@ -312,12 +312,12 @@ if [[ "${1:-}" == "--service" ]]; then
             exit 76
         fi
     fi
-    if [[ "$proof_sequence_selector" =~ ^perf107:(B|C|D|L1|L2)$ ]]; then
+    if [[ "$proof_sequence_selector" =~ ^perf107:(B|C|D|E|H|HF|S|L1|L2)$ ]]; then
         proof_memory_max=17179869184
         proof_stop_peak=16642998272
         proof_min_host_available=2147483648
         proof_runtime_max=900
-        if [[ "$proof_sequence_selector" == perf107:B ]]; then proof_runtime_max=600; fi
+        if [[ "$proof_sequence_selector" == perf107:B || "$proof_sequence_selector" == perf107:S ]]; then proof_runtime_max=600; fi
         if [[ "$proof_sequence_selector" == perf107:C || "$proof_sequence_selector" == perf107:D ]]; then proof_runtime_max=300; fi
         proof_sequence_sampling=true
         proof_process_sampling=true
@@ -388,7 +388,7 @@ if [[ "${1:-}" == "--service" ]]; then
         checkpointDiagnosticGuard "$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)" 0
     fi
     proof_browser=""
-    if [[ "$proof_memory_guard" != true || -n "$proof_capacity_treatment" || "$proof_sequence_selector" =~ ^perf107:(D|L1|L2)$ || "$proof_sequence_selector" == gui-diagnostic || "$proof_sequence_selector" == gui-passive || "$proof_sequence_selector" == gui-reference-first-qc || "$proof_sequence_selector" == gui-reference-routing || "$proof_sequence_selector" == gui-ruv-pearson || "$proof_sequence_selector" == gui-native-session || "$proof_sequence_selector" == gui-lifetime-repair || "$proof_sequence_selector" == gui-memory-repair || "$proof_sequence_selector" == gui-memory-verification ]]; then
+    if [[ "$proof_memory_guard" != true || -n "$proof_capacity_treatment" || "$proof_sequence_selector" =~ ^perf107:(D|E|H|HF|L1|L2)$ || "$proof_sequence_selector" == gui-diagnostic || "$proof_sequence_selector" == gui-passive || "$proof_sequence_selector" == gui-reference-first-qc || "$proof_sequence_selector" == gui-reference-routing || "$proof_sequence_selector" == gui-ruv-pearson || "$proof_sequence_selector" == gui-native-session || "$proof_sequence_selector" == gui-lifetime-repair || "$proof_sequence_selector" == gui-memory-repair || "$proof_sequence_selector" == gui-memory-verification ]]; then
         proof_browser="${CHROMOTE_CHROME:-$(command -v chromium || command -v google-chrome || command -v brave)}"
         [[ -x "$proof_browser" ]] || { echo "No browser executable found" >&2; exit 2; }
     fi
@@ -555,7 +555,7 @@ if [[ "${1:-}" == "--service" ]]; then
     if [[ "$proof_design_memory" == true ]]; then proof_gui_diagnostic=true; fi
     if [[ "$proof_gui_diagnostic" == true || "$proof_reclaim" == true ]]; then proof_process_sampling=true; fi
     proof_command=(Rscript --vanilla "${proof_script_dir}/run_workflow_checkpoint_proof.R" "${proof_operation[@]}")
-    if [[ "$proof_sequence_selector" =~ ^perf107:(B|C|D|L1|L2)$ ]]; then
+    if [[ "$proof_sequence_selector" =~ ^perf107:(B|C|D|E|H|HF|S|L1|L2)$ ]]; then
         if [[ "$proof_sequence_selector" == perf107:B ]]; then
             mkdir -p -- "$proof_run_dir/source"
             for proof_source_file in R src inst man DESCRIPTION NAMESPACE configure LICENSE COPYING COPYING.LESSER \
@@ -576,10 +576,20 @@ if [[ "${1:-}" == "--service" ]]; then
         else
             checkpointSnapshotPerf101Sources "$(realpath -e -- "${proof_script_dir}/../..")" \
                 "$proof_run_dir/source"
+            if [[ "$proof_sequence_selector" == perf107:S ]]; then
+                for proof_source_file in tools/profiling/workflow_perf107_synthetic.R \
+                    tests/testthat/helper-workflow-checkpoint-fixtures.R; do
+                    mkdir -p -- "$(dirname -- "$proof_run_dir/source/$proof_source_file")"
+                    cp -- "${proof_script_dir}/../../$proof_source_file" \
+                        "$proof_run_dir/source/$proof_source_file"
+                done
+            fi
             if [[ "$proof_sequence_selector" == perf107:C ]]; then
                 for proof_source_file in tests/testthat/helper-workflow-checkpoint-fixtures.R \
                     tests/testthat/test-perf-107.R \
                     tests/testthat/test-perf107-audit.R \
+                    tests/testthat/test-perf107-entry.R \
+                    tests/testthat/test-perf107-checkpoints.R \
                     tests/testthat/test-perf107-consumers.R \
                     tests/testthat/fixtures/perf107-ack-contract.cjs \
                     tests/testthat/test-prot-02i-qc-peptide-sample-shared.R \

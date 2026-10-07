@@ -204,7 +204,7 @@ test_that("Apply retries pending publication without dispatching science again",
         runWorkflowAction = function(...) { dispatches <<- dispatches + 1L; "worker-one" },
         pollWorkflowAction = function(...) list(status = "publication_pending"),
         resumeWorkflowAction = function(...) { retries <<- retries + 1L; list(state_reference = reference) },
-        readManagedPeptideSampleResult = function(...) list(resultText = "accepted", stateReference = reference),
+        readManagedPeptideSampleResult = function(...) list(resultText = "accepted\n", stateReference = reference),
         withDIAStateScope = function(manager, operation) operation(),
         updatePeptideSampleOutputs = function(output, samplePlot, ...) {
             output$sample_results <- shiny::renderText("accepted")
@@ -226,6 +226,7 @@ test_that("Apply retries pending publication without dispatching science again",
         action <- managed_action()
         session$setInputs(workflow_ack = "malformed")
         expect_identical(managed_action()$phase, "awaiting_browser")
+        expect_identical(managed_action()$expected_text, "accepted")
         session$setInputs(workflow_ack = list(request_id = "wrong", content_id = action$content_id,
             plot_ready = TRUE, stable_ms = 200))
         expect_identical(managed_action()$phase, "awaiting_browser")

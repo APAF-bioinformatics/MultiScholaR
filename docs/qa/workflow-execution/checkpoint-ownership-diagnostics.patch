@@ -1,0 +1,272 @@
+--- a/tools/profiling/workflow_checkpoint_dia_driver.R
++++ b/tools/profiling/workflow_checkpoint_dia_driver.R
+@@ -943,6 +943,165 @@
+         }
+     }
+     invisible(TRUE)
++}
++
++#' Observe explicit assay materialization in an untimed small ownership check.
++#' @param manager Reference-backed owner whose current assay is being checked.
++#' @param run Diagnostic callback; its return value is discarded, never recorded.
++#' @return Bounded events and terminal status, without scientific payloads.
++#' @noRd
++probePerf107Materializations <- function(manager, run) {
++    namespace <- asNamespace("MultiScholaR")
++    api <- function(name) get(name, namespace, inherits = FALSE)
++    if (!api("usesDIAReferenceStates")(manager) || !is.function(run))
++        stop("reference owner and diagnostic callback required")
++    source_reference <- api("getDIAStateReference")(manager)
++    record <- api("readDIAStateMetadata")(manager, source_reference)
++    assay <- record$data$components$peptide_data
++    columns <- record$data$dimensions$columns
++    if (!api("isSavedWorkflowReference")(assay) || !length(columns) ||
++        record$data$dimensions$rows > 2000L) stop("small peptide ownership fixture required")
++    functions <- c("materializeDIAStateRecord", "readDIAExecutionComponents", "materializeDIATable")
++    if (any(vapply(functions, function(name)
++        methods::is(api(name), "functionWithTrace"), logical(1))))
++        stop("ownership probe must not replace existing tracing")
++    option <- "multischolar.perf107_materialization_probe"
++    previous <- getOption(option)
++    if (!is.null(previous)) stop("ownership probe is already active")
++    events <- list()
++    hook <- function(kind, frame) {
++        context <- if (kind == "readDIAExecutionComponents")
++            get("manager", frame, inherits = FALSE)$.context else
++            get("context", frame, inherits = FALSE)
++        if (!identical(context, manager$.context)) return(invisible(NULL))
++        if (length(events) >= 256L) stop("ownership probe event ceiling exceeded")
++        reference <- get("reference", frame, inherits = FALSE)
++        selected <- if (kind == "materializeDIATable")
++            get("selected_columns", frame, inherits = FALSE) else NULL
++        whole_assay <- kind == "materializeDIATable" &&
++            identical(reference$entity_id, assay$entity_id) &&
++            is.null(get("relation", frame, inherits = FALSE)) &&
++            (is.null(selected) || setequal(selected, columns))
++        events[[length(events) + 1L]] <<- list(kind = kind,
++            reference_id = reference$entity_id, whole_current_assay = whole_assay,
++            selected_columns = selected,
++            fields = if (kind == "readDIAExecutionComponents")
++                get("fields", frame, inherits = FALSE) else NULL)
++        invisible(NULL)
++    }
++    options(stats::setNames(list(hook), option))
++    traced <- character()
++    on.exit({
++        for (name in rev(traced)) base::untrace(name, where = namespace)
++        options(stats::setNames(list(previous), option))
++    }, add = TRUE)
++    for (name in functions) {
++        tracer <- substitute(getOption(OPTION)(KIND, environment()),
++            list(OPTION = option, KIND = name))
++        base::trace(name, tracer = tracer, where = namespace, print = FALSE)
++        traced <- c(traced, name)
++    }
++    failure <- tryCatch({ run(); NULL }, error = function(error)
++        list(message = substr(conditionMessage(error), 1L, 512L), class = class(error)))
++    list(status = if (is.null(failure)) "complete" else "failed",
++        input_reference = source_reference$entity_id,
++        assay_reference = assay$entity_id, events = events, failure = failure,
++        scope = "untimed current-assay materialization; not a holder census or arbitrary-reader proof")
++}
++
++#' Inspect declared small-fixture holders without evaluating reactive getters.
++#' @param holders Named live roots supplied explicitly by the owning modules.
++#' @param assay_columns Scientific columns identifying a retained assay table.
++#' @return Bounded paths and shapes; unknown bindings prevent a passing result.
++#' @noRd
++inspectPerf107Holders <- function(holders, assay_columns) {
++    required <- c("workflow", "design_initial", "design_cleaned", "design_result",
++        "history", "cache", "plot", "result")
++    if (!is.list(holders) || !identical(sort(names(holders)), sort(required)) ||
++        !is.character(assay_columns) || !length(assay_columns) || anyNA(assay_columns))
++        stop("complete explicit ownership roots and assay columns required")
++    findings <- list(); unknown <- character(); seen <- character(); nodes <- 0L
++    walk <- function(value, path, depth = 0L) {
++        nodes <<- nodes + 1L
++        if (nodes > 4096L || depth > 24L) stop("ownership inventory ceiling exceeded")
++        if (is.null(value)) return(invisible(NULL))
++        if (inherits(value, "reactiveVal")) {
++            implementation <- attr(value, ".impl", exact = TRUE)
++            if (!is.environment(implementation) || !is.environment(implementation$private) ||
++                !exists("value", implementation$private, inherits = FALSE)) {
++                unknown <<- c(unknown, path); return(invisible(NULL))
++            }
++            walk(implementation$private$value, paste0(path, "/cached"), depth + 1L)
++            return(invisible(NULL))
++        }
++        if (inherits(value, "reactive")) {
++            observable <- attr(value, "observable", exact = TRUE)
++            if (!is.environment(observable) || !exists(".value", observable, inherits = FALSE) ||
++                isTRUE(observable$.invalidated) || isTRUE(observable$.error)) {
++                unknown <<- c(unknown, path); return(invisible(NULL))
++            }
++            walk(observable$.value, paste0(path, "/cached"), depth + 1L)
++            return(invisible(NULL))
++        }
++        backing <- if (is.function(value)) attr(value, "dia_reference", exact = TRUE) else NULL
++        if (!is.null(backing)) {
++            walk(backing, paste0(path, "/reference_cache"), depth + 1L)
++            return(invisible(NULL))
++        }
++        if (is.data.frame(value)) {
++            if (nrow(value) && all(assay_columns %in% names(value)))
++                findings[[length(findings) + 1L]] <<- list(path = path,
++                    rows = nrow(value), columns = ncol(value))
++            for (field in names(value))
++                if (is.list(value[[field]])) walk(value[[field]], paste0(path, "/", field), depth + 1L)
++            extra <- attributes(value)[setdiff(names(attributes(value)), c("class", "names", "row.names"))]
++            if (length(extra)) walk(extra, paste0(path, "/attributes"), depth + 1L)
++            return(invisible(NULL))
++        }
++        if (is.function(value)) {
++            frame <- environment(value)
++            if (!is.null(frame)) walk(frame, paste0(path, "/closure"), depth + 1L)
++            return(invisible(NULL))
++        }
++        if (is.environment(value)) {
++            if (isNamespace(value) || identical(value, baseenv()) || identical(value, emptyenv()))
++                return(invisible(NULL))
++            if (identical(value, globalenv())) {
++                unknown <<- c(unknown, path); return(invisible(NULL))
++            }
++            address <- rlang::obj_address(value)
++            if (address %in% seen) return(invisible(NULL))
++            seen <<- c(seen, address)
++            fields <- ls(value, all.names = TRUE)
++            for (field in fields) {
++                next_path <- paste0(path, "/", field)
++                if (rlang::env_binding_are_active(value, field) ||
++                    rlang::env_binding_are_lazy(value, field)) {
++                    unknown <<- c(unknown, next_path)
++                } else walk(get(field, value, inherits = FALSE), next_path, depth + 1L)
++            }
++            if (!isNamespace(parent.env(value)) && !identical(parent.env(value), baseenv()) &&
++                !identical(parent.env(value), emptyenv()))
++                unknown <<- c(unknown, paste0(path, "/uninspected_parent"))
++            return(invisible(NULL))
++        }
++        if (isS4(value)) {
++            for (field in methods::slotNames(value))
++                walk(methods::slot(value, field), paste0(path, "/", field), depth + 1L)
++        } else if (is.list(value)) {
++            labels <- names(value)
++            for (i in seq_along(value)) walk(value[[i]], paste0(path, "/",
++                if (is.null(labels) || !nzchar(labels[[i]])) i else labels[[i]]), depth + 1L)
++        } else if (!is.atomic(value)) unknown <<- c(unknown, path)
++        extra <- attributes(value)[setdiff(names(attributes(value)),
++            c("class", "names", "row.names", "dim", "dimnames"))]
++        if (length(extra) && !isS4(value)) walk(extra, paste0(path, "/attributes"), depth + 1L)
++        invisible(NULL)
++    }
++    for (root in required) walk(holders[[root]], root)
++    list(status = if (length(findings)) "failed" else if (length(unknown)) "inconclusive" else "complete",
++        roots = required, retained_assays = findings, uninspected = unique(unknown), nodes = nodes,
++        scope = "declared roots and cached values only; no whole-heap or installed-wiring claim")
+ }
+ 
+ #' Retain bounded DOM and acknowledgement evidence before browser teardown.
+--- a/tests/testthat/test-perf107-consumers.R
++++ b/tests/testthat/test-perf107-consumers.R
+@@ -75,3 +75,101 @@
+         closeDIAStateAdapter(manager)
+     }
+ })
++
++test_that("ownership probe detects direct assay reads and removes tracing after failure", {
++    harness <- new.env(parent = baseenv())
++    sys.source(test_path("..", "..", "tools/profiling/workflow_checkpoint_dia_driver.R"), harness)
++    recipe <- readWorkflowCheckpointRecipe("small")
++    recipe$n_proteins <- 8L; recipe$n_samples <- 8L
++    recipe$peptides_per_protein <- 4L; recipe$forms_per_peptide <- 2L
++    object <- makeWorkflowCheckpointPeptide(recipe)
++    manager <- newDIAStateAdapter(newWorkflowEntityStore(withr::local_tempdir(),
++        "ownership-probe", "DIA"), WorkflowState$new(audit_enabled = FALSE))
++    withr::defer(closeDIAStateAdapter(manager))
++    manager$.context$reference_states <- TRUE
++    manager$saveState("input", object, list(), "fixture")
++    reference <- getDIAStateReference(manager)
++    record <- readDIAStateMetadata(manager, reference)
++    probe <- harness$probePerf107Materializations
++    complete <- function(result) {
++        expect_identical(result$status, "complete")
++        expect_null(getOption("multischolar.perf107_materialization_probe"))
++        expect_lt(as.numeric(object.size(result)), 65536)
++    }
++    whole <- function(result) any(vapply(result$events,
++        function(event) isTRUE(event$whole_current_assay), logical(1)))
++    metadata <- probe(manager, function() readDIAExecutionComponents(manager,
++        reference, fields = character()))
++    complete(metadata)
++    expect_false(whole(metadata))
++    actual <- NULL
++    direct <- probe(manager, function() {
++        actual <<- materializeDIATable(manager$.context, record$data$components$peptide_data)
++    })
++    complete(direct)
++    expect_true(whole(direct))
++    expect_identical(actual, object@peptide_data)
++    expect_identical(diaStateOwnership(manager)$full_s4_reads, 0L)
++    component <- probe(manager, function() readDIAExecutionComponents(manager,
++        reference, fields = "peptide_data"))
++    complete(component)
++    expect_true(whole(component))
++    explicit <- probe(manager, function() materializeDIATable(manager$.context,
++        record$data$components$peptide_data, selected_columns = names(object@peptide_data)))
++    complete(explicit)
++    expect_true(whole(explicit))
++    failed <- probe(manager, function() {
++        materializeDIATable(manager$.context, record$data$components$peptide_data)
++        stop("injected diagnostic failure")
++    })
++    expect_identical(failed$status, "failed")
++    expect_match(failed$failure$message, "injected diagnostic failure")
++    expect_true(whole(failed))
++    expect_null(getOption("multischolar.perf107_materialization_probe"))
++    for (name in c("materializeDIAStateRecord", "readDIAExecutionComponents", "materializeDIATable")) {
++        expect_false(methods::is(get(name, asNamespace("MultiScholaR")), "functionWithTrace"))
++    }
++    expect_identical(getDIAStateReference(manager), reference)
++    expect_identical(manager$.context$store$open_resources, 0L)
++})
++
++test_that("holder inventory inspects cached values without evaluating unknown getters", {
++    harness <- new.env(parent = baseenv())
++    sys.source(test_path("..", "..", "tools/profiling/workflow_checkpoint_dia_driver.R"), harness)
++    roots <- stats::setNames(rep(list(NULL), 8L), c("workflow", "design_initial",
++        "design_cleaned", "design_result", "history", "cache", "plot", "result"))
++    inspect <- function() harness$inspectPerf107Holders(roots, c("Run", "Quantity"))
++    assay <- data.frame(Run = c("a", "b"), Quantity = c(1, 2))
++    expect_identical(inspect()$status, "complete")
++    expect_error(harness$inspectPerf107Holders(roots[-1], c("Run", "Quantity")), "complete explicit")
++    roots$design_result <- shiny::reactiveVal(list(data_cln = assay))
++    expect_identical(inspect()$status, "failed")
++    expect_match(inspect()$retained_assays[[1L]]$path, "design_result/cached/data_cln")
++    roots$design_result <- NULL
++    evaluated <- 0L
++    roots$design_initial <- shiny::reactive({ evaluated <<- evaluated + 1L; list(data_cln = assay) })
++    expect_identical(inspect()$status, "inconclusive")
++    expect_identical(evaluated, 0L)
++    shiny::isolate(roots$design_initial())
++    expect_identical(inspect()$status, "failed")
++    expect_identical(evaluated, 1L)
++    roots$design_initial <- NULL
++    cache <- new.env(parent = emptyenv())
++    makeActiveBinding("payload", function(value) stop("must not call active getter"), cache)
++    delayedAssign("lazy_payload", stop("must not force promise"), assign.env = cache)
++    roots$cache <- cache
++    expect_identical(inspect()$status, "inconclusive")
++    expect_setequal(inspect()$uninspected, c("cache/lazy_payload", "cache/payload"))
++    roots$cache <- NULL
++    frame <- new.env(parent = baseenv()); frame$theObject <- list(peptide_data = assay)
++    roots$plot <- eval(quote(function() stop("must not render")), frame)
++    expect_identical(inspect()$status, "failed")
++    roots$plot <- NULL
++    roots$result <- structure(1, hidden_assay = assay)
++    expect_identical(inspect()$status, "failed")
++    roots$result <- NULL
++    cache <- new.env(parent = emptyenv()); cache$self <- cache
++    roots$cache <- cache
++    expect_identical(inspect()$status, "complete")
++    expect_lt(as.numeric(object.size(inspect())), 65536)
++})

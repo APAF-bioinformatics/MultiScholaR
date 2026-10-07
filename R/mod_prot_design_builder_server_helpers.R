@@ -25,16 +25,36 @@ registerProtDesignInitialStateSyncObserver <- function(
     },
     updateSelectizeInputFn = shiny::updateSelectizeInput,
     updateTextInputFn = shiny::updateTextInput,
-    logInfoFn = logger::log_info
+    logInfoFn = logger::log_info,
+    resultRv = NULL
 ) {
     observer <- observeFn({
         withDIAStateScope(getDIAActiveManager(), function() {
+        restored <- NULL
         state <- initialState()
         reqFn(state)
         manager <- getDIAActiveManager()
         if (inherits(manager, "DIAStateAdapter")) {
             reference <- getDIAReactiveReference(dataTbl)
             pending <- manager$.context$design_adoption_pending
+            restored <- manager$.context$peptide_design_restore
+            if (!is.null(pending) || !is.null(restored)) {
+                # A Design Save result has already been consumed. Drop its native
+                # assay alias without re-saving Design or publishing another head.
+                cache <- attr(resultRv, "dia_reference", exact = TRUE)
+                if (is.function(cache)) cache(NULL)
+            }
+            if (!is.null(restored)) {
+                if (!isSavedWorkflowReference(reference) ||
+                    !identical(restored$source_reference, reference$entity_id)) {
+                    stop("restored Design source differs")
+                }
+                for (field in c("design_matrix", "groups", "factors", "contrasts", "formula")) {
+                    state[field] <- restored[field]
+                }
+                state$data_reference <- manager$.context$snapshot$gui_references$data_cln
+                manager$.context$peptide_design_restore <- NULL
+            }
             if (!is.null(pending) && isSavedWorkflowReference(reference) &&
                 identical(pending, reference$entity_id)) {
                 # Evaluate initialState above to replace its old resident cache,
@@ -46,7 +66,7 @@ registerProtDesignInitialStateSyncObserver <- function(
         }
 
         batch_source <- state$sample_metadata %||% state$data_cln
-        if (hasBatchColumnFn(batch_source)) {
+        if (is.null(restored) && hasBatchColumnFn(batch_source)) {
             logInfoFn(
                 "Design Matrix: 'Batch' column detected. Auto-assigning to batch column."
             )
@@ -70,7 +90,7 @@ registerProtDesignInitialStateSyncObserver <- function(
         groups(state$groups)
         factors(state$factors)
         contrasts(state$contrasts)
-        removedSamples(character(0))
+        removedSamples(if (is.null(restored)) character(0) else restored$removed_samples)
 
         sortedRuns <- state$design_matrix$Run
         updateSelectizeInputFn(
@@ -247,7 +267,7 @@ initializeProtDesignBuilderServerState <- function(
 
     mutableState <- createMutableStateShells()
 
-    registerInitialStateSyncObserver(
+    sync_args <- list(
         input = input,
         session = session,
         initialState = initialState,
@@ -259,6 +279,23 @@ initializeProtDesignBuilderServerState <- function(
         contrasts = mutableState$contrasts,
         removedSamples = mutableState$removedSamples
     )
+    if ("resultRv" %in% names(formals(registerInitialStateSyncObserver))) {
+        sync_args$resultRv <- mutableState$resultRv
+    }
+    do.call(registerInitialStateSyncObserver, sync_args)
+    if (is.environment(session$userData)) {
+        metadata <- function() shiny::isolate(list(
+            design_matrix = mutableState$designMatrix(), groups = mutableState$groups(),
+            factors = mutableState$factors(), contrasts = mutableState$contrasts(),
+            removed_samples = mutableState$removedSamples(), formula = input$formula_string))
+        session$userData$peptide_checkpoint_design <- metadata
+        session$onSessionEnded(function() {
+            if (identical(session$userData$peptide_checkpoint_design, metadata)) {
+                session$userData$peptide_checkpoint_design <- NULL
+            }
+        })
+    }
+
 
     c(
         list(initialState = initialState),

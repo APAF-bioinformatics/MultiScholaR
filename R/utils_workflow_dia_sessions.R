@@ -769,30 +769,11 @@ stageDIAGUIReferenceOwner <- function(native, experiment_paths) {
     manager
 }
 
-#' Swap a fully reopened pilot owner into one existing Shiny session.
-#' @param manager Staged reference-backed owner.
-#' @param workflow_data Existing reactive workflow bus.
-#' @param session Current Shiny session.
-#' @return Attached manager.
+#' Prepare immutable GUI roots before adoption or a resident checkpoint export.
+#' @param manager,workflow_data Staged owner and current GUI values.
+#' @return Named saved GUI roots.
 #' @noRd
-adoptDIAGUIReferenceOwner <- function(manager, workflow_data, session) {
-    if (!inherits(manager, "DIAStateAdapter") ||
-        !isTRUE(manager$.context$reference_states) ||
-        isTRUE(manager$.context$store$closed)) {
-        cli::cli_abort("staged GUI owner is unavailable", class = "saved_entity_scope")
-    }
-    previous <- workflow_data$state_manager
-    adopted <- FALSE
-    previous_session_owner <- session$userData$dia_capacity_manager
-    on.exit(if (!adopted && !identical(previous, manager)) {
-        closeDIAStateAdapter(manager)
-        session$userData$dia_capacity_manager <- previous_session_owner
-    }, add = TRUE)
-    if (!identical(as.character(unlist(previous$getHistory())),
-        as.character(unlist(manager$getHistory()))) ||
-        !identical(previous$current_state, manager$current_state)) {
-        cli::cli_abort("staged GUI history was superseded", class = "workflow_execution_stale")
-    }
+prepareDIAGUIReferences <- function(manager, workflow_data) {
     # Stage the known import/design assay holders before changing the live bus.
     # Their existing consumers already resolve saved values through the DIA codec.
     holders <- c("data_tbl", "data_cln", "peptide_data")
@@ -825,6 +806,35 @@ adoptDIAGUIReferenceOwner <- function(manager, workflow_data, session) {
         # changed without changing the user's design or removing any samples.
         manager$.context$design_adoption_pending <- references$data_tbl$entity_id
     }
+    references
+}
+
+#' Swap a fully reopened pilot owner into one existing Shiny session.
+#' @param manager Staged reference-backed owner.
+#' @param workflow_data Existing reactive workflow bus.
+#' @param session Current Shiny session.
+#' @return Attached manager.
+#' @noRd
+adoptDIAGUIReferenceOwner <- function(manager, workflow_data, session) {
+    if (!inherits(manager, "DIAStateAdapter") ||
+        !isTRUE(manager$.context$reference_states) ||
+        isTRUE(manager$.context$store$closed)) {
+        cli::cli_abort("staged GUI owner is unavailable", class = "saved_entity_scope")
+    }
+    previous <- workflow_data$state_manager
+    adopted <- FALSE
+    previous_session_owner <- session$userData$dia_capacity_manager
+    on.exit(if (!adopted && !identical(previous, manager)) {
+        closeDIAStateAdapter(manager)
+        session$userData$dia_capacity_manager <- previous_session_owner
+    }, add = TRUE)
+    if (!identical(as.character(unlist(previous$getHistory())),
+        as.character(unlist(manager$getHistory()))) ||
+        !identical(previous$current_state, manager$current_state)) {
+        cli::cli_abort("staged GUI history was superseded", class = "workflow_execution_stale")
+    }
+    references <- prepareDIAGUIReferences(manager, workflow_data)
+    holders <- names(references)
     workflowExecutionBoundary("before_gui_owner_swap")
     if (!identical(workflow_data$state_manager, previous)) {
         cli::cli_abort("GUI owner was replaced during adoption", class = "workflow_execution_stale")
@@ -1352,4 +1362,218 @@ copyDIANativeSessionArtifact <- function(source_dir, destination) {
     }
     syncWorkflowExportPaths(c(destination, root), root)
     destination
+}
+
+#' Recognize the supported pre-protein DIA checkpoint boundary.
+#' @param manager Existing workflow owner.
+#' @return Whether its selected state is a supported peptide checkpoint.
+#' @noRd
+isDIAPeptideCheckpoint <- function(manager) {
+    !is.null(manager) && identical(manager$workflow_type, "DIA") &&
+        manager$current_state %in% c("raw_data_s4", "qvalue_filtered",
+            "protein_peptide_filtered", "precursor_rollup", "intensity_filtered",
+            "sample_filtered", "replicate_filtered", "imputed")
+}
+
+#' Validate the supported peptide checkpoint route before staging or replacement.
+#' @param metadata Workflow/checkpoint metadata; no assay hydration.
+#' @return NULL invisibly.
+#' @noRd
+validateDIAPeptideCheckpointRoute <- function(metadata) {
+    method <- metadata$dia_quantification_method
+    global <- metadata$config_list$globalParameters
+    if ((!is.null(method) && !identical(method, "iq")) || isTRUE(global$use_limpa) ||
+        isTRUE(metadata$use_limpa) || isTRUE(metadata$limpa_applied) ||
+        !is.null(metadata$limpa_parameters) || !is.null(metadata$limpa_dpc_quant_results)) {
+        cli::cli_abort("peptide checkpoint archives support the DIA IQ route only",
+            class = "saved_entity_unsupported")
+    }
+    invisible(NULL)
+}
+
+#' Validate every metadata field consumed during peptide checkpoint restoration.
+#' @param metadata Native archive metadata.
+#' @return NULL invisibly; invalid metadata cannot replace a live owner.
+#' @noRd
+validateDIAPeptideCheckpointMetadata <- function(metadata) {
+    checkSavedWorkflowPayload(metadata)
+    validateDIAPeptideCheckpointRoute(metadata)
+    design <- metadata$peptide_design
+    valid_design <- function(value) is.data.frame(value) && nrow(value) > 0L &&
+        all(c("Run", "group") %in% names(value)) && !anyNA(value$Run) &&
+        !anyDuplicated(value$Run) && all(nzchar(as.character(value$Run)))
+    if (!identical(metadata$checkpoint_kind, "peptide-qc") ||
+        !identical(metadata$workflow_type, "DIA") || !is.list(metadata$config_list) ||
+        !valid_design(metadata$design_matrix) || !is.list(design) ||
+        !valid_design(design$design_matrix) ||
+        !(is.character(design$groups) || is.factor(design$groups)) ||
+        !(is.character(design$factors) || is.factor(design$factors)) ||
+        !is.character(design$removed_samples) || !is.data.frame(design$contrasts) ||
+        !is.character(design$formula) || length(design$formula) != 1L ||
+        is.na(design$formula) || !nzchar(design$formula) ||
+        !is.list(metadata$column_mapping) ||
+        !is.character(metadata$column_mapping$run_col) ||
+        length(metadata$column_mapping$run_col) != 1L ||
+        is.na(metadata$column_mapping$run_col) || !nzchar(metadata$column_mapping$run_col)) {
+        cli::cli_abort("peptide checkpoint restore metadata is incomplete or invalid",
+            class = "saved_entity_invalid")
+    }
+    invisible(NULL)
+}
+
+#' Require a quiescent workflow before checkpoint save or replacement.
+#' @param workflow_data,session Existing GUI owners.
+#' @return NULL invisibly.
+#' @noRd
+checkDIAPeptideCheckpointIdle <- function(workflow_data, session, saving = FALSE) {
+    app <- session$userData$workflow_execution
+    if (inherits(app, "WorkflowExecutionApplication") && !is.null(app$active)) {
+        cli::cli_abort("wait for the running action before saving or opening a checkpoint",
+            class = "workflow_execution_busy")
+    }
+    manager <- workflow_data$state_manager
+    if (inherits(manager, "DIAStateAdapter")) assertDIAExportReady(manager,
+        allow_action = if (saving) "session-export" else NULL)
+    invisible(NULL)
+}
+
+#' Save peptide history with the existing portable native archive and publisher.
+#' @param workflow_data,session,paths Existing GUI state, session and project paths.
+#' @return Existing publication receipt. No assay is returned.
+#' @noRd
+saveDIAPeptideCheckpoint <- function(workflow_data, session, paths) {
+    validateDIAPeptideCheckpointRoute(workflow_data)
+    checkDIAPeptideCheckpointIdle(workflow_data, session, saving = TRUE)
+    manager <- workflow_data$state_manager
+    if (!isDIAPeptideCheckpoint(manager)) {
+        cli::cli_abort("select a DIA peptide state before saving a checkpoint",
+            class = "saved_entity_unsupported")
+    }
+    design_reader <- session$userData$peptide_checkpoint_design
+    if (!is.function(design_reader)) cli::cli_abort("Design checkpoint metadata is unavailable")
+    if (!isDIANativeSession(manager)) {
+        # Saving a resident workflow exports a staged shadow. It never replaces
+        # the live owner, including when export fails.
+        manager <- stageDIAGUIReferenceOwner(manager, paths)
+        on.exit(closeDIAStateAdapter(manager), add = TRUE)
+        prepared <- prepareDIAGUIReferences(manager, workflow_data)
+        snapshot <- new.env(parent = emptyenv())
+        for (field in c("config_list", "contrasts_tbl", "design_matrix", "fasta_metadata",
+            "accession_cleanup_results", "ruv_optimization_result", "qc_params", "protein_counts",
+            "mixed_species_analysis", "aa_seq_tbl_final", "uniprot_dat_cln", "data_format",
+            "data_type", "column_mapping")) snapshot[[field]] <- workflow_data[[field]]
+        snapshot$state_manager <- manager
+        snapshot$data_tbl <- prepared$data_tbl
+        snapshot$data_cln <- prepared$data_cln
+        workflow_data <- snapshot
+    }
+    # Early checkpoints have no normalized-protein summary. The existing archive
+    # permits metadata records; keep the later-stage collector/DA contract intact.
+    metadata <- list(workflow_type = "DIA", checkpoint_kind = "peptide-qc",
+        r6_current_state_name = manager$current_state, r6_state_history = manager$getHistory(),
+        export_timestamp = Sys.time(), peptide_design = design_reader(), ruv_mode = "skip",
+        dia_quantification_method = "iq")
+    for (field in c("config_list", "design_matrix", "contrasts_tbl", "qc_params",
+        "aa_seq_tbl_final", "uniprot_dat_cln", "data_format", "data_type", "column_mapping",
+        "fasta_metadata", "accession_cleanup_results")) metadata[field] <- list(workflow_data[[field]])
+    references <- lapply(c("data_tbl", "data_cln"), function(field) {
+        saveDIAOwnedValue(workflow_data[[field]], field, manager)
+    })
+    names(references) <- c("data_tbl", "data_cln")
+    collected <- list(metadata = metadata, references = references)
+    collected$metadata$config_list <- prepareDIAStateRecord(
+        list(data = NULL, config = collected$metadata$config_list))$config
+    validateDIAPeptideCheckpointMetadata(collected$metadata)
+    output <- file.path(paths$source_dir, "peptide-checkpoints")
+    if (!dir.exists(output) && !dir.create(output)) cli::cli_abort("cannot create checkpoint directory")
+    dependencies <- resolveDIANativeDependencies(manager)
+    roots <- diaNativeGuiRoots(paths)
+    # Only existing peptide outputs belong to an early checkpoint. The later
+    # normalization exporter still requires its own protein outputs.
+    for (area in intersect(c("peptide_qc", "publication_graphs"), names(roots))) {
+        source <- if (area == "publication_graphs") file.path(roots[[area]], "filtering_qc") else roots[[area]]
+        if (!dir.exists(source)) next
+        files <- list.files(source, "[.](tsv|csv|png|pdf|rds)$", recursive = TRUE, full.names = TRUE)
+        if (length(files) > 10000L) cli::cli_abort("checkpoint output inventory exceeds limits")
+        for (file in files) {
+            relative <- substring(file, nchar(roots[[area]]) + 2L)
+            dependencies[[paste0("peptide_gui_", length(dependencies) + 1L)]] <-
+                list(source = file, destination = paste(area, relative, sep = "/"))
+        }
+    }
+    runDIANativeSessionExport(manager, collected$metadata, output,
+        extra_references = collected$references, dependencies = dependencies)$publication
+}
+
+#' Open a validated peptide archive without going through the protein DA loader.
+#' @param path Explicit local native archive.
+#' @param workflow_data,session,paths Current GUI ownership and project paths.
+#' @return Restored state name after a successful owner replacement.
+#' @noRd
+openDIAPeptideCheckpoint <- function(path, workflow_data, session, paths) {
+    checkDIAPeptideCheckpointIdle(workflow_data, session)
+    previous <- workflow_data$state_manager
+    imported <- openDIANativeSession(path, paths$source_dir)
+    manager <- imported$manager
+    adopted <- FALSE
+    on.exit(if (!adopted) closeDIAStateAdapter(manager), add = TRUE)
+    metadata <- imported$metadata
+    validateDIAPeptideCheckpointMetadata(metadata)
+    if (!identical(metadata$checkpoint_kind, "peptide-qc") || !isDIAPeptideCheckpoint(manager) ||
+        !is.data.frame(metadata$peptide_design$design_matrix) ||
+        !is.list(metadata$column_mapping) || is.null(metadata$column_mapping$run_col) ||
+        !isSavedWorkflowReference(imported$extra_references$data_tbl) ||
+        !isSavedWorkflowReference(imported$extra_references$data_cln)) {
+        cli::cli_abort("archive is not a supported peptide checkpoint", class = "saved_entity_invalid")
+    }
+    convertDIANativeLegacyCheckpoints(manager)
+    for (reference in imported$extra_references) validateSavedWorkflowReference(manager$.context$store, reference)
+    for (field in c("config_list", "contrasts_tbl", "uniprot_dat_cln")) {
+        if (exists(field, envir = .GlobalEnv, inherits = FALSE) && bindingIsLocked(field, .GlobalEnv)) {
+            cli::cli_abort("cannot restore locked workflow metadata", class = "saved_entity_scope")
+        }
+    }
+    restoreDIANativeGuiFiles(imported, paths)
+    if (!identical(workflow_data$state_manager, previous)) {
+        cli::cli_abort("project changed during checkpoint open", class = "workflow_execution_stale")
+    }
+    manager$.context$experiment_paths <- paths
+    manager$.context$gui_pilot_adopted <- inherits(previous, "DIAStateAdapter") &&
+        isTRUE(previous$.context$gui_pilot_adopted)
+    manager$.context$native_extra_references <- imported$extra_references
+    manager$.context$peptide_design_restore <- c(metadata$peptide_design,
+        list(source_reference = imported$extra_references$data_tbl$entity_id))
+    fields <- c("state_manager", "data_tbl", "data_cln", "config_list", "design_matrix",
+        "contrasts_tbl", "qc_params", "aa_seq_tbl_final", "uniprot_dat_cln", "data_format",
+        "data_type", "column_mapping", "fasta_metadata", "accession_cleanup_results",
+        "dia_quantification_method", "native_session_restored", "state_update_trigger")
+    previous_values <- stats::setNames(lapply(fields, function(field) workflow_data[[field]]), fields)
+    globals <- c("config_list", "contrasts_tbl", "uniprot_dat_cln")
+    existed <- vapply(globals, exists, logical(1), envir = .GlobalEnv, inherits = FALSE)
+    old_globals <- mget(globals[existed], envir = .GlobalEnv, inherits = FALSE)
+    previous_session_owner <- session$userData$dia_capacity_manager
+    # Register rollback before the first live assignment. Assays remain shared;
+    # no deep clone or getter-driven materialization is introduced here.
+    on.exit(if (!adopted) {
+        for (field in fields) workflow_data[[field]] <- previous_values[[field]]
+        session$userData$dia_capacity_manager <- previous_session_owner
+        for (field in globals) {
+            if (existed[[field]]) assign(field, old_globals[[field]], envir = .GlobalEnv) else
+                if (exists(field, envir = .GlobalEnv, inherits = FALSE)) rm(list = field, envir = .GlobalEnv)
+        }
+    }, add = TRUE, after = FALSE)
+    workflow_data$state_manager <- attachDIAStateSession(manager, session, workflow_data)
+    workflowExecutionBoundary("peptide_checkpoint_after_owner_swap")
+    for (field in c("data_tbl", "data_cln")) workflow_data[[field]] <- imported$extra_references[[field]]
+    for (field in c("config_list", "design_matrix", "contrasts_tbl", "qc_params",
+        "aa_seq_tbl_final", "uniprot_dat_cln", "data_format", "data_type", "column_mapping",
+        "fasta_metadata", "accession_cleanup_results")) workflow_data[[field]] <- metadata[[field]]
+    for (field in globals) assign(field, metadata[[field]], envir = .GlobalEnv)
+    workflowExecutionBoundary("peptide_checkpoint_after_metadata")
+    workflow_data$dia_quantification_method <- "iq"
+    workflow_data$native_session_restored <- Sys.time()
+    workflow_data$state_update_trigger <- Sys.time()
+    adopted <- TRUE
+    if (inherits(previous, "DIAStateAdapter")) closeDIAStateAdapter(previous)
+    manager$current_state
 }

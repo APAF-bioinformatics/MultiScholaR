@@ -26,7 +26,7 @@ NULL
 #' @return Static JavaScript handler for the application head.
 #' @noRd
 workflowPeptideSampleAckScript <- function() {
-  "(function install() {\n  if (window.MultiScholaRPerf107Ack) return;\n  if (!window.Shiny || typeof window.Shiny.addCustomMessageHandler !== 'function') {\n    setTimeout(install, 25);\n    return;\n  }\n  window.MultiScholaRPerf107Ack = true;\n  var state = window.MultiScholaRPerf107AckState = {registered: true, received: 0};\n  var timer = null, active = null;\n  window.Shiny.addCustomMessageHandler('multischolar-perf107-ready', function(m) {\n    state.received += 1;\n    if (active && active.request_id === m.request_id && active.content_id === m.content_id) return;\n    if (timer !== null) clearTimeout(timer);\n    active = m;\n    state.request_id = m.request_id;\n    state.content_id = m.content_id;\n    state.sent = false;\n    var started = Date.now(), stable = null, last = null;\n    function check() {\n      var text = document.getElementById(m.text_id);\n      var plot = document.getElementById(m.plot_id);\n      var img = plot && plot.querySelector('img');\n      state.text_ready = !!text && text.textContent === m.expected_text;\n      state.plot_ready = !!plot && !plot.classList.contains('recalculating');\n      state.image_ready = !!img && img.complete && img.naturalWidth > 0 &&\n        img.naturalHeight > 0 && img.alt === m.plot_identity;\n      var signature = img && (img.currentSrc || img.src);\n      var ready = state.text_ready && state.plot_ready && state.image_ready;\n      if (!ready || signature !== last) stable = null;\n      last = signature;\n      if (ready && stable === null) stable = Date.now();\n      if (ready && Date.now() - stable >= 200) {\n        state.sent = true;\n        window.Shiny.setInputValue(m.input_id, {\n          request_id: m.request_id, content_id: m.content_id,\n          plot_ready: true, stable_ms: Date.now() - stable\n        }, {priority: 'event'});\n        timer = null;\n        return;\n      }\n      if (Date.now() - started >= 30000) { state.timed_out = true; return; }\n      timer = setTimeout(check, 50);\n    }\n    check();\n  });\n})();"
+  "(function install() {\n  if (window.MultiScholaRPerf107Ack) return;\n  if (!window.Shiny || typeof window.Shiny.addCustomMessageHandler !== 'function') {\n    setTimeout(install, 25);\n    return;\n  }\n  window.MultiScholaRPerf107Ack = true;\n  var state = window.MultiScholaRPerf107AckState = {registered: true, received: 0};\n  var timer = null, active = null;\n  window.Shiny.addCustomMessageHandler('multischolar-perf107-ready', function(m) {\n    state.received += 1;\n    if (active && active.request_id === m.request_id && active.content_id === m.content_id) return;\n    if (timer !== null) clearTimeout(timer);\n    active = m;\n    state.request_id = m.request_id;\n    state.content_id = m.content_id;\n    state.expected_text = m.expected_text;\n    state.plot_identity = m.plot_identity;\n    state.sent = false;\n    var started = Date.now(), stable = null, last = null;\n    function check() {\n      var text = document.getElementById(m.text_id);\n      var plot = document.getElementById(m.plot_id);\n      var img = plot && plot.querySelector('img');\n      state.text_ready = !!text && text.textContent === m.expected_text;\n      state.plot_ready = !!plot && !plot.classList.contains('recalculating');\n      state.image_ready = !!img && img.complete && img.naturalWidth > 0 &&\n        img.naturalHeight > 0 && img.alt === m.plot_identity;\n      var signature = img && (img.currentSrc || img.src);\n      var ready = state.text_ready && state.plot_ready && state.image_ready;\n      if (!ready || signature !== last) stable = null;\n      last = signature;\n      if (ready && stable === null) stable = Date.now();\n      if (ready && Date.now() - stable >= 200) {\n        state.sent = true;\n        window.Shiny.setInputValue(m.input_id, {\n          request_id: m.request_id, content_id: m.content_id,\n          plot_ready: true, stable_ms: Date.now() - stable\n        }, {priority: 'event'});\n        timer = null;\n        return;\n      }\n      if (Date.now() - started >= 30000) { state.timed_out = true; return; }\n      timer = setTimeout(check, 50);\n    }\n    check();\n  });\n})();"
 }
 
 #' @rdname mod_prot_qc_peptide_sample
@@ -84,6 +84,51 @@ workflowPeptideSampleQualification <- function(session) {
       !identical(qualification$programme, "perf107-phase-a")) return(NULL)
   workflowQualificationVariant(application$config, "minimum_peptides_per_sample")
   qualification
+}
+
+#' Prepare or inspect only the explicitly bound small GUI entry fixture.
+#' @param command Fixed setup or post-completion inspection command.
+#' @param workflow_data,session,experiment_paths Existing GUI ownership and paths.
+#' @return Metadata pointing at a saved verification store; no assay handoff.
+#' @noRd
+runWorkflowGUIEntryFixture <- function(command, workflow_data, session, experiment_paths) {
+  qualification <- workflowPeptideSampleQualification(session)
+  application <- session$userData$workflow_execution
+  if (is.null(qualification) || !isTRUE(application$config$entry_fixture_test) ||
+      !identical(as.numeric(qualification$deadline), 900) ||
+      !is.character(command) || length(command) != 1L || is.na(command) ||
+      !command %in% c("prepare_reference", "capture_sample_filtered", "capture_imputed")) {
+    stop("entry fixture is not authorized")
+  }
+  checkWorkflowApplication(application)
+  if (!is.null(application$active)) stop("entry fixture cannot overlap an action")
+  manager <- workflow_data$state_manager
+  expected_state <- switch(command, prepare_reference = "intensity_filtered",
+    capture_sample_filtered = "sample_filtered", capture_imputed = "imputed")
+  if (!identical(manager$current_state, expected_state)) stop("entry fixture state differs")
+  rows <- if (usesDIAReferenceStates(manager)) {
+    readDIAStateMetadata(manager)$data$dimensions$rows
+  } else nrow(manager$getState()@peptide_data)
+  if (!is.numeric(rows) || length(rows) != 1L || !is.finite(rows) || rows > 2000 || rows < 0) {
+    stop("entry fixture exceeds the small verification boundary")
+  }
+  if (command == "prepare_reference") {
+    if (!identical(qualification$entry, "reference") || usesDIAReferenceStates(manager)) {
+      stop("entry fixture already prepared or wrong route")
+    }
+    manager <- stageDIAGUIReferenceOwner(manager, experiment_paths)
+    manager <- adoptDIAGUIReferenceOwner(manager, workflow_data, session)
+  } else if (!usesDIAReferenceStates(manager)) {
+    # Snapshot only AFTER GUI completion; the native action retains its original
+    # owner and scientific call. The existing codec strips worker handles.
+    manager <- stageDIAGUIReferenceOwner(manager, experiment_paths)
+    on.exit(closeDIAStateAdapter(manager), add = TRUE)
+  }
+  list(status = "complete", command = command,
+    root = dirname(manager$.context$store$directory), current_state = manager$current_state,
+    rows = rows, qualification = qualification,
+    measured_action_active = !is.null(application$active), verification_only = TRUE,
+    ownership = diaStateOwnership(manager))
 }
 
 #' Recover the bounded display product for one accepted managed action.
@@ -386,6 +431,45 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
     sample_plot_identity <- shiny::reactiveVal("Sample quality filtering summary")
     managed_action <- shiny::reactiveVal(NULL)
     pending_publication <- shiny::reactiveVal(NULL)
+    restored_cutoff <- shiny::reactiveVal(NULL)
+    shiny::observeEvent(workflow_data$native_session_restored, {
+      value <- workflow_data$qc_params$peptide_qc$sample_filter$min_peptides_per_sample
+      restored_cutoff(NULL)
+      if (is.numeric(value) && length(value) == 1L && is.finite(value)) {
+        restored_cutoff(value)
+      }
+      pending_publication(NULL)
+      sample_plot(NULL)
+      output$sample_results <- shiny::renderText(paste("Checkpoint restored:",
+        workflow_data$state_manager$current_state))
+    })
+
+    shiny::observe({
+      value <- restored_cutoff()
+      # Fresh Open activates this module before its dynamic input is bound.
+      # Send the saved value once that input exists, then leave user edits alone.
+      if (is.null(value) || is.null(input$min_peptides_per_sample)) return()
+      shiny::updateNumericInput(session, "min_peptides_per_sample", value = value)
+      restored_cutoff(NULL)
+    })
+
+    # Private fixture setup/inspection, admitted only by a hashed server member.
+    # No scientific GUI action is replaced by this observer.
+    shiny::observeEvent(input$perf107_fixture, {
+      qualification <- workflowPeptideSampleQualification(session)
+      application <- session$userData$workflow_execution
+      if (is.null(qualification) || !isTRUE(application$config$entry_fixture_test)) return()
+      command <- input$perf107_fixture
+      if (!is.character(command) || length(command) != 1L || is.na(command) ||
+          !command %in% c("prepare_reference", "capture_sample_filtered", "capture_imputed")) return()
+      path <- file.path(application$config$root, paste0("entry-", command, ".rds"))
+      if (file.exists(path)) return()
+      result <- tryCatch({
+        if (!is.null(managed_action())) stop("entry fixture cannot overlap GUI completion")
+        runWorkflowGUIEntryFixture(command, workflow_data, session, experiment_paths)
+      }, error = function(error) list(status = "failed", message = conditionMessage(error)))
+      writeWorkflowExecutionMessage(path, result)
+    })
 
     fail_managed_action <- function(action, error, status = "error") {
       if (identical(status, "publication_pending")) pending_publication(action)
@@ -422,7 +506,9 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
       action$content_id <- content_id
       action$accepted_manager <- workflow_data$state_manager
       action$accepted_reference <- getDIAStateReference(workflow_data$state_manager)
-      action$expected_text <- sample_result$resultText
+      # Match renderText's output conversion exactly, including its treatment
+      # of a final newline when no removed-sample list follows the summary.
+      action$expected_text <- paste(utils::capture.output(cat(sample_result$resultText)), collapse = "\n")
       sample_plot_identity(content_id)
       action$ack_started <- proc.time()[["elapsed"]]
       action$phase <- "awaiting_browser"
