@@ -27,3 +27,15 @@ Whether a blank factor label should be a valid rollup key is a scientific questi
 ## Post-hoc audit corrections (2026-10-08)
 
 The item 1 call-site statement above was corrected (finding CORE-002-P01). The item 3 closure was ratified by the user on 2026-10-08 (CORE-002-P03).
+
+## Observation verified (2026-10-08)
+
+The post-hoc audit's out-of-ticket observation was checked by running the kernels on the small fixture with one blank `Protein.Group` label.
+
+| Blank protein label | Native rollup helper | Native sample-filter method | SQL sample filter (physical) |
+|---|---|---|---|
+| Factor | accepted | refused | refused |
+| Character | refused | refused | refused |
+
+The SQL sample filter matches its native kernel, so there is no parity defect in the SQL route. The inconsistency is between the two native kernels: `.rollupAssertPopulatedKey` tests blanks only when `is.character(values)`, while `filterMinNumPeptidesPerSampleHelper` applies `as.character()` first. A blank factor label therefore passes rollup and is refused, with a clear error, at sample filtering. Changing either kernel is a scientific decision outside CORE, which preserves native kernels; it is recorded for the owner of the peptide QC kernels.
+
