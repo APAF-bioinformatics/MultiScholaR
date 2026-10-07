@@ -1133,14 +1133,235 @@ computeDIAReferencePrecursorRollup <- function(manager, reference, backend = "P1
         config = list(rollup_summary = result$summary), section = "rollUpPrecursorToPeptide")
 }
 
+#' Persist an explicit sample-filter candidate with existing saved-table machinery.
+#' @param scope Configured physical input lease.
+#' @param metadata Native result restoration metadata.
+#' @param passing Retained sample labels, including explicit overrides.
+#' @param roles Operation-declared sample and protein columns.
+#' @param identity Frozen input/design/parameter/software identity.
+#' @param output_mode Explicit physical or selection candidate.
+#' @param batch_rows Pre-admitted row count bounded by expanded transfer bytes.
+#' @return Accepted reference, producer counts and complete dependencies.
+#' @noRd
+persistDIAFilteredSamples <- function(scope, metadata, passing, roles,
+    identity, output_mode, batch_rows) {
+    sample <- roles$sample
+    protein <- roles$protein
+    prototype <- readSavedWorkflowTablePrototype(scope)
+    prototype[[sample]] <- as.character(prototype[[sample]])
+    counts <- newDIAFilteringAccumulator(prototype, protein)
+    reader <- newWorkflowTableReadScope(scope$store, scope$reference, reader = "fastduckdb")
+    reader$read_threads <- 8L
+    on.exit(releaseWorkflowTableReadScope(reader), add = TRUE)
+    fields <- if (output_mode == "physical") metadata$columns else
+        unique(c(sample, "Run", "Protein.Ids", "Stripped.Sequence", protein))
+    # Ordinal ranges preserve native source order. No wide engine result or sort
+    # exists: the only result resident in R is this admitted read/filter batch.
+    stream <- function(consume) {
+        retained <- 0
+        if (reader$metadata$rows > 0L) for (offset in seq.int(0L,
+            reader$metadata$rows - 1L, by = batch_rows)) {
+            page <- readSavedWorkflowTable(scope$store, scope$reference, fields,
+                offset = offset, limit = min(batch_rows, reader$metadata$rows - offset),
+                scope = reader)
+            keep <- as.character(page$data[[sample]]) %in% passing
+            data <- page$data[keep, , drop = FALSE]
+            data[[sample]] <- as.character(data[[sample]])
+            rownames(data) <- NULL
+            counts$push(data)
+            consume(data, as.double(page$source_order[keep]), retained)
+            retained <- retained + nrow(data)
+        }
+        if (retained != metadata$rows)
+            cli::cli_abort("sample filter output population differs", class = "saved_entity_corrupt")
+    }
+    if (output_mode == "physical") {
+        output <- saveWorkflowTable(scope$store, NULL, basename(tempfile("sample-physical-")),
+            identity, metadata$key_column, metadata = metadata,
+            write_fn = function(path, restoration) {
+                writer <- openWorkflowTableWriter(path, restoration, backend = "fast_r")
+                on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+                appendWorkflowTableWriter(writer, prototype)
+                stream(function(data, ordinals, retained) appendWorkflowTableWriter(writer, data))
+                finishWorkflowTableWriter(writer)
+            })
+        dependencies <- list(scope$reference, output)
+    } else {
+        map_prototype <- data.frame(logical_ordinal = double(), source_ordinal = double())
+        map_metadata <- workflowSavedTableMetadata(map_prototype, "logical_ordinal", 3L)
+        map_metadata$rows <- metadata$rows
+        map_identity <- identity
+        map_identity$selectors <- paste0(identity$selectors, "-ordinals")
+        map <- saveWorkflowTable(scope$store, NULL, basename(tempfile("sample-map-")),
+            map_identity, "logical_ordinal", metadata = map_metadata,
+            write_fn = function(path, restoration) {
+                writer <- openWorkflowTableWriter(path, restoration, backend = "fast_r")
+                on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+                appendWorkflowTableWriter(writer, map_prototype)
+                stream(function(data, ordinals, retained) appendWorkflowTableWriter(writer,
+                    data.frame(logical_ordinal = retained + as.double(seq_along(ordinals)),
+                        source_ordinal = ordinals)))
+                finishWorkflowTableWriter(writer)
+            })
+        columns <- data.frame(output = metadata$columns, source = metadata$columns,
+            cast = rep("identity", length(metadata$columns)))
+        if (!is.null(scope$metadata$column_metadata[[sample]]$levels))
+            columns$cast[columns$source == sample] <- "factor_to_character"
+        output <- saveWorkflowTableSelection(scope, map, columns, metadata,
+            basename(tempfile("sample-selection-")), identity)
+        dependencies <- list(scope$reference, map, output)
+    }
+    list(reference = output, counts = counts$finish(), dependencies = dependencies)
+}
+
+#' Admit and count complete samples without retaining full-population key state.
+#' @param scope Existing configured physical read lease.
+#' @param roles Declared sample/protein/peptide keys.
+#' @param design Native design population and order.
+#' @param output_mode Explicit physical or selection candidate.
+#' @param worker_cap Actual admitted worker bytes.
+#' @return Bounded counts and the recorded working-set admission.
+#' @noRd
+prepareDIASampleFilterCounts <- function(scope, roles, design, output_mode, worker_cap) {
+    con <- scope$connection
+    q <- \(x) as.character(DBI::dbQuoteIdentifier(con, x))
+    table <- paste0("read_parquet(", DBI::dbQuoteString(con, scope$path), ")")
+    keys <- unlist(roles, use.names = FALSE)
+    fields <- if (output_mode == "physical") scope$metadata$columns else
+        unique(c(roles$sample, "Run", "Protein.Ids", "Stripped.Sequence", roles$protein))
+    storage <- workflowTableStorageColumns(scope$metadata, fields)
+    widths <- vapply(storage, function(field) {
+        spec <- scope$metadata$column_metadata[[field]]
+        if (is.null(spec) || !is.null(spec$levels) || identical(spec$typeof, "character"))
+            return(paste0("80 + coalesce(octet_length(encode(CAST(", q(field),
+                " AS VARCHAR))),0)"))
+        "16"
+    }, character(1))
+    key_width <- paste(vapply(keys, \(field) paste0(
+        "80 + coalesce(octet_length(encode(CAST(", q(field), " AS VARCHAR))),0)"),
+        character(1)), collapse = " + ")
+    # Only per-sample scalar reductions precede admission. No wide sort/result
+    # and no full-population distinct-key aggregation is materialized.
+    counts <- collectWorkflowBulkMetadata(scope, paste0("SELECT CAST(", q(roles$sample),
+        " AS VARCHAR) AS sample, count(*) AS rows, max(", key_width,
+        ") AS key_width, max(96 + ", paste(widths, collapse = " + "),
+        ") AS transfer_width FROM ", table, " GROUP BY ", q(roles$sample)))
+    .validatePeptideRunDesign(stats::setNames(data.frame(counts$sample), roles$sample),
+        design, roles$sample, roles$sample, caller = "computeDIAReferenceSampleFilter")
+    order <- as.character(design[[roles$sample]])
+    batches <- partitionWorkflowCompleteGroups(order[order %in% counts$sample], 3L)
+    width <- max(c(0, as.numeric(counts$transfer_width)))
+    batch_rows <- max(1L, as.integer(min(10000, floor(33554432 / max(1, width)))))
+    if (width > 67108864) cli::cli_abort("one sample-filter row exceeds its admitted transfer",
+        class = "workflow_execution_unsupported")
+    state <- vapply(batches, function(selected) {
+        at <- counts$sample %in% selected
+        sum(as.numeric(counts$rows[at]) * (as.numeric(counts$key_width[at]) + 128))
+    }, numeric(1))
+    estimate <- 768 * 1024^2 + 2 * max(c(0, state)) +
+        2 * 67108864 + 268435456 + 2 * 8388608
+    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) ||
+        worker_cap <= 0 || estimate > worker_cap) cli::cli_abort(
+        "sample filter working-memory estimate exceeds admitted worker capacity",
+        class = "workflow_execution_unsupported")
+    counts$identities <- numeric(nrow(counts))
+    for (selected in batches) {
+        if (!length(selected)) next
+        part <- collectWorkflowBulkMetadata(scope, paste0("SELECT CAST(", q(roles$sample),
+            " AS VARCHAR) AS sample, count(DISTINCT (", q(roles$protein), ",", q(roles$peptide),
+            ")) AS identities FROM ", table, " WHERE ", q(roles$sample), " IN (",
+            paste(DBI::dbQuoteString(con, selected), collapse = ","), ") GROUP BY ", q(roles$sample)))
+        at <- match(part$sample, counts$sample)
+        if (anyNA(at) || nrow(part) != length(selected) ||
+            any(as.numeric(part$identities) > .Machine$integer.max))
+            cli::cli_abort("sample identity count population differs", class = "saved_entity_corrupt")
+        counts$identities[at] <- as.numeric(part$identities)
+    }
+    list(counts = counts, admission = list(estimated_bytes = estimate,
+        worker_cap = worker_cap, max_row_bytes = width, batch_rows = batch_rows,
+        count_batch_sizes = as.integer(lengths(batches)),
+        identity_groups = sum(counts$identities),
+        policy = "sample-three-complete-batches-and-expanded-transfer-v3",
+        limitation = "admission estimate; kernel cgroup guard remains authoritative"))
+}
+
+#' Execute the unchanged native method with the shared bounded persistence layer.
+#' @param manager,reference,parameters Existing operation inputs.
+#' @param worker_cap Actual admitted worker capacity.
+#' @return Existing compute-only checkpoint/result contract.
+#' @noRd
+computeDIANativeSampleFilter <- function(manager, reference, parameters, worker_cap) {
+    checkpoint <- readDIAStateMetadata(manager, reference)$data
+    scope <- newWorkflowTableReadScope(manager$.context$store, checkpoint$components$peptide_data)
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    settings <- configureWorkflowBulkQueryScope(scope)
+    con <- scope$connection
+    q <- \(name) as.character(DBI::dbQuoteIdentifier(con, name))
+    table <- paste0("read_parquet(", DBI::dbQuoteString(con, scope$path), ")")
+    strings <- scope$metadata$columns[vapply(scope$metadata$column_metadata,
+        \(spec) identical(spec$typeof, "character"), logical(1))]
+    dictionary <- sum(vapply(strings, function(field) {
+        as.numeric(collectWorkflowBulkMetadata(scope, paste0(
+            "SELECT coalesce(sum(80 + octet_length(encode(v))),0) AS n FROM (",
+            "SELECT DISTINCT CAST(", q(field), " AS VARCHAR) AS v FROM ", table, ")"),
+            max_rows = 1L, max_bytes = 65536)$n)
+    }, numeric(1)))
+    resident <- scope$metadata$rows * workflowProjectedRowBytes(scope$metadata,
+        scope$metadata$columns) + dictionary + as.numeric(object.size(scope$metadata))
+    estimate <- 768 * 1024^2 + 8 * resident + 2 * 67108864
+    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) ||
+        worker_cap <= 0 || estimate > worker_cap)
+        cli::cli_abort("native sample filter exceeds admitted worker capacity",
+            class = "workflow_execution_unsupported")
+    releaseWorkflowTableReadScope(scope)
+    object <- readDIAExecutionComponents(manager, reference,
+        fields = c("peptide_data", "design_matrix"))
+    object <- filterMinNumPeptidesPerSample(object,
+        peptides_per_sample_cutoff = parameters$peptides_per_sample_cutoff,
+        inclusion_list = parameters$inclusion_list, core_utilisation = NA)
+    args <- object@args$filterMinNumPeptidesPerSample
+    summary <- args$filter_summary
+    checkpoint$support$filterMinNumPeptidesPerSample <- list(
+        support_table = saveDIATableComponent(manager$.context, args$support_table),
+        removal_ledger = saveDIATableComponent(manager$.context, args$removal_ledger))
+    args$support_table <- args$removal_ledger <- NULL
+    checkpoint$slots$args$filterMinNumPeptidesPerSample <- args
+    counts <- newDIAFilteringAccumulator(object@peptide_data[0, , drop = FALSE],
+        object@protein_id_column)
+    output <- saveDIATableComponent(manager$.context, object@peptide_data,
+        backend = "fast_r", consume = counts$push)
+    produced <- list(reference = output, counts = counts$finish())
+    checkpoint$components$peptide_data <- output
+    checkpoint$dimensions <- list(rows = nrow(object@peptide_data), columns = names(object@peptide_data))
+    checkpoint$dependencies <- collectDIANativeReferences(list(reference, checkpoint$dependencies,
+        checkpoint$components, checkpoint$support, checkpoint$products))
+    list(checkpoint = checkpoint, reference = output, summary = summary,
+        dependencies = checkpoint$dependencies,
+        counts = saveDIALargeFilteringCountsReference(manager$.context$store, produced,
+            object@protein_id_column),
+        execution = list(strategy = "unchanged_native_shared_persistence", writer_backend = "fast_r",
+            bulk_query = list(settings = settings),
+            admission = list(estimated_bytes = estimate, worker_cap = worker_cap,
+                resident_bytes = resident, policy = "native-resident-copy-slack-v1")),
+        state_name = "sample_filtered", description = "Applied sample quality filter",
+        config = parameters, section = "filterMinNumPeptidesPerSample")
+}
+
 #' Compute sample identity filtering without advancing a workflow head.
 #' @param manager Read-only component owner.
 #' @param reference Frozen input checkpoint.
 #' @param parameters Explicit cutoff and inclusion list.
 #' @param worker_cap Admitted worker memory in bytes.
+#' @param output_mode Explicit experimental physical/selection output, or legacy default.
 #' @return Bounded checkpoint, summary and ledger references for the controller.
 #' @noRd
-computeDIAReferenceSampleFilter <- function(manager, reference, parameters, worker_cap = 12 * 1024^3) {
+computeDIAReferenceSampleFilter <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
+    output_mode = "legacy") {
+    if (!is.character(output_mode) || length(output_mode) != 1L || is.na(output_mode) ||
+        !output_mode %in% c("legacy", "native", "physical", "selection"))
+        cli::cli_abort("unsupported sample filter output mode", class = "workflow_execution_unsupported")
+    if (output_mode == "native")
+        return(computeDIANativeSampleFilter(manager, reference, parameters, worker_cap))
     checkpoint <- readDIAStateMetadata(manager, reference)$data
     object <- readDIAExecutionComponents(manager, reference, fields = "design_matrix")
     sample <- object@sample_id
@@ -1172,22 +1393,38 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
     if (nrow(DBI::dbGetQuery(con, paste("SELECT 1 FROM", table, "WHERE",
         paste(bad, collapse = " OR "), "LIMIT 1"))))
         cli::cli_abort("sample/protein/peptide identity is missing")
+    if (output_mode != "legacy") {
+        prepared <- prepareDIASampleFilterCounts(scope,
+            list(sample = sample, protein = protein, peptide = peptide),
+            object@design_matrix, output_mode, worker_cap)
+        counts <- prepared$counts
+        admission <- prepared$admission
+    } else {
+    key_width <- paste(vapply(keys, \(field) paste0(
+        "coalesce(octet_length(encode(CAST(", q(field), " AS VARCHAR))),0) + 80"),
+        character(1)), collapse = " + ")
+    projected_width <- if (output_mode == "legacy") "" else
+        paste0(", max(", key_width, ") AS key_width")
     counts <- collectWorkflowBulkMetadata(scope, paste0("SELECT CAST(", q(sample), " AS VARCHAR) AS sample, ",
         "count(DISTINCT (", q(protein), ",", q(peptide), ")) AS identities, count(*) AS rows ",
-        "FROM ", table, " GROUP BY ", q(sample)), max_rows = 10000L,
+        projected_width, " FROM ", table, " GROUP BY ", q(sample)), max_rows = 10000L,
         max_bytes = 8388608)
-    widths <- vapply(scope$metadata$columns, function(field) {
+    width <- if (output_mode == "legacy") {
+        widths <- vapply(scope$metadata$columns, function(field) {
         spec <- scope$metadata$column_metadata[[field]]
         if (!is.null(spec$levels) || identical(spec$typeof, "character")) return(paste0(
             "coalesce(octet_length(encode(CAST(", q(field), " AS VARCHAR))),0) + 16"))
         "8"
     }, character(1))
-    width <- as.numeric(collectWorkflowBulkMetadata(scope, paste0("SELECT coalesce(max(",
+        as.numeric(collectWorkflowBulkMetadata(scope, paste0("SELECT coalesce(max(",
         paste(widths, collapse = " + "), "),0) AS n FROM ", table),
         max_rows = 1L, max_bytes = 65536)$n)
+    } else max(c(0, as.numeric(counts$key_width)))
     if (width > 67108864) cli::cli_abort("one filter row exceeds the bounded codec transfer",
         class = "workflow_execution_unsupported")
-    estimate <- 768 * 1024^2 + 2 * min(scope$metadata$rows, 10000) * width +
+    transfer <- if (output_mode == "legacy")
+        2 * min(scope$metadata$rows, 10000) * width else 2 * 67108864
+    estimate <- 768 * 1024^2 + transfer +
         2 * sum(as.numeric(counts$identities)) * (width + 128) + 2 * 8388608
     if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) ||
         worker_cap <= 0 || estimate > worker_cap) cli::cli_abort(
@@ -1195,8 +1432,10 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
         class = "workflow_execution_unsupported")
     admission <- list(estimated_bytes = estimate, worker_cap = worker_cap,
         max_row_bytes = width, identity_groups = sum(as.numeric(counts$identities)),
-        policy = "sample-identity-state-and-bounded-transfer-v1",
+        policy = if (output_mode == "legacy") "sample-identity-state-and-bounded-transfer-v1" else
+            "sample-projected-identity-and-codec-transfer-v2",
         limitation = "admission estimate; kernel cgroup guard remains authoritative")
+    }
     observed <- stats::setNames(data.frame(counts$sample), sample)
     .validatePeptideRunDesign(observed, object@design_matrix, sample, sample,
         caller = "computeDIAReferenceSampleFilter")
@@ -1225,10 +1464,15 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
     summary$inclusion_entries_absent_from_data <- setdiff(inclusion, counts$sample)
     identity <- newSavedWorkflowScientificIdentity(source$entity_id,
         checkpoint$components$design_matrix$entity_id, digest::digest(parameters, algo = "sha256"),
-        "distinct-pair-sample-filter-v1", manager$.context$software)
+        paste0("distinct-pair-sample-filter-", output_mode, "-v1"), manager$.context$software)
+    if (output_mode == "legacy") identity$selectors <- "distinct-pair-sample-filter-v1"
     metadata <- workflowSavedTableMetadata(template@peptide_data, ".rownames", 3L)
     metadata$rows <- as.integer(sum(counts$rows[counts$sample %in% passing]))
-    output <- saveWorkflowTable(scope$store, NULL, basename(tempfile("wfx-sample-filter-")), identity,
+    produced <- if (output_mode != "legacy") persistDIAFilteredSamples(scope, metadata,
+        passing, list(sample = sample, protein = protein), identity, output_mode,
+        admission$batch_rows) else NULL
+    output <- if (!is.null(produced)) produced$reference else
+        saveWorkflowTable(scope$store, NULL, basename(tempfile("wfx-sample-filter-")), identity,
         ".rownames", metadata = metadata, write_fn = function(path, restoration) {
             writer <- openWorkflowTableWriter(path, restoration)
             on.exit(abortWorkflowTableWriter(writer), add = TRUE)
@@ -1242,7 +1486,7 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
             if (is.null(writer$output)) appendWorkflowTableWriter(writer, template@peptide_data)
             finishWorkflowTableWriter(writer)
         })
-    checkpoint$dependencies <- collectDIANativeReferences(list(reference,
+    checkpoint$dependencies <- collectDIANativeReferences(list(reference, produced$dependencies,
         checkpoint$dependencies, checkpoint$components, checkpoint$support, checkpoint$products))
     checkpoint$components$peptide_data <- output
     checkpoint$dimensions <- list(rows = metadata$rows, columns = metadata$columns)
@@ -1253,10 +1497,15 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
         support_table = saveDIATableComponent(manager$.context, support),
         removal_ledger = saveDIATableComponent(manager$.context, removal))
     list(checkpoint = checkpoint, reference = output, summary = summary,
-        dependencies = checkpoint$dependencies, counts = NULL,
-        execution = list(admission = admission, bulk_query = list(settings = bulk_settings,
-            global_statistics = "single_complete_population_pass",
-            independence_unit = "sample_decision_no_batching")),
+        dependencies = checkpoint$dependencies, counts = if (is.null(produced)) NULL else
+            saveDIALargeFilteringCountsReference(scope$store, produced, protein),
+        execution = list(admission = admission, output_mode = output_mode,
+            writer_backend = if (output_mode == "legacy") "arrow" else "fast_r",
+            bulk_query = list(settings = bulk_settings,
+            global_statistics = if (output_mode == "legacy") "single_complete_population_pass" else
+                "global_validation_before_complete_sample_counts",
+            independence_unit = if (output_mode == "legacy") "sample_decision_no_batching" else
+                "complete_sample_after_global_validation")),
         state_name = "sample_filtered", description = "Applied sample quality filter",
         config = parameters, section = "filterMinNumPeptidesPerSample")
 }

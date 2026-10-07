@@ -125,15 +125,29 @@ checkWorkflowTableAttributes <- function(attributes) {
 #' @param path Fresh staged Parquet path.
 #' @param metadata_version Explicit restoration format; defaults to version 1.
 #' @param metadata Optional metadata already constructed by the save action.
+#' @param backend Existing writer backend selected explicitly by the operation.
+#' @param consume Optional summary callback on the bounded original rows.
 #' @return Restoration metadata invisibly.
 #' @noRd
 writeSavedWorkflowParquet <- function(table, key_column, path, metadata_version = 1L,
-    metadata = NULL, progress = NULL) {
+    metadata = NULL, progress = NULL, backend = "arrow", consume = NULL) {
     if (is.null(metadata)) metadata <- workflowSavedTableMetadata(table, key_column, metadata_version)
-    writer <- openWorkflowTableWriter(path, metadata, progress)
+    writer <- openWorkflowTableWriter(path, metadata, progress, backend = backend)
     on.exit(abortWorkflowTableWriter(writer), add = TRUE)
-    for (start in seq.int(1L, max(1L, nrow(table)), by = 10000L)) {
-        at <- if (nrow(table)) seq.int(start, min(nrow(table), start + 9999L)) else integer()
+    width <- 96 + sum(vapply(table, function(column) {
+        labels <- if (is.factor(column)) levels(column) else column
+        bytes <- if (is.character(labels)) 80 + max(c(0, nchar(labels, type = "bytes")),
+            na.rm = TRUE) else 16
+        if (!is.null(names(column))) bytes <- bytes + 80 +
+            max(c(0, nchar(names(column), type = "bytes")), na.rm = TRUE)
+        bytes
+    }, numeric(1)))
+    if (nrow(table) && width > 67108864)
+        cli::cli_abort("one persisted row exceeds its transfer limit", class = "saved_entity_limit")
+    batch_rows <- max(1L, as.integer(min(10000, floor(33554432 / max(1, width)))))
+    for (start in seq.int(1L, max(1L, nrow(table)), by = batch_rows)) {
+        at <- if (nrow(table)) seq.int(start, min(nrow(table), start + batch_rows - 1L)) else integer()
+        if (!is.null(consume)) consume(table[at, , drop = FALSE])
         appendWorkflowTableWriter(writer, table, at)
     }
     finishWorkflowTableWriter(writer)
@@ -1172,6 +1186,11 @@ readWorkflowViewPage <- function(scope, columns, offset, limit, max_bytes) {
         source_row_names)
     data <- finishWorkflowTableBuffer(buffer)
     attr(data, "workflow_source_order") <- NULL
+    # A page exposes logical row positions just like a physical table page;
+    # whole-table assembly restores compact automatic row names separately.
+    if (isTRUE(scope$metadata$automatic_row_names))
+        data <- restoreWorkflowTableRowNames(data, scope$metadata,
+            as.character(offset + seq_len(count)))
     bytes <- as.numeric(object.size(data))
     if (bytes > max_bytes)
         cli::cli_abort("collected saved table exceeds byte ceiling", class = "saved_entity_limit")

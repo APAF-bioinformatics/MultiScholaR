@@ -507,12 +507,52 @@ commitDIAReferenceState <- function(manager, state_name, checkpoint, config, des
     reference
 }
 
+#' Hash the existing version-2 serialized value through a bounded Linux pipe.
+#' @param value Exact value previously supplied to digest with serializeVersion=2.
+#' @param store Existing entity owner for private scratch output.
+#' @return The unchanged SHA256, without retaining a complete serialized raw vector.
+#' @noRd
+hashWorkflowSerializedValue <- function(value, store) {
+    checkWorkflowEntityStore(store)
+    commands <- Sys.which(c("bash", "dd", "sha256sum"))
+    if (!identical(Sys.info()[["sysname"]], "Linux") || any(!nzchar(commands)))
+        cli::cli_abort("bounded serialized hashing is unavailable", class = "saved_entity_unsupported")
+    checkSavedEntityPath(store, ".pending")
+    # Managed workers use request-owned TMPDIR so controller cleanup also
+    # removes a partial hash after an uncatchable worker/process-group stop.
+    scratch <- if (identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1"))
+        tempdir() else file.path(store$directory, ".pending")
+    if (!dir.exists(scratch) && !dir.create(scratch))
+        cli::cli_abort("cannot create hash scratch directory", class = "saved_entity_write")
+    output <- tempfile("column-hash-", tmpdir = scratch)
+    on.exit(unlink(output), add = TRUE)
+    # digest's binary serializeVersion=2 identity omits the 14-byte R header.
+    # pipefail prevents a broken producer from being accepted as a valid digest.
+    pipeline <- paste(shQuote(commands[["dd"]]),
+        "bs=65536 skip=14 iflag=skip_bytes status=none |",
+        shQuote(commands[["sha256sum"]]), ">", shQuote(output))
+    connection <- pipe(paste(shQuote(commands[["bash"]]), "-o pipefail -c",
+        shQuote(pipeline)), open = "wb")
+    on.exit(if (!is.null(connection)) close(connection), add = TRUE)
+    serialize(value, connection, ascii = FALSE, xdr = TRUE, version = 2L)
+    status <- suppressWarnings(close(connection))
+    connection <- NULL
+    if (!identical(as.integer(status), 0L) || !file.exists(output) || file.size(output) > 128L)
+        cli::cli_abort("bounded serialized hashing failed", class = "saved_entity_write")
+    result <- readLines(output, n = 2L, warn = FALSE)
+    if (length(result) != 1L || !grepl("^[a-f0-9]{64}  -$", result))
+        cli::cli_abort("serialized hash output is invalid", class = "saved_entity_corrupt")
+    substr(result, 1L, 64L)
+}
+
 #' Persist or reuse an exact DIA table component in the existing registry.
 #' @param context Current owner.
 #' @param table Complete table already owned by a parser or scientific operation.
+#' @param backend Existing writer backend; fast_r is explicitly qualified only.
+#' @param consume Optional producer summary callback for each bounded output batch.
 #' @return Table descriptor, never a second resident table owner.
 #' @noRd
-saveDIATableComponent <- function(context, table) {
+saveDIATableComponent <- function(context, table, backend = "arrow", consume = NULL) {
     table <- prepareDIAParserTable(table)
     metadata <- workflowSavedTableMetadata(table, ".rownames", 3L)
     # Equivalent attribute orders and ALTREP representations have the same
@@ -520,7 +560,9 @@ saveDIATableComponent <- function(context, table) {
     column_hashes <- vapply(table, function(value) {
         element_names <- names(value)
         if (!is.null(attributes(value))) attributes(value) <- NULL
-        digest::digest(list(value = value, names = element_names), algo = "sha256", serializeVersion = 2L)
+        if (identical(Sys.info()[["sysname"]], "Linux"))
+            hashWorkflowSerializedValue(list(value = value, names = element_names), context$store) else
+            digest::digest(list(value = value, names = element_names), algo = "sha256", serializeVersion = 2L)
     }, character(1))
     content <- digest::digest(list(metadata = metadata, columns = column_hashes,
         row_names = if (isTRUE(metadata$automatic_row_names)) NULL else rownames(table)),
@@ -528,9 +570,17 @@ saveDIATableComponent <- function(context, table) {
     identity <- newSavedWorkflowScientificIdentity(content,
         "component-owned", "DIA-table-codec-v2", "all-ordered-rows-and-columns", context$software)
     hit <- resolveSavedWorkflowEntity(context$store, "result_table", identity, hydrate = FALSE)
-    if (identical(hit$status, "hit")) return(hit$reference)
+    if (identical(hit$status, "hit")) {
+        if (!is.null(consume)) for (start in seq.int(1L, max(1L, nrow(table)), by = 10000L)) {
+            at <- if (nrow(table)) seq.int(start, min(nrow(table), start + 9999L)) else integer()
+            consume(table[at, , drop = FALSE])
+        }
+        return(hit$reference)
+    }
     reference <- saveWorkflowTable(context$store, table, basename(tempfile("dia-table-")),
-        identity, ".rownames", metadata_version = 3L)
+        identity, ".rownames", metadata_version = 3L,
+        write_fn = function(path, metadata) writeSavedWorkflowParquet(table, ".rownames",
+            path, metadata = metadata, backend = backend, consume = consume))
     context$writes <- context$writes + 1L
     reference
 }

@@ -54,17 +54,17 @@ test_that("selected tables preserve bounded logical rows and typed columns", {
     unicode_scope <- newWorkflowTableReadScope(store, unicode_view, reader = "arrow")
     expect_identical(readSavedWorkflowTable(store, unicode_view,
         names(unicode_expected), limit = 2L, scope = unicode_scope)$data,
-        unicode_expected)
+        workflowPhysicalPageOracle(unicode_expected))
     releaseWorkflowTableReadScope(unicode_scope)
     selected <- newWorkflowTableReadScope(store, view, reader = "arrow")
     page <- readSavedWorkflowTable(store, view, c("renamed", "group"),
         limit = 2L, scope = selected)
-    expect_identical(page$data, expected)
+    expect_identical(page$data, workflowPhysicalPageOracle(expected))
     expect_identical(as.double(page$source_order), c(3, 1))
     streamed <- list()
     streamSavedWorkflowTable(selected, c("renamed", "group"),
         function(data, offset, row_names) streamed[[length(streamed) + 1L]] <<- data)
-    expect_identical(streamed[[1L]], expected)
+    expect_identical(streamed[[1L]], workflowPhysicalPageOracle(expected))
     expect_identical(workflowTablePopulationId(selected), selected$view_id)
     expect_identical(materializeDIATable(list(store = store), view, scope = selected),
         expected)
@@ -98,7 +98,7 @@ test_that("selected tables preserve bounded logical rows and typed columns", {
     child_scope <- newWorkflowTableReadScope(store, child, reader = "arrow")
     expect_identical(readSavedWorkflowTable(store, child,
         c("renamed", "group"), limit = 2L, scope = child_scope)$data,
-        child_expected)
+        workflowPhysicalPageOracle(child_expected))
     expect_identical(as.double(readSavedWorkflowTable(store, child,
         "renamed", limit = 2L, scope = child_scope)$source_order), c(1, 3))
     invalid_map <- saveWorkflowTable(store,
@@ -194,7 +194,7 @@ test_that("empty selected tables keep their schema and produce a physical export
     releaseWorkflowTableReadScope(scopes[[1L]])
     scopes[[2L]] <- newWorkflowTableReadScope(store, view, reader = "arrow")
     expect_identical(readSavedWorkflowTable(store, view, names(expected),
-        limit = 1L, scope = scopes[[2L]])$data, expected)
+        limit = 1L, scope = scopes[[2L]])$data, workflowPhysicalPageOracle(expected))
     batches <- list()
     streamSavedWorkflowTable(scopes[[2L]], names(expected),
         function(data, offset, row_names) batches[[length(batches) + 1L]] <<- data)
@@ -454,7 +454,7 @@ test_that("a selected table and its map survive store relocation", {
     reopened <- newWorkflowTableReadScope(relocated, view, reader = "arrow")
     on.exit(if (!isTRUE(reopened$released)) releaseWorkflowTableReadScope(reopened), add = TRUE)
     expect_identical(readSavedWorkflowTable(relocated, view, fields,
-        limit = 2L, scope = reopened)$data, expected)
+        limit = 2L, scope = reopened)$data, workflowPhysicalPageOracle(expected))
     releaseWorkflowTableReadScope(reopened)
     expect_identical(workflowEntityCacheInfo(relocated)$open_resources, 0L)
 })
@@ -568,7 +568,7 @@ test_that("selected reads reject source mutation and release their cursor", {
     writeBin(original, path)
     scopes[[3L]] <- newWorkflowTableReadScope(store, view, reader = "arrow")
     expect_identical(readSavedWorkflowTable(store, view, names(table),
-        limit = 2L, scope = scopes[[3L]])$data, expected)
+        limit = 2L, scope = scopes[[3L]])$data, workflowPhysicalPageOracle(expected))
     releaseWorkflowTableReadScope(scopes[[3L]])
     expect_identical(workflowEntityCacheInfo(store)$open_resources, 0L)
 })
@@ -618,7 +618,7 @@ test_that("native DIA session archive retains a selected checkpoint table", {
     reopened <- newWorkflowTableReadScope(saved, restored, reader = "arrow")
     on.exit(if (!isTRUE(reopened$released)) releaseWorkflowTableReadScope(reopened), add = TRUE)
     expect_identical(readSavedWorkflowTable(saved, restored, fields,
-        limit = 2L, scope = reopened)$data, expected)
+        limit = 2L, scope = reopened)$data, workflowPhysicalPageOracle(expected))
     releaseWorkflowTableReadScope(reopened)
     expect_identical(workflowEntityCacheInfo(saved)$open_resources, 0L)
 })

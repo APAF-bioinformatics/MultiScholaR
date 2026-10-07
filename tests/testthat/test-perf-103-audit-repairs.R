@@ -39,6 +39,37 @@ perf103RepairFixture <- function(table = data.frame(id = letters[1:4],
         select = select, identity = identity)
 }
 
+test_that("selection pages match physical row-name storage at every offset", {
+    for (kind in c("automatic", "integer", "character")) {
+        table <- data.frame(id = letters[1:4], quantity = as.double(1:4))
+        if (kind == "integer") attr(table, "row.names") <- c(11L, 22L, 33L, 44L)
+        if (kind == "character") rownames(table) <- paste0("row-", letters[1:4])
+        f <- perf103RepairFixture(table)
+        expected <- table[c(4L, 2L, 1L), , drop = FALSE]
+        if (kind == "automatic") rownames(expected) <- NULL
+        view <- f$select(f$open(), c(4L, 2L, 1L), expected, "page-view")
+        physical <- saveWorkflowTable(f$store, expected, "page-physical",
+            f$identity("page-physical"), "id", metadata_version = 3L)
+        for (reader in c("arrow", "duckdb", "fastduckdb")) {
+            selected_scope <- f$open(view, reader)
+            physical_scope <- f$open(physical,
+                if (reader == "arrow") "fastduckdb" else reader)
+            for (offset in c(0L, 1L, 2L, 3L)) {
+                selected <- readSavedWorkflowTable(f$store, view, names(table),
+                    offset = offset, limit = 2L, scope = selected_scope)
+                control <- readSavedWorkflowTable(f$store, physical, names(table),
+                    offset = offset, limit = 2L, scope = physical_scope)
+                expect_identical(selected$data, control$data)
+                expect_identical(digest::digest(selected$data), digest::digest(control$data))
+            }
+            expect_identical(materializeDIATable(list(store = f$store), view,
+                scope = selected_scope), expected)
+            releaseWorkflowTableReadScope(selected_scope)
+            releaseWorkflowTableReadScope(physical_scope)
+        }
+    }
+})
+
 test_that("v2 metadata edits preserve reordered, filtered and projected populations", {
     f <- perf103RepairFixture()
     source <- f$open()
@@ -160,7 +191,7 @@ test_that("v2 fast reads use fastduckdb with truthful counters and reusable scop
             testthat::with_mocked_bindings({
                 page <- readSavedWorkflowTable(f$store, view, names(expected),
                     limit = 4L, scope = scope)
-                expect_identical(page$data, expected)
+                expect_identical(page$data, workflowPhysicalPageOracle(expected))
                 child <- scope$view_scopes$source
                 readSavedWorkflowTable(f$store, view, names(expected), limit = 4L, scope = scope)
                 expect_identical(scope$view_scopes$source, child)

@@ -3014,6 +3014,7 @@ validateCheckpointReaderInput <- function(operation, input_path, selection = NUL
     if (!operation %in% paste0("reader-", c("build", "check", "prepare", "inspect", "member", "verify")) ||
         !dir.exists(input_path)) stop("invalid reader operation or input directory")
     if (operation == "reader-check" && !is.null(selection) &&
+        !grepl("^perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4])))$", selection) &&
         !selection %in% c("perf101:D0", "perf101:D1", "perf101:D0R", "perf101:V", "gui-sharing-repair", "gui-export-history-member", "gui-iq-history-member", "gui-ruv-pearson", "gui-native-session", "gui-native-outputs", "gui-reference-first-qc", "gui-reference-core", "gui-reference-routing", "gui-mechanism-preflight", "gui-rollup-profile", "gui-rollup-profile-preflight", "gui-raw-replay:small", "gui-raw-replay:outputs", "gui-raw-replay:verify", "gui-cohort-profile", "gui-impute-workers:preflight", "gui-impute-workers:4", "gui-impute-workers:8", "gui-cohort-size:256", "gui-cohort-size:768", "gui-cohort-size:768-threads8", "gui-cohort-threads:1", "gui-cohort-threads:2", "gui-cohort-threads:4", "gui-cohort-threads:8", "gui-raw-replay:300") &&
         !grepl("^gui-(rollup|session)-performance:(control|candidate)$", selection) &&
         !grepl("^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$", selection) &&
@@ -3640,6 +3641,29 @@ runCheckpointReaderOperation <- function(operation, library_path, run_dir,
     on.exit(jsonlite::write_json(receipt, file.path(run_dir, "reader-operation.json"),
         auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), add = TRUE)
     tryCatch({
+        if (operation == "reader-check" && !is.null(selection) &&
+            grepl("^perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4])))$", selection)) {
+            snapshot <- file.path(run_dir, "source")
+            receipt$execution_sources <- bindPerf101Sources(snapshot)
+            extra <- c("tools/profiling/workflow_perf106.R",
+                "tickets/openai/verification/perf106-repair-protocol-v2.json",
+                "docs/qa/workflow-execution/perf-106/candidate-build.json",
+                "docs/qa/workflow-execution/perf-106/L0-preserved-primary.rds",
+                "docs/qa/workflow-execution/perf-106/screen-decision.json",
+                "docs/qa/workflow-execution/perf-106/confirmation-input-bindings.rds",
+                "docs/qa/workflow-execution/perf-106/p14-regression-bindings.rds",
+                "tests/testthat/helper-workflow-checkpoint-fixtures.R",
+                "tests/testdata/workflow-checkpoints/scenarios.json")
+            receipt$execution_sources <- c(receipt$execution_sources, stats::setNames(
+                vapply(file.path(snapshot, extra), \(path) digest::digest(file = path,
+                    algo = "sha256"), character(1)), extra))
+            saveRDS(receipt$execution_sources, file.path(run_dir, "source-manifest.rds"))
+            qualification <- new.env(parent = asNamespace("MultiScholaR"))
+            sys.source(file.path(snapshot, "tools/profiling/workflow_perf106.R"), qualification)
+            value <- qualification$runPerf106Qualification(library_path, run_dir, snapshot, selection)
+            receipt$status <- "complete"
+            return(value)
+        }
         if (operation == "reader-check" && isTRUE(selection %in% c("perf101:D0", "perf101:D1", "perf101:D0R", "perf101:V"))) {
             snapshot <- file.path(run_dir, "source")
             receipt$execution_sources <- bindPerf101Sources(snapshot)

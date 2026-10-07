@@ -796,6 +796,9 @@ summarizeSavedDIAFiltering <- function(scope, prototype, protein_column, counted
             R.version[c("major", "minor", "platform")]), algo = "sha256"))
     if (isSavedWorkflowReference(counted)) {
         supplied <- counted
+        # A worker may have committed this product after the controller opened
+        # its store. Validate and register that exact descriptor before lookup.
+        validateSavedWorkflowReference(scope$store, supplied, payload = TRUE)
         hit <- resolveSavedWorkflowEntity(scope$store, "scientific_product", identity)
         if (!identical(hit$status, "hit") || !identical(hit$reference, supplied))
             cli::cli_abort("saved count reference differs from population",

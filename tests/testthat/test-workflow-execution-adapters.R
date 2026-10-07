@@ -247,6 +247,7 @@ test_that("frozen WFX-004 comparison member emits science and complete-operation
     app <- workflow_test_application
     skip_if(isTRUE(app$config$policy$diagnostic), "production guard required for timing")
     request <- readRDS(file.path(app$config$root, "timed-member.rds"))
+    skip_if(identical(request$programme, "perf106-repair-v2"), "PERF-106 v2 has its own bound member")
     stopifnot(identical(request$schema, 1L), request$cell %in% c("primary", "filter"),
         request$arm %in% c("control", "candidate"), request$rep %in% 1:2)
     sys.source(file.path(workflow_test_root, "tests/testthat/helper-workflow-bulk-rollup.R"), environment())
@@ -321,4 +322,133 @@ test_that("frozen WFX-004 comparison member emits science and complete-operation
     receipt$input_unchanged <- identical(digest::digest(file = file.path(request$source_store,
         "dia-state-head.rds"), algo = "sha256"), original)
     saveRDS(receipt, path)
+})
+
+test_that("PERF-106 repair uses actual installed action dispatch and durable measurements", {
+    skip_if(!exists("workflow_test_mode") || workflow_test_mode != "adapters",
+        "explicit installed application only")
+    app <- workflow_test_application
+    request_path <- file.path(app$config$root, "timed-member.rds")
+    skip_if(!file.exists(request_path), "no frozen member")
+    request <- readRDS(request_path)
+    skip_if(!identical(request$programme, "perf106-repair-v2"), "different programme")
+    stopifnot(identical(request$schema, 1L),
+        request$operation %in% c("minimum_peptides_per_sample", "precursor_rollup"),
+        request$variant %in% c("native", "physical", "selection", "p14"),
+        is.character(request$fault), length(request$fault) == 1L,
+        request$fault %in% c("none", "publication", "worker_failure", "cancel", "worker_loss", "monitor_loss"))
+    sys.source(file.path(workflow_test_root, "tests/testthat/helper-workflow-bulk-rollup.R"),
+        envir = environment())
+    owned <- file.path(app$config$root, "project")
+    dir.create(owned)
+    original_head <- NULL
+    if (isTRUE(request$preflight)) {
+        recipe <- readWorkflowCheckpointRecipe("small", workflow_test_root)
+        if (isTRUE(request$summary_heavy)) recipe$n_proteins <- 2000L
+        object <- makeWorkflowCheckpointPeptide(recipe)
+        if (request$operation == "minimum_peptides_per_sample") {
+            object@peptide_data$Protein.Ids <- paste0(object@peptide_data$Protein.Ids, strrep("x", 2048L))
+            if (identical(request$fault, "worker_failure")) object@peptide_data$Stripped.Sequence[[1L]] <- NA_character_
+        }
+        manager <- newDIAStateAdapter(newWorkflowEntityStore(owned, basename(app$config$root), "DIA"),
+            WorkflowState$new(audit_enabled = FALSE))
+        manager$.context$reference_states <- TRUE
+        manager$saveState("protein_peptide_filtered", object, list(), "installed preflight")
+    } else {
+        original_head <- digest::digest(file = file.path(request$source_store, "dia-state-head.rds"),
+            algo = "sha256")
+        stopifnot(identical(original_head, request$source_head_sha256))
+        manager <- copyDIAReplayCheckpoint(request$source_store, owned)
+        manager$.context$reference_states <- TRUE
+        selectDIAStateReference(manager, "protein_peptide_filtered")
+        stopifnot(identical(readDIAStateMetadata(manager)$data$components$peptide_data$entity_id,
+            request$input_entity_id))
+    }
+    withr::defer(closeDIAStateAdapter(manager))
+    owner <- newWorkflowExecutionController(manager, app)
+    withr::defer(closeWorkflowExecutionController(owner))
+    if (identical(request$fault, "publication")) withr::local_options(
+        multischolar.workflow_execution_boundary = function(stage) {
+            if (stage == "publication") stop("owned PERF-106 publication failure")
+        })
+    before <- getDIAStateReference(manager)
+    if (isTRUE(request$profile_worker)) {
+        sys.source(file.path(workflow_test_root, "tools/profiling/workflow_perf106.R"),
+            envir = environment())
+        testthat::local_mocked_bindings(
+            workflowLaunchService = perf106ProfileLauncher(workflowLaunchService),
+            .package = "MultiScholaR")
+    }
+    id <- runWorkflowAction(request$operation, list(state = before), request$parameters, owner)
+    paths <- owner$job$paths
+    injected <- FALSE
+    repeat {
+        done <- pollWorkflowAction(owner)
+        if (!done$status %in% c("admitting", "running")) break
+        if (!injected && identical(done$status, "running") &&
+            request$fault %in% c("cancel", "worker_loss", "monitor_loss")) {
+            injected <- TRUE
+            stale_token <- owner$job$request$token
+            if (request$fault == "cancel") {
+                cancelWorkflowAction(owner)
+                done <- readRDS(file.path(paths$request_dir, "completion.rds"))
+                expect_error(acceptWorkflowActionResult(owner, list(token = stale_token)),
+                    class = "workflow_execution_stale")
+                break
+            }
+            workflowSystemd(c("stop", if (request$fault == "worker_loss")
+                owner$job$worker_unit else owner$job$monitor_unit))
+        }
+        Sys.sleep(0.02)
+    }
+    record <- list(status = done$status, member = request, execution = done,
+        source_head_sha256 = original_head, output = NULL)
+    if (isTRUE(request$summary_heavy) && done$status == "complete") {
+        worker <- readRDS(file.path(paths$request_dir, "worker-result.rds"))
+        expect_true(isSavedWorkflowReference(worker$result$counts))
+        record$large_summary_by_reference <- isSavedWorkflowReference(worker$result$counts)
+    }
+    output_path <- file.path(app$config$root, "member-result.rds")
+    # Persist the measured terminal outcome before any scientific verification.
+    saveRDS(record, output_path)
+    failed_fixture <- request$fault %in% c("worker_failure", "worker_loss", "monitor_loss", "cancel")
+    if (failed_fixture) {
+        expect_identical(done$status, switch(request$fault, cancel = "cancelled",
+            monitor_loss = "monitor_lost", "worker_failed"))
+        expect_identical(getDIAStateReference(manager), before)
+    } else if (identical(request$fault, "publication")) {
+        expect_identical(done$status, "publication_pending")
+        worker_file <- file.path(paths$request_dir, "worker-result.rds")
+        worker_hash <- digest::digest(file = worker_file, algo = "sha256")
+        accepted <- getDIAStateReference(manager)
+        options(multischolar.workflow_execution_boundary = NULL)
+        result <- resumeWorkflowAction(owner, id)
+        expect_identical(getDIAStateReference(manager), accepted)
+        expect_identical(digest::digest(file = worker_file, algo = "sha256"), worker_hash)
+        expect_identical(acceptWorkflowActionResult(owner, readRDS(worker_file))$status, "duplicate")
+        record$status <- "complete"
+        record$output <- result
+        record$publication_retry_without_science <- TRUE
+    } else if (done$status == "complete") record$output <- resumeWorkflowAction(owner, id)
+    if (isTRUE(request$preflight) && !failed_fixture) {
+        expect_identical(record$status, "complete")
+        if (!is.null(record$output)) {
+            expected <- if (request$operation == "precursor_rollup")
+                rollUpPrecursorToPeptide(object, core_utilisation = NA) else
+                filterMinNumPeptidesPerSample(object,
+                    peptides_per_sample_cutoff = request$parameters$peptides_per_sample_cutoff,
+                    inclusion_list = request$parameters$inclusion_list, core_utilisation = NA)
+            actual <- readDIAExecutionComponents(manager, fields = c("peptide_data", "design_matrix"))
+            expect_identical(actual@peptide_data, expected@peptide_data)
+            expect_identical(actual@design_matrix, expected@design_matrix)
+            record$small_science_exact <- identical(actual@peptide_data, expected@peptide_data) &&
+                identical(actual@design_matrix, expected@design_matrix)
+        }
+    }
+    if (!is.null(original_head)) expect_identical(digest::digest(
+        file = file.path(request$source_store, "dia-state-head.rds"), algo = "sha256"), original_head)
+    expect_true(done$cleanup$worker_stopped && done$cleanup$monitor_stopped)
+    expect_identical(manager$.context$store$open_resources, 0L)
+    record$project_root <- owned
+    saveRDS(record, output_path)
 })

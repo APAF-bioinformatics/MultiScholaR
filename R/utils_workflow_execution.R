@@ -506,6 +506,19 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
         if (mode == "adapters" && !diagnostic)
             inputs <- c(inputs, file.path(root, "timed-member.rds"),
                 file.path(test_root, "tests/testthat/helper-workflow-bulk-rollup.R"))
+        member_path <- file.path(root, "timed-member.rds")
+        if (mode == "adapters" && file.exists(member_path)) {
+            if (file.size(member_path) > 65536) cli::cli_abort("qualification member is oversized")
+            member <- readRDS(member_path)
+            if (identical(member$programme, "perf106-repair-v2")) {
+                config$qualification <- list(programme = member$programme,
+                    variant = member$variant,
+                    member_sha256 = digest::digest(file = member_path, algo = "sha256"),
+                    deadline = member$deadline)
+                workflowQualificationVariant(config, member$operation)
+                inputs <- unique(c(inputs, member_path))
+            }
+        }
         config$test_hashes <- stats::setNames(vapply(inputs, function(path)
             digest::digest(file = path, algo = "sha256"), character(1)), inputs)
     }
@@ -520,7 +533,8 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
     if (file.exists(config_path)) cli::cli_abort("managed application directory already used")
     saveRDS(config, config_path, compress = FALSE, version = 3)
     workflowLaunchService(config, config$controller_unit, "application", config_path,
-        digest::digest(file = config_path, algo = "sha256"), deadline = if (mode == "adapters") { if (diagnostic) 300L else 1800L } else
+        digest::digest(file = config_path, algo = "sha256"), deadline = if (!is.null(config$qualification))
+            config$qualification$deadline else if (mode == "adapters") { if (diagnostic) 300L else 1800L } else
             if (mode == "resources" && diagnostic) 900L else if (diagnostic) 600L else 86400L)
     ready <- TRUE
     config
@@ -781,6 +795,8 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     job$peak <- peak
     job$accounting <- workflowCgroupAccounting(app$cgroup)
     store <- owner$manager$.context$store
+    job$existing_entities <- list.files(file.path(store$directory, "entities"))
+    job$existing_pending <- list.files(file.path(store$directory, ".pending"), all.files = TRUE, no.. = TRUE)
     validateSavedWorkflowReference(store, input_references$state, payload = FALSE)
     if (!identical(input_references$state, getDIAStateReference(owner$manager)))
         cli::cli_abort("action input is not the selected immutable checkpoint", class = "workflow_execution_stale")
@@ -794,6 +810,9 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
         expected_head = workflowExecutionHead(store)$entity_id, generation = owner$control$generation,
         controller_id = owner$control$controller_id, parameters = digest::digest(parameters, algo = "sha256"),
         execution = workflowExecutionBuildIdentity())
+    variant <- workflowQualificationVariant(app$config, operation)
+    if (!is.null(app$config$qualification)) token$qualification <- digest::digest(
+        app$config$qualification, algo = "sha256")
     request <- list(schema = 1L, build = token$execution, operation = operation, input_references = input_references,
         parameters = parameters, token = token, owner = store$identity, project_root = dirname(store$directory),
         directory = paths$request_dir, config = app$config)
@@ -1072,17 +1091,27 @@ finishWorkflowExecutionJob <- function(owner, status) {
         scratch <- file.path(job$paths$request_dir, paste0(role, "-scratch"))
         if (dir.exists(scratch) && !nzchar(Sys.readlink(scratch))) unlink(scratch, recursive = TRUE)
     }
+    new_entities <- if (valid_store) setdiff(list.files(file.path(owner$manager$.context$store$directory,
+        "entities")), job$existing_entities) else character()
+    new_pending <- if (valid_store) setdiff(list.files(file.path(owner$manager$.context$store$directory,
+        ".pending"), all.files = TRUE, no.. = TRUE), job$existing_pending) else character()
+    artifact_roots <- if (valid_store) c(job$paths$request_dir,
+        file.path(owner$manager$.context$store$directory, "entities", new_entities),
+        file.path(owner$manager$.context$store$directory, ".pending", new_pending)) else character()
+    files <- unique(unlist(lapply(artifact_roots, list.files,
+        recursive = TRUE, full.names = TRUE, all.files = TRUE)))
+    staged_bytes <- if (valid_store) sum(file.info(files)$size) else NA_real_
     peak <- closeWorkflowPeakWindow(job$peak)
     accounting <- workflowCgroupAccounting(owner$application$cgroup)
     delta <- Map(`-`, accounting, job$accounting)
-    files <- if (valid_store) list.files(job$paths$request_dir, recursive = TRUE, full.names = TRUE) else character()
-    staged_bytes <- if (valid_store) sum(file.info(files)$size) else NA_real_
     monitor <- if (valid_store && file.exists(monitor_path)) readRDS(monitor_path) else NULL
     receipt <- list(schema = 1L, request_id = job$request$token$request_id, status = status,
         token = job$request$token, error = job$error, elapsed_seconds = proc.time()[["elapsed"]] - job$started,
         peak_bytes = peak, whole_service_peak_bytes = workflowMemoryCounter(file.path(owner$application$cgroup, "memory.peak")),
         monitor = monitor, worker = worker, threads = 8L, browser_memory_included = FALSE,
         accounting_delta = delta, staged_bytes_at_teardown = staged_bytes,
+        staged_basis = "new entity/map/summary payloads plus request outputs and owned pending files; retained input links excluded",
+        new_entity_count = length(new_entities),
         spill_attempts = if (job$request$operation == "wfx_fixture") 0L else NA_integer_,
         spill_basis = if (job$request$operation == "wfx_fixture")
             "identity fixture uses no database or spill-capable algorithm" else
@@ -1276,14 +1305,43 @@ computeWorkflowPeptideAction <- function(request) {
     on.exit(closeDIAStateAdapter(manager), add = TRUE, after = FALSE)
     validateWorkflowActionParameters(request$operation, request$parameters, request$config$policy)
     validateWorkflowActionInput(request$operation, manager, request$input_references)
+    variant <- workflowQualificationVariant(request$config, request$operation)
+    if (!is.null(request$config$qualification) && !identical(request$token$qualification,
+        digest::digest(request$config$qualification, algo = "sha256")))
+        cli::cli_abort("qualification variant token differs", class = "workflow_execution_invalid")
     value <- switch(request$operation,
         precursor_rollup = computeDIAReferencePrecursorRollup(manager, request$input_references$state,
             worker_cap = request$worker_cap),
         minimum_peptides_per_sample = computeDIAReferenceSampleFilter(manager,
-            request$input_references$state, request$parameters, worker_cap = request$worker_cap),
+            request$input_references$state, request$parameters, worker_cap = request$worker_cap,
+            output_mode = variant),
         cli::cli_abort("scientific adapter unavailable"))
     value$operation <- request$operation
     value
+}
+
+#' Resolve only server-owned finite qualification variants for installed actions.
+#' @param config Frozen application configuration, never GUI scientific parameters.
+#' @param operation Existing registered action identifier.
+#' @return Legacy default or an explicitly bound experimental sample-filter mode.
+#' @noRd
+workflowQualificationVariant <- function(config, operation) {
+    qualification <- config$qualification
+    if (is.null(qualification)) return("legacy")
+    if (!identical(config$mode, "adapters") ||
+        !is.list(qualification) || !identical(names(qualification),
+            c("programme", "variant", "member_sha256", "deadline")) ||
+        !identical(qualification$programme, "perf106-repair-v2") ||
+        !is.character(qualification$member_sha256) || length(qualification$member_sha256) != 1L ||
+        is.na(qualification$member_sha256) || !grepl("^[a-f0-9]{64}$", qualification$member_sha256) ||
+        !is.numeric(qualification$deadline) || length(qualification$deadline) != 1L ||
+        is.na(qualification$deadline) || !qualification$deadline %in% c(300, 600, 1800) ||
+        !is.character(qualification$variant) || length(qualification$variant) != 1L ||
+        is.na(qualification$variant) || !qualification$variant %in% c("native", "physical", "selection", "p14") ||
+        !identical(operation, if (qualification$variant == "p14")
+            "precursor_rollup" else "minimum_peptides_per_sample"))
+        cli::cli_abort("unsupported qualification variant", class = "workflow_execution_invalid")
+    qualification$variant
 }
 
 #' Publish accepted peptide QC figures using existing checkpoint/output recovery.
@@ -1404,6 +1462,65 @@ completeWorkflowAction <- function(owner, operation, value) {
         value$description, value$config, value$section, value$counts,
         observed_inclusion_absence = if (operation == "minimum_peptides_per_sample")
             value$summary$inclusion_entries_absent_from_data else NULL)
+}
+
+#' Rank the repaired pilot on both widths without changing historical policies.
+#' @param populations Primary/wide lists of native/physical/selection paired receipts.
+#' @param expected_bindings Independently frozen per-population/per-arm bindings.
+#' @return One minimax memory finalist, or a held/no-finalist decision; never activation.
+#' @noRd
+rankPerfRepairScreen <- function(populations, expected_bindings) {
+    held <- list(status = "held", promotion_authorized = FALSE)
+    if (!perfQualificationKeys(populations, c("primary", "wide")) ||
+        !perfQualificationKeys(expected_bindings, c("primary", "wide"))) return(held)
+    valid <- function(member, binding, rep) {
+        is.list(member) && identical(member$status, "complete") &&
+            identical(member$bindings, binding) && identical(member$rep, rep) &&
+            all(vapply(c("science", "outputs", "measurement_valid", "integrity", "guard", "admission"),
+                \(field) isTRUE(member[[field]]), logical(1))) &&
+            is.numeric(member$peak_bytes) && length(member$peak_bytes) == 1L &&
+            is.finite(member$peak_bytes) && member$peak_bytes > 0 && member$peak_bytes < 15.5 * 1024^3 &&
+            is.numeric(member$elapsed_seconds) && length(member$elapsed_seconds) == 1L &&
+            is.finite(member$elapsed_seconds) && member$elapsed_seconds > 0 && member$elapsed_seconds <= 300 &&
+            identical(as.double(member$swap_bytes), 0) && identical(as.double(member$spill_bytes), 0)
+    }
+    medians <- list()
+    eligible <- c("physical", "selection")
+    requests <- character()
+    for (population in names(populations)) {
+        arms <- populations[[population]]
+        bindings <- expected_bindings[[population]]
+        if (!perfQualificationKeys(arms, c("native", "physical", "selection")) ||
+            !perfQualificationKeys(bindings, names(arms)) ||
+            any(!vapply(arms, \(arm) is.list(arm) && length(arm) == 2L, logical(1)))) return(held)
+        for (arm in names(arms)) {
+            binding <- bindings[[arm]]
+            if (!is.character(binding) || length(binding) != 1L || is.na(binding) ||
+                !grepl("^[a-f0-9]{64}$", binding)) return(held)
+            for (member in arms[[arm]]) {
+                id <- member$request_id
+                if (!is.character(id) || length(id) != 1L || is.na(id) || !nzchar(id) || id %in% requests)
+                    return(held)
+                requests <- c(requests, id)
+            }
+            good <- all(vapply(seq_len(2L), \(i) valid(arms[[arm]][[i]], bindings[[arm]], i), logical(1)))
+            if (!good && arm == "native") return(held)
+            if (!good) eligible <- setdiff(eligible, arm)
+            if (good) medians[[paste(population, arm)]] <- c(
+                peak = stats::median(vapply(arms[[arm]], `[[`, numeric(1), "peak_bytes")),
+                elapsed = stats::median(vapply(arms[[arm]], `[[`, numeric(1), "elapsed_seconds")))
+        }
+    }
+    if (!length(eligible)) return(list(status = "no_finalist", promotion_authorized = FALSE))
+    worst <- function(arm, metric) max(vapply(names(populations),
+        \(population) medians[[paste(population, arm)]][[metric]], numeric(1)))
+    peaks <- vapply(eligible, worst, numeric(1), metric = "peak")
+    times <- vapply(eligible, worst, numeric(1), metric = "elapsed")
+    tied <- which(peaks <= min(peaks) * 1.05)
+    winner <- tied[order(times[tied], match(eligible[tied], c("physical", "selection")))][[1L]]
+    list(status = "screen_finalist", finalist = eligible[[winner]],
+        medians = medians, worst_peak = stats::setNames(peaks, eligible),
+        worst_elapsed = stats::setNames(times, eligible), promotion_authorized = FALSE)
 }
 
 #' Frozen PERF policy, independent of historical schema-1 qualification.

@@ -422,3 +422,10 @@ makeWorkflowExecutionFilterFixture <- function(repeats = 1L) {
             input_rows = 10L * repeats, retained_rows = 9L * repeats,
             output_run_type = "character", unused_level = "unused"))
 }
+# Physical pages expose automatic row names as logical-position strings, while
+# full S4 assembly retains the native compact representation.
+workflowPhysicalPageOracle <- function(table, offset = 0L) {
+    if (!inherits(table, "tbl_df") && .row_names_info(table, type = 1L) <= 0L)
+        rownames(table) <- as.character(offset + seq_len(nrow(table)))
+    table
+}

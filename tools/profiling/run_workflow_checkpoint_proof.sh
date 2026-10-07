@@ -205,7 +205,7 @@ if [[ "${1:-}" == "--service" ]]; then
     fi
     # Sequential QC extends the existing recorded operation, not a new service.
     if [[ ( "$2" == recorded-qc || "$2" == reader-check ) && "$#" == 6 ]]; then
-        [[ ( "$2" == recorded-qc && ( "$6" == sequence-prepare || "$6" =~ ^sequence:(resident|qs2):(diagnostic|timing)$ || "$6" == sequence:qs2_duckdb:timing ) ) || ( "$2" == reader-check && ( "$6" =~ ^perf101:(D[01]|D0R|V)$ || "$6" == sequence || "$6" == gui-capacity || "$6" == gui-capacity-verifier || "$6" == gui-diagnostic || "$6" == gui-passive || "$6" == gui-lifetime-repair || "$6" == gui-memory-repair || "$6" == gui-memory-verification || "$6" == gui-audit-repair || "$6" == gui-audit-diagnostic || "$6" == gui-audit-member || "$6" == gui-audit-toggle || "$6" == gui-sleep-guard || "$6" == gui-integration-repair || "$6" == gui-worker-member || "$6" == gui-export-member || "$6" == gui-sharing-repair || "$6" == gui-native-session || "$6" == gui-native-outputs || "$6" == gui-reference-first-qc || "$6" == gui-reference-core || "$6" == gui-reference-routing || "$6" == gui-ruv-pearson || "$6" == gui-export-history-member || "$6" == gui-iq-history-member || "$6" == gui-mechanism-preflight || "$6" == gui-rollup-profile || "$6" == gui-raw-replay:small || "$6" == gui-raw-replay:outputs || "$6" == gui-raw-replay:verify || "$6" == gui-cohort-profile || "$6" =~ ^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$ || "$6" =~ ^(gui-cohort-size:(256|768|768-threads8)|gui-impute-workers:(preflight|4|8))$ || "$6" =~ ^gui-cohort-threads:(1|2|4|8)$ || "$6" == gui-raw-replay:300 || "$6" == gui-rollup-profile-preflight || "$6" =~ ^gui-rollup-compare:(control|candidate)$ || "$6" =~ ^gui-(rollup|session)-performance:(control|candidate)$ || "$6" =~ ^gui-first-qc-verify:[A-Za-z0-9]{6}:[A-Za-z0-9]{6}$ || "$6" =~ ^gui-history-verify:[A-Za-z0-9]{6}(:[A-Za-z0-9]{6})?$ ) ) ]] || exit 2
+        [[ ( "$2" == recorded-qc && ( "$6" == sequence-prepare || "$6" =~ ^sequence:(resident|qs2):(diagnostic|timing)$ || "$6" == sequence:qs2_duckdb:timing ) ) || ( "$2" == reader-check && ( "$6" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ || "$6" == sequence || "$6" == gui-capacity || "$6" == gui-capacity-verifier || "$6" == gui-diagnostic || "$6" == gui-passive || "$6" == gui-lifetime-repair || "$6" == gui-memory-repair || "$6" == gui-memory-verification || "$6" == gui-audit-repair || "$6" == gui-audit-diagnostic || "$6" == gui-audit-member || "$6" == gui-audit-toggle || "$6" == gui-sleep-guard || "$6" == gui-integration-repair || "$6" == gui-worker-member || "$6" == gui-export-member || "$6" == gui-sharing-repair || "$6" == gui-native-session || "$6" == gui-native-outputs || "$6" == gui-reference-first-qc || "$6" == gui-reference-core || "$6" == gui-reference-routing || "$6" == gui-ruv-pearson || "$6" == gui-export-history-member || "$6" == gui-iq-history-member || "$6" == gui-mechanism-preflight || "$6" == gui-rollup-profile || "$6" == gui-raw-replay:small || "$6" == gui-raw-replay:outputs || "$6" == gui-raw-replay:verify || "$6" == gui-cohort-profile || "$6" =~ ^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$ || "$6" =~ ^(gui-cohort-size:(256|768|768-threads8)|gui-impute-workers:(preflight|4|8))$ || "$6" =~ ^gui-cohort-threads:(1|2|4|8)$ || "$6" == gui-raw-replay:300 || "$6" == gui-rollup-profile-preflight || "$6" =~ ^gui-rollup-compare:(control|candidate)$ || "$6" =~ ^gui-(rollup|session)-performance:(control|candidate)$ || "$6" =~ ^gui-first-qc-verify:[A-Za-z0-9]{6}:[A-Za-z0-9]{6}$ || "$6" =~ ^gui-history-verify:[A-Za-z0-9]{6}(:[A-Za-z0-9]{6})?$ ) ) ]] || exit 2
         proof_sequence_selector="$6"
         if [[ "$6" == gui-export-history-member || "$6" == gui-iq-history-member ]]; then
             proof_sequence_sampling=true
@@ -264,16 +264,19 @@ if [[ "${1:-}" == "--service" ]]; then
         fi
     fi
     if [[ "$proof_memory_guard" == true ]]; then
-        if [[ ! "$proof_sequence_selector" =~ ^perf101:(D[01]|D0R|V)$ ]]; then checkpointRecordedGuard "$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)" 0 0 start; fi
+        if [[ ! "$proof_sequence_selector" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then checkpointRecordedGuard "$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)" 0 0 start; fi
         proof_stop_peak=8053063680
         proof_min_host_available=2147483648
     fi
-    if [[ "$proof_sequence_selector" =~ ^perf101:(D[01]|D0R|V)$ ]]; then
+    if [[ "$proof_sequence_selector" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
         proof_memory_max=17179869184
         proof_stop_peak=16642998272
         proof_min_host_available=2147483648
         proof_runtime_max=600
-        if [[ "$proof_sequence_selector" == perf101:D0R || "$proof_sequence_selector" == perf101:V ]]; then proof_runtime_max=300; fi
+        if [[ "$proof_sequence_selector" == perf106:V2-J ]]; then proof_runtime_max=120; fi
+        if [[ "$proof_sequence_selector" == perf106:V2-A || "$proof_sequence_selector" == perf106:V2-V ]]; then proof_runtime_max=300; fi
+        if [[ "$proof_sequence_selector" == perf101:D0R || "$proof_sequence_selector" == perf101:V || "$proof_sequence_selector" == perf106:S* ]]; then proof_runtime_max=300; fi
+        if [[ "$proof_sequence_selector" == perf106:F* || "$proof_sequence_selector" == perf106:R* ]]; then proof_runtime_max=1800; fi
         proof_sequence_sampling=true
         proof_process_sampling=true
         proof_available="$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)"
@@ -510,8 +513,22 @@ if [[ "${1:-}" == "--service" ]]; then
     if [[ "$proof_design_memory" == true ]]; then proof_gui_diagnostic=true; fi
     if [[ "$proof_gui_diagnostic" == true || "$proof_reclaim" == true ]]; then proof_process_sampling=true; fi
     proof_command=(Rscript --vanilla "${proof_script_dir}/run_workflow_checkpoint_proof.R" "${proof_operation[@]}")
-    if [[ "$proof_sequence_selector" =~ ^perf101:(D[01]|D0R|V)$ ]]; then
+    if [[ "$proof_sequence_selector" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
         checkpointSnapshotPerf101Sources "$(realpath -e -- "${proof_script_dir}/../..")" "$proof_run_dir/source"
+        if [[ "$proof_sequence_selector" == perf106:* ]]; then
+            for proof_source_file in tools/profiling/workflow_perf106.R \
+                tickets/openai/verification/perf106-repair-protocol-v2.json \
+                docs/qa/workflow-execution/perf-106/candidate-build.json \
+                docs/qa/workflow-execution/perf-106/L0-preserved-primary.rds \
+                docs/qa/workflow-execution/perf-106/screen-decision.json \
+                docs/qa/workflow-execution/perf-106/confirmation-input-bindings.rds \
+                docs/qa/workflow-execution/perf-106/p14-regression-bindings.rds \
+                tests/testthat/helper-workflow-checkpoint-fixtures.R \
+                tests/testdata/workflow-checkpoints/scenarios.json; do
+                mkdir -p -- "$(dirname -- "$proof_run_dir/source/$proof_source_file")"
+                cp -- "${proof_script_dir}/../../$proof_source_file" "$proof_run_dir/source/$proof_source_file"
+            done
+        fi
         proof_command=(Rscript --vanilla "$proof_run_dir/source/tools/profiling/run_workflow_checkpoint_proof.R" "${proof_operation[@]}")
     fi
     if [[ "$proof_utility_diagnostics" == true ]]; then proof_command+=(--diagnostic-memory); fi
@@ -550,7 +567,7 @@ if [[ "${1:-}" == "--service" ]]; then
             trap 'exit 130' INT TERM
         fi
         proof_service_env=(--setenv=NOT_CRAN=true --setenv="CHROMOTE_CHROME=$proof_browser")
-        if [[ "$proof_sequence_selector" =~ ^perf101:(D[01]|D0R|V)$ ]]; then
+        if [[ "$proof_sequence_selector" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
             proof_service_env+=(--setenv=OMP_NUM_THREADS=1 --setenv=OPENBLAS_NUM_THREADS=1
                 --setenv=MKL_NUM_THREADS=1 --setenv=VECLIB_MAXIMUM_THREADS=1)
         fi
