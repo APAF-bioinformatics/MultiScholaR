@@ -356,8 +356,9 @@ if [[ "${1:-}" == "--service" ]]; then
         proof_sequence_sampling=true
         proof_process_sampling=true
         proof_available="$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)"
-        if [[ ! "$proof_available" =~ ^[0-9]+$ ]] || (( proof_available < 17179869184 )); then
-            echo "bulk rollup refused: host headroom is below 16 GiB" >&2
+        # Startup headroom only (user 2026-10-08); the 16 GiB cap, early stop and 2 GiB floor still guard the run.
+        if [[ ! "$proof_available" =~ ^[0-9]+$ ]] || (( proof_available < 12884901888 )); then
+            echo "bulk rollup refused: host headroom is below 12 GiB" >&2
             exit 76
         fi
     fi
@@ -367,8 +368,9 @@ if [[ "${1:-}" == "--service" ]]; then
         proof_min_host_available=2147483648
         if [[ "$proof_sequence_selector" == gui-raw-replay:300 ]]; then proof_runtime_max=5400; fi
         proof_available="$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)"
-        if [[ ! "$proof_available" =~ ^[0-9]+$ ]] || (( proof_available < 17179869184 )); then
-            echo "300 replay refused: host headroom is below 16 GiB" >&2
+        # Startup headroom only (user 2026-10-08); the 16 GiB cap, early stop and 2 GiB floor still guard the run.
+        if [[ ! "$proof_available" =~ ^[0-9]+$ ]] || (( proof_available < 12884901888 )); then
+            echo "300 replay refused: host headroom is below 12 GiB" >&2
             exit 76
         fi
     fi
