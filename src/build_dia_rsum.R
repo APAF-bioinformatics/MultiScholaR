@@ -57,4 +57,22 @@ if (supported) {
     manifest$compiler <- system2(compiler, "--version", stdout = TRUE)[[1L]]
     manifest$flags <- flags
 }
+# Native provider admission is independent of the historical unsigned extension.
+callback <- function(path) {
+    lines <- readLines(path, warn = FALSE)
+    first <- grep("^static void dia_rsum\\(", lines)
+    last <- grep("^}", lines)[grep("^}", lines) > first][[1L]]
+    paste(lines[seq.int(first, last)], collapse = "\n")
+}
+stopifnot(identical(callback("src/dia_rsum.c"), callback("src/workflow_dia_exact_sum.c")))
+query_manifest <- system.file("query-manifest.rds", package = "fastduckdb")
+if (nzchar(query_manifest)) {
+    manifest$native_query <- list(api = "duckdb-c-scope-v1", registration = "dia_ordered_sum_v1",
+        runtime_release_status = "unqualified", unsigned_loading = FALSE,
+        kernel_sha256 = digest::digest(callback("src/dia_rsum.c"), algo = "sha256", serialize = FALSE),
+        provider_source_sha256 = digest::digest(file = "src/workflow_dia_exact_sum.c", algo = "sha256"),
+        query_manifest_sha256 = digest::digest(file = query_manifest, algo = "sha256"),
+        query_binary_sha256 = digest::digest(file = system.file("libs",
+            paste0("fastduckdb_query", .Platform$dynlib.ext), package = "fastduckdb"), algo = "sha256"))
+}
 saveRDS(manifest, file.path(destination, "manifest.rds"), compress = FALSE, version = 3)

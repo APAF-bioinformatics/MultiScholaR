@@ -1,0 +1,7 @@
+{
+  "kernel_source_sha256": "7f76be1f3f80ef2fd70d00ba0d36d50b5b19c53572ecf46e446a0008384abddd",
+  "callback_sha256": "4687e1978fb87dcff0d05068a244c75d0ed073a7d02b0e6224e4f90d7ca2b651",
+  "callback_unchanged": true,
+  "registration_change": "Direct public C call; same scalar name, types, handling and callback. No LOAD/extension entrypoint.",
+  "stage": "feasibility only, not installed fastduckdb qualification"
+}

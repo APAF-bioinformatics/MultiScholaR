@@ -220,6 +220,7 @@ openWorkflowTableWriter <- function(path, metadata, progress = NULL, backend = "
     writer$pending <- list()
     writer$pending_rows <- writer$pending_bytes <- 0
     writer$closed <- FALSE
+    writer$native_query <- FALSE
     writer
 }
 
@@ -261,8 +262,18 @@ appendWorkflowTableWriter <- function(writer, table, at = seq_len(nrow(table))) 
         if (writer$optimization == "metadata") writer$schema_metadata <- schema_metadata
     }
     if (writer$backend == "fast_r") {
+        if (isTRUE(writer$native_query) && n) cli::cli_abort(
+            "owned query writer accepts native batches after schema initialization",
+            class = "saved_entity_unsupported")
         if (is.null(writer$output)) {
-            writer$output <- fastduckdb::open_parquet_writer_fast(storage[0, , drop = FALSE],
+            opener <- fastduckdb::open_parquet_writer_fast
+            if (isTRUE(writer$native_query)) {
+                # The codec retains factor levels/attributes in its existing
+                # restoration metadata; physical values can remain UTF-8.
+                storage[] <- lapply(storage, function(x) if (is.factor(x)) as.character(x) else x)
+                opener <- fastduckdb::open_query_writer_fast
+            }
+            writer$output <- opener(storage[0, , drop = FALSE],
                 writer$path, metadata = schema_metadata, n_threads = 8L)
             updateWorkflowFastWriter(writer, fastduckdb::flush_parquet_writer_fast(writer$output))
         }
@@ -304,6 +315,41 @@ appendWorkflowTableWriter <- function(writer, table, at = seq_len(nrow(table))) 
     }
     writer$rows <- writer$rows + n
     invisible(NULL)
+}
+
+#' Stream owned query batches to the existing checkpoint writer.
+#' @param con,sql Scoped fastduckdb connection and ordered scientific query.
+#' @param writer Initialized native-query checkpoint writer.
+#' @param observer_columns Only columns needed by the bounded R summary consumer.
+#' @param observe Callback receiving one bounded summary projection.
+#' @param batch_rows Pre-admitted transfer size, at most 10,000.
+#' @return Number of native batches consumed; no full result is collected.
+#' @noRd
+streamWorkflowQueryToWriter <- function(con, sql, writer, observer_columns, observe,
+    batch_rows = 10000L) {
+    stopifnot(isTRUE(writer$native_query), !is.null(writer$output), !writer$closed)
+    result <- fastduckdb::send_query_fast(con, sql)
+    on.exit(fastduckdb::clear_query_fast(result), add = TRUE)
+    calls <- 0L
+    repeat {
+        batch <- fastduckdb::fetch_query_arrow_fast(result, batch_rows)
+        if (!batch$num_rows) break
+        indices <- match(observer_columns, batch$ColumnNames()) - 1L
+        if (anyNA(indices)) cli::cli_abort("query summary columns are absent",
+            class = "saved_entity_corrupt")
+        observation <- as.data.frame(batch$SelectColumns(as.integer(indices)))
+        if (as.numeric(object.size(observation)) > 67108864)
+            cli::cli_abort("query summary exceeds batch limit", class = "saved_entity_limit")
+        observe(observation)
+        info <- fastduckdb::append_query_writer_fast(writer$output, batch,
+            ordinal = ".multischolar_order",
+            row_key = if (writer$metadata$key_column == ".rownames" &&
+                isTRUE(writer$metadata$automatic_row_names)) ".multischolar_row_key" else "")
+        updateWorkflowFastWriter(writer, info)
+        writer$rows <- writer$rows + batch$num_rows
+        calls <- calls + 1L
+    }
+    calls
 }
 
 #' Apply native writer counters while keeping progress and file-cache ownership unchanged.
@@ -608,6 +654,15 @@ checkWorkflowTableReadScope <- function(scope) {
     invisible(TRUE)
 }
 
+#' Bind native reader cleanup without retaining a calling assay frame.
+#' @param handle Owned experimental fastduckdb cursor.
+#' @return Idempotent zero-argument cleanup callback.
+#' @noRd
+workflowNativeCursorCloser <- function(handle) {
+    force(handle)
+    function() fastduckdb::close_parquet_cursor_fast(handle)
+}
+
 #' Release one table action and fail if its source changed before delivery.
 #' @param scope Table read owner.
 #' @return TRUE invisibly; repeated release is harmless.
@@ -633,7 +688,7 @@ releaseWorkflowTableReadScope <- function(scope) {
     scope$action$scopes <- scope$action$scopes - 1L
     # Close a borrowed database as soon as the last table scope releases it.
     if (scope$action$scopes == 0L && !is.null(scope$action$connection)) {
-        DBI::dbDisconnect(scope$action$connection, shutdown = TRUE)
+        workflowQueryDisconnect(scope$action$connection)
         scope$action$connection <- NULL
     }
     scope$metadata <- NULL
@@ -792,10 +847,10 @@ configureWorkflowBulkQueryScope <- function(scope) {
         "bulk query requires a scoped DuckDB connection",
         class = "saved_entity_unsupported")
     settings <- list(threads = 8L, engine_limit = "12GiB", spill = FALSE)
-    DBI::dbExecute(scope$connection, "SET threads = 8")
-    DBI::dbExecute(scope$connection, "SET memory_limit = '12GiB'")
-    DBI::dbExecute(scope$connection, "SET max_temp_directory_size = '0B'")
-    DBI::dbExecute(scope$connection, "SET temp_directory = ''")
+    workflowQueryExecute(scope$connection, "SET threads = 8")
+    workflowQueryExecute(scope$connection, "SET memory_limit = '12GiB'")
+    workflowQueryExecute(scope$connection, "SET max_temp_directory_size = '0B'")
+    workflowQueryExecute(scope$connection, "SET temp_directory = ''")
     scope$bulk_query_settings <- settings
     settings
 }
@@ -822,8 +877,8 @@ collectWorkflowBulkMetadata <- function(scope, sql, params = list(),
     bounded <- paste0("SELECT * FROM (", sql,
         ") AS workflow_bounded_metadata LIMIT ", as.integer(max_rows) + 1L)
     con <- scope$connection
-    quote <- \(x) as.character(DBI::dbQuoteIdentifier(con, x))
-    fields <- DBI::dbGetQuery(con, paste("DESCRIBE", bounded), params = params)
+    quote <- \(x) as.character(workflowQueryQuoteIdentifier(con, x))
+    fields <- workflowQueryCollect(con, paste("DESCRIBE", bounded), params = params)
     ordinal <- ".workflow_metadata_order"
     supported <- c("BOOLEAN", "TINYINT", "SMALLINT", "INTEGER", "BIGINT", "HUGEINT",
         "UTINYINT", "USMALLINT", "UINTEGER", "UBIGINT", "UHUGEINT", "FLOAT", "DOUBLE", "VARCHAR")
@@ -833,21 +888,21 @@ collectWorkflowBulkMetadata <- function(scope, sql, params = list(),
     # Materialize only the bounded metadata, once. A second execution of the
     # scientific aggregation for a size preflight would duplicate its cost.
     table <- quote(basename(tempfile("workflow_metadata_")))
-    DBI::dbExecute(con, paste0("CREATE TEMP TABLE ", table,
+    workflowQueryExecute(con, paste0("CREATE TEMP TABLE ", table,
         " AS SELECT row_number() OVER () AS ", quote(ordinal), ", * FROM (", bounded, ")"),
         params = params)
-    on.exit(DBI::dbExecute(con, paste("DROP TABLE", table)), add = TRUE)
+    on.exit(workflowQueryExecute(con, paste("DROP TABLE", table)), add = TRUE)
     # Include vectors, per-string allocation/alignment and container overhead.
     # Counting repeated strings separately is deliberately conservative.
     widths <- ifelse(fields$column_type == "VARCHAR", paste0(
         "80 + coalesce(octet_length(encode(", quote(fields$column_name), ")), 0)"), "16")
     overhead <- 4096 + 256 * nrow(fields) + sum(nchar(fields$column_name, type = "bytes"))
-    footprint <- DBI::dbGetQuery(con, paste0("SELECT count(*) AS rows, ", overhead,
+    footprint <- workflowQueryCollect(con, paste0("SELECT count(*) AS rows, ", overhead,
         " + coalesce(sum(", paste(widths, collapse = " + "), "),0) AS bytes FROM ", table))
     if (footprint$rows > max_rows || footprint$bytes > max_bytes)
         cli::cli_abort("bulk query metadata exceeds collection limits",
             class = "saved_entity_limit")
-    value <- DBI::dbGetQuery(con, paste0("SELECT ",
+    value <- workflowQueryCollect(con, paste0("SELECT ",
         paste(quote(fields$column_name), collapse = ","), " FROM ", table,
         " ORDER BY ", quote(ordinal)))
     if (nrow(value) > max_rows || as.numeric(object.size(value)) > max_bytes)
@@ -874,6 +929,47 @@ partitionWorkflowCompleteGroups <- function(groups, batches, max_groups = 10000L
     if (!length(groups)) return(list(groups))
     labels <- ceiling(seq_along(groups) * as.double(batches) / length(groups))
     unname(split(groups, labels))
+}
+
+#' Inspect declared complete partitions without retaining full grouping state.
+#' @param scope Owned bulk query scope.
+#' @param relation,partition Trusted relation and declared partition column.
+#' @param inspect Callback receiving a parameterized predicate and scalar bindings.
+#' @return NULL invisibly after visiting every complete partition (or empty input).
+#' @noRd
+visitWorkflowCompletePartitions <- function(scope, relation, partition, inspect) {
+    con <- scope$connection
+    q <- function(x) as.character(workflowQueryQuoteIdentifier(con, x))
+    stopifnot(is.character(relation), length(relation) == 1L,
+        is.character(partition), length(partition) == 1L, is.function(inspect))
+    values <- collectWorkflowBulkMetadata(scope, paste0("SELECT DISTINCT ",
+        q(partition), " AS partition_value FROM ", q(relation), " ORDER BY ", q(partition)))
+    if (!nrow(values)) inspect("FALSE", list())
+    for (i in seq_len(nrow(values))) inspect(paste0(q(partition), " IS NOT DISTINCT FROM ?"),
+        list(values$partition_value[[i]]))
+    invisible(NULL)
+}
+
+#' Check operation-declared uniqueness with an identity-preserving partition.
+#' @param scope Owned bulk query scope.
+#' @param relation,partition Trusted relation and complete partition field.
+#' @param keys Declared identity columns, including the partition column.
+#' @return Whether any duplicate identity exists; no additional scientific rules.
+#' @noRd
+hasWorkflowPartitionDuplicates <- function(scope, relation, partition, keys) {
+    if (!is.character(keys) || !length(keys) || anyNA(keys) || anyDuplicated(keys) ||
+        !partition %in% keys) cli::cli_abort(
+            "uniqueness partition must be part of the declared identity",
+            class = "workflow_execution_unsupported")
+    con <- scope$connection
+    q <- function(x) as.character(workflowQueryQuoteIdentifier(con, x))
+    duplicate <- FALSE
+    visitWorkflowCompletePartitions(scope, relation, partition, function(predicate, params) {
+        if (!duplicate) duplicate <<- nrow(workflowQueryCollect(con, paste0(
+            "SELECT 1 FROM ", q(relation), " WHERE ", predicate, " GROUP BY ",
+            paste(q(keys), collapse = ","), " HAVING count(*) > 1 LIMIT 1"), params)) > 0L
+    })
+    duplicate
 }
 
 #' Stage a bounded R-produced batch using the existing physical table codec.
@@ -1090,7 +1186,33 @@ readSavedWorkflowTable <- function(store, reference, columns, keys = NULL,
         }
         # The pinned native cache is process-wide and entry-, not byte-bounded.
         # Do not retain its footers between calls; action R metadata stays owned.
-        collected <- tryCatch(fastduckdb::read_parquet_fast(path,
+        cursor_columns <- c(".multischolar_order", physical_columns)
+        cursor <- scope$readers$persistent_native
+        persistent <- isTRUE(getOption("multischolar.perf108.persistent_reader", FALSE)) && is.null(keys)
+        if (!is.null(cursor) && (!persistent || !identical(cursor$columns, cursor_columns) ||
+            cursor$offset != offset)) {
+            cursor$close()
+            rm("persistent_native", envir = scope$readers)
+            cursor <- NULL
+        }
+        if (persistent && is.null(cursor) && offset == 0) {
+            handle <- fastduckdb::open_parquet_cursor_fast(path, cursor_columns, n_threads = 8L)
+            cursor <- new.env(parent = emptyenv())
+            cursor$handle <- handle
+            cursor$columns <- cursor_columns
+            cursor$offset <- 0
+            cursor$close <- workflowNativeCursorCloser(handle)
+            scope$readers$persistent_native <- cursor
+            fastduckdb::clear_parquet_cache()
+        }
+        collected <- if (!is.null(cursor)) {
+            page <- fastduckdb::fetch_parquet_cursor_fast(cursor$handle, limit)
+            cursor$offset <- cursor$offset + nrow(page)
+            if (!identical(as.numeric(page$.multischolar_order), as.numeric(offset + seq_len(nrow(page)))))
+                cli::cli_abort("persistent reader requires canonical physical row order",
+                    class = "saved_entity_corrupt")
+            page
+        } else tryCatch(fastduckdb::read_parquet_fast(path,
             columns = c(".multischolar_order", physical_columns),
             n_threads = scope$read_threads %||% 2L, lazy_strings = FALSE,
             filter = list(.multischolar_order = c(offset + 1, offset + limit))),
@@ -2910,4 +3032,80 @@ readWorkflowSelectedOrdinals <- function(store, reference, columns, ordinals, sc
     if (as.numeric(object.size(data)) > 67108864)
         cli::cli_abort("ordinal projection exceeds 64 MiB", class = "saved_entity_limit")
     data
+}
+
+#' Execute SQL on the owned native scope or the existing DBI scope.
+#' @param con,statement Existing owner and quoted SQL.
+#' @param params Optional DBI parameters; native rollup uses quoted fixed statements.
+#' @return Existing backend result, invisibly for native execution.
+#' @noRd
+workflowQueryExecute <- function(con, statement, params = list()) {
+    if (!inherits(con, "workflow_fast_query")) return(if (length(params))
+        DBI::dbExecute(con, statement, params = params) else DBI::dbExecute(con, statement))
+    fastduckdb::execute_query_fast(con, statement, params = params)
+}
+
+#' Collect only bounded metadata from the owned native query scope.
+#' @param con,statement,params Existing owner, quoted SQL and optional DBI parameters.
+#' @return Bounded data frame, with native scientific types restored by the caller's codec.
+#' @noRd
+workflowQueryCollect <- function(con, statement, params = list()) {
+    if (!inherits(con, "workflow_fast_query")) return(if (length(params))
+        DBI::dbGetQuery(con, statement, params = params) else DBI::dbGetQuery(con, statement))
+    fastduckdb::query_data_fast(con, statement, params = params)
+}
+
+#' Quote identifiers through the existing SQL quoting contract.
+#' @param con,x Owned connection and identifiers.
+#' @return Quoted SQL identifiers.
+#' @noRd
+workflowQueryQuoteIdentifier <- function(con, x) {
+    DBI::dbQuoteIdentifier(if (inherits(con, "workflow_fast_query")) DBI::ANSI() else con, x)
+}
+
+#' Quote scalar string values through the existing SQL quoting contract.
+#' @param con,x Owned connection and string values.
+#' @return Quoted SQL values.
+#' @noRd
+workflowQueryQuoteString <- function(con, x) {
+    DBI::dbQuoteString(if (inherits(con, "workflow_fast_query")) DBI::ANSI() else con, x)
+}
+
+#' Release the query owner after its last saved-table scope closes.
+#' @param con Owned connection.
+#' @return NULL invisibly after all native results close, or the DBI disconnect result.
+#' @noRd
+workflowQueryDisconnect <- function(con) {
+    if (inherits(con, "workflow_fast_query")) return(fastduckdb::close_query_fast(con))
+    DBI::dbDisconnect(con, shutdown = TRUE)
+}
+
+#' Register only a bounded annotation or sample-rank lookup.
+#' @param con,name,value Existing owner, table name and small primitive lookup.
+#' @param temporary Must be TRUE for native query registration.
+#' @return TRUE invisibly, after bounded inserts finish.
+#' @noRd
+workflowQueryWriteLookup <- function(con, name, value, temporary = TRUE) {
+    if (!inherits(con, "workflow_fast_query")) return(DBI::dbWriteTable(con, name, value,
+        temporary = temporary))
+    if (!isTRUE(temporary) || !is.data.frame(value) || nrow(value) > 10000L ||
+        !length(value) || anyNA(names(value)) || any(!nzchar(names(value))) || anyDuplicated(names(value)))
+        cli::cli_abort("invalid native lookup table", class = "saved_entity_limit")
+    value <- lapply(value, \(column) if (is.factor(column)) as.character(column) else column)
+    types <- vapply(value, typeof, character(1))
+    if (any(!types %in% c("double", "integer", "logical", "character")) ||
+        any(vapply(value, \(column) !is.null(attributes(column)), logical(1))))
+        cli::cli_abort("unsupported native lookup column", class = "saved_entity_unsupported")
+    # Admit SQL-escaped text as well as the existing R lookup before constructing statements.
+    bytes <- sum(vapply(value, \(column) 32 * (length(column) + 1) +
+        if (is.character(column)) 2 * sum(nchar(enc2utf8(column), type = "bytes",
+            allowNA = TRUE), na.rm = TRUE) else 0, numeric(1)))
+    if (bytes > 67108864) cli::cli_abort("native lookup exceeds 64 MiB", class = "saved_entity_limit")
+    quote <- \(x) as.character(workflowQueryQuoteIdentifier(con, x))
+    sql_types <- c(double = "DOUBLE", integer = "INTEGER", logical = "BOOLEAN", character = "VARCHAR")
+    workflowQueryExecute(con, paste0("CREATE TEMP TABLE ", quote(name), " (",
+        paste(paste(quote(names(value)), sql_types[types]), collapse = ","), ")"))
+    table <- as.data.frame(value, stringsAsFactors = FALSE, check.names = FALSE)
+    fastduckdb::append_query_table_fast(con, name, table)
+    invisible(TRUE)
 }

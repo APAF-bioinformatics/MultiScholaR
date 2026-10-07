@@ -44,9 +44,9 @@ installedCompatibilitySnapshot <- function(library_path) {
     )
 }
 
-installedSavedEntityProbe <- function(library_path, project_root) {
+installedSavedEntityProbe <- function(library_path, project_root, allow_native_runtime = FALSE) {
     callr::r(
-        function(library_path, project_root) {
+        function(library_path, project_root, allow_native_runtime) {
             .libPaths(c(library_path, .libPaths()))
             suppressPackageStartupMessages(library(MultiScholaR))
             namespace <- asNamespace("MultiScholaR")
@@ -188,9 +188,17 @@ installedSavedEntityProbe <- function(library_path, project_root) {
             stopifnot(
                 inherits(scope_error, "saved_entity_scope"),
                 inherits(unsupported_error, "saved_entity_unsupported"),
-                inherits(get("digest_impl", asNamespace("digest")), "NativeSymbolInfo"),
-                length(getNamespaceInfo(namespace, "dynlibs")) == 0L
+                inherits(get("digest_impl", asNamespace("digest")), "NativeSymbolInfo")
             )
+            native_routines <- if (allow_native_runtime) {
+                dll <- getLoadedDLLs()[["MultiScholaR"]]
+                stopifnot(!is.null(dll), !dll[["dynamicLookup"]],
+                    identical(normalizePath(dirname(dirname(dll[["path"]]))), expected_path))
+                names(getDLLRegisteredRoutines(dll)$.Call)
+            } else {
+                stopifnot(length(getNamespaceInfo(namespace, "dynlibs")) == 0L)
+                character()
+            }
             api("closeWorkflowEntityStore")(reopened)
             api("closeWorkflowEntityStore")(foreign)
 
@@ -212,7 +220,8 @@ installedSavedEntityProbe <- function(library_path, project_root) {
                 public_workflow_state = TRUE,
                 legacy_round_trip = TRUE,
                 digest_native_symbol = TRUE,
-                package_native_routines = 0L,
+                package_native_routines = length(native_routines),
+                native_routines = native_routines,
                 cache = resident,
                 default_cache_bytes = default_cache_bytes,
                 artifact_files = length(files),
@@ -221,7 +230,7 @@ installedSavedEntityProbe <- function(library_path, project_root) {
                 explicit_rejections = c("saved_entity_scope", "saved_entity_unsupported")
             )
         },
-        args = list(library_path, project_root)
+        args = list(library_path, project_root, allow_native_runtime)
     )
 }
 
@@ -229,6 +238,7 @@ test_that("fresh installed saved-entity utility preserves package compatibility"
     candidate_library <- Sys.getenv("MULTISCHOLAR_DIA008_LIBRARY", unset = "")
     baseline_library <- Sys.getenv("MULTISCHOLAR_DIA008_B0_LIBRARY", unset = "")
     receipt_path <- Sys.getenv("MULTISCHOLAR_DIA008_RECEIPT", unset = "")
+    native_runtime <- identical(Sys.getenv("MULTISCHOLAR_PERF108_COMPATIBILITY"), "true")
     skip_if(!nzchar(candidate_library) || !nzchar(baseline_library),
         "DIA-008 installed libraries are not bound")
     expect_true(dir.exists(candidate_library))
@@ -243,16 +253,22 @@ test_that("fresh installed saved-entity utility preserves package compatibility"
     expect_identical(candidate$public_formals, baseline$public_formals)
     expect_identical(candidate$classes, baseline$classes)
     expect_identical(candidate$generics, baseline$generics)
-    expect_identical(candidate$package_dynlibs, baseline$package_dynlibs)
-    expect_length(candidate$package_dynlibs, 0L)
+    if (!native_runtime) {
+        expect_identical(candidate$package_dynlibs, baseline$package_dynlibs)
+        expect_length(candidate$package_dynlibs, 0L)
+    }
 
     project_root <- withr::local_tempdir(pattern = "dia008-installed-")
-    probe <- installedSavedEntityProbe(candidate_library, project_root)
+    probe <- installedSavedEntityProbe(candidate_library, project_root, native_runtime)
     expect_true(probe$s4_dispatch)
     expect_true(probe$public_workflow_state)
     expect_true(probe$legacy_round_trip)
     expect_true(probe$digest_native_symbol)
-    expect_identical(probe$package_native_routines, 0L)
+    if (native_runtime) {
+        expect_setequal(probe$native_routines, c("workflow_reclaim_pages",
+            "workflow_release_file_pages", "workflow_allocator_snapshot",
+            "workflow_dia_ordered_new", "workflow_dia_ordered_push", "workflow_dia_ordered_close"))
+    } else expect_identical(probe$package_native_routines, 0L)
     expect_identical(probe$default_cache_bytes, 0)
     expect_lte(probe$cache$bytes, 67108864)
     expect_identical(probe$cache$open_resources, 0L)

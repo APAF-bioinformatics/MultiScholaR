@@ -12,7 +12,45 @@ test_that("exact relational rollups preserve native science and release resource
     withr::local_envvar(c(DUCKPLYR_FALLBACK_AUTOUPLOAD = "0", DUCKPLYR_FALLBACK_COLLECT = "0"))
     artifact <- diaRollupExtensionInfo()
     extension <- artifact$path
+    perf108 <- identical(Sys.getenv("MULTISCHOLAR_PERF108_LOCAL"), "true")
+    native108 <- identical(Sys.getenv("MULTISCHOLAR_PERF108_NATIVE"), "true")
+    if (perf108 && !writer_only) {
+        trusted <- DBI::dbConnect(duckdb::duckdb(shared_home = FALSE,
+            config = list(allow_unsigned_extensions = "false", temp_directory = "")))
+        tryCatch(expect_error(DBI::dbExecute(trusted, paste("LOAD",
+            DBI::dbQuoteString(trusted, extension))), "[Ss]ignature|[Uu]nsigned"),
+            finally = DBI::dbDisconnect(trusted, shutdown = TRUE))
+        request <- jsonlite::read_json(file.path(proof, "perf108-bundle.json"))
+        expect_identical(digest::digest(file = request$path, algo = "sha256"), request$sha256)
+        experimental <- DBI::dbConnect(duckdb::duckdb(shared_home = FALSE,
+            config = list(allow_unsigned_extensions = "true", threads = "8", memory_limit = "12GiB",
+                temp_directory = "", max_temp_directory_size = "0B")))
+        tryCatch({
+            DBI::dbExecute(experimental, paste("LOAD", DBI::dbQuoteString(experimental, request$path)))
+            actual <- DBI::dbGetQuery(experimental,
+                "SELECT dia_r_sum([1e16, 1, 1]::DOUBLE[]) AS value")$value
+            expect_identical(actual, sum(c(1e16, 1, 1)))
+            expect_true(is.na(DBI::dbGetQuery(experimental,
+                "SELECT dia_r_sum([NULL]::DOUBLE[]) AS value")$value))
+            expect_identical(DBI::dbGetQuery(experimental,
+                "SELECT dia_r_sum([0, NULL, 1]::DOUBLE[]) AS value")$value, 1)
+            expect_error(DBI::dbGetQuery(experimental,
+                "SELECT dia_r_sum([-1]::DOUBLE[])"), "finite nonnegative")
+        }, finally = DBI::dbDisconnect(experimental, shutdown = TRUE))
+    }
     wfx_runtime <- writer_r && artifact$manifest$schema >= 2L
+    if (native108) {
+        info <- diaRollupNativeInfo()
+        expect_identical(info$runtime_release_status, "unqualified")
+        scope <- fastduckdb::open_query_fast()
+        tryCatch({
+            fastduckdb::register_query_native_fast(scope, "MultiScholaR", "dia_ordered_sum_v1")
+            expect_identical(fastduckdb::query_data_fast(scope,
+                "SELECT dia_r_sum([1e16,1,1]::DOUBLE[]) AS x")$x, sum(c(1e16,1,1)))
+            expect_false(fastduckdb::query_data_fast(scope,
+                "SELECT current_setting('allow_unsigned_extensions') AS x")$x)
+        }, finally = fastduckdb::close_query_fast(scope))
+    }
     base <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
     invoke <- function(data) rollUpPrecursorToPeptideHelper(data, sample_id_column = "Run",
         protein_id_column = "Protein.Group", peptide_sequence_column = "Stripped.Sequence",
@@ -372,6 +410,11 @@ test_that("exact relational rollups preserve native science and release resource
         }
         profiles <- if (writer_r) if (wfx_runtime) "P14" else c("P14", "P15", "P16") else if (writer_only) c("P13", "P14") else if (fast_only) paste0("P", 8:12) else if (adaptation_only) c("P6", "P7") else
             if (materialize_only) "P5" else paste0("P", 0:5)
+        if (identical(getOption("multischolar.dia_rollup_batches"), 6L)) {
+            expect_identical(diaRollupProfile("P14")$batches, 6L)
+            expect_false(diaRollupProfile("P14")$streaming)
+            expect_true(diaRollupProfile("P14")$preserve_order)
+        }
         for (profile in profiles) {
             owned <- file.path(root, paste0("package-", profile))
             dir.create(owned)
@@ -382,6 +425,41 @@ test_that("exact relational rollups preserve native science and release resource
                 object@peptide_data <- cases[[case]]
                 expected <- invoke(object@peptide_data)
                 input <- saveWorkflowPrecursorRollupInput(store, object, case, identity)
+                if (identical(Sys.getenv("MULTISCHOLAR_PERF108_QUERY_REPAIR"), "true") &&
+                    profile == "P14" && case == "ordinary") {
+                    plans <- lapply(c("D", "C", "F"), function(frontend) {
+                        # C on the native owner reproduces the regressing F count-DISTINCT plan.
+                        scope <- newDIARelationalScope(store, input, profile = "P14", native = frontend != "D")
+                        on.exit(releaseWorkflowTableReadScope(scope))
+                        validateDIARelationalInput(scope, input, NULL)
+                        workflowQueryExecute(scope$connection,
+                            "CREATE TEMP VIEW qc_aggregate_input AS SELECT * FROM qc_input")
+                        prepareDIARelationalAggregate(scope, input, frontend)
+                        plan <- workflowQueryCollect(scope$connection,
+                            "EXPLAIN (FORMAT JSON) SELECT * FROM qc_aggregated")$explain_value
+                        writeLines(plan, file.path(root, paste0("aggregate-plan-", frontend, ".json")))
+                        jsonlite::fromJSON(plan, simplifyVector = FALSE)
+                    })
+                    aggregates <- function(plan) {
+                        result <- character()
+                        visit <- function(node) {
+                            if (!is.null(node$extra_info$Aggregates)) result <<- c(result,
+                                unlist(node$extra_info$Aggregates, use.names = FALSE))
+                            for (child in node$children) visit(child)
+                        }
+                        for (node in plan) visit(node)
+                        gsub("#[0-9]+", "#", result)
+                    }
+                    comparison <- list(original = aggregates(plans[[1L]]),
+                        regressing = aggregates(plans[[2L]]), repaired = aggregates(plans[[3L]]))
+                    saveRDS(comparison, file.path(root, "aggregate-plan-comparison.rds"))
+                    paired_state <- isTRUE(getOption("multischolar.perf108.paired_state", FALSE))
+                    expected_plan <- if (paired_state) comparison$original[-1L] else comparison$original
+                    expect_identical(comparison$repaired, expected_plan)
+                    expect_false(identical(comparison$repaired, comparison$regressing))
+                    expect_identical(sum(grepl("^list\\(", comparison$repaired)),
+                        if (paired_state) 2L else 3L)
+                }
                 result <- withr::with_options(list(multischolar.dia_rollup_profile = profile),
                     computeSavedWorkflowPrecursorRollup(store, input,
                         list(prototype = expected$data[0, , drop = FALSE], identity = identity)))
@@ -389,12 +467,23 @@ test_that("exact relational rollups preserve native science and release resource
                     limit = max(1L, nrow(expected$data)))$data
                 expect_identical(actual, expected$data, info = paste(profile, case))
                 expect_identical(result$summary, expected$summary, info = paste(profile, case))
+                if (perf108) expect_identical(result$execution$aggregation_frontend,
+                    if (isTRUE(getOption("multischolar.perf108.ordered_groups", FALSE)))
+                        "ordered_native_groups" else "public_sql")
+                if (native108) expect_identical(result$execution$query_owner, "fastduckdb_c")
                 expect_identical(result$execution$engine_threads, 8L)
                 if (writer_only) {
                     expect_identical(result$execution$writer_backend,
                         if (profile == "P13") "fast_arrow" else "fast_r")
                     expect_identical(result$execution$writer_threads, 8L)
-                    expect_equal(result$execution$intermediate_bytes_written, 0)
+                    if (native108) {
+                        if (isTRUE(getOption("multischolar.perf108.native_output", FALSE))) {
+                            expect_equal(result$execution$intermediate_bytes_written, 0)
+                            expect_identical(result$execution$output_transport, "owned_query_arrow_to_native_writer")
+                        } else expect_gt(result$execution$intermediate_bytes_written, 0)
+                        if (nrow(cases[[case]])) expect_gt(result$execution$fastduckdb_calls, 0L) else
+                            expect_identical(result$execution$fastduckdb_calls, 0L)
+                    } else expect_equal(result$execution$intermediate_bytes_written, 0)
                 }
                 if (profile %in% c("P10", "P12")) {
                     expect_identical(result$execution$fastduckdb_threads, 8L)
@@ -417,9 +506,17 @@ test_that("exact relational rollups preserve native science and release resource
             if (fast_only || writer_only) {
                 input <- saveWorkflowPrecursorRollupInput(store, base, "staging-failure", identity)
                 original_append <- appendWorkflowTableWriter
-                expect_error(testthat::with_mocked_bindings(
+                failure_arm <- if (native108) "F" else "D"
+                if (isTRUE(getOption("multischolar.perf108.native_output", FALSE))) {
+                    expect_error(testthat::with_mocked_bindings(
+                        computeDIARelationalRollup(store, input,
+                            list(prototype = invoke(base@peptide_data)$data[0, ], identity = identity),
+                            arm = failure_arm, profile = profile),
+                        append_query_writer_fast = function(...) stop("injected native output failure"),
+                        .package = "fastduckdb"), "injected native output failure")
+                } else expect_error(testthat::with_mocked_bindings(
                     computeDIARelationalRollup(store, input,
-                        list(prototype = invoke(base@peptide_data)$data[0, ], identity = identity), profile = profile),
+                        list(prototype = invoke(base@peptide_data)$data[0, ], identity = identity), arm = failure_arm, profile = profile),
                     appendWorkflowTableWriter = function(writer, data, ...) {
                         if (nrow(data)) stop("injected staged output failure")
                         original_append(writer, data, ...)
@@ -460,6 +557,9 @@ test_that("exact relational rollups preserve native science and release resource
 # WFX-002 readback-only verification: never repeat accepted computation.
 test_that("the packaged writer supports predecessor readback and pending-output rollback", {
     completed <- Sys.getenv("MULTISCHOLAR_WFX002_VERIFY_MEMBER", unset = "")
+    local_readback <- identical(Sys.getenv("MULTISCHOLAR_PERF108_LOCAL"), "true") &&
+        identical(Sys.getenv("MULTISCHOLAR_DIA025_MECHANISM_MEMBER"), "gui-bulk-rollup:writer-r-preflight")
+    if (local_readback) completed <- dirname(Sys.getenv("MULTISCHOLAR_DIA008_RECEIPT"))
     skip_if(!nzchar(completed), "explicit bounded installed readback only")
     root <- dirname(Sys.getenv("MULTISCHOLAR_DIA008_RECEIPT"))
     proof <- dirname(root)
@@ -470,8 +570,12 @@ test_that("the packaged writer supports predecessor readback and pending-output 
     receipt <- jsonlite::read_json(receipt_path)
     expect_identical(receipt$status, "complete")
     expect_true(all(vapply(receipt$cases, function(case) isTRUE(case$exact), logical(1))))
-    results <- readRDS(file.path(completed, "reader-tests.rds"))
-    expect_true(all(results$failed == 0L & !results$error))
+    # The local check reads outputs from the preceding test in this invocation.
+    # Its aggregate failure status is checked by the runner after both tests finish.
+    if (!local_readback) {
+        results <- readRDS(file.path(completed, "reader-tests.rds"))
+        expect_true(all(results$failed == 0L & !results$error))
+    }
     source_store <- file.path(completed, "lifecycle-P14", ".workflow-entities")
     original_head <- digest::digest(file = file.path(source_store, "dia-state-head.rds"), algo = "sha256")
     clone <- file.path(root, "rollback-owned")
@@ -497,7 +601,8 @@ test_that("the packaged writer supports predecessor readback and pending-output 
         "owned pending output")
     expect_error(assertDIAExportReady(manager), class = "saved_entity_outputs_pending")
     closeDIAStateAdapter(manager)
-    baseline <- file.path(dirname(proof), "browser-smoke.XsaPvT", "library")
+    baseline <- Sys.getenv("MULTISCHOLAR_WFX002_READBACK_LIBRARY", unset = "")
+    if (!nzchar(baseline)) baseline <- file.path(dirname(proof), "browser-smoke.XsaPvT", "library")
     rollback <- callr::r(function(library, clone, owner) {
         .libPaths(c(library, .libPaths()))
         ns <- asNamespace("MultiScholaR")
@@ -528,4 +633,53 @@ test_that("the packaged writer supports predecessor readback and pending-output 
         recovered_receipt = receipt_path, receipt_sha256 = digest::digest(file = receipt_path, algo = "sha256"),
         original_head_sha256 = original_head, rollback = rollback),
         file.path(root, "wfx-runtime-readback.json"), auto_unbox = TRUE, pretty = TRUE)
+})
+
+# PERF-108: the writer lifecycle suite does not run the historical C/D invalid-input matrix.
+test_that("native fastduckdb rollup preserves its full input validation contract", {
+    skip_if(Sys.getenv("MULTISCHOLAR_DIA025_MECHANISM_MEMBER") != "perf108:native-contract" &&
+        Sys.getenv("MULTISCHOLAR_PERF108_CACHE_ROLE") != "candidate",
+        "explicit native validation matrix only")
+    root <- dirname(Sys.getenv("MULTISCHOLAR_DIA008_RECEIPT"))
+    owned <- file.path(root, "native-contract")
+    stopifnot(dir.create(owned))
+    store <- newWorkflowEntityStore(owned, "native-contract", "DIA")
+    on.exit(closeWorkflowEntityStore(store))
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    invoke <- function(data) rollUpPrecursorToPeptideHelper(data, sample_id_column = "Run",
+        protein_id_column = "Protein.Group", peptide_sequence_column = "Stripped.Sequence",
+        modified_peptide_sequence_column = "Modified.Sequence", precursor_quantity_column = "Precursor.Quantity",
+        precursor_normalised_column = "Precursor.Normalised", precursor_id_column = "Precursor.Id",
+        core_utilisation = NA, return_rollup_result = TRUE)
+    identity <- newSavedWorkflowScientificIdentity(input = "native-contract", design = "small",
+        parameters = "unchanged", selectors = "all", software = "native-api-v1")
+    object@peptide_data$identification_peptide_count <- 3L
+    expected <- invoke(object@peptide_data)
+    for (kind in c("negative", "infinite", "nan", "integer", "duplicate", "evidence")) {
+        changed <- object
+        if (kind %in% c("negative", "infinite", "nan"))
+            changed@peptide_data$Precursor.Quantity[[1L]] <- switch(kind, negative = -1, infinite = Inf, nan = NaN)
+        if (kind == "integer") changed@peptide_data$Precursor.Quantity <- as.integer(changed@peptide_data$Precursor.Quantity)
+        if (kind == "duplicate") changed@peptide_data <- rbind(changed@peptide_data, changed@peptide_data[1L, ])
+        if (kind == "evidence") changed@peptide_data$identification_peptide_count[[1L]] <- 4L
+        input <- saveWorkflowPrecursorRollupInput(store, changed, paste0("invalid-", kind), identity)
+        source <- file.path(store$directory, input$reference$payload$relative_path)
+        before <- digest::digest(file = source, algo = "sha256")
+        expect_error(computeDIARelationalRollup(store, input,
+            list(prototype = expected$data[0, ], identity = identity), arm = "F", profile = "P14"),
+            "negative or non-finite|double-precision|duplicate precursor|conflicting frozen")
+        expect_identical(store$open_resources, 0L)
+        expect_identical(digest::digest(file = source, algo = "sha256"), before)
+    }
+    logged <- object
+    logged@is_logged_data <- TRUE
+    expect_error(saveWorkflowPrecursorRollupInput(store, logged, "logged", identity), "linear peptide")
+    input <- saveWorkflowPrecursorRollupInput(store, object, "cancel", identity)
+    expect_error(local({
+        scope <- newDIARelationalScope(store, input, profile = "P14", native = TRUE)
+        on.exit(releaseWorkflowTableReadScope(scope))
+        streamDIARelationalQuery(scope$connection, "SELECT range::DOUBLE AS x FROM range(100001)",
+            function(...) stop("owned native consumer cancellation"))
+    }), "owned native consumer cancellation")
+    expect_identical(store$open_resources, 0L)
 })

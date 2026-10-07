@@ -1,6 +1,18 @@
 # WFX-002 P14 runtime packaging
 
-**Audited component repairs verified; production release held.**
+**Current: PERF-108's retained native runtime is accepted with an explicit primary
+timing exception; fastduckdb 0.2.0 is published.** See the
+[exact-artifact qualification](perf-108/closeout/qualification.json).
+Historical WFX-002 unsigned/private-bridge holds below remain unchanged for those
+older artifacts. GUI/default activation remains gated by PERF-107.
+The [clean-install packaging repair](perf-108/packaging-repair/remediation.json)
+is published and verified. The separate [native literal-list missing-result defect](perf-108/packaging-repair/native-literal-finding.md)
+is now [repaired](perf-108/native-null-repair/remediation.json) in staged build
+`browser-smoke.dWAQuA`. Compact list inputs are normalized with public C APIs;
+ordered arithmetic remains unchanged. All 408 installed assertions pass. This
+closes the correctness finding, while original performance measurements remain
+bound to their original binaries. PERF-107 must qualify the corrected deployment
+build through the actual GUI journey before default activation.
 Owner: [WFX-002](../../../tickets/openai/WFX-002.md). Authority:
 [execution contract](contract.md), [original audit](../wfx-ticket-audit-20260930.md)
 and [remediation requirements](../wfx-ticket-remediation-20260930.md).
@@ -223,3 +235,90 @@ existing bytes; the legacy writer still replaces when requested. All Arrow-strea
 inputs are outside the qualified incremental interface and fail before import.
 An altered installed R artifact is rejected with the DLL/capability unchanged.
 No production/default or broader workflow qualification follows from this repair.
+
+## PERF-108 approved local successor
+
+Current owner: [PERF-108](../../../tickets/openai/PERF-108.md). The accepted plan
+retains fastduckdb's existing readers and `fast_r` writer, eight threads, three
+complete-sample P14 batches and the exact source-ordered numerical kernel.
+The application call sites now explicitly choose public SQL arm C; historical
+experimental arm D retains its private bridge and identity. Results record
+`aggregation_frontend` so old D evidence cannot be attributed to the new route.
+Automatic selection and production release remain held.
+
+The [local extension bundle](../../../tools/profiling/perf108-extension/README.md)
+uses the official community C-API example's pinned template and build tools.
+Its kernel is byte-identical to the accepted source. A local build is unsigned;
+this is not a trusted-loading solution by itself. The package's existing held
+manifest and scoped experimental loading remain intact until a compatible
+signed artifact exists. No dependency upgrade, public R/S4 API or checkpoint
+format change is included. No upstream upload has occurred.
+
+Local build/check evidence and spent attempts are recorded under
+`perf-108/` in the retained proof root and in
+[the local protocol](perf-108/local-protocol.json). The full-size Stage 2 budget
+is conditional on trusted artifact availability. The PERF-106 P14 exception is
+not inherited by this runtime. PERF-107 still owns GUI action/default eligibility.
+
+The user subsequently rejected the external community-publication direction.
+PERF-108 now investigates a native query scope owned by fastduckdb using public
+DuckDB C API functions from the pinned installed engine. The current fastduckdb
+package is an Arrow/Parquet storage implementation and does not already own a
+query connection. No private R connection pointer, unsigned extension or second
+engine is authorized as a substitute. The initial native feasibility build hit
+an R macro naming collision before executing any query; the narrow correction
+is prepared, but the no-retry probe allowance is spent. See PERF-108's current
+internal-route evidence; earlier successful SQL/P14 tests do not prove this new
+native ownership interface. No external artifact has been published.
+
+The authorized corrected feasibility member `wCua8m` passed; `4IVkLl` then
+confirmed actual streaming over 100,001 rows and three independent scope cycles.
+The [current decision](perf-108/fastduckdb-feasibility-decision.json) recommends
+internal fastduckdb integration, with no community publication. The public
+streaming call is deprecated but available in the pinned engine; isolate it and
+requalify any future replacement. This native feasibility result does not yet
+qualify installed fastduckdb handles, Arrow/R conversion, application outputs or
+large-data performance. PERF-108 remains in progress, not release eligible.
+
+The subsequent [PERF-108 cache qualification](perf-108/cache-qualification/outcome.md)
+supersedes that feasibility-only status. Installed checks and all 18 timed
+members passed exact science and measurement validation. Candidate memory passed
+every paired comparison (approximately 7.6 GiB rollup, 2.9 GiB primary filter,
+3.5 GiB wide filter). Rollup and wide-filter timing passed; primary-filter timing
+failed the fixed 1.05 paired limit. Production release remains held, with no
+push/tag/release or GUI default activation. Historical failures and the explicit
+setup-recheck authorization remain bound in the owning evidence location.
+
+The [structural experiment](perf-108/structural/outcome.md) is also closed without
+promotion. Paired aggregation did not meet the gain threshold; per-sample
+validation was substantially slower; the persistent reader retains an unresolved
+application cleanup defect. Owned native output passed exact science, but full
+300-sample medians were 7.39 GiB / 106.45s versus 7.64 GiB / 99.21s for valid
+accepted controls. One separate current control failed the frozen monitoring-gap
+rule. All four small and six full rollup outputs verified; the gate prevented
+consumer confirmations. Retain P14 and the original release hold. No defaults,
+dependency versions, checkpoint formats or release status were changed.
+
+The [ordered-group/reader follow-up](perf-108/ordered-groups/outcome.md) repaired
+and verified the reader cleanup defect. Reader component gains remained below
+the advancement threshold. Ordered reduction preserved exact science, but on
+300 samples used median 6.58 GiB / 138.99s versus 7.08 GiB / 87.24s for matched
+current P14: about 7% less RAM and 59% more time. All ten complete operations
+verified with valid monitoring and zero swap. The decision is
+`no_justified_rollup_gain`; consumer confirmations were gated off. Keep current
+P14 and the correctness repair; experimental routes and release remain disabled.
+
+The [retained-runtime closeout](perf-108/closeout/outcome.md) qualifies the exact
+installed P14 route scientifically and preserves all required outputs. Its reused
+full rollup pairs pass the original peak/time gate (median 7.08 GiB / 87.24s).
+All eight new primary/wide filter members passed independent science, memory,
+monitoring and cleanup; installed API/S4/history/rollback checks and the source
+package check also passed. One primary-filter pair is 5.91% slower (47.51s versus
+44.86s), exceeding the fixed 5% allowance by 0.407s. The original numerical decision
+remains held; the user explicitly accepted the bound narrow timing exception.
+The retained runtime is accepted through `closeout/qualification.json`, and
+fastduckdb 0.2.0 is published from commit `942c56caf17a45eeb41b81984bed010b5ed7a09a`.
+No retry or threshold change occurred.
+The [inherited-clause reconciliation](perf-108/closeout/acceptance.json) keeps
+science/compatibility separate from that release decision. GUI/default rollout
+remains PERF-107.

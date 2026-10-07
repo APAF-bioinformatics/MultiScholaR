@@ -88,7 +88,7 @@ collectWorkflowRollupQuery <- function(connection, sql, max_rows) {
 computeSavedWorkflowPrecursorRollup <- function(store, input, persist = NULL) {
     profile <- getOption("multischolar.dia_rollup_profile")
     if (!is.null(persist) && !is.null(profile)) return(computeDIARelationalRollup(store, input, persist,
-        profile = profile, phase = getOption("multischolar.dia_rollup_phase", function(label, fn) fn())))
+        arm = "F", profile = profile, phase = getOption("multischolar.dia_rollup_phase", function(label, fn) fn())))
     if (!is.null(persist)) return(persistIndexedWorkflowPrecursorRollup(store, input, persist))
     scope <- newWorkflowTableReadScope(store, input$reference)
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
@@ -1116,7 +1116,9 @@ computeDIAReferencePrecursorRollup <- function(manager, reference, backend = "P1
         "precursor-linear-sum-v1", manager$.context$software)
     persist <- list(prototype = template@peptide_data, identity = identity)
     result <- if (identical(backend, "P14"))
-        computeDIARelationalRollup(manager$.context$store, input, persist, profile = "P14", worker_cap = worker_cap) else
+        computeDIARelationalRollup(manager$.context$store, input, persist, arm = "F", profile = "P14",
+            worker_cap = worker_cap,
+            phase = getOption("multischolar.dia_rollup_phase", function(label, fn) fn())) else
         computeSavedWorkflowPrecursorRollup(manager$.context$store, input, persist)
     result$counts <- saveDIALargeFilteringCountsReference(manager$.context$store,
         result, object@protein_id_column)
@@ -1150,6 +1152,41 @@ persistDIAFilteredSamples <- function(scope, metadata, passing, roles,
     prototype <- readSavedWorkflowTablePrototype(scope)
     prototype[[sample]] <- as.character(prototype[[sample]])
     counts <- newDIAFilteringAccumulator(prototype, protein)
+    if (output_mode == "physical" && isTRUE(getOption("multischolar.perf108.native_output", FALSE))) {
+        # Validation/counting is complete. Hand ownership to the native query
+        # connection before running output, releasing the old engine's buffers.
+        stopifnot(scope$action$scopes == 1L)
+        native <- fastduckdb::open_query_fast()
+        class(native) <- "workflow_fast_query"
+        ready <- FALSE
+        on.exit(if (!ready) fastduckdb::close_query_fast(native), add = TRUE)
+        workflowQueryDisconnect(scope$connection)
+        scope$action$connection <- scope$connection <- native
+        ready <- TRUE
+        configureWorkflowBulkQueryScope(scope)
+        workflowQueryWriteLookup(native, "retained_samples", data.frame(sample = as.character(passing)))
+        q <- function(x) as.character(workflowQueryQuoteIdentifier(native, x))
+        fields <- workflowTableStorageColumns(metadata, metadata$columns)
+        if (isTRUE(metadata$automatic_row_names)) fields <- setdiff(fields, ".multischolar_row_key")
+        query <- paste0("SELECT ", paste(q(fields), collapse = ","), " FROM read_parquet(",
+            workflowQueryQuoteString(native, scope$path), ") WHERE ", q(sample),
+            ' IN (SELECT sample FROM retained_samples) ORDER BY ".multischolar_order"')
+        summary_fields <- unique(c("Run", "Protein.Ids", "Stripped.Sequence", protein))
+        output <- saveWorkflowTable(scope$store, NULL, basename(tempfile("sample-native-")),
+            identity, metadata$key_column, metadata = metadata, write_fn = function(path, restoration) {
+                writer <- openWorkflowTableWriter(path, restoration, backend = "fast_r")
+                writer$native_query <- TRUE
+                on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+                appendWorkflowTableWriter(writer, prototype)
+                streamWorkflowQueryToWriter(native, query, writer, summary_fields,
+                    function(part) counts$push(restoreSavedWorkflowTable(part, restoration, summary_fields)),
+                    batch_rows = batch_rows)
+                if (writer$rows != metadata$rows) cli::cli_abort("sample output population differs",
+                    class = "saved_entity_corrupt")
+                finishWorkflowTableWriter(writer)
+            })
+        return(list(reference = output, counts = counts$finish(), dependencies = list(scope$reference, output)))
+    }
     reader <- newWorkflowTableReadScope(scope$store, scope$reference, reader = "fastduckdb")
     reader$read_threads <- 8L
     on.exit(releaseWorkflowTableReadScope(reader), add = TRUE)
@@ -1501,6 +1538,9 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
             saveDIALargeFilteringCountsReference(scope$store, produced, protein),
         execution = list(admission = admission, output_mode = output_mode,
             writer_backend = if (output_mode == "legacy") "arrow" else "fast_r",
+            output_transport = if (output_mode == "physical" &&
+                isTRUE(getOption("multischolar.perf108.native_output", FALSE)))
+                "owned_query_arrow_to_native_writer" else "bounded_R",
             bulk_query = list(settings = bulk_settings,
             global_statistics = if (output_mode == "legacy") "single_complete_population_pass" else
                 "global_validation_before_complete_sample_counts",

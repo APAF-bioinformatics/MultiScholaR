@@ -1,0 +1,31 @@
+require dia_rsum
+
+query I
+SELECT dia_r_sum([1e16, 1, 1]::DOUBLE[]) = 10000000000000002::DOUBLE;
+----
+true
+
+query I
+SELECT dia_r_sum([NULL]::DOUBLE[]) IS NULL;
+----
+true
+
+query I
+SELECT dia_r_sum([]::DOUBLE[]) IS NULL;
+----
+true
+
+query I
+SELECT dia_r_sum([0, NULL, 1]::DOUBLE[]) = 1;
+----
+true
+
+statement error
+SELECT dia_r_sum([-1]::DOUBLE[]);
+----
+DIA sum requires finite nonnegative linear quantities
+
+statement error
+SELECT dia_r_sum(['Infinity'::DOUBLE]);
+----
+DIA sum requires finite nonnegative linear quantities

@@ -1,0 +1,10 @@
+{
+  "owner": "PERF108-AUD-001",
+  "archive": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-108/closeout/browser-smoke.sopzDb/fastduckdb_0.2.0.tar.gz",
+  "archive_sha256": "5ae7cbf229ab6f053d7e6463ebff8398b7ea52e3075f64f255e1626e9e6aadf8",
+  "installer": "/tmp/perf108-fast-duckdb/scripts/install-fastduckdb-0.2.0.sh",
+  "installer_sha256": "92601e690087e18a870653fbf8c47a97a87d0de83038b1654a1a49319c1716f4",
+  "generic_receipt": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-108/packaging-repair/browser-smoke.0vSR6V/generic-tests.rds",
+  "generic_sha256": "c79e4a8aa7b1e2543e04400ca8200c6825803e34dc39cf2e9f69ed1b0bcfd7a6",
+  "generic_library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-108/packaging-repair/browser-smoke.7qxogf/library"
+}

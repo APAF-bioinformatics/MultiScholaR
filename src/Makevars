@@ -1,2 +1,13 @@
 # The DuckDB extension is a separate installed artifact, built by configure.
-OBJECTS = init.o workflow_memory.o
+OBJECTS = init.o workflow_memory.o workflow_dia_exact_sum.o workflow_dia_ordered_reduce.o
+PKG_CFLAGS = -fno-fast-math
+PKG_LIBS = $(if $(filter Linux,$(shell uname -s)),-ldl,)
+
+all: $(SHLIB)
+
+# Match the accepted exact-sum compiler options; do not inherit package -O3/-march flags.
+workflow_dia_exact_sum.o: workflow_dia_exact_sum.c duckdb.h
+	$(CC) $(ALL_CPPFLAGS) -std=c11 -O2 -fPIC -fno-fast-math -Wall -Wextra -Werror -c $< -o $@
+
+workflow_dia_ordered_reduce.o: workflow_dia_ordered_reduce.c
+	$(CC) $(ALL_CPPFLAGS) -std=c11 -O2 -fPIC -fno-fast-math -Wall -Wextra -Werror -c $< -o $@

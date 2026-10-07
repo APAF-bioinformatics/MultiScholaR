@@ -372,11 +372,30 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
             if (stage == "publication") stop("owned PERF-106 publication failure")
         })
     before <- getDIAStateReference(manager)
-    if (isTRUE(request$profile_worker)) {
+    if (isTRUE(request$profile_worker) || identical(request$batch_count, 6L) ||
+        !is.null(request$structural_options)) {
         sys.source(file.path(workflow_test_root, "tools/profiling/workflow_perf106.R"),
             envir = environment())
+        expression <- if (identical(request$batch_count, 6L)) paste(
+            "options(multischolar.dia_rollup_batches=6L);",
+            "MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))") else perf106ProfileExpression()
+        if (!is.null(request$structural_options)) {
+            output <- identical(request$structural_options, list(multischolar.perf108.native_output = TRUE))
+            ordered <- identical(request$structural_options, list(multischolar.perf108.ordered_groups = TRUE))
+            stopifnot(output || ordered, !isTRUE(request$profile_worker),
+                identical(request$operation, "precursor_rollup"))
+            expression <- paste(if (ordered) "options(multischolar.perf108.ordered_groups=TRUE);" else
+                "options(multischolar.perf108.native_output=TRUE);",
+                "MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))")
+        }
+        if (isTRUE(request$attribute_worker)) {
+            sys.source(file.path(workflow_test_root, "tools/profiling/workflow_perf108.R"),
+                envir = environment())
+            expression <- perf108AttributionExpression(file.path(workflow_test_root,
+                "tools/profiling/workflow_perf108.R"))
+        }
         testthat::local_mocked_bindings(
-            workflowLaunchService = perf106ProfileLauncher(workflowLaunchService),
+            workflowLaunchService = perf106ProfileLauncher(workflowLaunchService, expression),
             .package = "MultiScholaR")
     }
     id <- runWorkflowAction(request$operation, list(state = before), request$parameters, owner)

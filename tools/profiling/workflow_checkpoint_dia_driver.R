@@ -3014,6 +3014,7 @@ validateCheckpointReaderInput <- function(operation, input_path, selection = NUL
     if (!operation %in% paste0("reader-", c("build", "check", "prepare", "inspect", "member", "verify")) ||
         !dir.exists(input_path)) stop("invalid reader operation or input directory")
     if (operation == "reader-check" && !is.null(selection) &&
+        !grepl("^perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))$", selection) &&
         !grepl("^perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4])))$", selection) &&
         !selection %in% c("perf101:D0", "perf101:D1", "perf101:D0R", "perf101:V", "gui-sharing-repair", "gui-export-history-member", "gui-iq-history-member", "gui-ruv-pearson", "gui-native-session", "gui-native-outputs", "gui-reference-first-qc", "gui-reference-core", "gui-reference-routing", "gui-mechanism-preflight", "gui-rollup-profile", "gui-rollup-profile-preflight", "gui-raw-replay:small", "gui-raw-replay:outputs", "gui-raw-replay:verify", "gui-cohort-profile", "gui-impute-workers:preflight", "gui-impute-workers:4", "gui-impute-workers:8", "gui-cohort-size:256", "gui-cohort-size:768", "gui-cohort-size:768-threads8", "gui-cohort-threads:1", "gui-cohort-threads:2", "gui-cohort-threads:4", "gui-cohort-threads:8", "gui-raw-replay:300") &&
         !grepl("^gui-(rollup|session)-performance:(control|candidate)$", selection) &&
@@ -3642,6 +3643,12 @@ runCheckpointReaderOperation <- function(operation, library_path, run_dir,
         auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), add = TRUE)
     tryCatch({
         if (operation == "reader-check" && !is.null(selection) &&
+            grepl("^perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))$", selection)) {
+            value <- runPerf108Local(library_path, run_dir, selection)
+            receipt$status <- "complete"
+            return(value)
+        }
+        if (operation == "reader-check" && !is.null(selection) &&
             grepl("^perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4])))$", selection)) {
             snapshot <- file.path(run_dir, "source")
             receipt$execution_sources <- bindPerf101Sources(snapshot)
@@ -4171,4 +4178,266 @@ bindPerf101Sources <- function(snapshot) {
     if (!all(file.exists(paths))) stop("PERF-101 source snapshot is incomplete")
     stats::setNames(vapply(paths, function(path) digest::digest(file = path,
         algo = "sha256"), character(1)), required)
+}
+
+#' Execute only the approved local PERF-108 build and installed checks.
+#' @param library_path,run_dir,selection Bound library, owned member and fixed selector.
+#' @return Stage receipt; errors also propagate to the existing service controller.
+#' @noRd
+runPerf108Local <- function(library_path, run_dir, selection) {
+    source <- file.path(run_dir, "source")
+    files <- list.files(source, recursive = TRUE, full.names = TRUE, all.files = TRUE)
+    files <- files[!dir.exists(files)]
+    hashes <- stats::setNames(vapply(files, \(path) digest::digest(file = path,
+        algo = "sha256"), character(1)), substring(files, nchar(source) + 2L))
+    saveRDS(hashes, file.path(run_dir, "source-manifest.rds"))
+    stage <- sub("perf108:", "", selection, fixed = TRUE)
+    result <- list(stage = stage, status = "running", release_status = "held")
+    on.exit(saveRDS(result, file.path(run_dir, "perf108-result.rds")), add = TRUE)
+    if (stage %in% c("UB", "UT")) {
+        helpers <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/perf108-fastduckdb/clean-install.R"), helpers)
+        result$clean_install <- helpers$runPerf108CleanInstall(stage, run_dir, source, library_path)
+        result$status <- "complete"
+        return(result)
+    }
+    # RS1 is also a retained repair verifier outside this experiment's root.
+    if (stage %in% c("RC0", "RC1", "RS0") ||
+        stage == "RS1" && basename(dirname(run_dir)) == "ordered-groups") {
+        helpers <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108_ordered.R"), helpers)
+        result$component <- if (startsWith(stage, "RC")) helpers$runPerf108ReaderProbe(stage, run_dir, source) else
+            helpers$runPerf108OrderedProbe(stage, run_dir, source)
+        result$status <- "complete"
+        return(result)
+    }
+    if (grepl("^[YW](S[1-4]|[RPW][1-6])$", stage)) {
+        verification <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108_structural.R"), verification)
+        sys.source(file.path(source, "tools/profiling/workflow_perf108.R"), verification)
+        result$verification <- verification$verifyPerf108Runtime(run_dir, source,
+            as.integer(sub("^[YW][SRPW]", "", stage)), structural_stage = paste0(
+                if (startsWith(stage, "W")) "ordered-" else "structural-",
+                switch(substr(stage, 2L, 2L), S = "screen", R = "rollup", P = "primary", W = "wide")))
+        result$status <- "complete"
+        return(result)
+    }
+    invoke <- function(command, args) {
+        status <- system2(command, vapply(args, shQuote, character(1)))
+        if (!identical(status, 0L)) stop("PERF-108 child command failed: ", status)
+    }
+    if (stage %in% c("ZF", "PA0", "PA1", "PV0", "PV1", "PO0", "PO1")) {
+        helpers <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108_structural.R"), helpers)
+        result$component <- if (stage == "ZF") helpers$preparePerf108StructuralFixture(run_dir, source) else
+            helpers$runPerf108StructuralProbe(stage, run_dir, source)
+        result$status <- "complete"
+        return(result)
+    }
+    if (grepl("^E[1-8]$", stage)) {
+        verification <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108.R"), verification)
+        result$verification <- verification$verifyPerf108Runtime(run_dir, source,
+            as.integer(sub("^E", "", stage)), cache_stage = "closure-filters")
+    } else if (grepl("^X(S[1-4]|R[1-6]|F[1-8])$", stage)) {
+        verification <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108.R"), verification)
+        result$verification <- verification$verifyPerf108Runtime(run_dir, source,
+            as.integer(sub("^X[SRF]", "", stage)), cache_stage = switch(substr(stage, 2L, 2L),
+                S = "cache-screen", R = "cache-rollup", F = "cache-filters"))
+    } else if (grepl("^H[SF]1$", stage)) {
+        verification <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108.R"), verification)
+        result$verification <- verification$verifyPerf108Repair(run_dir, source,
+            1L, full = startsWith(stage, "HF"), batch = TRUE)
+    } else if (grepl("^A[SF]1$", stage)) {
+        verification <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108.R"), verification)
+        result$verification <- verification$verifyPerf108Repair(run_dir, source,
+            1L, full = startsWith(stage, "AF"), attribution = TRUE)
+    } else if (grepl("^P[SF][12]$", stage)) {
+        verification <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108.R"), verification)
+        result$verification <- verification$verifyPerf108Repair(run_dir, source,
+            as.integer(sub("^P[SF]", "", stage)), full = startsWith(stage, "PF"),
+            staged = TRUE)
+    } else if (grepl("^R[SFR][12]$", stage)) {
+        verification <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108.R"), verification)
+        result$verification <- verification$verifyPerf108Repair(run_dir, source,
+            as.integer(sub("^R[SFR]", "", stage)), full = startsWith(stage, "RF"),
+            recheck = startsWith(stage, "RR"))
+    } else if (grepl("^V([1-9]|1[0-6])$", stage) || stage %in% c("C2", "C3")) {
+        verification <- new.env(parent = asNamespace("MultiScholaR"))
+        sys.source(file.path(source, "tools/profiling/workflow_perf108.R"), verification)
+        result$verification <- verification$verifyPerf108Runtime(run_dir, source,
+            as.integer(sub("^[VC]", "", stage)), canonical = startsWith(stage, "C"))
+    } else if (stage %in% c("N1", "N2", "K1", "K2", "PC")) {
+        request <- jsonlite::read_json(file.path(source,
+            "tools/profiling/perf108-fastduckdb/package-request.json"))
+        files <- names(request$files)
+        for (file in files) stopifnot(identical(digest::digest(
+            file = file.path(request$source, file), algo = "sha256"), request$files[[file]]))
+        package <- file.path(run_dir, "fastduckdb-source")
+        stopifnot(dir.create(package))
+        for (file in files) {
+            target <- file.path(package, file)
+            dir.create(dirname(target), recursive = TRUE, showWarnings = FALSE)
+            stopifnot(file.copy(file.path(request$source, file), target))
+        }
+        result$package_sources <- request$files
+        if (stage %in% c("N1", "K1")) {
+            cache <- file.path(package, "src/.cargo")
+            stopifnot(dir.create(cache))
+            for (path in list.files(request$cargo_cache, all.files = TRUE,
+                no.. = TRUE, full.names = TRUE)) stopifnot(file.copy(path, cache, recursive = TRUE))
+            destination <- file.path(run_dir, "library")
+            stopifnot(dir.create(destination))
+            withr::with_envvar(c(CARGO_BUILD_JOBS = "8", CARGO_NET_OFFLINE = "true"),
+                invoke(file.path(R.home("bin"), "R"), c("CMD", "INSTALL",
+                    paste0("--library=", destination), package)))
+            # Bootstrap application/dependencies for the existing installed-check runner.
+            for (dependency in c("MultiScholaR", "duckplyr", "nanoarrow"))
+                stopifnot(file.copy(file.path(library_path, dependency), destination, recursive = TRUE))
+            jsonlite::write_json(list(baseline_library = library_path, source = package),
+                file.path(run_dir, "library-origin.json"), auto_unbox = TRUE)
+            result$library <- destination
+        } else if (stage == "PC") {
+            withr::with_dir(run_dir, {
+                invoke(file.path(R.home("bin"), "R"), c("CMD", "build", "--no-build-vignettes", "--no-manual", package))
+                tarball <- list.files(run_dir, "^fastduckdb_.*[.]tar[.]gz$", full.names = TRUE)
+                stopifnot(length(tarball) == 1L)
+                withr::with_envvar(c(R_LIBS = paste(c(library_path, .libPaths()), collapse = .Platform$path.sep)),
+                    invoke(file.path(R.home("bin"), "R"), c("CMD", "check", "--no-install",
+                        if (!isTRUE(request$check_tests)) "--no-tests",
+                        "--no-manual", "--no-vignettes", paste0("--library=", library_path), tarball)))
+                result$source_tarball <- tarball
+            })
+        } else {
+            stopifnot(identical(normalizePath(find.package("fastduckdb")),
+                normalizePath(file.path(library_path, "fastduckdb"))))
+            checks <- testthat::test_dir(file.path(package, "tests/testthat"),
+                filter = if (stage == "K2" && identical(request$revision, "cache-qualification-20261006")) NULL else
+                    if (stage == "K2") "query|fastduckdb|edge-cases|duckdb-interop" else "^query$", package = "fastduckdb", load_package = "installed",
+                reporter = "summary", stop_on_failure = FALSE)
+            checks <- as.data.frame(checks)
+            saveRDS(checks, file.path(run_dir, "reader-tests.rds"))
+            if (any(checks$failed > 0L | checks$error | checks$skipped)) stop("native query checks failed or skipped")
+            result$assertions <- sum(checks$passed)
+        }
+    } else if (stage == "F0") {
+        stopifnot(requireNamespace("duckdb", quietly = TRUE))
+        engine <- getLoadedDLLs()[["duckdb"]][["path"]]
+        result$engine_sha256 <- digest::digest(file = engine, algo = "sha256")
+        result$engine_package <- as.character(utils::packageVersion("duckdb"))
+        probe <- file.path(run_dir, "probe.c")
+        stopifnot(file.copy(file.path(source, "tools/profiling/perf108-fastduckdb/probe.c"), probe))
+        binary <- file.path(run_dir, "probe.so")
+        withr::with_envvar(c(PKG_CPPFLAGS = paste0("-I", file.path(source, "src")),
+            PKG_CFLAGS = "-O2 -fno-fast-math", PKG_LIBS = "-ldl"),
+            invoke(file.path(R.home("bin"), "R"), c("CMD", "SHLIB", "-o", binary, probe)))
+        dll <- dyn.load(binary, local = TRUE)
+        on.exit(dyn.unload(binary), add = TRUE)
+        entry <- getNativeSymbolInfo("fastduckdb_public_api_probe", PACKAGE = dll)
+        checks <- .Call(entry, engine)
+        stopifnot(identical(checks, 7L))
+        for (iteration in seq_len(2L)) stopifnot(identical(.Call(entry, engine), 7L))
+        result$independent_scope_cycles <- 3L
+        result$checks <- checks
+        result$probe_sha256 <- digest::digest(file = binary, algo = "sha256")
+        result$claim <- "public C connection, built-in exact sum and chunked results feasible; no package integration or performance claim"
+    } else if (stage == "B1") {
+        bundle <- file.path(source, "tools/profiling/perf108-extension")
+        provenance <- jsonlite::read_json(file.path(bundle, "provenance.json"), simplifyVector = TRUE)
+        for (name in names(provenance$files)) stopifnot(identical(
+            digest::digest(file = file.path(bundle, name), algo = "sha256"), provenance$files[[name]]))
+        stopifnot(identical(digest::digest(file = file.path(bundle, "src/dia_rsum.c"), algo = "sha256"),
+            digest::digest(file = file.path(source, "src/dia_rsum.c"), algo = "sha256")))
+        invoke("bash", c(file.path(bundle, "build.sh"), file.path(run_dir, "extension")))
+        result$binary_sha256 <- digest::digest(file = file.path(run_dir,
+            "extension/dia_rsum.duckdb_extension"), algo = "sha256")
+    } else if (stage %in% c("B2", "I1", "J1", "K3", "M1")) {
+        destination <- file.path(run_dir, "library")
+        stopifnot(dir.create(destination))
+        for (package in c("fastduckdb", "duckplyr", "nanoarrow")) {
+            path <- file.path(library_path, package)
+            stopifnot(dir.exists(path), file.copy(path, destination, recursive = TRUE))
+        }
+        withr::with_envvar(c(R_LIBS = paste(c(destination, .libPaths()), collapse = .Platform$path.sep)),
+            invoke(file.path(R.home("bin"), "R"), c("CMD", "INSTALL", paste0("--library=", destination), source)))
+        jsonlite::write_json(list(baseline_library = library_path, source = source),
+            file.path(run_dir, "library-origin.json"), auto_unbox = TRUE)
+        result$library <- destination
+    } else {
+        stopifnot(stage %in% c("T1", "T2", "I2", "I3", "J2", "K4", "M2", "QC", "QT", "ZA", "ZV", "ZC", "ZO", "ZS", "ZQ", "ZL"))
+        if (stage == "ZA") withr::local_options(multischolar.perf108.paired_state = TRUE)
+        if (stage == "ZV") withr::local_options(multischolar.perf108.partition_validation = TRUE)
+        if (stage == "ZC") withr::local_options(multischolar.perf108.persistent_reader = TRUE)
+        if (stage == "ZO") withr::local_options(multischolar.perf108.native_output = TRUE)
+        if (stage == "ZS") withr::local_options(multischolar.perf108.ordered_groups = TRUE)
+        recordedCheckpointApi(library_path)
+        readback_library <- ""
+        if (stage %in% c("QC", "QT", "ZA", "ZV", "ZC", "ZO", "ZS", "ZQ", "ZL")) {
+            accepted <- readRDS(file.path(source,
+                "docs/qa/workflow-execution/perf-108/runtime-bindings.rds"))$control$library
+            readback_library <- normalizePath(file.path(dirname(dirname(accepted)),
+                "browser-smoke.XsaPvT", "library"), mustWork = TRUE)
+        }
+        if (stage %in% c("QC", "ZC", "ZO", "ZQ")) {
+            # R CMD check --no-install skips tests even without --no-tests.
+            # Revalidate the corrected R/native boundary in this already-budgeted preflight.
+            generic <- jsonlite::read_json(file.path(source,
+                "tools/profiling/perf108-fastduckdb/package-request.json"))
+            for (file in names(generic$files)) stopifnot(identical(digest::digest(
+                file = file.path(generic$source, file), algo = "sha256"), generic$files[[file]]))
+            checks <- testthat::test_dir(file.path(generic$source, "tests/testthat"),
+                filter = switch(stage, ZC = "^cursor$", ZO = "^(query|owned-output)$", NULL),
+                package = "fastduckdb", load_package = "installed", reporter = "summary",
+                stop_on_failure = FALSE)
+            checks <- as.data.frame(checks)
+            saveRDS(checks, file.path(run_dir, "generic-tests.rds"))
+            if (any(checks$failed > 0L | checks$error | checks$skipped)) stop("corrected generic checks failed")
+            result$generic_assertions <- sum(checks$passed)
+        }
+        batch_binding <- file.path(source, "docs/qa/workflow-execution/perf-108/runtime-batch-bindings.rds")
+        if (stage == "M2" && file.exists(batch_binding)) {
+            batch <- readRDS(batch_binding)
+            stopifnot(identical(normalizePath(batch$library), normalizePath(library_path)),
+                identical(batch$batch_count, 6L))
+            withr::local_options(multischolar.dia_rollup_batches = 6L)
+        }
+        # Load the installed package, never replace its functions with source definitions.
+        withr::with_dir(source, {
+            here::i_am("DESCRIPTION")
+            withr::with_envvar(c(MULTISCHOLAR_DIA008_LIBRARY = library_path,
+                MULTISCHOLAR_PERF108_NATIVE_NULL = if (stage == "ZL") "true" else "false",
+                MULTISCHOLAR_PERF108_COMPATIBILITY = if (stage %in% c("ZQ", "ZL")) "true" else "false",
+                MULTISCHOLAR_DIA008_B0_LIBRARY = if (stage %in% c("ZQ", "ZL")) accepted else "",
+                MULTISCHOLAR_DIA008_RECEIPT = file.path(run_dir, "reader-operation.json"),
+                MULTISCHOLAR_PERF108_LOCAL = "true",
+                MULTISCHOLAR_PERF108_STRUCTURAL = switch(stage, ZA = "A", ZV = "V", ZC = "C", ZO = "O", ZS = "S", ""),
+                MULTISCHOLAR_PERF108_CACHE_ROLE = switch(stage, QC = "current", QT = "candidate", ZA = "candidate", ZV = "candidate", ZC = "candidate", ZO = "candidate", ZS = "candidate", ZQ = "candidate", ZL = "candidate", ""),
+                MULTISCHOLAR_WFX002_READBACK_LIBRARY = readback_library,
+                MULTISCHOLAR_PERF108_QUERY_REPAIR = if (stage %in% c("J2", "K4", "M2", "QC", "QT", "ZA", "ZV", "ZC", "ZO", "ZS", "ZQ", "ZL")) "true" else "false",
+                MULTISCHOLAR_PERF108_NATIVE = if (stage %in% c("I2", "I3", "J2", "K4", "M2", "QC", "QT", "ZA", "ZV", "ZC", "ZO", "ZS", "ZQ", "ZL")) "true" else "false",
+                MULTISCHOLAR_DIA025_MECHANISM_MEMBER = if (stage == "I3") "perf108:native-contract" else if (stage == "T1")
+                    "gui-bulk-rollup:relational-preflight" else "gui-bulk-rollup:writer-r-preflight"), {
+                checks <- testthat::test_dir(file.path(source, "tests/testthat"),
+                    filter = if (stage == "ZL") "^(workflow-bulk-relational|perf-106|workflow-saved-installed|perf108-native-null)$" else if (stage == "ZQ") "^(workflow-bulk-relational|perf-106|perf108-output-cache|workflow-saved-installed)$" else if (stage == "ZA") "^(workflow-bulk-relational|perf108-paired-state)$" else
+                        if (stage == "ZS") "^(workflow-bulk-relational|perf108-ordered-reduce)$" else
+                        if (stage == "ZV") "^(workflow-bulk-relational|perf108-partition-validation)$" else
+                        if (stage == "ZC") "^(workflow-bulk-relational|perf-106|perf108-cursor-integration)$" else
+                        if (stage == "ZO") "^(workflow-bulk-relational|perf-106)$" else
+                        if (stage %in% c("QC", "QT")) "^(workflow-bulk-relational|perf108-output-cache)$" else
+                        "^workflow-bulk-relational$", package = "MultiScholaR",
+                    load_package = "installed", reporter = "summary", stop_on_failure = FALSE)
+                checks <- as.data.frame(checks)
+                saveRDS(checks, file.path(run_dir, "reader-tests.rds"))
+                if (any(checks$failed > 0L | checks$error)) stop("PERF-108 installed checks failed")
+                result$assertions <- sum(checks$passed)
+            })
+        })
+    }
+    result$status <- "complete"
+    result
 }

@@ -205,7 +205,7 @@ if [[ "${1:-}" == "--service" ]]; then
     fi
     # Sequential QC extends the existing recorded operation, not a new service.
     if [[ ( "$2" == recorded-qc || "$2" == reader-check ) && "$#" == 6 ]]; then
-        [[ ( "$2" == recorded-qc && ( "$6" == sequence-prepare || "$6" =~ ^sequence:(resident|qs2):(diagnostic|timing)$ || "$6" == sequence:qs2_duckdb:timing ) ) || ( "$2" == reader-check && ( "$6" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ || "$6" == sequence || "$6" == gui-capacity || "$6" == gui-capacity-verifier || "$6" == gui-diagnostic || "$6" == gui-passive || "$6" == gui-lifetime-repair || "$6" == gui-memory-repair || "$6" == gui-memory-verification || "$6" == gui-audit-repair || "$6" == gui-audit-diagnostic || "$6" == gui-audit-member || "$6" == gui-audit-toggle || "$6" == gui-sleep-guard || "$6" == gui-integration-repair || "$6" == gui-worker-member || "$6" == gui-export-member || "$6" == gui-sharing-repair || "$6" == gui-native-session || "$6" == gui-native-outputs || "$6" == gui-reference-first-qc || "$6" == gui-reference-core || "$6" == gui-reference-routing || "$6" == gui-ruv-pearson || "$6" == gui-export-history-member || "$6" == gui-iq-history-member || "$6" == gui-mechanism-preflight || "$6" == gui-rollup-profile || "$6" == gui-raw-replay:small || "$6" == gui-raw-replay:outputs || "$6" == gui-raw-replay:verify || "$6" == gui-cohort-profile || "$6" =~ ^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$ || "$6" =~ ^(gui-cohort-size:(256|768|768-threads8)|gui-impute-workers:(preflight|4|8))$ || "$6" =~ ^gui-cohort-threads:(1|2|4|8)$ || "$6" == gui-raw-replay:300 || "$6" == gui-rollup-profile-preflight || "$6" =~ ^gui-rollup-compare:(control|candidate)$ || "$6" =~ ^gui-(rollup|session)-performance:(control|candidate)$ || "$6" =~ ^gui-first-qc-verify:[A-Za-z0-9]{6}:[A-Za-z0-9]{6}$ || "$6" =~ ^gui-history-verify:[A-Za-z0-9]{6}(:[A-Za-z0-9]{6})?$ ) ) ]] || exit 2
+        [[ ( "$2" == recorded-qc && ( "$6" == sequence-prepare || "$6" =~ ^sequence:(resident|qs2):(diagnostic|timing)$ || "$6" == sequence:qs2_duckdb:timing ) ) || ( "$2" == reader-check && ( "$6" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ || "$6" == sequence || "$6" == gui-capacity || "$6" == gui-capacity-verifier || "$6" == gui-diagnostic || "$6" == gui-passive || "$6" == gui-lifetime-repair || "$6" == gui-memory-repair || "$6" == gui-memory-verification || "$6" == gui-audit-repair || "$6" == gui-audit-diagnostic || "$6" == gui-audit-member || "$6" == gui-audit-toggle || "$6" == gui-sleep-guard || "$6" == gui-integration-repair || "$6" == gui-worker-member || "$6" == gui-export-member || "$6" == gui-sharing-repair || "$6" == gui-native-session || "$6" == gui-native-outputs || "$6" == gui-reference-first-qc || "$6" == gui-reference-core || "$6" == gui-reference-routing || "$6" == gui-ruv-pearson || "$6" == gui-export-history-member || "$6" == gui-iq-history-member || "$6" == gui-mechanism-preflight || "$6" == gui-rollup-profile || "$6" == gui-raw-replay:small || "$6" == gui-raw-replay:outputs || "$6" == gui-raw-replay:verify || "$6" == gui-cohort-profile || "$6" =~ ^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$ || "$6" =~ ^(gui-cohort-size:(256|768|768-threads8)|gui-impute-workers:(preflight|4|8))$ || "$6" =~ ^gui-cohort-threads:(1|2|4|8)$ || "$6" == gui-raw-replay:300 || "$6" == gui-rollup-profile-preflight || "$6" =~ ^gui-rollup-compare:(control|candidate)$ || "$6" =~ ^gui-(rollup|session)-performance:(control|candidate)$ || "$6" =~ ^gui-first-qc-verify:[A-Za-z0-9]{6}:[A-Za-z0-9]{6}$ || "$6" =~ ^gui-history-verify:[A-Za-z0-9]{6}(:[A-Za-z0-9]{6})?$ ) ) ]] || exit 2
         proof_sequence_selector="$6"
         if [[ "$6" == gui-export-history-member || "$6" == gui-iq-history-member ]]; then
             proof_sequence_sampling=true
@@ -264,15 +264,27 @@ if [[ "${1:-}" == "--service" ]]; then
         fi
     fi
     if [[ "$proof_memory_guard" == true ]]; then
-        if [[ ! "$proof_sequence_selector" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then checkpointRecordedGuard "$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)" 0 0 start; fi
+        if [[ ! "$proof_sequence_selector" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then checkpointRecordedGuard "$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)" 0 0 start; fi
         proof_stop_peak=8053063680
         proof_min_host_available=2147483648
     fi
-    if [[ "$proof_sequence_selector" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
+    if [[ "$proof_sequence_selector" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
         proof_memory_max=17179869184
         proof_stop_peak=16642998272
         proof_min_host_available=2147483648
         proof_runtime_max=600
+        if [[ "$proof_sequence_selector" == perf108:K1 || "$proof_sequence_selector" == perf108:M1 ]]; then
+            if [[ -n "${MULTISCHOLAR_PERF108_REMAINING_BUILD_SECONDS:-}" ]]; then
+                [[ "$MULTISCHOLAR_PERF108_REMAINING_BUILD_SECONDS" =~ ^[1-9][0-9]{0,2}$ ]] || exit 2
+                (( MULTISCHOLAR_PERF108_REMAINING_BUILD_SECONDS <= 600 )) || exit 2
+                proof_runtime_max=$MULTISCHOLAR_PERF108_REMAINING_BUILD_SECONDS
+            fi
+        fi
+        if [[ "$proof_sequence_selector" == perf108:UT || "$proof_sequence_selector" == perf108:Z[ACOVSQL] || "$proof_sequence_selector" == perf108:E[1-8] ]]; then proof_runtime_max=300; fi
+        if [[ "$proof_sequence_selector" == perf108:P[AVO][01] ]]; then proof_runtime_max=300; fi
+        if [[ "$proof_sequence_selector" == perf108:R[CS][01] ]]; then proof_runtime_max=300; fi
+        if [[ "$proof_sequence_selector" == perf108:[YW]* ]]; then proof_runtime_max=300; fi
+        if [[ "$proof_sequence_selector" == perf108:T* || "$proof_sequence_selector" == perf108:F0 || "$proof_sequence_selector" == perf108:N2 || "$proof_sequence_selector" == perf108:I[23] || "$proof_sequence_selector" == perf108:J2 || "$proof_sequence_selector" == perf108:K[24] || "$proof_sequence_selector" == perf108:M2 || "$proof_sequence_selector" == perf108:V* || "$proof_sequence_selector" == perf108:P[SF]* || "$proof_sequence_selector" == perf108:R[SFR]* || "$proof_sequence_selector" == perf108:C[23] ]]; then proof_runtime_max=300; fi
         if [[ "$proof_sequence_selector" == perf106:V2-J ]]; then proof_runtime_max=120; fi
         if [[ "$proof_sequence_selector" == perf106:V2-A || "$proof_sequence_selector" == perf106:V2-V ]]; then proof_runtime_max=300; fi
         if [[ "$proof_sequence_selector" == perf101:D0R || "$proof_sequence_selector" == perf101:V || "$proof_sequence_selector" == perf106:S* ]]; then proof_runtime_max=300; fi
@@ -513,8 +525,41 @@ if [[ "${1:-}" == "--service" ]]; then
     if [[ "$proof_design_memory" == true ]]; then proof_gui_diagnostic=true; fi
     if [[ "$proof_gui_diagnostic" == true || "$proof_reclaim" == true ]]; then proof_process_sampling=true; fi
     proof_command=(Rscript --vanilla "${proof_script_dir}/run_workflow_checkpoint_proof.R" "${proof_operation[@]}")
-    if [[ "$proof_sequence_selector" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
+    if [[ "$proof_sequence_selector" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
         checkpointSnapshotPerf101Sources "$(realpath -e -- "${proof_script_dir}/../..")" "$proof_run_dir/source"
+        if [[ "$proof_sequence_selector" == perf108:* ]]; then
+            cp -- "${proof_script_dir}/workflow_perf108_structural.R" "$proof_run_dir/source/tools/profiling/workflow_perf108_structural.R"
+            cp -- "${proof_script_dir}/workflow_perf108_ordered.R" "$proof_run_dir/source/tools/profiling/workflow_perf108_ordered.R"
+            if [[ "$proof_sequence_selector" == perf108:[YWE]* || "$proof_sequence_selector" == perf108:ZQ ]]; then
+                proof_binding_family=structural
+                if [[ "$proof_sequence_selector" == perf108:E* || "$proof_sequence_selector" == perf108:ZQ ]]; then proof_binding_family=closeout; fi
+                if [[ "$proof_sequence_selector" == perf108:W* ]]; then proof_binding_family=ordered-groups; fi
+                mkdir -p "$proof_run_dir/source/docs/qa/workflow-execution/perf-108/$proof_binding_family"
+                cp -- "${proof_script_dir}/../../docs/qa/workflow-execution/perf-108/$proof_binding_family/bindings.rds" \
+                    "$proof_run_dir/source/docs/qa/workflow-execution/perf-108/$proof_binding_family/bindings.rds"
+            fi
+            for proof_source_file in R src inst man DESCRIPTION NAMESPACE configure LICENSE COPYING COPYING.LESSER \
+                tests/testthat tests/testdata/workflow-checkpoints tools/profiling/perf108-extension tools/profiling/perf108-fastduckdb tools/profiling/workflow_perf106.R tools/profiling/workflow_perf108.R docs/qa/workflow-execution/perf-108/runtime-bindings.rds docs/qa/workflow-execution/perf-108/runtime-repair-bindings.rds docs/qa/workflow-execution/perf-108/runtime-staged-bindings.rds docs/qa/workflow-execution/perf-108/runtime-attribution-bindings.rds docs/qa/workflow-execution/perf-108/runtime-batch-bindings.rds docs/qa/workflow-execution/perf-108/cache-qualification/bindings.rds; do
+                if [[ "$proof_source_file" == docs/qa/workflow-execution/perf-108/cache-qualification/bindings.rds && ! -f "${proof_script_dir}/../../$proof_source_file" ]]; then
+                    [[ "$proof_sequence_selector" != perf108:X* ]] || exit 2
+                    continue
+                fi
+                if [[ ( "$proof_source_file" == docs/qa/workflow-execution/perf-108/runtime-staged-bindings.rds || "$proof_source_file" == docs/qa/workflow-execution/perf-108/runtime-attribution-bindings.rds || "$proof_source_file" == docs/qa/workflow-execution/perf-108/runtime-batch-bindings.rds ) &&
+                    ! -f "${proof_script_dir}/../../$proof_source_file" ]]; then
+                    [[ "$proof_sequence_selector" == perf108:M1 || "$proof_sequence_selector" == perf108:M2 ]] || exit 2
+                    continue
+                fi
+                mkdir -p -- "$(dirname -- "$proof_run_dir/source/$proof_source_file")"
+                if [[ -d "${proof_script_dir}/../../$proof_source_file" ]]; then
+                    mkdir -p -- "$proof_run_dir/source/$proof_source_file"
+                    cp -a -- "${proof_script_dir}/../../$proof_source_file/." "$proof_run_dir/source/$proof_source_file/"
+                else
+                    cp -a -- "${proof_script_dir}/../../$proof_source_file" "$proof_run_dir/source/$proof_source_file"
+                fi
+            done
+            # Compiler products are not source inputs; package installation rebuilds them.
+            find "$proof_run_dir/source/src" -maxdepth 1 -type f \( -name '*.o' -o -name '*.so' \) -delete
+        fi
         if [[ "$proof_sequence_selector" == perf106:* ]]; then
             for proof_source_file in tools/profiling/workflow_perf106.R \
                 tickets/openai/verification/perf106-repair-protocol-v2.json \
@@ -567,7 +612,7 @@ if [[ "${1:-}" == "--service" ]]; then
             trap 'exit 130' INT TERM
         fi
         proof_service_env=(--setenv=NOT_CRAN=true --setenv="CHROMOTE_CHROME=$proof_browser")
-        if [[ "$proof_sequence_selector" =~ ^(perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
+        if [[ "$proof_sequence_selector" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
             proof_service_env+=(--setenv=OMP_NUM_THREADS=1 --setenv=OPENBLAS_NUM_THREADS=1
                 --setenv=MKL_NUM_THREADS=1 --setenv=VECLIB_MAXIMUM_THREADS=1)
         fi
