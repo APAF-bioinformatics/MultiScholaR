@@ -426,6 +426,186 @@ WorkflowExecutionApplication <- R6::R6Class("WorkflowExecutionApplication", clon
     public = list(config = NULL, cgroup = NULL, controllers = list(), active = NULL,
         sessions = 0L, pid = NULL, closed = FALSE))
 
+#' Open the one application-wide GUI action before reading scientific payloads.
+#' @param application Managed application owner attached to the Shiny session.
+#' @param manager Current native or reference-backed state owner.
+#' @param operation Registered operation identifier.
+#' @param publication Immutable real project/output context.
+#' @return Process-local reservation borrowed by an optional worker action.
+#' @noRd
+beginWorkflowGUIAction <- function(application, manager, operation, publication) {
+    entered <- proc.time()[["elapsed"]]
+    checkWorkflowApplication(application)
+    workflowActionSpec(operation)
+    if (!is.list(publication) || !identical(sort(names(publication)),
+        sort(c("experiment_label", "experiment_paths", "omic_type"))) ||
+        !is.character(publication$experiment_label) || length(publication$experiment_label) != 1L ||
+        is.na(publication$experiment_label) || !nzchar(publication$experiment_label) ||
+        !identical(publication$omic_type, "proteomics") ||
+        !is.list(publication$experiment_paths) || hasMutableWorkflowEntityOwner(publication) ||
+        as.numeric(object.size(publication)) > 65536) {
+        cli::cli_abort("invalid GUI publication context", class = "workflow_execution_invalid")
+    }
+    if (!is.null(application$active)) {
+        cli::cli_abort("another heavy action is active", class = "workflow_execution_busy")
+    }
+    peak <- openWorkflowPeakWindow(application)
+    admission <- filelock::lock(file.path(application$config$root,
+        ".heavy-action.lock"), timeout = 0)
+    if (is.null(admission)) {
+        close(peak)
+        cli::cli_abort("application already has a heavy action", class = "workflow_execution_busy")
+    }
+    ready <- FALSE
+    on.exit(if (!ready) {
+        filelock::unlock(admission)
+        close(peak)
+    })
+    accounting <- workflowCgroupAccounting(application$cgroup)
+    id <- paste0("gui-", substr(digest::digest(list(Sys.time(), tempfile(),
+        application$config$stem), algo = "sha256"), 1L, 32L))
+    capture <- if (inherits(manager, "DIAStateAdapter")) {
+        reference <- getDIAStateReference(manager)
+        list(owner = manager$.context$store$identity, head = reference$entity_id,
+            history = as.character(unlist(manager$getHistory())),
+            current_state = manager$current_state)
+    } else {
+        list(owner = list(class = class(manager)), head = NULL,
+            history = as.character(unlist(manager$getHistory())),
+            current_state = manager$current_state)
+    }
+    reservation <- new.env(parent = emptyenv())
+    reservation$schema <- 1L
+    reservation$id <- id
+    reservation$application <- application
+    reservation$manager <- manager
+    reservation$operation <- operation
+    reservation$publication <- publication
+    reservation$capture <- capture
+    reservation$started <- entered
+    reservation$peak <- peak
+    reservation$accounting <- accounting
+    reservation$admission <- admission
+    reservation$pid <- Sys.getpid()
+    reservation$closed <- FALSE
+    reservation$worker_request_id <- NULL
+    class(reservation) <- c("WorkflowGUIActionReservation", "environment")
+    application$active <- id
+    ready <- TRUE
+    reservation
+}
+
+#' Close the GUI-complete action after current browser content is acknowledged.
+#' @param reservation Process-local beginWorkflowGUIAction result.
+#' @param status Terminal classification.
+#' @param acknowledgement Bounded current request/head browser acknowledgement.
+#' @return Durable, assay-free complete-operation receipt.
+#' @noRd
+finishWorkflowGUIAction <- function(reservation, status, acknowledgement = NULL) {
+    if (!inherits(reservation, "WorkflowGUIActionReservation") || reservation$closed ||
+        !identical(reservation$pid, Sys.getpid())) {
+        cli::cli_abort("GUI action reservation is unavailable", class = "workflow_execution_stale")
+    }
+    application <- reservation$application
+    if (!identical(application$active, reservation$id)) {
+        cli::cli_abort("GUI action was superseded", class = "workflow_execution_stale")
+    }
+    success <- identical(status, "complete")
+    valid_ack <- is.list(acknowledgement) && identical(acknowledgement$request_id,
+        reservation$id) && is.character(acknowledgement$content_id) &&
+        length(acknowledgement$content_id) == 1L && !is.na(acknowledgement$content_id) &&
+        nzchar(acknowledgement$content_id) && isTRUE(acknowledgement$plot_ready) &&
+        is.numeric(acknowledgement$stable_seconds) &&
+        length(acknowledgement$stable_seconds) == 1L &&
+        is.finite(acknowledgement$stable_seconds) && acknowledgement$stable_seconds >= 0.2
+    if (success && !valid_ack) {
+        cli::cli_abort("current browser acknowledgement required",
+            class = "workflow_execution_incomplete")
+    }
+    peak_closed <- FALSE
+    on.exit({
+        if (!peak_closed) close(reservation$peak)
+        if (!is.null(reservation$admission)) filelock::unlock(reservation$admission)
+        reservation$admission <- NULL
+        reservation$closed <- TRUE
+        if (identical(application$active, reservation$id)) application$active <- NULL
+    }, add = TRUE)
+    browser <- workflowBrowserMembership(application)
+    if (success && identical(application$config$qualification$programme,
+        "perf107-phase-a") && !isTRUE(browser$valid)) {
+        cli::cli_abort("browser is outside the guarded application",
+            class = "workflow_execution_unsupported")
+    }
+    monitor <- NULL
+    if (identical(application$config$mode, "gui")) {
+        snapshot_id <- sub("^gui-", "wfx-", reservation$id)
+        writeWorkflowExecutionMessage(file.path(application$config$root,
+            "application-monitor-snapshot-request.rds"),
+            list(schema = 1L, request_id = snapshot_id))
+        snapshot_path <- file.path(application$config$root,
+            paste0("application-monitor-snapshot-", snapshot_id, ".rds"))
+        deadline <- proc.time()[["elapsed"]] + 2
+        while (!file.exists(snapshot_path) && proc.time()[["elapsed"]] < deadline) Sys.sleep(0.02)
+        if (file.exists(snapshot_path)) monitor <- readRDS(snapshot_path)
+    }
+    # Once finishing starts, IO/accounting failure must not strand the admission
+    # lock or permit a second attempt to close the same peak descriptor.
+    peak_closed <- TRUE
+    peak <- closeWorkflowPeakWindow(reservation$peak)
+    accounting <- workflowCgroupAccounting(application$cgroup)
+    receipt <- list(schema = 1L, request_id = reservation$id, status = status,
+        operation = reservation$operation,
+        worker_request_id = reservation$worker_request_id,
+        capture = reservation$capture,
+        elapsed_seconds = proc.time()[["elapsed"]] - reservation$started,
+        peak_bytes = peak, whole_service_peak_bytes = workflowMemoryCounter(file.path(
+            application$cgroup, "memory.peak")), accounting_delta = Map(`-`, accounting,
+            reservation$accounting), browser_acknowledged = valid_ack,
+        browser_memory_included = isTRUE(browser$valid), browser = browser,
+        monitor = monitor,
+        monitor_basis = "application lifetime through final GUI acknowledgement; conservative attribution",
+        measurement_valid = !is.null(monitor) && is.null(monitor$reason) &&
+            is.numeric(monitor$max_observation_interval) &&
+            length(monitor$max_observation_interval) == 1L &&
+            is.finite(monitor$max_observation_interval) && monitor$max_observation_interval <= 0.1,
+        acknowledgement = acknowledgement)
+    path <- file.path(application$config$root, paste0(reservation$id, "-gui-completion.rds"))
+    writeWorkflowExecutionMessage(path, receipt)
+    filelock::unlock(reservation$admission)
+    reservation$admission <- NULL
+    reservation$closed <- TRUE
+    application$active <- NULL
+    receipt
+}
+
+#' Validate the proof driver's real service membership without inspecting payloads.
+#' @param application Managed application owner.
+#' @return Bounded membership result.
+#' @noRd
+workflowBrowserMembership <- function(application) {
+    held <- list(valid = FALSE)
+    path <- file.path(application$config$root, "application-browser-member.rds")
+    if (!file.exists(path) || file.size(path) > 65536 || nzchar(Sys.readlink(path))) {
+        return(held)
+    }
+    member <- readRDS(path)
+    if (!is.list(member) || !identical(member$schema, 1L) ||
+        !is.character(member$unit) || length(member$unit) != 1L ||
+        !grepl("^multischolarwfx[a-f0-9]{16}-proof[.]service$", member$unit) ||
+        !is.character(member$control_group) || length(member$control_group) != 1L ||
+        !is.list(member$process)) return(held)
+    actual <- workflowServiceProperties(member$unit)
+    process <- tryCatch(workflowExecutionProcess(as.integer(member$process$pid)),
+        error = function(error) NULL)
+    valid <- isTRUE(actual$available) && actual$SubState %in% c("running", "start") &&
+        identical(as.numeric(actual$MainPID), as.numeric(member$process$pid)) &&
+        identical(actual$ControlGroup, member$control_group) &&
+        startsWith(actual$ControlGroup, paste0(application$config$control_group, "/")) &&
+        identical(process, member$process)
+    list(valid = valid, unit = member$unit, control_group = member$control_group,
+        process = member$process)
+}
+
 #' Check real cgroup membership and limits before project mutation or dispatch.
 #' @param application Managed application resource owner.
 #' @return TRUE invisibly.
@@ -436,8 +616,15 @@ checkWorkflowApplication <- function(application) {
         cli::cli_abort("managed application required", class = "workflow_execution_unsupported")
     config <- application$config
     actual <- workflowServiceProperties(config$controller_unit)
+    monitor_ok <- TRUE
+    if (identical(config$mode, "gui")) {
+        monitor <- workflowServiceProperties(config$application_monitor_unit)
+        monitor_ok <- isTRUE(monitor$available) && monitor$SubState %in% c("running", "start") &&
+            startsWith(monitor$ControlGroup, paste0(config$control_group, "/"))
+    }
     if (!isTRUE(actual$available) || !identical(as.numeric(actual$MainPID), as.numeric(Sys.getpid())) ||
         !startsWith(actual$ControlGroup, paste0(config$control_group, "/")) ||
+        !monitor_ok ||
         workflowMemoryCounter(file.path(application$cgroup, "memory.max")) != config$policy$memory_max ||
         workflowMemoryCounter(file.path(application$cgroup, "memory.swap.max")) != 0)
         cli::cli_abort("application containment differs from policy", class = "workflow_execution_unsupported")
@@ -481,7 +668,8 @@ closeWorkflowPeakWindow <- function(con) {
 #' @param port Loopback Shiny port for the managed GUI.
 #' @return Launch receipt with the exact owned slice/controller identities.
 #' @noRd
-launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", test_root = NULL, port = 3838L) {
+launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", test_root = NULL,
+    port = 3838L, supervisor_unit = NULL) {
     if (!identical(Sys.info()[["sysname"]], "Linux") || !dir.exists(root) ||
         !mode %in% c("gui", "protocol", "resources", "adapters") || mode %in% c("protocol", "resources") && !isTRUE(diagnostic))
         cli::cli_abort("unsupported managed application launch", class = "workflow_execution_unsupported")
@@ -489,6 +677,16 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
     if (workflowHostAvailable() < policy$startup_headroom)
         cli::cli_abort("insufficient host headroom", class = "workflow_execution_refused")
     workflowSystemd(c("show-environment"))
+    if (!is.null(supervisor_unit)) {
+        membership <- readLines("/proc/self/cgroup", warn = FALSE)
+        if (!identical(mode, "gui") || !is.character(supervisor_unit) ||
+            length(supervisor_unit) != 1L || is.na(supervisor_unit) ||
+            !grepl("^multischolar-dia003-browser-smoke[.][A-Za-z0-9]{6}[.]service$", supervisor_unit) ||
+            !any(endsWith(membership, paste0("/", supervisor_unit)))) {
+            cli::cli_abort("supervisor is not this process's owned proof service",
+                class = "workflow_execution_unsupported")
+        }
+    }
     id <- substr(digest::digest(list(Sys.time(), Sys.getpid(), tempfile()), algo = "sha256"), 1L, 16L)
     stem <- paste0("multischolarwfx", id)
     slice <- paste0(stem, ".slice")
@@ -496,6 +694,25 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
         controller_unit = paste0(stem, "-controller.service"), policy = policy,
         build = workflowExecutionBuildIdentity(), library = dirname(system.file(package = "MultiScholaR")),
         mode = mode, port = as.integer(port), test_root = test_root)
+    if (mode == "gui") {
+        config$application_monitor_unit <- paste0(stem, "-appmonitor.service")
+        member_path <- file.path(root, "gui-member.rds")
+        if (file.exists(member_path)) {
+            if (file.size(member_path) > 65536) {
+                cli::cli_abort("GUI qualification member is oversized")
+            }
+            member <- readRDS(member_path)
+            if (!is.list(member) || !identical(member$schema, 1L)) {
+                cli::cli_abort("GUI qualification member is invalid")
+            }
+            config$qualification <- list(programme = member$programme,
+                variant = member$variant, entry = member$entry,
+                member_sha256 = digest::digest(file = member_path, algo = "sha256"),
+                deadline = member$deadline)
+            config$allow_guard_injection <- isTRUE(member$guard_stop_test)
+            workflowQualificationVariant(config, "minimum_peptides_per_sample")
+        }
+    }
     if (mode != "gui") {
         test_file <- if (mode == "adapters") "test-workflow-execution-adapters.R" else "test-workflow-execution.R"
         config$test_file <- test_file
@@ -522,6 +739,11 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
         config$test_hashes <- stats::setNames(vapply(inputs, function(path)
             digest::digest(file = path, algo = "sha256"), character(1)), inputs)
     }
+    if (identical(mode, "gui")) {
+        # The outer supervisor must be able to clean up even if R is killed
+        # between slice creation and publication of application.rds.
+        writeLines(slice, file.path(root, "application-slice.txt"))
+    }
     config$control_group <- createWorkflowApplicationSlice(stem, policy)
     ready <- FALSE
     on.exit(if (!ready) workflowSystemd(c("stop", slice), required = FALSE))
@@ -532,10 +754,28 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
     config_path <- file.path(root, "application.rds")
     if (file.exists(config_path)) cli::cli_abort("managed application directory already used")
     saveRDS(config, config_path, compress = FALSE, version = 3)
+    controller_binds <- character()
+    if (mode == "gui") {
+        monitor_request <- list(schema = 1L, build = config$build, scope = "application",
+            config = config, directory = config$root)
+        monitor_path <- file.path(root, "application-monitor.rds")
+        writeWorkflowExecutionMessage(monitor_path, monitor_request)
+        workflowLaunchService(config, config$application_monitor_unit, "monitor", monitor_path,
+            digest::digest(file = monitor_path, algo = "sha256"),
+            binds = supervisor_unit %||% character(), deadline = 86500L)
+        ready_path <- file.path(root, "application-monitor-ready.rds")
+        deadline <- proc.time()[["elapsed"]] + 30
+        while (!file.exists(ready_path) && proc.time()[["elapsed"]] < deadline) Sys.sleep(0.02)
+        if (!file.exists(ready_path)) {
+            cli::cli_abort("application monitor did not start", class = "workflow_execution_unsupported")
+        }
+        controller_binds <- config$application_monitor_unit
+    }
     workflowLaunchService(config, config$controller_unit, "application", config_path,
         digest::digest(file = config_path, algo = "sha256"), deadline = if (!is.null(config$qualification))
             config$qualification$deadline else if (mode == "adapters") { if (diagnostic) 300L else 1800L } else
-            if (mode == "resources" && diagnostic) 900L else if (diagnostic) 600L else 86400L)
+            if (mode == "resources" && diagnostic) 900L else if (diagnostic) 600L else 86400L,
+        binds = controller_binds)
     ready <- TRUE
     config
 }
@@ -609,6 +849,10 @@ workflowManagedMain <- function(arguments) {
     checkWorkflowApplication(app)
     on.exit({
         for (owner in app$controllers) closeWorkflowExecutionController(owner)
+        if (identical(config$mode, "gui")) {
+            writeWorkflowExecutionMessage(file.path(config$root,
+                "application-monitor-done.rds"), list(schema = 1L))
+        }
         app$closed <- TRUE
     })
     if (identical(config$mode, "fault_case")) {
@@ -658,6 +902,95 @@ writeWorkflowExecutionMessage <- function(path, value) {
 workflowMonitorMain <- function(arguments) {
     request <- readWorkflowExecutionRequest(arguments)
     group <- file.path("/sys/fs/cgroup", sub("^/", "", request$config$control_group))
+    if (identical(request$scope, "application")) {
+        ready <- file.path(request$directory, "application-monitor-ready.rds")
+        writeWorkflowExecutionMessage(ready, list(schema = 1L, pid = Sys.getpid(),
+            process = workflowExecutionProcess(), control_group = request$config$control_group))
+        max_anon <- max_file <- 0
+        max_interval <- 0
+        previous <- proc.time()[["elapsed"]]
+        stop_reason <- NULL
+        repeat {
+            now <- proc.time()[["elapsed"]]
+            max_interval <- max(max_interval, now - previous)
+            previous <- now
+            current <- workflowMemoryCounter(file.path(group, "memory.current"))
+            host <- workflowHostAvailable()
+            stat <- readLines(file.path(group, "memory.stat"), warn = FALSE)
+            metric <- function(key) as.numeric(sub(paste0("^", key, " "), "",
+                grep(paste0("^", key, " "), stat, value = TRUE)))
+            max_anon <- max(max_anon, metric("anon"))
+            max_file <- max(max_file, metric("file"))
+            if (current >= request$config$policy$early_stop) stop_reason <- "memory_guard"
+            if (host < request$config$policy$host_floor) stop_reason <- "host_headroom"
+            active_path <- file.path(request$directory, "application-active-worker.rds")
+            if (file.exists(active_path)) {
+                active <- readRDS(active_path)
+                valid_active <- is.list(active) && identical(active$schema, 1L) &&
+                    is.character(active$request_id) && length(active$request_id) == 1L &&
+                    grepl("^wfx-[a-f0-9]{32}$", active$request_id) &&
+                    is.character(active$worker_unit) && length(active$worker_unit) == 1L &&
+                    is.numeric(active$reservation) && length(active$reservation) == 1L &&
+                    is.finite(active$reservation) && active$reservation >= 0
+                if (!valid_active) {
+                    stop_reason <- "invalid_worker_registration"
+                } else {
+                    worker_group <- file.path(group, active$worker_unit)
+                    if (file.exists(file.path(worker_group, "memory.current"))) {
+                        worker <- workflowMemoryCounter(file.path(worker_group, "memory.current"))
+                        if (current - worker > active$reservation) {
+                            stop_reason <- "nonworker_reservation"
+                        }
+                    }
+                }
+            }
+            snapshot_path <- file.path(request$directory, "application-monitor-snapshot-request.rds")
+            if (file.exists(snapshot_path)) {
+                snapshot <- readRDS(snapshot_path)
+                if (is.list(snapshot) && identical(snapshot$schema, 1L) &&
+                    is.character(snapshot$request_id) && length(snapshot$request_id) == 1L &&
+                    grepl("^wfx-[a-f0-9]{32}$", snapshot$request_id)) {
+                    writeWorkflowExecutionMessage(file.path(request$directory, paste0(
+                        "application-monitor-snapshot-", snapshot$request_id, ".rds")),
+                    list(schema = 1L, scope = "application", max_anon = max_anon,
+                        max_file = max_file, max_observation_interval = max_interval,
+                        reason = stop_reason))
+                } else {
+                    stop_reason <- "invalid_monitor_snapshot"
+                }
+                unlink(snapshot_path)
+            }
+            injection <- file.path(request$directory, "application-guard-inject.rds")
+            if (file.exists(injection)) {
+                injected <- readRDS(injection)
+                if (!(isTRUE(request$config$policy$diagnostic) ||
+                    isTRUE(request$config$allow_guard_injection)) ||
+                    !identical(injected, list(schema = 1L, reason = "injected_guard_stop"))) {
+                    stop_reason <- "invalid_guard_injection"
+                } else {
+                    stop_reason <- "injected_guard_stop"
+                }
+            }
+            done <- file.path(request$directory, "application-monitor-done.rds")
+            if (!is.null(stop_reason) || file.exists(done)) break
+            Sys.sleep(request$config$policy$monitor_interval)
+        }
+        result <- list(schema = 1L, scope = "application", max_anon = max_anon,
+            max_file = max_file, max_observation_interval = max_interval,
+            reason = stop_reason)
+        writeWorkflowExecutionMessage(file.path(request$directory,
+            "application-monitor-result.rds"), result)
+        if (!is.null(stop_reason)) {
+            writeWorkflowExecutionMessage(file.path(request$directory,
+                "application-guard-stop.rds"), c(result, list(
+                    current = current, host_available = host)))
+            workflowSystemd(c("stop", request$config$slice), required = FALSE)
+        }
+        return(invisible(NULL))
+    }
+    if (!is.null(request$scope)) {
+        cli::cli_abort("unknown monitor scope", class = "workflow_execution_invalid")
+    }
     ready <- file.path(request$directory, "monitor-ready.rds")
     writeWorkflowExecutionMessage(ready, list(schema = 1L, pid = Sys.getpid()))
     max_anon <- max_file <- 0
@@ -763,36 +1096,51 @@ workflowWorkerMain <- function(arguments) {
 #' @param input_references Named immutable descriptors.
 #' @param parameters Small immutable operation parameters.
 #' @param resource_policy Project controller created inside a managed application.
+#' @param reservation Optional matching GUI action opened at handler entry.
 #' @return Request ID immediately after monitor launch; pollWorkflowAction advances it.
 #' @noRd
-runWorkflowAction <- function(operation, input_references, parameters, resource_policy) {
+runWorkflowAction <- function(operation, input_references, parameters, resource_policy,
+    reservation = NULL) {
     entered <- proc.time()[["elapsed"]]
     owner <- resource_policy
     if (!inherits(owner, "WorkflowExecutionController") || owner$closed) cli::cli_abort("controller required")
     app <- owner$application
-    peak <- openWorkflowPeakWindow(app)
+    outer <- !is.null(reservation)
+    if (outer && (!inherits(reservation, "WorkflowGUIActionReservation") ||
+        reservation$closed || !identical(reservation$pid, Sys.getpid()) ||
+        !identical(reservation$application, app) || !identical(reservation$manager, owner$manager) ||
+        !identical(reservation$operation, operation) ||
+        !identical(app$active, reservation$id))) {
+        cli::cli_abort("GUI action reservation differs", class = "workflow_execution_stale")
+    }
+    peak <- if (outer) reservation$peak else openWorkflowPeakWindow(app)
     transferred <- FALSE
-    on.exit(if (!transferred) close(peak), add = TRUE)
+    on.exit(if (!transferred && !outer) close(peak), add = TRUE)
     checkWorkflowApplication(app)
     assertDIAExportReady(owner$manager)
-    if (!is.null(app$active) || !is.null(owner$job)) cli::cli_abort("another heavy action is active", class = "workflow_execution_busy")
+    if ((!outer && !is.null(app$active)) || !is.null(owner$job)) {
+        cli::cli_abort("another heavy action is active", class = "workflow_execution_busy")
+    }
     validateWorkflowActionParameters(operation, parameters, app$config$policy, resolved = FALSE)
     if (!is.list(input_references) || !identical(names(input_references), "state") ||
         !isSavedWorkflowReference(input_references$state))
         cli::cli_abort("unsupported input reference", class = "workflow_execution_invalid")
     if (workflowHostAvailable() < app$config$policy$startup_headroom)
         cli::cli_abort("insufficient host headroom", class = "workflow_execution_refused")
-    admission <- filelock::lock(file.path(app$config$root, ".heavy-action.lock"), timeout = 0)
-    if (is.null(admission)) cli::cli_abort("application already has a heavy action", class = "workflow_execution_busy")
+    admission <- if (outer) reservation$admission else filelock::lock(file.path(
+        app$config$root, ".heavy-action.lock"), timeout = 0)
+    if (is.null(admission)) cli::cli_abort("application already has a heavy action",
+        class = "workflow_execution_busy")
     ready <- FALSE
     on.exit(if (!ready) {
-        filelock::unlock(admission)
+        if (!outer) filelock::unlock(admission)
         owner$job <- NULL
-        app$active <- NULL
+        if (!outer) app$active <- NULL
     }, add = TRUE)
     job <- new.env(parent = emptyenv())
     job$started <- entered
     job$peak <- peak
+    job$outer_reservation <- if (outer) reservation else NULL
     job$accounting <- workflowCgroupAccounting(app$cgroup)
     store <- owner$manager$.context$store
     job$existing_entities <- list.files(file.path(store$directory, "entities"))
@@ -821,26 +1169,38 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     job$admission <- admission
     job$stage <- "admitting"
     job$worker_unit <- paste0(app$config$stem, "-w", substr(token$request_id, 5, 16), ".service")
-    job$monitor_unit <- paste0(app$config$stem, "-m", substr(token$request_id, 5, 16), ".service")
+    job$monitor_borrowed <- identical(app$config$mode, "gui")
+    job$monitor_unit <- if (job$monitor_borrowed) app$config$application_monitor_unit else
+        paste0(app$config$stem, "-m", substr(token$request_id, 5, 16), ".service")
     job$worker_request <- file.path(paths$request_dir, "request.rds")
     writeWorkflowExecutionMessage(job$worker_request, request)
-    monitor <- list(schema = 1L, build = request$build, config = app$config,
-        directory = paths$request_dir, worker_unit = job$worker_unit)
-    monitor_path <- file.path(paths$request_dir, "monitor.rds")
-    writeWorkflowExecutionMessage(monitor_path, monitor)
+    if (outer) {
+        writeWorkflowExecutionMessage(file.path(paths$request_dir,
+            "publication-context.rds"), reservation$publication)
+        reservation$worker_request_id <- id
+    }
+    monitor_path <- NULL
+    if (!job$monitor_borrowed) {
+        monitor <- list(schema = 1L, build = request$build, config = app$config,
+            directory = paths$request_dir, worker_unit = job$worker_unit)
+        monitor_path <- file.path(paths$request_dir, "monitor.rds")
+        writeWorkflowExecutionMessage(monitor_path, monitor)
+    }
     writeWorkflowExportJournal(paths, list(schema = "multischolar.workflow_action.v1", request_id = id,
         status = "admitting", expected_head = token$expected_head, token_hash = digest::digest(token, algo = "sha256")))
     owner$control$active_request <- id
     writeWorkflowExecutionControl(store, owner$control)
     owner$job <- job
-    app$active <- id
+    if (!outer) app$active <- id
     # Transfer ownership before launch: a failed acknowledgement may still have created M.
     ready <- TRUE
     transferred <- TRUE
     launched <- tryCatch({
-        workflowLaunchService(app$config, job$monitor_unit, "monitor", monitor_path,
-            digest::digest(file = monitor_path, algo = "sha256"), binds = app$config$controller_unit,
-            deadline = app$config$policy$deadline + 60L)
+        if (!job$monitor_borrowed) {
+            workflowLaunchService(app$config, job$monitor_unit, "monitor", monitor_path,
+                digest::digest(file = monitor_path, algo = "sha256"), binds = app$config$controller_unit,
+                deadline = app$config$policy$deadline + 60L)
+        }
         TRUE
     }, workflow_execution_unsupported = function(error) {
         job$error <- substr(conditionMessage(error), 1L, 1024L)
@@ -867,13 +1227,19 @@ pollWorkflowAction <- function(owner) {
         return(finishWorkflowExecutionJob(owner, job$terminal_status))
     if (!workflowExecutionStoreValid(owner$manager$.context$store))
         return(finishWorkflowExecutionJob(owner, "project_replaced"))
-    guard <- file.path(job$paths$request_dir, "guard-stop.rds")
-    if (file.exists(guard)) return(finishWorkflowExecutionJob(owner, readRDS(guard)$reason))
+    guards <- c(file.path(job$paths$request_dir, "guard-stop.rds"),
+        if (job$monitor_borrowed) file.path(app$config$root, "application-guard-stop.rds"))
+    guard <- guards[file.exists(guards)][1L]
+    if (length(guard) && !is.na(guard)) {
+        return(finishWorkflowExecutionJob(owner, readRDS(guard)$reason))
+    }
     monitor <- workflowServiceProperties(job$monitor_unit)
     if (!isTRUE(monitor$available) || !monitor$SubState %in% c("running", "start"))
         return(finishWorkflowExecutionJob(owner, "monitor_lost"))
     if (job$stage == "admitting") {
-        if (!file.exists(file.path(job$paths$request_dir, "monitor-ready.rds"))) {
+        monitor_ready <- if (job$monitor_borrowed) file.path(app$config$root,
+            "application-monitor-ready.rds") else file.path(job$paths$request_dir, "monitor-ready.rds")
+        if (!file.exists(monitor_ready)) {
             if (proc.time()[["elapsed"]] - job$started > 30) return(finishWorkflowExecutionJob(owner, "monitor_start_timeout"))
             return(list(status = "admitting"))
         }
@@ -884,6 +1250,12 @@ pollWorkflowAction <- function(owner) {
         if (cap < 768 * 1024^2) return(finishWorkflowExecutionJob(owner, "admission_refused"))
         writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "admitted.rds"),
             list(schema = 1L, reservation = reservation, worker_cap = cap))
+        if (job$monitor_borrowed) {
+            writeWorkflowExecutionMessage(file.path(app$config$root,
+                "application-active-worker.rds"), list(schema = 1L,
+                    request_id = job$request$token$request_id,
+                    worker_unit = job$worker_unit, reservation = reservation))
+        }
         job$worker_cap <- cap
         job$request$worker_cap <- cap
         writeWorkflowExecutionMessage(job$worker_request, job$request)
@@ -903,14 +1275,16 @@ pollWorkflowAction <- function(owner) {
     state <- workflowServiceProperties(job$worker_unit)
     if (isTRUE(state$available) && state$SubState %in% c("running", "start")) return(list(status = "running"))
     result_path <- file.path(job$paths$request_dir, "worker-result.rds")
-    if (!file.exists(result_path) && !file.exists(guard)) {
+    if (!file.exists(result_path) && !any(file.exists(guards))) {
         # A worker may become terminal between two 50 ms monitor samples.
         # Give that already-running monitor two intervals to publish its
         # durable classification before treating the stop as an unguarded
         # worker failure.
         Sys.sleep(min(0.25, max(0.01, 2 * app$config$policy$monitor_interval)))
-        if (file.exists(guard))
+        guard <- guards[file.exists(guards)][1L]
+        if (length(guard) && !is.na(guard)) {
             return(finishWorkflowExecutionJob(owner, readRDS(guard)$reason))
+        }
         monitor <- workflowServiceProperties(job$monitor_unit)
         if (!isTRUE(monitor$available) || !monitor$SubState %in% c("running", "start"))
             return(finishWorkflowExecutionJob(owner, "monitor_lost"))
@@ -1066,28 +1440,50 @@ finishWorkflowExecutionJob <- function(owner, status) {
     if (is.null(job)) return(list(status = "idle"))
     valid_store <- workflowExecutionStoreValid(owner$manager$.context$store)
     # Stop M first when its request paths no longer belong to this project.
-    if (!valid_store) workflowSystemd(c("stop", job$monitor_unit), required = FALSE)
+    if (!valid_store && !job$monitor_borrowed) {
+        workflowSystemd(c("stop", job$monitor_unit), required = FALSE)
+    }
     worker <- workflowServiceProperties(job$worker_unit)
     workflowSystemd(c("stop", job$worker_unit), required = FALSE)
-    if (valid_store && dir.exists(job$paths$request_dir))
+    if (valid_store && dir.exists(job$paths$request_dir) && !job$monitor_borrowed) {
         writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "monitor-done.rds"), list(schema = 1L))
+    }
+    if (valid_store && job$monitor_borrowed) {
+        writeWorkflowExecutionMessage(file.path(owner$application$config$root,
+            "application-monitor-snapshot-request.rds"), list(schema = 1L,
+                request_id = job$request$token$request_id))
+    }
     deadline <- proc.time()[["elapsed"]] + 2
-    monitor_path <- file.path(job$paths$request_dir, "monitor-result.rds")
+    monitor_path <- if (job$monitor_borrowed) file.path(owner$application$config$root,
+        paste0("application-monitor-snapshot-", job$request$token$request_id, ".rds")) else
+        file.path(job$paths$request_dir, "monitor-result.rds")
     while (valid_store && !file.exists(monitor_path) && proc.time()[["elapsed"]] < deadline) Sys.sleep(0.02)
-    workflowSystemd(c("stop", job$monitor_unit), required = FALSE)
+    if (!job$monitor_borrowed) {
+        workflowSystemd(c("stop", job$monitor_unit), required = FALSE)
+    }
     worker_empty <- workflowServiceEmpty(owner$application, job$worker_unit)
-    monitor_empty <- workflowServiceEmpty(owner$application, job$monitor_unit)
+    monitor_empty <- if (job$monitor_borrowed) TRUE else
+        workflowServiceEmpty(owner$application, job$monitor_unit)
     if (!worker_empty || !monitor_empty) {
         job$stage <- "cleanup_failed"
         job$terminal_status <- status
         return(list(status = "cleanup_failed", request_id = job$request$token$request_id))
     }
     on.exit({
-        filelock::unlock(job$admission)
-        owner$application$active <- NULL
+        if (is.null(job$outer_reservation)) filelock::unlock(job$admission)
+        if (job$monitor_borrowed) {
+            active_path <- file.path(owner$application$config$root,
+                "application-active-worker.rds")
+            if (file.exists(active_path)) {
+                active <- readRDS(active_path)
+                if (identical(active$request_id, job$request$token$request_id)) unlink(active_path)
+            }
+        }
+        if (is.null(job$outer_reservation)) owner$application$active <- NULL
         owner$job <- NULL
     })
-    if (valid_store) for (role in c("worker", "monitor")) {
+    roles <- if (job$monitor_borrowed) "worker" else c("worker", "monitor")
+    if (valid_store) for (role in roles) {
         scratch <- file.path(job$paths$request_dir, paste0(role, "-scratch"))
         if (dir.exists(scratch) && !nzchar(Sys.readlink(scratch))) unlink(scratch, recursive = TRUE)
     }
@@ -1101,7 +1497,7 @@ finishWorkflowExecutionJob <- function(owner, status) {
     files <- unique(unlist(lapply(artifact_roots, list.files,
         recursive = TRUE, full.names = TRUE, all.files = TRUE)))
     staged_bytes <- if (valid_store) sum(file.info(files)$size) else NA_real_
-    peak <- closeWorkflowPeakWindow(job$peak)
+    peak <- if (is.null(job$outer_reservation)) closeWorkflowPeakWindow(job$peak) else NA_real_
     accounting <- workflowCgroupAccounting(owner$application$cgroup)
     delta <- Map(`-`, accounting, job$accounting)
     monitor <- if (valid_store && file.exists(monitor_path)) readRDS(monitor_path) else NULL
@@ -1109,6 +1505,7 @@ finishWorkflowExecutionJob <- function(owner, status) {
         token = job$request$token, error = job$error, elapsed_seconds = proc.time()[["elapsed"]] - job$started,
         peak_bytes = peak, whole_service_peak_bytes = workflowMemoryCounter(file.path(owner$application$cgroup, "memory.peak")),
         monitor = monitor, worker = worker, threads = 8L, browser_memory_included = FALSE,
+        monitor_borrowed = job$monitor_borrowed,
         accounting_delta = delta, staged_bytes_at_teardown = staged_bytes,
         staged_basis = "new entity/map/summary payloads plus request outputs and owned pending files; retained input links excluded",
         new_entity_count = length(new_entities),
@@ -1117,7 +1514,11 @@ finishWorkflowExecutionJob <- function(owner, status) {
             "identity fixture uses no database or spill-capable algorithm" else
             "engine spill disabled; attempted spill is not independently counted",
         measurement_valid = !is.null(monitor) && monitor$max_observation_interval <= 0.1,
-        cleanup = list(worker_stopped = worker_empty, monitor_stopped = monitor_empty))
+        complete_operation_measurement = is.null(job$outer_reservation),
+        cleanup = list(worker_stopped = worker_empty,
+            monitor_stopped = if (job$monitor_borrowed) NA else monitor_empty,
+            application_monitor_active = if (job$monitor_borrowed)
+                isTRUE(workflowServiceProperties(job$monitor_unit)$available) else NA))
     valid_store <- workflowExecutionStoreValid(owner$manager$.context$store)
     if (!valid_store) {
         receipt$status <- "project_replaced"
@@ -1182,10 +1583,17 @@ workflowServiceEmpty <- function(application, unit) {
 #' Identify one live controller across PID reuse and host restarts.
 #' @return Small process identity; non-Linux legacy callers have no managed identity.
 #' @noRd
-workflowExecutionProcess <- function() {
-    if (!identical(Sys.info()[["sysname"]], "Linux")) return(list(pid = Sys.getpid(), platform = Sys.info()[["sysname"]]))
-    stat <- strsplit(sub("^.*[)] ", "", readLines("/proc/self/stat", warn = FALSE)), " ", fixed = TRUE)[[1L]]
-    list(pid = Sys.getpid(), start = stat[[20L]], boot = readLines("/proc/sys/kernel/random/boot_id", warn = FALSE))
+workflowExecutionProcess <- function(pid = Sys.getpid()) {
+    if (!is.numeric(pid) || length(pid) != 1L || !is.finite(pid) ||
+        pid < 1 || pid != floor(pid)) stop("invalid process identity")
+    if (!identical(Sys.info()[["sysname"]], "Linux")) {
+        return(list(pid = as.integer(pid), platform = Sys.info()[["sysname"]]))
+    }
+    path <- file.path("/proc", as.character(as.integer(pid)), "stat")
+    stat <- strsplit(sub("^.*[)] ", "", readLines(path, warn = FALSE)), " ",
+        fixed = TRUE)[[1L]]
+    list(pid = as.integer(pid), start = stat[[20L]],
+        boot = readLines("/proc/sys/kernel/random/boot_id", warn = FALSE))
 }
 
 #' Check project identity for cleanup without writing into a replacement project.
@@ -1328,6 +1736,23 @@ computeWorkflowPeptideAction <- function(request) {
 workflowQualificationVariant <- function(config, operation) {
     qualification <- config$qualification
     if (is.null(qualification)) return("legacy")
+    if (identical(config$mode, "gui") && is.list(qualification) &&
+        identical(names(qualification), c("programme", "variant", "entry",
+            "member_sha256", "deadline")) &&
+        identical(qualification$programme, "perf107-phase-a") &&
+        is.character(qualification$variant) && length(qualification$variant) == 1L &&
+        !is.na(qualification$variant) && qualification$variant %in% c("native", "physical") &&
+        is.character(qualification$entry) && length(qualification$entry) == 1L &&
+        !is.na(qualification$entry) && qualification$entry %in% c("reference", "resident") &&
+        is.character(qualification$member_sha256) &&
+        length(qualification$member_sha256) == 1L &&
+        !is.na(qualification$member_sha256) &&
+        grepl("^[a-f0-9]{64}$", qualification$member_sha256) &&
+        is.numeric(qualification$deadline) && length(qualification$deadline) == 1L &&
+        !is.na(qualification$deadline) && qualification$deadline %in% c(900, 1800) &&
+        identical(operation, "minimum_peptides_per_sample")) {
+        return(qualification$variant)
+    }
     if (!identical(config$mode, "adapters") ||
         !is.list(qualification) || !identical(names(qualification),
             c("programme", "variant", "member_sha256", "deadline")) ||
@@ -1362,10 +1787,34 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
         dir.create(root, showWarnings = FALSE)
         directories <- setupDirectories(root, "proteomics")
         directories$proteomics_dia_baseline_smoke <- directories$proteomics
-        writeWorkflowExecutionMessage(context_path, directories)
+        publication <- list(directories = directories,
+            experiment_paths = directories$proteomics,
+            omic_type = "proteomics", experiment_label = "dia_baseline_smoke")
+        writeWorkflowExecutionMessage(context_path, publication)
+    } else {
+        publication <- readRDS(context_path)
+        if (identical(sort(names(publication)),
+            sort(c("experiment_label", "experiment_paths", "omic_type")))) {
+            directories <- stats::setNames(list(publication$experiment_paths),
+                paste(publication$omic_type, publication$experiment_label, sep = "_"))
+            publication$directories <- directories
+        } else if (is.list(publication) && is.list(publication$proteomics)) {
+            publication <- list(directories = publication,
+                experiment_paths = publication$proteomics,
+                omic_type = "proteomics", experiment_label = "dia_baseline_smoke")
+        }
     }
-    directories <- readRDS(context_path)
-    manager$.context$experiment_paths <- directories$proteomics
+    if (!is.list(publication) || !is.list(publication$directories) ||
+        !is.list(publication$experiment_paths) ||
+        !identical(publication$omic_type, "proteomics") ||
+        !is.character(publication$experiment_label) ||
+        length(publication$experiment_label) != 1L || is.na(publication$experiment_label) ||
+        !nzchar(publication$experiment_label) || hasMutableWorkflowEntityOwner(publication) ||
+        as.numeric(object.size(publication)) > 65536) {
+        cli::cli_abort("publication context is invalid", class = "workflow_execution_invalid")
+    }
+    directories <- publication$directories
+    manager$.context$experiment_paths <- publication$experiment_paths
     rlang::local_bindings(config_list = record$config, project_dirs = directories,
         filtering_progress = methods::new("FilteringProgress"), .env = .GlobalEnv)
     withr::local_options(multischolar.test_mode = FALSE)
@@ -1375,7 +1824,7 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
     on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device))
     arguments <- list(data = product$filteringSummary,
         step_name = if (result$operation == "precursor_rollup") "4_precursor_rollup" else "6_sample_filtered",
-        omic_type = "proteomics", experiment_label = "dia_baseline_smoke",
+        omic_type = publication$omic_type, experiment_label = publication$experiment_label,
         return_grid = TRUE, overwrite = TRUE, project_dirs = directories)
     workflowExecutionBoundary("publication")
     publishDIAQvalueOutput(manager, c(list(stateReference = result$state_reference), product),

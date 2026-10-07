@@ -31,6 +31,19 @@ registerProtDesignInitialStateSyncObserver <- function(
         withDIAStateScope(getDIAActiveManager(), function() {
         state <- initialState()
         reqFn(state)
+        manager <- getDIAActiveManager()
+        if (inherits(manager, "DIAStateAdapter")) {
+            reference <- getDIAReactiveReference(dataTbl)
+            pending <- manager$.context$design_adoption_pending
+            if (!is.null(pending) && isSavedWorkflowReference(reference) &&
+                identical(pending, reference$entity_id)) {
+                # Evaluate initialState above to replace its old resident cache,
+                # but preserve the current design selections on owner adoption.
+                dataClnReactive(manager$.context$snapshot$gui_references$data_cln)
+                manager$.context$design_adoption_pending <- NULL
+                return(invisible(NULL))
+            }
+        }
 
         batch_source <- state$sample_metadata %||% state$data_cln
         if (hasBatchColumnFn(batch_source)) {

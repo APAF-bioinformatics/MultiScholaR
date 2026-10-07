@@ -76,13 +76,23 @@ completeProtQcWorkflowStatus <- function(
 mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    # State-owner adoption does not change the scientific workflow type. Keep the
+    # existing tab DOM (and selected/visible plots) when only that owner changes.
+    qc_workflow_type <- shiny::reactiveVal(NULL)
+    shiny::observe({
+      # Native WorkflowState changes its R6 field in place during Design. The
+      # existing QC trigger is the notification for that mutation.
+      if (is.function(qc_trigger)) qc_trigger()
+      workflow_data$state_update_trigger
+      qc_workflow_type(workflow_data$state_manager$workflow_type)
+    }, priority = 100)
     
     output$dynamic_qc_tabs <- shiny::renderUI({
       message("=== DEBUG66: mod_prot_qc_server renderUI fired ===")
       
       # This logic will run once workflow_type is available
-      shiny::req(workflow_data$state_manager$workflow_type)
-      workflow_type <- workflow_data$state_manager$workflow_type
+      shiny::req(qc_workflow_type())
+      workflow_type <- qc_workflow_type()
       message(sprintf("   DEBUG66: workflow_type = %s", workflow_type))
       
       if (workflow_type %in% c("TMT", "LFQ")) {

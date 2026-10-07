@@ -74,6 +74,18 @@ checkpointSnapshotPerf101Sources() {
     done
 }
 
+checkpointStopOwnedApplication() {
+    local marker="$1/application/application-slice.txt" owned_slice
+    [[ -f "$marker" && ! -L "$marker" ]] || return 0
+    IFS= read -r owned_slice < "$marker"
+    [[ "$owned_slice" =~ ^multischolarwfx[a-f0-9]{16}\.slice$ ]] || return 2
+    systemctl --user show "$owned_slice" \
+        --property=Id,ControlGroup,ActiveState,MemoryPeak,MemorySwapPeak,CPUUsageNSec,IOReadBytes,IOWriteBytes \
+        > "$1/application-parent-terminal.txt" || return 1
+    systemctl --user stop "$owned_slice" || return 1
+    [[ "$(systemctl --user show "$owned_slice" --property=ActiveState --value)" == inactive ]]
+}
+
 proof_script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 if [[ "${1:-}" == "--workflow-lifecycle" ]]; then
     [[ "$#" == 5 && ( "$5" == protocol || "$5" == resources ) ]] || exit 2
@@ -204,7 +216,10 @@ if [[ "${1:-}" == "--service" ]]; then
         proof_memory_guard=true
     fi
     # Sequential QC extends the existing recorded operation, not a new service.
-    if [[ ( "$2" == recorded-qc || "$2" == reader-check ) && "$#" == 6 ]]; then
+    if [[ "$2" == reader-check && "$#" == 6 && "$6" =~ ^perf107:(B|C|D|L1|L2)$ ]]; then
+        proof_sequence_selector="$6"
+        set -- "${@:1:5}"
+    elif [[ ( "$2" == recorded-qc || "$2" == reader-check ) && "$#" == 6 ]]; then
         [[ ( "$2" == recorded-qc && ( "$6" == sequence-prepare || "$6" =~ ^sequence:(resident|qs2):(diagnostic|timing)$ || "$6" == sequence:qs2_duckdb:timing ) ) || ( "$2" == reader-check && ( "$6" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ || "$6" == sequence || "$6" == gui-capacity || "$6" == gui-capacity-verifier || "$6" == gui-diagnostic || "$6" == gui-passive || "$6" == gui-lifetime-repair || "$6" == gui-memory-repair || "$6" == gui-memory-verification || "$6" == gui-audit-repair || "$6" == gui-audit-diagnostic || "$6" == gui-audit-member || "$6" == gui-audit-toggle || "$6" == gui-sleep-guard || "$6" == gui-integration-repair || "$6" == gui-worker-member || "$6" == gui-export-member || "$6" == gui-sharing-repair || "$6" == gui-native-session || "$6" == gui-native-outputs || "$6" == gui-reference-first-qc || "$6" == gui-reference-core || "$6" == gui-reference-routing || "$6" == gui-ruv-pearson || "$6" == gui-export-history-member || "$6" == gui-iq-history-member || "$6" == gui-mechanism-preflight || "$6" == gui-rollup-profile || "$6" == gui-raw-replay:small || "$6" == gui-raw-replay:outputs || "$6" == gui-raw-replay:verify || "$6" == gui-cohort-profile || "$6" =~ ^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$ || "$6" =~ ^(gui-cohort-size:(256|768|768-threads8)|gui-impute-workers:(preflight|4|8))$ || "$6" =~ ^gui-cohort-threads:(1|2|4|8)$ || "$6" == gui-raw-replay:300 || "$6" == gui-rollup-profile-preflight || "$6" =~ ^gui-rollup-compare:(control|candidate)$ || "$6" =~ ^gui-(rollup|session)-performance:(control|candidate)$ || "$6" =~ ^gui-first-qc-verify:[A-Za-z0-9]{6}:[A-Za-z0-9]{6}$ || "$6" =~ ^gui-history-verify:[A-Za-z0-9]{6}(:[A-Za-z0-9]{6})?$ ) ) ]] || exit 2
         proof_sequence_selector="$6"
         if [[ "$6" == gui-export-history-member || "$6" == gui-iq-history-member ]]; then
@@ -297,6 +312,21 @@ if [[ "${1:-}" == "--service" ]]; then
             exit 76
         fi
     fi
+    if [[ "$proof_sequence_selector" =~ ^perf107:(B|C|D|L1|L2)$ ]]; then
+        proof_memory_max=17179869184
+        proof_stop_peak=16642998272
+        proof_min_host_available=2147483648
+        proof_runtime_max=900
+        if [[ "$proof_sequence_selector" == perf107:B ]]; then proof_runtime_max=600; fi
+        if [[ "$proof_sequence_selector" == perf107:C || "$proof_sequence_selector" == perf107:D ]]; then proof_runtime_max=300; fi
+        proof_sequence_sampling=true
+        proof_process_sampling=true
+        proof_available="$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)"
+        if [[ ! "$proof_available" =~ ^[0-9]+$ ]] || (( proof_available < 4294967296 )); then
+            echo "PERF-107 refused: host headroom is below 4 GiB" >&2
+            exit 76
+        fi
+    fi
     if [[ "$proof_capped_sixteen" == true ]]; then
         proof_memory_max=17179869184
         proof_stop_peak=16642998272
@@ -358,7 +388,7 @@ if [[ "${1:-}" == "--service" ]]; then
         checkpointDiagnosticGuard "$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)" 0
     fi
     proof_browser=""
-    if [[ "$proof_memory_guard" != true || -n "$proof_capacity_treatment" || "$proof_sequence_selector" == gui-diagnostic || "$proof_sequence_selector" == gui-passive || "$proof_sequence_selector" == gui-reference-first-qc || "$proof_sequence_selector" == gui-reference-routing || "$proof_sequence_selector" == gui-ruv-pearson || "$proof_sequence_selector" == gui-native-session || "$proof_sequence_selector" == gui-lifetime-repair || "$proof_sequence_selector" == gui-memory-repair || "$proof_sequence_selector" == gui-memory-verification ]]; then
+    if [[ "$proof_memory_guard" != true || -n "$proof_capacity_treatment" || "$proof_sequence_selector" =~ ^perf107:(D|L1|L2)$ || "$proof_sequence_selector" == gui-diagnostic || "$proof_sequence_selector" == gui-passive || "$proof_sequence_selector" == gui-reference-first-qc || "$proof_sequence_selector" == gui-reference-routing || "$proof_sequence_selector" == gui-ruv-pearson || "$proof_sequence_selector" == gui-native-session || "$proof_sequence_selector" == gui-lifetime-repair || "$proof_sequence_selector" == gui-memory-repair || "$proof_sequence_selector" == gui-memory-verification ]]; then
         proof_browser="${CHROMOTE_CHROME:-$(command -v chromium || command -v google-chrome || command -v brave)}"
         [[ -x "$proof_browser" ]] || { echo "No browser executable found" >&2; exit 2; }
     fi
@@ -525,6 +555,45 @@ if [[ "${1:-}" == "--service" ]]; then
     if [[ "$proof_design_memory" == true ]]; then proof_gui_diagnostic=true; fi
     if [[ "$proof_gui_diagnostic" == true || "$proof_reclaim" == true ]]; then proof_process_sampling=true; fi
     proof_command=(Rscript --vanilla "${proof_script_dir}/run_workflow_checkpoint_proof.R" "${proof_operation[@]}")
+    if [[ "$proof_sequence_selector" =~ ^perf107:(B|C|D|L1|L2)$ ]]; then
+        if [[ "$proof_sequence_selector" == perf107:B ]]; then
+            mkdir -p -- "$proof_run_dir/source"
+            for proof_source_file in R src inst man DESCRIPTION NAMESPACE configure LICENSE COPYING COPYING.LESSER \
+                tools/profiling/run_workflow_checkpoint_proof.R \
+                tools/profiling/workflow_checkpoint_dia_driver.R; do
+                mkdir -p -- "$(dirname -- "$proof_run_dir/source/$proof_source_file")"
+                if [[ -d "${proof_script_dir}/../../$proof_source_file" ]]; then
+                    mkdir -p -- "$proof_run_dir/source/$proof_source_file"
+                    cp -a -- "${proof_script_dir}/../../$proof_source_file/." \
+                        "$proof_run_dir/source/$proof_source_file/"
+                else
+                    cp -a -- "${proof_script_dir}/../../$proof_source_file" \
+                        "$proof_run_dir/source/$proof_source_file"
+                fi
+            done
+            find "$proof_run_dir/source/src" -maxdepth 1 -type f \
+                \( -name '*.o' -o -name '*.so' \) -delete
+        else
+            checkpointSnapshotPerf101Sources "$(realpath -e -- "${proof_script_dir}/../..")" \
+                "$proof_run_dir/source"
+            if [[ "$proof_sequence_selector" == perf107:C ]]; then
+                for proof_source_file in tests/testthat/helper-workflow-checkpoint-fixtures.R \
+                    tests/testthat/test-perf-107.R \
+                    tests/testthat/test-perf107-audit.R \
+                    tests/testthat/test-perf107-consumers.R \
+                    tests/testthat/fixtures/perf107-ack-contract.cjs \
+                    tests/testthat/test-prot-02i-qc-peptide-sample-shared.R \
+                    tests/testdata/workflow-checkpoints/scenarios.json; do
+                    mkdir -p -- "$(dirname -- "$proof_run_dir/source/$proof_source_file")"
+                    cp -- "${proof_script_dir}/../../$proof_source_file" \
+                        "$proof_run_dir/source/$proof_source_file"
+                done
+            fi
+        fi
+        proof_command=(Rscript --vanilla \
+            "$proof_run_dir/source/tools/profiling/run_workflow_checkpoint_proof.R" \
+            "${proof_operation[@]}")
+    fi
     if [[ "$proof_sequence_selector" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
         checkpointSnapshotPerf101Sources "$(realpath -e -- "${proof_script_dir}/../..")" "$proof_run_dir/source"
         if [[ "$proof_sequence_selector" == perf108:* ]]; then
@@ -574,7 +643,7 @@ if [[ "${1:-}" == "--service" ]]; then
                 cp -- "${proof_script_dir}/../../$proof_source_file" "$proof_run_dir/source/$proof_source_file"
             done
         fi
-        proof_command=(Rscript --vanilla "$proof_run_dir/source/tools/profiling/run_workflow_checkpoint_proof.R" "${proof_operation[@]}")
+    proof_command=(Rscript --vanilla "$proof_run_dir/source/tools/profiling/run_workflow_checkpoint_proof.R" "${proof_operation[@]}")
     fi
     if [[ "$proof_utility_diagnostics" == true ]]; then proof_command+=(--diagnostic-memory); fi
     if [[ "$proof_qvalue" == true ]]; then proof_command+=(qvalue); fi
@@ -608,10 +677,15 @@ if [[ "${1:-}" == "--service" ]]; then
                 checkpointDiagnosticGuard "$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)" 0
             fi
             # Stop our service on controller error/interruption as well as guard failure.
-            trap 'systemctl --user stop "${proof_unit}.service" >/dev/null 2>&1 || true' EXIT
+            trap 'systemctl --user stop "${proof_unit}.service" >/dev/null 2>&1 || true; checkpointStopOwnedApplication "$proof_run_dir"' EXIT
             trap 'exit 130' INT TERM
         fi
         proof_service_env=(--setenv=NOT_CRAN=true --setenv="CHROMOTE_CHROME=$proof_browser")
+        if [[ "$proof_sequence_selector" == perf107:C ]]; then
+            proof_node="$(command -v node)"
+            [[ -x "$proof_node" ]] || { echo "PERF-107 requires Node for its browser contract" >&2; exit 2; }
+            proof_service_env+=(--setenv="MULTISCHOLAR_PERF107_NODE=$proof_node")
+        fi
         if [[ "$proof_sequence_selector" =~ ^(perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))|perf101:(D[01]|D0R|V)|perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4]))))$ ]]; then
             proof_service_env+=(--setenv=OMP_NUM_THREADS=1 --setenv=OPENBLAS_NUM_THREADS=1
                 --setenv=MKL_NUM_THREADS=1 --setenv=VECLIB_MAXIMUM_THREADS=1)
@@ -730,6 +804,7 @@ if [[ "${1:-}" == "--service" ]]; then
         proof_interval_status=$?
         systemctl --user stop "${proof_unit}.service"
         proof_stop_status=$?
+        if ! checkpointStopOwnedApplication "$proof_run_dir"; then proof_stop_status=1; fi
         if [[ ( "$2" == "exclusion-allocation" || "$proof_capped_sixteen" == true || "$proof_memory_guard" == true ) && "$proof_stop_status" == 0 ]]; then
             trap - EXIT INT TERM
         fi

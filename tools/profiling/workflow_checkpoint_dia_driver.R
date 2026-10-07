@@ -421,15 +421,26 @@ checkpointProfiledApp <- function(library_path, profile_path, identity_root = NU
 #' @param allocator_probe Explicit small diagnostic-only allocator measurements.
 #' @param reclaim_memory Opt in to completed-action reclamation for this launch only.
 #' @param design_memory Explicit attribution run that stops before Design Save.
+#' @param managed_url Optional loopback URL for an already-running guarded app.
 #' @return Driver and canonical artifact root; caller owns stop and artifact collection.
 #' @noRd
 newCheckpointBrowser <- function(library_path, run_dir, seed = 20260428L, profile_application = FALSE,
-    capacity_treatment = NULL, diagnostic_source = NULL, diagnostic_profile = NULL, session_format = "legacy", allocator_probe = FALSE, reclaim_memory = FALSE, design_memory = FALSE) {
+    capacity_treatment = NULL, diagnostic_source = NULL, diagnostic_profile = NULL,
+    session_format = "legacy", allocator_probe = FALSE, reclaim_memory = FALSE,
+    design_memory = FALSE, managed_url = NULL) {
     if (!is.null(diagnostic_profile) && !identical(diagnostic_profile, "ruv_pearson")) stop("invalid diagnostic profile")
     if (!is.logical(profile_application) || length(profile_application) != 1L || is.na(profile_application)) {
         stop("profile_application must be TRUE or FALSE")
     }
     if (!dir.exists(run_dir)) stop("run directory must already exist")
+    if (!is.null(managed_url) && (!is.character(managed_url) ||
+        length(managed_url) != 1L || is.na(managed_url) ||
+        !grepl("^http://127[.]0[.]0[.]1:[0-9]{2,5}/?$", managed_url) ||
+        isTRUE(profile_application) || !is.null(capacity_treatment) ||
+        !is.null(diagnostic_source) || !is.null(diagnostic_profile) ||
+        isTRUE(allocator_probe) || isTRUE(reclaim_memory) || isTRUE(design_memory))) {
+        stop("invalid managed browser attachment")
+    }
     if (!requireNamespace("shinytest2", quietly = TRUE) ||
         !requireNamespace("chromote", quietly = TRUE)) {
         stop("shinytest2 and chromote are required; no browser skip is allowed")
@@ -438,11 +449,23 @@ newCheckpointBrowser <- function(library_path, run_dir, seed = 20260428L, profil
     if (length(browser) != 1L || !nzchar(browser) || !file.exists(browser)) {
         stop("a real browser executable is required")
     }
+    if (!is.null(managed_url)) {
+        chrome <- chromote::Chromote$new()
+        ready <- FALSE
+        on.exit(if (!ready) chrome$close(), add = TRUE)
+        session <- chrome$new_session()
+        session$Emulation$setDeviceMetricsOverride(width = 1440L, height = 1100L,
+            deviceScaleFactor = 1, mobile = FALSE)
+        driver <- newCheckpointManagedDriver(session)
+        ready <- TRUE
+        return(list(driver = driver, chrome = chrome,
+            artifact_root = normalizePath(run_dir, mustWork = TRUE)))
+    }
     capacity_diagnostic <- isTRUE(profile_application) && identical(capacity_treatment, "qs2_duckdb") &&
         !is.null(diagnostic_source) && file.exists(diagnostic_source)
     if (isTRUE(profile_application) && !is.null(capacity_treatment) && !capacity_diagnostic)
         stop("capacity timing cannot enable profiling")
-    app <- if (capacity_diagnostic) {
+    app <- if (!is.null(managed_url)) managed_url else if (capacity_diagnostic) {
         launch <- if (isTRUE(reclaim_memory)) checkpointInstalledApp(library_path, run_dir,
             capacity_treatment, session_format, reclaim_memory = TRUE) else
             checkpointInstalledApp(library_path, run_dir, capacity_treatment, session_format)
@@ -481,11 +504,596 @@ newCheckpointBrowser <- function(library_path, run_dir, seed = 20260428L, profil
         app_dir = app,
         name = "dia-installed-baseline", seed = seed,
         timeout = checkpointWaitBudget(), load_timeout = checkpointWaitBudget(),
+        wait = is.null(managed_url),
         width = 1440L, height = 1100L,
         options = list(multischolar.test_mode = FALSE,
             multischolar.capture_test_checkpoints = FALSE)
     )
     list(driver = driver, artifact_root = normalizePath(run_dir, mustWork = TRUE))
+}
+
+#' Register the proof service as a real descendant of the guarded application.
+#' @param application_root Managed application root containing application.rds.
+#' @param unit Exact request-owned proof service unit.
+#' @return Bounded membership record written for independent server validation.
+#' @noRd
+registerCheckpointManagedBrowser <- function(application_root, unit) {
+    application_root <- normalizePath(application_root, mustWork = TRUE)
+    config_path <- file.path(application_root, "application.rds")
+    if (!file.exists(config_path) || file.size(config_path) > 1048576) {
+        stop("managed application configuration is unavailable")
+    }
+    config <- readRDS(config_path)
+    expected <- paste0(config$stem, "-proof.service")
+    if (!identical(unit, expected)) stop("proof service identity differs")
+    membership <- readLines("/proc/self/cgroup", warn = FALSE)
+    membership <- sub("^[^:]*:[^:]*:", "", membership)
+    membership <- membership[endsWith(membership, paste0("/", unit))]
+    if (length(membership) != 1L ||
+        !startsWith(membership, paste0(config$control_group, "/"))) {
+        stop("proof service is outside the guarded application")
+    }
+    process <- list(pid = Sys.getpid(),
+        start = strsplit(sub("^.*[)] ", "", readLines("/proc/self/stat",
+            warn = FALSE)), " ", fixed = TRUE)[[1L]][[20L]],
+        boot = readLines("/proc/sys/kernel/random/boot_id", warn = FALSE))
+    record <- list(schema = 1L, unit = unit, control_group = membership,
+        process = process)
+    path <- file.path(application_root, "application-browser-member.rds")
+    if (file.exists(path)) stop("browser membership already exists")
+    saveRDS(record, path, compress = FALSE, version = 3)
+    record
+}
+
+#' Rebind shinytest2 tracing to the final remote document after AppDriver's race.
+#' @param driver Remote AppDriver whose initial navigation may have been superseded.
+#' @param url Exact loopback application URL.
+#' @param timeout Maximum seconds for initial navigation and stable connection.
+#' @return NULL after a connected, ready home page is stable for 200 ms.
+#' @noRd
+stabilizeCheckpointManagedBrowser <- function(driver, url, timeout = 60) {
+    tracer_path <- system.file("internal", "js", "shiny-tracer.js",
+        package = "shinytest2")
+    if (!file.exists(tracer_path)) stop("shinytest2 tracer is unavailable")
+    tracer <- paste(readLines(tracer_path, warn = FALSE), collapse = "\n")
+    session <- driver$get_chromote_session()
+    session$Page$addScriptToEvaluateOnNewDocument(source = tracer)
+    session$Page$navigate(url = url)
+    deadline <- proc.time()[["elapsed"]] + timeout
+    connected <- FALSE
+    injected <- FALSE
+    stable_since <- NULL
+    repeat {
+        if (proc.time()[["elapsed"]] >= deadline) {
+            stop("managed browser navigation did not become stable")
+        }
+        value <- driver$get_js(paste0(
+            "JSON.stringify({ready:document.readyState,",
+            "overlay:!!document.getElementById('shiny-disconnected-overlay'),",
+            "tracer:!!(window.shinytest2&&window.shinytest2.ready),",
+            "socket:window.Shiny&&Shiny.shinyapp&&Shiny.shinyapp.$socket?",
+            "Shiny.shinyapp.$socket.readyState:null,",
+            "tile:!!document.querySelector('[data-testid=\\\"tile-proteomics\\\"]')})"),
+            timeout = 5000)
+        state <- jsonlite::fromJSON(value)
+        current_connected <- identical(state$socket, 1L)
+        if (isTRUE(state$overlay) || connected && !current_connected) {
+            stop("managed Shiny session disconnected")
+        }
+        connected <- connected || current_connected
+        page_ready <- current_connected && identical(state$ready, "complete") &&
+            isTRUE(state$tile)
+        if (page_ready && !isTRUE(state$tracer) && !injected) {
+            session$Runtime$evaluate(expression = tracer, awaitPromise = TRUE,
+                returnByValue = TRUE)
+            injected <- TRUE
+            stable_since <- NULL
+            Sys.sleep(0.05)
+            next
+        }
+        ready <- current_connected && identical(state$ready, "complete") &&
+            isTRUE(state$tracer) && isTRUE(state$tile)
+        if (ready) {
+            if (is.null(stable_since)) stable_since <- proc.time()[["elapsed"]]
+            if (proc.time()[["elapsed"]] - stable_since >= 0.2) return(invisible(NULL))
+        } else {
+            stable_since <- NULL
+        }
+        Sys.sleep(0.05)
+    }
+}
+
+#' Use the public Chromote session after remote AppDriver initialization.
+#' @param app_driver Initialized AppDriver used only to create/instrument the session.
+#' @return Minimal driver surface required by the existing production harness.
+#' @noRd
+newCheckpointManagedDriver <- function(session) {
+    driver <- new.env(parent = emptyenv())
+    driver$get_chromote_session <- function() session
+    driver$get_js <- function(script, timeout = NULL) {
+        if (!is.character(script) || length(script) != 1L || is.na(script)) {
+            stop("managed browser script is invalid")
+        }
+        result <- session$Runtime$evaluate(expression = script,
+            awaitPromise = TRUE, returnByValue = TRUE,
+            timeout_ = if (is.null(timeout)) 30 else timeout / 1000)
+        if (identical(result$result$subtype, "error") ||
+            length(result$exceptionDetails)) {
+            message <- result$exceptionDetails$exception$description %||%
+                result$exceptionDetails$text %||% "managed browser script failed"
+            stop(message)
+        }
+        result$result$value %||% NULL
+    }
+    driver$wait_for_idle <- function(timeout = NULL) {
+        budget <- if (is.null(timeout)) checkpointWaitBudget() else timeout
+        deadline <- proc.time()[["elapsed"]] + budget / 1000
+        stable <- NULL
+        repeat {
+            if (proc.time()[["elapsed"]] >= deadline) stop("managed browser remained busy")
+            connected <- isTRUE(driver$get_js(paste0(
+                "!!(window.Shiny && Shiny.shinyapp && Shiny.shinyapp.$socket && ",
+                "Shiny.shinyapp.$socket.readyState === 1)")))
+            if (!connected) stop("managed Shiny session disconnected")
+            idle <- isTRUE(driver$get_js(
+                "window.shinytest2 && window.shinytest2.busy !== true"))
+            if (idle) {
+                if (is.null(stable)) stable <- proc.time()[["elapsed"]]
+                if (proc.time()[["elapsed"]] - stable >= 0.2) return(invisible(NULL))
+            } else {
+                stable <- NULL
+            }
+            Sys.sleep(0.05)
+        }
+    }
+    driver$set_inputs <- function(..., wait_ = TRUE) {
+        values <- list(...)
+        if (is.null(names(values)) || anyNA(names(values)) ||
+            any(!nzchar(names(values)))) stop("managed Shiny inputs must be named")
+        queue <- lapply(values, \(value) list(value = value,
+            allowNoInputBinding = FALSE, priority = "input"))
+        script <- sprintf(paste0(
+            "(function(){if(!window.shinytest2||!window.shinytest2.inputQueue)",
+            "throw new Error('shinytest2 input queue unavailable');",
+            "window.shinytest2.inputQueue.add(%s);",
+            "window.shinytest2.inputQueue.flush();return true;})()"),
+            jsonlite::toJSON(queue, auto_unbox = TRUE, null = "null"))
+        driver$get_js(script)
+        if (isTRUE(wait_)) driver$wait_for_idle()
+        invisible(TRUE)
+    }
+    driver$get_logs <- function() data.frame()
+    class(driver) <- c("CheckpointManagedDriver", "environment")
+    driver
+}
+
+#' Prepare the bounded PERF-107 GUI science fixture.
+#' @param directory Fresh member-owned input directory.
+#' @return Frozen files and exact amended GUI expectations.
+#' @noRd
+preparePerf107GuiInputs <- function(directory) {
+    if (dir.exists(directory) || !dir.create(directory)) stop("PERF-107 input directory exists")
+    encode <- function(indices) {
+        alphabet <- strsplit("ACDEFGHIKLMNPQRSTVWY", "", fixed = TRUE)[[1L]]
+        value <- as.double(indices) - 1
+        parts <- vector("list", 6L)
+        for (position in seq_len(6L)) {
+            parts[[position]] <- alphabet[(value %% 20) + 1]
+            value <- floor(value / 20)
+        }
+        paste0("M", do.call(paste0, parts), "K")
+    }
+    identities <- list(a1 = 1:160, a2 = 1:160, a3 = 1:60,
+        b1 = 1:160, b2 = c(1:4, 6:161), b3 = 1:60,
+        c1 = 1:160, d1 = 1:60)
+    report <- do.call(rbind, lapply(names(identities), \(run) {
+        identity <- identities[[run]]
+        sequence <- encode(identity)
+        data.frame(Run = run, Protein.Group = "P", Protein.Ids = "P",
+            Stripped.Sequence = sequence, Modified.Sequence = sequence,
+            Precursor.Charge = 2L, Precursor.Id = paste0(run, "_", sequence, "_2"),
+            Precursor.Quantity = 1, Precursor.Normalised = 101,
+            Q.Value = 0.001, Global.Q.Value = 0.001,
+            Global.PG.Q.Value = 0.001, PG.Q.Value = 0.001,
+            Proteotypic = 1L, stringsAsFactors = FALSE)
+    }))
+    sequence <- encode
+    set_quantity <- function(run, identity, value) {
+        at <- report$Run == run & report$Stripped.Sequence == sequence(identity)
+        if (sum(at) != 1L) stop("PERF-107 quantity anchor is not unique")
+        report$Precursor.Quantity[at] <<- value
+        report$Precursor.Normalised[at] <<- if (is.na(value)) 999 else value + 500
+    }
+    set_quantity("a1", 1L, 10)
+    set_quantity("a2", 1L, NA_real_)
+    set_quantity("a3", 1L, 1000)
+    set_quantity("a1", 2L, 0)
+    set_quantity("a2", 2L, NA_real_)
+    set_quantity("a1", 3L, NA_real_)
+    set_quantity("a2", 3L, NA_real_)
+    set_quantity("b1", 4L, 12)
+    set_quantity("b2", 4L, NA_real_)
+    set_quantity("b3", 4L, NA_real_)
+    set_quantity("b1", 5L, 20)
+    set_quantity("b3", 5L, 40)
+    set_quantity("c1", 6L, NA_real_)
+    design <- data.frame(sample = names(identities),
+        group = c("control", "control", "control", "treated", "treated",
+            "treated", "control", "treated"),
+        replicates = c(1L, 1L, 1L, 2L, 2L, 2L, 3L, 4L),
+        stringsAsFactors = FALSE)
+    files <- as.list(stats::setNames(file.path(directory,
+        c("report.tsv", "proteins.fasta", "design.tsv")),
+        c("report", "fasta", "design")))
+    vroom::vroom_write(report, files$report, delim = "\t", progress = FALSE)
+    vroom::vroom_write(design, files$design, delim = "\t", progress = FALSE)
+    writeLines(c(">P PERF-107 bounded synthetic protein",
+        paste(encode(1:161), collapse = "")), files$fasta)
+    list(schema = 1L, files = files,
+        sha256 = lapply(files, \(path) digest::digest(file = path, algo = "sha256")),
+        rows = nrow(report), sequence = encode(1:161),
+        expected = list(sample_rows = 800L, replicate_rows = 799L,
+            imputed_rows = 800L,
+            retained_runs = c("a1", "a2", "b1", "b2", "c1")))
+}
+
+#' Run and verify the amended real-GUI PERF-107 small journey.
+#' @param driver Live installed browser in the guarded proof service.
+#' @param run_dir,application_root Owned journey and application roots.
+#' @param inputs Frozen preparePerf107GuiInputs result.
+#' @return Bounded scientific/output/lifecycle receipt.
+#' @noRd
+runPerf107GuiScience <- function(driver, run_dir, application_root, inputs) {
+    checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "qc")
+    prefix <- "proteomics_workflow-quality_control-peptide_qc-"
+    checkpointSetInput(driver, "proteomics_workflow-quality_control-qc_tabs_lfq",
+        "Peptide QC")
+    actions <- checkpointPeptideActions()[1:5]
+    settings <- list(
+        protein_peptide_filtered = list(
+            "protein_peptide_filter-min_peptides_per_protein" = 1,
+            "protein_peptide_filter-min_peptidoforms_per_protein" = 1),
+        intensity_filtered = list("intensity_filter-use_strict_mode" = FALSE,
+            "intensity_filter-min_reps_per_group" = 1,
+            "intensity_filter-min_groups" = 1,
+            "intensity_filter-intensity_cutoff_percentile" = 0.1),
+        sample_filtered = list("sample_filter-min_peptides_per_sample" = 100))
+    for (action in actions) {
+        checkpointSetInput(driver, paste0(prefix, "peptide_filter_tabs"), action$tab)
+        for (field in names(settings[[action$state]])) {
+            checkpointSetInput(driver, paste0(prefix, field),
+                settings[[action$state]][[field]])
+        }
+        id <- jsonlite::toJSON(paste0(prefix, action$action), auto_unbox = TRUE)
+        output <- jsonlite::toJSON(paste0(prefix, action$result), auto_unbox = TRUE)
+        checkpointWaitForJs(driver, sprintf("document.getElementById(%s) !== null", id),
+            timeout = checkpointWaitBudget(control = TRUE))
+        driver$get_js(sprintf("document.getElementById(%s).click();true", id))
+        checkpointWaitForJs(driver, sprintf(paste0(
+            "(function(){const el=document.getElementById(%s);return ",
+            "(el&&el.textContent.includes(%s))||",
+            "document.querySelector('.shiny-notification-error')!==null;})()"),
+            output, jsonlite::toJSON(action$state, auto_unbox = TRUE)),
+            timeout = checkpointWaitBudget())
+        error <- driver$get_js(paste0("(function(){const el=document.querySelector(",
+            "'.shiny-notification-error');return el?el.textContent:null;})()"))
+        if (!is.null(error)) stop(paste("PERF-107 GUI action failed:", action$state, error))
+    }
+    deadline <- proc.time()[["elapsed"]] + 30
+    repeat {
+        receipts <- list.files(application_root,
+            pattern = "^gui-[a-f0-9]{32}-gui-completion[.]rds$", full.names = TRUE)
+        if (length(receipts) == 1L) break
+        if (proc.time()[["elapsed"]] >= deadline) stop("GUI completion receipt missing")
+        Sys.sleep(0.05)
+    }
+    gui <- readRDS(receipts)
+    if (!identical(gui$status, "complete") || !isTRUE(gui$browser_acknowledged) ||
+        !isTRUE(gui$browser_memory_included) || !isTRUE(gui$measurement_valid)) {
+        stop("GUI completion is not fully guarded")
+    }
+    heads <- list.files(run_dir, "^dia-state-head[.]rds$", recursive = TRUE,
+        full.names = TRUE)
+    heads <- heads[grepl("/.dia-gui-adoption-", heads, fixed = TRUE)]
+    if (length(heads) != 1L) stop("adopted GUI state store is ambiguous")
+    root <- dirname(dirname(heads))
+    namespace <- asNamespace("MultiScholaR")
+    api <- \(name) get(name, envir = namespace, inherits = FALSE)
+    manager <- api("newDIAStateAdapter")(api("newWorkflowEntityStore")(root,
+        "DIA-GUI-pilot", "DIA", max_cache_bytes = 0), reopen = TRUE)
+    on.exit(api("closeDIAStateAdapter")(manager), add = TRUE)
+    if (!identical(manager$current_state, "sample_filtered")) {
+        stop("sample-filter head differs")
+    }
+    sample_reference <- api("getDIAStateReference")(manager)
+    # This verifier is only for the frozen 980-row fixture. Never reuse its full
+    # native hydration for the large-input ownership/performance qualification.
+    if (!identical(inputs$rows, 980L)) stop("small scientific verifier requires 980-row fixture")
+    before <- manager$getState("intensity_filtered")
+    expected_sample <- MultiScholaR::filterMinNumPeptidesPerSample(before,
+        peptides_per_sample_cutoff = 100, core_utilisation = NA)
+    expected_replicate <- MultiScholaR::removePeptidesWithOnlyOneReplicate(
+        expected_sample, replicate_group_column = "replicates", core_utilisation = NA)
+    expected_imputed <- MultiScholaR::peptideMissingValueImputation(
+        expected_replicate, proportion_missing_values = 0.5, core_utilisation = NA)
+    sample <- manager$getState("sample_filtered")
+    verifyPerf107ScientificState(sample, expected_sample, "filterMinNumPeptidesPerSample")
+    table <- sample@peptide_data
+    if (nrow(table) != inputs$expected$sample_rows ||
+        !identical(unique(as.character(table[[sample@sample_id]])),
+            inputs$expected$retained_runs)) stop("sample-filter population differs")
+    sequence <- inputs$sequence
+    value <- function(run, identity, column = sample@raw_quantity_column) {
+        at <- as.character(table[[sample@sample_id]]) == run &
+            as.character(table[[sample@peptide_sequence_column]]) == sequence[[identity]]
+        if (sum(at) != 1L) return(NA_real_)
+        table[[column]][at]
+    }
+    if (!identical(value("a1", 1L), 10) || !is.na(value("a2", 1L)) ||
+        !identical(value("a1", 2L), 0) || !is.na(value("a2", 3L)) ||
+        !is.na(value("b2", 5L))) stop("sample-filter anchor differs")
+    figures <- list.files(run_dir, pattern = "^6_sample_filtered_.*[.](png|pdf)$",
+        recursive = TRUE, full.names = TRUE)
+    figures <- figures[!grepl("/[.]workflow-export/", figures)]
+    if (length(figures) != 12L || any(file.size(figures) <= 0)) {
+        stop("sample-filter required figures differ")
+    }
+    sample_id <- sample_reference$entity_id
+    api("closeDIAStateAdapter")(manager)
+    on.exit(NULL, add = FALSE)
+
+    remaining <- checkpointPeptideActions()[6:7]
+    for (action in remaining) {
+        checkpointSetInput(driver, paste0(prefix, "peptide_filter_tabs"), action$tab)
+        if (action$state == "replicate_filtered") {
+            checkpointSetInput(driver, paste0(prefix,
+                "replicate_filter-replicate_group_column"), "replicates")
+        } else {
+            checkpointSetInput(driver, paste0(prefix,
+                "imputation-proportion_missing_values"), 0.5)
+        }
+        id <- jsonlite::toJSON(paste0(prefix, action$action), auto_unbox = TRUE)
+        output <- jsonlite::toJSON(paste0(prefix, action$result), auto_unbox = TRUE)
+        driver$get_js(sprintf("document.getElementById(%s).click();true", id))
+        checkpointWaitForJs(driver, sprintf(
+            "document.getElementById(%s).textContent.includes(%s)", output,
+            jsonlite::toJSON(action$state, auto_unbox = TRUE)),
+            timeout = checkpointWaitBudget())
+    }
+    manager <- api("newDIAStateAdapter")(api("newWorkflowEntityStore")(root,
+        "DIA-GUI-pilot", "DIA", max_cache_bytes = 0), reopen = TRUE)
+    on.exit(api("closeDIAStateAdapter")(manager), add = TRUE)
+    actual_replicate <- manager$getState("replicate_filtered")
+    verifyPerf107ScientificState(actual_replicate, expected_replicate,
+        "removePeptidesWithOnlyOneReplicate")
+    imputed <- manager$getState("imputed")
+    verifyPerf107ScientificState(imputed, expected_imputed, "peptideMissingValueImputation")
+    table <- imputed@peptide_data
+    if (!identical(manager$current_state, "imputed") ||
+        nrow(table) != inputs$expected$imputed_rows) stop("consumer population differs")
+    raw <- imputed@raw_quantity_column
+    at <- \(run, identity) as.character(table[[imputed@sample_id]]) == run &
+        as.character(table[[imputed@peptide_sequence_column]]) == sequence[[identity]]
+    imputed_column <- "Peptide.Imputed"
+    if (!imputed_column %in% names(table) ||
+        !identical(table[[imputed_column]][at("a2", 1L)], 10) ||
+        !identical(table[[imputed_column]][at("a2", 2L)], 0) ||
+        !is.na(table[[imputed_column]][at("a2", 3L)]) ||
+        !identical(table[[imputed_column]][at("b2", 4L)], 12) ||
+        !identical(table[[imputed_column]][at("b2", 5L)], 20) ||
+        !is.na(table[[imputed_column]][at("c1", 6L)]) ||
+        !identical(table[[raw]][at("a1", 1L)], 10)) {
+        stop("consumer numerical anchors differ")
+    }
+    list(status = "passed", input_rows = inputs$rows,
+        sample_rows = inputs$expected$sample_rows,
+        replicate_rows = nrow(actual_replicate@peptide_data),
+        imputed_rows = nrow(table), sample_reference = sample_id,
+        current_state = manager$current_state, figures = basename(figures),
+        gui_receipt = gui)
+}
+
+#' Compare the complete bounded fixture against unchanged native scientific output.
+#' @noRd
+verifyPerf107ScientificState <- function(actual, expected, section) {
+    for (slot in c("peptide_data", "design_matrix", "sample_id", "protein_id_column",
+        "peptide_sequence_column", "raw_quantity_column", "norm_quantity_column",
+        "technical_replicate_id", "is_logged_data")) {
+        if (!identical(methods::slot(actual, slot), methods::slot(expected, slot))) {
+            stop(paste("independent native scientific mismatch:", section, slot))
+        }
+    }
+    for (field in c("support_table", "removal_ledger", "filter_summary", "imputation_summary")) {
+        if (!identical(actual@args[[section]][[field]], expected@args[[section]][[field]])) {
+            stop(paste("independent native scientific mismatch:", section, field))
+        }
+    }
+    invisible(TRUE)
+}
+
+#' Attach one fresh AppDriver/Chrome service to the managed PERF-107 controller.
+#' @param library_path Installed candidate library.
+#' @param run_dir,application_root Request-owned proof and application roots.
+#' @param unit Exact proof service identity beneath the application slice.
+#' @param scenario Bounded topology or injected-stop lifecycle case.
+#' @return Small browser receipt; no assay is read by this function.
+#' @noRd
+runPerf107ManagedBrowser <- function(library_path, run_dir, application_root,
+    unit, scenario) {
+    if (!scenario %in% c("diagnostic", "science", "guard-stop")) {
+        stop("invalid PERF-107 browser case")
+    }
+    library_path <- normalizePath(library_path, mustWork = TRUE)
+    run_dir <- normalizePath(run_dir, mustWork = TRUE)
+    application_root <- normalizePath(application_root, mustWork = TRUE)
+    .libPaths(unique(c(library_path, .libPaths())))
+    withr::local_options(multischolar.dia_memory_audit_directory = run_dir)
+    membership <- registerCheckpointManagedBrowser(application_root, unit)
+    config <- readRDS(file.path(application_root, "application.rds"))
+    managed_url <- sprintf("http://127.0.0.1:%d", config$port)
+    browser <- newCheckpointBrowser(library_path, run_dir,
+        managed_url = managed_url)
+    on.exit(browser$chrome$close(), add = TRUE)
+    ready <- tryCatch({
+        stabilizeCheckpointManagedBrowser(browser$driver, managed_url)
+        checkpointWaitForJs(browser$driver,
+            "document.querySelector('[data-testid=\"tile-proteomics\"]') !== null",
+            timeout = 60000, stable_ms = 200)
+        TRUE
+    }, error = function(error) {
+        state <- tryCatch(browser$driver$get_js(paste0(
+            "JSON.stringify({href:location.href,ready:document.readyState,",
+            "title:document.title,overlay:!!document.getElementById('shiny-disconnected-overlay'),",
+            "shiny:!!window.Shiny,tracer:!!window.shinytest2,",
+            "tracerReady:!!(window.shinytest2&&window.shinytest2.ready),",
+            "busy:window.shinytest2&&window.shinytest2.busy,",
+            "socket:window.Shiny&&Shiny.shinyapp&&Shiny.shinyapp.$socket?",
+            "Shiny.shinyapp.$socket.readyState:null,",
+            "tile:!!document.querySelector('[data-testid=\\\"tile-proteomics\\\"]'),",
+            "text:(document.body&&document.body.innerText||'').slice(0,4096)})")),
+            error = function(condition) conditionMessage(condition))
+        logs <- tryCatch(browser$driver$get_logs(),
+            error = function(condition) conditionMessage(condition))
+        saveRDS(list(schema = 1L, message = conditionMessage(error),
+            state = state, logs = logs), file.path(run_dir,
+                "perf107-browser-failure.rds"), compress = FALSE, version = 3)
+        stop(error)
+    })
+    stopifnot(ready)
+    receipt <- list(schema = 1L, status = "connected", scenario = scenario,
+        membership = membership, url = managed_url)
+    if (scenario == "diagnostic") {
+        checkpointClickControl(browser$driver, "tile-proteomics")
+        checkpointClickControl(browser$driver, "btn-start-analysis")
+        browser$driver$set_inputs(experiment_label = "perf107_diagnostic")
+        checkpointWaitForJs(browser$driver,
+            "document.getElementById('experiment_label').value === 'perf107_diagnostic'",
+            timeout = 30000, stable_ms = 200)
+        receipt$status <- "topology_complete"
+    } else if (scenario == "guard-stop") {
+        # Prove the independent monitor does not rely on a responsive Shiny loop.
+        status <- system2("systemctl", shQuote(c("--user", "kill", "--signal=STOP",
+            config$controller_unit)))
+        if (!identical(status, 0L)) stop("could not pause owned diagnostic controller")
+        saveRDS(list(schema = 1L, reason = "injected_guard_stop"), file.path(
+            application_root, "application-guard-inject.rds"), compress = FALSE,
+            version = 3)
+        checkpointWaitForJs(browser$driver,
+            "document.getElementById('shiny-disconnected-overlay') !== null",
+            timeout = 30000)
+        receipt$status <- "guard_stop_observed"
+    } else {
+        inputs <- preparePerf107GuiInputs(file.path(run_dir, "inputs"))
+        runCheckpointImportActions(browser$driver, run_dir, inputs$files)
+        runCheckpointDesignActions(browser$driver, inputs$files$design)
+        science <- tryCatch(runPerf107GuiScience(browser$driver, run_dir,
+            application_root, inputs), error = function(error) {
+                state <- tryCatch(browser$driver$get_js(paste0(
+                    "JSON.stringify({href:location.href,ready:document.readyState,",
+                    "socket:window.Shiny&&Shiny.shinyapp&&Shiny.shinyapp.$socket?",
+                    "Shiny.shinyapp.$socket.readyState:null,",
+                    "ack:window.MultiScholaRPerf107AckState||null,",
+                    "error:(document.querySelector('.shiny-notification-error')||{}).textContent||null})")),
+                    error = function(condition) conditionMessage(condition))
+                saveRDS(list(schema = 1L, message = conditionMessage(error),
+                    state = state), file.path(run_dir,
+                        "perf107-science-failure.rds"), compress = FALSE,
+                    version = 3)
+                stop(error)
+            })
+        receipt$status <- "science_complete"
+        receipt$science <- science
+    }
+    saveRDS(receipt, file.path(run_dir, "perf107-browser-result.rds"),
+        compress = FALSE, version = 3)
+    receipt
+}
+
+#' Launch the managed application and its proof service under one parent slice.
+#' @param library_path Installed candidate library.
+#' @param run_dir Fresh guarded member directory.
+#' @param source_root Frozen source snapshot containing this runner.
+#' @param scenario Bounded topology or injected-stop case.
+#' @return Coordinator receipt with exact service identities.
+#' @noRd
+runPerf107GuiLifecycle <- function(library_path, run_dir, source_root, scenario) {
+    if (!scenario %in% c("diagnostic", "science", "guard-stop")) {
+        stop("invalid PERF-107 lifecycle case")
+    }
+    library_path <- normalizePath(library_path, mustWork = TRUE)
+    run_dir <- normalizePath(run_dir, mustWork = TRUE)
+    source_root <- normalizePath(source_root, mustWork = TRUE)
+    .libPaths(unique(c(library_path, .libPaths())))
+    namespace <- loadNamespace("MultiScholaR", lib.loc = library_path)
+    api <- \(name) get(name, envir = namespace, inherits = FALSE)
+    application_root <- file.path(run_dir, "application")
+    dir.create(application_root)
+    saveRDS(list(schema = 1L, programme = "perf107-phase-a",
+        variant = if (scenario == "science") "physical" else "native",
+        entry = "resident", deadline = 900,
+        guard_stop_test = identical(scenario, "guard-stop")),
+        file.path(application_root, "gui-member.rds"), compress = FALSE,
+        version = 3)
+    config <- api("launchWorkflowApplication")(application_root,
+        diagnostic = FALSE, mode = "gui",
+        port = httpuv::randomPort(), supervisor_unit = paste0(
+            "multischolar-dia003-", basename(run_dir), ".service"))
+    stopped <- FALSE
+    on.exit(if (!stopped) api("workflowSystemd")(c("stop", config$slice),
+        required = FALSE), add = TRUE)
+    unit <- paste0(config$stem, "-proof.service")
+    runner <- file.path(source_root, "tools", "profiling",
+        "run_workflow_checkpoint_proof.R")
+    args <- c("--unit", unit, "--slice", config$slice, "--wait",
+        "--property=Type=exec", "--property=KillMode=control-group",
+        "--property=TimeoutStopSec=1", "--property=MemoryAccounting=yes",
+        "--property=CPUAccounting=yes", "--property=IOAccounting=yes",
+        "--property=MemorySwapMax=0", "--property=RuntimeMaxSec=900",
+        paste0("--property=BindsTo=", paste(c(config$controller_unit,
+            config$application_monitor_unit), collapse = " ")),
+        paste0("--property=After=", paste(c(config$controller_unit,
+            config$application_monitor_unit), collapse = " ")),
+        paste0("--setenv=R_LIBS=", paste(unique(c(library_path, .libPaths())),
+            collapse = .Platform$path.sep)),
+        "--setenv=NOT_CRAN=true",
+        paste0("--setenv=CHROMOTE_CHROME=", chromote::find_chrome()),
+        paste0("--working-directory=", run_dir), file.path(R.home("bin"),
+            "Rscript"), "--vanilla", runner, "--internal-perf107-browser",
+        library_path, run_dir, application_root, unit, scenario)
+    output <- api("workflowSystemd")(args, required = FALSE,
+        command = "systemd-run")
+    status <- attr(output, "exit_status") %||% 0L
+    result_path <- file.path(run_dir, "perf107-browser-result.rds")
+    guard_path <- file.path(application_root, "application-guard-stop.rds")
+    browser_result <- if (file.exists(result_path)) readRDS(result_path) else NULL
+    guard_result <- if (file.exists(guard_path)) readRDS(guard_path) else NULL
+    expected <- perf107LifecycleSucceeded(scenario, status, browser_result, guard_result)
+    receipt <- list(schema = 1L, status = if (expected) "complete" else "failed",
+        scenario = scenario, service_exit = status, config = config,
+        browser_result = browser_result, guard = guard_result,
+        application_parent = api("workflowServiceProperties")(config$slice),
+        accounting_basis = "application parent contains controller, monitor, proof browser and workers; outer service is supervisor only")
+    saveRDS(receipt, file.path(run_dir, "perf107-lifecycle-result.rds"),
+        compress = FALSE, version = 3)
+    api("workflowSystemd")(c("stop", config$slice), required = FALSE)
+    stopped <- TRUE
+    if (!expected) stop("PERF-107 managed browser lifecycle failed")
+    receipt
+}
+
+#' Classify the current fixed lifecycle cases without equating a file with success.
+#' @noRd
+perf107LifecycleSucceeded <- function(scenario, status, browser_result, guard_result) {
+    if (identical(scenario, "guard-stop")) {
+        return(is.list(guard_result) && identical(guard_result$schema, 1L) &&
+            identical(guard_result$reason, "injected_guard_stop"))
+    }
+    expected <- switch(scenario, diagnostic = "topology_complete",
+        science = "science_complete", NULL)
+    !is.null(expected) && identical(as.integer(status), 0L) &&
+        is.list(browser_result) && identical(browser_result$schema, 1L) &&
+        identical(browser_result$scenario, scenario) &&
+        identical(browser_result$status, expected) && is.null(guard_result)
 }
 
 #' Wait for browser completion and fail on session disconnection.
@@ -3016,6 +3624,7 @@ validateCheckpointReaderInput <- function(operation, input_path, selection = NUL
     if (operation == "reader-check" && !is.null(selection) &&
         !grepl("^perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))$", selection) &&
         !grepl("^perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4])))$", selection) &&
+        !grepl("^perf107:(B|C|D|L1|L2)$", selection) &&
         !selection %in% c("perf101:D0", "perf101:D1", "perf101:D0R", "perf101:V", "gui-sharing-repair", "gui-export-history-member", "gui-iq-history-member", "gui-ruv-pearson", "gui-native-session", "gui-native-outputs", "gui-reference-first-qc", "gui-reference-core", "gui-reference-routing", "gui-mechanism-preflight", "gui-rollup-profile", "gui-rollup-profile-preflight", "gui-raw-replay:small", "gui-raw-replay:outputs", "gui-raw-replay:verify", "gui-cohort-profile", "gui-impute-workers:preflight", "gui-impute-workers:4", "gui-impute-workers:8", "gui-cohort-size:256", "gui-cohort-size:768", "gui-cohort-size:768-threads8", "gui-cohort-threads:1", "gui-cohort-threads:2", "gui-cohort-threads:4", "gui-cohort-threads:8", "gui-raw-replay:300") &&
         !grepl("^gui-(rollup|session)-performance:(control|candidate)$", selection) &&
         !grepl("^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$", selection) &&
@@ -3642,6 +4251,61 @@ runCheckpointReaderOperation <- function(operation, library_path, run_dir,
     on.exit(jsonlite::write_json(receipt, file.path(run_dir, "reader-operation.json"),
         auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), add = TRUE)
     tryCatch({
+        if (operation == "reader-check" &&
+            isTRUE(selection %in% c("perf107:B", "perf107:C"))) {
+            source <- file.path(run_dir, "source")
+            if (selection == "perf107:B") {
+                destination <- file.path(run_dir, "library")
+                dir.create(destination)
+                for (package in c("fastduckdb", "duckplyr", "nanoarrow")) {
+                    path <- file.path(library_path, package)
+                    if (!dir.exists(path) || !file.copy(path, destination,
+                        recursive = TRUE)) stop("PERF-107 dependency copy failed")
+                }
+                status <- withr::with_envvar(c(R_LIBS = paste(c(destination,
+                    .libPaths()), collapse = .Platform$path.sep)), system2(
+                        file.path(R.home("bin"), "R"), c("CMD", "INSTALL",
+                            paste0("--library=", shQuote(destination)),
+                            shQuote(source))))
+                if (!identical(status, 0L)) stop("PERF-107 candidate build failed")
+                value <- list(status = "complete", stage = "build",
+                    library = destination,
+                    package_rdb_sha256 = digest::digest(file = file.path(destination,
+                        "MultiScholaR", "R", "MultiScholaR.rdb"), algo = "sha256"))
+            } else {
+                namespace <- loadNamespace("MultiScholaR", lib.loc = library_path)
+                environment <- new.env(parent = namespace)
+                sys.source(file.path(source, "tests", "testthat",
+                    "helper-workflow-checkpoint-fixtures.R"), environment)
+                read_recipe <- environment$readWorkflowCheckpointRecipe
+                environment$readWorkflowCheckpointRecipe <- function(recipe_id,
+                    repo_root = NULL) read_recipe(recipe_id, source)
+                files <- c("test-perf-107.R", "test-perf107-audit.R", "test-perf107-consumers.R",
+                    "test-prot-02i-qc-peptide-sample-shared.R")
+                checks <- lapply(files, \(file) {
+                    test_environment <- if (file != "test-prot-02i-qc-peptide-sample-shared.R") environment else
+                        new.env(parent = globalenv())
+                    as.data.frame(testthat::test_file(file.path(source, "tests",
+                        "testthat", file), env = test_environment,
+                        load_helpers = FALSE, package = "MultiScholaR",
+                        load_package = "installed", reporter = "summary",
+                        stop_on_failure = FALSE))
+                })
+                names(checks) <- files
+                if (any(vapply(checks, \(check) any(check$failed > 0L |
+                    check$error | check$skipped), logical(1)))) {
+                    stop("PERF-107 installed checks failed")
+                }
+                value <- list(status = "complete", stage = "installed-check",
+                    assertions = sum(vapply(checks, \(check) sum(check$passed),
+                        numeric(1))))
+                saveRDS(checks, file.path(run_dir, "perf107-installed-tests.rds"))
+            }
+            saveRDS(value, file.path(run_dir, "perf107-local-result.rds"),
+                compress = FALSE, version = 3)
+            receipt$status <- "complete"
+            return(value)
+        }
         if (operation == "reader-check" && !is.null(selection) &&
             grepl("^perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))$", selection)) {
             value <- runPerf108Local(library_path, run_dir, selection)
@@ -3668,6 +4332,15 @@ runCheckpointReaderOperation <- function(operation, library_path, run_dir,
             qualification <- new.env(parent = asNamespace("MultiScholaR"))
             sys.source(file.path(snapshot, "tools/profiling/workflow_perf106.R"), qualification)
             value <- qualification$runPerf106Qualification(library_path, run_dir, snapshot, selection)
+            receipt$status <- "complete"
+            return(value)
+        }
+        if (operation == "reader-check" &&
+            isTRUE(selection %in% c("perf107:D", "perf107:L1", "perf107:L2"))) {
+            source <- file.path(run_dir, "source")
+            scenario <- switch(selection, `perf107:D` = "diagnostic",
+                `perf107:L1` = "science", `perf107:L2` = "guard-stop")
+            value <- runPerf107GuiLifecycle(library_path, run_dir, source, scenario)
             receipt$status <- "complete"
             return(value)
         }

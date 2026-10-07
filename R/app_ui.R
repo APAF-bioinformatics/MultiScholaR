@@ -58,6 +58,10 @@ app_ui <- function(request) {
     dashboardBody(
       useShinyjs(),
 
+      shiny::tags$head(
+        shiny::tags$script(shiny::HTML(workflowPeptideSampleAckScript()))
+      ),
+
       # CSS for better styling - use shiny:: prefix
       shiny::tags$head(
         shiny::tags$style(shiny::HTML("

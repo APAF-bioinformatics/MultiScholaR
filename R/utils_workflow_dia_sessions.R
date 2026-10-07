@@ -722,6 +722,124 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
     invisible(manager)
 }
 
+#' Stage an ordinary DIA history into a durable owner without mutating its source.
+#' @param native Existing ordinary WorkflowState.
+#' @param experiment_paths Existing project paths containing source_dir.
+#' @return Reopened reference-backed owner with the same accepted topology.
+#' @noRd
+stageDIAGUIReferenceOwner <- function(native, experiment_paths) {
+    if (!inherits(native, "WorkflowState") || !is.list(experiment_paths) ||
+        !is.character(experiment_paths$source_dir) ||
+        length(experiment_paths$source_dir) != 1L ||
+        !dir.exists(experiment_paths$source_dir)) {
+        cli::cli_abort("ordinary DIA owner cannot be staged", class = "saved_entity_scope")
+    }
+    before <- list(states = names(native$states), history = native$state_history,
+        current = native$current_state, audits = names(native$audit_records))
+    shadow <- native$clone(deep = FALSE)
+    root <- tempfile(".dia-gui-adoption-", tmpdir = experiment_paths$source_dir)
+    if (!dir.create(root, mode = "0700")) {
+        cli::cli_abort("cannot create GUI adoption storage", class = "saved_entity_write")
+    }
+    store <- newWorkflowEntityStore(root, "DIA-GUI-pilot", "DIA", max_cache_bytes = 0)
+    manager <- newDIAStateAdapter(store, shadow)
+    accepted <- FALSE
+    on.exit(if (!accepted) closeDIAStateAdapter(manager), add = TRUE)
+    convertDIANativeLegacyCheckpoints(manager)
+    manager$.context$session_format <- "native_v1"
+    manager$.context$experiment_paths <- experiment_paths
+    identity <- store$identity
+    closeDIAStateAdapter(manager)
+    reopened_store <- newWorkflowEntityStore(root, identity$project_id,
+        identity$workflow_id, max_cache_bytes = 0)
+    manager <- newDIAStateAdapter(reopened_store, reopen = TRUE)
+    manager$.context$reference_states <- TRUE
+    manager$.context$session_format <- "native_v1"
+    manager$.context$experiment_paths <- experiment_paths
+    after <- list(states = names(native$states), history = native$state_history,
+        current = native$current_state, audits = names(native$audit_records))
+    if (!identical(before, after) ||
+        !identical(as.character(unlist(manager$getHistory())),
+            as.character(unlist(native$getHistory()))) ||
+        !identical(manager$current_state, native$current_state)) {
+        closeDIAStateAdapter(manager)
+        cli::cli_abort("GUI adoption changed accepted history", class = "saved_entity_corrupt")
+    }
+    accepted <- TRUE
+    manager
+}
+
+#' Swap a fully reopened pilot owner into one existing Shiny session.
+#' @param manager Staged reference-backed owner.
+#' @param workflow_data Existing reactive workflow bus.
+#' @param session Current Shiny session.
+#' @return Attached manager.
+#' @noRd
+adoptDIAGUIReferenceOwner <- function(manager, workflow_data, session) {
+    if (!inherits(manager, "DIAStateAdapter") ||
+        !isTRUE(manager$.context$reference_states) ||
+        isTRUE(manager$.context$store$closed)) {
+        cli::cli_abort("staged GUI owner is unavailable", class = "saved_entity_scope")
+    }
+    previous <- workflow_data$state_manager
+    adopted <- FALSE
+    previous_session_owner <- session$userData$dia_capacity_manager
+    on.exit(if (!adopted && !identical(previous, manager)) {
+        closeDIAStateAdapter(manager)
+        session$userData$dia_capacity_manager <- previous_session_owner
+    }, add = TRUE)
+    if (!identical(as.character(unlist(previous$getHistory())),
+        as.character(unlist(manager$getHistory()))) ||
+        !identical(previous$current_state, manager$current_state)) {
+        cli::cli_abort("staged GUI history was superseded", class = "workflow_execution_stale")
+    }
+    # Stage the known import/design assay holders before changing the live bus.
+    # Their existing consumers already resolve saved values through the DIA codec.
+    holders <- c("data_tbl", "data_cln", "peptide_data")
+    references <- stats::setNames(lapply(holders, function(field) {
+        value <- workflow_data[[field]]
+        if (is.null(value)) return(NULL)
+        if (!is.data.frame(value) && !isS4(value) && !isSavedWorkflowReference(value)) {
+            cli::cli_abort("unsupported resident GUI assay holder", class = "saved_entity_unsupported")
+        }
+        saveDIAOwnedValue(value, field, manager)
+    }), holders)
+    if (!is.null(references$data_tbl)) {
+        mapping <- workflow_data$column_mapping
+        if (!is.list(mapping) || is.null(mapping$run_col)) {
+            cli::cli_abort("resident import column mapping is required for adoption",
+                class = "saved_entity_unsupported")
+        }
+        recordDIAImportMetadata(manager, workflow_data$data_tbl,
+            list(data = workflow_data$data_tbl, data_type = workflow_data$data_type %||% "peptide",
+                column_mapping = mapping), references$data_tbl)
+        # Settle the Design observer's durable roots before dispatch freezes the
+        # head. Its later reactive refresh must not invalidate the running job.
+        buildDIAReferenceDesignState(manager, references$data_tbl,
+            workflow_data$config_list, mapping)
+        saveDIAOwnedValue(references$data_cln, "design-cleaned-data", manager)
+        snapshot <- manager$.context$snapshot
+        snapshot$design_current <- references$data_cln
+        publishDIAStateHead(manager$.context, snapshot)
+        # Notify the existing design observer that the source representation
+        # changed without changing the user's design or removing any samples.
+        manager$.context$design_adoption_pending <- references$data_tbl$entity_id
+    }
+    workflowExecutionBoundary("before_gui_owner_swap")
+    if (!identical(workflow_data$state_manager, previous)) {
+        cli::cli_abort("GUI owner was replaced during adoption", class = "workflow_execution_stale")
+    }
+    manager$.context$gui_pilot_adopted <- TRUE
+    workflow_data$state_manager <- attachDIAStateSession(manager, session, workflow_data,
+        scope = "perf-107-sample-filter")
+    for (field in holders) workflow_data[[field]] <- references[[field]]
+    adopted <- TRUE
+    if (inherits(previous, "DIAStateAdapter") && !identical(previous, manager)) {
+        closeDIAStateAdapter(previous)
+    }
+    manager
+}
+
 #' Attach an externally validated native session only after its DA view is valid.
 #' @param imported Result from openDIANativeSession.
 #' @param workflow_data Existing GUI bus, left untouched on validation failure.

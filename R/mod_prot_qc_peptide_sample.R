@@ -22,6 +22,13 @@
 #' @param id,workflowData,minPeptidesPerSample,updateConfigParameterFn,filterMinNumPeptidesPerSampleFn,logInfoFn,nowFn Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
+#' Register the PERF-107 browser acknowledgement before dynamic QC UI insertion.
+#' @return Static JavaScript handler for the application head.
+#' @noRd
+workflowPeptideSampleAckScript <- function() {
+  "(function install() {\n  if (window.MultiScholaRPerf107Ack) return;\n  if (!window.Shiny || typeof window.Shiny.addCustomMessageHandler !== 'function') {\n    setTimeout(install, 25);\n    return;\n  }\n  window.MultiScholaRPerf107Ack = true;\n  var state = window.MultiScholaRPerf107AckState = {registered: true, received: 0};\n  var timer = null, active = null;\n  window.Shiny.addCustomMessageHandler('multischolar-perf107-ready', function(m) {\n    state.received += 1;\n    if (active && active.request_id === m.request_id && active.content_id === m.content_id) return;\n    if (timer !== null) clearTimeout(timer);\n    active = m;\n    state.request_id = m.request_id;\n    state.content_id = m.content_id;\n    state.sent = false;\n    var started = Date.now(), stable = null, last = null;\n    function check() {\n      var text = document.getElementById(m.text_id);\n      var plot = document.getElementById(m.plot_id);\n      var img = plot && plot.querySelector('img');\n      state.text_ready = !!text && text.textContent === m.expected_text;\n      state.plot_ready = !!plot && !plot.classList.contains('recalculating');\n      state.image_ready = !!img && img.complete && img.naturalWidth > 0 &&\n        img.naturalHeight > 0 && img.alt === m.plot_identity;\n      var signature = img && (img.currentSrc || img.src);\n      var ready = state.text_ready && state.plot_ready && state.image_ready;\n      if (!ready || signature !== last) stable = null;\n      last = signature;\n      if (ready && stable === null) stable = Date.now();\n      if (ready && Date.now() - stable >= 200) {\n        state.sent = true;\n        window.Shiny.setInputValue(m.input_id, {\n          request_id: m.request_id, content_id: m.content_id,\n          plot_ready: true, stable_ms: Date.now() - stable\n        }, {priority: 'event'});\n        timer = null;\n        return;\n      }\n      if (Date.now() - started >= 30000) { state.timed_out = true; return; }\n      timer = setTimeout(check, 50);\n    }\n    check();\n  });\n})();"
+}
+
 #' @rdname mod_prot_qc_peptide_sample
 #' @export
 #' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr numericInput helpText div actionButton verbatimTextOutput plotOutput
@@ -63,6 +70,56 @@ mod_prot_qc_peptide_sample_ui <- function(id) {
       )
     )
   )
+}
+
+#' Resolve the one server-owned PERF-107 GUI route.
+#' @param session Current Shiny session.
+#' @return Frozen qualification binding or NULL for ordinary GUI behavior.
+#' @noRd
+workflowPeptideSampleQualification <- function(session) {
+  application <- session$userData$workflow_execution
+  if (!inherits(application, "WorkflowExecutionApplication")) return(NULL)
+  qualification <- application$config$qualification
+  if (!is.list(qualification) ||
+      !identical(qualification$programme, "perf107-phase-a")) return(NULL)
+  workflowQualificationVariant(application$config, "minimum_peptides_per_sample")
+  qualification
+}
+
+#' Recover the bounded display product for one accepted managed action.
+#' @param manager Reference-backed owner.
+#' @param result Accepted worker/controller result.
+#' @param workflowData Existing GUI workflow bus.
+#' @return Existing sample-filter display handoff without assay hydration.
+#' @noRd
+readManagedPeptideSampleResult <- function(manager, result, workflowData) {
+  record <- readDIAStateMetadata(manager, result$state_reference)
+  product <- record$data$products$qc_progress
+  envelope <- hydrateSavedWorkflowEntity(manager$.context$store, product)
+  checkSavedWorkflowConsumerPayload("scientific_product", envelope)
+  value <- c(list(stateReference = result$state_reference), envelope$value)
+  workflowData$qc_params <- value$qcParams
+  value
+}
+
+#' Invoke the ordinary native GUI helper for an explicit comparison arm.
+#' @noRd
+runWorkflowNativeSampleControl <- function(workflow_data, cutoff) {
+  manager <- workflow_data$state_manager
+  if (!usesDIAReferenceStates(manager)) {
+    return(runPeptideSampleApplyStep(workflow_data, cutoff))
+  }
+  # Only the control deliberately hydrates its selected input. The facade keeps
+  # public native compute/plot ownership and delegates durable history to its owner.
+  native_workflow <- new.env(parent = emptyenv())
+  native_workflow$qc_params <- workflow_data$qc_params
+  native_workflow$state_manager <- list(
+    current_state = manager$current_state, audit_enabled = manager$audit_enabled,
+    getState = manager$getState, saveState = manager$saveState
+  )
+  result <- runPeptideSampleApplyStep(native_workflow, cutoff)
+  workflow_data$qc_params <- native_workflow$qc_params
+  result
 }
 
 #' @rdname mod_prot_qc_peptide_sample
@@ -326,9 +383,134 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
   shiny::moduleServer(id, function(input, output, session) {
     
     sample_plot <- shiny::reactiveVal(NULL)
+    sample_plot_identity <- shiny::reactiveVal("Sample quality filtering summary")
+    managed_action <- shiny::reactiveVal(NULL)
+    pending_publication <- shiny::reactiveVal(NULL)
+
+    fail_managed_action <- function(action, error, status = "error") {
+      if (identical(status, "publication_pending")) pending_publication(action)
+      if (!is.null(action$owner) && !is.null(action$owner$job)) {
+        cancelWorkflowAction(action$owner, status)
+      }
+      if (!action$reservation$closed) {
+        finishWorkflowGUIAction(action$reservation, status)
+      }
+      managed_action(NULL)
+      shiny::removeNotification("sample_working")
+      message <- paste("Error applying sample quality filter:", conditionMessage(error))
+      logger::log_error(message)
+      shiny::showNotification(message, type = "error", duration = 15)
+      invisible(NULL)
+    }
+
+    deliver_managed_action <- function(action, sample_result) {
+      plot_grid <- withDIAStateScope(workflow_data$state_manager, function() {
+        arguments <- list(output = output, samplePlot = sample_plot,
+          sampleResult = sample_result, omicType = omic_type,
+          experimentLabel = experiment_label)
+        if (!is.null(experiment_paths)) {
+          arguments$projectDirs <- stats::setNames(list(experiment_paths),
+            paste(omic_type, experiment_label, sep = "_"))
+        }
+        do.call(updatePeptideSampleOutputs, arguments)
+      })
+      content_id <- digest::digest(list(sample_result$resultText,
+        sample_result$stateReference$entity_id %||% workflow_data$state_manager$current_state,
+        "6_sample_filtered"), algo = "sha256")
+      action$sample_result <- sample_result
+      action$plot_grid <- plot_grid
+      action$content_id <- content_id
+      action$accepted_manager <- workflow_data$state_manager
+      action$accepted_reference <- getDIAStateReference(workflow_data$state_manager)
+      action$expected_text <- sample_result$resultText
+      sample_plot_identity(content_id)
+      action$ack_started <- proc.time()[["elapsed"]]
+      action$phase <- "awaiting_browser"
+      managed_action(action)
+      session$onFlushed(function() {
+        session$sendCustomMessage("multischolar-perf107-ready", list(
+          request_id = action$reservation$id, content_id = content_id,
+          expected_text = action$expected_text, plot_identity = content_id,
+          input_id = session$ns("workflow_ack"),
+          text_id = session$ns("sample_results"),
+          plot_id = session$ns("sample_plot")
+        ))
+      }, once = TRUE)
+      invisible(NULL)
+    }
     
     # Step 5: Sample Quality Filter (chunk 14)
     shiny::observeEvent(input$apply_sample_filter, {
+      qualification <- workflowPeptideSampleQualification(session)
+      if (!is.null(qualification)) {
+        if (!is.null(managed_action())) {
+          shiny::showNotification("A sample-filter action is already running", type = "warning")
+          return(invisible(NULL))
+        }
+        application <- session$userData$workflow_execution
+        publication <- list(experiment_label = experiment_label,
+          experiment_paths = experiment_paths, omic_type = omic_type)
+        action <- list(owner = NULL, phase = "starting")
+        action$reservation <- tryCatch(beginWorkflowGUIAction(application,
+          workflow_data$state_manager, "minimum_peptides_per_sample", publication),
+          error = function(error) error)
+        if (inherits(action$reservation, "error")) {
+          shiny::showNotification(conditionMessage(action$reservation),
+            type = "error", duration = 15)
+          return(invisible(NULL))
+        }
+        shiny::showNotification("Applying sample quality filter...",
+          id = "sample_working", duration = NULL)
+        tryCatch({
+          manager <- workflow_data$state_manager
+          pending <- pending_publication()
+          if (!is.null(pending)) {
+            if (!identical(pending$owner$manager, manager) ||
+                !identical(pending$cutoff, input$min_peptides_per_sample)) {
+              stop("retry pending publication with its original parameters first")
+            }
+            action$owner <- pending$owner
+            action$worker_request_id <- pending$worker_request_id
+            action$cutoff <- pending$cutoff
+            accepted <- resumeWorkflowAction(action$owner, action$worker_request_id)
+            display <- readManagedPeptideSampleResult(manager, accepted, workflow_data)
+            deliver_managed_action(action, display)
+            pending_publication(NULL)
+            return(invisible(NULL))
+          }
+          action$cutoff <- input$min_peptides_per_sample
+          is_reference <- inherits(manager, "DIAStateAdapter")
+          if (!identical(qualification$entry,
+              if (is_reference) "reference" else "resident") &&
+              !(identical(qualification$entry, "resident") && is_reference &&
+                isTRUE(manager$.context$gui_pilot_adopted))) {
+            stop("GUI entry ownership differs from the frozen member")
+          }
+          if (identical(qualification$variant, "native")) {
+            result <- runWorkflowNativeSampleControl(workflow_data,
+              input$min_peptides_per_sample)
+            deliver_managed_action(action, result)
+          } else {
+            if (!is_reference) {
+              manager <- stageDIAGUIReferenceOwner(manager, experiment_paths)
+              manager <- adoptDIAGUIReferenceOwner(manager, workflow_data, session)
+              action$reservation$manager <- manager
+            }
+            owner <- manager$.context$store$execution_owner
+            if (is.null(owner)) owner <- newWorkflowExecutionController(manager, application)
+            action$owner <- owner
+            action$phase <- "running"
+            action$worker_request_id <- runWorkflowAction(
+              "minimum_peptides_per_sample",
+              list(state = getDIAStateReference(manager)),
+              list(peptides_per_sample_cutoff = input$min_peptides_per_sample),
+              owner, reservation = action$reservation
+            )
+            managed_action(action)
+          }
+        }, error = function(error) fail_managed_action(action, error))
+        return(invisible(NULL))
+      }
       apply_arguments <- list(
         workflowData = workflow_data,
         minPeptidesPerSample = input$min_peptides_per_sample,
@@ -340,9 +522,106 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
       if (!is.null(experiment_paths)) apply_arguments$experimentPaths <- experiment_paths
       do.call(runPeptideSampleApplyObserver, apply_arguments)
     })
+
+    shiny::observe({
+      action <- managed_action()
+      if (is.null(action) || !identical(action$phase, "running")) return()
+      if (!identical(workflow_data$state_manager, action$owner$manager)) {
+        fail_managed_action(action, simpleError("project was replaced"), "project_replaced")
+        return()
+      }
+      shiny::invalidateLater(50, session)
+      result <- tryCatch(pollWorkflowAction(action$owner), error = function(error) error)
+      if (inherits(result, "error")) {
+        fail_managed_action(action, result)
+        return()
+      }
+      if (result$status %in% c("admitting", "running")) return()
+      if (!identical(result$status, "complete")) {
+        fail_managed_action(action, simpleError(paste("managed action ended:",
+          result$status)), result$status)
+        return()
+      }
+      tryCatch({
+        accepted <- resumeWorkflowAction(action$owner, action$worker_request_id)
+        display <- readManagedPeptideSampleResult(workflow_data$state_manager,
+          accepted, workflow_data)
+        deliver_managed_action(action, display)
+      }, error = function(error) fail_managed_action(action, error))
+    })
+
+    shiny::observe({
+      action <- managed_action()
+      if (is.null(action) || !identical(action$phase, "awaiting_browser")) return()
+      if (!identical(workflow_data$state_manager, action$accepted_manager) ||
+          !identical(getDIAStateReference(workflow_data$state_manager), action$accepted_reference)) {
+        fail_managed_action(action, simpleError("result was superseded"), "stale")
+        return()
+      }
+      elapsed <- proc.time()[["elapsed"]] - action$ack_started
+      if (elapsed >= 30) {
+        fail_managed_action(action,
+          simpleError("browser acknowledgement timed out"),
+          "browser_ack_timeout")
+        return()
+      }
+      shiny::invalidateLater(1000, session)
+      session$sendCustomMessage("multischolar-perf107-ready", list(
+        request_id = action$reservation$id, content_id = action$content_id,
+        expected_text = action$expected_text, plot_identity = action$content_id,
+        input_id = session$ns("workflow_ack"),
+        text_id = session$ns("sample_results"),
+        plot_id = session$ns("sample_plot")
+      ))
+    })
+
+    shiny::observeEvent(input$workflow_ack, {
+      action <- managed_action()
+      acknowledgement <- input$workflow_ack
+      if (is.null(action) || !identical(action$phase, "awaiting_browser") ||
+          !is.list(acknowledgement) ||
+          !identical(acknowledgement$request_id, action$reservation$id) ||
+          !identical(acknowledgement$content_id, action$content_id) ||
+          !isTRUE(acknowledgement$plot_ready) ||
+          !is.numeric(acknowledgement$stable_ms) ||
+          length(acknowledgement$stable_ms) != 1L ||
+          !is.finite(acknowledgement$stable_ms) ||
+          acknowledgement$stable_ms < 200) return()
+      if (!identical(workflow_data$state_manager, action$accepted_manager) ||
+          !identical(getDIAStateReference(workflow_data$state_manager),
+            action$accepted_reference)) {
+        fail_managed_action(action, simpleError("result was superseded"), "stale")
+        return()
+      }
+      receipt <- tryCatch(finishWorkflowGUIAction(action$reservation, "complete",
+        list(request_id = acknowledgement$request_id,
+          content_id = acknowledgement$content_id, plot_ready = TRUE,
+          stable_seconds = acknowledgement$stable_ms / 1000)),
+        error = function(error) error)
+      if (inherits(receipt, "error")) {
+        fail_managed_action(action, receipt)
+        return()
+      }
+      managed_action(NULL)
+      shiny::removeNotification("sample_working")
+      logger::log_info("Sample quality filter applied successfully")
+      shiny::showNotification("Sample quality filter applied successfully", type = "message")
+    })
     
     # Revert Sample Filter
     shiny::observeEvent(input$revert_sample, {
+      pending_publication(NULL)
+      action <- managed_action()
+      if (!is.null(action)) {
+        if (!is.null(action$owner) && !is.null(action$owner$job)) {
+          cancelWorkflowAction(action$owner, "reverted")
+        }
+        if (!action$reservation$closed) {
+          finishWorkflowGUIAction(action$reservation, "reverted")
+        }
+        managed_action(NULL)
+        shiny::removeNotification("sample_working")
+      }
       runPeptideSampleRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -353,6 +632,20 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
     output$sample_plot <- shiny::renderPlot({
       shiny::req(sample_plot())
       grid::grid.draw(sample_plot())
-    })
+    }, alt = function() sample_plot_identity())
+
+    if (is.function(session$onSessionEnded)) {
+      session$onSessionEnded(function() {
+        action <- shiny::isolate(managed_action())
+        if (is.null(action)) return(invisible(NULL))
+        if (!is.null(action$owner) && !is.null(action$owner$job)) {
+          cancelWorkflowAction(action$owner, "session_ended")
+        }
+        if (!action$reservation$closed) {
+          finishWorkflowGUIAction(action$reservation, "session_ended")
+        }
+        invisible(NULL)
+      })
+    }
   })
 }
