@@ -7,6 +7,8 @@
 #' @return One deterministic decision; malformed or incomplete evidence is held.
 #' @noRd
 evaluateWorkflowQualification <- function(evidence, expected_bindings, limits = NULL) {
+    if (is.list(evidence) && identical(evidence$schema, 2L))
+        return(evaluatePerfWorkflowQualification(evidence, expected_bindings, limits))
     held <- list(status = "held", ratios = NULL)
     flags <- c("domain_supported", "science", "lifecycle", "integrity", "outputs",
         "absolute_limits", "measurement_valid", "bindings_match", "runtime_eligible",
@@ -730,9 +732,9 @@ workflowWorkerMain <- function(arguments) {
     request <- readWorkflowExecutionRequest(arguments)
     if (!identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")) stop("worker role is missing")
     result <- tryCatch({
-        value <- switch(request$operation, wfx_fixture = computeWorkflowFixture(request),
-            precursor_rollup = computeWorkflowPeptideAction(request),
-            minimum_peptides_per_sample = computeWorkflowPeptideAction(request),
+        handler <- workflowActionSpec(request$operation)$compute
+        value <- switch(handler, fixture = computeWorkflowFixture(request),
+            peptide = computeWorkflowPeptideAction(request),
             cli::cli_abort("operation adapter unavailable", class = "workflow_execution_unsupported"))
         list(schema = 1L, status = "complete", token = request$token, result = value)
     }, error = function(error) list(schema = 1L, status = "failed", token = request$token,
@@ -760,7 +762,7 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     checkWorkflowApplication(app)
     assertDIAExportReady(owner$manager)
     if (!is.null(app$active) || !is.null(owner$job)) cli::cli_abort("another heavy action is active", class = "workflow_execution_busy")
-    validateWorkflowActionParameters(operation, parameters, app$config$policy)
+    validateWorkflowActionParameters(operation, parameters, app$config$policy, resolved = FALSE)
     if (!is.list(input_references) || !identical(names(input_references), "state") ||
         !isSavedWorkflowReference(input_references$state))
         cli::cli_abort("unsupported input reference", class = "workflow_execution_invalid")
@@ -773,7 +775,7 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
         filelock::unlock(admission)
         owner$job <- NULL
         app$active <- NULL
-    })
+    }, add = TRUE)
     job <- new.env(parent = emptyenv())
     job$started <- entered
     job$peak <- peak
@@ -782,7 +784,9 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     validateSavedWorkflowReference(store, input_references$state, payload = FALSE)
     if (!identical(input_references$state, getDIAStateReference(owner$manager)))
         cli::cli_abort("action input is not the selected immutable checkpoint", class = "workflow_execution_stale")
-    readDIAStateMetadata(owner$manager, input_references$state)
+    validateWorkflowActionInput(operation, owner$manager, input_references)
+    parameters <- resolveWorkflowActionParameters(operation, owner$manager,
+        input_references$state, parameters, app$config$policy)
     id <- paste0("wfx-", substr(digest::digest(list(Sys.time(), tempfile(), owner$control$generation), algo = "sha256"), 1, 32))
     paths <- workflowExportPaths(store$directory, id)
     token <- list(request_id = id, incarnation = store$identity$incarnation,
@@ -941,18 +945,7 @@ acceptWorkflowActionResult <- function(owner, message) {
     writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "pending-result.rds"), value)
     owner$accepting <- token$request_id
     on.exit(owner$accepting <- NULL)
-    if (identical(job$request$operation, "wfx_fixture")) {
-        commitDIAReferenceState(owner$manager, value$state_name, value$checkpoint, value$config,
-            "guarded fixture computation")
-    } else {
-        workflow <- new.env(parent = emptyenv())
-        workflow$state_manager <- owner$manager
-        workflow$qc_params <- list(peptide_qc = list())
-        finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name,
-            value$description, value$config, value$section, value$counts,
-            observed_inclusion_absence = if (job$request$operation == "minimum_peptides_per_sample")
-                value$summary$inclusion_entries_absent_from_data else NULL)
-    }
+    completeWorkflowAction(owner, job$request$operation, value)
     owner$accepting <- NULL
     journal <- readWorkflowExecutionJournal(job$paths)
     journal$status <- "publication_pending"
@@ -975,7 +968,7 @@ publishWorkflowFixtureResult <- function(owner, paths) {
     result <- readRDS(result_path)
     if (!identical(getDIAStateReference(owner$manager), result$state_reference))
         cli::cli_abort("publication belongs to a superseded state", class = "workflow_execution_stale")
-    if (!identical(result$operation %||% "wfx_fixture", "wfx_fixture")) {
+    if (workflowActionSpec(result$operation %||% "wfx_fixture")$publication == "peptide") {
         publishWorkflowPeptideResult(owner, paths, result)
         journal$status <- "complete"
         journal$delivery_generation <- owner$control$generation
@@ -1216,12 +1209,11 @@ createWorkflowApplicationSlice <- function(stem, policy) {
 #' @param operation Registered operation identifier.
 #' @param parameters Bounded immutable parameters.
 #' @param policy Server-owned resource policy.
+#' @param resolved Whether native precedence has already produced complete parameters.
 #' @return NULL invisibly or explicit refusal before dispatch.
 #' @noRd
-validateWorkflowActionParameters <- function(operation, parameters, policy) {
-    if (!is.character(operation) || length(operation) != 1L || is.na(operation) ||
-        !operation %in% c("wfx_fixture", "precursor_rollup", "minimum_peptides_per_sample"))
-        cli::cli_abort("operation adapter is not qualified", class = "workflow_execution_unsupported")
+validateWorkflowActionParameters <- function(operation, parameters, policy, resolved = TRUE) {
+    workflowActionSpec(operation)
     # The frozen 4,000-sample filter includes duplicate/whitespace-bearing inclusion
     # arguments. Preserve those native argument bytes under a finite operation-specific cap.
     parameter_limit <- if (operation == "minimum_peptides_per_sample") 262144 else 65536
@@ -1232,11 +1224,15 @@ validateWorkflowActionParameters <- function(operation, parameters, policy) {
         if (length(parameters)) cli::cli_abort("P14 has no caller-selectable execution settings")
         diaRollupExtensionInfo()
     } else if (operation == "minimum_peptides_per_sample") {
-        if (is.null(names(parameters)) || !setequal(names(parameters),
-            c("peptides_per_sample_cutoff", "inclusion_list"))) cli::cli_abort("sample filter parameters required")
+        allowed <- c("peptides_per_sample_cutoff", "inclusion_list")
+        if (length(parameters) && (is.null(names(parameters)) ||
+            anyNA(names(parameters)) || any(!names(parameters) %in% allowed)) ||
+            resolved && !setequal(names(parameters), allowed))
+            cli::cli_abort("sample filter parameters required or unknown parameter supplied")
         k <- parameters$peptides_per_sample_cutoff
-        if (!is.numeric(k) || length(k) != 1L || !is.finite(k) || k < 1 ||
-            k > .Machine$integer.max || k != floor(k)) cli::cli_abort("cutoff must be a positive integer")
+        if ((resolved || !is.null(k)) && (!is.numeric(k) || length(k) != 1L ||
+            !is.finite(k) || k < 1 || k > .Machine$integer.max || k != floor(k)))
+            cli::cli_abort("cutoff must be a positive integer")
         if (!is.null(parameters$inclusion_list) && !is.character(parameters$inclusion_list))
             cli::cli_abort("inclusion entries must be character")
     } else {
@@ -1265,6 +1261,8 @@ computeWorkflowPeptideAction <- function(request) {
     if (!identical(store$identity, request$owner)) cli::cli_abort("project incarnation changed")
     manager <- newDIAStateAdapter(store, reopen = TRUE)
     on.exit(closeDIAStateAdapter(manager), add = TRUE, after = FALSE)
+    validateWorkflowActionParameters(request$operation, request$parameters, request$config$policy)
+    validateWorkflowActionInput(request$operation, manager, request$input_references)
     value <- switch(request$operation,
         precursor_rollup = computeDIAReferencePrecursorRollup(manager, request$input_references$state,
             worker_cap = request$worker_cap),
@@ -1312,4 +1310,266 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
     publishDIAQvalueOutput(manager, c(list(stateReference = result$state_reference), product),
         arguments, updateProteinFiltering)
     invisible(NULL)
+}
+
+#' Describe only the existing finite operations; handlers never travel in requests.
+#' @param operation Internal operation identifier.
+#' @return Server-owned handler names and input role.
+#' @noRd
+workflowActionSpec <- function(operation) {
+    if (!is.character(operation) || length(operation) != 1L || is.na(operation))
+        cli::cli_abort("operation adapter is not qualified", class = "workflow_execution_unsupported")
+    switch(operation,
+        wfx_fixture = list(input = "checkpoint", compute = "fixture", completion = "fixture", publication = "fixture"),
+        precursor_rollup = list(input = "peptide", compute = "peptide", completion = "peptide", publication = "peptide"),
+        minimum_peptides_per_sample = list(input = "peptide", compute = "peptide", completion = "peptide", publication = "peptide"),
+        cli::cli_abort("operation adapter is not qualified", class = "workflow_execution_unsupported"))
+}
+
+#' Validate the registered scientific role without collecting assay data.
+#' @param operation,manager,input_references Existing operation, owner and descriptors.
+#' @return NULL invisibly; unsupported roles fail before worker dispatch.
+#' @noRd
+validateWorkflowActionInput <- function(operation, manager, input_references) {
+    spec <- workflowActionSpec(operation)
+    if (!is.list(input_references) || !identical(names(input_references), "state") ||
+        !isSavedWorkflowReference(input_references$state))
+        cli::cli_abort("unsupported input reference", class = "workflow_execution_invalid")
+    record <- readDIAStateMetadata(manager, input_references$state)$data
+    if (!isDIAComponentCheckpoint(record))
+        cli::cli_abort("component checkpoint required", class = "workflow_execution_unsupported")
+    if (spec$input == "peptide") {
+        roles <- c("sample_id", "protein_id_column", "peptide_sequence_column")
+        columns <- record$dimensions$columns
+        valid <- identical(record$class, "PeptideQuantitativeData") &&
+            all(c("peptide_data", "design_matrix") %in% names(record$components)) &&
+            all(vapply(roles, function(role) {
+                value <- record$slots[[role]]
+                is.character(value) && length(value) == 1L && !is.na(value) &&
+                    nzchar(value) && value %in% columns
+            }, logical(1)))
+        if (!valid) cli::cli_abort("peptide input roles are unavailable",
+            class = "workflow_execution_unsupported")
+    }
+    invisible(NULL)
+}
+
+#' Freeze native-resolved arguments at the owned action boundary.
+#' @param operation,manager,reference,parameters,policy Existing action inputs.
+#' @return Bounded immutable arguments; no object or callback crosses the boundary.
+#' @noRd
+resolveWorkflowActionParameters <- function(operation, manager, reference, parameters, policy) {
+    validateWorkflowActionParameters(operation, parameters, policy, resolved = FALSE)
+    if (operation != "minimum_peptides_per_sample") return(parameters)
+    prototype <- readDIAExecutionComponents(manager, reference, fields = character())
+    # Invoke the real method's parameter resolver and call stack with empty tables.
+    # Do not mirror its precedence or hydrate the scientific assay.
+    arguments <- c(list(theObject = prototype, core_utilisation = NA), parameters)
+    resolved <- do.call(filterMinNumPeptidesPerSample, arguments)
+    native <- resolved@args$filterMinNumPeptidesPerSample
+    value <- list(peptides_per_sample_cutoff = native$peptides_per_sample_cutoff,
+        inclusion_list = native$inclusion_list)
+    validateWorkflowActionParameters(operation, value, policy)
+    value
+}
+
+#' Complete the registered result only under the controller's existing acceptance lease.
+#' @param owner,operation,value Leased controller, registered ID and immutable result.
+#' @return Existing checkpoint/handoff result.
+#' @noRd
+completeWorkflowAction <- function(owner, operation, value) {
+    assertWorkflowController()
+    if (is.null(owner$accepting)) cli::cli_abort("result acceptance lease required",
+        class = "workflow_execution_busy")
+    if (workflowActionSpec(operation)$completion == "fixture")
+        return(commitDIAReferenceState(owner$manager, value$state_name, value$checkpoint,
+            value$config, "guarded fixture computation"))
+    workflow <- new.env(parent = emptyenv())
+    workflow$state_manager <- owner$manager
+    workflow$qc_params <- list(peptide_qc = list())
+    finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name,
+        value$description, value$config, value$section, value$counts,
+        observed_inclusion_absence = if (operation == "minimum_peptides_per_sample")
+            value$summary$inclusion_entries_absent_from_data else NULL)
+}
+
+#' Frozen PERF policy, independent of historical schema-1 qualification.
+#' @return Internal versioned thresholds and stage bounds.
+#' @noRd
+workflowPerfQualificationPolicy <- function() {
+    list(schema = 2L, id = "perf.pilot.v1.2", peak_ratio = 0.80, elapsed_ratio = 1.20,
+        screen_tie_ratio = 1.05, early_stop = 15.5 * 1024^3, memory_max = 16 * 1024^3,
+        screen_seconds = 300, full_seconds = 1800, threads = 8L,
+        engine_bytes = 12 * 1024^3, swap_bytes = 0, spill_bytes = 0)
+}
+
+#' Evaluate PERF screen feasibility separately from full paired benefit.
+#' @param evidence Schema 2, stage, members/populations, immutable bindings and holds.
+#' @param expected_bindings Independently frozen identities, including this policy's hash.
+#' @param limits Optional tighter server-owned absolute memory/deadline caps.
+#' @return Comparison decision and explicit non-promotion result.
+#' @noRd
+evaluatePerfWorkflowQualification <- function(evidence, expected_bindings, limits = NULL) {
+    held <- list(status = "held", ratios = NULL, promotion_authorized = FALSE)
+    policy <- workflowPerfQualificationPolicy()
+    keys <- c("operation", "input", "parameters", "runtime", "boundary", "policy", "outputs",
+        "execution_plan")
+    bindings <- function(x) is.list(x) && length(x) == length(keys) &&
+        !is.null(names(x)) && !anyNA(names(x)) && !anyDuplicated(names(x)) &&
+        identical(sort(names(x)), sort(keys)) &&
+        all(vapply(x, function(v) is.character(v) && length(v) == 1L && !is.na(v) &&
+            grepl("^[a-f0-9]{64}$", v), logical(1)))
+    flag <- function(x) is.logical(x) && length(x) == 1L && !is.na(x)
+    positive <- function(x) is.numeric(x) && length(x) == 1L && is.finite(x) && x > 0
+    holds <- function(x) is.character(x) && !anyNA(x)
+    if (!is.list(evidence) || !identical(evidence$schema, 2L) ||
+        !identical(evidence$policy, policy$id) || !bindings(expected_bindings) ||
+        !identical(expected_bindings$policy, digest::digest(policy, algo = "sha256")) ||
+        !bindings(evidence$bindings) || !identical(evidence$bindings, expected_bindings) ||
+        !flag(evidence$domain_supported) || !flag(evidence$runtime_eligible) ||
+        !holds(evidence$open_holds) || !holds(evidence$release_holds) ||
+        !is.character(evidence$goal) || length(evidence$goal) != 1L || is.na(evidence$goal) ||
+        !evidence$goal %in% c("screen_feasibility", "benefit")) return(held)
+    if (!identical(digest::digest(evidence$execution_plan, algo = "sha256"),
+        expected_bindings$execution_plan) || !validatePerfQualificationMembers(evidence)) return(held)
+    if (!evidence$domain_supported) return(utils::modifyList(held, list(status = "unsupported")))
+    if (length(evidence$open_holds)) return(held)
+    deadline <- if (evidence$goal == "screen_feasibility") policy$screen_seconds else policy$full_seconds
+    memory_max <- policy$memory_max
+    if (!is.null(limits)) {
+        if (!is.list(limits) || !positive(limits$memory_max) || !positive(limits$deadline) ||
+            limits$memory_max > memory_max || limits$deadline > deadline) return(held)
+        memory_max <- limits$memory_max
+        deadline <- limits$deadline
+    }
+    flags <- c("science", "outputs", "measurement_valid", "integrity", "guard", "admission")
+    valid <- function(member) is.list(member) && identical(member$status, "complete") &&
+        all(vapply(flags, function(name) isTRUE(member[[name]]), logical(1))) &&
+        positive(member$peak_bytes) && positive(member$elapsed_seconds) &&
+        member$peak_bytes < policy$early_stop && member$peak_bytes <= memory_max &&
+        member$elapsed_seconds <= deadline && is.numeric(member$swap_bytes) &&
+        identical(as.double(member$swap_bytes), 0) && is.numeric(member$spill_bytes) &&
+        identical(as.double(member$spill_bytes), 0)
+    if (evidence$goal == "screen_feasibility") {
+        arms <- evidence$arms
+        if (!perfQualificationKeys(arms, c("native", "physical", "selection")) ||
+            !all(vapply(arms, function(x) is.list(x) && length(x) == 2L, logical(1)))) return(held)
+        eligible <- c("physical", "selection")[vapply(arms[c("physical", "selection")],
+            function(x) all(vapply(x, valid, logical(1))), logical(1))]
+        if (!length(eligible)) return(utils::modifyList(held, list(status = "no_finalist")))
+        peak <- vapply(arms[eligible], function(x) stats::median(vapply(x,
+            function(m) m$peak_bytes, numeric(1))), numeric(1))
+        elapsed <- vapply(arms[eligible], function(x) stats::median(vapply(x,
+            function(m) m$elapsed_seconds, numeric(1))), numeric(1))
+        tied <- which(peak <= min(peak) * policy$screen_tie_ratio)
+        selected <- tied[order(elapsed[tied], match(eligible[tied], c("physical", "selection")))][[1L]]
+        return(list(status = "screen_finalist", finalist = eligible[[selected]],
+            medians = list(peak = peak, elapsed = elapsed), ratios = NULL,
+            promotion_authorized = FALSE))
+    }
+    populations <- evidence$populations
+    if (!perfQualificationKeys(populations, c("primary", "wide")) ||
+        !all(vapply(populations, function(x) is.list(x) && length(x) == 2L, logical(1)))) return(held)
+    ratios <- list()
+    for (population in c("primary", "wide")) {
+        ratios[[population]] <- list()
+        for (i in seq_len(2L)) {
+            pair <- populations[[population]][[i]]
+            if (!is.list(pair) || !valid(pair$control)) return(held)
+            if (!valid(pair$candidate)) return(utils::modifyList(held, list(status = "rejected")))
+            ratios[[population]][[i]] <- list(peak = pair$candidate$peak_bytes / pair$control$peak_bytes,
+                elapsed = pair$candidate$elapsed_seconds / pair$control$elapsed_seconds)
+        }
+    }
+    passed <- unlist(lapply(ratios, function(pairs) vapply(pairs, function(pair)
+        pair$peak <= policy$peak_ratio && pair$elapsed <= policy$elapsed_ratio, logical(1))))
+    comparison <- if (all(passed)) "benefit" else if (any(passed)) "inconclusive" else "rejected"
+    list(status = if (!evidence$runtime_eligible || length(evidence$release_holds)) "held" else comparison,
+        comparison_status = comparison, ratios = ratios, promotion_authorized = FALSE)
+}
+
+#' Require exact named collection keys without dropping missing names.
+#' @param value,keys Collection and its fixed key set.
+#' @return TRUE only for the declared collection shape.
+#' @noRd
+perfQualificationKeys <- function(value, keys) {
+    is.list(value) && length(value) == length(keys) && !is.null(names(value)) &&
+        !anyNA(names(value)) && !anyDuplicated(names(value)) &&
+        all(nzchar(names(value))) && setequal(names(value), keys)
+}
+
+#' Bind every PERF member to the independently frozen execution plan.
+#' @param evidence Schema-2 evidence; its plan hash was independently checked.
+#' @return FALSE on missing, mixed, duplicated or mismatched member identities.
+#' @noRd
+validatePerfQualificationMembers <- function(evidence) {
+    plan <- evidence$execution_plan
+    if (!perfQualificationKeys(plan, c("schema", "goal", "finalist", "screen_decision", "members")) ||
+        !identical(plan$schema, 1L) || !identical(plan$goal, evidence$goal)) return(FALSE)
+    scalar <- function(x) is.character(x) && length(x) == 1L && !is.na(x) &&
+        nzchar(x) && nchar(x, type = "bytes") <= 128L
+    hash <- function(x) scalar(x) && grepl("^[a-f0-9]{64}$", x)
+    pair_list <- function(x) is.list(x) && length(x) == 2L && is.null(names(x))
+    observed <- expected_arm <- expected_population <- expected_rep <- list()
+    if (evidence$goal == "screen_feasibility") {
+        if (!is.null(plan$finalist) || !is.null(plan$screen_decision) ||
+            !perfQualificationKeys(evidence$arms, c("native", "physical", "selection"))) return(FALSE)
+        for (arm in c("native", "physical", "selection")) {
+            if (!pair_list(evidence$arms[[arm]])) return(FALSE)
+            for (rep in seq_len(2L)) {
+                slot <- paste("screen", arm, rep, sep = ".")
+                observed[[slot]] <- evidence$arms[[arm]][[rep]]
+                expected_arm[[slot]] <- arm
+                expected_population[[slot]] <- "screen"
+                expected_rep[[slot]] <- rep
+            }
+        }
+    } else {
+        if (!scalar(plan$finalist) || !plan$finalist %in% c("physical", "selection") ||
+            !hash(plan$screen_decision) ||
+            !perfQualificationKeys(evidence$populations, c("primary", "wide"))) return(FALSE)
+        for (population in c("primary", "wide")) {
+            if (!pair_list(evidence$populations[[population]])) return(FALSE)
+            for (rep in seq_len(2L)) {
+                pair <- evidence$populations[[population]][[rep]]
+                if (!perfQualificationKeys(pair, c("control", "candidate"))) return(FALSE)
+                for (arm in c("control", "candidate")) {
+                    slot <- paste(population, arm, rep, sep = ".")
+                    observed[[slot]] <- pair[[arm]]
+                    expected_arm[[slot]] <- if (arm == "control") "native" else plan$finalist
+                    expected_population[[slot]] <- population
+                    expected_rep[[slot]] <- rep
+                }
+            }
+        }
+    }
+    if (!perfQualificationKeys(plan$members, names(expected_arm)) ||
+        !perfQualificationKeys(observed, names(expected_arm))) return(FALSE)
+    identity_keys <- c("run_id", "population", "arm", "repetition", "input", "parameters",
+        "runtime", "build", "boundary", "output_contract")
+    hashes <- c("input", "parameters", "runtime", "build", "boundary", "output_contract")
+    for (slot in names(expected_arm)) {
+        wanted <- plan$members[[slot]]
+        member <- observed[[slot]]
+        if (!perfQualificationKeys(wanted, identity_keys) || !scalar(wanted$run_id) ||
+            !all(vapply(wanted[hashes], hash, logical(1))) ||
+            !identical(wanted$arm, expected_arm[[slot]]) ||
+            !identical(wanted$population, expected_population[[slot]]) ||
+            !identical(wanted$repetition, expected_rep[[slot]]) || !is.list(member) ||
+            is.null(names(member)) || anyNA(names(member)) || anyDuplicated(names(member)) ||
+            !all(c(identity_keys, "receipt_id") %in% names(member)) || !hash(member$receipt_id) ||
+            !identical(member[identity_keys], wanted[identity_keys])) return(FALSE)
+    }
+    values <- function(field) vapply(observed, function(x) x[[field]], character(1))
+    if (anyDuplicated(values("run_id")) || anyDuplicated(values("receipt_id"))) return(FALSE)
+    # Same scientific inputs/parameters/output contract for every arm and repeat
+    # of one population; the frozen build/runtime stays fixed for each arm.
+    for (population in unique(values("population"))) for (field in c("input", "parameters", "boundary", "output_contract")) {
+        if (length(unique(values(field)[values("population") == population])) != 1L) return(FALSE)
+    }
+    for (arm in unique(values("arm"))) for (field in c("build", "runtime")) {
+        if (length(unique(values(field)[values("arm") == arm])) != 1L) return(FALSE)
+    }
+    if (evidence$goal == "benefit" && length(unique(values("input"))) != 2L) return(FALSE)
+    TRUE
 }
