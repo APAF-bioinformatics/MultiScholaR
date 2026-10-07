@@ -426,3 +426,195 @@ test_that("monitor launch refusals preserve receipts and allow safe readmission"
     runWorkflowAction("wfx_fixture", list(state = getDIAStateReference(owner$manager)), list(mode = "identity"), owner)
     expect_identical(awaitExecutionTest(owner)$status, "complete")
 })
+
+# CORE-003 controller repairs. These run from source and in the installed suite;
+# only systemd, cgroup and application checks are replaced.
+
+sourceExecutionProject <- function(label, saves = 1L) {
+    root <- tempfile(paste0(label, "-"))
+    dir.create(root)
+    store <- newWorkflowEntityStore(root, label, "DIA")
+    manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    manager$.context$reference_states <- TRUE
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small",
+        if (exists("workflow_test_root")) workflow_test_root))
+    heads <- list()
+    for (i in seq_len(saves)) {
+        manager$saveState(paste0("state_", i), object, list(), "execution fixture")
+        heads[[i]] <- workflowExecutionHead(store)
+    }
+    list(root = root, store = store, manager = manager, heads = heads)
+}
+
+openSourceExecutionController <- function(manager, application = WorkflowExecutionApplication$new()) {
+    testthat::with_mocked_bindings(newWorkflowExecutionController(manager, application),
+        checkWorkflowApplication = function(application) invisible(NULL), .package = "MultiScholaR")
+}
+
+sourceExecutionJob <- function(owner) {
+    store <- owner$manager$.context$store
+    id <- paste0("wfx-", strrep("a", 32))
+    job <- new.env(parent = emptyenv())
+    job$paths <- workflowExportPaths(store$directory, id)
+    job$request <- list(operation = "wfx_fixture", token = list(request_id = id))
+    job$monitor_borrowed <- FALSE
+    job$monitor_unit <- "core003-monitor.service"
+    job$worker_unit <- "core003-worker.service"
+    job$stage <- "running"
+    job$started <- proc.time()[["elapsed"]]
+    job$accounting <- list()
+    job$outer_reservation <- list()
+    job$existing_entities <- list.files(file.path(store$directory, "entities"))
+    job$existing_pending <- character()
+    writeWorkflowExportJournal(job$paths, list(schema = "multischolar.workflow_action.v1",
+        request_id = id, status = "running"))
+    writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "monitor-result.rds"),
+        list(schema = 1L, max_observation_interval = 0.05))
+    owner$control$active_request <- id
+    owner$job <- job
+    job
+}
+
+withSourceExecutionServices <- function(code, monitor = FALSE, empty = TRUE) {
+    testthat::with_mocked_bindings(code,
+        workflowServiceProperties = function(unit) if (grepl("monitor", unit))
+            list(available = monitor, SubState = if (monitor) "running" else "dead") else
+            list(available = TRUE, SubState = "exited", Result = "success"),
+        workflowSystemd = function(...) invisible(NULL),
+        workflowServiceEmpty = function(...) empty,
+        workflowCgroupAccounting = function(...) list(),
+        workflowMemoryCounter = function(...) 0,
+        .package = "MultiScholaR")
+}
+
+test_that("a head recovery conflict holds every controller until acknowledged", {
+    project <- sourceExecutionProject("core003-conflict", saves = 3L)
+    on.exit({ closeDIAStateAdapter(project$manager); unlink(project$root, recursive = TRUE) }, add = TRUE)
+    store <- project$store
+    id <- paste0("wfx-", strrep("b", 32))
+    paths <- workflowExportPaths(store$directory, id)
+    descriptor <- file.path(paths$request_dir, "proposed-head.rds")
+    saveRDS(project$heads[[2]], descriptor, compress = FALSE, version = 3)
+    writeWorkflowExportJournal(paths, list(schema = "multischolar.workflow_action.v1", request_id = id,
+        status = "committing", expected_head = project$heads[[1]]$entity_id,
+        proposed_descriptor_sha256 = digest::digest(file = descriptor, algo = "sha256")))
+    writeWorkflowExecutionControl(store, list(schema = 1L, incarnation = store$identity$incarnation,
+        generation = 0L, active_request = id))
+    for (attempt in 1:2) {
+        expect_error(openSourceExecutionController(project$manager),
+            "acknowledgeWorkflowExecutionConflict", class = "workflow_execution_conflict")
+        expect_identical(readWorkflowExecutionJournal(paths)$status, "conflict")
+        expect_identical(readRDS(file.path(store$directory, ".workflow-execution-control.rds"))$active_request, id)
+    }
+    expect_error(acknowledgeWorkflowExecutionConflict(project$root, id, project$heads[[2]]$entity_id),
+        class = "workflow_execution_stale")
+    expect_identical(readRDS(file.path(store$directory, ".workflow-execution-control.rds"))$active_request, id)
+    acknowledgeWorkflowExecutionConflict(project$root, id, project$heads[[3]]$entity_id)
+    journal <- readWorkflowExecutionJournal(paths)
+    expect_identical(journal$status, "conflict")
+    expect_identical(journal$acknowledged_head, project$heads[[3]]$entity_id)
+    owner <- openSourceExecutionController(project$manager)
+    expect_null(owner$control$active_request)
+    expect_identical(workflowExecutionHead(store)$entity_id, project$heads[[3]]$entity_id)
+    closeWorkflowExecutionController(owner)
+})
+
+test_that("a cleanup failure at application exit still releases the application monitor", {
+    project <- sourceExecutionProject("core003-exit")
+    on.exit({ closeDIAStateAdapter(project$manager); unlink(project$root, recursive = TRUE) }, add = TRUE)
+    app <- WorkflowExecutionApplication$new()
+    app$config <- list(mode = "gui", root = project$root)
+    owner <- openSourceExecutionController(project$manager, app)
+    on.exit({ owner$job <- NULL; closeWorkflowExecutionController(owner) }, add = TRUE, after = FALSE)
+    job <- sourceExecutionJob(owner)
+    expect_error(withSourceExecutionServices(closeWorkflowManagedApplication(app), empty = FALSE),
+        class = "workflow_execution_cleanup_failed")
+    # Without the done file the monitor below would sample until its runtime cap.
+    expect_true(file.exists(file.path(project$root, "application-monitor-done.rds")))
+    if (!file.exists(file.path(project$root, "application-monitor-done.rds"))) return()
+    expect_identical(job$stage, "cleanup_failed")
+    expect_identical(job$terminal_status, "controller_closed")
+    expect_true(app$closed)
+    group <- sub("^0::", "", readLines("/proc/self/cgroup", n = 1L))
+    stopped <- character()
+    testthat::with_mocked_bindings(workflowMonitorMain(c("request", "hash")),
+        readWorkflowExecutionRequest = function(arguments) list(scope = "application",
+            directory = project$root, config = list(control_group = group, slice = "core003.slice",
+                policy = workflowExecutionPolicy(TRUE))),
+        workflowMemoryCounter = function(...) 0, workflowHostAvailable = function() 64 * 1024^3,
+        workflowSystemd = function(args, ...) stopped <<- c(stopped, args), .package = "MultiScholaR")
+    expect_true(file.exists(file.path(project$root, "application-monitor-result.rds")))
+    expect_null(readRDS(file.path(project$root, "application-monitor-result.rds"))$reason)
+    expect_identical(stopped, character())
+})
+
+test_that("a worker result written before monitor loss is accepted with an invalid measurement", {
+    project <- sourceExecutionProject("core003-monitor")
+    on.exit({ closeDIAStateAdapter(project$manager); unlink(project$root, recursive = TRUE) }, add = TRUE)
+    owner <- openSourceExecutionController(project$manager)
+    on.exit(closeWorkflowExecutionController(owner), add = TRUE, after = FALSE)
+    job <- sourceExecutionJob(owner)
+    lost <- withSourceExecutionServices(pollWorkflowAction(owner))
+    expect_identical(lost$status, "monitor_lost")
+    expect_null(lost$monitor_lost_after_result)
+    job <- sourceExecutionJob(owner)
+    writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "worker-result.rds"),
+        list(schema = 1L, status = "complete", token = job$request$token))
+    accepted <- NULL
+    receipt <- testthat::with_mocked_bindings(withSourceExecutionServices(pollWorkflowAction(owner)),
+        acceptWorkflowActionResult = function(owner, message) {
+            accepted <<- message
+            finishWorkflowExecutionJob(owner, "complete")
+        }, .package = "MultiScholaR")
+    expect_identical(accepted$token, job$request$token)
+    expect_identical(receipt$status, "complete")
+    expect_true(receipt$monitor_lost_after_result)
+    expect_false(receipt$measurement_valid)
+    expect_true(readRDS(file.path(job$paths$request_dir, "completion.rds"))$monitor_lost_after_result)
+})
+
+test_that("an invalid guard payload is classified without a teardown error", {
+    project <- sourceExecutionProject("core003-guard")
+    on.exit({ closeDIAStateAdapter(project$manager); unlink(project$root, recursive = TRUE) }, add = TRUE)
+    owner <- openSourceExecutionController(project$manager)
+    on.exit(closeWorkflowExecutionController(owner), add = TRUE, after = FALSE)
+    payloads <- list(list(schema = 1L, reason = NULL), list(schema = 1L, reason = c("a", "b")),
+        list(schema = 1L, reason = NA_character_), "memory_guard",
+        list(schema = 1L, reason = "memory_guard"))
+    expected <- c(rep("guard_payload_invalid", 4L), "memory_guard")
+    for (i in seq_along(payloads)) {
+        job <- sourceExecutionJob(owner)
+        saveRDS(payloads[[i]], file.path(job$paths$request_dir, "guard-stop.rds"))
+        receipt <- withSourceExecutionServices(pollWorkflowAction(owner), monitor = TRUE)
+        expect_identical(receipt$status, expected[[i]])
+        journal <- readWorkflowExecutionJournal(job$paths)
+        expect_identical(journal$status, expected[[i]])
+        expect_identical(journal$completion_status, expected[[i]])
+        unlink(file.path(job$paths$request_dir, "guard-stop.rds"))
+    }
+})
+
+test_that("a publication failure keeps its message in the job and receipt", {
+    project <- sourceExecutionProject("core003-publication")
+    on.exit({ closeDIAStateAdapter(project$manager); unlink(project$root, recursive = TRUE) }, add = TRUE)
+    owner <- openSourceExecutionController(project$manager)
+    on.exit(closeWorkflowExecutionController(owner), add = TRUE, after = FALSE)
+    job <- sourceExecutionJob(owner)
+    store <- project$store
+    job$request$token <- c(job$request$token, list(generation = owner$control$generation,
+        controller_id = owner$control$controller_id, incarnation = store$identity$incarnation,
+        expected_head = project$heads[[1]]$entity_id))
+    message <- list(token = job$request$token, result = list(checkpoint = NULL, reference = NULL))
+    receipt <- testthat::with_mocked_bindings(withSourceExecutionServices(
+        acceptWorkflowActionResult(owner, message)),
+        isDIAComponentCheckpoint = function(x) TRUE, isSavedWorkflowReference = function(x) TRUE,
+        validateSavedWorkflowReference = function(...) invisible(NULL),
+        completeWorkflowAction = function(...) invisible(NULL),
+        publishWorkflowFixtureResult = function(...) stop("intentional publication failure"),
+        .package = "MultiScholaR")
+    expect_identical(receipt$status, "publication_pending")
+    expect_identical(job$error, "intentional publication failure")
+    expect_identical(receipt$error, "intentional publication failure")
+    expect_identical(readRDS(file.path(job$paths$request_dir, "completion.rds"))$error,
+        "intentional publication failure")
+})

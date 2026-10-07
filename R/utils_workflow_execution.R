@@ -270,6 +270,10 @@ recoverWorkflowHeadAcceptance <- function(owner) {
     paths <- workflowExportPaths(context$store$directory, request)
     journal <- readWorkflowExecutionJournal(paths)
     if (is.null(journal)) cli::cli_abort("active execution journal is missing")
+    refuse <- function() cli::cli_abort(c("head recovery conflicts with a later mutation",
+        i = "Verify the durable head, then call {.code MultiScholaR:::acknowledgeWorkflowExecutionConflict(root, \"{request}\", head)}."),
+        class = c("workflow_execution_conflict", "workflow_execution_stale"), request_id = request)
+    if (identical(journal$status, "conflict")) refuse()
     if (identical(journal$status, "committing")) {
         descriptor <- file.path(paths$request_dir, "proposed-head.rds")
         if (!file.exists(descriptor) || file.size(descriptor) > 65536 ||
@@ -286,8 +290,12 @@ recoverWorkflowHeadAcceptance <- function(owner) {
             syncSavedWorkflowPaths(context$store, c(context$head_path, context$store$directory))
             current <- proposed
         }
-        if (!identical(current$entity_id, proposed$entity_id))
-            cli::cli_abort("head recovery conflicts with a later mutation", class = "workflow_execution_stale")
+        if (!identical(current$entity_id, proposed$entity_id)) {
+            journal$status <- "conflict"
+            journal$conflict_head <- current$entity_id
+            writeWorkflowExportJournal(paths, journal)
+            refuse()
+        }
         journal$status <- "science_committed"
         journal$accepted_head <- proposed$entity_id
         writeWorkflowExportJournal(paths, journal)
@@ -303,6 +311,34 @@ recoverWorkflowHeadAcceptance <- function(owner) {
     }
     owner$control$active_request <- NULL
     invisible(NULL)
+}
+
+#' Release a recovery conflict after an operator has verified the durable head.
+#' @param root Project directory containing `.workflow-entities`.
+#' @param request_id Request recorded as `conflict` in its journal.
+#' @param head Entity id the operator verified as the current durable head.
+#' @return The acknowledged journal, invisibly; the proposed head is never applied.
+#' @noRd
+acknowledgeWorkflowExecutionConflict <- function(root, request_id, head) {
+    identity <- readSavedStoreIdentity(file.path(root, ".workflow-entities", "store.json"))
+    store <- newWorkflowEntityStore(root, identity$project_id, identity$workflow_id)
+    on.exit(closeWorkflowEntityStore(store), add = TRUE)
+    lease <- acquireWorkflowMutationLease(store)
+    if (is.null(lease)) cli::cli_abort("controller already registered", class = "workflow_execution_busy")
+    on.exit(filelock::unlock(lease), add = TRUE, after = FALSE)
+    control <- readRDS(file.path(store$directory, ".workflow-execution-control.rds"))
+    paths <- workflowExportPaths(store$directory, request_id)
+    journal <- readWorkflowExecutionJournal(paths)
+    if (!identical(control$active_request, request_id) || !identical(journal$status, "conflict"))
+        cli::cli_abort("request {request_id} holds no recovery conflict", class = "workflow_execution_invalid")
+    if (!is.character(head) || length(head) != 1L || is.na(head) ||
+        !identical(workflowExecutionHead(store)$entity_id, head))
+        cli::cli_abort("acknowledged head is not the durable head", class = "workflow_execution_stale")
+    journal$acknowledged_head <- head
+    writeWorkflowExportJournal(paths, journal)
+    control$active_request <- NULL
+    writeWorkflowExecutionControl(store, control)
+    invisible(journal)
 }
 
 #' Cancel before acknowledging Revert/project replacement or session loss.
@@ -848,14 +884,7 @@ workflowManagedMain <- function(arguments) {
     app$cgroup <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))
     app$pid <- Sys.getpid()
     checkWorkflowApplication(app)
-    on.exit({
-        for (owner in app$controllers) closeWorkflowExecutionController(owner)
-        if (identical(config$mode, "gui")) {
-            writeWorkflowExecutionMessage(file.path(config$root,
-                "application-monitor-done.rds"), list(schema = 1L))
-        }
-        app$closed <- TRUE
-    })
+    on.exit(closeWorkflowManagedApplication(app))
     if (identical(config$mode, "fault_case")) {
         workflowControllerFaultMain(app)
         return(invisible(NULL))
@@ -879,6 +908,36 @@ workflowManagedMain <- function(arguments) {
     }
     shiny::runApp(run_app(workflow_execution = app), host = "127.0.0.1",
         port = config$port, launch.browser = FALSE)
+}
+
+#' Close every controller, then always release the application monitor.
+#' @param app Managed application owner at process exit.
+#' @return NULL invisibly; the first controller failure is re-signalled after release.
+#' @noRd
+closeWorkflowManagedApplication <- function(app) {
+    failure <- NULL
+    for (owner in app$controllers) {
+        outcome <- tryCatch({ closeWorkflowExecutionController(owner); NULL }, error = \(error) error)
+        failure <- failure %||% outcome
+    }
+    if (identical(app$config$mode, "gui")) {
+        writeWorkflowExecutionMessage(file.path(app$config$root,
+            "application-monitor-done.rds"), list(schema = 1L))
+    }
+    app$closed <- TRUE
+    if (!is.null(failure)) stop(failure)
+    invisible(NULL)
+}
+
+#' Read a guard classification; a malformed payload is itself the classification.
+#' @param path Existing guard-stop file.
+#' @return One non-missing reason string.
+#' @noRd
+readWorkflowGuardReason <- function(path) {
+    guard <- tryCatch(readRDS(path), error = \(error) NULL)
+    reason <- if (is.list(guard)) guard$reason
+    if (is.character(reason) && length(reason) == 1L && !is.na(reason) && nzchar(reason)) reason
+    else "guard_payload_invalid"
 }
 
 #' Persist bounded process handoffs without changing existing scientific stores.
@@ -1232,11 +1291,15 @@ pollWorkflowAction <- function(owner) {
         if (job$monitor_borrowed) file.path(app$config$root, "application-guard-stop.rds"))
     guard <- guards[file.exists(guards)][1L]
     if (length(guard) && !is.na(guard)) {
-        return(finishWorkflowExecutionJob(owner, readRDS(guard)$reason))
+        return(finishWorkflowExecutionJob(owner, readWorkflowGuardReason(guard)))
     }
+    result_path <- file.path(job$paths$request_dir, "worker-result.rds")
     monitor <- workflowServiceProperties(job$monitor_unit)
-    if (!isTRUE(monitor$available) || !monitor$SubState %in% c("running", "start"))
-        return(finishWorkflowExecutionJob(owner, "monitor_lost"))
+    if (!isTRUE(monitor$available) || !monitor$SubState %in% c("running", "start")) {
+        # The worker's result is kept; only the measurement is lost with the monitor.
+        if (!file.exists(result_path)) return(finishWorkflowExecutionJob(owner, "monitor_lost"))
+        job$monitor_lost_after_result <- TRUE
+    }
     if (job$stage == "admitting") {
         monitor_ready <- if (job$monitor_borrowed) file.path(app$config$root,
             "application-monitor-ready.rds") else file.path(job$paths$request_dir, "monitor-ready.rds")
@@ -1275,7 +1338,6 @@ pollWorkflowAction <- function(owner) {
     }
     state <- workflowServiceProperties(job$worker_unit)
     if (isTRUE(state$available) && state$SubState %in% c("running", "start")) return(list(status = "running"))
-    result_path <- file.path(job$paths$request_dir, "worker-result.rds")
     if (!file.exists(result_path) && !any(file.exists(guards))) {
         # A worker may become terminal between two 50 ms monitor samples.
         # Give that already-running monitor two intervals to publish its
@@ -1284,7 +1346,7 @@ pollWorkflowAction <- function(owner) {
         Sys.sleep(min(0.25, max(0.01, 2 * app$config$policy$monitor_interval)))
         guard <- guards[file.exists(guards)][1L]
         if (length(guard) && !is.na(guard)) {
-            return(finishWorkflowExecutionJob(owner, readRDS(guard)$reason))
+            return(finishWorkflowExecutionJob(owner, readWorkflowGuardReason(guard)))
         }
         monitor <- workflowServiceProperties(job$monitor_unit)
         if (!isTRUE(monitor$available) || !monitor$SubState %in% c("running", "start"))
@@ -1357,7 +1419,10 @@ acceptWorkflowActionResult <- function(owner, message) {
     journal$status <- "publication_pending"
     writeWorkflowExportJournal(job$paths, journal)
     published <- tryCatch({ publishWorkflowFixtureResult(owner, job$paths); TRUE },
-        error = function(error) FALSE)
+        error = function(error) {
+            job$error <- substr(conditionMessage(error), 1L, 1024L)
+            FALSE
+        })
     finishWorkflowExecutionJob(owner, if (published) "complete" else "publication_pending")
 }
 
@@ -1514,12 +1579,14 @@ finishWorkflowExecutionJob <- function(owner, status) {
         spill_basis = if (job$request$operation == "wfx_fixture")
             "identity fixture uses no database or spill-capable algorithm" else
             "engine spill disabled; attempted spill is not independently counted",
-        measurement_valid = !is.null(monitor) && monitor$max_observation_interval <= 0.1,
+        measurement_valid = !is.null(monitor) && monitor$max_observation_interval <= 0.1 &&
+            !isTRUE(job$monitor_lost_after_result),
         complete_operation_measurement = is.null(job$outer_reservation),
         cleanup = list(worker_stopped = worker_empty,
             monitor_stopped = if (job$monitor_borrowed) NA else monitor_empty,
             application_monitor_active = if (job$monitor_borrowed)
                 isTRUE(workflowServiceProperties(job$monitor_unit)$available) else NA))
+    if (isTRUE(job$monitor_lost_after_result)) receipt$monitor_lost_after_result <- TRUE
     valid_store <- workflowExecutionStoreValid(owner$manager$.context$store)
     if (!valid_store) {
         receipt$status <- "project_replaced"
