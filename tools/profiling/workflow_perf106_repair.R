@@ -114,6 +114,12 @@ if (core) {
     }
     receipt$host_at_start <- coreHostReady()
     if (validate_only) {
+        refusal <- helpers$coreSetupRefusal(receipt$host_at_start)
+        if (!is.null(refusal)) {
+            cat("SETUP_REFUSED", stage, refusal, "\n")
+            unlink(dirname(stage_root), recursive = TRUE)
+            quit(save = "no", status = 76L)
+        }
         cat("VALIDATED", stage, length(cases), "case(s); host", format(receipt$host_at_start$available / 1024^3,
             digits = 3), "GiB available;", length(receipt$host_at_start$units), "active managed unit(s)\n")
         unlink(dirname(stage_root), recursive = TRUE)
@@ -248,10 +254,12 @@ tryCatch({
         if (Sys.time() >= deadline) stop("installed preflight ceiling exhausted")
         if (core) {
             host <- coreHostReady()
-            if (host$available < 12 * 1024^3 || length(host$units)) {
-                outer_guard <- "setup_refused"
-                stop("CORE setup refused: ", format(host$available / 1024^3, digits = 3),
-                    " GiB available, ", length(host$units), " active managed unit(s)")
+            refusal <- helpers$coreSetupRefusal(host)
+            if (!is.null(refusal)) {
+                receipt$status <- "setup_refused"
+                receipt$refusal <- list(member = case$id, reason = refusal, host = host)
+                saveRDS(receipt, receipt_path)
+                stop("CORE setup refused: ", refusal)
             }
         }
         owned <- file.path(stage_root, case$id)
@@ -360,7 +368,8 @@ tryCatch({
                 coordinator_excluded = "metadata-only launcher outside managed slice",
                 clock = if (p14_stage || uptime_clock) "shared kernel uptime; namespace bootstrap excluded for both builds" else
                     "parent elapsed clock",
-                execution = if (!is.null(result)) result$execution else NULL)
+                execution = if (!is.null(result)) result$execution else NULL,
+                host_at_end = if (core) coreHostReady() else NULL)
             operation$measurement_valid <- isTRUE(result$execution$measurement_valid) &&
                 peak >= result$execution$peak_bytes &&
                 operation$elapsed_seconds >= result$execution$elapsed_seconds &&
@@ -530,7 +539,7 @@ tryCatch({
 }, error = function(error) {
     if (exists("trace") && !is.null(trace)) close(trace)
     if (!is.null(active_slice)) api("workflowSystemd")(c("stop", active_slice), required = FALSE)
-    receipt$status <<- "failed"
+    receipt$status <<- if (identical(receipt$status, "setup_refused")) "setup_refused" else "failed"
     receipt$error <<- conditionMessage(error)
     if (timed && exists("owned") && dir.exists(owned) &&
         !file.exists(file.path(owned, "operation-receipt.rds")))

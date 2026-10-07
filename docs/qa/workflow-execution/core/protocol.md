@@ -1,5 +1,7 @@
 # CORE measurement protocol
 
+**Version 2** (2026-10-08, CORE-004 post-hoc audit, user decision): limits hold for each matched pair, host state is recorded at the start and end of every member, refusals are recorded as `setup_refused`, and the dry-run scope is stated. Version 1 (hash in `core-004-evidence.md`) governed only the two CORE-004 lifecycle members; no measured stage used it.
+
 Frozen by CORE-004 before any counted CORE run. Later tickets cite this file by the SHA-256 recorded in `docs/qa/workflow-execution/core/bindings.json` (`harness.protocol_sha256`). A change to this file is a new protocol version: it needs a user decision and a new hash, and it invalidates control reuse across the change.
 
 ## 1. Measurement protocol (verbatim from the series plan v1.1)
@@ -26,8 +28,8 @@ Frozen by CORE-004 before any counted CORE run. Later tickets cite this file by 
 
 ## 2. Preconditions for every counted member
 
-- `MemAvailable` at least 12 GiB and no active `multischolar*` user unit at the start of each member. The coordinator checks both before every launch (`setup_refused` otherwise) and records them in the stage receipt.
-- A validate-only dry run of the exact coordinator invocation has passed on the same library, bindings and harness revision.
+- `MemAvailable` at least 12 GiB and no active `multischolar*` user unit at the start of each member. The coordinator checks both before every launch (`coreSetupRefusal`). On refusal the stage receipt records `status = "setup_refused"` with the reason and host reading; no member is launched and nothing is counted. The validate-only pass applies the same check and exits 76 on refusal. Host state at start is `host_at_start` in the stage receipt; host state after each member's teardown is `host_at_end` in its operation receipt.
+- A validate-only dry run of the exact coordinator invocation has passed on the same library, bindings and harness revision. The coordinator's dry run checks bindings, protocol and harness hashes, inputs, libraries and host state. The reader-check `--validate-only` checks only selector admission, the input path and service paths: it exits before the guard block and the verifier source snapshot, which are evidenced by each counted verifier unit's `controller-request.nul`.
 - The harness files listed in `bindings.json` (`harness.files`) hash to their recorded values. The coordinator refuses to start otherwise.
 - `OMP_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1` (set by the service launcher); DuckDB eight threads.
 - Test results are compared with `docs/qa/workflow-execution/core/test-baselines.json`.
@@ -62,10 +64,10 @@ Each ticket's `control` and `candidate` builds are bound under `harness.tickets.
 
 - **Eligibility of every member, in this order:** verifier accepted, status `complete`, measurement valid (gap ≤ 100 ms and no `monitor_lost_after_result`), lifecycle tests passed, zero swap, peak below 15.5 GiB, elapsed within the member ceiling. The first failing rule is named and the stage is `invalid`.
 - **Verifier (P14):** logical 10,000-row page hashes identical to `p14_oracle` (screen: 48 pages; full: 1,200 pages and the frozen summary), 480,000 / 12,000,000 output rows, the build's exact-sum identity, query owner `fastduckdb_c`, profile `P14`, eight engine and writer threads, writer `fast_r`, an admitted worker cap, twelve non-empty figures, export ready, journal `complete`. The request is rejected if its journal is `conflict`, its completion is `guard_payload_invalid` or it carries `monitor_lost_after_result`.
-- **Comparison:** candidate median divided by control median for each primary metric must be at most 1 (lower is better), then every guard ratio must hold. Otherwise the result is `reject`, naming `primary_metric_worse:<metric>` or `guard_breached:<guard>`. A metric that is not recorded is `primary_metric_unavailable:<metric>`, never a pass. For CORE-010, an elapsed breach with a memory gain is `trade_off` and goes to the user. CORE-012 is `decision_only`.
+- **Comparison:** candidate median divided by control median for each primary metric must be at most 1 (lower is better). Then every guard must hold **for each matched pair**: candidate-*k* divided by control-*k* (*k* = 1, 2) at most the guard value. A single breaching pair fails the guard; medians are not used for guards. Otherwise the result is `reject`, naming `primary_metric_worse:<metric>` or `guard_breached:<guard>`. Both the median ratios (`ratios`) and the per-pair ratios (`pair_ratios`) are recorded. A metric that is not recorded is `primary_metric_unavailable:<metric>`, never a pass. For CORE-010, an elapsed breach with a memory gain is `trade_off` and goes to the user. CORE-012 is `decision_only`.
 - **Metric names:** `peak` = `peak_bytes`; `elapsed` = `elapsed_seconds`; `phase:<name>` = `phase_seconds$<name>`; `execution:<name>` = the member's `execution$<name>`.
 
-| Ticket | Metrics (all lower is better) | Guard ratios |
+| Ticket | Metrics (all lower is better; medians) | Guard ratios (each matched pair) |
 |---|---|---|
 | 006 | `phase:staged_result_read_summary_write` | peak ≤ 1.00, elapsed ≤ 1.05 |
 | 007 | `peak` | elapsed ≤ 1.05 |

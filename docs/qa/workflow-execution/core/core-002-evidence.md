@@ -39,3 +39,6 @@ The post-hoc audit's out-of-ticket observation was checked by running the kernel
 
 The SQL sample filter matches its native kernel, so there is no parity defect in the SQL route. The inconsistency is between the two native kernels: `.rollupAssertPopulatedKey` tests blanks only when `is.character(values)`, while `filterMinNumPeptidesPerSampleHelper` applies `as.character()` first. A blank factor label therefore passes rollup and is refused, with a clear error, at sample filtering. Changing either kernel is a scientific decision outside CORE, which preserves native kernels; it is recorded for the owner of the peptide QC kernels.
 
+## Later finding (CORE-004, 2026-10-08; audit CORE-004-P06)
+
+CORE-002's caller trace covered `R/` only. The recorded-QC diagnostic in `tools/profiling/workflow_checkpoint_dia_driver.R` (`runRecordedQcSequenceStep`) also calls `computeSavedWorkflowPrecursorRollup` without persisting. CORE-002's refusal broke it: `test-workflow-checkpoint-harness.R` went from 1 to 2 errors. That file was not among CORE-002's regression checks. Fixed in `fcabd85c`: the diagnostic passes `non_exact = TRUE`, and the harness test is back to its baseline. The other callers outside `R/` are two test mocks and one persist call, all reached only on the persist path.

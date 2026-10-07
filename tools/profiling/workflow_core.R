@@ -2,7 +2,8 @@
 # Execution stays in the existing PERF coordinator and installed action runner.
 
 #' Frozen per-ticket primary metrics and guards (protocol.md mirrors this table).
-#' Every metric is lower-is-better; `guards` are candidate/control median ratios.
+#' Every metric is lower-is-better. Metrics compare candidate and control medians;
+#' `guards` must hold for each matched pair (control-k vs candidate-k).
 #' @noRd
 corePrimaryMetrics <- list(
     `006` = list(metrics = "phase:staged_result_read_summary_write", guards = c(peak = 1.00, elapsed = 1.05)),
@@ -20,6 +21,19 @@ corePrimaryMetrics <- list(
 #' Member ceilings in seconds: lifecycle and overflow members are small.
 #' @noRd
 coreMemberSeconds <- function(stage) if (grepl("^core-(lifecycle-|011-overflow$)", stage)) 300L else 600L
+
+#' Refuse a counted member unless the host meets the plan's start precondition.
+#' @param host `list(available, units)` from the coordinator's host reading.
+#' @return NULL when ready, otherwise the refusal reason.
+#' @noRd
+coreSetupRefusal <- function(host) {
+    if (!is.numeric(host$available) || length(host$available) != 1L || !is.finite(host$available))
+        return("host memory is unobserved")
+    if (host$available < 12 * 1024^3) return(sprintf("host MemAvailable %.2f GiB is below 12 GiB",
+        host$available / 1024^3))
+    if (length(host$units)) return(paste(length(host$units), "other managed unit(s) active"))
+    NULL
+}
 
 #' Read the tracked CORE bindings into the shape the coordinator and verifier use.
 #' @param path `docs/qa/workflow-execution/core/bindings.json`.
@@ -146,7 +160,7 @@ coreDecision <- function(receipt, cases, ticket) {
     spec <- corePrimaryMetrics[[ticket]]
     stopifnot(!is.null(spec))
     result <- list(ticket = ticket, status = "invalid", failing_rule = NULL, ratios = list(),
-        promotion_authorized = FALSE)
+        pair_ratios = list(), promotion_authorized = FALSE)
     seconds <- coreMemberSeconds(paste0("core-", ticket))
     for (case in cases) {
         rule <- coreIneligible(receipt$cases[[case$id]], seconds)
@@ -161,19 +175,23 @@ coreDecision <- function(receipt, cases, ticket) {
     }
     median_of <- function(role, name) stats::median(vapply(Filter(\(x) x$role == role, cases),
         \(x) coreMetric(receipt$cases[[x$id]]$operation, name), numeric(1)))
-    ratio <- function(name) median_of("candidate", name) / median_of("control", name)
     for (name in spec$metrics) {
-        value <- ratio(name)
+        value <- median_of("candidate", name) / median_of("control", name)
         result$ratios[[name]] <- value
         if (is.na(value)) {
             result$failing_rule <- paste0("primary_metric_unavailable:", name)
             return(result)
         }
     }
+    # Guards hold per matched pair (protocol v2, user 2026-10-08): no pair may breach a limit.
     guards <- spec$guards
-    for (name in names(guards)) result$ratios[[name]] <- ratio(name)
+    pair_ratio <- function(name, rep) coreMetric(receipt$cases[[paste0("candidate-", rep)]]$operation, name) /
+        coreMetric(receipt$cases[[paste0("control-", rep)]]$operation, name)
+    reps <- sort(unique(vapply(cases, `[[`, integer(1), "rep")))
+    for (name in names(guards)) result$pair_ratios[[name]] <- vapply(reps, \(rep) pair_ratio(name, rep), numeric(1))
     worse <- spec$metrics[vapply(spec$metrics, \(name) result$ratios[[name]] > 1, logical(1))]
-    breached <- names(guards)[vapply(names(guards), \(name) result$ratios[[name]] > guards[[name]], logical(1))]
+    breached <- names(guards)[vapply(names(guards), \(name) any(!(result$pair_ratios[[name]] <= guards[[name]])),
+        logical(1))]
     result$status <- "reject"
     if (length(worse)) {
         result$failing_rule <- paste0("primary_metric_worse:", worse[[1L]])

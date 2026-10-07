@@ -170,3 +170,35 @@ test_that("lifecycle decisions never relabel a failure as success", {
     })
     expect_identical(h$coreLifecycleDecision(broken, complete)$failing_rule, "peak_below_early_stop")
 })
+
+test_that("every guard holds per matched pair, so one breaching pair cannot be averaged away", {
+    h <- coreHarness()
+    expect_error(h$coreCases(coreSyntheticBindings(), "core-007"), "no bound control")
+    b <- coreSyntheticBindings()
+    b$tickets$`007` <- list(control = "core_005", candidate = "core_006")
+    cases <- h$coreCases(b, "core-007")
+    # Medians: elapsed 1.04 overall, but pair 2 alone is 1.08.
+    uneven <- coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 6e9), edit = function(r) {
+        r$cases[["control-1"]]$operation$elapsed_seconds <- 100
+        r$cases[["candidate-1"]]$operation$elapsed_seconds <- 100
+        r$cases[["control-2"]]$operation$elapsed_seconds <- 100
+        r$cases[["candidate-2"]]$operation$elapsed_seconds <- 108
+        r
+    })
+    decision <- h$coreDecision(uneven, cases, "007")
+    expect_identical(decision$status, "reject")
+    expect_identical(decision$failing_rule, "guard_breached:elapsed")
+    expect_equal(decision$pair_ratios$elapsed, c(1.00, 1.08))
+    even <- coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 6e9),
+        elapsed = c(control = 100, candidate = 104))
+    expect_identical(h$coreDecision(even, cases, "007")$status, "accept")
+})
+
+test_that("a counted member is refused below 12 GiB or with another managed unit active", {
+    h <- coreHarness()
+    expect_null(h$coreSetupRefusal(list(available = 13 * 1024^3, units = character())))
+    expect_match(h$coreSetupRefusal(list(available = 11.9 * 1024^3, units = character())), "below 12 GiB")
+    expect_match(h$coreSetupRefusal(list(available = 20 * 1024^3, units = "multischolarwfx0-controller.service")),
+        "1 other managed unit")
+    expect_match(h$coreSetupRefusal(list(available = NA_real_, units = character())), "unobserved")
+})

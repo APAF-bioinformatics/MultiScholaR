@@ -42,6 +42,7 @@ The closeout's `reused_rollup` stage receipt (`ordered-rollup/stage.rds`, SHA-25
   - reader-check `core:lifecycle:complete`;
   - reader-check `core:lifecycle:fail`.
 - No stage directory was claimed by any dry run.
+- Scope of these dry runs (audit CORE-004-P04): the coordinator's pass checks bindings, protocol and harness hashes, inputs, libraries and host state. The reader-check `--validate-only` checks only selector admission, the input path and service paths; it exits before the guard block and the source snapshot. The verifier units' guard limits (16 GiB, 300 s) and frozen source snapshot are evidenced by the counted runs: `controller-request.nul` of `browser-smoke.GiBsU9` and `browser-smoke.pCuyoq`.
 
 ## Counted lifecycle members (ledger: 2 small members, 5 min each; both first attempts, no correction used)
 
@@ -50,7 +51,7 @@ The closeout's `reused_rollup` stage receipt (`ordered-rollup/stage.rds`, SHA-25
 | `core-lifecycle-complete` | `lifecycle_complete_observed` | `complete` | 2.74 GiB (2.66 / 0.05) | 0 | 34.6 s | 53 ms | accepted. All 48 screen logical pages are identical to `p14_oracle$screen_pages`; exact-sum identity `a6ecc0e4…`; `fastduckdb_c`; P14; eight engine threads; writer `fast_r`; 12 figures; journal `complete`; cleanup verified. |
 | `core-lifecycle-fail` | `lifecycle_failure_observed` | `worker_failed` | 2.71 GiB | 0 | 27.0 s | 52 ms | accepted. The worker error is "CORE-004 forced failure after the aggregate stage". The journal and completion both record `worker_failed`, and the project head is unchanged (input entity `5b6a36c5…`). Worker and monitor were stopped; nothing was relabelled as success. |
 
-Both stage receipts bind `bindings.json` by SHA-256 (`input_bindings_sha256` equals the committed file's hash). Every library and input path comes from `bindings.json`, with no `latest` lookup. Host at start: 13.31 GiB available, 0 active managed units. After each run, 0 `multischolar*` units were active. Eight `failed` (not running) units from earlier sessions remain listed by systemd; they are not from this ticket and were left untouched.
+Both stage receipts bind `bindings.json` by SHA-256 (`input_bindings_sha256` equals the committed file's hash). Every library and input path comes from `bindings.json`, with no `latest` lookup. Host at start: 13.31 GiB available, 0 active managed units (stage receipt `host_at_start`). **Deviation (audit CORE-004-P01):** the plan requires host state at the end as well. These two members predate end recording: their end state was observed by hand for units only (0 active `multischolar*` units after each run), and `MemAvailable` at the end was not recorded. From protocol v2 on, the coordinator records `host_at_end` in every operation receipt. Eight `failed` (not running) units from earlier sessions remain listed by systemd; they are not from this ticket and were left untouched.
 
 **Exact P14 check carried from CORE-001:** the installed build with CORE-001's repaired exact-sum provider reproduces the PERF-108 screen oracle exactly. The CORE-001 deferral is closed.
 
@@ -61,6 +62,8 @@ Both stage receipts bind `bindings.json` by SHA-256 (`input_bindings_sha256` equ
 | `test-workflow-core-harness.R` (new) | 5 tests, 50 passed | — |
 | `test-workflow-checkpoint-harness.R` | 780 passed, 2 failed, 1 error | identical to `test-baselines.json` |
 | `test-perf108-*` (10 files) | 20 passed, 0 failed; the rest are installed-only skips | unchanged |
+| `test-perf106-runner-audit.R` (reads the coordinator; added after the post-hoc audit, missed from the original regression set) | 2 tests, 24 passed | — |
+| `test-workflow-core-harness.R` after the audit repairs | 7 tests, 59 passed | — |
 
 **Regression found and fixed:** the first run of `test-workflow-checkpoint-harness.R` gave 759 passed, 2 failed, 2 errors. The new error came from `workflow_checkpoint_dia_driver.R`, where the recorded-QC diagnostic sequence calls `computeSavedWorkflowPrecursorRollup(store, input)` without persisting. CORE-002's new refusal broke it. CORE-002's caller trace searched only `R/` and missed this `tools/profiling` caller. The diagnostic legitimately uses the non-exact arm, so the call now passes `non_exact = TRUE`. The rerun matches the baseline exactly. The other callers outside `R/` are two mocks and a persist call, all reached only on the persist path, so they are unaffected.
 
@@ -69,6 +72,12 @@ Both stage receipts bind `bindings.json` by SHA-256 (`input_bindings_sha256` equ
 - **Unrecorded metrics:** the harness does not record per-phase timings (CORE-006 and CORE-008) or the execution counters that CORE-013 and CORE-014 need. `coreDecision` returns `primary_metric_unavailable` for them, never a pass. Each of those tickets must add the recording, which is a harness change and requires re-hashing `bindings.json`, before its counted stage.
 - **Undefined vehicles:** `core-011-overflow` and the CORE-014 checkpoint vehicle are admitted by the selector regexes, but their members are refused by `coreCases` until CORE-011 and CORE-014 define them.
 - **Per-ticket bindings:** each measured ticket binds `harness.tickets.<ticket>` (control and candidate build keys) and records its outcome in `outcomes`.
+
+## Post-hoc audit repairs (2026-10-08)
+
+- **Protocol v2** (user decision on CORE-004-P02): limits hold for each matched pair; primary metrics stay median-to-median. v1 hash `cae16bdcbdfb…` governed only the two lifecycle members. The v2 hash is `harness.protocol_sha256`.
+- **Refusals and end state:** the coordinator records `setup_refused` (with reason and host) through `coreSetupRefusal`, also in validate-only (exit 76), and records `host_at_end` after each member's teardown.
+- **Generator:** `bindings.json` is generated by the tracked `bindings-generator.R`. Two consecutive runs produced byte-identical output.
 
 ## Handoff
 
