@@ -27,7 +27,9 @@ test_that("saved rollup matches native populations, types, missingness and annot
         input <- saveWorkflowPrecursorRollupInput(store, current, "input",
             list(input = "fixture", design = "paired", parameters = "native-rollup",
                 selectors = "all", software = "test"))
-        actual <- computeSavedWorkflowPrecursorRollup(store, input)
+        actual <- computeSavedWorkflowPrecursorRollup(store, input, non_exact = TRUE)
+        expect_identical(actual$execution$aggregation_frontend, "duckdb_sum_non_exact")
+        actual$execution <- NULL
         expect_identical(actual, expected)
         expect_identical(store$open_resources, 0L)
         expect_gt(actual$summary$raw_all_missing_outputs, 0)
@@ -60,7 +62,7 @@ test_that("saved rollup refuses invalid science and releases every query lease",
         input <- saveWorkflowPrecursorRollupInput(store, invalid, "input",
             list(input = name, design = "paired", parameters = "native-rollup",
                 selectors = "all", software = "test"))
-        expect_error(computeSavedWorkflowPrecursorRollup(store, input), patterns[[name]])
+        expect_error(computeSavedWorkflowPrecursorRollup(store, input, non_exact = TRUE), patterns[[name]])
         expect_identical(store$open_resources, 0L)
         expect_true(file.exists(file.path(store$directory, input$reference$payload$relative_path)))
         closeWorkflowEntityStore(store)
@@ -232,4 +234,91 @@ test_that("rollup retains native summation at a floating threshold boundary", {
     expect_identical(value$Peptide.RawQuantity, sum(prepared$.rollup_raw))
     expect_identical(value$Peptide.Normalised, sum(prepared$.rollup_normalised))
     expect_true(value$Peptide.RawQuantity > 1e16)
+})
+
+coreRollupIdentity <- function(name) list(input = name, design = "paired",
+    parameters = "native-rollup", selectors = "all", software = "test")
+
+coreRollupKernel <- function(table) rollUpPrecursorToPeptideHelper(table,
+    sample_id_column = "Run", protein_id_column = "Protein.Group",
+    peptide_sequence_column = "Stripped.Sequence",
+    modified_peptide_sequence_column = "Modified.Sequence",
+    precursor_quantity_column = "Precursor.Quantity",
+    precursor_normalised_column = "Precursor.Normalised",
+    core_utilisation = NA, precursor_id_column = "Precursor.Id",
+    return_rollup_result = TRUE)
+
+test_that("the DuckDB sum() rollup arm refuses unless explicitly marked non-exact", {
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    store <- newWorkflowEntityStore(withr::local_tempdir(), "non-exact", "DIA", max_cache_bytes = 0)
+    withr::defer(closeWorkflowEntityStore(store))
+    input <- saveWorkflowPrecursorRollupInput(store, object, "input", coreRollupIdentity("non-exact"))
+    expect_error(computeSavedWorkflowPrecursorRollup(store, input), class = "dia_rollup_non_exact")
+    expect_identical(store$open_resources, 0L)
+    result <- computeSavedWorkflowPrecursorRollup(store, input, non_exact = TRUE)
+    expect_identical(result$execution$aggregation_frontend, "duckdb_sum_non_exact")
+    expect_identical(store$open_resources, 0L)
+    # Production routes never select the non-exact arm.
+    expect_false("non_exact" %in% all.names(body(runDIAReferencePrecursorRollup)))
+    expect_false("non_exact" %in% all.names(body(computeDIAReferencePrecursorRollup)))
+    expect_false("non_exact" %in% all.names(body(computeDIARelationalRollup)))
+})
+
+test_that("indexed rollup keeps kernel order when sample levels are not alphabetical", {
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    table <- object@peptide_data
+    runs <- sort(unique(as.character(table$Run)))
+    for (ordered in c(FALSE, TRUE)) {
+        current <- object
+        current@peptide_data$Run <- factor(as.character(table$Run), levels = rev(runs), ordered = ordered)
+        expected <- coreRollupKernel(current@peptide_data)
+        store <- newWorkflowEntityStore(withr::local_tempdir(), "indexed-order", "DIA", max_cache_bytes = 0)
+        identity <- coreRollupIdentity(paste0("indexed-order-", ordered))
+        input <- saveWorkflowPrecursorRollupInput(store, current, "input", identity)
+        result <- computeSavedWorkflowPrecursorRollup(store, input,
+            list(prototype = expected$data[0, , drop = FALSE], identity = identity))
+        actual <- readSavedWorkflowTable(store, result$reference, names(expected$data),
+            limit = max(1L, nrow(expected$data)))$data
+        expect_identical(as.character(actual$Run), as.character(expected$data$Run), info = paste("ordered", ordered))
+        expect_identical(actual, expected$data, info = paste("ordered", ordered))
+        closeWorkflowEntityStore(store)
+    }
+})
+
+test_that("blank keys follow the native kernel: factor labels pass, character blanks are refused", {
+    # The kernel flags blanks only in character columns (.rollupAssertPopulatedKey);
+    # both SQL validators must reproduce that rule, not tighten it.
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    labels <- as.character(object@peptide_data$Protein.Group)
+    labels[[1L]] <- ""
+    cases <- list(
+        factor = factor(labels, levels = c("", setdiff(unique(labels), ""))),
+        character = labels)
+    for (kind in names(cases)) {
+        current <- object
+        current@peptide_data$Protein.Group <- cases[[kind]]
+        store <- newWorkflowEntityStore(withr::local_tempdir(), paste0("blank-", kind), "DIA",
+            max_cache_bytes = 0)
+        input <- saveWorkflowPrecursorRollupInput(store, current, "input",
+            coreRollupIdentity(paste0("blank-", kind)))
+        validate <- function() {
+            scope <- newWorkflowTableReadScope(store, input$reference)
+            on.exit(releaseWorkflowTableReadScope(scope))
+            validateDIARelationalInput(scope, input, NULL)
+        }
+        if (kind == "factor") {
+            expected <- coreRollupKernel(current@peptide_data)
+            actual <- computeSavedWorkflowPrecursorRollup(store, input, non_exact = TRUE)
+            actual$execution <- NULL
+            expect_identical(actual, expected)
+            expect_identical(validate(), nrow(current@peptide_data))
+        } else {
+            expect_error(coreRollupKernel(current@peptide_data), "missing/blank rollup keys")
+            expect_error(computeSavedWorkflowPrecursorRollup(store, input, non_exact = TRUE),
+                "missing or blank")
+            expect_error(validate(), "missing or blank identity keys")
+        }
+        expect_identical(store$open_resources, 0L, info = kind)
+        closeWorkflowEntityStore(store)
+    }
 })

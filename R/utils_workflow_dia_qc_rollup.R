@@ -83,13 +83,17 @@ collectWorkflowRollupQuery <- function(connection, sql, max_rows) {
 #' Calculate one full-population precursor rollup before checkpoint hydration.
 #' @param store Existing owner; metadata and integrity are validated once per action.
 #' @param input Reference/roles from saveWorkflowPrecursorRollupInput.
+#' @param non_exact Explicitly select the diagnostic DuckDB sum() arm, whose
+#'   summation order is unspecified and therefore not bit-identical to the kernel.
 #' @return Native-shaped data/summary after all database resources have closed.
 #' @noRd
-computeSavedWorkflowPrecursorRollup <- function(store, input, persist = NULL) {
+computeSavedWorkflowPrecursorRollup <- function(store, input, persist = NULL, non_exact = FALSE) {
     profile <- getOption("multischolar.dia_rollup_profile")
     if (!is.null(persist) && !is.null(profile)) return(computeDIARelationalRollup(store, input, persist,
         arm = "F", profile = profile, phase = getOption("multischolar.dia_rollup_phase", function(label, fn) fn())))
     if (!is.null(persist)) return(persistIndexedWorkflowPrecursorRollup(store, input, persist))
+    if (!isTRUE(non_exact)) cli::cli_abort(paste("the DuckDB sum() rollup arm is not order-exact;",
+        "select it only with non_exact = TRUE"), class = "dia_rollup_non_exact")
     scope <- newWorkflowTableReadScope(store, input$reference)
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
     assertWorkflowPhysicalTableScope(scope)
@@ -223,7 +227,8 @@ computeSavedWorkflowPrecursorRollup <- function(store, input, persist = NULL) {
         frozen_identification_evidence = if (length(evidence)) "preserved" else "absent",
         protein_ids_provenance = if (length(input$annotation)) "preserved" else
             if (roles$protein == "Protein.Ids") "active_key" else "absent")
-    list(data = output, summary = summary)
+    list(data = output, summary = summary,
+        execution = list(aggregation_frontend = "duckdb_sum_non_exact"))
 }
 
 #' Collapse protein annotations with one projected cursor and native token rules.

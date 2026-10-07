@@ -309,6 +309,10 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
 #' @param fields Required scientific tables, never history or support ledgers.
 #' @param columns Optional named per-table projections.
 #' @return Transient S4 execution view carrying its immutable source descriptor.
+#'   Slots not named in `fields` are zero-row prototypes with the stored schema,
+#'   listed by the `dia_execution_fields` attribute. Callers may read their column
+#'   schema but must request every table a kernel computes on; the checkpoint
+#'   writer keeps the stored component for any slot that was not loaded.
 #' @noRd
 readDIAExecutionComponents <- function(manager, reference = NULL,
     fields = c("protein_quant_table", "design_matrix", "protein_id_table"), columns = list()) {
@@ -1618,7 +1622,9 @@ computeDIACapacityRollup <- function(manager) {
         # Revert/skipped-predecessor paths remain usable; their extra read is measured.
         prepareDIACapacityRollupInput(manager, manager$getState())
     }
-    result <- computeSavedWorkflowPrecursorRollup(context$store, context$rollup_input$input)
+    # The experimental capacity trial is the one explicit caller of the non-exact arm.
+    result <- computeSavedWorkflowPrecursorRollup(context$store, context$rollup_input$input,
+        non_exact = TRUE)
     if (context$store$open_resources != 0L) {
         cli::cli_abort("DIA rollup retained a database lease", class = "saved_entity_resource")
     }

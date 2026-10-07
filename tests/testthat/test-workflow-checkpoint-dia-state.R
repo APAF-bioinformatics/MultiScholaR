@@ -666,3 +666,30 @@ test_that("protein progress is cached by declared population and excludes only m
         readDIAExecutionComponents = function(...) stop("count hit read design"))
     expect_identical(hit, value)
 })
+
+test_that("narrow execution views carry schema-only prototypes that never replace stored components", {
+    # Contract: undeclared slots are zero-row prototypes with the stored schema,
+    # recorded in dia_execution_fields; the checkpoint writer keeps the stored
+    # component for any slot that was not loaded. Kernels read slots with @,
+    # so this is a documented contract rather than an access check.
+    root <- withr::local_tempdir()
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "narrow-view", "DIA"),
+        WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    manager$saveState("raw", object, list(), "raw")
+    reference <- getDIAStateReference(manager)
+    full <- readDIAExecutionComponents(manager, reference, fields = c("peptide_data", "design_matrix"))
+    expect_identical(nrow(full@peptide_data), nrow(object@peptide_data))
+    narrow <- readDIAExecutionComponents(manager, reference, fields = "design_matrix")
+    expect_identical(attr(narrow, "dia_execution_fields"), "design_matrix")
+    expect_identical(nrow(narrow@peptide_data), 0L)
+    expect_identical(names(narrow@peptide_data), names(object@peptide_data))
+    expect_identical(lapply(narrow@peptide_data, class), lapply(object@peptide_data, class))
+    expect_identical(nrow(narrow@design_matrix), nrow(object@design_matrix))
+    stored <- readDIAStateMetadata(manager, reference)$data$components$peptide_data
+    checkpoint <- withDIAStateScope(manager, function() checkpointDIAExecutionResult(manager, narrow))
+    expect_identical(checkpoint$components$peptide_data, stored)
+    expect_identical(manager$.context$store$open_resources, 0L)
+})

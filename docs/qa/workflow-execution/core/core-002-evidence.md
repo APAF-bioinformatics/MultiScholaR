@@ -1,0 +1,25 @@
+# CORE-002 evidence (2026-10-08)
+
+Ticket: `tickets/openai/CORE-002.md` revision 1.1. Base: `2e4887df`. No counted runs. Test runner as recorded in [bindings.json](bindings.json); baseline failures per [test-baselines.json](test-baselines.json) (none in this ticket's files).
+
+## Outcome per item
+
+| Item | Outcome | Evidence |
+|---|---|---|
+| 1. Undeclared execution-view slots | **Criterion not implementable as written; contract pinned instead (user decision).** Kernels read slots with `@`, which R cannot intercept without changing the S4 classes; narrow-view callers legitimately read the zero-row prototype's column schema (for example `names(object@peptide_data)` in the rollup adapter); `checkpointDIAExecutionResult` already uses `dia_execution_fields` so unloaded slots never replace stored components. A trace of all 19 `readDIAExecutionComponents` call sites found none computing on an undeclared slot. | New test "narrow execution views carry schema-only prototypes that never replace stored components" (8/8); roxygen of `readDIAExecutionComponents` documents the contract. No behaviour change. |
+| 2. Non-order-exact DuckDB `sum()` arm | `computeSavedWorkflowPrecursorRollup(..., non_exact = FALSE)` refuses the persist-less arm with class `dia_rollup_non_exact`; with `non_exact = TRUE` it returns `execution$aggregation_frontend = "duckdb_sum_non_exact"`. Its one production caller, the experimental capacity trial (`computeDIACapacityRollup`), passes the flag explicitly. | Failing first, then 7/7: refusal, marker, released leases, and that `runDIAReferencePrecursorRollup`, `computeDIAReferencePrecursorRollup` and `computeDIARelationalRollup` never reference `non_exact`. Two existing tests now pass the flag explicitly. |
+| 3. Blank factor keys | **Review premise false; no code change.** The native kernel flags blanks only in character columns (`.rollupAssertPopulatedKey`: `is.character(values) & !nzchar(trimws(values))`), so blank factor labels are accepted by design, and both SQL validators already matched it. A cast added in this ticket made both routes stricter than the kernel; it was caught before commit and reverted. | Parity test "blank keys follow the native kernel": blank factor label accepted by kernel, diagnostic arm (identical output) and `validateDIARelationalInput`; blank character key refused by all three (7/7). |
+| 4. Group order under non-alphabetic levels | Indexed arm already matches the kernel; no change. | Test with reversed, ordered and unordered `Run` levels: output identical to the kernel (4/4), passing from the first run. |
+
+## Regression checks (full files, from source)
+
+| File | Result |
+|---|---|
+| `test-workflow-saved-qc-rollup.R` | 76 pass, 1 skip (receipt-gated frozen-kernel test) |
+| `test-workflow-checkpoint-dia-state.R` | 238 pass |
+| `test-workflow-saved-qc.R` | 108 pass |
+| `test-workflow-saved-consumers.R` | 36 pass |
+
+## Observation for the user (not changed)
+
+Whether a blank factor label should be a valid rollup key is a scientific question about the native kernel's contract. It is preserved here because every route must match the kernel; changing it would be a separate, kernel-level decision.
