@@ -961,16 +961,33 @@ partitionWorkflowCompleteGroups <- function(groups, batches, max_groups = 10000L
 #' @param scope Owned bulk query scope.
 #' @param relation,partition Trusted relation and declared partition column.
 #' @param inspect Callback receiving a parameterized predicate and scalar bindings.
+#' @param batches NULL visits each partition value; a count visits that many groups of
+#'   complete partitions (one group visits `TRUE`), never splitting a partition.
 #' @return NULL invisibly after visiting every complete partition (or empty input).
 #' @noRd
-visitWorkflowCompletePartitions <- function(scope, relation, partition, inspect) {
+visitWorkflowCompletePartitions <- function(scope, relation, partition, inspect, batches = NULL) {
     con <- scope$connection
     q <- function(x) as.character(workflowQueryQuoteIdentifier(con, x))
     stopifnot(is.character(relation), length(relation) == 1L,
         is.character(partition), length(partition) == 1L, is.function(inspect))
+    if (is.numeric(batches) && length(batches) == 1L && isTRUE(batches == 1)) {
+        inspect("TRUE", list())
+        return(invisible(NULL))
+    }
     values <- collectWorkflowBulkMetadata(scope, paste0("SELECT DISTINCT ",
         q(partition), " AS partition_value FROM ", q(relation), " ORDER BY ", q(partition)))
-    if (!nrow(values)) inspect("FALSE", list())
+    if (!nrow(values)) {
+        inspect("FALSE", list())
+        return(invisible(NULL))
+    }
+    if (!is.null(batches)) {
+        if (anyNA(values$partition_value)) cli::cli_abort(
+            "batched partitions require non-missing partition values", class = "workflow_execution_unsupported")
+        for (group in partitionWorkflowCompleteGroups(values$partition_value, batches))
+            inspect(paste0(q(partition), " IN (", paste(rep("?", length(group)), collapse = ","), ")"),
+                as.list(group))
+        return(invisible(NULL))
+    }
     for (i in seq_len(nrow(values))) inspect(paste0(q(partition), " IS NOT DISTINCT FROM ?"),
         list(values$partition_value[[i]]))
     invisible(NULL)
@@ -980,9 +997,10 @@ visitWorkflowCompletePartitions <- function(scope, relation, partition, inspect)
 #' @param scope Owned bulk query scope.
 #' @param relation,partition Trusted relation and complete partition field.
 #' @param keys Declared identity columns, including the partition column.
+#' @param batches Passed to `visitWorkflowCompletePartitions`.
 #' @return Whether any duplicate identity exists; no additional scientific rules.
 #' @noRd
-hasWorkflowPartitionDuplicates <- function(scope, relation, partition, keys) {
+hasWorkflowPartitionDuplicates <- function(scope, relation, partition, keys, batches = NULL) {
     if (!is.character(keys) || !length(keys) || anyNA(keys) || anyDuplicated(keys) ||
         !partition %in% keys) cli::cli_abort(
             "uniqueness partition must be part of the declared identity",
@@ -994,7 +1012,7 @@ hasWorkflowPartitionDuplicates <- function(scope, relation, partition, keys) {
         if (!duplicate) duplicate <<- nrow(workflowQueryCollect(con, paste0(
             "SELECT 1 FROM ", q(relation), " WHERE ", predicate, " GROUP BY ",
             paste(q(keys), collapse = ","), " HAVING count(*) > 1 LIMIT 1"), params)) > 0L
-    })
+    }, batches)
     duplicate
 }
 

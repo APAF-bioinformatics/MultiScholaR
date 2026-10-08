@@ -166,13 +166,12 @@ validateDIARelationalInput <- function(scope, input, samples) {
         ") OR ", quantities, " < 0))")
     if (nrow(workflowQueryCollect(con, paste0("SELECT 1 FROM qc_input WHERE ",
         paste(bad_values, collapse = " OR "), " LIMIT 1")))) stop("negative or non-finite abundance")
-    identity <- paste(q(c(roles$sample, roles$protein, roles$precursor)), collapse = ",")
-    duplicates <- if (isTRUE(getOption("multischolar.perf108.partition_validation", FALSE)))
-        hasWorkflowPartitionDuplicates(scope, "qc_input", roles$sample,
-            c(roles$sample, roles$protein, roles$precursor)) else
-        nrow(workflowQueryCollect(con, paste0("SELECT 1 FROM qc_input GROUP BY ", identity,
-            " HAVING count(*) > 1 LIMIT 1"))) > 0L
-    if (duplicates) stop("duplicate precursor identities")
+    # The identity includes the sample, so complete-sample batches bound the check's grouping state.
+    batches <- if (isTRUE(getOption("multischolar.perf108.partition_validation", FALSE))) NULL else
+        scope$dia_rollup_profile$batches %||% 1L
+    if (hasWorkflowPartitionDuplicates(scope, "qc_input", roles$sample,
+        c(roles$sample, roles$protein, roles$precursor), batches = batches))
+        stop("duplicate precursor identities")
     if (length(input$evidence)) {
         fields <- paste(q(c(roles$protein, input$evidence)), collapse = ",")
         if (nrow(workflowQueryCollect(con, paste0("SELECT 1 FROM (SELECT DISTINCT ", fields,
@@ -728,7 +727,14 @@ estimateDIARollupWorkingMemory <- function(scope, input, worker_cap) {
             parts[[count]] <<- part
         })
         stats <- do.call(rbind, parts[seq_len(count)])
-    } else stats <- statistics()
+    } else {
+        # Per-sample statistics are unchanged by grouping complete samples into the profile's batches.
+        parts <- list()
+        visitWorkflowCompletePartitions(scope, "qc_input", roles$sample, function(predicate, params)
+            parts[[length(parts) + 1L]] <<- statistics(predicate, params),
+            batches = scope$dia_rollup_profile$batches %||% 1L)
+        stats <- do.call(rbind, parts)
+    }
     if (any(stats$max_group_bytes > 67108864)) cli::cli_abort(
         "indivisible rollup group exceeds 64 MiB qualified aggregate-state estimate",
         class = "workflow_execution_unsupported")
