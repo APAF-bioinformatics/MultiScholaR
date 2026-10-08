@@ -7,13 +7,13 @@ installs <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = T
 # Recorded outcome per CORE build; a control must be `accepted` (coreControl).
 build_outcomes <- list(
     core_004 = list(outcome = "harness", note = "lifecycle build; not a control (harness ticket, no mechanism under test)"),
-    core_005 = list(outcome = "pending", note = "accepted or reverted by stage core-010-control, alternating this build with the PERF-108 build in one session: per-pair peak <= 1.00 (protocol v5; time reported, not judged)"),
+    core_005 = list(outcome = "reverted", note = "stage core-010-control (protocol v6) rejected it: per-pair peak 1.005 and 0.961 against the PERF-108 build; reverted in 887cde28 (user 2026-10-08)"),
     core_017 = list(outcome = "reverted", note = "stage core-017 invalid under host contention; reverted in fea29bb6; re-applied in the CORE-010 build (0d5ea8ee) after the anonymous-memory reading (user 2026-10-08)"),
     core_010 = list(outcome = "pending", note = "decided by stage core-010 (protocol v6 section 4a)"))
 # Stage bindings: each measured stage's control and candidate builds (protocol section 4).
 stage_builds <- list(`017` = list(control = "core_005", candidate = "core_017"),
     `010-control` = list(control = "perf108", candidate = "core_005"),
-    `010` = list(control = "core_005", candidate = "core_010"))
+    `010` = list(control = "perf108", candidate = "core_010", reference_role = "control"))
 # The CORE-010 budget, fixed from stage core-010-control before any budget member (protocol v6).
 budget_path <- file.path(".", "docs/qa/workflow-execution/core/core-010/budget.json")
 if (file.exists(budget_path)) stage_builds$`010`$budget_bytes <- jsonlite::read_json(budget_path)$budget_bytes

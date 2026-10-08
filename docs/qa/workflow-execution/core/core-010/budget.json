@@ -1,0 +1,17 @@
+{
+  "ticket": "CORE-010",
+  "protocol": "v7 section 4a",
+  "rule": "0.90 x median whole-slice anonymous peak of the PERF-108 build in core-010-control, rounded down to 0.25 GiB",
+  "source_stage": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/runtime/core-010-control",
+  "stage_receipt_sha256": "e3f3c09ba182eb9f6f19d1ab5dee6686fe60b478e75c664fe9a0495438438dab",
+  "decision_receipt_sha256": "a3552f0663dab9373cbab1971666bed677b44af31a3558860fd747de26c47797",
+  "member_anon_bytes": {
+    "control-1": 7098245120,
+    "control-2": 7326773248
+  },
+  "median_anon_bytes": 7212509184,
+  "budget_bytes": 6442450944,
+  "budget_gib": 6,
+  "free_at_member_start_bytes": 8589934592,
+  "fixed": "2026-10-08, before any core-010 member"
+}

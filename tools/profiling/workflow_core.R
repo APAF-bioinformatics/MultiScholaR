@@ -335,12 +335,14 @@ coreLifecycleDecision <- function(receipt, cases) {
     result
 }
 
-#' Fix the CORE-010 budget from the `core-010-control` stage (protocol v6 section 4a).
-#' @param receipt,cases That stage's receipt and cases; `candidate` is CORE-010's control build.
+#' Fix the CORE-010 budget from the `core-010-control` stage (protocol v6/v7 section 4a).
+#' @param receipt,cases That stage's receipt and cases.
+#' @param role The role holding CORE-010's control build: `candidate` (`core_005`) if CORE-005
+#'   was accepted, otherwise `control` (the PERF-108 build; protocol v7).
 #' @return B in bytes: 0.90 x the median whole-slice anonymous peak, rounded down to 0.25 GiB.
 #' @noRd
-coreBudgetBytes <- function(receipt, cases) {
-    members <- Filter(\(x) x$role == "candidate", cases)
+coreBudgetBytes <- function(receipt, cases, role = "candidate") {
+    members <- Filter(\(x) x$role == role, cases)
     stopifnot(length(members) == 2L)
     for (case in members) stopifnot(is.null(coreIneligible(receipt$cases[[case$id]], coreMemberSeconds("core-010-control"))))
     anon <- stats::median(vapply(members, \(x) receipt$cases[[x$id]]$operation$sampled_anon_bytes, numeric(1)))
@@ -357,7 +359,8 @@ coreBallastBytes <- function(available, budget, floor = 2 * 1024^3) {
 
 #' Classify the CORE-010 budget stage (protocol v6 section 4a).
 #' @param receipt,cases Budget-stage receipt and its three cases.
-#' @param reference `core-010-control` receipt and cases, for the reported time ratios.
+#' @param reference `core-010-control` receipt, cases and `role` of CORE-010's control build there,
+#'   for the reported time ratios.
 #' @return `fits_budget`, `exceeds_budget`, `budget_not_binding` or `invalid`, with time ratios.
 #' @noRd
 coreBudgetDecision <- function(receipt, cases, reference = NULL) {
@@ -392,7 +395,7 @@ coreBudgetDecision <- function(receipt, cases, reference = NULL) {
         as.integer(receipt$cases[[id]]$operation$admission$batches %||% NA_integer_),
         integer(1))
     if (!is.null(reference)) {
-        base <- Filter(\(x) x$role == "candidate", reference$cases)
+        base <- Filter(\(x) x$role == (reference$role %||% "candidate"), reference$cases)
         median_of <- function(name) stats::median(vapply(base, \(x)
             coreMetric(reference$receipt$cases[[x$id]]$operation, name), numeric(1)))
         result$time_ratios <- lapply(c(cpu = "cpu", wall = "elapsed"), \(name) vapply(c("candidate-1", "candidate-2"),

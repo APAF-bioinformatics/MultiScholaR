@@ -476,7 +476,8 @@ tryCatch({
         receipt$decision <- if (startsWith(stage, "core-lifecycle-")) helpers$coreLifecycleDecision(receipt, cases) else
             if (stage == "core-010") helpers$coreBudgetDecision(receipt, cases, list(
                 receipt = readRDS(file.path(root, "core-010-control", "stage.rds")),
-                cases = helpers$coreCases(bindings, "core-010-control"))) else
+                cases = helpers$coreCases(bindings, "core-010-control"),
+                role = bindings$tickets$`010`$reference_role %||% "candidate")) else
             helpers$coreDecision(receipt, cases, sub("core-", "", stage, fixed = TRUE))
         saveRDS(receipt$decision, file.path(stage_root, "decision.rds"))
     } else if (structural) {

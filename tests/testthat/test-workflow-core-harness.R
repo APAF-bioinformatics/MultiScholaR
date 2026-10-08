@@ -336,6 +336,10 @@ test_that("CORE-010 runs a side-by-side control stage, then a fixed budget with 
     })
     budget <- h$coreBudgetBytes(reference, control)
     expect_equal(budget, 5.75 * 1024^3)
+    # Protocol v7: with CORE-005 reverted, B comes from the PERF-108 build's members.
+    split <- reference
+    for (id in c("control-1", "control-2")) split$cases[[id]]$operation$sampled_anon_bytes <- 6.72 * 1024^3
+    expect_equal(h$coreBudgetBytes(split, control, role = "control"), 6 * 1024^3)
     expect_equal(h$coreBallastBytes(16 * 1024^3, budget), 16 * 1024^3 - 7.75 * 1024^3)
     expect_null(h$coreBallastBytes(7 * 1024^3, budget))
     b$tickets$`010`$budget_bytes <- budget
