@@ -12,7 +12,8 @@ corePrimaryMetrics <- list(
     `007` = list(metrics = "peak", guards = numeric()),
     `008` = list(metrics = c("peak", "phase:relational_validation"), guards = numeric()),
     `009` = list(metrics = "peak", guards = numeric()),
-    `010` = list(metrics = "peak", guards = numeric()),
+    `010` = list(budget_stage = TRUE),
+    `010-control` = list(metrics = "peak", guards = c(peak = 1.00)),
     `011` = list(metrics = "peak", guards = c(peak = 1.00)),
     `012` = list(metrics = character(), guards = numeric(), decision_only = TRUE),
     `013` = list(metrics = c("execution:synchronous_wait_seconds", "execution:sync_forks"),
@@ -50,8 +51,9 @@ corePhaseHookExpression <- function(fault = "none") {
 #' Turn worker phase events and coordinator samples into phase seconds and sampled peaks.
 #' @param events Data frame `uptime, id, phase, event` (`start`, then `complete` or `failed`).
 #' @param trace Data frame `uptime, current` of the coordinator's 50 ms samples.
-#' @return `phase_seconds` (summed intervals), `phase_peak_bytes` (largest sample inside any
-#'   interval; NA without a sample), `phase_status` (`failed` > `open` > `complete`).
+#' @return `phase_seconds` (summed intervals), `phase_peak_bytes` (largest `current` sample inside
+#'   any interval; NA without a sample), `phase_peak_anon_bytes` (the same for anonymous memory,
+#'   when the trace has it; protocol v6), `phase_status` (`failed` > `open` > `complete`).
 #' @noRd
 corePhaseMeasures <- function(events, trace) {
     stopifnot(is.data.frame(events), all(c("uptime", "id", "phase", "event") %in% names(events)),
@@ -59,7 +61,7 @@ corePhaseMeasures <- function(events, trace) {
     starts <- events[events$event == "start", , drop = FALSE]
     ends <- events[events$event %in% c("complete", "failed"), , drop = FALSE]
     labels <- unique(starts$phase)
-    seconds <- peaks <- stats::setNames(rep(NA_real_, length(labels)), labels)
+    seconds <- peaks <- anon <- stats::setNames(rep(NA_real_, length(labels)), labels)
     status <- stats::setNames(rep("complete", length(labels)), labels)
     last <- if (nrow(trace)) max(trace$uptime) else max(c(events$uptime, -Inf))
     for (i in seq_len(nrow(starts))) {
@@ -70,10 +72,14 @@ corePhaseMeasures <- function(events, trace) {
         state <- if (closed) end$event[[1L]] else "open"
         if (state == "failed" || state == "open" && status[[label]] != "failed") status[[label]] <- state
         seconds[[label]] <- sum(seconds[[label]], finish - starts$uptime[[i]], na.rm = TRUE)
-        inside <- trace$current[trace$uptime >= starts$uptime[[i]] & trace$uptime <= finish]
-        if (length(inside)) peaks[[label]] <- max(peaks[[label]], inside, na.rm = TRUE)
+        rows <- trace$uptime >= starts$uptime[[i]] & trace$uptime <= finish
+        if (any(rows)) {
+            peaks[[label]] <- max(peaks[[label]], trace$current[rows], na.rm = TRUE)
+            if (!is.null(trace$anon)) anon[[label]] <- max(anon[[label]], trace$anon[rows], na.rm = TRUE)
+        }
     }
-    list(phase_seconds = as.list(seconds), phase_peak_bytes = as.list(peaks), phase_status = as.list(status))
+    list(phase_seconds = as.list(seconds), phase_peak_bytes = as.list(peaks),
+        phase_peak_anon_bytes = as.list(anon), phase_status = as.list(status))
 }
 
 #' Member ceilings in seconds: lifecycle and overflow members are small.
@@ -135,7 +141,7 @@ coreControl <- function(outcomes) {
 #' @return Fixed cases in launch order; never an adaptive schedule.
 #' @noRd
 coreCases <- function(bindings, stage) {
-    stopifnot(grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|011-overflow)$", stage))
+    stopifnot(grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|010-control|011-overflow)$", stage))
     case <- function(id, role, rep, build_key, input, population, fault = "none", selector) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
@@ -163,15 +169,27 @@ coreCases <- function(bindings, stage) {
     input <- bindings$full[[population]]
     roles <- c("control", "candidate", "candidate", "control")
     reps <- c(1L, 1L, 2L, 2L)
-    lapply(seq_along(roles), function(i) case(paste(roles[[i]], reps[[i]], sep = "-"), roles[[i]], reps[[i]],
-        spec[[roles[[i]]]], input, population,
-        selector = paste("core", ticket, roles[[i]], reps[[i]], sep = ":")))
+    if (ticket == "010") {
+        # Protocol v6 budget stage: every member starts with only budget + host floor free.
+        budget <- spec$budget_bytes
+        if (!is.numeric(budget) || length(budget) != 1L || !is.finite(budget) || budget <= 0)
+            stop("the CORE-010 budget is not fixed in the bindings")
+        roles <- roles[1:3]
+        reps <- reps[1:3]
+    }
+    lapply(seq_along(roles), function(i) {
+        value <- case(paste(roles[[i]], reps[[i]], sep = "-"), roles[[i]], reps[[i]],
+            spec[[roles[[i]]]], input, population,
+            selector = paste("core", ticket, roles[[i]], reps[[i]], sep = ":"))
+        if (ticket == "010") value$budget_bytes <- spec$budget_bytes
+        value
+    })
 }
 
 #' Map a verifier selector back to its coordinator stage and case id.
 #' @noRd
 coreSelectorStage <- function(selection) {
-    stopifnot(grepl("^core:((00[6-9]|01[0-4]|017):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection))
+    stopifnot(grepl("^core:((00[6-9]|01[0-4]|017|010-control):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection))
     parts <- strsplit(sub("^core:", "", selection), ":", fixed = TRUE)[[1L]]
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("core-lifecycle-", parts[[2L]]), id = "member"))
     if (identical(parts, c("011", "overflow"))) return(list(stage = "core-011-overflow", id = "member"))
@@ -314,6 +332,72 @@ coreLifecycleDecision <- function(receipt, cases) {
             identical(status$relational_validation, "complete"))
     failing <- names(rules)[!vapply(rules, isTRUE, logical(1))]
     if (length(failing)) result$failing_rule <- failing[[1L]] else result$status <- "lifecycle_failure_observed"
+    result
+}
+
+#' Fix the CORE-010 budget from the `core-010-control` stage (protocol v6 section 4a).
+#' @param receipt,cases That stage's receipt and cases; `candidate` is CORE-010's control build.
+#' @return B in bytes: 0.90 x the median whole-slice anonymous peak, rounded down to 0.25 GiB.
+#' @noRd
+coreBudgetBytes <- function(receipt, cases) {
+    members <- Filter(\(x) x$role == "candidate", cases)
+    stopifnot(length(members) == 2L)
+    for (case in members) stopifnot(is.null(coreIneligible(receipt$cases[[case$id]], coreMemberSeconds("core-010-control"))))
+    anon <- stats::median(vapply(members, \(x) receipt$cases[[x$id]]$operation$sampled_anon_bytes, numeric(1)))
+    floor(0.90 * anon / (0.25 * 1024^3)) * 0.25 * 1024^3
+}
+
+#' Bytes the placeholder must hold so that only budget + host floor stays free (protocol v6).
+#' @return Bytes to hold, or NULL when the host already has less than that free.
+#' @noRd
+coreBallastBytes <- function(available, budget, floor = 2 * 1024^3) {
+    hold <- available - (budget + floor)
+    if (!is.finite(hold) || hold < 0) NULL else hold
+}
+
+#' Classify the CORE-010 budget stage (protocol v6 section 4a).
+#' @param receipt,cases Budget-stage receipt and its three cases.
+#' @param reference `core-010-control` receipt and cases, for the reported time ratios.
+#' @return `fits_budget`, `exceeds_budget`, `budget_not_binding` or `invalid`, with time ratios.
+#' @noRd
+coreBudgetDecision <- function(receipt, cases, reference = NULL) {
+    stopped <- c("host_headroom", "memory_guard", "worker_failed", "worker_lost")
+    result <- list(ticket = "010", status = "invalid", failing_rule = NULL, promotion_authorized = FALSE,
+        statuses = vapply(cases, \(x) receipt$cases[[x$id]]$operation$status %||% NA_character_, character(1)))
+    names(result$statuses) <- vapply(cases, `[[`, character(1), "id")
+    control <- receipt$cases[["control-1"]]$operation
+    if (identical(control$status, "complete")) {
+        result$status <- "budget_not_binding"
+        return(result)
+    }
+    if (!control$status %in% stopped) {
+        result$failing_rule <- paste0("control-1:unexpected_status:", control$status)
+        return(result)
+    }
+    for (id in c("candidate-1", "candidate-2")) {
+        op <- receipt$cases[[id]]$operation
+        if (op$status %in% stopped) {
+            result$status <- "exceeds_budget"
+            result$failing_rule <- paste0(id, ":", op$status)
+            return(result)
+        }
+        rule <- coreIneligible(receipt$cases[[id]], coreMemberSeconds("core-010"))
+        if (!is.null(rule)) {
+            result$failing_rule <- paste0(id, ":", rule)
+            return(result)
+        }
+    }
+    result$status <- "fits_budget"
+    result$batches <- vapply(c("candidate-1", "candidate-2"), \(id)
+        as.integer(receipt$cases[[id]]$operation$admission$batches %||% NA_integer_),
+        integer(1))
+    if (!is.null(reference)) {
+        base <- Filter(\(x) x$role == "candidate", reference$cases)
+        median_of <- function(name) stats::median(vapply(base, \(x)
+            coreMetric(reference$receipt$cases[[x$id]]$operation, name), numeric(1)))
+        result$time_ratios <- lapply(c(cpu = "cpu", wall = "elapsed"), \(name) vapply(c("candidate-1", "candidate-2"),
+            \(id) coreMetric(receipt$cases[[id]]$operation, name) / median_of(name), numeric(1)))
+    }
     result
 }
 

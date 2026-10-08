@@ -3861,7 +3861,7 @@ validateCheckpointReaderInput <- function(operation, input_path, selection = NUL
         !grepl("^perf108:(B[12]|T[12]|F0|N[12]|I[1-3]|J[12]|K[1-4]|M[12]|Q[CT]|U[BT]|Z[ACOVFSQL]|E[1-8]|R[CS][01]|P[AVO][01]|[YW](S[1-4]|[RPW][1-6])|PC|X(S[1-4]|R[1-6]|F[1-8])|A[SF]1|H[SF]1|C[23]|P[SF][12]|R[SFR][12]|V([1-9]|1[0-6]))$", selection) &&
         !grepl("^perf106:(L[01]|S[1-6]|F[1-8]|R[1-4]|V2-(A|V|I|J|D[12]|Q([1-9]|1[0-9]|2[0-4])))$", selection) &&
         !grepl("^perf107:(B|C|D|E|H|HF|S|L1|L2)$", selection) &&
-        !grepl("^core:((00[6-9]|01[0-4]|017):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection) &&
+        !grepl("^core:((00[6-9]|01[0-4]|017|010-control):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection) &&
         !selection %in% c("perf101:D0", "perf101:D1", "perf101:D0R", "perf101:V", "gui-sharing-repair", "gui-export-history-member", "gui-iq-history-member", "gui-ruv-pearson", "gui-native-session", "gui-native-outputs", "gui-reference-first-qc", "gui-reference-core", "gui-reference-routing", "gui-mechanism-preflight", "gui-rollup-profile", "gui-rollup-profile-preflight", "gui-raw-replay:small", "gui-raw-replay:outputs", "gui-raw-replay:verify", "gui-cohort-profile", "gui-impute-workers:preflight", "gui-impute-workers:4", "gui-impute-workers:8", "gui-cohort-size:256", "gui-cohort-size:768", "gui-cohort-size:768-threads8", "gui-cohort-threads:1", "gui-cohort-threads:2", "gui-cohort-threads:4", "gui-cohort-threads:8", "gui-raw-replay:300") &&
         !grepl("^gui-(rollup|session)-performance:(control|candidate)$", selection) &&
         !grepl("^gui-bulk-rollup:(qualification-preflight|qualification-prepare|writer-build|writer-opt-(build|preflight|diagnostic:(primary|contrast))|writer-r-preflight|writer-r-readback:[A-Za-z0-9]{6}|writer-r:(screen|full):(primary|contrast):P1[456]:[12]|io-preflight|io-prepare|io:(duckdb|fastduckdb):[12]|scan-inspection|crossover:(B|P0):(4608|9600|96000|960000):[12]|contrast:(B|P([0-9]|1[0-4]))|diagnostic|diagnostic-preflight|preflight|relational-preflight|materialize-preflight|adaptation-preflight|fast-p3-preflight|writer-preflight|screen:([ABCD]|P([0-9]|1[0-4])):[12]|full:([ABCD]|P([0-9]|1[0-4])))$", selection) &&
@@ -4577,7 +4577,7 @@ runCheckpointReaderOperation <- function(operation, library_path, run_dir,
             return(value)
         }
         if (operation == "reader-check" && !is.null(selection) &&
-            grepl("^core:((00[6-9]|01[0-4]|017):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection)) {
+            grepl("^core:((00[6-9]|01[0-4]|017|010-control):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection)) {
             # CORE independent verifier; the member itself ran in the coordinator's managed slice.
             source <- file.path(run_dir, "source")
             verification <- new.env(parent = asNamespace("MultiScholaR"))

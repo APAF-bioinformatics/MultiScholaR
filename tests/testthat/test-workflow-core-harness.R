@@ -18,7 +18,8 @@ coreSyntheticBindings <- function() {
         outcomes = list(list(ticket = "PERF-108", outcome = "accepted", build = "perf108")),
         tickets = list(`006` = list(control = "core_005", candidate = "core_006"),
             `010` = list(control = "core_005", candidate = "core_006"),
-            `017` = list(control = "core_005", candidate = "core_006")),
+            `017` = list(control = "core_005", candidate = "core_006"),
+            `010-control` = list(control = "perf108", candidate = "core_005")),
         screen = list(p14 = input(960000L)), full = list(p14 = input(24000000L), primary = input(6225000L)))
 }
 
@@ -161,14 +162,14 @@ test_that("coreDecision accepts only when every eligibility and comparison rule 
 
 test_that("a memory gain with slower time is accepted and the time cost reported", {
     h <- coreHarness()
-    cases <- h$coreCases(coreSyntheticBindings(), "core-010")
+    cases <- h$coreCases(coreSyntheticBindings(), "core-010-control")
     gain <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 4e9),
-        elapsed = c(control = 100, candidate = 120)), cases, "010")
+        elapsed = c(control = 100, candidate = 120)), cases, "010-control")
     expect_identical(gain$status, "accept")
     expect_equal(gain$ratios$peak, 4 / 7)
     expect_equal(gain$time_pair_ratios$cpu, c(1.2, 1.2))
     worse <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 7.2e9),
-        elapsed = c(control = 100, candidate = 120)), cases, "010")
+        elapsed = c(control = 100, candidate = 120)), cases, "010-control")
     expect_identical(worse$status, "reject")
     expect_identical(worse$failing_rule, "primary_metric_worse:peak")
 })
@@ -242,12 +243,15 @@ test_that("phase events and 50 ms samples give phase seconds and sampled phase p
     events <- data.frame(uptime = c(10, 11, 12, 12.5, 13, 14, 20, 21), id = c(1L, 2L, 2L, 3L, 3L, 1L, 4L, 4L),
         phase = c("outer", "check", "check", "check", "check", "outer", "late", "late"),
         event = c("start", "start", "complete", "start", "complete", "complete", "start", "failed"))
-    trace <- data.frame(uptime = c(10.5, 11.5, 12.25, 12.75, 13.5, 15), current = c(1, 5, 9, 3, 2, 8) * 1e9)
+    trace <- data.frame(uptime = c(10.5, 11.5, 12.25, 12.75, 13.5, 15), current = c(1, 5, 9, 3, 2, 8) * 1e9,
+        anon = c(1, 4, 6, 2, 1, 7) * 1e9)
     m <- h$corePhaseMeasures(events, trace)
     expect_equal(m$phase_seconds$check, 1.5)
     expect_equal(m$phase_seconds$outer, 4)
     expect_equal(m$phase_peak_bytes$check, 5e9)
     expect_equal(m$phase_peak_bytes$outer, 9e9)
+    expect_equal(m$phase_peak_anon_bytes$check, 4e9)
+    expect_equal(m$phase_peak_anon_bytes$outer, 6e9)
     expect_true(is.na(m$phase_peak_bytes$late))
     expect_identical(unlist(m$phase_status), c(outer = "complete", check = "complete", late = "failed"))
     open <- h$corePhaseMeasures(events[1:7, ], trace)
@@ -311,4 +315,50 @@ test_that("the worker phase hook flushes boundaries on completion and on the for
         expect_gte(m$phase_seconds$relational_validation, 0.04)
     }
     expect_error(h$corePhaseHookExpression("cancel"))
+})
+
+test_that("CORE-010 runs a side-by-side control stage, then a fixed budget with a placeholder", {
+    h <- coreHarness()
+    b <- coreSyntheticBindings()
+    control <- h$coreCases(b, "core-010-control")
+    expect_identical(vapply(control, `[[`, character(1), "library"), c("/lib/p", "/lib/f", "/lib/f", "/lib/p"))
+    expect_identical(control[[2]]$selector, "core:010-control:candidate:1")
+    expect_identical(h$coreSelectorStage("core:010-control:control:2"), list(stage = "core-010-control", id = "control-2"))
+    expect_error(h$coreCases(b, "core-010"), "budget is not fixed")
+    # CORE-005 qualification: whole-run peak not worse per pair, time reported.
+    qualified <- h$coreDecision(coreSyntheticReceipt(control, peak = c(control = 7.1e9, candidate = 7.0e9),
+        elapsed = c(control = 100, candidate = 130)), control, "010-control")
+    expect_identical(qualified$status, "accept")
+    expect_equal(qualified$time_pair_ratios$wall, c(1.3, 1.3))
+    reference <- coreSyntheticReceipt(control, edit = function(r) {
+        for (id in names(r$cases)) r$cases[[id]]$operation$sampled_anon_bytes <- 6.5 * 1024^3
+        r
+    })
+    budget <- h$coreBudgetBytes(reference, control)
+    expect_equal(budget, 5.75 * 1024^3)
+    expect_equal(h$coreBallastBytes(16 * 1024^3, budget), 16 * 1024^3 - 7.75 * 1024^3)
+    expect_null(h$coreBallastBytes(7 * 1024^3, budget))
+    b$tickets$`010`$budget_bytes <- budget
+    stage <- h$coreCases(b, "core-010")
+    expect_identical(vapply(stage, `[[`, character(1), "id"), c("control-1", "candidate-1", "candidate-2"))
+    expect_true(all(vapply(stage, \(x) x$budget_bytes == budget, logical(1))))
+    run <- function(control_status, candidate_status = "complete") coreSyntheticReceipt(stage, edit = function(r) {
+        r$cases[["control-1"]]$operation$status <- control_status
+        for (id in c("candidate-1", "candidate-2")) {
+            r$cases[[id]]$operation$status <- candidate_status
+            r$cases[[id]]$operation$admission <- list(batches = 9L)
+        }
+        r
+    })
+    fits <- h$coreBudgetDecision(run("host_headroom"), stage, list(receipt = reference, cases = control))
+    expect_identical(fits$status, "fits_budget")
+    expect_identical(unname(fits$batches), c(9L, 9L))
+    expect_equal(unname(fits$time_ratios$wall), c(1, 1))
+    expect_identical(h$coreBudgetDecision(run("complete"), stage)$status, "budget_not_binding")
+    over <- h$coreBudgetDecision(run("host_headroom", "worker_failed"), stage)
+    expect_identical(over$status, "exceeds_budget")
+    expect_identical(over$failing_rule, "candidate-1:worker_failed")
+    odd <- h$coreBudgetDecision(run("controller_failed"), stage)
+    expect_identical(odd$status, "invalid")
+    expect_identical(odd$failing_rule, "control-1:unexpected_status:controller_failed")
 })

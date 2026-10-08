@@ -4,7 +4,7 @@ args <- commandArgs(trailingOnly = TRUE)
 validate_only <- length(args) == 4L && identical(args[[4L]], "--validate-only")
 if (validate_only) args <- args[1:3]
 core <- length(args) == 3L &&
-    grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|011-overflow)$", args[[1L]])
+    grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|010-control|011-overflow)$", args[[1L]])
 stopifnot(!validate_only || core)
 stopifnot(length(args) == 3L, core || args[[1L]] %in%
     c("preflight-1", "preflight-2", "correction-3", "correction-4", "screen", "confirmation",
@@ -253,6 +253,7 @@ if (core) {
     list(id = "p14_control", variant = "p14", fault = "none", control = TRUE)
 )
 active_slice <- NULL
+ballast <- NULL
 tryCatch({
     for (case in cases) {
         properties <- list(available = FALSE, reason = "service not yet observed")
@@ -272,6 +273,31 @@ tryCatch({
         }
         owned <- file.path(stage_root, case$id)
         stopifnot(dir.create(owned))
+        if (core && !is.null(case$budget_bytes)) {
+            # Protocol v6: a placeholder outside the slice holds memory so only budget + floor is free.
+            hold <- helpers$coreBallastBytes(api("workflowHostAvailable")(), case$budget_bytes)
+            if (is.null(hold)) {
+                receipt$status <- "setup_refused"
+                receipt$refusal <- list(member = case$id, reason = "host has less than budget + floor free",
+                    host = coreHostReady())
+                saveRDS(receipt, receipt_path)
+                stop("CORE setup refused: host has less than budget + floor free")
+            }
+            ballast_unit <- paste0("corebudget-", basename(stage_root), "-", case$id, ".service")
+            ready <- file.path(owned, "ballast-ready")
+            api("workflowSystemd")(c("--unit", ballast_unit, "--property=MemorySwapMax=0",
+                "--property=RuntimeMaxSec=1200", "--property=Type=exec",
+                file.path(R.home("bin"), "Rscript"), "--vanilla", "-e", paste0(
+                    "x <- rep.int(as.raw(1L), ", sprintf("%.0f", hold), "); writeLines('ready', '", ready,
+                    "'); repeat Sys.sleep(1)")), command = "systemd-run")
+            waited <- 0
+            while (!file.exists(ready) && waited < 120) { Sys.sleep(0.5); waited <- waited + 0.5 }
+            stopifnot(file.exists(ready))
+            Sys.sleep(2)
+            ballast <- list(unit = ballast_unit, hold_bytes = hold, budget_bytes = case$budget_bytes,
+                available_after = api("workflowHostAvailable")())
+            host <- coreHostReady()
+        } else ballast <- NULL
         member <- c(list(schema = 1L, programme = "perf106-repair-v2", preflight = !timed,
             operation = if (case$variant == "p14") "precursor_rollup" else "minimum_peptides_per_sample",
             deadline = if (timed) member_seconds else stage_seconds,
@@ -364,6 +390,7 @@ tryCatch({
         saveRDS(receipt, receipt_path)
         api("workflowSystemd")(c("stop", config$slice), required = FALSE)
         active_slice <- NULL
+        if (!is.null(ballast)) api("workflowSystemd")(c("stop", ballast$unit), required = FALSE)
         if (timed) {
             operation <- list(status = if (!is.null(outer_guard)) outer_guard else
                     if (is.null(result)) "controller_failed" else result$status,
@@ -378,13 +405,16 @@ tryCatch({
                 clock = if (p14_stage || uptime_clock) "shared kernel uptime; namespace bootstrap excluded for both builds" else
                     "parent elapsed clock",
                 execution = if (!is.null(result)) result$execution else NULL,
-                host_at_start = if (core) host else NULL, host_at_end = if (core) coreHostReady() else NULL)
+                host_at_start = if (core) host else NULL, host_at_end = if (core) coreHostReady() else NULL,
+                ballast = ballast)
             if (core && !is.null(result$execution$request_id)) {
                 events_path <- file.path(owned, "project/.workflow-entities/.workflow-export",
                     result$execution$request_id, "phase-events.tsv")
                 if (file.exists(events_path)) operation <- c(operation, helpers$corePhaseMeasures(
                     utils::read.delim(events_path, stringsAsFactors = FALSE),
                     utils::read.delim(file.path(owned, "memory-trace.tsv"))))
+                worker_path <- file.path(dirname(events_path), "worker-result.rds")
+                if (file.exists(worker_path)) operation$admission <- readRDS(worker_path)$result$execution$admission
             }
             operation$measurement_valid <- isTRUE(result$execution$measurement_valid) &&
                 peak >= result$execution$peak_bytes &&
@@ -444,6 +474,9 @@ tryCatch({
     }
     if (core) {
         receipt$decision <- if (startsWith(stage, "core-lifecycle-")) helpers$coreLifecycleDecision(receipt, cases) else
+            if (stage == "core-010") helpers$coreBudgetDecision(receipt, cases, list(
+                receipt = readRDS(file.path(root, "core-010-control", "stage.rds")),
+                cases = helpers$coreCases(bindings, "core-010-control"))) else
             helpers$coreDecision(receipt, cases, sub("core-", "", stage, fixed = TRUE))
         saveRDS(receipt$decision, file.path(stage_root, "decision.rds"))
     } else if (structural) {
@@ -555,6 +588,7 @@ tryCatch({
 }, error = function(error) {
     if (exists("trace") && !is.null(trace)) close(trace)
     if (!is.null(active_slice)) api("workflowSystemd")(c("stop", active_slice), required = FALSE)
+    if (!is.null(ballast)) api("workflowSystemd")(c("stop", ballast$unit), required = FALSE)
     receipt$status <<- if (identical(receipt$status, "setup_refused")) "setup_refused" else "failed"
     receipt$error <<- conditionMessage(error)
     if (timed && exists("owned") && dir.exists(owned) &&
