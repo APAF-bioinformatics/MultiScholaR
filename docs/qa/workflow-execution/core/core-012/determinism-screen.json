@@ -1,0 +1,19 @@
+{
+  "input": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.djt8ku/size-960000/.workflow-entities/entities/selection-960000/payload.parquet",
+  "groups": 480000,
+  "duckdb": "1.5.5",
+  "raw": {
+    "repeats_at_8_threads_differing": [0, 0, 0],
+    "one_vs_eight_threads_differing": 15329,
+    "one_thread_vs_ordered_differing": 0,
+    "eight_threads_vs_ordered_differing": 15329,
+    "same_groups_one_eight_and_eight_ordered": true
+  },
+  "normalised": {
+    "repeats_at_8_threads_differing": [0, 0, 0],
+    "one_vs_eight_threads_differing": 15027,
+    "one_thread_vs_ordered_differing": 0,
+    "eight_threads_vs_ordered_differing": 15027,
+    "same_groups_one_eight_and_eight_ordered": true
+  }
+}

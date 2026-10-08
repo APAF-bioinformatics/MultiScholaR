@@ -65,3 +65,13 @@ Not done, because the decision was reached at step 1 (cheapest first): the fixtu
 
 Possible future work, not opened: a deterministic, correctly rounded streaming aggregate (custom C aggregate with an exact accumulator) would remove the value lists without thread dependence. Its per-group state cost is unknown. Consider it only if CORE-009 and CORE-010 leave memory too high.
 
+## Corrections (2026-10-08, post-hoc audit `CORE-SERIES-POSTHOC-AUDIT-20261008b`)
+
+- **P01, deciding evidence now tracked.** `core-012/determinism-check.R`, with output `core-012/determinism-screen.json`, reproduces the recorded figures:
+  - four runs at eight threads are identical;
+  - one against eight threads differ in 15,329 raw and 15,027 normalised groups;
+  - at one thread, `kahan_sum` equals the ordered sum in every group;
+  - the eight-thread differences are exactly those groups.
+
+  So the deviation comes from DuckDB combining per-thread partial states, not from the compensated algorithm.
+- **P02, scope of the step 1 checks.** "The predeclared tolerance and screen-level decision checks passed" overstates what was checked. Of the predeclared downstream decisions, only the intensity cutoff (`ceiling(quantile())`) and its retention vector were computed, at 11 percentiles. Minimum-peptide filtering, replicate filtering and imputation inputs were not computed. Step 1 used `screen$p14` in place of the small fixtures. This does not affect the decision, which rests on thread dependence.

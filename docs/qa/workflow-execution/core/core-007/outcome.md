@@ -19,3 +19,7 @@ About 80 `object.size()` checks walk every string after allocation. This forces 
 - **CORE-005's pending outcome** is settled by the next ticket that runs a control pair on `core_005`.
 - **What's left in this ticket:** the per-iteration sizing of growing containers (`readDIAProteinLineage`, `saveWorkflowGroupIndex`) may cost CPU time, not peak memory. `saveWorkflowGroupIndex` is already covered by CORE-008's group-index item. No separate work is opened.
 - **Series order:** this finding, with CORE-006's, shows that the remaining memory gains can come only from the DuckDB grouping phase. The series order is revisited in the plan.
+
+## Correction (2026-10-08, post-hoc audit `CORE-SERIES-POSTHOC-AUDIT-20261008b` P03)
+
+Finding 3 sized a column that came back as a plain `STRSXP` because it was dictionary-encoded, which is finding 2's mechanism. So it shows only that such a column is not lazy. Whether `object.size()` materialises a truly lazy, non-dictionary vector was not tested. Two `screen$p14` input string columns are not dictionary-encoded (`.multischolar_row_key`, `exclusion_reason`) and would be returned lazily. The closure rests on findings 1 and 2.

@@ -52,3 +52,8 @@ The native and extension capability checks call the same `workflowFileSha256`; n
 ## Update (2026-10-08)
 
 CORE-006 closed without change (see `core-006/outcome.md`), so CORE-007's control pair on `core_005` qualifies this build and records its outcome in place of CORE-006's.
+
+## Corrections (2026-10-08, post-hoc audit `CORE-SERIES-POSTHOC-AUDIT-20261008b`)
+
+- **P05:** CORE-007 and CORE-012 also ran no pairs. The build is qualified, and CORE-005's outcome recorded, by **CORE-009's** control pair on `core_005`. This supersedes the CORE-006 and CORE-007 references above.
+- **P06:** the edited writer-metadata assertion in `test-workflow-bulk-relational.R` belongs to its installed-only `writer_r` case. It has not run yet, from source or installed. CORE-009's installed regressions name it explicitly.
