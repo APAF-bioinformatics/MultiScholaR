@@ -7,7 +7,7 @@ Decision: **accept** (stage `core-018-floor`, protocol v8.1, 2026-10-09). Both m
 | Role | Build | Source | Install |
 |---|---|---|---|
 | control-1 | `core_016` (series closure build) | `6d4f7c22` | `browser-smoke.Hz6YwJ` |
-| candidate-1 | `core_018` (this ticket) | `c5aed2be` | `browser-smoke.gQ40C7` |
+| candidate-1 | `core_018` (this ticket) | `906c50dc` | `browser-smoke.gQ40C7` |
 
 Both members: `screen_p14` (8 samples, 960,000 rows), the normal 16 GiB policy, host 19.1–19.3 GiB free at start, no other managed unit.
 
@@ -29,9 +29,9 @@ The floor fell by 1.22 GiB against the 1 GiB rule. The whole-slice peak of this 
 
 ## First attempt (`core/runtime/core-018-floor.v8/`, invalid, preserved)
 
-Under protocol v8 the stage reused the `core:lifecycle:complete` verifier selector. Both members completed with the same readings (floor 2.42 → 1.12 GiB, peaks 2.77 → 1.41 GiB, elapsed 49.0 → 30.2 s), but the independent verifier resolved the selector to the old `core-lifecycle-complete/member` folder and refused on both (`verifier launcher did not exit successfully`), so the coordinator's decision is `invalid` (`control:verifier_accepted`). After the repair (own selectors; protocol v8.1, commits `929c7c34`, `f016d9a1`) the v8 members could not be verified because their recorded binding carries the v8 protocol hash, so the stage was re-run as the ticket's correction (user decision; ledger row amended). Two attempts at the standalone verifier against the v8 members are in each member folder's `verification-launch-v81.log` and `verification.rds` (`failed`).
+Under protocol v8 the stage reused the `core:lifecycle:complete` verifier selector. Both members completed with the same readings (floor 2.42 → 1.12 GiB, peaks 2.77 → 1.41 GiB, elapsed 49.0 → 30.2 s), but the independent verifier resolved the selector to the old `core-lifecycle-complete/member` folder and refused on both (`verifier launcher did not exit successfully`), so the coordinator's decision is `invalid` (`control:verifier_accepted`). After the repair (own selectors; protocol v8.1, commits `7ea3730e`, `d5e5cff8`) the v8 members could not be verified because their recorded binding carries the v8 protocol hash, so the stage was re-run as the ticket's correction (user decision; ledger row amended). Two attempts at the standalone verifier against the v8 members are in each member folder's `verification-launch-v81.log` and `verification.rds` (`failed`).
 
-## Checks on the package change (commit `b54d8060`)
+## Checks on the package change (commit `892d7fa0`)
 
 - Fresh process loading the namespace: 127 namespaces, 349 MiB anonymous (closure build: 188, 815 MiB); none of the eleven loaded.
 - `tests/testthat/test-optional-packages.R`: 10 passed (fresh-process check; classed refusal `multischolar_package_missing` from eight caller families with availability mocked absent).
@@ -41,4 +41,4 @@ Under protocol v8 the stage reused the `core:lifecycle:complete` verifier select
 
 ## Rollback
 
-`git revert b54d8060` restores Imports and `NAMESPACE`. The protocol v8/v8.1 stage and its evidence stay.
+`git revert 892d7fa0` restores Imports and `NAMESPACE`. The protocol v8/v8.1 stage and its evidence stay.

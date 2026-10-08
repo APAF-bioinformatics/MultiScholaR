@@ -1496,7 +1496,7 @@
       "build": "91e297c0a640c99ac3e41b0cae368cb954a8049e71f6a2402e64693794b2470b",
       "exact_sum": "3f2a5e9d5a9f460eb3513503118ba7ca366ebbcc77cadd3316e77548e9aa54a1",
       "install_member": "browser-smoke.gQ40C7",
-      "source_commit": "c5aed2be9829fcc43f1530d061e55ff1806a4ba7",
+      "source_commit": "906c50dcbbbab04276a3032f22059668b91dc51c",
       "runtime_patch_bytes": 0,
       "untracked_runtime_files": false
     }
