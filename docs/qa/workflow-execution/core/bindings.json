@@ -1472,11 +1472,11 @@
     },
     "core_010": {
       "ticket": "CORE-010",
-      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.JccVmY/library",
-      "build": "758944c414531508c3421625b7b90181d182022a4e94ffe3855201d821ee3a76",
-      "exact_sum": "6e78981ca316fc9888a3f599eccead49dae77d7a5c4844af464ae8d3e1b7ce3d",
-      "install_member": "browser-smoke.JccVmY",
-      "source_commit": "0085b897b68b754e0bb5ce5951800373e5699797",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.vtJFQY/library",
+      "build": "0f26956f198ce2396d77f220ac877ac83770ce5b3b6bf000424498a842296335",
+      "exact_sum": "5937686405da62fa10ba173db850db808533af6b376133e5e52f82c82769cd0a",
+      "install_member": "browser-smoke.vtJFQY",
+      "source_commit": "9d9a8daad7db6f041c15a58171728ba02729d89c",
       "runtime_patch_bytes": 0,
       "untracked_runtime_files": false
     }
@@ -1496,8 +1496,8 @@
     {
       "ticket": "CORE-005",
       "build": "core_005",
-      "outcome": "pending",
-      "note": "accepted or reverted by stage core-010-control, alternating this build with the PERF-108 build in one session: per-pair peak <= 1.00 (protocol v5; time reported, not judged)"
+      "outcome": "reverted",
+      "note": "stage core-010-control (protocol v6) rejected it: per-pair peak 1.005 and 0.961 against the PERF-108 build; reverted in 887cde28 (user 2026-10-08)"
     },
     {
       "ticket": "CORE-017",
@@ -1541,11 +1541,11 @@
     "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/runtime",
     "coordinator": "tools/profiling/workflow_perf106_repair.R",
     "protocol": "docs/qa/workflow-execution/core/protocol.md",
-    "protocol_sha256": "f4838cdcb526f6bb1821c766156e532aab3374d8cd4a12363ae447f66239460a",
+    "protocol_sha256": "ef4c43b603c004a7ae1d163dd5558385282257a814272012b69f8f9b7698d10d",
     "plan_sha256_at_protocol_freeze": "f9878de3fb060b1f51bda64ba35406bfce8cfe5a2d6a48feda428e4331aa4e77",
     "files": {
-      "tools/profiling/workflow_core.R": "c2ebff0de5936a78557159eda33b09192564b4a6b371f6cf5a6648643bb00617",
-      "tools/profiling/workflow_perf106_repair.R": "0767fb1ed7a27c0bc51054f9e4402af3853e4611db6e65d36d9470d4ffe9381d",
+      "tools/profiling/workflow_core.R": "9d844396cfbda6cc3659b79b09afd6e499933cb2a5bc45b122296aa3a407cc9e",
+      "tools/profiling/workflow_perf106_repair.R": "52992a2b9d3fb17cfd16b7c4ce6c2bde96e8155bcbaedc6023da9e42c0da7d0a",
       "tools/profiling/workflow_perf106.R": "a4d4ed234c780f44cdcd499e821d66dd7256378b494562a1c6a74c3c9a92b592",
       "tools/profiling/workflow_perf108.R": "f1293a4e03fbe0fa9e6e7103901984ed92bdb86153e77d8d04de0b5d830e4bac",
       "tools/profiling/run_workflow_checkpoint_proof.R": "56d989a021f00903f2f225bdf7c18b96029bb676faa37b9af6e5c65849d76a45",
@@ -1565,8 +1565,10 @@
         "candidate": "core_005"
       },
       "010": {
-        "control": "core_005",
-        "candidate": "core_010"
+        "control": "perf108",
+        "candidate": "core_010",
+        "reference_role": "control",
+        "budget_bytes": 6442450944
       }
     }
   }
