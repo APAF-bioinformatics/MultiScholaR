@@ -163,8 +163,8 @@ coreCases <- function(bindings, stage) {
     if (stage == "core-018-floor") {
         # Protocol v8: the shared-floor pair, screen-size lifecycle members on fixed builds.
         return(list(
-            case("control-1", "control", 1L, "core_016", bindings$screen$p14, "p14", selector = "core:lifecycle:complete"),
-            case("candidate-1", "candidate", 1L, "core_018", bindings$screen$p14, "p14", selector = "core:lifecycle:complete")))
+            case("control-1", "control", 1L, "core_016", bindings$screen$p14, "p14", selector = "core:018-floor:control:1"),
+            case("candidate-1", "candidate", 1L, "core_018", bindings$screen$p14, "p14", selector = "core:018-floor:candidate:1")))
     }
     if (stage == "core-011-overflow") stop("the overflow member is defined by CORE-011")
     ticket <- sub("core-", "", stage, fixed = TRUE)
@@ -195,7 +195,7 @@ coreCases <- function(bindings, stage) {
 #' Map a verifier selector back to its coordinator stage and case id.
 #' @noRd
 coreSelectorStage <- function(selection) {
-    stopifnot(grepl("^core:((00[6-9]|01[0-4]|017|010-control):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection))
+    stopifnot(grepl("^core:((00[6-9]|01[0-4]|017|010-control|018-floor):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection))
     parts <- strsplit(sub("^core:", "", selection), ":", fixed = TRUE)[[1L]]
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("core-lifecycle-", parts[[2L]]), id = "member"))
     if (identical(parts, c("011", "overflow"))) return(list(stage = "core-011-overflow", id = "member"))

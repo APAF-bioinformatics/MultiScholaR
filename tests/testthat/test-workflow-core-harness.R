@@ -373,7 +373,8 @@ test_that("the CORE-018 floor stage expands to a fixed pair and decides on the v
     cases <- h$coreCases(coreSyntheticBindings(), "core-018-floor")
     expect_identical(vapply(cases, `[[`, "", "id"), c("control-1", "candidate-1"))
     expect_identical(vapply(cases, `[[`, "", "library"), c("/lib/c", "/lib/n"))
-    expect_true(all(vapply(cases, `[[`, "", "selector") == "core:lifecycle:complete"))
+    expect_identical(vapply(cases, `[[`, "", "selector"), c("core:018-floor:control:1", "core:018-floor:candidate:1"))
+    expect_identical(h$coreSelectorStage("core:018-floor:candidate:1"), list(stage = "core-018-floor", id = "candidate-1"))
     expect_identical(cases[[1]]$input$rows, 960000L)
     expect_identical(h$coreMemberSeconds("core-018-floor"), 300L)
     floors <- function(control, candidate) function(r) {
