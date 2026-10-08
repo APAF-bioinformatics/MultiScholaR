@@ -1,5 +1,7 @@
 # CORE measurement protocol
 
+**Version 8** (2026-10-09, user decision on CORE-018, a post-closure amendment): new stage `core-018-floor` measures the shared process floor. Its two members are screen-size lifecycle members (`screen_p14`, selector `core:lifecycle:complete`, 300 s): `control-1` on the series closure build (`core_016`, install `Hz6YwJ`) and `candidate-1` on the CORE-018 build (`core_018`). The floor metric is the anonymous peak of the `relational_validation` phase (`phase_peak_anon_bytes$relational_validation`), which is reached before any rollup work and is independent of input size (`core/floor/outcome.md`). Decision (`coreFloorDecision`): both members eligible under §5 and lifecycle-complete, and the candidate floor at least 1 GiB below the control floor; otherwise `reject`, recorded and not retried. Memory alone decides; elapsed and CPU ratios are reported. The lifecycle stages themselves are unchanged. Version 7.1 had SHA-256 `7b3bfe5e3727276c097d46c7dbf391d616d83f6adc9a016cb1fabbf77afa2692`.
+
 **Version 7.1** (2026-10-08, editorial, audit CORE-S3-P08 and P10; no rule changes): §1 is relabelled as amended, and §4a's cap statement is limited to builds with `workflowAdmissionCap`. Version 7 had SHA-256 `ef4c43b603c004a7ae1d163dd5558385282257a814272012b69f8f9b7698d10d`.
 
 **Version 7** (2026-10-08, forced by the control-definition rule after stage `core-010-control` rejected CORE-005; user decision to apply the rule): CORE-005 is `reverted`, so CORE-010's control build is the PERF-108 build. B is taken from that build's members in `core-010-control` (role `control`) by the unchanged 0.90 × median anonymous peak rule, the budget stage's control member is the PERF-108 build, and its time ratios divide by the PERF-108 medians. The CORE-010 candidate is rebuilt without CORE-005. Version 6 had SHA-256 `f4838cdcb526f6bb1821c766156e532aab3374d8cd4a12363ae447f66239460a`.
@@ -66,6 +68,7 @@ Rscript tools/profiling/workflow_perf106_repair.R <stage> <library> <root>
 | Stage | Members in launch order | Population | Ceiling per member | Verifier selector |
 |---|---|---|---|---|
 | `core-lifecycle-complete` | `member` (candidate, no fault) | `screen_p14` | 300 s | `core:lifecycle:complete` |
+| `core-018-floor` (v8) | `control-1` (`core_016`), `candidate-1` (`core_018`); both no fault | `screen_p14` | 300 s | `core:lifecycle:complete` |
 | `core-lifecycle-fail` | `member` (candidate, fault `after_aggregate`: the worker stops right after the first `ordered_result_stage`) | `screen_p14` | 300 s | `core:lifecycle:fail` |
 | `core-006` … `core-013`, `core-017` | `control-1`, `candidate-1`, `candidate-2`, `control-2` | `full_p14` (`full_primary` for CORE-013) | 600 s | `core:<ticket>:<role>:<rep>` |
 | `core-010-control` (v6) | `control-1`, `candidate-1`, `candidate-2`, `control-2` | `full_p14` | 600 s | `core:010-control:<role>:<rep>` |

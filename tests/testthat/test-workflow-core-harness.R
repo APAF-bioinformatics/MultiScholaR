@@ -14,7 +14,8 @@ coreSyntheticBindings <- function() {
     build <- function(key) list(library = paste0("/lib/", key), build = strrep(substr(key, 1, 1), 64),
         exact_sum = paste0("sum-", key))
     list(root = "/root", protocol_sha256 = strrep("c", 64),
-        builds = list(perf108 = build("p"), core_004 = build("h"), core_005 = build("f"), core_006 = build("s")),
+        builds = list(perf108 = build("p"), core_004 = build("h"), core_005 = build("f"), core_006 = build("s"),
+            core_016 = build("c"), core_018 = build("n")),
         outcomes = list(list(ticket = "PERF-108", outcome = "accepted", build = "perf108")),
         tickets = list(`006` = list(control = "core_005", candidate = "core_006"),
             `010` = list(control = "core_005", candidate = "core_006"),
@@ -365,4 +366,37 @@ test_that("CORE-010 runs a side-by-side control stage, then a fixed budget with 
     odd <- h$coreBudgetDecision(run("controller_failed"), stage)
     expect_identical(odd$status, "invalid")
     expect_identical(odd$failing_rule, "control-1:unexpected_status:controller_failed")
+})
+
+test_that("the CORE-018 floor stage expands to a fixed pair and decides on the validation-phase anonymous floor", {
+    h <- coreHarness()
+    cases <- h$coreCases(coreSyntheticBindings(), "core-018-floor")
+    expect_identical(vapply(cases, `[[`, "", "id"), c("control-1", "candidate-1"))
+    expect_identical(vapply(cases, `[[`, "", "library"), c("/lib/c", "/lib/n"))
+    expect_true(all(vapply(cases, `[[`, "", "selector") == "core:lifecycle:complete"))
+    expect_identical(cases[[1]]$input$rows, 960000L)
+    expect_identical(h$coreMemberSeconds("core-018-floor"), 300L)
+    floors <- function(control, candidate) function(r) {
+        r$cases[["control-1"]]$operation$phase_peak_anon_bytes <- list(relational_validation = control)
+        r$cases[["candidate-1"]]$operation$phase_peak_anon_bytes <- list(relational_validation = candidate)
+        r
+    }
+    gib <- 1024^3
+    accepted <- h$coreFloorDecision(coreSyntheticReceipt(cases, elapsed = c(control = 30, candidate = 33),
+        edit = floors(2.5 * gib, 1.3 * gib)), cases)
+    expect_identical(accepted$status, "accept")
+    expect_equal(accepted$delta_bytes, 1.2 * gib)
+    expect_equal(accepted$time_pair_ratios$elapsed, 1.1)
+    rejected <- h$coreFloorDecision(coreSyntheticReceipt(cases, edit = floors(2.5 * gib, 1.6 * gib)), cases)
+    expect_identical(rejected$status, "reject")
+    expect_identical(rejected$failing_rule, "floor_reduction_below_1GiB")
+    missing <- h$coreFloorDecision(coreSyntheticReceipt(cases, edit = floors(2.5 * gib, NA_real_)), cases)
+    expect_identical(missing$status, "invalid")
+    expect_identical(missing$failing_rule, "candidate:floor_unavailable")
+    swapped <- h$coreFloorDecision(coreSyntheticReceipt(cases, edit = function(r) {
+        r <- floors(2.5 * gib, 1.3 * gib)(r)
+        r$cases[["control-1"]]$operation$swap_bytes <- 1
+        r
+    }), cases)
+    expect_identical(swapped$failing_rule, "control:zero_swap")
 })

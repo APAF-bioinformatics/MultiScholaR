@@ -474,6 +474,7 @@ tryCatch({
     }
     if (core) {
         receipt$decision <- if (startsWith(stage, "core-lifecycle-")) helpers$coreLifecycleDecision(receipt, cases) else
+            if (stage == "core-018-floor") helpers$coreFloorDecision(receipt, cases) else
             if (stage == "core-010") helpers$coreBudgetDecision(receipt, cases, list(
                 receipt = readRDS(file.path(root, "core-010-control", "stage.rds")),
                 cases = helpers$coreCases(bindings, "core-010-control"),

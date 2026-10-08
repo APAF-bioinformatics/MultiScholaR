@@ -84,7 +84,7 @@ corePhaseMeasures <- function(events, trace) {
 
 #' Member ceilings in seconds: lifecycle and overflow members are small.
 #' @noRd
-coreMemberSeconds <- function(stage) if (grepl("^core-(lifecycle-|011-overflow$)", stage)) 300L else 600L
+coreMemberSeconds <- function(stage) if (grepl("^core-(lifecycle-|011-overflow$|018-floor$)", stage)) 300L else 600L
 
 #' Refuse a counted member unless the host meets the plan's start precondition.
 #' @param host `list(available, units, ...)` from the coordinator's host reading. The platform
@@ -141,7 +141,7 @@ coreControl <- function(outcomes) {
 #' @return Fixed cases in launch order; never an adaptive schedule.
 #' @noRd
 coreCases <- function(bindings, stage) {
-    stopifnot(grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|010-control|011-overflow)$", stage))
+    stopifnot(grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|010-control|011-overflow|018-floor)$", stage))
     case <- function(id, role, rep, build_key, input, population, fault = "none", selector) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
@@ -159,6 +159,12 @@ coreCases <- function(bindings, stage) {
         return(list(case("member", "candidate", 1L, "core_004", bindings$screen$p14, "p14",
             fault = if (kind == "fail") "after_aggregate" else "none",
             selector = paste0("core:lifecycle:", kind))))
+    }
+    if (stage == "core-018-floor") {
+        # Protocol v8: the shared-floor pair, screen-size lifecycle members on fixed builds.
+        return(list(
+            case("control-1", "control", 1L, "core_016", bindings$screen$p14, "p14", selector = "core:lifecycle:complete"),
+            case("candidate-1", "candidate", 1L, "core_018", bindings$screen$p14, "p14", selector = "core:lifecycle:complete")))
     }
     if (stage == "core-011-overflow") stop("the overflow member is defined by CORE-011")
     ticket <- sub("core-", "", stage, fixed = TRUE)
@@ -332,6 +338,44 @@ coreLifecycleDecision <- function(receipt, cases) {
             identical(status$relational_validation, "complete"))
     failing <- names(rules)[!vapply(rules, isTRUE, logical(1))]
     if (length(failing)) result$failing_rule <- failing[[1L]] else result$status <- "lifecycle_failure_observed"
+    result
+}
+
+#' Decide the CORE-018 shared-floor stage (protocol v8).
+#' Both members must be eligible and lifecycle-complete; the floor is the anonymous peak of the
+#' `relational_validation` phase, and the candidate must sit at least 1 GiB below the control.
+#' Time ratios are reported, never judged.
+#' @param receipt,cases Stage receipt and its two fixed cases.
+#' @return `accept`, `reject` or `invalid` with the failing rule, the floors and the delta.
+#' @noRd
+coreFloorDecision <- function(receipt, cases) {
+    stopifnot(length(cases) == 2L)
+    floor_of <- function(op) {
+        value <- op$phase_peak_anon_bytes$relational_validation
+        if (is.numeric(value) && length(value) == 1L && is.finite(value) && value > 0) value else NA_real_
+    }
+    result <- list(status = "invalid", failing_rule = NULL, promotion_authorized = FALSE,
+        floor_bytes = list(), delta_bytes = NA_real_, time_pair_ratios = list())
+    for (case in cases) {
+        item <- receipt$cases[[case$id]]
+        rule <- coreIneligible(item, coreMemberSeconds("core-018-floor"))
+        status <- item$operation$phase_status
+        if (is.null(rule) && !(all(coreRequiredPhases %in% names(status)) && all(unlist(status) == "complete")))
+            rule <- "phase_timing"
+        if (is.null(rule) && is.na(floor_of(item$operation))) rule <- "floor_unavailable"
+        if (!is.null(rule)) {
+            result$failing_rule <- paste0(case$role, ":", rule)
+            return(result)
+        }
+        result$floor_bytes[[case$role]] <- floor_of(item$operation)
+    }
+    control <- receipt$cases[["control-1"]]$operation
+    candidate <- receipt$cases[["candidate-1"]]$operation
+    result$time_pair_ratios <- list(elapsed = candidate$elapsed_seconds / control$elapsed_seconds,
+        cpu = candidate$accounting$cpu_seconds / control$accounting$cpu_seconds)
+    result$delta_bytes <- result$floor_bytes$control - result$floor_bytes$candidate
+    result$status <- if (result$delta_bytes >= 1024^3) "accept" else "reject"
+    if (result$status == "reject") result$failing_rule <- "floor_reduction_below_1GiB"
     result
 }
 
