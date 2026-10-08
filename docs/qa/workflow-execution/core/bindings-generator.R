@@ -7,7 +7,10 @@ installs <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = T
 # Recorded outcome per CORE build; a control must be `accepted` (coreControl).
 build_outcomes <- list(
     core_004 = list(outcome = "harness", note = "lifecycle build; not a control (harness ticket, no mechanism under test)"),
-    core_005 = list(outcome = "pending", note = "accepted or reverted by CORE-010's control pair on this build (CORE-006, CORE-007, CORE-012 and CORE-009 ran no pairs) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"))
+    core_005 = list(outcome = "pending", note = "accepted or reverted by CORE-017's control pair on this build (CORE-006, CORE-007, CORE-012 and CORE-009 ran no pairs) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"),
+    core_017 = list(outcome = "pending", note = "accepted or reverted by stage core-017 (protocol v3)"))
+# Stage bindings: each measured stage's control and candidate builds (protocol section 4).
+stage_builds <- list(`017` = list(control = "core_005", candidate = "core_017"))
 stopifnot(all(names(installs) %in% names(build_outcomes)))
 repo <- normalizePath(".")
 stopifnot(file.exists(file.path(repo, "DESCRIPTION")))
@@ -78,7 +81,8 @@ b$harness <- list(root = "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-
     plan_sha256_at_protocol_freeze = plan_at_freeze,
     files = as.list(stats::setNames(vapply(file.path(repo, files), \(f) digest::digest(file = f, algo = "sha256"),
         character(1), USE.NAMES = FALSE), files)),
-    tickets = structure(list(), names = character()))
+    tickets = Filter(\(x) all(unlist(x) %in% names(b$builds)), stage_builds))
+if (!length(b$harness$tickets)) b$harness$tickets <- structure(list(), names = character())
 b$authority$plan_sha256_note <- "CORE-001 value; superseded by harness.plan_sha256_at_protocol_freeze (CORE-004)"
 jsonlite::write_json(b, path, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)
 for (key in names(installs)) cat(key, "build", b$builds[[key]]$build, "exact_sum", b$builds[[key]]$exact_sum, "\n")

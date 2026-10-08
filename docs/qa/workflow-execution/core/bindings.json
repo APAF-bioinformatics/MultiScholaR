@@ -1459,6 +1459,16 @@
       "source_commit": "c0de46ea6c27d719080b356d0f992a7af60f45f4",
       "runtime_patch_bytes": 0,
       "untracked_runtime_files": false
+    },
+    "core_017": {
+      "ticket": "CORE-017",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.4dyAum/library",
+      "build": "7caf73f9b7c5a1d36602c359dde90f92effef6d214d4f491ad19204369d5cd2e",
+      "exact_sum": "de25e8f2aa1e9fdce8a0e2a773bcbf10c4f805925f4abc89bbcf7090dfa83785",
+      "install_member": "browser-smoke.4dyAum",
+      "source_commit": "c325457ce7b8cde622eebb62eba07d59eabb2a23",
+      "runtime_patch_bytes": 0,
+      "untracked_runtime_files": false
     }
   },
   "outcomes": [
@@ -1477,7 +1487,13 @@
       "ticket": "CORE-005",
       "build": "core_005",
       "outcome": "pending",
-      "note": "accepted or reverted by CORE-010's control pair on this build (CORE-006, CORE-007, CORE-012 and CORE-009 ran no pairs) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"
+      "note": "accepted or reverted by CORE-017's control pair on this build (CORE-006, CORE-007, CORE-012 and CORE-009 ran no pairs) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"
+    },
+    {
+      "ticket": "CORE-017",
+      "build": "core_017",
+      "outcome": "pending",
+      "note": "accepted or reverted by stage core-017 (protocol v3)"
     }
   ],
   "control_receipts": {
@@ -1507,20 +1523,25 @@
     "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/runtime",
     "coordinator": "tools/profiling/workflow_perf106_repair.R",
     "protocol": "docs/qa/workflow-execution/core/protocol.md",
-    "protocol_sha256": "f6bbb48a4e9799b2e953d8d1c8b6f87ae25e1ecf31c384131092f6117970baad",
+    "protocol_sha256": "7ba6f7dca14b6c6330b8bed8b3b89531f9b2f3775adf7ce43ff1dea1273c68aa",
     "plan_sha256_at_protocol_freeze": "f9878de3fb060b1f51bda64ba35406bfce8cfe5a2d6a48feda428e4331aa4e77",
     "files": {
-      "tools/profiling/workflow_core.R": "7a6c963aa0c9a4d949e3fafc346ce7553abf82d4b1d0331ec6da1c1d102c4c30",
-      "tools/profiling/workflow_perf106_repair.R": "7fbfc630a1cceabb05e00a1fefd653646e758559d705f69b9da3837a77a0a0ea",
+      "tools/profiling/workflow_core.R": "6098403ec017d7521b9ea3087678b99824bd0cd5146f8a218665fa3069f21a20",
+      "tools/profiling/workflow_perf106_repair.R": "c749c22c144d2ad43edd86d567a5e4792b50b8bbc1a57b4b5703b68900291c5b",
       "tools/profiling/workflow_perf106.R": "a4d4ed234c780f44cdcd499e821d66dd7256378b494562a1c6a74c3c9a92b592",
       "tools/profiling/workflow_perf108.R": "f1293a4e03fbe0fa9e6e7103901984ed92bdb86153e77d8d04de0b5d830e4bac",
-      "tools/profiling/run_workflow_checkpoint_proof.R": "a5a473b54d724d65e1006c904e92e6f42c04b4a219a11a2d6d33dacb30388092",
-      "tools/profiling/run_workflow_checkpoint_proof.sh": "d7ae2af5fafac0bb5c45a9508b413a71fa34dda0147364f524a24596bebc2f04",
-      "tools/profiling/workflow_checkpoint_dia_driver.R": "8a36614a577855cef285cfd2502c2e4986d55ec34346bc56ecbdb630219ca47d",
-      "tests/testthat/test-workflow-execution-adapters.R": "b6e45714dedc73e99cf3f6f78ad2c4e88b2ea070b564f4165448916f10912e7d",
+      "tools/profiling/run_workflow_checkpoint_proof.R": "c1102b37a1a14e9e56c71912f22bc7219bcd88627524fdc12709311fc79f8e38",
+      "tools/profiling/run_workflow_checkpoint_proof.sh": "b674889b9a14b39ccd24ea8e2a3994aff5ce228e2c1eda83e5517b134122a389",
+      "tools/profiling/workflow_checkpoint_dia_driver.R": "c6e7986e6f63e91638378b579b90b7a645f1c09a43ed4c6d9ea932082d2d7214",
+      "tests/testthat/test-workflow-execution-adapters.R": "1e6a6cdf9ba8236f28bfc7e0a7924c362264c1bb9a33e79356c9e645e32f7ec0",
       "tests/testthat/helper-workflow-bulk-rollup.R": "a68d08a0769c0223bcdc1bb4294b89c20e27586385cf5c84d0ffbfd6e8bfe089",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396"
     },
-    "tickets": {}
+    "tickets": {
+      "017": {
+        "control": "core_005",
+        "candidate": "core_017"
+      }
+    }
   }
 }
