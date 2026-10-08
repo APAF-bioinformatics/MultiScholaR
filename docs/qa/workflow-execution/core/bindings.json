@@ -1479,6 +1479,26 @@
       "source_commit": "9d9a8daad7db6f041c15a58171728ba02729d89c",
       "runtime_patch_bytes": 0,
       "untracked_runtime_files": false
+    },
+    "core_016": {
+      "ticket": "CORE-016",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.Hz6YwJ/library",
+      "build": "4cbcb1460eef30cc18a5bde551eb06905ae83ecb5df9aa724c3274edb10182c1",
+      "exact_sum": "f66b6d764d6f0fcc78862c754d40dc5e6440bcc1bcd828f4532664d62d809d42",
+      "install_member": "browser-smoke.Hz6YwJ",
+      "source_commit": "6d4f7c2210850c2bd28cc07cbbed78b3d45bdf43",
+      "runtime_patch_bytes": 0,
+      "untracked_runtime_files": false
+    },
+    "core_018": {
+      "ticket": "CORE-018",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.gQ40C7/library",
+      "build": "91e297c0a640c99ac3e41b0cae368cb954a8049e71f6a2402e64693794b2470b",
+      "exact_sum": "3f2a5e9d5a9f460eb3513503118ba7ca366ebbcc77cadd3316e77548e9aa54a1",
+      "install_member": "browser-smoke.gQ40C7",
+      "source_commit": "c5aed2be9829fcc43f1530d061e55ff1806a4ba7",
+      "runtime_patch_bytes": 0,
+      "untracked_runtime_files": false
     }
   },
   "outcomes": [
@@ -1510,6 +1530,18 @@
       "build": "core_010",
       "outcome": "accepted",
       "note": "accepted by user decision 2026-10-08 on stage core-010 evidence (budget_not_binding; candidate peak 20-25% lower under reduced free memory, identical output); not a protocol pass; see core-010/outcome.md"
+    },
+    {
+      "ticket": "CORE-016",
+      "build": "core_016",
+      "outcome": "closure",
+      "note": "series closure build (6d4f7c22, install Hz6YwJ); the control of stage core-018-floor; not a mechanism build"
+    },
+    {
+      "ticket": "CORE-018",
+      "build": "core_018",
+      "outcome": "undecided",
+      "note": "CORE-018 candidate (app-only imports moved to Suggests); decided by stage core-018-floor (protocol v8)"
     }
   ],
   "control_receipts": {
@@ -1541,11 +1573,11 @@
     "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/runtime",
     "coordinator": "tools/profiling/workflow_perf106_repair.R",
     "protocol": "docs/qa/workflow-execution/core/protocol.md",
-    "protocol_sha256": "7b3bfe5e3727276c097d46c7dbf391d616d83f6adc9a016cb1fabbf77afa2692",
+    "protocol_sha256": "02678ae65685c425d39dbac76e235a6267391a5b0415f649bc6988f6deb3e926",
     "plan_sha256_at_protocol_freeze": "f9878de3fb060b1f51bda64ba35406bfce8cfe5a2d6a48feda428e4331aa4e77",
     "files": {
-      "tools/profiling/workflow_core.R": "9d844396cfbda6cc3659b79b09afd6e499933cb2a5bc45b122296aa3a407cc9e",
-      "tools/profiling/workflow_perf106_repair.R": "52992a2b9d3fb17cfd16b7c4ce6c2bde96e8155bcbaedc6023da9e42c0da7d0a",
+      "tools/profiling/workflow_core.R": "8affbb4e05220c648082ace66b6a9f1f6a805442c4ebccc8ceb4ce8257158f45",
+      "tools/profiling/workflow_perf106_repair.R": "f92c3e34cfdf0640911af68a538434b404d3cd2011af13a750e8878d7420746f",
       "tools/profiling/workflow_perf106.R": "a4d4ed234c780f44cdcd499e821d66dd7256378b494562a1c6a74c3c9a92b592",
       "tools/profiling/workflow_perf108.R": "f1293a4e03fbe0fa9e6e7103901984ed92bdb86153e77d8d04de0b5d830e4bac",
       "tools/profiling/run_workflow_checkpoint_proof.R": "41492212ed08104cfc4d83054de26fc75e072ad1274a80b9f780f138e998c28e",
