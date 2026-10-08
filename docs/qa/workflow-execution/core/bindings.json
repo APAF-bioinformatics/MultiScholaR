@@ -1477,7 +1477,7 @@
       "ticket": "CORE-005",
       "build": "core_005",
       "outcome": "pending",
-      "note": "accepted or reverted by CORE-006's control pair against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"
+      "note": "accepted or reverted by CORE-007's control pair (CORE-006 closed without change) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"
     }
   ],
   "control_receipts": {
@@ -1508,7 +1508,7 @@
     "coordinator": "tools/profiling/workflow_perf106_repair.R",
     "protocol": "docs/qa/workflow-execution/core/protocol.md",
     "protocol_sha256": "f6bbb48a4e9799b2e953d8d1c8b6f87ae25e1ecf31c384131092f6117970baad",
-    "plan_sha256_at_protocol_freeze": "cc7e9e9fa7eb04cf25fade6e2c03ac7f2f6edb77292e35d8c05b0fad642df69d",
+    "plan_sha256_at_protocol_freeze": "8f77b34b99098e9c0c48c0d0f2137bd5a5f1698fe04fc399aca40dc7f4453f05",
     "files": {
       "tools/profiling/workflow_core.R": "7a6c963aa0c9a4d949e3fafc346ce7553abf82d4b1d0331ec6da1c1d102c4c30",
       "tools/profiling/workflow_perf106_repair.R": "7fbfc630a1cceabb05e00a1fefd653646e758559d705f69b9da3837a77a0a0ea",

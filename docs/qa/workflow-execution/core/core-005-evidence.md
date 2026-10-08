@@ -48,3 +48,7 @@ The native and extension capability checks call the same `workflowFileSha256`; n
 
 - **Exact P14 cases on the installed candidate, and the outcome record.** CORE-005 has no counted run. CORE-006's control pair runs full P14 on `core_005` with oracle verification. It records CORE-005 as `accepted` (peak ≤ 1.00 and elapsed ≤ 1.05 against the PERF-108 `full_p14` receipts) or `reverted`. Until then `core_005` is not an accepted control.
 - **Measurement.** No measurement claim is made; caching is expected to save hashing time only.
+
+## Update (2026-10-08)
+
+CORE-006 closed without change (see `core-006/outcome.md`), so CORE-007's control pair on `core_005` qualifies this build and records its outcome in place of CORE-006's.
