@@ -476,14 +476,16 @@ test_that("exact relational rollups preserve native science and release resource
                     expect_identical(result$execution$writer_backend,
                         if (profile == "P13") "fast_arrow" else "fast_r")
                     expect_identical(result$execution$writer_threads, 8L)
+                    # Profiles here run arm F, which stages its output unless the native writer
+                    # is selected (PERF-108 77eeab03; audit CORE-S3-R01).
+                    if (isTRUE(getOption("multischolar.perf108.native_output", FALSE))) {
+                        expect_equal(result$execution$intermediate_bytes_written, 0)
+                        expect_identical(result$execution$output_transport, "owned_query_arrow_to_native_writer")
+                    } else expect_gt(result$execution$intermediate_bytes_written, 0)
                     if (native108) {
-                        if (isTRUE(getOption("multischolar.perf108.native_output", FALSE))) {
-                            expect_equal(result$execution$intermediate_bytes_written, 0)
-                            expect_identical(result$execution$output_transport, "owned_query_arrow_to_native_writer")
-                        } else expect_gt(result$execution$intermediate_bytes_written, 0)
                         if (nrow(cases[[case]])) expect_gt(result$execution$fastduckdb_calls, 0L) else
                             expect_identical(result$execution$fastduckdb_calls, 0L)
-                    } else expect_equal(result$execution$intermediate_bytes_written, 0)
+                    }
                 }
                 if (profile %in% c("P10", "P12")) {
                     expect_identical(result$execution$fastduckdb_threads, 8L)
