@@ -1541,7 +1541,7 @@
     "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/runtime",
     "coordinator": "tools/profiling/workflow_perf106_repair.R",
     "protocol": "docs/qa/workflow-execution/core/protocol.md",
-    "protocol_sha256": "ef4c43b603c004a7ae1d163dd5558385282257a814272012b69f8f9b7698d10d",
+    "protocol_sha256": "7b3bfe5e3727276c097d46c7dbf391d616d83f6adc9a016cb1fabbf77afa2692",
     "plan_sha256_at_protocol_freeze": "f9878de3fb060b1f51bda64ba35406bfce8cfe5a2d6a48feda428e4331aa4e77",
     "files": {
       "tools/profiling/workflow_core.R": "9d844396cfbda6cc3659b79b09afd6e499933cb2a5bc45b122296aa3a407cc9e",

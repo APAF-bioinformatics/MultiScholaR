@@ -56,3 +56,10 @@ This build (`core_010`, including CORE-017's per-batch checks) is the next contr
 - Recalibrate `diaRollupRowBytes` against these receipts. The candidates' estimates admitted 5–6 batches with real peaks well inside their caps (5.15 / 4.77 GiB anonymous against 5.32 / 4.98 GiB caps, whole slice), so the margin is real but thin.
 - `multischolar.dia_rollup_batches` is removed in CORE-015.
 - A noise tolerance for per-pair peak guards should be decided before the next stage that uses one.
+
+## Corrections (2026-10-08, post-hoc audit `CORE-SERIES-POSTHOC-AUDIT-20261008c`)
+
+- **P01, budget not reached.** Free memory at member start was 0.79–1.13 GiB above the declared B + floor (8.00 GiB), and protocol v6 had no upper-bound check. The declared budget was therefore never tested, and the control's completion is uninterpretable; it is not evidence that the old build fits 6.0 GiB. The candidates' evidence stands, since each adapted to the cap it observed. Before the budget stage is reused, the placeholder must re-check free memory just before launch and re-size or refuse beyond a stated drift. That fix, and recording batches and time ratios on every decision path (P09), are deferred to that reuse.
+- **P03, margin.** From `9e540d8f` the host term of the worker cap also leaves the 1 GiB growth reserve free above the host floor. The measured runs predate this; with it, the same free memory gives a smaller cap and more batches.
+- **P05, calibration.** `diaRollupRowBytes` comes from a two-point fit using the CORE-017 traces and PERF-108's six-batch run (another build, on a quiet host), not from the CORE-017 traces alone. The docstring is corrected.
+- **P07, time.** "No measured time cost" means: in this stage, against one control member, under protocol v5, where time is reported and not judged. PERF-108 measured +46% for six batches on a quiet host.

@@ -693,9 +693,13 @@ computeDIARelationalRollup <- function(store, input, persist, arm = "D", samples
 }
 
 #' Bytes per input row for work over the whole input before batching (validation, admission,
-#' layout). Calibrated 2026-10-08 (CORE-010) from the CORE-017 `full_p14` traces: anonymous
-#' memory of about 2.1 GiB beyond the per-batch terms on 24,000,000 rows (61 bytes per row),
-#' rounded up. The kernel cgroup guard remains authoritative.
+#' layout). Calibrated 2026-10-08 (CORE-010) by a two-point fit of worker anonymous memory on
+#' `full_p14` (24,000,000 rows): three batches from the CORE-017 traces (`core_005`, about 5.0
+#' GiB after removing about 1.5 GiB of controller memory) and six batches from PERF-108's
+#' unprofiled run (another build, quiet host, 5.04 GiB whole-slice). The fit gave about 2.1 GiB
+#' outside the per-batch terms (61 bytes per row, rounded up to 64); its per-batch coefficient
+#' (0.61) is not used, so the per-batch terms stay at their conservative weight of 1. The
+#' kernel cgroup guard remains authoritative.
 #' @noRd
 diaRollupRowBytes <- 64
 
