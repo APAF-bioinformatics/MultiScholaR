@@ -40,7 +40,20 @@ Copied verbatim from `tickets/openai/CORE-012.md` revision 1.1, item 2 (SHA-256 
 
 ## Results
 
-_None yet._
+### Step 1: `screen$p14`, in-process (2026-10-08; not counted)
+
+Script `core-012/accuracy-check.R`; raw output `core-012/accuracy-screen.json`. Input: `selection-960000` (960,000 rows), 480,000 groups, every group exactly two values. Ordered sum is R `sum()` on the non-missing values in source order, the C kernel's semantics. Compensated sum is DuckDB 1.5.5 `kahan_sum` at eight threads. The reference is the exact rational sum.
+
+| | Raw | Normalised |
+|---|---|---|
+| Groups where compensated equals ordered, bit for bit | 464,671 / 480,000 | 464,973 / 480,000 |
+| Max relative deviation, ordered sum | 1.11e-16 | 1.11e-16 |
+| Max relative deviation, compensated sum | 2.99e-16 | 3.02e-16 |
+| Within 2^-50 (8.88e-16) | ordered yes, compensated yes | ordered yes, compensated yes |
+| Intensity cutoff `ceiling(quantile())` and retention, 11 percentiles (0.5–99) | identical 11/11 | identical 11/11 |
+
+**Determinism (finding outside the predeclared list).** Repeated at eight threads, `kahan_sum` returned identical values in four runs. At one thread against eight threads, 15,329 raw groups differ: the compensated result depends on how DuckDB combines per-thread partial states. The ordered sum does not depend on threads, because each group is reduced from its source-ordered list. The predeclared rule does not name thread or partition dependence. It is recorded here for the user's decision before any guarded run.
+
 
 ## Decision
 

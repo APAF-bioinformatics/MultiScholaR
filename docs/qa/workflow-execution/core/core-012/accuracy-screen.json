@@ -1,0 +1,185 @@
+{
+  "input": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.djt8ku/size-960000/.workflow-entities/entities/selection-960000/payload.parquet",
+  "groups": 480000,
+  "group_sizes": {
+    "2": 480000
+  },
+  "raw": {
+    "bit_identical_groups": 464671,
+    "differing_groups": 15329,
+    "missing_ordered": 741,
+    "missing_kahan": 741,
+    "max_relative_deviation_ordered": 1.11022264908495e-16,
+    "max_relative_deviation_kahan": 2.99216013150918e-16,
+    "within_tolerance_ordered": true,
+    "within_tolerance_kahan": true,
+    "cutoffs": [
+      {
+        "percentile": 0.5,
+        "threshold_ordered": 4935453,
+        "threshold_kahan": 4935453,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 1,
+        "threshold_ordered": 5875854,
+        "threshold_kahan": 5875854,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 2.5,
+        "threshold_ordered": 7895678,
+        "threshold_kahan": 7895678,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 5,
+        "threshold_ordered": 9563638,
+        "threshold_kahan": 9563638,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 10,
+        "threshold_ordered": 11627955,
+        "threshold_kahan": 11627955,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 25,
+        "threshold_ordered": 17355733,
+        "threshold_kahan": 17355733,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 50,
+        "threshold_ordered": 31941725,
+        "threshold_kahan": 31941725,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 75,
+        "threshold_ordered": 58262790,
+        "threshold_kahan": 58262790,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 90,
+        "threshold_ordered": 85542629,
+        "threshold_kahan": 85542629,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 95,
+        "threshold_ordered": 101367625,
+        "threshold_kahan": 101367625,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 99,
+        "threshold_ordered": 140538053,
+        "threshold_kahan": 140538053,
+        "identical_threshold": true,
+        "identical_retention": true
+      }
+    ]
+  },
+  "normalised": {
+    "bit_identical_groups": 464973,
+    "differing_groups": 15027,
+    "missing_ordered": 741,
+    "missing_kahan": 741,
+    "max_relative_deviation_ordered": 1.11022133526039e-16,
+    "max_relative_deviation_kahan": 3.0188009147519e-16,
+    "within_tolerance_ordered": true,
+    "within_tolerance_kahan": true,
+    "cutoffs": [
+      {
+        "percentile": 0.5,
+        "threshold_ordered": 5083517,
+        "threshold_kahan": 5083517,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 1,
+        "threshold_ordered": 6052130,
+        "threshold_kahan": 6052130,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 2.5,
+        "threshold_ordered": 8132548,
+        "threshold_kahan": 8132548,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 5,
+        "threshold_ordered": 9850547,
+        "threshold_kahan": 9850547,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 10,
+        "threshold_ordered": 11976793,
+        "threshold_kahan": 11976793,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 25,
+        "threshold_ordered": 17876404,
+        "threshold_kahan": 17876404,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 50,
+        "threshold_ordered": 32899977,
+        "threshold_kahan": 32899977,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 75,
+        "threshold_ordered": 60010674,
+        "threshold_kahan": 60010674,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 90,
+        "threshold_ordered": 88108908,
+        "threshold_kahan": 88108908,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 95,
+        "threshold_ordered": 104408654,
+        "threshold_kahan": 104408654,
+        "identical_threshold": true,
+        "identical_retention": true
+      },
+      {
+        "percentile": 99,
+        "threshold_ordered": 144754194,
+        "threshold_kahan": 144754194,
+        "identical_threshold": true,
+        "identical_retention": true
+      }
+    ]
+  }
+}
