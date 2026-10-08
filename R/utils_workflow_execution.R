@@ -436,8 +436,11 @@ workflowMemoryCounter <- function(path) {
 #' @noRd
 workflowHostAvailable <- function() {
     line <- grep("^MemAvailable:", readLines("/proc/meminfo", warn = FALSE), value = TRUE)
-    value <- suppressWarnings(as.numeric(strsplit(trimws(line), "[[:space:]]+")[[1L]][[2L]])) * 1024
-    if (length(value) != 1L || !is.finite(value) || value < 0) cli::cli_abort("host memory unavailable")
+    fields <- if (length(line) == 1L) strsplit(trimws(line), "[[:space:]]+")[[1L]] else character()
+    value <- if (length(fields) >= 2L) suppressWarnings(as.numeric(fields[[2L]])) * 1024 else NA_real_
+    if (length(value) != 1L || !is.finite(value) || value < 0) cli::cli_abort(
+        "host memory unavailable: /proc/meminfo has no usable MemAvailable (Linux 3.14 or later required)",
+        class = "workflow_execution_unsupported")
     value
 }
 
@@ -693,11 +696,14 @@ checkWorkflowApplication <- function(application) {
 openWorkflowPeakWindow <- function(application) {
     if (!inherits(application, "WorkflowExecutionApplication") || application$closed ||
         !identical(application$pid, Sys.getpid())) cli::cli_abort("managed peak owner required")
-    con <- file(file.path(application$cgroup, "memory.peak"), open = "r+")
+    refuse <- function(error) cli::cli_abort(paste("cannot reset the cgroup memory.peak counter;",
+        "managed execution requires cgroup v2 on Linux 6.12 or later"),
+        class = "workflow_execution_unsupported", parent = error)
+    con <- tryCatch(suppressWarnings(file(file.path(application$cgroup, "memory.peak"), open = "r+")),
+        error = refuse)
     ready <- FALSE
     on.exit(if (!ready) close(con))
-    writeLines("0", con)
-    flush(con)
+    tryCatch(suppressWarnings({ writeLines("0", con); flush(con) }), error = refuse)
     ready <- TRUE
     con
 }
@@ -1763,7 +1769,7 @@ validateWorkflowActionParameters <- function(operation, parameters, policy, reso
         cli::cli_abort("unsupported execution parameters", class = "workflow_execution_invalid")
     if (operation == "precursor_rollup") {
         if (length(parameters)) cli::cli_abort("P14 has no caller-selectable execution settings")
-        diaRollupExtensionInfo()
+        diaRollupNativeInfo()
     } else if (operation == "minimum_peptides_per_sample") {
         allowed <- c("peptides_per_sample_cutoff", "inclusion_list")
         if (length(parameters) && (is.null(names(parameters)) ||

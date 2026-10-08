@@ -1,6 +1,6 @@
 test_that("staged-file cache ownership preserves ordered pages and failure isolation", {
-    role <- Sys.getenv("MULTISCHOLAR_PERF108_CACHE_ROLE")
-    skip_if(!role %in% c("current", "candidate"), "explicit installed cache qualification")
+    skip_if_not_installed("fastduckdb")
+    role <- "candidate"  # CORE-015: the staged reader always clears the native cache on entry and exit.
     root <- tempfile("cache-fixture-")
     dir.create(root)
     on.exit(unlink(root, recursive = TRUE))
@@ -21,7 +21,7 @@ test_that("staged-file cache ownership preserves ordered pages and failure isola
         expect_lte(as.numeric(object.size(part)), 67108864)
         parts[[length(parts) + 1L]] <<- part
     }
-    expect_identical(streamDIARelationalResultFile(NULL, path, consume, TRUE, rows = n), 3L)
+    expect_identical(streamDIARelationalResultFile(path, consume, rows = n), 3L)
     actual <- do.call(rbind, parts)
     rownames(actual) <- NULL
     expect_identical(actual, original[c("value", "label")])
@@ -39,24 +39,24 @@ test_that("staged-file cache ownership preserves ordered pages and failure isola
         lazy_strings = FALSE, filter = list(.dia_output_order = c(1, 2)))$value, c(-1, -2))
 
     clears <- 0L
-    expect_error(streamDIARelationalResultFile(NULL, path,
-        function(part) stop("owned cache consumer failure"), TRUE, rows = n), "owned cache consumer failure")
+    expect_error(streamDIARelationalResultFile(path,
+        function(part) stop("owned cache consumer failure"), rows = n), "owned cache consumer failure")
     expect_identical(clears, if (role == "candidate") 2L else 1L)
     parts <- list()
-    streamDIARelationalResultFile(NULL, path, consume, TRUE, rows = n)
+    streamDIARelationalResultFile(path, consume, rows = n)
     actual <- do.call(rbind, parts)
     rownames(actual) <- NULL
     expect_identical(actual, updated[c("value", "label")])
     writeBin(as.raw(c(1L, 2L, 3L)), path)
     clears <- 0L
-    expect_error(streamDIARelationalResultFile(NULL, path, consume, TRUE, rows = n))
+    expect_error(streamDIARelationalResultFile(path, consume, rows = n))
     expect_identical(clears, if (role == "candidate") 2L else 1L)
     arrow::write_parquet(updated, path, chunk_size = 10240L)
     expect_identical(fastduckdb::read_parquet_fast(path, columns = "value", n_threads = 8L,
         filter = list(.dia_output_order = c(n, n)))$value, -as.double(n))
     clears <- 0L
-    expect_identical(streamDIARelationalResultFile(NULL, path,
-        function(part) stop("empty input must not be consumed"), TRUE, rows = 0), 0L)
+    expect_identical(streamDIARelationalResultFile(path,
+        function(part) stop("empty input must not be consumed"), rows = 0), 0L)
     expect_identical(clears, if (role == "candidate") 2L else 0L)
     clear()
     expect_length(list.files(root, pattern = "replacement"), 0L)

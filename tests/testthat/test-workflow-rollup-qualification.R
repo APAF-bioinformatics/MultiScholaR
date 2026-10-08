@@ -290,7 +290,7 @@ test_that("production rollup qualification uses frozen prepared cases", {
             source = selected, phases = list(), failures = list(), profiling = FALSE,
             runtime_rdb_sha256 = digest::digest(file = file.path(Sys.getenv("MULTISCHOLAR_DIA008_LIBRARY"),
                 "MultiScholaR", "R", "MultiScholaR.rdb"), algo = "sha256"),
-            extension_sha256 = diaRollupExtensionInfo()$manifest$binary_sha256)
+            extension_sha256 = diaRollupNativeInfo()$manifest$binary_sha256)
         path <- file.path(root, "rollup-qualification.json")
         flush <- function() jsonlite::write_json(receipt, path, pretty = TRUE, auto_unbox = TRUE,
             null = "null", digits = NA)

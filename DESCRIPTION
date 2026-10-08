@@ -379,7 +379,6 @@ Collate:
     'utils_workflow_saved_table_codec.R'
     'utils_workflow_dia_qc_rollup.R'
     'utils_workflow_dia_relational_rollup.R'
-    'utils_workflow_dia_ordered_reduce.R'
     'utils_workflow_dia_products.R'
     'utils_workflow_dia_da.R'
     'utils_workflow_saved_exports.R'
@@ -387,6 +386,7 @@ Collate:
     'utils_workflow_dia_sessions.R'
     'zzz.R'
 Suggests:
+    duckplyr (>= 1.2.1),
     AnnotationDbi,
     beepr,
     BiocManager,
@@ -443,7 +443,6 @@ Imports:
     digest,
     dplyr,
     duckdb,
-    duckplyr (>= 1.2.1),
     filelock (>= 1.0.3),
     parallel,
     forcats,

@@ -1744,7 +1744,7 @@ test_that("bulk rollup experiment preserves complete operations and rejects rela
         })
         receipt$duckplyr_source_sha256 <- digest::digest(file = file.path(proof,
             "bulk-rollup-library", "duckplyr_1.2.1.tar.gz"), algo = "sha256")
-        receipt$exact_sum_extension_sha256 <- diaRollupExtensionInfo()$manifest$binary_sha256
+        receipt$exact_sum_extension_sha256 <- diaRollupNativeInfo()$manifest$binary_sha256
         if (native_preflight) {
             withr::local_libpaths(c(file.path(proof, "bulk-rollup-library"), .libPaths()))
             stopifnot(as.character(utils::packageVersion("duckdb")) == "1.5.5",

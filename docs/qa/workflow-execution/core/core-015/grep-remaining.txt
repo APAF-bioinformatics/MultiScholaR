@@ -1,0 +1,7 @@
+      1 tests/testthat/test-perf108-structural-decision.R
+      4 tests/testthat/test-workflow-execution-adapters.R
+      2 tools/profiling/perf108-fastduckdb/freeze-structural.R
+      5 tools/profiling/workflow_checkpoint_dia_driver.R
+      2 tools/profiling/workflow_perf106.R
+      2 tools/profiling/workflow_perf108_ordered.R
+      6 tools/profiling/workflow_perf108_structural.R

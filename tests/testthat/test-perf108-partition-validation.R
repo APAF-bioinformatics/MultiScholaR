@@ -9,11 +9,10 @@ test_that("partitioned admission preserves the conservative estimate and declare
     identity <- newSavedWorkflowScientificIdentity(input = "partition-contract", design = "small",
         parameters = "unchanged", selectors = "all", software = "native-api-v1")
     input <- saveWorkflowPrecursorRollupInput(store, object, "input", identity)
-    scope <- newDIARelationalScope(store, input, profile = "P14", native = TRUE)
+    scope <- newDIARelationalScope(store, input, profile = "P14")
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE, after = FALSE)
     validateDIARelationalInput(scope, input, NULL)
-    original <- withr::with_options(list(multischolar.perf108.partition_validation = FALSE),
-        estimateDIARollupWorkingMemory(scope, input, 16 * 1024^3))
+    original <- estimateDIARollupWorkingMemory(scope, input, 16 * 1024^3)
     expect_identical(estimateDIARollupWorkingMemory(scope, input, 16 * 1024^3), original)
     con <- scope$connection
     workflowQueryExecute(con, paste0("CREATE TEMP TABLE generic_measurements AS SELECT ",

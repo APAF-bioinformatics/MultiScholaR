@@ -251,8 +251,8 @@ computeDIABulkRollup <- function(store, input, persist, kernel, cluster, samples
 #' @noRd
 runDIABulkOperation <- function(manager, root, proof, arm, samples, phase, failure = FALSE) {
     profile <- if (grepl("^P([0-9]|1[0-6])$", arm)) arm else "P0"
-    if (grepl("^P([0-9]|1[0-6])$", arm)) arm <- "D"
-    if (identical(Sys.getenv("MULTISCHOLAR_PERF108_LOCAL"), "true") && profile == "P14") arm <- "C"
+    # CORE-015: P14 runs only on the native route (arm F).
+    if (grepl("^P([0-9]|1[0-6])$", arm)) arm <- "F"
     if (identical(Sys.getenv("MULTISCHOLAR_PERF108_NATIVE"), "true") && profile == "P14") arm <- "F"
     cluster <- NA
     on.exit(if (inherits(cluster, "multidplyr_cluster")) stopDIAWorkerCluster(cluster), add = TRUE)
@@ -261,8 +261,8 @@ runDIABulkOperation <- function(manager, root, proof, arm, samples, phase, failu
     workers <- if (arm == "A") vapply(cluster, \(worker) worker$get_pid(), integer(1)) else Sys.getpid()
     testthat::local_mocked_bindings(computeSavedWorkflowPrecursorRollup = function(store, input, persist = NULL) {
         stopifnot(!is.null(persist))
-        if (arm %in% c("C", "D", "F")) return(computeDIARelationalRollup(store, input, persist,
-            arm, samples, phase, if (arm == "F") NULL else diaRollupExtensionInfo()$path, profile = profile))
+        if (identical(arm, "F")) return(computeDIARelationalRollup(store, input, persist,
+            arm, samples, phase, NULL, profile = profile))
         computeDIABulkRollup(store, input, persist, kernel, cluster, samples, phase)
     })
     project <- file.path(root, "dia_baseline_smoke")

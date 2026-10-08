@@ -220,7 +220,6 @@ openWorkflowTableWriter <- function(path, metadata, progress = NULL, backend = "
     writer$pending <- list()
     writer$pending_rows <- writer$pending_bytes <- 0
     writer$closed <- FALSE
-    writer$native_query <- FALSE
     writer
 }
 
@@ -262,18 +261,8 @@ appendWorkflowTableWriter <- function(writer, table, at = seq_len(nrow(table))) 
         if (writer$optimization == "metadata") writer$schema_metadata <- schema_metadata
     }
     if (writer$backend == "fast_r") {
-        if (isTRUE(writer$native_query) && n) cli::cli_abort(
-            "owned query writer accepts native batches after schema initialization",
-            class = "saved_entity_unsupported")
         if (is.null(writer$output)) {
-            opener <- fastduckdb::open_parquet_writer_fast
-            if (isTRUE(writer$native_query)) {
-                # The codec retains factor levels/attributes in its existing
-                # restoration metadata; physical values can remain UTF-8.
-                storage[] <- lapply(storage, function(x) if (is.factor(x)) as.character(x) else x)
-                opener <- fastduckdb::open_query_writer_fast
-            }
-            writer$output <- opener(storage[0, , drop = FALSE],
+            writer$output <- fastduckdb::open_parquet_writer_fast(storage[0, , drop = FALSE],
                 writer$path, metadata = schema_metadata, n_threads = 8L)
             updateWorkflowFastWriter(writer, fastduckdb::flush_parquet_writer_fast(writer$output))
         }
@@ -315,41 +304,6 @@ appendWorkflowTableWriter <- function(writer, table, at = seq_len(nrow(table))) 
     }
     writer$rows <- writer$rows + n
     invisible(NULL)
-}
-
-#' Stream owned query batches to the existing checkpoint writer.
-#' @param con,sql Scoped fastduckdb connection and ordered scientific query.
-#' @param writer Initialized native-query checkpoint writer.
-#' @param observer_columns Only columns needed by the bounded R summary consumer.
-#' @param observe Callback receiving one bounded summary projection.
-#' @param batch_rows Pre-admitted transfer size, at most 10,000.
-#' @return Number of native batches consumed; no full result is collected.
-#' @noRd
-streamWorkflowQueryToWriter <- function(con, sql, writer, observer_columns, observe,
-    batch_rows = 10000L) {
-    stopifnot(isTRUE(writer$native_query), !is.null(writer$output), !writer$closed)
-    result <- fastduckdb::send_query_fast(con, sql)
-    on.exit(fastduckdb::clear_query_fast(result), add = TRUE)
-    calls <- 0L
-    repeat {
-        batch <- fastduckdb::fetch_query_arrow_fast(result, batch_rows)
-        if (!batch$num_rows) break
-        indices <- match(observer_columns, batch$ColumnNames()) - 1L
-        if (anyNA(indices)) cli::cli_abort("query summary columns are absent",
-            class = "saved_entity_corrupt")
-        observation <- as.data.frame(batch$SelectColumns(as.integer(indices)))
-        if (as.numeric(object.size(observation)) > 67108864)
-            cli::cli_abort("query summary exceeds batch limit", class = "saved_entity_limit")
-        observe(observation)
-        info <- fastduckdb::append_query_writer_fast(writer$output, batch,
-            ordinal = ".multischolar_order",
-            row_key = if (writer$metadata$key_column == ".rownames" &&
-                isTRUE(writer$metadata$automatic_row_names)) ".multischolar_row_key" else "")
-        updateWorkflowFastWriter(writer, info)
-        writer$rows <- writer$rows + batch$num_rows
-        calls <- calls + 1L
-    }
-    calls
 }
 
 #' Apply native writer counters while keeping progress and file-cache ownership unchanged.
@@ -652,15 +606,6 @@ checkWorkflowTableReadScope <- function(scope) {
         !identical(scope$map_file_identity, workflowTableFileIdentity(scope$map_path)))
         cli::cli_abort("selected row map changed during read", class = "saved_entity_corrupt")
     invisible(TRUE)
-}
-
-#' Bind native reader cleanup without retaining a calling assay frame.
-#' @param handle Owned experimental fastduckdb cursor.
-#' @return Idempotent zero-argument cleanup callback.
-#' @noRd
-workflowNativeCursorCloser <- function(handle) {
-    force(handle)
-    function() fastduckdb::close_parquet_cursor_fast(handle)
 }
 
 #' Release one table action and fail if its source changed before delivery.
@@ -1211,33 +1156,7 @@ readSavedWorkflowTable <- function(store, reference, columns, keys = NULL,
         }
         # The pinned native cache is process-wide and entry-, not byte-bounded.
         # Do not retain its footers between calls; action R metadata stays owned.
-        cursor_columns <- c(".multischolar_order", physical_columns)
-        cursor <- scope$readers$persistent_native
-        persistent <- isTRUE(getOption("multischolar.perf108.persistent_reader", FALSE)) && is.null(keys)
-        if (!is.null(cursor) && (!persistent || !identical(cursor$columns, cursor_columns) ||
-            cursor$offset != offset)) {
-            cursor$close()
-            rm("persistent_native", envir = scope$readers)
-            cursor <- NULL
-        }
-        if (persistent && is.null(cursor) && offset == 0) {
-            handle <- fastduckdb::open_parquet_cursor_fast(path, cursor_columns, n_threads = 8L)
-            cursor <- new.env(parent = emptyenv())
-            cursor$handle <- handle
-            cursor$columns <- cursor_columns
-            cursor$offset <- 0
-            cursor$close <- workflowNativeCursorCloser(handle)
-            scope$readers$persistent_native <- cursor
-            fastduckdb::clear_parquet_cache()
-        }
-        collected <- if (!is.null(cursor)) {
-            page <- fastduckdb::fetch_parquet_cursor_fast(cursor$handle, limit)
-            cursor$offset <- cursor$offset + nrow(page)
-            if (!identical(as.numeric(page$.multischolar_order), as.numeric(offset + seq_len(nrow(page)))))
-                cli::cli_abort("persistent reader requires canonical physical row order",
-                    class = "saved_entity_corrupt")
-            page
-        } else tryCatch(fastduckdb::read_parquet_fast(path,
+        collected <- tryCatch(fastduckdb::read_parquet_fast(path,
             columns = c(".multischolar_order", physical_columns),
             n_threads = scope$read_threads %||% 2L, lazy_strings = FALSE,
             filter = list(.multischolar_order = c(offset + 1, offset + limit))),

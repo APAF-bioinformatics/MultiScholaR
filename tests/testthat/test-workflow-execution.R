@@ -662,3 +662,18 @@ test_that("the admitted worker cap is bounded by the slice and by the host's fre
     expect_equal(slice$reservation, 1.6 * 1024^3 + 1024^3)
     expect_error(workflowAdmissionCap(policy, current = 1.6 * 1024^3, host = NA_real_))
 })
+
+test_that("missing platform counters refuse with a classed, named reason", {
+    expect_error(testthat::with_mocked_bindings(workflowHostAvailable(),
+        readLines = function(...) c("MemTotal:  1 kB", "MemFree:  1 kB"), .package = "base"),
+        "MemAvailable", class = "workflow_execution_unsupported")
+    root <- withr::local_tempdir()
+    peak <- file.path(root, "memory.peak")
+    writeLines("123", peak)
+    Sys.chmod(peak, "0444")
+    application <- WorkflowExecutionApplication$new()
+    application$cgroup <- root
+    application$pid <- Sys.getpid()
+    # A kernel older than 6.12 rejects the write that resets the peak.
+    expect_error(openWorkflowPeakWindow(application), "6.12", class = "workflow_execution_unsupported")
+})

@@ -6,7 +6,7 @@ testthat::skip_if_not(identical(Sys.info()[["sysname"]], "Linux"))
 #' @return Native and persisted results plus their owned store.
 #' @noRd
 runPerf105Rollup <- function(object, worker_cap = 12 * 1024^3) {
-    artifact <- tryCatch(diaRollupExtensionInfo(), error = function(error) NULL)
+    artifact <- tryCatch(diaRollupNativeInfo(), error = function(error) NULL)
     testthat::skip_if(is.null(artifact), "qualified exact-sum runtime unavailable")
     roles <- list(sample = object@sample_id, protein = object@protein_id_column,
         peptide = object@peptide_sequence_column, modified = "Modified.Sequence",

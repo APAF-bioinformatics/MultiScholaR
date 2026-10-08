@@ -149,7 +149,6 @@ computeSavedWorkflowPrecursorRollup <- function(store, input, persist = NULL, no
         ", CAST(count(", quantities[[2L]], ") AS INTEGER) AS normalised_observed",
         ", CAST(count(*) AS INTEGER) AS source_count",
         " FROM qc_input GROUP BY ", group_sql)
-    if (!is.null(persist)) return(persistWorkflowPrecursorRollup(scope, input, aggregate_sql, persist))
     aggregated <- collectWorkflowRollupQuery(connection, aggregate_sql, metadata$rows)
     missingness <- list(
         raw_partial_missing_outputs = sum(aggregated$raw_observed > 0L &
@@ -229,120 +228,6 @@ computeSavedWorkflowPrecursorRollup <- function(store, input, persist = NULL, no
             if (roles$protein == "Protein.Ids") "active_key" else "absent")
     list(data = output, summary = summary,
         execution = list(aggregation_frontend = "duckdb_sum_non_exact"))
-}
-
-#' Collapse protein annotations with one projected cursor and native token rules.
-#' @param scope Validated rollup input lease with qc_input view.
-#' @param protein Protein identity column.
-#' @return Bounded annotation table, with the existing 10,000-key/value ceilings.
-#' @noRd
-readWorkflowRollupAnnotations <- function(scope, protein) {
-    con <- scope$connection
-    key <- as.character(DBI::dbQuoteIdentifier(con, protein))
-    result <- DBI::dbSendQuery(con, paste0("SELECT DISTINCT ", key,
-        ', "Protein.Ids" FROM qc_input ORDER BY ', key, ', "Protein.Ids"'))
-    on.exit(DBI::dbClearResult(result), add = TRUE)
-    scope$store$io_counts$query_streams <- scope$store$io_counts$query_streams + 1L
-    out <- stats::setNames(data.frame(rep(NA_character_, 10000L),
-        rep(NA_character_, 10000L)), c(protein, "Protein.Ids"))
-    values <- rep(NA_character_, 10000L)
-    count <- groups <- 0L
-    current <- NULL
-    finish <- function() {
-        if (!count) return(invisible(NULL))
-        groups <<- groups + 1L
-        if (groups > 10000L) cli::cli_abort("rollup annotation keys exceed read limits",
-            class = "saved_entity_limit")
-        tokens <- trimws(unlist(strsplit(values[seq_len(count)], ";", fixed = TRUE)))
-        out[groups, ] <<- list(current,
-            paste(sort(unique(tokens[!is.na(tokens) & nzchar(tokens)])), collapse = ";"))
-        if (as.numeric(object.size(out)) > 67108864) cli::cli_abort(
-            "rollup annotation output exceeds read limits", class = "saved_entity_limit")
-        count <<- 0L
-    }
-    repeat {
-        part <- DBI::dbFetch(result, n = 10000L)
-        if (as.numeric(object.size(part)) > 67108864) cli::cli_abort(
-            "rollup annotation batch exceeds read limits", class = "saved_entity_limit")
-        if (!nrow(part)) break
-        for (i in seq_len(nrow(part))) {
-            next_key <- part[[protein]][[i]]
-            if (count && !identical(current, next_key)) finish()
-            current <- next_key
-            count <- count + 1L
-            if (count > 10000L) cli::cli_abort("rollup annotation batch exceeds read limits",
-                class = "saved_entity_limit")
-            values[[count]] <- part$Protein.Ids[[i]]
-        }
-        if (as.numeric(object.size(values)) > 67108864) cli::cli_abort(
-            "rollup annotation batch exceeds read limits", class = "saved_entity_limit")
-    }
-    finish()
-    out[seq_len(groups), , drop = FALSE]
-}
-
-#' Persist the existing precursor aggregation without collecting the result.
-#' @param scope,input Existing rollup lease and declared scientific roles.
-#' @param aggregate_sql Validated existing full-population aggregation query.
-#' @param persist Empty native output schema and immutable scientific identity.
-#' @return Saved result descriptor and exact rollup summary.
-#' @noRd
-persistWorkflowPrecursorRollup <- function(scope, input, aggregate_sql, persist) {
-    con <- scope$connection
-    q <- \(name) as.character(DBI::dbQuoteIdentifier(con, name))
-    roles <- input$roles
-    DBI::dbExecute(con, paste0("CREATE TEMP TABLE qc_aggregated AS ", aggregate_sql))
-    counts <- DBI::dbGetQuery(con, paste0("SELECT count(*) AS output_rows, ",
-        "count(*) FILTER (WHERE raw_observed > 0 AND raw_observed < source_count) AS raw_partial, ",
-        "count(*) FILTER (WHERE raw_observed = 0) AS raw_missing, ",
-        "count(*) FILTER (WHERE normalised_observed > 0 AND normalised_observed < source_count) AS norm_partial, ",
-        "count(*) FILTER (WHERE normalised_observed = 0) AS norm_missing FROM qc_aggregated"))
-    join <- ""
-    select <- paste0("a.", q(c(roles$sample, roles$protein, roles$peptide,
-        "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count")))
-    if (length(input$evidence)) {
-        fields <- paste(q(c(roles$protein, input$evidence)), collapse = ", ")
-        if (nrow(DBI::dbGetQuery(con, paste0("SELECT 1 FROM (SELECT DISTINCT ", fields,
-            " FROM qc_input) GROUP BY ", q(roles$protein), " HAVING count(*) <> 1 LIMIT 1")))) {
-            cli::cli_abort("conflicting frozen identification evidence for protein groups")
-        }
-        join <- paste0(join, " LEFT JOIN (SELECT DISTINCT ", fields,
-            " FROM qc_input) e ON a.", q(roles$protein), " = e.", q(roles$protein))
-        select <- c(select, paste0("e.", q(input$evidence)))
-    }
-    if (length(input$annotation)) {
-        annotations <- readWorkflowRollupAnnotations(scope, roles$protein)
-        DBI::dbWriteTable(con, "qc_annotations", annotations, temporary = TRUE)
-        join <- paste0(join, " LEFT JOIN qc_annotations n ON a.", q(roles$protein), " = n.", q(roles$protein))
-        select <- c(select, 'n."Protein.Ids"')
-    }
-    order <- paste(vapply(c(roles$sample, roles$protein, roles$peptide), function(field) {
-        levels <- scope$metadata$column_metadata[[field]]$levels
-        column <- paste0("a.", q(field))
-        if (is.null(levels)) return(column)
-        paste0("CASE ", column, " ", paste(paste0("WHEN ", DBI::dbQuoteString(con, levels),
-            " THEN ", seq_along(levels)), collapse = " "), " END")
-    }, character(1)), collapse = ", ")
-    metadata <- workflowSavedTableMetadata(persist$prototype, ".rownames", 2L)
-    metadata$rows <- as.integer(counts$output_rows)
-    query <- paste0("SELECT ", paste(select, collapse = ", "),
-        ", CAST(row_number() OVER (ORDER BY ", order, ") AS INTEGER) AS \".multischolar_order\", ",
-        "CAST(row_number() OVER (ORDER BY ", order, ") AS VARCHAR) AS \".multischolar_row_key\" ",
-        "FROM qc_aggregated a", join, " ORDER BY ", order)
-    reference <- saveWorkflowTableQuery(scope, query, metadata, basename(tempfile("dia-rollup-")), persist$identity)
-    summary <- list(aggregation_rule = "linear_sum_modified_unmodified_and_charge_states",
-        active_protein_key = roles$protein, precursor_identity_mode = "declared_precursor_id",
-        input_precursor_rows = as.integer(scope$metadata$rows),
-        unique_precursor_identities = as.integer(scope$metadata$rows),
-        output_stripped_peptide_identities = as.integer(counts$output_rows),
-        raw_partial_missing_outputs = as.integer(counts$raw_partial),
-        raw_all_missing_outputs = as.integer(counts$raw_missing),
-        normalised_partial_missing_outputs = as.integer(counts$norm_partial),
-        normalised_all_missing_outputs = as.integer(counts$norm_missing),
-        frozen_identification_evidence = if (length(input$evidence)) "preserved" else "absent",
-        protein_ids_provenance = if (length(input$annotation)) "preserved" else
-            if (roles$protein == "Protein.Ids") "active_key" else "absent")
-    list(reference = reference, summary = summary, columns = metadata$columns)
 }
 
 #' Roll up the current saved precursor table and commit references only.
@@ -1161,41 +1046,6 @@ persistDIAFilteredSamples <- function(scope, metadata, passing, roles,
     prototype <- readSavedWorkflowTablePrototype(scope)
     prototype[[sample]] <- as.character(prototype[[sample]])
     counts <- newDIAFilteringAccumulator(prototype, protein)
-    if (output_mode == "physical" && isTRUE(getOption("multischolar.perf108.native_output", FALSE))) {
-        # Validation/counting is complete. Hand ownership to the native query
-        # connection before running output, releasing the old engine's buffers.
-        stopifnot(scope$action$scopes == 1L)
-        native <- fastduckdb::open_query_fast()
-        class(native) <- "workflow_fast_query"
-        ready <- FALSE
-        on.exit(if (!ready) fastduckdb::close_query_fast(native), add = TRUE)
-        workflowQueryDisconnect(scope$connection)
-        scope$action$connection <- scope$connection <- native
-        ready <- TRUE
-        configureWorkflowBulkQueryScope(scope)
-        workflowQueryWriteLookup(native, "retained_samples", data.frame(sample = as.character(passing)))
-        q <- function(x) as.character(workflowQueryQuoteIdentifier(native, x))
-        fields <- workflowTableStorageColumns(metadata, metadata$columns)
-        if (isTRUE(metadata$automatic_row_names)) fields <- setdiff(fields, ".multischolar_row_key")
-        query <- paste0("SELECT ", paste(q(fields), collapse = ","), " FROM read_parquet(",
-            workflowQueryQuoteString(native, scope$path), ") WHERE ", q(sample),
-            ' IN (SELECT sample FROM retained_samples) ORDER BY ".multischolar_order"')
-        summary_fields <- unique(c("Run", "Protein.Ids", "Stripped.Sequence", protein))
-        output <- saveWorkflowTable(scope$store, NULL, basename(tempfile("sample-native-")),
-            identity, metadata$key_column, metadata = metadata, write_fn = function(path, restoration) {
-                writer <- openWorkflowTableWriter(path, restoration, backend = "fast_r")
-                writer$native_query <- TRUE
-                on.exit(abortWorkflowTableWriter(writer), add = TRUE)
-                appendWorkflowTableWriter(writer, prototype)
-                streamWorkflowQueryToWriter(native, query, writer, summary_fields,
-                    function(part) counts$push(restoreSavedWorkflowTable(part, restoration, summary_fields)),
-                    batch_rows = batch_rows)
-                if (writer$rows != metadata$rows) cli::cli_abort("sample output population differs",
-                    class = "saved_entity_corrupt")
-                finishWorkflowTableWriter(writer)
-            })
-        return(list(reference = output, counts = counts$finish(), dependencies = list(scope$reference, output)))
-    }
     reader <- newWorkflowTableReadScope(scope$store, scope$reference, reader = "fastduckdb")
     reader$read_threads <- 8L
     on.exit(releaseWorkflowTableReadScope(reader), add = TRUE)
@@ -1547,9 +1397,7 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
             saveDIALargeFilteringCountsReference(scope$store, produced, protein),
         execution = list(admission = admission, output_mode = output_mode,
             writer_backend = if (output_mode == "legacy") "arrow" else "fast_r",
-            output_transport = if (output_mode == "physical" &&
-                isTRUE(getOption("multischolar.perf108.native_output", FALSE)))
-                "owned_query_arrow_to_native_writer" else "bounded_R",
+            output_transport = "bounded_R",
             bulk_query = list(settings = bulk_settings,
             global_statistics = if (output_mode == "legacy") "single_complete_population_pass" else
                 "global_validation_before_complete_sample_counts",

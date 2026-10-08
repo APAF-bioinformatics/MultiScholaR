@@ -1,5 +1,7 @@
 # WFX-003 guarded execution boundary
 
+Design overview: [design.md](design.md); platform requirements: [preconditions.md](preconditions.md).
+
 Current decision: WFX-003 is verified; [final closeout](wfx-003-closeout-20261001.md)
 records 192 installed lifecycle assertions, 1,135 affected regression assertions
 and predecessor readback. The [audit](wfx-003-audit-20261001.md) remains immutable;

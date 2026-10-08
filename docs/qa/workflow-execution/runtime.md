@@ -1,5 +1,7 @@
 # WFX-002 P14 runtime packaging
 
+Design overview: [design.md](design.md); platform requirements: [preconditions.md](preconditions.md).
+
 **Current: PERF-108's retained native runtime is accepted with an explicit primary
 timing exception; fastduckdb 0.2.0 is published.** See the
 [exact-artifact qualification](perf-108/closeout/qualification.json).
