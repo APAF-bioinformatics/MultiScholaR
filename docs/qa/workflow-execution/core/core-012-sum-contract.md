@@ -55,6 +55,13 @@ Script `core-012/accuracy-check.R`; raw output `core-012/accuracy-screen.json`. 
 **Determinism (finding outside the predeclared list).** Repeated at eight threads, `kahan_sum` returned identical values in four runs. At one thread against eight threads, 15,329 raw groups differ: the compensated result depends on how DuckDB combines per-thread partial states. The ordered sum does not depend on threads, because each group is reduced from its source-ordered list. The predeclared rule does not name thread or partition dependence. It is recorded here for the user's decision before any guarded run.
 
 
-## Decision
+## Decision (user, 2026-10-08)
 
-_None yet._
+**Retain the ordered sum.**
+
+The failing point is reproducibility. DuckDB's compensated sum (`kahan_sum`) gives results that depend on the thread count and on how the data is partitioned: 15,329 of 480,000 groups differ between one and eight threads. The ordered long-double sum is independent of both. Scientific output must not depend on execution parameters, because the series verifies outputs by exact hashes, and CORE-010 varies the batch count with available memory. The predeclared tolerance and screen-level decision checks passed, and no threshold, tolerance or rule was altered. The decision rests on a property the predeclaration did not name; the user decided it explicitly after the finding was recorded above.
+
+Not done, because the decision was reached at step 1 (cheapest first): the fixture test file, the prototype branch, the candidate install and the full-corpus pair. No guarded run was spent.
+
+Possible future work, not opened: a deterministic, correctly rounded streaming aggregate (custom C aggregate with an exact accumulator) would remove the value lists without thread dependence. Its per-group state cost is unknown. Consider it only if CORE-009 and CORE-010 leave memory too high.
+

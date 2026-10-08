@@ -7,7 +7,7 @@ installs <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = T
 # Recorded outcome per CORE build; a control must be `accepted` (coreControl).
 build_outcomes <- list(
     core_004 = list(outcome = "harness", note = "lifecycle build; not a control (harness ticket, no mechanism under test)"),
-    core_005 = list(outcome = "pending", note = "accepted or reverted by the next CORE control pair on this build (CORE-006 and CORE-007 closed without change) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"))
+    core_005 = list(outcome = "pending", note = "accepted or reverted by CORE-009's control pair on this build (CORE-006, CORE-007 and CORE-012 ran no pairs) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"))
 stopifnot(all(names(installs) %in% names(build_outcomes)))
 repo <- normalizePath(".")
 stopifnot(file.exists(file.path(repo, "DESCRIPTION")))
