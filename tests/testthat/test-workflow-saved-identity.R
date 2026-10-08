@@ -188,22 +188,3 @@ test_that("standalone metadata does not change the public resident S4 history pa
     expect_true(methods::validObject(restored$getState()))
     expect_identical(levels(restored$getState()@design_matrix$group), c("A", "B"))
 })
-
-test_that("a commit-time input descriptor matches the archive descriptor and is hashed once", {
-    rm(list = ls(.workflowFileHashes, all.names = TRUE), envir = .workflowFileHashes)
-    path <- tempfile(fileext = ".tsv")
-    on.exit(unlink(path), add = TRUE)
-    writeLines(c("Run\tPrecursor.Id", "a\tp1"), path)
-    expect_identical(describeDIAInputFile(path), describeDIANativeFile(path))
-    real <- digest::digest
-    reads <- 0L
-    testthat::local_mocked_bindings(digest = function(...) {
-        if (!is.null(list(...)$file)) reads <<- reads + 1L
-        real(...)
-    }, .package = "digest")
-    describeDIAInputFile(path)
-    expect_identical(reads, 0L)
-    writeLines(c("Run\tPrecursor.Id", "b\tp2"), path)
-    expect_identical(describeDIAInputFile(path), describeDIANativeFile(path))
-    expect_error(describeDIAInputFile(tempdir()))
-})

@@ -19,7 +19,7 @@ diaRollupExtensionInfo <- function() {
         !identical(manifest$runtime_release_status, "held") ||
         !identical(as.character(utils::packageVersion("duckdb")), manifest$duckdb) ||
         !identical(as.character(utils::packageVersion("duckplyr")), manifest$duckplyr) ||
-        !identical(workflowFileSha256(path), manifest$binary_sha256)) fail()
+        !identical(digest::digest(file = path, algo = "sha256"), manifest$binary_sha256)) fail()
     if (length(manifest$dependencies) != 2L) fail()
     for (dependency in manifest$dependencies) {
         if (!dependency$package %in% c("duckdb", "duckplyr")) fail()
@@ -27,7 +27,8 @@ diaRollupExtensionInfo <- function() {
         files <- names(dependency$files)
         if (!length(files) || any(grepl("(^/|[.][.])", files)) ||
             any(!file.exists(file.path(dependency_root, files)))) fail()
-        actual <- vapply(files, \(file) workflowFileSha256(file.path(dependency_root, file)), character(1))
+        actual <- vapply(files, function(file) digest::digest(
+            file = file.path(dependency_root, file), algo = "sha256"), character(1))
         if (!identical(actual, dependency$files)) fail()
     }
     list(path = normalizePath(path), manifest = manifest)
@@ -51,9 +52,9 @@ diaRollupNativeInfo <- function() {
         !identical(native$api, "duckdb-c-scope-v1") ||
         !identical(native$registration, "dia_ordered_sum_v1") ||
         !identical(native$unsigned_loading, FALSE) ||
-        !identical(workflowFileSha256(query_path), native$query_manifest_sha256)) fail()
+        !identical(digest::digest(file = query_path, algo = "sha256"), native$query_manifest_sha256)) fail()
     query_binary <- system.file("libs", paste0("fastduckdb_query", .Platform$dynlib.ext), package = "fastduckdb")
-    if (!nzchar(query_binary) || !identical(workflowFileSha256(query_binary),
+    if (!nzchar(query_binary) || !identical(digest::digest(file = query_binary, algo = "sha256"),
         native$query_binary_sha256)) fail()
     capability <- readRDS(query_path)
     if (!identical(capability$api, native$api) || !identical(capability$registration_abi, 1L) ||
@@ -65,10 +66,10 @@ diaRollupNativeInfo <- function() {
     files <- names(dependency$files)
     if (!length(files) || any(grepl("(^/|[.][.])", files))) fail()
     actual <- vapply(file.path(system.file(package = "duckdb"), files),
-        workflowFileSha256, character(1))
+        \(file) digest::digest(file = file, algo = "sha256"), character(1))
     if (!identical(unname(actual), unname(dependency$files))) fail()
     provider <- getLoadedDLLs()[["MultiScholaR"]][["path"]]
-    binding <- digest::digest(list(provider = workflowFileSha256(provider),
+    binding <- digest::digest(list(provider = digest::digest(file = provider, algo = "sha256"),
         kernel = native$kernel_sha256, query = native$query_manifest_sha256,
         query_binary = native$query_binary_sha256,
         writer = writer$binary_sha256), algo = "sha256")
@@ -509,7 +510,7 @@ persistDIARelationalRollup <- function(scope, input, persist, rows, arm = "D") {
         persist$identity, metadata$key_column, metadata = metadata, write_fn = function(path, restoration) {
             writer_backend <- switch(profile, P13 = "fast_arrow", P14 = "fast_r", P15 = "fast_r", P16 = "fast_r", "arrow")
             writer <- openWorkflowTableWriter(path, restoration, scope$store$progress, backend = writer_backend,
-                optimization = switch(profile, P16 = "batch", "none"))
+                optimization = switch(profile, P15 = "metadata", P16 = "batch", "none"))
             writer$native_query <- native_output
             on.exit(abortWorkflowTableWriter(writer), add = TRUE)
             appendWorkflowTableWriter(writer, persist$prototype, integer())
@@ -652,7 +653,7 @@ persistDIARelationalRollup <- function(scope, input, persist, rows, arm = "D") {
             fastduckdb_calls = fastduckdb_calls,
             fastduckdb_threads = if (arm == "F" || profile %in% c("P10", "P12")) 8L else 0L,
             writer_backend = switch(profile, P13 = "fast_arrow", P14 = "fast_r", P15 = "fast_r", P16 = "fast_r", "arrow"),
-            writer_optimization = switch(profile, P16 = "batch", "none"),
+            writer_optimization = switch(profile, P15 = "metadata", P16 = "batch", "none"),
             writer_threads = if (profile %in% c("P13", "P14", "P15", "P16")) 8L else NA_integer_,
             evidence_rows = evidence_rows, evidence_payload_estimate = evidence_bytes,
             exact_sum_sha256 = scope$dia_rollup_extension,
