@@ -16,7 +16,6 @@
 #'
 #' @return A Glimma HTML widget or NULL if generation fails.
 #'
-#' @importFrom Glimma glimmaVolcano
 #' @importFrom dplyr filter mutate case_when select
 #' @importFrom rlang sym
 #' @importFrom stringr str_extract
@@ -30,6 +29,7 @@ generateMetabDAVolcanoPlotGlimma <- function(
   metabolite_id_column = "metabolite_id",
   annotation_column = "metabolite_name"
 ) {
+    requireOptionalPackage("Glimma", "interactive volcano plots")
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     d66_log("=== ENTER generateMetabDAVolcanoPlotGlimma ===")

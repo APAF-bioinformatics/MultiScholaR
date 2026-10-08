@@ -451,6 +451,7 @@ plotPcaGgpairs <- function(
   sample_id_column,
   ncomp = 2
 ) {
+  requireOptionalPackage("GGally", "PCA pair plots")
   pca.res <- mixOmics::pca(t(as.matrix(data_matrix)), ncomp = ncomp)
 
 
@@ -481,7 +482,7 @@ plotPcaGgpairs <- function(
     left_join(design_matrix,
       by = join_by(!!sym(sample_id_column) == !!sym(sample_id_column))
     ) |>
-    ggpairs(
+    GGally::ggpairs(
       columns = pc_list, aes(colour = !!sym(grouping_variable), fill = !!sym(grouping_variable), alpha = 0.4),
       legend = 1
     )
@@ -602,6 +603,7 @@ getMaxMinBoxplot <- function(input_boxplot, adjust_factor = 0.05) {
 #' @export
 rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
                            sample_id_column = Sample_ID, grouping_variable = group, list_of_descriptions) {
+  requireOptionalPackage("ggpubr", "arranging RLE and PCA plots")
   rle_list <- purrr::pmap(
     list(data_matrix = list_of_data_matrix, description = list_of_descriptions, design_matrix = list_of_design_matrix),
     function(data_matrix, description, design_matrix) {
@@ -626,7 +628,7 @@ rlePcaPlotList <- function(list_of_data_matrix, list_of_design_matrix,
 
   list_of_plots <- c(rle_list, pca_list)
 
-  rle_pca_plots_arranged <- ggarrange(
+  rle_pca_plots_arranged <- ggpubr::ggarrange(
     plotlist = list_of_plots, nrow = 2, ncol = length(list_of_descriptions),
     common.legend = FALSE, legend = "bottom", widths = 10, heights = 10
   )

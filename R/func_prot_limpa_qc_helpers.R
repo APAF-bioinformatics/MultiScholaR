@@ -34,7 +34,6 @@
 #' }
 #'
 #' @importFrom ggplotify as.ggplot
-#' @importFrom cowplot ggdraw draw_grob
 #' @importFrom png readPNG
 #' @importFrom magick image_read
 #' @importFrom grid grid.grabExpr

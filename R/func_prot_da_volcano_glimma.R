@@ -29,6 +29,7 @@ generateProtDAVolcanoPlotGlimma <- function(
   output_dir = NULL,
   ...
 ) {
+  requireOptionalPackage("Glimma", "interactive volcano plots")
   logger::log_info("--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---")
 
   # --- Semi-automated Test Capture Logic ---

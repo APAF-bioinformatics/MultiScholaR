@@ -196,7 +196,6 @@ setupDirectories <- function(base_dir = here::here(), omic_types, label = NULL, 
 #' loadDependencies(verbose = FALSE)
 #' }
 #'
-#' @importFrom devtools install_github
 #' @importFrom pacman p_load
 #'
 #' @export

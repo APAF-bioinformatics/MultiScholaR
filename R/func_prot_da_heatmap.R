@@ -26,8 +26,6 @@
 #'   \item{row_clusters}{Named vector of row cluster assignments.}
 #'   \item{col_clusters}{Named vector of column cluster assignments.}
 #'
-#' @importFrom ComplexHeatmap Heatmap HeatmapAnnotation
-#' @importFrom circlize colorRamp2
 #' @importFrom stats hclust dist cor setNames cutree
 #' @importFrom dplyr filter arrange desc slice_head pull
 #' @importFrom logger log_info log_error log_warn
@@ -250,6 +248,8 @@ computeProtDAHeatmapProduct <- function(
 #' @return Existing plot and cluster handoff; no clustering is recalculated.
 #' @noRd
 renderProtDAHeatmapProduct <- function(product, color_scheme, show_gene_names) {
+  requireOptionalPackage("ComplexHeatmap", "differential-analysis heatmaps")
+  requireOptionalPackage("circlize", "differential-analysis heatmaps")
   expr_matrix <- product$expr_matrix
   top_proteins <- product$top_proteins
   protein_id_col <- product$protein_id_col

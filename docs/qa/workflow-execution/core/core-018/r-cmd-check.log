@@ -1,0 +1,236 @@
+* using log directory ‘/home/doktersmol/.cache/core018-check/MultiScholaR.Rcheck’
+* using R version 4.6.1 (2026-06-24)
+* using platform: x86_64-pc-linux-gnu
+* R was compiled by
+    gcc (GCC) 16.1.1 20260430
+    GNU Fortran (GCC) 16.1.1 20260430
+* running under: CachyOS
+* using session charset: UTF-8
+* current time: 2026-10-08 22:19:21 UTC
+* using options ‘--no-tests --no-manual --ignore-vignettes’
+* checking for file ‘MultiScholaR/DESCRIPTION’ ... OK
+* this is package ‘MultiScholaR’ version ‘0.5.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... INFO
+Packages suggested but not available for checking:
+  'dynamicTreeCut', 'GlimmaV2', 'GSEABase', 'MOFA2'
+* checking if this is a source package ... NOTE
+Found the following apparent object files/libraries:
+  1.2.3/renv/libs/renv.so
+  docs/qa/workflow-execution/perf-108/native-null-repair/isolated-probe-2/nullprobe.o
+  docs/qa/workflow-execution/perf-108/native-null-repair/isolated-probe-2/nullprobe.so
+  docs/qa/workflow-execution/perf-108/native-null-repair/isolated-probe-2/workflow_dia_exact_sum.o
+Object files/libraries should not be included in a source package.
+
+Subdirectory ‘1.2.3/renv’ seems to contain an installed version of the package.
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  tools/profiling/perf108-extension/extension-ci-tools/.github
+These were most likely included in error. See section ‘Package
+structure’ in the ‘Writing R Extensions’ manual.
+* checking for portable file names ... NOTE
+Found the following non-portable file paths:
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-1/source/tests/testdata/workflow-execution/qualification.json
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-2/source/tests/testthat/test-prot-02b-qc-peptide-module-contracts.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-2/source/tests/testthat/test-workflow-checkpoint-dia-state.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-2/source/tests/testthat/test-workflow-execution-adapters.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-2/source/tests/testthat/test-workflow-execution.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-2/source/tests/testthat/test-workflow-saved-qc-rollup.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-3/source/tests/testthat/test-prot-02b-qc-peptide-module-contracts.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-3/source/tests/testthat/test-workflow-checkpoint-dia-state.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-3/source/tests/testthat/test-workflow-execution-adapters.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-3/source/tests/testthat/test-workflow-execution.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-3/source/tests/testthat/test-workflow-saved-qc-rollup.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-4/source/docs/qa/workflow-execution/perf-102/recheck-4/runner.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-4/source/tests/testthat/test-prot-02b-qc-peptide-module-contracts.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-4/source/tests/testthat/test-workflow-checkpoint-dia-state.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-4/source/tests/testthat/test-workflow-execution-adapters.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-4/source/tests/testthat/test-workflow-execution.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-4/source/tests/testthat/test-workflow-saved-qc-rollup.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/correction/source/R/utils_workflow_execution.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/correction/source/docs/qa/workflow-execution/perf-102/remediation-20261003/run-checks.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/correction/source/tests/testthat/test-perf-003.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/correction/source/tests/testthat/test-perf-102-audit-repairs.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/focused/source/R/utils_workflow_execution.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/focused/source/docs/qa/workflow-execution/perf-102/remediation-20261003/run-checks.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/focused/source/tests/testthat/test-perf-003.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/focused/source/tests/testthat/test-perf-102-audit-repairs.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/regressions/source/R/utils_workflow_execution.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/regressions/source/docs/qa/workflow-execution/perf-102/remediation-20261003/run-checks.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/regressions/source/tests/testthat/test-perf-003.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/regressions/source/tests/testthat/test-perf-102-audit-repairs.R
+  MultiScholaR/docs/qa/workflow-execution/perf-102/suite-1/source/tests/testdata/workflow-execution/qualification.json
+  MultiScholaR/docs/qa/workflow-execution/perf-102/suite-2/source/tests/testdata/workflow-execution/qualification.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/attribution-preflight.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/complete-plan-1.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/phase-events.tsv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/profile-finished.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/profile-start.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/query-profile-1.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/request.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/result.parquet
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/stderr.log
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/stdout.log
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/worker-allocations.out
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/completion/worker-stack.out
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/failure/complete-plan-1.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/failure/phase-events.tsv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/failure/profile-finished.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/failure/profile-start.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/failure/query-profile-1.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/failure/request.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/failure/result.parquet
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/failure/worker-allocations.out
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-correction/failure/worker-stack.out
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/attribution-preflight.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/active-query-profile.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/complete-plan-1.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/complete-plan-2.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/complete-plan-3.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/phase-events.tsv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/profile-finished.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/profile-start.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/query-profile-1.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/query-profile-2.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/query-profile-3.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/result-1.parquet
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/result-2.parquet
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/result-3.parquet
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/worker-allocations.out
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/completion/worker-stack.out
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/active-query-profile.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/complete-plan-1.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/complete-plan-2.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/complete-plan-3.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/phase-events.tsv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/profile-finished.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/profile-start.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/query-profile-1.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/query-profile-2.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/query-profile-3.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/result-1.parquet
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/result-2.parquet
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/result-3.parquet
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/worker-allocations.out
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight-sealed/failure/worker-stack.out
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight/completion/complete-plan-1.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight/completion/profile-finished.rds
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-preflight/completion/worker-allocations.out
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-screen-analysis-reviewed/memory-phases.png
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-screen-analysis-reviewed/memory-with-phases.csv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-screen-analysis-reviewed/phase-intervals.csv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-screen-analysis-reviewed/worker-stack-summary.csv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-sealed-screen-analysis/memory-phases.png
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-sealed-screen-analysis/memory-with-phases.csv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-sealed-screen-analysis/phase-intervals.csv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/attribution-sealed-screen-analysis/worker-stack-summary.csv
+  MultiScholaR/docs/qa/workflow-execution/perf-108/cache-qualification/current-preflight-setup-recheck.log
+  MultiScholaR/docs/qa/workflow-execution/perf-108/cache-qualification/package-request-before-symbol-correction.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/native-null-repair/isolated-probe-1/workflow_dia_exact_sum.c
+  MultiScholaR/docs/qa/workflow-execution/perf-108/native-null-repair/isolated-probe-2/workflow_dia_exact_sum.c
+  MultiScholaR/docs/qa/workflow-execution/perf-108/native-null-repair/isolated-probe-2/workflow_dia_exact_sum.o
+  MultiScholaR/docs/qa/workflow-execution/perf-108/native-null-repair/native-provider-repair-validation.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/pre-native-integration/R/utils_workflow_dia_qc_rollup.R
+  MultiScholaR/docs/qa/workflow-execution/perf-108/pre-native-integration/R/utils_workflow_dia_relational_rollup.R
+  MultiScholaR/docs/qa/workflow-execution/perf-108/pre-native-integration/R/utils_workflow_saved_table_codec.R
+  MultiScholaR/docs/qa/workflow-execution/perf-108/pre-native-integration/tests/testthat/helper-workflow-bulk-rollup.R
+  MultiScholaR/docs/qa/workflow-execution/perf-108/pre-native-integration/tests/testthat/test-workflow-bulk-relational.R
+  MultiScholaR/docs/qa/workflow-execution/perf-108/predecessor/R/utils_workflow_dia_relational_rollup.R
+  MultiScholaR/docs/qa/workflow-execution/perf-108/predecessor/tests/testthat/test-workflow-bulk-relational.R
+  MultiScholaR/docs/qa/workflow-execution/perf-108/predecessor/tools/profiling/run_workflow_checkpoint_proof.R
+  MultiScholaR/docs/qa/workflow-execution/perf-108/predecessor/tools/profiling/run_workflow_checkpoint_proof.sh
+  MultiScholaR/docs/qa/workflow-execution/perf-108/predecessor/tools/profiling/workflow_checkpoint_dia_driver.R
+  MultiScholaR/docs/qa/workflow-execution/perf-108/preservation-repair/predecessor-package-request.json
+  MultiScholaR/docs/qa/workflow-execution/perf-108/preservation-repair/runtime-repair-screen-recheck.log
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/.github/workflows/_extension_client_tests.yml
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/.github/workflows/_extension_deploy.yml
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/.github/workflows/_extension_distribution.yml
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/c_api_extensions/base.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/c_api_extensions/c_cpp.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/c_api_extensions/rust.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/duckdb_extension.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/scripts/append_extension_metadata.py
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/scripts/modify_distribution_matrix.py
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/portfile.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg-port-config.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg_cmake_build.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg_cmake_configure.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg_cmake_install.cmake
+  MultiScholaR/docs/qa/workflow-execution/perf-102/recheck-4/source/docs/qa/workflow-execution/perf-102/recheck-4
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/correction/source/docs/qa/workflow-execution/perf-102/remediation-20261003
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/correction/source/tests/testthat
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/focused/source/docs/qa/workflow-execution/perf-102/remediation-20261003
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/regressions/source/docs/qa/workflow-execution/perf-102/remediation-20261003
+  MultiScholaR/docs/qa/workflow-execution/perf-102/remediation-20261003/regressions/source/tests/testthat
+
+Tarballs are only required to store paths of up to 100 bytes and cannot
+store those of more than 256 bytes, with restrictions including to 100
+bytes for the final component.
+See section ‘Package structure’ in the ‘Writing R Extensions’ manual.
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘MultiScholaR’ can be installed ... OK
+* used C compiler: ‘gcc (GCC) 16.2.1 20260810’
+* checking installed package size ... INFO
+  installed size is 16.7Mb
+  sub-directories of 1Mb or more:
+    R       6.0Mb
+    shiny   8.7Mb
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking whether startup messages can be suppressed ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' import not declared from: ‘cli’
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking line endings in shell scripts ... OK
+* checking line endings in C/C++/Fortran sources/headers ... OK
+* checking line endings in Makefiles ... OK
+* checking compilation flags in Makevars ... WARNING
+Non-portable flags in variable 'PKG_CFLAGS':
+  -fno-fast-math
+* checking for GNU extensions in Makefiles ... WARNING
+Found the following file(s) containing GNU extensions:
+  src/Makevars
+  tools/profiling/perf108-extension/Makefile
+Portable Makefiles do not use GNU extensions such as +=, :=, $(shell),
+$(wildcard), ifeq ... endif, .NOTPARALLEL See section ‘Writing portable
+packages’ in the ‘Writing R Extensions’ manual.
+* checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
+* checking use of PKG_*FLAGS in Makefiles ... OK
+* checking include directives in Makefiles ... OK
+* checking compiled code ... OK
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+
+Status: 3 WARNINGs, 3 NOTEs
+See
+  ‘/home/doktersmol/.cache/core018-check/MultiScholaR.Rcheck/00check.log’
+for details.
+

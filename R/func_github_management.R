@@ -95,6 +95,7 @@ pushProjectToGithub <- function(base_dir,
                                github_user_name = getOption("github_user_name", "your_github_username"),
                                commit_message = "Initial project commit",
                                private = TRUE) {
+  requireOptionalPackage("git2r", "pushing a project to GitHub")
   
   # === DEBUG: Print base_dir ===
   # message("DEBUG: Entered pushProjectToGithub. base_dir: ", base_dir)

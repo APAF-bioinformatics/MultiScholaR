@@ -14,8 +14,6 @@
 #' @importFrom rlang base_env
 #' @importFrom utils str
 #' @importFrom htmlwidgets saveWidget
-#' @importFrom GGally ggpairs
-#' @importFrom ggpubr ggarrange
 #' @export
 #' @param input_table,intensity_column,protein_id_column,peptide_id_column,sample_id_column,peptide_sequence_column Runtime inputs used by this function; see the usage section for accepted values.
 plotPeptidesProteinsCountsPerSampleHelper <- function(
@@ -99,6 +97,7 @@ plotHistogramOfPercentMissingPerIndvidual <- function(
 # ----------------------------------------------------------------------------
 #' @export
 getOneRlePlotData <- function(input_matrix) {
+  requireOptionalPackage("Biobase", "RLE plot data")
   # if(!( length(which( is.na(input_matrix[, 1]) | is.nan(input_matrix[, 1]) | is.infinite(input_matrix[, 1]) )) > 0 )){
 
   input_matrix[is.infinite(input_matrix) | is.nan(input_matrix)] <- NA
@@ -160,8 +159,9 @@ plotRleQc <- function(
 #------------------------------------------------------------------------------------------------
 #' @export
 compareUmapComponentsPairs <- function(input_table, columns = c("V1", "V2", "V3", "V4"), covariate) {
+  requireOptionalPackage("GGally", "UMAP component pair plots")
   pm <- input_table |>
-    ggpairs(columns = columns, ggplot2::aes(colour = {{ covariate }}), legend = 1) +
+    GGally::ggpairs(columns = columns, ggplot2::aes(colour = {{ covariate }}), legend = 1) +
     apafTheme()
 
   pm

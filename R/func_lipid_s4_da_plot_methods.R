@@ -106,6 +106,7 @@
 #' @keywords internal
 #' @noRd
 .plotInteractiveVolcanoLipidomicsList <- function(objectsList, anno_list = NULL) {
+            requireOptionalPackage("Glimma", "interactive volcano plots")
             list_of_objects <- purrr::imap(
                 objectsList,
                 \(de_output_object, idx) {

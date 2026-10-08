@@ -73,7 +73,6 @@ cleanIsoformNumber <- function(string) {
 #' @importFrom purrr partial compact imap map map_int map_chr reduce
 #' @importFrom stringr str_match str_remove str_length str_extract str_split str_detect str_replace
 #' @importFrom dplyr filter select mutate bind_rows arrange distinct left_join anti_join rowwise ungroup pull rename rename_with coalesce row_number
-#' @importFrom seqinr read.fasta
 #' @importFrom vroom vroom vroom_write
 #' @importFrom janitor clean_names
 #' @importFrom httr GET timeout status_code content

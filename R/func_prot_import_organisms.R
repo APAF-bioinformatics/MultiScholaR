@@ -11,12 +11,12 @@
 #' 
 #' @return A tibble with columns: uniprot_acc, organism_name, taxon_id
 #' 
-#' @importFrom seqinr read.fasta
 #' @importFrom dplyr tibble mutate
 #' @importFrom stringr str_detect str_replace_all str_extract
 #' @importFrom logger log_info log_warn
 #' @export
 extractOrganismsFromFasta <- function(fasta_file_path) {
+  requireOptionalPackage("seqinr", "FASTA organism extraction")
   log_info(paste("Extracting organism information from FASTA:", fasta_file_path))
   
   # Check file exists

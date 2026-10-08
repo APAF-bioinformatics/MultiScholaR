@@ -222,6 +222,7 @@ getGlimmaVolcanoProteomics <- function(
   contrast_name = "Contrast",
   ...
 ) {
+  requireOptionalPackage("Glimma", "interactive volcano plots")
   
   # 1. Clean and prepare basic annotation
   volcano_plot_tab_cln <- volcano_plot_tab |>
@@ -392,6 +393,7 @@ getGlimmaVolcanoProteomicsWidget <- function(
   groups = NULL,
   ...
 ) {
+  requireOptionalPackage("Glimma", "interactive volcano plots")
   message("--- Entering getGlimmaVolcanoProteomicsWidget ---")
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: coef = %d", coef))
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: r_obj class = %s", class(r_obj)))
@@ -505,7 +507,7 @@ getGlimmaVolcanoProteomicsWidget <- function(
     }
 
     # Call glimmaVolcano
-    widget <- glimmaVolcano(r_obj,
+    widget <- Glimma::glimmaVolcano(r_obj,
       coef = coef,
       counts = counts_tbl,
       groups = groups,
@@ -549,6 +551,7 @@ getGlimmaVolcanoPhosphoproteomics <- function(
   counts_tbl = NULL,
   output_dir
 ) {
+  requireOptionalPackage("Glimma", "interactive volcano plots")
   if (coef <= ncol(r_obj$coefficients)) {
     volcano_plot_tab_cln <- volcano_plot_tab |>
       dplyr::distinct(
@@ -582,7 +585,7 @@ getGlimmaVolcanoPhosphoproteomics <- function(
 
 
     htmlwidgets::saveWidget(
-      widget = glimmaVolcano(r_obj,
+      widget = Glimma::glimmaVolcano(r_obj,
         coef = coef,
         counts = counts_tbl,
         anno = anno_tbl,

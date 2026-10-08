@@ -26,6 +26,7 @@ getSamplesCorrelationHeatMap <- function(
   heatmap_width = ncol(correlation_matrix) * unit(0.05, "cm"),
   heatmap_height = nrow(correlation_matrix) * unit(0.05, "cm")
 ) {
+  requireOptionalPackage("ComplexHeatmap", "sample correlation heatmaps")
   names(metadata_column_labels) <- metadata_column_selected
 
   without_hek_samples <- metadata_tbl |>
@@ -48,7 +49,7 @@ getSamplesCorrelationHeatMap <- function(
   cln_meatadata_tbl <- cln_meatadata_orig_col_name
   colnames(cln_meatadata_tbl) <- metadata_column_labels[colnames(cln_meatadata_orig_col_name)]
 
-  top_annotation <- HeatmapAnnotation(
+  top_annotation <- ComplexHeatmap::HeatmapAnnotation(
     df = cln_meatadata_tbl |>
       dplyr::select(-any_of(metadata_column_labels[columns_to_exclude])),
     col = colour_rules_filt,
@@ -63,7 +64,7 @@ getSamplesCorrelationHeatMap <- function(
     show_legend = FALSE
   )
 
-  output_heatmap <- Heatmap(correlation_matrix[correlation_samples_to_use, correlation_samples_to_use],
+  output_heatmap <- ComplexHeatmap::Heatmap(correlation_matrix[correlation_samples_to_use, correlation_samples_to_use],
     name = "Correlation",
     left_annotation = row_ha,
     top_annotation = top_annotation,
@@ -124,6 +125,7 @@ getProteinsHeatMap <- function(
   raster_device = "CairoTIFF",
   heatmap_legend_param = list(title = "Intensity")
 ) {
+  requireOptionalPackage("ComplexHeatmap", "protein heatmaps")
   metadata_column_labels_copy <- metadata_column_labels
   names(metadata_column_labels_copy) <- metadata_column_selected
 
@@ -163,7 +165,7 @@ getProteinsHeatMap <- function(
   # print(colour_rules_filt)
 
   print("Set top located annotation")
-  top_annotation <- HeatmapAnnotation(
+  top_annotation <- ComplexHeatmap::HeatmapAnnotation(
     df = cln_meatadata_tbl,
     col = colour_rules_filt,
     show_legend = FALSE,
@@ -174,7 +176,7 @@ getProteinsHeatMap <- function(
 
   # Retained in the public signature for compatibility; ComplexHeatmap has no
   # equivalent per-call core-utilisation argument.
-  heatmap <- Heatmap(protein_matrix[, samples_to_use],
+  heatmap <- ComplexHeatmap::Heatmap(protein_matrix[, samples_to_use],
     name = "Intensity",
     top_annotation = top_annotation,
     show_row_names = FALSE,
@@ -220,10 +222,10 @@ getProteinsHeatMap <- function(
 #' @param file_prefix A string to prefix the filenames with (e.g., "prot_contrast1").
 #'
 #' @importFrom grDevices png pdf dev.off
-#' @importFrom ComplexHeatmap draw
 #' @importFrom utils write.csv
 #' @export
 save_heatmap_products <- function(heatmap_obj, row_clusters, params_list, output_dir, file_prefix) {
+  requireOptionalPackage("ComplexHeatmap", "saving heatmap products")
   logger::log_info("--- Entering save_heatmap_products ---")
 
   # 1. Create directory

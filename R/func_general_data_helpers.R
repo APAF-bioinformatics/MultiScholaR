@@ -217,6 +217,7 @@ extract_experiment <- function(x, mode = "range", start = 1, end = NULL) {
 # ----------------------------------------------------------------------------
 #' @export
 calcHtSize = function(ht, unit = "inch") {
+  requireOptionalPackage("ComplexHeatmap", "heatmap sizing")
   grDevices::pdf(NULL)
   on.exit(grDevices::dev.off(), add = TRUE)
   ComplexHeatmap::draw(ht)

@@ -16,7 +16,6 @@
 #'
 #' @return A Glimma HTML widget or NULL if generation fails.
 #'
-#' @importFrom Glimma glimmaVolcano
 #' @importFrom dplyr filter mutate case_when select
 #' @importFrom rlang sym
 #' @importFrom stringr str_extract
@@ -30,6 +29,7 @@ generateLipidDAVolcanoPlotGlimma <- function(
   lipid_id_column = "lipid_id",
   annotation_column = "lipid_name"
 ) {
+    requireOptionalPackage("Glimma", "interactive volcano plots")
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     d66_log("=== ENTER generateLipidDAVolcanoPlotGlimma ===")
@@ -358,8 +358,6 @@ generateLipidDAVolcanoPlotGlimma <- function(
 #'
 #' @return A list containing the Heatmap object and cluster assignments, or NULL.
 #'
-#' @importFrom ComplexHeatmap Heatmap
-#' @importFrom circlize colorRamp2
 #' @importFrom stats hclust dist cor cutree
 #' @importFrom dplyr filter arrange desc slice_head
 #' @importFrom logger log_info log_error log_warn
@@ -382,6 +380,8 @@ generateLipidDAHeatmap <- function(
   cut_height = 10,
   min_cluster_size = 5
 ) {
+    requireOptionalPackage("ComplexHeatmap", "differential-analysis heatmaps")
+    requireOptionalPackage("circlize", "differential-analysis heatmaps")
     logger::log_info("--- Entering generateLipidDAHeatmap ---")
 
     # Handle potential NA/NULL parameters from Shiny

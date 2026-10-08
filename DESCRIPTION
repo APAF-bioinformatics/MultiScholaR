@@ -376,6 +376,7 @@ Collate:
     'utils_workflow_state.R'
     'utils_workflow_saved_entities.R'
     'utils_workflow_execution.R'
+    'utils_optional_packages.R'
     'utils_workflow_saved_table_codec.R'
     'utils_workflow_dia_qc_rollup.R'
     'utils_workflow_dia_relational_rollup.R'
@@ -387,6 +388,17 @@ Collate:
     'zzz.R'
 Suggests:
     duckplyr (>= 1.2.1),
+    Biobase,
+    circlize,
+    ComplexHeatmap,
+    cowplot,
+    devtools,
+    GGally,
+    ggpubr,
+    Glimma,
+    ggraph,
+    git2r,
+    seqinr,
     AnnotationDbi,
     beepr,
     BiocManager,
@@ -431,14 +443,9 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     arrow,
-    Biobase,
-    circlize,
     checkmate,
-    ComplexHeatmap,
     configr,
-    cowplot,
     DBI,
-    devtools,
     DT,
     digest,
     dplyr,
@@ -449,16 +456,11 @@ Imports:
     furrr,
     future,
     fs,
-    GGally,
     ggplot2,
     ggplotify,
-    ggpubr,
     ggnewscale,
-    Glimma,
-    ggraph,
     ggrepel,
     gh,
-    git2r,
     golem,
     graphics,
     grDevices,
@@ -501,7 +503,6 @@ Imports:
     ruv,
     RUVIIIC,
     rvest,
-    seqinr,
     shiny,
     shinydashboard,
     shinyFiles,

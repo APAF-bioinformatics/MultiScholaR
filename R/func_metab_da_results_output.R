@@ -40,6 +40,7 @@ outputMetabDaResultsAllContrasts <- function(
   heatmap_clustering = "both",
   heatmap_color_scheme = "RdBu"
 ) {
+    requireOptionalPackage("ComplexHeatmap", "heatmap output")
     logger::log_info("--- Entering outputMetabDaResultsAllContrasts ---")
     logger::log_info(sprintf("   da_output_dir = %s", da_output_dir))
     logger::log_info(sprintf("   publication_graphs_dir = %s", publication_graphs_dir))

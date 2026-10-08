@@ -21,8 +21,6 @@
 #'
 #' @return A ggplot2 or ComplexHeatmap object, or NULL.
 #'
-#' @importFrom ComplexHeatmap Heatmap
-#' @importFrom circlize colorRamp2
 #' @importFrom stats hclust dist cor
 #' @importFrom dplyr filter arrange desc slice_head
 #' @importFrom logger log_info log_error log_warn
@@ -46,6 +44,8 @@ generateMetabDAHeatmap <- function(
   cut_height = 10,
   min_cluster_size = 5
 ) {
+    requireOptionalPackage("ComplexHeatmap", "differential-analysis heatmaps")
+    requireOptionalPackage("circlize", "differential-analysis heatmaps")
     logger::log_info("--- Entering generateMetabDAHeatmap ---")
 
     # Handle potential NA/NULL parameters from Shiny

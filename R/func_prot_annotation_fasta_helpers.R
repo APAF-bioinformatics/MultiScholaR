@@ -85,8 +85,9 @@ parseFastaObject <- function(aa_seq ) {
 #' @export
 #' @param fasta_file Runtime inputs used by this function; see the usage section for accepted values.
 parseFastaFile <- function(fasta_file) {
+  requireOptionalPackage("seqinr", "FASTA parsing")
 
-  aa_seqinr <-  read.fasta( file = fasta_file,
+  aa_seqinr <-  seqinr::read.fasta( file = fasta_file,
                             seqtype="AA",
                             whole.header	=TRUE,
                             as.string=TRUE)

@@ -17,6 +17,7 @@
 #' @return Mapping table between accessions and standardized IDs.
 #' @export
 processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uniparc_search_results = NULL, fasta_meta_file, organism_name) {
+  requireOptionalPackage("seqinr", "FASTA processing")
   # Properly suppress all vroom messages
   withr::local_options(list(
     vroom.show_col_types = FALSE,

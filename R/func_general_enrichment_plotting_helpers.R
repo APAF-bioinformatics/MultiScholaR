@@ -387,9 +387,9 @@ set_enrichplot_color <- function(colors = get_enrichplot_color(2),
 # ----------------------------------------------------------------------------
 # add_node_label
 # ----------------------------------------------------------------------------
-#' @importFrom ggraph geom_node_text geom_edge_arc geom_edge_link ggraph geom_node_point
 #' @export
 add_node_label <- function(p, data, label_size_node, cex_label_node, shadowtext) {
+  requireOptionalPackage("ggraph", "enrichment network plots")
   # If use 'aes_(alpha =~I(alpha))' will put an error for AsIs object.
   # But I(alpha) is necessory, so use 'alpha = I(data$alpha)'.
   segment.size <- get_ggrepel_segsize()
@@ -397,12 +397,12 @@ add_node_label <- function(p, data, label_size_node, cex_label_node, shadowtext)
     data <- p$data
   }
   if (shadowtext) {
-    p <- p + geom_node_text(aes_(label=~name), data = data,
+    p <- p + ggraph::geom_node_text(aes_(label=~name), data = data,
                             alpha = I(data$alpha),
                             size = label_size_node * cex_label_node, bg.color = "white",
                             repel=TRUE, segment.size = segment.size)
   } else {
-    p <- p + geom_node_text(aes_(label=~name), data = data,
+    p <- p + ggraph::geom_node_text(aes_(label=~name), data = data,
                             alpha = I(data$alpha),
                             size = label_size_node * cex_label_node, repel=TRUE,
                             segment.size = segment.size)
@@ -457,6 +457,7 @@ cnetplotEdited <- function(
       alpha_no_hilight = 0.3
     ),
     ...) {
+  requireOptionalPackage("ggraph", "enrichment network plots")
 
   label_size_category <- 5
   label_size_gene <- 5
@@ -547,9 +548,9 @@ cnetplotEdited <- function(
 
   if (circular) {
     layout <- "linear"
-    geom_edge <- geom_edge_arc
+    geom_edge <- ggraph::geom_edge_arc
   } else {
-    geom_edge <- geom_edge_link
+    geom_edge <- ggraph::geom_edge_link
   }
   if (is.logical(shadowtext)) {
     shadowtext <- ifelse(shadowtext, "all", "none")
@@ -603,7 +604,7 @@ cnetplotEdited <- function(
     V(g)$color[(n+1):length(V(g))] <- fc
     show_legend <- c(TRUE, FALSE)
     names(show_legend) <- c("color", "size")
-    p <- ggraph(g, layout=layout, circular = circular)
+    p <- ggraph::ggraph(g, layout=layout, circular = circular)
     p$data[-(1:n), "size"] <- 3 * cex_gene
 
     p <- node_add_alpha(p, hilight_category, hilight_gene, alpha_nohilight, alpha_hilight)
@@ -619,11 +620,11 @@ cnetplotEdited <- function(
     }
 
     p <- p + edge_layer +
-      geom_node_point(aes_(size=~size), color=I(color_category),
+      ggraph::geom_node_point(aes_(size=~size), color=I(color_category),
                       data = NULL, show.legend = show_legend,
                       alpha = I(alpha_category)) +
       ggnewscale::new_scale_color() +
-      geom_node_point(aes_(color=~as.numeric(as.character(color)), size=~size),
+      ggraph::geom_node_point(aes_(color=~as.numeric(as.character(color)), size=~size),
                       data = NULL, alpha = I(alpha_gene)) +
       scale_size(range=c(3, 8) * cex_category) +
       # scale_colour_gradient2(name = "fold change") +
@@ -633,11 +634,11 @@ cnetplotEdited <- function(
   } else {
     V(g)$color <- color_gene
     V(g)$color[1:n] <- color_category
-    p <- ggraph(g, layout=layout, circular=circular)
+    p <- ggraph::ggraph(g, layout=layout, circular=circular)
     p$data[-(1:n), "size"] <- 3 * cex_gene
     p <- node_add_alpha(p, hilight_category, hilight_gene, alpha_nohilight, alpha_hilight)
     p <- p + edge_layer +
-      geom_node_point(aes_(color=~I(color), size=~size, alpha=~I(alpha)))+
+      ggraph::geom_node_point(aes_(color=~I(color), size=~size, alpha=~I(alpha)))+
       scale_size(range=c(3, 8) * cex_category)
 
   }
