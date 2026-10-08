@@ -35,7 +35,10 @@ coreSyntheticReceipt <- function(cases, peak = c(control = 7e9, candidate = 6e9)
                 ordered_result_stage = peak[[case$role]]),
             phase_status = list(relational_validation = "complete", working_memory_admission = "complete",
                 relational_aggregate_order_summary_write = "complete", ordered_result_stage = "complete"),
-            execution = list(cleanup = list(worker_stopped = TRUE, monitor_stopped = TRUE)))
+            accounting = list(cpu_seconds = elapsed[[case$role]]),
+            execution = list(cleanup = list(worker_stopped = TRUE, monitor_stopped = TRUE),
+                monitor = list(max_observation_interval = 0.05), peak_bytes = peak[[case$role]],
+                elapsed_seconds = elapsed[[case$role]]))
         receipt$cases[[case$id]] <- list(passed = TRUE, operation = operation,
             verifier_completion = list(accepted = TRUE))
     }
@@ -96,11 +99,20 @@ test_that("coreDecision accepts only when every eligibility and comparison rule 
     expect_null(accepted$failing_rule)
     expect_false(accepted$promotion_authorized)
     invalid_monitor <- h$coreDecision(coreSyntheticReceipt(cases, edit = function(r) {
-        r$cases[["candidate-2"]]$operation$measurement_valid <- FALSE
+        r$cases[["candidate-2"]]$operation$execution$monitor$max_observation_interval <- 0.26
         r
     }), cases, "006")
     expect_identical(invalid_monitor$status, "invalid")
     expect_identical(invalid_monitor$failing_rule, "candidate-2:measurement_valid")
+    # Protocol v5: a busy host may stretch the monitor gap to 250 ms; the kernel peak is unaffected.
+    busy <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 7e9),
+        elapsed = c(control = 100, candidate = 90), edit = function(r) {
+            r$cases[["control-2"]]$operation$execution$monitor$max_observation_interval <- 0.131
+            r$cases[["control-2"]]$operation$measurement_valid <- FALSE
+            r
+        }), cases, "006")
+    expect_identical(busy$status, "accept")
+    expect_equal(busy$time_pair_ratios$wall, c(0.9, 0.9))
     lost <- h$coreDecision(coreSyntheticReceipt(cases, edit = function(r) {
         r$cases[["candidate-1"]]$operation$execution$monitor_lost_after_result <- TRUE
         r
@@ -126,6 +138,17 @@ test_that("coreDecision accepts only when every eligibility and comparison rule 
         peak = c(control = 7e9, candidate = 7e9)), cases, "006")
     expect_identical(slow$status, "reject")
     expect_identical(slow$failing_rule, "primary_metric_worse:phase:staged_result_read_summary_write")
+    # Time is reported, not judged (protocol v5): slower CPU and wall time still pass.
+    contended <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 7e9),
+        elapsed = c(control = 100, candidate = 90), edit = function(r) {
+            for (id in c("candidate-1", "candidate-2")) {
+                r$cases[[id]]$operation$elapsed_seconds <- 140
+                r$cases[[id]]$operation$accounting$cpu_seconds <- 130
+            }
+            r
+        }), cases, "006")
+    expect_identical(contended$status, "accept")
+    expect_equal(contended$time_pair_ratios, list(cpu = c(1.3, 1.3), wall = c(1.4, 1.4)))
     heavier <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 7.1e9),
         elapsed = c(control = 100, candidate = 90)), cases, "006")
     expect_identical(heavier$failing_rule, "guard_breached:peak")
@@ -136,17 +159,14 @@ test_that("coreDecision accepts only when every eligibility and comparison rule 
     expect_identical(missing$failing_rule, "primary_metric_unavailable:phase:staged_result_read_summary_write")
 })
 
-test_that("a CORE-010 memory gain with an elapsed breach is a trade-off, not a pass", {
+test_that("a memory gain with slower time is accepted and the time cost reported", {
     h <- coreHarness()
     cases <- h$coreCases(coreSyntheticBindings(), "core-010")
-    tradeoff <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 4e9),
-        elapsed = c(control = 100, candidate = 120)), cases, "010")
-    expect_identical(tradeoff$status, "trade_off")
-    expect_identical(tradeoff$failing_rule, "guard_breached:elapsed")
-    expect_equal(tradeoff$ratios$peak, 4 / 7)
     gain <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 4e9),
-        elapsed = c(control = 100, candidate = 104)), cases, "010")
+        elapsed = c(control = 100, candidate = 120)), cases, "010")
     expect_identical(gain$status, "accept")
+    expect_equal(gain$ratios$peak, 4 / 7)
+    expect_equal(gain$time_pair_ratios$cpu, c(1.2, 1.2))
     worse <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 7.2e9),
         elapsed = c(control = 100, candidate = 120)), cases, "010")
     expect_identical(worse$status, "reject")
@@ -190,27 +210,20 @@ test_that("lifecycle decisions never relabel a failure as success", {
 test_that("every guard holds per matched pair, so one breaching pair cannot be averaged away", {
     h <- coreHarness()
     expect_error(h$coreCases(coreSyntheticBindings(), "core-007"), "no bound control")
-    b <- coreSyntheticBindings()
-    b$tickets$`007` <- list(control = "core_005", candidate = "core_006")
-    cases <- h$coreCases(b, "core-007")
-    # Medians: elapsed 1.04 overall, but pair 2 alone is 1.08.
-    uneven <- coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 6e9), edit = function(r) {
-        r$cases[["control-1"]]$operation$elapsed_seconds <- 100
-        r$cases[["candidate-1"]]$operation$elapsed_seconds <- 100
-        r$cases[["control-2"]]$operation$elapsed_seconds <- 100
-        r$cases[["candidate-2"]]$operation$elapsed_seconds <- 108
+    cases <- h$coreCases(coreSyntheticBindings(), "core-017")
+    # Checks-phase medians improve, but pair 2's whole-run peak alone is 1.02.
+    uneven <- coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 7e9), edit = function(r) {
+        for (id in c("candidate-1", "candidate-2")) r$cases[[id]]$operation$phase_peak_bytes$relational_validation <- 2e9
+        r$cases[["candidate-2"]]$operation$peak_bytes <- 7.14e9
         r
     })
-    decision <- h$coreDecision(uneven, cases, "007")
+    decision <- h$coreDecision(uneven, cases, "017")
     expect_identical(decision$status, "reject")
-    expect_identical(decision$failing_rule, "guard_breached:elapsed")
-    expect_equal(decision$pair_ratios$elapsed, c(1.00, 1.08))
-    even <- coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 6e9),
-        elapsed = c(control = 100, candidate = 104))
-    expect_identical(h$coreDecision(even, cases, "007")$status, "accept")
+    expect_identical(decision$failing_rule, "guard_breached:peak")
+    expect_equal(decision$pair_ratios$peak, c(1.00, 1.02))
 })
 
-test_that("a counted member is refused below 12 GiB, with another managed unit active or on a busy host", {
+test_that("a counted member is refused below 12 GiB or with another managed unit active", {
     h <- coreHarness()
     quiet <- function(...) utils::modifyList(list(available = 13 * 1024^3, units = character(),
         profile = "performance", cpu_busy = 0.01), list(...))
@@ -220,10 +233,8 @@ test_that("a counted member is refused below 12 GiB, with another managed unit a
     expect_match(h$coreSetupRefusal(quiet(available = 20 * 1024^3, units = "multischolarwfx0-controller.service")),
         "1 other managed unit")
     expect_match(h$coreSetupRefusal(quiet(available = NA_real_)), "unobserved")
-    expect_match(h$coreSetupRefusal(quiet(profile = "low-power")), "low-power not performance")
-    expect_match(h$coreSetupRefusal(quiet(profile = "balanced")), "balanced not performance")
-    expect_match(h$coreSetupRefusal(quiet(cpu_busy = 0.21)), "21.0% busy")
-    expect_match(h$coreSetupRefusal(quiet(cpu_busy = NA_real_)), "CPU load is unobserved")
+    # Protocol v5: the power profile and other host work are recorded, never a refusal.
+    expect_null(h$coreSetupRefusal(quiet(profile = "low-power", cpu_busy = 0.21)))
 })
 
 test_that("phase events and 50 ms samples give phase seconds and sampled phase peaks", {

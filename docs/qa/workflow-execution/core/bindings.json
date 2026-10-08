@@ -1487,7 +1487,7 @@
       "ticket": "CORE-005",
       "build": "core_005",
       "outcome": "pending",
-      "note": "accepted or reverted by CORE-010's quiet-host 16 GiB control pair on this build (protocol v4; CORE-017's stage was invalid) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"
+      "note": "accepted or reverted by stage core-010-control, alternating this build with the PERF-108 build in one session: per-pair peak <= 1.00 (protocol v5; time reported, not judged)"
     },
     {
       "ticket": "CORE-017",
@@ -1506,6 +1506,7 @@
           "build": "0c38dce1991718ea0ef6fa11e424d020cda4ea6e837bce4e04011fd360b626bd",
           "peak_bytes": 7626620928,
           "elapsed_seconds": 87.5100000000093,
+          "cpu_seconds": 283.551709,
           "swap_bytes": 0,
           "verified": true
         },
@@ -1513,6 +1514,7 @@
           "build": "0c38dce1991718ea0ef6fa11e424d020cda4ea6e837bce4e04011fd360b626bd",
           "peak_bytes": 7574171648,
           "elapsed_seconds": 86.9699999999721,
+          "cpu_seconds": 285.323758,
           "swap_bytes": 0,
           "verified": true
         }
@@ -1523,11 +1525,11 @@
     "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/runtime",
     "coordinator": "tools/profiling/workflow_perf106_repair.R",
     "protocol": "docs/qa/workflow-execution/core/protocol.md",
-    "protocol_sha256": "fe1dade154e61fee030da5fe194f8580afcd410c6bafc0bfe699d00b846fa300",
+    "protocol_sha256": "a64e2cda4d9612d51076a6668e92dc06cfe3034c93578fd62e11848f0b83cbee",
     "plan_sha256_at_protocol_freeze": "f9878de3fb060b1f51bda64ba35406bfce8cfe5a2d6a48feda428e4331aa4e77",
     "files": {
-      "tools/profiling/workflow_core.R": "7794dd418de3e2aae1cde432615152959f24a0db033f020fce9df22e8626a12d",
-      "tools/profiling/workflow_perf106_repair.R": "9d199d03cd61ff5548d60a4261af789f9156d541eac2abce2fa6bed7c2a21f34",
+      "tools/profiling/workflow_core.R": "e38fa34698b2970bab584fbfdf03f8fb6bd24042f564da37786ecbcb567b2046",
+      "tools/profiling/workflow_perf106_repair.R": "ac0b223d7e97a1bc16395fefed92b59150f19a0afb8aa00173c55bc2db517d1b",
       "tools/profiling/workflow_perf106.R": "a4d4ed234c780f44cdcd499e821d66dd7256378b494562a1c6a74c3c9a92b592",
       "tools/profiling/workflow_perf108.R": "f1293a4e03fbe0fa9e6e7103901984ed92bdb86153e77d8d04de0b5d830e4bac",
       "tools/profiling/run_workflow_checkpoint_proof.R": "c1102b37a1a14e9e56c71912f22bc7219bcd88627524fdc12709311fc79f8e38",

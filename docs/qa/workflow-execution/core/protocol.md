@@ -1,5 +1,7 @@
 # CORE measurement protocol
 
+**Version 5** (2026-10-08, user decision: the measurement must work with the host's normal use, including other heavy programs and any power profile). Version 4's quiet-host refusal is withdrawn: the platform profile and busy CPU fraction are recorded per member (`host_at_start`, `host_at_end`), never a refusal. Time is reported, never judged: on a host in normal use neither wall-clock nor CPU time is robust (stage `core-017` under power-saver and a game took 445–488 CPU s against 284 s quiet), so every comparison records per-pair CPU and wall-clock ratios (`time_pair_ratios`) for the user, and memory alone decides acceptance. CORE-005 is qualified against the PERF-108 build run in the same session, not against PERF-108's quiet-host receipts (§4a). A member's measurement is valid with a monitor sampling gap up to 250 ms, because the peak is the kernel high-water mark however the monitor is scheduled (§5). Phase seconds and phase peaks remain wall-clock and sampled, so they are noisier on a busy host. Version 4 had SHA-256 `fe1dade154e61fee030da5fe194f8580afcd410c6bafc0bfe699d00b846fa300`; no counted member ran under it.
+
 **Version 4** (2026-10-08, user decision after stage `core-017` was invalid under host CPU contention): adds a quiet-host start precondition (§2) and takes CORE-010's budget and CORE-005's qualification from a 16 GiB control pair that CORE-010 runs on a quiet host (§4a). Version 3 had SHA-256 `7ba6f7dca14b6c6330b8bed8b3b89531f9b2f3775adf7ce43ff1dea1273c68aa`; its only counted stage, `core-017`, is recorded as invalid and is not a control for later stages.
 
 **Version 3** (2026-10-08, user decision after CORE-010's premise check): adds CORE-017 (whole-input checks per batch) with phase timing and sampled phase peaks (§5), and replaces CORE-010's 16 GiB pair with a smaller-budget stage whose budget is fixed by a predeclared rule (§4a). CORE-009 closed without a stage. Version 2 had SHA-256 `f6bbb48a4e9799b2e953d8d1c8b6f87ae25e1ecf31c384131092f6117970baad`; no counted stage ran under it, so no control receipt is invalidated.
@@ -16,24 +18,24 @@ Frozen by CORE-004 before any counted CORE run. Later tickets cite this file by 
 
 | Ticket | Primary metric (must not worsen; expected direction) | Guards |
 |---|---|---|
-| CORE-006 | elapsed of the staged-result read phase (lower) | peak ≤ 1.00, total elapsed ≤ 1.05 |
-| CORE-007 | combined peak (lower) | elapsed ≤ 1.05 |
-| CORE-008 | combined peak (lower or equal) and validation-phase elapsed (lower) | total elapsed ≤ 1.05 |
+| CORE-006 | elapsed of the staged-result read phase (lower) | peak ≤ 1.00; time reported (v5) |
+| CORE-007 | combined peak (lower) | time reported (v5) |
+| CORE-008 | combined peak (lower or equal) and validation-phase elapsed (lower) | time reported (v5) |
 | CORE-009 | closed without change (v3); no stage | — |
-| CORE-017 | sampled peak of the checks phase, `phase_peak:checks` (lower) | combined peak ≤ 1.00, elapsed ≤ 1.05 |
+| CORE-017 | sampled peak of the checks phase, `phase_peak:checks` (lower) | combined peak ≤ 1.00; time reported (v5) |
 | CORE-010 | (v3) completion with verified pages under the predeclared budget B (§4a) | none; elapsed against the control's 16 GiB median is a recorded trade-off for the user |
-| CORE-011 | combined peak on the normal path (≤ 1.00); overflow member completes without OOM | elapsed ≤ 1.05; anon and file maxima reported separately |
+| CORE-011 | combined peak on the normal path (≤ 1.00); overflow member completes without OOM | time reported (v5); anon and file maxima reported separately |
 | CORE-012 | decision only; prototype peak reported against the 0.85 adoption rule | science tolerance as predeclared |
-| CORE-013 | `synchronous_wait_seconds` and `sync` fork count (lower) | elapsed ≤ 1.05, peak ≤ 1.00 |
-| CORE-014 | project disk bytes after Save then Open (lower) and head publishes per Save (lower) | elapsed ≤ 1.05, peak ≤ 1.00 |
+| CORE-013 | `synchronous_wait_seconds` and `sync` fork count (lower) | peak ≤ 1.00; time reported (v5) |
+| CORE-014 | project disk bytes after Save then Open (lower) and head publishes per Save (lower) | peak ≤ 1.00; time reported (v5) |
 
 - **Peak rule.** Peak is the combined managed-process kernel peak including file cache, exactly as PERF-108 measured it. Spilled or dirty file pages count. Anonymous and file maxima are always reported alongside.
-- **Acceptance.** Both candidate runs complete with valid monitoring (gap ≤ 100 ms), zero swap, output hashes identical to the oracle (CORE-012 excepted), the primary metric not worse than the control median, every guard satisfied, cleanup verified. A valid unfavourable result is recorded as the ticket outcome and the mechanism reverted in a follow-up commit; it is never retried or re-thresholded.
+- **Acceptance.** Both candidate runs complete with valid monitoring (gap ≤ 100 ms; 250 ms since v5, see §5), zero swap, output hashes identical to the oracle (CORE-012 excepted), the primary metric not worse than the control median, every guard satisfied, cleanup verified. A valid unfavourable result is recorded as the ticket outcome and the mechanism reverted in a follow-up commit; it is never retried or re-thresholded.
 - A unit-test pass is never a performance claim. Builds are recorded with elapsed and peak but are not counted runs.
 
 ## 2. Preconditions for every counted member
 
-- `MemAvailable` at least 12 GiB and no active `multischolar*` user unit at the start of each member. Since v4 also: the ACPI platform profile is `performance` (a host without a platform profile passes this check), and the whole-host busy CPU fraction over a 2 s `/proc/stat` sample is at most 5%. The coordinator checks both before every launch (`coreSetupRefusal`). On refusal the stage receipt records `status = "setup_refused"` with the reason and host reading; no member is launched and nothing is counted. The validate-only pass applies the same check and exits 76 on refusal. Host state at start is `host_at_start` in the stage receipt; host state after each member's teardown is `host_at_end` in its operation receipt.
+- `MemAvailable` at least 12 GiB and no active `multischolar*` user unit at the start of each member. (v4 added a performance-profile and ≤ 5% busy-CPU refusal; v5 withdrew it. Both readings are recorded per member.) The coordinator checks both before every launch (`coreSetupRefusal`). On refusal the stage receipt records `status = "setup_refused"` with the reason and host reading; no member is launched and nothing is counted. The validate-only pass applies the same check and exits 76 on refusal. Host state at start is `host_at_start` in the stage receipt; host state after each member's teardown is `host_at_end` in its operation receipt.
 - A validate-only dry run of the exact coordinator invocation has passed on the same library, bindings and harness revision. The coordinator's dry run checks bindings, protocol and harness hashes, inputs, libraries and host state. The reader-check `--validate-only` checks only selector admission, the input path and service paths: it exits before the guard block and the verifier source snapshot, which are evidenced by each counted verifier unit's `controller-request.nul`.
 - The harness files listed in `bindings.json` (`harness.files`) hash to their recorded values. The coordinator refuses to start otherwise.
 - `OMP_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1` (set by the service launcher); DuckDB eight threads.
@@ -68,30 +70,30 @@ Each ticket's `control` and `candidate` builds are bound under `harness.tickets.
 
 ## 4a. CORE-010 smaller budget (v3)
 
-- **Budget rule (v4).** CORE-010 first runs a control pair of its control build on `full_p14` at the normal 16 GiB slice on a quiet host (stage `core-010-control`). These two members also record CORE-005's outcome. B = 0.90 × the median combined peak of that pair, rounded down to a multiple of 0.25 GiB, fixed before any member at B. B, its inputs and the receipt hashes are written to `core/core-010/budget.md` and committed before the first CORE-010 member.
+- **Budget rule (v4; v5 control stage).** CORE-010 first runs stage `core-010-control` at the normal 16 GiB slice on `full_p14`: the PERF-108 build and `core_005`, alternating (PERF-108, `core_005`, `core_005`, PERF-108). It records CORE-005's outcome by the §5 rule with PERF-108 as control (primary metric peak, per-pair peak ≤ 1.00, time reported). B = 0.90 × the median combined peak of CORE-010's control build in that stage, rounded down to a multiple of 0.25 GiB, fixed before any member at B. B, its inputs and the receipt hashes are written to `core/core-010/budget.md` and committed before the first CORE-010 member.
 - **Member policy at B.** The application slice `memory_max` is B and the coordinator's early stop is B − 0.5 GiB, mirroring 16 / 15.5 GiB. Swap stays zero, threads eight, monitoring 50 ms. The host start precondition (12 GiB available, no other managed unit) is unchanged.
-- **Outcomes.** The control member is expected to stop at the guard; if it completes, B is not binding and the stage is `budget_not_binding` (recorded; no new budget is chosen). Pass (`fits_budget`) requires both candidates to complete with valid monitoring, zero swap, verified cleanup and pages identical to the oracle. A candidate stopped at the guard is a valid unfavourable result (`exceeds_budget`). Elapsed of each candidate is divided by the median of the `core-010-control` pair and recorded as the trade-off.
+- **Outcomes.** The control member is expected to stop at the guard; if it completes, B is not binding and the stage is `budget_not_binding` (recorded; no new budget is chosen). Pass (`fits_budget`) requires both candidates to complete with valid monitoring, zero swap, verified cleanup and pages identical to the oracle. A candidate stopped at the guard is a valid unfavourable result (`exceeds_budget`). CPU and wall-clock time of each candidate are divided by the medians of CORE-010's control build in `core-010-control` and reported to the user (v5).
 
 ## 5. Decision rule as implemented (`tools/profiling/workflow_core.R`)
 
-- **Eligibility of every member, in this order:** verifier accepted, status `complete`, measurement valid (gap ≤ 100 ms and no `monitor_lost_after_result`), lifecycle tests passed, zero swap, peak below 15.5 GiB, elapsed within the member ceiling. The first failing rule is named and the stage is `invalid`.
+- **Eligibility of every member, in this order:** verifier accepted, status `complete`, measurement valid (v5, `coreMeasurementValid`: monitor present without a stop reason, sampling gap ≤ 250 ms, no `monitor_lost_after_result`, operation peak and elapsed at least the worker's, worker and monitor stopped), lifecycle tests passed, zero swap, peak below 15.5 GiB, elapsed within the member ceiling. The first failing rule is named and the stage is `invalid`.
 - **Verifier (P14):** logical 10,000-row page hashes identical to `p14_oracle` (screen: 48 pages; full: 1,200 pages and the frozen summary), 480,000 / 12,000,000 output rows, the build's exact-sum identity, query owner `fastduckdb_c`, profile `P14`, eight engine and writer threads, writer `fast_r`, an admitted worker cap, twelve non-empty figures, export ready, journal `complete`. The request is rejected if its journal is `conflict`, its completion is `guard_payload_invalid` or it carries `monitor_lost_after_result`.
-- **Comparison:** candidate median divided by control median for each primary metric must be at most 1 (lower is better). Then every guard must hold **for each matched pair**: candidate-*k* divided by control-*k* (*k* = 1, 2) at most the guard value. A single breaching pair fails the guard; medians are not used for guards. Otherwise the result is `reject`, naming `primary_metric_worse:<metric>` or `guard_breached:<guard>`. Both the median ratios (`ratios`) and the per-pair ratios (`pair_ratios`) are recorded. A metric that is not recorded is `primary_metric_unavailable:<metric>`, never a pass. For CORE-010, an elapsed breach with a memory gain is `trade_off` and goes to the user. CORE-012 is `decision_only`.
-- **Metric names:** `peak` = `peak_bytes`; `elapsed` = `elapsed_seconds`; `phase:<name>` = `phase_seconds$<name>`; `phase_peak:<name>` = `phase_peak_bytes$<name>`; `phase_peak:checks` = the larger of `phase_peak:relational_validation` and `phase_peak:working_memory_admission`; `execution:<name>` = the member's `execution$<name>`.
+- **Comparison:** candidate median divided by control median for each primary metric must be at most 1 (lower is better). Then every guard must hold **for each matched pair**: candidate-*k* divided by control-*k* (*k* = 1, 2) at most the guard value. A single breaching pair fails the guard; medians are not used for guards. Otherwise the result is `reject`, naming `primary_metric_worse:<metric>` or `guard_breached:<guard>`. Both the median ratios (`ratios`) and the per-pair ratios (`pair_ratios`) are recorded. A metric that is not recorded is `primary_metric_unavailable:<metric>`, never a pass. Since v5 there is no time guard and no `trade_off` status; time ratios go to the user. CORE-012 is `decision_only`.
+- **Metric names:** `peak` = `peak_bytes`; `elapsed` = `elapsed_seconds` and `cpu` = `accounting$cpu_seconds` of the managed slice, both reported per pair in `time_pair_ratios` and never judged since v5; `phase:<name>` = `phase_seconds$<name>`; `phase_peak:<name>` = `phase_peak_bytes$<name>`; `phase_peak:checks` = the larger of `phase_peak:relational_validation` and `phase_peak:working_memory_admission`; `execution:<name>` = the member's `execution$<name>`.
 - **Phase measures (v3).** The worker writes `phase-events.tsv` (shared uptime clock; `start`, then `complete` or `failed`) through the existing `multischolar.dia_rollup_phase` hook; the coordinator writes its 50 ms samples to `memory-trace.tsv`. `phase_seconds` sums each phase's intervals; `phase_peak_bytes` is the largest sampled `memory.current` inside any of its intervals. Phase peaks are sampled, not kernel high-water marks, and a phase with no sample inside it has no peak (`primary_metric_unavailable`).
 
 | Ticket | Metrics (all lower is better; medians) | Guard ratios (each matched pair) |
 |---|---|---|
-| 006 | `phase:staged_result_read_summary_write` | peak ≤ 1.00, elapsed ≤ 1.05 |
-| 007 | `peak` | elapsed ≤ 1.05 |
-| 008 | `peak`, `phase:relational_validation` | elapsed ≤ 1.05 |
-| 009 | `peak` | elapsed ≤ 1.05 |
+| 006 | `phase:staged_result_read_summary_write` | peak ≤ 1.00; time reported (v5) |
+| 007 | `peak` | time reported (v5) |
+| 008 | `peak`, `phase:relational_validation` | time reported (v5) |
+| 009 | `peak` | time reported (v5) |
 | 010 | v3: budget stage (§4a), not a ratio comparison | none |
-| 017 | `phase_peak:checks` | peak ≤ 1.00, elapsed ≤ 1.05 |
-| 011 | `peak` | peak ≤ 1.00, elapsed ≤ 1.05 |
+| 017 | `phase_peak:checks` | peak ≤ 1.00; time reported (v5) |
+| 011 | `peak` | peak ≤ 1.00; time reported (v5) |
 | 012 | decision only | predeclared tolerance (CORE-012) |
-| 013 | `execution:synchronous_wait_seconds`, `execution:sync_forks` | peak ≤ 1.00, elapsed ≤ 1.05 |
-| 014 | `execution:project_disk_bytes`, `execution:head_publishes` | peak ≤ 1.00, elapsed ≤ 1.05 |
+| 013 | `execution:synchronous_wait_seconds`, `execution:sync_forks` | peak ≤ 1.00; time reported (v5) |
+| 014 | `execution:project_disk_bytes`, `execution:head_publishes` | peak ≤ 1.00; time reported (v5) |
 
 Since v3 the harness records phase seconds and phase peaks (CORE-017). CORE-013's and CORE-014's execution metrics are not recorded by the CORE-004 harness. The ticket that needs one must add its recording before its counted stage (a harness change: the harness files are re-hashed in `bindings.json`); until then its decision is `primary_metric_unavailable`.
 

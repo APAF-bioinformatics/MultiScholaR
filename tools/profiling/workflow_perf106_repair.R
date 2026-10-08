@@ -110,7 +110,7 @@ if (core) {
     coreHostReady <- function() {
         units <- system2("systemctl", c("--user", "list-units", "--state=active", "--no-legend",
             "--plain", shQuote("multischolar*")), stdout = TRUE)
-        # Protocol v4: a quiet host in the performance profile (user 2026-10-08).
+        # Recorded for interpretation only (protocol v5): platform profile and busy CPU fraction.
         profile_path <- "/sys/firmware/acpi/platform_profile"
         cpu <- function() as.numeric(strsplit(readLines("/proc/stat", n = 1L), " +")[[1L]][-1L])
         before <- cpu()
@@ -378,7 +378,7 @@ tryCatch({
                 clock = if (p14_stage || uptime_clock) "shared kernel uptime; namespace bootstrap excluded for both builds" else
                     "parent elapsed clock",
                 execution = if (!is.null(result)) result$execution else NULL,
-                host_at_end = if (core) coreHostReady() else NULL)
+                host_at_start = if (core) host else NULL, host_at_end = if (core) coreHostReady() else NULL)
             if (core && !is.null(result$execution$request_id)) {
                 events_path <- file.path(owned, "project/.workflow-entities/.workflow-export",
                     result$execution$request_id, "phase-events.tsv")

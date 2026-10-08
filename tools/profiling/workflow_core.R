@@ -3,21 +3,23 @@
 
 #' Frozen per-ticket primary metrics and guards (protocol.md mirrors this table).
 #' Every metric is lower-is-better. Metrics compare candidate and control medians;
-#' `guards` must hold for each matched pair (control-k vs candidate-k).
+#' `guards` must hold for each matched pair (control-k vs candidate-k). Since protocol v5 time
+#' is reported, never judged: no time measure is robust on a host in normal use, so CPU and
+#' wall-clock ratios per pair are recorded for the user (`time_pair_ratios`).
 #' @noRd
 corePrimaryMetrics <- list(
-    `006` = list(metrics = "phase:staged_result_read_summary_write", guards = c(peak = 1.00, elapsed = 1.05)),
-    `007` = list(metrics = "peak", guards = c(elapsed = 1.05)),
-    `008` = list(metrics = c("peak", "phase:relational_validation"), guards = c(elapsed = 1.05)),
-    `009` = list(metrics = "peak", guards = c(elapsed = 1.05)),
-    `010` = list(metrics = "peak", guards = c(elapsed = 1.05), trade_off = "elapsed"),
-    `011` = list(metrics = "peak", guards = c(peak = 1.00, elapsed = 1.05)),
+    `006` = list(metrics = "phase:staged_result_read_summary_write", guards = c(peak = 1.00)),
+    `007` = list(metrics = "peak", guards = numeric()),
+    `008` = list(metrics = c("peak", "phase:relational_validation"), guards = numeric()),
+    `009` = list(metrics = "peak", guards = numeric()),
+    `010` = list(metrics = "peak", guards = numeric()),
+    `011` = list(metrics = "peak", guards = c(peak = 1.00)),
     `012` = list(metrics = character(), guards = numeric(), decision_only = TRUE),
     `013` = list(metrics = c("execution:synchronous_wait_seconds", "execution:sync_forks"),
-        guards = c(peak = 1.00, elapsed = 1.05)),
+        guards = c(peak = 1.00)),
     `014` = list(metrics = c("execution:project_disk_bytes", "execution:head_publishes"),
-        guards = c(peak = 1.00, elapsed = 1.05)),
-    `017` = list(metrics = "phase_peak:checks", guards = c(peak = 1.00, elapsed = 1.05)))
+        guards = c(peak = 1.00)),
+    `017` = list(metrics = "phase_peak:checks", guards = c(peak = 1.00)))
 
 #' P14 phases every completed CORE member must record (protocol v3).
 #' @noRd
@@ -79,9 +81,8 @@ corePhaseMeasures <- function(events, trace) {
 coreMemberSeconds <- function(stage) if (grepl("^core-(lifecycle-|011-overflow$)", stage)) 300L else 600L
 
 #' Refuse a counted member unless the host meets the plan's start precondition.
-#' @param host `list(available, units, profile, cpu_busy)` from the coordinator's host reading;
-#'   `profile` is the ACPI platform profile (NA when the host has none), `cpu_busy` the
-#'   whole-host busy CPU fraction over a short sample (protocol v4).
+#' @param host `list(available, units, ...)` from the coordinator's host reading. The platform
+#'   profile and busy CPU fraction are recorded for interpretation, never a refusal (protocol v5).
 #' @return NULL when ready, otherwise the refusal reason.
 #' @noRd
 coreSetupRefusal <- function(host) {
@@ -90,12 +91,6 @@ coreSetupRefusal <- function(host) {
     if (host$available < 12 * 1024^3) return(sprintf("host MemAvailable %.2f GiB is below 12 GiB",
         host$available / 1024^3))
     if (length(host$units)) return(paste(length(host$units), "other managed unit(s) active"))
-    if (!is.character(host$profile) || length(host$profile) != 1L ||
-        !is.na(host$profile) && host$profile != "performance")
-        return(paste("platform profile is", host$profile %||% "unobserved", "not performance"))
-    if (!is.numeric(host$cpu_busy) || length(host$cpu_busy) != 1L || !is.finite(host$cpu_busy))
-        return("host CPU load is unobserved")
-    if (host$cpu_busy > 0.05) return(sprintf("host CPU is %.1f%% busy, above 5%%", 100 * host$cpu_busy))
     NULL
 }
 
@@ -183,6 +178,21 @@ coreSelectorStage <- function(selection) {
     list(stage = paste0("core-", parts[[1L]]), id = paste(parts[[2L]], parts[[3L]], sep = "-"))
 }
 
+#' CORE measurement validity (protocol v5): the kernel high-water mark gives the peak however
+#' the monitor is scheduled, so a busy host may stretch the monitor's sampling gap up to 250 ms.
+#' @param op Operation receipt.
+#' @return TRUE when the member's measurement is usable.
+#' @noRd
+coreMeasurementValid <- function(op) {
+    gap <- op$execution$monitor$max_observation_interval
+    e <- op$execution
+    !is.null(e$monitor) && is.null(e$monitor$reason) && is.numeric(gap) && length(gap) == 1L &&
+        is.finite(gap) && gap <= 0.25 && !isTRUE(e$monitor_lost_after_result) &&
+        is.numeric(op$peak_bytes) && is.numeric(e$peak_bytes) && isTRUE(op$peak_bytes >= e$peak_bytes) &&
+        isTRUE(op$elapsed_seconds >= e$elapsed_seconds) &&
+        isTRUE(e$cleanup$worker_stopped) && isTRUE(e$cleanup$monitor_stopped)
+}
+
 #' Check one member against the frozen eligibility rules.
 #' @param item Coordinator receipt entry with `operation`, `verifier_completion` and `passed`.
 #' @param seconds Member ceiling.
@@ -193,8 +203,7 @@ coreIneligible <- function(item, seconds) {
     rules <- list(
         verifier_accepted = isTRUE(item$verifier_completion$accepted),
         status_complete = identical(op$status, "complete"),
-        measurement_valid = isTRUE(op$measurement_valid) &&
-            !isTRUE(op$execution$monitor_lost_after_result),
+        measurement_valid = coreMeasurementValid(op),
         lifecycle_passed = isTRUE(op$lifecycle_passed) && isTRUE(item$passed),
         zero_swap = identical(op$swap_bytes, 0),
         peak_below_early_stop = is.numeric(op$peak_bytes) && length(op$peak_bytes) == 1L &&
@@ -209,6 +218,7 @@ coreIneligible <- function(item, seconds) {
 #' @noRd
 coreMetric <- function(op, name) {
     value <- if (name == "peak") op$peak_bytes else if (name == "elapsed") op$elapsed_seconds else
+        if (name == "cpu") op$accounting$cpu_seconds else
         if (name == "phase_peak:checks") max(unlist(op$phase_peak_bytes[c("relational_validation",
             "working_memory_admission")]) %||% NA_real_) else
         if (startsWith(name, "phase_peak:")) op$phase_peak_bytes[[sub("phase_peak:", "", name, fixed = TRUE)]] else
@@ -221,7 +231,7 @@ coreMetric <- function(op, name) {
 #' @param receipt Coordinator stage receipt (`cases` keyed by case id).
 #' @param cases Output of `coreCases()` for the stage.
 #' @param ticket Three-digit ticket number.
-#' @return `accept`, `reject`, `invalid`, `trade_off` or `decision_only`, the first failing rule,
+#' @return `accept`, `reject`, `invalid` or `decision_only`, the first failing rule, per-pair time ratios
 #'   and the median ratios; never promotion or default activation.
 #' @noRd
 coreDecision <- function(receipt, cases, ticket) {
@@ -257,6 +267,9 @@ coreDecision <- function(receipt, cases, ticket) {
         coreMetric(receipt$cases[[paste0("control-", rep)]]$operation, name)
     reps <- sort(unique(vapply(cases, `[[`, integer(1), "rep")))
     for (name in names(guards)) result$pair_ratios[[name]] <- vapply(reps, \(rep) pair_ratio(name, rep), numeric(1))
+    # Time is reported, not judged (protocol v5).
+    result$time_pair_ratios <- list(cpu = vapply(reps, \(rep) pair_ratio("cpu", rep), numeric(1)),
+        wall = vapply(reps, \(rep) pair_ratio("elapsed", rep), numeric(1)))
     worse <- spec$metrics[vapply(spec$metrics, \(name) result$ratios[[name]] > 1, logical(1))]
     breached <- names(guards)[vapply(names(guards), \(name) any(!(result$pair_ratios[[name]] <= guards[[name]])),
         logical(1))]
@@ -265,7 +278,6 @@ coreDecision <- function(receipt, cases, ticket) {
         result$failing_rule <- paste0("primary_metric_worse:", worse[[1L]])
     } else if (length(breached)) {
         result$failing_rule <- paste0("guard_breached:", breached[[1L]])
-        if (identical(breached, spec$trade_off)) result$status <- "trade_off"
     } else {
         result$status <- "accept"
     }

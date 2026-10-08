@@ -7,7 +7,7 @@ installs <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = T
 # Recorded outcome per CORE build; a control must be `accepted` (coreControl).
 build_outcomes <- list(
     core_004 = list(outcome = "harness", note = "lifecycle build; not a control (harness ticket, no mechanism under test)"),
-    core_005 = list(outcome = "pending", note = "accepted or reverted by CORE-010's quiet-host 16 GiB control pair on this build (protocol v4; CORE-017's stage was invalid) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"),
+    core_005 = list(outcome = "pending", note = "accepted or reverted by stage core-010-control, alternating this build with the PERF-108 build in one session: per-pair peak <= 1.00 (protocol v5; time reported, not judged)"),
     core_017 = list(outcome = "reverted", note = "stage core-017 invalid under host contention; checks phase about 5% lower; reverted in fea29bb6 (user 2026-10-08)"))
 # Stage bindings: each measured stage's control and candidate builds (protocol section 4).
 stage_builds <- list(`017` = list(control = "core_005", candidate = "core_017"))
@@ -64,7 +64,7 @@ b$control_receipts <- list(full_p14 = list(source = reused$path, sha256 = reused
         stopifnot(identical(op$config$build, control$build), identical(op$status, "complete"),
             isTRUE(op$measurement_valid), isTRUE(stage$cases[[id]]$verifier_completion$accepted))
         list(build = op$config$build, peak_bytes = op$peak_bytes, elapsed_seconds = op$elapsed_seconds,
-            swap_bytes = op$swap_bytes, verified = TRUE)
+            cpu_seconds = op$accounting$cpu_seconds, swap_bytes = op$swap_bytes, verified = TRUE)
     })))
 files <- c("tools/profiling/workflow_core.R", "tools/profiling/workflow_perf106_repair.R",
     "tools/profiling/workflow_perf106.R", "tools/profiling/workflow_perf108.R",
