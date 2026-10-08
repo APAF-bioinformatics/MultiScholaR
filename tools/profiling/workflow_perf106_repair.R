@@ -4,7 +4,7 @@ args <- commandArgs(trailingOnly = TRUE)
 validate_only <- length(args) == 4L && identical(args[[4L]], "--validate-only")
 if (validate_only) args <- args[1:3]
 core <- length(args) == 3L &&
-    grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|010-control|011-overflow)$", args[[1L]])
+    grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|010-control|011-overflow|018-floor)$", args[[1L]])
 stopifnot(!validate_only || core)
 stopifnot(length(args) == 3L, core || args[[1L]] %in%
     c("preflight-1", "preflight-2", "correction-3", "correction-4", "screen", "confirmation",

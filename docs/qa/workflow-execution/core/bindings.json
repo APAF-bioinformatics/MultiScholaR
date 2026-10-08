@@ -1577,7 +1577,7 @@
     "plan_sha256_at_protocol_freeze": "f9878de3fb060b1f51bda64ba35406bfce8cfe5a2d6a48feda428e4331aa4e77",
     "files": {
       "tools/profiling/workflow_core.R": "8affbb4e05220c648082ace66b6a9f1f6a805442c4ebccc8ceb4ce8257158f45",
-      "tools/profiling/workflow_perf106_repair.R": "f92c3e34cfdf0640911af68a538434b404d3cd2011af13a750e8878d7420746f",
+      "tools/profiling/workflow_perf106_repair.R": "9e0b87dbaadc400536ce21782ab3e5f6a210601874b1226a2f524095474f8ef9",
       "tools/profiling/workflow_perf106.R": "a4d4ed234c780f44cdcd499e821d66dd7256378b494562a1c6a74c3c9a92b592",
       "tools/profiling/workflow_perf108.R": "f1293a4e03fbe0fa9e6e7103901984ed92bdb86153e77d8d04de0b5d830e4bac",
       "tools/profiling/run_workflow_checkpoint_proof.R": "41492212ed08104cfc4d83054de26fc75e072ad1274a80b9f780f138e998c28e",
