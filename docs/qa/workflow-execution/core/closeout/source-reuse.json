@@ -1,0 +1,210 @@
+{
+  "series": "CORE-001..CORE-017",
+  "range": "addcccc0^..HEAD",
+  "head": "6d4f7c2210850c2bd28cc07cbbed78b3d45bdf43",
+  "files": {
+    "R/utils_workflow_dia_ordered_reduce.R": {
+      "deleted": true,
+      "commits": [
+        {
+          "commit": "6d4f7c22",
+          "ticket": "CORE-015",
+          "reverted_commit_message": false,
+          "subject": "CORE-015: remove experimental rollup routes, add preconditions and design note"
+        }
+      ]
+    },
+    "R/utils_workflow_dia_qc_rollup.R": {
+      "deleted": false,
+      "commits": [
+        {
+          "commit": "6d4f7c22",
+          "ticket": "CORE-015",
+          "reverted_commit_message": false,
+          "subject": "CORE-015: remove experimental rollup routes, add preconditions and design note"
+        },
+        {
+          "commit": "77e8ac35",
+          "ticket": "CORE-010",
+          "reverted_commit_message": false,
+          "subject": "CORE-010: bound the worker by free host memory and choose P14 batches to fit"
+        },
+        {
+          "commit": "3375c5ce",
+          "ticket": "CORE-002",
+          "reverted_commit_message": false,
+          "subject": "CORE-002: mark the non-exact rollup arm and pin execution-view contracts"
+        }
+      ]
+    },
+    "R/utils_workflow_dia_relational_rollup.R": {
+      "deleted": false,
+      "commits": [
+        {
+          "commit": "6d4f7c22",
+          "ticket": "CORE-015",
+          "reverted_commit_message": false,
+          "subject": "CORE-015: remove experimental rollup routes, add preconditions and design note"
+        },
+        {
+          "commit": "9a8bdf7a",
+          "ticket": "CORE-S3",
+          "reverted_commit_message": false,
+          "subject": "CORE-S3 audit repairs: records, calibration provenance and protocol 7.1 (editorial)"
+        },
+        {
+          "commit": "887cde28",
+          "ticket": "CORE-005",
+          "reverted_commit_message": true,
+          "subject": "Revert CORE-005: file-hash memoisation and writer metadata caching"
+        },
+        {
+          "commit": "77e8ac35",
+          "ticket": "CORE-010",
+          "reverted_commit_message": false,
+          "subject": "CORE-010: bound the worker by free host memory and choose P14 batches to fit"
+        },
+        {
+          "commit": "0d5ea8ee",
+          "ticket": "CORE-010",
+          "reverted_commit_message": false,
+          "subject": "CORE-010: re-apply CORE-017's per-batch whole-input checks"
+        },
+        {
+          "commit": "fea29bb6",
+          "ticket": "CORE-017",
+          "reverted_commit_message": true,
+          "subject": "Revert \"CORE-017: run P14 whole-input checks per complete-sample batch\""
+        },
+        {
+          "commit": "7152942b",
+          "ticket": "CORE-017",
+          "reverted_commit_message": false,
+          "subject": "CORE-017: run P14 whole-input checks per complete-sample batch"
+        },
+        {
+          "commit": "c0de46ea",
+          "ticket": "CORE-005",
+          "reverted_commit_message": false,
+          "subject": "CORE-005: memoise file hashes and cache writer restoration metadata"
+        }
+      ]
+    },
+    "R/utils_workflow_dia_state.R": {
+      "deleted": false,
+      "commits": [
+        {
+          "commit": "887cde28",
+          "ticket": "CORE-005",
+          "reverted_commit_message": true,
+          "subject": "Revert CORE-005: file-hash memoisation and writer metadata caching"
+        },
+        {
+          "commit": "c0de46ea",
+          "ticket": "CORE-005",
+          "reverted_commit_message": false,
+          "subject": "CORE-005: memoise file hashes and cache writer restoration metadata"
+        },
+        {
+          "commit": "3375c5ce",
+          "ticket": "CORE-002",
+          "reverted_commit_message": false,
+          "subject": "CORE-002: mark the non-exact rollup arm and pin execution-view contracts"
+        }
+      ]
+    },
+    "R/utils_workflow_execution.R": {
+      "deleted": false,
+      "commits": [
+        {
+          "commit": "6d4f7c22",
+          "ticket": "CORE-015",
+          "reverted_commit_message": false,
+          "subject": "CORE-015: remove experimental rollup routes, add preconditions and design note"
+        },
+        {
+          "commit": "9e540d8f",
+          "ticket": "CORE-S3-P03",
+          "reverted_commit_message": false,
+          "subject": "CORE-S3-P03: keep the growth reserve free above the host floor in the worker cap"
+        },
+        {
+          "commit": "77e8ac35",
+          "ticket": "CORE-010",
+          "reverted_commit_message": false,
+          "subject": "CORE-010: bound the worker by free host memory and choose P14 batches to fit"
+        },
+        {
+          "commit": "520ad385",
+          "ticket": "CORE-003",
+          "reverted_commit_message": false,
+          "subject": "CORE-003 follow-up: close the post-hoc audit for production use"
+        },
+        {
+          "commit": "5b5eaa7d",
+          "ticket": "CORE-003",
+          "reverted_commit_message": false,
+          "subject": "CORE-003: execution recovery conflict path and leak repairs"
+        }
+      ]
+    },
+    "R/utils_workflow_saved_exports.R": {
+      "deleted": false,
+      "commits": [
+        {
+          "commit": "addcccc0",
+          "ticket": "CORE-001",
+          "reverted_commit_message": false,
+          "subject": "CORE-001: repair scope release, exact-sum handle and export publication"
+        }
+      ]
+    },
+    "R/utils_workflow_saved_table_codec.R": {
+      "deleted": false,
+      "commits": [
+        {
+          "commit": "6d4f7c22",
+          "ticket": "CORE-015",
+          "reverted_commit_message": false,
+          "subject": "CORE-015: remove experimental rollup routes, add preconditions and design note"
+        },
+        {
+          "commit": "887cde28",
+          "ticket": "CORE-005",
+          "reverted_commit_message": true,
+          "subject": "Revert CORE-005: file-hash memoisation and writer metadata caching"
+        },
+        {
+          "commit": "0d5ea8ee",
+          "ticket": "CORE-010",
+          "reverted_commit_message": false,
+          "subject": "CORE-010: re-apply CORE-017's per-batch whole-input checks"
+        },
+        {
+          "commit": "fea29bb6",
+          "ticket": "CORE-017",
+          "reverted_commit_message": true,
+          "subject": "Revert \"CORE-017: run P14 whole-input checks per complete-sample batch\""
+        },
+        {
+          "commit": "7152942b",
+          "ticket": "CORE-017",
+          "reverted_commit_message": false,
+          "subject": "CORE-017: run P14 whole-input checks per complete-sample batch"
+        },
+        {
+          "commit": "c0de46ea",
+          "ticket": "CORE-005",
+          "reverted_commit_message": false,
+          "subject": "CORE-005: memoise file hashes and cache writer restoration metadata"
+        },
+        {
+          "commit": "addcccc0",
+          "ticket": "CORE-001",
+          "reverted_commit_message": false,
+          "subject": "CORE-001: repair scope release, exact-sum handle and export publication"
+        }
+      ]
+    }
+  }
+}
