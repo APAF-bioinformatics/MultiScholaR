@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "ticket": "CORE-012",
+  "created": "2026-10-08T11:54:50+1100",
+  "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/reference-library",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "packages": {
+    "gmp": "0.7.5.1",
+    "Rmpfr": "1.1.3"
+  },
+  "system": {
+    "gmp": "6.3.0",
+    "mpfr": "4.2.2"
+  },
+  "method": "exact rational sum of the doubles (gmp::as.bigq); relative deviation in 256-bit MPFR",
+  "self_test": {
+    "cancellation": true,
+    "tenth_is_exact_rational": true,
+    "order_independent": true,
+    "resolves_one_ulp": true,
+    "tolerance_scale": true,
+    "zero_exact": true
+  },
+  "self_test_passed": true,
+  "source": "CRAN https://cloud.r-project.org, installed 2026-10-08 into the isolated library"
+}
