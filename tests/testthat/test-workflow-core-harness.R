@@ -210,13 +210,20 @@ test_that("every guard holds per matched pair, so one breaching pair cannot be a
     expect_identical(h$coreDecision(even, cases, "007")$status, "accept")
 })
 
-test_that("a counted member is refused below 12 GiB or with another managed unit active", {
+test_that("a counted member is refused below 12 GiB, with another managed unit active or on a busy host", {
     h <- coreHarness()
-    expect_null(h$coreSetupRefusal(list(available = 13 * 1024^3, units = character())))
-    expect_match(h$coreSetupRefusal(list(available = 11.9 * 1024^3, units = character())), "below 12 GiB")
-    expect_match(h$coreSetupRefusal(list(available = 20 * 1024^3, units = "multischolarwfx0-controller.service")),
+    quiet <- function(...) utils::modifyList(list(available = 13 * 1024^3, units = character(),
+        profile = "performance", cpu_busy = 0.01), list(...))
+    expect_null(h$coreSetupRefusal(quiet()))
+    expect_null(h$coreSetupRefusal(quiet(profile = NA_character_)))
+    expect_match(h$coreSetupRefusal(quiet(available = 11.9 * 1024^3)), "below 12 GiB")
+    expect_match(h$coreSetupRefusal(quiet(available = 20 * 1024^3, units = "multischolarwfx0-controller.service")),
         "1 other managed unit")
-    expect_match(h$coreSetupRefusal(list(available = NA_real_, units = character())), "unobserved")
+    expect_match(h$coreSetupRefusal(quiet(available = NA_real_)), "unobserved")
+    expect_match(h$coreSetupRefusal(quiet(profile = "low-power")), "low-power not performance")
+    expect_match(h$coreSetupRefusal(quiet(profile = "balanced")), "balanced not performance")
+    expect_match(h$coreSetupRefusal(quiet(cpu_busy = 0.21)), "21.0% busy")
+    expect_match(h$coreSetupRefusal(quiet(cpu_busy = NA_real_)), "CPU load is unobserved")
 })
 
 test_that("phase events and 50 ms samples give phase seconds and sampled phase peaks", {

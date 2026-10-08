@@ -1487,13 +1487,13 @@
       "ticket": "CORE-005",
       "build": "core_005",
       "outcome": "pending",
-      "note": "accepted or reverted by CORE-017's control pair on this build (CORE-006, CORE-007, CORE-012 and CORE-009 ran no pairs) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"
+      "note": "accepted or reverted by CORE-010's quiet-host 16 GiB control pair on this build (protocol v4; CORE-017's stage was invalid) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"
     },
     {
       "ticket": "CORE-017",
       "build": "core_017",
-      "outcome": "pending",
-      "note": "accepted or reverted by stage core-017 (protocol v3)"
+      "outcome": "reverted",
+      "note": "stage core-017 invalid under host contention; checks phase about 5% lower; reverted in fea29bb6 (user 2026-10-08)"
     }
   ],
   "control_receipts": {
@@ -1523,11 +1523,11 @@
     "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/runtime",
     "coordinator": "tools/profiling/workflow_perf106_repair.R",
     "protocol": "docs/qa/workflow-execution/core/protocol.md",
-    "protocol_sha256": "7ba6f7dca14b6c6330b8bed8b3b89531f9b2f3775adf7ce43ff1dea1273c68aa",
+    "protocol_sha256": "fe1dade154e61fee030da5fe194f8580afcd410c6bafc0bfe699d00b846fa300",
     "plan_sha256_at_protocol_freeze": "f9878de3fb060b1f51bda64ba35406bfce8cfe5a2d6a48feda428e4331aa4e77",
     "files": {
-      "tools/profiling/workflow_core.R": "6098403ec017d7521b9ea3087678b99824bd0cd5146f8a218665fa3069f21a20",
-      "tools/profiling/workflow_perf106_repair.R": "c749c22c144d2ad43edd86d567a5e4792b50b8bbc1a57b4b5703b68900291c5b",
+      "tools/profiling/workflow_core.R": "7794dd418de3e2aae1cde432615152959f24a0db033f020fce9df22e8626a12d",
+      "tools/profiling/workflow_perf106_repair.R": "9d199d03cd61ff5548d60a4261af789f9156d541eac2abce2fa6bed7c2a21f34",
       "tools/profiling/workflow_perf106.R": "a4d4ed234c780f44cdcd499e821d66dd7256378b494562a1c6a74c3c9a92b592",
       "tools/profiling/workflow_perf108.R": "f1293a4e03fbe0fa9e6e7103901984ed92bdb86153e77d8d04de0b5d830e4bac",
       "tools/profiling/run_workflow_checkpoint_proof.R": "c1102b37a1a14e9e56c71912f22bc7219bcd88627524fdc12709311fc79f8e38",

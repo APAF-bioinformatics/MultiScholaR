@@ -110,7 +110,15 @@ if (core) {
     coreHostReady <- function() {
         units <- system2("systemctl", c("--user", "list-units", "--state=active", "--no-legend",
             "--plain", shQuote("multischolar*")), stdout = TRUE)
-        list(available = api("workflowHostAvailable")(), units = units[nzchar(trimws(units))])
+        # Protocol v4: a quiet host in the performance profile (user 2026-10-08).
+        profile_path <- "/sys/firmware/acpi/platform_profile"
+        cpu <- function() as.numeric(strsplit(readLines("/proc/stat", n = 1L), " +")[[1L]][-1L])
+        before <- cpu()
+        Sys.sleep(2)
+        ticks <- cpu() - before
+        list(available = api("workflowHostAvailable")(), units = units[nzchar(trimws(units))],
+            profile = if (file.exists(profile_path)) readLines(profile_path, n = 1L) else NA_character_,
+            cpu_busy = 1 - sum(ticks[4:5]) / sum(ticks[1:8]))
     }
     receipt$host_at_start <- coreHostReady()
     if (validate_only) {

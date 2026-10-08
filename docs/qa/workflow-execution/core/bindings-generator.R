@@ -7,8 +7,8 @@ installs <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = T
 # Recorded outcome per CORE build; a control must be `accepted` (coreControl).
 build_outcomes <- list(
     core_004 = list(outcome = "harness", note = "lifecycle build; not a control (harness ticket, no mechanism under test)"),
-    core_005 = list(outcome = "pending", note = "accepted or reverted by CORE-017's control pair on this build (CORE-006, CORE-007, CORE-012 and CORE-009 ran no pairs) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"),
-    core_017 = list(outcome = "pending", note = "accepted or reverted by stage core-017 (protocol v3)"))
+    core_005 = list(outcome = "pending", note = "accepted or reverted by CORE-010's quiet-host 16 GiB control pair on this build (protocol v4; CORE-017's stage was invalid) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"),
+    core_017 = list(outcome = "reverted", note = "stage core-017 invalid under host contention; checks phase about 5% lower; reverted in fea29bb6 (user 2026-10-08)"))
 # Stage bindings: each measured stage's control and candidate builds (protocol section 4).
 stage_builds <- list(`017` = list(control = "core_005", candidate = "core_017"))
 stopifnot(all(names(installs) %in% names(build_outcomes)))

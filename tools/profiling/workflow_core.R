@@ -79,7 +79,9 @@ corePhaseMeasures <- function(events, trace) {
 coreMemberSeconds <- function(stage) if (grepl("^core-(lifecycle-|011-overflow$)", stage)) 300L else 600L
 
 #' Refuse a counted member unless the host meets the plan's start precondition.
-#' @param host `list(available, units)` from the coordinator's host reading.
+#' @param host `list(available, units, profile, cpu_busy)` from the coordinator's host reading;
+#'   `profile` is the ACPI platform profile (NA when the host has none), `cpu_busy` the
+#'   whole-host busy CPU fraction over a short sample (protocol v4).
 #' @return NULL when ready, otherwise the refusal reason.
 #' @noRd
 coreSetupRefusal <- function(host) {
@@ -88,6 +90,12 @@ coreSetupRefusal <- function(host) {
     if (host$available < 12 * 1024^3) return(sprintf("host MemAvailable %.2f GiB is below 12 GiB",
         host$available / 1024^3))
     if (length(host$units)) return(paste(length(host$units), "other managed unit(s) active"))
+    if (!is.character(host$profile) || length(host$profile) != 1L ||
+        !is.na(host$profile) && host$profile != "performance")
+        return(paste("platform profile is", host$profile %||% "unobserved", "not performance"))
+    if (!is.numeric(host$cpu_busy) || length(host$cpu_busy) != 1L || !is.finite(host$cpu_busy))
+        return("host CPU load is unobserved")
+    if (host$cpu_busy > 0.05) return(sprintf("host CPU is %.1f%% busy, above 5%%", 100 * host$cpu_busy))
     NULL
 }
 
