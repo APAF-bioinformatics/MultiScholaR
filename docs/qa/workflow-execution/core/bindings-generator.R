@@ -9,7 +9,7 @@ build_outcomes <- list(
     core_004 = list(outcome = "harness", note = "lifecycle build; not a control (harness ticket, no mechanism under test)"),
     core_005 = list(outcome = "reverted", note = "stage core-010-control (protocol v6) rejected it: per-pair peak 1.005 and 0.961 against the PERF-108 build; reverted in 887cde28 (user 2026-10-08)"),
     core_017 = list(outcome = "reverted", note = "stage core-017 invalid under host contention; reverted in fea29bb6; re-applied in the CORE-010 build (0d5ea8ee) after the anonymous-memory reading (user 2026-10-08)"),
-    core_010 = list(outcome = "pending", note = "decided by stage core-010 (protocol v6 section 4a)"))
+    core_010 = list(outcome = "accepted", note = "accepted by user decision 2026-10-08 on stage core-010 evidence (budget_not_binding; candidate peak 20-25% lower under reduced free memory, identical output); not a protocol pass; see core-010/outcome.md"))
 # Stage bindings: each measured stage's control and candidate builds (protocol section 4).
 stage_builds <- list(`017` = list(control = "core_005", candidate = "core_017"),
     `010-control` = list(control = "perf108", candidate = "core_005"),

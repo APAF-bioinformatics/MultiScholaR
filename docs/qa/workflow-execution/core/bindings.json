@@ -1508,8 +1508,8 @@
     {
       "ticket": "CORE-010",
       "build": "core_010",
-      "outcome": "pending",
-      "note": "decided by stage core-010 (protocol v6 section 4a)"
+      "outcome": "accepted",
+      "note": "accepted by user decision 2026-10-08 on stage core-010 evidence (budget_not_binding; candidate peak 20-25% lower under reduced free memory, identical output); not a protocol pass; see core-010/outcome.md"
     }
   ],
   "control_receipts": {

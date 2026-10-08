@@ -57,3 +57,7 @@ CORE-006 closed without change (see `core-006/outcome.md`), so CORE-007's contro
 
 - **P05:** CORE-007 and CORE-012 also ran no pairs. The build is qualified, and CORE-005's outcome recorded, by **CORE-009's** control pair on `core_005`. This supersedes the CORE-006 and CORE-007 references above.
 - **P06:** the edited writer-metadata assertion in `test-workflow-bulk-relational.R` belongs to its installed-only `writer_r` case. It has not run yet, from source or installed. CORE-009's installed regressions name it explicitly.
+
+## Outcome (2026-10-08): reverted
+
+Stage `core-010-control` (protocol v6) compared `core_005` with the PERF-108 build in one session. The per-pair peak ratios were 1.005 (7.98 against 7.94 GiB) and 0.961, against a frozen limit of 1.00 per pair, so the decision was reject. The change only affects hashing and writer metadata and its output was byte-identical, so the breach is likely noise; the rule was applied as frozen (user). Reverted in `887cde28`. See `core-010/outcome.md`.
