@@ -1582,7 +1582,7 @@
       "tools/profiling/workflow_perf108.R": "f1293a4e03fbe0fa9e6e7103901984ed92bdb86153e77d8d04de0b5d830e4bac",
       "tools/profiling/run_workflow_checkpoint_proof.R": "851463e584052d17515369e3839661e4e2ca926f97f0ccab79ac32fce8e95081",
       "tools/profiling/run_workflow_checkpoint_proof.sh": "bbcc3d5295414b21ed051cfb5cc28c278b2c9a6d573c5c987d00a82643f0d241",
-      "tools/profiling/workflow_checkpoint_dia_driver.R": "52987f49f564e2b604afae15d5f2cad15de6df210ca677da3b0c60955c082685",
+      "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
       "tests/testthat/test-workflow-execution-adapters.R": "1e6a6cdf9ba8236f28bfc7e0a7924c362264c1bb9a33e79356c9e645e32f7ec0",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396"
