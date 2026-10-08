@@ -4,7 +4,7 @@ args <- commandArgs(trailingOnly = TRUE)
 validate_only <- length(args) == 4L && identical(args[[4L]], "--validate-only")
 if (validate_only) args <- args[1:3]
 core <- length(args) == 3L &&
-    grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4])|011-overflow)$", args[[1L]])
+    grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|011-overflow)$", args[[1L]])
 stopifnot(!validate_only || core)
 stopifnot(length(args) == 3L, core || args[[1L]] %in%
     c("preflight-1", "preflight-2", "correction-3", "correction-4", "screen", "confirmation",
@@ -307,7 +307,8 @@ tryCatch({
         outer_guard <- NULL
         max_anon <- max_file <- 0
         trace <- NULL
-        if (profiling) {
+        if (profiling || core) {
+            # CORE protocol v3 keeps the 50 ms samples so phase peaks can be read against phase events.
             trace <- file(file.path(owned, "memory-trace.tsv"), "wt")
             writeLines("uptime\tcurrent\tpeak\tanon\tfile\tkernel\tpagetables\tslab", trace)
         }
@@ -318,7 +319,7 @@ tryCatch({
                     vapply(stats, `[[`, character(1), 1L))
                 max_anon <- max(max_anon, stats[["anon"]])
                 max_file <- max(max_file, stats[["file"]])
-                if (profiling) {
+                if (!is.null(trace)) {
                     writeLines(paste(c(operationClock(),
                         api("workflowMemoryCounter")(file.path(group, "memory.current")),
                         api("workflowMemoryCounter")(file.path(group, "memory.peak")),
@@ -370,6 +371,13 @@ tryCatch({
                     "parent elapsed clock",
                 execution = if (!is.null(result)) result$execution else NULL,
                 host_at_end = if (core) coreHostReady() else NULL)
+            if (core && !is.null(result$execution$request_id)) {
+                events_path <- file.path(owned, "project/.workflow-entities/.workflow-export",
+                    result$execution$request_id, "phase-events.tsv")
+                if (file.exists(events_path)) operation <- c(operation, helpers$corePhaseMeasures(
+                    utils::read.delim(events_path, stringsAsFactors = FALSE),
+                    utils::read.delim(file.path(owned, "memory-trace.tsv"))))
+            }
             operation$measurement_valid <- isTRUE(result$execution$measurement_valid) &&
                 peak >= result$execution$peak_bytes &&
                 operation$elapsed_seconds >= result$execution$elapsed_seconds &&

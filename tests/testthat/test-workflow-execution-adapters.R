@@ -374,7 +374,8 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
         })
     before <- getDIAStateReference(manager)
     if (isTRUE(request$profile_worker) || identical(request$batch_count, 6L) ||
-        !is.null(request$structural_options) || identical(request$fault, "after_aggregate")) {
+        !is.null(request$structural_options) || identical(request$fault, "after_aggregate") ||
+        isTRUE(request$phase_events)) {
         sys.source(file.path(workflow_test_root, "tools/profiling/workflow_perf106.R"),
             envir = environment())
         expression <- if (identical(request$batch_count, 6L)) paste(
@@ -396,6 +397,14 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
                 "value <- fn(); if (identical(label, \"ordered_result_stage\"))",
                 "stop(\"CORE-004 forced failure after the aggregate stage\"); value });",
                 "MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))")
+        }
+        if (isTRUE(request$phase_events)) {
+            # CORE protocol v3: phase boundaries beside the request; the forced failure stays inside the hook.
+            stopifnot(identical(request$operation, "precursor_rollup"), !isTRUE(request$profile_worker),
+                is.null(request$structural_options), !identical(request$batch_count, 6L))
+            sys.source(file.path(workflow_test_root, "tools/profiling/workflow_core.R"), envir = environment())
+            expression <- corePhaseHookExpression(if (identical(request$fault, "after_aggregate"))
+                "after_aggregate" else "none")
         }
         if (isTRUE(request$attribute_worker)) {
             sys.source(file.path(workflow_test_root, "tools/profiling/workflow_perf108.R"),

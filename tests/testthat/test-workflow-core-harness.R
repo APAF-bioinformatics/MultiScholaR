@@ -17,7 +17,8 @@ coreSyntheticBindings <- function() {
         builds = list(perf108 = build("p"), core_004 = build("h"), core_005 = build("f"), core_006 = build("s")),
         outcomes = list(list(ticket = "PERF-108", outcome = "accepted", build = "perf108")),
         tickets = list(`006` = list(control = "core_005", candidate = "core_006"),
-            `010` = list(control = "core_005", candidate = "core_006")),
+            `010` = list(control = "core_005", candidate = "core_006"),
+            `017` = list(control = "core_005", candidate = "core_006")),
         screen = list(p14 = input(960000L)), full = list(p14 = input(24000000L), primary = input(6225000L)))
 }
 
@@ -28,6 +29,12 @@ coreSyntheticReceipt <- function(cases, peak = c(control = 7e9, candidate = 6e9)
         operation <- list(status = "complete", measurement_valid = TRUE, lifecycle_passed = TRUE,
             swap_bytes = 0, peak_bytes = peak[[case$role]], elapsed_seconds = elapsed[[case$role]],
             phase_seconds = list(staged_result_read_summary_write = elapsed[[case$role]] / 4),
+            phase_peak_bytes = list(relational_validation = peak[[case$role]] / 2,
+                working_memory_admission = peak[[case$role]] / 3,
+                relational_aggregate_order_summary_write = peak[[case$role]],
+                ordered_result_stage = peak[[case$role]]),
+            phase_status = list(relational_validation = "complete", working_memory_admission = "complete",
+                relational_aggregate_order_summary_write = "complete", ordered_result_stage = "complete"),
             execution = list(cleanup = list(worker_stopped = TRUE, monitor_stopped = TRUE)))
         receipt$cases[[case$id]] <- list(passed = TRUE, operation = operation,
             verifier_completion = list(accepted = TRUE))
@@ -155,6 +162,7 @@ test_that("lifecycle decisions never relabel a failure as success", {
     fail <- h$coreCases(b, "core-lifecycle-fail")
     failed <- coreSyntheticReceipt(fail, edit = function(r) {
         r$cases$member$operation$status <- "worker_failed"
+        r$cases$member$operation$phase_status$ordered_result_stage <- "failed"
         r
     })
     decision <- h$coreLifecycleDecision(failed, fail)
@@ -164,6 +172,14 @@ test_that("lifecycle decisions never relabel a failure as success", {
     uncleaned <- failed
     uncleaned$cases$member$operation$execution$cleanup$monitor_stopped <- FALSE
     expect_identical(h$coreLifecycleDecision(uncleaned, fail)$failing_rule, "cleanup")
+    untimed <- failed
+    untimed$cases$member$operation$phase_status$ordered_result_stage <- "complete"
+    expect_identical(h$coreLifecycleDecision(untimed, fail)$failing_rule, "phase_timing")
+    unobserved <- coreSyntheticReceipt(complete, edit = function(r) {
+        r$cases$member$operation$phase_peak_bytes$working_memory_admission <- NA_real_
+        r
+    })
+    expect_identical(h$coreLifecycleDecision(unobserved, complete)$failing_rule, "phase_timing")
     broken <- coreSyntheticReceipt(complete, edit = function(r) {
         r$cases$member$operation$peak_bytes <- 16 * 1024^3
         r
@@ -201,4 +217,80 @@ test_that("a counted member is refused below 12 GiB or with another managed unit
     expect_match(h$coreSetupRefusal(list(available = 20 * 1024^3, units = "multischolarwfx0-controller.service")),
         "1 other managed unit")
     expect_match(h$coreSetupRefusal(list(available = NA_real_, units = character())), "unobserved")
+})
+
+test_that("phase events and 50 ms samples give phase seconds and sampled phase peaks", {
+    h <- coreHarness()
+    events <- data.frame(uptime = c(10, 11, 12, 12.5, 13, 14, 20, 21), id = c(1L, 2L, 2L, 3L, 3L, 1L, 4L, 4L),
+        phase = c("outer", "check", "check", "check", "check", "outer", "late", "late"),
+        event = c("start", "start", "complete", "start", "complete", "complete", "start", "failed"))
+    trace <- data.frame(uptime = c(10.5, 11.5, 12.25, 12.75, 13.5, 15), current = c(1, 5, 9, 3, 2, 8) * 1e9)
+    m <- h$corePhaseMeasures(events, trace)
+    expect_equal(m$phase_seconds$check, 1.5)
+    expect_equal(m$phase_seconds$outer, 4)
+    expect_equal(m$phase_peak_bytes$check, 5e9)
+    expect_equal(m$phase_peak_bytes$outer, 9e9)
+    expect_true(is.na(m$phase_peak_bytes$late))
+    expect_identical(unlist(m$phase_status), c(outer = "complete", check = "complete", late = "failed"))
+    open <- h$corePhaseMeasures(events[1:7, ], trace)
+    expect_identical(open$phase_status$late, "open")
+    op <- list(phase_peak_bytes = list(relational_validation = 4e9, working_memory_admission = 6e9))
+    expect_equal(h$coreMetric(op, "phase_peak:checks"), 6e9)
+    expect_equal(h$coreMetric(op, "phase_peak:relational_validation"), 4e9)
+    expect_true(is.na(h$coreMetric(list(), "phase_peak:checks")))
+})
+
+test_that("CORE-017 expands, measures the checks phase and keeps the per-pair guards", {
+    h <- coreHarness()
+    b <- coreSyntheticBindings()
+    cases <- h$coreCases(b, "core-017")
+    expect_identical(vapply(cases, `[[`, character(1), "selector"),
+        c("core:017:control:1", "core:017:candidate:1", "core:017:candidate:2", "core:017:control:2"))
+    expect_true(all(vapply(cases, `[[`, logical(1), "phase_events")))
+    expect_true(h$coreCases(b, "core-lifecycle-fail")[[1]]$phase_events)
+    expect_identical(h$coreSelectorStage("core:017:candidate:2"), list(stage = "core-017", id = "candidate-2"))
+    lower <- coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 7e9), edit = function(r) {
+        for (id in c("candidate-1", "candidate-2")) {
+            r$cases[[id]]$operation$phase_peak_bytes$relational_validation <- 2e9
+            r$cases[[id]]$operation$phase_peak_bytes$working_memory_admission <- 1.5e9
+        }
+        r
+    })
+    accepted <- h$coreDecision(lower, cases, "017")
+    expect_identical(accepted$status, "accept")
+    expect_equal(accepted$ratios$`phase_peak:checks`, 2 / 3.5)
+    same <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 7e9)), cases, "017")
+    expect_identical(same$status, "accept")
+    heavier <- h$coreDecision(coreSyntheticReceipt(cases, peak = c(control = 7e9, candidate = 7.2e9)), cases, "017")
+    expect_identical(heavier$failing_rule, "primary_metric_worse:phase_peak:checks")
+    missing <- h$coreDecision(coreSyntheticReceipt(cases, edit = function(r) {
+        r$cases[["control-1"]]$operation$phase_peak_bytes <- NULL
+        r
+    }), cases, "017")
+    expect_identical(missing$failing_rule, "primary_metric_unavailable:phase_peak:checks")
+})
+
+test_that("the worker phase hook flushes boundaries on completion and on the forced failure", {
+    h <- coreHarness()
+    fixture <- paste("p <- getOption(\"multischolar.dia_rollup_phase\");",
+        "p(\"relational_validation\", function() Sys.sleep(0.05));",
+        "p(\"relational_aggregate_order_summary_write\", function() p(\"ordered_result_stage\", function() 1))")
+    for (fault in c("none", "after_aggregate")) {
+        dir <- withr::local_tempdir()
+        request <- file.path(dir, "request.rds")
+        saveRDS(list(), request)
+        expression <- sub("MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))", fixture,
+            h$corePhaseHookExpression(fault), fixed = TRUE)
+        status <- suppressWarnings(system2(file.path(R.home("bin"), "Rscript"),
+            c("--vanilla", "-e", shQuote(expression), shQuote(request)), stdout = FALSE, stderr = FALSE))
+        expect_identical(status == 0L, fault == "none")
+        events <- utils::read.delim(file.path(dir, "phase-events.tsv"), stringsAsFactors = FALSE)
+        m <- h$corePhaseMeasures(events, data.frame(uptime = numeric(), current = numeric()))
+        expect_identical(m$phase_status$relational_validation, "complete")
+        expect_identical(m$phase_status$ordered_result_stage, if (fault == "none") "complete" else "failed")
+        expect_identical(m$phase_status$relational_aggregate_order_summary_write,
+            if (fault == "none") "complete" else "failed")
+        expect_gte(m$phase_seconds$relational_validation, 0.04)
+    }
+    expect_error(h$corePhaseHookExpression("cancel"))
 })

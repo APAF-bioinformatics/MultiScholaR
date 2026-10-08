@@ -16,7 +16,63 @@ corePrimaryMetrics <- list(
     `013` = list(metrics = c("execution:synchronous_wait_seconds", "execution:sync_forks"),
         guards = c(peak = 1.00, elapsed = 1.05)),
     `014` = list(metrics = c("execution:project_disk_bytes", "execution:head_publishes"),
-        guards = c(peak = 1.00, elapsed = 1.05)))
+        guards = c(peak = 1.00, elapsed = 1.05)),
+    `017` = list(metrics = "phase_peak:checks", guards = c(peak = 1.00, elapsed = 1.05)))
+
+#' P14 phases every completed CORE member must record (protocol v3).
+#' @noRd
+coreRequiredPhases <- c("relational_validation", "working_memory_admission",
+    "relational_aggregate_order_summary_write", "ordered_result_stage")
+
+#' Worker entry that records phase boundaries beside the request (protocol v3).
+#' @param fault `none` or `after_aggregate` (fail once the first ordered result stage has run).
+#' @return Rscript expression for the adapters launcher; the scientific call is unchanged.
+#' @noRd
+corePhaseHookExpression <- function(fault = "none") {
+    stopifnot(fault %in% c("none", "after_aggregate"))
+    inner <- if (fault == "after_aggregate") paste("function(label, fn) { value <- fn();",
+        "if (identical(label, \"ordered_result_stage\"))",
+        "stop(\"CORE-004 forced failure after the aggregate stage\"); value }") else "function(label, fn) fn()"
+    paste0('local({ d <- dirname(commandArgs(TRUE)[[1L]]); ',
+        'events <- file(file.path(d, "phase-events.tsv"), "wt"); ',
+        'writeLines("uptime\\tid\\tphase\\tevent", events); flush(events); ',
+        'clock <- function() as.numeric(strsplit(readLines("/proc/uptime", n = 1L), " ")[[1L]][[1L]]); ',
+        'emit <- function(id, label, event) { writeLines(paste(clock(), id, label, event, sep = "\\t"), events); ',
+        'flush(events) }; serial <- 0L; inner <- ', inner, '; ',
+        'options(multischolar.dia_rollup_phase = function(label, fn) { serial <<- serial + 1L; id <- serial; ',
+        'status <- "failed"; emit(id, label, "start"); on.exit(emit(id, label, status), add = TRUE); ',
+        'value <- inner(label, fn); status <- "complete"; value }) }); ',
+        'MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))')
+}
+
+#' Turn worker phase events and coordinator samples into phase seconds and sampled peaks.
+#' @param events Data frame `uptime, id, phase, event` (`start`, then `complete` or `failed`).
+#' @param trace Data frame `uptime, current` of the coordinator's 50 ms samples.
+#' @return `phase_seconds` (summed intervals), `phase_peak_bytes` (largest sample inside any
+#'   interval; NA without a sample), `phase_status` (`failed` > `open` > `complete`).
+#' @noRd
+corePhaseMeasures <- function(events, trace) {
+    stopifnot(is.data.frame(events), all(c("uptime", "id", "phase", "event") %in% names(events)),
+        is.data.frame(trace), all(c("uptime", "current") %in% names(trace)))
+    starts <- events[events$event == "start", , drop = FALSE]
+    ends <- events[events$event %in% c("complete", "failed"), , drop = FALSE]
+    labels <- unique(starts$phase)
+    seconds <- peaks <- stats::setNames(rep(NA_real_, length(labels)), labels)
+    status <- stats::setNames(rep("complete", length(labels)), labels)
+    last <- if (nrow(trace)) max(trace$uptime) else max(c(events$uptime, -Inf))
+    for (i in seq_len(nrow(starts))) {
+        label <- starts$phase[[i]]
+        end <- ends[ends$id == starts$id[[i]], , drop = FALSE]
+        closed <- nrow(end) == 1L
+        finish <- if (closed) end$uptime[[1L]] else last
+        state <- if (closed) end$event[[1L]] else "open"
+        if (state == "failed" || state == "open" && status[[label]] != "failed") status[[label]] <- state
+        seconds[[label]] <- sum(seconds[[label]], finish - starts$uptime[[i]], na.rm = TRUE)
+        inside <- trace$current[trace$uptime >= starts$uptime[[i]] & trace$uptime <= finish]
+        if (length(inside)) peaks[[label]] <- max(peaks[[label]], inside, na.rm = TRUE)
+    }
+    list(phase_seconds = as.list(seconds), phase_peak_bytes = as.list(peaks), phase_status = as.list(status))
+}
 
 #' Member ceilings in seconds: lifecycle and overflow members are small.
 #' @noRd
@@ -76,7 +132,7 @@ coreControl <- function(outcomes) {
 #' @return Fixed cases in launch order; never an adaptive schedule.
 #' @noRd
 coreCases <- function(bindings, stage) {
-    stopifnot(grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4])|011-overflow)$", stage))
+    stopifnot(grepl("^core-(lifecycle-(complete|fail)|0(0[6-9]|1[0-4]|17)|011-overflow)$", stage))
     case <- function(id, role, rep, build_key, input, population, fault = "none", selector) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
@@ -84,6 +140,7 @@ coreCases <- function(bindings, stage) {
             role = role, control = role == "control", fault = fault, rep = rep,
             population = population, library = build$library, expected_build = build$build,
             exact_sum = build$exact_sum, expect_failure = fault != "none", profile_worker = FALSE,
+            phase_events = TRUE,
             binding = digest::digest(list(input, build, stage, rep,
                 protocol = bindings$protocol_sha256), algo = "sha256"),
             input = input, selector = selector)
@@ -111,7 +168,7 @@ coreCases <- function(bindings, stage) {
 #' Map a verifier selector back to its coordinator stage and case id.
 #' @noRd
 coreSelectorStage <- function(selection) {
-    stopifnot(grepl("^core:((00[6-9]|01[0-4]):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection))
+    stopifnot(grepl("^core:((00[6-9]|01[0-4]|017):(control|candidate):[12]|lifecycle:(complete|fail)|011:overflow)$", selection))
     parts <- strsplit(sub("^core:", "", selection), ":", fixed = TRUE)[[1L]]
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("core-lifecycle-", parts[[2L]]), id = "member"))
     if (identical(parts, c("011", "overflow"))) return(list(stage = "core-011-overflow", id = "member"))
@@ -144,6 +201,9 @@ coreIneligible <- function(item, seconds) {
 #' @noRd
 coreMetric <- function(op, name) {
     value <- if (name == "peak") op$peak_bytes else if (name == "elapsed") op$elapsed_seconds else
+        if (name == "phase_peak:checks") max(unlist(op$phase_peak_bytes[c("relational_validation",
+            "working_memory_admission")]) %||% NA_real_) else
+        if (startsWith(name, "phase_peak:")) op$phase_peak_bytes[[sub("phase_peak:", "", name, fixed = TRUE)]] else
         if (startsWith(name, "phase:")) op$phase_seconds[[sub("phase:", "", name, fixed = TRUE)]] else
         if (startsWith(name, "execution:")) op$execution[[sub("execution:", "", name, fixed = TRUE)]] else NULL
     if (is.numeric(value) && length(value) == 1L && is.finite(value) && value >= 0) value else NA_real_
@@ -215,8 +275,13 @@ coreLifecycleDecision <- function(receipt, cases) {
     op <- item$operation
     result <- list(status = "invalid", failing_rule = NULL, promotion_authorized = FALSE,
         expect_failure = case$expect_failure)
+    status <- op$phase_status
     if (!case$expect_failure) {
         result$failing_rule <- coreIneligible(item, coreMemberSeconds("core-lifecycle-complete"))
+        # Protocol v3: phase timing must observe the work through completion.
+        if (is.null(result$failing_rule) && !(all(coreRequiredPhases %in% names(status)) &&
+            all(unlist(status) == "complete") && all(is.finite(unlist(op$phase_peak_bytes[coreRequiredPhases])))))
+            result$failing_rule <- "phase_timing"
         if (is.null(result$failing_rule)) result$status <- "lifecycle_complete_observed"
         return(result)
     }
@@ -224,7 +289,9 @@ coreLifecycleDecision <- function(receipt, cases) {
         failure_recorded = identical(op$status, "worker_failed"),
         lifecycle_passed = isTRUE(op$lifecycle_passed) && isTRUE(item$passed),
         zero_swap = identical(op$swap_bytes, 0),
-        cleanup = isTRUE(op$execution$cleanup$worker_stopped) && isTRUE(op$execution$cleanup$monitor_stopped))
+        cleanup = isTRUE(op$execution$cleanup$worker_stopped) && isTRUE(op$execution$cleanup$monitor_stopped),
+        phase_timing = identical(status$ordered_result_stage, "failed") &&
+            identical(status$relational_validation, "complete"))
     failing <- names(rules)[!vapply(rules, isTRUE, logical(1))]
     if (length(failing)) result$failing_rule <- failing[[1L]] else result$status <- "lifecycle_failure_observed"
     result
