@@ -1,7 +1,14 @@
 # Tracked generator for docs/qa/workflow-execution/core/bindings.json (CORE-004; audit CORE-004-P03).
-# Run from the repository root after any harness or protocol change, then commit both files.
+# Run from the repository root after any harness, protocol or build change, then commit both files.
+# Usage: Rscript bindings-generator.R core_004=<install run dir> [core_005=<install run dir> ...]
 args <- commandArgs(TRUE)
-install <- normalizePath(args[[1L]], mustWork = TRUE)
+stopifnot(length(args) >= 1L, all(grepl("^core_[0-9]{3}=.+", args)))
+installs <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = TRUE), sub("=.*$", "", args))
+# Recorded outcome per CORE build; a control must be `accepted` (coreControl).
+build_outcomes <- list(
+    core_004 = list(outcome = "harness", note = "lifecycle build; not a control (harness ticket, no mechanism under test)"),
+    core_005 = list(outcome = "pending", note = "accepted or reverted by CORE-006's control pair against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"))
+stopifnot(all(names(installs) %in% names(build_outcomes)))
 repo <- normalizePath(".")
 stopifnot(file.exists(file.path(repo, "DESCRIPTION")))
 path <- file.path(repo, "docs/qa/workflow-execution/core/bindings.json")
@@ -19,20 +26,22 @@ probe <- function(library) {
 control <- b$control
 control_probe <- probe(control$library)
 stopifnot(identical(control_probe$build, control$build), identical(control_probe$exact_sum, control$exact_sum_sha256))
-library <- file.path(install, "library")
-new <- probe(library)
-b$owner <- "CORE-001; extended by CORE-004"
-b$builds <- list(
-    perf108 = list(ticket = "PERF-108", library = control$library, build = control$build,
-        exact_sum = control$exact_sum_sha256),
-    core_004 = list(ticket = "CORE-004", library = library, build = new$build, exact_sum = new$exact_sum,
+b$owner <- "CORE-001; extended by CORE-004 and later CORE tickets"
+b$builds <- list(perf108 = list(ticket = "PERF-108", library = control$library, build = control$build,
+    exact_sum = control$exact_sum_sha256))
+b$outcomes <- list(list(ticket = "PERF-108", outcome = "accepted", build = "perf108"))
+for (key in names(installs)) {
+    install <- installs[[key]]
+    library <- file.path(install, "library")
+    new <- probe(library)
+    ticket <- sub("^core_", "CORE-", key)
+    b$builds[[key]] <- list(ticket = ticket, library = library, build = new$build, exact_sum = new$exact_sum,
         install_member = basename(install),
         source_commit = trimws(readLines(file.path(install, "source-commit.txt"))[[1L]]),
         runtime_patch_bytes = file.size(file.path(install, "runtime.patch")),
-        untracked_runtime_files = file.exists(file.path(install, "untracked-runtime.sha256"))))
-b$outcomes <- list(list(ticket = "PERF-108", outcome = "accepted", build = "perf108"),
-    list(ticket = "CORE-004", outcome = "harness", build = "core_004",
-        note = "lifecycle build; not a control (harness ticket, no mechanism under test)"))
+        untracked_runtime_files = file.exists(file.path(install, "untracked-runtime.sha256")))
+    b$outcomes[[length(b$outcomes) + 1L]] <- c(list(ticket = ticket, build = key), build_outcomes[[key]])
+}
 oracle <- closeout$p14_oracle
 pagehash <- function(x) digest::digest(paste(x, collapse = "\n"), algo = "sha256", serialize = FALSE)
 stopifnot(identical(pagehash(oracle$screen_pages), b$oracles$p14$screen_pages_sha256),
@@ -69,4 +78,4 @@ b$harness <- list(root = "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-
     tickets = structure(list(), names = character()))
 b$authority$plan_sha256_note <- "CORE-001 value; superseded by harness.plan_sha256_at_protocol_freeze (CORE-004)"
 jsonlite::write_json(b, path, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)
-cat("core_004 build", new$build, "exact_sum", new$exact_sum, "\n")
+for (key in names(installs)) cat(key, "build", b$builds[[key]]$build, "exact_sum", b$builds[[key]]$exact_sum, "\n")

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "owner": "CORE-001; extended by CORE-004",
+  "owner": "CORE-001; extended by CORE-004 and later CORE tickets",
   "created": "2026-10-08",
   "authority": {
     "plan": "tickets/openai/06-CORE-INFRA-PLAN.md",
@@ -1449,6 +1449,16 @@
       "source_commit": "b47d0bf8f47589f54a3240bd234b92a95d938c17",
       "runtime_patch_bytes": 0,
       "untracked_runtime_files": false
+    },
+    "core_005": {
+      "ticket": "CORE-005",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.UgUYyi/library",
+      "build": "693afda93ce13cc225323faae1a144f730fe14432d33c44629be7f9c7a3e8832",
+      "exact_sum": "4f0a90eb7df76de58f1536e78c031c5b7871fdfd93f460f48deb73c5915ce5f3",
+      "install_member": "browser-smoke.UgUYyi",
+      "source_commit": "c0de46ea6c27d719080b356d0f992a7af60f45f4",
+      "runtime_patch_bytes": 0,
+      "untracked_runtime_files": false
     }
   },
   "outcomes": [
@@ -1459,9 +1469,15 @@
     },
     {
       "ticket": "CORE-004",
-      "outcome": "harness",
       "build": "core_004",
+      "outcome": "harness",
       "note": "lifecycle build; not a control (harness ticket, no mechanism under test)"
+    },
+    {
+      "ticket": "CORE-005",
+      "build": "core_005",
+      "outcome": "pending",
+      "note": "accepted or reverted by CORE-006's control pair against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"
     }
   ],
   "control_receipts": {
@@ -1492,7 +1508,7 @@
     "coordinator": "tools/profiling/workflow_perf106_repair.R",
     "protocol": "docs/qa/workflow-execution/core/protocol.md",
     "protocol_sha256": "f6bbb48a4e9799b2e953d8d1c8b6f87ae25e1ecf31c384131092f6117970baad",
-    "plan_sha256_at_protocol_freeze": "fff41bc8991a31b8346290c74b9b2e0f7e9fb0ffeaa492785edb6165af2470e3",
+    "plan_sha256_at_protocol_freeze": "cc7e9e9fa7eb04cf25fade6e2c03ac7f2f6edb77292e35d8c05b0fad642df69d",
     "files": {
       "tools/profiling/workflow_core.R": "7a6c963aa0c9a4d949e3fafc346ce7553abf82d4b1d0331ec6da1c1d102c4c30",
       "tools/profiling/workflow_perf106_repair.R": "7fbfc630a1cceabb05e00a1fefd653646e758559d705f69b9da3837a77a0a0ea",
