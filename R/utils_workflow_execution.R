@@ -457,6 +457,23 @@ workflowExecutionPolicy <- function(diagnostic = FALSE) {
         engine_limit = 12 * 1024^3, deadline = 1800L, monitor_interval = 0.05)
 }
 
+#' Bound the worker by the slice and by what the host has free at dispatch (CORE-010).
+#' @param policy Server-owned execution policy.
+#' @param current Slice memory already in use (controller and monitor).
+#' @param host Host available memory at dispatch.
+#' @return `cap` in bytes, its `source` (`slice` or `host`) and the slice `reservation`.
+#' @noRd
+workflowAdmissionCap <- function(policy, current, host) {
+    if (!is.numeric(current) || length(current) != 1L || !is.finite(current) ||
+        !is.numeric(host) || length(host) != 1L || !is.finite(host))
+        cli::cli_abort("admission memory readings unavailable", class = "workflow_execution_unsupported")
+    reservation <- current + policy$growth_reserve
+    slice <- policy$memory_max - reservation
+    # The host floor guard stops the action below this; other programs keep what they hold.
+    free <- host - policy$host_floor
+    list(cap = min(slice, free), source = if (free < slice) "host" else "slice", reservation = reservation)
+}
+
 #' Managed application resource owner; no scientific state is stored here.
 #' @noRd
 WorkflowExecutionApplication <- R6::R6Class("WorkflowExecutionApplication", cloneable = FALSE,
@@ -1311,13 +1328,14 @@ pollWorkflowAction <- function(owner) {
             if (proc.time()[["elapsed"]] - job$started > 30) return(finishWorkflowExecutionJob(owner, "monitor_start_timeout"))
             return(list(status = "admitting"))
         }
-        current <- workflowMemoryCounter(file.path(app$cgroup, "memory.current"))
-        reservation <- current + app$config$policy$growth_reserve
-        cap <- app$config$policy$memory_max - reservation
+        admitted <- workflowAdmissionCap(app$config$policy,
+            workflowMemoryCounter(file.path(app$cgroup, "memory.current")), workflowHostAvailable())
+        reservation <- admitted$reservation
+        cap <- admitted$cap
         # This finite fixture estimate includes R/package startup and bounded reader overhead.
         if (cap < 768 * 1024^2) return(finishWorkflowExecutionJob(owner, "admission_refused"))
         writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "admitted.rds"),
-            list(schema = 1L, reservation = reservation, worker_cap = cap))
+            list(schema = 1L, reservation = reservation, worker_cap = cap, worker_cap_source = admitted$source))
         if (job$monitor_borrowed) {
             writeWorkflowExecutionMessage(file.path(app$config$root,
                 "application-active-worker.rds"), list(schema = 1L,

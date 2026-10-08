@@ -649,3 +649,15 @@ test_that("a publication failure keeps its message in the job and receipt", {
     expect_identical(readRDS(file.path(job$paths$request_dir, "completion.rds"))$error,
         "intentional publication failure")
 })
+
+test_that("the admitted worker cap is bounded by the slice and by the host's free memory", {
+    policy <- workflowExecutionPolicy()
+    slice <- workflowAdmissionCap(policy, current = 1.6 * 1024^3, host = 40 * 1024^3)
+    expect_identical(slice$source, "slice")
+    expect_equal(slice$cap, 16 * 1024^3 - 1.6 * 1024^3 - 1024^3)
+    host <- workflowAdmissionCap(policy, current = 1.6 * 1024^3, host = 7.75 * 1024^3)
+    expect_identical(host$source, "host")
+    expect_equal(host$cap, 7.75 * 1024^3 - 2 * 1024^3)
+    expect_equal(slice$reservation, 1.6 * 1024^3 + 1024^3)
+    expect_error(workflowAdmissionCap(policy, current = 1.6 * 1024^3, host = NA_real_))
+})

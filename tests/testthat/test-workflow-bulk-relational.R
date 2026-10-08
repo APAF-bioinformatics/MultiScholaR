@@ -728,7 +728,8 @@ test_that("P14 whole-input checks run per complete-sample batch with unchanged r
     expect_identical(unlist(visited), samples)
     batched <- estimateDIARollupWorkingMemory(scope, input, 16 * 1024^3)
     scope$dia_rollup_profile$batches <- 1L
-    expect_identical(estimateDIARollupWorkingMemory(scope, input, 16 * 1024^3), batched)
+    statistics <- c("samples", "rows", "output_groups", "max_group_rows", "max_group_bytes", "annotation_width")
+    expect_identical(estimateDIARollupWorkingMemory(scope, input, 16 * 1024^3)[statistics], batched[statistics])
     whole <- list()
     visitWorkflowCompletePartitions(scope, "qc_input", "Run", function(sql, params)
         whole[[length(whole) + 1L]] <<- list(sql, params), batches = 1L)
@@ -770,5 +771,60 @@ test_that("P14 whole-input checks run per complete-sample batch with unchanged r
     actual <- readSavedWorkflowTable(store, result$reference, columns = names(expected$data),
         offset = 0L, limit = nrow(expected$data), reader = "duckdb")$data
     expect_identical(actual, expected$data)
+    expect_identical(store$open_resources, 0L)
+})
+
+test_that("P14 chooses the fewest complete-sample batches that fit the admitted cap", {
+    skip_if_not_installed("fastduckdb")
+    skip_if_not(identical(Sys.info()[["sysname"]], "Linux") &&
+        identical(Sys.info()[["machine"]], "x86_64") && isTRUE(.Machine$longdouble.digits == 64L),
+        "qualified Linux x86_64 long-double runtime only")
+    root <- withr::local_tempdir("adaptive-batches-")
+    store <- newWorkflowEntityStore(root, "adaptive-batches", "DIA")
+    on.exit(closeWorkflowEntityStore(store), add = TRUE)
+    recipe <- readWorkflowCheckpointRecipe("small")
+    recipe$n_samples <- 32L
+    object <- makeWorkflowCheckpointPeptide(recipe)
+    identity <- newSavedWorkflowScientificIdentity(input = "adaptive-batches", design = "small-32",
+        parameters = "unchanged", selectors = "all", software = "native-api-v1")
+    input <- saveWorkflowPrecursorRollupInput(store, object, "input", identity)
+    expected <- rollUpPrecursorToPeptideHelper(object@peptide_data, sample_id_column = "Run",
+        protein_id_column = "Protein.Group", peptide_sequence_column = "Stripped.Sequence",
+        modified_peptide_sequence_column = "Modified.Sequence", precursor_quantity_column = "Precursor.Quantity",
+        precursor_normalised_column = "Precursor.Normalised", precursor_id_column = "Precursor.Id",
+        core_utilisation = NA, return_rollup_result = TRUE)
+    persist <- list(prototype = expected$data[0, , drop = FALSE], identity = identity)
+    estimates <- local({
+        scope <- newDIARelationalScope(store, input, profile = "P14", native = TRUE)
+        on.exit(releaseWorkflowTableReadScope(scope))
+        validateDIARelationalInput(scope, input, NULL)
+        roomy <- estimateDIARollupWorkingMemory(scope, input, 16 * 1024^3)
+        expect_identical(roomy$batches, 3L)
+        # A cap between the 6- and 5-batch estimates admits exactly six batches.
+        cap <- (roomy$estimates[[6L]] + roomy$estimates[[5L]]) / 2
+        expect_identical(estimateDIARollupWorkingMemory(scope, input, cap)$batches, 6L)
+        expect_error(estimateDIARollupWorkingMemory(scope, input, roomy$estimates[[32L]] - 1),
+            class = "workflow_execution_unsupported")
+        roomy$estimates
+    })
+    withr::with_options(list(multischolar.dia_rollup_batches = 6L), local({
+        forced <- newDIARelationalScope(store, input, profile = "P14", native = TRUE)
+        on.exit(releaseWorkflowTableReadScope(forced))
+        validateDIARelationalInput(forced, input, NULL)
+        expect_identical(estimateDIARollupWorkingMemory(forced, input, 16 * 1024^3)$batches, 6L)
+    }))
+    expect_length(unlist(estimates), 30L)
+    expect_true(all(diff(unlist(estimates)) <= 0))
+    for (batches in c(3L, 6L, 32L)) {
+        cap <- if (batches == 3L) 16 * 1024^3 else (estimates[[batches]] + estimates[[batches - 1L]]) / 2
+        result <- computeDIARelationalRollup(store, input, persist, arm = "F", profile = "P14", worker_cap = cap)
+        expect_identical(result$execution$admission$batches, batches, info = batches)
+        expect_identical(length(result$execution$batch_sizes), batches, info = batches)
+        expect_identical(sum(result$execution$batch_sizes), 32L)
+        expect_identical(result$summary, expected$summary, info = batches)
+        actual <- readSavedWorkflowTable(store, result$reference, columns = names(expected$data),
+            offset = 0L, limit = nrow(expected$data), reader = "duckdb")$data
+        expect_identical(actual, expected$data, info = batches)
+    }
     expect_identical(store$open_resources, 0L)
 })

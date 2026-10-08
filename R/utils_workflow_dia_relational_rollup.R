@@ -684,11 +684,19 @@ computeDIARelationalRollup <- function(store, input, persist, arm = "D", samples
     rows <- phase("relational_validation", function() validateDIARelationalInput(scope, input, samples))
     admission <- if (!is.null(worker_cap)) phase("working_memory_admission", function()
         estimateDIARollupWorkingMemory(scope, input, worker_cap)) else NULL
+    if (!is.null(admission)) scope$dia_rollup_profile$batches <- admission$batches
     result <- phase("relational_aggregate_order_summary_write", function()
         persistDIARelationalRollup(scope, input, persist, rows, arm))
     result$execution$admission <- admission
     result
 }
+
+#' Bytes per input row for work over the whole input before batching (validation, admission,
+#' layout). Calibrated 2026-10-08 (CORE-010) from the CORE-017 `full_p14` traces: anonymous
+#' memory of about 2.1 GiB beyond the per-batch terms on 24,000,000 rows (61 bytes per row),
+#' rounded up. The kernel cgroup guard remains authoritative.
+#' @noRd
+diaRollupRowBytes <- 64
 
 #' Estimate the bounded P14 working set before constructing ordered aggregate lists.
 #' @param scope Validated relational scope with qc_input view.
@@ -744,19 +752,32 @@ estimateDIARollupWorkingMemory <- function(scope, input, worker_cap) {
             paste(q(c(roles$protein, input$annotation)), collapse = ","),
             " FROM qc_input) GROUP BY ", q(roles$protein), ")"),
         max_rows = 1L, max_bytes = 65536)$n) else 0
-    # Upper bound any one of the three complete-sample batches by the largest ceil(N/3)
-    # samples. Include hash/list slack, materialized joins/order, R transfers and writer headroom.
-    n <- ceiling(nrow(stats) / 3)
-    batch <- function(values) sum(utils::head(sort(as.numeric(values), decreasing = TRUE), n))
-    estimate <- 768 * 1024^2 + 2 * batch(stats$state_bytes) +
-        2 * batch(stats$groups) * (256 + annotation_width) + 2 * 67108864
+    # Upper bound any one of `b` complete-sample batches by the largest ceil(N/b) samples.
+    # Include hash/list slack, materialized joins/order, R transfers and writer headroom, plus a
+    # whole-input term for work done before batching (CORE-010 calibration, see diaRollupRowBytes).
+    fixed <- 768 * 1024^2 + 2 * 67108864 + diaRollupRowBytes * sum(as.numeric(stats$rows))
+    estimate_for <- function(b) {
+        n <- ceiling(nrow(stats) / b)
+        batch <- function(values) sum(utils::head(sort(as.numeric(values), decreasing = TRUE), n))
+        fixed + 2 * batch(stats$state_bytes) + 2 * batch(stats$groups) * (256 + annotation_width)
+    }
+    # P14 takes the fewest batches (at least its profile's three) whose estimate fits the cap;
+    # an explicit experimental count or another profile keeps its fixed count.
+    minimum <- scope$dia_rollup_profile$batches
+    adaptive <- identical(scope$dia_rollup_profile$name, "P14") &&
+        is.null(getOption("multischolar.dia_rollup_batches"))
+    counts <- if (adaptive) seq.int(minimum, max(minimum, nrow(stats))) else minimum
+    estimates <- stats::setNames(vapply(counts, estimate_for, numeric(1)), counts)
     if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) ||
-        worker_cap <= 0 || estimate > worker_cap) cli::cli_abort(
+        worker_cap <= 0 || !any(estimates <= worker_cap)) cli::cli_abort(
         "rollup working-memory estimate exceeds admitted worker capacity",
         class = "workflow_execution_unsupported")
-    list(estimated_bytes = estimate, worker_cap = worker_cap, samples = nrow(stats),
+    batches <- counts[which(estimates <= worker_cap)[[1L]]]
+    list(estimated_bytes = estimates[[as.character(batches)]], batches = as.integer(batches),
+        estimates = as.list(stats::setNames(unname(estimates), NULL))[match(seq_len(max(counts)), counts)],
+        worker_cap = worker_cap, samples = nrow(stats), rows = sum(as.numeric(stats$rows)),
         output_groups = sum(as.numeric(stats$groups)), max_group_rows = max(c(0, stats$max_group_rows)),
         max_group_bytes = max(c(0, stats$max_group_bytes)), annotation_width = annotation_width,
-        policy = "P14-three-batches-state-and-output-slack-v1",
+        policy = "P14-adaptive-complete-sample-batches-v2",
         limitation = "admission estimate; kernel cgroup guard remains authoritative")
 }

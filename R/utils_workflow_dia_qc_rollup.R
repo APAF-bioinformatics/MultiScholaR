@@ -1098,8 +1098,11 @@ persistIndexedWorkflowPrecursorRollup <- function(store, input, persist) {
 #' @param worker_cap Admitted worker memory in bytes, separately from the engine limit.
 #' @return Bounded checkpoint/result descriptors for controller acceptance.
 #' @noRd
-computeDIAReferencePrecursorRollup <- function(manager, reference, backend = "P14", worker_cap = 12 * 1024^3) {
+computeDIAReferencePrecursorRollup <- function(manager, reference, backend = "P14", worker_cap = NULL) {
     if (!backend %in% c("legacy", "P14")) cli::cli_abort("unsupported rollup backend")
+    # Managed actions pass the dispatched cap; only legacy unmanaged callers use the default.
+    worker_cap_source <- if (is.null(worker_cap)) "default" else "dispatched"
+    if (is.null(worker_cap)) worker_cap <- 12 * 1024^3
     before <- readDIAStateMetadata(manager, reference)
     checkpoint <- before$data
     checkpoint$dependencies <- collectDIANativeReferences(list(reference,
@@ -1125,6 +1128,7 @@ computeDIAReferencePrecursorRollup <- function(manager, reference, backend = "P1
             worker_cap = worker_cap,
             phase = getOption("multischolar.dia_rollup_phase", function(label, fn) fn())) else
         computeSavedWorkflowPrecursorRollup(manager$.context$store, input, persist)
+    if (!is.null(result$execution$admission)) result$execution$admission$worker_cap_source <- worker_cap_source
     result$counts <- saveDIALargeFilteringCountsReference(manager$.context$store,
         result, object@protein_id_column)
     checkpoint$dependencies <- collectDIANativeReferences(list(checkpoint$dependencies, result$dependencies))
