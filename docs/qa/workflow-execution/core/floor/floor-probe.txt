@@ -1,0 +1,7 @@
+imports=87 app_only=11 (median of 3 fresh processes each)
+RESULT anonymous MiB per process:
+                  bare_r           full_namespace imports_without_app_only 
+                      41                      830                      395 
+        worker_style_set 
+                     124 
+RESULT2 three-process floor GiB: full=2.43 without_app_only=1.16 controller_full_plus_two_worker_style=1.05
