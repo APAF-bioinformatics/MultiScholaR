@@ -1,6 +1,6 @@
 # CORE series hand-off to PERF-107 (app and GUI work)
 
-Written by CORE-016. Line numbers are at the CORE closure source (`6d4f7c22`); PERF-107 rebases on the closure commit before resuming. Each item was checked against the code at that source.
+Written by CORE-016. Line numbers are at the CORE closure source (`6d4f7c22`); PERF-107 rebases on the closure commit before resuming; since the post-closure CORE-018 (2026-10-09) changed `DESCRIPTION`, `NAMESPACE` and the plotting files that use Glimma, ComplexHeatmap, circlize, ggraph, GGally, ggpubr, seqinr, git2r, Biobase, cowplot and devtools (now Suggests behind `requireOptionalPackage()`), the rebase target is the `performance-v2` head that includes CORE-018, recorded in the series plan. Each item was checked against the code at that source.
 
 ## App findings excluded from CORE (review, 2026-10-07)
 
