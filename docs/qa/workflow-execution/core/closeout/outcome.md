@@ -55,6 +55,7 @@ Closure source: `6d4f7c22`; the closure commit is the commit that adds this file
   - row-group alignment, lazy strings, scan consolidation and coordination overhead (premises false or negligible);
   - the compensated sum (rejected for reproducibility).
 - **The remaining floor:** about 2.4 GiB before the rollup and about 3.2 GiB anonymous memory in the checks phase. The single largest remaining lever is the exact ordered sum, which was kept deliberately (CORE-012).
+- **Post-closure (CORE-018, 2026-10-09):** the 2.4 GiB pre-rollup floor was three package namespaces; moving eleven app-only imports to Suggests cut it to about 1.2 GiB on the screen member (−1.22 GiB, accepted, `core-018/outcome.md`). Not measured at full size.
 
 ## Unfavourable or incomplete results (not omitted)
 

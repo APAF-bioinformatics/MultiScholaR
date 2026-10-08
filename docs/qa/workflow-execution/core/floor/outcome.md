@@ -35,6 +35,10 @@ The package's own code is 11 MiB of that; the rest is its import list. Attribute
 - `floor-probe.R` launches fresh `Rscript --vanilla` children and reads `RssAnon` from `/proc/self/status` after one `gc()`; `floor-probe.txt` is its recorded output. Each namespace is loaded by its own top-level call, matching how the managed processes are launched. The same loads written inside a `for` loop measured about 130 MiB higher per process; that form was discarded.
 - Load-order attribution per package (first measurement, not in the probe) is approximate because shared dependencies are charged to whichever package loads them first. The set-level figures in the table do not have that problem.
 
-## Suggested bounded follow-up (not started)
+## Follow-up
+
+Done as CORE-018 (2026-10-09): stage `core-018-floor` measured the validation-phase floor at 2.38 GiB on the closure build and 1.16 GiB with the eleven packages in Suggests (`core-018/outcome.md`). The original suggestion follows.
+
+## Suggested bounded follow-up (as written before the ticket)
 
 One ticket: move the 11 app-only packages to Suggests behind `requireNamespace()` guards, keep public behaviour identical, and measure the floor on the existing small-fixture lifecycle member (one guarded screen run, about 35 s) against the 2.37 GiB plateau recorded here. Decision rule: accept if the pre-rollup plateau falls by at least 1 GiB with the lifecycle checks unchanged.
