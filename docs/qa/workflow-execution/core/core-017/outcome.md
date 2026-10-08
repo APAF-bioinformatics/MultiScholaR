@@ -34,3 +34,7 @@ The host was not quiet. At the end of the stage the ACPI platform profile was `l
 ## Decision (user, 2026-10-08)
 
 Revert the product change and keep the phase-timing harness. No re-run: the memory effect is too small to justify the change whatever a re-run's validity. Protocol version 4 adds a quiet-host start precondition (performance profile, at most 5% busy CPU over 2 s). CORE-005's qualification moves to a quiet-host 16 GiB control pair run by CORE-010, which also sets CORE-010's smaller budget. `core_017` is recorded as `reverted`.
+
+## Correction (2026-10-08, CORE-010 premise check)
+
+The reading above used phase peaks of `memory.current`, which include reclaimable file cache. The same traces (`memory-trace.tsv`, anonymous column) show the checks phase's anonymous memory fell from 4.38 / 4.40 GiB (controls) to 3.18 / 3.20 GiB (candidates), about 1.2 GiB or 27%; file cache filled the freed space. Whole-run anonymous peaks (aggregate phase) were unchanged at 6.47–6.67 GiB. The stage stays `invalid`; it is not re-judged under later protocol versions. By user decision the change is re-applied in the CORE-010 build (`0d5ea8ee`) and measured with CORE-010's stages, and phase peaks report anonymous memory from protocol v6.
