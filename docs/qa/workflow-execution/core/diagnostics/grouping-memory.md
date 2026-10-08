@@ -22,3 +22,7 @@ User-approved diagnostic to choose the order of the remaining memory tickets aft
 **Limits.** One cohort of the small screen population; a full cohort is about 8,000,000 rows. The ranking is the result, not the ratios as a full-size prediction. A streaming sum is not the current exact ordered sum, and any adoption goes through CORE-012's tolerance decision.
 
 **Decision (user, 2026-10-08):** run CORE-012 next, then CORE-009, then CORE-010 and CORE-011; CORE-008, CORE-013 and CORE-014 follow, each premise-checked first.
+
+## Correction (2026-10-08, CORE-009 premise check)
+
+The integer-key rows built the dictionaries and the encoded table before the probe's "before" reading, so encoding cost was not measured and the high-water mark could hide query growth. Measured end to end (`../core-009/end-to-end-probe.R`), integer keys save about 5% of the grouping step, not 19%, with no clear time difference. CORE-009 closed without change. The rows combining integer keys with a streaming sum carry the same flaw; they were not used for any decision.

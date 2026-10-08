@@ -7,7 +7,7 @@ installs <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = T
 # Recorded outcome per CORE build; a control must be `accepted` (coreControl).
 build_outcomes <- list(
     core_004 = list(outcome = "harness", note = "lifecycle build; not a control (harness ticket, no mechanism under test)"),
-    core_005 = list(outcome = "pending", note = "accepted or reverted by CORE-009's control pair on this build (CORE-006, CORE-007 and CORE-012 ran no pairs) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"))
+    core_005 = list(outcome = "pending", note = "accepted or reverted by CORE-010's control pair on this build (CORE-006, CORE-007, CORE-012 and CORE-009 ran no pairs) against the PERF-108 full_p14 receipts (peak <= 1.00, elapsed <= 1.05)"))
 stopifnot(all(names(installs) %in% names(build_outcomes)))
 repo <- normalizePath(".")
 stopifnot(file.exists(file.path(repo, "DESCRIPTION")))
@@ -68,11 +68,14 @@ files <- c("tools/profiling/workflow_core.R", "tools/profiling/workflow_perf106_
     "tools/profiling/run_workflow_checkpoint_proof.R", "tools/profiling/run_workflow_checkpoint_proof.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-execution-adapters.R",
     "tests/testthat/helper-workflow-bulk-rollup.R", "tests/testthat/helper-workflow-checkpoint-fixtures.R")
+# Frozen with the protocol by CORE-004 (fcabd85c); kept, never re-hashed from the current plan.
+plan_at_freeze <- b$harness$plan_sha256_at_protocol_freeze
+stopifnot(is.character(plan_at_freeze), length(plan_at_freeze) == 1L)
 b$harness <- list(root = "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/runtime",
     coordinator = "tools/profiling/workflow_perf106_repair.R",
     protocol = "docs/qa/workflow-execution/core/protocol.md",
     protocol_sha256 = digest::digest(file = file.path(repo, "docs/qa/workflow-execution/core/protocol.md"), algo = "sha256"),
-    plan_sha256_at_protocol_freeze = digest::digest(file = file.path(repo, "tickets/openai/06-CORE-INFRA-PLAN.md"), algo = "sha256"),
+    plan_sha256_at_protocol_freeze = plan_at_freeze,
     files = as.list(stats::setNames(vapply(file.path(repo, files), \(f) digest::digest(file = f, algo = "sha256"),
         character(1), USE.NAMES = FALSE), files)),
     tickets = structure(list(), names = character()))
