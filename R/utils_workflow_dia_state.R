@@ -491,7 +491,7 @@ commitDIAReferenceState <- function(manager, state_name, checkpoint, config, des
         path <- config[[field]]
         if (is.character(path) && length(path) == 1L && !is.na(path)) {
             dependency <- c(list(source = path,
-                destination = paste("execution", field, basename(path), sep = "/")), describeDIANativeFile(path))
+                destination = paste("execution", field, basename(path), sep = "/")), describeDIAInputFile(path))
             snapshot$file_dependencies[[field]] <- dependency
             snapshot$file_dependencies[[paste0(field, "_", substr(reference$entity_id, 1L, 16L))]] <- dependency
         }
@@ -1038,7 +1038,7 @@ saveDIAStateRecord <- function(context, state_name, s4_data_object, config_objec
     for (field in dependency_fields) {
         path <- record$config[[field]]
         if (is.character(path) && length(path) == 1L && !is.na(path)) {
-            description <- describeDIANativeFile(path)
+            description <- describeDIAInputFile(path)
             snapshot$file_dependencies[[field]] <- c(list(source = path,
                 destination = paste("execution", field, basename(path), sep = "/")), description)
         }
@@ -1965,4 +1965,20 @@ produceDIAConfidenceTables <- function(scope, retained, params, slots,
     ledger <- finishWorkflowTableBatch(scope, "confidence_ledger", identity)
     list(reference = accepted, ledger = ledger, summary = summary, dependencies = dependencies,
         counts = counts$finish())
+}
+
+#' Describe an execution input file at commit, hashing it once per process identity.
+#' @param path Regular input file recorded as a state file dependency.
+#' @return The same `list(bytes, sha256)` as `describeDIANativeFile(path)`.
+#' @noRd
+describeDIAInputFile <- function(path) {
+    identity <- workflowTableFileIdentity(path)
+    if (isTRUE(file.info(path)$isdir)) {
+        cli::cli_abort("native archive sources must be regular owned files", class = "saved_entity_path")
+    }
+    hash <- workflowFileSha256(path)
+    if (!identical(identity, workflowTableFileIdentity(path))) {
+        cli::cli_abort("native archive source changed during validation", class = "saved_entity_corrupt")
+    }
+    list(bytes = as.numeric(identity$size), sha256 = hash)
 }

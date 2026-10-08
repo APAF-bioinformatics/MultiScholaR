@@ -305,3 +305,72 @@ test_that("a failing cursor close still releases the scope, its action and conne
     expect_identical(action$scopes, 0L)
     expect_invisible(releaseWorkflowTableReadScope(scope))
 })
+
+coreCountingDigest <- function(counter) {
+    real <- digest::digest
+    function(...) {
+        if (!is.null(list(...)$file)) counter$n <- counter$n + 1L
+        real(...)
+    }
+}
+
+test_that("file hashes are computed once per unchanged file identity", {
+    rm(list = ls(.workflowFileHashes, all.names = TRUE), envir = .workflowFileHashes)
+    path <- tempfile()
+    on.exit(unlink(path), add = TRUE)
+    writeBin(as.raw(seq_len(64L)), path)
+    counter <- new.env()
+    counter$n <- 0L
+    testthat::local_mocked_bindings(digest = coreCountingDigest(counter), .package = "digest")
+    first <- workflowFileSha256(path)
+    expect_identical(workflowFileSha256(path), first)
+    expect_identical(counter$n, 1L)
+    expect_identical(first, digest::digest(file = path, algo = "sha256"))
+    counter$n <- 0L
+    # Same size, original mtime restored: the ctime still changes, so the hash is recomputed.
+    stamp <- file.info(path)$mtime
+    Sys.sleep(0.01)
+    writeBin(rev(as.raw(seq_len(64L))), path)
+    Sys.setFileTime(path, stamp)
+    second <- workflowFileSha256(path)
+    expect_identical(counter$n, 1L)
+    expect_false(identical(second, first))
+    expect_identical(second, digest::digest(file = path, algo = "sha256"))
+})
+
+test_that("two fast writer capability checks hash each runtime file once", {
+    skip_if_not(isTRUE(tryCatch({ workflowFastWriterInfo(); TRUE }, error = \(error) FALSE)),
+        "qualified fastduckdb writer runtime unavailable")
+    rm(list = ls(.workflowFileHashes, all.names = TRUE), envir = .workflowFileHashes)
+    counter <- new.env()
+    counter$n <- 0L
+    testthat::local_mocked_bindings(digest = coreCountingDigest(counter), .package = "digest")
+    first <- workflowFastWriterInfo()
+    opened <- counter$n
+    expect_identical(opened, 4L)
+    expect_identical(workflowFastWriterInfo(), first)
+    expect_identical(counter$n, opened)
+})
+
+test_that("a writer encodes its restoration metadata once across batches", {
+    skip_if_not(isTRUE(tryCatch({ workflowFastWriterInfo(); TRUE }, error = \(error) FALSE)),
+        "qualified fastduckdb writer runtime unavailable")
+    table <- data.frame(value = as.numeric(seq_len(50000L)))
+    rownames(table) <- paste0("precursor-", seq_len(50000L))
+    metadata <- workflowSavedTableMetadata(table, ".rownames", 1L)
+    path <- tempfile(fileext = ".parquet")
+    on.exit(unlink(path), add = TRUE)
+    encoded <- 0L
+    real <- jsonlite::base64_enc
+    testthat::local_mocked_bindings(base64_enc = function(...) {
+        encoded <<- encoded + 1L
+        real(...)
+    }, .package = "jsonlite")
+    writer <- openWorkflowTableWriter(path, metadata, backend = "fast_r")
+    for (start in seq.int(1L, 50000L, by = 10000L))
+        appendWorkflowTableWriter(writer, table, start:(start + 9999L))
+    finishWorkflowTableWriter(writer)
+    expect_identical(encoded, 1L)
+    expect_identical(writer$schema_metadata$multischolar_table,
+        real(serialize(metadata, NULL, version = 3)))
+})

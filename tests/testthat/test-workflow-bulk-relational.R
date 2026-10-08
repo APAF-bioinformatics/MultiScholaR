@@ -98,7 +98,7 @@ test_that("exact relational rollups preserve native science and release resource
         identity <- list(input = "fixture", design = "paired", parameters = "exact-native",
             selectors = "all", software = "extension-v1")
         if (writer_r) {
-            for (optimization in if (wfx_runtime) "none" else c("none", "metadata", "batch")) for (partial in c(FALSE, TRUE)) {
+            for (optimization in if (wfx_runtime) "none" else c("none", "batch")) for (partial in c(FALSE, TRUE)) {
                 owned <- file.path(root, paste(optimization, partial, sep = "-"))
                 dir.create(owned)
                 store <- newWorkflowEntityStore(owned, basename(owned), "DIA")
@@ -124,12 +124,11 @@ test_that("exact relational rollups preserve native science and release resource
                         table$annotation[] <- "changed after append"
                         table <- NULL
                         invisible(gc())
-                        if (optimization == "metadata") {
-                            encoded <- restoration
-                            encoded["rows"] <- list(NULL)
-                            expect_identical(writer$schema_metadata$multischolar_table,
-                                jsonlite::base64_enc(serialize(encoded, NULL, version = 3)))
-                        }
+                        # Restoration metadata is encoded once and kept for every batch (CORE-005).
+                        encoded <- restoration
+                        encoded["rows"] <- list(NULL)
+                        expect_identical(writer$schema_metadata$multischolar_table,
+                            jsonlite::base64_enc(serialize(encoded, NULL, version = 3)))
                         finishWorkflowTableWriter(writer)
                     })
                 page <- readSavedWorkflowTable(store, reference, metadata$columns, limit = 64L)

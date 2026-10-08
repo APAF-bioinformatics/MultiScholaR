@@ -158,6 +158,25 @@ writeSavedWorkflowParquet <- function(table, key_column, path, metadata_version 
 #' @param backend Requested writer mode; only direct R columns are qualified.
 #' @return Source-bound capability metadata; release eligibility remains held.
 #' @noRd
+# Per-process SHA-256 of files whose identity has not changed (CORE-005).
+.workflowFileHashes <- new.env(parent = emptyenv())
+
+#' Hash a file once per process while its identity (path, size, mtime, ctime, mode) is unchanged.
+#' @param path Existing file.
+#' @return SHA-256 identical to `digest::digest(file = path, algo = "sha256")`; only
+#'   digests are cached, so every check comparing them is re-evaluated on each call.
+#' @noRd
+workflowFileSha256 <- function(path) {
+    identity <- tryCatch(workflowTableFileIdentity(path), saved_entity_corrupt = \(error) NULL)
+    if (is.null(identity)) return(digest::digest(file = path, algo = "sha256"))
+    cached <- .workflowFileHashes[[identity$path]]
+    if (!is.null(cached) && identical(cached$identity, identity)) return(cached$sha256)
+    sha256 <- digest::digest(file = path, algo = "sha256")
+    if (identical(identity, workflowTableFileIdentity(path)))
+        assign(identity$path, list(identity = identity, sha256 = sha256), envir = .workflowFileHashes)
+    sha256
+}
+
 workflowFastWriterInfo <- function(backend = "fast_r") {
     fail <- function() cli::cli_abort(
         "direct writer requires the qualified incremental fastduckdb build",
@@ -179,11 +198,10 @@ workflowFastWriterInfo <- function(backend = "fast_r") {
     if (!identical(names(expected$files), required)) fail()
     paths <- file.path(system.file(package = "fastduckdb"), required)
     if (any(!file.exists(paths))) fail()
-    hashes <- stats::setNames(vapply(paths, function(path)
-        digest::digest(file = path, algo = "sha256"), character(1)), required)
+    hashes <- stats::setNames(vapply(paths, workflowFileSha256, character(1)), required)
     if (!identical(hashes, expected$files)) fail()
     binary <- getLoadedDLLs()[["fastduckdb"]][["path"]]
-    if (!identical(digest::digest(file = binary, algo = "sha256"), expected$binary_sha256)) fail()
+    if (!identical(workflowFileSha256(binary), expected$binary_sha256)) fail()
     list(capability = actual, binary_sha256 = expected$binary_sha256,
         runtime_release_status = manifest$runtime_release_status)
 }
@@ -193,14 +211,14 @@ workflowFastWriterInfo <- function(backend = "fast_r") {
 #' @param metadata Exact restoration schema; v3 derives its row count from the footer.
 #' @param progress Optional scalar-only observer supplied by the action owner.
 #' @param backend Explicit qualified writer; ordinary callers retain Arrow.
-#' @param optimization Private measured writer candidate; ordinary callers use none.
+#' @param optimization Private measured writer candidate (`batch`, P16); ordinary callers use none.
 #' @return Private writer; callers must finish or abort it.
 #' @noRd
 openWorkflowTableWriter <- function(path, metadata, progress = NULL, backend = "arrow",
     optimization = "none") {
     if (file.exists(path)) cli::cli_abort("table writer destination exists", class = "saved_entity_conflict")
     if (!backend %in% c("arrow", "fast_arrow", "fast_r")) cli::cli_abort("unsupported table writer")
-    if (!optimization %in% c("none", "metadata", "batch") ||
+    if (!optimization %in% c("none", "batch") ||
         optimization != "none" && backend != "fast_r") cli::cli_abort("unsupported writer optimization")
     if (backend != "arrow") workflowFastWriterInfo(backend)
     if (backend == "fast_arrow" && !requireNamespace("nanoarrow", quietly = TRUE))
@@ -256,10 +274,11 @@ appendWorkflowTableWriter <- function(writer, table, at = seq_len(nrow(table))) 
     if (is.null(schema_metadata)) {
         encoded_metadata <- metadata
         if (metadata$schema == 3L) encoded_metadata["rows"] <- list(NULL)
-        # The workflow codec owns restoration, including row-sized R names.
+        # The workflow codec owns restoration, including row-sized R names. Encode it
+        # once per writer: re-serialising per batch is quadratic for v1 row names.
         schema_metadata <- list(multischolar_table =
             jsonlite::base64_enc(serialize(encoded_metadata, NULL, version = 3)))
-        if (writer$optimization == "metadata") writer$schema_metadata <- schema_metadata
+        writer$schema_metadata <- schema_metadata
     }
     if (writer$backend == "fast_r") {
         if (isTRUE(writer$native_query) && n) cli::cli_abort(
