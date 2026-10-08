@@ -469,8 +469,9 @@ workflowAdmissionCap <- function(policy, current, host) {
         cli::cli_abort("admission memory readings unavailable", class = "workflow_execution_unsupported")
     reservation <- current + policy$growth_reserve
     slice <- policy$memory_max - reservation
-    # The host floor guard stops the action below this; other programs keep what they hold.
-    free <- host - policy$host_floor
+    # The monitor stops the action below the host floor, so the growth reserve also stays free
+    # above it (CORE-S3-P03); other programs keep what they hold.
+    free <- host - policy$host_floor - policy$growth_reserve
     list(cap = min(slice, free), source = if (free < slice) "host" else "slice", reservation = reservation)
 }
 
