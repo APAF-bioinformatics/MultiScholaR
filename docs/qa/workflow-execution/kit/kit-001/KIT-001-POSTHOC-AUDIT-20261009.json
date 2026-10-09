@@ -1,0 +1,72 @@
+{
+  "schema": "em.ticket_series_evidence_audit.result.v1",
+  "mode": "post_hoc",
+  "scope": {
+    "ticket_ids": ["KIT-001"],
+    "files": [
+      "tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R", "tools/profiling/workflow_kit_coordinator.R",
+      "tools/profiling/run_workflow_kit.sh", "docs/qa/workflow-execution/kit/bindings.json", "docs/qa/workflow-execution/kit/protocol.md",
+      "docs/qa/workflow-execution/kit/kit-001/step-map.json", "docs/qa/workflow-execution/kit/kit-001/holder-inventory.json",
+      "docs/qa/workflow-execution/kit/kit-001/outcome.md", "docs/qa/workflow-execution/kit/kit-001/lifecycle-complete.json",
+      "docs/qa/workflow-execution/kit/kit-001/lifecycle-fail.json", "docs/qa/workflow-execution/kit/kit-001/attempt4-post-hoc-fingerprints.R",
+      "R/utils_workflow_execution.R", "R/func_prot_s4_norm_methods.R", "R/func_prot_norm_optimization_helpers.R",
+      "R/func_prot_qc_peptide_methods.R", "R/func_prot_qc_filtering_helpers.R", "R/func_prot_s4_qc_filter_methods.R",
+      "R/utils_workflow_dia_qc_rollup.R", "R/func_prot_qc_peptide_group_filters.R"
+    ],
+    "claim_classes": ["lifecycle_observation", "mechanism_proof", "science_change_installed", "provenance"]
+  },
+  "authority": {
+    "route_valid": true,
+    "artifacts": [
+      {"path": "docs/qa/workflow-execution/kit/protocol.md", "sha256": "8998db8f12a30ce119c516f4e3ffa44cac9a2c57f014d4a1564bb23147813d61", "version": "1.1"},
+      {"path": "docs/qa/workflow-execution/kit/kit-001/step-map.json", "sha256": "966a76f191eae8cc368a15ace2b400c44546548f1ddae8c5da1dc30b26756fea"},
+      {"path": "tickets/kit/00-KIT-PLAN.md", "note": "run ledger row KIT-001; decision rows 2026-10-09"},
+      {"commit": "1ef2b8b3", "note": "KIT-001 closeout"},
+      {"build": "kit_001", "install": "browser-smoke.y8rDOi", "source_commit": "9075b3610ed38f4ac4aecb83f3c8402ab7881d58"}
+    ]
+  },
+  "findings": [
+    {"id": "PA-01", "severity": "medium", "layer": "empirical", "summary": "complete-member fingerprints computed post hoc after the driver's C-stack failure; verifier and decision rerun by an untracked ad-hoc script from the working tree", "claim": "snapshot-and-fingerprint mechanism proven on the screen corpus", "repair": "record verify/decide commands in a successor correction script; KIT-005 lifecycle members must fingerprint in-run", "blocked": "none"},
+    {"id": "PA-02", "severity": "medium", "layer": "provenance", "summary": "correction record names harness commit 3512f84d while the code that ran equals dfd6aacd (committed afterwards)", "repair": "successor note naming dfd6aacd", "blocked": "none"},
+    {"id": "PA-03", "severity": "medium", "layer": "decision_design", "summary": "forced failure is a between-step stop (guard and sample start at the same uptime, failed 0.27 s later), not a failure during a step's write", "repair": "state the claim scope; KIT-005 operation-member fault mid-step", "blocked": "none"},
+    {"id": "PA-04", "severity": "low", "layer": "ledger", "summary": "four launches against one allowed correction (user-authorised, recorded); three install runs versus 'one recorded install'", "repair": "add the install sequence to the outcome", "blocked": "none"},
+    {"id": "PA-05", "severity": "low", "layer": "implementation", "summary": "kitJourneySteps labels import -> raw_data_s4; the store shows import -> initial", "repair": "set the import step state to initial", "blocked": "none"},
+    {"id": "PA-06", "severity": "low", "layer": "claim_scope", "summary": "screen corpus v2 has replicates = 1 everywhere so technical-replicate blocks equal groups; the RUV decision is installed and recorded (under the ruvIII_C_VaryingFn args section) but not distinguishable by this proof", "repair": "none for KIT-001; first exercised by KIT-005's control journey", "blocked": "none"},
+    {"id": "PA-07", "severity": "info", "layer": "empirical", "summary": "protein intensity threshold not recorded in args; ceiling removal verified from installed code and the peptide threshold value", "repair": "KIT-015 may record the threshold", "blocked": "none"},
+    {"id": "PA-08", "severity": "low", "layer": "scientific_validity", "summary": "ceiling removed at five proteomics sites including two not named by the user's decision (disclosed)", "repair": "user confirmation of the five-site scope", "blocked": "decision"},
+    {"id": "PA-09", "severity": "info", "layer": "empirical", "summary": "host profile low-power during both members; recorded per protocol", "repair": "none", "blocked": "none"},
+    {"id": "PA-10", "severity": "low", "layer": "documentation", "summary": "ticket cites 51 assertions (54 now); outcome says the failure member ran with the corrected harness although the attach fix came later", "repair": "correct both sentences", "blocked": "none"}
+  ],
+  "repairs": [],
+  "tests": [
+    {"file": "tests/testthat/test-workflow-kit-harness.R", "passed": 54, "failed": 0},
+    {"file": "tests/testthat/test-workflow-execution-launch-record.R", "passed": 16, "failed": 0},
+    {"file": "tests/testthat/test-prot-ruv-replicate-structure.R", "passed": 15, "failed": 0},
+    {"file": "tests/testthat/test-prot-qc-peptide-intensity-group-batches.R", "passed": 5, "failed": 0},
+    {"file": "tests/testthat/test-prot-qc-peptide-methods-direct-shared.R", "passed": 119, "failed": 0},
+    {"file": "tests/testthat/test-workflow-core-harness.R", "passed": 131, "failed": 0}
+  ],
+  "graph": {"duplicates": [], "missing": [], "cycles": [], "inventory_script": {"findings": 0, "exit": 0}},
+  "documentation": {"outcome": "docs/qa/workflow-execution/kit/kit-001/outcome.md", "register": "docs/qa/workflow-execution/kit/kit-001/KIT-001-POSTHOC-AUDIT-20261009.md"},
+  "evidence_layers": [
+    {"layer": "mechanical", "status": "pass", "evidence": "hashes, pins, bindings, member binding digests, launch snapshots match commits"},
+    {"layer": "semantic", "status": "pass", "evidence": "receipt fields match protocol v1.1 member kinds; decisions by kitLifecycleDecision"},
+    {"layer": "empirical", "status": "pass_with_limits", "evidence": "both members measured validly; PA-01 post-hoc fingerprints; PA-03 between-step failure"},
+    {"layer": "promotion", "status": "not_claimed", "evidence": "ticket status is workflow metadata"}
+  ],
+  "formal_verification": {"used": false, "obligations": [], "limits": ["floating fingerprints and GUI journeys are executable evidence only"]},
+  "closeout": {
+    "implementation_verified": true,
+    "execution_complete": true,
+    "decision_supported": true,
+    "promotion_authorized": false,
+    "claim_scope": "lifecycle proof on screen corpus v2 under the kit-journey-v1 record with the kit_001 control; per-step snapshots in-run, fingerprints post hoc; the forced failure is a between-step stop; the RUV replicate decision is installed but not distinguishable on this corpus"
+  },
+  "blockers": [],
+  "deviations": [
+    "four launches of kit-lifecycle-complete against a ledger allowing one correction (attempts 3 and 4 user-authorised)",
+    "post-hoc fingerprint correction with verifier rerun from the working tree",
+    "ceiling removal applied at five sites, two beyond the decision's wording (disclosed)"
+  ],
+  "next_action": "No blocker for KIT-002. User to confirm PA-08; PA-01 to PA-05 and PA-10 are bounded corrections for a separate remediation record on request."
+}
