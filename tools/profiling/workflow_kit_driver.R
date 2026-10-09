@@ -165,7 +165,7 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
             store = switch(id,
                 import = h$runCheckpointImportActions(driver, project_parent, corpus),
                 design = runKitDesignActions(h, driver, corpus$design),
-                session_export = h$checkpointClickAndWaitText(driver, paste0(norm_prefix, "export_filtered_session"),
+                session_export = kitClickAndWaitText(h, driver, paste0(norm_prefix, "export_filtered_session"),
                     ".shiny-notification", "Filtered session data exported successfully!")),
             peptide = {
                 if (id == "qvalue") {
@@ -191,7 +191,7 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
                     for (name in names(journey$normalisation$ruv)) {
                         h$checkpointSetInput(driver, paste0(norm_prefix, name), journey$normalisation$ruv[[name]])
                     }
-                    h$checkpointClickAndWaitText(driver, paste0(norm_prefix, "run_normalization"),
+                    kitClickAndWaitText(h, driver, paste0(norm_prefix, "run_normalization"),
                         ".shiny-notification", "Normalization and RUV correction completed!")
                 },
                 correlation = {
@@ -204,7 +204,7 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
             da = {
                 prefix <- "proteomics_workflow-differential_expression-"
                 h$checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "da")
-                h$checkpointClickAndWaitText(driver, paste0(prefix, "load_filtered_session"),
+                kitClickAndWaitText(h, driver, paste0(prefix, "load_filtered_session"),
                     ".shiny-notification", "Session loaded successfully!")
                 h$checkpointSetInput(driver, paste0(prefix, "formula_string"), journey$da$formula)
                 h$checkpointSetInput(driver, paste0(prefix, "da_q_val_thresh"), journey$da$q_value)
@@ -245,6 +245,13 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
     }
     if (record$status == "running") record$status <- "complete"
     record$files <- previous_files
+    # The journey is over: let the application settle, mark teardown (the resident-end window is the
+    # 5 s before it) and release the sampler before the fingerprint pass, which reads the immutable
+    # store and counts against neither elapsed nor the ceiling.
+    Sys.sleep(6)
+    kitMark(events, "journey", "teardown")
+    record$teardown_clock <- kitClock()
+    file.create(file.path(dirname(application_root), "stop-sampling"))
     fingerprints <- if (is.null(record$store)) NULL else tryCatch(kitFingerprintStore(record$store, api),
         error = function(error) { record$fingerprint_error <<- conditionMessage(error); NULL })
     if (!is.null(fingerprints)) {
@@ -307,6 +314,44 @@ kitPatientDriver <- function(driver, patience_seconds = 600) {
     invisible(driver)
 }
 
+#' Record every Shiny notification the page ever shows in `window.__kitNotifications` (text and
+#' error flag), so a completion message that stays visible for 10 s cannot be missed while the
+#' renderer is frozen (KIT-005 correction 5). Idempotent.
+#' @noRd
+kitInstallNotificationLog <- function(driver) {
+    driver$get_js(paste0("(function(){if(window.__kitNotifications)return true;window.__kitNotifications=[];",
+        "const push=n=>{if(n&&n.textContent)window.__kitNotifications.push({text:n.textContent,",
+        "error:!!(n.classList&&n.classList.contains('shiny-notification-error'))});};",
+        "const visit=n=>{if(n.nodeType!==1)return;if(n.classList&&n.classList.contains('shiny-notification'))push(n);",
+        "if(n.querySelectorAll)n.querySelectorAll('.shiny-notification').forEach(push);};",
+        "new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)visit(n);})",
+        ".observe(document.documentElement,{childList:true,subtree:true});return true;})()"))
+    invisible(NULL)
+}
+
+#' Click a production action and wait for its completion text in the live DOM or in the
+#' notification log; an error notification (live or logged) fails the step.
+#' @noRd
+kitClickAndWaitText <- function(h, driver, input_id, selector, text) {
+    kitInstallNotificationLog(driver)
+    id <- jsonlite::toJSON(input_id, auto_unbox = TRUE)
+    encoded_selector <- jsonlite::toJSON(selector, auto_unbox = TRUE)
+    encoded_text <- jsonlite::toJSON(text, auto_unbox = TRUE)
+    h$checkpointWaitForJs(driver, sprintf("document.getElementById(%s) !== null", id),
+        timeout = h$checkpointWaitBudget(control = TRUE))
+    driver$get_js(sprintf("window.__kitNotifications=[];document.getElementById(%s).click();true", id))
+    h$checkpointWaitForJs(driver, sprintf(paste0("(function(){return Array.from(document.querySelectorAll(%s))",
+        ".some(el=>el.textContent.includes(%s)) || (window.__kitNotifications||[]).some(n=>n.text.includes(%s)) || ",
+        "document.querySelector('.shiny-notification-error') !== null || ",
+        "(window.__kitNotifications||[]).some(n=>n.error);})()"), encoded_selector, encoded_text, encoded_text),
+        timeout = h$checkpointWaitBudget())
+    error <- driver$get_js(paste0("(function(){const el=document.querySelector('.shiny-notification-error');",
+        "if(el)return el.textContent;const logged=(window.__kitNotifications||[]).find(n=>n.error);",
+        "return logged?logged.text:null;})()"))
+    if (!is.null(error)) stop(paste("production action failed:", input_id, error))
+    invisible(TRUE)
+}
+
 #' Attach a browser to the managed application and run the journey, recording the result.
 #' @param h Browser helper environment (the pinned driver file sourced from the snapshot).
 #' @param member_dir Member directory; `application_root` its managed application root.
@@ -325,6 +370,7 @@ runKitMember <- function(h, member_dir, application_root, library_path, corpus, 
     browser <- h$newCheckpointBrowser(library_path, member_dir, managed_url = managed_url)
     on.exit(try(browser$chrome$close(), silent = TRUE), add = TRUE)
     kitPatientDriver(browser$driver)
+    kitInstallNotificationLog(browser$driver)
     h$stabilizeCheckpointManagedBrowser(browser$driver, managed_url)
     h$checkpointWaitForJs(browser$driver, "document.querySelector('[data-testid=\"tile-proteomics\"]') !== null",
         timeout = 60000, stable_ms = 200)
@@ -333,8 +379,10 @@ runKitMember <- function(h, member_dir, application_root, library_path, corpus, 
     record <- tryCatch(runKitJourney(h, browser$driver, project_parent, corpus, journey, fault, application_root,
         events, api), error = function(error) list(status = "driver_failed", error = conditionMessage(error),
             corpus = journey$corpus_key, project = project_parent))
-    kitMark(events, "journey", "teardown")
-    record$teardown_clock <- kitClock()
+    if (is.null(record$teardown_clock)) {
+        kitMark(events, "journey", "teardown")
+        record$teardown_clock <- kitClock()
+    }
     saveRDS(record, file.path(member_dir, "journey-result.rds"), compress = FALSE, version = 3)
     record
 }

@@ -243,8 +243,8 @@ tryCatch({
             journey$corpus_key <- case$corpus
             fault <- if (case$expect_failure) bindings$lifecycle$fault else NULL
             # The browser driver runs in its own process per member (correction 3), outside the slice.
-            saveRDS(list(schema = 1L, application_root = application_root, corpus = corpus, journey = journey, fault = fault),
-                file.path(owned, "driver-request.rds"), compress = FALSE, version = 3)
+            saveRDS(list(schema = 1L, application_root = application_root, corpus = corpus, journey = journey, fault = fault,
+                deadline_uptime = deadline_uptime), file.path(owned, "driver-request.rds"), compress = FALSE, version = 3)
             driver_log <- file.path(owned, "driver-launch.log")
             driver_status <- system2(file.path(R.home("bin"), "Rscript"), c("--vanilla",
                 shQuote(file.path(snapshot, "tools/profiling/workflow_kit_member.R")),
