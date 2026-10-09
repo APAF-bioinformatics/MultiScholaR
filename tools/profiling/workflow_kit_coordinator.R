@@ -152,14 +152,19 @@ tryCatch({
         slice_state <- sliceState(config$slice)
         active_slice <- NULL
         trace <- utils::read.delim(trace_path, stringsAsFactors = FALSE)
-        trace <- trace[is.finite(trace$uptime), , drop = FALSE]
-        phases <- utils::read.delim(file.path(owned, "journey-phases.tsv"), stringsAsFactors = FALSE)
+        trace <- trace[is.finite(suppressWarnings(as.numeric(trace$uptime))), , drop = FALSE]
+        for (column in c("uptime", "current", "peak", "anon", "file", "kernel", "swap_peak"))
+            trace[[column]] <- suppressWarnings(as.numeric(trace[[column]]))
+        phases_path <- file.path(owned, "journey-phases.tsv")
+        phases <- if (file.exists(phases_path)) utils::read.delim(phases_path, stringsAsFactors = FALSE) else
+            data.frame(uptime = numeric(), step = character(), event = character(), stringsAsFactors = FALSE)
         guard_path <- file.path(application_root, "application-guard-stop.rds")
         guard <- if (file.exists(guard_path)) readRDS(guard_path) else NULL
         sampler_guard <- file.path(owned, "guard-stop.txt")
         outer_guard <- if (file.exists(sampler_guard)) readLines(sampler_guard, n = 1L) else NULL
-        peak <- if (!is.null(counters)) counters$peak else max(trace$peak, na.rm = TRUE)
-        swap <- if (!is.null(counters)) counters$swap else max(trace$swap_peak, na.rm = TRUE)
+        safe_max <- function(x) if (any(is.finite(x))) max(x, na.rm = TRUE) else NA_real_
+        peak <- if (!is.null(counters)) counters$peak else safe_max(trace$peak)
+        swap <- if (!is.null(counters)) counters$swap else safe_max(trace$swap_peak)
         head_unchanged <- NA
         if (case$expect_failure && !is.null(result$store) && !is.null(result$populations[[fault$after_step]])) {
             head <- helpers$kitReadHead(result$store, api)
@@ -170,7 +175,7 @@ tryCatch({
             elapsed_seconds = (result$teardown_clock %||% clock()) - operation_started,
             peak_bytes = peak, peak_source = if (!is.null(counters)) "cgroup" else "trace",
             swap_bytes = swap, accounting = counters$accounting,
-            sampled_anon_bytes = max(trace$anon, na.rm = TRUE),
+            sampled_anon_bytes = safe_max(trace$anon),
             max_sample_interval = if (nrow(trace) > 1L) max(diff(trace$uptime)) else NA_real_,
             samples = nrow(trace), guard = guard, outer_guard = outer_guard,
             head_unchanged = head_unchanged, populations_complete = isTRUE(result$populations_complete),

@@ -278,6 +278,9 @@ runKitMember <- function(h, member_dir, application_root, library_path, corpus, 
     config <- readRDS(file.path(application_root, "application.rds"))
     withr::local_options(multischolar.dia_memory_audit_directory = member_dir,
         multischolar.dia_memory_audit_seconds = 900)
+    # The phase file exists before the browser so a driver failure still leaves a readable record.
+    events <- kitOpenPhases(file.path(member_dir, "journey-phases.tsv"))
+    on.exit(close(events), add = TRUE)
     managed_url <- sprintf("http://127.0.0.1:%d", config$port)
     browser <- h$newCheckpointBrowser(library_path, member_dir, managed_url = managed_url)
     on.exit(try(browser$chrome$close(), silent = TRUE), add = TRUE)
@@ -286,8 +289,6 @@ runKitMember <- function(h, member_dir, application_root, library_path, corpus, 
         timeout = 60000, stable_ms = 200)
     project_parent <- file.path(member_dir, "project")
     dir.create(project_parent)
-    events <- kitOpenPhases(file.path(member_dir, "journey-phases.tsv"))
-    on.exit(close(events), add = TRUE)
     record <- tryCatch(runKitJourney(h, browser$driver, project_parent, corpus, journey, fault, application_root,
         events, api), error = function(error) list(status = "driver_failed", error = conditionMessage(error)))
     kitMark(events, "journey", "teardown")

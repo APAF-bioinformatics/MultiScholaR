@@ -43,6 +43,9 @@ mode="${1:-}"; stage="${2:-}"; library="${3:-}"
 [[ ( "$mode" == validate || "$mode" == run ) && "$stage" =~ ^kit-(lifecycle-(complete|fail)|journey)$ && -d "$library" ]] || {
     echo "Usage: run_workflow_kit.sh validate|run <stage> <library>" >&2; exit 2; }
 root="$(jq -r '.harness.root' "$repo/docs/qa/workflow-execution/kit/bindings.json")"
+# The browser driver runs in the coordinator (outside the slice); chromote needs the executable (as the pinned runner does).
+export CHROMOTE_CHROME="${CHROMOTE_CHROME:-$(command -v chromium || command -v google-chrome || command -v brave || true)}"
+[[ -x "$CHROMOTE_CHROME" ]] || { echo "refused: no Chromium-based browser executable found" >&2; exit 2; }
 [[ "$root" == /* ]] || { echo "bindings carry no proof root" >&2; exit 2; }
 mkdir -p -- "$root"
 cd -- "$repo"

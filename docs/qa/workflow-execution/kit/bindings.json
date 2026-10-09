@@ -1868,9 +1868,9 @@
     "core_pinned_unchanged": true,
     "files": {
       "tools/profiling/workflow_kit.R": "83ea205e2bd303a3b907743c1ddd75afa8c2e6319cacf13855c3f25d5be6cec1",
-      "tools/profiling/workflow_kit_driver.R": "846658caa5328b0cdf02f51b25060d6185604b76f1ffdc99d660e529bb7419a4",
-      "tools/profiling/workflow_kit_coordinator.R": "68216fccacbcda7662be590128cb3d81883ee6713484fc149bf493c3ee33f6f0",
-      "tools/profiling/run_workflow_kit.sh": "1c2491290d0d91c3561cc690201f42cb04d61cb2474e4b4bf5facacc7f872aae",
+      "tools/profiling/workflow_kit_driver.R": "9c595526c5056f31ede50f3357074343531c3d474cff98d3f3b551f4db3c9b62",
+      "tools/profiling/workflow_kit_coordinator.R": "9ce9bc2962ea0af46296a4d112d0d337f0381f2f06eff8d1e1b4762f401b7df4",
+      "tools/profiling/run_workflow_kit.sh": "4987c0c62e95197e3261a84a820d76ef6de47327e68e83567aec689bdf706399",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
       "tests/testthat/test-workflow-kit-harness.R": "d9dd11be8da4b555ae3785eda25524c2e0d3bc7c3eb126e235af93fb80317385"
     }
