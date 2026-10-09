@@ -760,7 +760,9 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
     if (case$operation == "precursor_rollup") {
         screen <- identical(case$input$rows, bindings$populations$screen_p14$rows)
         oracle <- bindings$oracles$p14
-        expected <- unlist(oracle[[if (screen) "screen_pages" else "full_pages"]], use.names = FALSE)
+        # `screen_pages`/`full_pages` are the page counts; the hashes are `*_page_hashes` (KIT-005 correction 1).
+        expected <- unlist(oracle[[if (screen) "screen_page_hashes" else "full_page_hashes"]], use.names = FALSE)
+        stopifnot(length(expected) == oracle[[if (screen) "screen_pages" else "full_pages"]])
         pages <- kitFingerprintTablePages(store, input_component, api)
         stopifnot(identical(unname(pages), unname(expected)), identical(execution$exact_sum_sha256, case$exact_sum),
             identical(execution$query_owner, "fastduckdb_c"), identical(execution$profile$name, "P14"),
