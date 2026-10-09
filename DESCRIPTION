@@ -383,6 +383,7 @@ Collate:
     'utils_workflow_dia_products.R'
     'utils_workflow_dia_da.R'
     'utils_workflow_saved_exports.R'
+    'utils_workflow_class_declarations.R'
     'utils_workflow_dia_state.R'
     'utils_workflow_dia_sessions.R'
     'zzz.R'

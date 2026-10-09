@@ -166,6 +166,17 @@ isDIAComponentCheckpoint <- function(value) {
 #' @return Record containing component descriptors, never an assay.
 #' @noRd
 readDIAStateMetadata <- function(manager, reference = NULL) {
+    record <- readComponentMetadata(manager, reference, classes = c("PeptideQuantitativeData", "ProteinQuantitativeData"))
+    record
+}
+
+#' Read a component checkpoint's bounded record for any declared class (KIT-002).
+#' @param manager Session owner.
+#' @param reference Immutable state descriptor.
+#' @param classes Optional class names the caller accepts; another class is `saved_entity_corrupt`.
+#' @return Record containing component descriptors, never an assay.
+#' @noRd
+readComponentMetadata <- function(manager, reference = NULL, classes = NULL) {
     if (is.null(reference)) reference <- getDIAStateReference(manager)
     if (is.null(reference)) return(NULL)
     if (!identical(reference$payload$codec, "rds") || reference$payload$bytes > 8388608) {
@@ -176,9 +187,12 @@ readDIAStateMetadata <- function(manager, reference = NULL) {
         cli::cli_abort("state has no component metadata", class = "saved_entity_corrupt")
     }
     spec <- record$data
-    required <- if (identical(spec$class, "PeptideQuantitativeData")) c("peptide_data", "design_matrix") else
-        if (identical(spec$class, "ProteinQuantitativeData")) c("protein_quant_table", "design_matrix") else NULL
-    if (is.null(required) || !all(required %in% names(spec$components)) ||
+    accepted <- if (is.null(classes)) names(workflowClassDeclarations()) else classes
+    if (!is.character(spec$class) || length(spec$class) != 1L || !spec$class %in% accepted) {
+        cli::cli_abort("component checkpoint is incomplete", class = "saved_entity_corrupt")
+    }
+    required <- workflowClassRequiredComponents(workflowClassDeclaration(spec$class))
+    if (!all(required %in% names(spec$components)) ||
         !all(vapply(spec$components[required], isSavedWorkflowReference, logical(1)))) {
         cli::cli_abort("component checkpoint is incomplete", class = "saved_entity_corrupt")
     }
@@ -388,18 +402,17 @@ checkpointDIAExecutionResult <- function(manager, object) {
             slots$args[[section]][field] <- list(NULL)
         }
     }
-    assay_field <- if (methods::is(object, "PeptideQuantitativeData")) "peptide_data" else
-        "protein_quant_table"
-    assay <- methods::slot(object, assay_field)
+    declaration <- workflowClassDeclaration(object)
+    assay <- methods::slot(object, declaration$assay)
     list(schema = "dia.component_checkpoint.v2", class = class(object)[[1L]],
+        declaration = workflowDeclarationField(declaration),
         slots = slots, components = components, support = support,
         products = previous$products %||% list(),
         dependencies = collectDIANativeReferences(list(source, previous$dependencies, previous$components,
             previous$support, previous$products)),
         dimensions = list(rows = nrow(assay), columns = names(assay),
-            samples = nrow(methods::slot(object, "design_matrix"))),
-        metadata = if (methods::is(object, "ProteinQuantitativeData"))
-            describeDIAProteinState(object) else NULL)
+            samples = nrow(methods::slot(object, declaration$design))),
+        metadata = if (is.function(declaration$describe)) declaration$describe(object) else NULL)
 }
 
 #' Resolve a protein scientific view while leaving public getState compatible.
@@ -753,6 +766,7 @@ newDIAPeptideCheckpoint <- function(manager, reference, design, args) {
         \(name) methods::slot(prototype, name)), methods::slotNames(prototype))
     slots[c("peptide_data", "design_matrix")] <- NULL
     list(schema = "dia.component_checkpoint.v2", class = "PeptideQuantitativeData",
+        declaration = workflowDeclarationField(workflowClassDeclaration("PeptideQuantitativeData")),
         slots = slots, components = list(peptide_data = reference,
             design_matrix = saveDIATableComponent(context, design)), support = list(),
         dimensions = list(rows = scope$metadata$rows, columns = scope$metadata$columns))
@@ -811,8 +825,7 @@ materializeDIAStates <- function(context, share_immutable = FALSE) {
     lapply(context$snapshot$states, function(reference) {
         record <- materializeDIAStateRecord(context, reference)
         if (!share_immutable || !isS4(record$data)) return(record)
-        for (field in intersect(c("peptide_data", "protein_quant_table", "design_matrix",
-            "protein_id_table"), methods::slotNames(record$data))) {
+        for (field in intersect(workflowClassDeclaration(record$data)$tables, methods::slotNames(record$data))) {
             table <- methods::slot(record$data, field)
             if (hasMutableWorkflowEntityOwner(table)) next
             previous <- tables[[field]]
@@ -1044,13 +1057,13 @@ saveDIAStateRecord <- function(context, state_name, s4_data_object, config_objec
         }
     }
     if (isS4(record$data)) {
-        field <- if (methods::is(record$data, "PeptideQuantitativeData")) "peptide_data" else "protein_quant_table"
-        table <- methods::slot(record$data, field)
+        declaration <- workflowClassDeclaration(record$data)
+        table <- methods::slot(record$data, declaration$assay)
         snapshot$sizes[[state_name]] <- list(s4_object_size_bytes = as.numeric(object.size(record$data)),
             table_object_size_bytes = as.numeric(object.size(table)), rows = nrow(table), columns = ncol(table),
             note = "object.size of owned values, not unique whole-process heap or RSS")
-        if (methods::is(record$data, "ProteinQuantitativeData")) {
-            snapshot$state_metadata[[state_name]] <- describeDIAProteinState(record$data)
+        if (is.function(declaration$describe)) {
+            snapshot$state_metadata[[state_name]] <- declaration$describe(record$data)
         }
     }
     snapshot$current_state <- native$current_state
