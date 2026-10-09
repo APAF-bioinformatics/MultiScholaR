@@ -452,7 +452,7 @@ kitPageHashes <- function(store, reference, api, scope) {
 #' paths masked, `timestamp`/`mtime` fields dropped, saved references replaced by their payload
 #' hash (tables) or their own canonical form (records), plot and grob objects by their class.
 #' @noRd
-kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L) {
+kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L, memo = NULL) {
     if (depth > 48L) return("<depth>")
     if (is.null(value) || is.function(value) || is.environment(value)) return(if (is.null(value)) NULL else "<opaque>")
     if (inherits(value, c("gg", "ggplot", "grob", "gtable", "htmlwidget", "recordedplot"))) return(paste0("<", class(value)[[1L]], ">"))
@@ -462,24 +462,31 @@ kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L) {
     if (reference) {
         if (identical(value$payload$codec, "parquet_duckdb") || is.null(store) || is.null(api))
             return(list(.ref = value$kind %||% "value", sha256 = value$payload$sha256))
+        # Records are hydrated once per fingerprint run (memo by entity id); their reference registries
+        # (`dependencies` and the like) accumulate every earlier state and are derived, not science.
+        if (!is.null(memo) && !is.null(memo[[value$entity_id]])) return(memo[[value$entity_id]])
         hydrated <- api("hydrateSavedWorkflowEntity")(store, value)
-        return(list(.ref = value$kind %||% "value", value = kitCanonical(hydrated, store, api, depth + 1L)))
+        canonical <- list(.ref = value$kind %||% "value", value = kitCanonical(hydrated, store, api, depth + 1L, memo))
+        if (!is.null(memo)) memo[[value$entity_id]] <- canonical
+        return(canonical)
     }
     if (is.data.frame(value)) return(list(.df = digest::digest(kitMaskPaths(value), algo = "sha256"), dim = dim(value)))
     if (is.list(value)) {
-        value <- value[!(names(value) %||% rep("", length(value))) %in% c("timestamp", "mtime")]
-        return(lapply(value, kitCanonical, store = store, api = api, depth = depth + 1L))
+        names_ <- names(value) %||% rep("", length(value))
+        value <- value[!names_ %in% c("timestamp", "mtime", "dependencies", "product_dependencies", "da_dependencies",
+            "owned_components", "component_dependencies")]
+        return(lapply(value, kitCanonical, store = store, api = api, depth = depth + 1L, memo = memo))
     }
     kitMaskPaths(value)
 }
 
 #' Fingerprint one saved reference: tables by logical pages, other payloads by their canonical value.
 #' @noRd
-kitFingerprintReference <- function(store, reference, api) {
+kitFingerprintReference <- function(store, reference, api, memo = NULL) {
     if (identical(reference$payload$codec, "parquet_duckdb")) return(kitFingerprintTable(store, reference, api))
     value <- api("hydrateSavedWorkflowEntity")(store, reference)
     list(kind = reference$kind %||% "value", product_type = if (is.list(value)) value$product_type else NULL,
-        sha256 = digest::digest(kitCanonical(value, store, api), algo = "sha256"))
+        sha256 = digest::digest(kitCanonical(value, store, api, memo = memo), algo = "sha256"))
 }
 
 #' Fingerprint every component, support entry, product and the args summary of one state record.
@@ -487,7 +494,7 @@ kitFingerprintReference <- function(store, reference, api) {
 #' @param store Open entity store; `reference` the state's checkpoint descriptor.
 #' @return Named list `components`, `support`, `products`, `summary_sha256`, `class`, `rows`.
 #' @noRd
-kitFingerprintState <- function(store, reference, api) {
+kitFingerprintState <- function(store, reference, api, memo = NULL) {
     record <- api("hydrateSavedWorkflowCheckpoint")(store, reference)
     spec <- record$data
     # The `initial` placeholder carries no data; it is recorded, not fingerprinted.
@@ -495,7 +502,7 @@ kitFingerprintState <- function(store, reference, api) {
         components = list(), support = list(), products = list(), summary_sha256 = NA_character_, empty = TRUE))
     if (!api("isDIAComponentCheckpoint")(spec)) stop("state is not a component checkpoint")
     walk <- function(node, path = character()) {
-        if (api("isSavedWorkflowReference")(node)) return(stats::setNames(list(kitFingerprintReference(store, node, api)),
+        if (api("isSavedWorkflowReference")(node)) return(stats::setNames(list(kitFingerprintReference(store, node, api, memo)),
             paste(path, collapse = "/")))
         if (is.list(node) && !is.data.frame(node)) {
             out <- list()
@@ -612,9 +619,10 @@ kitFingerprintStore <- function(store_dir, api, states = NULL) {
     store <- kitOpenStore(store_dir, api)
     on.exit(api("closeWorkflowEntityStore")(store), add = TRUE)
     names <- if (is.null(states)) names(head$references) else intersect(states, names(head$references))
-    result <- lapply(stats::setNames(names, names), \(name) kitFingerprintState(store, head$references[[name]], api))
+    memo <- new.env(parent = emptyenv())
+    result <- lapply(stats::setNames(names, names), \(name) kitFingerprintState(store, head$references[[name]], api, memo))
     snapshot <- api("hydrateSavedWorkflowCheckpoint")(store, readRDS(file.path(store_dir, "dia-state-head.rds")))
-    products <- lapply(snapshot$products, \(reference) kitFingerprintReference(store, reference, api))
+    products <- lapply(snapshot$products, \(reference) kitFingerprintReference(store, reference, api, memo))
     list(head_sha256 = head$head_sha256, states = result, products = products)
 }
 
