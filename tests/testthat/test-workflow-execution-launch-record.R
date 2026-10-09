@@ -10,7 +10,7 @@ test_that("a KIT journey record switches on native sessions with a bounded deadl
     expect_identical(record$journey$member_sha256, strrep("a", 64))
     expect_true(record$allow_guard_injection)
     expect_false(record$entry_fixture_test)
-    expect_error(workflowGuiLaunchRecord(list(schema = 1L, programme = "kit-journey-v1", deadline = 5401), "x"),
+    expect_error(workflowGuiLaunchRecord(list(schema = 1L, programme = "kit-journey-v1", deadline = 14401), "x"),
         "KIT journey record is invalid")
     expect_error(workflowGuiLaunchRecord(list(schema = 1L, programme = "kit-journey-v1", deadline = 900,
         entry_fixture_test = TRUE), "x"), "KIT journey record is invalid")

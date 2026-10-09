@@ -932,7 +932,7 @@ workflowManagedMain <- function(arguments) {
 
 #' Interpret a bounded GUI launch record (`gui-member.rds`) into frozen configuration fields.
 #' @param member Record list; `perf107-phase-a` carries a qualification, `kit-journey-v1`
-#'   switches the controller to native DIA sessions with a deadline of at most 90 minutes.
+#'   switches the controller to native DIA sessions with a deadline of at most 4 hours (protocol v1.2).
 #' @param member_sha256 Hash of the record file.
 #' @return Named list of configuration fields (`qualification` or `journey`, plus the test flags).
 #' @noRd
@@ -944,7 +944,7 @@ workflowGuiLaunchRecord <- function(member, member_sha256) {
     if (identical(member$programme, "kit-journey-v1")) {
         deadline <- member$deadline
         if (!is.numeric(deadline) || length(deadline) != 1L || !is.finite(deadline) ||
-            deadline < 60 || deadline > 5400 || isTRUE(member$entry_fixture_test)) {
+            deadline < 60 || deadline > 14400 || isTRUE(member$entry_fixture_test)) {
             cli::cli_abort("KIT journey record is invalid")
         }
         return(list(journey = list(programme = "kit-journey-v1", native_sessions = TRUE,

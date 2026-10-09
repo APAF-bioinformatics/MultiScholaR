@@ -91,8 +91,8 @@ b$corpora$screen$note <- "screen corpus v2: eight samples of the calibration rec
 b$journey <- list(
     experiment_label = "dia_baseline_smoke",
     state_manager_mode = "dia_native_sessions",
-    member = list(programme = "kit-journey-v1", deadline = 5400),
-    controller_deadline_seconds = 5400,
+    member = list(programme = "kit-journey-v1", deadline = 14400),
+    controller_deadline_seconds = 14400,
     claim_limits = c(
         "The journey runs the production native DIA session path (`initializeDIANativeImport`: on-disk reference states from import onward, in-process reference kernels) switched on by the KIT journey launch record, so every step is snapshotted after its own step.",
         "A production-default journey (no launch record, in-memory WorkflowState) has no per-step references; KIT-005 runs one such member as the memory baseline and cannot fingerprint it per step."),
@@ -106,10 +106,12 @@ b$journey <- list(
     steps = c("import", "design", "qvalue", "protein_peptide", "rollup", "intensity", "sample", "replicate", "imputation",
         "iq", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation",
         "session_export", "da"),
-    # KIT-005: the KIT-001 screen journey took 269 s for 320,872 report rows (8 samples); the full corpus has
-    # 5,846,578 rows (18.2 x), so a linear scaling gives 4,900 s; the ceiling is the protocol's 90 min maximum.
-    ceiling_seconds = 5400L,
-    ceiling_note = "KIT-005: KIT-001 screen journey 269 s at 320,872 rows scaled linearly to 5,846,578 rows = 4,900 s; capped at the protocol maximum of 90 min",
+    # KIT-005 (protocol v1.2, user decision 2026-10-10): the first 300-sample attempt showed the data steps scaling
+    # about 20 x from 8 to 300 samples (q-value 14 s -> 296 s, evidence 9 s -> 190 s), about 5,000 s for the whole
+    # journey at the KIT-001 host speed and more on a shared host, so the 90 min cap was infeasible; the ceiling
+    # is 4 h, the protocol v1.2 maximum.
+    ceiling_seconds = 14400L,
+    ceiling_note = "KIT-005 / protocol v1.2: data steps scale about 20 x from 8 to 300 samples (attempt 1: q-value 296 s, evidence 190 s); 4 h, the protocol maximum",
     # The baseline stage: two control journey members on kit_001 with the journey record (the first produces
     # the per-step populations and oracles, the second reproduces them) and the production-default member.
     pair = list(control = b$control, candidate = NULL, reps = 2L, production_default = TRUE))

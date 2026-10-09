@@ -130,8 +130,8 @@ test_that("KIT stages expand to fixed cases with bound corpora, builds and diges
     expect_identical(h$kitMemberSeconds("kit-lifecycle-operation-fail"), 300L)
     expect_identical(h$kitMemberSeconds("kit-006"), 600L)
     expect_identical(h$kitMemberSeconds("kit-journey", b), 3600L)
-    b$journey$ceiling_seconds <- 6000
-    expect_error(h$kitMemberSeconds("kit-journey", b), "90 min")
+    b$journey$ceiling_seconds <- 15000
+    expect_error(h$kitMemberSeconds("kit-journey", b), "4 h")
     expect_identical(h$kitControl(b), "core_018")
     b$outcomes <- c(b$outcomes, list(list(ticket = "KIT-006", outcome = "accepted", build = "kit_006")))
     expect_identical(h$kitControl(b), "kit_006")

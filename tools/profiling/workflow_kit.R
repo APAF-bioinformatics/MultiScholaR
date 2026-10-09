@@ -44,8 +44,8 @@ kitMemberSeconds <- function(stage, bindings = NULL) {
     if (grepl("^kit-0[0-9]{2}$", stage)) return(600L)
     if (stage == "kit-journey") {
         seconds <- bindings$journey$ceiling_seconds
-        if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 5400)
-            stop("the journey ceiling is not fixed in the bindings (at most 90 min)")
+        if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 14400)
+            stop("the journey ceiling is not fixed in the bindings (at most 4 h, protocol v1.2)")
         return(as.integer(seconds))
     }
     600L
