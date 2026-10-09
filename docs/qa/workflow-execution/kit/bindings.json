@@ -16,6 +16,15 @@
       "source_commit": "906c50dcbbbab04276a3032f22059668b91dc51c",
       "runtime_patch_bytes": 0,
       "untracked_runtime_files": false
+    },
+    "kit_001": {
+      "ticket": "KIT-001",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.uvS55B/library",
+      "build": "041b49ad0f0a9a7e5d9e91d2a711d481482481bf16f3ba5eef13bf5350d13387",
+      "exact_sum": "4606a1be3097a36eb82b569ce6e45f65e9e894ac7652112ed3e525edce75c7a4",
+      "install_member": "browser-smoke.uvS55B",
+      "source_commit": "d2c73bfc8359a2c11d745ff10e42a752cce05187",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -24,9 +33,15 @@
       "outcome": "superseded",
       "build": "core_018",
       "note": "post-closure CORE build (source 906c50dc, install browser-smoke.gQ40C7); superseded as the KIT control by kit_001 (user decision 2026-10-09: launch hook, RUV replicate structure, quantile ceiling removal)"
+    },
+    {
+      "ticket": "KIT-001",
+      "outcome": "control",
+      "build": "kit_001",
+      "note": "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09); the KIT control until KIT-006 accepts"
     }
   ],
-  "control": "core_018",
+  "control": "kit_001",
   "populations": {
     "screen_p14": {
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.djt8ku/size-960000/.workflow-entities",
