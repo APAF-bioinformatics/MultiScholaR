@@ -376,3 +376,44 @@ test_that("retained native QC products allow their scientific input to be collec
         expect_null(ggplot2::get_last_plot())
     }
 })
+
+test_that("the normalisation module edge writes the config_list method and RUV audit trail around the declaration", {
+  original <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+  root <- withr::local_tempdir()
+  paths <- list(source_dir = root, protein_qc_dir = file.path(root, "qc"), time_dir = file.path(root, "time"),
+    publication_graphs_dir = file.path(root, "graphs"))
+  for (path in paths[-1]) dir.create(path)
+  shiny::testServer(function(input, output, session) {
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "module-edge-audit", "DIA"),
+      WorkflowState$new(audit_enabled = FALSE))
+    manager$.context$reference_states <- TRUE
+    manager$.context$experiment_paths <- paths
+    workflow <- shiny::reactiveValues(state_manager = manager)
+    attachDIAStateSession(manager, session, workflow)
+    manager$saveState("protein_replicate_filtered", original, list(), "source")
+    norm <- shiny::reactiveValues()
+  }, {
+    rlang::local_bindings(config_list = list(normaliseBetweenSamples = list(method = "cyclicloess")), .env = .GlobalEnv)
+    settings <- list(norm_method = "quantile", ruv_mode = "manual", ruv_k = 1, ruv_percentage = 50,
+      color_variable = "group", shape_variable = NULL)
+    notified <- character()
+    for (pass in 1:2) {
+      completed <- shiny::isolate(runProtNormNormalizationWorkflow(settings, workflow, norm, paths, "proteomics",
+        "audit", checkMemoryUsageFn = function(...) NULL, generatePostNormalizationQcFn = function(...) NULL,
+        generateRuvCorrectedQcFn = function(...) NULL, getRuvGroupingVariableFn = function() "group",
+        showNotificationFn = function(message, ...) notified <<- c(notified, message),
+        handleErrorFn = function(error, ...) stop(error), messageFn = function(...) NULL))
+      expect_true(completed, info = pass)
+      config <- get("config_list", envir = .GlobalEnv)
+      expect_identical(config$normaliseBetweenSamples$method, "quantile", info = pass)
+      expect_identical(config$ruvParameters$best_k, 1L, info = pass)
+      expect_identical(config$ruvParameters$percentage_as_neg_ctrl, 50, info = pass)
+      expect_identical(config$ruvParameters$num_neg_ctrl, length(norm$control_genes_index), info = pass)
+      assign("config_list", list(normaliseBetweenSamples = list(method = "cyclicloess")), envir = .GlobalEnv)
+    }
+    # The second pass is an identity hit: the audit trail is written on hits as on misses (KIT-004 PC-04).
+    expect_length(notified, 2L)
+    expect_identical(manager$current_state, "ruv_corrected")
+    closeDIAStateAdapter(manager)
+  })
+})

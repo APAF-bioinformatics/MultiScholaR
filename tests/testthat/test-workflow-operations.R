@@ -163,10 +163,18 @@ test_that("the three DIA declarations run in a fresh R session with no Shiny ses
     root <- normalizePath(test_path("..", ".."))
     result <- callr::r(function(root, libraries) {
         .libPaths(unique(c(libraries, .libPaths())))
-        suppressPackageStartupMessages(pkgload::load_all(root, quiet = TRUE, attach_testthat = FALSE))
+        # A source tree is loaded with pkgload; an installed suite or a check directory has no DESCRIPTION
+        # at the root, so the installed package is used there.
+        if (file.exists(file.path(root, "DESCRIPTION"))) {
+            suppressPackageStartupMessages(pkgload::load_all(root, quiet = TRUE, attach_testthat = FALSE))
+        } else {
+            suppressPackageStartupMessages(library(MultiScholaR))
+        }
         ns <- asNamespace("MultiScholaR")
         helpers <- new.env(parent = ns)
         sys.source(file.path(root, "tests/testthat/helper-workflow-checkpoint-fixtures.R"), helpers)
+        attach(ns, name = "MultiScholaR-namespace", warn.conflicts = FALSE)
+        on.exit(detach("MultiScholaR-namespace"), add = TRUE)
         snapshot <- function() {
             names <- sort(ls(.GlobalEnv, all.names = TRUE))
             stats::setNames(lapply(names, function(name) digest::digest(get(name, envir = .GlobalEnv), algo = "sha256")), names)

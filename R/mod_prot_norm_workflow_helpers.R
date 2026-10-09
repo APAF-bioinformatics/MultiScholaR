@@ -678,7 +678,7 @@ runProtNormApplyCorrelationObserver <- function(
 ) {
   if ((is.list(workflowData) || is.environment(workflowData)) &&
       usesDIAReferenceStates(workflowData$state_manager)) {
-    return(tryCatch({
+    return(tryCatch(withDIAStateScope(getDIAActiveManager(), function() {
       final <- runDIAReferenceCorrelation(workflowData, normData, experimentPaths,
         input$min_pearson_correlation_threshold, FALSE, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn)
       completeCorrelationWorkflowFn(
@@ -693,7 +693,7 @@ runProtNormApplyCorrelationObserver <- function(
         messagePrefix = "Correlation"
       )
       final
-    }, error = function(e) handleCorrelationErrorFn(error = e,
+    }), error = function(e) handleCorrelationErrorFn(error = e,
         logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
   }
   withDIAStateScope(getDIAActiveManager(), function() {
@@ -761,7 +761,7 @@ runProtNormSkipCorrelationObserver <- function(
 ) {
   if ((is.list(workflowData) || is.environment(workflowData)) &&
       usesDIAReferenceStates(workflowData$state_manager)) {
-    return(tryCatch({
+    return(tryCatch(withDIAStateScope(getDIAActiveManager(), function() {
       final <- runDIAReferenceCorrelation(workflowData, normData, experimentPaths,
         0, TRUE, omicType, experimentLabel, function() NULL, getPlotAestheticsFn)
       completeCorrelationWorkflowFn(
@@ -776,7 +776,7 @@ runProtNormSkipCorrelationObserver <- function(
         messagePrefix = "Correlation"
       )
       final
-    }, error = function(e) handleCorrelationErrorFn(error = e,
+    }), error = function(e) handleCorrelationErrorFn(error = e,
         logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
   }
   withDIAStateScope(getDIAActiveManager(), function() {

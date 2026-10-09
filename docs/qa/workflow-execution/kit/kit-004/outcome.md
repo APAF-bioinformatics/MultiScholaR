@@ -40,4 +40,4 @@ Kernels unchanged (`normaliseBetweenSamples`, `findBestNegCtrlPercentage` / `get
 
 ## Hand-off
 
-KIT-006 consumes `runSavedOperation` and the store handle; KIT-011/012 consume the declarations. Later declarations keep the `…Fn` call aliases where the legacy path uses them.
+KIT-006 consumes `runSavedOperation` and the store handle; KIT-011/012 consume the declarations. Later declarations keep the `…Fn` call aliases where the legacy path uses them. When KIT-011/012 retire the legacy normalisation path, `resolveProtNormRuvParameters` should delegate to `resolveProtRuvParameters` so the RUV defaults live once (audit PC-05).
