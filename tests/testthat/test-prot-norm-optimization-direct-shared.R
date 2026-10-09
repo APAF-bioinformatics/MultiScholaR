@@ -179,10 +179,10 @@ test_that("protein RUV percentage optimization preserves ranking and validation 
       percentage = percentage_as_neg_ctrl
     )
   })
-  localBinding(helper_env, "ruvCancor", function(
-    normalised_protein_matrix_obj,
+  localBinding(helper_env, "ruvCancorFromInput", function(
+    Y,
+    theObject,
     ctrl,
-    num_components_to_impute,
     ruv_grouping_variable
   ) {
     list(percentage = attr(ctrl, "percentage"))
@@ -255,10 +255,10 @@ makeOptimizerEnvMocks <- function(helper_env, scores_by_pct, k_by_pct) {
     n <- if (percentage_as_neg_ctrl %in% names(scores_by_pct)) 6L else 6L
     structure(c(rep(TRUE, n), rep(FALSE, max(0L, 10L - n))), pct = percentage_as_neg_ctrl)
   })
-  localBinding(helper_env, "ruvCancor", function(
-    normalised_protein_matrix_obj,
+  localBinding(helper_env, "ruvCancorFromInput", function(
+    Y,
+    theObject,
     ctrl,
-    num_components_to_impute,
     ruv_grouping_variable
   ) {
     list(pct = attr(ctrl, "pct"))
@@ -280,7 +280,7 @@ test_that("findBestNegCtrlPercentage uses findBestKElbow (not findBestK)", {
   localBinding(helper_env, "getNegCtrlProtAnova", function(...) {
     rep(TRUE, 6L)
   })
-  localBinding(helper_env, "ruvCancor", function(...) list(dummy = 1))
+  localBinding(helper_env, "ruvCancorFromInput", function(...) list(dummy = 1))
   localBinding(helper_env, "calculateSeparationScore", function(...) 0.3)
   localBinding(helper_env, "findBestKElbow", function(...) {
     elbow_called <<- TRUE
@@ -301,7 +301,7 @@ test_that("findBestNegCtrlPercentage uses findBestKElbow (not findBestK)", {
 test_that("weighted_difference deprecation warning fires exactly once per optimizer call", {
   helper_env <- environment(findBestNegCtrlPercentage)
   localBinding(helper_env, "getNegCtrlProtAnova", function(...) rep(TRUE, 6L))
-  localBinding(helper_env, "ruvCancor", function(...) list(dummy = 1))
+  localBinding(helper_env, "ruvCancorFromInput", function(...) list(dummy = 1))
   localBinding(helper_env, "calculateSeparationScore", function(...) 0.3)
   localBinding(helper_env, "findBestKElbow", function(...) 2L)
 
@@ -345,7 +345,7 @@ test_that("weighted_difference deprecation warning fires exactly once per optimi
 test_that("optimization_results contains exactly one row per tested percentage", {
   helper_env <- environment(findBestNegCtrlPercentage)
   localBinding(helper_env, "getNegCtrlProtAnova", function(...) rep(TRUE, 6L))
-  localBinding(helper_env, "ruvCancor", function(...) list(dummy = 1))
+  localBinding(helper_env, "ruvCancorFromInput", function(...) list(dummy = 1))
   localBinding(helper_env, "calculateSeparationScore", function(...) 0.3)
   localBinding(helper_env, "findBestKElbow", function(...) 2L)
 
@@ -378,7 +378,7 @@ test_that("invalid and skipped percentages are retained with status and error_re
     if (percentage_as_neg_ctrl == 5L) return(rep(FALSE, 10L))  # 0 controls < 5
     rep(TRUE, 6L)
   })
-  localBinding(helper_env, "ruvCancor", function(...) list(dummy = 1))
+  localBinding(helper_env, "ruvCancorFromInput", function(...) list(dummy = 1))
   localBinding(helper_env, "calculateSeparationScore", function(...) 0.3)
   localBinding(helper_env, "findBestKElbow", function(...) 2L)
 
@@ -411,10 +411,10 @@ test_that("winner selection is deterministic using stable tie-breaking order", {
   helper_env <- environment(findBestNegCtrlPercentage)
 
   localBinding(helper_env, "getNegCtrlProtAnova", function(...) rep(TRUE, 6L))
-  localBinding(helper_env, "ruvCancor", function(
-    normalised_protein_matrix_obj,
+  localBinding(helper_env, "ruvCancorFromInput", function(
+    Y,
+    theObject,
     ctrl,
-    num_components_to_impute,
     ruv_grouping_variable
   ) {
     list(pct = attr(ctrl, "pct"))
@@ -427,10 +427,10 @@ test_that("winner selection is deterministic using stable tie-breaking order", {
   ) {
     structure(rep(TRUE, 6L), pct = percentage_as_neg_ctrl)
   })
-  localBinding(helper_env, "ruvCancor", function(
-    normalised_protein_matrix_obj,
+  localBinding(helper_env, "ruvCancorFromInput", function(
+    Y,
+    theObject,
     ctrl,
-    num_components_to_impute,
     ruv_grouping_variable
   ) {
     list(pct = attr(ctrl, "pct"))
@@ -457,7 +457,7 @@ test_that("winner selection is deterministic using stable tie-breaking order", {
 test_that("best_k in return value is always a scalar integer", {
   helper_env <- environment(findBestNegCtrlPercentage)
   localBinding(helper_env, "getNegCtrlProtAnova", function(...) rep(TRUE, 6L))
-  localBinding(helper_env, "ruvCancor", function(...) list(dummy = 1))
+  localBinding(helper_env, "ruvCancorFromInput", function(...) list(dummy = 1))
   localBinding(helper_env, "calculateSeparationScore", function(...) 0.4)
   localBinding(helper_env, "findBestKElbow", function(...) 3L)
 

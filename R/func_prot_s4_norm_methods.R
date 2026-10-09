@@ -146,28 +146,44 @@ setMethod(
       stop(paste0("The number of negative control molecules entered is less than 5. Please check the 'ctl' parameter."))
     }
 
-    normalised_frozen_protein_matrix_filt <- protein_quant_table |>
-      column_to_rownames(protein_id_column) |>
-      as.matrix()
-
-    Y <- t(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))])
-    if (length(which(is.na(normalised_frozen_protein_matrix_filt))) > 0) {
-      message("   DEBUG66 S4: Performing imputation (NIPALS)...")
-      Y <- mixOmics::impute.nipals(t(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))]),
-        ncomp = num_components_to_impute
-      )
-    }
-
-    message("   DEBUG66 S4: Calling ruv_cancorplot...")
-    cancorplot_r2 <- ruv_cancorplot(Y,
-      X = design_matrix |>
-        dplyr::pull(!!sym(ruv_grouping_variable)),
-      ctl = ctrl
-    )
-    message("   DEBUG66 S4: ruv_cancorplot returned.")
-    cancorplot_r2
+    Y <- prepareRuvCancorInput(theObject, num_components_to_impute)
+    ruvCancorFromInput(Y, theObject, ctrl, ruv_grouping_variable)
   }
 )
+
+#' The sample-by-protein input of the canonical-correlation plot: the normalised matrix, NIPALS-imputed
+#' when it has missing values. It does not depend on the control set, so a percentage sweep prepares it
+#' once (KIT-005, user decision 2026-10-10) and `ruvCancor` prepares it for a single call; both paths
+#' compute the same matrix.
+#' @noRd
+prepareRuvCancorInput <- function(theObject, num_components_to_impute) {
+  design_matrix <- theObject@design_matrix
+  sample_columns <- design_matrix |> dplyr::pull(!!sym(theObject@sample_id))
+  normalised_frozen_protein_matrix_filt <- theObject@protein_quant_table |>
+    column_to_rownames(theObject@protein_id_column) |>
+    as.matrix()
+  Y <- t(normalised_frozen_protein_matrix_filt[, sample_columns])
+  if (length(which(is.na(normalised_frozen_protein_matrix_filt))) > 0) {
+    message("   DEBUG66 S4: Performing imputation (NIPALS)...")
+    Y <- mixOmics::impute.nipals(t(normalised_frozen_protein_matrix_filt[, sample_columns]),
+      ncomp = num_components_to_impute
+    )
+  }
+  Y
+}
+
+#' The canonical-correlation plot for one control set on a prepared input (see `prepareRuvCancorInput`).
+#' @noRd
+ruvCancorFromInput <- function(Y, theObject, ctrl, ruv_grouping_variable) {
+  message("   DEBUG66 S4: Calling ruv_cancorplot...")
+  cancorplot_r2 <- ruv_cancorplot(Y,
+    X = theObject@design_matrix |>
+      dplyr::pull(!!sym(ruv_grouping_variable)),
+    ctl = ctrl
+  )
+  message("   DEBUG66 S4: ruv_cancorplot returned.")
+  cancorplot_r2
+}
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @export

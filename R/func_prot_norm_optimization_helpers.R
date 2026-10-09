@@ -719,6 +719,17 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     )
   }
 
+  # The canonical-correlation input (NIPALS imputation when values are missing) does not depend on the
+  # percentage: it is prepared once for the sweep instead of once per percentage (KIT-005; at 300 samples
+  # the imputation took about 15 min and was repeated for each of the 20 percentages).
+  if (!ruv_grouping_variable %in% colnames(normalised_protein_matrix_obj@design_matrix)) {
+    stop(paste0("The 'ruv_grouping_variable = ", ruv_grouping_variable, "' is not a column in the design matrix."))
+  }
+  if (is.na(num_components_to_impute) || num_components_to_impute < 1) {
+    stop(paste0("The num_components_to_impute = ", num_components_to_impute, " value is invalid."))
+  }
+  cancor_input <- prepareRuvCancorInput(normalised_protein_matrix_obj, num_components_to_impute)
+
   # Process a single percentage, returning a fully annotated trace record
   process_percentage <- function(current_percentage, index) {
     message(sprintf("   DEBUG66 Loop: Processing percentage %d%%", current_percentage))
@@ -770,12 +781,7 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     # Step 3: Canonical correlation
     cancor_error <- NULL
     cancorplot <- tryCatch({
-      ruvCancor(
-        normalised_protein_matrix_obj,
-        ctrl = control_genes_index,
-        num_components_to_impute = num_components_to_impute,
-        ruv_grouping_variable = ruv_grouping_variable
-      )
+      ruvCancorFromInput(cancor_input, normalised_protein_matrix_obj, control_genes_index, ruv_grouping_variable)
     }, error = function(e) {
       cancor_error <<- e$message
       NULL
