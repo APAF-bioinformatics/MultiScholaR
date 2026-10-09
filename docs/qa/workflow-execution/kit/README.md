@@ -24,7 +24,7 @@ A **step declaration** is six facts: input class, fields and columns read, indep
 | whole matrix | `runProjected` | protein missing-value filters (dataset-wide quantile), between-sample normalisation, RUV, correlation, limma, Limpa, edgeR, enrichment |
 | store | none | import adoption, design, reports, Save/Open |
 
-A unit is declared only after the science owner confirms it in the tracked step map (`kit-001/step-map.json`), and the partitioner's exactness test checks it against the control build's output on every component the step writes (assay, design, support tables, ledgers, summaries, products). Partitioned declarations carry merge rules for the non-assay components (design recomputed once on the merged output, ledgers concatenated, counts summed). Whole-matrix steps do not reach constant memory; they reach one projected object under a cap with nothing else resident.
+A unit is a property of the kernel's code and is determined by reading it, with the evidence recorded in the tracked step map (`kit-001/step-map.json`); only a step where the code is batch-safe but the intended science might not be, or where the code is ambiguous, is flagged with a question for the science owner. The partitioner's exactness test then checks every determination against the control build's output on every component the step writes (assay, design, support tables, ledgers, summaries, products). Partitioned declarations carry merge rules for the non-assay components (design recomputed once on the merged output, ledgers concatenated, counts summed). Whole-matrix steps do not reach constant memory; they reach one projected object under a cap with nothing else resident.
 
 ## Rules the kit keeps
 
