@@ -279,6 +279,9 @@ kitFingerprintReference <- function(store, reference, api) {
 kitFingerprintState <- function(store, reference, api) {
     record <- api("hydrateSavedWorkflowCheckpoint")(store, reference)
     spec <- record$data
+    # The `initial` placeholder carries no data; it is recorded, not fingerprinted.
+    if (is.null(spec)) return(list(class = NA_character_, rows = NA_integer_, entity_id = reference$entity_id,
+        components = list(), support = list(), products = list(), summary_sha256 = NA_character_, empty = TRUE))
     if (!api("isDIAComponentCheckpoint")(spec)) stop("state is not a component checkpoint")
     walk <- function(node, path = character()) {
         if (api("isSavedWorkflowReference")(node)) return(stats::setNames(list(kitFingerprintReference(store, node, api)),

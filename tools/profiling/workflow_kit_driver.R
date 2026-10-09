@@ -245,10 +245,11 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
     }
     if (record$status == "running") record$status <- "complete"
     record$files <- previous_files
-    if (!is.null(record$store)) {
+    fingerprints <- if (is.null(record$store)) NULL else tryCatch(kitFingerprintStore(record$store, api),
+        error = function(error) { record$fingerprint_error <<- conditionMessage(error); NULL })
+    if (!is.null(fingerprints)) {
         # Fingerprint every state the final head references and attach each to the step that
         # produced it (a state snapshotted only after a later step is marked after_adoption).
-        fingerprints <- kitFingerprintStore(record$store, api)
         record$final_head_sha256 <- fingerprints$head_sha256
         record$product_fingerprints <- fingerprints$products
         head <- kitReadHead(record$store, api)
@@ -290,7 +291,8 @@ runKitMember <- function(h, member_dir, application_root, library_path, corpus, 
     project_parent <- file.path(member_dir, "project")
     dir.create(project_parent)
     record <- tryCatch(runKitJourney(h, browser$driver, project_parent, corpus, journey, fault, application_root,
-        events, api), error = function(error) list(status = "driver_failed", error = conditionMessage(error)))
+        events, api), error = function(error) list(status = "driver_failed", error = conditionMessage(error),
+            corpus = journey$corpus_key, project = project_parent))
     kitMark(events, "journey", "teardown")
     record$teardown_clock <- kitClock()
     saveRDS(record, file.path(member_dir, "journey-result.rds"), compress = FALSE, version = 3)
