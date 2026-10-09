@@ -188,8 +188,9 @@ tryCatch({
                     utils::read.delim(events_path, stringsAsFactors = FALSE), trace) else NULL
             } else phases <- NULL
             if (case$expect_failure && !is.null(result)) {
-                head <- tryCatch(helpers$kitReadHead(file.path(owned, "project/.workflow-entities"), api), error = function(error) NULL)
-                head_unchanged <- !is.null(head) && identical(head$states[[head$current_state]], case$input$entity_id)
+                current <- tryCatch(helpers$kitCurrentInputComponentId(file.path(owned, "project/.workflow-entities"), api),
+                    error = function(error) NULL)
+                head_unchanged <- !is.null(current) && identical(current, case$input$entity_id)
             }
             operation <- c(list(status = if (!is.null(outer_guard)) outer_guard else if (is.null(result)) "controller_failed" else result$status,
                 config = config, binding = case$binding, member = member,

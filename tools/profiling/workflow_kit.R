@@ -593,6 +593,17 @@ kitReadHead <- function(store_dir, api) {
         products = lapply(snapshot$products, `[[`, "entity_id"))
 }
 
+#' The peptide_data component entity id of the store's current state: an operation member whose
+#' worker failed must leave it equal to the bound input (the head unchanged).
+#' @noRd
+kitCurrentInputComponentId <- function(store_dir, api) {
+    head <- kitReadHead(store_dir, api)
+    store <- kitOpenStore(store_dir, api)
+    on.exit(api("closeWorkflowEntityStore")(store), add = TRUE)
+    record <- api("hydrateSavedWorkflowCheckpoint")(store, head$references[[head$current_state]])
+    record$data$components$peptide_data$entity_id
+}
+
 #' Fingerprint every state and product the head references.
 #' @return Named list of `kitFingerprintState()` results plus `products`.
 #' @noRd
@@ -661,7 +672,11 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
     receipt$operation_sha256 <- digest::digest(file = operation_path, algo = "sha256")
     operation <- readRDS(operation_path)
     stopifnot(identical(operation$binding, case$binding), identical(operation$config$build, case$expected_build))
-    if (case$kind == "operation") return(verifyKitOperationMember(receipt, owned, case, bindings, operation, api))
+    if (case$kind == "operation") {
+        # Assigned, not returned directly: the exit handler saves this variable (KIT-005 correction 2).
+        receipt <- verifyKitOperationMember(receipt, owned, case, bindings, operation, api)
+        return(receipt)
+    }
     journey <- readRDS(file.path(owned, "journey-result.rds"))
     stopifnot(identical(journey$corpus, case$corpus))
     corpus <- bindings$corpora[[case$corpus]]
