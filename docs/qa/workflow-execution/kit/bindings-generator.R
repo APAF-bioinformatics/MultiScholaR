@@ -43,7 +43,7 @@ for (key in names(installs)) {
         runtime_patch_bytes = file.size(file.path(install, "runtime.patch")))
     if (key == "kit_001") {
         b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-001", outcome = "control", build = "kit_001",
-            note = "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09); the KIT control until KIT-006 accepts")
+            note = "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09) plus the KIT-005 ceiling constant (launch-record deadline up to 14400 s, protocol v1.2, user decision 2026-10-10; branch kit-control-ceiling 0f96397b); the earlier install browser-smoke.y8rDOi (source 9075b361) is superseded and stays recorded; the KIT control until KIT-006 accepts")
         b$control <- "kit_001"
     }
 }
