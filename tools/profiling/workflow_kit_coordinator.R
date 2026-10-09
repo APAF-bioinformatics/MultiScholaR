@@ -24,7 +24,7 @@ receipt <- list(stage = stage, status = "starting", started = started, cases = l
 saveRDS(receipt, receipt_path)
 snapshot <- file.path(stage_root, "source")
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
-    "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/run_workflow_kit.sh",
+    "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R",
     "docs/qa/workflow-execution/kit/bindings.json", "docs/qa/workflow-execution/kit/protocol.md",
     "docs/qa/workflow-execution/kit/kit-001/step-map.json",
@@ -242,8 +242,16 @@ tryCatch({
             journey <- bindings$journey
             journey$corpus_key <- case$corpus
             fault <- if (case$expect_failure) bindings$lifecycle$fault else NULL
-            result <- tryCatch(helpers$runKitMember(helpers, owned, application_root, case$library, corpus, journey, fault, api),
-                error = function(error) list(status = "driver_failed", error = conditionMessage(error)))
+            # The browser driver runs in its own process per member (correction 3), outside the slice.
+            saveRDS(list(schema = 1L, application_root = application_root, corpus = corpus, journey = journey, fault = fault),
+                file.path(owned, "driver-request.rds"), compress = FALSE, version = 3)
+            driver_log <- file.path(owned, "driver-launch.log")
+            driver_status <- system2(file.path(R.home("bin"), "Rscript"), c("--vanilla",
+                shQuote(file.path(snapshot, "tools/profiling/workflow_kit_member.R")),
+                shQuote(c(case$library, snapshot, owned))), stdout = driver_log, stderr = driver_log)
+            result_path <- file.path(owned, "journey-result.rds")
+            result <- if (file.exists(result_path)) readRDS(result_path) else
+                list(status = "driver_failed", error = paste("driver process exited with status", driver_status))
             # Counters are read while the slice may still exist; the monitor stops it on a guard.
             counters <- readCounters(group)
             file.create(stop_file)

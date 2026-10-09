@@ -142,7 +142,7 @@ b$lifecycle <- list(ceiling_seconds = 300L,
     fault = list(name = "guard_after_intensity", after_step = "intensity", failed_step = "sample",
         mechanism = "application-guard-inject.rds written after the intensity filter (the first post-rollup step) completes; the application monitor stops the slice (injected_guard_stop); the sample-filter step fails on disconnection; the head must equal the intensity-filter snapshot"))
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
-    "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/run_workflow_kit.sh",
+    "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
     # The operation-member vehicle (KIT-005): the installed adapters test and its inputs, CORE's files unchanged.
     "tests/testthat/test-workflow-execution-adapters.R", "tests/testthat/helper-workflow-checkpoint-fixtures.R",
@@ -154,6 +154,7 @@ core_pinned <- c("tools/profiling/run_workflow_checkpoint_proof.R", "tools/profi
 for (file in core_pinned) stopifnot(identical(hash(file.path(repo, file)), core$harness$files[[file]]))
 b$harness <- list(root = file.path(proof, "kit/runtime"),
     coordinator = "tools/profiling/workflow_kit_coordinator.R", driver = "tools/profiling/workflow_kit_driver.R",
+    member = "tools/profiling/workflow_kit_member.R",
     runner = "tools/profiling/run_workflow_kit.sh", protocol = "docs/qa/workflow-execution/kit/protocol.md",
     protocol_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/protocol.md")),
     step_map = "docs/qa/workflow-execution/kit/kit-001/step-map.json",

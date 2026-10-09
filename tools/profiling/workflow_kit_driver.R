@@ -292,8 +292,11 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
 #' @noRd
 runKitMember <- function(h, member_dir, application_root, library_path, corpus, journey, fault, api) {
     config <- readRDS(file.path(application_root, "application.rds"))
+    # The pinned helpers' wait budget is the diagnostic ceiling minus this process's elapsed time; the
+    # member runs in its own process (workflow_kit_member.R) and the 2 h ceiling covers the journey
+    # ceiling (90 min), so no browser wait expires before the member's own deadline (KIT-005 correction 3).
     withr::local_options(multischolar.dia_memory_audit_directory = member_dir,
-        multischolar.dia_memory_audit_seconds = 900)
+        multischolar.dia_memory_audit_seconds = 7200, multischolar.dia_extended120 = TRUE)
     # The phase file exists before the browser so a driver failure still leaves a readable record.
     events <- kitOpenPhases(file.path(member_dir, "journey-phases.tsv"))
     on.exit(close(events), add = TRUE)
