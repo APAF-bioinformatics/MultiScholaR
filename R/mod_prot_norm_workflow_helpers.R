@@ -448,6 +448,15 @@ handleProtNormNormalizationError <- function(
   invisible(FALSE)
 }
 
+# The plain settings the reference normalisation declaration reads (KIT-004): the module edge is the
+# only place GUI inputs are read.
+resolveProtNormReferenceSettings <- function(input) {
+  fields <- c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
+    "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k",
+    "color_variable", "shape_variable")
+  stats::setNames(lapply(fields, function(field) input[[field]]), fields)
+}
+
 runProtNormNormalizationWorkflow <- function(
   input,
   workflowData,
@@ -479,9 +488,29 @@ runProtNormNormalizationWorkflow <- function(
 ) {
   if ((is.list(workflowData) || is.environment(workflowData)) &&
       usesDIAReferenceStates(workflowData$state_manager)) {
-    return(tryCatch(runDIAReferenceNormalization(input, workflowData, normData, experimentPaths,
-      omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
-      getRuvGroupingVariableFn, showNotificationFn), error = function(e) handleErrorFn(error = e)))
+    return(tryCatch({
+      settings <- resolveProtNormReferenceSettings(input)
+      if (exists("config_list", envir = .GlobalEnv, inherits = FALSE)) {
+        config_list <- get("config_list", envir = .GlobalEnv)
+        config_list$normaliseBetweenSamples$method <- settings$norm_method
+        assign("config_list", config_list, envir = .GlobalEnv)
+      }
+      completed <- runDIAReferenceNormalization(settings, workflowData, normData, experimentPaths,
+        omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
+        getRuvGroupingVariableFn)
+      if (isTRUE(completed) && !identical(settings$ruv_mode, "skip")) {
+        updateProtNormRuvAuditTrail(
+          ruvK = normData$best_k,
+          controlGenesIndex = normData$control_genes_index,
+          percentageAsNegCtrl = if (identical(settings$ruv_mode, "automatic"))
+            normData$ruv_optimization_result$best_percentage else settings$ruv_percentage,
+          modeLabel = settings$ruv_mode,
+          messageFn = messageFn
+        )
+      }
+      showNotificationFn(buildCompletionNotificationFn(settings$ruv_mode), type = "message", duration = 10)
+      completed
+    }, error = function(e) handleErrorFn(error = e)))
   }
   withDIAStateScope(getDIAActiveManager(), function() {
   messageFn("=== NORMALIZATION BUTTON CLICKED ===")
@@ -649,9 +678,22 @@ runProtNormApplyCorrelationObserver <- function(
 ) {
   if ((is.list(workflowData) || is.environment(workflowData)) &&
       usesDIAReferenceStates(workflowData$state_manager)) {
-    return(tryCatch(runDIAReferenceCorrelation(workflowData, normData, experimentPaths, output,
-      input$min_pearson_correlation_threshold, FALSE, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn),
-      error = function(e) handleCorrelationErrorFn(error = e,
+    return(tryCatch({
+      final <- runDIAReferenceCorrelation(workflowData, normData, experimentPaths,
+        input$min_pearson_correlation_threshold, FALSE, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn)
+      completeCorrelationWorkflowFn(
+        finalS4ForDe = final,
+        workflowData = workflowData,
+        output = output,
+        normData = normData,
+        correlationThreshold = input$min_pearson_correlation_threshold,
+        skipped = FALSE,
+        successNotification = "Correlation filtering completed! Ready for differential expression analysis.",
+        completionMessage = "Correlation workflow completed",
+        messagePrefix = "Correlation"
+      )
+      final
+    }, error = function(e) handleCorrelationErrorFn(error = e,
         logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
   }
   withDIAStateScope(getDIAActiveManager(), function() {
@@ -719,9 +761,22 @@ runProtNormSkipCorrelationObserver <- function(
 ) {
   if ((is.list(workflowData) || is.environment(workflowData)) &&
       usesDIAReferenceStates(workflowData$state_manager)) {
-    return(tryCatch(runDIAReferenceCorrelation(workflowData, normData, experimentPaths, output,
-      0, TRUE, omicType, experimentLabel, function() NULL, getPlotAestheticsFn),
-      error = function(e) handleCorrelationErrorFn(error = e,
+    return(tryCatch({
+      final <- runDIAReferenceCorrelation(workflowData, normData, experimentPaths,
+        0, TRUE, omicType, experimentLabel, function() NULL, getPlotAestheticsFn)
+      completeCorrelationWorkflowFn(
+        finalS4ForDe = final,
+        workflowData = workflowData,
+        output = output,
+        normData = normData,
+        correlationThreshold = 0,
+        skipped = TRUE,
+        successNotification = "Correlation filtering skipped! Ready for differential expression analysis.",
+        completionMessage = "Correlation workflow completed",
+        messagePrefix = "Correlation"
+      )
+      final
+    }, error = function(e) handleCorrelationErrorFn(error = e,
         logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
   }
   withDIAStateScope(getDIAActiveManager(), function() {

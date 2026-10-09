@@ -1,0 +1,23 @@
+{
+  "normalization": "0d541d2409188a86879bf7b2c59728aaf9c4a44b19a68dff1f0c33d0577651c3",
+  "pairs": "cff2ba961787bfdafe5e688fee57c371cd39a82d12b20034cb1d2cab9c0f6f86",
+  "selection": "d004b625a31622fb22e1525fa46f69eca6db404f2d3c91e815a81949d06a355a",
+  "da_contrasts": 1,
+  "da_hits": 1,
+  "parameters": {
+    "norm_method": "cyclicloess",
+    "ruv_mode": "automatic",
+    "auto_percentage_min": 1,
+    "auto_percentage_max": 20,
+    "separation_metric": "max_difference",
+    "k_penalty_weight": 0.5,
+    "adaptive_k_penalty": true,
+    "ruv_percentage": 5,
+    "ruv_k": null,
+    "grouping": "group"
+  },
+  "software_identity": "substituted from the member's product (installed kit_001 build)",
+  "full_s4_reads": 0,
+  "head_commit": "e2bd5680",
+  "member_head_sha256": "eb16db98b3da0534b9fcbb939c3f88696d0956503bc9826f5e0733a397a6baf9"
+}

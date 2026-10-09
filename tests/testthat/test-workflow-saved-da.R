@@ -107,7 +107,7 @@ test_that("the reference DA GUI publishes native-equivalent tables and serves pr
         shiny::observeEvent(input$go, {
             testthat::with_mocked_bindings(runDIAReferenceDaAnalysis(
                 list(formula_string = "~0+group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0),
-                output, session, da, workflow, paths),
+                da, workflow, paths),
                 materializeDIAStateRecord = function(...) stop("DA hydrated a full state"))
         })
     }, {

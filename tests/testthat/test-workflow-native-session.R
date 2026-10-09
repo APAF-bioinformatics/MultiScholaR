@@ -513,7 +513,7 @@ test_that("ten native normalization revert style export cycles release GUI-owned
                   aesthetics(), norm$qc_plot_paths)
               }
               expect_true(runDIAReferenceNormalization(settings, workflow, norm, paths,
-                "proteomics", "cycles", post, ruv, function() "group", function(...) NULL))
+                "proteomics", "cycles", post, ruv, function() "group"))
             }, materializeDIAStateRecord = function(...) stop("GUI lifecycle hydrated an S4 state"))
           })
         })
@@ -524,12 +524,18 @@ test_that("ten native normalization revert style export cycles release GUI-owned
               settings <- list(norm_method = input$method,
                 ruv_mode = if (input$cycle == 10L) "manual" else "skip", ruv_k = 1,
                 ruv_percentage = 50, color_variable = "group", shape_variable = NULL)
-              final <- runDIAReferenceCorrelation(workflow, norm, paths, output,
-                0.5, input$cycle %% 2L != 0L, "proteomics", "cycles", function() "group", aesthetics)
+              skipped <- input$cycle %% 2L != 0L
+              final <- runDIAReferenceCorrelation(workflow, norm, paths,
+                0.5, skipped, "proteomics", "cycles", function() "group", aesthetics)
               expect_true(isSavedWorkflowReference(final))
+              # The module edge completes the GUI state after the declaration (KIT-004).
+              completeProtNormCorrelationWorkflow(final, workflow, output, norm,
+                correlationThreshold = if (skipped) 0 else 0.5, skipped = skipped,
+                successNotification = "done", completionMessage = "done", messagePrefix = "Correlation",
+                showNotificationFn = function(...) NULL, messageFn = function(...) NULL)
               first <- getDIAStateReference(manager)
               if (input$cycle %% 2L == 0L) {
-                testthat::with_mocked_bindings(runDIAReferenceCorrelation(workflow, norm, paths, output,
+                testthat::with_mocked_bindings(runDIAReferenceCorrelation(workflow, norm, paths,
                   0.5, FALSE, "proteomics", "cycles", function() "group", aesthetics),
                   pearsonCorForSamplePairs = function(...) stop("Pearson refitted on reapply"))
                 expect_identical(getDIAStateReference(manager), first)

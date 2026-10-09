@@ -1,0 +1,312 @@
+{
+  "label": "pre-b",
+  "head_commit": "e2bd5680",
+  "source_member_head_sha256": "eb16db98b3da0534b9fcbb939c3f88696d0956503bc9826f5e0733a397a6baf9",
+  "states": {
+    "initial": "8b3a0a00f7b70651d90d01d0a8bc747b9a6271d8ca9f6ef205b4f8db5fdce1ab",
+    "protein_replicate_filtered": "0f0a1f2e0a3e58f9690d36f634fa6e06abf092ff78038807e21a0d519b6e6aae",
+    "ruv_corrected": "26a4473be4ba44fd253a36a0d6c656c53f4423b8ad04700ec84a9247b9a17b6c",
+    "correlation_filtered": "36e1e7cdb35d95843dfb8382a58150a126e0e91cf2a80dc85ec851cde09ad9ad"
+  },
+  "products": [
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": null,
+      "sha256": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a"
+    },
+    {
+      "type": "dia_contrast_results",
+      "sha256": "b6f21800faf0d45893f391da5a7f24ab8ee51457466f9874e1135b79f3049957"
+    },
+    {
+      "type": "dia_normalization_correlation",
+      "sha256": "80acb685d3ae39ac378bafa997776e84811869efedfc6adf726d9d3c5547b1e0"
+    },
+    {
+      "type": "dia_normalization_correlation",
+      "sha256": "1a074e7ce9ff800a4cc9fc0c9068c6ecd4e6f1edf08900b4101193ae6e770c97"
+    },
+    {
+      "type": "dia_normalization_correlation",
+      "sha256": "a67790d7f220b2060688df7ec732f8d80b19ae86aef3a8fe3e8c3f737d08abf5"
+    },
+    {
+      "type": "dia_normalization_density",
+      "sha256": "bc40e19aaf15645f3218456da48f6122e0d834bac70997583dd31be34030f27d"
+    },
+    {
+      "type": "dia_normalization_density",
+      "sha256": "fcb75825ce0a27c6b47c126313c1cbcc1b076a739a1c811913d7bb5cc4bfdb82"
+    },
+    {
+      "type": "dia_normalization_density",
+      "sha256": "660b0fe3ecc623bc536a93a8e863468c13ba7938c10b83de3eb8955e01edd35a"
+    },
+    {
+      "type": "dia_normalization_pca",
+      "sha256": "51be9bebc509b27e30e761ac0a15b810c77da9f5f4e27df9d8ef86f839086cb1"
+    },
+    {
+      "type": "dia_normalization_pca",
+      "sha256": "500e72cdc9e53b108e4091409efb624212a2cffd6c3d4c0931ff742e7da1ce16"
+    },
+    {
+      "type": "dia_normalization_pca",
+      "sha256": "da4e1339e850d67babf04368ac9ce006d55638dbadd862fa0272176173e63994"
+    },
+    {
+      "type": "dia_normalization_pca",
+      "sha256": "da4e1339e850d67babf04368ac9ce006d55638dbadd862fa0272176173e63994"
+    },
+    {
+      "type": "dia_normalization_rle",
+      "sha256": "116b4e87de2a86ee679d63f7aeb3423bba885418e9aa60eb052353a54b66ee4f"
+    },
+    {
+      "type": "dia_normalization_rle",
+      "sha256": "bd31ac380598141c1d06028a2f2c16bcfc2cbbf18c0e7f89fd02e744c820831f"
+    },
+    {
+      "type": "dia_normalization_rle",
+      "sha256": "cfdf4406a46049f6fca22b24a80c57b883f37e7bffd541b8719a9f641285ec12"
+    },
+    {
+      "type": "dia-contrast-references",
+      "sha256": "b13c13acb06f7ab524fdab405821cb7217f587c0b0cf94c0f524b5871fa7ee54"
+    },
+    {
+      "type": "dia-normalization-ruv",
+      "sha256": "3d880a8729b3c6320ac7e866fb1c31db5e56e38750fdb444678bf397d5613df3"
+    },
+    {
+      "type": "dia-pearson-pairs",
+      "sha256": "d96f315ae1f66d54b3830e867246b06428b9307a828383d91b49bf9f8aa5b2b1"
+    },
+    {
+      "type": "dia-pearson-selection",
+      "sha256": "8fbd8b9fa6d537b534259d53d3a737e6683551db1bae96989267eef6fd720318"
+    }
+  ],
+  "da_results": "dfae7f37611d351ab40935835143fa36bf922f3a78fb833c06d9fbb7d52430a0",
+  "gui_references": {
+    "normalized_protein_obj": "6a7eb1f3978811f74450f1abb33fed1bc407872c1f99206103be2da6fe53e40f",
+    "normalized-science": "6b40aee245bbf9717dd44c11860826116f10ac326a8d31c4db2f940b0cccaf87",
+    "ruv-science": "417c338a8a6eaade5aac7b1e437c0b115990d77850ef64c009aabe6538739c49",
+    "pearson-filtered-science": "8fbd8b9fa6d537b534259d53d3a737e6683551db1bae96989267eef6fd720318"
+  },
+  "holders": {
+    "norm": {
+      "normalization_input_reference": "0f0a1f2e0a3e58f9690d36f634fa6e06abf092ff78038807e21a0d519b6e6aae",
+      "normalized_protein_obj": "6b40aee245bbf9717dd44c11860826116f10ac326a8d31c4db2f940b0cccaf87",
+      "ruv_normalized_obj": "417c338a8a6eaade5aac7b1e437c0b115990d77850ef64c009aabe6538739c49",
+      "best_k": "a7b8541c0f557ee02a48acd7188a83c1413473c8e1dcce2b895d1ead5a05928e",
+      "control_genes_index": "89cebdab5edbc2786b0d74019ff323fd72583f2fa16ffa856850501775eb4a8e",
+      "ruv_optimization_result": "bb14d7a4d72647547f44f584689e95aa38295371aa41d24cdeaba686ccd0778c",
+      "publication_paths": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
+      "qc_plot_paths": "f4154b31e2d34f21fb1dde161ecb4dd0c2f93e752be53105ce3fe29c1185c3b1",
+      "post_norm_filtering_plot": "1cc1786a46386211f593bcfa78ac47163902281e47c6974aa40e9ba1f59bea0a",
+      "filtering_summary_text": "282aa5e41514394bc3ecc4c194d70c8eabfc3c13ba8ad91ea4e4d93a516d020e",
+      "normalization_complete": "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6",
+      "QC_composite_figure": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
+      "ruv_complete": "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6",
+      "correlation_vector": "e6968d9a05314bd18a95cfbacc99c9167c1fb2ef7a892474325bf4ea5cee8960",
+      "correlation_filtered_obj": "8fbd8b9fa6d537b534259d53d3a737e6683551db1bae96989267eef6fd720318",
+      "correlation_threshold": "acf06dd9ce0cc864c380801c226029cf8302775c9bbeed684e43a8a4ed20e929",
+      "final_filtering_plot": "1cc1786a46386211f593bcfa78ac47163902281e47c6974aa40e9ba1f59bea0a",
+      "final_qc_plot": "0182e03d601ac1a4690630518782b06e69254deb6d320c35e23047e08f04b864",
+      "correlation_filtering_complete": "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6"
+    },
+    "da": {
+      "current_s4_object": "dc5f33bb7e7d3bda77bdd1a58848927f2f7983af6a39dd095af1cc3f3f402bc9",
+      "contrasts_available": "206501d241b74383c21e9030db7c8690b8341b238e976ed6479f39ba1aa44e46",
+      "da_results_list": "b326270a5038de319b3b209d32ccb0c7f6d5caff475fd58fff87f2697d14b657",
+      "analysis_complete": "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6"
+    },
+    "workflow": {
+      "ruv_optimization_result": "bb14d7a4d72647547f44f584689e95aa38295371aa41d24cdeaba686ccd0778c",
+      "protein_counts": "40855173ef92b344cf9bf6868595175de913a098858563e805f9c65c71141fc4",
+      "da_ui_params": "7fba41c2c7de2596a695c74a54df31cc67d4e61e631492cc9b6d242f7ab30d0d",
+      "tab_status": "0acbeaac9605cf33658b0b21567456837aad3a0e3d5a9c60cfc9c461221d8bb1",
+      "da_analysis_results_list": "b326270a5038de319b3b209d32ccb0c7f6d5caff475fd58fff87f2697d14b657"
+    }
+  },
+  "files": {
+    "results/proteomics/da_proteins/da_proteins_grouptreated-groupcontrol_long_annot.tsv": "aed0eae6b02ffe1316c9ce3045ad2bd8dc33652925bd30b31b4dc71f79db147e",
+    "results/proteomics/da_proteins/da_proteins_grouptreated-groupcontrol_long_annot.xlsx": "2ecbab49065d8144efe8c3026b8c3097b2bd1cea555fe5a9f6dee4a177b27525",
+    "results/proteomics/protein_qc/normalized_protein_matrix_pre_ruv.tsv": "fa641c38012f7b181184bfef1f2d0723df4f51f4ebedc0c8ef40375f29dc2bb0",
+    "results/proteomics/protein_qc/post_norm_correlation.png": "d8dacb6c50564bfb94a8e3519553b6f018d08d376b202442e5455fc4badeda23",
+    "results/proteomics/protein_qc/post_norm_density.png": "4a067e8103dedf9727a7e87f85cf34e78d8caf2a70204c27a025f5d353042723",
+    "results/proteomics/protein_qc/post_norm_pca.png": "42a2c1e12829d848f74bcb3838b7e7b253b25f8c995254b6b2aac5759d7a50a6",
+    "results/proteomics/protein_qc/post_norm_rle.png": "e49fdad9a7f37afe3def9ef0f3f6d30d05f612c4fe5d37d0cf71bbdf9899531c",
+    "results/proteomics/protein_qc/pre_norm_correlation.png": "d8dacb6c50564bfb94a8e3519553b6f018d08d376b202442e5455fc4badeda23",
+    "results/proteomics/protein_qc/pre_norm_density.png": "9b71ea07b8ae842e71d5531e01ad0bb596f7eef96586a8872f553e60da3e8235",
+    "results/proteomics/protein_qc/pre_norm_pca.png": "4e2b2dab7e383da9c635123bce9b6281228504d2df72db12100c0449185fba36",
+    "results/proteomics/protein_qc/pre_norm_rle.png": "476bcd1c4c83121a4c41a075235dce84b5a84f0babd1a86afcc5e3ca04794c5f",
+    "results/proteomics/protein_qc/proteomics_composite_QC_figure.pdf": "2f9eff3b9876181d8a8127372a9ec22cdb4f2c81102c9af07f86952d82b4ba4b",
+    "results/proteomics/protein_qc/proteomics_composite_QC_figure.png": "77b7dc48f1ed7dcd002c94cff1e004c933cebf11b74dcf7cbd351b058498d1fb",
+    "results/proteomics/protein_qc/proteomics_composite_QC_figure.rds": "92f8be35cae6d3d3d957afb92da34c9716f99a164d08736be9c4576e4272d620",
+    "results/proteomics/protein_qc/ruv_corrected_cancor.png": "6be9afb40f0ef40b1664aa82ec532c65267319ad18a9890534a3aae9999b3a54",
+    "results/proteomics/protein_qc/ruv_corrected_correlation.png": "b24abc8f1787a7f8ad34e91262aab5541699db127bcb8dd62162175323e3737f",
+    "results/proteomics/protein_qc/ruv_corrected_density.png": "5d9e33fe3c0fd95f93a2d66bcfa9ce10643df686fcd1c287dba4887a7f3076b9",
+    "results/proteomics/protein_qc/ruv_corrected_pca.png": "bb86418d4797c91c77361405f323b324d8a56a1ce2f049f67e13fc4bdbe3fc15",
+    "results/proteomics/protein_qc/ruv_corrected_rle.png": "2b5a4d147a680ddd99e400fd9ec672e9a5c137559d7c0f54b3e38359631e28f9",
+    "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv": "b87af5e462e651bc78fed3e879015bf443622f7a529cd018f1bcc6824b8d18ef",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_combined_plots.pdf": "db73b6f156009c16e29c9685093f58e181002daaab64f40ba58cfa56bd67d84d",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_combined_plots.png": "af6d88139002287d45f8f9369990c65d4d100f8322f1dfdea3dff77b3b4f3b1c",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_peptides_per_protein.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_peptides_per_protein.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_peptides_per_run.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_peptides_per_run.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_peptides_total.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_peptides_total.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_proteins_per_run.pdf": "d36330d90e8ac756aaaf6dbc08e3e2c39e1e9b72b827076353b3c61283986279",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_proteins_per_run.png": "71c6fa6fc022a874a2542c5100a6dd64556a89a4cbd888890eeddd58c7be5cb0",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_proteins_total.pdf": "39d398ab5ae933e7d21628c56c0873dcc475c036b42d041475f2f7f18b2bc285",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/11_RUV_filtered_proteins_total.png": "f36734aa26a04b7571b89e412f65f4b249f7fc761db4749984773b137ce09473",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_combined_plots.pdf": "4da6dbece159de65a7a91445bf6f5a13fb553aedaa904cebf7886044d1720070",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_combined_plots.png": "e3f4eb0439bf30db081717a770c3646a630e9791be8d0fdd4cfa15bc0eab117a",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_peptides_per_protein.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_peptides_per_protein.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_peptides_per_run.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_peptides_per_run.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_peptides_total.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_peptides_total.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_proteins_per_run.pdf": "683bcfa4cdbc4b96268ace80cb9ff5a0ad2c1f9182c15e185e7e56d6023a1aa4",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_proteins_per_run.png": "ef862186acc3bd21ef45d7959a81fce59d956171ab209713e354f2d7c484f3ec",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_proteins_total.pdf": "a82e1f5a8d831775bc4ba93fbb3aa6cba1d2443de88373eaa65d2a6fc3515c14",
+    "results/proteomics/publication_graphs/filtering_qc/20261010_043435/12_correlation_filtered_proteins_total.png": "8ba25e1b5180965273220d79c8fdc90b67a094a75d0af380178cbc3a3663f0db",
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/treated_vs_control.html": "c77e5168dffda66b8dc13f1425b4d3630a6656a3e5acf707f4393277ba3c8b5e",
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf": "3fa88ce12ba24bd0078e401ee2500c19266068b25811be308c7187f82b5cb28d",
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png": "eeee1b678d369bbd057c098c2a4ad99846a7b177dddb22cd8428ef90c92f9595",
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.tab": "df7869fde94ea604f2e108b43979276c71de63bf83e1490132be36eba3ddd7fb",
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.xlsx": "6d7bd79ccabbadba7f9e00cbba75555c4bf179c90213a296895a2dff626273ab",
+    "results/proteomics/publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf": "f866ae71beb7140a67cf6c94df12768dcb087c98b1c81d1cdef6b82b1f44e02e",
+    "results/proteomics/publication_graphs/Volcano_Plots/grouptreated-groupcontrol.pdf": "eec46f9351d74ece91f76c74d39f6e6cd491fcd37435c0acc1129babcd34215c",
+    "results/proteomics/publication_graphs/Volcano_Plots/grouptreated-groupcontrol.png": "2af3cece22e4c3b2ffb290c41350025b5d7f951a89678ae468cbaa2c512f9aa4",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/display.rds": "2dd1ce6c93dfb6d72ef9e56152d18e02900a10b7974417e9535031fd30756b68",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/protein_qc_dir/ruv_normalised_results_cln_with_replicates.tsv": "b87af5e462e651bc78fed3e879015bf443622f7a529cd018f1bcc6824b8d18ef",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_combined_plots.pdf": "4da6dbece159de65a7a91445bf6f5a13fb553aedaa904cebf7886044d1720070",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_combined_plots.png": "e3f4eb0439bf30db081717a770c3646a630e9791be8d0fdd4cfa15bc0eab117a",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_peptides_per_protein.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_peptides_per_protein.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_peptides_per_run.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_peptides_per_run.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_peptides_total.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_peptides_total.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_proteins_per_run.pdf": "683bcfa4cdbc4b96268ace80cb9ff5a0ad2c1f9182c15e185e7e56d6023a1aa4",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_proteins_per_run.png": "ef862186acc3bd21ef45d7959a81fce59d956171ab209713e354f2d7c484f3ec",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_proteins_total.pdf": "a82e1f5a8d831775bc4ba93fbb3aa6cba1d2443de88373eaa65d2a6fc3515c14",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/files/time_dir/12_correlation_filtered_proteins_total.png": "8ba25e1b5180965273220d79c8fdc90b67a094a75d0af380178cbc3a3663f0db",
+    "scripts/proteomics/.workflow-export/dia-correlation-d14934e9ca3002c31d833adf48b1c84b/journal.json": "80a3715c69e881bf8975aa06d2ad5d0f9a685aeb37aaacbd9d6f3a04c2fa5660",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/display.rds": "e21ec187179d80f72f223ed12695255e6b57673f1fe415db1d73dd0108e13d9e",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/da_output_dir/da_proteins_grouptreated-groupcontrol_long_annot.tsv": "aed0eae6b02ffe1316c9ce3045ad2bd8dc33652925bd30b31b4dc71f79db147e",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/da_output_dir/da_proteins_grouptreated-groupcontrol_long_annot.xlsx": "2ecbab49065d8144efe8c3026b8c3097b2bd1cea555fe5a9f6dee4a177b27525",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/publication_graphs_dir/Interactive_Volcano_Plots/treated_vs_control.html": "c77e5168dffda66b8dc13f1425b4d3630a6656a3e5acf707f4393277ba3c8b5e",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/publication_graphs_dir/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf": "3fa88ce12ba24bd0078e401ee2500c19266068b25811be308c7187f82b5cb28d",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/publication_graphs_dir/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png": "eeee1b678d369bbd057c098c2a4ad99846a7b177dddb22cd8428ef90c92f9595",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/publication_graphs_dir/NumSigDaMolecules/da_proteins_num_sig_da_molecules.tab": "df7869fde94ea604f2e108b43979276c71de63bf83e1490132be36eba3ddd7fb",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/publication_graphs_dir/NumSigDaMolecules/da_proteins_num_sig_da_molecules.xlsx": "6d7bd79ccabbadba7f9e00cbba75555c4bf179c90213a296895a2dff626273ab",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/publication_graphs_dir/Volcano_Plots/all_volcano_plots_combined.pdf": "f866ae71beb7140a67cf6c94df12768dcb087c98b1c81d1cdef6b82b1f44e02e",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/publication_graphs_dir/Volcano_Plots/grouptreated-groupcontrol.pdf": "eec46f9351d74ece91f76c74d39f6e6cd491fcd37435c0acc1129babcd34215c",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/files/publication_graphs_dir/Volcano_Plots/grouptreated-groupcontrol.png": "2af3cece22e4c3b2ffb290c41350025b5d7f951a89678ae468cbaa2c512f9aa4",
+    "scripts/proteomics/.workflow-export/dia-da-579bd33b9dd0d8a353fcbd38dc6e8e74/journal.json": "9f7f726f18af4af00e84870f69b2fa3a079382025fecba5ef1f2011680851e8b",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/display.rds": "89f34a52b6fbcfbb6cccb6b0d5f7bfff708fa5e3a44e16b5c5ebfeb5fece2fb0",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/normalized_protein_matrix_pre_ruv.tsv": "fa641c38012f7b181184bfef1f2d0723df4f51f4ebedc0c8ef40375f29dc2bb0",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/post_norm_correlation.png": "d8dacb6c50564bfb94a8e3519553b6f018d08d376b202442e5455fc4badeda23",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/post_norm_density.png": "4a067e8103dedf9727a7e87f85cf34e78d8caf2a70204c27a025f5d353042723",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/post_norm_pca.png": "42a2c1e12829d848f74bcb3838b7e7b253b25f8c995254b6b2aac5759d7a50a6",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/post_norm_rle.png": "e49fdad9a7f37afe3def9ef0f3f6d30d05f612c4fe5d37d0cf71bbdf9899531c",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/pre_norm_correlation.png": "d8dacb6c50564bfb94a8e3519553b6f018d08d376b202442e5455fc4badeda23",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/pre_norm_density.png": "9b71ea07b8ae842e71d5531e01ad0bb596f7eef96586a8872f553e60da3e8235",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/pre_norm_pca.png": "4e2b2dab7e383da9c635123bce9b6281228504d2df72db12100c0449185fba36",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/pre_norm_rle.png": "476bcd1c4c83121a4c41a075235dce84b5a84f0babd1a86afcc5e3ca04794c5f",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/proteomics_composite_QC_figure.pdf": "2f9eff3b9876181d8a8127372a9ec22cdb4f2c81102c9af07f86952d82b4ba4b",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/proteomics_composite_QC_figure.png": "77b7dc48f1ed7dcd002c94cff1e004c933cebf11b74dcf7cbd351b058498d1fb",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/proteomics_composite_QC_figure.rds": "92f8be35cae6d3d3d957afb92da34c9716f99a164d08736be9c4576e4272d620",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/ruv_corrected_cancor.png": "6be9afb40f0ef40b1664aa82ec532c65267319ad18a9890534a3aae9999b3a54",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/ruv_corrected_correlation.png": "b24abc8f1787a7f8ad34e91262aab5541699db127bcb8dd62162175323e3737f",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/ruv_corrected_density.png": "5d9e33fe3c0fd95f93a2d66bcfa9ce10643df686fcd1c287dba4887a7f3076b9",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/ruv_corrected_pca.png": "bb86418d4797c91c77361405f323b324d8a56a1ce2f049f67e13fc4bdbe3fc15",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/protein_qc_dir/ruv_corrected_rle.png": "2b5a4d147a680ddd99e400fd9ec672e9a5c137559d7c0f54b3e38359631e28f9",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/source_dir/ruv_optimization_results.RDS": "bb14d7a4d72647547f44f584689e95aa38295371aa41d24cdeaba686ccd0778c",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_combined_plots.pdf": "db73b6f156009c16e29c9685093f58e181002daaab64f40ba58cfa56bd67d84d",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_combined_plots.png": "af6d88139002287d45f8f9369990c65d4d100f8322f1dfdea3dff77b3b4f3b1c",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_peptides_per_protein.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_peptides_per_protein.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_peptides_per_run.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_peptides_per_run.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_peptides_total.pdf": "2f6437bd40887ee5a655af82a75a961bd420a49ee225ca6810402bcd9f1b2f5d",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_peptides_total.png": "73cc9f21e356d81c497007714d14ad7c8484c865152a62abf37c18e567bd0699",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_proteins_per_run.pdf": "d36330d90e8ac756aaaf6dbc08e3e2c39e1e9b72b827076353b3c61283986279",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_proteins_per_run.png": "71c6fa6fc022a874a2542c5100a6dd64556a89a4cbd888890eeddd58c7be5cb0",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_proteins_total.pdf": "39d398ab5ae933e7d21628c56c0873dcc475c036b42d041475f2f7f18b2bc285",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/files/time_dir/11_RUV_filtered_proteins_total.png": "f36734aa26a04b7571b89e412f65f4b249f7fc761db4749984773b137ce09473",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/journal.json": "3c1005aa85d82fb57348f3fef9f750843cd65660fce65e6a2b313cecc6258386",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/previous/protein_qc_dir/pre_norm_correlation.png": "d8dacb6c50564bfb94a8e3519553b6f018d08d376b202442e5455fc4badeda23",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/previous/protein_qc_dir/pre_norm_density.png": "9b71ea07b8ae842e71d5531e01ad0bb596f7eef96586a8872f553e60da3e8235",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/previous/protein_qc_dir/pre_norm_pca.png": "4e2b2dab7e383da9c635123bce9b6281228504d2df72db12100c0449185fba36",
+    "scripts/proteomics/.workflow-export/dia-normalization-ac704b6d1543772c4ef9d85fcfa135b7/previous/protein_qc_dir/pre_norm_rle.png": "476bcd1c4c83121a4c41a075235dce84b5a84f0babd1a86afcc5e3ca04794c5f",
+    "scripts/proteomics/aa_seq_tbl_final.RDS": "04373bdfaac20c4da0c12185a72e06251f5436cde790b33078faadd38dc09912",
+    "scripts/proteomics/config.ini": "33d28bb25dc78d1cc71aca01d9e43915c8a9e5cb08adc98bf7a608a9c84bae39",
+    "scripts/proteomics/contrast_strings.tab": "3bea190ecd8525ef0a63c2558709177dfb80b4b50aaeacf93572d06e600191c6",
+    "scripts/proteomics/design_matrix.tab": "9f0ec17183f8e586e4d59e6a885dae4420cc1565e17e4f5d8f7d49ab081f6333",
+    "scripts/proteomics/fasta_metadata.RDS": "7401659649a273da885e0dcbfe6fc5fe8ee16103d9987585cd07eb8eaae2b9ac",
+    "scripts/proteomics/ruv_optimization_results.RDS": "bb14d7a4d72647547f44f584689e95aa38295371aa41d24cdeaba686ccd0778c",
+    "scripts/proteomics/uniprot_dat_cln.RDS": "bd01fc2c79763009ccafea10dc558ca08974e16e67505f22217584e6dc518c41"
+  },
+  "timings": {
+    "source": 4.033,
+    "normalisation": 116.927,
+    "correlation": 9.19200000000001,
+    "da_prepare": 0.00200000000000955,
+    "da": 13.667
+  },
+  "elapsed": 212.683
+}

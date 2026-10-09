@@ -931,10 +931,10 @@ runDIARawCheckpointReplay <- function(source_member, root) {
                         norm$publication_paths$protein_qc_dir %||% paths$protein_qc_dir, aesthetics(), norm$qc_plot_paths)
                 }
                 stopifnot(runDIAReferenceNormalization(settings, workflow, norm, paths,
-                    "proteomics", "dia_baseline_smoke", post, ruv, function() "group", function(...) NULL))
+                    "proteomics", "dia_baseline_smoke", post, ruv, function() "group"))
             })
             phase("Pearson", function() {
-                runDIAReferenceCorrelation(workflow, norm, paths, output, 0.5, FALSE,
+                runDIAReferenceCorrelation(workflow, norm, paths, 0.5, FALSE,
                     "proteomics", "dia_baseline_smoke", function() "group", aesthetics)
             })
             phase("native_session", function() {
@@ -944,7 +944,7 @@ runDIARawCheckpointReplay <- function(source_member, root) {
             phase("DA", function() {
                 da$current_s4_object <- getDIAStateReference(manager)
                 runDIAReferenceDaAnalysis(list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05,
-                    treat_lfc_cutoff = 0), output, session, da, workflow, paths)
+                    treat_lfc_cutoff = 0), da, workflow, paths)
             })
             phase("DA_views", function() {
                 manifest <- da$da_results_list

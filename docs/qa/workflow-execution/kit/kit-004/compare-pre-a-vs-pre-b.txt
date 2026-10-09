@@ -1,0 +1,3 @@
+compare pre-a (e2bd5680) vs pre-b (e2bd5680): 4 states, 31 products, 59 files
+DIFFERENCES:
+  files$results/proteomics/protein_qc/proteomics_composite_QC_figure.pdf

@@ -51,7 +51,7 @@ test_that("automatic RUV failures preserve GUI holders and release transient plo
     reference <- getDIAStateReference(manager)
     run <- function() runDIAReferenceNormalization(settings, workflow, norm,
       list(source_dir = root), "proteomics", "fixture", function(...) NULL,
-      function(...) NULL, function() "group", function(...) NULL)
+      function(...) NULL, function() "group")
     for (stage in c("validation", "correction")) {
       ggplot2::set_last_plot(prior_plot)
       reached <- FALSE

@@ -95,6 +95,60 @@ persistProtNormRuvResult <- function(
   invisible(ruvResult)
 }
 
+# Kernel-only RUV parameter determination (KIT-004): the same control selection, k validation and
+# canonical-correlation plot as resolveProtNormRuvParameters, without progress, messages, holders or
+# the config_list audit trail. The module keeps the adapter below; the operation runner calls this.
+resolveProtRuvParameters <- function(
+  normalizedS4,
+  settings,
+  ruvGroupingVariable,
+  findBestNegCtrlPercentageFn = findBestNegCtrlPercentage,
+  getNegCtrlProtAnovaFn = getNegCtrlProtAnova,
+  ruvCancorFn = ruvCancor,
+  buildManualRuvResultFn = buildProtNormManualRuvResult
+) {
+  if (identical(settings$ruv_mode, "automatic")) {
+    percentage_min <- if (is.null(settings$auto_percentage_min) || is.na(settings$auto_percentage_min)) 1 else settings$auto_percentage_min
+    percentage_max <- if (is.null(settings$auto_percentage_max) || is.na(settings$auto_percentage_max)) 20 else settings$auto_percentage_max
+    if (percentage_min >= percentage_max) {
+      stop("Minimum percentage must be less than maximum percentage")
+    }
+    result <- findBestNegCtrlPercentageFn(
+      normalised_protein_matrix_obj = normalizedS4,
+      percentage_range = seq(percentage_min, percentage_max, by = 1),
+      separation_metric = settings$separation_metric,
+      k_penalty_weight = settings$k_penalty_weight,
+      adaptive_k_penalty = settings$adaptive_k_penalty,
+      ruv_grouping_variable = ruvGroupingVariable,
+      verbose = TRUE
+    )
+    ruv_k <- validateProtNormRuvK(result$best_k, "ruv_k")
+    return(list(result = result, k = ruv_k, controls = result$best_control_genes_index,
+      percentage = result$best_percentage))
+  }
+  percentage <- settings$ruv_percentage
+  ruv_k <- if (is.null(settings$ruv_k) || is.na(settings$ruv_k)) 3 else settings$ruv_k
+  ruv_k <- validateProtNormRuvK(ruv_k, "ruv_k")
+  controls <- getNegCtrlProtAnovaFn(
+    normalizedS4,
+    ruv_grouping_variable = ruvGroupingVariable,
+    percentage_as_neg_ctrl = percentage,
+    ruv_qval_cutoff = 0.05,
+    ruv_fdr_method = "BH"
+  )
+  # The adapter tolerates a failed canonical-correlation plot and leaves the result unset.
+  result <- tryCatch({
+    cancor_plot <- ruvCancorFn(normalizedS4, ctrl = controls, num_components_to_impute = 2,
+      ruv_grouping_variable = ruvGroupingVariable)
+    buildManualRuvResultFn(percentageAsNegCtrl = percentage, ruvK = ruv_k,
+      controlGenesIndex = controls, cancorPlot = cancor_plot)
+  }, error = function(e) {
+    message(paste("Warning: Could not generate canonical correlation plot for manual mode:", e$message))
+    NULL
+  })
+  list(result = result, k = ruv_k, controls = controls, percentage = result$best_percentage)
+}
+
 resolveProtNormRuvParameters <- function(
   normalizedS4,
   input,

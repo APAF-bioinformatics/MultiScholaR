@@ -258,62 +258,34 @@ readDIAContrastOutput <- function(result, fields = c("da_proteins_long", "num_si
     values
 }
 
-#' Run native DA one contrast at a time and retain only accepted references.
-#' @param input,output,session,da_data,workflow,paths Existing module owners.
-#' @return Reference manifest after required outputs have completed.
+#' The per-contrast DA operation (KIT-004): the unchanged `differentialAbundanceAnalysis` kernel on one
+#' projected object; tables become components and display values derived products, assembled into
+#' the existing `dia.contrast_reference.v1` record saved under the existing identity and factors.
 #' @noRd
-runDIAReferenceDaAnalysis <- function(input, output, session, da_data, workflow, paths) {
-    manager <- workflow$state_manager
-    withDIAStateScope(manager, function() {
-        assertDIAExportReady(manager, allow_action = "da")
-        source <- da_data$current_s4_object
-        if (!isSavedWorkflowReference(source)) cli::cli_abort("load a reference-backed protein state before DA")
-        contrasts <- workflow$contrasts_tbl
-        if (is.null(contrasts) && exists("contrasts_tbl", envir = .GlobalEnv, inherits = FALSE))
-            contrasts <- get("contrasts_tbl", envir = .GlobalEnv)
-        if (is.null(contrasts)) contrasts <- data.frame(contrasts = da_data$contrasts_available)
-        contrasts <- normaliseProtDaContrastsTable(contrasts)
-        spec <- readDIAStateMetadata(manager, source)$data
-        prototype <- readDIAExecutionComponents(manager, source, fields = "design_matrix")
-        validateProtDaModelAndContrasts(prototype, input$formula_string, contrasts)
-        manifest <- list(schema = "dia.da_results.v1", source = source,
-            protein_id_column = spec$slots$protein_id_column, sample_id = spec$slots$sample_id,
-            contrasts = contrasts, results = list(), parameters = list(formula = input$formula_string,
-                qvalue = input$da_q_val_thresh, lfc = input$treat_lfc_cutoff, weights = NA))
-        context <- manager$.context
-        context$da_reference_execution <- TRUE
-        context$da_source_reference <- source
-        on.exit({ context$da_reference_execution <- FALSE; context$da_source_reference <- NULL }, add = TRUE)
-        object <- NULL
-        for (i in seq_len(nrow(contrasts))) {
-            name <- contrasts$contrasts[[i]]
-            identity <- diaComponentScientificIdentity(manager, source, "DA-contrast-output",
-                c(manifest$parameters, list(contrast = contrasts$full_format[[i]],
-                    annotations = spec$components$protein_id_table$entity_id)))
-            hit <- resolveSavedWorkflowEntity(context$store, "scientific_product", identity,
-                factors = list(route = "iq", layer = "contrast_references"))
-            if (identical(hit$status, "hit")) {
-                manifest$results[[name]] <- hit$value$value
-                next
-            }
-            if (is.null(object)) object <- readDIAExecutionComponents(manager, source)
-            single <- data.frame(contrasts = contrasts$full_format[[i]], stringsAsFactors = FALSE)
-            parameters <- list(contrasts_tbl = single, formula_string = input$formula_string,
-                da_q_val_thresh = input$da_q_val_thresh, treat_lfc_cutoff = input$treat_lfc_cutoff,
+diaContrastOperation <- function() {
+    newWorkflowOperation("DA-contrast-output", "ProteinQuantitativeData",
+        fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
+        product_type = "dia-contrast-references", factors = list(route = "iq", layer = "contrast_references"),
+        parameters = c("formula", "qvalue", "lfc", "weights", "contrast", "annotations"),
+        kernel = function(object, parameters, store) {
+            single <- data.frame(contrasts = parameters$contrast, stringsAsFactors = FALSE)
+            arguments <- list(contrasts_tbl = single, formula_string = parameters$formula,
+                da_q_val_thresh = parameters$qvalue, treat_lfc_cutoff = parameters$lfc,
                 eBayes_trend = TRUE, eBayes_robust = TRUE, args_group_pattern = "(\\d+)",
                 args_row_id = object@protein_id_column, qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue")
             for (section in c("differentialAbundanceAnalysis", "differentialAbundanceAnalysisHelper")) {
-                if (is.null(object@args[[section]])) object@args[[section]] <- parameters
+                if (is.null(object@args[[section]])) object@args[[section]] <- arguments
             }
             result <- differentialAbundanceAnalysis(object, contrasts_tbl = single,
-                formula_string = input$formula_string, da_q_val_thresh = input$da_q_val_thresh,
-                treat_lfc_cutoff = input$treat_lfc_cutoff, qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue")
-            accepted <- list(schema = "dia.contrast_reference.v1", source = source,
-                contrast = name, comparison = contrasts$friendly_names[[i]],
+                formula_string = parameters$formula, da_q_val_thresh = parameters$qvalue,
+                treat_lfc_cutoff = parameters$lfc, qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue")
+            object <- NULL
+            accepted <- list(schema = "dia.contrast_reference.v1", source = store$source,
+                contrast = parameters$name, comparison = parameters$comparison,
                 tables = list(), products = list(), qvalue_warnings = result$qvalue_warnings)
             for (field in c("da_proteins_long", "da_proteins_wide", "contrasts_results_table",
                 "significant_rows", "norm_counts")) {
-                if (is.data.frame(result[[field]])) accepted$tables[[field]] <- saveDIATableComponent(context, result[[field]])
+                if (is.data.frame(result[[field]])) accepted$tables[[field]] <- store$table(result[[field]])
             }
             for (field in c("num_sig_da_molecules_first_go", "num_sig_da_molecules", "qvalue_warnings")) {
                 if (is.null(result[[field]])) next
@@ -325,29 +297,62 @@ runDIAReferenceDaAnalysis <- function(input, output, session, da_data, workflow,
                     if (inherits(value[[entry]], c("gg", "ggplot", "patchwork")))
                         value[[entry]] <- stripProtNormQcPlotOwners(value[[entry]])
                 }
-                product_identity <- identity
-                product_identity$selectors <- digest::digest(list(identity$selectors, field), algo = "sha256")
-                accepted$products[[field]] <- saveWorkflowConsumerEntity(context$store,
-                    newSavedWorkflowScientificProduct(value, paste0("dia-", field)),
-                    basename(tempfile("dia-da-display-")), product_identity, "scientific_product")
+                accepted$products[[field]] <- store$product(value, field, paste0("dia-", field))
             }
             accepted$columns <- names(result$da_proteins_long)
             accepted$rows <- nrow(result$da_proteins_long)
-            result <- NULL
-            reference <- saveWorkflowConsumerEntity(context$store,
-                newSavedWorkflowScientificProduct(accepted, "dia-contrast-references"),
-                basename(tempfile("dia-contrast-")), identity, "scientific_product",
-                factors = list(route = "iq", layer = "contrast_references"))
-            snapshot <- context$snapshot
-            snapshot$da_dependencies[[reference$entity_id]] <- collectDIANativeReferences(accepted)
-            publishDIAStateHead(context, snapshot)
-            rootDIAProduct(manager, reference, list(source, accepted$tables, accepted$products))
-            manifest$results[[name]] <- accepted
+            accepted
+        })
+}
+
+#' Run native DA one contrast at a time through the DA declaration and retain only accepted references.
+#' @param settings Plain list: `formula_string`, `da_q_val_thresh`, `treat_lfc_cutoff`.
+#' @param da_data,workflow,paths Existing module owners and publication paths.
+#' @param contrasts Contrasts table; NULL uses `workflow$contrasts_tbl`, then the available contrasts.
+#' @param annotations Bounded annotation table for the published outputs; NULL uses
+#'   `workflow$uniprot_dat_cln`, then an empty table.
+#' @return Reference manifest after required outputs have completed; the module edge updates the
+#'   selectors and notifies.
+#' @noRd
+runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contrasts = NULL, annotations = NULL) {
+    manager <- workflow$state_manager
+    withDIAStateScope(manager, function() {
+        assertDIAExportReady(manager, allow_action = "da")
+        source <- da_data$current_s4_object
+        if (!isSavedWorkflowReference(source)) cli::cli_abort("load a reference-backed protein state before DA")
+        if (is.null(contrasts)) contrasts <- workflow$contrasts_tbl
+        if (is.null(contrasts)) contrasts <- data.frame(contrasts = da_data$contrasts_available)
+        contrasts <- normaliseProtDaContrastsTable(contrasts)
+        if (is.null(annotations)) annotations <- workflow$uniprot_dat_cln
+        if (is.null(annotations)) annotations <- data.frame()
+        spec <- readDIAStateMetadata(manager, source)$data
+        prototype <- readDIAExecutionComponents(manager, source, fields = "design_matrix")
+        validateProtDaModelAndContrasts(prototype, settings$formula_string, contrasts)
+        prototype <- NULL
+        manifest <- list(schema = "dia.da_results.v1", source = source,
+            protein_id_column = spec$slots$protein_id_column, sample_id = spec$slots$sample_id,
+            contrasts = contrasts, results = list(), parameters = list(formula = settings$formula_string,
+                qvalue = settings$da_q_val_thresh, lfc = settings$treat_lfc_cutoff, weights = NA))
+        context <- manager$.context
+        context$da_reference_execution <- TRUE
+        context$da_source_reference <- source
+        on.exit({ context$da_reference_execution <- FALSE; context$da_source_reference <- NULL }, add = TRUE)
+        operation <- diaContrastOperation()
+        for (i in seq_len(nrow(contrasts))) {
+            name <- contrasts$contrasts[[i]]
+            run <- runSavedOperation(manager, operation, source, c(manifest$parameters,
+                list(contrast = contrasts$full_format[[i]], annotations = spec$components$protein_id_table$entity_id,
+                    name = name, comparison = contrasts$friendly_names[[i]])))
+            if (identical(run$status, "computed")) {
+                snapshot <- context$snapshot
+                snapshot$da_dependencies[[run$reference$entity_id]] <- collectDIANativeReferences(run$value)
+                publishDIAStateHead(context, snapshot)
+            }
+            manifest$results[[name]] <- run$value
         }
-        object <- prototype <- NULL
-        workflow$da_ui_params <- list(q_value_threshold = input$da_q_val_thresh,
-            log_fold_change_cutoff = input$treat_lfc_cutoff, treat_enabled = input$treat_lfc_cutoff > 0,
-            formula_string = input$formula_string, timestamp = Sys.time())
+        workflow$da_ui_params <- list(q_value_threshold = settings$da_q_val_thresh,
+            log_fold_change_cutoff = settings$treat_lfc_cutoff, treat_enabled = settings$treat_lfc_cutoff > 0,
+            formula_string = settings$formula_string, timestamp = Sys.time())
         state_record <- readDIAStateMetadata(manager)
         checkpoint <- state_record$data
         da_parameters <- workflow$da_ui_params
@@ -355,8 +360,8 @@ runDIAReferenceDaAnalysis <- function(input, output, session, da_data, workflow,
         if (!identical(recorded[setdiff(names(recorded), "timestamp")],
             da_parameters[setdiff(names(da_parameters), c("timestamp", "treat_enabled"))])) {
             first <- data.frame(contrasts = contrasts$full_format[[1L]], stringsAsFactors = FALSE)
-            defaults <- list(contrasts_tbl = first, formula_string = input$formula_string,
-                da_q_val_thresh = input$da_q_val_thresh, treat_lfc_cutoff = input$treat_lfc_cutoff,
+            defaults <- list(contrasts_tbl = first, formula_string = settings$formula_string,
+                da_q_val_thresh = settings$da_q_val_thresh, treat_lfc_cutoff = settings$treat_lfc_cutoff,
                 eBayes_trend = TRUE, eBayes_robust = TRUE, args_group_pattern = "(\\d+)",
                 args_row_id = manifest$protein_id_column, qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue")
             if (is.null(checkpoint$slots$args$differentialAbundanceAnalysis))
@@ -376,15 +381,11 @@ runDIAReferenceDaAnalysis <- function(input, output, session, da_data, workflow,
         publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
             paths[c("da_output_dir", "publication_graphs_dir")], function(staged) {
                 metadata_object <- readDIAExecutionComponents(manager, source, fields = "design_matrix")
-                annotations <- workflow$uniprot_dat_cln
-                if (is.null(annotations) && exists("uniprot_dat_cln", envir = .GlobalEnv, inherits = FALSE))
-                    annotations <- get("uniprot_dat_cln", envir = .GlobalEnv)
-                if (is.null(annotations)) annotations <- data.frame()
                 metadata_object@args$outputDaResultsAllContrasts <- list(uniprot_tbl = annotations,
                     da_output_dir = staged$da_output_dir, publication_graphs_dir = staged$publication_graphs_dir,
                     file_prefix = "da_proteins", args_row_id = manifest$protein_id_column,
                     gene_names_column = "gene_names", uniprot_id_column = "Entry",
-                    da_q_val_thresh = input$da_q_val_thresh, fdr_column = "fdr_qvalue", log2fc_column = "log2FC")
+                    da_q_val_thresh = settings$da_q_val_thresh, fdr_column = "fdr_qvalue", log2fc_column = "log2FC")
                 if (!isTRUE(outputDaResultsAllContrasts(metadata_object, manifest$results,
                     uniprot_tbl = annotations, da_output_dir = staged$da_output_dir,
                     publication_graphs_dir = staged$publication_graphs_dir, file_prefix = "da_proteins",
@@ -392,7 +393,7 @@ runDIAReferenceDaAnalysis <- function(input, output, session, da_data, workflow,
                     cli::cli_abort("required DA outputs did not complete", class = "saved_entity_outputs_pending")
                 }
                 interactive_files <- writeDIAInteractiveVolcanoOutputs(manifest,
-                    staged$publication_graphs_dir, annotations, input$da_q_val_thresh)
+                    staged$publication_graphs_dir, annotations, settings$da_q_val_thresh)
                 safe <- gsub("[^A-Za-z0-9_-]", "_", names(manifest$results))
                 required <- c(file.path(staged$da_output_dir, as.vector(outer(
                     paste0("da_proteins_", safe, "_long_annot"), c("tsv", "xlsx"), paste, sep = "."))),
@@ -409,17 +410,10 @@ runDIAReferenceDaAnalysis <- function(input, output, session, da_data, workflow,
         da_data$da_results_list <- manifest
         da_data$analysis_complete <- TRUE
         workflow$da_analysis_results_list <- manifest
-        choices <- stats::setNames(contrasts$friendly_names, contrasts$friendly_names)
-        for (id in c("volcano_contrast", "heatmap_contrast", "table_contrast"))
-            shiny::updateSelectInput(session, id, choices = choices)
         status <- workflow$tab_status
         status$differential_expression <- status$differential_abundance <- "complete"
         status$enrichment_analysis <- "pending"
         workflow$tab_status <- status
-        warnings <- unlist(lapply(manifest$results, \(result) result$qvalue_warnings), recursive = FALSE)
-        if (length(warnings)) shiny::showNotification(
-            "Some contrasts used the existing BH fallback after q-value estimation failed.", type = "warning", duration = NULL)
-        shiny::showNotification("Differential abundance analysis completed successfully!", type = "message", duration = 5)
         manifest
     })
 }

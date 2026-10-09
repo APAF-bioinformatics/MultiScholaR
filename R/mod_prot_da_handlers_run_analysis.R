@@ -18,7 +18,24 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
     tryCatch(
       {
         if (usesDIAReferenceStates(workflow_data$state_manager)) {
-          return(runDIAReferenceDaAnalysis(input, output, session, da_data, workflow_data, experiment_paths))
+          contrasts <- workflow_data$contrasts_tbl
+          if (is.null(contrasts) && exists("contrasts_tbl", envir = .GlobalEnv, inherits = FALSE))
+            contrasts <- get("contrasts_tbl", envir = .GlobalEnv)
+          annotations <- workflow_data$uniprot_dat_cln
+          if (is.null(annotations) && exists("uniprot_dat_cln", envir = .GlobalEnv, inherits = FALSE))
+            annotations <- get("uniprot_dat_cln", envir = .GlobalEnv)
+          settings <- list(formula_string = input$formula_string, da_q_val_thresh = input$da_q_val_thresh,
+            treat_lfc_cutoff = input$treat_lfc_cutoff)
+          manifest <- runDIAReferenceDaAnalysis(settings, da_data, workflow_data, experiment_paths,
+            contrasts, annotations)
+          choices <- stats::setNames(manifest$contrasts$friendly_names, manifest$contrasts$friendly_names)
+          for (id in c("volcano_contrast", "heatmap_contrast", "table_contrast"))
+            shiny::updateSelectInput(session, id, choices = choices)
+          warnings <- unlist(lapply(manifest$results, function(result) result$qvalue_warnings), recursive = FALSE)
+          if (length(warnings)) shiny::showNotification(
+            "Some contrasts used the existing BH fallback after q-value estimation failed.", type = "warning", duration = NULL)
+          shiny::showNotification("Differential abundance analysis completed successfully!", type = "message", duration = 5)
+          return(manifest)
         }
         assertDIAExportReady(workflow_data$state_manager)
         shiny::withProgress(message = "Running DE analysis...", value = 0, {

@@ -213,9 +213,9 @@ rootDIAProduct <- function(manager, reference, dependencies = list()) {
     snapshot <- manager$.context$snapshot
     snapshot$products[[reference$entity_id]] <- reference
     roots <- collectDIANativeReferences(dependencies)
-    for (input in roots) {
-        if (identical(input$kind, "checkpoint") && identical(input$payload$codec, "rds")) {
-            record <- readDIAStateMetadata(manager, input)
+    for (root in roots) {
+        if (identical(root$kind, "checkpoint") && identical(root$payload$codec, "rds")) {
+            record <- readDIAStateMetadata(manager, root)
             roots <- collectDIANativeReferences(list(record$data$components, record$data$support,
                 record$data$products, record$data$dependencies), roots)
         }
@@ -290,57 +290,32 @@ resolveDIAReferenceQcPlot <- function(reference, aesthetics, plot_type, build_pr
     plot
 }
 
-#' Run or reuse the existing normalization and RUV kernels within a temporary scope.
-#' @param input,workflow,norm_data,paths Existing GUI inputs and owners.
-#' @param omic_type,experiment_label Existing publication labels.
-#' @param post_qc,ruv_qc,grouping,notify Existing GUI callbacks.
-#' @return TRUE after science, required tables and plots have completed.
+#' The normalisation + RUV operation (KIT-004): one declaration producing the existing
+#' `dia-normalization-ruv` product. The normalised object is checkpointed before RUV so the corrected
+#' object inherits it as its source, exactly as before.
 #' @noRd
-runDIAReferenceNormalization <- function(input, workflow, norm_data, paths, omic_type,
-    experiment_label, post_qc, ruv_qc, grouping, notify) {
-    prior_plot <- ggplot2::get_last_plot()
-    on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
-    manager <- workflow$state_manager
-    withDIAStateScope(manager, function() {
-        assertDIAExportReady(manager, allow_action = "normalization")
-        if (exists("config_list", envir = .GlobalEnv, inherits = FALSE)) {
-            config <- get("config_list", envir = .GlobalEnv)
-            config$normaliseBetweenSamples$method <- input$norm_method
-            assign("config_list", config, envir = .GlobalEnv)
-        }
-        source <- norm_data$normalization_input_reference %||%
-            manager$.context$snapshot$qc_sources$pre_normalization %||%
-            getDIAStateReference(manager, "protein_replicate_filtered") %||% getDIAStateReference(manager)
-        norm_data$normalization_input_reference <- source
-        fields <- c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
-            "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k")
-        parameters <- stats::setNames(lapply(fields, \(field) input[[field]]), fields)
-        parameters$grouping <- grouping()
-        identity <- diaComponentScientificIdentity(manager, source, "normalization-ruv", parameters)
-        hit <- resolveSavedWorkflowEntity(manager$.context$store, "scientific_product", identity)
-        if (identical(hit$status, "hit")) {
-            saved <- hit$value$value
-            product <- hit$reference
-        } else {
-            object <- readDIAExecutionComponents(manager, source)
-            normalized <- runProtNormBetweenSamplesStep(object, input$norm_method, norm_data,
-                proteinQcDir = NULL)
-            normalized_reference <- saveDIAOwnedValue(normalized, "normalized-science", manager)
+diaNormalizationOperation <- function() {
+    newWorkflowOperation("normalization-ruv", "ProteinQuantitativeData",
+        fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
+        output_class = "ProteinQuantitativeData", product_type = "dia-normalization-ruv",
+        parameters = c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
+            "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k", "grouping"),
+        kernel = function(object, parameters, store) {
+            # The kernels record their arguments under the calling name; the legacy path calls them through
+            # these aliases, so the aliases keep the recorded args (and every checkpoint hash) identical.
+            normaliseBetweenSamplesFn <- normaliseBetweenSamples
+            normalized <- normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method)
+            normalized_reference <- store$checkpoint(normalized, "normalized-science")
             object <- NULL
-            if (input$ruv_mode == "skip") {
+            if (parameters$ruv_mode == "skip") {
                 ruv_result <- buildProtNormSkippedRuvResult()
                 final_reference <- normalized_reference
                 best_k <- NA
                 controls <- NA
                 best_percentage <- NA
             } else {
-                # Parameter discovery may fail after creating scientific plots. Keep
-                # those intermediates out of GUI holders until science is accepted.
-                ruv_norm <- new.env(parent = emptyenv())
-                ruv_workflow <- new.env(parent = emptyenv())
-                resolveProtNormRuvParameters(normalized, input, ruv_norm, ruv_workflow, sourceDir = NULL,
-                    getRuvGroupingVariableFn = grouping)
-                ruv_result <- ruv_norm$ruv_optimization_result
+                resolved <- resolveProtRuvParameters(normalized, parameters, parameters$grouping)
+                ruv_result <- resolved$result
                 if (!is.null(ruv_result$best_cancor_plot)) {
                     ruv_result$best_cancor_plot <- ggplot2::ggplotGrob(
                         stripProtNormQcPlotOwners(ruv_result$best_cancor_plot))
@@ -348,35 +323,57 @@ runDIAReferenceNormalization <- function(input, workflow, norm_data, paths, omic
                 ruvIII_C_VaryingFn <- ruvIII_C_Varying
                 removeRowsWithMissingValuesPercentFn <- removeRowsWithMissingValuesPercent
                 corrected <- ruvIII_C_VaryingFn(normalized,
-                    ruv_grouping_variable = parameters$grouping, ruv_number_k = ruv_norm$best_k,
-                    ctrl = ruv_norm$control_genes_index)
+                    ruv_grouping_variable = parameters$grouping, ruv_number_k = resolved$k, ctrl = resolved$controls)
                 corrected <- removeRowsWithMissingValuesPercentFn(theObject = corrected)
-                corrected <- inheritDIAExecutionSource(corrected, manager, normalized_reference)
-                final_reference <- saveDIAOwnedValue(corrected, "ruv-science", manager)
+                final_reference <- store$checkpoint(corrected, "ruv-science", from = normalized_reference)
                 corrected <- NULL
-                best_k <- ruv_norm$best_k
-                controls <- ruv_norm$control_genes_index
-                best_percentage <- ruv_result$best_percentage
-                ruv_norm <- ruv_workflow <- NULL
+                best_k <- resolved$k
+                controls <- resolved$controls
+                best_percentage <- resolved$percentage
             }
             normalized <- NULL
-            saved <- list(normalized = normalized_reference, final = final_reference,
-                ruv_result = ruv_result, best_k = best_k, controls = controls,
-                percentage = best_percentage, parameters = parameters)
-            product <- saveWorkflowConsumerEntity(manager$.context$store,
-                newSavedWorkflowScientificProduct(saved, "dia-normalization-ruv"),
-                basename(tempfile("dia-normalization-")), identity, "scientific_product")
-            rootDIAProduct(manager, product, list(source, saved$normalized, saved$final))
-        }
+            list(normalized = normalized_reference, final = final_reference, ruv_result = ruv_result,
+                best_k = best_k, controls = controls, percentage = best_percentage,
+                parameters = parameters[c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
+                    "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k", "grouping")])
+        })
+}
+
+#' Run or reuse the normalisation + RUV declaration and publish its outputs.
+#' @param settings Plain list of the normalisation settings (`norm_method`, `ruv_mode`, the RUV fields,
+#'   `color_variable`, `shape_variable`); the module edge builds it from its inputs.
+#' @param workflow,norm_data,paths Existing GUI owners and publication paths.
+#' @param omic_type,experiment_label Existing publication labels.
+#' @param post_qc,ruv_qc,grouping Existing callbacks.
+#' @return TRUE after science, required tables and plots have completed.
+#' @noRd
+runDIAReferenceNormalization <- function(settings, workflow, norm_data, paths, omic_type,
+    experiment_label, post_qc, ruv_qc, grouping) {
+    prior_plot <- ggplot2::get_last_plot()
+    on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
+    manager <- workflow$state_manager
+    withDIAStateScope(manager, function() {
+        assertDIAExportReady(manager, allow_action = "normalization")
+        source <- norm_data$normalization_input_reference %||%
+            manager$.context$snapshot$qc_sources$pre_normalization %||%
+            getDIAStateReference(manager, "protein_replicate_filtered") %||% getDIAStateReference(manager)
+        norm_data$normalization_input_reference <- source
+        fields <- c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
+            "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k")
+        parameters <- stats::setNames(lapply(fields, \(field) settings[[field]]), fields)
+        parameters$grouping <- grouping()
+        run <- runSavedOperation(manager, diaNormalizationOperation(), source, parameters)
+        saved <- run$value
+        product <- run$reference
         norm_data$normalized_protein_obj <- saved$normalized
         norm_data$ruv_normalized_obj <- saved$final
         norm_data$best_k <- saved$best_k
         norm_data$control_genes_index <- saved$controls
         norm_data$ruv_optimization_result <- saved$ruv_result
         workflow$ruv_optimization_result <- saved$ruv_result
-        skipped <- identical(input$ruv_mode, "skip")
+        skipped <- identical(settings$ruv_mode, "skip")
         final <- readDIAStateMetadata(manager, saved$final)$data
-        config <- list(norm_method = input$norm_method, ruv_mode = input$ruv_mode,
+        config <- list(norm_method = settings$norm_method, ruv_mode = settings$ruv_mode,
             ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage)
         if (skipped) config$ruv_applied <- FALSE
         state_name <- if (skipped) "normalized" else "ruv_corrected"
@@ -413,16 +410,16 @@ runDIAReferenceNormalization <- function(input, workflow, norm_data, paths, omic
                     workflow$protein_counts$after_ruv_filtering <- final$metadata$proteins
                     norm_data$filtering_summary_text <- sprintf(
                         "Filtering Summary through Normalization & RUV:\n\n* Pre-normalization proteins: [Previous step]\n* Post-RUV filtering: %d proteins\n* Proteins removed by RUV: [Calculated from difference]\n\nRUV Parameters:\n* Normalization method: %s\n* RUV mode: %s\n* RUV k value: %d\n* Negative control %%: %.1f",
-                        final$metadata$proteins, input$norm_method, input$ruv_mode, saved$best_k, saved$percentage)
+                        final$metadata$proteins, settings$norm_method, settings$ruv_mode, saved$best_k, saved$percentage)
                     if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
                         file.path(staged$protein_qc_dir, "ruv_corrected_cancor.png"),
                         saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
                 }
-                generateProtNormCompositeQcFigure(input$ruv_mode, staged$protein_qc_dir, omic_type)
+                generateProtNormCompositeQcFigure(settings$ruv_mode, staged$protein_qc_dir, omic_type)
                 list(qc_paths = norm_data$qc_plot_paths, filtering_plot = norm_data$post_norm_filtering_plot,
                     filtering_text = norm_data$filtering_summary_text, staged_qc_dir = staged$protein_qc_dir)
-            }, identity = list(product = product$entity_id, color = input$color_variable,
-                shape = input$shape_variable, output_schema = 2L))
+            }, identity = list(product = product$entity_id, color = settings$color_variable,
+                shape = settings$shape_variable, output_schema = 2L))
         norm_data$qc_plot_paths <- lapply(display$qc_paths, function(group) lapply(group, function(path) {
             if (is.character(path)) sub(display$staged_qc_dir, paths$protein_qc_dir, path, fixed = TRUE) else path
         }))
@@ -430,7 +427,6 @@ runDIAReferenceNormalization <- function(input, workflow, norm_data, paths, omic
         norm_data$filtering_summary_text <- display$filtering_text
         norm_data$normalization_complete <- TRUE
         finalizeProtNormWorkflowState(norm_data)
-        notify(buildProtNormCompletionNotification(input$ruv_mode), type = "message", duration = 10)
         TRUE
     })
 }
@@ -484,14 +480,40 @@ readDIAProteinProgress <- function(manager, reference, summary = NULL) {
     summary
 }
 
+#' The two correlation operations (KIT-004): within-group Pearson pairs (a product) and the sample
+#' selection at a threshold (a checkpointed object whose reference is the product).
+#' @noRd
+diaPearsonPairsOperation <- function() {
+    newWorkflowOperation("pearson-pairs", "ProteinQuantitativeData",
+        fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
+        product_type = "dia-pearson-pairs", parameters = c("group", "tech_rep_remove_regex"),
+        kernel = function(object, parameters, store) {
+            pearsonCorForSamplePairs(object, tech_rep_remove_regex = parameters$tech_rep_remove_regex,
+                correlation_group = parameters$group)
+        })
+}
+
+diaPearsonSelectionOperation <- function() {
+    newWorkflowOperation("pearson-selection", "ProteinQuantitativeData",
+        fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
+        output_class = "ProteinQuantitativeData", product_type = "dia-pearson-selection",
+        parameters = c("pairs", "threshold"),
+        kernel = function(object, parameters, store) {
+            filterSamplesFn <- filterSamplesByProteinCorrelationThreshold
+            filtered <- filterSamplesFn(object, pearson_correlation_per_pair = parameters$correlations,
+                min_pearson_correlation_threshold = parameters$threshold)
+            store$checkpoint(filtered, "pearson-filtered-science")
+        })
+}
+
 #' Apply, skip or reapply Pearson filtering from the original saved population.
-#' @param workflow,norm_data,paths,output Existing module owners and publication paths.
+#' @param workflow,norm_data,paths Existing module owners and publication paths.
 #' @param threshold,skipped User filtering decision.
 #' @param omic_type,experiment_label Existing output labels.
 #' @param grouping,aesthetics Current scientific grouping and render selections.
-#' @return Final reference, after required output completion.
+#' @return Final reference, after required output completion; the module edge completes the GUI state.
 #' @noRd
-runDIAReferenceCorrelation <- function(workflow, norm_data, paths, output, threshold,
+runDIAReferenceCorrelation <- function(workflow, norm_data, paths, threshold,
     skipped, omic_type, experiment_label, grouping, aesthetics) {
     manager <- workflow$state_manager
     withDIAStateScope(manager, function() {
@@ -502,40 +524,14 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, output, thres
         if (skipped) {
             final <- source
         } else {
-            identity <- diaComponentScientificIdentity(manager, source, "pearson-pairs",
+            pairs <- runSavedOperation(manager, diaPearsonPairsOperation(), source,
                 list(group = grouping(), tech_rep_remove_regex = "pool"))
-            vector_hit <- resolveSavedWorkflowEntity(manager$.context$store, "scientific_product", identity)
-            object <- NULL
-            if (identical(vector_hit$status, "hit")) {
-                correlations <- vector_hit$value$value
-                vector_reference <- vector_hit$reference
-            } else {
-                object <- readDIAExecutionComponents(manager, source)
-                correlations <- pearsonCorForSamplePairs(object,
-                    tech_rep_remove_regex = "pool", correlation_group = grouping())
-                vector_reference <- saveWorkflowConsumerEntity(manager$.context$store,
-                    newSavedWorkflowScientificProduct(correlations, "dia-pearson-pairs"),
-                    basename(tempfile("dia-pearson-")), identity, "scientific_product")
-                rootDIAProduct(manager, vector_reference, list(source))
-            }
-            norm_data$correlation_vector <- vector_reference
-            filter_identity <- diaComponentScientificIdentity(manager, source, "pearson-selection",
-                list(pairs = vector_reference$entity_id, threshold = threshold))
-            filter_hit <- resolveSavedWorkflowEntity(manager$.context$store, "scientific_product", filter_identity)
-            if (identical(filter_hit$status, "hit")) final <- filter_hit$value$value else {
-                if (is.null(object)) object <- readDIAExecutionComponents(manager, source)
-                filterSamplesFn <- filterSamplesByProteinCorrelationThreshold
-                filtered <- filterSamplesFn(object,
-                    pearson_correlation_per_pair = correlations, min_pearson_correlation_threshold = threshold)
-                filtered <- inheritDIAExecutionSource(filtered, manager, source)
-                final <- saveDIAOwnedValue(filtered, "pearson-filtered-science", manager)
-                filtered <- NULL
-                product <- saveWorkflowConsumerEntity(manager$.context$store,
-                    newSavedWorkflowScientificProduct(final, "dia-pearson-selection"),
-                    basename(tempfile("dia-pearson-selection-")), filter_identity, "scientific_product")
-                rootDIAProduct(manager, product, list(source, vector_reference, final))
-            }
-            object <- correlations <- NULL
+            norm_data$correlation_vector <- pairs$reference
+            selection <- runSavedOperation(manager, diaPearsonSelectionOperation(), source,
+                list(pairs = pairs$reference$entity_id, threshold = threshold, correlations = pairs$value),
+                dependencies = list(pairs$reference))
+            final <- selection$value
+            pairs <- selection <- NULL
         }
         norm_data$correlation_filtered_obj <- final
         norm_data$correlation_threshold <- if (skipped) 0 else threshold
@@ -569,11 +565,6 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, output, thres
                 aesthetics = aesthetics(), output_schema = 2L))
         norm_data$final_filtering_plot <- display$filtering_plot
         norm_data$final_qc_plot <- display$qc_plot
-        completeProtNormCorrelationWorkflow(final, workflow, output, norm_data,
-            correlationThreshold = if (skipped) 0 else threshold, skipped = skipped,
-            successNotification = if (skipped) "Correlation filtering skipped! Ready for differential expression analysis." else
-                "Correlation filtering completed! Ready for differential expression analysis.",
-            completionMessage = "Correlation workflow completed", messagePrefix = "Correlation")
         final
     })
 }
