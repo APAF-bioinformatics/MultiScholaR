@@ -259,7 +259,7 @@ kitLifecycleDecision <- function(receipt, cases, bindings) {
     status <- op$phase_status
     steps <- kitStepIds()
     if (!case$expect_failure) {
-        result$failing_rule <- kitIneligible(item, kitMemberSeconds("kit-lifecycle-complete"))
+        result$failing_rule <- kitIneligible(item, kitMemberSeconds("kit-lifecycle-complete", bindings))
         if (is.null(result$failing_rule) && !(all(steps %in% names(status)) &&
             all(unlist(status[steps]) == "complete") && all(is.finite(unlist(op$phase_peak_anon_bytes[steps])))))
             result$failing_rule <- "phase_timing"
@@ -331,7 +331,7 @@ kitOperationLifecycleDecision <- function(receipt, cases, bindings) {
         expect_failure = case$expect_failure)
     status <- op$phase_status
     if (!case$expect_failure) {
-        result$failing_rule <- kitIneligible(item, kitMemberSeconds("kit-lifecycle-operation-complete"))
+        result$failing_rule <- kitIneligible(item, kitMemberSeconds("kit-lifecycle-operation-complete", bindings))
         if (is.null(result$failing_rule) && !(all(kitRequiredOperationPhases %in% names(status)) &&
             all(unlist(status[kitRequiredOperationPhases]) == "complete")))
             result$failing_rule <- "phase_timing"
