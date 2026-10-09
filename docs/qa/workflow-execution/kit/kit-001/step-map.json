@@ -349,7 +349,8 @@
     "Step 2 (min peptides per protein) uses the evidence counts frozen by the q-value step."
   ],
   "partitioned_path_defects_for_later_tickets": [
-    {"ticket": "KIT-009", "step": "intensity", "defect": "peptideIntensityFilteringHelper aborts when any design run is absent from a group's rows (group_filters.R:296-315); the per-group reference loop passes the full design. The partitioner must present the design restricted to the runs present in the batch."},
+    {"ticket": "KIT-013/KIT-014", "step": "sample", "defect": "Observed 2026-10-09 (kit-lifecycle-complete attempt 3): when the sample filter removes every sample the GUI accepts a 0-row state and carries it through the replicate filter and imputation; IQ then fails with a misleading 'output file not created within timeout'. A step that empties the assay should refuse with a clear message."},
+    {"ticket": "fixed 2026-10-09 (9075b361)", "step": "intensity", "defect": "peptideIntensityFilteringHelper refused protein-group batches lacking runs where the group was not observed; the per-group reference loop now passes require_complete_design_runs = FALSE (exact per-group result; unit test test-prot-qc-peptide-intensity-group-batches.R)."},
     {"ticket": "KIT-009/KIT-014", "step": "sample", "defect": "runDIAReferencePeptideGroups merges only sum_fields and copies other summary fields from the first group (qc_rollup.R:344-347, 391-396); non-additive provenance fields must be recomputed globally."}
   ]
 }

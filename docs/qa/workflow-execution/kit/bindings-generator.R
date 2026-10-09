@@ -60,22 +60,28 @@ bind_corpus <- function(directory, manifest) {
 }
 full <- synthetic$profiles$calibration
 b$corpora <- list(full = bind_corpus(dirname(full$files[["report.tsv"]]$path), full))
-screen_dir <- file.path(proof, "kit/corpus/screen")
+# Screen corpus v2 (2026-10-09): eight samples of the calibration recipe with dense counts, so the
+# group-count intensity filter (two runs in two groups) keeps about 56% of features and the 3000
+# cutoff drops exactly one sample. v1 (counts 500...60000) left 365 features and the sample filter
+# emptied the table (attempt 3 of kit-lifecycle-complete); it stays on disk as the record.
+screen_counts <- c(3000L, 20000L, 30000L, 40000L, 45000L, 50000L, 55000L, 60000L)
+screen_dir <- file.path(proof, "kit/corpus/screen-v2")
 if (!dir.exists(screen_dir)) {
     code <- new.env(parent = globalenv())
     sys.source(file.path(repo, "tests/testthat/helper-workflow-checkpoint-fixtures.R"), code)
     sys.source(file.path(repo, "tools/profiling/workflow_perf107_synthetic.R"), code)
     recipe <- code$perf107SyntheticRecipe("calibration")
     recipe$samples <- 8L
-    recipe$counts <- recipe$counts[1:8]
+    recipe$counts <- screen_counts
     recipe$profile <- "calibration"
     dir.create(dirname(screen_dir), recursive = TRUE, showWarnings = FALSE)
     code$writePerf107SyntheticCohort(screen_dir, recipe)
 }
 screen <- jsonlite::read_json(file.path(screen_dir, "manifest.json"))
-stopifnot(identical(screen$samples, 8L), identical(screen$recipe$cutoff, 3000L))
+stopifnot(identical(screen$samples, 8L), identical(screen$recipe$cutoff, 3000L),
+    identical(as.integer(unlist(screen$recipe$counts)), screen_counts))
 b$corpora$screen <- bind_corpus(screen_dir, screen)
-b$corpora$screen$note <- "the first eight samples of the calibration recipe (same universe, proteins and cutoff); counts 500, 2999, 3000, 3001, 5000, 12000, 40000, 60000"
+b$corpora$screen$note <- "screen corpus v2: eight samples of the calibration recipe (same universe, proteins and cutoff) with counts 3000, 20000, 30000, 40000, 45000, 50000, 55000, 60000; about 56% of features pass the group-count intensity filter and the 3000 cutoff drops one sample"
 # Journey: frozen settings (audit A13/A14). GUI defaults except the sample-filter cutoff, which is the
 # corpus's designed cutoff; the ruv_pearson profile of runCheckpointNormalizationActions; DA as runCheckpointDaActions.
 b$journey <- list(

@@ -1765,7 +1765,7 @@
       "profile": "calibration",
       "synthetic": true,
       "samples": 8,
-      "rows": 133892,
+      "rows": 320872,
       "recipe": {
         "profile": "calibration",
         "synthetic": true,
@@ -1773,13 +1773,13 @@
         "samples": 8,
         "universe": 60000,
         "counts": [
-          500,
-          2999,
           3000,
-          3001,
-          5000,
-          12000,
+          20000,
+          30000,
           40000,
+          45000,
+          50000,
+          55000,
           60000
         ],
         "cutoff": 3000,
@@ -1787,26 +1787,26 @@
         "feature_offset": 0,
         "annotation_tail_bytes": 512
       },
-      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen",
-      "expected_retained_samples": 6,
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen-v2",
+      "expected_retained_samples": 8,
       "files": {
         "report.tsv": {
-          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen/report.tsv",
-          "bytes": 28019578,
-          "sha256": "8839c444d09a837a92712e0221878bfb7cfca35ac6133f4c0251f5f6da5257fd"
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen-v2/report.tsv",
+          "bytes": 67134786,
+          "sha256": "87a99e83d1545ba8aabac0ff8b9db2caddb30902842ce08ab6230ac6ff91f196"
         },
         "design.tsv": {
-          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen/design.tsv",
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen-v2/design.tsv",
           "bytes": 336,
           "sha256": "13632eec4331c8cc123b5dd0031a7039b3e1ed4bc081b3b08f81832f96298340"
         },
         "proteins.fasta": {
-          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen/proteins.fasta",
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen-v2/proteins.fasta",
           "bytes": 665427,
           "sha256": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82"
         }
       },
-      "note": "the first eight samples of the calibration recipe (same universe, proteins and cutoff); counts 500, 2999, 3000, 3001, 5000, 12000, 40000, 60000"
+      "note": "screen corpus v2: eight samples of the calibration recipe (same universe, proteins and cutoff) with counts 3000, 20000, 30000, 40000, 45000, 50000, 55000, 60000; about 56% of features pass the group-count intensity filter and the 3000 cutoff drops one sample"
     }
   },
   "journey": {
@@ -1864,7 +1864,7 @@
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
     "protocol_sha256": "8998db8f12a30ce119c516f4e3ffa44cac9a2c57f014d4a1564bb23147813d61",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
-    "step_map_sha256": "966a76f191eae8cc368a15ace2b400c44546548f1ddae8c5da1dc30b26756fea",
+    "step_map_sha256": "e14432f147a6019cfc6895af7e153df6829a25b2d91173356cedf4b22daae857",
     "core_pinned_unchanged": true,
     "files": {
       "tools/profiling/workflow_kit.R": "2e46f4938b2258cc89d88b160e190b22d3c7dd198b75eb170656642a94cb36f2",
