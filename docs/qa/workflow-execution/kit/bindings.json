@@ -19,11 +19,11 @@
     },
     "kit_001": {
       "ticket": "KIT-001",
-      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.uvS55B/library",
-      "build": "041b49ad0f0a9a7e5d9e91d2a711d481482481bf16f3ba5eef13bf5350d13387",
-      "exact_sum": "4606a1be3097a36eb82b569ce6e45f65e9e894ac7652112ed3e525edce75c7a4",
-      "install_member": "browser-smoke.uvS55B",
-      "source_commit": "d2c73bfc8359a2c11d745ff10e42a752cce05187",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y8rDOi/library",
+      "build": "4e05647831744ff9670ec2052d2c2c1f0f13de99cde85f7b61bb69c8f46a4483",
+      "exact_sum": "01471901e542cd8a70624350be6204052fbbe250465dd5c307387d8bd96eced1",
+      "install_member": "browser-smoke.y8rDOi",
+      "source_commit": "9075b3610ed38f4ac4aecb83f3c8402ab7881d58",
       "runtime_patch_bytes": 0
     }
   },
@@ -1867,8 +1867,8 @@
     "step_map_sha256": "966a76f191eae8cc368a15ace2b400c44546548f1ddae8c5da1dc30b26756fea",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "83ea205e2bd303a3b907743c1ddd75afa8c2e6319cacf13855c3f25d5be6cec1",
-      "tools/profiling/workflow_kit_driver.R": "9c595526c5056f31ede50f3357074343531c3d474cff98d3f3b551f4db3c9b62",
+      "tools/profiling/workflow_kit.R": "2e46f4938b2258cc89d88b160e190b22d3c7dd198b75eb170656642a94cb36f2",
+      "tools/profiling/workflow_kit_driver.R": "5380b2898007b34feb32f4db9fed20dd2ee3af350ee27590af7605d970815e12",
       "tools/profiling/workflow_kit_coordinator.R": "9ce9bc2962ea0af46296a4d112d0d337f0381f2f06eff8d1e1b4762f401b7df4",
       "tools/profiling/run_workflow_kit.sh": "4987c0c62e95197e3261a84a820d76ef6de47327e68e83567aec689bdf706399",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
