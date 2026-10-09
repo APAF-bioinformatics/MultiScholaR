@@ -1,0 +1,182 @@
+{
+  "schema": 1,
+  "owner": "KIT-001 (worklist for KIT-012; .GlobalEnv sites for KIT-013)",
+  "date": "2026-10-09",
+  "context": [
+    "Default path keeps everything in memory: R/mod_proteomics.R:217 creates WorkflowState$new(audit_enabled = FALSE); saveState (R/utils_workflow_state.R:102) stores the whole S4 in self$states[[name]]$data.",
+    "The on-disk owner is opt-in: initializeDIACapacitySession (R/mod_proteomics.R:299) needs multischolar.dia_capacity_trial; initializeDIANativeImport (R/utils_workflow_dia_sessions.R:680) needs multischolar.dia_native_sessions; the PERF-107 qualification member adopts a store at the sample filter (R/mod_prot_qc_peptide_sample.R:581-582).",
+    "The reference-aware helpers (setDIAOwnedPayload, saveDIAOwnedValue, newDIASavedReactiveVal; R/utils_workflow_dia_state.R:1275-1425) return the value unchanged without an adapter, so every such holder carries a full object on the default path.",
+    "revertToState (R/utils_workflow_state.R:136-145) trims state_history but never removes self$states[[...]]: every reverted-past S4 stays resident."
+  ],
+  "totals": {
+    "files_inventoried": 40,
+    "holder_sites": 121,
+    "sites_holding_a_quant_s4_or_da_list_with_theObject": 49,
+    "files_with_s4_holder_assignments": 26,
+    "saveState_calls_in_memory_on_default_path": 19,
+    "globalenv_assigns": 26,
+    "globalenv_assigns_of_a_quant_s4": 0
+  },
+  "files": [
+    {"file": "R/utils_workflow_state.R", "sites": [{"line": 102, "expr": "self$states[[state_name]] <- list(data = s4_data_object, ...)", "held": "any S4", "kind": "saveState"}]},
+    {"file": "R/mod_proteomics.R", "sites": [
+      {"line": 217, "expr": "workflow_data$state_manager = WorkflowState$new(audit_enabled = FALSE)", "held": "R6 holding every saved S4", "kind": "reactive holder"},
+      {"line": 299, "expr": "workflow_data$state_manager <- initializeDIACapacitySession(...)", "held": "native R6 unless the trial option is set", "kind": "reference (opt-in)"},
+      {"line": 311, "expr": "workflow_data$aa_seq_tbl_final <- readRDS(...)", "held": "data.frame", "kind": "reactive holder"},
+      {"line": 312, "expr": "assign(\"aa_seq_tbl_final\", ..., envir = .GlobalEnv)", "held": "data.frame", "kind": ".GlobalEnv"}]},
+    {"file": "R/mod_prot_design_state_helpers.R", "sites": [
+      {"line": 14, "expr": "commitDIAReferenceState(..., \"raw_data_s4\", checkpoint)", "held": "checkpoint", "kind": "reference"},
+      {"line": 101, "expr": "state_manager$saveState(raw_data_s4 | protein_s4_initial, s4Object)", "held": "PeptideQuantitativeData / ProteinQuantitativeData", "kind": "saveState"},
+      {"line": 180, "expr": "workflowData$uniprot_dat_cln <- uniprotDatCln", "held": "data.frame", "kind": "reactive holder"},
+      {"line": 181, "expr": "assign(\"uniprot_dat_cln\", ..., .GlobalEnv)", "held": "data.frame", "kind": ".GlobalEnv"}]},
+    {"file": "R/mod_prot_design_import_helpers.R", "sites": [
+      {"line": 30, "expr": "workflowData$uniprot_dat_cln", "held": "data.frame", "kind": "reactive holder"}, {"line": 31, "expr": "assign uniprot_dat_cln", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 50, "expr": "workflowData$uniprot_dat_cln", "held": "data.frame", "kind": "reactive holder"}, {"line": 51, "expr": "assign uniprot_dat_cln", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 89, "expr": "workflowData$aa_seq_tbl_final", "held": "data.frame", "kind": "reactive holder"}, {"line": 90, "expr": "assign aa_seq_tbl_final", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 103, "expr": "workflowData$aa_seq_tbl_final", "held": "data.frame", "kind": "reactive holder"}, {"line": 104, "expr": "assign aa_seq_tbl_final", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 142, "expr": "workflowData$aa_seq_tbl_final", "held": "data.frame", "kind": "reactive holder"}, {"line": 144, "expr": "assign aa_seq_tbl_final", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 231, "expr": "assignFn(\"config_list\", ..., .GlobalEnv)", "held": "config list", "kind": ".GlobalEnv"},
+      {"line": 297, "expr": "setDIAOwnedPayload(workflowData, \"data_cln\", importedDataCln)", "held": "data.frame (ref-aware)", "kind": "reactive holder"},
+      {"line": 301, "expr": "assign contrasts_tbl", "held": "data.frame", "kind": ".GlobalEnv"}]},
+    {"file": "R/mod_prot_design_builder_helpers.R", "sites": [
+      {"line": 20, "expr": "assign contrasts_tbl", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 55, "expr": "setDIAOwnedPayload(workflowData, \"data_cln\", results$data_reference %||% results$data_cln)", "held": "data.frame (ref-aware)", "kind": "reference"},
+      {"line": 61, "expr": "assign contrasts_tbl", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 65, "expr": "assign config_list", "held": "config list", "kind": ".GlobalEnv"}]},
+    {"file": "R/mod_prot_design_builder_server_helpers.R", "sites": [
+      {"line": 137, "expr": "resultRv = newDIASavedReactiveVal(NULL, \"design-result\")", "held": "design result incl. data_cln", "kind": "reference"},
+      {"line": 139, "expr": "dataClnReactive = newDIASavedReactiveVal(NULL, \"design-cleaned-data\")", "held": "data.frame", "kind": "reference"},
+      {"line": 232, "expr": "saveDIAOwnedValue(converted$data_cln, \"design-numeric\")", "held": "data.frame", "kind": "reference"},
+      {"line": 245, "expr": "state$data_reference <- initial$data_reference", "held": "ref", "kind": "reference"}]},
+    {"file": "R/mod_prot_design_builder_state_helpers.R", "sites": [
+      {"line": 119, "expr": "finalResult$data_reference <- saveDIAOwnedValue(finalResult$data_cln, ...) (adapter only)", "held": "data.frame", "kind": "reference"},
+      {"line": 122, "expr": "resultSetter(finalResult)", "held": "list with data_cln (in memory on the default path)", "kind": "reactive holder"}]},
+    {"file": "R/mod_prot_import_processing_helpers.R", "sites": [
+      {"line": 172, "expr": "setDIAOwnedPayload(workflowData, \"data_tbl\", sanitized$data)", "held": "data.frame (ref-aware)", "kind": "reactive holder"},
+      {"line": 203, "expr": "setDIAOwnedPayload(workflowData, \"data_tbl\", table)", "held": "data.frame (ref-aware)", "kind": "reactive holder"},
+      {"line": 206, "expr": "setDIAOwnedPayload(workflowData, \"data_tbl\", dataImportResult$data)", "held": "data.frame (ref-aware)", "kind": "reactive holder"},
+      {"line": 221, "expr": "workflowData$data_cln <- workflowData$data_tbl", "held": "data.frame / ref", "kind": "duplicate copy"},
+      {"line": 340, "expr": "workflowData$aa_seq_tbl_final", "held": "data.frame", "kind": "reactive holder"},
+      {"line": 343, "expr": "assignFn(\"aa_seq_tbl_final\", envir = .GlobalEnv)", "held": "data.frame", "kind": ".GlobalEnv"}]},
+    {"file": "R/mod_prot_import_organism_helpers.R", "sites": [
+      {"line": 199, "expr": "setDIAOwnedPayload(workflowData, \"data_tbl\", table)", "held": "data.frame (ref-aware)", "kind": "reactive holder"},
+      {"line": 204, "expr": "setDIAOwnedPayload(workflowData, \"data_cln\", cleaned[keep, ])", "held": "data.frame (ref-aware)", "kind": "reactive holder"}]},
+    {"file": "R/mod_prot_import_config_helpers.R", "sites": [{"line": 70, "expr": "assignFn(\"config_list\", envir = .GlobalEnv)", "held": "config list", "kind": ".GlobalEnv"}]},
+    {"file": "R/mod_prot_qc_peptide_qvalue.R", "sites": [{"line": 212, "expr": ".savePeptideQcState(\"qvalue_filtered\", filteredS4)", "held": "PeptideQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_peptide_protein.R", "sites": [{"line": 151, "expr": ".savePeptideQcState(\"protein_peptide_filtered\", filteredS4)", "held": "PeptideQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_peptide_rollup.R", "sites": [{"line": 141, "expr": ".savePeptideQcState(\"precursor_rollup\", rolledUpS4)", "held": "PeptideQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_peptide_intensity.R", "sites": [{"line": 275, "expr": ".savePeptideQcState(\"intensity_filtered\", filteredS4)", "held": "PeptideQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_peptide_sample.R", "sites": [
+      {"line": 245, "expr": ".savePeptideQcState(\"sample_filtered\", filteredS4)", "held": "PeptideQuantitativeData", "kind": "saveState"},
+      {"line": 504, "expr": "action$sample_result <- sample_result (native qualification arm)", "held": "PeptideQuantitativeData", "kind": "duplicate copy"},
+      {"line": 515, "expr": "managed_action(action)", "held": "PeptideQuantitativeData inside the action", "kind": "reactive holder"}]},
+    {"file": "R/mod_prot_qc_peptide_replicate.R", "sites": [{"line": 168, "expr": ".savePeptideQcState(\"replicate_filtered\", filteredS4)", "held": "PeptideQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_peptide_impute.R", "sites": [{"line": 209, "expr": ".savePeptideQcState(\"imputed\", imputed_s4)", "held": "PeptideQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_protein_rollup.R", "sites": [
+      {"line": 425, "expr": ".savePeptideQcState(\"protein_s4_created\", proteinObj) [IQ]", "held": "ProteinQuantitativeData", "kind": "saveState"},
+      {"line": 520, "expr": ".savePeptideQcState(\"protein_s4_created\", proteinObj) [limpa]", "held": "ProteinQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_protein_s4.R", "sites": [{"line": 76, "expr": "saveState(\"protein_s4_initial\", proteinObj)", "held": "ProteinQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_protein_cleanup.R", "sites": [{"line": 228, "expr": "saveState(\"protein_accession_cleaned\", cleanedS4)", "held": "ProteinQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_protein_dedup.R", "sites": [{"line": 131, "expr": "saveState(\"duplicates_removed\", currentS4)", "held": "ProteinQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_protein_intensity.R", "sites": [{"line": 193, "expr": "saveState(\"protein_intensity_filtered\", filteredS4)", "held": "ProteinQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_qc_protein_replicate.R", "sites": [{"line": 168, "expr": "saveState(\"protein_replicate_filtered\", filteredS4)", "held": "ProteinQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_norm_workflow_helpers.R", "sites": [
+      {"line": 41, "expr": "assignFn(\"config_list\", .GlobalEnv)", "held": "config list", "kind": ".GlobalEnv"},
+      {"line": 47, "expr": "setDIAOwnedPayload(normData, \"normalized_protein_obj\", normalized_s4)", "held": "ProteinQuantitativeData (ref-aware)", "kind": "reactive holder"},
+      {"line": 105, "expr": "setDIAOwnedPayload(normData, \"ruv_normalized_obj\", normalizedS4) [RUV skip]", "held": "ProteinQuantitativeData (same object)", "kind": "duplicate copy"},
+      {"line": 128, "expr": "saveState(\"normalized\", normalizedS4) [RUV skip]", "held": "ProteinQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_norm_ruv_helpers.R", "sites": [
+      {"line": 62, "expr": "assignFn(\"config_list\", .GlobalEnv)", "held": "config list", "kind": ".GlobalEnv"},
+      {"line": 295, "expr": "setDIAOwnedPayload(normData, \"ruv_normalized_obj\", ruv_corrected_s4)", "held": "ProteinQuantitativeData (ref-aware)", "kind": "reactive holder"},
+      {"line": 375, "expr": "setDIAOwnedPayload(normData, \"ruv_normalized_obj\", ruv_corrected_s4_clean)", "held": "ProteinQuantitativeData", "kind": "duplicate copy"},
+      {"line": 380, "expr": "saveState(\"ruv_corrected\", ruv_corrected_s4_clean)", "held": "ProteinQuantitativeData", "kind": "saveState"}]},
+    {"file": "R/mod_prot_norm_correlation_helpers.R", "sites": [
+      {"line": 149, "expr": "workflowData$ruv_normalised_for_da_analysis_obj <- getDIAStateReference(manager)", "held": "ref", "kind": "reference"},
+      {"line": 159, "expr": "workflowData$ruv_normalised_for_da_analysis_obj <- saveDIAOwnedValue(finalS4ForDe, ...)", "held": "ProteinQuantitativeData on the default path", "kind": "duplicate copy"},
+      {"line": 174, "expr": "saveState(\"correlation_filtered\", finalS4ForDe)", "held": "ProteinQuantitativeData", "kind": "saveState"},
+      {"line": 354, "expr": "setDIAOwnedPayload(normData, \"correlation_filtered_obj\", final_s4_for_de)", "held": "ProteinQuantitativeData", "kind": "duplicate copy"},
+      {"line": 372, "expr": "setDIAOwnedPayload(normData, \"correlation_filtered_obj\", ruvS4) [skip]", "held": "ProteinQuantitativeData", "kind": "duplicate copy"}]},
+    {"file": "R/mod_prot_norm_observer_helpers.R", "sites": [
+      {"line": 172, "expr": "normData$normalization_input_reference <- getDIAStateReference(...)", "held": "ref", "kind": "reference"},
+      {"line": 174, "expr": "normData$normalized_protein_obj <- getDIAStateReference(\"normalized\")", "held": "ref", "kind": "reference"},
+      {"line": 175, "expr": "normData$ruv_normalized_obj <- getDIAStateReference(...)", "held": "ref", "kind": "reference"},
+      {"line": 177, "expr": "normData$correlation_filtered_obj <- getDIAStateReference(...)", "held": "ref", "kind": "reference"}]},
+    {"file": "R/mod_prot_norm_qc_generation_helpers.R", "sites": [{"line": 10, "expr": "snapshot$qc_sources$pre_normalization <- getDIAStateReference(...)", "held": "ref", "kind": "reference"}]},
+    {"file": "R/mod_prot_norm_session_helpers.R", "sites": [
+      {"line": 81, "expr": "session_data$r6_complete_states = state_manager$states", "held": "every S4 state (serialised at :262)", "kind": "duplicate copy"},
+      {"line": 83, "expr": "session_data$current_s4_object (+ :84 correlation_filtered_s4)", "held": "ProteinQuantitativeData x2", "kind": "duplicate copy"}]},
+    {"file": "R/mod_prot_da_server.R", "sites": [{"line": 21, "expr": "da_data <- reactiveValues(da_results_list, current_s4_object, ...)", "held": "declaration of S4 + DA list slots", "kind": "reactive holder"}]},
+    {"file": "R/mod_prot_da_handlers_init.R", "sites": [
+      {"line": 40, "expr": "da_data$current_s4_object <- current_s4$reference %||% current_s4$legacy_object", "held": "ProteinQuantitativeData", "kind": "duplicate copy"},
+      {"line": 207, "expr": "da_data$current_s4_object <- current_s4$reference %||% current_s4$legacy_object", "held": "ProteinQuantitativeData", "kind": "duplicate copy"}]},
+    {"file": "R/mod_prot_da_handlers_load_session.R", "sites": [
+      {"line": 96, "expr": "workflow_data$state_manager$states <- r6_complete_states", "held": "every S4 state from RDS", "kind": "saveState"},
+      {"line": 120, "expr": "assign contrasts_tbl", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 126, "expr": "assign config_list", "held": "config list", "kind": ".GlobalEnv"},
+      {"line": 133, "expr": "da_data$current_s4_object <- session_data$current_s4_object", "held": "ProteinQuantitativeData", "kind": "duplicate copy"},
+      {"line": 173, "expr": "workflow_data$uniprot_dat_cln", "held": "data.frame", "kind": "reactive holder"}, {"line": 174, "expr": "assign uniprot_dat_cln", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 181, "expr": "workflow_data$uniprot_dat_cln", "held": "data.frame", "kind": "reactive holder"}, {"line": 182, "expr": "assign uniprot_dat_cln", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 308, "expr": "da_data$da_results_list <- results (manifest)", "held": "DA manifest", "kind": "reference"},
+      {"line": 310, "expr": "workflow_data$da_analysis_results_list <- results (manifest)", "held": "DA manifest", "kind": "reference"}]},
+    {"file": "R/mod_prot_da_handlers_run_analysis.R", "sites": [
+      {"line": 158, "expr": "da_data$current_s4_object@args$differentialAbundanceAnalysis <- list(...)", "held": "ProteinQuantitativeData (mutation forces a full copy)", "kind": "duplicate copy"},
+      {"line": 175, "expr": "da_data$current_s4_object@args$daAnalysisUI <- list()", "held": "ProteinQuantitativeData", "kind": "reactive holder"},
+      {"line": 178, "expr": "da_data$current_s4_object@args$daAnalysisUI <- list(...)", "held": "ProteinQuantitativeData", "kind": "reactive holder"},
+      {"line": 211, "expr": "saveState(current_data_state, da_data$current_s4_object)", "held": "ProteinQuantitativeData", "kind": "saveState"},
+      {"line": 231, "expr": "da_data$current_s4_object@args$differentialAbundanceAnalysisHelper <- list(...)", "held": "ProteinQuantitativeData", "kind": "reactive holder"},
+      {"line": 354, "expr": "da_data$da_results_list <- combined_results (theObject :350, per-contrast theObject :343)", "held": "da list with theObject", "kind": "reactive holder"},
+      {"line": 437, "expr": "workflow_data$da_analysis_results_list <- da_results_list", "held": "da list with theObject", "kind": "duplicate copy"}]},
+    {"file": "R/mod_prot_enrich_observer_helpers.R", "sites": [{"line": 190, "expr": "createProtEnrichReactiveValues(current_s4_object, da_results_data, ...)", "held": "declaration of S4 + DA list slots", "kind": "reactive holder"}]},
+    {"file": "R/mod_prot_enrich_registration_helpers.R", "sites": [
+      {"line": 334, "expr": "enrichmentData$current_s4_object <- references$source", "held": "ref", "kind": "reference"},
+      {"line": 335, "expr": "enrichmentData$da_results_data <- references", "held": "manifest", "kind": "reference"},
+      {"line": 401, "expr": "enrichmentData$current_s4_object <- currentS4 (getState)", "held": "ProteinQuantitativeData", "kind": "duplicate copy"},
+      {"line": 402, "expr": "enrichmentData$da_results_data <- workflowData$da_analysis_results_list", "held": "da list with theObject", "kind": "duplicate copy"},
+      {"line": 504, "expr": "enrichmentData$current_s4_object <- daResultsList$source", "held": "ref", "kind": "reference"},
+      {"line": 505, "expr": "enrichmentData$da_results_data <- daResultsList (manifest)", "held": "manifest", "kind": "reference"},
+      {"line": 527, "expr": "enrichmentData$current_s4_object <- currentS4", "held": "ProteinQuantitativeData", "kind": "duplicate copy"},
+      {"line": 539, "expr": "enrichmentData$da_results_data <- daResultsList", "held": "da list with theObject", "kind": "duplicate copy"}]},
+    {"file": "R/mod_prot_enrich_analysis_helpers.R", "sites": [{"line": 351, "expr": "enrichmentData$current_s4_object <- dependencyConfig$currentS4", "held": "ProteinQuantitativeData", "kind": "reactive holder"}]},
+    {"file": "R/mod_prot_enrich_state_helpers.R", "sites": [
+      {"line": 225, "expr": "saveState(\"enrichment_completed\", enrichmentResults)", "held": "enrichment results (also moves current_state)", "kind": "saveState"},
+      {"line": 435, "expr": "enrichmentData$enrichment_results_full <- enrichmentResults", "held": "enrichment results", "kind": "duplicate copy"},
+      {"line": 438, "expr": "workflowData$enrichment_analysis_results <- list(full_enrichment_results = ...)", "held": "enrichment results", "kind": "duplicate copy"},
+      {"line": 474, "expr": "enrichmentData$current_s4_object <- uiParamsPropagation$currentS4Object (@args mutated :123-126)", "held": "ProteinQuantitativeData (diverged copy)", "kind": "duplicate copy"}]},
+    {"file": "R/mod_prot_enrich_input_helpers.R", "sites": [
+      {"line": 611, "expr": "assign uniprot_dat_cln", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 622, "expr": "workflowData$uniprot_dat_cln <- readRDS", "held": "data.frame", "kind": "reactive holder"}, {"line": 623, "expr": "assign uniprot_dat_cln", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 650, "expr": "workflowData$uniprot_dat_cln", "held": "data.frame", "kind": "reactive holder"}, {"line": 651, "expr": "assign uniprot_dat_cln", "held": "data.frame", "kind": ".GlobalEnv"},
+      {"line": 677, "expr": "assign uniprot_dat_cln", "held": "data.frame", "kind": ".GlobalEnv"}]},
+    {"file": "R/mod_prot_summary_session_helpers.R", "sites": [{"line": 31, "expr": "assignFn(\"config_list\", .GlobalEnv)", "held": "config list", "kind": ".GlobalEnv"}]},
+    {"file": "R/mod_prot_summary_publication_helpers.R", "sites": [{"line": 107, "expr": "assignFn(\"project_dirs\", .GlobalEnv)", "held": "path list", "kind": ".GlobalEnv"}]},
+    {"file": "R/utils_workflow_dia_da.R", "sites": [
+      {"line": 409, "expr": "da_data$da_results_list <- manifest", "held": "DA manifest", "kind": "reference"},
+      {"line": 411, "expr": "workflow$da_analysis_results_list <- manifest", "held": "DA manifest", "kind": "reference"}]}
+  ],
+  "duplicate_copy_sites": [
+    "R/mod_prot_norm_correlation_helpers.R: the correlation-filtered S4 in normData$correlation_filtered_obj (:354/:372), workflowData$ruv_normalised_for_da_analysis_obj (:159) and state correlation_filtered (:174)",
+    "R/mod_prot_norm_ruv_helpers.R: normData$ruv_normalized_obj (:375) and state ruv_corrected (:380)",
+    "R/mod_prot_norm_workflow_helpers.R (RUV skip): normalized_protein_obj (:47), ruv_normalized_obj (:105) and state normalized (:128); with correlation skipped, correlation_filtered_obj (:372) is a fourth copy",
+    "R/mod_prot_da_handlers_init.R:40/:207 and R/mod_prot_da_handlers_load_session.R:133: da_data$current_s4_object duplicates the state-manager S4; load replaces state_manager$states (:96)",
+    "R/mod_prot_da_handlers_run_analysis.R: @args writes (:158/:175/:178/:231) force a full copy; :211 writes it back over the current state; da_results_list (:354) carries theObject per contrast; workflow_data$da_analysis_results_list (:437) is the same list again",
+    "R/mod_prot_enrich_registration_helpers.R:401/:402/:527/:539: a third copy of the S4 and of the DA list",
+    "R/mod_prot_enrich_state_helpers.R: :474 diverged S4 copy; enrichment results held three times (:225, :435, :438)",
+    "R/mod_prot_norm_session_helpers.R:81/:83-84: the export bundle serialises the current S4 two or three times (transient)",
+    "R/mod_prot_qc_peptide_sample.R:504/:515: managed_action() holds filteredS4 beside state sample_filtered on the native arm",
+    "R/mod_prot_import_processing_helpers.R:221: data_cln aliases data_tbl",
+    "uniprot_dat_cln and aa_seq_tbl_final mirrored in a reactive holder and .GlobalEnv"
+  ],
+  "globalenv_assigns": {
+    "config_list": ["load_session:126", "design_import:231", "design_builder_helpers:65", "import_config:70", "norm_ruv:62", "norm_workflow:41", "summary_session:31"],
+    "uniprot_dat_cln": ["load_session:174", "load_session:182", "design_state:181", "design_import:31", "design_import:51", "enrich_input:611", "enrich_input:623", "enrich_input:651", "enrich_input:677"],
+    "aa_seq_tbl_final": ["design_import:90", "design_import:104", "design_import:144", "mod_proteomics:312", "import_processing:343"],
+    "contrasts_tbl": ["load_session:120", "design_import:301", "design_builder_helpers:20", "design_builder_helpers:61"],
+    "project_dirs": ["summary_publication:107"]
+  },
+  "reference_helpers_already_in_use": {
+    "newDIASavedReactiveVal / getDIAReactiveReference / resolveDIAOwnedValue": "design builder only",
+    "setDIAOwnedPayload": "design, import and organism helpers (data tables)",
+    "getDIAStateReference / commitDIAReferenceState": "norm, DA and summary reference branches; DA manifests in R/utils_workflow_dia_da.R:409/:411",
+    "selectDIAStateReference": "all QC revert handlers and norm session :445 (passthrough to revertToState without an adapter)"
+  }
+}

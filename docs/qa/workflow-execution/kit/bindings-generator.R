@@ -1,0 +1,115 @@
+# Tracked generator for docs/qa/workflow-execution/kit/bindings.json (KIT-001; modelled on core/bindings-generator.R).
+# Run from the repository root after any harness, protocol, step-map, corpus or build change; commit both files.
+# Usage: Rscript docs/qa/workflow-execution/kit/bindings-generator.R [kit_006=<install run dir> ...]
+# The screen corpus (8 samples of the PERF-107 calibration recipe) is generated once under the proof
+# root if absent; its hashes are then bound. The 300-sample corpora are PERF-107's generated cohorts.
+args <- commandArgs(TRUE)
+stopifnot(all(grepl("^kit_[0-9]{3}=.+", args)))
+installs <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = TRUE), sub("=.*$", "", args))
+repo <- normalizePath(".")
+stopifnot(file.exists(file.path(repo, "DESCRIPTION")))
+proof <- "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5"
+hash <- function(path) digest::digest(file = path, algo = "sha256")
+core <- jsonlite::read_json(file.path(repo, "docs/qa/workflow-execution/core/bindings.json"))
+path <- file.path(repo, "docs/qa/workflow-execution/kit/bindings.json")
+b <- list(schema = 1L, owner = "KIT-001; extended by later KIT tickets", created = format(Sys.Date()),
+    repository = core$repository)
+# Builds: core_018 (the control until KIT-006 accepts) carried verbatim from the CORE bindings.
+b$builds <- list(core_018 = core$builds$core_018)
+b$outcomes <- list(list(ticket = "CORE-018", outcome = "control", build = "core_018",
+    note = "post-closure CORE build (source 906c50dc, install browser-smoke.gQ40C7); the KIT control until KIT-006 accepts"))
+b$control <- "core_018"
+probe <- function(library) {
+    out <- system2(file.path(R.home("bin"), "Rscript"), c("--vanilla", "-e", shQuote(paste0(
+        '.libPaths(c("', library, '", .libPaths())); ns <- asNamespace("MultiScholaR"); ',
+        'cat(get("workflowExecutionBuildIdentity", ns)(), get("diaRollupNativeInfo", ns)()$manifest$binary_sha256, ',
+        'normalizePath(getNamespaceInfo(ns, "path")), sep = "\\n")'))), stdout = TRUE)
+    out <- tail(out, 3L)
+    stopifnot(identical(out[[3L]], normalizePath(file.path(library, "MultiScholaR"))))
+    list(build = out[[1L]], exact_sum = out[[2L]])
+}
+control_probe <- probe(b$builds$core_018$library)
+stopifnot(identical(control_probe$build, b$builds$core_018$build), identical(control_probe$exact_sum, b$builds$core_018$exact_sum))
+for (key in names(installs)) {
+    install <- installs[[key]]
+    library <- file.path(install, "library")
+    new <- probe(library)
+    b$builds[[key]] <- list(ticket = sub("^kit_", "KIT-", key), library = library, build = new$build, exact_sum = new$exact_sum,
+        install_member = basename(install), source_commit = trimws(readLines(file.path(install, "source-commit.txt"))[[1L]]),
+        runtime_patch_bytes = file.size(file.path(install, "runtime.patch")))
+}
+# CORE populations and oracles, copied verbatim (the P14 page oracle and the sample-filter oracle).
+b$populations <- core$populations[c("screen_p14", "full_p14", "full_primary")]
+b$oracles <- core$oracles
+# Corpora: PERF-107 synthetic DIA-NN cohorts. Full = calibration (300 samples); heldout stays reserved.
+synthetic <- jsonlite::read_json(file.path(repo, "docs/qa/workflow-execution/perf-107/synthetic-corpus.json"))
+bind_corpus <- function(directory, manifest) {
+    files <- c("report.tsv", "design.tsv", "proteins.fasta")
+    list(profile = manifest$profile, synthetic = TRUE, samples = manifest$samples, rows = manifest$rows,
+        recipe = manifest$recipe, directory = directory, expected_retained_samples = manifest$expected_retained_samples,
+        files = stats::setNames(lapply(files, function(name) {
+            file <- file.path(directory, name)
+            stopifnot(identical(hash(file), manifest$files[[name]]$sha256))
+            list(path = file, bytes = file.size(file), sha256 = manifest$files[[name]]$sha256)
+        }), files))
+}
+full <- synthetic$profiles$calibration
+b$corpora <- list(full = bind_corpus(dirname(full$files[["report.tsv"]]$path), full))
+screen_dir <- file.path(proof, "kit/corpus/screen")
+if (!dir.exists(screen_dir)) {
+    code <- new.env(parent = globalenv())
+    sys.source(file.path(repo, "tests/testthat/helper-workflow-checkpoint-fixtures.R"), code)
+    sys.source(file.path(repo, "tools/profiling/workflow_perf107_synthetic.R"), code)
+    recipe <- code$perf107SyntheticRecipe("calibration")
+    recipe$samples <- 8L
+    recipe$counts <- recipe$counts[1:8]
+    recipe$profile <- "calibration"
+    dir.create(dirname(screen_dir), recursive = TRUE, showWarnings = FALSE)
+    code$writePerf107SyntheticCohort(screen_dir, recipe)
+}
+screen <- jsonlite::read_json(file.path(screen_dir, "manifest.json"))
+stopifnot(identical(screen$samples, 8L), identical(screen$recipe$cutoff, 3000L))
+b$corpora$screen <- bind_corpus(screen_dir, screen)
+b$corpora$screen$note <- "the first eight samples of the calibration recipe (same universe, proteins and cutoff); counts 500, 2999, 3000, 3001, 5000, 12000, 40000, 60000"
+# Journey: frozen settings (audit A13/A14). GUI defaults except the sample-filter cutoff, which is the
+# corpus's designed cutoff; the ruv_pearson profile of runCheckpointNormalizationActions; DA as runCheckpointDaActions.
+b$journey <- list(
+    experiment_label = "dia_baseline_smoke",
+    state_manager_mode = "dia_gui_adoption",
+    member = list(programme = "perf107-phase-a", variant = "physical", entry = "resident", deadline = 1800),
+    controller_deadline_seconds = 1800,
+    claim_limits = c(
+        "The on-disk owner is entered through the existing PERF-107 phase-A launch record: the in-memory WorkflowState holds every state until the sample filter, where the history is converted into a .dia-gui-adoption store and the sample filter runs through the managed worker (physical variant). Earlier states are snapshotted after adoption, not after their own step.",
+        "That launch record caps the controller at 1800 s; a journey ceiling above 1800 s needs a different entry (user decision before KIT-005).",
+        "The in-memory mode has no references to snapshot; a production default journey (no launch record) cannot be fingerprinted per step until KIT-011."),
+    diagnostic_settings = FALSE,
+    settings = list(sample = list("sample_filter-min_peptides_per_sample" = 3000)),
+    normalisation = list(norm_method = "cyclicloess", ruv_mode = "automatic",
+        ruv = list(auto_percentage_min = 1, auto_percentage_max = 20, separation_metric = "max_difference",
+            k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, ruv_grouping_variable = "group"),
+        correlation_threshold = 0.5, profile = "ruv_pearson"),
+    da = list(formula = "~ 0 + group", q_value = 0.05, treat_lfc = 0),
+    steps = c("import", "design", "qvalue", "protein_peptide", "rollup", "intensity", "sample", "replicate", "imputation",
+        "iq", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation",
+        "session_export", "da"),
+    ceiling_seconds = NULL,
+    ceiling_note = "set by KIT-005 from the KIT-001 screen duration scaled to 300 samples, never above 90 min")
+b$lifecycle <- list(ceiling_seconds = 300L,
+    fault = list(name = "guard_after_sample", after_step = "sample", failed_step = "replicate",
+        mechanism = "application-guard-inject.rds written after the sample filter completes; the application monitor stops the slice (injected_guard_stop); the replicate step fails on disconnection; the head must equal the sample-filter snapshot"))
+files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
+    "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/run_workflow_kit.sh",
+    "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R")
+core_pinned <- c("tools/profiling/run_workflow_checkpoint_proof.R", "tools/profiling/run_workflow_checkpoint_proof.sh",
+    "tools/profiling/workflow_checkpoint_dia_driver.R", "tools/profiling/workflow_perf106_repair.R")
+for (file in core_pinned) stopifnot(identical(hash(file.path(repo, file)), core$harness$files[[file]]))
+b$harness <- list(root = file.path(proof, "kit/runtime"),
+    coordinator = "tools/profiling/workflow_kit_coordinator.R", driver = "tools/profiling/workflow_kit_driver.R",
+    runner = "tools/profiling/run_workflow_kit.sh", protocol = "docs/qa/workflow-execution/kit/protocol.md",
+    protocol_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/protocol.md")),
+    step_map = "docs/qa/workflow-execution/kit/kit-001/step-map.json",
+    step_map_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map.json")),
+    core_pinned_unchanged = TRUE,
+    files = as.list(stats::setNames(vapply(file.path(repo, files), hash, character(1), USE.NAMES = FALSE), files)))
+jsonlite::write_json(b, path, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)
+cat("bindings written:", path, "\nprotocol", b$harness$protocol_sha256, "\nstep map", b$harness$step_map_sha256, "\n")

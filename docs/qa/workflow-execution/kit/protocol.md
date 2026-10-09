@@ -1,6 +1,6 @@
 # KIT measurement protocol
 
-**Version 1 (draft, 2026-10-09).** Frozen by KIT-001 before any counted KIT member; its SHA-256 is then recorded in `kit/bindings.json` and a change to this file is a new version needing a user decision. Carries the CORE protocol v8.1 (`../core/protocol.md`) unless stated.
+**Version 1 (frozen by KIT-001, 2026-10-09).** Its SHA-256 is recorded in `kit/bindings.json` and a change to this file is a new version needing a user decision. Carries the CORE protocol v8.1 (`../core/protocol.md`) unless stated.
 
 ## 1. Rules carried from CORE
 
