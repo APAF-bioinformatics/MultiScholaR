@@ -1,0 +1,53 @@
+{
+  "schema": "em.ticket_series_evidence_audit.result.v1",
+  "mode": "post_hoc",
+  "scope": {
+    "ticket_ids": ["KIT-002"],
+    "files": ["DESCRIPTION", "R/utils_workflow_class_declarations.R", "R/utils_workflow_dia_state.R", "tests/testthat/test-workflow-class-declarations.R", "docs/qa/workflow-execution/kit/kit-002/outcome.md", "docs/qa/workflow-execution/kit/kit-002/r-cmd-check.log", "docs/qa/workflow-execution/kit/kit-002/r-cmd-check-baseline.log"],
+    "claim_classes": ["behaviour_unchanged", "identity_unchanged", "installed_check", "check_parity"]
+  },
+  "authority": {
+    "route_valid": true,
+    "artifacts": [
+      {"path": "docs/qa/workflow-execution/kit/protocol.md", "sha256": "8998db8f12a30ce119c516f4e3ffa44cac9a2c57f014d4a1564bb23147813d61", "version": "1.1"},
+      {"commit": "4865be8e", "note": "KIT-002 implementation"},
+      {"commit": "1589d0f0", "note": "KIT-002 closeout"},
+      {"install": "core/browser-smoke.401rH2", "check_member": "core/browser-smoke.qGXvfo"}
+    ]
+  },
+  "findings": [
+    {"id": "PB-01", "severity": "medium", "layer": "documentation", "attributed_to": "KIT-001 (9075b361)", "summary": "code/documentation mismatch warning: require_complete_design_runs missing from the roxygen @param line and the Rd not regenerated; new since CORE-018 (3 warnings) though equal between the KIT-002 candidate and baseline", "repair": "add the @param entry and regenerate man/peptideIntensityFilteringHelper.Rd", "blocked": "none"},
+    {"id": "PB-02", "severity": "low", "layer": "process", "summary": "check tarballs built under the session scratch directory, not /home as the ticket words it", "repair": "record; use ~/.cache next time", "blocked": "none"},
+    {"id": "PB-03", "severity": "low", "layer": "process", "summary": "check needs the proof library on R_LIBS and suggests not forced; recorded only in the outcome", "repair": "add the recipe to the KIT README", "blocked": "none"},
+    {"id": "PB-04", "severity": "info", "layer": "tests", "summary": "no test pins the undeclared-S4 refusal of checkpointDIAExecutionResult / materializeDIAStates", "repair": "one refusal test", "blocked": "none"},
+    {"id": "PB-05", "severity": "info", "layer": "design", "summary": "readComponentMetadata(classes = NULL) accepts any declared class; equivalent to the wrapper until KIT-003 adds classes", "repair": "KIT-003 decides caller visibility", "blocked": "none"}
+  ],
+  "repairs": [],
+  "tests": [
+    {"file": "tests/testthat/test-workflow-class-declarations.R", "passed": 48, "failed": 0},
+    {"file": "tests/testthat/test-workflow-checkpoint-dia-state.R", "passed": 238, "failed": 0},
+    {"file": "tests/testthat/test-workflow-saved-qc-rollup.R", "passed": 76, "failed": 0, "skipped": 1},
+    {"file": "tests/testthat/test-workflow-bulk-relational.R", "passed": 45, "failed": 0, "skipped": 3},
+    {"installed": "gui-bulk-rollup:writer-r-preflight", "member": "core/browser-smoke.qGXvfo", "passed": 174, "failed": 0, "skipped": 2},
+    {"check": "R CMD check --no-manual --no-tests --no-build-vignettes", "candidate": "4 WARNINGs, 3 NOTEs", "baseline": "4 WARNINGs, 3 NOTEs", "diff": "timestamps only"}
+  ],
+  "graph": {"duplicates": [], "missing": [], "cycles": [], "inventory_script": {"findings": 0, "exit": 0}},
+  "documentation": {"outcome": "docs/qa/workflow-execution/kit/kit-002/outcome.md", "register": "docs/qa/workflow-execution/kit/kit-002/KIT-002-POSTHOC-AUDIT-20261009.md"},
+  "evidence_layers": [
+    {"layer": "mechanical", "status": "pass", "evidence": "inventory, scope, NAMESPACE, install record, Collate"},
+    {"layer": "semantic", "status": "pass", "evidence": "no subclasses; undeclared S4 unreachable; declaration field outside slots and reference walks"},
+    {"layer": "empirical", "status": "pass", "evidence": "installed preflight 174/0; check parity; 407 regression assertions"},
+    {"layer": "promotion", "status": "not_claimed", "evidence": "no counted member; candidate not a control"}
+  ],
+  "formal_verification": {"used": false, "obligations": [], "limits": ["exactness is executable evidence (installed P14 cases)"]},
+  "closeout": {
+    "implementation_verified": true,
+    "execution_complete": true,
+    "decision_supported": true,
+    "promotion_authorized": false,
+    "claim_scope": "DIA behaviour and identity digests unchanged for the two declared classes; one additive top-level record field; candidate build is not a control"
+  },
+  "blockers": [],
+  "deviations": ["check tarballs built under /tmp scratch, not /home", "check required R_LIBS and _R_CHECK_FORCE_SUGGESTS_=false (environment)"],
+  "next_action": "No blocker for KIT-003. Fix PB-01 (roxygen line and Rd) before the next R CMD check comparison; add the check recipe to the README (PB-03)."
+}
