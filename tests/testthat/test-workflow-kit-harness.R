@@ -154,4 +154,11 @@ test_that("path masking keeps summaries comparable across members", {
     expect_identical(masked$a, "<path>/iq_output.txt")
     expect_identical(masked$c$d, "<path>/y")
     expect_identical(masked$b, 3)
+    deep <- "/leaf"
+    for (i in seq_len(5000L)) deep <- list(deep)
+    expect_identical(h$kitMaskPaths(deep), deep)
+    plot <- structure(list(path = "/x/y"), class = "gg")
+    expect_identical(h$kitMaskPaths(list(plot = plot))$plot$path, "/x/y")
+    frame <- data.frame(path = "/a/b", stringsAsFactors = FALSE)
+    expect_identical(h$kitMaskPaths(frame)$path, "<path>/b")
 })

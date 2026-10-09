@@ -235,14 +235,18 @@ kitLifecycleDecision <- function(receipt, cases, bindings) {
 
 #' Mask run-specific absolute paths so args summaries compare across members.
 #' @noRd
-kitMaskPaths <- function(value) {
+#' Only plain lists and data frames are descended, to a bounded depth: plot objects and grob trees
+#' (the RUV diagnostic product) nest far deeper and carry no run-specific paths.
+#' @noRd
+kitMaskPaths <- function(value, depth = 0L) {
     if (is.character(value)) {
         masked <- value
         at <- !is.na(masked) & startsWith(masked, "/")
         masked[at] <- paste0("<path>/", basename(masked[at]))
         return(masked)
     }
-    if (is.list(value)) return(lapply(value, kitMaskPaths))
+    if (is.list(value) && depth < 32L && (!is.object(value) || is.data.frame(value)))
+        return(lapply(value, kitMaskPaths, depth = depth + 1L))
     value
 }
 
