@@ -1,6 +1,6 @@
 {
-  "label": "post",
-  "head_commit": "e2bd5680",
+  "label": "post-committed",
+  "head_commit": "3bf3ff91",
   "source_member_head_sha256": "eb16db98b3da0534b9fcbb939c3f88696d0956503bc9826f5e0733a397a6baf9",
   "states": {
     "initial": "177896e3f04062d85ad8ee7d3284261b501dc8730692dfd635d995983caf2d17",
@@ -188,7 +188,7 @@
     "results/proteomics/protein_qc/pre_norm_density.png": "9b71ea07b8ae842e71d5531e01ad0bb596f7eef96586a8872f553e60da3e8235",
     "results/proteomics/protein_qc/pre_norm_pca.png": "4e2b2dab7e383da9c635123bce9b6281228504d2df72db12100c0449185fba36",
     "results/proteomics/protein_qc/pre_norm_rle.png": "476bcd1c4c83121a4c41a075235dce84b5a84f0babd1a86afcc5e3ca04794c5f",
-    "results/proteomics/protein_qc/proteomics_composite_QC_figure.pdf": "f3e1decaeccb39556fec2aacb971b2fdb1828926919e36a1ed377e74a774c5cf",
+    "results/proteomics/protein_qc/proteomics_composite_QC_figure.pdf": "c3af1f5bac609f4cf4fb551cb945e8c4ad8799746734ee1d9b184bcdcc695dd3",
     "results/proteomics/protein_qc/proteomics_composite_QC_figure.png": "77b7dc48f1ed7dcd002c94cff1e004c933cebf11b74dcf7cbd351b058498d1fb",
     "results/proteomics/protein_qc/proteomics_composite_QC_figure.rds": "92f8be35cae6d3d3d957afb92da34c9716f99a164d08736be9c4576e4272d620",
     "results/proteomics/protein_qc/ruv_corrected_cancor.png": "6be9afb40f0ef40b1664aa82ec532c65267319ad18a9890534a3aae9999b3a54",
@@ -238,11 +238,11 @@
     "scripts/proteomics/uniprot_dat_cln.RDS": "bd01fc2c79763009ccafea10dc558ca08974e16e67505f22217584e6dc518c41"
   },
   "timings": {
-    "source": 3.611,
-    "normalisation": 123.276,
-    "correlation": 9.90699999999998,
-    "da_prepare": 0.00300000000001432,
-    "da": 15.312
+    "source": 3.737,
+    "normalisation": 122.456,
+    "correlation": 9.89400000000001,
+    "da_prepare": 0.0029999999999859,
+    "da": 15.201
   },
-  "elapsed": 221.614
+  "elapsed": 223.748
 }

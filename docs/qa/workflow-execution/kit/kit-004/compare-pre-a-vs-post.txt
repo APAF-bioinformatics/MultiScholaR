@@ -1,4 +1,4 @@
-compare pre-a (e2bd5680) vs post (e2bd5680): 4 states, 31 products, 59 files
+compare pre-a (e2bd5680) vs post-committed (3bf3ff91): 4 states, 31 products, 59 files
 DIFFERENCES:
   gui_references$normalized_protein_obj (missing on one side)
   files$results/proteomics/protein_qc/proteomics_composite_QC_figure.pdf

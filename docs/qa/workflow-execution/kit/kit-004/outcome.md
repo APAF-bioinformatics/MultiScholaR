@@ -1,6 +1,6 @@
 # KIT-004: operation runner and the whole-matrix declarations
 
-Status 2026-10-10: **complete.** No counted member. One recorded in-process comparison on the screen fixture (three passes) and one identity-continuity check against the KIT-001 member store. Authority: `tickets/kit/00-KIT-PLAN.md`; protocol v1.1. Step map: `normalisation_ruv`, `correlation` and `da` are `whole_matrix` with code evidence and no open flag (`../kit-001/step-map.json`, 0 open flags), so the three declarations were allowed.
+Status 2026-10-10: **complete** at `ea2b678d`; audit repairs at `3bf3ff91` (`KIT-004-POSTHOC-REMEDIATION-20261010.md`). No counted member. One recorded in-process comparison on the screen fixture (three passes) and one identity-continuity check against the KIT-001 member store. Authority: `tickets/kit/00-KIT-PLAN.md`; protocol v1.1. Step map: `normalisation_ruv`, `correlation` and `da` are `whole_matrix` with code evidence and no open flag (`../kit-001/step-map.json`, 0 open flags), so the three declarations were allowed.
 
 ## What changed
 
@@ -18,7 +18,7 @@ Fixture: the `protein_replicate_filtered` state of the KIT-001 complete member (
 | Comparison | Result |
 |---|---|
 | pre-a vs pre-b (both `e2bd5680`, baseline determinism) | identical except `protein_qc/proteomics_composite_QC_figure.pdf` ([compare-pre-a-vs-pre-b.txt](compare-pre-a-vs-pre-b.txt)) |
-| pre-a vs post (KIT-004 working tree) | identical except that same PDF and `gui_references$normalized_protein_obj` ([compare-pre-a-vs-post.txt](compare-pre-a-vs-post.txt)) |
+| pre-a vs post (committed `3bf3ff91`, after the audit repairs) | identical except that same PDF and `gui_references$normalized_protein_obj` ([compare-pre-a-vs-post.txt](compare-pre-a-vs-post.txt)); the earlier pass on the uncommitted tree gave the same result ([fingerprints-post-uncommitted-tree.json](fingerprints-post-uncommitted-tree.json), audit PC-02) |
 
 - The composite QC PDF differs between two runs of the same code, so it is outside the exactness claim.
 - `gui_references$normalized_protein_obj`: the legacy adapter `runProtNormBetweenSamplesStep` registered the normalised S4 a second time as an owned value under the holder's name; the runner checkpoints it once (`normalized-science`). The holder field `norm_data$normalized_protein_obj` is identical on both sides (it is set from the product), no code reads the snapshot entry, and no state, product or file depends on it.
