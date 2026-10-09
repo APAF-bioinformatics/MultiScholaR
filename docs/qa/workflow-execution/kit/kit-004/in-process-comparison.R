@@ -15,7 +15,7 @@
 args <- commandArgs(trailingOnly = TRUE)
 mode <- args[[1L]]
 PROOF <- "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5"
-MEMBER <- file.path(PROOF, "kit/runtime/kit-lifecycle-complete/member/project/dia_baseline_smoke")
+MEMBER <- file.path(PROOF, "kit/runtime/kit-lifecycle-complete.kit-001/member/project/dia_baseline_smoke")
 OUT_ROOT <- if (length(args) >= 3L && mode == "run") args[[3L]] else if (length(args) >= 2L && mode == "hit") args[[2L]] else path.expand("~/.cache/multischolar-kit-004")
 
 mask_value <- function(value, store, root, depth = 0L) {
