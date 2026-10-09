@@ -42,3 +42,8 @@ A unit is a property of the kernel's code and is determined by reading it, with 
 5. Gates (KIT-050–052): the PERF-128/129/130 cases, carried verbatim.
 
 Evidence per ticket lives in `kit-0NN/` beside this file; bindings in `bindings.json` (KIT-001).
+
+## Checks that need the proof environment
+
+- `R CMD check --no-manual --no-tests --no-build-vignettes` only configures with an installed dependency set on `R_LIBS` (the configure step locates the exact-sum artifacts through installed packages): set `R_LIBS=<proof>/core/browser-smoke.<control>/library`. Two suggested packages (GSEABase, MOFA2) are not installed on the measurement host, so set `_R_CHECK_FORCE_SUGGESTS_=false`. Build the tarball from a clean worktree under `~/.cache` (a working-tree build carries ignored local artifacts and adds NOTEs) and compare against a baseline worktree built the same way. Baseline after KIT-002 remediation: 3 warnings, 3 notes.
+- Installed checks (`install-corrected`, `writer-r-preflight`) run under `<proof>/core`, where the exact-sum artifacts live; the kit proof root holds only runtime stages and corpora.

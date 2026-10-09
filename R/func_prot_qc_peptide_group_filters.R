@@ -39,6 +39,10 @@ check_case_collision_columns <- function(df, df_label = "data frame") {
 #'   groups. Historical percentage parameters remain available as an explicit,
 #'   deprecated compatibility path.
 #' @param input_table,design_matrix,min_peptide_intensity_threshold,sample_id_column,grouping_variable,groupwise_percentage_cutoff,max_groups_percentage_cutoff,protein_id_column,peptide_sequence_column,peptide_quantity_column,core_utilisation,min_reps_per_group,min_groups,strict_mode,return_filter_result,... Runtime inputs used by this function; see the usage section for accepted values.
+#' @param require_complete_design_runs Whether every design run must be present in `input_table`
+#'   (TRUE on the whole-table path). A feature-group batch of the reference path passes FALSE: it
+#'   legitimately lacks runs where the group was not observed, and group sizes still come from the
+#'   complete design, so the batch result equals the whole-table result.
 peptideIntensityFilteringHelper <- function(input_table = NULL,
                                              design_matrix = NULL,
                                              min_peptide_intensity_threshold = 15,

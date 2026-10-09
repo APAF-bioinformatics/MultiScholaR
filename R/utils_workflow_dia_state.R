@@ -358,6 +358,8 @@ readDIAExecutionComponents <- function(manager, reference = NULL,
 #' @return Component checkpoint specification for the existing state-head commit.
 #' @noRd
 checkpointDIAExecutionResult <- function(manager, object) {
+    # An undeclared class is refused before any component is written.
+    declaration <- workflowClassDeclaration(object)
     context <- manager$.context
     source <- attr(object, "dia_component_source", exact = TRUE)
     previous <- if (isSavedWorkflowReference(source)) readDIAStateMetadata(manager, source)$data else NULL
@@ -402,7 +404,6 @@ checkpointDIAExecutionResult <- function(manager, object) {
             slots$args[[section]][field] <- list(NULL)
         }
     }
-    declaration <- workflowClassDeclaration(object)
     assay <- methods::slot(object, declaration$assay)
     list(schema = "dia.component_checkpoint.v2", class = class(object)[[1L]],
         declaration = workflowDeclarationField(declaration),

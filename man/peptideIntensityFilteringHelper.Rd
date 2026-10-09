@@ -20,11 +20,17 @@ peptideIntensityFilteringHelper(
   min_groups = NULL,
   strict_mode = FALSE,
   return_filter_result = FALSE,
+  require_complete_design_runs = TRUE,
   ...
 )
 }
 \arguments{
 \item{input_table, design_matrix, min_peptide_intensity_threshold, sample_id_column, grouping_variable, groupwise_percentage_cutoff, max_groups_percentage_cutoff, protein_id_column, peptide_sequence_column, peptide_quantity_column, core_utilisation, min_reps_per_group, min_groups, strict_mode, return_filter_result, ...}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{require_complete_design_runs}{Whether every design run must be present in \code{input_table}
+(TRUE on the whole-table path). A feature-group batch of the reference path passes FALSE: it
+legitimately lacks runs where the group was not observed, and group sizes still come from the
+complete design, so the batch result equals the whole-table result.}
 }
 \description{
 Retain peptide identities observed at or above an intensity

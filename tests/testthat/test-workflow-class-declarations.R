@@ -88,3 +88,13 @@ test_that("a record without the declaration field reads as before and identities
     expect_error(commitDIAReferenceState(manager, "foreign", foreign, list(), "unknown") |> invisible() |>
         (\(reference) readDIAStateMetadata(manager, reference))(), class = "saved_entity_corrupt")
 })
+
+test_that("an undeclared S4 result is refused with a typed class before any component is written", {
+    methods::setClass("DeclarationAuditForeign", representation(args = "list", x = "numeric"),
+        where = environment())
+    manager <- newDeclarationTestManager("undeclared")
+    foreign <- methods::new("DeclarationAuditForeign", args = list(), x = 1)
+    writes <- manager$.context$writes
+    expect_error(checkpointDIAExecutionResult(manager, foreign), class = "workflow_class_undeclared")
+    expect_identical(manager$.context$writes, writes)
+})
