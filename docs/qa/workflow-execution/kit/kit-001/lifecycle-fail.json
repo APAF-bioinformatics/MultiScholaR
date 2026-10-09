@@ -1,0 +1,71 @@
+{
+  "stage": "kit-lifecycle-fail",
+  "decision": "lifecycle_failure_observed",
+  "failing_rule": null,
+  "member_status": "journey_failed",
+  "build": "4e05647831744ff9670ec2052d2c2c1f0f13de99cde85f7b61bb69c8f46a4483",
+  "binding": "1d3931823312b98b8eaee9237f6607af147d23070bd22ff346308babefb76011",
+  "corpus": "screen",
+  "elapsed_seconds": 87.2700000000004,
+  "peak_bytes": 1564528640,
+  "sampled_anon_bytes": 1441214464,
+  "resident_end_bytes": "NA",
+  "swap_bytes": 0,
+  "max_sample_interval": 0.0700000000006185,
+  "samples": 1280,
+  "guard": "injected_guard_stop",
+  "head_unchanged": true,
+  "cleanup": {
+    "slice_stopped": true
+  },
+  "host_at_start": {
+    "available": 20387622912,
+    "profile": "low-power",
+    "cpu_busy": 0.0150862068965517
+  },
+  "phase_status": {
+    "import": "complete",
+    "design": "complete",
+    "qvalue": "complete",
+    "protein_peptide": "complete",
+    "rollup": "complete",
+    "intensity": "complete",
+    "guard_injected": "open",
+    "sample": "failed"
+  },
+  "phase_seconds": {
+    "import": 8.07999999999993,
+    "design": 13.1700000000001,
+    "qvalue": 13.1999999999998,
+    "protein_peptide": 9.14999999999964,
+    "rollup": 9.96000000000004,
+    "intensity": 17.2199999999993,
+    "guard_injected": 0.0800000000008367,
+    "sample": 0.270000000000437
+  },
+  "phase_peak_anon_bytes": {
+    "import": 1155915776,
+    "design": 1330307072,
+    "qvalue": 1383567360,
+    "protein_peptide": 1399533568,
+    "rollup": 1441214464,
+    "intensity": 1405505536,
+    "guard_injected": 1310244864,
+    "sample": 1310244864
+  },
+  "verifier": {
+    "accepted": true,
+    "reason": null
+  },
+  "corrections": null,
+  "source_hashes": {
+    "tools/profiling/workflow_kit.R": "12985fe2253ac650dfbabccd63b7f8e02108adbd1cfb6cc80ed1cea3ff8fd005",
+    "tools/profiling/workflow_kit_driver.R": "5380b2898007b34feb32f4db9fed20dd2ee3af350ee27590af7605d970815e12",
+    "tools/profiling/workflow_kit_coordinator.R": "9ce9bc2962ea0af46296a4d112d0d337f0381f2f06eff8d1e1b4762f401b7df4",
+    "tools/profiling/run_workflow_kit.sh": "4987c0c62e95197e3261a84a820d76ef6de47327e68e83567aec689bdf706399",
+    "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
+    "docs/qa/workflow-execution/kit/bindings.json": "e90a269371e048413032f208afc837271dbb3595b06d13ab6ece101242c8eb5a",
+    "docs/qa/workflow-execution/kit/protocol.md": "8998db8f12a30ce119c516f4e3ffa44cac9a2c57f014d4a1564bb23147813d61",
+    "docs/qa/workflow-execution/kit/kit-001/step-map.json": "e14432f147a6019cfc6895af7e153df6829a25b2d91173356cedf4b22daae857"
+  }
+}

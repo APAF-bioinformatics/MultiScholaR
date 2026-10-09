@@ -1,41 +1,72 @@
 # KIT-001: full-journey driver, per-step populations and step map
 
-Status 2026-10-09: harness built and verified by its tests and validate-only passes; three user decisions applied the same day (launch hook, RUV replicate structure, quantile ceiling); the control build `kit_001` and the two counted lifecycle members are declared below and wait for the user's go. Authority: `tickets/kit/00-KIT-PLAN.md` run ledger (KIT-001 row). Protocol v1.1 (`../protocol.md`, sha256 in `../bindings.json`).
+Status 2026-10-09: **complete.** Lifecycle pair observed on the `kit_001` control build with screen corpus v2: `lifecycle_complete_observed` and `lifecycle_failure_observed`. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger row KIT-001, decision rows of 2026-10-09). Protocol v1.1 (`../protocol.md`, sha256 in `../bindings.json`).
+
+## Results
+
+| Member | Decision | Elapsed | Whole-slice peak | Anonymous peak | Resident end | Sampling gap | Evidence |
+|---|---|---|---|---|---|---|---|
+| `kit-lifecycle-complete` | `lifecycle_complete_observed` | 269 s (ceiling 300 s) | 2.76 GiB | 2.15 GiB | 1.86 GiB | 70 ms | [lifecycle-complete.json](lifecycle-complete.json) |
+| `kit-lifecycle-fail` | `lifecycle_failure_observed` | 87 s | — | — | — | 70 ms | [lifecycle-fail.json](lifecycle-fail.json) |
+
+Per step of the complete member (anonymous peak of the whole slice during the step):
+
+| Step | s | GiB | Step | s | GiB |
+|---|---|---|---|---|---|
+| import | 9.0 | 1.08 | iq | 8.9 | 1.41 |
+| design | 13.9 | 1.24 | accession | 6.1 | 1.40 |
+| qvalue | 13.7 | 1.28 | protein_intensity | 8.9 | 1.43 |
+| protein_peptide | 9.4 | 1.30 | duplicates | 6.1 | 1.45 |
+| rollup | 9.4 | 1.35 | protein_replicate | 6.9 | 1.45 |
+| intensity | 16.5 | 1.35 | normalisation_ruv | 70.2 | 2.15 |
+| sample | 8.1 | 1.33 | correlation | 8.9 | 1.86 |
+| replicate | 8.4 | 1.35 | session_export | 11.2 | 1.86 |
+| imputation | 14.7 | 1.39 | da | 11.4 | 1.99 |
+
+The failure member completed import to the intensity filter, injected the application's own guard (`application-guard-inject.rds`), the monitor stopped the slice (`injected_guard_stop`), the sample-filter step failed on disconnection, and the store head equalled the intensity-filter snapshot (`intensity_filtered`, head `d2c71061…`). Zero swap, slice stopped, in both members.
+
+The complete member's store: 16 states (`initial` through `correlation_filtered`), 31 products (QC plot products and rendered assets, the DA fit, the DA result references), 527 publication files; every step has an in-run snapshot (head sha256, current state, entity id, rows) and the verifier recomputed and matched every fingerprint.
+
+## Launch record (the ledger allowed one correction; the user authorised attempts 3 and 4)
+
+| Attempt | Cause | Classification | Fix |
+|---|---|---|---|
+| 1 | the coordinator did not export the browser executable for chromote | instrumentation | `run_workflow_kit.sh` exports `CHROMOTE_CHROME` (`a3b40b45`) |
+| 2 | native-path defect: the per-group reference loop handed the intensity helper the full design and it refused groups lacking runs (155 of 2,500 proteins present in every run after the rollup) | application defect, observed correctly | `require_complete_design_runs` flag, per-group result shown identical to the whole-table result on the member's data (`9075b361`); control reinstalled as `kit_001` (`browser-smoke.y8rDOi`) |
+| 3 | screen corpus v1 too sparse: the group-count intensity filter left 365 of 60,000 features, the 3,000 cutoff then removed every sample and the GUI carried an empty table to IQ | fixture | screen corpus v2 (`ea731185`); GUI gap recorded for KIT-013/014 |
+| 4 | journey complete; the driver's fingerprinting overran the C stack on the RUV diagnostic plot product | instrumentation, after a valid measurement | masking depth bounded (`99487853`); fingerprints recomputed from the immutable store by [attempt4-post-hoc-fingerprints.R](attempt4-post-hoc-fingerprints.R) with the in-run snapshots kept; the state-attach slip found by the verifier fixed (`dfd6aacd`); verifier rerun from the corrected harness; driver originals kept beside the member (`*.driver.rds`, `verification.driver-failed.rds`) |
+
+The failure member ran once and verified on its first launch with the corrected harness.
 
 ## What was built (new harness files; the four CORE-pinned files byte-identical)
 
 | File | Role |
 |---|---|
 | `tools/profiling/workflow_kit.R` | bindings, fixed cases, selectors, journey step map, phase measures (`phase_peak_anon_bytes$<step>`, `resident_end_bytes`), eligibility and lifecycle decisions, store and file fingerprints, independent verifier |
-| `tools/profiling/workflow_kit_driver.R` | the journey: import, design (any number of groups), the 7 peptide and 5 protein QC actions, normalisation with RUV (`ruv_pearson` profile), correlation, session export, DA; `start`/`complete`/`failed` marks per step and a `teardown` mark in `journey-phases.tsv`; per-step store snapshot and fingerprints; the forced-failure injection |
+| `tools/profiling/workflow_kit_driver.R` | the journey: import, design (any number of groups), the 7 peptide and 5 protein QC actions, normalisation with RUV (`ruv_pearson` profile), correlation, session export, DA; `start`/`complete`/`failed` marks per step and a `teardown` mark; per-step store snapshot and fingerprints; the forced-failure injection |
 | `tools/profiling/workflow_kit_coordinator.R` | stage coordinator: frozen source snapshot, bindings and hash checks, host precondition, managed `gui` launch with the KIT journey record from a fresh launcher on the case library, 50 ms slice sampler, browser driven from the coordinator (outside the slice), operation receipt, verifier launch, decision |
-| `tools/profiling/run_workflow_kit.sh` | guarded `validate` / `run` entry (clean tree, 12 GiB, no other managed unit, no live stage) and the `--sample` loop with the 15.5 GiB / 2 GiB / deadline guards |
-| `docs/qa/workflow-execution/kit/bindings-generator.R`, `bindings.json` | builds, copied CORE populations and oracles, the two corpora, frozen journey settings, lifecycle fault, harness, protocol and step-map hashes |
-| `tests/testthat/test-workflow-kit-harness.R` | 51 assertions: step map, case expansion and digests, selectors, phase measures and resident end, lifecycle decisions, setup refusal, path masking |
-| `kit-001/step-map.json` | 19 entries (18 journey steps plus enrichment): units determined from the kernel code with file:line evidence, global statistics, merge rules, holders, mode; 0 open flags |
+| `tools/profiling/run_workflow_kit.sh` | guarded `validate` / `run` entry (clean tree, 12 GiB, no other managed unit, no live stage, browser present) and the `--sample` loop with the 15.5 GiB / 2 GiB / deadline guards |
+| `docs/qa/workflow-execution/kit/bindings-generator.R`, `bindings.json` | builds (`kit_001` control, `core_018` superseded), copied CORE populations and oracles, the two corpora, frozen journey settings, lifecycle fault, harness, protocol and step-map hashes |
+| `tests/testthat/test-workflow-kit-harness.R` | 54 assertions |
+| `kit-001/step-map.json` | 19 entries: units from the kernel code with file:line evidence, global statistics, merge rules, holders, mode; 0 open flags |
 | `kit-001/holder-inventory.json` | KIT-012 worklist: 121 holder sites in 40 files, 49 holding a full S4 or a DA list with `theObject`, 19 in-memory `saveState` calls, 26 `.GlobalEnv` assigns (KIT-013) |
 
 ## Three user decisions applied (2026-10-09)
 
-1. **Launch hook (R/ change, bounded).** `launchWorkflowApplication` reads `gui-member.rds` through `workflowGuiLaunchRecord`; programme `kit-journey-v1` sets `config$journey` (native DIA sessions switched on in the controller before `runApp`, deadline 60 s to 90 min) and never a qualification, so `workflowQualificationVariant` stays `legacy`. The journey therefore runs the production native-session path from import onward (`initializeDIANativeImport`: on-disk reference states, in-process reference kernels, the GUI rollup on its reference path). Test: `tests/testthat/test-workflow-execution-launch-record.R` (16 assertions).
-2. **RUV-III replicate structure.** `resolveProtRuvReplicateBlocks` chooses group × replicate blocks when the design has technical replicates (any duplicated block), else the RUV grouping variable; `ruvIII_C_Varying` builds M from it and records `ruv_replicate_structure` in its args. Control selection (ANOVA by group) and the k search keep the biological grouping. Test: `tests/testthat/test-prot-ruv-replicate-structure.R` (15 assertions).
-3. **Quantile ceiling.** Interrogation: the ceiling has been present since the first S4 pass (fa80eb90, 2025-04) with no stated rationale; on the protein stage the values are log2 (after IQ), so `ceiling()` lifted the threshold by up to one log2 unit (up to twice as strict as the percentile); on the linear peptide scale the effect is negligible. Removed at the five proteomics sites (`func_prot_qc_peptide_methods.R` ×2, `func_prot_qc_filtering_helpers.R`, `func_prot_s4_qc_filter_methods.R`, `utils_workflow_dia_qc_rollup.R`). Three expectations in `test-prot-qc-peptide-methods-direct-shared.R` encoded the ceiling (2 for 1.03, 3 for 2.5) and were corrected. The lipidomics and metabolomics intensity filters keep theirs until their stage (KIT-031/032).
+1. **Launch hook (R/).** `workflowGuiLaunchRecord`: programme `kit-journey-v1` sets `config$journey` (native DIA sessions switched on in the controller, deadline 60 s to 90 min), never a qualification. Test: `test-workflow-execution-launch-record.R`.
+2. **RUV-III replicate structure.** `resolveProtRuvReplicateBlocks`: group × replicate blocks when the design has technical replicates, else the grouping variable; recorded in `args$ruvIII_C_Varying$ruv_replicate_structure`. Test: `test-prot-ruv-replicate-structure.R`.
+3. **Quantile ceiling.** Removed at the five proteomics sites (it lifted the log2 protein threshold by up to one unit); three ceiling-encoding test expectations corrected; lipidomics and metabolomics keep theirs until their stage.
 
-Consequence: the KIT control is no longer the `core_018` install but `kit_001`, built from the core_018 source plus these changes; protocol v1.1; KIT-005 gains one production-default baseline journey member (no record, in-memory state) as the memory baseline (ledger 35).
+Plus the native-path fix found by attempt 2 (item 2 of the launch record). The KIT control is `kit_001` (core_018 source plus these); protocol v1.1; KIT-005 gains one production-default baseline journey member (ledger 35).
 
 ## Corpora (bound with sha256)
 
-- Screen: 8 samples of the PERF-107 calibration recipe (same universe, proteins and cutoff; counts 500, 2999, 3000, 3001, 5000, 12000, 40000, 60000), 133,892 report rows, under `<proof>/kit/corpus/screen`. The sample-filter cutoff 3000 retains 6 samples (2 per group).
+- Screen v2: 8 samples of the PERF-107 calibration recipe (same universe, proteins and cutoff) with counts 3,000 to 60,000; 320,872 report rows; the 3,000 cutoff drops one sample. v1 (counts 500 to 60,000; 133,892 rows) stays on disk as the attempt-3 record.
 - Full: PERF-107 `calibration` (300 samples, 5,846,578 rows); `heldout` stays reserved.
 
-## Journey settings frozen in the bindings (audit A13)
+## Journey settings frozen in the bindings
 
-GUI defaults with `diagnostic_settings = FALSE`, except the sample-filter cutoff (3000, the corpus's designed cutoff); normalisation `cyclicloess`, RUV automatic (1–20 %, max_difference, penalty 0.5, adaptive, grouping `group`), correlation threshold 0.5; DA `~ 0 + group`, q 0.05, treat lfc 0.
-
-## Claim limits (audit A14)
-
-- The journey's state-manager mode is the native DIA session (reference states from import), entered through the launch record; every step is snapshotted after its own step.
-- A production-default journey (no record) has no per-step references; it is measured for memory only (KIT-005's extra member).
+GUI defaults with `diagnostic_settings = FALSE`, except the sample-filter cutoff (3,000); normalisation `cyclicloess`, RUV automatic (1–20 %, max_difference, penalty 0.5, adaptive, grouping `group`); correlation threshold 0.5; DA `~ 0 + group`, q 0.05, treat lfc 0. State-manager mode: native DIA session from import (reference states), entered through the journey record.
 
 ## Step map: determinations (no open flag)
 
@@ -43,29 +74,14 @@ GUI defaults with `diagnostic_settings = FALSE`, except the sample-filter cutoff
 |---|---|
 | store | import, design, session export |
 | complete sample | P14 rollup (after the global annotation/evidence lookups and validation), sample filter (after design validation and the inclusion-absence set) |
-| feature group | q-value (protein; global row offsets), min peptides per protein (protein), intensity filter (protein+peptide after the global quantile pre-pass), replicate filter (protein+peptide), imputation (protein+peptide within technical-replicate groups; deterministic), IQ (protein; surviving-sample union), duplicate removal (protein) |
-| row | accession cleanup (DIA branch annotates `protein_id_table` only), protein replicate filter |
+| feature group | q-value (protein; global row offsets), min peptides per protein, intensity filter (protein+peptide after the global quantile pre-pass), replicate filter, imputation (deterministic), IQ (surviving-sample union), duplicate removal |
+| row | accession cleanup (DIA branch), protein replicate filter |
 | whole matrix | protein intensity filter (dataset-wide quantile), normalisation + RUV, correlation, DA, enrichment |
 
-Two defects in the existing partitioned reference path are recorded for KIT-009/KIT-014 (intensity helper aborts on absent design runs; non-additive summary fields copied from the first group).
+Recorded for later tickets: the sample-filter summary merge (non-additive fields from the first group; KIT-009/014) and the empty-assay GUI gap (KIT-013/014).
 
-## Declared work waiting for the user's go
+## Hand-off
 
-1. **Install `kit_001`** (recorded, not counted): `run_workflow_checkpoint_proof.sh --service install-corrected` on the clean tree at the commit carrying the three changes; then `bindings-generator.R kit_001=<install run dir>` and a commit of the bindings.
-2. **Lifecycle members** (ledger row KIT-001):
-
-| Member | Stage | Build / corpus | Ceiling | Decision |
-|---|---|---|---|---|
-| lifecycle complete | `kit-lifecycle-complete` | `kit_001` on the screen corpus, journey record | 300 s | `lifecycle_complete_observed`: every step `complete`, a finite anonymous peak per step, `resident_end_bytes` observed, every state fingerprinted, verifier recomputes and matches |
-| lifecycle fail | `kit-lifecycle-fail` | same | 300 s | `lifecycle_failure_observed`: guard injected after the intensity filter (the first post-rollup step), the monitor stops the slice (`injected_guard_stop`), the sample-filter step `failed`, head equal to the intensity-filter snapshot, slice stopped |
-
-```
-tools/profiling/run_workflow_kit.sh run kit-lifecycle-complete <kit_001 library>
-tools/profiling/run_workflow_kit.sh run kit-lifecycle-fail     <kit_001 library>
-```
-
-Risk stated before launch: the 300 s ceiling is the ledger's; the screen journey has not been timed through this driver. A time guard would be a valid recorded result, not a retry; a demonstrated harness fault allows one correction.
-
-## Evidence
-
-Stage receipts, member receipts, traces, journey records and verifications land under `<proof>/kit/runtime/<stage>/`; the decision in `decision.rds`. This file records the outcome after the runs.
+- **KIT-005.** The screen journey took 269 s at 8 samples with 70 s in normalisation/RUV; the 300-sample ceiling is set from this with the scaling recorded before launch (never above 90 min; the journey record allows up to 5,400 s). Populations and oracles come from the counted control journey on `kit_001`; the production-default baseline member measures memory only.
+- **KIT-012.** `holder-inventory.json`. **KIT-013/014.** The empty-assay gap and the summary merge rule.
+- Claim limit: the per-step fingerprints of the complete member were recomputed post hoc from the immutable store after the driver's fingerprint failure; the in-run snapshots are the driver's. The next journey member (KIT-005) exercises the corrected in-run path.

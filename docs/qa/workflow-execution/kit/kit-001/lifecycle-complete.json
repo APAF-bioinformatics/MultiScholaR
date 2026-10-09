@@ -1,0 +1,109 @@
+{
+  "stage": "kit-lifecycle-complete",
+  "decision": "lifecycle_complete_observed",
+  "failing_rule": null,
+  "member_status": "complete",
+  "build": "4e05647831744ff9670ec2052d2c2c1f0f13de99cde85f7b61bb69c8f46a4483",
+  "binding": "e5b53e463c0fed66690c46370e8ef3727f6e7055c1572cd45b21d4f8dfeff29a",
+  "corpus": "screen",
+  "elapsed_seconds": 269.21,
+  "peak_bytes": 2965028864,
+  "sampled_anon_bytes": 2306363392,
+  "resident_end_bytes": 1993515008,
+  "swap_bytes": 0,
+  "max_sample_interval": 0.0700000000006185,
+  "samples": 4307,
+  "guard": null,
+  "head_unchanged": null,
+  "cleanup": {
+    "slice_stopped": true
+  },
+  "host_at_start": {
+    "available": 20287848448,
+    "profile": "low-power",
+    "cpu_busy": 0.0413983440662373
+  },
+  "phase_status": {
+    "import": "complete",
+    "design": "complete",
+    "qvalue": "complete",
+    "protein_peptide": "complete",
+    "rollup": "complete",
+    "intensity": "complete",
+    "sample": "complete",
+    "replicate": "complete",
+    "imputation": "complete",
+    "iq": "complete",
+    "accession": "complete",
+    "protein_intensity": "complete",
+    "duplicates": "complete",
+    "protein_replicate": "complete",
+    "normalisation_ruv": "complete",
+    "correlation": "complete",
+    "session_export": "complete",
+    "da": "complete"
+  },
+  "phase_seconds": {
+    "import": 9.03000000000065,
+    "design": 13.8599999999997,
+    "qvalue": 13.7199999999993,
+    "protein_peptide": 9.35999999999967,
+    "rollup": 9.35999999999967,
+    "intensity": 16.5200000000004,
+    "sample": 8.10999999999967,
+    "replicate": 8.36000000000058,
+    "imputation": 14.6700000000001,
+    "iq": 8.86999999999989,
+    "accession": 6.08999999999924,
+    "protein_intensity": 8.86999999999989,
+    "duplicates": 6.07999999999993,
+    "protein_replicate": 6.85000000000036,
+    "normalisation_ruv": 70.2399999999998,
+    "correlation": 8.89000000000033,
+    "session_export": 11.1800000000003,
+    "da": 11.4299999999994
+  },
+  "phase_peak_anon_bytes": {
+    "import": 1156550656,
+    "design": 1330855936,
+    "qvalue": 1376870400,
+    "protein_peptide": 1397514240,
+    "rollup": 1451655168,
+    "intensity": 1446072320,
+    "sample": 1426948096,
+    "replicate": 1446584320,
+    "imputation": 1491652608,
+    "iq": 1512206336,
+    "accession": 1498398720,
+    "protein_intensity": 1538920448,
+    "duplicates": 1560522752,
+    "protein_replicate": 1560526848,
+    "normalisation_ruv": 2306363392,
+    "correlation": 1992187904,
+    "session_export": 1997426688,
+    "da": 2139783168
+  },
+  "verifier": {
+    "accepted": true,
+    "reason": null,
+    "corrected": "verifier rerun from the corrected harness after the post-hoc fingerprints"
+  },
+  "corrections": [
+    {
+      "kind": "post_hoc_fingerprints",
+      "reason": "driver fingerprinting overran the C stack on the RUV diagnostic product; recomputed from the immutable store with the corrected harness (99487853)",
+      "harness_commit": "3512f84d1ebd64ee1478db6226642557df054e94",
+      "when": "2026-10-09 16:10:05"
+    }
+  ],
+  "source_hashes": {
+    "tools/profiling/workflow_kit.R": "2e46f4938b2258cc89d88b160e190b22d3c7dd198b75eb170656642a94cb36f2",
+    "tools/profiling/workflow_kit_driver.R": "5380b2898007b34feb32f4db9fed20dd2ee3af350ee27590af7605d970815e12",
+    "tools/profiling/workflow_kit_coordinator.R": "9ce9bc2962ea0af46296a4d112d0d337f0381f2f06eff8d1e1b4762f401b7df4",
+    "tools/profiling/run_workflow_kit.sh": "4987c0c62e95197e3261a84a820d76ef6de47327e68e83567aec689bdf706399",
+    "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
+    "docs/qa/workflow-execution/kit/bindings.json": "30a446a5db74168c2734ade01e7e294b742dcd25cae16ebb9eae765e47540c1d",
+    "docs/qa/workflow-execution/kit/protocol.md": "8998db8f12a30ce119c516f4e3ffa44cac9a2c57f014d4a1564bb23147813d61",
+    "docs/qa/workflow-execution/kit/kit-001/step-map.json": "e14432f147a6019cfc6895af7e153df6829a25b2d91173356cedf4b22daae857"
+  }
+}
