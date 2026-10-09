@@ -1,0 +1,61 @@
+{
+  "schema": "em.ticket_series_evidence_audit.result.v1",
+  "mode": "post_hoc",
+  "scope": {
+    "ticket_ids": ["KIT-004"],
+    "files": ["R/utils_workflow_operations.R", "R/utils_workflow_dia_products.R", "R/utils_workflow_dia_da.R", "R/mod_prot_norm_workflow_helpers.R", "R/mod_prot_norm_ruv_helpers.R", "R/mod_prot_da_handlers_run_analysis.R", "DESCRIPTION", "tests/testthat/test-workflow-operations.R", "docs/qa/workflow-execution/kit/kit-004/outcome.md", "docs/qa/workflow-execution/kit/kit-004/in-process-comparison.R", "docs/qa/workflow-execution/kit/kit-004/fingerprints-pre-a.json", "docs/qa/workflow-execution/kit/kit-004/fingerprints-pre-b.json", "docs/qa/workflow-execution/kit/kit-004/fingerprints-post.json", "docs/qa/workflow-execution/kit/kit-004/identity-hits.json"],
+    "claim_classes": ["behaviour_unchanged", "identity_unchanged", "exactness_in_process", "no_gui_in_runner"]
+  },
+  "authority": {
+    "route_valid": true,
+    "artifacts": [
+      {"path": "docs/qa/workflow-execution/kit/protocol.md", "sha256": "8998db8f12a30ce119c516f4e3ffa44cac9a2c57f014d4a1564bb23147813d61", "version": "1.1"},
+      {"commit": "ea2b678d", "note": "KIT-004 implementation and evidence"},
+      {"member_store_head_sha256": "eb16db98b3da0534b9fcbb939c3f88696d0956503bc9826f5e0733a397a6baf9", "note": "KIT-001 complete member (fixture source, read-only)"}
+    ]
+  },
+  "findings": [
+    {"id": "PC-01", "severity": "medium", "layer": "tests", "summary": "callr fresh-session test loads the package with pkgload::load_all from the test root; errors under installed suites and R CMD check tests directories where no DESCRIPTION exists", "repair": "use the installed namespace when the root has no DESCRIPTION, or skip with a reason", "blocked": "none"},
+    {"id": "PC-02", "severity": "low", "layer": "provenance", "summary": "fingerprints-post.json records head_commit e2bd5680; the pass ran on the uncommitted tree (differs from ea2b678d only by a loop-variable rename and test edits)", "repair": "rerun the post pass on ea2b678d or state the provenance in the outcome", "blocked": "none"},
+    {"id": "PC-03", "severity": "low", "layer": "design", "summary": "correlation completion runs outside withDIAStateScope on the reference path; legacy branch runs inside; no behaviour change observed", "repair": "wrap the reference branch of the two observers in the scope", "blocked": "none"},
+    {"id": "PC-04", "severity": "low", "layer": "behaviour", "summary": "RUV audit trail written on hits too and manual percentage from settings; documented; no test or fingerprint covers config_list", "repair": "one assertion on config_list$ruvParameters after the module-edge call, or accept as recorded", "blocked": "none"},
+    {"id": "PC-05", "severity": "info", "layer": "duplication", "summary": "resolveProtRuvParameters repeats the adapter's defaults", "repair": "adapter delegates when the legacy path is retired (KIT-011/012)", "blocked": "none"},
+    {"id": "PC-06", "severity": "info", "layer": "process", "summary": "three completed and two aborted comparison passes against a budget worded as one; within the one-correction rule", "repair": "declare two baseline passes as the design before running", "blocked": "none"},
+    {"id": "PC-07", "severity": "info", "layer": "coverage", "summary": "workflow holder fingerprint covers five fields; composite QC PDF excluded with baseline evidence; claim scope stated correctly", "repair": "none required", "blocked": "none"},
+    {"id": "PC-08", "severity": "info", "layer": "compatibility", "summary": "wrapper names kept, internal signatures changed, four call sites updated, diagnostic tool traces by name only", "repair": "none", "blocked": "none"}
+  ],
+  "repairs": [],
+  "tests": [
+    {"file": "tests/testthat/test-workflow-operations.R", "passed": 66, "failed": 0},
+    {"file": "tests/testthat/test-workflow-saved-qc.R", "passed": 108, "failed": 0},
+    {"file": "tests/testthat/test-workflow-saved-da.R", "passed": 109, "failed": 0},
+    {"file": "tests/testthat/test-workflow-native-session.R", "passed": 425, "failed": 1, "error": 1, "note": "known process-loss source-load artefact, identical at baseline"},
+    {"file": "tests/testthat/test-workflow-checkpoint-dia-state.R", "passed": 238, "failed": 0},
+    {"file": "tests/testthat/test-workflow-class-declarations.R", "passed": 161, "failed": 0},
+    {"file": "tests/testthat/test-prot-05b-norm-module-contracts.R", "passed": 562, "failed": 0},
+    {"file": "tests/testthat/test-prot-05d-norm-module-characterization.R", "passed": 199, "failed": 0},
+    {"file": "tests/testthat/test-module-ci-prot-norm.R", "passed": 127, "failed": 0, "error": 2, "note": "MCI-008.2 and MCI-008.4 reproduced in a clean e2bd5680 worktree"},
+    {"comparison": "pre-a vs pre-b", "result": "identical except protein_qc/proteomics_composite_QC_figure.pdf"},
+    {"comparison": "pre-a vs post", "result": "identical except that PDF and gui_references$normalized_protein_obj"},
+    {"continuity": "identity-hits.json", "result": "normalization-ruv, pearson-pairs, pearson-selection and 1/1 DA contrast hit with the member's software identity substituted; 0 full S4 reads"}
+  ],
+  "graph": {"duplicates": [], "missing": [], "cycles": [], "inventory_script": {"findings": 0, "exit": 0}},
+  "documentation": {"outcome": "docs/qa/workflow-execution/kit/kit-004/outcome.md", "register": "docs/qa/workflow-execution/kit/kit-004/KIT-004-POSTHOC-AUDIT-20261010.md"},
+  "evidence_layers": [
+    {"layer": "mechanical", "status": "pass", "evidence": "inventory 0 findings; Collate; NAMESPACE and man unchanged; grep clean"},
+    {"layer": "semantic", "status": "pass", "evidence": "identity scheme called verbatim; kernels unchanged via legacy aliases; declaration-driven checkpoints"},
+    {"layer": "empirical", "status": "pass", "evidence": "baseline determinism; baseline vs post exact as scoped; member products hit; regressions green except known artefacts"},
+    {"layer": "promotion", "status": "not_claimed", "evidence": "no counted member; control unchanged"}
+  ],
+  "formal_verification": {"used": false, "obligations": [], "limits": ["exactness is executable evidence on the screen fixture in-process; a native identity hit needs an installed build"]},
+  "closeout": {
+    "implementation_verified": true,
+    "execution_complete": true,
+    "decision_supported": true,
+    "promotion_authorized": false,
+    "claim_scope": "products, checkpoints, publication files and holder fields hash-identical to the pre-ticket build on the screen fixture in-process (composite QC PDF excluded with baseline evidence; one unread snapshot entry no longer written); identity continuity with the member's software identity substituted"
+  },
+  "blockers": [],
+  "deviations": ["three completed and two aborted comparison passes (one bounded correction after the first post pass)", "post pass ran on the uncommitted tree before ea2b678d"],
+  "next_action": "No blocker for KIT-005. Fix PC-01 before the next installed suite run; PC-02 is a four-minute rerun on ea2b678d."
+}
