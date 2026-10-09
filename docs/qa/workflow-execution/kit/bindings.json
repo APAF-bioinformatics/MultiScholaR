@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-09",
+  "created": "2026-10-10",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -1844,9 +1844,27 @@
       "treat_lfc": 0
     },
     "steps": ["import", "design", "qvalue", "protein_peptide", "rollup", "intensity", "sample", "replicate", "imputation", "iq", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation", "session_export", "da"],
-    "ceiling_seconds": null,
-    "ceiling_note": "set by KIT-005 from the KIT-001 screen duration scaled to 300 samples, never above 90 min"
+    "ceiling_seconds": 5400,
+    "ceiling_note": "KIT-005: KIT-001 screen journey 269 s at 320,872 rows scaled linearly to 5,846,578 rows = 4,900 s; capped at the protocol maximum of 90 min",
+    "pair": {
+      "control": "kit_001",
+      "candidate": null,
+      "reps": 2,
+      "production_default": true
+    }
   },
+  "operation_lifecycle": {
+    "ceiling_seconds": 300,
+    "fault": {
+      "name": "after_aggregate",
+      "operation": "precursor_rollup",
+      "population": "screen_p14",
+      "failed_phase": "ordered_result_stage",
+      "error_pattern": "CORE-004 forced failure after the aggregate stage",
+      "mechanism": "the worker's phase hook raises after the ordered result stage completes; the action completes as worker_failed and the head stays on the input"
+    }
+  },
+  "tickets": [],
   "lifecycle": {
     "ceiling_seconds": 300,
     "fault": {
@@ -1867,12 +1885,19 @@
     "step_map_sha256": "e14432f147a6019cfc6895af7e153df6829a25b2d91173356cedf4b22daae857",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "6fc4b3bef17ade412af1af7eed60772dc0183ba0cde403d8ce6c2eeb615ff5da",
-      "tools/profiling/workflow_kit_driver.R": "e9f53943f29c2b6d6ce0730c2bc64abcf9724bff16b7c44e6f4c2084c0b31c04",
-      "tools/profiling/workflow_kit_coordinator.R": "9ce9bc2962ea0af46296a4d112d0d337f0381f2f06eff8d1e1b4762f401b7df4",
-      "tools/profiling/run_workflow_kit.sh": "4987c0c62e95197e3261a84a820d76ef6de47327e68e83567aec689bdf706399",
+      "tools/profiling/workflow_kit.R": "d133db6ae839ddc6e75e7b1fc2344998920e75f16d777804e52e396349651eb8",
+      "tools/profiling/workflow_kit_driver.R": "b357296973d801aa37792102dc567dcaa35c5dba23663e76224ffeae0e7040b1",
+      "tools/profiling/workflow_kit_coordinator.R": "bd3247b871a6ae39f9f56b9b44f2351b754158cadd88a4694797dba4e3940b45",
+      "tools/profiling/run_workflow_kit.sh": "6734f6e1da3a18956af45159f90dccf475e59f81cad3259139ed1ada733946da",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
-      "tests/testthat/test-workflow-kit-harness.R": "48a53b9516f8f0031570416a5cb623e0ae84a43bce881d75dbeae3b7e12c1c1f"
+      "tests/testthat/test-workflow-kit-harness.R": "f175afc2fa124ebd2ed85eb82068db40f6da4bdc6f28d38bffc407ff89f91ef0",
+      "tests/testthat/test-workflow-execution-adapters.R": "1e6a6cdf9ba8236f28bfc7e0a7924c362264c1bb9a33e79356c9e645e32f7ec0",
+      "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
+      "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",
+      "tests/testdata/workflow-execution/qualification.json": "18f9b76d7c1e054151d2fd70ad517c5db26d7fca4c7a93040c30f7fb69061f4f",
+      "tests/testdata/workflow-checkpoints/scenarios.json": "cfdf7da2fc5a6123da269f85011550d8ffd2e8a611de071e0cd1a52a6f35d152",
+      "tools/profiling/workflow_perf106.R": "a4d4ed234c780f44cdcd499e821d66dd7256378b494562a1c6a74c3c9a92b592",
+      "tools/profiling/workflow_core.R": "adb83e0f4a5516a28eb8f810e171c753d62476c6ab779b310cd22defa9476cc5"
     }
   }
 }

@@ -1,11 +1,15 @@
 # Tracked generator for docs/qa/workflow-execution/kit/bindings.json (KIT-001; modelled on core/bindings-generator.R).
 # Run from the repository root after any harness, protocol, step-map, corpus or build change; commit both files.
-# Usage: Rscript docs/qa/workflow-execution/kit/bindings-generator.R [kit_006=<install run dir> ...]
+# Usage: Rscript docs/qa/workflow-execution/kit/bindings-generator.R [kit_001=<install run dir> ...] [kit_journey=<kit-journey stage dir>]
 # The screen corpus (8 samples of the PERF-107 calibration recipe) is generated once under the proof
 # root if absent; its hashes are then bound. The 300-sample corpora are PERF-107's generated cohorts.
 args <- commandArgs(TRUE)
-stopifnot(all(grepl("^kit_[0-9]{3}=.+", args)))
-installs <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = TRUE), sub("=.*$", "", args))
+stopifnot(all(grepl("^kit_([0-9]{3}|journey)=.+", args)))
+values <- stats::setNames(normalizePath(sub("^[^=]+=", "", args), mustWork = TRUE), sub("=.*$", "", args))
+# kit_journey=<kit-journey stage directory>: ingest the control journey's per-step populations and oracles (KIT-005).
+`%||%` <- function(x, y) if (is.null(x)) y else x
+journey_stage <- if ("kit_journey" %in% names(values)) values[["kit_journey"]] else NULL
+installs <- values[setdiff(names(values), "kit_journey")]
 repo <- normalizePath(".")
 stopifnot(file.exists(file.path(repo, "DESCRIPTION")))
 proof <- "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5"
@@ -102,14 +106,49 @@ b$journey <- list(
     steps = c("import", "design", "qvalue", "protein_peptide", "rollup", "intensity", "sample", "replicate", "imputation",
         "iq", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation",
         "session_export", "da"),
-    ceiling_seconds = NULL,
-    ceiling_note = "set by KIT-005 from the KIT-001 screen duration scaled to 300 samples, never above 90 min")
+    # KIT-005: the KIT-001 screen journey took 269 s for 320,872 report rows (8 samples); the full corpus has
+    # 5,846,578 rows (18.2 x), so a linear scaling gives 4,900 s; the ceiling is the protocol's 90 min maximum.
+    ceiling_seconds = 5400L,
+    ceiling_note = "KIT-005: KIT-001 screen journey 269 s at 320,872 rows scaled linearly to 5,846,578 rows = 4,900 s; capped at the protocol maximum of 90 min",
+    # The baseline stage: two control journey members on kit_001 with the journey record (the first produces
+    # the per-step populations and oracles, the second reproduces them) and the production-default member.
+    pair = list(control = b$control, candidate = NULL, reps = 2L, production_default = TRUE))
+# Operation-member lifecycle pair (KIT-005): the precursor rollup on screen_p14 through the installed action
+# dispatch; the failure member fails inside the worker after the first ordered result stage (CORE-004's fault).
+b$operation_lifecycle <- list(ceiling_seconds = 300L,
+    fault = list(name = "after_aggregate", operation = "precursor_rollup", population = "screen_p14",
+        failed_phase = "ordered_result_stage", error_pattern = "CORE-004 forced failure after the aggregate stage",
+        mechanism = "the worker's phase hook raises after the ordered result stage completes; the action completes as worker_failed and the head stays on the input"))
+# Operation pairs per ticket (control and candidate builds, operation, population): added by KIT-006 onward.
+b$tickets <- list()
+if (!is.null(journey_stage)) {
+    result <- readRDS(file.path(journey_stage, "control-1", "journey-result.rds"))
+    stopifnot(identical(result$status, "complete"), isTRUE(result$populations_complete))
+    receipt <- readRDS(file.path(journey_stage, "stage.rds"))
+    stopifnot(identical(receipt$status, "complete"), identical(receipt$decision$status, "baseline_recorded"))
+    b$journey$baseline <- list(stage = journey_stage, member = "control-1", final_head_sha256 = result$final_head_sha256,
+        verified_by = "control-2 (reproduced)", decision = receipt$decision$status)
+    for (step in names(result$populations)) {
+        population <- result$populations[[step]]
+        if (is.null(population$state) || is.null(population$fingerprint)) next
+        key <- paste0("journey_", step)
+        b$populations[[key]] <- list(step = step, state = population$state, store = population$store,
+            head_sha256 = population$head_sha256, entity_id = population$entity_id, rows = population$rows,
+            snapshot_time = population$snapshot_time, parameters = NULL)
+        b$oracles[[key]] <- population$fingerprint
+    }
+}
 b$lifecycle <- list(ceiling_seconds = 300L,
     fault = list(name = "guard_after_intensity", after_step = "intensity", failed_step = "sample",
         mechanism = "application-guard-inject.rds written after the intensity filter (the first post-rollup step) completes; the application monitor stops the slice (injected_guard_stop); the sample-filter step fails on disconnection; the head must equal the intensity-filter snapshot"))
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/run_workflow_kit.sh",
-    "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R")
+    "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
+    # The operation-member vehicle (KIT-005): the installed adapters test and its inputs, CORE's files unchanged.
+    "tests/testthat/test-workflow-execution-adapters.R", "tests/testthat/helper-workflow-checkpoint-fixtures.R",
+    "tests/testthat/helper-workflow-bulk-rollup.R", "tests/testdata/workflow-execution/qualification.json",
+    "tests/testdata/workflow-checkpoints/scenarios.json", "tools/profiling/workflow_perf106.R",
+    "tools/profiling/workflow_core.R")
 core_pinned <- c("tools/profiling/run_workflow_checkpoint_proof.R", "tools/profiling/run_workflow_checkpoint_proof.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tools/profiling/workflow_perf106_repair.R")
 for (file in core_pinned) stopifnot(identical(hash(file.path(repo, file)), core$harness$files[[file]]))

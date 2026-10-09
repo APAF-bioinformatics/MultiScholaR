@@ -1,5 +1,7 @@
-# KIT series harness: bindings, fixed member cases, journey step map, phase measures,
-# frozen decisions, store fingerprints and the independent verifier (KIT-001).
+# KIT series harness: bindings, fixed member cases (journey, operation, lifecycle), journey step map,
+# phase measures, frozen decisions, cross-run canonical store fingerprints and the independent
+# verifier (KIT-001; operation members, the baseline journey pair, the production-default baseline
+# and the reproducibility check in KIT-005).
 # Pure functions only; execution lives in workflow_kit_coordinator.R and workflow_kit_driver.R.
 # The four CORE-pinned harness files are never sourced for logic here, only for the browser helpers.
 
@@ -39,6 +41,7 @@ kitStepIds <- function() vapply(kitJourneySteps(), `[[`, character(1), "id")
 #' @noRd
 kitMemberSeconds <- function(stage, bindings = NULL) {
     if (grepl("^kit-lifecycle-", stage)) return(300L)
+    if (grepl("^kit-0[0-9]{2}$", stage)) return(600L)
     if (stage == "kit-journey") {
         seconds <- bindings$journey$ceiling_seconds
         if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 5400)
@@ -70,6 +73,7 @@ kitBindings <- function(path) {
         step_map_sha256 = raw$harness$step_map_sha256, files = raw$harness$files,
         builds = raw$builds, outcomes = raw$outcomes, control = raw$control,
         corpora = raw$corpora, journey = raw$journey, lifecycle = raw$lifecycle,
+        operation_lifecycle = raw$operation_lifecycle, tickets = raw$tickets,
         populations = raw$populations, oracles = raw$oracles)
 }
 
@@ -83,46 +87,91 @@ kitControl <- function(bindings) {
 }
 
 #' Expand one KIT stage into its fixed member cases.
-#' @param stage `kit-lifecycle-complete`, `kit-lifecycle-fail` or `kit-journey`.
-#' @return Fixed cases in launch order.
+#' @param stage `kit-lifecycle-complete|fail` (journey shape, KIT-001), `kit-lifecycle-operation-complete|fail`
+#'   (operation shape, KIT-005), `kit-journey` (the baseline pair and the production-default baseline, or a
+#'   control/candidate pair) or `kit-0NN` (operation members of ticket NN from `bindings$tickets`).
+#' @return Fixed cases in launch order. Every case carries `kind` (`journey` or `operation`), `selector`
+#'   and a `binding` digest of everything that fixes it.
 #' @noRd
 kitCases <- function(bindings, stage) {
-    stopifnot(grepl("^kit-(lifecycle-(complete|fail)|journey|0[0-9]{2})$", stage))
-    case <- function(id, role, rep, build_key, corpus_key, fault, selector) {
+    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey|0[0-9]{2})$", stage))
+    build_of <- function(build_key) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
+        build
+    }
+    journey_case <- function(id, role, rep, build_key, corpus_key, fault, selector, record = TRUE) {
+        build <- build_of(build_key)
         corpus <- bindings$corpora[[corpus_key]]
         if (is.null(corpus)) stop("corpus ", corpus_key, " is not bound")
-        list(id = id, role = role, control = role == "control", rep = rep, fault = fault,
-            corpus = corpus_key, library = build$library, expected_build = build$build,
+        list(id = id, kind = "journey", role = role, control = role == "control", rep = rep, fault = fault,
+            corpus = corpus_key, record = record, library = build$library, expected_build = build$build,
             exact_sum = build$exact_sum, expect_failure = fault != "none",
-            binding = digest::digest(list(corpus = corpus$files, build = build, stage = stage, rep = rep,
-                journey = bindings$journey, protocol = bindings$protocol_sha256,
+            binding = digest::digest(list(corpus = corpus$files, build = build, stage = stage, rep = rep, record = record,
+                journey = bindings$journey[setdiff(names(bindings$journey), "pair")], protocol = bindings$protocol_sha256,
                 step_map = bindings$step_map_sha256), algo = "sha256"),
             selector = selector)
     }
+    operation_case <- function(id, role, rep, build_key, operation, population_key, fault, selector) {
+        build <- build_of(build_key)
+        population <- bindings$populations[[population_key]]
+        if (is.null(population)) stop("population ", population_key, " is not bound")
+        parameters <- population$parameters
+        if (!length(parameters)) parameters <- list()
+        list(id = id, kind = "operation", role = role, control = role == "control", rep = rep, fault = fault,
+            operation = operation, population = population_key, parameters = parameters,
+            input = list(store = population$store, head_sha256 = population$head_sha256, rows = population$rows,
+                entity_id = population$entity_id),
+            library = build$library, expected_build = build$build, exact_sum = build$exact_sum,
+            expect_failure = fault != "none",
+            binding = digest::digest(list(population = population, build = build, stage = stage, rep = rep,
+                operation = operation, protocol = bindings$protocol_sha256), algo = "sha256"),
+            selector = selector)
+    }
+    if (grepl("^kit-lifecycle-operation-", stage)) {
+        kind <- sub("kit-lifecycle-operation-", "", stage, fixed = TRUE)
+        fault <- bindings$operation_lifecycle$fault
+        if (is.null(fault)) stop("the operation lifecycle fault is not bound")
+        return(list(operation_case("member", "candidate", 1L, kitControl(bindings), fault$operation, fault$population,
+            fault = if (kind == "fail") fault$name else "none", selector = paste0("kit:lifecycle:operation:", kind))))
+    }
     if (startsWith(stage, "kit-lifecycle-")) {
         kind <- sub("kit-lifecycle-", "", stage, fixed = TRUE)
-        return(list(case("member", "candidate", 1L, kitControl(bindings), "screen",
+        return(list(journey_case("member", "candidate", 1L, kitControl(bindings), "screen",
             fault = if (kind == "fail") bindings$lifecycle$fault$name else "none",
             selector = paste0("kit:lifecycle:", kind))))
     }
     if (stage == "kit-journey") {
         spec <- bindings$journey$pair
         if (is.null(spec)) stop("the journey pair is defined by KIT-005")
-        return(list(
-            case("control-1", "control", 1L, spec$control, "full", "none", "kit:journey:control:1"),
-            case("candidate-1", "candidate", 1L, spec$candidate, "full", "none", "kit:journey:candidate:1")))
+        reps <- as.integer(spec$reps %||% 1L)
+        stopifnot(reps %in% 1:2)
+        cases <- list()
+        for (rep in seq_len(reps)) {
+            cases[[length(cases) + 1L]] <- journey_case(paste0("control-", rep), "control", rep, spec$control, "full", "none",
+                paste0("kit:journey:control:", rep))
+            if (!is.null(spec$candidate)) cases[[length(cases) + 1L]] <- journey_case(paste0("candidate-", rep), "candidate",
+                rep, spec$candidate, "full", "none", paste0("kit:journey:candidate:", rep))
+        }
+        if (isTRUE(spec$production_default)) cases[[length(cases) + 1L]] <- journey_case("default-1", "default", 1L,
+            spec$control, "full", "none", "kit:journey:default:1", record = FALSE)
+        return(cases)
     }
-    stop("operation members are defined by KIT-005")
+    ticket <- sub("kit-", "", stage, fixed = TRUE)
+    spec <- bindings$tickets[[ticket]]
+    if (is.null(spec)) stop("KIT-", ticket, " has no bound operation, population, control and candidate builds")
+    roles <- c("control", "candidate", "candidate", "control")
+    reps <- c(1L, 1L, 2L, 2L)
+    lapply(seq_along(roles), function(i) operation_case(paste(roles[[i]], reps[[i]], sep = "-"), roles[[i]], reps[[i]],
+        spec[[roles[[i]]]], spec$operation, spec$population, "none", paste("kit", ticket, roles[[i]], reps[[i]], sep = ":")))
 }
 
 #' Map a verifier selector back to its stage and case id.
 #' @noRd
 kitSelectorStage <- function(selection) {
-    stopifnot(grepl("^kit:(journey:(control|candidate):[12]|lifecycle:(complete|fail)|0[0-9]{2}:(control|candidate):[12])$", selection))
+    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:(control|candidate):[12])$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
-    if (parts[[1L]] == "lifecycle") return(list(stage = paste0("kit-lifecycle-", parts[[2L]]), id = "member"))
+    if (parts[[1L]] == "lifecycle") return(list(stage = paste0("kit-lifecycle-", paste(parts[-1L], collapse = "-")), id = "member"))
     list(stage = paste0("kit-", parts[[1L]]), id = paste(parts[[2L]], parts[[3L]], sep = "-"))
 }
 
@@ -233,6 +282,130 @@ kitLifecycleDecision <- function(receipt, cases, bindings) {
     result
 }
 
+#' P14 phases every completed operation member must record (CORE protocol v3, carried).
+#' @noRd
+kitRequiredOperationPhases <- c("relational_validation", "working_memory_admission",
+    "relational_aggregate_order_summary_write", "ordered_result_stage")
+
+#' Turn worker phase events (`uptime, id, phase, event`) and the coordinator's samples into phase
+#' measures for an operation member (the CORE measure, carried unchanged into the kit).
+#' @noRd
+kitOperationPhaseMeasures <- function(events, trace) {
+    stopifnot(is.data.frame(events), all(c("uptime", "id", "phase", "event") %in% names(events)),
+        is.data.frame(trace), all(c("uptime", "current") %in% names(trace)))
+    starts <- events[events$event == "start", , drop = FALSE]
+    ends <- events[events$event %in% c("complete", "failed"), , drop = FALSE]
+    labels <- unique(starts$phase)
+    seconds <- peaks <- anon <- stats::setNames(rep(NA_real_, length(labels)), labels)
+    status <- stats::setNames(rep("complete", length(labels)), labels)
+    last <- if (nrow(trace)) max(trace$uptime) else max(c(events$uptime, -Inf))
+    for (i in seq_len(nrow(starts))) {
+        label <- starts$phase[[i]]
+        end <- ends[ends$id == starts$id[[i]], , drop = FALSE]
+        closed <- nrow(end) == 1L
+        finish <- if (closed) end$uptime[[1L]] else last
+        state <- if (closed) end$event[[1L]] else "open"
+        if (state == "failed" || state == "open" && status[[label]] != "failed") status[[label]] <- state
+        seconds[[label]] <- sum(seconds[[label]], finish - starts$uptime[[i]], na.rm = TRUE)
+        rows <- trace$uptime >= starts$uptime[[i]] & trace$uptime <= finish
+        if (any(rows)) {
+            peaks[[label]] <- max(peaks[[label]], trace$current[rows], na.rm = TRUE)
+            if (!is.null(trace$anon)) anon[[label]] <- max(anon[[label]], trace$anon[rows], na.rm = TRUE)
+        }
+    }
+    list(phase_seconds = as.list(seconds), phase_peak_bytes = as.list(peaks),
+        phase_peak_anon_bytes = as.list(anon), phase_status = as.list(status))
+}
+
+#' Classify an operation lifecycle member (operation-member shape; KIT-005): completion through the
+#' installed action dispatch with every P14 phase complete, or the mid-step forced failure
+#' (`after_aggregate`: the worker fails inside the ordered result stage) with the head unchanged.
+#' @noRd
+kitOperationLifecycleDecision <- function(receipt, cases, bindings) {
+    stopifnot(length(cases) == 1L)
+    case <- cases[[1L]]
+    item <- receipt$cases[[case$id]]
+    op <- item$operation
+    result <- list(status = "invalid", failing_rule = NULL, promotion_authorized = FALSE,
+        expect_failure = case$expect_failure)
+    status <- op$phase_status
+    if (!case$expect_failure) {
+        result$failing_rule <- kitIneligible(item, kitMemberSeconds("kit-lifecycle-operation-complete"))
+        if (is.null(result$failing_rule) && !(all(kitRequiredOperationPhases %in% names(status)) &&
+            all(unlist(status[kitRequiredOperationPhases]) == "complete")))
+            result$failing_rule <- "phase_timing"
+        if (is.null(result$failing_rule)) result$status <- "lifecycle_complete_observed"
+        return(result)
+    }
+    fault <- bindings$operation_lifecycle$fault
+    rules <- list(verifier_accepted = isTRUE(item$verifier_completion$accepted),
+        failure_recorded = identical(op$status, "worker_failed"),
+        zero_swap = identical(op$swap_bytes, 0),
+        cleanup = isTRUE(op$cleanup$slice_stopped),
+        phase_timing = identical(status[[fault$failed_phase]], "failed"),
+        head_unchanged = isTRUE(op$head_unchanged))
+    failing <- names(rules)[!vapply(rules, isTRUE, logical(1))]
+    if (length(failing)) result$failing_rule <- failing[[1L]] else result$status <- "lifecycle_failure_observed"
+    result
+}
+
+#' Compare the per-step fingerprints of two journey members (the oracle reproducibility check).
+#' @return Character vector of `step/kind/name` mismatches; empty when every fingerprint reproduces.
+#' @noRd
+kitReproduceMismatches <- function(reference, candidate) {
+    mismatches <- character()
+    for (step in names(reference)) {
+        expected <- reference[[step]]$fingerprint
+        if (is.null(expected)) next
+        actual <- candidate[[step]]$fingerprint
+        if (is.null(actual)) { mismatches <- c(mismatches, paste0(step, "/missing")); next }
+        for (kind in c("components", "support", "products")) {
+            names_expected <- names(expected[[kind]])
+            if (!setequal(names_expected, names(actual[[kind]])))
+                mismatches <- c(mismatches, paste0(step, "/", kind, "/names"))
+            for (name in intersect(names_expected, names(actual[[kind]]))) {
+                if (!identical(expected[[kind]][[name]]$sha256, actual[[kind]][[name]]$sha256))
+                    mismatches <- c(mismatches, paste0(step, "/", kind, "/", name))
+            }
+        }
+        if (!identical(expected$summary_sha256, actual$summary_sha256)) mismatches <- c(mismatches, paste0(step, "/summary"))
+        if (!identical(expected$rows, actual$rows)) mismatches <- c(mismatches, paste0(step, "/rows"))
+    }
+    mismatches
+}
+
+#' Journey stage decision (KIT-005): the baseline pair is recorded when both control members are
+#' eligible, verified and the second reproduces the first's fingerprints; the production-default
+#' baseline is recorded when it completes with its measures. Nothing is promoted.
+#' @noRd
+kitJourneyDecision <- function(receipt, cases, bindings) {
+    seconds <- kitMemberSeconds("kit-journey", bindings)
+    members <- list()
+    for (case in cases) {
+        item <- receipt$cases[[case$id]]
+        op <- item$operation
+        failing <- kitIneligible(item, seconds)
+        if (is.null(failing) && case$role != "default" && !isTRUE(op$populations_complete)) failing <- "populations_incomplete"
+        if (is.null(failing) && case$rep == 2L && !isTRUE(item$verifier_completion$reproduced)) failing <- "not_reproduced"
+        members[[case$id]] <- list(role = case$role, rep = case$rep, eligible = is.null(failing), failing_rule = failing,
+            peak_anon_bytes = op$sampled_anon_bytes, peak_bytes = op$peak_bytes,
+            resident_end_bytes = op$resident_end_bytes, elapsed_seconds = op$elapsed_seconds,
+            phase_peak_anon_bytes = op$phase_peak_anon_bytes, phase_seconds = op$phase_seconds)
+    }
+    controls <- Filter(\(m) m$role == "control", members)
+    noise <- NULL
+    if (length(controls) == 2L && all(vapply(controls, `[[`, logical(1), "eligible"))) {
+        ratio <- function(name) controls[[2L]][[name]] / controls[[1L]][[name]]
+        noise <- list(peak_anon = ratio("peak_anon_bytes"), resident_end = ratio("resident_end_bytes"),
+            elapsed = ratio("elapsed_seconds"))
+    }
+    default <- Filter(\(m) m$role == "default", members)
+    list(status = if (length(controls) && all(vapply(controls, `[[`, logical(1), "eligible"))) "baseline_recorded" else "invalid",
+        failing_rule = unlist(lapply(members, `[[`, "failing_rule")), members = members, noise = noise,
+        production_default = if (length(default)) list(recorded = default[[1L]]$eligible, failing_rule = default[[1L]]$failing_rule) else NULL,
+        promotion_authorized = FALSE)
+}
+
 #' Mask run-specific absolute paths so args summaries compare across members.
 #' @noRd
 #' Only plain lists and data frames are descended, to a bounded depth: plot objects and grob trees
@@ -255,6 +428,14 @@ kitMaskPaths <- function(value, depth = 0L) {
 kitFingerprintTable <- function(store, reference, api) {
     scope <- api("newWorkflowTableReadScope")(store, reference, reader = "fastduckdb")
     on.exit(api("releaseWorkflowTableReadScope")(scope), add = TRUE)
+    hashes <- kitPageHashes(store, reference, api, scope)
+    list(kind = "table", rows = scope$metadata$rows, columns = scope$metadata$columns,
+        sha256 = digest::digest(paste(hashes, collapse = "\n"), algo = "sha256", serialize = FALSE))
+}
+
+#' Page hashes within an open read scope.
+#' @noRd
+kitPageHashes <- function(store, reference, api, scope) {
     rows <- scope$metadata$rows
     hashes <- character()
     if (rows > 0L) for (offset in seq.int(0L, rows - 1L, by = 10000L)) {
@@ -264,19 +445,45 @@ kitFingerprintTable <- function(store, reference, api) {
         attr(data, "row.names") <- .set_row_names(nrow(data))
         hashes[[length(hashes) + 1L]] <- digest::digest(data, algo = "sha256")
     }
-    list(kind = "table", rows = rows, columns = scope$metadata$columns,
-        sha256 = digest::digest(paste(hashes, collapse = "\n"), algo = "sha256", serialize = FALSE))
+    hashes
 }
 
-#' Fingerprint one saved reference: tables by logical pages, other payloads by their hydrated value.
+#' Canonical form of a hydrated value for fingerprints that must reproduce across runs: absolute
+#' paths masked, `timestamp`/`mtime` fields dropped, saved references replaced by their payload
+#' hash (tables) or their own canonical form (records), plot and grob objects by their class.
+#' @noRd
+kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L) {
+    if (depth > 48L) return("<depth>")
+    if (is.null(value) || is.function(value) || is.environment(value)) return(if (is.null(value)) NULL else "<opaque>")
+    if (inherits(value, c("gg", "ggplot", "grob", "gtable", "htmlwidget", "recordedplot"))) return(paste0("<", class(value)[[1L]], ">"))
+    if (isS4(value)) return(list(.s4 = class(value)[[1L]]))
+    reference <- is.list(value) && !is.data.frame(value) && is.character(value$entity_id) && length(value$entity_id) == 1L &&
+        is.list(value$payload) && is.character(value$payload$sha256)
+    if (reference) {
+        if (identical(value$payload$codec, "parquet_duckdb") || is.null(store) || is.null(api))
+            return(list(.ref = value$kind %||% "value", sha256 = value$payload$sha256))
+        hydrated <- api("hydrateSavedWorkflowEntity")(store, value)
+        return(list(.ref = value$kind %||% "value", value = kitCanonical(hydrated, store, api, depth + 1L)))
+    }
+    if (is.data.frame(value)) return(list(.df = digest::digest(kitMaskPaths(value), algo = "sha256"), dim = dim(value)))
+    if (is.list(value)) {
+        value <- value[!(names(value) %||% rep("", length(value))) %in% c("timestamp", "mtime")]
+        return(lapply(value, kitCanonical, store = store, api = api, depth = depth + 1L))
+    }
+    kitMaskPaths(value)
+}
+
+#' Fingerprint one saved reference: tables by logical pages, other payloads by their canonical value.
 #' @noRd
 kitFingerprintReference <- function(store, reference, api) {
     if (identical(reference$payload$codec, "parquet_duckdb")) return(kitFingerprintTable(store, reference, api))
     value <- api("hydrateSavedWorkflowEntity")(store, reference)
-    list(kind = reference$kind %||% "value", sha256 = digest::digest(kitMaskPaths(value), algo = "sha256"))
+    list(kind = reference$kind %||% "value", product_type = if (is.list(value)) value$product_type else NULL,
+        sha256 = digest::digest(kitCanonical(value, store, api), algo = "sha256"))
 }
 
 #' Fingerprint every component, support entry, product and the args summary of one state record.
+#' The fingerprint carries no entity ids (those are run-specific); the population record does.
 #' @param store Open entity store; `reference` the state's checkpoint descriptor.
 #' @return Named list `components`, `support`, `products`, `summary_sha256`, `class`, `rows`.
 #' @noRd
@@ -284,7 +491,7 @@ kitFingerprintState <- function(store, reference, api) {
     record <- api("hydrateSavedWorkflowCheckpoint")(store, reference)
     spec <- record$data
     # The `initial` placeholder carries no data; it is recorded, not fingerprinted.
-    if (is.null(spec)) return(list(class = NA_character_, rows = NA_integer_, entity_id = reference$entity_id,
+    if (is.null(spec)) return(list(class = NA_character_, rows = NA_integer_,
         components = list(), support = list(), products = list(), summary_sha256 = NA_character_, empty = TRUE))
     if (!api("isDIAComponentCheckpoint")(spec)) stop("state is not a component checkpoint")
     walk <- function(node, path = character()) {
@@ -297,9 +504,9 @@ kitFingerprintState <- function(store, reference, api) {
         }
         list()
     }
-    summary <- list(class = spec$class, slots = kitMaskPaths(spec$slots), dimensions = spec$dimensions,
-        config = kitMaskPaths(record$config), description = record$description)
-    list(class = spec$class, rows = spec$dimensions$rows, entity_id = reference$entity_id,
+    summary <- list(class = spec$class, slots = kitCanonical(spec$slots), dimensions = spec$dimensions,
+        config = kitCanonical(record$config), description = record$description)
+    list(class = spec$class, rows = spec$dimensions$rows,
         components = walk(spec$components), support = walk(spec$support), products = walk(spec$products),
         summary_sha256 = digest::digest(summary, algo = "sha256"))
 }
@@ -320,11 +527,25 @@ kitFingerprintFiles <- function(project, previous = NULL) {
     reuse <- if (is.null(previous)) rep(FALSE, length(files)) else
         paste(relative, bytes, mtime) %in% paste(previous$path, previous$bytes, previous$mtime)
     hash <- function(path) {
-        if (grepl("[.]pdf$", path, ignore.case = TRUE)) {
+        lower <- tolower(path)
+        if (grepl("[.]pdf$", lower)) {
             raw <- readBin(path, "raw", file.size(path))
             text <- rawToChar(raw[raw != as.raw(0L)], multiple = FALSE)
             text <- gsub("/(CreationDate|ModDate) *\\([^)]*\\)", "", text, useBytes = TRUE)
             return(c(digest::digest(text, algo = "sha256", serialize = FALSE), "sha256_pdf_dates_stripped"))
+        }
+        # Serialized R objects, widgets and workbooks carry run-specific ids or times: hash their content.
+        if (grepl("[.]rds$", lower)) {
+            value <- tryCatch(readRDS(path), error = function(error) NULL)
+            if (!is.null(value)) return(c(digest::digest(kitCanonical(value), algo = "sha256"), "sha256_rds_canonical"))
+        }
+        if (grepl("[.]html$", lower)) {
+            text <- gsub("htmlwidget-[A-Za-z0-9]+", "htmlwidget-X", readLines(path, warn = FALSE))
+            return(c(digest::digest(text, algo = "sha256", serialize = FALSE), "sha256_html_widget_ids_masked"))
+        }
+        if (grepl("[.]xlsx$", lower) && requireNamespace("openxlsx", quietly = TRUE)) {
+            sheets <- lapply(openxlsx::getSheetNames(path), function(sheet) openxlsx::read.xlsx(path, sheet = sheet))
+            return(c(digest::digest(sheets, algo = "sha256"), "sha256_xlsx_sheets"))
         }
         c(digest::digest(file = path, algo = "sha256"), "sha256")
     }
@@ -386,7 +607,40 @@ kitFingerprintStore <- function(store_dir, api, states = NULL) {
     list(head_sha256 = head$head_sha256, states = result, products = products)
 }
 
+#' Does an in-run state fingerprint match the one recomputed from the immutable store? The in-run
+#' record also carries the products that appeared after the step (snapshot products), which a state
+#' record does not reference; those are compared only where the recomputed record has them.
+#' @noRd
+kitStateFingerprintMatches <- function(expected, recomputed) {
+    if (is.null(expected) || is.null(recomputed)) return(FALSE)
+    for (field in c("class", "rows", "components", "support", "summary_sha256"))
+        if (!identical(expected[[field]], recomputed[[field]])) return(FALSE)
+    for (name in names(recomputed$products))
+        if (!identical(expected$products[[name]], recomputed$products[[name]])) return(FALSE)
+    TRUE
+}
+
+#' Compare a member's publication files with another member's: content hashes for every file except
+#' PDFs, whose compressed metadata (ids, dates) differs between identical runs; PDFs compare by path and size.
+#' @return Character vector of differing paths.
+#' @noRd
+kitFileMismatches <- function(reference, candidate) {
+    key <- function(files) {
+        pdf <- grepl("[.]pdf$", files$path, ignore.case = TRUE)
+        paste(files$path, ifelse(pdf, files$bytes, files$sha256))
+    }
+    a <- key(reference)
+    b <- key(candidate)
+    unique(c(reference$path[!a %in% b], candidate$path[!b %in% a]))
+}
+
 #' Verify one KIT member outside its measured slice: binding, build, steps, head and fingerprints.
+#' Journey members: every in-run population fingerprint is recomputed from the immutable store and the
+#' publication files re-hashed; a second repetition must also reproduce the first repetition's
+#' fingerprints and files (the oracle reproducibility check); the production-default member has no
+#' store and verifies on completion and phase measures. Operation members: the installed action
+#' journal, completion and worker result, the P14 page oracle (precursor rollup) or the sample-filter
+#' oracle, and the exact-sum identity; a failed member must leave the head on its input.
 #' @param run_dir Verifier output directory. `repo` the frozen snapshot holding the bindings.
 #' @return Verification receipt saved as `verification.rds` beside the member.
 #' @noRd
@@ -398,7 +652,7 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
     owned <- file.path(bindings$root, target$stage, case$id)
     path <- file.path(owned, "verification.rds")
     stopifnot(!file.exists(path))
-    receipt <- list(status = "starting", run_dir = run_dir, member_id = case$id, selector = selection)
+    receipt <- list(status = "starting", run_dir = run_dir, member_id = case$id, selector = selection, kind = case$kind)
     on.exit({
         if (identical(receipt$status, "starting")) receipt$status <- "failed"
         saveRDS(receipt, path)
@@ -406,9 +660,10 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
     operation_path <- file.path(owned, "operation-receipt.rds")
     receipt$operation_sha256 <- digest::digest(file = operation_path, algo = "sha256")
     operation <- readRDS(operation_path)
+    stopifnot(identical(operation$binding, case$binding), identical(operation$config$build, case$expected_build))
+    if (case$kind == "operation") return(verifyKitOperationMember(receipt, owned, case, bindings, operation, api))
     journey <- readRDS(file.path(owned, "journey-result.rds"))
-    stopifnot(identical(operation$binding, case$binding), identical(operation$config$build, case$expected_build),
-        identical(journey$corpus, case$corpus))
+    stopifnot(identical(journey$corpus, case$corpus))
     corpus <- bindings$corpora[[case$corpus]]
     for (name in names(corpus$files)) stopifnot(identical(digest::digest(file = corpus$files[[name]]$path,
         algo = "sha256"), corpus$files[[name]]$sha256))
@@ -429,6 +684,17 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         return(receipt)
     }
     stopifnot(identical(operation$status, "complete"), all(steps %in% names(status)), all(unlist(status[steps]) == "complete"))
+    files <- kitFingerprintFiles(journey$project)
+    stopifnot(identical(files[c("path", "bytes", "sha256", "method")], journey$files[c("path", "bytes", "sha256", "method")]))
+    receipt$files <- nrow(files)
+    if (!isTRUE(case$record)) {
+        # Production default: in-memory state, no store, no populations; completion and measures only.
+        stopifnot(is.null(journey$store), is.numeric(operation$resident_end_bytes), is.finite(operation$resident_end_bytes),
+            all(is.finite(unlist(operation$phase_peak_anon_bytes[steps]))))
+        receipt$populations <- NULL
+        receipt$status <- "complete"
+        return(receipt)
+    }
     store_dir <- journey$store
     stopifnot(!is.null(store_dir), dir.exists(store_dir))
     recomputed <- kitFingerprintStore(store_dir, api)
@@ -437,20 +703,85 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
     for (step in names(journey$populations)) {
         population <- journey$populations[[step]]
         if (is.null(population$state)) next
-        expected <- population$fingerprint
-        actual <- recomputed$states[[population$state]]
-        if (!identical(expected, actual)) mismatches <- c(mismatches, step)
+        if (!kitStateFingerprintMatches(population$fingerprint, recomputed$states[[population$state]])) mismatches <- c(mismatches, step)
     }
-    stopifnot(!length(mismatches))
-    files <- kitFingerprintFiles(journey$project)
-    stopifnot(identical(files[c("path", "bytes", "sha256", "method")], journey$files[c("path", "bytes", "sha256", "method")]))
+    stopifnot(!length(mismatches), isTRUE(journey$populations_complete))
     receipt$populations <- lapply(journey$populations, \(p) list(state = p$state, entity_id = p$entity_id,
         rows = p$rows, fingerprints = length(p$fingerprint$components) + length(p$fingerprint$support) +
             length(p$fingerprint$products) + 1L))
-    receipt$files <- nrow(files)
     receipt$products <- length(recomputed$products)
+    if (case$rep == 2L) {
+        # Reproducibility: the first repetition of the same role is the oracle (KIT-005 item 5).
+        first <- readRDS(file.path(bindings$root, target$stage, paste0(case$role, "-1"), "journey-result.rds"))
+        receipt$reproduce_mismatches <- kitReproduceMismatches(first$populations, journey$populations)
+        receipt$file_mismatches <- kitFileMismatches(first$files, journey$files)
+        receipt$reproduced <- !length(receipt$reproduce_mismatches) && !length(receipt$file_mismatches)
+        stopifnot(isTRUE(receipt$reproduced))
+    }
     receipt$status <- "complete"
     receipt
+}
+
+#' Operation-member verification (CORE's checks carried into the kit; no `population == "p14"` assertion).
+#' @noRd
+verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, api) {
+    member <- readRDS(file.path(owned, "member-result.rds"))
+    expected_status <- if (case$expect_failure) "worker_failed" else "complete"
+    stopifnot(identical(operation$status, expected_status), identical(member$status, expected_status),
+        identical(member$member$input_entity_id, case$input$entity_id),
+        identical(digest::digest(file = file.path(case$input$store, "dia-state-head.rds"), algo = "sha256"), case$input$head_sha256))
+    project <- file.path(owned, "project")
+    owner <- api("readSavedStoreIdentity")(file.path(project, ".workflow-entities/store.json"))
+    manager <- api("newDIAStateAdapter")(api("newWorkflowEntityStore")(project, owner$project_id, owner$workflow_id), reopen = TRUE)
+    on.exit(api("closeDIAStateAdapter")(manager), add = TRUE, after = FALSE)
+    checkpoint <- api("readDIAStateMetadata")(manager)$data
+    request <- file.path(project, ".workflow-entities/.workflow-export", operation$execution$request_id)
+    journal <- jsonlite::read_json(file.path(request, "journal.json"))
+    completion <- readRDS(file.path(request, "completion.rds"))
+    worker <- readRDS(file.path(request, "worker-result.rds"))
+    stopifnot(!identical(journal$status, "conflict"), !identical(completion$status, "guard_payload_invalid"),
+        !isTRUE(completion$monitor_lost_after_result), identical(completion$status, expected_status),
+        isTRUE(completion$cleanup$worker_stopped), isTRUE(completion$cleanup$monitor_stopped))
+    input_component <- checkpoint$components$peptide_data
+    if (case$expect_failure) {
+        fault <- bindings$operation_lifecycle$fault
+        stopifnot(identical(journal$status, "worker_failed"), identical(worker$status, "failed"),
+            grepl(fault$error_pattern, worker$error, fixed = TRUE),
+            identical(input_component$entity_id, case$input$entity_id))
+        receipt$failure <- list(worker_error = worker$error, journal_status = journal$status,
+            head_entity = input_component$entity_id, completion_status = completion$status)
+        receipt$status <- "complete"
+        return(receipt)
+    }
+    stopifnot(identical(journal$status, "complete"))
+    execution <- worker$result$execution
+    store <- manager$.context$store
+    hashes <- kitFingerprintTable(store, input_component, api)
+    if (case$operation == "precursor_rollup") {
+        screen <- identical(case$input$rows, bindings$populations$screen_p14$rows)
+        oracle <- bindings$oracles$p14
+        expected <- unlist(oracle[[if (screen) "screen_pages" else "full_pages"]], use.names = FALSE)
+        pages <- kitFingerprintTablePages(store, input_component, api)
+        stopifnot(identical(unname(pages), unname(expected)), identical(execution$exact_sum_sha256, case$exact_sum),
+            identical(execution$query_owner, "fastduckdb_c"), identical(execution$profile$name, "P14"),
+            all(kitRequiredOperationPhases %in% names(operation$phase_status)))
+        receipt$pages <- pages
+    } else {
+        oracle <- bindings$oracles[[paste0("operation_", case$population)]]
+        stopifnot(!is.null(oracle), identical(hashes$sha256, oracle$sha256))
+    }
+    receipt$output <- hashes
+    receipt$execution <- execution
+    receipt$status <- "complete"
+    receipt
+}
+
+#' The P14 page hashes of a table (every column, 10,000 rows per page), as the bound oracle records them.
+#' @noRd
+kitFingerprintTablePages <- function(store, reference, api) {
+    scope <- api("newWorkflowTableReadScope")(store, reference, reader = "fastduckdb")
+    on.exit(api("releaseWorkflowTableReadScope")(scope), add = TRUE)
+    kitPageHashes(store, reference, api, scope)
 }
 
 `%||%` <- function(x, y) if (is.null(x)) y else x

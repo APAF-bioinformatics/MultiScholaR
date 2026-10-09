@@ -119,7 +119,7 @@ kitSnapshotAfterStep <- function(project, api) {
     head <- kitReadHead(store_dir, api)
     list(store = store_dir, head_sha256 = head$head_sha256, state = head$current_state,
         entity_id = head$states[[head$current_state]], rows = head$rows[[head$current_state]],
-        history = head$history)
+        history = head$history, product_ids = as.character(unlist(head$products)))
 }
 
 #' Run the journey. Every step is marked `start` then `complete` or `failed`; after each step the
@@ -266,6 +266,19 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
                 record$populations[[id]]$snapshot_time <- "after_adoption"
             } else record$populations[[id]]$snapshot_time <- "after_step"
             record$populations[[id]]$fingerprint <- fingerprints$states[[state]]
+        }
+        # Products are attached to the step after which they first appear (canonical fingerprints,
+        # ordered by hash so the set compares across runs).
+        seen <- character()
+        for (id in names(record$populations)) {
+            ids <- record$populations[[id]]$product_ids %||% character()
+            new_ids <- setdiff(ids, seen)
+            seen <- union(seen, ids)
+            products <- fingerprints$products[intersect(new_ids, names(fingerprints$products))]
+            products <- unname(products[order(vapply(products, `[[`, character(1), "sha256"))])
+            names(products) <- vapply(products, function(p) paste0(p$product_type %||% p$kind, ":", substr(p$sha256, 1L, 12L)), character(1))
+            if (!is.null(record$populations[[id]]$fingerprint)) record$populations[[id]]$fingerprint$products <- c(
+                record$populations[[id]]$fingerprint$products, products)
         }
         record$populations_complete <- all(vapply(steps, function(step) is.null(step$state) ||
             !is.null(record$populations[[step$id]]$fingerprint), logical(1)))
