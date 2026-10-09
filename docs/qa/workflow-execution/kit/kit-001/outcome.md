@@ -36,7 +36,13 @@ The complete member's store: 16 states (`initial` through `correlation_filtered`
 | 3 | screen corpus v1 too sparse: the group-count intensity filter left 365 of 60,000 features, the 3,000 cutoff then removed every sample and the GUI carried an empty table to IQ | fixture | screen corpus v2 (`ea731185`); GUI gap recorded for KIT-013/014 |
 | 4 | journey complete; the driver's fingerprinting overran the C stack on the RUV diagnostic plot product | instrumentation, after a valid measurement | masking depth bounded (`99487853`); fingerprints recomputed from the immutable store by [attempt4-post-hoc-fingerprints.R](attempt4-post-hoc-fingerprints.R) with the in-run snapshots kept; the state-attach slip found by the verifier fixed (`dfd6aacd`); verifier rerun from the corrected harness; driver originals kept beside the member (`*.driver.rds`, `verification.driver-failed.rds`) |
 
-The failure member ran once and verified on its first launch with the corrected harness.
+The failure member ran once and verified on its first launch (harness at `3512f84d`: the masking fix was in, the state-attach fix `dfd6aacd` came after; the failure decision does not depend on it).
+
+Provenance of the attempt-4 correction (audit PA-02): `journey$correction$harness_commit` records `3512f84d`, but the script and driver as run were the versions committed afterwards at `dfd6aacd` (the attach-loop fix was applied before the correction ran and committed after). The successor script [attempt4-post-hoc-correction-v2.R](attempt4-post-hoc-correction-v2.R) records the full correction (fingerprints, verifier rerun, decision) as it ran.
+
+Install sequence (audit PA-04): `kit/browser-smoke.sLJ4aC` failed at configure (the exact-sum artifacts live under `core/`); `core/browser-smoke.uvS55B` (source `d2c73bfc`) was bound as `kit_001` and superseded by the native-path fix; `core/browser-smoke.y8rDOi` (source `9075b361`) is the bound `kit_001`.
+
+Claim scope of the forced failure (audit PA-03): the guard was injected and the sample step marked `start` at the same uptime; the step failed 0.27 s later on disconnection before any sample-filter work, so the member proves the application's guard path and head stability across a stop between steps, not during a step's write. KIT-005's operation-member lifecycle uses a mid-step fault.
 
 ## What was built (new harness files; the four CORE-pinned files byte-identical)
 
@@ -47,7 +53,7 @@ The failure member ran once and verified on its first launch with the corrected 
 | `tools/profiling/workflow_kit_coordinator.R` | stage coordinator: frozen source snapshot, bindings and hash checks, host precondition, managed `gui` launch with the KIT journey record from a fresh launcher on the case library, 50 ms slice sampler, browser driven from the coordinator (outside the slice), operation receipt, verifier launch, decision |
 | `tools/profiling/run_workflow_kit.sh` | guarded `validate` / `run` entry (clean tree, 12 GiB, no other managed unit, no live stage, browser present) and the `--sample` loop with the 15.5 GiB / 2 GiB / deadline guards |
 | `docs/qa/workflow-execution/kit/bindings-generator.R`, `bindings.json` | builds (`kit_001` control, `core_018` superseded), copied CORE populations and oracles, the two corpora, frozen journey settings, lifecycle fault, harness, protocol and step-map hashes |
-| `tests/testthat/test-workflow-kit-harness.R` | 54 assertions |
+| `tests/testthat/test-workflow-kit-harness.R` | 56 assertions |
 | `kit-001/step-map.json` | 19 entries: units from the kernel code with file:line evidence, global statistics, merge rules, holders, mode; 0 open flags |
 | `kit-001/holder-inventory.json` | KIT-012 worklist: 121 holder sites in 40 files, 49 holding a full S4 or a DA list with `theObject`, 19 in-memory `saveState` calls, 26 `.GlobalEnv` assigns (KIT-013) |
 

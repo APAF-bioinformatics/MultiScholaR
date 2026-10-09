@@ -11,7 +11,7 @@ kitJourneySteps <- function() {
     step <- function(id, label, state, kind, module, action) list(id = id, label = label,
         state = state, kind = kind, module = module, action = action)
     list(
-        step("import", "Import", "raw_data_s4", "store", "mod_prot_import", "prot-import-process"),
+        step("import", "Import", "initial", "store", "mod_prot_import", "prot-import-process"),
         step("design", "Design", "raw_data_s4", "store", "mod_prot_design", "builder save_results"),
         step("qvalue", "Q-Value Filter", "qvalue_filtered", "peptide", "mod_prot_qc_peptide_qvalue", "qvalue_filter-apply_qvalue_filter"),
         step("protein_peptide", "Protein Evidence", "protein_peptide_filtered", "peptide", "mod_prot_qc_peptide_protein", "protein_peptide_filter-apply_protein_peptide_filter"),

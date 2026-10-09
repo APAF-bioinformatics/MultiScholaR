@@ -44,6 +44,8 @@ test_that("the journey step map lists every DIA step in production order", {
         "imputation", "iq", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv",
         "correlation", "session_export", "da"))
     steps <- h$kitJourneySteps()
+    expect_identical(steps[[1]]$state, "initial")
+    expect_identical(steps[[2]]$state, "raw_data_s4")
     expect_identical(steps[[7]]$state, "sample_filtered")
     expect_null(steps[[17]]$state)
 })

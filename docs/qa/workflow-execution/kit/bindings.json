@@ -1867,12 +1867,12 @@
     "step_map_sha256": "e14432f147a6019cfc6895af7e153df6829a25b2d91173356cedf4b22daae857",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "12985fe2253ac650dfbabccd63b7f8e02108adbd1cfb6cc80ed1cea3ff8fd005",
+      "tools/profiling/workflow_kit.R": "6fc4b3bef17ade412af1af7eed60772dc0183ba0cde403d8ce6c2eeb615ff5da",
       "tools/profiling/workflow_kit_driver.R": "e9f53943f29c2b6d6ce0730c2bc64abcf9724bff16b7c44e6f4c2084c0b31c04",
       "tools/profiling/workflow_kit_coordinator.R": "9ce9bc2962ea0af46296a4d112d0d337f0381f2f06eff8d1e1b4762f401b7df4",
       "tools/profiling/run_workflow_kit.sh": "4987c0c62e95197e3261a84a820d76ef6de47327e68e83567aec689bdf706399",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
-      "tests/testthat/test-workflow-kit-harness.R": "3f87f6f749aff648ea546294044079f5fa9bd5884adad3f4f22f9931f1f13232"
+      "tests/testthat/test-workflow-kit-harness.R": "48a53b9516f8f0031570416a5cb623e0ae84a43bce881d75dbeae3b7e12c1c1f"
     }
   }
 }
