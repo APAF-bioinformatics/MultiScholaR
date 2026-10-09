@@ -54,6 +54,7 @@ peptideIntensityFilteringHelper <- function(input_table = NULL,
                                              min_groups = NULL,
                                              strict_mode = FALSE,
                                              return_filter_result = FALSE,
+                                             require_complete_design_runs = TRUE,
                                              ...) {
   extra_args <- list(...)
   if (is.null(input_table)) {
@@ -294,7 +295,9 @@ peptideIntensityFilteringHelper <- function(input_table = NULL,
     )
   }
   unmatched_input_runs <- setdiff(input_runs, design_runs)
-  absent_design_runs <- setdiff(design_runs, input_runs)
+  # A feature-group batch legitimately lacks runs where the group was not observed; the group
+  # sizes still come from the complete design, so the per-batch result equals the whole-table one.
+  absent_design_runs <- if (isTRUE(require_complete_design_runs)) setdiff(design_runs, input_runs) else character()
   if (length(unmatched_input_runs) > 0L || length(absent_design_runs) > 0L) {
     stop(
       paste0(

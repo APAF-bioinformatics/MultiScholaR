@@ -370,7 +370,7 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
                 min_groups = parameters$min_groups, strict_mode = parameters$strict_mode,
                 groupwise_percentage_cutoff = args$groupwise_percentage_cutoff %||% 1,
                 max_groups_percentage_cutoff = args$max_groups_percentage_cutoff %||% 50,
-                return_filter_result = TRUE)
+                return_filter_result = TRUE, require_complete_design_runs = FALSE)
             result_args <- utils::modifyList(args, list(
                 grouping_variable = parameters$grouping_variable %||% "group",
                 groupwise_percentage_cutoff = args$groupwise_percentage_cutoff %||% 1,
