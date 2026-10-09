@@ -108,11 +108,11 @@ setMethod( f="peptideIntensityFiltering"
              min_peptide_intensity_threshold <- if (length(valid_values) == 0L) {
                0
              } else {
-               unname(ceiling(stats::quantile(
+               unname(stats::quantile(
                  valid_values,
                  na.rm = TRUE,
                  probs = percentile / 100
-               ))[[1L]])
+               )[[1L]])
              }
 
              filter_result <- peptideIntensityFilteringHelper(
@@ -210,7 +210,7 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
                message("      WARNING: No valid intensity values found for threshold calculation.")
                min_peptide_intensity_threshold <- 0
              } else {
-               min_peptide_intensity_threshold <- unname(ceiling( quantile( valid_values, na.rm=TRUE, probs = c(peptides_intensity_cutoff_percentile/100) ))[1])
+               min_peptide_intensity_threshold <- unname(quantile(valid_values, na.rm = TRUE, probs = c(peptides_intensity_cutoff_percentile / 100))[1])
              }
              message(sprintf("      Calculated min_peptide_intensity_threshold = %g", min_peptide_intensity_threshold))
 

@@ -17,9 +17,9 @@ kitSyntheticBindings <- function() {
         builds = list(core_018 = build("n"), kit_006 = build("k")), control = "core_018",
         outcomes = list(list(ticket = "CORE-018", outcome = "control", build = "core_018")),
         corpora = list(screen = corpus(8L), full = corpus(300L)),
-        journey = list(member = list(programme = "perf107-phase-a", variant = "physical", entry = "resident", deadline = 1800),
+        journey = list(member = list(programme = "kit-journey-v1", deadline = 5400),
             settings = list(), ceiling_seconds = 3600),
-        lifecycle = list(ceiling_seconds = 300L, fault = list(name = "guard_after_sample", after_step = "sample", failed_step = "replicate")))
+        lifecycle = list(ceiling_seconds = 300L, fault = list(name = "guard_after_intensity", after_step = "intensity", failed_step = "sample")))
 }
 
 kitSyntheticReceipt <- function(cases, h, edit = NULL) {
@@ -58,7 +58,7 @@ test_that("KIT stages expand to fixed cases with bound corpora, builds and diges
     expect_identical(life[[1]]$corpus, "screen")
     expect_false(life[[1]]$expect_failure)
     fail <- h$kitCases(b, "kit-lifecycle-fail")[[1]]
-    expect_identical(fail$fault, "guard_after_sample")
+    expect_identical(fail$fault, "guard_after_intensity")
     expect_true(fail$expect_failure)
     expect_false(identical(fail$binding, life[[1]]$binding))
     changed <- b
@@ -122,7 +122,7 @@ test_that("lifecycle decisions never relabel a failure as success", {
     fail <- h$kitCases(b, "kit-lifecycle-fail")
     failed <- kitSyntheticReceipt(fail, h, edit = function(r) {
         r$cases$member$operation$status <- "journey_failed"
-        r$cases$member$operation$phase_status$replicate <- "failed"
+        r$cases$member$operation$phase_status$sample <- "failed"
         r$cases$member$operation$guard <- list(reason = "injected_guard_stop")
         r$cases$member$operation$head_unchanged <- TRUE
         r
@@ -135,7 +135,7 @@ test_that("lifecycle decisions never relabel a failure as success", {
     moved$cases$member$operation$head_unchanged <- FALSE
     expect_identical(h$kitLifecycleDecision(moved, fail, b)$failing_rule, "head_unchanged")
     wrong_step <- failed
-    wrong_step$cases$member$operation$phase_status$replicate <- "complete"
+    wrong_step$cases$member$operation$phase_status$sample <- "complete"
     expect_identical(h$kitLifecycleDecision(wrong_step, fail, b)$failing_rule, "phase_timing")
 })
 

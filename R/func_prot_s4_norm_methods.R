@@ -204,10 +204,15 @@ setMethod(
 
     Y <- t(normalised_frozen_protein_matrix_filt[, sample_ids, drop = FALSE])
 
+    # Replicate sets: technical replicates when the design has them, else the grouping variable.
+    replicate_blocks <- resolveProtRuvReplicateBlocks(design_matrix, sample_id, group_id,
+      replicate_group_column, ruv_grouping_variable)
+    ruv_replicate_structure <- replicate_blocks$structure
+    theObject <- updateParamInObject(theObject, "ruv_replicate_structure")
     M <- getRuvIIIReplicateMatrixHelper(
-      design_matrix,
+      replicate_blocks$design,
       !!sym(sample_id),
-      !!sym(ruv_grouping_variable)
+      .ruv_replicate_block
     )
 
     cln_mat <- RUVIII_C_Varying(

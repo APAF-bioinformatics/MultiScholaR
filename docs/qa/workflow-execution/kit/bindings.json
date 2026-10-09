@@ -21,9 +21,9 @@
   "outcomes": [
     {
       "ticket": "CORE-018",
-      "outcome": "control",
+      "outcome": "superseded",
       "build": "core_018",
-      "note": "post-closure CORE build (source 906c50dc, install browser-smoke.gQ40C7); the KIT control until KIT-006 accepts"
+      "note": "post-closure CORE build (source 906c50dc, install browser-smoke.gQ40C7); superseded as the KIT control by kit_001 (user decision 2026-10-09: launch hook, RUV replicate structure, quantile ceiling removal)"
     }
   ],
   "control": "core_018",
@@ -1796,15 +1796,13 @@
   },
   "journey": {
     "experiment_label": "dia_baseline_smoke",
-    "state_manager_mode": "dia_gui_adoption",
+    "state_manager_mode": "dia_native_sessions",
     "member": {
-      "programme": "perf107-phase-a",
-      "variant": "physical",
-      "entry": "resident",
-      "deadline": 1800
+      "programme": "kit-journey-v1",
+      "deadline": 5400
     },
-    "controller_deadline_seconds": 1800,
-    "claim_limits": ["The on-disk owner is entered through the existing PERF-107 phase-A launch record: the in-memory WorkflowState holds every state until the sample filter, where the history is converted into a .dia-gui-adoption store and the sample filter runs through the managed worker (physical variant). Earlier states are snapshotted after adoption, not after their own step.", "That launch record caps the controller at 1800 s; a journey ceiling above 1800 s needs a different entry (user decision before KIT-005).", "The in-memory mode has no references to snapshot; a production default journey (no launch record) cannot be fingerprinted per step until KIT-011."],
+    "controller_deadline_seconds": 5400,
+    "claim_limits": ["The journey runs the production native DIA session path (`initializeDIANativeImport`: on-disk reference states from import onward, in-process reference kernels) switched on by the KIT journey launch record, so every step is snapshotted after its own step.", "A production-default journey (no launch record, in-memory WorkflowState) has no per-step references; KIT-005 runs one such member as the memory baseline and cannot fingerprint it per step."],
     "diagnostic_settings": false,
     "settings": {
       "sample": {
@@ -1837,10 +1835,10 @@
   "lifecycle": {
     "ceiling_seconds": 300,
     "fault": {
-      "name": "guard_after_sample",
-      "after_step": "sample",
-      "failed_step": "replicate",
-      "mechanism": "application-guard-inject.rds written after the sample filter completes; the application monitor stops the slice (injected_guard_stop); the replicate step fails on disconnection; the head must equal the sample-filter snapshot"
+      "name": "guard_after_intensity",
+      "after_step": "intensity",
+      "failed_step": "sample",
+      "mechanism": "application-guard-inject.rds written after the intensity filter (the first post-rollup step) completes; the application monitor stops the slice (injected_guard_stop); the sample-filter step fails on disconnection; the head must equal the intensity-filter snapshot"
     }
   },
   "harness": {
@@ -1849,17 +1847,17 @@
     "driver": "tools/profiling/workflow_kit_driver.R",
     "runner": "tools/profiling/run_workflow_kit.sh",
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
-    "protocol_sha256": "020a8ff1b6e96a38f6e8673b10d4bb1efe78ad726be2be7a6aa486413482b803",
+    "protocol_sha256": "8998db8f12a30ce119c516f4e3ffa44cac9a2c57f014d4a1564bb23147813d61",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
-    "step_map_sha256": "d74b3e1035efc527a309c2d3d64b368daad7c51416f93f6bc588cafda5da3a53",
+    "step_map_sha256": "966a76f191eae8cc368a15ace2b400c44546548f1ddae8c5da1dc30b26756fea",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "2c96ac97f256f21673f6f9f229ad8445efe07c612ea44026ac5de4738703cc8d",
-      "tools/profiling/workflow_kit_driver.R": "3c638dc909efb6e8459999817d25330e91c1765b005a30ad0edea584d174f0b8",
-      "tools/profiling/workflow_kit_coordinator.R": "0bf29eb77688243d6ad2bee7ebb0d0c3e98bf111e164eaf4bff277a793d24743",
+      "tools/profiling/workflow_kit.R": "83ea205e2bd303a3b907743c1ddd75afa8c2e6319cacf13855c3f25d5be6cec1",
+      "tools/profiling/workflow_kit_driver.R": "846658caa5328b0cdf02f51b25060d6185604b76f1ffdc99d660e529bb7419a4",
+      "tools/profiling/workflow_kit_coordinator.R": "68216fccacbcda7662be590128cb3d81883ee6713484fc149bf493c3ee33f6f0",
       "tools/profiling/run_workflow_kit.sh": "1c2491290d0d91c3561cc690201f42cb04d61cb2474e4b4bf5facacc7f872aae",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
-      "tests/testthat/test-workflow-kit-harness.R": "f487c1176e24d1ef94542425716d81fef7d114f6219785b39bd829705c1056ce"
+      "tests/testthat/test-workflow-kit-harness.R": "d9dd11be8da4b555ae3785eda25524c2e0d3bc7c3eb126e235af93fb80317385"
     }
   }
 }

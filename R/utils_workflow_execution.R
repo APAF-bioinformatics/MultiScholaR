@@ -762,17 +762,10 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
             if (file.size(member_path) > 65536) {
                 cli::cli_abort("GUI qualification member is oversized")
             }
-            member <- readRDS(member_path)
-            if (!is.list(member) || !identical(member$schema, 1L)) {
-                cli::cli_abort("GUI qualification member is invalid")
-            }
-            config$qualification <- list(programme = member$programme,
-                variant = member$variant, entry = member$entry,
-                member_sha256 = digest::digest(file = member_path, algo = "sha256"),
-                deadline = member$deadline)
-            config$allow_guard_injection <- isTRUE(member$guard_stop_test)
-            config$entry_fixture_test <- isTRUE(member$entry_fixture_test)
-            workflowQualificationVariant(config, "minimum_peptides_per_sample")
+            record <- workflowGuiLaunchRecord(readRDS(member_path),
+                digest::digest(file = member_path, algo = "sha256"))
+            config[names(record)] <- record
+            if (!is.null(config$qualification)) workflowQualificationVariant(config, "minimum_peptides_per_sample")
         }
     }
     if (mode != "gui") {
@@ -835,7 +828,7 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
     }
     workflowLaunchService(config, config$controller_unit, "application", config_path,
         digest::digest(file = config_path, algo = "sha256"), deadline = if (!is.null(config$qualification))
-            config$qualification$deadline else if (mode == "adapters") { if (diagnostic) 300L else 1800L } else
+            config$qualification$deadline else if (!is.null(config$journey)) config$journey$deadline else if (mode == "adapters") { if (diagnostic) 300L else 1800L } else
             if (mode == "resources" && diagnostic) 900L else if (diagnostic) 600L else 86400L,
         binds = controller_binds)
     ready <- TRUE
@@ -931,8 +924,36 @@ workflowManagedMain <- function(arguments) {
         if (any(results$failed > 0 | results$error)) stop("installed lifecycle checks failed")
         return(invisible(NULL))
     }
+    # A KIT journey record runs the production native DIA session path from import onward.
+    if (isTRUE(config$journey$native_sessions)) options(multischolar.dia_native_sessions = TRUE)
     shiny::runApp(run_app(workflow_execution = app), host = "127.0.0.1",
         port = config$port, launch.browser = FALSE)
+}
+
+#' Interpret a bounded GUI launch record (`gui-member.rds`) into frozen configuration fields.
+#' @param member Record list; `perf107-phase-a` carries a qualification, `kit-journey-v1`
+#'   switches the controller to native DIA sessions with a deadline of at most 90 minutes.
+#' @param member_sha256 Hash of the record file.
+#' @return Named list of configuration fields (`qualification` or `journey`, plus the test flags).
+#' @noRd
+workflowGuiLaunchRecord <- function(member, member_sha256) {
+    if (!is.list(member) || !identical(member$schema, 1L)) {
+        cli::cli_abort("GUI qualification member is invalid")
+    }
+    guard <- isTRUE(member$guard_stop_test)
+    if (identical(member$programme, "kit-journey-v1")) {
+        deadline <- member$deadline
+        if (!is.numeric(deadline) || length(deadline) != 1L || !is.finite(deadline) ||
+            deadline < 60 || deadline > 5400 || isTRUE(member$entry_fixture_test)) {
+            cli::cli_abort("KIT journey record is invalid")
+        }
+        return(list(journey = list(programme = "kit-journey-v1", native_sessions = TRUE,
+            deadline = as.numeric(deadline), member_sha256 = member_sha256),
+            allow_guard_injection = guard, entry_fixture_test = FALSE))
+    }
+    list(qualification = list(programme = member$programme, variant = member$variant,
+        entry = member$entry, member_sha256 = member_sha256, deadline = member$deadline),
+        allow_guard_injection = guard, entry_fixture_test = isTRUE(member$entry_fixture_test))
 }
 
 #' Close every controller, then always release the application monitor.

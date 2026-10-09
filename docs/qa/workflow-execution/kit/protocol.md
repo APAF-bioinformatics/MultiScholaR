@@ -1,6 +1,6 @@
 # KIT measurement protocol
 
-**Version 1 (frozen by KIT-001, 2026-10-09).** Its SHA-256 is recorded in `kit/bindings.json` and a change to this file is a new version needing a user decision. Carries the CORE protocol v8.1 (`../core/protocol.md`) unless stated.
+**Version 1.1 (frozen by KIT-001, 2026-10-09; amended the same day before any counted member, user decision: the control is the rebuilt `kit_001` build and KIT-005 adds a production-default baseline member).** Its SHA-256 is recorded in `kit/bindings.json` and a change to this file is a new version needing a user decision. Carries the CORE protocol v8.1 (`../core/protocol.md`) unless stated.
 
 ## 1. Rules carried from CORE
 
@@ -13,7 +13,7 @@
 
 ## 2. Control
 
-The control is the latest accepted KIT build, run in the same session as the candidate. Until KIT-006 accepts, the control is `core_018` (source `906c50dc`, install `browser-smoke.gQ40C7`). A control receipt is never reused across a build or protocol change; controls are re-run.
+The control is the latest accepted KIT build, run in the same session as the candidate. Until KIT-006 accepts, the control is `kit_001`: the `core_018` source (`906c50dc`) plus the KIT journey launch record (`kit-journey-v1`, native DIA sessions in the controller), the RUV-III technical-replicate structure and the removal of the quantile ceiling in the proteomics intensity filters (user decisions 2026-10-09). Its install is recorded in the bindings before any member uses it. A control receipt is never reused across a build or protocol change; controls are re-run.
 
 ## 3. Decision rules
 
@@ -28,8 +28,9 @@ The control is the latest accepted KIT build, run in the same session as the can
 | Kind | Scope | Metrics |
 |---|---|---|
 | operation member | one registered operation on one bound population in the worker slice | kernel peak (`peak_bytes`), whole-slice anonymous peak, phase peaks, batches, elapsed and CPU (reported) |
-| journey member | the KIT-001 driver through the whole DIA journey on the 300-sample synthetic corpus, under a `gui`-mode managed launch, with the journey's state-manager mode and per-step settings frozen in the bindings | whole-slice anonymous peak, per-step anonymous peaks (`phase_peak_anon_bytes$<step>`), `resident_end_bytes` (minimum anonymous memory in the last 5 s before teardown, from the coordinator's anonymous trace and a teardown mark), elapsed (reported); ceiling set from the KIT-001 screen duration scaled to 300 samples and recorded before launch, never above 90 min |
-| baseline pair | `core_018` (source `906c50dc`, install `browser-smoke.gQ40C7`) versus a candidate, both journey members in one session; used by KIT-005 (baseline, populations and oracles) and KIT-017 (closure) | as journey member, judged per pair |
+| journey member | the KIT-001 driver through the whole DIA journey on the 300-sample synthetic corpus, under a `gui`-mode managed launch with the KIT journey record (native DIA sessions from import), with the per-step settings frozen in the bindings | whole-slice anonymous peak, per-step anonymous peaks (`phase_peak_anon_bytes$<step>`), `resident_end_bytes` (minimum anonymous memory in the last 5 s before teardown, from the coordinator's anonymous trace and a teardown mark), elapsed (reported); ceiling set from the KIT-001 screen duration scaled to 300 samples and recorded before launch, never above 90 min |
+| baseline pair | the control build (`kit_001` until KIT-006 accepts) versus a candidate, both journey members in one session; used by KIT-005 (baseline, populations and oracles) and KIT-017 (closure) | as journey member, judged per pair |
+| production-default baseline | one journey member of the control build launched without a journey record (in-memory `WorkflowState`, as users run it); the memory baseline that KIT-011, KIT-012 and KIT-017 reductions are judged against; no per-step references, so no populations | whole-slice anonymous peak, per-step anonymous peaks, `resident_end_bytes`, elapsed (reported) |
 | lifecycle member | completion and forced failure through a changed launch or measurement path, on the screen corpus | observed / not observed |
 
 Selectors: `kit:0NN:(control|candidate):[12]` for operation members, `kit:journey:(control|candidate):[12]` for journey and baseline-pair members, `kit:lifecycle:(complete|fail)`. All KIT selectors live in the KIT harness files; the CORE-pinned files are not edited.

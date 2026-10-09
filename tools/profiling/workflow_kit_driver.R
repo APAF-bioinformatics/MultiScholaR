@@ -111,7 +111,7 @@ runKitQcAction <- function(h, driver, prefix, tab_input, tab, action, result, st
 }
 
 #' Snapshot the adopted store after a step: head hash, current state, entity id and rows.
-#' NULL before adoption (the in-memory owner has no references to snapshot).
+#' NULL while no store exists (an in-memory owner has no references to snapshot).
 #' @noRd
 kitSnapshotAfterStep <- function(project, api) {
     store_dir <- kitFindStore(project)
@@ -246,8 +246,8 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
     if (record$status == "running") record$status <- "complete"
     record$files <- previous_files
     if (!is.null(record$store)) {
-        # Pre-adoption states are converted into the store at adoption; fingerprint every state
-        # the final head references and attach each to the step that produced it.
+        # Fingerprint every state the final head references and attach each to the step that
+        # produced it (a state snapshotted only after a later step is marked after_adoption).
         fingerprints <- kitFingerprintStore(record$store, api)
         record$final_head_sha256 <- fingerprints$head_sha256
         record$product_fingerprints <- fingerprints$products

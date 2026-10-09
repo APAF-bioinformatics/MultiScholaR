@@ -176,13 +176,13 @@ test_that("peptide QC S4 methods preserve threshold resolution and invalid-value
   expect_s4_class(valid_missing, "PeptideQuantitativeData")
   expect_s4_class(invalid_missing, "PeptideQuantitativeData")
 
-  expect_equal(log_env$intensity_calls[[1]]$min_peptide_intensity_threshold, 2)
+  expect_equal(log_env$intensity_calls[[1]]$min_peptide_intensity_threshold, 1.03)
   expect_identical(
     log_env$intensity_calls[[1]]$peptide_quantity_column,
     "Precursor.Normalised"
   )
   expect_equal(log_env$intensity_calls[[2]]$min_peptide_intensity_threshold, 0)
-  expect_equal(log_env$missing_calls[[1]]$abundance_threshold, 3)
+  expect_equal(log_env$missing_calls[[1]]$abundance_threshold, 2.5)
   expect_equal(log_env$missing_calls[[2]]$abundance_threshold, 0)
   expect_equal(nrow(valid_intensity@peptide_data), 2)
   expect_equal(nrow(valid_missing@peptide_data), 1)
@@ -256,7 +256,7 @@ test_that("peptide intensity method defaults to normalised quantity and permits 
   )
   expect_equal(
     normalised@args$peptideIntensityFiltering$min_peptide_intensity_threshold,
-    3
+    2.5
   )
   expect_identical(
     raw@args$peptideIntensityFiltering$peptide_quantity_column,

@@ -16,8 +16,8 @@ b <- list(schema = 1L, owner = "KIT-001; extended by later KIT tickets", created
     repository = core$repository)
 # Builds: core_018 (the control until KIT-006 accepts) carried verbatim from the CORE bindings.
 b$builds <- list(core_018 = core$builds$core_018)
-b$outcomes <- list(list(ticket = "CORE-018", outcome = "control", build = "core_018",
-    note = "post-closure CORE build (source 906c50dc, install browser-smoke.gQ40C7); the KIT control until KIT-006 accepts"))
+b$outcomes <- list(list(ticket = "CORE-018", outcome = "superseded", build = "core_018",
+    note = "post-closure CORE build (source 906c50dc, install browser-smoke.gQ40C7); superseded as the KIT control by kit_001 (user decision 2026-10-09: launch hook, RUV replicate structure, quantile ceiling removal)"))
 b$control <- "core_018"
 probe <- function(library) {
     out <- system2(file.path(R.home("bin"), "Rscript"), c("--vanilla", "-e", shQuote(paste0(
@@ -37,6 +37,11 @@ for (key in names(installs)) {
     b$builds[[key]] <- list(ticket = sub("^kit_", "KIT-", key), library = library, build = new$build, exact_sum = new$exact_sum,
         install_member = basename(install), source_commit = trimws(readLines(file.path(install, "source-commit.txt"))[[1L]]),
         runtime_patch_bytes = file.size(file.path(install, "runtime.patch")))
+    if (key == "kit_001") {
+        b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-001", outcome = "control", build = "kit_001",
+            note = "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09); the KIT control until KIT-006 accepts")
+        b$control <- "kit_001"
+    }
 }
 # CORE populations and oracles, copied verbatim (the P14 page oracle and the sample-filter oracle).
 b$populations <- core$populations[c("screen_p14", "full_p14", "full_primary")]
@@ -75,13 +80,12 @@ b$corpora$screen$note <- "the first eight samples of the calibration recipe (sam
 # corpus's designed cutoff; the ruv_pearson profile of runCheckpointNormalizationActions; DA as runCheckpointDaActions.
 b$journey <- list(
     experiment_label = "dia_baseline_smoke",
-    state_manager_mode = "dia_gui_adoption",
-    member = list(programme = "perf107-phase-a", variant = "physical", entry = "resident", deadline = 1800),
-    controller_deadline_seconds = 1800,
+    state_manager_mode = "dia_native_sessions",
+    member = list(programme = "kit-journey-v1", deadline = 5400),
+    controller_deadline_seconds = 5400,
     claim_limits = c(
-        "The on-disk owner is entered through the existing PERF-107 phase-A launch record: the in-memory WorkflowState holds every state until the sample filter, where the history is converted into a .dia-gui-adoption store and the sample filter runs through the managed worker (physical variant). Earlier states are snapshotted after adoption, not after their own step.",
-        "That launch record caps the controller at 1800 s; a journey ceiling above 1800 s needs a different entry (user decision before KIT-005).",
-        "The in-memory mode has no references to snapshot; a production default journey (no launch record) cannot be fingerprinted per step until KIT-011."),
+        "The journey runs the production native DIA session path (`initializeDIANativeImport`: on-disk reference states from import onward, in-process reference kernels) switched on by the KIT journey launch record, so every step is snapshotted after its own step.",
+        "A production-default journey (no launch record, in-memory WorkflowState) has no per-step references; KIT-005 runs one such member as the memory baseline and cannot fingerprint it per step."),
     diagnostic_settings = FALSE,
     settings = list(sample = list("sample_filter-min_peptides_per_sample" = 3000)),
     normalisation = list(norm_method = "cyclicloess", ruv_mode = "automatic",
@@ -95,8 +99,8 @@ b$journey <- list(
     ceiling_seconds = NULL,
     ceiling_note = "set by KIT-005 from the KIT-001 screen duration scaled to 300 samples, never above 90 min")
 b$lifecycle <- list(ceiling_seconds = 300L,
-    fault = list(name = "guard_after_sample", after_step = "sample", failed_step = "replicate",
-        mechanism = "application-guard-inject.rds written after the sample filter completes; the application monitor stops the slice (injected_guard_stop); the replicate step fails on disconnection; the head must equal the sample-filter snapshot"))
+    fault = list(name = "guard_after_intensity", after_step = "intensity", failed_step = "sample",
+        mechanism = "application-guard-inject.rds written after the intensity filter (the first post-rollup step) completes; the application monitor stops the slice (injected_guard_stop); the sample-filter step fails on disconnection; the head must equal the intensity-filter snapshot"))
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R")

@@ -334,8 +334,8 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
         if (length(percentile) != 1L || !is.finite(percentile) || percentile < 0 || percentile > 100) {
             cli::cli_abort("invalid intensity percentile", class = "saved_entity_invalid")
         }
-        threshold <- if (length(values)) unname(ceiling(stats::quantile(values,
-            probs = percentile / 100, na.rm = TRUE)[[1L]])) else 0
+        threshold <- if (length(values)) unname(stats::quantile(values,
+            probs = percentile / 100, na.rm = TRUE)[[1L]]) else 0
         values <- NULL
     }
     offsets <- list(data = 0L)

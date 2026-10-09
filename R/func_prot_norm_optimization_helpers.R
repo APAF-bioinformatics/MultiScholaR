@@ -331,6 +331,33 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
   ruvIII_replicates_matrix
 }
 
+#' Choose the RUV-III replicate structure from the design (user decision 2026-10-09).
+#' Technical replicates (samples sharing group and replicate number) are the replicate set when
+#' the design has any; otherwise every sample of the RUV grouping variable is a replicate.
+#' @param design_matrix Design table.
+#' @param sample_id,group_id,technical_replicate_id Column names from the S4 slots.
+#' @param ruv_grouping_variable Fallback grouping column.
+#' @return `design` with a `.ruv_replicate_block` column, `structure` (`technical_replicates` or
+#'   `group`) and `blocks` (number of replicate sets).
+#' @noRd
+resolveProtRuvReplicateBlocks <- function(design_matrix, sample_id, group_id, technical_replicate_id,
+                                          ruv_grouping_variable) {
+  stopifnot(is.data.frame(design_matrix), sample_id %in% names(design_matrix))
+  technical <- all(c(group_id, technical_replicate_id) %in% names(design_matrix))
+  block <- if (technical) paste(design_matrix[[group_id]], design_matrix[[technical_replicate_id]], sep = "_") else NULL
+  if (technical && anyDuplicated(block) > 0L && !anyNA(design_matrix[[technical_replicate_id]])) {
+    design_matrix$.ruv_replicate_block <- block
+    structure <- "technical_replicates"
+  } else {
+    if (!ruv_grouping_variable %in% names(design_matrix)) {
+      stop(sprintf("RUV grouping variable `%s` is absent from the design matrix", ruv_grouping_variable), call. = FALSE)
+    }
+    design_matrix$.ruv_replicate_block <- as.character(design_matrix[[ruv_grouping_variable]])
+    structure <- "group"
+  }
+  list(design = design_matrix, structure = structure, blocks = length(unique(design_matrix$.ruv_replicate_block)))
+}
+
 # ----------------------------------------------------------------------------
 # getNegCtrlProtAnovaHelper
 # ----------------------------------------------------------------------------

@@ -102,8 +102,8 @@ tryCatch({
         application_root <- file.path(owned, "application")
         dir.create(application_root)
         member <- bindings$journey$member
-        saveRDS(list(schema = 1L, programme = member$programme, variant = member$variant, entry = member$entry,
-            deadline = as.numeric(member$deadline), entry_fixture_test = FALSE,
+        stopifnot(identical(member$programme, "kit-journey-v1"))
+        saveRDS(list(schema = 1L, programme = member$programme, deadline = as.numeric(member$deadline),
             guard_stop_test = case$expect_failure), file.path(application_root, "gui-member.rds"),
             compress = FALSE, version = 3)
         saveRDS(c(list(schema = 1L, stage = stage, deadline = member_seconds), case), file.path(owned, "timed-member.rds"))
@@ -121,7 +121,8 @@ tryCatch({
         config <- readRDS(file.path(application_root, "application.rds"))
         operation_started <- readRDS(file.path(owned, "launcher-start.rds"))
         deadline_uptime <- operation_started + member_seconds
-        stopifnot(identical(config$build, case$expected_build), identical(config$mode, "gui"))
+        stopifnot(identical(config$build, case$expected_build), identical(config$mode, "gui"),
+            isTRUE(config$journey$native_sessions))
         cat("START", case$id, config$controller_unit, "\n")
         active_slice <- config$slice
         group <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))

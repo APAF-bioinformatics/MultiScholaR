@@ -626,7 +626,7 @@ setMethod(
       ) |>
       mutate(temp = "")
 
-    min_peptide_intensity_threshold <- ceiling(quantile(data_long_cln$log_values, na.rm = TRUE, probs = c(proteins_intensity_cutoff_percentile)))[1]
+    min_peptide_intensity_threshold <- unname(quantile(data_long_cln$log_values, na.rm = TRUE, probs = c(proteins_intensity_cutoff_percentile)))[1]
 
     peptide_normalised_pif_cln <- peptideIntensityFilteringHelper(data_long_cln,
       min_peptide_intensity_threshold = min_peptide_intensity_threshold,

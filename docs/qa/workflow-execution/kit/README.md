@@ -1,6 +1,6 @@
 # The workflow kit (KIT series)
 
-Status 2026-10-09: series created; nothing built yet. Series authority: `tickets/kit/00-KIT-PLAN.md` (gitignored, local). Measurement protocol: [protocol.md](protocol.md). Diagram of the target architecture along the DIA workflow: `https://claude.ai/artifact/VZaUi4mPYvmqf2qSR2jsAd` (private artifact). Predecessor record: [perf-retirement-20261009.json](perf-retirement-20261009.json).
+Status 2026-10-09: KIT-001 harness built (journey driver, coordinator, bindings, step map); the control build is `kit_001` (core_018 source plus the KIT journey launch record, the RUV-III technical-replicate structure and the proteomics quantile-ceiling removal, user decisions 2026-10-09). Series authority: `tickets/kit/00-KIT-PLAN.md` (gitignored, local). Measurement protocol: [protocol.md](protocol.md). Diagram of the target architecture along the DIA workflow: `https://claude.ai/artifact/VZaUi4mPYvmqf2qSR2jsAd` (private artifact). Predecessor record: [perf-retirement-20261009.json](perf-retirement-20261009.json).
 
 ## What the kit is
 

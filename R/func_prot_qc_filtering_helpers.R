@@ -217,7 +217,7 @@ removeRowsWithMissingValuesPercentHelper <- function(
   valid_values <- valid_values[!is.na(valid_values) & !is.nan(valid_values) & !is.infinite(valid_values)]
 
   min_protein_intensity_threshold <- if (length(valid_values) > 0) {
-    ceiling(quantile(valid_values, probs = proteins_intensity_cutoff_percentile / 100, na.rm = TRUE))[1]
+    unname(quantile(valid_values, probs = proteins_intensity_cutoff_percentile / 100, na.rm = TRUE))[1]
   } else {
     0
   }

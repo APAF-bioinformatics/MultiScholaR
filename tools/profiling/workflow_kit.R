@@ -303,7 +303,7 @@ kitFingerprintState <- function(store, reference, api) {
 #' @noRd
 kitFingerprintFiles <- function(project, previous = NULL) {
     files <- list.files(project, recursive = TRUE, full.names = TRUE, all.files = TRUE)
-    files <- files[!grepl("/[.]workflow-entities/|/[.]dia-gui-adoption-[^/]*/|[.]log$|/checkpoint-io[.]log$", files)]
+    files <- files[!grepl("/[.]workflow-entities/|/[.]dia-(native|gui-adoption)-[^/]*/|[.]log$|/checkpoint-io[.]log$", files)]
     files <- files[!dir.exists(files)]
     relative <- substring(files, nchar(project) + 2L)
     info <- file.info(files, extra_cols = FALSE)
@@ -332,13 +332,13 @@ kitFingerprintFiles <- function(project, previous = NULL) {
         method = hashed[2L, ], stringsAsFactors = FALSE, row.names = NULL)
 }
 
-#' Locate the adopted DIA store beneath a project root (NULL before adoption).
+#' Locate the DIA state store beneath a project root (native session from import, or a GUI adoption store).
 #' @noRd
 kitFindStore <- function(project) {
     heads <- list.files(project, "^dia-state-head[.]rds$", recursive = TRUE, full.names = TRUE, all.files = TRUE)
-    heads <- heads[grepl("/[.]dia-gui-adoption-[^/]*/[.]workflow-entities/dia-state-head[.]rds$", heads)]
+    heads <- heads[grepl("/[.]dia-(native|gui-adoption)-[^/]*/[.]workflow-entities/dia-state-head[.]rds$", heads)]
     if (!length(heads)) return(NULL)
-    if (length(heads) != 1L) stop("adopted GUI state store is ambiguous")
+    if (length(heads) != 1L) stop("DIA state store is ambiguous")
     dirname(heads)
 }
 

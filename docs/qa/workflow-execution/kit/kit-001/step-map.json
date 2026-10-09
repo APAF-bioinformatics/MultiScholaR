@@ -100,7 +100,7 @@
       "module": "R/mod_prot_qc_peptide_intensity.R: observeEvent(apply_intensity_filter) :448 -> runPeptideIntensityApplyObserver :351 -> runPeptideIntensityApplyStep :201",
       "kernel": "peptideIntensityFiltering (R/func_prot_qc_peptide_methods.R:5) -> peptideIntensityFilteringHelper (R/func_prot_qc_peptide_group_filters.R:42); reference path runDIAReferencePeptideGroups calls the helper per protein group after the global threshold (R/utils_workflow_dia_qc_rollup.R:329-340, 362-373)",
       "evidence": [
-        "R/func_prot_qc_peptide_methods.R:107-116 valid_values = every finite quantity in the table; threshold = ceiling(quantile(valid_values, percentile/100)) (DATASET-WIDE)",
+        "R/func_prot_qc_peptide_methods.R:107-116 valid_values = every finite quantity in the table; threshold = quantile(valid_values, percentile/100) (DATASET-WIDE; ceiling removed 2026-10-09)",
         "R/utils_workflow_dia_qc_rollup.R:329-340 the reference path computes that quantile over the whole column before the per-group loop",
         "R/func_prot_qc_peptide_group_filters.R:394-399 join design by run; .is_observed = finite & >= threshold",
         "R/func_prot_qc_peptide_group_filters.R:403-413 group_by(protein, peptide, design group) n_distinct(run); :439-452 group_by(protein, peptide) passing_group_count >= min_groups; :464-471 anti_join of removed (protein, peptide)",
@@ -213,7 +213,7 @@
       "module": "R/mod_prot_qc_protein_intensity.R: runProteinIntensityFilterApplyObserver :273 -> runProteinIntensityFilterApplyStep :120",
       "kernel": "removeRowsWithMissingValuesPercent (R/func_prot_s4_qc_filter_methods.R:130-428) -> removeRowsWithMissingValuesPercentHelper (R/func_prot_qc_filtering_helpers.R:157-277); cutoffs from updateMissingValueParameters (R/func_general_parameter_helpers.R:143)",
       "evidence": [
-        "R/func_prot_qc_filtering_helpers.R:216-220 valid_values = every finite long value; min_protein_intensity_threshold = ceiling(quantile(valid_values, percentile/100)) (DATASET-WIDE)",
+        "R/func_prot_qc_filtering_helpers.R:216-220 valid_values = every finite long value; min_protein_intensity_threshold = quantile(valid_values, percentile/100) (DATASET-WIDE; ceiling removed 2026-10-09)",
         "R/func_prot_qc_filtering_helpers.R:204 join design; :227-229 samples per group; :239-251 per (protein, group) missing count and per-protein percent of failing groups; :259 anti_join",
         "R/func_general_parameter_helpers.R:148, 170-187 cutoffs from design replicate counts with grouping 'group'"
       ],
@@ -224,7 +224,7 @@
       "holders": ["R/mod_prot_qc_protein_intensity.R:193 saveState(protein_intensity_filtered)"],
       "mode": "in_process",
       "flag": null,
-      "notes": ["The same method re-runs after RUV (mod_prot_norm_ruv_helpers.R:319-321; utils_workflow_dia_products.R:353), recomputing the quantile on corrected values with the args stored by the first run."]
+      "notes": ["The same method re-runs after RUV (mod_prot_norm_ruv_helpers.R:319-321; utils_workflow_dia_products.R:353), recomputing the quantile on corrected values with the args stored by the first run.", "The ceiling() on the log2-scale quantile (up to one log2 unit stricter) was removed 2026-10-09 at the five proteomics sites; the lipidomics and metabolomics intensity filters keep theirs until their stage (KIT-031/032)."]
     },
     {
       "id": "duplicates", "label": "Duplicate Removal", "unit": "feature_group", "grouping": "protein_id_column (fallback Protein.Ids)", "in_journey": true,
@@ -268,7 +268,7 @@
         "R/func_prot_s4_norm_methods.R:65-69 whole table to matrix; :77 normalizeCyclicLoess over the full protein x sample matrix",
         "R/func_prot_norm_optimization_helpers.R:379 num_neg_ctrl = round(nrow(all proteins) * pct / 100); :456 per-row aov; :471 qvalue over ALL p-values; :487 control set = top-N by q (stable sort)",
         "R/func_prot_s4_norm_methods.R:154-158 mixOmics::impute.nipals on the full matrix; :162-166 ruv_cancorplot(Y, X = grouping, ctl)",
-        "R/func_prot_s4_norm_methods.R:207-211 M = replicate matrix from ruv_grouping_variable; :213-219 RUVIII_C_Varying(k, Y = all samples x all proteins, M, potentialControls)",
+        "R/func_prot_s4_norm_methods.R: M = replicate matrix from resolveProtRuvReplicateBlocks (technical replicates = group x replicate blocks when the design has duplicates, else ruv_grouping_variable; R/func_prot_norm_optimization_helpers.R); RUVIII_C_Varying(k, Y = all samples x all proteins, M, potentialControls)",
         "R/mod_prot_norm_ruv_helpers.R:319-321 post-RUV removeRowsWithMissingValuesPercent (dataset-wide quantile again)"
       ],
       "reads_outside_assay": ["design_matrix (grouping variable, pool detection)", "config_list (.GlobalEnv)", "GUI inputs"],
@@ -278,7 +278,7 @@
       "holders": ["R/mod_prot_norm_workflow_helpers.R:47 normalized_protein_obj, :105 ruv_normalized_obj, :128 saveState(normalized)", "R/mod_prot_norm_ruv_helpers.R:295, :375 ruv_normalized_obj; :380 saveState(ruv_corrected)"],
       "mode": "in_process (reference path: runDIAReferenceNormalization, one declaration for normalisation + RUV per audit B4)",
       "flag": null,
-      "notes": ["RUV-III's replicate matrix M comes from ruv_grouping_variable (default 'group'); technical_replicate_id is read at norm_methods.R:183 and never used. The unit is whole-matrix either way; the science owner may want to revisit the grouping choice but it does not change the declaration.", "Control-protein ties at q = 1 make the control set depend on row order (:487): the projected object must preserve row order."]
+      "notes": ["Changed 2026-10-09 (user decision): RUV-III uses technical replicates (group x replicate blocks) as its replicate sets when the design has them, else the grouping variable; the structure used is recorded in args$ruvIII_C_Varying$ruv_replicate_structure. Control selection (ANOVA by group) and the canonical-correlation k search keep the biological grouping.", "Control-protein ties at q = 1 make the control set depend on row order (:487): the projected object must preserve row order."]
     },
     {
       "id": "correlation", "label": "Correlation Filtering", "unit": "whole_matrix", "grouping": null, "in_journey": true,
@@ -343,8 +343,8 @@
   ],
   "science_notes_for_the_user": [
     "None of these changes a determination; they are recorded because the code reading surfaced them.",
-    "RUV-III uses the experimental group as its replicate structure (ruv_grouping_variable = 'group'); DA uses group x replicates as the duplicateCorrelation block. Both are whole-matrix regardless.",
-    "The peptide intensity filter and the protein missing-value filter apply ceiling() to a dataset-wide quantile on the log2 scale.",
+    "Resolved 2026-10-09 (user): RUV-III now uses technical replicates (group x replicate blocks) when the design has them, matching DA's duplicateCorrelation block; otherwise the grouping variable.",
+    "Resolved 2026-10-09 (user): the ceiling() on the dataset-wide quantile is removed from the proteomics intensity filters (peptide and protein, in-process and reference paths). Lipidomics and metabolomics keep it until their stage.",
     "The automatic RUV search uses qvalue with 5 NIPALS components while manual mode uses BH with 2.",
     "Step 2 (min peptides per protein) uses the evidence counts frozen by the q-value step."
   ],
