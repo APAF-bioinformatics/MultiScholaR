@@ -1,0 +1,651 @@
+{
+  "recorded": "2026-10-09",
+  "decision": "user: retire the pending PERF tickets and replace them with the KIT series (tickets/kit)",
+  "source_index": "tickets/openai/tickets-index.json (gitignored)",
+  "successor_plan": "tickets/kit/00-KIT-PLAN.md (gitignored)",
+  "tracked_companions": [
+    "docs/qa/workflow-execution/kit/README.md",
+    "docs/qa/workflow-execution/kit/protocol.md"
+  ],
+  "core_closure": "5f0aaf5e",
+  "head_at_creation": "70cd537f",
+  "control_build": {
+    "key": "core_018",
+    "source": "906c50dc",
+    "install": "browser-smoke.gQ40C7"
+  },
+  "transcriptomics": {
+    "superseded_by_KIT-040": [
+      "TRX-003",
+      "TRX-006 (conditional)"
+    ],
+    "precondition": "TRX-005",
+    "unchanged": [
+      "TRX-001",
+      "TRX-002",
+      "TRX-004"
+    ]
+  },
+  "retired_tickets": [
+    {
+      "id": "PERF-104",
+      "title": "Implement saved selections history Revert and session compatibility",
+      "status": "pending",
+      "priority": "P0",
+      "dependencies": [
+        "PERF-103",
+        "PERF-107",
+        "PERF-109"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-104.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-011",
+        "KIT-016",
+        "KIT-050"
+      ]
+    },
+    {
+      "id": "PERF-107",
+      "title": "Qualify the pilot GUI journey real-data applicability and routing",
+      "status": "blocked",
+      "priority": "P0",
+      "dependencies": [
+        "PERF-106",
+        "PERF-108"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-107.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-008",
+        "KIT-011",
+        "KIT-013",
+        "KIT-017"
+      ]
+    },
+    {
+      "id": "PERF-109",
+      "title": "Prove actual reuse across lipidomics and metabolomics",
+      "status": "pending",
+      "priority": "P0",
+      "dependencies": [
+        "PERF-106"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-109.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-110",
+      "title": "Prove shared matrix preparation with native normalization",
+      "status": "pending",
+      "priority": "P0",
+      "dependencies": [
+        "PERF-106"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-110.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-004",
+        "KIT-015"
+      ]
+    },
+    {
+      "id": "PERF-111",
+      "title": "Migrate import and annotation handling across implemented formats",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-109",
+        "PERF-104"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-111.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-011",
+        "KIT-020",
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-112",
+      "title": "Migrate design sample mappings and initial and finalized states",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-111",
+        "PERF-104"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-112.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-016",
+        "KIT-020",
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-113",
+      "title": "Migrate DIA confidence evidence and accepted P14 integration",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-105",
+        "PERF-109"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-113.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-006",
+        "KIT-014"
+      ]
+    },
+    {
+      "id": "PERF-114",
+      "title": "Migrate intensity missingness and replicate filters",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-105",
+        "PERF-109"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-114.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-010",
+        "KIT-014",
+        "KIT-015",
+        "KIT-021",
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-115",
+      "title": "Migrate accession cleanup and duplicate-feature resolution",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-105",
+        "PERF-109"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-115.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-015",
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-116",
+      "title": "Migrate technical-replicate peptide imputation",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-105",
+        "PERF-109"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-116.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-014"
+      ]
+    },
+    {
+      "id": "PERF-117",
+      "title": "Migrate genuine IQ protein quantification",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-105",
+        "PERF-109"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-117.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-015"
+      ]
+    },
+    {
+      "id": "PERF-118",
+      "title": "Migrate genuine Limpa quantification and downstream compatibility",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-110"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-118.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-015"
+      ]
+    },
+    {
+      "id": "PERF-119",
+      "title": "Migrate internal-standard QC normalization and log transformations",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-109"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-119.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-120",
+      "title": "Migrate between-sample normalization across workflows",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-110",
+        "PERF-119",
+        "PERF-121"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-120.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-004",
+        "KIT-021",
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-121",
+      "title": "Migrate RUV control selection and correction across workflows",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-110"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-121.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-004",
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-122",
+      "title": "Migrate correlation calculations and sample selection",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-110",
+        "PERF-121"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-122.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-004",
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-123",
+      "title": "Migrate differential analysis and valid model reuse",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-110"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-123.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-004",
+        "KIT-021",
+        "KIT-031",
+        "KIT-032"
+      ]
+    },
+    {
+      "id": "PERF-124",
+      "title": "Migrate enrichment and external dependencies",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-123"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-124.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-016"
+      ]
+    },
+    {
+      "id": "PERF-125",
+      "title": "Bound GUI previews tables and project and workflow switching",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-103",
+        "PERF-104",
+        "PERF-106"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-125.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-012"
+      ]
+    },
+    {
+      "id": "PERF-126",
+      "title": "Bound QC plots volcano plots and heatmaps",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-110",
+        "PERF-125"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-126.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-012"
+      ]
+    },
+    {
+      "id": "PERF-127",
+      "title": "Migrate reports parameter records publication and exports",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-104",
+        "PERF-125",
+        "PERF-126"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-127.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-016"
+      ]
+    },
+    {
+      "id": "PERF-128",
+      "title": "Qualify complete journeys application memory and Linux release",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-107",
+        "PERF-108",
+        "PERF-109",
+        "PERF-110",
+        "PERF-111",
+        "PERF-112",
+        "PERF-113",
+        "PERF-114",
+        "PERF-115",
+        "PERF-116",
+        "PERF-117",
+        "PERF-118",
+        "PERF-119",
+        "PERF-120",
+        "PERF-121",
+        "PERF-122",
+        "PERF-123",
+        "PERF-124",
+        "PERF-125",
+        "PERF-126",
+        "PERF-127"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-128.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-050"
+      ]
+    },
+    {
+      "id": "PERF-129",
+      "title": "Qualify macOS separately",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-128"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-129.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-051"
+      ]
+    },
+    {
+      "id": "PERF-130",
+      "title": "Qualify Windows separately",
+      "status": "pending",
+      "priority": "P1",
+      "dependencies": [
+        "PERF-128"
+      ],
+      "time_estimate": "4h",
+      "file": "PERF-130.md",
+      "retirement_reason": "retired 2026-10-09 (user): superseded by the KIT series (tickets/kit); planning-gated shell with no implementation; cases carried by successor_owners",
+      "successor_owners": [
+        "KIT-052"
+      ]
+    }
+  ],
+  "kit_tickets": [
+    {
+      "id": "KIT-001",
+      "title": "Full-journey driver, per-step populations and step map",
+      "dependencies": []
+    },
+    {
+      "id": "KIT-002",
+      "title": "Class declaration registry and declaration-driven checkpoints",
+      "dependencies": [
+        "KIT-001"
+      ]
+    },
+    {
+      "id": "KIT-003",
+      "title": "List-of-tables slots and result classes in the registry",
+      "dependencies": [
+        "KIT-002"
+      ]
+    },
+    {
+      "id": "KIT-004",
+      "title": "Operation runner and the whole-matrix declarations",
+      "dependencies": [
+        "KIT-002"
+      ]
+    },
+    {
+      "id": "KIT-005",
+      "title": "Harness: operation-bound members, per-step oracles, protocol v1, baseline journey",
+      "dependencies": [
+        "KIT-001",
+        "KIT-002"
+      ]
+    },
+    {
+      "id": "KIT-006",
+      "title": "Complete-sample partitioner",
+      "dependencies": [
+        "KIT-004",
+        "KIT-005"
+      ]
+    },
+    {
+      "id": "KIT-007",
+      "title": "Operation registry replaces the hard-wired switches",
+      "dependencies": [
+        "KIT-006"
+      ]
+    },
+    {
+      "id": "KIT-008",
+      "title": "Production worker dispatch for P14 and the sample filter",
+      "dependencies": [
+        "KIT-007"
+      ]
+    },
+    {
+      "id": "KIT-009",
+      "title": "Feature-group partitioner",
+      "dependencies": [
+        "KIT-007"
+      ]
+    },
+    {
+      "id": "KIT-010",
+      "title": "Row partitioner and wide-table sample projection",
+      "dependencies": [
+        "KIT-009"
+      ]
+    },
+    {
+      "id": "KIT-011",
+      "title": "On-disk state manager, native sessions and import adoption by default",
+      "dependencies": [
+        "KIT-004",
+        "KIT-008"
+      ]
+    },
+    {
+      "id": "KIT-012",
+      "title": "Holders to references; paged tables; plots as products",
+      "dependencies": [
+        "KIT-011"
+      ]
+    },
+    {
+      "id": "KIT-013",
+      "title": "App defects from the CORE hand-off",
+      "dependencies": [
+        "KIT-011"
+      ]
+    },
+    {
+      "id": "KIT-014",
+      "title": "Peptide QC declarations",
+      "dependencies": [
+        "KIT-009",
+        "KIT-012"
+      ]
+    },
+    {
+      "id": "KIT-015",
+      "title": "Protein QC declarations",
+      "dependencies": [
+        "KIT-010",
+        "KIT-014"
+      ]
+    },
+    {
+      "id": "KIT-016",
+      "title": "Design checkpoint default, enrichment, reports, legacy-session readability",
+      "dependencies": [
+        "KIT-015"
+      ]
+    },
+    {
+      "id": "KIT-017",
+      "title": "DIA stage closure",
+      "dependencies": [
+        "KIT-013",
+        "KIT-016"
+      ]
+    },
+    {
+      "id": "KIT-020",
+      "title": "LFQ/TMT import adoption, plex partitioner and class path",
+      "dependencies": [
+        "KIT-017"
+      ]
+    },
+    {
+      "id": "KIT-021",
+      "title": "LFQ/TMT journeys measured",
+      "dependencies": [
+        "KIT-020"
+      ]
+    },
+    {
+      "id": "KIT-030",
+      "title": "State manager and sessions for lipidomics and metabolomics",
+      "dependencies": [
+        "KIT-017"
+      ]
+    },
+    {
+      "id": "KIT-031",
+      "title": "Lipidomics declarations (kit completeness test)",
+      "dependencies": [
+        "KIT-030"
+      ]
+    },
+    {
+      "id": "KIT-032",
+      "title": "Metabolomics declarations",
+      "dependencies": [
+        "KIT-031"
+      ]
+    },
+    {
+      "id": "KIT-040",
+      "title": "Transcriptomics on the kit",
+      "dependencies": [
+        "KIT-030"
+      ]
+    },
+    {
+      "id": "KIT-050",
+      "title": "Complete journeys, continuing-session ownership and Linux release",
+      "dependencies": [
+        "KIT-021",
+        "KIT-032",
+        "KIT-040"
+      ]
+    },
+    {
+      "id": "KIT-051",
+      "title": "Qualify macOS separately",
+      "dependencies": [
+        "KIT-050"
+      ]
+    },
+    {
+      "id": "KIT-052",
+      "title": "Qualify Windows separately",
+      "dependencies": [
+        "KIT-050"
+      ]
+    }
+  ]
+}
