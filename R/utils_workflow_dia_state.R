@@ -191,9 +191,15 @@ readComponentMetadata <- function(manager, reference = NULL, classes = NULL) {
     if (!is.character(spec$class) || length(spec$class) != 1L || !spec$class %in% accepted) {
         cli::cli_abort("component checkpoint is incomplete", class = "saved_entity_corrupt")
     }
-    required <- workflowClassRequiredComponents(workflowClassDeclaration(spec$class))
-    if (!all(required %in% names(spec$components)) ||
-        !all(vapply(spec$components[required], isSavedWorkflowReference, logical(1)))) {
+    declaration <- workflowClassDeclaration(spec$class)
+    required <- workflowClassRequiredComponents(declaration)
+    complete <- function(field) {
+        component <- spec$components[[field]]
+        if (field %in% declaration$lists) return(is.list(component) && !isSavedWorkflowReference(component) &&
+            all(vapply(component, isSavedWorkflowReference, logical(1))))
+        isSavedWorkflowReference(component)
+    }
+    if (!all(required %in% names(spec$components)) || !all(vapply(required, complete, logical(1)))) {
         cli::cli_abort("component checkpoint is incomplete", class = "saved_entity_corrupt")
     }
     record
@@ -331,25 +337,63 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
 readDIAExecutionComponents <- function(manager, reference = NULL,
     fields = c("protein_quant_table", "design_matrix", "protein_id_table"), columns = list()) {
     if (is.null(reference)) reference <- getDIAStateReference(manager)
-    record <- readDIAStateMetadata(manager, reference)
+    record <- readComponentMetadata(manager, reference)
     spec <- record$data
-    slots <- spec$slots
-    for (field in names(spec$components)) {
-        component <- spec$components[[field]]
-        if (field %in% fields) {
-            slots[[field]] <- if (isWorkflowTableReference(component))
-                materializeDIATable(manager$.context, component, columns[[field]]) else
-                resolveDIAStateValue(manager$.context, component)
-        } else if (isWorkflowTableReference(component)) {
-            scope <- newWorkflowTableReadScope(manager$.context$store, component, metadata_only = TRUE)
-            slots[[field]] <- tryCatch(readSavedWorkflowTablePrototype(scope),
-                finally = releaseWorkflowTableReadScope(scope))
-        }
-    }
-    object <- do.call(methods::new, c(list(Class = spec$class), slots))
+    object <- rebuildDIACheckpointObject(manager$.context, spec, fields, columns)
     attr(object, "dia_component_source") <- reference
     attr(object, "dia_execution_fields") <- intersect(fields, names(spec$components))
     object
+}
+
+#' Rebuild a declared object from a component checkpoint, hydrating only the requested fields.
+#' @param context Current owner.
+#' @param spec Component checkpoint record (`data` of a state record).
+#' @param fields Slot names to hydrate, or `"<slot>/<element>"` for one element of a list slot;
+#'   `TRUE` hydrates everything. Unrequested tables become zero-row prototypes, unrequested list
+#'   elements zero-row prototypes (tables) or NULL (values), unrequested nested objects are rebuilt
+#'   with prototypes, unrequested opaque slots keep the class prototype.
+#' @param columns Named list of column selections per table slot.
+#' @return The S4 object; support entries are not restored here (see materializeDIAStateRecord).
+#' @noRd
+rebuildDIACheckpointObject <- function(context, spec, fields = TRUE, columns = list()) {
+    declaration <- workflowClassDeclaration(spec$class)
+    everything <- isTRUE(fields)
+    wanted <- function(field, element = NULL) everything || field %in% fields ||
+        (!is.null(element) && paste(field, element, sep = "/") %in% fields)
+    prototype <- function(component) {
+        scope <- newWorkflowTableReadScope(context$store, component, metadata_only = TRUE)
+        tryCatch(readSavedWorkflowTablePrototype(scope), finally = releaseWorkflowTableReadScope(scope))
+    }
+    read_table <- function(component, field, element = NULL) {
+        if (wanted(field, element)) materializeDIATable(context, component, columns[[field]]) else prototype(component)
+    }
+    slots <- spec$slots
+    for (field in names(spec$components)) {
+        component <- spec$components[[field]]
+        if (field %in% declaration$lists) {
+            elements <- lapply(names(component), function(name) {
+                item <- component[[name]]
+                if (isWorkflowTableReference(item)) read_table(item, field, name) else
+                    if (wanted(field, name)) resolveDIAStateValue(context, item) else NULL
+            })
+            names(elements) <- names(component)
+            slots[[field]] <- elements
+        } else if (field %in% declaration$nested) {
+            nested <- resolveDIAStateValue(context, component)$data
+            # An unrequested nested object keeps prototypes for its assay but its (small) design
+            # table is hydrated, so the nested class's own validity holds.
+            nested_fields <- if (wanted(field)) TRUE else
+                as.character(workflowClassDeclaration(nested$class)$design %||% character())
+            slots[[field]] <- rebuildDIACheckpointObject(context, nested, nested_fields, list())
+        } else if (field %in% declaration$opaque) {
+            if (wanted(field)) slots[[field]] <- resolveDIAStateValue(context, component)
+        } else if (isWorkflowTableReference(component)) {
+            slots[[field]] <- read_table(component, field)
+        } else if (wanted(field)) {
+            slots[[field]] <- resolveDIAStateValue(context, component)
+        }
+    }
+    do.call(methods::new, c(list(Class = spec$class), slots))
 }
 
 #' Persist a scientific result as reusable components and bounded metadata.
@@ -371,13 +415,43 @@ checkpointDIAExecutionResult <- function(manager, object) {
     components <- components[intersect(names(components), names(slots))]
     support <- previous$support %||% list()
     loaded <- attr(object, "dia_execution_fields", exact = TRUE)
+    unchanged <- function(field) !is.null(previous) && field %in% names(previous$components) && !field %in% loaded
+    zero_row <- function(value) is.data.frame(value) && !nrow(value)
     for (field in names(slots)) {
         value <- slots[[field]]
+        if (field %in% declaration$lists) {
+            if (!is.list(value) || is.data.frame(value)) next
+            if (unchanged(field) && all(vapply(value, zero_row, logical(1)))) { slots[[field]] <- NULL; next }
+            if (is.null(names(value)) && length(value)) cli::cli_abort("list slot {.field {field}} needs element names",
+                class = "saved_entity_invalid")
+            components[[field]] <- lapply(stats::setNames(names(value), names(value)), function(name) {
+                element <- value[[name]]
+                if (is.data.frame(element) && ncol(element) > 0L) saveDIATableComponent(context, element) else
+                    saveDIAStateValue(context, element, paste0("element:", field, ":", name))
+            })
+            slots[[field]] <- NULL
+            next
+        }
+        if (field %in% declaration$nested) {
+            if (!isS4(value)) next
+            if (unchanged(field)) { slots[[field]] <- NULL; next }
+            nested <- checkpointDIAExecutionResult(manager, value)
+            components[[field]] <- saveDIAStateValue(context, list(schema = "dia.nested_checkpoint.v1", data = nested),
+                paste0("nested:", field), codec = "rds")
+            slots[[field]] <- NULL
+            next
+        }
+        if (field %in% declaration$opaque) {
+            if (is.null(value) || !length(value)) next
+            if (unchanged(field)) { slots[[field]] <- NULL; next }
+            components[[field]] <- saveDIAStateValue(context, value, paste0("opaque:", field))
+            slots[[field]] <- NULL
+            next
+        }
         table <- is.data.frame(value) && ncol(value) > 0L
         sizeable <- is.matrix(value) && length(value) > 0L
         if (!table && !sizeable) next
-        if (!is.null(previous) && field %in% names(previous$components) &&
-            !field %in% loaded && !nrow(value)) {
+        if (unchanged(field) && !nrow(value)) {
             slots[[field]] <- NULL
             next
         }
@@ -404,15 +478,13 @@ checkpointDIAExecutionResult <- function(manager, object) {
             slots$args[[section]][field] <- list(NULL)
         }
     }
-    assay <- methods::slot(object, declaration$assay)
     list(schema = "dia.component_checkpoint.v2", class = class(object)[[1L]],
         declaration = workflowDeclarationField(declaration),
         slots = slots, components = components, support = support,
         products = previous$products %||% list(),
         dependencies = collectDIANativeReferences(list(source, previous$dependencies, previous$components,
             previous$support, previous$products)),
-        dimensions = list(rows = nrow(assay), columns = names(assay),
-            samples = nrow(methods::slot(object, declaration$design))),
+        dimensions = workflowAssayDimensions(object, declaration),
         metadata = if (is.function(declaration$describe)) declaration$describe(object) else NULL)
 }
 
@@ -451,22 +523,21 @@ materializeDIAStateRecord <- function(context, reference) {
     }
     if (!isDIAComponentCheckpoint(record$data)) return(record)
     spec <- record$data
-    slots <- spec$slots
-    for (field in names(spec$components)) {
-        component <- spec$components[[field]]
-        slots[[field]] <- if (isWorkflowTableReference(component))
-            materializeDIATable(context, component) else resolveDIAStateValue(context, component)
-    }
-    for (section in names(spec$support)) {
-        for (field in names(spec$support[[section]])) {
-            component <- spec$support[[section]][[field]]
-            value <- if (isWorkflowTableReference(component))
-                materializeDIATable(context, component) else resolveDIAStateValue(context, component)
-            if (section == ".arguments") slots$args[field] <- list(value) else
-                slots$args[[section]][field] <- list(value)
+    object <- rebuildDIACheckpointObject(context, spec, TRUE, list())
+    if (length(spec$support) && "args" %in% methods::slotNames(object)) {
+        args <- methods::slot(object, "args")
+        for (section in names(spec$support)) {
+            for (field in names(spec$support[[section]])) {
+                component <- spec$support[[section]][[field]]
+                value <- if (isWorkflowTableReference(component))
+                    materializeDIATable(context, component) else resolveDIAStateValue(context, component)
+                if (section == ".arguments") args[field] <- list(value) else
+                    args[[section]][field] <- list(value)
+            }
         }
+        methods::slot(object, "args") <- args
     }
-    record$data <- do.call(methods::new, c(list(Class = spec$class), slots))
+    record$data <- object
     record
 }
 
@@ -1059,9 +1130,11 @@ saveDIAStateRecord <- function(context, state_name, s4_data_object, config_objec
     }
     if (isS4(record$data)) {
         declaration <- workflowClassDeclaration(record$data)
-        table <- methods::slot(record$data, declaration$assay)
+        dimensions <- workflowAssayDimensions(record$data, declaration)
+        table <- if (!is.null(declaration$assay)) methods::slot(record$data, declaration$assay) else NULL
         snapshot$sizes[[state_name]] <- list(s4_object_size_bytes = as.numeric(object.size(record$data)),
-            table_object_size_bytes = as.numeric(object.size(table)), rows = nrow(table), columns = ncol(table),
+            table_object_size_bytes = as.numeric(object.size(table)), rows = dimensions$rows,
+            columns = length(dimensions$columns),
             note = "object.size of owned values, not unique whole-process heap or RSS")
         if (is.function(declaration$describe)) {
             snapshot$state_metadata[[state_name]] <- declaration$describe(record$data)
