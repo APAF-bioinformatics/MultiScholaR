@@ -286,6 +286,27 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
     record
 }
 
+#' A browser tab rendering a large production table freezes for longer than one evaluation
+#' call (the pinned helpers allow 5 s per poll and 30 s per click); at 300 samples the IQ
+#' protein table did so for over 30 s (KIT-005 correction 4). A transport timeout while the
+#' renderer is busy means "not ready yet", so the evaluation is retried, for up to ten minutes
+#' per call, until the tab answers; every other error is raised unchanged.
+#' @noRd
+kitPatientDriver <- function(driver, patience_seconds = 600) {
+    original <- driver$get_js
+    driver$get_js <- function(script, timeout = NULL) {
+        started <- proc.time()[["elapsed"]]
+        repeat {
+            outcome <- tryCatch(list(value = original(script, timeout)), error = function(error) error)
+            if (!inherits(outcome, "error")) return(outcome$value)
+            frozen <- grepl("timed out waiting for response", conditionMessage(outcome), fixed = TRUE)
+            if (!frozen || proc.time()[["elapsed"]] - started > patience_seconds) stop(outcome)
+            Sys.sleep(1)
+        }
+    }
+    invisible(driver)
+}
+
 #' Attach a browser to the managed application and run the journey, recording the result.
 #' @param h Browser helper environment (the pinned driver file sourced from the snapshot).
 #' @param member_dir Member directory; `application_root` its managed application root.
@@ -303,6 +324,7 @@ runKitMember <- function(h, member_dir, application_root, library_path, corpus, 
     managed_url <- sprintf("http://127.0.0.1:%d", config$port)
     browser <- h$newCheckpointBrowser(library_path, member_dir, managed_url = managed_url)
     on.exit(try(browser$chrome$close(), silent = TRUE), add = TRUE)
+    kitPatientDriver(browser$driver)
     h$stabilizeCheckpointManagedBrowser(browser$driver, managed_url)
     h$checkpointWaitForJs(browser$driver, "document.querySelector('[data-testid=\"tile-proteomics\"]') !== null",
         timeout = 60000, stable_ms = 200)
