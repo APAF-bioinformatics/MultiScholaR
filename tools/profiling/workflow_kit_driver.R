@@ -254,8 +254,10 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
         record$product_fingerprints <- fingerprints$products
         head <- kitReadHead(record$store, api)
         for (id in names(record$populations)) {
-            state <- record$populations[[id]]$expected_state
+            # The state the step actually left current (in-run snapshot), else the expected state.
+            state <- record$populations[[id]]$state %||% record$populations[[id]]$expected_state
             if (is.null(state) || is.null(fingerprints$states[[state]])) next
+            record$populations[[id]]$state_as_expected <- identical(state, record$populations[[id]]$expected_state)
             if (is.null(record$populations[[id]]$state)) {
                 record$populations[[id]]$state <- state
                 record$populations[[id]]$store <- record$store

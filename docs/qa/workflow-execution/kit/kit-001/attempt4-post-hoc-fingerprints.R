@@ -19,9 +19,11 @@ fingerprints <- env$kitFingerprintStore(journey$store, api)
 head <- env$kitReadHead(journey$store, api)
 journey$final_head_sha256 <- fingerprints$head_sha256
 journey$product_fingerprints <- fingerprints$products
+`%||%` <- function(x, y) if (is.null(x)) y else x
 for (id in names(journey$populations)) {
-    state <- journey$populations[[id]]$expected_state
+    state <- journey$populations[[id]]$state %||% journey$populations[[id]]$expected_state
     if (is.null(state) || is.null(fingerprints$states[[state]])) next
+    journey$populations[[id]]$state_as_expected <- identical(state, journey$populations[[id]]$expected_state)
     if (is.null(journey$populations[[id]]$state)) {
         journey$populations[[id]]$state <- state
         journey$populations[[id]]$store <- journey$store
