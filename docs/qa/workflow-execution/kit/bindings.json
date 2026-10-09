@@ -1866,7 +1866,7 @@
   },
   "tickets": [],
   "lifecycle": {
-    "ceiling_seconds": 300,
+    "ceiling_seconds": 600,
     "fault": {
       "name": "guard_after_intensity",
       "after_step": "intensity",
@@ -1886,7 +1886,7 @@
     "step_map_sha256": "e14432f147a6019cfc6895af7e153df6829a25b2d91173356cedf4b22daae857",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "b2b8a1d9547146905922a839f7d04789d795c28ad2cf69b54ee5811d0fa1e01e",
+      "tools/profiling/workflow_kit.R": "f43f325dca9ba90400483553438487e6b6a2603b15376d4544e11e5a8f16044b",
       "tools/profiling/workflow_kit_driver.R": "6837180135c4801924a5b73a6078934c429b765e70cafda5e17fd1b5fb0123b4",
       "tools/profiling/workflow_kit_coordinator.R": "cfe10967b6a79504f996e3e2de6feae0652706e03f357759d6c41b0c81296f25",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",

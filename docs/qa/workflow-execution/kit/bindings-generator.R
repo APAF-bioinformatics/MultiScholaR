@@ -140,7 +140,10 @@ if (!is.null(journey_stage)) {
         b$oracles[[key]] <- population$fingerprint
     }
 }
-b$lifecycle <- list(ceiling_seconds = 300L,
+# KIT-005: the screen lifecycle ceiling is 600 s (was 300 s) for the harness proof of the per-member driver,
+# the member-ceiling wait budget and the notification log: on the shared host of 2026-10-10 every step ran
+# about twice as slowly as during KIT-001 (269 s), so 300 s stopped the check in the normalisation step.
+b$lifecycle <- list(ceiling_seconds = 600L,
     fault = list(name = "guard_after_intensity", after_step = "intensity", failed_step = "sample",
         mechanism = "application-guard-inject.rds written after the intensity filter (the first post-rollup step) completes; the application monitor stops the slice (injected_guard_stop); the sample-filter step fails on disconnection; the head must equal the intensity-filter snapshot"))
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",

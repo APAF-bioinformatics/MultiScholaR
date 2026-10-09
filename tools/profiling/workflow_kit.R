@@ -40,7 +40,8 @@ kitStepIds <- function() vapply(kitJourneySteps(), `[[`, character(1), "id")
 #' Member ceilings in seconds (plan run ledger): lifecycle members 5 min; journey members from the bindings.
 #' @noRd
 kitMemberSeconds <- function(stage, bindings = NULL) {
-    if (grepl("^kit-lifecycle-", stage)) return(300L)
+    if (grepl("^kit-lifecycle-operation-", stage)) return(as.integer(bindings$operation_lifecycle$ceiling_seconds %||% 300L))
+    if (grepl("^kit-lifecycle-", stage)) return(as.integer(bindings$lifecycle$ceiling_seconds %||% 300L))
     if (grepl("^kit-0[0-9]{2}$", stage)) return(600L)
     if (stage == "kit-journey") {
         seconds <- bindings$journey$ceiling_seconds
