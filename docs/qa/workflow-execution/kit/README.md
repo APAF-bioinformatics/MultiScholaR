@@ -11,17 +11,17 @@ Two axes bind the functions:
 - **The class declaration** binds storage. `workflowClassDeclaration(class)` says which slot is the assay (long or wide; a single table or a named list of tables), which is the design, which slots are tables, which columns are identity roles, and how to describe a state. The component checkpoint saves and reads any declared class. DIA's `PeptideQuantitativeData` and `ProteinQuantitativeData`, the lipidomics and metabolomics assay classes, and the result classes are declarations.
 - **The independence unit** binds execution. There are few units, so there are few partitioners: `partitionByRows` (row-independent steps), `partitionBySamples` (complete-sample batches, the proven P14 engine), `partitionByFeatureGroup` (batches of whole feature groups), `partitionByPlex` (TMT), and `runProjected` (whole-matrix kernels on one projected object under the cap). A partitioner presents each batch in the shape the kernel already expects and appends the results; the kernel never learns it ran on a slice.
 
-A **step declaration** is six facts: input class, fields and columns read, independence unit, kernel, output class, parameter names. The **operation runner** does the rest: identity (source references, operation, parameters, declaration version, software identity), cache lookup, projected hydrate, kernel call, checkpoint, release. The **operation registry** makes any declaration dispatchable through the managed worker (controller, monitor, worker in one slice under the admission cap) or in-process. The **on-disk state manager** is the default `state_manager` of every workflow module, so history is an immutable chain of references and modules hold references, not objects.
+A **step declaration** is six facts: input class, fields and columns read, independence unit, kernel, output class, parameter names, plus a declared **global-statistic pre-pass** where the kernel takes a dataset-wide value (such as a quantile threshold): computed once over the whole input before any partition and recorded in the identity. A kernel that silently recomputes such a value per batch would change results, which is why the pre-pass is part of the contract and not left to the partitioner. The **operation runner** does the rest: identity (source references, operation, parameters, declaration version, software identity), cache lookup, projected hydrate, kernel call, checkpoint, release. The **operation registry** makes any declaration dispatchable through the managed worker (controller, monitor, worker in one slice under the admission cap) or in-process. The **on-disk state manager** is the default `state_manager` of every workflow module, so history is an immutable chain of references and modules hold references, not objects.
 
 ## Independence units
 
 | Unit | Partitioner | Examples |
 |---|---|---|
-| row | `partitionByRows` | q-value filter, intensity filter, protein missing-value filters, log transforms |
+| row | `partitionByRows` | q-value filter, protein replicate filter (wide), log transforms |
 | complete sample | `partitionBySamples` | min peptides per sample, P14 precursor-to-peptide rollup |
-| feature group | `partitionByFeatureGroup` | min peptides per protein, replicate filter, imputation, duplicate resolution, IQ (checked per batch) |
+| feature group | `partitionByFeatureGroup` | min peptides per protein, peptide replicate filter, imputation, duplicate resolution, IQ (checked per batch); the peptide intensity filter after a declared global-statistic pre-pass |
 | plex | `partitionByPlex` | TMT |
-| whole matrix | `runProjected` | between-sample normalisation, RUV, correlation, limma, Limpa, edgeR, enrichment |
+| whole matrix | `runProjected` | protein missing-value filters (dataset-wide quantile), between-sample normalisation, RUV, correlation, limma, Limpa, edgeR, enrichment |
 | store | none | import adoption, design, reports, Save/Open |
 
 A unit is declared only after the science owner confirms it, and the partitioner's exactness test checks it (per-batch results must hash-identical to per-item results). Whole-matrix steps do not reach constant memory; they reach one projected object under a cap with nothing else resident.

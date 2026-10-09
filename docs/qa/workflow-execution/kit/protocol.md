@@ -1,6 +1,6 @@
 # KIT measurement protocol
 
-**Version 1 (draft, 2026-10-09).** Frozen by KIT-005 before any counted KIT member; its SHA-256 is then recorded in `kit/bindings.json` and a change to this file is a new version needing a user decision. Carries the CORE protocol v8.1 (`../core/protocol.md`) unless stated.
+**Version 1 (draft, 2026-10-09).** Frozen by KIT-001 before any counted KIT member; its SHA-256 is then recorded in `kit/bindings.json` and a change to this file is a new version needing a user decision. Carries the CORE protocol v8.1 (`../core/protocol.md`) unless stated.
 
 ## 1. Rules carried from CORE
 
@@ -19,7 +19,7 @@ The control is the latest accepted KIT build, run in the same session as the can
 
 - **Not worse:** candidate peak ≤ 1.02 × control peak (the per-pair rule of CORE-005 had no noise tolerance; this one does).
 - **Required reduction:** a ticket that exists to lower memory claims it only when candidate ≤ 0.95 × control on the named metric.
-- **Exactness:** the candidate's output table component pages are hash-identical to the oracle. The oracle is the in-process pre-kit build (`core_018`) run once on the same bound population and fingerprinted into the bindings, or the P14 page oracle for the replacement kernel.
+- **Exactness:** every component, support entry, args summary and product of the step is hash-identical to the oracle (zero-row safe fingerprints). The oracle for a post-rollup step is produced by KIT-005's counted control journey on `core_018`, which snapshots the store after each step as the bound population and fingerprints its outputs; the second baseline member must reproduce every fingerprint. No in-process full-size oracle runs exist. The `core` populations keep their bound oracles (the P14 page oracle; `oracles.filter_primary` pages, summary, support and design hashes).
 - **Single members** (KIT-014, KIT-015, KIT-016) are exactness-and-completion only: oracle hash, peak recorded, no ratio. The memory decision for migrated steps is taken once by the closure journey pair (KIT-017).
 - **Unit confirmation gate:** a step is declared only when `kit-001/step-map.json` marks its independence unit `confirmed` by a decision-record row in the series plan.
 
@@ -28,14 +28,14 @@ The control is the latest accepted KIT build, run in the same session as the can
 | Kind | Scope | Metrics |
 |---|---|---|
 | operation member | one registered operation on one bound population in the worker slice | kernel peak (`peak_bytes`), whole-slice anonymous peak, phase peaks, batches, elapsed and CPU (reported) |
-| journey member | the KIT-001 driver through the whole DIA journey on the 300-sample synthetic corpus | whole-slice anonymous peak, per-step anonymous peaks (`phase_peak_anon_bytes$<step>`), `resident_end_bytes` (minimum anonymous memory in the last 5 s before teardown), elapsed (reported) |
+| journey member | the KIT-001 driver through the whole DIA journey on the 300-sample synthetic corpus, under a `gui`-mode managed launch, with the journey's state-manager mode and per-step settings frozen in the bindings | whole-slice anonymous peak, per-step anonymous peaks (`phase_peak_anon_bytes$<step>`), `resident_end_bytes` (minimum anonymous memory in the last 5 s before teardown, from the coordinator's anonymous trace and a teardown mark), elapsed (reported); ceiling set from the KIT-001 screen duration scaled to 300 samples and recorded before launch, never above 90 min |
 | lifecycle member | completion and forced failure through a changed launch or measurement path, on the screen fixture | observed / not observed |
 
 Selectors: `kit:0NN:(control|candidate):[12]` for operation members, `kit:journey:(control|candidate):[12]` for journey members, `kit:lifecycle:(complete|fail)`.
 
 ## 5. Populations and oracles
 
-`kit/bindings.json` (KIT-001) carries the `core` populations (`screen_p14`, `full_p14` with the P14 page oracle, `full_primary` with the sample-filter oracle), the PERF-107 synthetic 300-sample DIA-NN import corpus, and one population per DIA step snapshotted after that step by the KIT-001 driver (store path, `dia-state-head.rds` sha256, input entity id, rows). KIT-005 records an in-process oracle for every per-step population on `core_018`.
+`kit/bindings.json` (KIT-001) carries the `core` populations (`screen_p14`, `full_p14` with the P14 page oracle, `full_primary` with the sample-filter oracle), the PERF-107 synthetic DIA-NN import corpora (8-sample screen, 300-sample full), the KIT harness file hashes and this protocol's hash. KIT-005's counted control journey adds one population per DIA step (store path, `dia-state-head.rds` sha256, input entity id, rows) and the full fingerprint set that is its oracle. The four CORE-pinned harness files are never edited by KIT tickets.
 
 ## 6. Run ledger
 
