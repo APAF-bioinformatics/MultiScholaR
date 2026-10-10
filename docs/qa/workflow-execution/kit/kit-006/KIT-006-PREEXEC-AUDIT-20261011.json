@@ -1,0 +1,117 @@
+{
+ "schema": "em.ticket_series_evidence_audit.result.v1",
+ "mode": "audit_only",
+ "audit_date": "2026-10-11",
+ "scope": {
+  "ticket_ids": [
+   "KIT-006"
+  ],
+  "commit": "57ad8613",
+  "claim_classes": [
+   "loop_equivalence",
+   "admission_equivalence",
+   "exactness_in_process_screen",
+   "harness_paths",
+   "declared_runs"
+  ]
+ },
+ "authority": {
+  "route_valid": true,
+  "artifacts": [
+   {
+    "path": "docs/qa/workflow-execution/kit/protocol.md",
+    "sha256": "a5867e9cea97a72892fc7fb972b75d18e644d2b0e27adf49823c544eed8bf068",
+    "version": "1.3"
+   },
+   {
+    "commit": "57ad8613",
+    "note": "KIT-006 implementation"
+   }
+  ]
+ },
+ "findings": [
+  {
+   "id": "PE-01",
+   "severity": "low",
+   "layer": "ticket_metadata",
+   "summary": "files_to_modify incomplete; control named core_018 in the ticket",
+   "repair": "ticket revision 1.1",
+   "blocked": "none"
+  },
+  {
+   "id": "PE-02",
+   "severity": "low",
+   "layer": "tracked_authority",
+   "summary": "step-map sample entry still describes the fixed three batches",
+   "repair": "text edit and bindings regeneration",
+   "blocked": "none"
+  },
+  {
+   "id": "PE-03",
+   "severity": "info",
+   "layer": "provenance",
+   "summary": "screen check ran on the uncommitted tree (R/ identical to 57ad8613)",
+   "repair": "outcome sentence or rerun",
+   "blocked": "none"
+  },
+  {
+   "id": "PE-04",
+   "severity": "info",
+   "layer": "design",
+   "summary": "partitioner shape and declaration routing differ from the ticket sketch; divergence not named in the outcome",
+   "repair": "one sentence",
+   "blocked": "none"
+  },
+  {
+   "id": "PE-05",
+   "severity": "info",
+   "layer": "admission",
+   "summary": "sample-filter three-batch estimate is the largest-samples bound (never smaller than before); three batches expected at full_primary",
+   "repair": "none",
+   "blocked": "none"
+  },
+  {
+   "id": "PE-06",
+   "severity": "low",
+   "layer": "verifier_coverage",
+   "summary": "filter verifier recipe untested against a known CORE record; first real check is the control member",
+   "repair": "accept or fixture test later",
+   "blocked": "none"
+  },
+  {
+   "id": "PE-07",
+   "severity": "info",
+   "layer": "verifier_cost",
+   "summary": "filter verifier reads the output twice outside the slice",
+   "repair": "none",
+   "blocked": "none"
+  }
+ ],
+ "tests": [
+  {
+   "name": "audit_inventory.py",
+   "result": "passed"
+  },
+  {
+   "name": "P14 loop and admission diff review",
+   "result": "passed"
+  },
+  {
+   "name": "affected test files (partitions 61, perf-106 193, repair-v2 75, bulk-relational 45, saved-qc-rollup 76, operations 66, harness 160)",
+   "result": "passed"
+  },
+  {
+   "name": "in-process screen check",
+   "result": "passed"
+  }
+ ],
+ "closeout": {
+  "implementation_verified": true,
+  "execution_complete": false,
+  "decision_supported": false,
+  "promotion_authorized": false,
+  "claim_scope": "physical sample filter exact against native on the 8-sample screen state at 3 and 4 batches; P14 unchanged on unit populations; no full-size or memory claim"
+ },
+ "blockers": [],
+ "next_action": "declared install and four members on the user's go; PE-01/PE-02 text fixes with the closeout"
+}
