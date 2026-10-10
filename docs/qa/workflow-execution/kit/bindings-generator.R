@@ -43,7 +43,7 @@ for (key in names(installs)) {
         runtime_patch_bytes = file.size(file.path(install, "runtime.patch")))
     if (key == "kit_001") {
         b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-001", outcome = "control", build = "kit_001",
-            note = "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09) plus the KIT-005 ceiling constant (launch-record deadline up to 14400 s, protocol v1.2) and the once-per-sweep RUV canonical-correlation input (user decisions 2026-10-10; branch kit-control-ceiling 42a7a4bb); the earlier installs browser-smoke.y8rDOi (source 9075b361) and browser-smoke.sMOGTK (0f96397b) are superseded and stay recorded; the KIT control until KIT-006 accepts")
+            note = "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09) plus the KIT-005 ceiling constant (launch-record deadline up to 14400 s, protocol v1.2) the once-per-sweep RUV canonical-correlation input, the sweep's k validity rule and the RUV-III guards (user decisions 2026-10-10; branch kit-control-ceiling 8e77d92d); the earlier installs browser-smoke.y8rDOi (9075b361), browser-smoke.sMOGTK (0f96397b) and browser-smoke.3nBUjx (42a7a4bb) are superseded and stay recorded; the KIT control until KIT-006 accepts")
         b$control <- "kit_001"
     }
 }

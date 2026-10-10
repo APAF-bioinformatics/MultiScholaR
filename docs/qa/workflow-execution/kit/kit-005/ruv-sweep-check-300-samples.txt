@@ -1,0 +1,24 @@
+RESULT sweep seconds: 697 
+RESULT pct  1 controls  25 k 15 sep 0.7458 comp NA skipped_k_exceeds_complete_controls
+RESULT pct  2 controls  50 k 33 sep 0.8464 comp NA skipped_k_exceeds_complete_controls
+RESULT pct  3 controls  75 k 47 sep 0.8797 comp NA skipped_k_exceeds_complete_controls
+RESULT pct  4 controls 100 k 48 sep 0.8852 comp NA skipped_k_exceeds_complete_controls
+RESULT pct  5 controls 125 k 48 sep 0.8878 comp NA skipped_k_exceeds_complete_controls
+RESULT pct  6 controls 150 k 49 sep 0.8876 comp NA skipped_k_exceeds_complete_controls
+RESULT pct  7 controls 175 k 48 sep 0.8868 comp NA skipped_k_exceeds_complete_controls
+RESULT pct  8 controls 200 k 49 sep 0.8873 comp NA skipped_k_exceeds_complete_controls
+RESULT pct  9 controls 225 k 48 sep 0.8840 comp NA skipped_k_exceeds_complete_controls
+RESULT pct 10 controls 250 k 48 sep 0.8866 comp NA skipped_k_exceeds_complete_controls
+RESULT pct 11 controls 275 k 52 sep 0.8880 comp NA skipped_k_exceeds_complete_controls
+RESULT pct 12 controls 300 k 48 sep 0.8819 comp 0.0000 ok
+RESULT pct 13 controls 325 k 47 sep 0.8765 comp 0.0000 ok
+RESULT pct 14 controls 350 k 46 sep 0.8718 comp 0.0000 ok
+RESULT pct 15 controls 375 k 47 sep 0.8731 comp 0.0000 ok
+RESULT pct 16 controls 400 k 46 sep 0.8748 comp 0.0000 ok
+RESULT pct 17 controls 425 k 48 sep 0.8743 comp 0.0000 ok
+RESULT pct 18 controls 450 k 47 sep 0.8727 comp 0.0000 ok
+RESULT pct 19 controls 475 k 44 sep 0.8682 comp 0.0000 ok
+RESULT pct 20 controls 500 k 45 sep 0.8680 comp 0.0000 ok
+RESULT WINNER percentage 19 k 44 controls 475 
+RESULT RUV-III corrected table: 2500 x 298 
+RESULT after missing-value cleanup: 2476 x 298 

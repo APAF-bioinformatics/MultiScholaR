@@ -19,11 +19,11 @@
     },
     "kit_001": {
       "ticket": "KIT-001",
-      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.3nBUjx/library",
-      "build": "3d824bc7b7d29c0ca38267e8b15c9ae893c5ca817c2020b8fc8b31ca14e4be77",
-      "exact_sum": "2752b1842d5fb9fe3df2c1184390db55073dd45883dfbbcfdf4be4509ccab85b",
-      "install_member": "browser-smoke.3nBUjx",
-      "source_commit": "42a7a4bb13587749a20dd8741017a61d45834360",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.X9aj9P/library",
+      "build": "da9a844d991887f9beeacb97d69a7a0c115998c94aa3070f5e6668c4f697eac3",
+      "exact_sum": "49798e98149fe241f2e8cccf78a8c7547ba31803f7fcb31adc5da16d0771598c",
+      "install_member": "browser-smoke.X9aj9P",
+      "source_commit": "8e77d92d87bb84375297d155abe97790619a2ddf",
       "runtime_patch_bytes": 0
     }
   },
@@ -38,7 +38,7 @@
       "ticket": "KIT-001",
       "outcome": "control",
       "build": "kit_001",
-      "note": "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09) plus the KIT-005 ceiling constant (launch-record deadline up to 14400 s, protocol v1.2) and the once-per-sweep RUV canonical-correlation input (user decisions 2026-10-10; branch kit-control-ceiling 42a7a4bb); the earlier installs browser-smoke.y8rDOi (source 9075b361) and browser-smoke.sMOGTK (0f96397b) are superseded and stay recorded; the KIT control until KIT-006 accepts"
+      "note": "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09) plus the KIT-005 ceiling constant (launch-record deadline up to 14400 s, protocol v1.2) the once-per-sweep RUV canonical-correlation input, the sweep's k validity rule and the RUV-III guards (user decisions 2026-10-10; branch kit-control-ceiling 8e77d92d); the earlier installs browser-smoke.y8rDOi (9075b361), browser-smoke.sMOGTK (0f96397b) and browser-smoke.3nBUjx (42a7a4bb) are superseded and stay recorded; the KIT control until KIT-006 accepts"
     }
   ],
   "control": "kit_001",
