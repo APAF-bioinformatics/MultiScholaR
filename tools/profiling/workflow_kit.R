@@ -655,7 +655,7 @@ kitFileMismatches <- function(reference, candidate) {
     }
     # Compared by path only: PDFs (compressed metadata differs between identical runs) and the session
     # export's bookkeeping files, which carry the export time and the session id (KIT-005 correction 7).
-    by_path_only <- function(path) grepl("[.]pdf$|[.]msdia[.]tar$|/native_export_complete_|/native-(io-)?preflight-|/filtered_session_(latest[.]json|summary[.]txt)$",
+    by_path_only <- function(path) grepl("[.]pdf$|[.]msdia[.]tar$|(^|/)native_export_complete_|(^|/)native-(io-)?preflight-|(^|/)filtered_session_(latest[.]json|summary[.]txt)$",
         path, ignore.case = TRUE)
     key <- function(files) paste(files$path, ifelse(by_path_only(files$path), "", files$sha256))
     reference <- canonical(reference)
