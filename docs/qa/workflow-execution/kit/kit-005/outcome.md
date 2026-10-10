@@ -1,6 +1,6 @@
 # KIT-005: harness, operation members, per-step oracles, baseline journey
 
-Status 2026-10-11: stage decisions recorded. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-005 with the user's amendments of 2026-10-10); protocol v1.3 (`../protocol.md`, sha256 in `../bindings.json`). Control: `kit_001` = install `core/browser-smoke.X9aj9P` (source `8e77d92d` on branch `kit-control-ceiling`: the KIT-001 control source `9075b361` plus three user decisions of 2026-10-10, below).
+Status 2026-10-11: **complete** (acceptance wording for the production-default member amended by the user: completes, or ends at a guard, with its per-step peaks recorded). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-005 with the user's amendments of 2026-10-10); protocol v1.3 (`../protocol.md`, sha256 in `../bindings.json`). Control: `kit_001` = install `core/browser-smoke.X9aj9P` (source `8e77d92d` on branch `kit-control-ceiling`: the KIT-001 control source `9075b361` plus three user decisions of 2026-10-10, below).
 
 ## Results
 
