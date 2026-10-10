@@ -1,0 +1,247 @@
+{
+ "schema": "em.ticket_series_evidence_audit.result.v1",
+ "mode": "post_hoc",
+ "audit_date": "2026-10-11",
+ "scope": {
+  "ticket_ids": [
+   "KIT-005"
+  ],
+  "files": [
+   "tools/profiling/workflow_kit.R",
+   "tools/profiling/workflow_kit_coordinator.R",
+   "tools/profiling/workflow_kit_driver.R",
+   "tools/profiling/workflow_kit_member.R",
+   "tools/profiling/run_workflow_kit.sh",
+   "docs/qa/workflow-execution/kit/bindings-generator.R",
+   "docs/qa/workflow-execution/kit/bindings.json",
+   "docs/qa/workflow-execution/kit/protocol.md",
+   "R/utils_workflow_execution.R",
+   "R/func_prot_s4_norm_methods.R",
+   "R/func_prot_norm_optimization_helpers.R",
+   "tests/testthat/test-workflow-kit-harness.R",
+   "tests/testthat/test-prot-ruv-sweep-imputation.R",
+   "docs/qa/workflow-execution/kit/kit-005/outcome.md",
+   "docs/qa/workflow-execution/kit/kit-005/journey-attempt6.json",
+   "docs/qa/workflow-execution/kit/kit-005/journey-decision-v13.R",
+   "docs/qa/workflow-execution/kit/kit-005/journey-control-2-verifier-correction.R",
+   "docs/qa/workflow-execution/kit/kit-005/operation-complete-verifier-correction.R",
+   "docs/qa/workflow-execution/kit/kit-005/operation-fail-verifier-correction.R"
+  ],
+  "claim_classes": [
+   "lifecycle_observed",
+   "baseline_recorded",
+   "oracle_reproducible",
+   "production_default_guard_baseline",
+   "control_build_identity"
+  ]
+ },
+ "authority": {
+  "route_valid": true,
+  "artifacts": [
+   {
+    "path": "docs/qa/workflow-execution/kit/protocol.md",
+    "sha256": "a5867e9cea97a72892fc7fb972b75d18e644d2b0e27adf49823c544eed8bf068",
+    "version": "1.3"
+   },
+   {
+    "commit": "89610e16",
+    "note": "KIT-005 closeout"
+   },
+   {
+    "commit": "5c8c33ed",
+    "note": "HEAD at the kit-journey attempt 6 launch (stage snapshot)"
+   },
+   {
+    "build": "kit_001",
+    "install": "core/browser-smoke.X9aj9P",
+    "source_commit": "8e77d92d87bb84375297d155abe97790619a2ddf",
+    "build_sha256": "da9a844d991887f9beeacb97d69a7a0c115998c94aa3070f5e6668c4f697eac3"
+   },
+   {
+    "stage": "kit-journey",
+    "input_bindings_sha256": "5a4f8166c54c5e8e418fcd94c32cb638f263c4d251f105288ce9b27dbbcd1e09",
+    "decision": "baseline_recorded",
+    "protocol": "1.3"
+   }
+  ]
+ },
+ "findings": [
+  {
+   "id": "PH-01",
+   "severity": "high",
+   "layer": "producer_consumer",
+   "summary": "journey_<step> populations bind one live store with a stale head hash; the operation-member precondition refuses 17 of 18",
+   "evidence": "tools/profiling/workflow_kit_coordinator.R:63-64, tools/profiling/workflow_kit.R:770-771; bindings populations.journey_* head_sha256 vs sha256 of <store>/dia-state-head.rds (only journey_da matches)",
+   "impact": "KIT-009/010/014/015 cannot bind a journey population as recorded; KIT-006 unaffected",
+   "repair": "operation member copies the bound store and checks entity_id and record hash (or per-step snapshot copies); bindings regenerated from journey-result.rds, no rerun",
+   "blocked": "execution of KIT-009 onward",
+   "closure_evidence": "a validate run of a kit-009 case against journey_imputation passes the precondition"
+  },
+  {
+   "id": "PH-02",
+   "severity": "medium",
+   "layer": "decision_design",
+   "summary": "production-default rule requires completion and verifier acceptance; decision records recorded=FALSE against the amended acceptance",
+   "evidence": "tools/profiling/workflow_kit.R kitJourneyDecision/kitIneligible; <proof>/kit/runtime/kit-journey/decision.rds production_default",
+   "impact": "decision record contradicts ticket closure; baseline consumers read recorded=FALSE",
+   "repair": "default role eligible on complete or protocol guard with per-step peaks and zero swap; recompute decision from receipts",
+   "blocked": "decision record only",
+   "closure_evidence": "decision.rds production_default.recorded TRUE with the guard named; harness test"
+  },
+  {
+   "id": "PH-03",
+   "severity": "low",
+   "layer": "evidence_provenance",
+   "summary": "tracked journey-attempt6.json carries the v1.2 decision (invalid), not the v1.3 baseline_recorded",
+   "evidence": "docs/qa/workflow-execution/kit/kit-005/journey-attempt6.json .decision",
+   "impact": "tracked record disagrees with the outcome",
+   "repair": "regenerate from decision.rds after PH-02",
+   "blocked": "none",
+   "closure_evidence": "summary .decision.status == baseline_recorded, protocol 1.3"
+  },
+  {
+   "id": "PH-04",
+   "severity": "low",
+   "layer": "documentation",
+   "summary": "outcome says 17 populations; bindings carry 18 journey_* entries, journey_import empty and journey_session_export a duplicate head of the correlation state",
+   "evidence": "bindings populations.journey_import (rows NA, no components), populations.journey_session_export entity == journey_correlation entity",
+   "impact": "count and wording",
+   "repair": "one sentence in outcome.md",
+   "blocked": "none",
+   "closure_evidence": "outcome sentence"
+  },
+  {
+   "id": "PH-05",
+   "severity": "low",
+   "layer": "authority",
+   "summary": "protocol section 2 control definition omits the ceiling constant and the two RUV sweep changes carried by the installed control",
+   "evidence": "protocol.md section 2 vs bindings builds.kit_001.source_commit 8e77d92d",
+   "impact": "authority text stale; bindings identify the build",
+   "repair": "section 2 sentence in the next protocol version (user decision) or a control.note in the bindings",
+   "blocked": "none",
+   "closure_evidence": "protocol or bindings text"
+  },
+  {
+   "id": "PH-06",
+   "severity": "low",
+   "layer": "ticket_metadata",
+   "summary": "ticket experiment budget still says never above 90 min; files_to_modify omits driver, member, generator, R/ and test files",
+   "evidence": "tickets/kit/KIT-005.md frontmatter and Experiment budget",
+   "impact": "ticket text only",
+   "repair": "ticket revision 1.2",
+   "blocked": "none",
+   "closure_evidence": "ticket text"
+  },
+  {
+   "id": "PH-07",
+   "severity": "low",
+   "layer": "acceptance_wording",
+   "summary": "acceptance item 2 checked as verified without post-hoc correction; the verifier was rerun for corrections 1 and 7 (populations themselves in-run)",
+   "evidence": "stage.rds corrections; verification.harness-failed.rds and verification.correction-7-attempt1-failed.rds kept",
+   "impact": "overstated wording",
+   "repair": "qualify the item",
+   "blocked": "none",
+   "closure_evidence": "ticket text"
+  },
+  {
+   "id": "PH-08",
+   "severity": "info",
+   "layer": "process",
+   "summary": "attempt 2 launch has no explicit ledger authorisation sentence (implicit in the user's option 1)",
+   "evidence": "ledger row 2026-10-10 (protocol v1.2); kit-journey.attempt2-instrumentation-start.txt 07:11 AEDT; user '1.' at 07:06 AEDT",
+   "impact": "audit trail",
+   "repair": "one clause in the ledger row",
+   "blocked": "none",
+   "closure_evidence": "ledger text"
+  },
+  {
+   "id": "PH-09",
+   "severity": "info",
+   "layer": "host_hygiene",
+   "summary": "four failed user units linger; none active",
+   "evidence": "systemctl --user list-units multischolar*",
+   "impact": "none",
+   "repair": "systemctl --user reset-failed",
+   "blocked": "none",
+   "closure_evidence": "empty listing"
+  },
+  {
+   "id": "PH-10",
+   "severity": "info",
+   "layer": "regression_scope",
+   "summary": "adapters test file skips all six tests from the source tree; installed suite not yet run (KIT-004 PC-01 still open)",
+   "evidence": "test-workflow-execution-adapters.R 0 pass 6 skip under load_all",
+   "impact": "adapters regression evidence comes from the lifecycle members",
+   "repair": "installed suite before KIT-007",
+   "blocked": "none",
+   "closure_evidence": "installed suite output"
+  }
+ ],
+ "tests": [
+  {
+   "name": "audit_inventory.py",
+   "result": "passed",
+   "validity_layer": "documentation_or_graph_integrity"
+  },
+  {
+   "name": "harness file hashes vs bindings",
+   "result": "passed",
+   "validity_layer": "mechanical"
+  },
+  {
+   "name": "control source 8e77d92d == 9075b361 + 88482d81/8d9d6250/a226eba2 R diffs",
+   "result": "passed",
+   "validity_layer": "provenance"
+  },
+  {
+   "name": "journey receipts recomputed from memory-trace.tsv (peaks, swap, gaps, resident end)",
+   "result": "passed",
+   "validity_layer": "empirical"
+  },
+  {
+   "name": "test-workflow-kit-harness.R",
+   "result": "passed",
+   "count": 114,
+   "validity_layer": "unit"
+  },
+  {
+   "name": "test-prot-ruv-sweep-imputation.R",
+   "result": "passed",
+   "count": 18,
+   "validity_layer": "unit"
+  },
+  {
+   "name": "test-workflow-execution-launch-record.R",
+   "result": "passed",
+   "count": 16,
+   "validity_layer": "unit"
+  },
+  {
+   "name": "test-prot-norm-optimization-direct-shared.R",
+   "result": "passed",
+   "count": 53,
+   "validity_layer": "unit"
+  },
+  {
+   "name": "test-workflow-execution-adapters.R",
+   "result": "skipped",
+   "count": 6,
+   "validity_layer": "unit",
+   "note": "installed package required"
+  }
+ ],
+ "closeout": {
+  "implementation_verified": true,
+  "execution_complete": true,
+  "decision_supported": true,
+  "promotion_authorized": false,
+  "claim_scope": "native-path 300-sample journey: 3,847-3,941 s, anonymous peak 5.5-5.7 GiB, resident end 2.98-3.03 GiB, 17 post-import oracles reproduced across two runs; production default: memory guard in imputation at 14.3 GiB anonymous after eight steps, per-step peaks recorded; no ratio against the default member; times reported only"
+ },
+ "blockers": [
+  {
+   "id": "PH-01",
+   "blocks": "KIT-009 and later journey-population members"
+  }
+ ],
+ "next_action": "repair PH-01 before any journey population is bound by an operation member; PH-02/PH-03 one bounded harness correction with a recomputed decision; KIT-006 may start"
+}
