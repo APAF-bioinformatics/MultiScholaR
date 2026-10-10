@@ -1,6 +1,6 @@
 # KIT-005: harness, operation members, per-step oracles, baseline journey
 
-Status 2026-10-11: **complete** (acceptance wording for the production-default member amended by the user: completes, or ends at a guard, with its per-step peaks recorded). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-005 with the user's amendments of 2026-10-10); protocol v1.3 (`../protocol.md`, sha256 in `../bindings.json`). Control: `kit_001` = install `core/browser-smoke.X9aj9P` (source `8e77d92d` on branch `kit-control-ceiling`: the KIT-001 control source `9075b361` plus three user decisions of 2026-10-10, below).
+Status 2026-10-11: **complete** (acceptance wording for the production-default member amended by the user: completes, or ends at a guard, with its per-step peaks recorded). Post-hoc audit and remediation 2026-10-11: [KIT-005-POSTHOC-AUDIT-20261011.md](KIT-005-POSTHOC-AUDIT-20261011.md), [KIT-005-POSTHOC-REMEDIATION-20261011.md](KIT-005-POSTHOC-REMEDIATION-20261011.md). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-005 with the user's amendments of 2026-10-10); protocol v1.3 (`../protocol.md`, sha256 in `../bindings.json`). Control: `kit_001` = install `core/browser-smoke.X9aj9P` (source `8e77d92d` on branch `kit-control-ceiling`: the KIT-001 control source `9075b361` plus three user decisions of 2026-10-10, below).
 
 ## Results
 
@@ -10,7 +10,7 @@ Status 2026-10-11: **complete** (acceptance wording for the production-default m
 | `kit-lifecycle-operation-fail` | same, worker fails inside the ordered result stage | `lifecycle_failure_observed` (head unchanged on the input component) | 28 s | 1.36 GiB | — | — | [operation-fail-verifier-correction.R](operation-fail-verifier-correction.R) |
 | `kit-journey` control-1 | 300-sample journey, `kit-journey-v1` record | complete, verified, 18 populations in-run | 3,847 s | 7.89 GiB | 5.67 GiB | 3.03 GiB | [journey-attempt6.json](journey-attempt6.json) |
 | `kit-journey` control-2 | same | complete, verified, **reproduced every fingerprint and file of control-1** | 3,941 s | 7.61 GiB | 5.51 GiB | 2.98 GiB | same |
-| `kit-journey` default-1 | production default (no record, in-memory `WorkflowState`) | **memory guard in imputation after 8 of 18 steps** (valid recorded result) | 643 s | 15.51 GiB | 14.32 GiB | not reached | same |
+| `kit-journey` default-1 | production default (no record, in-memory `WorkflowState`) | **memory guard in imputation after 8 of 18 steps** (recorded guard baseline; decision `production_default$recorded` TRUE, outcome `memory_guard`, after audit PH-02) | 643 s | 15.51 GiB | 14.32 GiB | not reached | same |
 
 Stage decision `baseline_recorded` under protocol v1.3 ([journey-decision-v13.R](journey-decision-v13.R)); noise between the two control members: anonymous peak ratio 0.971, resident end 0.983, elapsed 1.02. Control-1 had one 280 ms sampling gap in 66,823 samples (RUV); control-2 none above 250 ms.
 
@@ -38,7 +38,7 @@ The in-memory default's per-step peaks (q-value 6.4, rollup 9.8, imputation 14.3
 
 ## Populations and oracles
 
-`kit/bindings.json` now binds, from control-1, one population per journey step (`journey_<step>`: store, head sha256, entity id, rows) and its oracle (every component, support entry and product fingerprint and the args summary, canonical across runs), 17 steps (the session export leaves no state) plus the three `core` populations. Control-2 reproduced all of them (0 fingerprint mismatches over 18 steps, 0 file mismatches with the canonical file rule). Rows: peptide states 5,846,578 to 5,515,154; `imputed` 11,826,409 (the imputation step writes about twice the rows of its input; recorded for a later ticket); protein states 2,500; `ruv_corrected` and `correlation_filtered` 2,476.
+`kit/bindings.json` now binds, from control-1, one population per journey step (`journey_<step>`: store, head sha256, the checkpoint entity whose descriptor is that head (`head_entity`, audit PH-01), entity id, rows) and its oracle (every component, support entry and product fingerprint and the args summary, canonical across runs): 18 entries, of which 16 carry a verifiable state; `journey_import` is the initial state (no table component, no products, nothing to verify) and `journey_session_export` is the correlation entity under a later head (the export writes no state). Plus the three `core` populations. Control-2 reproduced all of them (0 fingerprint mismatches over the 18 entries, 0 file mismatches with the canonical file rule). An operation member on a journey population works from a snapshot store materialised by the coordinator (entities reflinked from control-1's immutable store, the bound descriptor as the head), never from the live store. Rows: peptide states 5,846,578 to 5,515,154; `imputed` 11,826,409 (the imputation step writes about twice the rows of its input; recorded for a later ticket); protein states 2,500; `ruv_corrected` and `correlation_filtered` 2,476.
 
 ## Three user decisions of 2026-10-10 (science and protocol)
 
@@ -59,6 +59,7 @@ Plus protocol v1.3 (2026-10-11): journey members tolerate isolated sampling gaps
 | 5 | proactive | pinned 2 h process cap on waits; 10 s completion notifications; fingerprint pass inside the measured window | wait budget = member ceiling; persistent notification log; teardown before fingerprints |
 | 6 | journey attempt 5 | table reader's 64-column cap refused the wide protein tables; six process spawns per sample left gaps above 250 ms | column cap = table width; one awk per sample (56 ms mean, 60 ms max) |
 | 7 | journey attempt 6 control-2 | between-member file check compared raw paths (timestamped directories, request ids, export bookkeeping) | canonical paths; export bookkeeping and PDFs by path; verifier rerun |
+| 8 | journey attempt 6 default-1 (audit PH-02) | the production-default rule and verifier required completion, against the acceptance as amended by the user | guard outcome accepted with per-step peaks; verifier rerun; decision recomputed ([journey-decision-ph02.R](journey-decision-ph02.R)) |
 
 Launch record: journey attempts 1 to 5 are archived under `<proof>/kit/runtime/kit-journey.attempt*` with the causes in `<proof>/kit/kit-journey-notes.txt` (attempt 3's coordinator log was overwritten by the attempt 4 launch; its receipts are intact). Two screen lifecycle members ran outside the ledger at the user's request to prove the corrected driver path; the second completed all 18 steps in 462 s under a 600 s screen ceiling. A stray dry-check process of mine overlapped the first 22 minutes of attempt 1 (elapsed time only).
 

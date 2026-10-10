@@ -4,13 +4,27 @@
   "attempt": 6,
   "control": "kit_001 (browser-smoke.X9aj9P, 8e77d92d)",
   "decision": {
-    "status": "invalid",
-    "failing_rule": ["measurement_valid", "verifier_accepted"],
-    "noise": null,
+    "status": "baseline_recorded",
+    "protocol": {
+      "version": "1.3",
+      "sha256": "a5867e9cea97a72892fc7fb972b75d18e644d2b0e27adf49823c544eed8bf068",
+      "note": "recomputed from the attempt 6 receipts after audit remediation PH-02 (production-default guard rule); the earlier v1.3 decision kept as decision_before_ph02"
+    },
+    "failing_rule": [],
+    "noise": {
+      "peak_anon": 0.971148400220093,
+      "resident_end": 0.983141379997026,
+      "elapsed": 1.02436824277778
+    },
     "production_default": {
-      "recorded": false,
-      "failing_rule": "verifier_accepted"
+      "recorded": true,
+      "failing_rule": null,
+      "outcome": "memory_guard"
     }
+  },
+  "decisions_superseded": {
+    "protocol_v12": "invalid",
+    "v13_before_ph02": "baseline_recorded"
   },
   "corrections": [
     {
@@ -18,6 +32,10 @@
       "harness_commit": "6b598edf",
       "harness_sha256": "f24c9da067d6ac2acdd57c6889b847e0a0f32645442918d035cde63792893d5d",
       "reason": "between-member file check compared raw paths (timestamped directories, request ids, session export bookkeeping); member measurement untouched"
+    },
+    {
+      "id": 8,
+      "reason": "KIT-005 audit PH-02: the production-default rule and verifier accept a member that ends at a protocol guard with its per-step peaks (acceptance as amended by the user 2026-10-11); member measurement untouched"
     }
   ],
   "members": [
@@ -30,6 +48,7 @@
       "resident_end_gib": 3.027,
       "swap_bytes": 0,
       "max_sample_interval_s": 0.279999999998836,
+      "gaps_above_250ms": 1,
       "samples": 66824,
       "populations_complete": true,
       "verifier_accepted": true,
@@ -105,6 +124,7 @@
       "resident_end_gib": 2.976,
       "swap_bytes": 0,
       "max_sample_interval_s": 0.160000000003492,
+      "gaps_above_250ms": 0,
       "samples": 68252,
       "populations_complete": true,
       "verifier_accepted": true,
@@ -180,9 +200,10 @@
       "resident_end_gib": null,
       "swap_bytes": 0,
       "max_sample_interval_s": 0.110000000000582,
+      "gaps_above_250ms": 0,
       "samples": 11030,
       "populations_complete": false,
-      "verifier_accepted": false,
+      "verifier_accepted": true,
       "reproduced": null,
       "outer_guard": "memory_guard",
       "phase_seconds": {

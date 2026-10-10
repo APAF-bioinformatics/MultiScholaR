@@ -42,6 +42,7 @@
     }
   ],
   "control": "kit_001",
+  "control_note": "kit_001 = core_018 source (906c50dc) + KIT journey launch record, RUV-III technical-replicate structure, quantile-ceiling removal (2026-10-09) + launch-record deadline up to 14400 s (protocol v1.2), RUV sweep canonical-correlation input prepared once per sweep, sweep k validity rule and RUV-III guards (2026-10-10); source 8e77d92d on branch kit-control-ceiling; install browser-smoke.X9aj9P",
   "populations": {
     "screen_p14": {
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/browser-smoke.djt8ku/size-960000/.workflow-entities",
@@ -156,180 +157,216 @@
       "state": "initial",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "e9cbbcdca5b8c2a09cfadabee4b8c7c9f06a44a9ac89fd211b8d060b9df3b267",
+      "head_entity": "dia-state-3005b15ee338f",
       "entity_id": "ad4892309d483be04f57a8a36f8f2e8d65bfeba7d1777249803c0410fb032815",
       "rows": null,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": "initial state: no table component, no products; nothing to verify"
     },
     "journey_design": {
       "step": "design",
       "state": "raw_data_s4",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "ea880a577573e0b08fb6f9a2a837358e91dbfda745e1abca61683c3af834cb48",
+      "head_entity": "dia-state-3005b3f1720fd",
       "entity_id": "ac3bf10e5ac62060849cffc688b6d6837b90bed8803b3b184edf09d8178cfacb",
       "rows": 5846578,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_qvalue": {
       "step": "qvalue",
       "state": "qvalue_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "4151cd670f6f763f76683251924119fd7a88688cbb50e50149d61eaebd52fc80",
+      "head_entity": "dia-state-3005b506b697d",
       "entity_id": "c42fcdd5d0704ca63b07098e1375e91ad8b2917ca39a0a53eb5f136fe9bcbada",
       "rows": 5846578,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_protein_peptide": {
       "step": "protein_peptide",
       "state": "protein_peptide_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "3d23107b5b688f58ca869f8cb24ff03da6b83d5dce81e6e7732a7ae1a31daa8d",
+      "head_entity": "dia-state-3005b43751500",
       "entity_id": "3f310a9c236acbecb4a9bef1459b62c37613053a2796b938b430d53ca12bc065",
       "rows": 5846578,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_rollup": {
       "step": "rollup",
       "state": "precursor_rollup",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "65cd9cb97532be75a810139ba000780fb84a9f5921d525284faa14070a4fcd3a",
+      "head_entity": "dia-state-3005b48d5522c",
       "entity_id": "5d13abe87361d55d50018d649499b1801036f78a8fc91830107aa21c81655fce",
       "rows": 5521570,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_intensity": {
       "step": "intensity",
       "state": "intensity_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "16e917cc0e7bca80f39fb389987d17ab08c096b51d39446b065d6342ddb5b83a",
+      "head_entity": "dia-state-3005bce738ae",
       "entity_id": "962beb4b4679680d1cbe92f2ffe802ff34a724723c67c4709a6dac6bd57ac1b7",
       "rows": 5521570,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_sample": {
       "step": "sample",
       "state": "sample_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "555a8ec075112856f2e647c6fe55c678e8aeeb1fc7e9d10d4150770a66f9880f",
+      "head_entity": "dia-state-3005b1dde6753",
       "entity_id": "62a2c954667291827a8cc1523f87954896fd44091343d8ccded7b4a097c0fb21",
       "rows": 5515154,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_replicate": {
       "step": "replicate",
       "state": "replicate_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "6fa7a443c2340038dce5a61ecdb2682caa6f14ac2e2dc16b34c9ac2975472cb2",
+      "head_entity": "dia-state-3005b29bece99",
       "entity_id": "2cba598461cc203cd8cc796ef12443aa04dd1dbb73af2d6b136145a20037ca07",
       "rows": 5515154,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_imputation": {
       "step": "imputation",
       "state": "imputed",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "c6d5ef222ce2c2753235d3df649e5fea067ef1b8add8bf21b66006011c62219a",
+      "head_entity": "dia-state-3005b297f85d0",
       "entity_id": "ad79be933e45daa50a1da7a9e7104e228b3f1f470b751ab1cc6ec70c0d0e2db2",
       "rows": 11826409,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_iq": {
       "step": "iq",
       "state": "protein_s4_created",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "f7fc1c0c5f4c8310b2a52472cb839ece33e9dd9ba8fe9215487a433ee1760a4e",
+      "head_entity": "dia-state-3005b78973b4f",
       "entity_id": "e38d29a879b0fc0c75fe38298e96483ac10306e01e472d6ad84337d05d6a7fef",
       "rows": 2500,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_accession": {
       "step": "accession",
       "state": "protein_accession_cleaned",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "944f56dc3b341a6bd5d5dd76cdbdfb350f9b9193edf6d33baee90634ac002e71",
+      "head_entity": "dia-state-3005b68be8c96",
       "entity_id": "fde27b03cd520e49c88d88dd0a9daadd8c3fbec7b3812962e5d2ee1cc8ecde05",
       "rows": 2500,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_protein_intensity": {
       "step": "protein_intensity",
       "state": "protein_intensity_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "ccf7d1651c54242411f23630f9bf800965564f567e1601507545940cab58c241",
+      "head_entity": "dia-state-3005b6f45ddc6",
       "entity_id": "b250b5f646bbae091e7183561e80313227635062ca474f081a3e10bfce486e32",
       "rows": 2500,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_duplicates": {
       "step": "duplicates",
       "state": "duplicates_removed",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "2d567cfc0d386d5fe1bea7eec8dab60aba80eb94ac1bf401d17951bb3e392a51",
+      "head_entity": "dia-state-3005b27ee74cc",
       "entity_id": "b244e6ddf168b8c1c19ce3cc0c8cac50eeb234de57046bc208d09d2e690acec4",
       "rows": 2500,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_protein_replicate": {
       "step": "protein_replicate",
       "state": "protein_replicate_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "b4a8dde1feb91721e697e265de33ae28cb726bef27009a2cbbc073f396d17b96",
+      "head_entity": "dia-state-3005b61e98c3e",
       "entity_id": "05450ae487ba0932777d49da331ea3f39edbc007215121535a40b5923ba040cd",
       "rows": 2500,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_normalisation_ruv": {
       "step": "normalisation_ruv",
       "state": "ruv_corrected",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "3a870808a28b4cda3de2a6710f937ab8dcea361b64a5d40a92e6e5da5c997f7a",
+      "head_entity": "dia-state-3005b5c49ddb9",
       "entity_id": "abd2c64f6fb00bb7d01a0dae89a454ff3965b6c2319ed43c997b9fdfc51cd68b",
       "rows": 2476,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_correlation": {
       "step": "correlation",
       "state": "correlation_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "a91824f452fb4bc5a5d6699d3fdbbd49796ee2ee08dbef8a6e656c56237c09d8",
+      "head_entity": "dia-state-3005b5bd5e207",
       "entity_id": "a6e3b2a817d1685f2a6ebd903f3de20c7646017f61b55805d78470c7133aaab3",
       "rows": 2476,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     },
     "journey_session_export": {
       "step": "session_export",
       "state": "correlation_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "879dc5f9368afbbfa01fb16eee0d249cbe8bbde3b1398704b2c8ef7c05315922",
+      "head_entity": "dia-state-3005b1bcc0ab8",
       "entity_id": "a6e3b2a817d1685f2a6ebd903f3de20c7646017f61b55805d78470c7133aaab3",
       "rows": 2476,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": "the session export writes no state: same entity as journey_correlation under a later head"
     },
     "journey_da": {
       "step": "da",
       "state": "correlation_filtered",
       "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
       "head_sha256": "c409d7ad418efa137800fb3bde3c90cf594763ac2d0d1f677d89dcbe4d798a6b",
+      "head_entity": "dia-state-3005b75a9faa9",
       "entity_id": "2bb20f3216d1dafc9ef3647f76c94547287dd1dcd83f793b5870481769e88783",
       "rows": 2476,
       "snapshot_time": "after_step",
-      "parameters": null
+      "parameters": null,
+      "note": null
     }
   },
   "oracles": {
@@ -3567,13 +3604,13 @@
     "step_map_sha256": "e14432f147a6019cfc6895af7e153df6829a25b2d91173356cedf4b22daae857",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "c78cfcc002d1852563dd28f5a999f7073c8afd07a30974394e230f6f342ed599",
-      "tools/profiling/workflow_kit_driver.R": "6837180135c4801924a5b73a6078934c429b765e70cafda5e17fd1b5fb0123b4",
-      "tools/profiling/workflow_kit_coordinator.R": "b36cc2fc095378ed8ff464e77f9b154da4b537721cef5937f953f279462c52e4",
+      "tools/profiling/workflow_kit.R": "0dd804455792ca78c3896d5ad9f17ecad55edb921ae4241bd7d7a8253f7e0e43",
+      "tools/profiling/workflow_kit_driver.R": "98037c37d9bd76034d1862296cd7124cce9262436e996fa401f34e67354e33af",
+      "tools/profiling/workflow_kit_coordinator.R": "07a2e95473b988322a62e1fc73e1ee7d68951c459c09e475bc50ca6db9dfcfef",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "bb48e90e34d5ecb914b2671c3f7563296c7460de1e79339f2610c90243dbc5aa",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
-      "tests/testthat/test-workflow-kit-harness.R": "9daaa2cd565a4d44bd101809a7f11e24bb063e940c53179f26b189ef0cd83fbc",
+      "tests/testthat/test-workflow-kit-harness.R": "c5892f202f104fbdec4de605462f6fdcf4aaa1458fb8ca83d5a94d3cbe1c96e7",
       "tests/testthat/test-workflow-execution-adapters.R": "1e6a6cdf9ba8236f28bfc7e0a7924c362264c1bb9a33e79356c9e645e32f7ec0",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

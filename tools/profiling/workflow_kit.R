@@ -122,7 +122,7 @@ kitCases <- function(bindings, stage) {
         list(id = id, kind = "operation", role = role, control = role == "control", rep = rep, fault = fault,
             operation = operation, population = population_key, parameters = parameters,
             input = list(store = population$store, head_sha256 = population$head_sha256, rows = population$rows,
-                entity_id = population$entity_id),
+                entity_id = population$entity_id, head_entity = population$head_entity, state = population$state),
             library = build$library, expected_build = build$build, exact_sum = build$exact_sum,
             expect_failure = fault != "none",
             binding = digest::digest(list(population = population, build = build, stage = stage, rep = rep,
@@ -243,6 +243,40 @@ kitIneligible <- function(item, seconds, kind = "operation") {
             is.finite(op$peak_bytes) && op$peak_bytes > 0 && op$peak_bytes < 15.5 * 1024^3,
         elapsed_within_ceiling = is.numeric(op$elapsed_seconds) && length(op$elapsed_seconds) == 1L &&
             is.finite(op$elapsed_seconds) && op$elapsed_seconds > 0 && op$elapsed_seconds <= seconds)
+    failing <- names(rules)[!vapply(rules, isTRUE, logical(1))]
+    if (length(failing)) failing[[1L]] else NULL
+}
+
+#' Protocol guards the sampler or the application monitor can end a member with.
+#' @noRd
+kitGuardReasons <- c("memory_guard", "host_guard", "time_guard")
+
+#' The production-default member's outcome: `complete`, the guard that ended it, or NULL.
+#' @noRd
+kitDefaultOutcome <- function(op) {
+    if (identical(op$status, "complete")) return("complete")
+    guard <- op$outer_guard %||% op$guard$reason
+    if (is.character(guard) && length(guard) == 1L && guard %in% kitGuardReasons) guard else NULL
+}
+
+#' Eligibility of the production-default baseline member (KIT-005 acceptance as amended by the user
+#' 2026-10-11): the member completes, or ends at a protocol guard, with its per-step anonymous peaks
+#' recorded. A completed member follows the journey rules; a guarded member needs a valid measurement
+#' (sampling gaps, zero swap, slice stopped) and at least one completed step with a finite peak. Any
+#' other end (a driver failure, an application error, a hand stop) is not a recorded baseline.
+#' @return Name of the first failing rule, or NULL when eligible.
+#' @noRd
+kitDefaultIneligible <- function(item, seconds) {
+    op <- item$operation
+    outcome <- kitDefaultOutcome(op)
+    if (identical(outcome, "complete")) return(kitIneligible(item, seconds, "journey"))
+    if (is.null(outcome)) return("status_complete_or_guard")
+    rules <- list(measurement_valid = kitMeasurementValid(op, "journey"),
+        zero_swap = identical(op$swap_bytes, 0),
+        phase_peaks_recorded = {
+            peaks <- unlist(op$phase_peak_anon_bytes[names(op$phase_status)[unlist(op$phase_status) == "complete"]])
+            length(peaks) >= 1L && all(is.finite(peaks))
+        })
     failing <- names(rules)[!vapply(rules, isTRUE, logical(1))]
     if (length(failing)) failing[[1L]] else NULL
 }
@@ -388,10 +422,11 @@ kitJourneyDecision <- function(receipt, cases, bindings) {
     for (case in cases) {
         item <- receipt$cases[[case$id]]
         op <- item$operation
-        failing <- kitIneligible(item, seconds, "journey")
+        failing <- if (case$role == "default") kitDefaultIneligible(item, seconds) else kitIneligible(item, seconds, "journey")
         if (is.null(failing) && case$role != "default" && !isTRUE(op$populations_complete)) failing <- "populations_incomplete"
         if (is.null(failing) && case$rep == 2L && !isTRUE(item$verifier_completion$reproduced)) failing <- "not_reproduced"
         members[[case$id]] <- list(role = case$role, rep = case$rep, eligible = is.null(failing), failing_rule = failing,
+            outcome = if (case$role == "default") kitDefaultOutcome(op) else NULL,
             max_sample_interval = op$max_sample_interval, gaps_above_250ms = op$gaps_above_250ms,
             peak_anon_bytes = op$sampled_anon_bytes, peak_bytes = op$peak_bytes,
             resident_end_bytes = op$resident_end_bytes, elapsed_seconds = op$elapsed_seconds,
@@ -407,7 +442,8 @@ kitJourneyDecision <- function(receipt, cases, bindings) {
     default <- Filter(\(m) m$role == "default", members)
     list(status = if (length(controls) && all(vapply(controls, `[[`, logical(1), "eligible"))) "baseline_recorded" else "invalid",
         failing_rule = unlist(lapply(members, `[[`, "failing_rule")), members = members, noise = noise,
-        production_default = if (length(default)) list(recorded = default[[1L]]$eligible, failing_rule = default[[1L]]$failing_rule) else NULL,
+        production_default = if (length(default)) list(recorded = default[[1L]]$eligible, failing_rule = default[[1L]]$failing_rule,
+            outcome = default[[1L]]$outcome) else NULL,
         promotion_authorized = FALSE)
 }
 
@@ -607,6 +643,66 @@ kitReadHead <- function(store_dir, api) {
         products = lapply(snapshot$products, `[[`, "entity_id"))
 }
 
+#' Find the checkpoint entity whose descriptor is byte-identical to a head file with the given hash
+#' (a store's `dia-state-head.rds` is the descriptor of the checkpoint entity it points at, so the head
+#' as it stood after any step survives in `entities/<id>/descriptor.rds` of the immutable store).
+#' @return The entity directory name, or NULL when no descriptor matches.
+#' @noRd
+kitFindHeadEntity <- function(store_dir, head_sha256) {
+    descriptors <- list.files(file.path(store_dir, "entities"), pattern = "^descriptor\\.rds$", recursive = TRUE, full.names = TRUE)
+    for (path in descriptors) if (identical(digest::digest(file = path, algo = "sha256"), head_sha256)) return(basename(dirname(path)))
+    NULL
+}
+
+#' Validity of a bound population (KIT-005 audit PH-01). A `core` population is a frozen store whose
+#' live head is the bound head. A journey population is a step inside a live store whose head has moved
+#' on: its bound head is the descriptor of the checkpoint entity `head_entity`, which must still hash to
+#' `head_sha256`.
+#' @return NULL when valid, else the reason.
+#' @noRd
+kitPopulationInvalid <- function(input) {
+    if (!is.character(input$store) || !dir.exists(input$store)) return("store_missing")
+    head <- if (is.null(input$head_entity)) file.path(input$store, "dia-state-head.rds") else
+        file.path(input$store, "entities", input$head_entity, "descriptor.rds")
+    if (!file.exists(head)) return("head_missing")
+    if (!identical(digest::digest(file = head, algo = "sha256"), input$head_sha256)) return("head_hash_mismatch")
+    NULL
+}
+
+#' The store an operation member works from. A `core` population is used in place (the member copies it).
+#' A journey population is materialised under `destination`: the immutable entities and the store identity
+#' are reflinked (a plain copy where the filesystem cannot share extents) and the bound checkpoint descriptor
+#' becomes the head, so the member sees the store exactly as it stood after that step and never writes into
+#' the journey member's evidence store. When `api` is given, the head's current state is checked against the
+#' bound state and entity id.
+#' @param destination A fresh directory; the snapshot store is its `.workflow-entities` (a store is always
+#'   opened from its parent directory, so the store directory keeps the production name).
+#' @return The store directory to bind as `source_store`.
+#' @noRd
+kitPopulationStore <- function(input, destination = NULL, api = NULL) {
+    reason <- kitPopulationInvalid(input)
+    if (!is.null(reason)) stop("bound population is not usable: ", reason)
+    if (is.null(input$head_entity)) return(input$store)
+    stopifnot(is.character(destination), length(destination) == 1L, !dir.exists(destination))
+    snapshot <- file.path(destination, ".workflow-entities")
+    dir.create(snapshot, recursive = TRUE)
+    for (name in c("entities", "store.json", "checkpoint-io.log")) {
+        source <- file.path(input$store, name)
+        if (!file.exists(source)) next
+        status <- system2("cp", c("-a", "--reflink=auto", shQuote(source), shQuote(file.path(snapshot, name))))
+        if (!identical(status, 0L)) stop("population snapshot copy failed: ", name)
+    }
+    destination <- snapshot
+    head <- file.path(destination, "dia-state-head.rds")
+    stopifnot(file.copy(file.path(input$store, "entities", input$head_entity, "descriptor.rds"), head),
+        identical(digest::digest(file = head, algo = "sha256"), input$head_sha256))
+    if (!is.null(api)) {
+        current <- kitReadHead(destination, api)
+        stopifnot(identical(current$current_state, input$state), identical(current$states[[input$state]], input$entity_id))
+    }
+    destination
+}
+
 #' The peptide_data component entity id of the store's current state: an operation member whose
 #' worker failed must leave it equal to the bound input (the head unchanged).
 #' @noRd
@@ -722,6 +818,19 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         receipt$status <- "complete"
         return(receipt)
     }
+    if (!isTRUE(case$record) && !identical(operation$status, "complete")) {
+        # Production default ended at a protocol guard (KIT-005 acceptance as amended 2026-10-11): the
+        # completed steps' peaks are the record; no store, no populations, no file fingerprints.
+        outcome <- kitDefaultOutcome(operation)
+        stopifnot(!is.null(outcome), is.null(journey$store))
+        completed <- names(status)[unlist(status) == "complete"]
+        stopifnot(length(completed) >= 1L, all(is.finite(unlist(operation$phase_peak_anon_bytes[completed]))))
+        receipt$guard <- list(outcome = outcome, completed_steps = completed,
+            failed_step = names(status)[unlist(status) == "failed"])
+        receipt$populations <- NULL
+        receipt$status <- "complete"
+        return(receipt)
+    }
     stopifnot(identical(operation$status, "complete"), all(steps %in% names(status)), all(unlist(status[steps]) == "complete"))
     files <- kitFingerprintFiles(journey$project)
     stopifnot(identical(files[c("path", "bytes", "sha256", "method")], journey$files[c("path", "bytes", "sha256", "method")]))
@@ -766,9 +875,17 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
 verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, api) {
     member <- readRDS(file.path(owned, "member-result.rds"))
     expected_status <- if (case$expect_failure) "worker_failed" else "complete"
+    # The bound population is still valid and the store the member worked from carried the bound head
+    # (for a journey population that is the per-step snapshot the coordinator materialised, KIT-005 audit PH-01).
+    source_store <- operation$member$source_store %||% case$input$store
     stopifnot(identical(operation$status, expected_status), identical(member$status, expected_status),
-        identical(member$member$input_entity_id, case$input$entity_id),
-        identical(digest::digest(file = file.path(case$input$store, "dia-state-head.rds"), algo = "sha256"), case$input$head_sha256))
+        identical(member$member$input_entity_id, case$input$entity_id), is.null(kitPopulationInvalid(case$input)),
+        identical(digest::digest(file = file.path(source_store, "dia-state-head.rds"), algo = "sha256"), case$input$head_sha256))
+    if (!is.null(case$input$state)) {
+        source_head <- kitReadHead(source_store, api)
+        stopifnot(identical(source_head$current_state, case$input$state),
+            identical(source_head$states[[case$input$state]], case$input$entity_id))
+    }
     project <- file.path(owned, "project")
     owner <- api("readSavedStoreIdentity")(file.path(project, ".workflow-entities/store.json"))
     manager <- api("newDIAStateAdapter")(api("newWorkflowEntityStore")(project, owner$project_id, owner$workflow_id), reopen = TRUE)

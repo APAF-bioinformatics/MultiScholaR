@@ -45,6 +45,10 @@ for (key in names(installs)) {
         b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-001", outcome = "control", build = "kit_001",
             note = "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09) plus the KIT-005 ceiling constant (launch-record deadline up to 14400 s, protocol v1.2) the once-per-sweep RUV canonical-correlation input, the sweep's k validity rule and the RUV-III guards (user decisions 2026-10-10; branch kit-control-ceiling 8e77d92d); the earlier installs browser-smoke.y8rDOi (9075b361), browser-smoke.sMOGTK (0f96397b) and browser-smoke.3nBUjx (42a7a4bb) are superseded and stay recorded; the KIT control until KIT-006 accepts")
         b$control <- "kit_001"
+        # Protocol section 2 names the control's 2026-10-09 composition; the installed control also carries
+        # the three 2026-10-10 user decisions (KIT-005 audit PH-05). The protocol text itself is not edited
+        # (a protocol edit is a new version that re-runs controls).
+        b$control_note <- "kit_001 = core_018 source (906c50dc) + KIT journey launch record, RUV-III technical-replicate structure, quantile-ceiling removal (2026-10-09) + launch-record deadline up to 14400 s (protocol v1.2), RUV sweep canonical-correlation input prepared once per sweep, sweep k validity rule and RUV-III guards (2026-10-10); source 8e77d92d on branch kit-control-ceiling; install browser-smoke.X9aj9P"
     }
 }
 # CORE populations and oracles, copied verbatim (the P14 page oracle and the sample-filter oracle).
@@ -124,6 +128,8 @@ b$operation_lifecycle <- list(ceiling_seconds = 300L,
 # Operation pairs per ticket (control and candidate builds, operation, population): added by KIT-006 onward.
 b$tickets <- list()
 if (!is.null(journey_stage)) {
+    harness <- new.env(parent = globalenv())
+    sys.source(file.path(repo, "tools/profiling/workflow_kit.R"), harness)
     result <- readRDS(file.path(journey_stage, "control-1", "journey-result.rds"))
     stopifnot(identical(result$status, "complete"), isTRUE(result$populations_complete))
     receipt <- readRDS(file.path(journey_stage, "stage.rds"))
@@ -134,9 +140,16 @@ if (!is.null(journey_stage)) {
         population <- result$populations[[step]]
         if (is.null(population$state) || is.null(population$fingerprint)) next
         key <- paste0("journey_", step)
+        # The head after a step is the descriptor of a checkpoint entity in the immutable store; it is the
+        # population's identity once the live head has moved on (KIT-005 audit PH-01). Records from the
+        # attempt 6 driver predate the field, so it is looked up here.
+        head_entity <- population$head_entity %||% harness$kitFindHeadEntity(population$store, population$head_sha256)
+        if (is.null(head_entity)) stop("no checkpoint descriptor in ", population$store, " hashes to the head of step ", step)
         b$populations[[key]] <- list(step = step, state = population$state, store = population$store,
-            head_sha256 = population$head_sha256, entity_id = population$entity_id, rows = population$rows,
-            snapshot_time = population$snapshot_time, parameters = NULL)
+            head_sha256 = population$head_sha256, head_entity = head_entity, entity_id = population$entity_id, rows = population$rows,
+            snapshot_time = population$snapshot_time, parameters = NULL,
+            note = if (identical(step, "import")) "initial state: no table component, no products; nothing to verify" else
+                if (identical(step, "session_export")) "the session export writes no state: same entity as journey_correlation under a later head" else NULL)
         b$oracles[[key]] <- population$fingerprint
     }
 }

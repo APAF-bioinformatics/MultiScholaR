@@ -117,7 +117,10 @@ kitSnapshotAfterStep <- function(project, api) {
     store_dir <- kitFindStore(project)
     if (is.null(store_dir)) return(NULL)
     head <- kitReadHead(store_dir, api)
-    list(store = store_dir, head_sha256 = head$head_sha256, state = head$current_state,
+    # `head_entity`: the checkpoint entity whose descriptor is this head, so the step stays reachable
+    # after the live head moves on (KIT-005 audit PH-01).
+    list(store = store_dir, head_sha256 = head$head_sha256, head_entity = kitFindHeadEntity(store_dir, head$head_sha256),
+        state = head$current_state,
         entity_id = head$states[[head$current_state]], rows = head$rows[[head$current_state]],
         history = head$history, product_ids = as.character(unlist(head$products)))
 }

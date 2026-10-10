@@ -311,3 +311,83 @@ test_that("canonical fingerprints drop run-specific ids, times and plot objects 
     expect_identical(h$kitFileMismatches(files("p1", "q"), transform(files("p1", "q"), sha256 = replace(sha256, 6, "f2"))), "fasta_metadata.RDS")
     expect_null(h$kitCanonical(list(processing_timestamp = Sys.time(), x = 1))$processing_timestamp)
 })
+
+test_that("a journey population is identified by its per-step checkpoint descriptor and materialised as a snapshot store", {
+    h <- kitHarness()
+    store <- file.path(withr::local_tempdir(), "store")
+    dir.create(file.path(store, "entities", "dia-state-aaa"), recursive = TRUE)
+    dir.create(file.path(store, "entities", "dia-state-bbb"))
+    writeLines('{"schema":1}', file.path(store, "store.json"))
+    saveRDS(list(entity_id = strrep("1", 64), kind = "checkpoint"), file.path(store, "entities", "dia-state-aaa", "descriptor.rds"))
+    saveRDS(list(entity_id = strrep("2", 64), kind = "checkpoint"), file.path(store, "entities", "dia-state-bbb", "descriptor.rds"))
+    # The live head has moved on to the second checkpoint.
+    file.copy(file.path(store, "entities", "dia-state-bbb", "descriptor.rds"), file.path(store, "dia-state-head.rds"))
+    step_head <- digest::digest(file = file.path(store, "entities", "dia-state-aaa", "descriptor.rds"), algo = "sha256")
+    expect_identical(h$kitFindHeadEntity(store, step_head), "dia-state-aaa")
+    expect_null(h$kitFindHeadEntity(store, strrep("0", 64)))
+    journey <- list(store = store, head_sha256 = step_head, head_entity = "dia-state-aaa", entity_id = strrep("5", 64), state = "imputed")
+    expect_null(h$kitPopulationInvalid(journey))
+    # Without the head entity the stale live head is refused, as the audit found (PH-01).
+    expect_identical(h$kitPopulationInvalid(journey[setdiff(names(journey), "head_entity")]), "head_hash_mismatch")
+    expect_identical(h$kitPopulationInvalid(c(journey[setdiff(names(journey), "head_sha256")], list(head_sha256 = strrep("0", 64)))), "head_hash_mismatch")
+    expect_identical(h$kitPopulationInvalid(list(store = file.path(store, "missing"))), "store_missing")
+    live <- list(store = store, head_sha256 = digest::digest(file = file.path(store, "dia-state-head.rds"), algo = "sha256"))
+    expect_null(h$kitPopulationInvalid(live))
+    expect_identical(h$kitPopulationStore(live, file.path(store, "..", "unused")), store)
+    snapshot <- h$kitPopulationStore(journey, file.path(dirname(store), "member", "population-store"))
+    expect_identical(basename(snapshot), ".workflow-entities")
+    expect_true(dir.exists(file.path(snapshot, "entities", "dia-state-bbb")))
+    expect_identical(digest::digest(file = file.path(snapshot, "dia-state-head.rds"), algo = "sha256"), step_head)
+    expect_identical(readRDS(file.path(snapshot, "dia-state-head.rds"))$entity_id, strrep("1", 64))
+    expect_true(file.exists(file.path(snapshot, "store.json")))
+    # The evidence store is untouched.
+    expect_identical(digest::digest(file = file.path(store, "dia-state-head.rds"), algo = "sha256"), live$head_sha256)
+    expect_error(h$kitPopulationStore(journey, dirname(snapshot)), "dir.exists")
+    b <- kitSyntheticBindings()
+    b$populations$journey_imputation <- c(journey, list(rows = 10L))
+    b$tickets[["009"]] <- list(operation = "minimum_peptides_per_sample", population = "journey_imputation", control = "core_018", candidate = "kit_006")
+    case <- h$kitCases(b, "kit-009")[[1L]]
+    expect_identical(case$input$head_entity, "dia-state-aaa")
+    expect_identical(case$input$state, "imputed")
+})
+
+test_that("the production-default member is recorded when it completes or ends at a protocol guard with its step peaks", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$journey$pair <- list(control = "core_018", candidate = NULL, reps = 2L, production_default = TRUE)
+    cases <- h$kitCases(b, "kit-journey")
+    receipt <- kitSyntheticReceipt(cases, h, edit = function(r) {
+        r$cases[["control-2"]]$verifier_completion$reproduced <- TRUE
+        r$cases[["default-1"]]$operation$populations_complete <- FALSE
+        r
+    })
+    expect_true(h$kitJourneyDecision(receipt, cases, b)$production_default$recorded)
+    expect_identical(h$kitJourneyDecision(receipt, cases, b)$production_default$outcome, "complete")
+    guarded <- receipt
+    guarded$cases[["default-1"]]$operation$status <- "memory_guard"
+    guarded$cases[["default-1"]]$operation$outer_guard <- "memory_guard"
+    guarded$cases[["default-1"]]$operation$peak_bytes <- 16.6e9
+    guarded$cases[["default-1"]]$operation$resident_end_bytes <- NA_real_
+    guarded$cases[["default-1"]]$operation$phase_status$imputation <- "failed"
+    guarded$cases[["default-1"]]$operation$phase_status[10:18] <- NULL
+    guarded$cases[["default-1"]]$verifier_completion <- list(accepted = FALSE)
+    decision <- h$kitJourneyDecision(guarded, cases, b)
+    expect_identical(decision$status, "baseline_recorded")
+    expect_true(decision$production_default$recorded)
+    expect_identical(decision$production_default$outcome, "memory_guard")
+    expect_null(decision$production_default$failing_rule)
+    expect_identical(h$kitDefaultOutcome(guarded$cases[["default-1"]]$operation), "memory_guard")
+    gap <- guarded
+    gap$cases[["default-1"]]$operation$max_sample_interval <- 0.6
+    expect_identical(h$kitJourneyDecision(gap, cases, b)$production_default$failing_rule, "measurement_valid")
+    swapped <- guarded
+    swapped$cases[["default-1"]]$operation$swap_bytes <- 4096
+    expect_false(h$kitJourneyDecision(swapped, cases, b)$production_default$recorded)
+    crashed <- guarded
+    crashed$cases[["default-1"]]$operation$status <- "journey_failed"
+    crashed$cases[["default-1"]]$operation$outer_guard <- NULL
+    expect_identical(h$kitJourneyDecision(crashed, cases, b)$production_default$failing_rule, "status_complete_or_guard")
+    no_peaks <- guarded
+    no_peaks$cases[["default-1"]]$operation$phase_peak_anon_bytes$import <- NA_real_
+    expect_identical(h$kitJourneyDecision(no_peaks, cases, b)$production_default$failing_rule, "phase_peaks_recorded")
+})

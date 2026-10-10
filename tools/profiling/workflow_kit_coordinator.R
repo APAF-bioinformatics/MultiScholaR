@@ -59,9 +59,10 @@ stopifnot(identical(normalizePath(root), normalizePath(bindings$root)),
 for (case in cases) {
     stopifnot(dir.exists(case$library))
     if (case$kind == "operation") {
-        # The bound population must be the immutable store the bindings describe.
-        stopifnot(dir.exists(case$input$store),
-            identical(hash(file.path(case$input$store, "dia-state-head.rds")), case$input$head_sha256))
+        # The bound population must be the immutable store (or the immutable per-step head inside the
+        # journey member's store) the bindings describe (KIT-005 audit PH-01).
+        reason <- helpers$kitPopulationInvalid(case$input)
+        if (!is.null(reason)) stop("population ", case$population, " is not usable: ", reason)
         next
     }
     corpus <- bindings$corpora[[case$corpus]]
@@ -135,10 +136,13 @@ tryCatch({
             # Operation member: the installed adapters-mode application runs the bound operation on the
             # bound population through the production action dispatch (the CORE vehicle, carried).
             fault <- bindings$operation_lifecycle$fault
+            # A journey population is materialised as a per-step snapshot store under the member (the
+            # entities reflinked, the bound checkpoint descriptor as the head); a core population is used in place.
+            population_store <- helpers$kitPopulationStore(case$input, file.path(owned, "population-store"), api)
             member <- list(schema = 1L, programme = "perf106-repair-v2", preflight = FALSE,
                 operation = case$operation, variant = if (case$operation == "precursor_rollup") "p14" else "physical",
                 fault = if (case$expect_failure) fault$name else "none", deadline = member_seconds,
-                parameters = case$parameters, source_store = case$input$store,
+                parameters = case$parameters, source_store = population_store, bound_store = case$input$store,
                 source_head_sha256 = case$input$head_sha256, input_entity_id = case$input$entity_id,
                 phase_events = case$operation == "precursor_rollup", id = case$id, role = case$role, rep = case$rep,
                 population = case$population, binding = case$binding, stage = stage, selector = case$selector)
