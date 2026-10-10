@@ -295,7 +295,14 @@ test_that("canonical fingerprints drop run-specific ids, times and plot objects 
     expect_identical(h$kitReproduceMismatches(first, list()), "step/missing")
     expect_true(h$kitStateFingerprintMatches(c(fingerprint("x"), list(extra = 1)), fingerprint("x")))
     expect_false(h$kitStateFingerprintMatches(fingerprint("x"), fingerprint("y")))
-    files <- function(pdf, png) data.frame(path = c("a.pdf", "b.png"), bytes = c(10, 20), sha256 = c(pdf, png), stringsAsFactors = FALSE)
-    expect_length(h$kitFileMismatches(files("p1", "q"), files("p2", "q")), 0L)
-    expect_identical(h$kitFileMismatches(files("p1", "q1"), files("p1", "q2")), "b.png")
+    files <- function(pdf, png, stamp = "20261010_184024", id = "3005b574e4ee6") data.frame(
+        path = c("a.pdf", paste0("filtering_qc/", stamp, "/b.png"), paste0("filtering_qc/", stamp, "/.workflow-export/qvalue-", strrep("a", 40), "/journal.json"),
+            paste0("filtered_session_", stamp, "_native-export-", id, ".msdia.tar"), "filtered_session_summary.txt", "fasta_metadata.RDS"),
+        bytes = c(10, 20, 5, 100, 7, 9), sha256 = c(pdf, png, "j", "t", "s", "f"), stringsAsFactors = FALSE)
+    same <- files("p1", "q", "20261010_200235", "29442991abd56")
+    same$sha256[4:5] <- c("t2", "s2")
+    expect_length(h$kitFileMismatches(files("p1", "q"), same), 0L)
+    expect_identical(h$kitFileMismatches(files("p1", "q1"), files("p2", "q2")), "filtering_qc/<time>/b.png")
+    expect_identical(h$kitFileMismatches(files("p1", "q"), transform(files("p1", "q"), sha256 = replace(sha256, 6, "f2"))), "fasta_metadata.RDS")
+    expect_null(h$kitCanonical(list(processing_timestamp = Sys.time(), x = 1))$processing_timestamp)
 })

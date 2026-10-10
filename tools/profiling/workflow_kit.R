@@ -476,8 +476,8 @@ kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L, memo = NUL
     if (is.data.frame(value)) return(list(.df = digest::digest(kitMaskPaths(value), algo = "sha256"), dim = dim(value)))
     if (is.list(value)) {
         names_ <- names(value) %||% rep("", length(value))
-        value <- value[!names_ %in% c("timestamp", "mtime", "dependencies", "product_dependencies", "da_dependencies",
-            "owned_components", "component_dependencies")]
+        value <- value[!(names_ %in% c("timestamp", "mtime", "dependencies", "product_dependencies", "da_dependencies",
+            "owned_components", "component_dependencies") | grepl("timestamp$", names_))]
         return(lapply(value, kitCanonical, store = store, api = api, depth = depth + 1L, memo = memo))
     }
     kitMaskPaths(value)
@@ -647,10 +647,19 @@ kitStateFingerprintMatches <- function(expected, recomputed) {
 #' @return Character vector of differing paths.
 #' @noRd
 kitFileMismatches <- function(reference, candidate) {
-    key <- function(files) {
-        pdf <- grepl("[.]pdf$", files$path, ignore.case = TRUE)
-        paste(files$path, ifelse(pdf, files$bytes, files$sha256))
+    canonical <- function(files) {
+        files <- files[!grepl("/[.]workflow-export/", files$path), , drop = FALSE]
+        files$path <- gsub("[0-9]{8}_[0-9]{6}", "<time>", files$path)
+        files$path <- gsub("[0-9a-f]{13,}", "<id>", files$path)
+        files
     }
+    # Compared by path only: PDFs (compressed metadata differs between identical runs) and the session
+    # export's bookkeeping files, which carry the export time and the session id (KIT-005 correction 7).
+    by_path_only <- function(path) grepl("[.]pdf$|[.]msdia[.]tar$|/native_export_complete_|/native-(io-)?preflight-|/filtered_session_(latest[.]json|summary[.]txt)$",
+        path, ignore.case = TRUE)
+    key <- function(files) paste(files$path, ifelse(by_path_only(files$path), "", files$sha256))
+    reference <- canonical(reference)
+    candidate <- canonical(candidate)
     a <- key(reference)
     b <- key(candidate)
     unique(c(reference$path[!a %in% b], candidate$path[!b %in% a]))
