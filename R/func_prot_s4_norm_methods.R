@@ -219,6 +219,13 @@ setMethod(
     feature_ids <- rownames(normalised_frozen_protein_matrix_filt)
 
     Y <- t(normalised_frozen_protein_matrix_filt[, sample_ids, drop = FALSE])
+    # RUV-III cannot estimate more factors than it has control proteins observed in every sample; with
+    # fewer it returns no finite values and the corrected table would be empty (KIT-005, 2026-10-10).
+    complete_controls <- sum(ruvCompleteControlRows(theObject)[which(ctrl)], na.rm = TRUE)
+    if (k > complete_controls) {
+      cli::cli_abort(c("RUV-III cannot estimate {k} factor{?s} from {complete_controls} control protein{?s} observed in every sample",
+        i = "choose a smaller k or a larger control set"), class = "prot_ruv_insufficient_controls")
+    }
 
     # Replicate sets: technical replicates when the design has them, else the grouping variable.
     replicate_blocks <- resolveProtRuvReplicateBlocks(design_matrix, sample_id, group_id,
@@ -246,6 +253,10 @@ setMethod(
     )
     cln_mat_4 <- cln_mat_4[rowSums(is.finite(cln_mat_4)) > 0, , drop = FALSE]
     cln_mat_4 <- cln_mat_4[, colSums(is.finite(cln_mat_4)) > 0, drop = FALSE]
+    if (nrow(cln_mat_4) == 0L || ncol(cln_mat_4) == 0L) {
+      cli::cli_abort("RUV-III produced no finite corrected values (k = {k}, {sum(ctrl)} controls)",
+        class = "prot_ruv_empty_result")
+    }
 
     ruv_normalised_results_cln <- cln_mat_4 |>
       as.data.frame() |>

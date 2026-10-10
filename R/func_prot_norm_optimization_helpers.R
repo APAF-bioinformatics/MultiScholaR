@@ -340,6 +340,17 @@ getRuvIIIReplicateMatrixHelper <- function(design_matrix, sample_id_column, grou
 #' @return `design` with a `.ruv_replicate_block` column, `structure` (`technical_replicates` or
 #'   `group`) and `blocks` (number of replicate sets).
 #' @noRd
+#' Which proteins are observed (finite) in every design sample: the controls RUV-III can use for every
+#' sample, and therefore the upper bound on the number of factors it can estimate.
+#' @return Logical vector, one entry per row of the protein table.
+#' @noRd
+ruvCompleteControlRows <- function(theObject) {
+  samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
+  samples <- intersect(samples, names(theObject@protein_quant_table))
+  values <- as.matrix(theObject@protein_quant_table[, samples, drop = FALSE])
+  rowSums(!is.finite(values)) == 0L
+}
+
 resolveProtRuvReplicateBlocks <- function(design_matrix, sample_id, group_id, technical_replicate_id,
                                           ruv_grouping_variable) {
   stopifnot(is.data.frame(design_matrix), sample_id %in% names(design_matrix))
@@ -729,6 +740,11 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     stop(paste0("The num_components_to_impute = ", num_components_to_impute, " value is invalid."))
   }
   cancor_input <- prepareRuvCancorInput(normalised_protein_matrix_obj, num_components_to_impute)
+  # RUV-III can estimate at most as many factors as it has control proteins observed in every sample
+  # (KIT-005, user decision 2026-10-10: at 300 samples the sweep chose 1 % controls with k = 15 while only
+  # 3 of those 25 controls were complete, and the correction returned no finite values). A percentage whose
+  # elbow k exceeds its complete controls is not viable and is skipped, not re-scored.
+  complete_rows <- ruvCompleteControlRows(normalised_protein_matrix_obj)
 
   # Process a single percentage, returning a fully annotated trace record
   process_percentage <- function(current_percentage, index) {
@@ -819,6 +835,20 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     }
 
     best_k <- as.integer(best_k)
+    complete_controls <- sum(complete_rows[which(control_genes_index)], na.rm = TRUE)
+    if (best_k > complete_controls) {
+      if (verbose) {
+        log_warn("Percentage {current_percentage}%: elbow k = {best_k} exceeds the {complete_controls} control proteins observed in every sample. Skipping.")
+      }
+      return(.make_failed_row(current_percentage, "skipped_k_exceeds_complete_controls",
+        realized_num_controls = realized_num_controls,
+        realized_percentage = realized_percentage,
+        separation_score = separation_score,
+        best_k = best_k,
+        error_reason = sprintf("k = %d exceeds %d controls complete in every sample", best_k, complete_controls),
+        control_genes_index = control_genes_index,
+        cancor_plot = cancorplot))
+    }
     composite_score <- calculateCompositeScore(
       separation_score,
       best_k,

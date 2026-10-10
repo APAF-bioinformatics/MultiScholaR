@@ -35,3 +35,38 @@ test_that("the percentage sweep prepares the canonical-correlation input once an
     expect_error(suppressMessages(findBestNegCtrlPercentage(normalized, percentage_range = 20,
         ruv_grouping_variable = "no_such_column", verbose = FALSE)), "not a column")
 })
+
+test_that("a percentage whose elbow k exceeds its complete controls is skipped, and RUV-III refuses such a k", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    normalized <- suppressMessages(normaliseBetweenSamples(object, normalisation_method = "quantile"))
+    samples <- normalized@design_matrix[[normalized@sample_id]]
+    # Every protein but the first four misses one value, so at most four controls are complete.
+    for (i in seq(5L, nrow(normalized@protein_quant_table))) normalized@protein_quant_table[i, samples[[1L + i %% length(samples)]]] <- NA_real_
+    complete <- ruvCompleteControlRows(normalized)
+    expect_identical(sum(complete), 4L)
+    controls <- suppressMessages(getNegCtrlProtAnova(normalized, ruv_grouping_variable = "group",
+        percentage_as_neg_ctrl = 50, ruv_qval_cutoff = 0.05, ruv_fdr_method = "BH"))
+    usable <- sum(complete[which(controls)])
+    expect_true(sum(controls) > usable)
+    expect_error(suppressMessages(ruvIII_C_Varying(normalized, ruv_grouping_variable = "group",
+        ruv_number_k = usable + 1L, ctrl = controls)), class = "prot_ruv_insufficient_controls")
+    if (usable >= 1L) {
+        corrected <- suppressMessages(suppressWarnings(ruvIII_C_Varying(normalized, ruv_grouping_variable = "group",
+            ruv_number_k = 1L, ctrl = controls)))
+        expect_true(nrow(corrected@protein_quant_table) > 0L)
+    }
+    # Five factors exceed the four complete proteins whatever the control set: every percentage is skipped.
+    forced_k <- 5L
+    sweep <- testthat::with_mocked_bindings(suppressMessages(findBestNegCtrlPercentage(normalized,
+        percentage_range = c(50, 80), num_components_to_impute = 5, ruv_grouping_variable = "group",
+        ruv_fdr_method = "BH", verbose = FALSE)), findBestKElbow = function(...) forced_k) |>
+        tryCatch(error = function(error) error)
+    # Every percentage is skipped when the forced k exceeds its complete controls: no valid winner.
+    expect_true(inherits(sweep, "error"))
+    expect_match(conditionMessage(sweep), "No valid percentage")
+    viable <- testthat::with_mocked_bindings(suppressMessages(findBestNegCtrlPercentage(normalized,
+        percentage_range = c(50, 80), num_components_to_impute = 5, ruv_grouping_variable = "group",
+        ruv_fdr_method = "BH", verbose = FALSE)), findBestKElbow = function(...) 1L)
+    expect_true(all(viable$optimization_results$status == "ok"))
+    expect_identical(viable$best_k, 1L)
+})
