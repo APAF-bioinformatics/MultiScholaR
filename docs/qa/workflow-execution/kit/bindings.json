@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-10",
+  "created": "2026-10-11",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -1881,18 +1881,18 @@
     "member": "tools/profiling/workflow_kit_member.R",
     "runner": "tools/profiling/run_workflow_kit.sh",
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
-    "protocol_sha256": "f702134b4f5b3e3a47f24c8d4562c259d4ace72a2effe85832f6b43fbf5e24d7",
+    "protocol_sha256": "a5867e9cea97a72892fc7fb972b75d18e644d2b0e27adf49823c544eed8bf068",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
     "step_map_sha256": "e14432f147a6019cfc6895af7e153df6829a25b2d91173356cedf4b22daae857",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "f24c9da067d6ac2acdd57c6889b847e0a0f32645442918d035cde63792893d5d",
+      "tools/profiling/workflow_kit.R": "c78cfcc002d1852563dd28f5a999f7073c8afd07a30974394e230f6f342ed599",
       "tools/profiling/workflow_kit_driver.R": "6837180135c4801924a5b73a6078934c429b765e70cafda5e17fd1b5fb0123b4",
-      "tools/profiling/workflow_kit_coordinator.R": "cfe10967b6a79504f996e3e2de6feae0652706e03f357759d6c41b0c81296f25",
+      "tools/profiling/workflow_kit_coordinator.R": "b36cc2fc095378ed8ff464e77f9b154da4b537721cef5937f953f279462c52e4",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "bb48e90e34d5ecb914b2671c3f7563296c7460de1e79339f2610c90243dbc5aa",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
-      "tests/testthat/test-workflow-kit-harness.R": "2df3d60066dab819a86ccb86423c33f51d7b3a12ae4543a474f1bcb3c4b6184f",
+      "tests/testthat/test-workflow-kit-harness.R": "9daaa2cd565a4d44bd101809a7f11e24bb063e940c53179f26b189ef0cd83fbc",
       "tests/testthat/test-workflow-execution-adapters.R": "1e6a6cdf9ba8236f28bfc7e0a7924c362264c1bb9a33e79356c9e645e32f7ec0",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

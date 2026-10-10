@@ -282,6 +282,7 @@ tryCatch({
                 swap_bytes = swap, accounting = counters$accounting,
                 sampled_anon_bytes = safe_max(trace$anon),
                 max_sample_interval = if (nrow(trace) > 1L) max(diff(trace$uptime)) else NA_real_,
+                gaps_above_250ms = if (nrow(trace) > 1L) sum(diff(trace$uptime) > 0.25) else NA_integer_,
                 samples = nrow(trace), guard = guard, outer_guard = outer_guard,
                 head_unchanged = head_unchanged, populations_complete = isTRUE(result$populations_complete),
                 cleanup = list(slice_stopped = identical(slice_state, "inactive") || !dir.exists(group)),

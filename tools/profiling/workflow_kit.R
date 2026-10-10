@@ -217,11 +217,14 @@ kitPhaseMeasures <- function(phases, trace) {
         resident_end_bytes = resident)
 }
 
-#' Measurement validity: coordinator sampling gap at most 250 ms, zero swap, slice stopped.
+#' Measurement validity: coordinator sampling gap at most 250 ms (operation members) or 500 ms
+#' (journey members, protocol v1.3: the whole-slice peak is the kernel high-water mark; a gap only
+#' blinds the sampled anonymous trace for that window), zero swap, slice stopped.
 #' @noRd
-kitMeasurementValid <- function(op) {
+kitMeasurementValid <- function(op, kind = "operation") {
     gap <- op$max_sample_interval
-    is.numeric(gap) && length(gap) == 1L && is.finite(gap) && gap <= 0.25 &&
+    limit <- if (identical(kind, "journey")) 0.5 else 0.25
+    is.numeric(gap) && length(gap) == 1L && is.finite(gap) && gap <= limit &&
         is.numeric(op$peak_bytes) && length(op$peak_bytes) == 1L && is.finite(op$peak_bytes) &&
         identical(op$swap_bytes, 0) && isTRUE(op$cleanup$slice_stopped)
 }
@@ -229,12 +232,12 @@ kitMeasurementValid <- function(op) {
 #' Check one member against the frozen eligibility rules.
 #' @return Name of the first failing rule, or NULL when eligible.
 #' @noRd
-kitIneligible <- function(item, seconds) {
+kitIneligible <- function(item, seconds, kind = "operation") {
     op <- item$operation
     rules <- list(
         verifier_accepted = isTRUE(item$verifier_completion$accepted),
         status_complete = identical(op$status, "complete"),
-        measurement_valid = kitMeasurementValid(op),
+        measurement_valid = kitMeasurementValid(op, kind),
         zero_swap = identical(op$swap_bytes, 0),
         peak_below_early_stop = is.numeric(op$peak_bytes) && length(op$peak_bytes) == 1L &&
             is.finite(op$peak_bytes) && op$peak_bytes > 0 && op$peak_bytes < 15.5 * 1024^3,
@@ -259,7 +262,7 @@ kitLifecycleDecision <- function(receipt, cases, bindings) {
     status <- op$phase_status
     steps <- kitStepIds()
     if (!case$expect_failure) {
-        result$failing_rule <- kitIneligible(item, kitMemberSeconds("kit-lifecycle-complete", bindings))
+        result$failing_rule <- kitIneligible(item, kitMemberSeconds("kit-lifecycle-complete", bindings), "journey")
         if (is.null(result$failing_rule) && !(all(steps %in% names(status)) &&
             all(unlist(status[steps]) == "complete") && all(is.finite(unlist(op$phase_peak_anon_bytes[steps])))))
             result$failing_rule <- "phase_timing"
@@ -385,10 +388,11 @@ kitJourneyDecision <- function(receipt, cases, bindings) {
     for (case in cases) {
         item <- receipt$cases[[case$id]]
         op <- item$operation
-        failing <- kitIneligible(item, seconds)
+        failing <- kitIneligible(item, seconds, "journey")
         if (is.null(failing) && case$role != "default" && !isTRUE(op$populations_complete)) failing <- "populations_incomplete"
         if (is.null(failing) && case$rep == 2L && !isTRUE(item$verifier_completion$reproduced)) failing <- "not_reproduced"
         members[[case$id]] <- list(role = case$role, rep = case$rep, eligible = is.null(failing), failing_rule = failing,
+            max_sample_interval = op$max_sample_interval, gaps_above_250ms = op$gaps_above_250ms,
             peak_anon_bytes = op$sampled_anon_bytes, peak_bytes = op$peak_bytes,
             resident_end_bytes = op$resident_end_bytes, elapsed_seconds = op$elapsed_seconds,
             phase_peak_anon_bytes = op$phase_peak_anon_bytes, phase_seconds = op$phase_seconds)
