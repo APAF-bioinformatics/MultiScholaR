@@ -150,6 +150,186 @@
           "run_0150"
         ]
       }
+    },
+    "journey_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "e9cbbcdca5b8c2a09cfadabee4b8c7c9f06a44a9ac89fd211b8d060b9df3b267",
+      "entity_id": "ad4892309d483be04f57a8a36f8f2e8d65bfeba7d1777249803c0410fb032815",
+      "rows": null,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_design": {
+      "step": "design",
+      "state": "raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "ea880a577573e0b08fb6f9a2a837358e91dbfda745e1abca61683c3af834cb48",
+      "entity_id": "ac3bf10e5ac62060849cffc688b6d6837b90bed8803b3b184edf09d8178cfacb",
+      "rows": 5846578,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_qvalue": {
+      "step": "qvalue",
+      "state": "qvalue_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "4151cd670f6f763f76683251924119fd7a88688cbb50e50149d61eaebd52fc80",
+      "entity_id": "c42fcdd5d0704ca63b07098e1375e91ad8b2917ca39a0a53eb5f136fe9bcbada",
+      "rows": 5846578,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_protein_peptide": {
+      "step": "protein_peptide",
+      "state": "protein_peptide_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "3d23107b5b688f58ca869f8cb24ff03da6b83d5dce81e6e7732a7ae1a31daa8d",
+      "entity_id": "3f310a9c236acbecb4a9bef1459b62c37613053a2796b938b430d53ca12bc065",
+      "rows": 5846578,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_rollup": {
+      "step": "rollup",
+      "state": "precursor_rollup",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "65cd9cb97532be75a810139ba000780fb84a9f5921d525284faa14070a4fcd3a",
+      "entity_id": "5d13abe87361d55d50018d649499b1801036f78a8fc91830107aa21c81655fce",
+      "rows": 5521570,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_intensity": {
+      "step": "intensity",
+      "state": "intensity_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "16e917cc0e7bca80f39fb389987d17ab08c096b51d39446b065d6342ddb5b83a",
+      "entity_id": "962beb4b4679680d1cbe92f2ffe802ff34a724723c67c4709a6dac6bd57ac1b7",
+      "rows": 5521570,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_sample": {
+      "step": "sample",
+      "state": "sample_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "555a8ec075112856f2e647c6fe55c678e8aeeb1fc7e9d10d4150770a66f9880f",
+      "entity_id": "62a2c954667291827a8cc1523f87954896fd44091343d8ccded7b4a097c0fb21",
+      "rows": 5515154,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_replicate": {
+      "step": "replicate",
+      "state": "replicate_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "6fa7a443c2340038dce5a61ecdb2682caa6f14ac2e2dc16b34c9ac2975472cb2",
+      "entity_id": "2cba598461cc203cd8cc796ef12443aa04dd1dbb73af2d6b136145a20037ca07",
+      "rows": 5515154,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_imputation": {
+      "step": "imputation",
+      "state": "imputed",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "c6d5ef222ce2c2753235d3df649e5fea067ef1b8add8bf21b66006011c62219a",
+      "entity_id": "ad79be933e45daa50a1da7a9e7104e228b3f1f470b751ab1cc6ec70c0d0e2db2",
+      "rows": 11826409,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_iq": {
+      "step": "iq",
+      "state": "protein_s4_created",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "f7fc1c0c5f4c8310b2a52472cb839ece33e9dd9ba8fe9215487a433ee1760a4e",
+      "entity_id": "e38d29a879b0fc0c75fe38298e96483ac10306e01e472d6ad84337d05d6a7fef",
+      "rows": 2500,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_accession": {
+      "step": "accession",
+      "state": "protein_accession_cleaned",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "944f56dc3b341a6bd5d5dd76cdbdfb350f9b9193edf6d33baee90634ac002e71",
+      "entity_id": "fde27b03cd520e49c88d88dd0a9daadd8c3fbec7b3812962e5d2ee1cc8ecde05",
+      "rows": 2500,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_protein_intensity": {
+      "step": "protein_intensity",
+      "state": "protein_intensity_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "ccf7d1651c54242411f23630f9bf800965564f567e1601507545940cab58c241",
+      "entity_id": "b250b5f646bbae091e7183561e80313227635062ca474f081a3e10bfce486e32",
+      "rows": 2500,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_duplicates": {
+      "step": "duplicates",
+      "state": "duplicates_removed",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "2d567cfc0d386d5fe1bea7eec8dab60aba80eb94ac1bf401d17951bb3e392a51",
+      "entity_id": "b244e6ddf168b8c1c19ce3cc0c8cac50eeb234de57046bc208d09d2e690acec4",
+      "rows": 2500,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_protein_replicate": {
+      "step": "protein_replicate",
+      "state": "protein_replicate_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "b4a8dde1feb91721e697e265de33ae28cb726bef27009a2cbbc073f396d17b96",
+      "entity_id": "05450ae487ba0932777d49da331ea3f39edbc007215121535a40b5923ba040cd",
+      "rows": 2500,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_normalisation_ruv": {
+      "step": "normalisation_ruv",
+      "state": "ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "3a870808a28b4cda3de2a6710f937ab8dcea361b64a5d40a92e6e5da5c997f7a",
+      "entity_id": "abd2c64f6fb00bb7d01a0dae89a454ff3965b6c2319ed43c997b9fdfc51cd68b",
+      "rows": 2476,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_correlation": {
+      "step": "correlation",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "a91824f452fb4bc5a5d6699d3fdbbd49796ee2ee08dbef8a6e656c56237c09d8",
+      "entity_id": "a6e3b2a817d1685f2a6ebd903f3de20c7646017f61b55805d78470c7133aaab3",
+      "rows": 2476,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_session_export": {
+      "step": "session_export",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "879dc5f9368afbbfa01fb16eee0d249cbe8bbde3b1398704b2c8ef7c05315922",
+      "entity_id": "a6e3b2a817d1685f2a6ebd903f3de20c7646017f61b55805d78470c7133aaab3",
+      "rows": 2476,
+      "snapshot_time": "after_step",
+      "parameters": null
+    },
+    "journey_da": {
+      "step": "da",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+      "head_sha256": "c409d7ad418efa137800fb3bde3c90cf594763ac2d0d1f677d89dcbe4d798a6b",
+      "entity_id": "2bb20f3216d1dafc9ef3647f76c94547287dd1dcd83f793b5870481769e88783",
+      "rows": 2476,
+      "snapshot_time": "after_step",
+      "parameters": null
     }
   },
   "oracles": {
@@ -1420,6 +1600,1500 @@
     "filter_primary": {
       "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-pilot-v1/repair-v2/confirmation/primary-native-1/verification.rds",
       "sha256": "45988b72f7616b9d5c0e285ba5b5d0865077d50b8b3e185699a73daf3ecb8519"
+    },
+    "journey_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "journey_design": {
+      "class": "PeptideQuantitativeData",
+      "rows": 5846578,
+      "components": {
+        "peptide_data": {
+          "kind": "result_table",
+          "product_type": null,
+          "sha256": "8eec57c19d71c9177907ce26054907b39dfcddd737e1392834c060abb944b403"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6a5fdcd23d6179f66237a079a5411136c99c416183bca97215ade284018a6f83"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "fcaed9d9065824111ff0bd40663bb94542a2442351ef09c51e94df67b31e8553"
+    },
+    "journey_qvalue": {
+      "class": "PeptideQuantitativeData",
+      "rows": 5846578,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 5846578,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "Precursor.Charge", "Precursor.Quantity", "Precursor.Normalised", "Q.Value", "Global.Q.Value", "Global.PG.Q.Value", "Proteotypic", "is_decoy", "is_contaminant", "contaminant_manifest_partial_match", "exclude_from_biological_analysis", "exclusion_reason", "classification_source", "identification_peptide_count", "identification_peptidoform_count"],
+          "sha256": "7139033582ab460b3aea8db95e5a09adc925ba681724b0015d66b614e16db70b"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "990ba25e6e1d8358d338d9860147e193b0bf40240351a466f8cf8a8d5351dfa7"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        }
+      },
+      "summary_sha256": "2b22989b7acfa8697672034c018581dcea9eacccc419283ec6b0269eb41074b7"
+    },
+    "journey_protein_peptide": {
+      "class": "PeptideQuantitativeData",
+      "rows": 5846578,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 5846578,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "Precursor.Charge", "Precursor.Quantity", "Precursor.Normalised", "Q.Value", "Global.Q.Value", "Global.PG.Q.Value", "Proteotypic", "is_decoy", "is_contaminant", "contaminant_manifest_partial_match", "exclude_from_biological_analysis", "exclusion_reason", "classification_source", "identification_peptide_count", "identification_peptidoform_count", "peptides_for_protein_count", "peptidoforms_for_protein_count"],
+          "sha256": "fc6e49de30385cdf08c6ce977e509b321db570f3caf6666f5ff34a0b9c413e58"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "990ba25e6e1d8358d338d9860147e193b0bf40240351a466f8cf8a8d5351dfa7"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-protein_peptide_filtered-progress",
+          "sha256": "f0f32d298cef7f317d78f543a0ea876cac5d74a500d81f6ab97752b306a445b3"
+        }
+      },
+      "summary_sha256": "6eb48d0c8a9e672e9293d1b8e7661d2089888023ad161540d35cad3dc10c2000"
+    },
+    "journey_rollup": {
+      "class": "PeptideQuantitativeData",
+      "rows": 5521570,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 5521570,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "peptides_for_protein_count", "peptidoforms_for_protein_count", "Protein.Ids"],
+          "sha256": "d1c210a2d3e29a08a3da17d3986fcef3c69132b737b5af7ba66ee12f77ff84aa"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "990ba25e6e1d8358d338d9860147e193b0bf40240351a466f8cf8a8d5351dfa7"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-precursor_rollup-progress",
+          "sha256": "7c113f2c3215b9d15e33cb52d574bda408b8f86a1954b1eff8f2618b55a9ff7e"
+        }
+      },
+      "summary_sha256": "8f24d975b41933e372ae64b1a9838cbb71ff0eb145f8a707dc183d4f9cf4c427"
+    },
+    "journey_intensity": {
+      "class": "PeptideQuantitativeData",
+      "rows": 5521570,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 5521570,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "peptides_for_protein_count", "peptidoforms_for_protein_count", "Protein.Ids"],
+          "sha256": "d1c210a2d3e29a08a3da17d3986fcef3c69132b737b5af7ba66ee12f77ff84aa"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "990ba25e6e1d8358d338d9860147e193b0bf40240351a466f8cf8a8d5351dfa7"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-intensity_filtered-progress",
+          "sha256": "326232b881da444c51c31a42d2ce2190a4cda2c6c3d263fac559b08fec9ca2c5"
+        }
+      },
+      "summary_sha256": "33c0e2c416a53ea4ebdbb766e749f7ee63f72ab6b35908254b5b032c03da1bca"
+    },
+    "journey_sample": {
+      "class": "PeptideQuantitativeData",
+      "rows": 5515154,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 5515154,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "peptides_for_protein_count", "peptidoforms_for_protein_count", "Protein.Ids"],
+          "sha256": "6472bd27febcf85fef7a3f247305be202d6d52257ebde62d01ad45ceb19d5239"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-sample_filtered-progress",
+          "sha256": "18af54fcc8bc50b1f211fff022286028ad47a1a0691e00da1fc64dcb85802b39"
+        }
+      },
+      "summary_sha256": "2682b59da078f305e5cdd34f1d60af079ea7795572cf50b3b0d0feb0d899a39d"
+    },
+    "journey_replicate": {
+      "class": "PeptideQuantitativeData",
+      "rows": 5515154,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 5515154,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "peptides_for_protein_count", "peptidoforms_for_protein_count", "Protein.Ids"],
+          "sha256": "6472bd27febcf85fef7a3f247305be202d6d52257ebde62d01ad45ceb19d5239"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-replicate_filtered-progress",
+          "sha256": "2887b4bd2b0a65dd731be7eeea14cae201b14ac123943720b8178ff619f0cd82"
+        }
+      },
+      "summary_sha256": "dc1f56ac93debe10174a0259d891cd5797102dd869b791273bbb1adb58976437"
+    },
+    "journey_imputation": {
+      "class": "PeptideQuantitativeData",
+      "rows": 11826409,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 11826409,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "peptides_for_protein_count", "peptidoforms_for_protein_count", "Protein.Ids", "Peptide.Imputed", "is_imputed"],
+          "sha256": "cae4580f91c8561b9b85935770a85916a0ac70504b483aef6c79b1cc64a6d504"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        }
+      },
+      "summary_sha256": "47f7743857462fe8ac0e5d870c763cc7216afa475c6744b1f658069d8b5704fe"
+    },
+    "journey_iq": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008", "calibration_run_009", "calibration_run_010", "calibration_run_011", "calibration_run_012", "calibration_run_013", "calibration_run_014", "calibration_run_015", "calibration_run_016", "calibration_run_017", "calibration_run_018", "calibration_run_019", "calibration_run_020", "calibration_run_021", "calibration_run_022", "calibration_run_023", "calibration_run_024", "calibration_run_025", "calibration_run_026", "calibration_run_027", "calibration_run_028", "calibration_run_029", "calibration_run_030", "calibration_run_031", "calibration_run_032", "calibration_run_033", "calibration_run_034", "calibration_run_035", "calibration_run_036", "calibration_run_037", "calibration_run_038", "calibration_run_039", "calibration_run_040", "calibration_run_041", "calibration_run_042", "calibration_run_043", "calibration_run_044", "calibration_run_045", "calibration_run_046", "calibration_run_047", "calibration_run_048", "calibration_run_049", "calibration_run_050", "calibration_run_051", "calibration_run_053", "calibration_run_054", "calibration_run_055", "calibration_run_056", "calibration_run_057", "calibration_run_058", "calibration_run_059", "calibration_run_060", "calibration_run_061", "calibration_run_062", "calibration_run_063", "calibration_run_064", "calibration_run_065", "calibration_run_066", "calibration_run_067", "calibration_run_068", "calibration_run_069", "calibration_run_070", "calibration_run_071", "calibration_run_072", "calibration_run_073", "calibration_run_074", "calibration_run_075", "calibration_run_076", "calibration_run_077", "calibration_run_078", "calibration_run_079", "calibration_run_080", "calibration_run_081", "calibration_run_082", "calibration_run_083", "calibration_run_084", "calibration_run_085", "calibration_run_086", "calibration_run_087", "calibration_run_088", "calibration_run_089", "calibration_run_090", "calibration_run_091", "calibration_run_092", "calibration_run_093", "calibration_run_094", "calibration_run_095", "calibration_run_096", "calibration_run_097", "calibration_run_098", "calibration_run_099", "calibration_run_100", "calibration_run_101", "calibration_run_102", "calibration_run_103", "calibration_run_104", "calibration_run_105", "calibration_run_106", "calibration_run_107", "calibration_run_108", "calibration_run_109", "calibration_run_110", "calibration_run_111", "calibration_run_112", "calibration_run_113", "calibration_run_114", "calibration_run_115", "calibration_run_116", "calibration_run_117", "calibration_run_118", "calibration_run_119", "calibration_run_120", "calibration_run_121", "calibration_run_122", "calibration_run_123", "calibration_run_124", "calibration_run_125", "calibration_run_126", "calibration_run_127", "calibration_run_128", "calibration_run_129", "calibration_run_130", "calibration_run_131", "calibration_run_132", "calibration_run_133", "calibration_run_134", "calibration_run_135", "calibration_run_136", "calibration_run_137", "calibration_run_138", "calibration_run_139", "calibration_run_140", "calibration_run_141", "calibration_run_142", "calibration_run_143", "calibration_run_144", "calibration_run_145", "calibration_run_146", "calibration_run_147", "calibration_run_148", "calibration_run_149", "calibration_run_150", "calibration_run_151", "calibration_run_152", "calibration_run_153", "calibration_run_154", "calibration_run_155", "calibration_run_156", "calibration_run_157", "calibration_run_158", "calibration_run_159", "calibration_run_160", "calibration_run_161", "calibration_run_162", "calibration_run_163", "calibration_run_164", "calibration_run_165", "calibration_run_166", "calibration_run_167", "calibration_run_168", "calibration_run_169", "calibration_run_170", "calibration_run_171", "calibration_run_172", "calibration_run_173", "calibration_run_174", "calibration_run_175", "calibration_run_176", "calibration_run_177", "calibration_run_178", "calibration_run_179", "calibration_run_180", "calibration_run_181", "calibration_run_182", "calibration_run_183", "calibration_run_184", "calibration_run_185", "calibration_run_186", "calibration_run_187", "calibration_run_188", "calibration_run_189", "calibration_run_190", "calibration_run_191", "calibration_run_192", "calibration_run_193", "calibration_run_194", "calibration_run_195", "calibration_run_196", "calibration_run_197", "calibration_run_198", "calibration_run_199", "calibration_run_200", "calibration_run_201", "calibration_run_202", "calibration_run_203", "calibration_run_204", "calibration_run_205", "calibration_run_206", "calibration_run_207", "calibration_run_208", "calibration_run_209", "calibration_run_210", "calibration_run_211", "calibration_run_212", "calibration_run_213", "calibration_run_214", "calibration_run_215", "calibration_run_216", "calibration_run_217", "calibration_run_218", "calibration_run_219", "calibration_run_220", "calibration_run_221", "calibration_run_222", "calibration_run_223", "calibration_run_224", "calibration_run_225", "calibration_run_226", "calibration_run_227", "calibration_run_228", "calibration_run_229", "calibration_run_230", "calibration_run_231", "calibration_run_232", "calibration_run_233", "calibration_run_234", "calibration_run_235", "calibration_run_236", "calibration_run_237", "calibration_run_238", "calibration_run_239", "calibration_run_240", "calibration_run_241", "calibration_run_242", "calibration_run_243", "calibration_run_244", "calibration_run_245", "calibration_run_246", "calibration_run_247", "calibration_run_248", "calibration_run_249", "calibration_run_250", "calibration_run_251", "calibration_run_252", "calibration_run_253", "calibration_run_254", "calibration_run_255", "calibration_run_256", "calibration_run_257", "calibration_run_258", "calibration_run_259", "calibration_run_260", "calibration_run_261", "calibration_run_262", "calibration_run_263", "calibration_run_264", "calibration_run_265", "calibration_run_266", "calibration_run_267", "calibration_run_268", "calibration_run_269", "calibration_run_270", "calibration_run_271", "calibration_run_272", "calibration_run_273", "calibration_run_274", "calibration_run_275", "calibration_run_276", "calibration_run_277", "calibration_run_278", "calibration_run_279", "calibration_run_280", "calibration_run_281", "calibration_run_282", "calibration_run_283", "calibration_run_284", "calibration_run_285", "calibration_run_286", "calibration_run_287", "calibration_run_288", "calibration_run_289", "calibration_run_290", "calibration_run_291", "calibration_run_292", "calibration_run_293", "calibration_run_294", "calibration_run_295", "calibration_run_296", "calibration_run_297", "calibration_run_298", "calibration_run_299", "calibration_run_300"],
+          "sha256": "2fc19a6c22780c0e0e0a637291c69c86513302503bda77ba5616089947462813"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 5000,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "678828fe41a938bd6afc78604ef3f1a8a4c51047949777ead3b719a9d4e1a841"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "931fe4bcc66ccb62d9ae2f93b45216452c9608a143bd9de7f9aac27b63375dbe"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        }
+      },
+      "summary_sha256": "b68f5ae7f6f6b7538c2217cda2d489c89ad51def005704030f9ea515482c9246"
+    },
+    "journey_accession": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008", "calibration_run_009", "calibration_run_010", "calibration_run_011", "calibration_run_012", "calibration_run_013", "calibration_run_014", "calibration_run_015", "calibration_run_016", "calibration_run_017", "calibration_run_018", "calibration_run_019", "calibration_run_020", "calibration_run_021", "calibration_run_022", "calibration_run_023", "calibration_run_024", "calibration_run_025", "calibration_run_026", "calibration_run_027", "calibration_run_028", "calibration_run_029", "calibration_run_030", "calibration_run_031", "calibration_run_032", "calibration_run_033", "calibration_run_034", "calibration_run_035", "calibration_run_036", "calibration_run_037", "calibration_run_038", "calibration_run_039", "calibration_run_040", "calibration_run_041", "calibration_run_042", "calibration_run_043", "calibration_run_044", "calibration_run_045", "calibration_run_046", "calibration_run_047", "calibration_run_048", "calibration_run_049", "calibration_run_050", "calibration_run_051", "calibration_run_053", "calibration_run_054", "calibration_run_055", "calibration_run_056", "calibration_run_057", "calibration_run_058", "calibration_run_059", "calibration_run_060", "calibration_run_061", "calibration_run_062", "calibration_run_063", "calibration_run_064", "calibration_run_065", "calibration_run_066", "calibration_run_067", "calibration_run_068", "calibration_run_069", "calibration_run_070", "calibration_run_071", "calibration_run_072", "calibration_run_073", "calibration_run_074", "calibration_run_075", "calibration_run_076", "calibration_run_077", "calibration_run_078", "calibration_run_079", "calibration_run_080", "calibration_run_081", "calibration_run_082", "calibration_run_083", "calibration_run_084", "calibration_run_085", "calibration_run_086", "calibration_run_087", "calibration_run_088", "calibration_run_089", "calibration_run_090", "calibration_run_091", "calibration_run_092", "calibration_run_093", "calibration_run_094", "calibration_run_095", "calibration_run_096", "calibration_run_097", "calibration_run_098", "calibration_run_099", "calibration_run_100", "calibration_run_101", "calibration_run_102", "calibration_run_103", "calibration_run_104", "calibration_run_105", "calibration_run_106", "calibration_run_107", "calibration_run_108", "calibration_run_109", "calibration_run_110", "calibration_run_111", "calibration_run_112", "calibration_run_113", "calibration_run_114", "calibration_run_115", "calibration_run_116", "calibration_run_117", "calibration_run_118", "calibration_run_119", "calibration_run_120", "calibration_run_121", "calibration_run_122", "calibration_run_123", "calibration_run_124", "calibration_run_125", "calibration_run_126", "calibration_run_127", "calibration_run_128", "calibration_run_129", "calibration_run_130", "calibration_run_131", "calibration_run_132", "calibration_run_133", "calibration_run_134", "calibration_run_135", "calibration_run_136", "calibration_run_137", "calibration_run_138", "calibration_run_139", "calibration_run_140", "calibration_run_141", "calibration_run_142", "calibration_run_143", "calibration_run_144", "calibration_run_145", "calibration_run_146", "calibration_run_147", "calibration_run_148", "calibration_run_149", "calibration_run_150", "calibration_run_151", "calibration_run_152", "calibration_run_153", "calibration_run_154", "calibration_run_155", "calibration_run_156", "calibration_run_157", "calibration_run_158", "calibration_run_159", "calibration_run_160", "calibration_run_161", "calibration_run_162", "calibration_run_163", "calibration_run_164", "calibration_run_165", "calibration_run_166", "calibration_run_167", "calibration_run_168", "calibration_run_169", "calibration_run_170", "calibration_run_171", "calibration_run_172", "calibration_run_173", "calibration_run_174", "calibration_run_175", "calibration_run_176", "calibration_run_177", "calibration_run_178", "calibration_run_179", "calibration_run_180", "calibration_run_181", "calibration_run_182", "calibration_run_183", "calibration_run_184", "calibration_run_185", "calibration_run_186", "calibration_run_187", "calibration_run_188", "calibration_run_189", "calibration_run_190", "calibration_run_191", "calibration_run_192", "calibration_run_193", "calibration_run_194", "calibration_run_195", "calibration_run_196", "calibration_run_197", "calibration_run_198", "calibration_run_199", "calibration_run_200", "calibration_run_201", "calibration_run_202", "calibration_run_203", "calibration_run_204", "calibration_run_205", "calibration_run_206", "calibration_run_207", "calibration_run_208", "calibration_run_209", "calibration_run_210", "calibration_run_211", "calibration_run_212", "calibration_run_213", "calibration_run_214", "calibration_run_215", "calibration_run_216", "calibration_run_217", "calibration_run_218", "calibration_run_219", "calibration_run_220", "calibration_run_221", "calibration_run_222", "calibration_run_223", "calibration_run_224", "calibration_run_225", "calibration_run_226", "calibration_run_227", "calibration_run_228", "calibration_run_229", "calibration_run_230", "calibration_run_231", "calibration_run_232", "calibration_run_233", "calibration_run_234", "calibration_run_235", "calibration_run_236", "calibration_run_237", "calibration_run_238", "calibration_run_239", "calibration_run_240", "calibration_run_241", "calibration_run_242", "calibration_run_243", "calibration_run_244", "calibration_run_245", "calibration_run_246", "calibration_run_247", "calibration_run_248", "calibration_run_249", "calibration_run_250", "calibration_run_251", "calibration_run_252", "calibration_run_253", "calibration_run_254", "calibration_run_255", "calibration_run_256", "calibration_run_257", "calibration_run_258", "calibration_run_259", "calibration_run_260", "calibration_run_261", "calibration_run_262", "calibration_run_263", "calibration_run_264", "calibration_run_265", "calibration_run_266", "calibration_run_267", "calibration_run_268", "calibration_run_269", "calibration_run_270", "calibration_run_271", "calibration_run_272", "calibration_run_273", "calibration_run_274", "calibration_run_275", "calibration_run_276", "calibration_run_277", "calibration_run_278", "calibration_run_279", "calibration_run_280", "calibration_run_281", "calibration_run_282", "calibration_run_283", "calibration_run_284", "calibration_run_285", "calibration_run_286", "calibration_run_287", "calibration_run_288", "calibration_run_289", "calibration_run_290", "calibration_run_291", "calibration_run_292", "calibration_run_293", "calibration_run_294", "calibration_run_295", "calibration_run_296", "calibration_run_297", "calibration_run_298", "calibration_run_299", "calibration_run_300"],
+          "sha256": "2fc19a6c22780c0e0e0a637291c69c86513302503bda77ba5616089947462813"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 5000,
+          "columns": ["Protein.Group", "Protein.Ids", "uniprot_acc"],
+          "sha256": "64c3f569adf1a0e5a76c86663cf21dad6b601b9f0a02edc8e1757a67d4eb841b"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "931fe4bcc66ccb62d9ae2f93b45216452c9608a143bd9de7f9aac27b63375dbe"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        }
+      },
+      "summary_sha256": "7b671b8a6d077d4740255958855f1606026ad16e60f648dd07dbd7e3066985ab"
+    },
+    "journey_protein_intensity": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008", "calibration_run_009", "calibration_run_010", "calibration_run_011", "calibration_run_012", "calibration_run_013", "calibration_run_014", "calibration_run_015", "calibration_run_016", "calibration_run_017", "calibration_run_018", "calibration_run_019", "calibration_run_020", "calibration_run_021", "calibration_run_022", "calibration_run_023", "calibration_run_024", "calibration_run_025", "calibration_run_026", "calibration_run_027", "calibration_run_028", "calibration_run_029", "calibration_run_030", "calibration_run_031", "calibration_run_032", "calibration_run_033", "calibration_run_034", "calibration_run_035", "calibration_run_036", "calibration_run_037", "calibration_run_038", "calibration_run_039", "calibration_run_040", "calibration_run_041", "calibration_run_042", "calibration_run_043", "calibration_run_044", "calibration_run_045", "calibration_run_046", "calibration_run_047", "calibration_run_048", "calibration_run_049", "calibration_run_050", "calibration_run_051", "calibration_run_053", "calibration_run_054", "calibration_run_055", "calibration_run_056", "calibration_run_057", "calibration_run_058", "calibration_run_059", "calibration_run_060", "calibration_run_061", "calibration_run_062", "calibration_run_063", "calibration_run_064", "calibration_run_065", "calibration_run_066", "calibration_run_067", "calibration_run_068", "calibration_run_069", "calibration_run_070", "calibration_run_071", "calibration_run_072", "calibration_run_073", "calibration_run_074", "calibration_run_075", "calibration_run_076", "calibration_run_077", "calibration_run_078", "calibration_run_079", "calibration_run_080", "calibration_run_081", "calibration_run_082", "calibration_run_083", "calibration_run_084", "calibration_run_085", "calibration_run_086", "calibration_run_087", "calibration_run_088", "calibration_run_089", "calibration_run_090", "calibration_run_091", "calibration_run_092", "calibration_run_093", "calibration_run_094", "calibration_run_095", "calibration_run_096", "calibration_run_097", "calibration_run_098", "calibration_run_099", "calibration_run_100", "calibration_run_101", "calibration_run_102", "calibration_run_103", "calibration_run_104", "calibration_run_105", "calibration_run_106", "calibration_run_107", "calibration_run_108", "calibration_run_109", "calibration_run_110", "calibration_run_111", "calibration_run_112", "calibration_run_113", "calibration_run_114", "calibration_run_115", "calibration_run_116", "calibration_run_117", "calibration_run_118", "calibration_run_119", "calibration_run_120", "calibration_run_121", "calibration_run_122", "calibration_run_123", "calibration_run_124", "calibration_run_125", "calibration_run_126", "calibration_run_127", "calibration_run_128", "calibration_run_129", "calibration_run_130", "calibration_run_131", "calibration_run_132", "calibration_run_133", "calibration_run_134", "calibration_run_135", "calibration_run_136", "calibration_run_137", "calibration_run_138", "calibration_run_139", "calibration_run_140", "calibration_run_141", "calibration_run_142", "calibration_run_143", "calibration_run_144", "calibration_run_145", "calibration_run_146", "calibration_run_147", "calibration_run_148", "calibration_run_149", "calibration_run_150", "calibration_run_151", "calibration_run_152", "calibration_run_153", "calibration_run_154", "calibration_run_155", "calibration_run_156", "calibration_run_157", "calibration_run_158", "calibration_run_159", "calibration_run_160", "calibration_run_161", "calibration_run_162", "calibration_run_163", "calibration_run_164", "calibration_run_165", "calibration_run_166", "calibration_run_167", "calibration_run_168", "calibration_run_169", "calibration_run_170", "calibration_run_171", "calibration_run_172", "calibration_run_173", "calibration_run_174", "calibration_run_175", "calibration_run_176", "calibration_run_177", "calibration_run_178", "calibration_run_179", "calibration_run_180", "calibration_run_181", "calibration_run_182", "calibration_run_183", "calibration_run_184", "calibration_run_185", "calibration_run_186", "calibration_run_187", "calibration_run_188", "calibration_run_189", "calibration_run_190", "calibration_run_191", "calibration_run_192", "calibration_run_193", "calibration_run_194", "calibration_run_195", "calibration_run_196", "calibration_run_197", "calibration_run_198", "calibration_run_199", "calibration_run_200", "calibration_run_201", "calibration_run_202", "calibration_run_203", "calibration_run_204", "calibration_run_205", "calibration_run_206", "calibration_run_207", "calibration_run_208", "calibration_run_209", "calibration_run_210", "calibration_run_211", "calibration_run_212", "calibration_run_213", "calibration_run_214", "calibration_run_215", "calibration_run_216", "calibration_run_217", "calibration_run_218", "calibration_run_219", "calibration_run_220", "calibration_run_221", "calibration_run_222", "calibration_run_223", "calibration_run_224", "calibration_run_225", "calibration_run_226", "calibration_run_227", "calibration_run_228", "calibration_run_229", "calibration_run_230", "calibration_run_231", "calibration_run_232", "calibration_run_233", "calibration_run_234", "calibration_run_235", "calibration_run_236", "calibration_run_237", "calibration_run_238", "calibration_run_239", "calibration_run_240", "calibration_run_241", "calibration_run_242", "calibration_run_243", "calibration_run_244", "calibration_run_245", "calibration_run_246", "calibration_run_247", "calibration_run_248", "calibration_run_249", "calibration_run_250", "calibration_run_251", "calibration_run_252", "calibration_run_253", "calibration_run_254", "calibration_run_255", "calibration_run_256", "calibration_run_257", "calibration_run_258", "calibration_run_259", "calibration_run_260", "calibration_run_261", "calibration_run_262", "calibration_run_263", "calibration_run_264", "calibration_run_265", "calibration_run_266", "calibration_run_267", "calibration_run_268", "calibration_run_269", "calibration_run_270", "calibration_run_271", "calibration_run_272", "calibration_run_273", "calibration_run_274", "calibration_run_275", "calibration_run_276", "calibration_run_277", "calibration_run_278", "calibration_run_279", "calibration_run_280", "calibration_run_281", "calibration_run_282", "calibration_run_283", "calibration_run_284", "calibration_run_285", "calibration_run_286", "calibration_run_287", "calibration_run_288", "calibration_run_289", "calibration_run_290", "calibration_run_291", "calibration_run_292", "calibration_run_293", "calibration_run_294", "calibration_run_295", "calibration_run_296", "calibration_run_297", "calibration_run_298", "calibration_run_299", "calibration_run_300"],
+          "sha256": "2fc19a6c22780c0e0e0a637291c69c86513302503bda77ba5616089947462813"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 5000,
+          "columns": ["Protein.Group", "Protein.Ids", "uniprot_acc"],
+          "sha256": "64c3f569adf1a0e5a76c86663cf21dad6b601b9f0a02edc8e1757a67d4eb841b"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "931fe4bcc66ccb62d9ae2f93b45216452c9608a143bd9de7f9aac27b63375dbe"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        }
+      },
+      "summary_sha256": "a259f87532ff07182a0844d99de172ecc188f81bbda98f8123df653088e37d04"
+    },
+    "journey_duplicates": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008", "calibration_run_009", "calibration_run_010", "calibration_run_011", "calibration_run_012", "calibration_run_013", "calibration_run_014", "calibration_run_015", "calibration_run_016", "calibration_run_017", "calibration_run_018", "calibration_run_019", "calibration_run_020", "calibration_run_021", "calibration_run_022", "calibration_run_023", "calibration_run_024", "calibration_run_025", "calibration_run_026", "calibration_run_027", "calibration_run_028", "calibration_run_029", "calibration_run_030", "calibration_run_031", "calibration_run_032", "calibration_run_033", "calibration_run_034", "calibration_run_035", "calibration_run_036", "calibration_run_037", "calibration_run_038", "calibration_run_039", "calibration_run_040", "calibration_run_041", "calibration_run_042", "calibration_run_043", "calibration_run_044", "calibration_run_045", "calibration_run_046", "calibration_run_047", "calibration_run_048", "calibration_run_049", "calibration_run_050", "calibration_run_051", "calibration_run_053", "calibration_run_054", "calibration_run_055", "calibration_run_056", "calibration_run_057", "calibration_run_058", "calibration_run_059", "calibration_run_060", "calibration_run_061", "calibration_run_062", "calibration_run_063", "calibration_run_064", "calibration_run_065", "calibration_run_066", "calibration_run_067", "calibration_run_068", "calibration_run_069", "calibration_run_070", "calibration_run_071", "calibration_run_072", "calibration_run_073", "calibration_run_074", "calibration_run_075", "calibration_run_076", "calibration_run_077", "calibration_run_078", "calibration_run_079", "calibration_run_080", "calibration_run_081", "calibration_run_082", "calibration_run_083", "calibration_run_084", "calibration_run_085", "calibration_run_086", "calibration_run_087", "calibration_run_088", "calibration_run_089", "calibration_run_090", "calibration_run_091", "calibration_run_092", "calibration_run_093", "calibration_run_094", "calibration_run_095", "calibration_run_096", "calibration_run_097", "calibration_run_098", "calibration_run_099", "calibration_run_100", "calibration_run_101", "calibration_run_102", "calibration_run_103", "calibration_run_104", "calibration_run_105", "calibration_run_106", "calibration_run_107", "calibration_run_108", "calibration_run_109", "calibration_run_110", "calibration_run_111", "calibration_run_112", "calibration_run_113", "calibration_run_114", "calibration_run_115", "calibration_run_116", "calibration_run_117", "calibration_run_118", "calibration_run_119", "calibration_run_120", "calibration_run_121", "calibration_run_122", "calibration_run_123", "calibration_run_124", "calibration_run_125", "calibration_run_126", "calibration_run_127", "calibration_run_128", "calibration_run_129", "calibration_run_130", "calibration_run_131", "calibration_run_132", "calibration_run_133", "calibration_run_134", "calibration_run_135", "calibration_run_136", "calibration_run_137", "calibration_run_138", "calibration_run_139", "calibration_run_140", "calibration_run_141", "calibration_run_142", "calibration_run_143", "calibration_run_144", "calibration_run_145", "calibration_run_146", "calibration_run_147", "calibration_run_148", "calibration_run_149", "calibration_run_150", "calibration_run_151", "calibration_run_152", "calibration_run_153", "calibration_run_154", "calibration_run_155", "calibration_run_156", "calibration_run_157", "calibration_run_158", "calibration_run_159", "calibration_run_160", "calibration_run_161", "calibration_run_162", "calibration_run_163", "calibration_run_164", "calibration_run_165", "calibration_run_166", "calibration_run_167", "calibration_run_168", "calibration_run_169", "calibration_run_170", "calibration_run_171", "calibration_run_172", "calibration_run_173", "calibration_run_174", "calibration_run_175", "calibration_run_176", "calibration_run_177", "calibration_run_178", "calibration_run_179", "calibration_run_180", "calibration_run_181", "calibration_run_182", "calibration_run_183", "calibration_run_184", "calibration_run_185", "calibration_run_186", "calibration_run_187", "calibration_run_188", "calibration_run_189", "calibration_run_190", "calibration_run_191", "calibration_run_192", "calibration_run_193", "calibration_run_194", "calibration_run_195", "calibration_run_196", "calibration_run_197", "calibration_run_198", "calibration_run_199", "calibration_run_200", "calibration_run_201", "calibration_run_202", "calibration_run_203", "calibration_run_204", "calibration_run_205", "calibration_run_206", "calibration_run_207", "calibration_run_208", "calibration_run_209", "calibration_run_210", "calibration_run_211", "calibration_run_212", "calibration_run_213", "calibration_run_214", "calibration_run_215", "calibration_run_216", "calibration_run_217", "calibration_run_218", "calibration_run_219", "calibration_run_220", "calibration_run_221", "calibration_run_222", "calibration_run_223", "calibration_run_224", "calibration_run_225", "calibration_run_226", "calibration_run_227", "calibration_run_228", "calibration_run_229", "calibration_run_230", "calibration_run_231", "calibration_run_232", "calibration_run_233", "calibration_run_234", "calibration_run_235", "calibration_run_236", "calibration_run_237", "calibration_run_238", "calibration_run_239", "calibration_run_240", "calibration_run_241", "calibration_run_242", "calibration_run_243", "calibration_run_244", "calibration_run_245", "calibration_run_246", "calibration_run_247", "calibration_run_248", "calibration_run_249", "calibration_run_250", "calibration_run_251", "calibration_run_252", "calibration_run_253", "calibration_run_254", "calibration_run_255", "calibration_run_256", "calibration_run_257", "calibration_run_258", "calibration_run_259", "calibration_run_260", "calibration_run_261", "calibration_run_262", "calibration_run_263", "calibration_run_264", "calibration_run_265", "calibration_run_266", "calibration_run_267", "calibration_run_268", "calibration_run_269", "calibration_run_270", "calibration_run_271", "calibration_run_272", "calibration_run_273", "calibration_run_274", "calibration_run_275", "calibration_run_276", "calibration_run_277", "calibration_run_278", "calibration_run_279", "calibration_run_280", "calibration_run_281", "calibration_run_282", "calibration_run_283", "calibration_run_284", "calibration_run_285", "calibration_run_286", "calibration_run_287", "calibration_run_288", "calibration_run_289", "calibration_run_290", "calibration_run_291", "calibration_run_292", "calibration_run_293", "calibration_run_294", "calibration_run_295", "calibration_run_296", "calibration_run_297", "calibration_run_298", "calibration_run_299", "calibration_run_300"],
+          "sha256": "ca107c2419fe893c27825d1303140871e1bb9da73d570b33ecaf34fdd812f0b3"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 5000,
+          "columns": ["Protein.Group", "Protein.Ids", "uniprot_acc"],
+          "sha256": "64c3f569adf1a0e5a76c86663cf21dad6b601b9f0a02edc8e1757a67d4eb841b"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "931fe4bcc66ccb62d9ae2f93b45216452c9608a143bd9de7f9aac27b63375dbe"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        }
+      },
+      "summary_sha256": "858dfd8c29f5bb3ade92aa118825c1e95bdc0441f40f72cc4da314ab022d2413"
+    },
+    "journey_protein_replicate": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008", "calibration_run_009", "calibration_run_010", "calibration_run_011", "calibration_run_012", "calibration_run_013", "calibration_run_014", "calibration_run_015", "calibration_run_016", "calibration_run_017", "calibration_run_018", "calibration_run_019", "calibration_run_020", "calibration_run_021", "calibration_run_022", "calibration_run_023", "calibration_run_024", "calibration_run_025", "calibration_run_026", "calibration_run_027", "calibration_run_028", "calibration_run_029", "calibration_run_030", "calibration_run_031", "calibration_run_032", "calibration_run_033", "calibration_run_034", "calibration_run_035", "calibration_run_036", "calibration_run_037", "calibration_run_038", "calibration_run_039", "calibration_run_040", "calibration_run_041", "calibration_run_042", "calibration_run_043", "calibration_run_044", "calibration_run_045", "calibration_run_046", "calibration_run_047", "calibration_run_048", "calibration_run_049", "calibration_run_050", "calibration_run_051", "calibration_run_053", "calibration_run_054", "calibration_run_055", "calibration_run_056", "calibration_run_057", "calibration_run_058", "calibration_run_059", "calibration_run_060", "calibration_run_061", "calibration_run_062", "calibration_run_063", "calibration_run_064", "calibration_run_065", "calibration_run_066", "calibration_run_067", "calibration_run_068", "calibration_run_069", "calibration_run_070", "calibration_run_071", "calibration_run_072", "calibration_run_073", "calibration_run_074", "calibration_run_075", "calibration_run_076", "calibration_run_077", "calibration_run_078", "calibration_run_079", "calibration_run_080", "calibration_run_081", "calibration_run_082", "calibration_run_083", "calibration_run_084", "calibration_run_085", "calibration_run_086", "calibration_run_087", "calibration_run_088", "calibration_run_089", "calibration_run_090", "calibration_run_091", "calibration_run_092", "calibration_run_093", "calibration_run_094", "calibration_run_095", "calibration_run_096", "calibration_run_097", "calibration_run_098", "calibration_run_099", "calibration_run_100", "calibration_run_101", "calibration_run_102", "calibration_run_103", "calibration_run_104", "calibration_run_105", "calibration_run_106", "calibration_run_107", "calibration_run_108", "calibration_run_109", "calibration_run_110", "calibration_run_111", "calibration_run_112", "calibration_run_113", "calibration_run_114", "calibration_run_115", "calibration_run_116", "calibration_run_117", "calibration_run_118", "calibration_run_119", "calibration_run_120", "calibration_run_121", "calibration_run_122", "calibration_run_123", "calibration_run_124", "calibration_run_125", "calibration_run_126", "calibration_run_127", "calibration_run_128", "calibration_run_129", "calibration_run_130", "calibration_run_131", "calibration_run_132", "calibration_run_133", "calibration_run_134", "calibration_run_135", "calibration_run_136", "calibration_run_137", "calibration_run_138", "calibration_run_139", "calibration_run_140", "calibration_run_141", "calibration_run_142", "calibration_run_143", "calibration_run_144", "calibration_run_145", "calibration_run_146", "calibration_run_147", "calibration_run_148", "calibration_run_149", "calibration_run_150", "calibration_run_151", "calibration_run_152", "calibration_run_153", "calibration_run_154", "calibration_run_155", "calibration_run_156", "calibration_run_157", "calibration_run_158", "calibration_run_159", "calibration_run_160", "calibration_run_161", "calibration_run_162", "calibration_run_163", "calibration_run_164", "calibration_run_165", "calibration_run_166", "calibration_run_167", "calibration_run_168", "calibration_run_169", "calibration_run_170", "calibration_run_171", "calibration_run_172", "calibration_run_173", "calibration_run_174", "calibration_run_175", "calibration_run_176", "calibration_run_177", "calibration_run_178", "calibration_run_179", "calibration_run_180", "calibration_run_181", "calibration_run_182", "calibration_run_183", "calibration_run_184", "calibration_run_185", "calibration_run_186", "calibration_run_187", "calibration_run_188", "calibration_run_189", "calibration_run_190", "calibration_run_191", "calibration_run_192", "calibration_run_193", "calibration_run_194", "calibration_run_195", "calibration_run_196", "calibration_run_197", "calibration_run_198", "calibration_run_199", "calibration_run_200", "calibration_run_201", "calibration_run_202", "calibration_run_203", "calibration_run_204", "calibration_run_205", "calibration_run_206", "calibration_run_207", "calibration_run_208", "calibration_run_209", "calibration_run_210", "calibration_run_211", "calibration_run_212", "calibration_run_213", "calibration_run_214", "calibration_run_215", "calibration_run_216", "calibration_run_217", "calibration_run_218", "calibration_run_219", "calibration_run_220", "calibration_run_221", "calibration_run_222", "calibration_run_223", "calibration_run_224", "calibration_run_225", "calibration_run_226", "calibration_run_227", "calibration_run_228", "calibration_run_229", "calibration_run_230", "calibration_run_231", "calibration_run_232", "calibration_run_233", "calibration_run_234", "calibration_run_235", "calibration_run_236", "calibration_run_237", "calibration_run_238", "calibration_run_239", "calibration_run_240", "calibration_run_241", "calibration_run_242", "calibration_run_243", "calibration_run_244", "calibration_run_245", "calibration_run_246", "calibration_run_247", "calibration_run_248", "calibration_run_249", "calibration_run_250", "calibration_run_251", "calibration_run_252", "calibration_run_253", "calibration_run_254", "calibration_run_255", "calibration_run_256", "calibration_run_257", "calibration_run_258", "calibration_run_259", "calibration_run_260", "calibration_run_261", "calibration_run_262", "calibration_run_263", "calibration_run_264", "calibration_run_265", "calibration_run_266", "calibration_run_267", "calibration_run_268", "calibration_run_269", "calibration_run_270", "calibration_run_271", "calibration_run_272", "calibration_run_273", "calibration_run_274", "calibration_run_275", "calibration_run_276", "calibration_run_277", "calibration_run_278", "calibration_run_279", "calibration_run_280", "calibration_run_281", "calibration_run_282", "calibration_run_283", "calibration_run_284", "calibration_run_285", "calibration_run_286", "calibration_run_287", "calibration_run_288", "calibration_run_289", "calibration_run_290", "calibration_run_291", "calibration_run_292", "calibration_run_293", "calibration_run_294", "calibration_run_295", "calibration_run_296", "calibration_run_297", "calibration_run_298", "calibration_run_299", "calibration_run_300"],
+          "sha256": "ca107c2419fe893c27825d1303140871e1bb9da73d570b33ecaf34fdd812f0b3"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 5000,
+          "columns": ["Protein.Group", "Protein.Ids", "uniprot_acc"],
+          "sha256": "64c3f569adf1a0e5a76c86663cf21dad6b601b9f0a02edc8e1757a67d4eb841b"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "931fe4bcc66ccb62d9ae2f93b45216452c9608a143bd9de7f9aac27b63375dbe"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        }
+      },
+      "summary_sha256": "fba6c555a1de2b19320a22f6fca4e573c13e77323c46e381fe543c35598bb167"
+    },
+    "journey_normalisation_ruv": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2476,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2476,
+          "columns": ["Protein.Group", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008", "calibration_run_009", "calibration_run_010", "calibration_run_011", "calibration_run_012", "calibration_run_013", "calibration_run_014", "calibration_run_015", "calibration_run_016", "calibration_run_017", "calibration_run_018", "calibration_run_019", "calibration_run_020", "calibration_run_021", "calibration_run_022", "calibration_run_023", "calibration_run_024", "calibration_run_025", "calibration_run_026", "calibration_run_027", "calibration_run_028", "calibration_run_029", "calibration_run_030", "calibration_run_031", "calibration_run_032", "calibration_run_033", "calibration_run_034", "calibration_run_035", "calibration_run_036", "calibration_run_037", "calibration_run_038", "calibration_run_039", "calibration_run_040", "calibration_run_041", "calibration_run_042", "calibration_run_043", "calibration_run_044", "calibration_run_045", "calibration_run_046", "calibration_run_047", "calibration_run_048", "calibration_run_049", "calibration_run_050", "calibration_run_051", "calibration_run_053", "calibration_run_054", "calibration_run_055", "calibration_run_056", "calibration_run_057", "calibration_run_058", "calibration_run_059", "calibration_run_060", "calibration_run_061", "calibration_run_062", "calibration_run_063", "calibration_run_064", "calibration_run_065", "calibration_run_066", "calibration_run_067", "calibration_run_068", "calibration_run_069", "calibration_run_070", "calibration_run_071", "calibration_run_072", "calibration_run_073", "calibration_run_074", "calibration_run_075", "calibration_run_076", "calibration_run_077", "calibration_run_078", "calibration_run_079", "calibration_run_080", "calibration_run_081", "calibration_run_082", "calibration_run_083", "calibration_run_084", "calibration_run_085", "calibration_run_086", "calibration_run_087", "calibration_run_088", "calibration_run_089", "calibration_run_090", "calibration_run_091", "calibration_run_092", "calibration_run_093", "calibration_run_094", "calibration_run_095", "calibration_run_096", "calibration_run_097", "calibration_run_098", "calibration_run_099", "calibration_run_100", "calibration_run_101", "calibration_run_102", "calibration_run_103", "calibration_run_104", "calibration_run_105", "calibration_run_106", "calibration_run_107", "calibration_run_108", "calibration_run_109", "calibration_run_110", "calibration_run_111", "calibration_run_112", "calibration_run_113", "calibration_run_114", "calibration_run_115", "calibration_run_116", "calibration_run_117", "calibration_run_118", "calibration_run_119", "calibration_run_120", "calibration_run_121", "calibration_run_122", "calibration_run_123", "calibration_run_124", "calibration_run_125", "calibration_run_126", "calibration_run_127", "calibration_run_128", "calibration_run_129", "calibration_run_130", "calibration_run_131", "calibration_run_132", "calibration_run_133", "calibration_run_134", "calibration_run_135", "calibration_run_136", "calibration_run_137", "calibration_run_138", "calibration_run_139", "calibration_run_140", "calibration_run_141", "calibration_run_142", "calibration_run_143", "calibration_run_144", "calibration_run_145", "calibration_run_146", "calibration_run_147", "calibration_run_148", "calibration_run_149", "calibration_run_150", "calibration_run_151", "calibration_run_152", "calibration_run_153", "calibration_run_154", "calibration_run_155", "calibration_run_156", "calibration_run_157", "calibration_run_158", "calibration_run_159", "calibration_run_160", "calibration_run_161", "calibration_run_162", "calibration_run_163", "calibration_run_164", "calibration_run_165", "calibration_run_166", "calibration_run_167", "calibration_run_168", "calibration_run_169", "calibration_run_170", "calibration_run_171", "calibration_run_172", "calibration_run_173", "calibration_run_174", "calibration_run_175", "calibration_run_176", "calibration_run_177", "calibration_run_178", "calibration_run_179", "calibration_run_180", "calibration_run_181", "calibration_run_182", "calibration_run_183", "calibration_run_184", "calibration_run_185", "calibration_run_186", "calibration_run_187", "calibration_run_188", "calibration_run_189", "calibration_run_190", "calibration_run_191", "calibration_run_192", "calibration_run_193", "calibration_run_194", "calibration_run_195", "calibration_run_196", "calibration_run_197", "calibration_run_198", "calibration_run_199", "calibration_run_200", "calibration_run_201", "calibration_run_202", "calibration_run_203", "calibration_run_204", "calibration_run_205", "calibration_run_206", "calibration_run_207", "calibration_run_208", "calibration_run_209", "calibration_run_210", "calibration_run_211", "calibration_run_212", "calibration_run_213", "calibration_run_214", "calibration_run_215", "calibration_run_216", "calibration_run_217", "calibration_run_218", "calibration_run_219", "calibration_run_220", "calibration_run_221", "calibration_run_222", "calibration_run_223", "calibration_run_224", "calibration_run_225", "calibration_run_226", "calibration_run_227", "calibration_run_228", "calibration_run_229", "calibration_run_230", "calibration_run_231", "calibration_run_232", "calibration_run_233", "calibration_run_234", "calibration_run_235", "calibration_run_236", "calibration_run_237", "calibration_run_238", "calibration_run_239", "calibration_run_240", "calibration_run_241", "calibration_run_242", "calibration_run_243", "calibration_run_244", "calibration_run_245", "calibration_run_246", "calibration_run_247", "calibration_run_248", "calibration_run_249", "calibration_run_250", "calibration_run_251", "calibration_run_252", "calibration_run_253", "calibration_run_254", "calibration_run_255", "calibration_run_256", "calibration_run_257", "calibration_run_258", "calibration_run_259", "calibration_run_260", "calibration_run_261", "calibration_run_262", "calibration_run_263", "calibration_run_264", "calibration_run_265", "calibration_run_266", "calibration_run_267", "calibration_run_268", "calibration_run_269", "calibration_run_270", "calibration_run_271", "calibration_run_272", "calibration_run_273", "calibration_run_274", "calibration_run_275", "calibration_run_276", "calibration_run_277", "calibration_run_278", "calibration_run_279", "calibration_run_280", "calibration_run_281", "calibration_run_282", "calibration_run_283", "calibration_run_284", "calibration_run_285", "calibration_run_286", "calibration_run_287", "calibration_run_288", "calibration_run_289", "calibration_run_290", "calibration_run_291", "calibration_run_292", "calibration_run_293", "calibration_run_294", "calibration_run_295", "calibration_run_296", "calibration_run_297", "calibration_run_298", "calibration_run_299", "calibration_run_300"],
+          "sha256": "0dc747e4ec1fe15aa1b3f6371af2b07d6636b818b705b4b8323ff94fb2bfb77b"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 5000,
+          "columns": ["Protein.Group", "Protein.Ids", "uniprot_acc"],
+          "sha256": "64c3f569adf1a0e5a76c86663cf21dad6b601b9f0a02edc8e1757a67d4eb841b"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "931fe4bcc66ccb62d9ae2f93b45216452c9608a143bd9de7f9aac27b63375dbe"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        },
+        "ruvIII_C_VaryingFn/ctrl": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "cee9026c350dd13e0c2b6827191be18f3fd0b2471bc039d2b7931a031c4117ca"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        },
+        "normalization_science": {
+          "kind": "scientific_product",
+          "product_type": "dia-normalization-ruv",
+          "sha256": "bd9f0c35dd5bef4a08b864f2d9d573d41430a56521392b5a701ec3d72a328127"
+        },
+        "rendered_asset:22111db166cf": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "22111db166cf990a98dd5b3176d72703fd4c670ba63c5505fc804dced09ab263"
+        },
+        "rendered_asset:29ef6aa567be": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "29ef6aa567be7062a607d5d4f9db6ccd28d554e881368a38969794e5e3e980f5"
+        },
+        "dia_normalization_correlation:40ccbf05a927": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_correlation",
+          "sha256": "40ccbf05a927194618df229c9f4e80f2d0ce604488e1caee46b20f2d76527a70"
+        },
+        "rendered_asset:4c8b7020916f": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "4c8b7020916ff1d03f90d247b9b57360c7229e2f744a6c16f436fb425d9d649e"
+        },
+        "dia_normalization_pca:508d4f308294": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_pca",
+          "sha256": "508d4f30829445f59abf9d0b41506a1f054639ab5f41aca9724a302df66bbe80"
+        },
+        "rendered_asset:51d68d38b1ef": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "51d68d38b1ef9aafd3ac69ba91d7a1e54cafc6015220be86103b5dbb079ef294"
+        },
+        "dia_normalization_pca:6aec29547472": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_pca",
+          "sha256": "6aec29547472a1942bbed383431b8f04732f11802ff3fdd0aa9086bbe8ed5cb4"
+        },
+        "dia_normalization_rle:7a62df3bf4c2": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_rle",
+          "sha256": "7a62df3bf4c25c82f5e15c50c32493edbdcb6097e98d31af696bc46a46f37f63"
+        },
+        "rendered_asset:810262458379": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "810262458379fdfde5588008fa4b3ed1d83e8bec9b7f8250f3baea50e966e491"
+        },
+        "dia_normalization_density:849b149b3787": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_density",
+          "sha256": "849b149b3787785273700b7cdb2914ec112041d59e71e1e4954e54583bb834f1"
+        },
+        "rendered_asset:89641565b562": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "89641565b56243cbf794b1ce7594579bbb944d070b992cf97bd2d6ca9ae1a6b2"
+        },
+        "rendered_asset:8f7dfdd3fee4": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "8f7dfdd3fee4f4a8ecece4f71849ff3b440ca095ce7560c7085b07c2e2519194"
+        },
+        "dia_normalization_density:ab8a9c1f746f": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_density",
+          "sha256": "ab8a9c1f746f6e5eaf8a5452c2eeed7f4fee7bd56da51c898505e02775ff338e"
+        },
+        "rendered_asset:ae6fdb38a357": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "ae6fdb38a357dd272eebc70dcf1144bc1704fc6c7c02b8e228e8e95bd8a0c8f7"
+        },
+        "rendered_asset:aeba352873cb": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "aeba352873cbcd9955f62556e9238db1d1a0b460fae8bdce3fe1fa333950827f"
+        },
+        "dia_normalization_correlation:ba62b4228fe2": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_correlation",
+          "sha256": "ba62b4228fe2bb8182b1d829855cb0b41c33965985861074a922210fa75764dd"
+        },
+        "dia_normalization_correlation:bacc8ba2c682": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_correlation",
+          "sha256": "bacc8ba2c68215e2b1abb67c67b913a36020570912c104de0c25f1fee08cb83b"
+        },
+        "dia-normalization-ruv:bd9f0c35dd5b": {
+          "kind": "scientific_product",
+          "product_type": "dia-normalization-ruv",
+          "sha256": "bd9f0c35dd5bef4a08b864f2d9d573d41430a56521392b5a701ec3d72a328127"
+        },
+        "dia_normalization_rle:c080b4f5c568": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_rle",
+          "sha256": "c080b4f5c56879abed3617a9355b5edbc037dabcb0e5c994d3604b07af16fd3f"
+        },
+        "dia_normalization_rle:d1121a181145": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_rle",
+          "sha256": "d1121a181145e77d00858511e7558a13bf661aebe29b7118bc819a21ea50676b"
+        },
+        "rendered_asset:d557f3b40b75": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "d557f3b40b75604c8b99ee450404f1eba2fed378334c358b0dda772f7db54fa7"
+        },
+        "rendered_asset:da14b13faabf": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "da14b13faabf91e518eff0d09b8b0431760eefacfd1482e0250e94ad790a6d21"
+        },
+        "rendered_asset:eb960c8ef1ed": {
+          "kind": "rendered_asset",
+          "product_type": null,
+          "sha256": "eb960c8ef1edb94778312f9ded2376e0d47de33bb27428d578c42341a6f85d89"
+        },
+        "dia_normalization_density:ede277a7c2ce": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_density",
+          "sha256": "ede277a7c2ce081b7af16c66767884540299d1859a8fac2c9832fd0b1e0ce06a"
+        },
+        "dia_normalization_pca:feaf5458fbad": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_pca",
+          "sha256": "feaf5458fbadf86d2112e49c04c29b796f1708a347d2b4eea7b19caa0c161ebe"
+        }
+      },
+      "summary_sha256": "2e5d9215f30e213a9cb3f3ef6b8f0eecf066307aed3177d9ffe3c1e4c3630abb"
+    },
+    "journey_correlation": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2476,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2476,
+          "columns": ["Protein.Group", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008", "calibration_run_009", "calibration_run_010", "calibration_run_011", "calibration_run_012", "calibration_run_013", "calibration_run_014", "calibration_run_015", "calibration_run_016", "calibration_run_017", "calibration_run_018", "calibration_run_019", "calibration_run_020", "calibration_run_021", "calibration_run_022", "calibration_run_023", "calibration_run_024", "calibration_run_025", "calibration_run_026", "calibration_run_027", "calibration_run_028", "calibration_run_029", "calibration_run_030", "calibration_run_031", "calibration_run_032", "calibration_run_033", "calibration_run_034", "calibration_run_035", "calibration_run_036", "calibration_run_037", "calibration_run_038", "calibration_run_039", "calibration_run_040", "calibration_run_041", "calibration_run_042", "calibration_run_043", "calibration_run_044", "calibration_run_045", "calibration_run_046", "calibration_run_047", "calibration_run_048", "calibration_run_049", "calibration_run_050", "calibration_run_051", "calibration_run_053", "calibration_run_054", "calibration_run_055", "calibration_run_056", "calibration_run_057", "calibration_run_058", "calibration_run_059", "calibration_run_060", "calibration_run_061", "calibration_run_062", "calibration_run_063", "calibration_run_064", "calibration_run_065", "calibration_run_066", "calibration_run_067", "calibration_run_068", "calibration_run_069", "calibration_run_070", "calibration_run_071", "calibration_run_072", "calibration_run_073", "calibration_run_074", "calibration_run_075", "calibration_run_076", "calibration_run_077", "calibration_run_078", "calibration_run_079", "calibration_run_080", "calibration_run_081", "calibration_run_082", "calibration_run_083", "calibration_run_084", "calibration_run_085", "calibration_run_086", "calibration_run_087", "calibration_run_088", "calibration_run_089", "calibration_run_090", "calibration_run_091", "calibration_run_092", "calibration_run_093", "calibration_run_094", "calibration_run_095", "calibration_run_096", "calibration_run_097", "calibration_run_098", "calibration_run_099", "calibration_run_100", "calibration_run_101", "calibration_run_102", "calibration_run_103", "calibration_run_104", "calibration_run_105", "calibration_run_106", "calibration_run_107", "calibration_run_108", "calibration_run_109", "calibration_run_110", "calibration_run_111", "calibration_run_112", "calibration_run_113", "calibration_run_114", "calibration_run_115", "calibration_run_116", "calibration_run_117", "calibration_run_118", "calibration_run_119", "calibration_run_120", "calibration_run_121", "calibration_run_122", "calibration_run_123", "calibration_run_124", "calibration_run_125", "calibration_run_126", "calibration_run_127", "calibration_run_128", "calibration_run_129", "calibration_run_130", "calibration_run_131", "calibration_run_132", "calibration_run_133", "calibration_run_134", "calibration_run_135", "calibration_run_136", "calibration_run_137", "calibration_run_138", "calibration_run_139", "calibration_run_140", "calibration_run_141", "calibration_run_142", "calibration_run_143", "calibration_run_144", "calibration_run_145", "calibration_run_146", "calibration_run_147", "calibration_run_148", "calibration_run_149", "calibration_run_150", "calibration_run_151", "calibration_run_152", "calibration_run_153", "calibration_run_154", "calibration_run_155", "calibration_run_156", "calibration_run_157", "calibration_run_158", "calibration_run_159", "calibration_run_160", "calibration_run_161", "calibration_run_162", "calibration_run_163", "calibration_run_164", "calibration_run_165", "calibration_run_166", "calibration_run_167", "calibration_run_168", "calibration_run_169", "calibration_run_170", "calibration_run_171", "calibration_run_172", "calibration_run_173", "calibration_run_174", "calibration_run_175", "calibration_run_176", "calibration_run_177", "calibration_run_178", "calibration_run_179", "calibration_run_180", "calibration_run_181", "calibration_run_182", "calibration_run_183", "calibration_run_184", "calibration_run_185", "calibration_run_186", "calibration_run_187", "calibration_run_188", "calibration_run_189", "calibration_run_190", "calibration_run_191", "calibration_run_192", "calibration_run_193", "calibration_run_194", "calibration_run_195", "calibration_run_196", "calibration_run_197", "calibration_run_198", "calibration_run_199", "calibration_run_200", "calibration_run_201", "calibration_run_202", "calibration_run_203", "calibration_run_204", "calibration_run_205", "calibration_run_206", "calibration_run_207", "calibration_run_208", "calibration_run_209", "calibration_run_210", "calibration_run_211", "calibration_run_212", "calibration_run_213", "calibration_run_214", "calibration_run_215", "calibration_run_216", "calibration_run_217", "calibration_run_218", "calibration_run_219", "calibration_run_220", "calibration_run_221", "calibration_run_222", "calibration_run_223", "calibration_run_224", "calibration_run_225", "calibration_run_226", "calibration_run_227", "calibration_run_228", "calibration_run_229", "calibration_run_230", "calibration_run_231", "calibration_run_232", "calibration_run_233", "calibration_run_234", "calibration_run_235", "calibration_run_236", "calibration_run_237", "calibration_run_238", "calibration_run_239", "calibration_run_240", "calibration_run_241", "calibration_run_242", "calibration_run_243", "calibration_run_244", "calibration_run_245", "calibration_run_246", "calibration_run_247", "calibration_run_248", "calibration_run_249", "calibration_run_250", "calibration_run_251", "calibration_run_252", "calibration_run_253", "calibration_run_254", "calibration_run_255", "calibration_run_256", "calibration_run_257", "calibration_run_258", "calibration_run_259", "calibration_run_260", "calibration_run_261", "calibration_run_262", "calibration_run_263", "calibration_run_264", "calibration_run_265", "calibration_run_266", "calibration_run_267", "calibration_run_268", "calibration_run_269", "calibration_run_270", "calibration_run_271", "calibration_run_272", "calibration_run_273", "calibration_run_274", "calibration_run_275", "calibration_run_276", "calibration_run_277", "calibration_run_278", "calibration_run_279", "calibration_run_280", "calibration_run_281", "calibration_run_282", "calibration_run_283", "calibration_run_284", "calibration_run_285", "calibration_run_286", "calibration_run_287", "calibration_run_288", "calibration_run_289", "calibration_run_290", "calibration_run_291", "calibration_run_292", "calibration_run_293", "calibration_run_294", "calibration_run_295", "calibration_run_296", "calibration_run_297", "calibration_run_298", "calibration_run_299", "calibration_run_300"],
+          "sha256": "0dc747e4ec1fe15aa1b3f6371af2b07d6636b818b705b4b8323ff94fb2bfb77b"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 5000,
+          "columns": ["Protein.Group", "Protein.Ids", "uniprot_acc"],
+          "sha256": "64c3f569adf1a0e5a76c86663cf21dad6b601b9f0a02edc8e1757a67d4eb841b"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "931fe4bcc66ccb62d9ae2f93b45216452c9608a143bd9de7f9aac27b63375dbe"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        },
+        "ruvIII_C_VaryingFn/ctrl": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "cee9026c350dd13e0c2b6827191be18f3fd0b2471bc039d2b7931a031c4117ca"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 14554,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "bf7ec95cb065a2b278750cf376b5d2fcc903ba566c81cbb8e2d1c2dc5b25eb90"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        },
+        "dia-pearson-pairs:3790bdd5e188": {
+          "kind": "scientific_product",
+          "product_type": "dia-pearson-pairs",
+          "sha256": "3790bdd5e18840448b5197193f05893144649d8f7014ea476ddc8b99153d809f"
+        },
+        "dia_normalization_pca:508d4f308294": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_pca",
+          "sha256": "508d4f30829445f59abf9d0b41506a1f054639ab5f41aca9724a302df66bbe80"
+        },
+        "dia-pearson-selection:f380b7d85da4": {
+          "kind": "scientific_product",
+          "product_type": "dia-pearson-selection",
+          "sha256": "f380b7d85da444a82eb879388410e9e68ef76eaaed1e93fda86beaaf6ae209ad"
+        }
+      },
+      "summary_sha256": "324a73fa73c3af04e01ac49652cfa00de1fc74ace52bf231b15ac72871ebcfb5"
+    },
+    "journey_session_export": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2476,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2476,
+          "columns": ["Protein.Group", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008", "calibration_run_009", "calibration_run_010", "calibration_run_011", "calibration_run_012", "calibration_run_013", "calibration_run_014", "calibration_run_015", "calibration_run_016", "calibration_run_017", "calibration_run_018", "calibration_run_019", "calibration_run_020", "calibration_run_021", "calibration_run_022", "calibration_run_023", "calibration_run_024", "calibration_run_025", "calibration_run_026", "calibration_run_027", "calibration_run_028", "calibration_run_029", "calibration_run_030", "calibration_run_031", "calibration_run_032", "calibration_run_033", "calibration_run_034", "calibration_run_035", "calibration_run_036", "calibration_run_037", "calibration_run_038", "calibration_run_039", "calibration_run_040", "calibration_run_041", "calibration_run_042", "calibration_run_043", "calibration_run_044", "calibration_run_045", "calibration_run_046", "calibration_run_047", "calibration_run_048", "calibration_run_049", "calibration_run_050", "calibration_run_051", "calibration_run_053", "calibration_run_054", "calibration_run_055", "calibration_run_056", "calibration_run_057", "calibration_run_058", "calibration_run_059", "calibration_run_060", "calibration_run_061", "calibration_run_062", "calibration_run_063", "calibration_run_064", "calibration_run_065", "calibration_run_066", "calibration_run_067", "calibration_run_068", "calibration_run_069", "calibration_run_070", "calibration_run_071", "calibration_run_072", "calibration_run_073", "calibration_run_074", "calibration_run_075", "calibration_run_076", "calibration_run_077", "calibration_run_078", "calibration_run_079", "calibration_run_080", "calibration_run_081", "calibration_run_082", "calibration_run_083", "calibration_run_084", "calibration_run_085", "calibration_run_086", "calibration_run_087", "calibration_run_088", "calibration_run_089", "calibration_run_090", "calibration_run_091", "calibration_run_092", "calibration_run_093", "calibration_run_094", "calibration_run_095", "calibration_run_096", "calibration_run_097", "calibration_run_098", "calibration_run_099", "calibration_run_100", "calibration_run_101", "calibration_run_102", "calibration_run_103", "calibration_run_104", "calibration_run_105", "calibration_run_106", "calibration_run_107", "calibration_run_108", "calibration_run_109", "calibration_run_110", "calibration_run_111", "calibration_run_112", "calibration_run_113", "calibration_run_114", "calibration_run_115", "calibration_run_116", "calibration_run_117", "calibration_run_118", "calibration_run_119", "calibration_run_120", "calibration_run_121", "calibration_run_122", "calibration_run_123", "calibration_run_124", "calibration_run_125", "calibration_run_126", "calibration_run_127", "calibration_run_128", "calibration_run_129", "calibration_run_130", "calibration_run_131", "calibration_run_132", "calibration_run_133", "calibration_run_134", "calibration_run_135", "calibration_run_136", "calibration_run_137", "calibration_run_138", "calibration_run_139", "calibration_run_140", "calibration_run_141", "calibration_run_142", "calibration_run_143", "calibration_run_144", "calibration_run_145", "calibration_run_146", "calibration_run_147", "calibration_run_148", "calibration_run_149", "calibration_run_150", "calibration_run_151", "calibration_run_152", "calibration_run_153", "calibration_run_154", "calibration_run_155", "calibration_run_156", "calibration_run_157", "calibration_run_158", "calibration_run_159", "calibration_run_160", "calibration_run_161", "calibration_run_162", "calibration_run_163", "calibration_run_164", "calibration_run_165", "calibration_run_166", "calibration_run_167", "calibration_run_168", "calibration_run_169", "calibration_run_170", "calibration_run_171", "calibration_run_172", "calibration_run_173", "calibration_run_174", "calibration_run_175", "calibration_run_176", "calibration_run_177", "calibration_run_178", "calibration_run_179", "calibration_run_180", "calibration_run_181", "calibration_run_182", "calibration_run_183", "calibration_run_184", "calibration_run_185", "calibration_run_186", "calibration_run_187", "calibration_run_188", "calibration_run_189", "calibration_run_190", "calibration_run_191", "calibration_run_192", "calibration_run_193", "calibration_run_194", "calibration_run_195", "calibration_run_196", "calibration_run_197", "calibration_run_198", "calibration_run_199", "calibration_run_200", "calibration_run_201", "calibration_run_202", "calibration_run_203", "calibration_run_204", "calibration_run_205", "calibration_run_206", "calibration_run_207", "calibration_run_208", "calibration_run_209", "calibration_run_210", "calibration_run_211", "calibration_run_212", "calibration_run_213", "calibration_run_214", "calibration_run_215", "calibration_run_216", "calibration_run_217", "calibration_run_218", "calibration_run_219", "calibration_run_220", "calibration_run_221", "calibration_run_222", "calibration_run_223", "calibration_run_224", "calibration_run_225", "calibration_run_226", "calibration_run_227", "calibration_run_228", "calibration_run_229", "calibration_run_230", "calibration_run_231", "calibration_run_232", "calibration_run_233", "calibration_run_234", "calibration_run_235", "calibration_run_236", "calibration_run_237", "calibration_run_238", "calibration_run_239", "calibration_run_240", "calibration_run_241", "calibration_run_242", "calibration_run_243", "calibration_run_244", "calibration_run_245", "calibration_run_246", "calibration_run_247", "calibration_run_248", "calibration_run_249", "calibration_run_250", "calibration_run_251", "calibration_run_252", "calibration_run_253", "calibration_run_254", "calibration_run_255", "calibration_run_256", "calibration_run_257", "calibration_run_258", "calibration_run_259", "calibration_run_260", "calibration_run_261", "calibration_run_262", "calibration_run_263", "calibration_run_264", "calibration_run_265", "calibration_run_266", "calibration_run_267", "calibration_run_268", "calibration_run_269", "calibration_run_270", "calibration_run_271", "calibration_run_272", "calibration_run_273", "calibration_run_274", "calibration_run_275", "calibration_run_276", "calibration_run_277", "calibration_run_278", "calibration_run_279", "calibration_run_280", "calibration_run_281", "calibration_run_282", "calibration_run_283", "calibration_run_284", "calibration_run_285", "calibration_run_286", "calibration_run_287", "calibration_run_288", "calibration_run_289", "calibration_run_290", "calibration_run_291", "calibration_run_292", "calibration_run_293", "calibration_run_294", "calibration_run_295", "calibration_run_296", "calibration_run_297", "calibration_run_298", "calibration_run_299", "calibration_run_300"],
+          "sha256": "0dc747e4ec1fe15aa1b3f6371af2b07d6636b818b705b4b8323ff94fb2bfb77b"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 5000,
+          "columns": ["Protein.Group", "Protein.Ids", "uniprot_acc"],
+          "sha256": "64c3f569adf1a0e5a76c86663cf21dad6b601b9f0a02edc8e1757a67d4eb841b"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "931fe4bcc66ccb62d9ae2f93b45216452c9608a143bd9de7f9aac27b63375dbe"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        },
+        "ruvIII_C_VaryingFn/ctrl": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "cee9026c350dd13e0c2b6827191be18f3fd0b2471bc039d2b7931a031c4117ca"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 14554,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "bf7ec95cb065a2b278750cf376b5d2fcc903ba566c81cbb8e2d1c2dc5b25eb90"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        }
+      },
+      "summary_sha256": "324a73fa73c3af04e01ac49652cfa00de1fc74ace52bf231b15ac72871ebcfb5"
+    },
+    "journey_da": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2476,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 297,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2d732757553538104ab54a80533bbbf2e3207e70a7c98ffd1579a8ac49b15b1f"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2476,
+          "columns": ["Protein.Group", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008", "calibration_run_009", "calibration_run_010", "calibration_run_011", "calibration_run_012", "calibration_run_013", "calibration_run_014", "calibration_run_015", "calibration_run_016", "calibration_run_017", "calibration_run_018", "calibration_run_019", "calibration_run_020", "calibration_run_021", "calibration_run_022", "calibration_run_023", "calibration_run_024", "calibration_run_025", "calibration_run_026", "calibration_run_027", "calibration_run_028", "calibration_run_029", "calibration_run_030", "calibration_run_031", "calibration_run_032", "calibration_run_033", "calibration_run_034", "calibration_run_035", "calibration_run_036", "calibration_run_037", "calibration_run_038", "calibration_run_039", "calibration_run_040", "calibration_run_041", "calibration_run_042", "calibration_run_043", "calibration_run_044", "calibration_run_045", "calibration_run_046", "calibration_run_047", "calibration_run_048", "calibration_run_049", "calibration_run_050", "calibration_run_051", "calibration_run_053", "calibration_run_054", "calibration_run_055", "calibration_run_056", "calibration_run_057", "calibration_run_058", "calibration_run_059", "calibration_run_060", "calibration_run_061", "calibration_run_062", "calibration_run_063", "calibration_run_064", "calibration_run_065", "calibration_run_066", "calibration_run_067", "calibration_run_068", "calibration_run_069", "calibration_run_070", "calibration_run_071", "calibration_run_072", "calibration_run_073", "calibration_run_074", "calibration_run_075", "calibration_run_076", "calibration_run_077", "calibration_run_078", "calibration_run_079", "calibration_run_080", "calibration_run_081", "calibration_run_082", "calibration_run_083", "calibration_run_084", "calibration_run_085", "calibration_run_086", "calibration_run_087", "calibration_run_088", "calibration_run_089", "calibration_run_090", "calibration_run_091", "calibration_run_092", "calibration_run_093", "calibration_run_094", "calibration_run_095", "calibration_run_096", "calibration_run_097", "calibration_run_098", "calibration_run_099", "calibration_run_100", "calibration_run_101", "calibration_run_102", "calibration_run_103", "calibration_run_104", "calibration_run_105", "calibration_run_106", "calibration_run_107", "calibration_run_108", "calibration_run_109", "calibration_run_110", "calibration_run_111", "calibration_run_112", "calibration_run_113", "calibration_run_114", "calibration_run_115", "calibration_run_116", "calibration_run_117", "calibration_run_118", "calibration_run_119", "calibration_run_120", "calibration_run_121", "calibration_run_122", "calibration_run_123", "calibration_run_124", "calibration_run_125", "calibration_run_126", "calibration_run_127", "calibration_run_128", "calibration_run_129", "calibration_run_130", "calibration_run_131", "calibration_run_132", "calibration_run_133", "calibration_run_134", "calibration_run_135", "calibration_run_136", "calibration_run_137", "calibration_run_138", "calibration_run_139", "calibration_run_140", "calibration_run_141", "calibration_run_142", "calibration_run_143", "calibration_run_144", "calibration_run_145", "calibration_run_146", "calibration_run_147", "calibration_run_148", "calibration_run_149", "calibration_run_150", "calibration_run_151", "calibration_run_152", "calibration_run_153", "calibration_run_154", "calibration_run_155", "calibration_run_156", "calibration_run_157", "calibration_run_158", "calibration_run_159", "calibration_run_160", "calibration_run_161", "calibration_run_162", "calibration_run_163", "calibration_run_164", "calibration_run_165", "calibration_run_166", "calibration_run_167", "calibration_run_168", "calibration_run_169", "calibration_run_170", "calibration_run_171", "calibration_run_172", "calibration_run_173", "calibration_run_174", "calibration_run_175", "calibration_run_176", "calibration_run_177", "calibration_run_178", "calibration_run_179", "calibration_run_180", "calibration_run_181", "calibration_run_182", "calibration_run_183", "calibration_run_184", "calibration_run_185", "calibration_run_186", "calibration_run_187", "calibration_run_188", "calibration_run_189", "calibration_run_190", "calibration_run_191", "calibration_run_192", "calibration_run_193", "calibration_run_194", "calibration_run_195", "calibration_run_196", "calibration_run_197", "calibration_run_198", "calibration_run_199", "calibration_run_200", "calibration_run_201", "calibration_run_202", "calibration_run_203", "calibration_run_204", "calibration_run_205", "calibration_run_206", "calibration_run_207", "calibration_run_208", "calibration_run_209", "calibration_run_210", "calibration_run_211", "calibration_run_212", "calibration_run_213", "calibration_run_214", "calibration_run_215", "calibration_run_216", "calibration_run_217", "calibration_run_218", "calibration_run_219", "calibration_run_220", "calibration_run_221", "calibration_run_222", "calibration_run_223", "calibration_run_224", "calibration_run_225", "calibration_run_226", "calibration_run_227", "calibration_run_228", "calibration_run_229", "calibration_run_230", "calibration_run_231", "calibration_run_232", "calibration_run_233", "calibration_run_234", "calibration_run_235", "calibration_run_236", "calibration_run_237", "calibration_run_238", "calibration_run_239", "calibration_run_240", "calibration_run_241", "calibration_run_242", "calibration_run_243", "calibration_run_244", "calibration_run_245", "calibration_run_246", "calibration_run_247", "calibration_run_248", "calibration_run_249", "calibration_run_250", "calibration_run_251", "calibration_run_252", "calibration_run_253", "calibration_run_254", "calibration_run_255", "calibration_run_256", "calibration_run_257", "calibration_run_258", "calibration_run_259", "calibration_run_260", "calibration_run_261", "calibration_run_262", "calibration_run_263", "calibration_run_264", "calibration_run_265", "calibration_run_266", "calibration_run_267", "calibration_run_268", "calibration_run_269", "calibration_run_270", "calibration_run_271", "calibration_run_272", "calibration_run_273", "calibration_run_274", "calibration_run_275", "calibration_run_276", "calibration_run_277", "calibration_run_278", "calibration_run_279", "calibration_run_280", "calibration_run_281", "calibration_run_282", "calibration_run_283", "calibration_run_284", "calibration_run_285", "calibration_run_286", "calibration_run_287", "calibration_run_288", "calibration_run_289", "calibration_run_290", "calibration_run_291", "calibration_run_292", "calibration_run_293", "calibration_run_294", "calibration_run_295", "calibration_run_296", "calibration_run_297", "calibration_run_298", "calibration_run_299", "calibration_run_300"],
+          "sha256": "0dc747e4ec1fe15aa1b3f6371af2b07d6636b818b705b4b8323ff94fb2bfb77b"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 5000,
+          "columns": ["Protein.Group", "Protein.Ids", "uniprot_acc"],
+          "sha256": "64c3f569adf1a0e5a76c86663cf21dad6b601b9f0a02edc8e1757a67d4eb841b"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "931fe4bcc66ccb62d9ae2f93b45216452c9608a143bd9de7f9aac27b63375dbe"
+        },
+        "peptideIntensityFiltering/support_table": {
+          "kind": "table",
+          "rows": 180000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "group", "observed_run_count", "design_run_count", "required_observed_runs", "group_passes", "group_failure_reason"],
+          "sha256": "50d5380b75041fb3209292a6d26687f1d653f61e91358378a468f14e50ba82af"
+        },
+        "peptideIntensityFiltering/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "passing_group_count", "required_passing_groups"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "filterMinNumPeptidesPerSample/support_table": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "distinct_peptide_identity_count", "inclusion_override", "sample_passes", "decision_reason"],
+          "sha256": "4039270cb6ec3ed1324a282e32f04d217c3690fa33105a2c740a7f9306140354"
+        },
+        "filterMinNumPeptidesPerSample/removal_ledger": {
+          "kind": "table",
+          "rows": 3,
+          "columns": ["Run", "distinct_peptide_identity_count", "required_distinct_peptide_identities", "failure_reason"],
+          "sha256": "a99eaa56f912b58b2e45ccd8bb7f5ee7da704082b01582295ece1141b7b92186"
+        },
+        "removePeptidesWithOnlyOneReplicate/support_table": {
+          "kind": "table",
+          "rows": 2040000,
+          "columns": ["Protein.Group", "Stripped.Sequence", "replicates", "distinct_run_count", "required_distinct_runs", "group_supports_feature"],
+          "sha256": "695bf030f4b2127ac61f99d71fc145f1e234f5c15e516b8fab937f8c3356951f"
+        },
+        "removePeptidesWithOnlyOneReplicate/removal_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": ["Protein.Group", "Stripped.Sequence", "failure_reason", "supporting_group_count", "required_distinct_runs"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "peptideMissingValueImputation/support_table": {
+          "kind": "table",
+          "rows": 4020133,
+          "columns": ["technical_replicate_group", "protein_identity", "peptide_identity", "total_distinct_runs", "observed_distinct_runs", "missing_distinct_runs", "missing_fraction", "mean_observed_raw_quantity", "group_has_technical_replicates", "eligible_for_imputation"],
+          "sha256": "7309f03d6f2bbf63e35a7fe1ca0688135b8ab35b2c0b2549c43c5baa4f9a309d"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        },
+        "ruvIII_C_VaryingFn/ctrl": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "cee9026c350dd13e0c2b6827191be18f3fd0b2471bc039d2b7931a031c4117ca"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 14554,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "bf7ec95cb065a2b278750cf376b5d2fcc903ba566c81cbb8e2d1c2dc5b25eb90"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-imputed-progress",
+          "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
+        },
+        "da_fit:0ac83c189c9d": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "0ac83c189c9db88366b4e37052bc8cb0d3c71f089cdd17e13e2d849389b8b78b"
+        },
+        "dia-contrast-references:3693777c95a9": {
+          "kind": "scientific_product",
+          "product_type": "dia-contrast-references",
+          "sha256": "3693777c95a99bcfc5ab02e841d43c944a55f1f80437425ee235f562288abe4a"
+        },
+        "dia_contrast_results:e87b9d2a830d": {
+          "kind": "scientific_product",
+          "product_type": "dia_contrast_results",
+          "sha256": "e87b9d2a830df0f2ea7a7850939699cf45393a99b4df2489bf863cd87042f1f0"
+        }
+      },
+      "summary_sha256": "324a73fa73c3af04e01ac49652cfa00de1fc74ace52bf231b15ac72871ebcfb5"
     }
   },
   "corpora": {
@@ -1851,6 +3525,13 @@
       "candidate": null,
       "reps": 2,
       "production_default": true
+    },
+    "baseline": {
+      "stage": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey",
+      "member": "control-1",
+      "final_head_sha256": "c409d7ad418efa137800fb3bde3c90cf594763ac2d0d1f677d89dcbe4d798a6b",
+      "verified_by": "control-2 (reproduced)",
+      "decision": "baseline_recorded"
     }
   },
   "operation_lifecycle": {
