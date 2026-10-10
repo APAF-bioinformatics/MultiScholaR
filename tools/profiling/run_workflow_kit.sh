@@ -20,13 +20,15 @@ if [[ "${1:-}" == "--sample" ]]; then
             printf '%s\tcgroup_gone\n' "$(cut -d' ' -f1 /proc/uptime)" >> "${trace%.tsv}-gaps.tsv"
             sleep 0.05; continue
         fi
-        uptime="$(cut -d' ' -f1 /proc/uptime)"
-        current="$(cat "$group/memory.current" 2>/dev/null || echo NA)"
-        peak="$(cat "$group/memory.peak" 2>/dev/null || echo NA)"
-        swap="$(cat "$group/memory.swap.peak" 2>/dev/null || echo NA)"
-        read -r anon file kernel < <(awk '$1=="anon"{a=$2} $1=="file"{f=$2} $1=="kernel"{k=$2} END{print a, f, k}' "$group/memory.stat" 2>/dev/null || echo "NA NA NA")
+        # One awk per sample (KIT-005 correction 6): the earlier six process spawns per sample left gaps
+        # above the 250 ms validity rule on a busy host.
+        read -r uptime current peak swap anon file kernel available < <(awk '
+            FILENAME=="/proc/uptime"{u=$1} FILENAME==ARGV[2]{c=$1} FILENAME==ARGV[3]{p=$1} FILENAME==ARGV[4]{s=$1}
+            FILENAME==ARGV[5]{if($1=="anon")a=$2; if($1=="file")f=$2; if($1=="kernel")k=$2}
+            FILENAME=="/proc/meminfo" && /^MemAvailable:/{m=$2*1024}
+            END{printf "%s %s %s %s %s %s %s %.0f\n", u, (c==""?"NA":c), (p==""?"NA":p), (s==""?"NA":s), (a==""?"NA":a), (f==""?"NA":f), (k==""?"NA":k), m}' \
+            /proc/uptime "$group/memory.current" "$group/memory.peak" "$group/memory.swap.peak" "$group/memory.stat" /proc/meminfo 2>/dev/null || echo "NA NA NA NA NA NA NA NA")
         printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$uptime" "$current" "$peak" "$anon" "$file" "$kernel" "$swap" >> "$trace"
-        available="$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)"
         reason=""
         if [[ "$peak" =~ ^[0-9]+$ ]] && (( peak >= 16642998272 )); then reason="memory_guard"; fi
         if [[ "$available" =~ ^[0-9]+$ ]] && (( available < 2147483648 )); then reason="host_guard"; fi

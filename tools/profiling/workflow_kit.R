@@ -440,8 +440,10 @@ kitPageHashes <- function(store, reference, api, scope) {
     rows <- scope$metadata$rows
     hashes <- character()
     if (rows > 0L) for (offset in seq.int(0L, rows - 1L, by = 10000L)) {
+        # Wide protein tables (one column per sample) exceed the reader's default 64-column cap (KIT-005 correction 6).
         data <- api("readSavedWorkflowTable")(store, reference, scope$metadata$columns,
-            offset = offset, limit = min(10000L, rows - offset), scope = scope)$data
+            offset = offset, limit = min(10000L, rows - offset), max_columns = max(64L, length(scope$metadata$columns)),
+            scope = scope)$data
         attr(data, "dia_source_order") <- NULL
         attr(data, "row.names") <- .set_row_names(nrow(data))
         hashes[[length(hashes) + 1L]] <- digest::digest(data, algo = "sha256")
