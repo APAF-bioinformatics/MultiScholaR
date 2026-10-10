@@ -23,8 +23,12 @@ kitSyntheticBindings <- function() {
         operation_lifecycle = list(ceiling_seconds = 300L, fault = list(name = "after_aggregate", operation = "precursor_rollup",
             population = "screen_p14", failed_phase = "ordered_result_stage", error_pattern = "CORE-004 forced failure")),
         populations = list(screen_p14 = list(store = "/store/screen", head_sha256 = strrep("1", 64), entity_id = strrep("2", 64), rows = 960000L),
-            full_p14 = list(store = "/store/full", head_sha256 = strrep("3", 64), entity_id = strrep("4", 64), rows = 24000000L)),
-        tickets = list(`006` = list(operation = "precursor_rollup", population = "full_p14", control = "core_018", candidate = "kit_006")))
+            full_p14 = list(store = "/store/full", head_sha256 = strrep("3", 64), entity_id = strrep("4", 64), rows = 24000000L),
+            full_primary = list(store = "/store/primary", head_sha256 = strrep("5", 64), entity_id = strrep("6", 64), rows = 6225000L,
+                parameters = list(peptides_per_sample_cutoff = 3000L))),
+        tickets = list(`006` = list(control = "core_018", candidate = "kit_006",
+            pairs = list(list(operation = "precursor_rollup", population = "full_p14"),
+                list(operation = "minimum_peptides_per_sample", population = "full_primary")))))
 }
 
 kitSyntheticOperationReceipt <- function(cases, h, edit = NULL) {
@@ -114,10 +118,16 @@ test_that("KIT stages expand to fixed cases with bound corpora, builds and diges
     expect_true(op_fail$expect_failure)
     expect_identical(op_fail$selector, "kit:lifecycle:operation:fail")
     ticket <- h$kitCases(b, "kit-006")
-    expect_identical(vapply(ticket, `[[`, "", "id"), c("control-1", "candidate-1", "candidate-2", "control-2"))
-    expect_identical(vapply(ticket, `[[`, "", "library"), c("/lib/n", "/lib/k", "/lib/k", "/lib/n"))
+    expect_identical(vapply(ticket, `[[`, "", "id"), c("control-1", "candidate-1", "control-2", "candidate-2"))
+    expect_identical(vapply(ticket, `[[`, "", "library"), c("/lib/n", "/lib/k", "/lib/n", "/lib/k"))
     expect_identical(ticket[[2]]$input$store, "/store/full")
     expect_identical(ticket[[2]]$selector, "kit:006:candidate:1")
+    expect_identical(ticket[[3]]$operation, "minimum_peptides_per_sample")
+    expect_identical(ticket[[4]]$input$store, "/store/primary")
+    expect_identical(ticket[[4]]$parameters$peptides_per_sample_cutoff, 3000L)
+    single <- b
+    single$tickets[["007"]] <- list(operation = "precursor_rollup", population = "screen_p14", control = "core_018", candidate = "kit_006")
+    expect_identical(vapply(h$kitCases(single, "kit-007"), `[[`, "", "id"), c("control-1", "candidate-1"))
     expect_error(h$kitCases(b, "kit-007"), "KIT-007")
     expect_identical(h$kitSelectorStage("kit:lifecycle:fail"), list(stage = "kit-lifecycle-fail", id = "member"))
     expect_identical(h$kitSelectorStage("kit:lifecycle:operation:fail"), list(stage = "kit-lifecycle-operation-fail", id = "member"))
@@ -390,4 +400,45 @@ test_that("the production-default member is recorded when it completes or ends a
     no_peaks <- guarded
     no_peaks$cases[["default-1"]]$operation$phase_peak_anon_bytes$import <- NA_real_
     expect_identical(h$kitJourneyDecision(no_peaks, cases, b)$production_default$failing_rule, "phase_peaks_recorded")
+})
+
+test_that("the operation pair decision needs every member eligible and each candidate not worse than 1.02 x its control", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    cases <- h$kitCases(b, "kit-006")
+    receipt <- kitSyntheticOperationReceipt(cases, h, edit = function(r) {
+        for (id in names(r$cases)) {
+            r$cases[[id]]$operation$sampled_anon_bytes <- 4e9
+            r$cases[[id]]$operation$execution <- list(admission = list(batches = 3L))
+        }
+        r$cases[["candidate-1"]]$operation$peak_bytes <- 5e9 * 1.01
+        r$cases[["candidate-2"]]$operation$peak_bytes <- 5e9 * 0.9
+        r$cases[["candidate-2"]]$operation$execution$admission$batches <- 5L
+        r
+    })
+    decision <- h$kitOperationDecision(receipt, cases, b)
+    expect_identical(decision$status, "accepted")
+    expect_null(decision$failing_rule)
+    expect_equal(decision$pairs[["1"]]$peak_ratio, 1.01)
+    expect_false(decision$pairs[["1"]]$reduction)
+    expect_true(decision$pairs[["2"]]$reduction)
+    expect_identical(decision$pairs[["2"]]$batches$candidate, 5L)
+    expect_identical(decision$pairs[["2"]]$operation, "minimum_peptides_per_sample")
+    expect_false(decision$promotion_authorized)
+    worse <- receipt
+    worse$cases[["candidate-1"]]$operation$peak_bytes <- 5e9 * 1.03
+    rejected <- h$kitOperationDecision(worse, cases, b)
+    expect_identical(rejected$status, "rejected")
+    expect_identical(rejected$failing_rule, "not_worse")
+    anon <- receipt
+    anon$cases[["candidate-2"]]$operation$sampled_anon_bytes <- 4e9 * 1.05
+    expect_identical(h$kitOperationDecision(anon, cases, b)$status, "rejected")
+    unverified <- receipt
+    unverified$cases[["control-2"]]$verifier_completion$accepted <- FALSE
+    invalid <- h$kitOperationDecision(unverified, cases, b)
+    expect_identical(invalid$status, "invalid")
+    expect_identical(unname(invalid$failing_rule), "verifier_accepted")
+    gap <- receipt
+    gap$cases[["candidate-1"]]$operation$max_sample_interval <- 0.3
+    expect_identical(unname(h$kitOperationDecision(gap, cases, b)$failing_rule), "measurement_valid")
 })

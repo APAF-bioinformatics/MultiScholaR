@@ -378,6 +378,7 @@ Collate:
     'utils_workflow_execution.R'
     'utils_optional_packages.R'
     'utils_workflow_saved_table_codec.R'
+    'utils_workflow_partitions.R'
     'utils_workflow_dia_qc_rollup.R'
     'utils_workflow_dia_relational_rollup.R'
     'utils_workflow_dia_products.R'

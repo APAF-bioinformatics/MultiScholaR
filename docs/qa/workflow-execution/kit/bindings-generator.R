@@ -125,8 +125,13 @@ b$operation_lifecycle <- list(ceiling_seconds = 300L,
     fault = list(name = "after_aggregate", operation = "precursor_rollup", population = "screen_p14",
         failed_phase = "ordered_result_stage", error_pattern = "CORE-004 forced failure after the aggregate stage",
         mechanism = "the worker's phase hook raises after the ordered result stage completes; the action completes as worker_failed and the head stays on the input"))
-# Operation pairs per ticket (control and candidate builds, operation, population): added by KIT-006 onward.
+# Operation pairs per ticket (control and candidate builds; one or two (operation, population) pairs):
+# KIT-006 binds the P14 rollup on full_p14 (P14 page oracle) and the sample filter on full_primary
+# (the native filter oracle), both at the kit_001 control against the kit_006 candidate once installed.
 b$tickets <- list()
+if (!is.null(b$builds$kit_006)) b$tickets[["006"]] <- list(control = "kit_001", candidate = "kit_006",
+    pairs = list(list(operation = "precursor_rollup", population = "full_p14"),
+        list(operation = "minimum_peptides_per_sample", population = "full_primary")))
 if (!is.null(journey_stage)) {
     harness <- new.env(parent = globalenv())
     sys.source(file.path(repo, "tools/profiling/workflow_kit.R"), harness)

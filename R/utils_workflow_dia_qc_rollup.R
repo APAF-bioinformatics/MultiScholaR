@@ -1145,24 +1145,25 @@ prepareDIASampleFilterCounts <- function(scope, roles, design, output_mode, work
     .validatePeptideRunDesign(stats::setNames(data.frame(counts$sample), roles$sample),
         design, roles$sample, roles$sample, caller = "computeDIAReferenceSampleFilter")
     order <- as.character(design[[roles$sample]])
-    batches <- partitionWorkflowCompleteGroups(order[order %in% counts$sample], 3L)
+    present <- order[order %in% counts$sample]
     width <- max(c(0, as.numeric(counts$transfer_width)))
     batch_rows <- max(1L, as.integer(min(10000, floor(33554432 / max(1, width)))))
     if (width > 67108864) cli::cli_abort("one sample-filter row exceeds its admitted transfer",
         class = "workflow_execution_unsupported")
-    state <- vapply(batches, function(selected) {
-        at <- counts$sample %in% selected
-        sum(as.numeric(counts$rows[at]) * (as.numeric(counts$key_width[at]) + 128))
-    }, numeric(1))
-    estimate <- 768 * 1024^2 + 2 * max(c(0, state)) +
+    # Complete-sample batches (KIT-006): the fewest, at least three, whose per-batch identity state
+    # (bounded by the largest samples any one batch can hold) fits the admitted cap; the fixed three
+    # of the earlier policy are the floor, so the count at the normal cap stays three.
+    state <- as.numeric(counts$rows) * (as.numeric(counts$key_width) + 128)
+    estimate_for <- function(b) 768 * 1024^2 + 2 * completeGroupBatchBound(state, b) +
         2 * 67108864 + 268435456 + 2 * 8388608
-    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) ||
-        worker_cap <= 0 || estimate > worker_cap) cli::cli_abort(
-        "sample filter working-memory estimate exceeds admitted worker capacity",
-        class = "workflow_execution_unsupported")
+    admitted <- tryCatch(chooseCompleteGroupBatches(seq.int(3L, max(3L, length(present))), estimate_for,
+        worker_cap, "sample-adaptive-complete-batches-and-expanded-transfer-v4"),
+        workflow_execution_unsupported = function(error) cli::cli_abort(
+            "sample filter working-memory estimate exceeds admitted worker capacity",
+            class = "workflow_execution_unsupported"))
     counts$identities <- numeric(nrow(counts))
-    for (selected in batches) {
-        if (!length(selected)) next
+    partition <- partitionBySamples(present, admitted$batches, stage = function(selected, index) {
+        if (!length(selected)) return(NULL)
         part <- collectWorkflowBulkMetadata(scope, paste0("SELECT CAST(", q(roles$sample),
             " AS VARCHAR) AS sample, count(DISTINCT (", q(roles$protein), ",", q(roles$peptide),
             ")) AS identities FROM ", table, " WHERE ", q(roles$sample), " IN (",
@@ -1171,14 +1172,34 @@ prepareDIASampleFilterCounts <- function(scope, roles, design, output_mode, work
         if (anyNA(at) || nrow(part) != length(selected) ||
             any(as.numeric(part$identities) > .Machine$integer.max))
             cli::cli_abort("sample identity count population differs", class = "saved_entity_corrupt")
-        counts$identities[at] <- as.numeric(part$identities)
-    }
-    list(counts = counts, admission = list(estimated_bytes = estimate,
+        counts$identities[at] <<- as.numeric(part$identities)
+        NULL
+    })
+    list(counts = counts, admission = list(estimated_bytes = admitted$estimated_bytes,
         worker_cap = worker_cap, max_row_bytes = width, batch_rows = batch_rows,
-        count_batch_sizes = as.integer(lengths(batches)),
-        identity_groups = sum(counts$identities),
-        policy = "sample-three-complete-batches-and-expanded-transfer-v3",
-        limitation = "admission estimate; kernel cgroup guard remains authoritative"))
+        batches = admitted$batches, count_batch_sizes = partition$batch_sizes,
+        estimates = admitted$estimates, identity_groups = sum(counts$identities),
+        policy = admitted$policy, limitation = admitted$limitation))
+}
+
+#' The minimum-peptides-per-sample filter as a declaration on the complete-sample partitioner
+#' (KIT-006): per-sample identity counts in complete-sample batches after the global design
+#' validation, one global decision, the unchanged native method resolving parameters and output
+#' types. The kernel runs the reference entry point in its batched (`physical`) output mode.
+#' @return Declaration from `newWorkflowOperation`.
+#' @noRd
+diaSampleFilterOperation <- function() {
+    newWorkflowOperation(name = "minimum_peptides_per_sample", input_class = "PeptideQuantitativeData",
+        fields = "design_matrix", unit = "complete_sample",
+        kernel = function(object, parameters, store) computeDIAReferenceSampleFilter(store$manager, store$source,
+            parameters[c("peptides_per_sample_cutoff", "inclusion_list")],
+            worker_cap = parameters$worker_cap %||% 12 * 1024^3, output_mode = "physical"),
+        output_class = "PeptideQuantitativeData", parameters = c("peptides_per_sample_cutoff", "inclusion_list"),
+        product_type = "dia.sample_filter_result",
+        global_statistics = c(design_validation_and_inclusion_absence =
+            "unique design runs, input runs a subset of the design, and the inclusion-absence set, computed once over the whole input"),
+        merge = c(design_matrix = "design", peptide_data = "concatenate", support_table = "concatenate",
+            removal_ledger = "concatenate", counts = "sum"))
 }
 
 #' Execute the unchanged native method with the shared bounded persistence layer.
@@ -1402,7 +1423,8 @@ computeDIAReferenceSampleFilter <- function(manager, reference, parameters, work
             global_statistics = if (output_mode == "legacy") "single_complete_population_pass" else
                 "global_validation_before_complete_sample_counts",
             independence_unit = if (output_mode == "legacy") "sample_decision_no_batching" else
-                "complete_sample_after_global_validation")),
+                "complete_sample_after_global_validation",
+            declared_unit = if (output_mode == "legacy") NULL else diaSampleFilterOperation()$unit)),
         state_name = "sample_filtered", description = "Applied sample quality filter",
         config = parameters, section = "filterMinNumPeptidesPerSample")
 }

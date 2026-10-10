@@ -1,0 +1,62 @@
+{
+  "schema": "kit.in_process_screen_check.v1",
+  "ticket": "KIT-006",
+  "date": "2026-10-11",
+  "head_commit": "976222c80d05a40365a239afb8e97303c0ac96b5",
+  "population": {
+    "source": "kit-lifecycle-complete member, intensity_filtered",
+    "rows": 226991,
+    "entity_id": "a2e4ede34fb4ae2f1ffa4a59aa2c10eda30f14a80ded7d6368edbce861ea00f4",
+    "head_entity": "dia-state-38de4675add95e",
+    "samples": 8
+  },
+  "parameters": {
+    "peptides_per_sample_cutoff": 3000,
+    "inclusion_list": null
+  },
+  "native": {
+    "seconds": 3.1,
+    "unit": null
+  },
+  "physical": {
+    "seconds": 1.7,
+    "unit": "complete_sample_after_global_validation",
+    "declared_unit": "complete_sample",
+    "admission": {
+      "estimated_bytes": 1321042084,
+      "worker_cap": 12884901888,
+      "max_row_bytes": 627,
+      "batch_rows": 10000,
+      "batches": 3,
+      "count_batch_sizes": [2, 3, 3],
+      "estimates": [
+        null,
+        null,
+        1321042084,
+        1291258276,
+        1291258276,
+        1291258276,
+        1291258276,
+        1258735612
+      ],
+      "identity_groups": 226991,
+      "policy": "sample-adaptive-complete-batches-and-expanded-transfer-v4",
+      "limitation": "admission estimate; kernel cgroup guard remains authoritative"
+    }
+  },
+  "reduced_cap": {
+    "cap": 1306150180,
+    "seconds": 1.3,
+    "batches": 4,
+    "count_batch_sizes": [2, 2, 2, 2]
+  },
+  "identical_to_native": {
+    "normal_cap": [true, true, true, true, true, true, true],
+    "reduced_cap": [true, true, true, true, true, true, true]
+  },
+  "retained": {
+    "rows": 224359,
+    "samples_retained": 7,
+    "samples_removed": 1
+  }
+}

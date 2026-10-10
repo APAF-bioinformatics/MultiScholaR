@@ -277,7 +277,7 @@ persistDIARelationalRollup <- function(scope, input, persist, rows) {
     sample_values <- collectWorkflowBulkMetadata(scope, paste0("SELECT DISTINCT ",
         q(roles$sample), " FROM qc_input ORDER BY ", sample_order),
         max_rows = 10000L, max_bytes = 8388608)[[1L]]
-    selections <- partitionWorkflowCompleteGroups(sample_values, scope$dia_rollup_profile$batches)
+    batch_sizes <- integer()
     max_group_rows <- 0L
     intermediate_bytes <- 0
     intermediate_bytes_written <- 0
@@ -332,33 +332,37 @@ persistDIARelationalRollup <- function(scope, input, persist, rows) {
                 counts$push(output)
                 appendWorkflowTableWriter(writer, output)
             }
-            deferred_results <- list()
-            for (batch_index in seq_along(selections)) {
-                sample_selection <- selections[[batch_index]]
-                result_file <- file.path(dirname(path), paste0("ordered-result-", batch_index, ".parquet"))
-                stage_paths <- unique(c(stage_paths, result_file))
-                filter <- if (!length(sample_selection)) "FALSE" else paste0(q(roles$sample), " IN (",
-                    paste(workflowQueryQuoteString(con, sample_selection), collapse = ","), ")")
-                workflowQueryExecute(con, paste0("CREATE OR REPLACE TEMP VIEW qc_aggregate_input AS ",
-                    "SELECT * FROM qc_input WHERE ", filter))
-                prepareDIARelationalAggregate(scope, input)
-                phase("ordered_result_stage", \() workflowQueryExecute(con, paste0("COPY (", query,
-                    ") TO ", workflowQueryQuoteString(con, result_file),
-                    " (FORMAT PARQUET, COMPRESSION SNAPPY, ROW_GROUP_SIZE 10240)")))
-                record_stage(result_file)
-                result_rows <- as.numeric(workflowQueryCollect(con,
-                    paste0("SELECT count(*) AS n FROM read_parquet(",
-                        workflowQueryQuoteString(con, result_file), ")"))$n)
-                deferred_results[[length(deferred_results) + 1L]] <- list(path = result_file, rows = result_rows)
-            }
-            phase("query_engine_close", \() fastduckdb::close_query_fast(con))
-            scope$connection <- scope$action$connection <- NULL
-            for (result in deferred_results) {
-                calls <- phase("staged_result_read_summary_write", \()
-                    streamDIARelationalResultFile(result$path, consume, result$rows))
-                fastduckdb_calls <<- fastduckdb_calls + calls
-                unlink(result$path)
-            }
+            # Complete-sample batches (KIT-006, the generic partitioner): each batch stages one ordered
+            # aggregate file, the engine closes once, then every stage is read into the writer in order.
+            partition <- partitionBySamples(sample_values, scope$dia_rollup_profile$batches,
+                stage = function(sample_selection, batch_index) {
+                    result_file <- file.path(dirname(path), paste0("ordered-result-", batch_index, ".parquet"))
+                    stage_paths <<- unique(c(stage_paths, result_file))
+                    filter <- if (!length(sample_selection)) "FALSE" else paste0(q(roles$sample), " IN (",
+                        paste(workflowQueryQuoteString(con, sample_selection), collapse = ","), ")")
+                    workflowQueryExecute(con, paste0("CREATE OR REPLACE TEMP VIEW qc_aggregate_input AS ",
+                        "SELECT * FROM qc_input WHERE ", filter))
+                    prepareDIARelationalAggregate(scope, input)
+                    phase("ordered_result_stage", \() workflowQueryExecute(con, paste0("COPY (", query,
+                        ") TO ", workflowQueryQuoteString(con, result_file),
+                        " (FORMAT PARQUET, COMPRESSION SNAPPY, ROW_GROUP_SIZE 10240)")))
+                    record_stage(result_file)
+                    result_rows <- as.numeric(workflowQueryCollect(con,
+                        paste0("SELECT count(*) AS n FROM read_parquet(",
+                            workflowQueryQuoteString(con, result_file), ")"))$n)
+                    list(path = result_file, rows = result_rows)
+                },
+                between = function() {
+                    phase("query_engine_close", \() fastduckdb::close_query_fast(con))
+                    scope$connection <- scope$action$connection <- NULL
+                },
+                consume = function(result, batch_index) {
+                    calls <- phase("staged_result_read_summary_write", \()
+                        streamDIARelationalResultFile(result$path, consume, result$rows))
+                    fastduckdb_calls <<- fastduckdb_calls + calls
+                    unlink(result$path)
+                })
+            batch_sizes <<- partition$batch_sizes
             phase("final_writer_finish", \() finishWorkflowTableWriter(writer))
         })
     list(reference = reference, summary = summary, columns = metadata$columns,
@@ -376,9 +380,9 @@ persistDIARelationalRollup <- function(scope, input, persist, rows) {
             writer_backend = "fast_r", writer_optimization = "none", writer_threads = 8L,
             evidence_rows = 0, evidence_payload_estimate = 0,
             exact_sum_sha256 = scope$dia_rollup_extension,
-            independence_unit = "complete_sample",
+            independence_unit = diaPrecursorRollupOperation()$unit,
             global_validation = "completed_before_batching",
-            batch_sizes = as.integer(lengths(selections))))
+            batch_sizes = batch_sizes))
 }
 
 #' Execute the P14 rollup through the common scientific/output boundary.
@@ -461,28 +465,40 @@ estimateDIARollupWorkingMemory <- function(scope, input, worker_cap) {
     # Include hash/list slack, materialized joins/order, R transfers and writer headroom, plus a
     # whole-input term for work done before batching (CORE-010 calibration, see diaRollupRowBytes).
     fixed <- 768 * 1024^2 + 2 * 67108864 + diaRollupRowBytes * sum(as.numeric(stats$rows))
-    estimate_for <- function(b) {
-        n <- ceiling(nrow(stats) / b)
-        batch <- function(values) sum(utils::head(sort(as.numeric(values), decreasing = TRUE), n))
-        fixed + 2 * batch(stats$state_bytes) + 2 * batch(stats$groups) * (256 + annotation_width)
-    }
+    estimate_for <- function(b) fixed + 2 * completeGroupBatchBound(stats$state_bytes, b) +
+        2 * completeGroupBatchBound(stats$groups, b) * (256 + annotation_width)
     # P14 takes the fewest batches (at least its profile's three) whose estimate fits the cap;
-    # an explicit experimental count or another profile keeps its fixed count.
+    # an explicit experimental count or another profile keeps its fixed count (KIT-006: the choice
+    # is the generic complete-group admission; the estimate stays P14's CORE-010 calibration).
     minimum <- scope$dia_rollup_profile$batches
     adaptive <- identical(scope$dia_rollup_profile$name, "P14") &&
         is.null(getOption("multischolar.dia_rollup_batches"))
     counts <- if (adaptive) seq.int(minimum, max(minimum, nrow(stats))) else minimum
-    estimates <- stats::setNames(vapply(counts, estimate_for, numeric(1)), counts)
-    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) ||
-        worker_cap <= 0 || !any(estimates <= worker_cap)) cli::cli_abort(
-        "rollup working-memory estimate exceeds admitted worker capacity",
-        class = "workflow_execution_unsupported")
-    batches <- counts[which(estimates <= worker_cap)[[1L]]]
-    list(estimated_bytes = estimates[[as.character(batches)]], batches = as.integer(batches),
-        estimates = as.list(stats::setNames(unname(estimates), NULL))[match(seq_len(max(counts)), counts)],
-        worker_cap = worker_cap, samples = nrow(stats), rows = sum(as.numeric(stats$rows)),
-        output_groups = sum(as.numeric(stats$groups)), max_group_rows = max(c(0, stats$max_group_rows)),
-        max_group_bytes = max(c(0, stats$max_group_bytes)), annotation_width = annotation_width,
-        policy = "P14-adaptive-complete-sample-batches-v2",
-        limitation = "admission estimate; kernel cgroup guard remains authoritative")
+    admission <- tryCatch(chooseCompleteGroupBatches(counts, estimate_for, worker_cap,
+        "P14-adaptive-complete-sample-batches-v2"), workflow_execution_unsupported = function(error)
+        cli::cli_abort("rollup working-memory estimate exceeds admitted worker capacity",
+            class = "workflow_execution_unsupported"))
+    c(admission[c("estimated_bytes", "batches", "estimates", "worker_cap")],
+        list(samples = nrow(stats), rows = sum(as.numeric(stats$rows)),
+            output_groups = sum(as.numeric(stats$groups)), max_group_rows = max(c(0, stats$max_group_rows)),
+            max_group_bytes = max(c(0, stats$max_group_bytes)), annotation_width = annotation_width),
+        admission[c("policy", "limitation")])
+}
+
+#' The P14 precursor rollup as a declaration on the complete-sample partitioner (KIT-006). The
+#' kernel is the ordered-sum SQL aggregate (`prepareDIARelationalAggregate`, exact against the R
+#' kernel by the CORE P14 oracle), run through the unchanged reference entry point; phases and
+#' `execution` fields are those the CORE verifier reads. Admission keeps the CORE-010 calibration.
+#' @return Declaration from `newWorkflowOperation`.
+#' @noRd
+diaPrecursorRollupOperation <- function() {
+    newWorkflowOperation(name = "precursor_rollup", input_class = "PeptideQuantitativeData",
+        fields = "design_matrix", unit = "complete_sample",
+        kernel = function(object, parameters, store) computeDIAReferencePrecursorRollup(store$manager, store$source,
+            backend = "P14", worker_cap = parameters$worker_cap),
+        output_class = "PeptideQuantitativeData", parameters = character(), product_type = "dia.precursor_rollup_result",
+        global_statistics = c(protein_annotation_lookup = "Protein.Ids collapse spans every sample of a protein",
+            frozen_evidence_lookup = "per-protein evidence join and conflict check over the whole input",
+            global_validation = "duplicate, key and finite checks over the whole input before batching"),
+        merge = c(design_matrix = "design", peptide_data = "concatenate", rollup_summary = "sum"))
 }

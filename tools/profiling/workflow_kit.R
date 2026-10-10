@@ -161,10 +161,53 @@ kitCases <- function(bindings, stage) {
     ticket <- sub("kit-", "", stage, fixed = TRUE)
     spec <- bindings$tickets[[ticket]]
     if (is.null(spec)) stop("KIT-", ticket, " has no bound operation, population, control and candidate builds")
-    roles <- c("control", "candidate", "candidate", "control")
-    reps <- c(1L, 1L, 2L, 2L)
-    lapply(seq_along(roles), function(i) operation_case(paste(roles[[i]], reps[[i]], sep = "-"), roles[[i]], reps[[i]],
-        spec[[roles[[i]]]], spec$operation, spec$population, "none", paste("kit", ticket, roles[[i]], reps[[i]], sep = ":")))
+    # A ticket binds one or two pairs (operation, population); pair i is members control-i and
+    # candidate-i, control first then candidate, pair after pair (KIT-006: full_p14 then full_primary).
+    pairs <- spec$pairs %||% list(list(operation = spec$operation, population = spec$population))
+    stopifnot(length(pairs) >= 1L, length(pairs) <= 2L)
+    cases <- list()
+    for (i in seq_along(pairs)) for (role in c("control", "candidate")) {
+        cases[[length(cases) + 1L]] <- operation_case(paste(role, i, sep = "-"), role, i, spec[[role]],
+            pairs[[i]]$operation, pairs[[i]]$population, "none", paste("kit", ticket, role, i, sep = ":"))
+    }
+    cases
+}
+
+#' Decide a ticket's operation pairs (protocol section 3): every member eligible and verified exact
+#' against its oracle; per pair, the candidate's kernel peak and whole-slice anonymous peak are not
+#' worse than 1.02 x the control's. A reduction is reported (the 0.95 rule) and never required here.
+#' @return `status` (`accepted`, `rejected` or `invalid`), per-pair ratios and the failing rule.
+#' @noRd
+kitOperationDecision <- function(receipt, cases, bindings) {
+    seconds <- kitMemberSeconds(paste0("kit-", strsplit(cases[[1L]]$selector, ":", fixed = TRUE)[[1L]][[2L]]), bindings)
+    members <- list()
+    for (case in cases) {
+        item <- receipt$cases[[case$id]]
+        op <- item$operation
+        members[[case$id]] <- list(role = case$role, pair = case$rep, operation = case$operation, population = case$population,
+            failing_rule = kitIneligible(item, seconds, "operation"), peak_bytes = op$peak_bytes,
+            peak_anon_bytes = op$sampled_anon_bytes, elapsed_seconds = op$elapsed_seconds,
+            batches = op$execution$admission$batches %||% op$execution$batch_sizes)
+    }
+    invalid <- Filter(\(m) !is.null(m$failing_rule), members)
+    pairs <- list()
+    for (i in sort(unique(vapply(members, `[[`, integer(1), "pair")))) {
+        control <- members[[paste0("control-", i)]]
+        candidate <- members[[paste0("candidate-", i)]]
+        if (is.null(control) || is.null(candidate)) next
+        ratio <- function(name) candidate[[name]] / control[[name]]
+        pairs[[as.character(i)]] <- list(operation = control$operation, population = control$population,
+            peak_ratio = ratio("peak_bytes"), peak_anon_ratio = ratio("peak_anon_bytes"), elapsed_ratio = ratio("elapsed_seconds"),
+            not_worse = is.finite(ratio("peak_bytes")) && ratio("peak_bytes") <= 1.02 &&
+                is.finite(ratio("peak_anon_bytes")) && ratio("peak_anon_bytes") <= 1.02,
+            reduction = is.finite(ratio("peak_bytes")) && ratio("peak_bytes") <= 0.95,
+            batches = list(control = control$batches, candidate = candidate$batches))
+    }
+    status <- if (length(invalid)) "invalid" else if (!length(pairs) || !all(vapply(pairs, `[[`, logical(1), "not_worse"))) "rejected" else "accepted"
+    list(status = status, members = members, pairs = pairs,
+        failing_rule = if (length(invalid)) unlist(lapply(invalid, `[[`, "failing_rule")) else
+            if (status == "rejected") "not_worse" else NULL,
+        promotion_authorized = FALSE)
 }
 
 #' Map a verifier selector back to its stage and case id.
@@ -924,6 +967,21 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
             identical(execution$query_owner, "fastduckdb_c"), identical(execution$profile$name, "P14"),
             all(kitRequiredOperationPhases %in% names(operation$phase_status)))
         receipt$pages <- pages
+    } else if (case$operation == "minimum_peptides_per_sample") {
+        # The sample-filter oracle is the native member's verification record bound by CORE
+        # (`oracles.filter_primary`): page hashes of the filtered table, design, summary and support.
+        oracle <- bindings$oracles[[paste0("filter_", sub("^full_", "", case$population))]]
+        stopifnot(!is.null(oracle), file.exists(oracle$path),
+            identical(digest::digest(file = oracle$path, algo = "sha256"), oracle$sha256))
+        expected <- readRDS(oracle$path)$verification
+        actual <- kitFingerprintFilterResult(manager, checkpoint, api)
+        stopifnot(identical(actual$page_hashes, expected$page_hashes), identical(actual$rows, expected$rows),
+            identical(actual$samples, expected$samples), identical(actual$columns, expected$columns),
+            identical(actual$design_sha256, expected$design_sha256), identical(actual$summary_sha256, expected$summary_sha256),
+            identical(actual$support_sha256, expected$support_sha256), identical(execution$output_mode, "physical"),
+            is.numeric(execution$admission$batches), execution$admission$batches >= 3L)
+        receipt$filter <- actual[c("rows", "samples", "design_sha256", "summary_sha256", "support_sha256")]
+        receipt$batches <- execution$admission$batches
     } else {
         oracle <- bindings$oracles[[paste0("operation_", case$population)]]
         stopifnot(!is.null(oracle), identical(hashes$sha256, oracle$sha256))
@@ -932,6 +990,30 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
     receipt$execution <- execution
     receipt$status <- "complete"
     receipt
+}
+
+#' Fingerprint a sample-filter result exactly as the CORE repair recorded its native oracle
+#' (`verifyPerf106Result`): page digests of the raw 10,000-row pages, then the design, the filter
+#' summary and the support tables.
+#' @noRd
+kitFingerprintFilterResult <- function(manager, checkpoint, api) {
+    store <- manager$.context$store
+    reference <- checkpoint$components$peptide_data
+    scope <- api("newWorkflowTableReadScope")(store, reference, reader = "fastduckdb")
+    on.exit(api("releaseWorkflowTableReadScope")(scope), add = TRUE)
+    hashes <- character()
+    for (offset in seq.int(0L, max(0L, scope$metadata$rows - 1L), by = 10000L)) {
+        page <- api("readSavedWorkflowTable")(store, reference, scope$metadata$columns, offset = offset,
+            limit = min(10000L, scope$metadata$rows - offset), scope = scope)$data
+        hashes[[length(hashes) + 1L]] <- digest::digest(page, algo = "sha256")
+    }
+    design <- api("materializeDIATable")(manager$.context, checkpoint$components$design_matrix)
+    support <- lapply(checkpoint$support$filterMinNumPeptidesPerSample,
+        function(reference) api("materializeDIATable")(manager$.context, reference))
+    list(rows = scope$metadata$rows, samples = nrow(design), columns = scope$metadata$columns, page_hashes = hashes,
+        design_sha256 = digest::digest(design, algo = "sha256"),
+        summary_sha256 = digest::digest(checkpoint$slots$args$filterMinNumPeptidesPerSample$filter_summary, algo = "sha256"),
+        support_sha256 = digest::digest(support, algo = "sha256"))
 }
 
 #' The P14 page hashes of a table (every column, 10,000 rows per page), as the bound oracle records them.

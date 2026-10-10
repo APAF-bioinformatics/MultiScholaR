@@ -322,7 +322,7 @@ tryCatch({
     receipt$decision <- if (startsWith(stage, "kit-lifecycle-operation-")) helpers$kitOperationLifecycleDecision(receipt, cases, bindings) else
         if (startsWith(stage, "kit-lifecycle-")) helpers$kitLifecycleDecision(receipt, cases, bindings) else
         if (stage == "kit-journey") helpers$kitJourneyDecision(receipt, cases, bindings) else
-        list(status = "recorded", promotion_authorized = FALSE, note = "operation pair decisions are defined by KIT-006")
+        helpers$kitOperationDecision(receipt, cases, bindings)
     saveRDS(receipt$decision, file.path(stage_root, "decision.rds"))
     receipt$status <- "complete"
 }, error = function(error) {

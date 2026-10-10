@@ -10,7 +10,8 @@
 #' @param fields,columns Components hydrated for the kernel and an optional column projection per table.
 #' @param unit Independence unit: `row`, `complete_sample`, `feature_group`, `whole_matrix` or `store`.
 #' @param kernel `function(object, parameters, store)` composing the unchanged scientific kernels.
-#'   `store$source` is the source reference; `store$checkpoint(value, label, from)` saves an S4 of
+#'   `store$source` is the source reference and `store$manager` the state owner (for kernels that run a
+#'   reference entry point, KIT-006); `store$checkpoint(value, label, from)` saves an S4 of
 #'   `output_class` as an owned reference (`from` defaults to the operation source);
 #'   `store$table(table)` saves a table component; `store$product(value, name, product_type)` saves a
 #'   derived product under the operation identity. The kernel's return value is the product saved
@@ -129,6 +130,7 @@ newWorkflowOperationStore <- function(manager, declaration, source, identity) {
     }
     list(
         source = source,
+        manager = manager,
         checkpoint = function(value, label, from = NULL) {
             if (is.null(declaration$output_class) || !methods::is(value, declaration$output_class)) {
                 cli::cli_abort("operation {.val {declaration$name}} may only checkpoint {.cls {declaration$output_class}}",
