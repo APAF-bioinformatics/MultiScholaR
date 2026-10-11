@@ -119,6 +119,12 @@ kitCases <- function(bindings, stage) {
         if (is.null(population)) stop("population ", population_key, " is not bound")
         parameters <- population$parameters
         if (!length(parameters)) parameters <- list()
+        # The bindings are read without simplification, so a JSON array arrives as a list of scalars;
+        # the pinned action validator wants atomic vectors (KIT-006 attempt 1: "inclusion entries must be
+        # character" refused both sample-filter members before any work).
+        parameters <- lapply(parameters, function(value)
+            if (is.list(value) && length(value) && all(lengths(value) == 1L) && all(vapply(value, is.atomic, logical(1))))
+                unlist(value, use.names = FALSE) else value)
         list(id = id, kind = "operation", role = role, control = role == "control", rep = rep, fault = fault,
             operation = operation, population = population_key, parameters = parameters,
             input = list(store = population$store, head_sha256 = population$head_sha256, rows = population$rows,
@@ -187,7 +193,7 @@ kitOperationDecision <- function(receipt, cases, bindings) {
         members[[case$id]] <- list(role = case$role, pair = case$rep, operation = case$operation, population = case$population,
             failing_rule = kitIneligible(item, seconds, "operation"), peak_bytes = op$peak_bytes,
             peak_anon_bytes = op$sampled_anon_bytes, elapsed_seconds = op$elapsed_seconds,
-            batches = op$execution$admission$batches %||% op$execution$batch_sizes)
+            batches = op$science_execution$admission$batches %||% op$science_execution$batch_sizes)
     }
     invalid <- Filter(\(m) !is.null(m$failing_rule), members)
     pairs <- list()

@@ -3,9 +3,18 @@
 # The coordinator is a metadata-only launcher outside the managed slice: it launches the
 # application slice, samples its memory, drives the browser (journey members) or waits for the
 # installed action dispatch (operation members, KIT-005) and verifies afterwards.
+# `--rerun=<id>,<id>` (KIT-006): run only the named members again inside an existing stage after a
+# demonstrated harness failure (protocol: rerun only the affected cases, keep the valid receipts); the
+# earlier member directories are kept as `<id>.attempt<k>`, the corrected harness is snapshotted as
+# `source.rerun<k>`, and the decision is recomputed over every member of the stage.
 args <- commandArgs(trailingOnly = TRUE)
 validate_only <- length(args) == 4L && identical(args[[4L]], "--validate-only")
 if (validate_only) args <- args[1:3]
+rerun_cases <- NULL
+if (length(args) == 4L && grepl("^--rerun=", args[[4L]])) {
+    rerun_cases <- strsplit(sub("^--rerun=", "", args[[4L]]), ",", fixed = TRUE)[[1L]]
+    args <- args[1:3]
+}
 stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey|0[0-9]{2})$", args[[1L]]))
 stage <- args[[1L]]
 library_path <- normalizePath(args[[2L]])
@@ -17,12 +26,22 @@ api <- function(name) get(name, asNamespace("MultiScholaR"))
 dir.create(root, recursive = TRUE, showWarnings = FALSE)
 stage_root <- if (validate_only) file.path(tempfile("kit-validate-"), stage) else file.path(root, stage)
 if (validate_only) dir.create(dirname(stage_root))
-stopifnot(!file.exists(stage_root), dir.create(stage_root))
 started <- Sys.time()
 receipt_path <- file.path(stage_root, "stage.rds")
-receipt <- list(stage = stage, status = "starting", started = started, cases = list())
+if (is.null(rerun_cases)) {
+    stopifnot(!file.exists(stage_root), dir.create(stage_root))
+    receipt <- list(stage = stage, status = "starting", started = started, cases = list())
+    snapshot <- file.path(stage_root, "source")
+} else {
+    stopifnot(dir.exists(stage_root), file.exists(receipt_path), length(rerun_cases) >= 1L, !anyDuplicated(rerun_cases))
+    receipt <- readRDS(receipt_path)
+    stopifnot(receipt$status %in% c("complete", "failed"))
+    rerun_index <- length(receipt$reruns) + 1L
+    snapshot <- file.path(stage_root, sprintf("source.rerun%d", rerun_index))
+    receipt$reruns[[rerun_index]] <- list(cases = rerun_cases, started = started, source = snapshot)
+    receipt$status <- "rerunning"
+}
 saveRDS(receipt, receipt_path)
-snapshot <- file.path(stage_root, "source")
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R",
@@ -38,8 +57,9 @@ for (file in files) {
     dir.create(dirname(target), recursive = TRUE, showWarnings = FALSE)
     stopifnot(file.copy(file.path(repo, file), target))
 }
-receipt$source_hashes <- stats::setNames(vapply(file.path(snapshot, files),
+source_hashes <- stats::setNames(vapply(file.path(snapshot, files),
     \(file) digest::digest(file = file, algo = "sha256"), character(1)), files)
+if (is.null(rerun_cases)) receipt$source_hashes <- source_hashes else receipt$reruns[[rerun_index]]$source_hashes <- source_hashes
 helpers <- new.env(parent = globalenv())
 sys.source(file.path(snapshot, "tools/profiling/workflow_checkpoint_dia_driver.R"), helpers)
 sys.source(file.path(snapshot, "tools/profiling/workflow_kit.R"), helpers)
@@ -47,9 +67,26 @@ sys.source(file.path(snapshot, "tools/profiling/workflow_kit_driver.R"), helpers
 bindings_path <- file.path(snapshot, "docs/qa/workflow-execution/kit/bindings.json")
 bindings <- helpers$kitBindings(bindings_path)
 cases <- helpers$kitCases(bindings, stage)
+all_cases <- cases
 member_seconds <- helpers$kitMemberSeconds(stage, bindings)
-receipt$input_bindings_sha256 <- digest::digest(file = bindings_path, algo = "sha256")
-receipt$build <- api("workflowExecutionBuildIdentity")()
+if (is.null(rerun_cases)) {
+    receipt$input_bindings_sha256 <- digest::digest(file = bindings_path, algo = "sha256")
+    receipt$build <- api("workflowExecutionBuildIdentity")()
+} else {
+    ids <- vapply(cases, `[[`, character(1), "id")
+    stopifnot(all(rerun_cases %in% ids), all(rerun_cases %in% names(receipt$cases)))
+    cases <- cases[ids %in% rerun_cases]
+    # The case bindings (population, build, operation, protocol) must be the ones the stage ran under.
+    for (case in cases) stopifnot(identical(case$binding, receipt$cases[[case$id]]$operation$binding))
+    receipt$reruns[[rerun_index]]$input_bindings_sha256 <- digest::digest(file = bindings_path, algo = "sha256")
+    receipt$reruns[[rerun_index]]$build <- api("workflowExecutionBuildIdentity")()
+    for (case in cases) {
+        owned <- file.path(stage_root, case$id)
+        attempts <- length(list.files(stage_root, pattern = paste0("^", case$id, "\\.attempt[0-9]+$")))
+        stopifnot(dir.exists(owned), file.rename(owned, file.path(stage_root, sprintf("%s.attempt%d", case$id, attempts + 1L))))
+        receipt$cases[[case$id]] <- NULL
+    }
+}
 hash <- function(path) digest::digest(file = path, algo = "sha256")
 stopifnot(identical(normalizePath(root), normalizePath(bindings$root)),
     identical(hash(file.path(snapshot, "docs/qa/workflow-execution/kit/protocol.md")), bindings$protocol_sha256),
@@ -80,7 +117,7 @@ hostReady <- function() {
         profile = if (file.exists(profile_path)) readLines(profile_path, n = 1L) else NA_character_,
         cpu_busy = 1 - sum(ticks[4:5]) / sum(ticks[1:8]))
 }
-receipt$host_at_start <- hostReady()
+if (is.null(rerun_cases)) receipt$host_at_start <- hostReady() else receipt$reruns[[rerun_index]]$host_at_start <- hostReady()
 if (validate_only) {
     refusal <- helpers$kitSetupRefusal(receipt$host_at_start)
     if (!is.null(refusal)) {
@@ -196,13 +233,18 @@ tryCatch({
                     error = function(error) NULL)
                 head_unchanged <- !is.null(current) && identical(current, case$input$entity_id)
             }
+            # The worker's scientific execution record (admission, batches, phases) for the decision (KIT-006).
+            worker_path <- if (!is.null(result$execution$request_id)) file.path(owned, "project/.workflow-entities/.workflow-export",
+                result$execution$request_id, "worker-result.rds") else ""
+            science <- if (nzchar(worker_path) && file.exists(worker_path)) tryCatch(readRDS(worker_path)$result$execution,
+                error = function(error) NULL) else NULL
             operation <- c(list(status = if (!is.null(outer_guard)) outer_guard else if (is.null(result)) "controller_failed" else result$status,
                 config = config, binding = case$binding, member = member,
                 elapsed_seconds = clock() - operation_started, peak_bytes = peak,
                 peak_source = if (!is.null(counters)) "cgroup" else "trace", swap_bytes = swap, accounting = counters$accounting,
                 sampled_anon_bytes = safe_max(trace$anon),
                 max_sample_interval = if (nrow(trace) > 1L) max(diff(trace$uptime)) else NA_real_, samples = nrow(trace),
-                outer_guard = outer_guard, execution = result$execution, head_unchanged = head_unchanged,
+                outer_guard = outer_guard, execution = result$execution, science_execution = science, head_unchanged = head_unchanged,
                 lifecycle_passed = !is.null(tests) && !any(tests$failed > 0 | tests$error),
                 cleanup = list(slice_stopped = identical(slice_state, "inactive") || !dir.exists(group)),
                 boundary = "managed adapters launch (controller, worker, monitor) through publication and teardown; coordinator and verifier outside the slice",
@@ -319,10 +361,11 @@ tryCatch({
         cat("VERIFY", case$id, if (isTRUE(receipt$cases[[case$id]]$verifier_completion$accepted)) "passed" else "FAILED", "\n")
         cat("DONE", case$id, operation$status, "\n")
     }
-    receipt$decision <- if (startsWith(stage, "kit-lifecycle-operation-")) helpers$kitOperationLifecycleDecision(receipt, cases, bindings) else
-        if (startsWith(stage, "kit-lifecycle-")) helpers$kitLifecycleDecision(receipt, cases, bindings) else
-        if (stage == "kit-journey") helpers$kitJourneyDecision(receipt, cases, bindings) else
-        helpers$kitOperationDecision(receipt, cases, bindings)
+    if (!is.null(rerun_cases)) receipt$decisions_before_rerun <- c(receipt$decisions_before_rerun, list(receipt$decision))
+    receipt$decision <- if (startsWith(stage, "kit-lifecycle-operation-")) helpers$kitOperationLifecycleDecision(receipt, all_cases, bindings) else
+        if (startsWith(stage, "kit-lifecycle-")) helpers$kitLifecycleDecision(receipt, all_cases, bindings) else
+        if (stage == "kit-journey") helpers$kitJourneyDecision(receipt, all_cases, bindings) else
+        helpers$kitOperationDecision(receipt, all_cases, bindings)
     saveRDS(receipt$decision, file.path(stage_root, "decision.rds"))
     receipt$status <- "complete"
 }, error = function(error) {

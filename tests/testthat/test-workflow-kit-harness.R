@@ -25,7 +25,7 @@ kitSyntheticBindings <- function() {
         populations = list(screen_p14 = list(store = "/store/screen", head_sha256 = strrep("1", 64), entity_id = strrep("2", 64), rows = 960000L),
             full_p14 = list(store = "/store/full", head_sha256 = strrep("3", 64), entity_id = strrep("4", 64), rows = 24000000L),
             full_primary = list(store = "/store/primary", head_sha256 = strrep("5", 64), entity_id = strrep("6", 64), rows = 6225000L,
-                parameters = list(peptides_per_sample_cutoff = 3000L))),
+                parameters = list(peptides_per_sample_cutoff = 3000L, inclusion_list = list("run_0076", "run_0077")))),
         tickets = list(`006` = list(control = "core_018", candidate = "kit_006",
             pairs = list(list(operation = "precursor_rollup", population = "full_p14"),
                 list(operation = "minimum_peptides_per_sample", population = "full_primary")))))
@@ -125,6 +125,8 @@ test_that("KIT stages expand to fixed cases with bound corpora, builds and diges
     expect_identical(ticket[[3]]$operation, "minimum_peptides_per_sample")
     expect_identical(ticket[[4]]$input$store, "/store/primary")
     expect_identical(ticket[[4]]$parameters$peptides_per_sample_cutoff, 3000L)
+    # JSON arrays arrive as lists of scalars; the pinned action validator needs atomic vectors (KIT-006 attempt 1).
+    expect_identical(ticket[[4]]$parameters$inclusion_list, c("run_0076", "run_0077"))
     single <- b
     single$tickets[["007"]] <- list(operation = "precursor_rollup", population = "screen_p14", control = "core_018", candidate = "kit_006")
     expect_identical(vapply(h$kitCases(single, "kit-007"), `[[`, "", "id"), c("control-1", "candidate-1"))
@@ -409,11 +411,11 @@ test_that("the operation pair decision needs every member eligible and each cand
     receipt <- kitSyntheticOperationReceipt(cases, h, edit = function(r) {
         for (id in names(r$cases)) {
             r$cases[[id]]$operation$sampled_anon_bytes <- 4e9
-            r$cases[[id]]$operation$execution <- list(admission = list(batches = 3L))
+            r$cases[[id]]$operation$science_execution <- list(admission = list(batches = 3L))
         }
         r$cases[["candidate-1"]]$operation$peak_bytes <- 5e9 * 1.01
         r$cases[["candidate-2"]]$operation$peak_bytes <- 5e9 * 0.9
-        r$cases[["candidate-2"]]$operation$execution$admission$batches <- 5L
+        r$cases[["candidate-2"]]$operation$science_execution$admission$batches <- 5L
         r
     })
     decision <- h$kitOperationDecision(receipt, cases, b)

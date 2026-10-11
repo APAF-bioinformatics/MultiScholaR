@@ -1,0 +1,220 @@
+{
+  "schema": "kit.operation_stage_summary.v1",
+  "stage": "kit-006",
+  "status": "complete",
+  "control": "kit_001",
+  "builds": "b84b072a88cf7c158da04236ec83f2d81e916b02891d7c40bf7ebcba95ab5fcc",
+  "input_bindings_sha256": "cde64794b7c512e5dae825082b9d464f769f59e0c20bf4502fcd5e860124fcc1",
+  "decision": {
+    "status": "invalid",
+    "members": {
+      "control-1": {
+        "role": "control",
+        "pair": 1,
+        "operation": "precursor_rollup",
+        "population": "full_p14",
+        "failing_rule": null,
+        "peak_bytes": 7094366208,
+        "peak_anon_bytes": 5641461760,
+        "elapsed_seconds": 74.9599999999919,
+        "batches": null
+      },
+      "candidate-1": {
+        "role": "candidate",
+        "pair": 1,
+        "operation": "precursor_rollup",
+        "population": "full_p14",
+        "failing_rule": null,
+        "peak_bytes": 7029305344,
+        "peak_anon_bytes": 5617717248,
+        "elapsed_seconds": 73.4100000000035,
+        "batches": null
+      },
+      "control-2": {
+        "role": "control",
+        "pair": 2,
+        "operation": "minimum_peptides_per_sample",
+        "population": "full_primary",
+        "failing_rule": "verifier_accepted",
+        "peak_bytes": 376819712,
+        "peak_anon_bytes": 367755264,
+        "elapsed_seconds": 3.46000000002095,
+        "batches": null
+      },
+      "candidate-2": {
+        "role": "candidate",
+        "pair": 2,
+        "operation": "minimum_peptides_per_sample",
+        "population": "full_primary",
+        "failing_rule": "verifier_accepted",
+        "peak_bytes": 374657024,
+        "peak_anon_bytes": 367800320,
+        "elapsed_seconds": 3.67999999999302,
+        "batches": null
+      }
+    },
+    "pairs": {
+      "1": {
+        "operation": "precursor_rollup",
+        "population": "full_p14",
+        "peak_ratio": 0.99082922109002,
+        "peak_anon_ratio": 0.995791071000719,
+        "elapsed_ratio": 0.979322305229609,
+        "not_worse": true,
+        "reduction": false,
+        "batches": {
+          "control": null,
+          "candidate": null
+        }
+      },
+      "2": {
+        "operation": "minimum_peptides_per_sample",
+        "population": "full_primary",
+        "peak_ratio": 0.994260682413557,
+        "peak_anon_ratio": 1.00012251626125,
+        "elapsed_ratio": 1.06358381502044,
+        "not_worse": true,
+        "reduction": false,
+        "batches": {
+          "control": null,
+          "candidate": null
+        }
+      }
+    },
+    "failing_rule": ["verifier_accepted", "verifier_accepted"],
+    "promotion_authorized": false
+  },
+  "decisions_before_rerun": null,
+  "reruns": null,
+  "corrections": null,
+  "members": [
+    {
+      "id": "control-1",
+      "status": "complete",
+      "operation": "precursor_rollup",
+      "population": "full_p14",
+      "build": "da9a844d991887f9beeacb97d69a7a0c115998c94aa3070f5e6668c4f697eac3",
+      "elapsed_seconds": 75,
+      "peak_gib": 6.607,
+      "anon_peak_gib": 5.254,
+      "swap_bytes": 0,
+      "max_sample_interval_s": 0.0799999999871943,
+      "samples": 1314,
+      "outer_guard": null,
+      "verifier_accepted": true,
+      "verification_status": "complete",
+      "batches": 3,
+      "batch_sizes": [100, 100, 100],
+      "admission_estimated_gib": 7.037,
+      "worker_cap_gib": 14.307,
+      "phase_seconds": {
+        "relational_validation": 2,
+        "working_memory_admission": 1,
+        "relational_aggregate_order_summary_write": 54,
+        "ordered_result_stage": 23,
+        "query_engine_close": 0,
+        "staged_result_read_summary_write": 28,
+        "final_writer_finish": 0
+      },
+      "phase_peak_anon_gib": {
+        "relational_validation": 1.919,
+        "working_memory_admission": 1.854,
+        "relational_aggregate_order_summary_write": 5.254,
+        "ordered_result_stage": 5.254,
+        "query_engine_close": 4.54,
+        "staged_result_read_summary_write": 1.434,
+        "final_writer_finish": 1.433
+      },
+      "host_profile": "low-power",
+      "host_cpu_busy": 0.029
+    },
+    {
+      "id": "candidate-1",
+      "status": "complete",
+      "operation": "precursor_rollup",
+      "population": "full_p14",
+      "build": "b84b072a88cf7c158da04236ec83f2d81e916b02891d7c40bf7ebcba95ab5fcc",
+      "elapsed_seconds": 73,
+      "peak_gib": 6.547,
+      "anon_peak_gib": 5.232,
+      "swap_bytes": 0,
+      "max_sample_interval_s": 0.0700000000069849,
+      "samples": 1284,
+      "outer_guard": null,
+      "verifier_accepted": true,
+      "verification_status": "complete",
+      "batches": 3,
+      "batch_sizes": [100, 100, 100],
+      "admission_estimated_gib": 7.037,
+      "worker_cap_gib": 14.309,
+      "phase_seconds": {
+        "relational_validation": 2,
+        "working_memory_admission": 1,
+        "relational_aggregate_order_summary_write": 52,
+        "ordered_result_stage": 23,
+        "query_engine_close": 0,
+        "staged_result_read_summary_write": 27,
+        "final_writer_finish": 0
+      },
+      "phase_peak_anon_gib": {
+        "relational_validation": 1.963,
+        "working_memory_admission": 1.84,
+        "relational_aggregate_order_summary_write": 5.232,
+        "ordered_result_stage": 5.232,
+        "query_engine_close": 4.332,
+        "staged_result_read_summary_write": 1.447,
+        "final_writer_finish": 1.446
+      },
+      "host_profile": "low-power",
+      "host_cpu_busy": 0.023
+    },
+    {
+      "id": "control-2",
+      "status": "controller_failed",
+      "operation": "minimum_peptides_per_sample",
+      "population": "full_primary",
+      "build": "da9a844d991887f9beeacb97d69a7a0c115998c94aa3070f5e6668c4f697eac3",
+      "elapsed_seconds": 3,
+      "peak_gib": 0.351,
+      "anon_peak_gib": 0.342,
+      "swap_bytes": 0,
+      "max_sample_interval_s": 0.0600000000267755,
+      "samples": 42,
+      "outer_guard": null,
+      "verifier_accepted": false,
+      "verification_status": "failed",
+      "batches": null,
+      "batch_sizes": null,
+      "admission_estimated_gib": null,
+      "worker_cap_gib": null,
+      "phase_seconds": [],
+      "phase_peak_anon_gib": [],
+      "host_profile": "low-power",
+      "host_cpu_busy": 0.026
+    },
+    {
+      "id": "candidate-2",
+      "status": "controller_failed",
+      "operation": "minimum_peptides_per_sample",
+      "population": "full_primary",
+      "build": "b84b072a88cf7c158da04236ec83f2d81e916b02891d7c40bf7ebcba95ab5fcc",
+      "elapsed_seconds": 4,
+      "peak_gib": 0.349,
+      "anon_peak_gib": 0.343,
+      "swap_bytes": 0,
+      "max_sample_interval_s": 0.0600000000267755,
+      "samples": 46,
+      "outer_guard": null,
+      "verifier_accepted": false,
+      "verification_status": "failed",
+      "batches": null,
+      "batch_sizes": null,
+      "admission_estimated_gib": null,
+      "worker_cap_gib": null,
+      "phase_seconds": [],
+      "phase_peak_anon_gib": [],
+      "host_profile": "low-power",
+      "host_cpu_busy": 0.025
+    }
+  ]
+}

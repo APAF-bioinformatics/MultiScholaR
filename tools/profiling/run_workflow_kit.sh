@@ -43,9 +43,9 @@ if [[ "${1:-}" == "--sample" ]]; then
     exit 0
 fi
 
-mode="${1:-}"; stage="${2:-}"; library="${3:-}"
-[[ ( "$mode" == validate || "$mode" == run ) && "$stage" =~ ^kit-(lifecycle-(operation-)?(complete|fail)|journey|0[0-9]{2})$ && -d "$library" ]] || {
-    echo "Usage: run_workflow_kit.sh validate|run <stage> <library>" >&2; exit 2; }
+mode="${1:-}"; stage="${2:-}"; library="${3:-}"; rerun="${4:-}"
+[[ ( "$mode" == validate || "$mode" == run || ( "$mode" == rerun && "$rerun" =~ ^[a-z0-9-]+(,[a-z0-9-]+)*$ ) ) && "$stage" =~ ^kit-(lifecycle-(operation-)?(complete|fail)|journey|0[0-9]{2})$ && -d "$library" ]] || {
+    echo "Usage: run_workflow_kit.sh validate|run <stage> <library> | rerun <stage> <library> <member,member>" >&2; exit 2; }
 root="$(jq -r '.harness.root' "$repo/docs/qa/workflow-execution/kit/bindings.json")"
 # The browser driver runs in the coordinator (outside the slice); chromote needs the executable (as the pinned runner does).
 export CHROMOTE_CHROME="${CHROMOTE_CHROME:-$(command -v chromium || command -v google-chrome || command -v brave || true)}"
@@ -53,19 +53,28 @@ export CHROMOTE_CHROME="${CHROMOTE_CHROME:-$(command -v chromium || command -v g
 [[ "$root" == /* ]] || { echo "bindings carry no proof root" >&2; exit 2; }
 mkdir -p -- "$root"
 cd -- "$repo"
-if [[ "$mode" == run ]]; then
+if [[ "$mode" == run || "$mode" == rerun ]]; then
     # Preconditions (plan): clean tree, bindings committed, 12 GiB free, no other managed unit, no live stage.
     [[ -z "$(git status --porcelain)" ]] || { echo "refused: working tree is not clean" >&2; exit 76; }
     available="$(awk '/^MemAvailable:/ {printf "%.0f", $2 * 1024}' /proc/meminfo)"
     (( available >= 12884901888 )) || { echo "refused: host headroom is below 12 GiB" >&2; exit 76; }
     units="$(systemctl --user list-units --state=active --no-legend --plain 'multischolar*' | sed '/^\s*$/d' || true)"
     [[ -z "$units" ]] || { echo "refused: another managed unit is active: $units" >&2; exit 76; }
-    [[ ! -e "$root/$stage" ]] || { echo "refused: stage directory exists: $root/$stage" >&2; exit 76; }
-    { date; echo "MemAvailable $(awk -v a="$available" 'BEGIN{printf "%.2f GiB", a/1073741824}')"; git rev-parse HEAD; } \
-        > "$root/../$stage-start.txt"
-    nohup Rscript --vanilla "$kit_dir/workflow_kit_coordinator.R" "$stage" "$library" "$root" \
-        > "$root/../$stage.log" 2>&1 &
-    echo "launched $stage (pid $!); log $root/../$stage.log"
+    if [[ "$mode" == run ]]; then
+        [[ ! -e "$root/$stage" ]] || { echo "refused: stage directory exists: $root/$stage" >&2; exit 76; }
+        label="$stage"; extra=()
+    else
+        # A rerun of named members inside an existing, finished stage (KIT-006): its own start file and
+        # log, so the first launch's records are never overwritten.
+        [[ -f "$root/$stage/stage.rds" ]] || { echo "refused: no finished stage at $root/$stage" >&2; exit 76; }
+        n=1; while [[ -e "$root/../$stage.rerun$n.log" ]]; do n=$((n + 1)); done
+        label="$stage.rerun$n"; extra=("--rerun=$rerun")
+    fi
+    { date; echo "MemAvailable $(awk -v a="$available" 'BEGIN{printf "%.2f GiB", a/1073741824}')"; git rev-parse HEAD; echo "$mode $rerun"; } \
+        > "$root/../$label-start.txt"
+    nohup Rscript --vanilla "$kit_dir/workflow_kit_coordinator.R" "$stage" "$library" "$root" "${extra[@]}" \
+        > "$root/../$label.log" 2>&1 &
+    echo "launched $label (pid $!); log $root/../$label.log"
     exit 0
 fi
 exec Rscript --vanilla "$kit_dir/workflow_kit_coordinator.R" "$stage" "$library" "$root" --validate-only

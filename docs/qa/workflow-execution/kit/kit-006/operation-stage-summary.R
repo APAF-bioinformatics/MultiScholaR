@@ -18,15 +18,19 @@ member <- function(id) {
         build = op$config$build, elapsed_seconds = round(op$elapsed_seconds), peak_gib = gib(op$peak_bytes),
         anon_peak_gib = gib(op$sampled_anon_bytes), swap_bytes = op$swap_bytes, max_sample_interval_s = op$max_sample_interval,
         samples = op$samples, outer_guard = op$outer_guard, verifier_accepted = isTRUE(item$verifier_completion$accepted),
-        verification_status = verification$status, batches = op$execution$admission$batches,
-        batch_sizes = op$execution$batch_sizes %||% op$execution$admission$count_batch_sizes,
-        admission_estimated_gib = gib(op$execution$admission$estimated_bytes), worker_cap_gib = gib(op$execution$admission$worker_cap),
+        verification_status = verification$status,
+        batches = op$science_execution$admission$batches %||% verification$execution$admission$batches,
+        batch_sizes = op$science_execution$batch_sizes %||% verification$execution$batch_sizes %||%
+            op$science_execution$admission$count_batch_sizes %||% verification$execution$admission$count_batch_sizes,
+        admission_estimated_gib = gib(op$science_execution$admission$estimated_bytes %||% verification$execution$admission$estimated_bytes),
+        worker_cap_gib = gib(op$science_execution$admission$worker_cap %||% verification$execution$admission$worker_cap),
         phase_seconds = lapply(op$phase_seconds, round), phase_peak_anon_gib = lapply(op$phase_peak_anon_bytes, gib),
         host_profile = op$host_at_start$profile, host_cpu_busy = round(op$host_at_start$cpu_busy, 3))
 }
 `%||%` <- function(x, y) if (is.null(x)) y else x
 summary <- list(schema = "kit.operation_stage_summary.v1", stage = stage, status = receipt$status,
     control = bindings$control, builds = receipt$build, input_bindings_sha256 = receipt$input_bindings_sha256,
-    decision = receipt$decision, corrections = receipt$corrections, members = lapply(names(receipt$cases), member))
+    decision = receipt$decision, decisions_before_rerun = receipt$decisions_before_rerun, reruns = receipt$reruns,
+    corrections = receipt$corrections, members = lapply(names(receipt$cases), member))
 jsonlite::write_json(summary, out, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)
 cat("summary written:", out, "decision", receipt$decision$status, "\n")
