@@ -1699,8 +1699,7 @@ runDIAReferenceQvalue <- function(workflow, qvalue, global_qvalue, proteotypic,
         summary$excluded_rows), text, fixed = TRUE)
     text <- sub(params$biological_exclusion_summary$classification_status,
         classification_status, text, fixed = TRUE)
-    prior <- if (exists("filtering_progress", envir = .GlobalEnv, inherits = FALSE))
-        get("filtering_progress", envir = .GlobalEnv) else NULL
+    prior <- shiny::isolate(workflow$filtering_progress)
     prior_slots <- if (methods::is(prior, "FilteringProgress")) stats::setNames(
         lapply(methods::slotNames(prior), \(name) methods::slot(prior, name)), methods::slotNames(prior)) else NULL
     product <- list(filteringSummary = progress, resultText = text, priorProgress = prior_slots,

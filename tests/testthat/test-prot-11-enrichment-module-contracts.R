@@ -171,7 +171,7 @@ test_that("setupProtEnrichRawContrastNameReactive delegates creation through the
 
   registration <- setupProtEnrichRawContrastNameReactive(
     input = input,
-    createRawContrastNameReactiveFn = function(input) {
+    createRawContrastNameReactiveFn = function(input, workflowData = NULL) {
       recorded$input <- input
       raw_contrast_name
     }

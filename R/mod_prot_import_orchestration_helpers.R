@@ -136,8 +136,6 @@ loadProtImportConfigurationResources <- function(
     , fileCopy = file.copy
     , downloadFile = download.file
     , systemFileFn = system.file
-    , assignFn = assign
-    , assignEnv = .GlobalEnv
     , readOptionalMapping = readProtImportOptionalMapping
 ) {
   updateStatus("Loading configuration...")
@@ -166,8 +164,6 @@ loadProtImportConfigurationResources <- function(
   storeConfiguration(
     workflowData = workflowData
     , configList = config_list
-    , assignFn = assignFn
-    , assignEnv = assignEnv
     , logInfo = logInfo
   )
 

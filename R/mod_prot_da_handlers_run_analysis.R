@@ -19,11 +19,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
       {
         if (usesDIAReferenceStates(workflow_data$state_manager)) {
           contrasts <- workflow_data$contrasts_tbl
-          if (is.null(contrasts) && exists("contrasts_tbl", envir = .GlobalEnv, inherits = FALSE))
-            contrasts <- get("contrasts_tbl", envir = .GlobalEnv)
           annotations <- workflow_data$uniprot_dat_cln
-          if (is.null(annotations) && exists("uniprot_dat_cln", envir = .GlobalEnv, inherits = FALSE))
-            annotations <- get("uniprot_dat_cln", envir = .GlobalEnv)
           settings <- list(formula_string = input$formula_string, da_q_val_thresh = input$da_q_val_thresh,
             treat_lfc_cutoff = input$treat_lfc_cutoff)
           manifest <- runDIAReferenceDaAnalysis(settings, da_data, workflow_data, experiment_paths,
@@ -42,11 +38,10 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           # Step 1: Prepare contrasts table for analysis
           shiny::incProgress(0.2, detail = "Preparing contrasts for analysis...")
 
-          # Get contrasts from global environment or create basic ones
-          contrasts_tbl <- NULL
-          if (exists("contrasts_tbl", envir = .GlobalEnv)) {
-            contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-            cat("   DA ANALYSIS Step: Using existing contrasts_tbl from global environment\n")
+          # Get contrasts from the workflow bus or create basic ones
+          contrasts_tbl <- workflow_data$contrasts_tbl
+          if (!is.null(contrasts_tbl)) {
+            cat("   DA ANALYSIS Step: Using existing contrasts_tbl from workflow_data\n")
             cat("   DA ANALYSIS Step: contrasts_tbl structure:\n")
             str(contrasts_tbl)
           } else {
@@ -384,8 +379,8 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           if (length(all_qvalue_warnings) > 0) {
             # Map contrast names to friendly names for user-friendly message
             failed_contrasts <- names(all_qvalue_warnings)
-            if (exists("contrasts_tbl", envir = .GlobalEnv)) {
-              contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
+            contrasts_tbl <- workflow_data$contrasts_tbl
+            if (!is.null(contrasts_tbl)) {
               friendly_failed_names <- purrr::map_chr(failed_contrasts, function(failed_contrast) {
                 # Extract the part before = if it exists
                 contrast_base <- stringr::str_extract(failed_contrast, "^[^=]+")
@@ -467,9 +462,8 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           tryCatch(
             {
               # Get UniProt annotations for output
-              uniprot_tbl <- NULL
-              if (exists("uniprot_dat_cln", envir = .GlobalEnv)) {
-                uniprot_tbl <- get("uniprot_dat_cln", envir = .GlobalEnv)
+              uniprot_tbl <- workflow_data$uniprot_dat_cln
+              if (!is.null(uniprot_tbl)) {
                 cat("   DA ANALYSIS Step: Found uniprot_dat_cln for annotations\n")
               } else {
                 cat("   DA ANALYSIS Step: No uniprot_dat_cln found - proceeding without annotations\n")

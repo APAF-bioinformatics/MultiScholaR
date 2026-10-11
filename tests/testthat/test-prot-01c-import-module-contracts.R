@@ -1902,8 +1902,6 @@ test_that("processProtImportFastaData stores FASTA results and persists helper o
       expect_true(grepl("aa_seq_tbl\\.RDS$", fasta_meta_file))
       mockFastaResult()
     },
-    assignFn = assign,
-    assignEnv = assignEnv,
     saveRds = function(object, file) {
       savePaths <<- c(savePaths, file)
     },
@@ -1920,7 +1918,8 @@ test_that("processProtImportFastaData stores FASTA results and persists helper o
   expect_equal(basename(savePaths), c("aa_seq_tbl_final.RDS", "fasta_metadata.RDS"))
   expect_equal(workflowData$fasta_metadata$num_sequences, 2)
   expect_equal(workflowData$aa_seq_tbl_final$uniprot_acc, c("P1", "P2"))
-  expect_identical(get("aa_seq_tbl_final", envir = assignEnv), workflowData$aa_seq_tbl_final)
+  # KIT-013: the sequence table is owned by workflow_data only; no compatibility copy is written.
+  expect_false(exists("aa_seq_tbl_final", envir = assignEnv, inherits = FALSE))
   expect_true(any(grepl("Checking experiment_paths...", logMessages, fixed = TRUE)))
   expect_true(any(grepl("FASTA file processed successfully. Found 2 sequences", logMessages, fixed = TRUE)))
   expect_length(warnMessages, 0)
@@ -1942,9 +1941,6 @@ test_that("processProtImportFastaData clears FASTA state and reports failure whe
     experimentPaths = NULL,
     processFasta = function(...) {
       stop("parse failed")
-    },
-    assignFn = function(...) {
-      stop("should not assign")
     },
     saveRds = function(...) {
       stop("should not save")
@@ -2192,26 +2188,24 @@ test_that("loadProtImportConfiguration falls back to minimal defaults when retri
   )))
 })
 
-test_that("storeProtImportConfiguration saves config in workflow and compatibility env", {
+test_that("storeProtImportConfiguration saves config on workflow_data only (KIT-013)", {
   workflowData <- list2env(list(config_list = NULL))
-  assignEnv <- new.env(parent = emptyenv())
   logMessages <- character()
   configList <- list(generalParameters = list(min_peptides_per_protein = 2))
 
   result <- storeProtImportConfiguration(
     workflowData = workflowData,
     configList = configList,
-    assignFn = assign,
-    assignEnv = assignEnv,
     logInfo = function(text) {
       logMessages <<- c(logMessages, text)
     }
   )
 
   expect_identical(workflowData$config_list, configList)
-  expect_identical(get("config_list", envir = assignEnv), configList)
+  expect_false(exists("config_list", envir = .GlobalEnv, inherits = FALSE) &&
+    identical(get("config_list", envir = .GlobalEnv), configList))
   expect_identical(result, configList)
-  expect_identical(logMessages, "Created global config_list for compatibility")
+  expect_identical(logMessages, "Stored config_list on workflow_data")
 })
 
 test_that("readProtImportOptionalMapping returns NULL without a path and wraps reader errors", {
@@ -2333,8 +2327,9 @@ test_that("mod_prot_import_server stores successful import side effects", {
         expect_false(workflowData$mixed_species_analysis$enabled)
         expect_equal(workflowData$processing_log$setup_import$detected_format, "diann")
         expect_equal(workflowData$processing_log$setup_import$n_runs, 2)
-        expect_true(exists("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE))
-        expect_true(exists("config_list", envir = .GlobalEnv, inherits = FALSE))
+        # KIT-013: import writes the sequence table and configuration to workflow_data only.
+        expect_false(exists("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE))
+        expect_false(exists("config_list", envir = .GlobalEnv, inherits = FALSE))
       }
     )
   })

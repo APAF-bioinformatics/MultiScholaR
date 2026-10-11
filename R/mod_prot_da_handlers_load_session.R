@@ -115,18 +115,6 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
           workflow_data$design_matrix <- session_data$design_matrix
           workflow_data$config_list <- session_data$config_list
 
-          # Set global contrasts_tbl for DA analysis
-          if (!is.null(session_data$contrasts_tbl)) {
-            assign("contrasts_tbl", session_data$contrasts_tbl, envir = .GlobalEnv)
-            cat("*** LOAD DA: Restored contrasts_tbl to global environment ***\n")
-          }
-
-          # Set global config_list
-          if (!is.null(session_data$config_list)) {
-            assign("config_list", session_data$config_list, envir = .GlobalEnv)
-            cat("*** LOAD: Restored config_list to global environment ***\n")
-          }
-
           # Step 4: Update DA module state
           shiny::incProgress(0.15, detail = "Updating DA module...")
 
@@ -171,15 +159,13 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
 
               if (native_requested && is.data.frame(session_data$uniprot_dat_cln)) {
                 workflow_data$uniprot_dat_cln <- session_data$uniprot_dat_cln
-                assign("uniprot_dat_cln", session_data$uniprot_dat_cln, envir = .GlobalEnv)
               } else if (file.exists(scripts_uniprot_path)) {
                 cat(sprintf("*** LOAD: Found uniprot_dat_cln.RDS at %s ***\n", scripts_uniprot_path))
 
                 uniprot_dat_cln <- readRDS(scripts_uniprot_path)
 
-                # Store in workflow data and global environment
+                # Store on the workflow bus (the owned payload the DA and enrichment steps read)
                 workflow_data$uniprot_dat_cln <- uniprot_dat_cln
-                assign("uniprot_dat_cln", uniprot_dat_cln, envir = .GlobalEnv)
 
                 cat(sprintf("*** LOAD: Successfully loaded %d UniProt annotations ***\n", nrow(uniprot_dat_cln)))
                 logger::log_info(paste("Loaded UniProt annotations from", scripts_uniprot_path))

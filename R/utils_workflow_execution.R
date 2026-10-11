@@ -482,7 +482,65 @@ workflowAdmissionCap <- function(policy, current, host) {
 #' @noRd
 WorkflowExecutionApplication <- R6::R6Class("WorkflowExecutionApplication", cloneable = FALSE,
     public = list(config = NULL, cgroup = NULL, controllers = list(), active = NULL,
-        sessions = 0L, pid = NULL, closed = FALSE))
+        sessions = 0L, pid = NULL, closed = FALSE, entry_hook = NULL))
+
+#' Resolve the entry hook a managed launch installs on the application (KIT-013 item 4).
+#' @param config Frozen application configuration (`application.rds`).
+#' @return The hook `function(command, workflow_data, session, experiment_paths)` the sample module
+#'   runs for an `entry_hook` input, or NULL when the launch record asked for none. Today the one
+#'   hook is the PERF-107 small entry fixture, selected by the record's `entry_fixture_test` flag.
+#' @noRd
+workflowEntryHook <- function(config) {
+    if (is.list(config) && isTRUE(config$entry_fixture_test)) runWorkflowGUIEntryFixture else NULL
+}
+
+#' Prepare or inspect only the explicitly bound small GUI entry fixture (the harness entry hook,
+#' installed by `workflowManagedMain` through `workflowEntryHook`; KIT-013 moved it out of the module).
+#' @param command Fixed setup or post-completion inspection command.
+#' @param workflow_data,session,experiment_paths Existing GUI ownership and paths.
+#' @return Metadata pointing at a saved verification store; no assay handoff.
+#' @noRd
+runWorkflowGUIEntryFixture <- function(command, workflow_data, session, experiment_paths) {
+  qualification <- workflowPeptideSampleQualification(session)
+  application <- session$userData$workflow_execution
+  if (is.null(qualification) || !isTRUE(application$config$entry_fixture_test) ||
+      !identical(as.numeric(qualification$deadline), 900) ||
+      !is.character(command) || length(command) != 1L || is.na(command) ||
+      !command %in% c("prepare_reference", "capture_sample_filtered", "capture_imputed")) {
+    stop("entry fixture is not authorized")
+  }
+  checkWorkflowApplication(application)
+  if (!is.null(application$active)) stop("entry fixture cannot overlap an action")
+  manager <- workflow_data$state_manager
+  expected_state <- switch(command, prepare_reference = "intensity_filtered",
+    capture_sample_filtered = "sample_filtered", capture_imputed = "imputed")
+  if (!identical(manager$current_state, expected_state)) stop("entry fixture state differs")
+  rows <- if (usesDIAReferenceStates(manager)) {
+    readDIAStateMetadata(manager)$data$dimensions$rows
+  } else nrow(manager$getState()@peptide_data)
+  if (!is.numeric(rows) || length(rows) != 1L || !is.finite(rows) || rows > 2000 || rows < 0) {
+    stop("entry fixture exceeds the small verification boundary")
+  }
+  if (command == "prepare_reference") {
+    if (!identical(qualification$entry, "reference") || usesDIAReferenceStates(manager)) {
+      stop("entry fixture already prepared or wrong route")
+    }
+    manager <- stageDIAGUIReferenceOwner(manager, experiment_paths)
+    manager <- adoptDIAGUIReferenceOwner(manager, workflow_data, session)
+  } else if (!usesDIAReferenceStates(manager)) {
+    # Snapshot only AFTER GUI completion; the native action retains its original
+    # owner and scientific call. The existing codec strips worker handles.
+    manager <- stageDIAGUIReferenceOwner(manager, experiment_paths)
+    on.exit(closeDIAStateAdapter(manager), add = TRUE)
+  }
+  list(status = "complete", command = command,
+    root = dirname(manager$.context$store$directory), current_state = manager$current_state,
+    rows = rows, qualification = qualification,
+    measured_action_active = !is.null(application$active), verification_only = TRUE,
+    ownership = diaStateOwnership(manager))
+}
+
+
 
 #' Open the one application-wide GUI action before reading scientific payloads.
 #' @param application Managed application owner attached to the Shiny session.
@@ -899,6 +957,7 @@ workflowManagedMain <- function(arguments) {
         cli::cli_abort("application policy differs from server policy")
     app <- WorkflowExecutionApplication$new()
     app$config <- config
+    app$entry_hook <- workflowEntryHook(config)
     app$cgroup <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))
     app$pid <- Sys.getpid()
     checkWorkflowApplication(app)
@@ -1953,17 +2012,19 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
     }
     directories <- publication$directories
     manager$.context$experiment_paths <- publication$experiment_paths
-    rlang::local_bindings(config_list = record$config, project_dirs = directories,
-        filtering_progress = methods::new("FilteringProgress"), .env = .GlobalEnv)
+    rlang::local_bindings(config_list = record$config, project_dirs = directories, .env = .GlobalEnv)
     withr::local_options(multischolar.test_mode = FALSE)
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "false")
     grDevices::pdf(NULL)
     device <- grDevices::dev.cur()
     on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device))
+    # The worker owns its filtering progress for this publication only (KIT-013): the product's
+    # prior progress is seeded by the publisher, never read from or left in the global environment.
     arguments <- list(data = product$filteringSummary,
         step_name = workflowActionSpec(result$operation)$step_label,
         omic_type = publication$omic_type, experiment_label = publication$experiment_label,
-        return_grid = TRUE, overwrite = TRUE, project_dirs = directories)
+        return_grid = TRUE, overwrite = TRUE, project_dirs = directories,
+        progress_owner = new.env(parent = emptyenv()))
     workflowExecutionBoundary("publication")
     publishDIAQvalueOutput(manager, c(list(stateReference = result$state_reference), product),
         arguments, updateProteinFiltering)

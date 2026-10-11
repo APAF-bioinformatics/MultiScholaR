@@ -1177,8 +1177,7 @@ test_that("prot design import artifact helpers preserve sidecar and table loadin
     contrastFile = contrast_file,
     readConfig = function(file) list(globalParameters = list(workflow_type = "DIA")),
     readTabular = function(path) data.frame(source = basename(path), stringsAsFactors = FALSE),
-    showNotification = function(...) invisible(NULL),
-    assignFn = function(name, value, envir) assign(name, value, envir = envir)
+    showNotification = function(...) invisible(NULL)
   )
   expect_identical(workflow_data$config_list$globalParameters$workflow_type, "DIA")
   expect_identical(loaded$importedDesign$source, "design_matrix.tab")
@@ -1342,8 +1341,7 @@ test_that("prot design import helpers preserve fallback and bootstrap edge branc
     readTabular = read_tabular,
     systemFileFn = function(...) package_config,
     fileCopy = function(from, to) file.copy(from, to),
-    showNotification = function(message, ...) package_notifications <<- c(package_notifications, message),
-    assignFn = function(...) invisible(NULL)
+    showNotification = function(message, ...) package_notifications <<- c(package_notifications, message)
   )
   expect_identical(package_loaded$importedDesign$source, "design_matrix.tab")
   expect_true(file.exists(file.path(package_source, "config.ini")))
@@ -1365,8 +1363,7 @@ test_that("prot design import helpers preserve fallback and bootstrap edge branc
       download_dest <<- destfile
       writeLines("[globalParameters]\nworkflow_type = DIA", destfile)
     },
-    showNotification = function(...) invisible(NULL),
-    assignFn = function(...) invisible(NULL)
+    showNotification = function(...) invisible(NULL)
   )
   expect_identical(download_loaded$importedDataCln$source, "data_cln.tab")
   expect_identical(download_dest, file.path(download_source, "config.ini"))
@@ -1384,8 +1381,7 @@ test_that("prot design import helpers preserve fallback and bootstrap edge branc
       readTabular = read_tabular,
       systemFileFn = function(...) "",
       downloadFile = function(...) stop("offline"),
-      showNotification = function(...) invisible(NULL),
-      assignFn = function(...) invisible(NULL)
+      showNotification = function(...) invisible(NULL)
     ),
     "Could not obtain a configuration file"
   )

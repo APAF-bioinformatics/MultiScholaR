@@ -28,7 +28,7 @@ completeProtSummaryWorkflowArgsSave <- function(output,
     }
 
     if (!is.null(workflowData) && !is.null(workflowData$config_list)) {
-      assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
+      # createWorkflowArgsFromConfig reads the configuration from workflow_data (KIT-013).
       catFn(
         "SESSION SUMMARY: Config list available with",
         length(workflowData$config_list),

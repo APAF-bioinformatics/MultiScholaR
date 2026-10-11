@@ -859,7 +859,11 @@ adoptDIAGUIReferenceOwner <- function(manager, workflow_data, session) {
 adoptDIANativeSession <- function(imported, workflow_data, session, source_dir, experiment_paths = NULL) {
     manager <- imported$manager
     adopted <- FALSE
-    on.exit(if (!adopted) closeDIAStateAdapter(manager), add = TRUE)
+    on.exit(if (!adopted) {
+        extracted <- dirname(manager$.context$store$directory)
+        closeDIAStateAdapter(manager)
+        removeDIAReplacedSessionFolder(extracted, NULL, list(source_dir = source_dir))
+    }, add = TRUE)
     convertDIANativeLegacyCheckpoints(manager)
     for (field in names(imported$extra_references)) {
         reference <- imported$extra_references[[field]]
@@ -879,6 +883,7 @@ adoptDIANativeSession <- function(imported, workflow_data, session, source_dir, 
     if (!is.null(experiment_paths)) restoreDIANativeGuiFiles(imported, experiment_paths)
     manager$.context$experiment_paths <- experiment_paths
     previous <- workflow_data$state_manager
+    replaced_root <- if (inherits(previous, "DIAStateAdapter")) dirname(previous$.context$store$directory) else NULL
     if (inherits(previous, "DIAStateAdapter")) closeDIAStateAdapter(previous)
     previous <- NULL
     workflow_data$state_manager <- attachDIAStateSession(manager, session, workflow_data)
@@ -889,6 +894,10 @@ adoptDIANativeSession <- function(imported, workflow_data, session, source_dir, 
     workflow_data$dia_quantification_method <- "iq"
     workflow_data$native_session_restored <- Sys.time()
     adopted <- TRUE
+    # The replaced private folder goes once the swap is complete (KIT-013 item 5).
+    if (!is.null(replaced_root) && !is.null(experiment_paths)) {
+        removeDIAReplacedSessionFolder(replaced_root, dirname(manager$.context$store$directory), experiment_paths)
+    }
     view
 }
 
@@ -1165,7 +1174,8 @@ exportDIAS4Compatibility <- function(manager, path, state_name = NULL) {
 #' Restore archived GUI files only into vacant or byte-identical destinations.
 #' @param imported Fully validated native session.
 #' @param paths Existing destination experiment paths.
-#' @return TRUE invisibly; conflicting projects are not overwritten.
+#' @return The files this call created (character, possibly empty), invisibly, so a failed or
+#'   stale Open can remove them again (KIT-013); conflicting projects are not overwritten.
 #' @noRd
 restoreDIANativeGuiFiles <- function(imported, paths) {
     roots <- diaNativeGuiRoots(paths)
@@ -1191,16 +1201,55 @@ restoreDIANativeGuiFiles <- function(imported, paths) {
             }
         } else copies[[target]] <- list(source = dependency$path, description = source, root = root)
     }
+    created <- character()
+    completed <- FALSE
+    on.exit(if (!completed) discardDIANativeGuiFiles(created), add = TRUE)
     for (target in names(copies)) {
         spec <- copies[[target]]
         if (!dir.exists(dirname(target))) dir.create(dirname(target), recursive = TRUE)
+        created <- c(created, target)
         if (!file.copy(spec$source, target, overwrite = FALSE) ||
             !identical(describeDIANativeFile(target), spec$description)) {
             cli::cli_abort("native artifact restore failed", class = "saved_entity_write")
         }
         syncWorkflowExportPaths(c(target, dirname(target), spec$root), spec$root)
     }
-    invisible(TRUE)
+    completed <- TRUE
+    invisible(created)
+}
+
+#' Remove the GUI files a restore created, after the Open that restored them failed.
+#' @param created Paths returned by `restoreDIANativeGuiFiles`.
+#' @return NULL invisibly.
+#' @noRd
+discardDIANativeGuiFiles <- function(created) {
+    for (target in created) if (file.exists(target)) unlink(target)
+    invisible(NULL)
+}
+
+#' Remove the private session folder an Open just replaced (hand-off item 5, CORE-014).
+#' @param root The replaced manager's project root (its store directory's parent).
+#' @param keep The adopted manager's project root; never removed.
+#' @param paths Experiment paths whose `source_dir` must contain the folder.
+#' @return TRUE when the folder was removed, FALSE when the rule did not apply, invisibly. Only the
+#'   application's own dot-prefixed folders directly under the project's source directory qualify
+#'   (`.dia-native-*`, `.dia-native-import-*`, `.dia-gui-adoption-*`); a user's folder is never
+#'   touched.
+#' @noRd
+removeDIAReplacedSessionFolder <- function(root, keep, paths) {
+    if (!is.character(root) || length(root) != 1L || is.na(root) || !dir.exists(root) ||
+        !is.list(paths) || !is.character(paths$source_dir) || !dir.exists(paths$source_dir)) {
+        return(invisible(FALSE))
+    }
+    root <- normalizePath(root, mustWork = TRUE)
+    source <- normalizePath(paths$source_dir, mustWork = TRUE)
+    kept <- if (is.character(keep) && length(keep) == 1L && dir.exists(keep)) normalizePath(keep) else ""
+    if (identical(root, kept) || !identical(dirname(root), source) ||
+        !grepl("^[.]dia-(native|native-import|gui-adoption)-", basename(root))) {
+        return(invisible(FALSE))
+    }
+    unlink(root, recursive = TRUE)
+    invisible(!dir.exists(root))
 }
 
 #' Gather the existing export metadata without materializing historical states.
@@ -1515,7 +1564,12 @@ openDIAPeptideCheckpoint <- function(path, workflow_data, session, paths) {
     imported <- openDIANativeSession(path, paths$source_dir)
     manager <- imported$manager
     adopted <- FALSE
-    on.exit(if (!adopted) closeDIAStateAdapter(manager), add = TRUE)
+    # A failed Open closes the staged owner and removes the private folder it extracted into.
+    on.exit(if (!adopted) {
+        extracted <- dirname(manager$.context$store$directory)
+        closeDIAStateAdapter(manager)
+        removeDIAReplacedSessionFolder(extracted, NULL, paths)
+    }, add = TRUE)
     metadata <- imported$metadata
     validateDIAPeptideCheckpointMetadata(metadata)
     if (!identical(metadata$checkpoint_kind, "peptide-qc") || !isDIAPeptideCheckpoint(manager) ||
@@ -1527,12 +1581,6 @@ openDIAPeptideCheckpoint <- function(path, workflow_data, session, paths) {
     }
     convertDIANativeLegacyCheckpoints(manager)
     for (reference in imported$extra_references) validateSavedWorkflowReference(manager$.context$store, reference)
-    for (field in c("config_list", "contrasts_tbl", "uniprot_dat_cln")) {
-        if (exists(field, envir = .GlobalEnv, inherits = FALSE) && bindingIsLocked(field, .GlobalEnv)) {
-            cli::cli_abort("cannot restore locked workflow metadata", class = "saved_entity_scope")
-        }
-    }
-    restoreDIANativeGuiFiles(imported, paths)
     if (!identical(workflow_data$state_manager, previous)) {
         cli::cli_abort("project changed during checkpoint open", class = "workflow_execution_stale")
     }
@@ -1547,32 +1595,37 @@ openDIAPeptideCheckpoint <- function(path, workflow_data, session, paths) {
         "data_type", "column_mapping", "fasta_metadata", "accession_cleanup_results",
         "dia_quantification_method", "native_session_restored", "state_update_trigger")
     previous_values <- stats::setNames(lapply(fields, function(field) workflow_data[[field]]), fields)
-    globals <- c("config_list", "contrasts_tbl", "uniprot_dat_cln")
-    existed <- vapply(globals, exists, logical(1), envir = .GlobalEnv, inherits = FALSE)
-    old_globals <- mget(globals[existed], envir = .GlobalEnv, inherits = FALSE)
     previous_session_owner <- session$userData$dia_capacity_manager
-    # Register rollback before the first live assignment. Assays remain shared;
-    # no deep clone or getter-driven materialization is introduced here.
+    restored_files <- character()
+    # Register rollback before the first live assignment and before any project file is
+    # restored (KIT-013 item 2): a stale or failed Open puts the bus back and removes the
+    # files this Open created. Assays remain shared; no deep clone is introduced here.
     on.exit(if (!adopted) {
         for (field in fields) workflow_data[[field]] <- previous_values[[field]]
         session$userData$dia_capacity_manager <- previous_session_owner
-        for (field in globals) {
-            if (existed[[field]]) assign(field, old_globals[[field]], envir = .GlobalEnv) else
-                if (exists(field, envir = .GlobalEnv, inherits = FALSE)) rm(list = field, envir = .GlobalEnv)
-        }
+        discardDIANativeGuiFiles(restored_files)
     }, add = TRUE, after = FALSE)
+    restored_files <- restoreDIANativeGuiFiles(imported, paths)
+    if (!identical(workflow_data$state_manager, previous)) {
+        cli::cli_abort("project changed during checkpoint open", class = "workflow_execution_stale")
+    }
     workflow_data$state_manager <- attachDIAStateSession(manager, session, workflow_data)
     workflowExecutionBoundary("peptide_checkpoint_after_owner_swap")
     for (field in c("data_tbl", "data_cln")) workflow_data[[field]] <- imported$extra_references[[field]]
+    # The design and annotation payloads are owned by the bus only (KIT-013 item 1).
     for (field in c("config_list", "design_matrix", "contrasts_tbl", "qc_params",
         "aa_seq_tbl_final", "uniprot_dat_cln", "data_format", "data_type", "column_mapping",
         "fasta_metadata", "accession_cleanup_results")) workflow_data[[field]] <- metadata[[field]]
-    for (field in globals) assign(field, metadata[[field]], envir = .GlobalEnv)
     workflowExecutionBoundary("peptide_checkpoint_after_metadata")
     workflow_data$dia_quantification_method <- "iq"
     workflow_data$native_session_restored <- Sys.time()
     workflow_data$state_update_trigger <- Sys.time()
     adopted <- TRUE
+    replaced_root <- if (inherits(previous, "DIAStateAdapter")) dirname(previous$.context$store$directory) else NULL
     if (inherits(previous, "DIAStateAdapter")) closeDIAStateAdapter(previous)
+    # The replaced private folder is removed only after the previous owner is released and the
+    # rollback handler above has exited (KIT-013 item 5); it runs after that handler.
+    if (!is.null(replaced_root)) on.exit(if (adopted) removeDIAReplacedSessionFolder(replaced_root,
+        dirname(manager$.context$store$directory), paths), add = TRUE, after = TRUE)
     manager$current_state
 }

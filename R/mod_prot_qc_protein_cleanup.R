@@ -146,8 +146,9 @@ runProteinAccessionCleanupStep <- function(workflowData,
     dplyr::distinct(!!rlang::sym(proteinKeyBefore)) |>
     nrow()
 
-  if (existsFn("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE)) {
-    aaSeqTblFinal <- getFn("aa_seq_tbl_final", envir = .GlobalEnv) |>
+  aaSeqTblFinal <- shiny::isolate(workflowData$aa_seq_tbl_final)
+  if (!is.null(aaSeqTblFinal)) {
+    aaSeqTblFinal <- aaSeqTblFinal |>
       dplyr::rename(uniprot_acc = database_id)
 
     cleanedS4 <- chooseBestProteinAccessionFn(

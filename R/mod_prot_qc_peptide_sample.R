@@ -86,51 +86,6 @@ workflowPeptideSampleQualification <- function(session) {
   qualification
 }
 
-#' Prepare or inspect only the explicitly bound small GUI entry fixture.
-#' @param command Fixed setup or post-completion inspection command.
-#' @param workflow_data,session,experiment_paths Existing GUI ownership and paths.
-#' @return Metadata pointing at a saved verification store; no assay handoff.
-#' @noRd
-runWorkflowGUIEntryFixture <- function(command, workflow_data, session, experiment_paths) {
-  qualification <- workflowPeptideSampleQualification(session)
-  application <- session$userData$workflow_execution
-  if (is.null(qualification) || !isTRUE(application$config$entry_fixture_test) ||
-      !identical(as.numeric(qualification$deadline), 900) ||
-      !is.character(command) || length(command) != 1L || is.na(command) ||
-      !command %in% c("prepare_reference", "capture_sample_filtered", "capture_imputed")) {
-    stop("entry fixture is not authorized")
-  }
-  checkWorkflowApplication(application)
-  if (!is.null(application$active)) stop("entry fixture cannot overlap an action")
-  manager <- workflow_data$state_manager
-  expected_state <- switch(command, prepare_reference = "intensity_filtered",
-    capture_sample_filtered = "sample_filtered", capture_imputed = "imputed")
-  if (!identical(manager$current_state, expected_state)) stop("entry fixture state differs")
-  rows <- if (usesDIAReferenceStates(manager)) {
-    readDIAStateMetadata(manager)$data$dimensions$rows
-  } else nrow(manager$getState()@peptide_data)
-  if (!is.numeric(rows) || length(rows) != 1L || !is.finite(rows) || rows > 2000 || rows < 0) {
-    stop("entry fixture exceeds the small verification boundary")
-  }
-  if (command == "prepare_reference") {
-    if (!identical(qualification$entry, "reference") || usesDIAReferenceStates(manager)) {
-      stop("entry fixture already prepared or wrong route")
-    }
-    manager <- stageDIAGUIReferenceOwner(manager, experiment_paths)
-    manager <- adoptDIAGUIReferenceOwner(manager, workflow_data, session)
-  } else if (!usesDIAReferenceStates(manager)) {
-    # Snapshot only AFTER GUI completion; the native action retains its original
-    # owner and scientific call. The existing codec strips worker handles.
-    manager <- stageDIAGUIReferenceOwner(manager, experiment_paths)
-    on.exit(closeDIAStateAdapter(manager), add = TRUE)
-  }
-  list(status = "complete", command = command,
-    root = dirname(manager$.context$store$directory), current_state = manager$current_state,
-    rows = rows, qualification = qualification,
-    measured_action_active = !is.null(application$active), verification_only = TRUE,
-    ownership = diaStateOwnership(manager))
-}
-
 #' Recover the bounded display product for one accepted managed action.
 #' @param manager Reference-backed owner.
 #' @param result Accepted worker/controller result.
@@ -453,20 +408,20 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
       restored_cutoff(NULL)
     })
 
-    # Private fixture setup/inspection, admitted only by a hashed server member.
-    # No scientific GUI action is replaced by this observer.
-    shiny::observeEvent(input$perf107_fixture, {
-      qualification <- workflowPeptideSampleQualification(session)
+    # Entry hook (KIT-013 item 4): the module runs whatever hook the managed application carries
+    # (installed by the launch from its record) and writes the hook's receipt. The module itself
+    # knows no command and no qualification; without a hook the input is ignored.
+    shiny::observeEvent(input$entry_hook, {
       application <- session$userData$workflow_execution
-      if (is.null(qualification) || !isTRUE(application$config$entry_fixture_test)) return()
-      command <- input$perf107_fixture
-      if (!is.character(command) || length(command) != 1L || is.na(command) ||
-          !command %in% c("prepare_reference", "capture_sample_filtered", "capture_imputed")) return()
+      hook <- if (inherits(application, "WorkflowExecutionApplication")) application$entry_hook else NULL
+      command <- input$entry_hook
+      if (!is.function(hook) || !is.character(command) || length(command) != 1L || is.na(command) ||
+          !grepl("^[a-z][a-z0-9_]*$", command)) return()
       path <- file.path(application$config$root, paste0("entry-", command, ".rds"))
       if (file.exists(path)) return()
       result <- tryCatch({
-        if (!is.null(managed_action())) stop("entry fixture cannot overlap GUI completion")
-        runWorkflowGUIEntryFixture(command, workflow_data, session, experiment_paths)
+        if (!is.null(managed_action())) stop("entry hook cannot overlap GUI completion")
+        hook(command, workflow_data, session, experiment_paths)
       }, error = function(error) list(status = "failed", message = conditionMessage(error)))
       writeWorkflowExecutionMessage(path, result)
     })

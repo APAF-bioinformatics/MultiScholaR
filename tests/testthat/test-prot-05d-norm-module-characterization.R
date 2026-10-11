@@ -761,7 +761,7 @@ test_that("prot norm shared normalization workflow preserves orchestration", {
       calls$prepare <<- list(stateManager = stateManager, normData = normData)
       list(currentS4 = "current_obj")
     },
-    runBetweenSamplesStepFn = function(currentS4, normMethod, normData, proteinQcDir) {
+    runBetweenSamplesStepFn = function(currentS4, normMethod, normData, proteinQcDir, workflowData = NULL) {
       calls$between <<- list(currentS4 = currentS4, normMethod = normMethod, normData = normData, proteinQcDir = proteinQcDir)
       "normalized_obj"
     },
@@ -1319,7 +1319,6 @@ test_that("prot norm shared normalization and RUV helpers preserve workflow buil
     captureCheckpointFn = function(object, checkpoint, label) {
       checkpoint_call <<- list(object = object, checkpoint = checkpoint, label = label)
     },
-    existsFn = function(...) FALSE,
     saveMatrixFn = function(data, path) {
       saved_matrix <<- list(data = data, path = path)
     },
@@ -1380,17 +1379,14 @@ test_that("prot norm shared normalization and RUV helpers preserve workflow buil
   expect_equal(manual_result$best_k, 2)
   expect_equal(manual_result$optimization_results$num_controls, 2)
 
-  updated_config <- NULL
+  audit_bus <- new.env(parent = emptyenv())
+  audit_bus$config_list <- list(existing = TRUE)
   update_audit_trail(
     ruvK = 3,
     controlGenesIndex = c(TRUE, FALSE),
     percentageAsNegCtrl = 10,
     modeLabel = "automatic",
-    existsFn = function(...) TRUE,
-    getFn = function(...) list(existing = TRUE),
-    assignFn = function(name, value, envir) {
-      updated_config <<- list(name = name, value = value)
-    },
+    workflowData = audit_bus,
     updateRuvParametersFn = function(config_list, ruv_k, control_genes_index, percentage_as_neg_ctrl) {
       config_list$ruv_k <- ruv_k
       config_list$num_controls <- sum(control_genes_index, na.rm = TRUE)
@@ -1399,6 +1395,7 @@ test_that("prot norm shared normalization and RUV helpers preserve workflow buil
     },
     messageFn = function(...) NULL
   )
+  updated_config <- list(name = "config_list", value = audit_bus$config_list)
   expect_equal(updated_config$name, "config_list")
   expect_equal(updated_config$value$ruv_k, 3)
   expect_equal(updated_config$value$num_controls, 1)

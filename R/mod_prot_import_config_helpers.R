@@ -62,13 +62,10 @@ loadProtImportConfiguration <- function(
 storeProtImportConfiguration <- function(
     workflowData
     , configList
-    , assignFn = assign
-    , assignEnv = .GlobalEnv
     , logInfo = logger::log_info
 ) {
   workflowData$config_list <- configList
-  assignFn("config_list", configList, envir = assignEnv)
-  logInfo("Created global config_list for compatibility")
+  logInfo("Stored config_list on workflow_data")
 
   invisible(configList)
 }

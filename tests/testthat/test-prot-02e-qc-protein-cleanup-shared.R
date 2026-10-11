@@ -317,10 +317,8 @@ test_that("proteomics protein cleanup module preserves accession-cleanup apply b
   dir.create(source_dir)
   withr::defer(unlink(source_dir, recursive = TRUE, force = TRUE), envir = teardown_env())
 
-  setSharedProteinCleanupGlobal(
-    "aa_seq_tbl_final",
-    data.frame(database_id = c("P1", "P2"), gene = c("G1", "G2"))
-  )
+  # KIT-013: the sequence table is read from the workflow bus, not the global environment.
+  withoutSharedProteinCleanupGlobal("aa_seq_tbl_final")
   setSharedProteinCleanupGlobal("experiment_paths", list(source_dir = source_dir))
   withSharedProteinCleanupPackageMocks(server_env, captured, cleaned_state)
   withSharedProteinCleanupUiMocks(
@@ -335,6 +333,7 @@ test_that("proteomics protein cleanup module preserves accession-cleanup apply b
   )
 
   workflow_data <- makeSharedProteinCleanupWorkflow(current_state, captured)
+  workflow_data$aa_seq_tbl_final <- data.frame(database_id = c("P1", "P2"), gene = c("G1", "G2"))
   server_fn(
     id = "cleanup",
     workflow_data = workflow_data,
@@ -432,10 +431,7 @@ test_that("proteomics protein cleanup module preserves apply error behavior", {
   server_env <- environment(server_fn)
   current_state <- makeSharedProteinCleanupState(c("P1;P2", "P3"))
 
-  setSharedProteinCleanupGlobal(
-    "aa_seq_tbl_final",
-    data.frame(database_id = c("P1", "P2"), gene = c("G1", "G2"))
-  )
+  withoutSharedProteinCleanupGlobal("aa_seq_tbl_final")
   withSharedProteinCleanupPackageMocks(
     server_env,
     captured,
@@ -460,6 +456,7 @@ test_that("proteomics protein cleanup module preserves apply error behavior", {
   )
 
   workflow_data <- makeSharedProteinCleanupWorkflow(current_state, captured)
+  workflow_data$aa_seq_tbl_final <- data.frame(database_id = c("P1", "P2"), gene = c("G1", "G2"))
   server_fn(
     id = "cleanup",
     workflow_data = workflow_data,

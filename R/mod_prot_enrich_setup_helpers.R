@@ -53,8 +53,9 @@ setupProtEnrichAnalysisMethodBootstrap <- function(input,
 }
 
 setupProtEnrichRawContrastNameReactive <- function(input,
+                                                   workflowData = NULL,
                                                    createRawContrastNameReactiveFn = createProtEnrichRawContrastNameReactive) {
-  rawContrastName <- createRawContrastNameReactiveFn(input = input)
+  rawContrastName <- createRawContrastNameReactiveFn(input = input, workflowData = workflowData)
 
   list(
     rawContrastName = rawContrastName,
@@ -80,10 +81,12 @@ setupProtEnrichDaResultsObserverRegistration <- function(workflowData,
 
 setupProtEnrichSelectedContrastObserverRegistration <- function(input,
                                                                 enrichmentData,
+                                                                workflowData = NULL,
                                                                 registerSelectedContrastObserverFn = registerProtEnrichSelectedContrastObserver) {
   registration <- registerSelectedContrastObserverFn(
     input = input,
-    enrichmentData = enrichmentData
+    enrichmentData = enrichmentData,
+    workflowData = workflowData
   )
 
   list(
@@ -353,10 +356,11 @@ setupProtEnrichStringDbPlotOutputRegistration <- function(output,
 setupProtEnrichPlotOutputBootstrap <- function(output,
                                                input,
                                                enrichmentData,
+                                               workflowData = NULL,
                                                setupRawContrastNameReactiveFn = setupProtEnrichRawContrastNameReactive,
                                                setupPlotOutputsRegistrationFn = setupProtEnrichPlotOutputsRegistration,
                                                setupStringDbPlotOutputRegistrationFn = setupProtEnrichStringDbPlotOutputRegistration) {
-  rawContrastNameSetup <- setupRawContrastNameReactiveFn(input = input)
+  rawContrastNameSetup <- setupRawContrastNameReactiveFn(input = input, workflowData = workflowData)
   plotOutputsRegistration <- setupPlotOutputsRegistrationFn(
     output = output,
     input = input,
@@ -402,7 +406,8 @@ setupProtEnrichRunOutputDownloadBootstrap <- function(output,
   plotOutputBootstrap <- setupPlotOutputBootstrapFn(
     output = output,
     input = input,
-    enrichmentData = enrichmentData
+    enrichmentData = enrichmentData,
+    workflowData = workflowData
   )
   resultsDownloadHandlerRegistration <- setupResultsDownloadHandlerRegistrationFn(
     output = output,
@@ -536,7 +541,8 @@ setupProtEnrichObserverRegistrationBootstrap <- function(selectedTabFn,
   )
   selectedContrastObserverRegistration <- setupSelectedContrastObserverRegistrationFn(
     input = input,
-    enrichmentData = enrichmentData
+    enrichmentData = enrichmentData,
+    workflowData = workflowData
   )
   selectedTabObserverRegistration <- setupSelectedTabObserverRegistrationFn(
     selectedTabFn = selectedTabFn,

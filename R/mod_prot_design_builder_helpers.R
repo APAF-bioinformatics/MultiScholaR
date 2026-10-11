@@ -16,9 +16,6 @@ persistProtDesignBuilderArtifacts <- function(results, workflowData, sourceDir) 
     contrastPath <- file.path(sourceDir, "contrast_strings.tab")
     logger::log_info(paste("Writing contrasts to:", contrastPath))
     writeLines(results$contrasts_tbl$contrasts, contrastPath)
-
-    assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
-    logger::log_info("Saved contrasts_tbl to global environment for DE analysis.")
   }
 
   manifestPath <- file.path(sourceDir, "manifest.json")
@@ -56,14 +53,6 @@ hydrateProtDesignBuilderResults <- function(results, workflowData) {
     results$data_reference %||% results$data_cln)
   workflowData$contrasts_tbl <- results$contrasts_tbl
   workflowData$config_list <- results$config_list
-
-  if (!is.null(results$contrasts_tbl)) {
-    assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
-    logger::log_info("Updated contrasts_tbl in global environment from design builder.")
-  }
-
-  assign("config_list", workflowData$config_list, envir = .GlobalEnv)
-  logger::log_info("Updated global config_list for updateConfigParameter compatibility")
 }
 
 runProtDesignBuilderSaveFlow <- function(

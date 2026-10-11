@@ -20,26 +20,34 @@ prepareProtNormNormalizationRun <- function(
   list(currentState = current_state, currentS4 = current_s4)
 }
 
+#' Record the chosen between-sample normalisation method on the workflow bus configuration.
+#' @param workflowData Proteomics workflow bus (`reactiveValues` or environment) or NULL.
+#' @param normMethod Method name chosen in the GUI.
+#' @return NULL invisibly; a bus without a configuration is left untouched.
+#' @noRd
+recordProtNormMethod <- function(workflowData, normMethod) {
+  if (is.null(workflowData)) return(invisible(NULL))
+  config_list <- shiny::isolate(workflowData$config_list)
+  if (is.null(config_list)) return(invisible(NULL))
+  config_list$normaliseBetweenSamples$method <- normMethod
+  workflowData$config_list <- config_list
+  invisible(NULL)
+}
+
 runProtNormBetweenSamplesStep <- function(
   currentS4,
   normMethod,
   normData,
   proteinQcDir = NULL,
+  workflowData = NULL,
   normaliseBetweenSamplesFn = normaliseBetweenSamples,
   captureCheckpointFn = .capture_checkpoint,
-  existsFn = exists,
-  getFn = get,
-  assignFn = assign,
   saveMatrixFn = vroom::vroom_write,
   messageFn = message
 ) {
   messageFn("*** STEP 1: Starting between-samples normalization ***")
 
-  if (existsFn("config_list", envir = .GlobalEnv)) {
-    config_list <- getFn("config_list", envir = .GlobalEnv)
-    config_list$normaliseBetweenSamples$method <- normMethod
-    assignFn("config_list", config_list, envir = .GlobalEnv)
-  }
+  recordProtNormMethod(workflowData, normMethod)
 
   normalized_s4 <- normaliseBetweenSamplesFn(currentS4, normalisation_method = normMethod)
   normalized_s4 <- inheritDIAExecutionSource(normalized_s4, getDIAActiveManager(),
@@ -490,11 +498,7 @@ runProtNormNormalizationWorkflow <- function(
       usesDIAReferenceStates(workflowData$state_manager)) {
     return(tryCatch({
       settings <- resolveProtNormReferenceSettings(input)
-      if (exists("config_list", envir = .GlobalEnv, inherits = FALSE)) {
-        config_list <- get("config_list", envir = .GlobalEnv)
-        config_list$normaliseBetweenSamples$method <- settings$norm_method
-        assign("config_list", config_list, envir = .GlobalEnv)
-      }
+      recordProtNormMethod(workflowData, settings$norm_method)
       completed <- runDIAReferenceNormalization(settings, workflowData, normData, experimentPaths,
         omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
         getRuvGroupingVariableFn)
@@ -505,6 +509,7 @@ runProtNormNormalizationWorkflow <- function(
           percentageAsNegCtrl = if (identical(settings$ruv_mode, "automatic"))
             normData$ruv_optimization_result$best_percentage else settings$ruv_percentage,
           modeLabel = settings$ruv_mode,
+          workflowData = workflowData,
           messageFn = messageFn
         )
       }
@@ -536,7 +541,8 @@ runProtNormNormalizationWorkflow <- function(
           currentS4 = current_s4,
           normMethod = input$norm_method,
           normData = normData,
-          proteinQcDir = experimentPaths$protein_qc_dir
+          proteinQcDir = experimentPaths$protein_qc_dir,
+          workflowData = workflowData
         )
       }, error = function(e) {
         stop(paste("Step 1 (normalization) error:", e$message))

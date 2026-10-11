@@ -39,12 +39,12 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
                     cat(sprintf("   DA TAB Step: S4 object retrieved, class = %s\n", class(current_s4)))
                     da_data$current_s4_object <- current_s4$reference %||% current_s4$legacy_object
 
-                    # Check for contrasts_tbl in global environment FIRST
-                    cat("   DA TAB Step: Checking for contrasts_tbl in global environment...\n")
-                    cat(sprintf("   DA TAB Step: contrasts_tbl exists in global env: %s\n", exists("contrasts_tbl", envir = .GlobalEnv)))
-                    if (exists("contrasts_tbl", envir = .GlobalEnv)) {
-                      contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-                      cat("   DA TAB Step: Found contrasts_tbl in global environment\n")
+                    # Check for contrasts_tbl on the workflow bus FIRST
+                    cat("   DA TAB Step: Checking for contrasts_tbl in workflow_data...\n")
+                    contrasts_tbl <- workflow_data$contrasts_tbl
+                    cat(sprintf("   DA TAB Step: contrasts_tbl exists in workflow_data: %s\n", !is.null(contrasts_tbl)))
+                    if (!is.null(contrasts_tbl)) {
+                      cat("   DA TAB Step: Found contrasts_tbl in workflow_data\n")
                       cat("   DA TAB Step: contrasts_tbl structure:\n")
                       str(contrasts_tbl)
                       cat("   DA TAB Step: contrasts_tbl content:\n")
@@ -231,11 +231,11 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
               cat("   DA TAB Step: Design matrix found in S4 object\n")
               cat(sprintf("   DA TAB Step: Design matrix dims = %d rows, %d cols\n", nrow(current_s4$design_matrix), ncol(current_s4$design_matrix)))
 
-              # Check for contrasts_tbl in global environment
-              cat(sprintf("   DA TAB Step: contrasts_tbl exists in global env: %s\n", exists("contrasts_tbl", envir = .GlobalEnv)))
-              if (exists("contrasts_tbl", envir = .GlobalEnv)) {
-                contrasts_tbl <- get("contrasts_tbl", envir = .GlobalEnv)
-                cat("   DA TAB Step: Found contrasts_tbl in global environment\n")
+              # Check for contrasts_tbl on the workflow bus
+              contrasts_tbl <- workflow_data$contrasts_tbl
+              cat(sprintf("   DA TAB Step: contrasts_tbl exists in workflow_data: %s\n", !is.null(contrasts_tbl)))
+              if (!is.null(contrasts_tbl)) {
+                cat("   DA TAB Step: Found contrasts_tbl in workflow_data\n")
                 cat("   DA TAB Step: contrasts_tbl structure:\n")
                 str(contrasts_tbl)
                 cat("   DA TAB Step: contrasts_tbl content:\n")

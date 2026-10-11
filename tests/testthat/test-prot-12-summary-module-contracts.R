@@ -984,15 +984,15 @@ test_that("completeProtSummaryWorkflowArgsSave preserves the save success shell"
     )
 
     expect_true(completed)
-    expect_true(exists("config_list", envir = .GlobalEnv, inherits = FALSE))
-    expect_identical(get("config_list", envir = .GlobalEnv), workflowData$config_list)
+    # KIT-013: the study parameters read the configuration from workflow_data; no global copy.
+    expect_null(recorded$assigned)
   })
 
   expect_true(values$workflow_args_saved)
   expect_identical(recorded$resolveArgs$workflowData, workflowData)
   expect_identical(recorded$resolveArgs$logPrefix, "SESSION SUMMARY")
-  expect_identical(recorded$assigned$name, "config_list")
-  expect_identical(recorded$assigned$value, workflowData$config_list)
+  expect_null(recorded$assigned)
+  expect_identical(recorded$workflowArgs$workflow_data, workflowData)
   expect_identical(recorded$workflowArgs$workflow_name, "summary-demo")
   expect_identical(recorded$workflowArgs$description, "demo run")
   expect_identical(recorded$workflowArgs$source_dir_path, sourceDir)

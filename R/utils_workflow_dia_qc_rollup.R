@@ -597,8 +597,7 @@ finishDIAReferencePeptideStep <- function(workflow, checkpoint, state_name, desc
     description <- handoff$description
     result_text <- handoff$text
     workflow$qc_params$peptide_qc[[handoff$qc_name]] <- handoff$qc
-    prior <- if (exists("filtering_progress", envir = .GlobalEnv, inherits = FALSE))
-        get("filtering_progress", envir = .GlobalEnv) else NULL
+    prior <- shiny::isolate(workflow$filtering_progress)
     prior_slots <- if (methods::is(prior, "FilteringProgress")) stats::setNames(
         lapply(methods::slotNames(prior), \(name) methods::slot(prior, name)), methods::slotNames(prior)) else NULL
     product <- list(filteringSummary = summary, resultText = result_text, priorProgress = prior_slots,
@@ -799,8 +798,7 @@ finishDIAProteinAction <- function(workflow, result, field) {
     result$filteringSummary <- summary
     result$qcParams <- workflow$qc_params
     result$accessionCleanupResults <- workflow$accession_cleanup_results
-    prior <- if (exists("filtering_progress", envir = .GlobalEnv, inherits = FALSE))
-        get("filtering_progress", envir = .GlobalEnv) else NULL
+    prior <- shiny::isolate(workflow$filtering_progress)
     result$priorProgress <- if (methods::is(prior, "FilteringProgress")) stats::setNames(
         lapply(methods::slotNames(prior), \(name) methods::slot(prior, name)), methods::slotNames(prior)) else NULL
     identity <- newSavedWorkflowScientificIdentity(result$stateReference$entity_id,

@@ -44,25 +44,24 @@ updateProtNormRuvAuditTrail <- function(
   controlGenesIndex,
   percentageAsNegCtrl,
   modeLabel,
-  existsFn = exists,
-  getFn = get,
-  assignFn = assign,
+  workflowData = NULL,
   updateRuvParametersFn = updateRuvParameters,
   messageFn = message
 ) {
   tryCatch({
-    if (existsFn("config_list", envir = .GlobalEnv)) {
-      config_list <- getFn("config_list", envir = .GlobalEnv)
+    # The audit trail lives on the workflow bus configuration (KIT-013), not in a global copy.
+    config_list <- if (is.null(workflowData)) NULL else shiny::isolate(workflowData$config_list)
+    if (!is.null(config_list)) {
       config_list <- updateRuvParametersFn(
         config_list,
         ruvK,
         controlGenesIndex,
         percentageAsNegCtrl
       )
-      assignFn("config_list", config_list, envir = .GlobalEnv)
+      workflowData$config_list <- config_list
       messageFn(sprintf("*** AUDIT: Logged %s RUV parameters to config_list ***", modeLabel))
     } else {
-      messageFn("*** WARNING: config_list not found in global environment - audit trail not updated ***")
+      messageFn("*** WARNING: config_list not found in workflow_data - audit trail not updated ***")
     }
   }, error = function(e) {
     messageFn(paste("*** WARNING: Could not update config_list audit trail:", e$message, "***"))

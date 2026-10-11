@@ -809,8 +809,9 @@ test_that("mod_prot_import_server preserves successful import side effects", {
         expect_false(workflow_data$mixed_species_analysis$enabled)
         expect_equal(workflow_data$processing_log$setup_import$detected_format, "diann")
         expect_equal(workflow_data$processing_log$setup_import$n_runs, 2)
-        expect_true(exists("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE))
-        expect_true(exists("config_list", envir = .GlobalEnv, inherits = FALSE))
+        # KIT-013: import writes the sequence table and configuration to workflow_data only.
+        expect_false(exists("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE))
+        expect_false(exists("config_list", envir = .GlobalEnv, inherits = FALSE))
       }
     )
   })

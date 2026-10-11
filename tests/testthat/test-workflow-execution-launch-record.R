@@ -31,3 +31,13 @@ test_that("the PERF-107 qualification record is interpreted as before", {
     expect_identical(workflowQualificationVariant(list(mode = "gui", journey = list(native_sessions = TRUE)),
         "minimum_peptides_per_sample"), "legacy")
 })
+
+test_that("the launch record's fixture flag installs the entry hook on the application (KIT-013)", {
+    expect_identical(workflowEntryHook(list(mode = "gui", entry_fixture_test = TRUE)), runWorkflowGUIEntryFixture)
+    expect_null(workflowEntryHook(list(mode = "gui", entry_fixture_test = FALSE)))
+    expect_null(workflowEntryHook(list(mode = "gui")))
+    expect_null(workflowEntryHook(NULL))
+    record <- workflowGuiLaunchRecord(list(schema = 1L, programme = "kit-journey-v1", deadline = 900), strrep("c", 64))
+    expect_null(workflowEntryHook(c(list(mode = "gui"), record)))
+    expect_null(WorkflowExecutionApplication$new()$entry_hook)
+})

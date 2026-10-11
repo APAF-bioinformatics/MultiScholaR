@@ -196,6 +196,7 @@ test_that("proteomics summary report helpers preserve template retrieval and act
   )
   expect_identical(s4_choice$templateFilename, "LFQ_report.rmd")
 
+  # KIT-013: a global config_list no longer steers the template; only workflow_data does.
   config_list <- list(globalParameters = list(workflow_type = "tmt_pd"))
   assign("config_list", config_list, envir = .GlobalEnv)
   on.exit(rm("config_list", envir = .GlobalEnv), add = TRUE)
@@ -203,7 +204,12 @@ test_that("proteomics summary report helpers preserve template retrieval and act
     workflowData = list(state_manager = NULL),
     catFn = function(...) invisible(NULL)
   )
-  expect_identical(global_choice$templateFilename, "TMT_report.rmd")
+  expect_identical(global_choice$templateFilename, "DIANN_report.rmd")
+  bus_choice <- resolve_report_template(
+    workflowData = list(state_manager = NULL, config_list = config_list),
+    catFn = function(...) invisible(NULL)
+  )
+  expect_identical(bus_choice$templateFilename, "TMT_report.rmd")
 
   fixture_dir <- tempfile("prot-summary-report-template-")
   template_dir <- file.path(fixture_dir, "scripts", "proteomics")

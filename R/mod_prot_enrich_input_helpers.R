@@ -372,8 +372,24 @@ resolveProtEnrichRawContrastName <- function(selectedContrast, contrastsTbl = NU
   )
 }
 
+#' Resolve the contrasts table the enrichment step works from.
+#' @param workflowData Proteomics workflow bus; its `contrasts_tbl` is the owned payload (KIT-013).
+#' @param globalEnv Optional lookup environment kept as a seam for scripts and tests; NULL (the
+#'   application default) means no environment lookup.
+#' @param existsFn,getFn Injectable lookup functions for the optional environment.
+#' @return The contrasts table or NULL.
+#' @noRd
+resolveProtEnrichContrastsTable <- function(workflowData, globalEnv = NULL, existsFn = exists, getFn = get) {
+  contrastsTbl <- if (is.null(workflowData)) NULL else shiny::isolate(workflowData$contrasts_tbl)
+  if (is.null(contrastsTbl) && !is.null(globalEnv) && existsFn("contrasts_tbl", envir = globalEnv)) {
+    contrastsTbl <- getFn("contrasts_tbl", envir = globalEnv)
+  }
+  contrastsTbl
+}
+
 createProtEnrichRawContrastNameReactive <- function(input,
-                                                    globalEnv = .GlobalEnv,
+                                                    workflowData = NULL,
+                                                    globalEnv = NULL,
                                                     reactiveFn = shiny::reactive,
                                                     reqFn = shiny::req,
                                                     existsFn = exists,
@@ -382,11 +398,7 @@ createProtEnrichRawContrastNameReactive <- function(input,
   reactiveFn({
     reqFn(input$selected_contrast)
 
-    contrastsTbl <- if (existsFn("contrasts_tbl", envir = globalEnv)) {
-      getFn("contrasts_tbl", envir = globalEnv)
-    } else {
-      NULL
-    }
+    contrastsTbl <- resolveProtEnrichContrastsTable(workflowData, globalEnv, existsFn, getFn)
 
     resolveRawContrastNameFn(input$selected_contrast, contrastsTbl)$rawContrastName
   })
@@ -480,7 +492,7 @@ resolveProtEnrichRunDependencies <- function(currentS4Object,
                                              daResultsData,
                                              workflowData,
                                              contrastsTbl = NULL,
-                                             globalEnv = .GlobalEnv) {
+                                             globalEnv = NULL) {
   resolvedCurrentS4 <- currentS4Object
   s4Source <- if (!is.null(resolvedCurrentS4)) "current_s4_object" else NULL
 
@@ -519,7 +531,7 @@ resolveProtEnrichRunDependencies <- function(currentS4Object,
     })
   }
 
-  if (is.null(designMatrix) && exists("design_matrix", envir = globalEnv)) {
+  if (is.null(designMatrix) && !is.null(globalEnv) && exists("design_matrix", envir = globalEnv)) {
     designMatrix <- get("design_matrix", envir = globalEnv)
     designMatrixSource <- "global_environment"
   }
@@ -586,7 +598,7 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
                                                 experimentPaths,
                                                 currentS4Object = NULL,
                                                 organismTaxid = NULL,
-                                                globalEnv = .GlobalEnv,
+                                                globalEnv = NULL,
                                                 fileExistsFn = file.exists,
                                                 readRdsFn = readRDS,
                                                 filePathFn = file.path,
@@ -602,14 +614,19 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
   loadError <- NULL
   creationError <- NULL
 
-  if (exists("uniprot_dat_cln", envir = globalEnv)) {
+  shareAnnotations <- function(value) {
+    if (!is.null(globalEnv)) assign("uniprot_dat_cln", value, envir = globalEnv)
+    invisible(value)
+  }
+  if (!is.null(workflowData$uniprot_dat_cln)) {
+    uniprotDatCln <- workflowData$uniprot_dat_cln
+    shareAnnotations(uniprotDatCln)
+    annotationSource <- "workflow_data"
+    catFn("   ENRICHMENT Step: Found uniprot_dat_cln in workflow_data\n")
+  } else if (!is.null(globalEnv) && exists("uniprot_dat_cln", envir = globalEnv)) {
+    # Script/test seam only: the application passes no environment (KIT-013).
     uniprotDatCln <- get("uniprot_dat_cln", envir = globalEnv)
     annotationSource <- "global_environment"
-    catFn("   ENRICHMENT Step: Found uniprot_dat_cln in global environment\n")
-  } else if (!is.null(workflowData$uniprot_dat_cln)) {
-    uniprotDatCln <- workflowData$uniprot_dat_cln
-    assign("uniprot_dat_cln", uniprotDatCln, envir = globalEnv)
-    annotationSource <- "workflow_data"
     catFn("   ENRICHMENT Step: Found uniprot_dat_cln in workflow_data\n")
   } else {
     catFn("   ENRICHMENT Step: No uniprot_dat_cln found - checking source directory\n")
@@ -620,7 +637,7 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
       tryCatch({
         uniprotDatCln <- readRdsFn(sourcePath)
         workflowData$uniprot_dat_cln <- uniprotDatCln
-        assign("uniprot_dat_cln", uniprotDatCln, envir = globalEnv)
+        shareAnnotations(uniprotDatCln)
         annotationSource <- "source_directory"
         catFn(sprintf(
           "   ENRICHMENT Step: Successfully loaded %d UniProt annotations from source directory\n",
@@ -648,7 +665,7 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
       organismTaxid = organismTaxid
     )
     workflowData$uniprot_dat_cln <- uniprotDatCln
-    assign("uniprot_dat_cln", uniprotDatCln, envir = globalEnv)
+    shareAnnotations(uniprotDatCln)
     annotationSource <- "test_mode_deterministic"
     catFn(sprintf(
       "   ENRICHMENT Step: Created %d deterministic test-mode UniProt annotations\n",
@@ -674,7 +691,7 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
         )
 
         workflowData$uniprot_dat_cln <- uniprotDatCln
-        assign("uniprot_dat_cln", uniprotDatCln, envir = globalEnv)
+        shareAnnotations(uniprotDatCln)
         annotationSource <- "generated"
         catFn("   ENRICHMENT Step: Successfully created uniprot_dat_cln on-the-fly\n")
       } else {

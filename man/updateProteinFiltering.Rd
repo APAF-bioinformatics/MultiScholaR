@@ -12,7 +12,8 @@ updateProteinFiltering(
   overwrite = FALSE,
   return_grid = FALSE,
   formats = c("png", "pdf"),
-  project_dirs = NULL
+  project_dirs = NULL,
+  progress_owner = workflowFilteringProgressOwner()
 )
 }
 \arguments{
@@ -44,6 +45,11 @@ object created with \code{gridExtra::grid.arrange()}. If \code{FALSE} (default),
 individual plots and returns an invisible list of the ggplot objects.}
 
 \item{formats, project_dirs}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{progress_owner}{Owner of the \code{filtering_progress} object: the proteomics workflow bus
+(\code{reactiveValues} or environment with a \code{filtering_progress} field) or, for scripts, the
+global environment. The default resolves the bus registered on the current Shiny session,
+else the global environment.}
 }
 \value{
 If \code{return_grid} is \code{TRUE}, returns a \code{grob} object (a grid graphical object).
@@ -92,8 +98,11 @@ if plot saving is enabled.
 and returns the list of plot objects invisibly.
 }
 
-\strong{Important:} This function relies on and modifies a global variable named
-\code{filtering_progress}. For saving plots, it depends on the global \code{project_dirs}
-object (expected to be populated by \code{setupDirectories()}) and the successful
-derivation of \code{time_dir} from it using \code{omic_type} and \code{experiment_label}.
+\strong{Important:} This function reads and updates the \code{filtering_progress} object
+held by \code{progress_owner}. In the application that owner is the proteomics
+workflow bus (\code{workflow_data$filtering_progress}, KIT-013); in a script it is the
+calling session's global environment, as before. For saving plots, it depends on
+the \code{project_dirs} argument (or the global \code{project_dirs} object populated by
+\code{setupDirectories()}) and the successful derivation of \code{time_dir} from it using
+\code{omic_type} and \code{experiment_label}.
 }

@@ -1,0 +1,68 @@
+{
+  "schema": "kit.open_probe.v1",
+  "ticket": "KIT-013",
+  "date": "2026-10-12",
+  "head_commit": "32499f43edd563487248a17f5fc32eaf103afde4",
+  "session": {
+    "source": "kit-lifecycle-complete member project (kit_011 screen journey)",
+    "build": "kit_011",
+    "archive": "filtered_session_20261011_155156_native-export-196fa71832b7b3.msdia.tar"
+  },
+  "steps": [
+    {
+      "label": "before",
+      "seconds": "NA",
+      "private_folders": ".dia-native-196fa7150afb0d",
+      "private_folder_bytes": 325625600,
+      "live_store": {
+        "store": ".dia-native-196fa7150afb0d",
+        "entities": 266,
+        "closure": 134,
+        "dead": 132,
+        "bytes": 325624211,
+        "dead_bytes": 178733471,
+        "current_state": "correlation_filtered",
+        "states": 16
+      }
+    },
+    {
+      "label": "after_open_1",
+      "seconds": 8.7,
+      "private_folders": ".dia-native-import-65ad6725c3719",
+      "private_folder_bytes": 233448650,
+      "live_store": {
+        "store": ".dia-native-import-65ad6725c3719",
+        "entities": 123,
+        "closure": 122,
+        "dead": 1,
+        "bytes": 144798874,
+        "dead_bytes": 1423718,
+        "current_state": "correlation_filtered",
+        "states": 16
+      }
+    },
+    {
+      "label": "after_open_2",
+      "seconds": 7.3,
+      "private_folders": ".dia-native-import-65ad61b996ee9",
+      "private_folder_bytes": 233448650,
+      "live_store": {
+        "store": ".dia-native-import-65ad61b996ee9",
+        "entities": 123,
+        "closure": 122,
+        "dead": 1,
+        "bytes": 144798874,
+        "dead_bytes": 1423718,
+        "current_state": "correlation_filtered",
+        "states": 16
+      }
+    }
+  ],
+  "result": {
+    "before_folders": ".dia-native-196fa7150afb0d",
+    "after_first_open": ".dia-native-import-65ad6725c3719",
+    "after_second_open": ".dia-native-import-65ad61b996ee9",
+    "replaced_folder_removed_each_time": true,
+    "removed_bytes": [325625600, 233448650]
+  }
+}

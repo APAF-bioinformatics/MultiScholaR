@@ -366,7 +366,9 @@ test_that("native GUI export and owned DA load do not materialize historical sta
     fresh_paths <- makeDIANativeGuiPaths(withr::local_tempdir())
     imported <- openDIANativeSession(result$exportArtifacts$sessionFilepath, fresh_paths$source_dir)
     withr::defer(closeDIAStateAdapter(imported$manager))
-    expect_true(restoreDIANativeGuiFiles(imported, fresh_paths))
+    restored <- restoreDIANativeGuiFiles(imported, fresh_paths)
+    expect_type(restored, "character")
+    expect_true(length(restored) > 0L && all(file.exists(restored)))
     expect_false(file.exists(file.path(fresh_paths$protein_qc_dir,
         "normalised_results_cln_with_replicates.RDS")))
     expect_identical(imported$manager$getState(), fixture$final)
@@ -396,7 +398,7 @@ test_that("native GUI export and owned DA load do not materialize historical sta
         "proteomics_native_fixture_final.msdia.tar"), algo = "sha256"),
         digest::digest(file = portable, algo = "sha256"))
     expect_false(file.exists(file.path(integration, "proteomics_native_fixture_final_s4.RDS")))
-    expect_true(restoreDIANativeGuiFiles(imported, fresh_paths))
+    expect_identical(restoreDIANativeGuiFiles(imported, fresh_paths), character())
     writeLines("conflict", file.path(fresh_paths$protein_qc_dir, "normalised_results_cln_with_replicates.tsv"))
     expect_error(restoreDIANativeGuiFiles(imported, fresh_paths), class = "saved_entity_conflict")
 })
@@ -736,4 +738,133 @@ test_that("native publication recovers after process loss without another scient
         expect_identical(recovered$.context$store$open_resources, 0L)
         closeDIAStateAdapter(recovered)
     }
+})
+
+# KIT-013: the hand-off's checkpoint defects (items 2, 3 and 5).
+
+makeKit013CheckpointWorkflow <- function(native, object) {
+    shiny::reactiveValues(state_manager = native, data_tbl = object@peptide_data,
+        data_cln = object@peptide_data, data_type = "peptide", data_format = "diann",
+        config_list = list(globalParameters = list(workflow_type = "DIA")),
+        design_matrix = object@design_matrix,
+        column_mapping = list(run_col = "Run", protein_col = "Protein.Group",
+            peptide_col = "Stripped.Sequence", raw_quantity_col = "Precursor.Quantity",
+            norm_quantity_col = "Precursor.Normalised"))
+}
+
+makeKit013CheckpointPaths <- function(root, name) {
+    paths <- list(source_dir = file.path(root, paste0(name, "-source")),
+        peptide_qc_dir = file.path(root, paste0(name, "-peptide")))
+    lapply(paths, dir.create)
+    paths
+}
+
+test_that("KIT-013 item 3: a peptide checkpoint taken at every accepted state reopens", {
+    # The hand-off claimed raw_data_s4 and qvalue_filtered could not be reopened because the
+    # validator requires a design. The design module commits raw_data_s4 at design time, so a
+    # checkpoint at any accepted peptide state carries one; this reproduces the claim and shows
+    # every state reopening. Direction recorded in kit-013/outcome.md: no validator change.
+    recipe <- readWorkflowCheckpointRecipe("small")
+    recipe$n_proteins <- 8L; recipe$n_samples <- 8L
+    recipe$peptides_per_protein <- 4L; recipe$forms_per_peptide <- 2L
+    object <- makeWorkflowCheckpointPeptide(recipe)
+    root <- withr::local_tempdir()
+    states <- c("raw_data_s4", "qvalue_filtered", "protein_peptide_filtered", "precursor_rollup",
+        "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed")
+    writeLines("accepted output", file.path(makeKit013CheckpointPaths(root, "save")$peptide_qc_dir, "peptide.tsv"))
+    save_paths <- list(source_dir = file.path(root, "save-source"), peptide_qc_dir = file.path(root, "save-peptide"))
+    shiny::testServer(function(input, output, session) {}, {
+        session$userData$peptide_checkpoint_design <- function() list(
+            design_matrix = object@design_matrix, groups = unique(object@design_matrix$group),
+            factors = character(), contrasts = data.frame(), removed_samples = character(),
+            formula = "~ 0 + group")
+        for (state in states) {
+            native <- WorkflowState$new(audit_enabled = FALSE)
+            native$setWorkflowType("DIA")
+            for (earlier in states[seq_len(match(state, states))]) native$saveState(earlier, object, list(), earlier)
+            saving <- makeKit013CheckpointWorkflow(native, object)
+            publication <- saveDIAPeptideCheckpoint(saving, session, save_paths)
+            opening <- makeKit013CheckpointWorkflow(WorkflowState$new(audit_enabled = FALSE), object)
+            opening$state_manager$setWorkflowType("DIA")
+            open_paths <- makeKit013CheckpointPaths(root, paste0("open-", state))
+            expect_identical(openDIAPeptideCheckpoint(publication$archive_path, opening, session, open_paths), state)
+            manager <- opening$state_manager
+            expect_true(usesDIAReferenceStates(manager))
+            expect_identical(manager$getHistory()[[length(manager$getHistory())]], state)
+            expect_identical(manager$getState(state)@peptide_data, object@peptide_data)
+            closeDIAStateAdapter(manager)
+        }
+    })
+})
+
+test_that("KIT-013 items 2 and 5: a failed Open leaves no restored file and a successful Open removes the replaced folder", {
+    recipe <- readWorkflowCheckpointRecipe("small")
+    recipe$n_proteins <- 8L; recipe$n_samples <- 8L
+    recipe$peptides_per_protein <- 4L; recipe$forms_per_peptide <- 2L
+    object <- makeWorkflowCheckpointPeptide(recipe)
+    root <- withr::local_tempdir()
+    save_paths <- makeKit013CheckpointPaths(root, "save")
+    writeLines("accepted output", file.path(save_paths$peptide_qc_dir, "peptide.tsv"))
+    native <- WorkflowState$new(audit_enabled = FALSE)
+    native$setWorkflowType("DIA")
+    native$saveState("intensity_filtered", object, list(), "before")
+    native$saveState("sample_filtered", object, list(), "after")
+    shiny::testServer(function(input, output, session) {}, {
+        session$userData$peptide_checkpoint_design <- function() list(
+            design_matrix = object@design_matrix, groups = unique(object@design_matrix$group),
+            factors = character(), contrasts = data.frame(), removed_samples = character(),
+            formula = "~ 0 + group")
+        publication <- saveDIAPeptideCheckpoint(makeKit013CheckpointWorkflow(native, object), session, save_paths)
+        workflow <- makeKit013CheckpointWorkflow(native, object)
+        paths <- makeKit013CheckpointPaths(root, "project")
+        restored <- file.path(paths$peptide_qc_dir, "peptide.tsv")
+        private_folders <- function() list.files(paths$source_dir, "^[.]dia-", all.files = TRUE, include.dirs = TRUE)
+        # Item 2: the restore runs after the rollback is registered; a failure after the owner
+        # swap puts the bus back and removes the file this Open restored.
+        with_mocked_bindings({
+            expect_error(openDIAPeptideCheckpoint(publication$archive_path, workflow, session, paths),
+                "injected restore failure")
+        }, workflowExecutionBoundary = function(stage) {
+            if (stage == "peptide_checkpoint_after_owner_swap") stop("injected restore failure")
+        }, .package = "MultiScholaR")
+        expect_identical(workflow$state_manager, native)
+        expect_false(file.exists(restored))
+        expect_identical(private_folders(), character())
+        # A stale project (the bus changed under the Open) is refused before any file is restored.
+        stale <- makeKit013CheckpointWorkflow(native, object)
+        with_mocked_bindings({
+            expect_error(openDIAPeptideCheckpoint(publication$archive_path, stale, session, paths),
+                class = "workflow_execution_stale")
+        }, validateSavedWorkflowReference = function(store, reference) {
+            stale$state_manager <- WorkflowState$new(audit_enabled = FALSE)
+            invisible(TRUE)
+        }, .package = "MultiScholaR")
+        expect_false(file.exists(restored))
+        expect_identical(private_folders(), character())
+        # Item 5: the first Open installs its private folder; the second removes the first.
+        expect_identical(openDIAPeptideCheckpoint(publication$archive_path, workflow, session, paths), "sample_filtered")
+        expect_identical(readLines(restored), "accepted output")
+        first_root <- dirname(workflow$state_manager$.context$store$directory)
+        expect_true(dir.exists(first_root))
+        expect_true(startsWith(basename(first_root), ".dia-native-import-"))
+        expect_identical(private_folders(), basename(first_root))
+        expect_identical(openDIAPeptideCheckpoint(publication$archive_path, workflow, session, paths), "sample_filtered")
+        second_root <- dirname(workflow$state_manager$.context$store$directory)
+        expect_false(identical(first_root, second_root))
+        expect_false(dir.exists(first_root))
+        expect_true(dir.exists(second_root))
+        expect_identical(private_folders(), basename(second_root))
+        # The rule never touches a user's folder, a folder elsewhere, or the adopted owner.
+        user_folder <- file.path(paths$source_dir, "my-results")
+        dir.create(user_folder)
+        expect_false(removeDIAReplacedSessionFolder(user_folder, second_root, paths))
+        expect_true(dir.exists(user_folder))
+        expect_false(removeDIAReplacedSessionFolder(second_root, second_root, paths))
+        expect_true(dir.exists(second_root))
+        elsewhere <- file.path(root, ".dia-native-import-elsewhere")
+        dir.create(elsewhere)
+        expect_false(removeDIAReplacedSessionFolder(elsewhere, second_root, paths))
+        expect_true(dir.exists(elsewhere))
+        closeDIAStateAdapter(workflow$state_manager)
+    })
 })

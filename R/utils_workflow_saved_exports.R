@@ -784,6 +784,8 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
         }
     }
     check_owner()
+    owner <- arguments$progress_owner
+    if (is.null(owner)) owner <- arguments$progress_owner <- workflowFilteringProgressOwner()
     key <- paste(arguments$omic_type, arguments$experiment_label, sep = "_")
     directories <- arguments$project_dirs[[key]]
     root <- directories$time_dir
@@ -814,25 +816,21 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
     if (is.null(journal$files)) {
         if (!dir.exists(staged)) dir.create(staged)
         arguments$project_dirs[[key]]$time_dir <- staged
-        previous <- if (exists("filtering_progress", envir = .GlobalEnv, inherits = FALSE))
-            get("filtering_progress", envir = .GlobalEnv) else NULL
+        # The renderer accumulates its filtering_progress on the owner the caller named (the
+        # proteomics bus, or the session default); a failed render restores what the owner held.
+        previous <- shiny::isolate(owner$filtering_progress)
         succeeded <- FALSE
-        on.exit(if (!succeeded) {
-            if (is.null(previous)) {
-                if (exists("filtering_progress", envir = .GlobalEnv, inherits = FALSE))
-                    rm("filtering_progress", envir = .GlobalEnv)
-            } else assign("filtering_progress", previous, envir = .GlobalEnv)
-        }, add = TRUE)
+        on.exit(if (!succeeded) writeWorkflowFilteringProgress(owner, previous), add = TRUE)
         prior <- if (is.null(result$priorProgress)) methods::new("FilteringProgress") else
             do.call(methods::new, c(list(Class = "FilteringProgress"), result$priorProgress))
-        assign("filtering_progress", prior, envir = .GlobalEnv)
+        writeWorkflowFilteringProgress(owner, prior)
         workflowExportBoundary("before_qvalue_figures")
         grid <- do.call(render_fn, arguments)
         files <- file.path(staged, expected)
         if (is.null(grid) || any(!file.exists(files)) || any(file.size(files) <= 0)) {
             cli::cli_abort("required Q-value figures are incomplete", class = "saved_entity_outputs_pending")
         }
-        saveRDS(list(grid = grid, progress = get("filtering_progress", envir = .GlobalEnv)), grid_path)
+        saveRDS(list(grid = grid, progress = shiny::isolate(owner$filtering_progress)), grid_path)
         journal$files <- stats::setNames(lapply(files, \(path) list(
             sha256 = digest::digest(file = path, algo = "sha256"), bytes = file.size(path))), expected)
         journal$display_sha256 <- digest::digest(file = grid_path, algo = "sha256")
@@ -872,7 +870,7 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
         cli::cli_abort("saved Q-value display differs", class = "saved_entity_corrupt")
     }
     display <- readRDS(grid_path)
-    assign("filtering_progress", display$progress, envir = .GlobalEnv)
+    writeWorkflowFilteringProgress(owner, display$progress)
     journal$status <- "complete"
     writeWorkflowExportJournal(paths, journal)
     acknowledgeDIAOutputs(manager, reference, "qc")

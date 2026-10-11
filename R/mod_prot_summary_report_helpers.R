@@ -240,36 +240,7 @@ resolveProtSummaryReportTemplate <- function(workflowData,
     }
   }
 
-  if ((is.null(workflowTypeDetected) || !nzchar(workflowTypeDetected)) &&
-      exists("config_list", envir = .GlobalEnv)) {
-    configList <- get("config_list", envir = .GlobalEnv)
-    workflowTypeFromGlobal <- configList$globalParameters$workflow_type
-    reportTemplateFromGlobal <- configList$globalParameters$report_template
-    useLimpaFromGlobal <- isTRUE(configList$globalParameters$use_limpa)
-
-    if ((is.null(reportTemplateRequested) || !nzchar(reportTemplateRequested)) &&
-        !is.null(reportTemplateFromGlobal) &&
-        nzchar(reportTemplateFromGlobal)) {
-      reportTemplateRequested <- basename(reportTemplateFromGlobal)
-      catFn(sprintf(
-        "   %s: Detected report_template from global config_list: %s\n",
-        logPrefix,
-        reportTemplateRequested
-      ))
-    }
-    limpaRequested <- isTRUE(limpaRequested) ||
-      isTRUE(useLimpaFromGlobal)
-
-    if (!is.null(workflowTypeFromGlobal) && nzchar(workflowTypeFromGlobal)) {
-      workflowTypeDetected <- workflowTypeFromGlobal
-      catFn(sprintf(
-        "   %s: Detected workflow_type from global config_list: %s\n",
-        logPrefix,
-        workflowTypeDetected
-      ))
-    }
-  }
-
+  # The workflow bus is the only configuration source (KIT-013); the global config_list is gone.
   if (is.null(workflowTypeDetected) || !nzchar(workflowTypeDetected)) {
     workflowTypeDetected <- "DIA"
     catFn(sprintf(

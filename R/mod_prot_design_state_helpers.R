@@ -178,7 +178,6 @@ completeProtDesignPostCheckpoint <- function(
     )
 
     workflowData$uniprot_dat_cln <- uniprotDatCln
-    assign("uniprot_dat_cln", uniprotDatCln, envir = .GlobalEnv)
 
     if (!is.null(experimentPaths) && !is.null(experimentPaths$source_dir)) {
       scriptsUniprotPath <- file.path(experimentPaths$source_dir, "uniprot_dat_cln.RDS")

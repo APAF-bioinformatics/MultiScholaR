@@ -10,6 +10,39 @@ renderPeptideQcResultText <- function(text, render_text_fn) {
 }
 
 # ----------------------------------------------------------------------------
+# Ownership of the proteomics filtering_progress object (KIT-013)
+# ----------------------------------------------------------------------------
+#' Resolve who owns the proteomics `filtering_progress` object.
+#' @return The workflow bus the proteomics server registered on the current Shiny session
+#'   (`session$userData$workflow_data`); outside a session, or before registration, the
+#'   global environment so scripts keep their existing behaviour.
+#' @noRd
+workflowFilteringProgressOwner <- function() {
+  session <- shiny::getDefaultReactiveDomain()
+  owner <- if (is.null(session)) NULL else session$userData$workflow_data
+  if (is.null(owner)) globalenv() else owner
+}
+
+#' Read the owner's `filtering_progress`, or a fresh object when it holds none.
+#' @param owner Workflow bus (`reactiveValues` or environment) or the global environment.
+#' @return A `FilteringProgress` object.
+#' @noRd
+readWorkflowFilteringProgress <- function(owner) {
+  value <- shiny::isolate(owner$filtering_progress)
+  if (methods::is(value, "FilteringProgress")) value else methods::new("FilteringProgress")
+}
+
+#' Store the `filtering_progress` object on its owner.
+#' @param owner Workflow bus (`reactiveValues` or environment) or the global environment.
+#' @param progress `FilteringProgress` object or NULL.
+#' @return The stored value, invisibly.
+#' @noRd
+writeWorkflowFilteringProgress <- function(owner, progress) {
+  owner$filtering_progress <- progress
+  invisible(progress)
+}
+
+# ----------------------------------------------------------------------------
 # updateProteinFiltering
 # ----------------------------------------------------------------------------
 #' @title Update and Visualize Filtering Progress
@@ -51,10 +84,13 @@ renderPeptideQcResultText <- function(text, render_text_fn) {
 #'     and returns the list of plot objects invisibly.
 #' }
 #'
-#' **Important:** This function relies on and modifies a global variable named
-#' `filtering_progress`. For saving plots, it depends on the global `project_dirs`
-#' object (expected to be populated by `setupDirectories()`) and the successful
-#' derivation of `time_dir` from it using `omic_type` and `experiment_label`.
+#' **Important:** This function reads and updates the `filtering_progress` object
+#' held by `progress_owner`. In the application that owner is the proteomics
+#' workflow bus (`workflow_data$filtering_progress`, KIT-013); in a script it is the
+#' calling session's global environment, as before. For saving plots, it depends on
+#' the `project_dirs` argument (or the global `project_dirs` object populated by
+#' `setupDirectories()`) and the successful derivation of `time_dir` from it using
+#' `omic_type` and `experiment_label`.
 #'
 #' @param data The input data object. Can be a data frame (expected to conform
 #'   to typical peptide or protein quantification structures) or an S4 object
@@ -96,19 +132,18 @@ renderPeptideQcResultText <- function(text, render_text_fn) {
 #'
 #' @export
 #' @param formats,project_dirs Runtime inputs used by this function; see the usage section for accepted values.
+#' @param progress_owner Owner of the `filtering_progress` object: the proteomics workflow bus
+#'   (`reactiveValues` or environment with a `filtering_progress` field) or, for scripts, the
+#'   global environment. The default resolves the bus registered on the current Shiny session,
+#'   else the global environment.
 updateProteinFiltering <- function(data, step_name,
                                    omic_type = NULL, experiment_label = NULL,
                                    overwrite = FALSE, return_grid = FALSE,
                                    formats = c("png", "pdf"),
-                                   project_dirs = NULL) {
-  # Initialize filtering_progress if it doesn\'t exist
-  if (!exists("filtering_progress", envir = .GlobalEnv)) {
-    filtering_progress <- new("FilteringProgress")
-    assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
-  }
-
-  # Get the current filtering_progress object
-  filtering_progress <- get("filtering_progress", envir = .GlobalEnv)
+                                   project_dirs = NULL,
+                                   progress_owner = workflowFilteringProgressOwner()) {
+  # Get the owner's current filtering_progress object (a fresh one when none is held yet)
+  filtering_progress <- readWorkflowFilteringProgress(progress_owner)
 
   # DEBUG66: Memory check
   message("--- DEBUG66 [updatePeptideFiltering]: Entry ---")
@@ -290,8 +325,8 @@ updateProteinFiltering <- function(data, step_name,
     }
   }
 
-  # Update the global filtering_progress object
-  assign("filtering_progress", filtering_progress, envir = .GlobalEnv)
+  # Hand the updated filtering_progress object back to its owner
+  writeWorkflowFilteringProgress(progress_owner, filtering_progress)
 
   # Create base protein count plot (always shown)
   message("   [updateProteinFiltering] Generating P1 (Protein Count Bar)...")

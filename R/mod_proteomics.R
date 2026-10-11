@@ -242,6 +242,9 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
       # Processing logs
       processing_log = list()
     )
+    # The proteomics bus owns the filtering-progress tracker and the design/annotation payloads
+    # that used to live in the global environment (KIT-013); helpers find it through the session.
+    session$userData$workflow_data <- workflow_data
 
     # Reactive trigger for initializing QC modules
     qc_trigger <- reactiveVal(NULL)
@@ -308,7 +311,6 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
           {
             aa_seq_tbl_final <- readRDS(aa_seq_file_path)
             workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
-            assign("aa_seq_tbl_final", aa_seq_tbl_final, envir = .GlobalEnv)
             log_info(sprintf("Successfully loaded aa_seq_tbl_final with %d sequences", nrow(aa_seq_tbl_final)))
           },
           error = function(e) {

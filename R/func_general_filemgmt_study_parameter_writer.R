@@ -70,14 +70,16 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         cat("WORKFLOW ARGS: No S4 object provided or S4 @args is NULL\n")
     }
 
-    # Get fallback config_list from global environment
-    config_list <- if (exists("config_list", envir = .GlobalEnv)) {
+    # Fallback config_list: the workflow bus (the application), else the global environment (scripts)
+    config_list <- if (!is.null(workflow_data) && is.list(workflow_data$config_list)) {
+        workflow_data$config_list
+    } else if (exists("config_list", envir = .GlobalEnv)) {
         get("config_list", envir = .GlobalEnv)
     } else {
         list()
     }
 
-    cat(sprintf("WORKFLOW ARGS: Global config_list has %d sections\n", length(config_list)))
+    cat(sprintf("WORKFLOW ARGS: Fallback config_list has %d sections\n", length(config_list)))
 
     # Extract RUV optimization results from workflow_data if available
     ruv_optimization_result <- NULL

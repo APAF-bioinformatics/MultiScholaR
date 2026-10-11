@@ -853,6 +853,8 @@ test_that("runProtNormBetweenSamplesStep normalizes data and saves the pre-RUV m
     "MockNormStepData",
     protein_quant_table = data.frame(Protein.Ids = "p1", S1 = 2)
   )
+  workflow_bus <- new.env(parent = emptyenv())
+  workflow_bus$config_list <- list(normaliseBetweenSamples = list(method = "cyclicloess"))
   norm_data <- new.env(parent = emptyenv())
   assigned_config <- NULL
   checkpoints <- list()
@@ -871,16 +873,7 @@ test_that("runProtNormBetweenSamplesStep normalizes data and saves the pre-RUV m
     captureCheckpointFn = function(object, checkpointId, label) {
       checkpoints <<- list(object = object, checkpointId = checkpointId, label = label)
     },
-    existsFn = function(name, envir) {
-      expect_equal(name, "config_list")
-      TRUE
-    },
-    getFn = function(name, envir) {
-      list(normaliseBetweenSamples = list(method = "cyclicloess"))
-    },
-    assignFn = function(name, value, envir) {
-      assigned_config <<- value
-    },
+    workflowData = workflow_bus,
     saveMatrixFn = function(data, path) {
       saved_matrix <<- list(data = data, path = path)
     },
@@ -892,7 +885,8 @@ test_that("runProtNormBetweenSamplesStep normalizes data and saves the pre-RUV m
   expect_identical(checkpoints$object, normalized_s4)
   expect_equal(checkpoints$checkpointId, "cp05")
   expect_equal(checkpoints$label, "normalised")
-  expect_equal(assigned_config$normaliseBetweenSamples$method, "quantile")
+  # KIT-013: the chosen method is recorded on the workflow bus configuration, not a global copy.
+  expect_equal(workflow_bus$config_list$normaliseBetweenSamples$method, "quantile")
   expect_equal(saved_matrix$data, normalized_s4@protein_quant_table)
   expect_equal(
     saved_matrix$path,
@@ -989,18 +983,15 @@ test_that("buildProtNormManualRuvResult returns the manual-mode result payload",
 })
 
 test_that("updateProtNormRuvAuditTrail updates config_list when available", {
-  assigned_config <- NULL
+  workflow_bus <- new.env(parent = emptyenv())
+  workflow_bus$config_list <- list(existing = TRUE)
 
   updateProtNormRuvAuditTrail(
     ruvK = 4,
     controlGenesIndex = c(TRUE, FALSE),
     percentageAsNegCtrl = 12,
     modeLabel = "automatic",
-    existsFn = function(name, envir) TRUE,
-    getFn = function(name, envir) list(existing = TRUE),
-    assignFn = function(name, value, envir) {
-      assigned_config <<- value
-    },
+    workflowData = workflow_bus,
     updateRuvParametersFn = function(config, ruv_k, control_genes_index, percentage_as_neg_ctrl) {
       config$ruv_k <- ruv_k
       config$controls <- control_genes_index
@@ -1010,6 +1001,8 @@ test_that("updateProtNormRuvAuditTrail updates config_list when available", {
     messageFn = function(...) NULL
   )
 
+  assigned_config <- workflow_bus$config_list
+  expect_true(assigned_config$existing)
   expect_equal(assigned_config$ruv_k, 4)
   expect_identical(assigned_config$controls, c(TRUE, FALSE))
   expect_equal(assigned_config$percentage, 12)
@@ -1419,7 +1412,7 @@ test_that("runProtNormNormalizationWorkflow sequences the automatic normalizatio
       calls$prepare <<- list(stateManager = stateManager, normData = normData)
       list(currentS4 = "current_obj")
     },
-    runBetweenSamplesStepFn = function(currentS4, normMethod, normData, proteinQcDir) {
+    runBetweenSamplesStepFn = function(currentS4, normMethod, normData, proteinQcDir, workflowData = NULL) {
       calls$between <<- list(
         currentS4 = currentS4,
         normMethod = normMethod,

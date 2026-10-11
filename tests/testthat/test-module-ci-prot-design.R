@@ -124,8 +124,7 @@ test_that("MCI-005.4 existing-design import and builder-created designs produce 
     fileExists = file.exists,
     fileCopy = file.copy,
     downloadFile = function(...) stop("network not allowed in module-CI design import"),
-    showNotification = function(...) NULL,
-    assignFn = function(...) NULL
+    showNotification = function(...) NULL
   )
 
   expect_identical(

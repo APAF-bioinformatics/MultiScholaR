@@ -426,3 +426,29 @@ test_that("updateProteinFiltering initializes protein-only progress with placeho
   expect_identical(nrow(progress@peptides_per_protein[[1]]), 0L)
   expect_identical(nrow(progress@peptides_per_run[[1]]), 0L)
 })
+
+test_that("updateProteinFiltering accumulates on the owner it is given and leaves the global environment alone (KIT-013)", {
+  localSharedProteinFilteringProgress()
+  peptide_data <- makeSharedPeptideFilteringData()
+  owner <- new.env(parent = emptyenv())
+  withSharedPdfDevice({
+    updateProteinFiltering(peptide_data, step_name = "step_one", return_grid = TRUE, progress_owner = owner)
+    updateProteinFiltering(peptide_data, step_name = "step_two", return_grid = TRUE, progress_owner = owner)
+  })
+  expect_s4_class(owner$filtering_progress, "FilteringProgress")
+  expect_identical(owner$filtering_progress@steps, c("step_one", "step_two"))
+  expect_false(exists("filtering_progress", envir = .GlobalEnv, inherits = FALSE))
+
+  bus <- shiny::reactiveValues(filtering_progress = NULL)
+  withSharedPdfDevice(updateProteinFiltering(peptide_data, step_name = "bus_step", return_grid = TRUE, progress_owner = bus))
+  expect_identical(shiny::isolate(bus$filtering_progress)@steps, "bus_step")
+  expect_false(exists("filtering_progress", envir = .GlobalEnv, inherits = FALSE))
+
+  # Outside a Shiny session the default owner is the global environment, as scripts expect.
+  expect_identical(workflowFilteringProgressOwner(), globalenv())
+  shiny::testServer(function(input, output, session) {}, {
+    expect_identical(workflowFilteringProgressOwner(), globalenv())
+    session$userData$workflow_data <- bus
+    expect_identical(workflowFilteringProgressOwner(), bus)
+  })
+})

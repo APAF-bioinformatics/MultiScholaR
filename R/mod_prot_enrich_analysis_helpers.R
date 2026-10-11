@@ -269,7 +269,7 @@ prepareProtEnrichAnalysisBodySetup <- function(selectedContrast,
                                                applyOrganismFilterFn = applyProtEnrichOrganismFilter,
                                                persistOrganismFilterMetadataFn = persistProtEnrichOrganismFilterMetadata,
                                                showNotificationFn = shiny::showNotification,
-                                               globalEnv = .GlobalEnv,
+                                               globalEnv = NULL,
                                                catFn = cat) {
   catFn(sprintf("   ENRICHMENT Step: Selected contrast (friendly name) = %s\n", selectedContrast))
   catFn(sprintf(
@@ -277,11 +277,7 @@ prepareProtEnrichAnalysisBodySetup <- function(selectedContrast,
     paste(names(enrichmentData$da_results_data), collapse = ", ")
   ))
 
-  contrastsTbl <- if (exists("contrasts_tbl", envir = globalEnv)) {
-    get("contrasts_tbl", envir = globalEnv)
-  } else {
-    NULL
-  }
+  contrastsTbl <- resolveProtEnrichContrastsTable(workflowData, globalEnv)
 
   selectedDaConfig <- resolveSelectedDaResultsFn(
     selectedContrast = selectedContrast,
@@ -526,7 +522,7 @@ runProtEnrichAnalysisBody <- function(input,
                                       finalizeAnalysisResultsFn = finalizeProtEnrichAnalysisBodyResults,
                                       showNotificationFn = shiny::showNotification,
                                       incProgressFn = shiny::incProgress,
-                                      globalEnv = .GlobalEnv,
+                                      globalEnv = NULL,
                                       catFn = cat) {
   if (isDIAResultManifest(enrichmentData$da_results_data)) {
     cli::cli_abort("active enrichment requires an explicit compatibility export for this native DIA session",

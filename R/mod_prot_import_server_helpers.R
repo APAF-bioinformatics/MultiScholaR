@@ -234,8 +234,6 @@ registerProtImportObservers <- function(
     fileCopyFn = file.copy,
     downloadFileFn = download.file,
     systemFileFn = system.file,
-    assignFn = assign,
-    assignEnv = .GlobalEnv,
     logInfo = logger::log_info,
     logError = logger::log_error,
     logWarn = logger::log_warn,
@@ -382,8 +380,6 @@ registerProtImportObservers <- function(
           fileCopy = fileCopyFn,
           downloadFile = downloadFileFn,
           systemFileFn = systemFileFn,
-          assignFn = assignFn,
-          assignEnv = assignEnv,
           readOptionalMapping = readOptionalMappingFn
         )
 

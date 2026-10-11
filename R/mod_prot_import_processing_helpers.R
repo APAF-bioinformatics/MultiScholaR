@@ -284,8 +284,6 @@ processProtImportFastaData <- function(
     , organismName
     , experimentPaths = NULL
     , processFasta = processFastaFile
-    , assignFn = assign
-    , assignEnv = .GlobalEnv
     , saveRds = saveRDS
     , logInfo = logger::log_info
     , logWarn = logger::log_warn
@@ -339,8 +337,6 @@ processProtImportFastaData <- function(
 
     workflowData$aa_seq_tbl_final <- aa_seq_tbl_final
     workflowData$fasta_metadata <- fasta_metadata
-
-    assignFn("aa_seq_tbl_final", aa_seq_tbl_final, envir = assignEnv)
 
     if (!is.null(experimentPaths) && !is.null(experimentPaths$source_dir)) {
       scripts_aa_seq_path <- file.path(experimentPaths$source_dir, "aa_seq_tbl_final.RDS")

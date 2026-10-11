@@ -309,7 +309,7 @@ registerProtEnrichSelectedTabObserver <- function(selectedTabFn,
                                                   buildContrastChoicesFn = buildProtEnrichContrastChoices,
                                                   existsFn = exists,
                                                   getFn = get,
-                                                  globalEnv = .GlobalEnv,
+                                                  globalEnv = NULL,
                                                   updateSelectInputFn = shiny::updateSelectInput,
                                                   showNotificationFn = shiny::showNotification,
                                                   catFn = cat) {
@@ -407,11 +407,7 @@ registerProtEnrichSelectedTabObserver <- function(selectedTabFn,
                 paste(contrastNames, collapse = ", ")
               ))
 
-              contrastsTbl <- if (existsFn("contrasts_tbl", envir = globalEnv)) {
-                getFn("contrasts_tbl", envir = globalEnv)
-              } else {
-                NULL
-              }
+              contrastsTbl <- resolveProtEnrichContrastsTable(workflowData, globalEnv, existsFn, getFn)
 
               contrastConfig <- buildContrastChoicesFn(daResultsList, contrastsTbl)
               enrichmentData$contrasts_available <- contrastConfig$contrastsAvailable
@@ -493,7 +489,7 @@ registerProtEnrichDaResultsObserver <- function(workflowData,
                                                 buildContrastChoicesFn = buildProtEnrichContrastChoices,
                                                 existsFn = exists,
                                                 getFn = get,
-                                                globalEnv = .GlobalEnv,
+                                                globalEnv = NULL,
                                                 updateSelectInputFn = shiny::updateSelectInput,
                                                 catFn = cat) {
   observeEventFn(workflowData$da_analysis_results_list, {
@@ -544,11 +540,7 @@ registerProtEnrichDaResultsObserver <- function(workflowData,
         paste(contrastNames, collapse = ", ")
       ))
 
-      contrastsTbl <- if (existsFn("contrasts_tbl", envir = globalEnv)) {
-        getFn("contrasts_tbl", envir = globalEnv)
-      } else {
-        NULL
-      }
+      contrastsTbl <- resolveProtEnrichContrastsTable(workflowData, globalEnv, existsFn, getFn)
 
       contrastConfig <- buildContrastChoicesFn(daResultsList, contrastsTbl)
       enrichmentData$contrasts_available <- contrastConfig$contrastsAvailable
@@ -582,12 +574,13 @@ registerProtEnrichDaResultsObserver <- function(workflowData,
 
 registerProtEnrichSelectedContrastObserver <- function(input,
                                                        enrichmentData,
+                                                       workflowData = NULL,
                                                        observeFn = shiny::observe,
                                                        reqFn = shiny::req,
                                                        resolveSelectedContrastResultsFn = resolveProtEnrichSelectedContrastResults,
                                                        existsFn = exists,
                                                        getFn = get,
-                                                       globalEnv = .GlobalEnv,
+                                                       globalEnv = NULL,
                                                        rowCountFn = nrow,
                                                        catFn = cat) {
   selectedContrastObserver <- observeFn({
@@ -600,11 +593,7 @@ registerProtEnrichSelectedContrastObserver <- function(input,
       input$selected_contrast
     ))
 
-    contrastsTbl <- if (existsFn("contrasts_tbl", envir = globalEnv)) {
-      getFn("contrasts_tbl", envir = globalEnv)
-    } else {
-      NULL
-    }
+    contrastsTbl <- resolveProtEnrichContrastsTable(workflowData, globalEnv, existsFn, getFn)
 
     contrastState <- resolveSelectedContrastResultsFn(
       input$selected_contrast,

@@ -740,7 +740,7 @@ preparePerf107GuiInputs <- function(directory) {
 #' Request one fixed small-fixture setup/inspection outside the action clock.
 #' @noRd
 requestPerf107EntryFixture <- function(driver, application_root, command) {
-    id <- "proteomics_workflow-quality_control-peptide_qc-sample_filter-perf107_fixture"
+    id <- "proteomics_workflow-quality_control-peptide_qc-sample_filter-entry_hook"
     driver$get_js(sprintf("Shiny.setInputValue(%s,%s,{priority:'event'});true",
         jsonlite::toJSON(id, auto_unbox = TRUE), jsonlite::toJSON(command, auto_unbox = TRUE)))
     path <- file.path(application_root, paste0("entry-", command, ".rds"))
