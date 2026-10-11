@@ -72,9 +72,15 @@
       "outcome": "control",
       "build": "kit_006",
       "note": "complete-sample partitioner (partitionBySamples) under the P14 rollup and the physical sample filter; accepted against kit_001 (stage kit-006, 2026-10-11): exact on both oracles, slice peak 0.991 x (P14) and 0.996 x (sample filter) the control; the control for KIT-007 onward"
+    },
+    {
+      "ticket": "KIT-011",
+      "outcome": "control",
+      "build": "kit_011",
+      "note": "on-disk native DIA state manager as the production default; accepted against kit_006 run as users run it (stage kit-journey-011, 2026-10-11): whole-slice anonymous peak 0.358 x the control's guard reading, every data step 0.23 to 0.48 x; the control for KIT-013 onward"
     }
   ],
-  "control": "kit_006",
+  "control": "kit_011",
   "control_note": "kit_001 = core_018 source (906c50dc) + KIT journey launch record, RUV-III technical-replicate structure, quantile-ceiling removal (2026-10-09) + launch-record deadline up to 14400 s (protocol v1.2), RUV sweep canonical-correlation input prepared once per sweep, sweep k validity rule and RUV-III guards (2026-10-10); source 8e77d92d on branch kit-control-ceiling; install browser-smoke.X9aj9P",
   "populations": {
     "screen_p14": {
@@ -3591,7 +3597,7 @@
     "ceiling_seconds": 14400,
     "ceiling_note": "KIT-005 / protocol v1.2: data steps scale about 20 x from 8 to 300 samples (attempt 1: q-value 296 s, evidence 190 s); 4 h, the protocol maximum",
     "pair": {
-      "control": "kit_006",
+      "control": "kit_011",
       "candidate": null,
       "reps": 2,
       "production_default": true
@@ -3661,7 +3667,7 @@
     "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "8f27e65c3a262eea2bcb8515b7115095ba49f7435d13ae6bae372faacd4b621e",
+      "tools/profiling/workflow_kit.R": "1cb0220a075b1ca64cf18b72fab67715834e4e080fd66cc4d852da6ecd0a68cb",
       "tools/profiling/workflow_kit_driver.R": "98037c37d9bd76034d1862296cd7124cce9262436e996fa401f34e67354e33af",
       "tools/profiling/workflow_kit_coordinator.R": "1e4bb1c9fdb40fe48c15279674150d3b821a217b65e5d3222559c79bd5f3dc34",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",

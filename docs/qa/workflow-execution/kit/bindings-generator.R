@@ -183,6 +183,13 @@ if (!is.null(b$builds$kit_011)) {
     b$tickets[["011"]] <- list(kind = "journey", control = "kit_006", candidate = "kit_011", record = FALSE)
     # The GUI's default state manager changed: the screen lifecycle member runs on kit_011 (audit PX-02).
     b$lifecycle$build <- "kit_011"
+    # KIT-011 accepted 2026-10-11 (stage kit-journey-011: the kit_011 production default completed the 300-sample
+    # journey at 5.51 GiB anonymous against the kit_006 default's 15.40 GiB at the memory guard, every state equal to
+    # the KIT-005 oracles): the KIT-011 build is the control from here (protocol section 2).
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-011", outcome = "control", build = "kit_011",
+        note = "on-disk native DIA state manager as the production default; accepted against kit_006 run as users run it (stage kit-journey-011, 2026-10-11): whole-slice anonymous peak 0.358 x the control's guard reading, every data step 0.23 to 0.48 x; the control for KIT-013 onward")
+    b$control <- "kit_011"
+    b$journey$pair$control <- b$control
 }
 
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",

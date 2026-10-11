@@ -992,14 +992,28 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         stopifnot(dir.exists(store_dir), isTRUE(journey$populations_complete))
         recomputed <- kitFingerprintStore(store_dir, api)
         stopifnot(identical(recomputed$head_sha256, journey$final_head_sha256))
+        # Integrity: the states the driver recorded in-run are the ones in the immutable store (class, rows,
+        # components, support, summary). Products are judged on the recomputed fingerprints, so a canonical-form
+        # correction between the run and this verification (KIT-011 correction 1) is recorded, not fatal.
+        recomputed_populations <- journey$populations
+        receipt$canonical_form_differences <- character()
         for (step in names(journey$populations)) {
             population <- journey$populations[[step]]
             if (is.null(population$state)) next
-            stopifnot(kitStateFingerprintMatches(population$fingerprint, recomputed$states[[population$state]]))
+            fresh <- recomputed$states[[population$state]]
+            for (field in c("class", "rows", "components", "support", "summary_sha256"))
+                stopifnot(identical(population$fingerprint[[field]], fresh[[field]]))
+            if (!kitStateFingerprintMatches(population$fingerprint, fresh))
+                receipt$canonical_form_differences <- c(receipt$canonical_form_differences, step)
+            # The in-run fingerprint also carries the per-step assets the driver attached from the head; the
+            # recomputed values overlay the entries the state record itself holds.
+            merged <- population$fingerprint
+            for (name in names(fresh$products)) merged$products[[name]] <- fresh$products[[name]]
+            recomputed_populations[[step]]$fingerprint <- merged
         }
         # Cross-build: the operation identity products are reported, every state, support entry, summary and
         # other product is judged (KIT-011 screen check: identical states on kit_001 and kit_011).
-        receipt$oracle_mismatches <- kitReproduceMismatches(kitOracleJourneyPopulations(bindings), journey$populations,
+        receipt$oracle_mismatches <- kitReproduceMismatches(kitOracleJourneyPopulations(bindings), recomputed_populations,
             ignore_products = kitOperationIdentityProducts)
         receipt$operation_identity_products <- unlist(lapply(journey$populations, function(p)
             grep(kitOperationIdentityProducts, names(p$fingerprint$products), value = TRUE)), use.names = FALSE)

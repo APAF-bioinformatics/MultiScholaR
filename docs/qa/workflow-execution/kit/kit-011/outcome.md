@@ -1,6 +1,6 @@
 # KIT-011: on-disk state manager, native sessions and import adoption by default
 
-Status 2026-10-11: **implemented; the journey pair is declared and waits for the user's go.** Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-011: two journey members, journey ceiling; reordered ahead of KIT-009/010 by the user 2026-10-11); protocol v1.3; the KIT-005 acceptance as amended by the user ("later comparisons against the production default are completion plus those per-step peaks"). Control: `kit_006` (`core/browser-smoke.qBR5tm`), run as users run it (no launch record).
+Status 2026-10-11: **accepted and complete.** Stage `kit-journey-011` decision `accepted`; `kit_011` (`core/browser-smoke.AFaqC1`, source `b3d44bdb`) is the control from KIT-013 onward. This is the first ticket that lowers the GUI's memory for a user: the DIA-NN journey that stopped at the memory guard after 8 of 18 steps now completes at about a third of that reading. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-011: two journey members, journey ceiling; reordered ahead of KIT-009/010 by the user 2026-10-11); protocol v1.3; the KIT-005 acceptance as amended by the user ("later comparisons against the production default are completion plus those per-step peaks"). Control: `kit_006` (`core/browser-smoke.qBR5tm`), run as users run it (no launch record).
 
 ## What changed
 
@@ -13,7 +13,36 @@ Status 2026-10-11: **implemented; the journey pair is declared and waits for the
 
 Claim limits of the default switch (audit PX-04): two behaviours the gated path already had are now default on Linux: a legacy DIA session opened in the DA tab is adopted into the store, and a project imported on the Limpa route refuses an IQ rollup (and vice versa) until the project is reset.
 
-## Declared runs (authorised by the user 2026-10-11: "let's go with recommendations")
+## Results
+
+Install: `kit_011` = `core/browser-smoke.AFaqC1` from `b3d44bdb`, empty runtime patch; both stages validated.
+
+**Screen lifecycle member on `kit_011`** (`kit-lifecycle-complete`, the KIT-001 screen corpus, 8 samples; [screen-cross-build-check.R](screen-cross-build-check.R) → [screen-cross-build-check.json](screen-cross-build-check.json)): `lifecycle_complete_observed` in 486 s (2.53 GiB slice, 2.10 GiB anonymous, 1.78 GiB resident end), 18 populations; against the kit_001 screen member (`kit-lifecycle-complete.kit-005-screen`) every state's components, support entries and summaries are identical. Four strict product differences: the three operation identity products of KIT-004 (`dia-normalization-ruv`, `dia-pearson-selection`, `dia-contrast-references`), whose names and content embed the build's software identity and differ across builds by construction, and the sweep record `normalization_science`, because that reference predates the RUV rules of 2026-10-10. The cross-build verifier reports the identity products and judges everything else.
+
+**Stage `kit-journey-011`** (300-sample corpus, no launch record, 14,400 s ceiling; tracked summary [kit-journey-011-stage.json](kit-journey-011-stage.json)):
+
+| Member | Build | Outcome | Elapsed | Slice peak | Anonymous peak | Resident end | Max gap | Verified |
+|---|---|---|---|---|---|---|---|---|
+| control-1 | kit_006, the GUI as it ships (in-memory `WorkflowState`) | **memory guard in imputation after 8 of 18 steps** | 737 s | 15.54 GiB | 15.40 GiB | not reached | 170 ms | guard outcome, 8 per-step peaks |
+| candidate-1 | kit_011, the new default (on-disk state from import) | **complete, all 18 steps** | 2,826 s | 7.98 GiB | 5.51 GiB | 3.02 GiB | 170 ms | every state equal to the KIT-005 oracles (correction 1) |
+
+Per step, anonymous peak in GiB (control / candidate / ratio): import 2.71 / 2.66 / 0.98; design 3.52 / 2.86 / 0.81; q-value 6.31 / 3.01 / 0.48; protein evidence 6.63 / 2.45 / 0.37; rollup 10.24 / 2.63 / 0.26; intensity 8.96 / 2.33 / 0.26; sample 9.06 / 2.07 / 0.23; replicate 9.08 / 2.45 / 0.27; imputation 15.40 (guard) / 2.79; then IQ 2.99, protein QC 2.85 to 2.86, normalisation and RUV 3.13, correlation 2.98, session export 2.26, DA 5.51 on the candidate only.
+
+Decision `accepted` (`kitJourneyTicketDecision`, protocol v1.3 with the user's rules): the candidate's whole-slice anonymous peak is 0.358 × the control's reading at the guard, which is a lower bound of the control's true peak (`control_peak_is_lower_bound`); the six guarded steps (q-value to replicate) are 0.23 to 0.48 ×; import and design are reported (0.98, 0.81). Zero swap on both, every gap under 250 ms, slices stopped. `resident_end_bytes` 3.02 GiB on the candidate (the control did not reach the end).
+
+Versus KIT-005's native-path members on `kit_001` (5.67 / 5.51 GiB anonymous, 3.03 / 2.98 GiB resident end, 3,847 / 3,941 s): the same memory profile, 1,000 s faster on a quieter host (time is reported, not judged).
+
+### Corrections (verifier only; no member measurement rerun)
+
+1. **Correction 1** ([candidate-verifier-correction.R](candidate-verifier-correction.R)): the candidate's `normalization_science` product differed from the oracle only because its nested checkpoint records carry the KIT-002 `declaration` field (additive storage format) that the kit_001 oracles lack; every scientific field (best k, controls, percentage, parameters, RUV result) is identical. The canonical fingerprint now drops that field; the verifier judges products on the recomputed fingerprints overlaid on the in-run per-step assets, records the in-run entries the correction changed (`canonical_form_differences`: normalisation_ruv) and reports the four operation identity products. The failed verification is kept as `verification.harness-failed.rds`; the launch decision (`invalid`, verifier) is kept in `decisions_before_correction`.
+
+### Claim limits
+
+- The control's peak is a guard reading, so the reduction ratio (0.358) is an upper bound of the true ratio; the protocol forbids a finite denominator from a guard, and the rule here uses the lower bound only in the stricter direction.
+- The oracle check is cross-build: states, support entries, summaries and every content-addressed product are judged; the operation identity products are reported (per-build software identity).
+- Scope: DIA-NN with the IQ route on Linux. Limpa and other formats keep the in-memory manager (unchanged, unmeasured here).
+
+## Declared runs (as authorised; recorded above)
 
 0. **Screen lifecycle member on `kit_011`** (`kit-lifecycle-complete`, 600 s, the KIT-001 screen corpus; the previous stage directory archived as `kit-lifecycle-complete.kit-005-screen`): proves the new default end to end on an installed build and compares its 18 in-run populations with the KIT-001 screen member's (`kit-lifecycle-complete.kit-005-screen/member/journey-result.rds`, produced on `kit_001`) through `kitReproduceMismatches` (audit PX-02). A mismatch stops the pair until it is explained.
 

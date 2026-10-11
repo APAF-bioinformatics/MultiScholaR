@@ -23,12 +23,20 @@ stopifnot(identical(receipt$status, "complete"), identical(receipt$decision$stat
 owned <- file.path(stage_root, "candidate-1")
 failed <- file.path(owned, "verification.rds")
 kept <- file.path(owned, "verification.harness-failed.rds")
-stopifnot(file.exists(failed), identical(readRDS(failed)$status, "failed"),
-    identical(readRDS(failed)$oracle_mismatches, "normalisation_ruv/products/normalization_science"), !file.exists(kept), file.rename(failed, kept))
 run_dir <- file.path(owned, "verify-correction-1")
-dir.create(run_dir)
+if (file.exists(failed)) {
+    first <- readRDS(failed)
+    stopifnot(identical(first$status, "failed"))
+    # The launch verification is kept; a failed attempt of this correction is discarded.
+    if (identical(first$run_dir, run_dir)) unlink(failed) else stopifnot(
+        identical(first$oracle_mismatches, "normalisation_ruv/products/normalization_science"), !file.exists(kept), file.rename(failed, kept))
+}
+stopifnot(file.exists(kept))
+dir.create(run_dir, showWarnings = FALSE)
 verification <- helpers$verifyKitMember(run_dir, snapshot, "kit:journey-011:candidate:1", api)
 stopifnot(identical(verification$status, "complete"), !length(verification$oracle_mismatches))
+cat("in-run fingerprints differing from the recomputed ones only by the canonical-form correction:",
+    paste(verification$canonical_form_differences, collapse = ", "), "\n")
 correction <- list(id = 1L, harness_sha256 = digest::digest(file = file.path(repo, "tools/profiling/workflow_kit.R"), algo = "sha256"),
     reason = "canonical fingerprint dropped the KIT-002 record field `declaration`, absent from the kit_001 oracles and present in every later build's nested records; verifier rerun only, member measurement untouched")
 receipt$cases[["candidate-1"]]$verifier_completion <- list(accepted = TRUE, reproduced = NULL, reason = NULL, correction = correction)
