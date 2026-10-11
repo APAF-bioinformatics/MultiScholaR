@@ -1,0 +1,108 @@
+{
+ "schema": "em.ticket_series_evidence_audit.result.v1",
+ "mode": "post_hoc",
+ "audit_date": "2026-10-12",
+ "scope": {
+  "ticket_ids": [
+   "KIT-011"
+  ],
+  "commit": "5ade1884",
+  "claim_classes": [
+   "memory_reduction_production_default",
+   "exactness_cross_build",
+   "promotion_to_control",
+   "correction_authority"
+  ]
+ },
+ "authority": {
+  "route_valid": true,
+  "artifacts": [
+   {
+    "path": "docs/qa/workflow-execution/kit/protocol.md",
+    "sha256": "a5867e9cea97a72892fc7fb972b75d18e644d2b0e27adf49823c544eed8bf068",
+    "version": "1.3"
+   },
+   {
+    "commit": "5ade1884"
+   },
+   {
+    "build": "kit_011",
+    "install": "core/browser-smoke.AFaqC1",
+    "source_commit": "b3d44bdb"
+   },
+   {
+    "stage": "kit-journey-011",
+    "decision": "accepted"
+   }
+  ]
+ },
+ "findings": [
+  {
+   "id": "PY-01",
+   "severity": "low",
+   "layer": "verifier_design",
+   "summary": "correction 1 bundles the canonical field drop and the recomputed-overlay product rule; per-step assets judged from the in-run record",
+   "repair": "none now; recompute assets from head history later",
+   "blocked": "none"
+  },
+  {
+   "id": "PY-02",
+   "severity": "low",
+   "layer": "claim_scope",
+   "summary": "publication files fingerprinted but not compared; outcome does not say so",
+   "repair": "one sentence in claim limits",
+   "blocked": "none"
+  },
+  {
+   "id": "PY-03",
+   "severity": "info",
+   "layer": "provenance",
+   "summary": "correction hash equals the committed verifier",
+   "repair": "none",
+   "blocked": "none"
+  },
+  {
+   "id": "PY-04",
+   "severity": "info",
+   "layer": "evidence_shape",
+   "summary": "legacy archive acceptance rests on tests",
+   "repair": "none",
+   "blocked": "none"
+  },
+  {
+   "id": "PY-05",
+   "severity": "info",
+   "layer": "bindings",
+   "summary": "journey pair control follows the promotion; baseline names kit_001",
+   "repair": "none",
+   "blocked": "none"
+  }
+ ],
+ "tests": [
+  {
+   "name": "audit_inventory.py",
+   "result": "passed"
+  },
+  {
+   "name": "receipts recomputed from traces (3 members)",
+   "result": "passed"
+  },
+  {
+   "name": "decision arithmetic",
+   "result": "passed"
+  },
+  {
+   "name": "correction provenance and kept records",
+   "result": "passed"
+  }
+ ],
+ "closeout": {
+  "implementation_verified": true,
+  "execution_complete": true,
+  "decision_supported": true,
+  "promotion_authorized": true,
+  "claim_scope": "GUI as shipped completes the 300-sample DIA-NN/IQ journey on Linux at 5.5 GiB anonymous where the previous default guarded at 15.5 GiB after 8 steps; states equal to the KIT-005 oracles; files and identity products not judged"
+ },
+ "blockers": [],
+ "next_action": "KIT-013; PY-02 sentence at the next closeout"
+}
