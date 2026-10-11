@@ -3601,7 +3601,7 @@
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
     "protocol_sha256": "a5867e9cea97a72892fc7fb972b75d18e644d2b0e27adf49823c544eed8bf068",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
-    "step_map_sha256": "e14432f147a6019cfc6895af7e153df6829a25b2d91173356cedf4b22daae857",
+    "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
     "core_pinned_unchanged": true,
     "files": {
       "tools/profiling/workflow_kit.R": "9182053c1378b808faca8b574ef83e369a69b158759233a64c3706b2947659f2",
@@ -3610,7 +3610,7 @@
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "bb48e90e34d5ecb914b2671c3f7563296c7460de1e79339f2610c90243dbc5aa",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
-      "tests/testthat/test-workflow-kit-harness.R": "374517dd8d6546e2edb02dc93054c5c88f3a144e39a4a49dda1ba82dd0ba98e7",
+      "tests/testthat/test-workflow-kit-harness.R": "1346168787b612583841f60610eacdf0d38e8a920a25fec40963a844df779358",
       "tests/testthat/test-workflow-execution-adapters.R": "1e6a6cdf9ba8236f28bfc7e0a7924c362264c1bb9a33e79356c9e645e32f7ec0",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

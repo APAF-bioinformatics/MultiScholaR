@@ -2,7 +2,7 @@
   "schema": "kit.in_process_screen_check.v1",
   "ticket": "KIT-006",
   "date": "2026-10-11",
-  "head_commit": "976222c80d05a40365a239afb8e97303c0ac96b5",
+  "head_commit": "76e496dcdca0dcd5acf213d09a80ee5a6d93db1c",
   "population": {
     "source": "kit-lifecycle-complete member, intensity_filtered",
     "rows": 226991,
@@ -15,11 +15,11 @@
     "inclusion_list": null
   },
   "native": {
-    "seconds": 3.1,
+    "seconds": 3,
     "unit": null
   },
   "physical": {
-    "seconds": 1.7,
+    "seconds": 1.6,
     "unit": "complete_sample_after_global_validation",
     "declared_unit": "complete_sample",
     "admission": {
