@@ -25,6 +25,15 @@
       "install_member": "browser-smoke.X9aj9P",
       "source_commit": "8e77d92d87bb84375297d155abe97790619a2ddf",
       "runtime_patch_bytes": 0
+    },
+    "kit_006": {
+      "ticket": "KIT-006",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.qBR5tm/library",
+      "build": "b84b072a88cf7c158da04236ec83f2d81e916b02891d7c40bf7ebcba95ab5fcc",
+      "exact_sum": "5a7c1153436d6ba7defec5635ae6e6d3a7fd8b3b9f6771effe1e35faf629419d",
+      "install_member": "browser-smoke.qBR5tm",
+      "source_commit": "62fb9aecee85defc5d442f5dcd8445822e56b845",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -3582,7 +3591,22 @@
       "mechanism": "the worker's phase hook raises after the ordered result stage completes; the action completes as worker_failed and the head stays on the input"
     }
   },
-  "tickets": [],
+  "tickets": {
+    "006": {
+      "control": "kit_001",
+      "candidate": "kit_006",
+      "pairs": [
+        {
+          "operation": "precursor_rollup",
+          "population": "full_p14"
+        },
+        {
+          "operation": "minimum_peptides_per_sample",
+          "population": "full_primary"
+        }
+      ]
+    }
+  },
   "lifecycle": {
     "ceiling_seconds": 600,
     "fault": {
