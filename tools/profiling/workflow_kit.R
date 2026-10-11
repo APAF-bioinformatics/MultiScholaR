@@ -147,7 +147,8 @@ kitCases <- function(bindings, stage) {
     }
     if (startsWith(stage, "kit-lifecycle-")) {
         kind <- sub("kit-lifecycle-", "", stage, fixed = TRUE)
-        return(list(journey_case("member", "candidate", 1L, kitControl(bindings), "screen",
+        # `lifecycle$build` names the build whose launch path changed (KIT-011: the production default); else the control.
+        return(list(journey_case("member", "candidate", 1L, bindings$lifecycle$build %||% kitControl(bindings), "screen",
             fault = if (kind == "fail") bindings$lifecycle$fault$name else "none",
             selector = paste0("kit:lifecycle:", kind))))
     }
@@ -557,16 +558,20 @@ kitJourneyTicketDecision <- function(receipt, cases, bindings) {
     completed <- completed[vapply(completed, function(step) is.finite(control$phase_peak_anon_bytes[[step]] %||% NA_real_) &&
         is.finite(candidate$phase_peak_anon_bytes[[step]] %||% NA_real_), logical(1))]
     step_ratios <- vapply(completed, function(step) candidate$phase_peak_anon_bytes[[step]] / control$phase_peak_anon_bytes[[step]], numeric(1))
+    # The per-step guard applies from the first saved state (q-value) onward (user decision 2026-10-11, KIT-011
+    # audit PX-01): import and design run the same code on both paths and are reported, not judged.
+    reported_only <- c("import", "design")
+    guarded <- setdiff(completed, reported_only)
     control_complete <- identical(control$outcome, "complete")
     whole_ratio <- candidate$peak_anon_bytes / control$peak_anon_bytes
     resident_ratio <- if (control_complete && is.finite(control$resident_end_bytes) && is.finite(candidate$resident_end_bytes))
         candidate$resident_end_bytes / control$resident_end_bytes else NA_real_
-    not_worse_steps <- length(step_ratios) >= 1L && all(step_ratios <= 1.02)
+    not_worse_steps <- length(guarded) >= 1L && all(step_ratios[guarded] <= 1.02)
     reduced <- is.finite(whole_ratio) && whole_ratio <= 0.95
     status <- if (!not_worse_steps) "rejected" else if (!reduced) "rejected" else "accepted"
     list(status = status, failing_rule = if (!not_worse_steps) "step_not_worse" else if (!reduced) "required_reduction" else NULL,
         members = members, control_outcome = control$outcome, control_peak_is_lower_bound = !control_complete,
-        steps_compared = completed, step_ratios = as.list(step_ratios),
+        steps_compared = completed, steps_guarded = guarded, step_ratios = as.list(step_ratios),
         whole_slice_anon_ratio = whole_ratio, resident_end_ratio = resident_ratio,
         resident_end_bytes = list(control = control$resident_end_bytes, candidate = candidate$resident_end_bytes),
         promotion_authorized = FALSE)

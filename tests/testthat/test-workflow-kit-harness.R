@@ -115,7 +115,9 @@ test_that("KIT stages expand to fixed cases with bound corpora, builds and diges
     expect_false(op$expect_failure)
     lifecycle_build <- b
     lifecycle_build$operation_lifecycle$build <- "kit_006"
+    lifecycle_build$lifecycle$build <- "kit_006"
     expect_identical(h$kitCases(lifecycle_build, "kit-lifecycle-operation-complete")[[1]]$library, "/lib/k")
+    expect_identical(h$kitCases(lifecycle_build, "kit-lifecycle-complete")[[1]]$library, "/lib/k")
     op_fail <- h$kitCases(b, "kit-lifecycle-operation-fail")[[1]]
     expect_identical(op_fail$fault, "after_aggregate")
     expect_true(op_fail$expect_failure)
@@ -535,8 +537,15 @@ test_that("a ticket journey pair runs both builds as users run them and is decid
     expect_identical(rejected$status, "rejected")
     expect_identical(rejected$failing_rule, "required_reduction")
     worse_step <- receipt
-    worse_step$cases[["candidate-1"]]$operation$phase_peak_anon_bytes$import <- 2.7e9 * 1.03
+    worse_step$cases[["candidate-1"]]$operation$phase_peak_anon_bytes$qvalue <- 6.4e9 * 1.03
     expect_identical(h$kitJourneyTicketDecision(worse_step, cases, b)$failing_rule, "step_not_worse")
+    # Import and design are reported, not judged (user decision 2026-10-11).
+    noisy_import <- receipt
+    noisy_import$cases[["candidate-1"]]$operation$phase_peak_anon_bytes$import <- 2.7e9 * 1.07
+    reported <- h$kitJourneyTicketDecision(noisy_import, cases, b)
+    expect_identical(reported$status, "accepted")
+    expect_identical(reported$steps_guarded, steps[3:8])
+    expect_equal(reported$step_ratios$import, 1.07, tolerance = 1e-6)
     guarded <- receipt
     guarded$cases[["candidate-1"]]$operation$status <- "memory_guard"
     expect_identical(h$kitJourneyTicketDecision(guarded, cases, b)$status, "invalid")
