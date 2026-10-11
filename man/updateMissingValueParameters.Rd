@@ -11,7 +11,7 @@ updateMissingValueParameters(
   function_name = "removeRowsWithMissingValuesPercent",
   grouping_variable = "group",
   config_list_name = "config_list",
-  env = .GlobalEnv
+  env = workflowConfigEnvironment()
 )
 }
 \arguments{
@@ -27,7 +27,9 @@ quantifiable values. Default is 2.}
 
 \item{config_list_name}{The name of the global config list variable (defaults to "config_list").}
 
-\item{env}{The environment where the global config list resides (defaults to .GlobalEnv).}
+\item{env}{The environment where the config list resides. The default is the environment
+\code{workflowConfigEnvironment()} resolves: a view of the proteomics workflow bus inside the
+application, the global environment in a script.}
 }
 \value{
 Updated S4 object with synchronized @args and global config_list

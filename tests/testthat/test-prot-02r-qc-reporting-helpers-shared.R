@@ -452,3 +452,16 @@ test_that("updateProteinFiltering accumulates on the owner it is given and leave
     expect_identical(workflowFilteringProgressOwner(), bus)
   })
 })
+
+test_that("updateConfigParameter keeps the workflow bus configuration in step inside the application (KIT-013)", {
+  object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+  bus <- shiny::reactiveValues(config_list = list(srlQvalueProteotypicPeptideClean = list(qvalue_threshold = 0.05)))
+  shiny::testServer(function(input, output, session) {}, {
+    session$userData$workflow_data <- bus
+    updated <- suppressMessages(updateConfigParameter(object, "srlQvalueProteotypicPeptideClean", "qvalue_threshold", 0.01))
+    expect_equal(updated@args$srlQvalueProteotypicPeptideClean$qvalue_threshold, 0.01)
+    expect_equal(shiny::isolate(bus$config_list)$srlQvalueProteotypicPeptideClean$qvalue_threshold, 0.01)
+    expect_false(exists("config_list", envir = .GlobalEnv, inherits = FALSE))
+  })
+  expect_identical(workflowConfigEnvironment(), globalenv())
+})

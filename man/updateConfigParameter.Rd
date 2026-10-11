@@ -10,7 +10,7 @@ updateConfigParameter(
   parameter_name,
   new_value,
   config_list_name = "config_list",
-  env = .GlobalEnv
+  env = workflowConfigEnvironment()
 )
 }
 \arguments{
@@ -30,7 +30,8 @@ Corresponds to the second-level key.}
 configuration (defaults to "config_list").}
 
 \item{env}{The environment where the global config list resides (defaults to
-.GlobalEnv).}
+\code{workflowConfigEnvironment()}: the workflow bus in the application, the global
+environment in a script).}
 }
 \value{
 The modified S4 object.

@@ -103,6 +103,29 @@ updateParamInObject <- function(theObject, param_name_string) {
 }
 
 # ----------------------------------------------------------------------------
+# workflowConfigEnvironment (KIT-013)
+# ----------------------------------------------------------------------------
+#' Resolve the environment the configuration-synchronising helpers read and write `config_list` in.
+#' @description Inside the application the proteomics server registers its workflow bus on the
+#'   Shiny session (`session$userData$workflow_data`); this returns an environment whose
+#'   `config_list` binding reads and writes `workflow_data$config_list`, so `updateConfigParameter`
+#'   and `updateMissingValueParameters` keep the bus configuration in step with the S4 `@args`
+#'   without a global copy. Outside a session, or before registration, it is the global
+#'   environment, which keeps the documented script behaviour.
+#' @return An environment.
+#' @export
+workflowConfigEnvironment <- function() {
+    session <- shiny::getDefaultReactiveDomain()
+    bus <- if (is.null(session)) NULL else session$userData$workflow_data
+    if (is.null(bus)) return(globalenv())
+    env <- new.env(parent = emptyenv())
+    makeActiveBinding("config_list", function(value) {
+        if (missing(value)) shiny::isolate(bus$config_list) else bus$config_list <- value
+    }, env)
+    env
+}
+
+# ----------------------------------------------------------------------------
 # updateMissingValueParameters
 # ----------------------------------------------------------------------------
 #' Update Missing Value Parameters in Configuration List and S4 Object
@@ -118,7 +141,9 @@ updateParamInObject <- function(theObject, param_name_string) {
 #' @param min_groups Integer specifying the minimum number of groups required to have sufficient
 #'                  quantifiable values. Default is 2.
 #' @param config_list_name The name of the global config list variable (defaults to "config_list").
-#' @param env The environment where the global config list resides (defaults to .GlobalEnv).
+#' @param env The environment where the config list resides. The default is the environment
+#'   `workflowConfigEnvironment()` resolves: a view of the proteomics workflow bus inside the
+#'   application, the global environment in a script.
 #'
 #' @return Updated S4 object with synchronized @args and global config_list
 #'
@@ -146,7 +171,7 @@ updateMissingValueParameters <- function(theObject,
                                        function_name = "removeRowsWithMissingValuesPercent",
                                        grouping_variable = "group",
                                        config_list_name = "config_list",
-                                       env = .GlobalEnv) {
+                                       env = workflowConfigEnvironment()) {
     
     # --- Input Validation ---
     if (!isS4(theObject)) {

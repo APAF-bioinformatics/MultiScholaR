@@ -584,7 +584,8 @@ formatConfigList <- function(config_list, indent = 0) {
 #' @param config_list_name The name of the global list variable holding the
 #'                         configuration (defaults to "config_list").
 #' @param env The environment where the global config list resides (defaults to
-#'            .GlobalEnv).
+#'            `workflowConfigEnvironment()`: the workflow bus in the application, the global
+#'            environment in a script).
 #'
 #' @return The modified S4 object.
 #' @export
@@ -615,7 +616,7 @@ updateConfigParameter <- function(theObject,
                                   parameter_name,
                                   new_value,
                                   config_list_name = "config_list",
-                                  env = .GlobalEnv) {
+                                  env = workflowConfigEnvironment()) {
     # --- Input Validation ---
     if (!isS4(theObject)) {
         stop("'theObject' must be an S4 object.")
