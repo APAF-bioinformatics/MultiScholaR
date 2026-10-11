@@ -1,0 +1,46 @@
+{
+  "schema": "kit.screen_cross_build_check.v1",
+  "ticket": "KIT-011",
+  "date": "2026-10-11",
+  "reference": {
+    "stage": "kit-lifecycle-complete.kit-005-screen",
+    "build": "kit_001 (browser-smoke.sMOGTK era)",
+    "populations": 18
+  },
+  "candidate": {
+    "stage": "kit-lifecycle-complete",
+    "build": "kit_011",
+    "install": "browser-smoke.AFaqC1",
+    "decision": "lifecycle_complete_observed",
+    "elapsed_seconds": 486,
+    "peak_gib": 2.527,
+    "anon_peak_gib": 2.099,
+    "resident_end_gib": 1.777,
+    "populations": 18,
+    "phase_peak_anon_gib": {
+      "import": 1.073,
+      "design": 1.236,
+      "qvalue": 1.289,
+      "protein_peptide": 1.311,
+      "rollup": 1.347,
+      "intensity": 1.323,
+      "sample": 1.344,
+      "replicate": 1.341,
+      "imputation": 1.391,
+      "iq": 1.359,
+      "accession": 1.43,
+      "protein_intensity": 1.432,
+      "duplicates": 1.453,
+      "protein_replicate": 1.455,
+      "normalisation_ruv": 2.099,
+      "correlation": 1.546,
+      "session_export": 1.552,
+      "da": 1.913
+    }
+  },
+  "strict_mismatches": ["normalisation_ruv/products/names", "normalisation_ruv/products/normalization_science", "correlation/products/names", "da/products/names"],
+  "mismatches_excluding_operation_identity_products": "normalisation_ruv/products/normalization_science",
+  "explained": "normalisation_ruv/products/normalization_science",
+  "unexplained": [],
+  "identical_states": true
+}

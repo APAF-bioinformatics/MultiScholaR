@@ -456,8 +456,16 @@ kitOperationLifecycleDecision <- function(receipt, cases, bindings) {
 #' Compare the per-step fingerprints of two journey members (the oracle reproducibility check).
 #' @return Character vector of `step/kind/name` mismatches; empty when every fingerprint reproduces.
 #' @noRd
-kitReproduceMismatches <- function(reference, candidate) {
+#' The products a declared operation saves under its own scientific identity (KIT-004's runner): their
+#' name suffix and content embed the build's software identity, so across builds they differ by
+#' construction while the states they reference are identical. A cross-build check reports them
+#' (`kitOperationIdentityProducts`) and judges everything else.
+#' @noRd
+kitOperationIdentityProducts <- "^dia-(normalization-ruv|pearson-pairs|pearson-selection|contrast-references):[0-9a-f]{12}$"
+
+kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL) {
     mismatches <- character()
+    keep <- function(names) if (is.null(ignore_products)) names else names[!grepl(ignore_products, names)]
     for (step in names(reference)) {
         expected <- reference[[step]]$fingerprint
         if (is.null(expected)) next
@@ -465,9 +473,11 @@ kitReproduceMismatches <- function(reference, candidate) {
         if (is.null(actual)) { mismatches <- c(mismatches, paste0(step, "/missing")); next }
         for (kind in c("components", "support", "products")) {
             names_expected <- names(expected[[kind]])
-            if (!setequal(names_expected, names(actual[[kind]])))
+            names_actual <- names(actual[[kind]])
+            if (kind == "products") { names_expected <- keep(names_expected); names_actual <- keep(names_actual) }
+            if (!setequal(names_expected, names_actual))
                 mismatches <- c(mismatches, paste0(step, "/", kind, "/names"))
-            for (name in intersect(names_expected, names(actual[[kind]]))) {
+            for (name in intersect(names_expected, names_actual)) {
                 if (!identical(expected[[kind]][[name]]$sha256, actual[[kind]][[name]]$sha256))
                     mismatches <- c(mismatches, paste0(step, "/", kind, "/", name))
             }
@@ -985,7 +995,12 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
             if (is.null(population$state)) next
             stopifnot(kitStateFingerprintMatches(population$fingerprint, recomputed$states[[population$state]]))
         }
-        receipt$oracle_mismatches <- kitReproduceMismatches(kitOracleJourneyPopulations(bindings), journey$populations)
+        # Cross-build: the operation identity products are reported, every state, support entry, summary and
+        # other product is judged (KIT-011 screen check: identical states on kit_001 and kit_011).
+        receipt$oracle_mismatches <- kitReproduceMismatches(kitOracleJourneyPopulations(bindings), journey$populations,
+            ignore_products = kitOperationIdentityProducts)
+        receipt$operation_identity_products <- unlist(lapply(journey$populations, function(p)
+            grep(kitOperationIdentityProducts, names(p$fingerprint$products), value = TRUE)), use.names = FALSE)
         stopifnot(!length(receipt$oracle_mismatches))
         receipt$populations <- lapply(journey$populations, \(p) list(state = p$state, entity_id = p$entity_id, rows = p$rows))
         receipt$oracle <- "KIT-005 journey_<step> fingerprints"

@@ -315,6 +315,20 @@ test_that("canonical fingerprints drop run-specific ids, times and plot objects 
     expect_length(h$kitReproduceMismatches(first, list(step = list(fingerprint = fingerprint("x")))), 0L)
     expect_identical(h$kitReproduceMismatches(first, list(step = list(fingerprint = fingerprint("y")))), "step/components/protein_quant_table")
     expect_identical(h$kitReproduceMismatches(first, list()), "step/missing")
+    # Operation identity products differ across builds by construction; a cross-build check reports them.
+    with_identity <- function(sha, suffix) {
+        products <- list(normalization_science = list(sha256 = "n"))
+        products[[paste0("dia-normalization-ruv:", suffix)]] <- list(sha256 = sha)
+        list(step = list(fingerprint = list(class = "ProteinQuantitativeData", rows = 10L, summary_sha256 = "s",
+            components = list(protein_quant_table = list(kind = "table", sha256 = "x")), support = list(), products = products)))
+    }
+    expect_identical(h$kitReproduceMismatches(with_identity("a", strrep("1", 12)), with_identity("b", strrep("2", 12))), "step/products/names")
+    expect_length(h$kitReproduceMismatches(with_identity("a", strrep("1", 12)), with_identity("b", strrep("2", 12)),
+        ignore_products = h$kitOperationIdentityProducts), 0L)
+    science_changed <- with_identity("b", strrep("2", 12))
+    science_changed$step$fingerprint$products$normalization_science$sha256 <- "m"
+    expect_identical(h$kitReproduceMismatches(with_identity("a", strrep("1", 12)), science_changed,
+        ignore_products = h$kitOperationIdentityProducts), "step/products/normalization_science")
     expect_true(h$kitStateFingerprintMatches(c(fingerprint("x"), list(extra = 1)), fingerprint("x")))
     expect_false(h$kitStateFingerprintMatches(fingerprint("x"), fingerprint("y")))
     files <- function(pdf, png, stamp = "20261010_184024", id = "3005b574e4ee6") data.frame(
