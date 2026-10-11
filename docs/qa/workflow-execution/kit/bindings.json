@@ -34,6 +34,15 @@
       "install_member": "browser-smoke.qBR5tm",
       "source_commit": "62fb9aecee85defc5d442f5dcd8445822e56b845",
       "runtime_patch_bytes": 0
+    },
+    "kit_007": {
+      "ticket": "KIT-007",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.BThWyC/library",
+      "build": "3f9299c57afb6e0069a410d6b8b8ceeb5c7696a3383f0ace4e9976dace4b26fe",
+      "exact_sum": "2cedab91abe8eb8d019b5c4582fa94261a0adf931b1f719ece2d3630a44634e1",
+      "install_member": "browser-smoke.BThWyC",
+      "source_commit": "c3b40a47d8297d4c1c520c17892fbef99621510c",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -3596,7 +3605,8 @@
       "failed_phase": "ordered_result_stage",
       "error_pattern": "CORE-004 forced failure after the aggregate stage",
       "mechanism": "the worker's phase hook raises after the ordered result stage completes; the action completes as worker_failed and the head stays on the input"
-    }
+    },
+    "build": "kit_007"
   },
   "tickets": {
     "006": {
