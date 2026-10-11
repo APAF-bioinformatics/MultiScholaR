@@ -13,27 +13,61 @@
   "open_flags": 0,
   "steps": [
     {
-      "id": "import", "label": "Import", "unit": "store", "in_journey": true,
+      "id": "import",
+      "label": "Import",
+      "unit": "store",
+      "in_journey": true,
       "module": "R/mod_prot_import_server_helpers.R (process_data observer; initializeDIANativeImport then readDataWithStatusFn)",
       "kernel": "importDiann / importDataByFormat (R/func_prot_import_*)",
-      "evidence": ["R/mod_prot_import_server_helpers.R:289-291 initializeDIANativeImport is gated by multischolar.dia_native_sessions (R/utils_workflow_dia_sessions.R:668-670); the production launch keeps the in-memory WorkflowState"],
-      "writes": ["workflow_data$data_tbl / data_cln (setDIAOwnedPayload)", "state raw_data_s4 via the design step"],
-      "global_statistics": [], "merge": null,
-      "holders": ["R/mod_prot_import_processing_helpers.R:172,203,206 setDIAOwnedPayload(data_tbl)", ":221 data_cln alias of data_tbl", ":340-343 aa_seq_tbl_final (+ .GlobalEnv)"],
-      "mode": "in_process", "flag": null, "notes": []
+      "evidence": [
+        "R/mod_prot_import_server_helpers.R:289-291 initializeDIANativeImport is gated by multischolar.dia_native_sessions (R/utils_workflow_dia_sessions.R:668-670); the production launch keeps the in-memory WorkflowState"
+      ],
+      "writes": [
+        "workflow_data$data_tbl / data_cln (setDIAOwnedPayload)",
+        "state raw_data_s4 via the design step"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "holders": [
+        "R/mod_prot_import_processing_helpers.R:172,203,206 setDIAOwnedPayload(data_tbl)",
+        ":221 data_cln alias of data_tbl",
+        ":340-343 aa_seq_tbl_final (+ .GlobalEnv)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": []
     },
     {
-      "id": "design", "label": "Design", "unit": "store", "in_journey": true,
+      "id": "design",
+      "label": "Design",
+      "unit": "store",
+      "in_journey": true,
       "module": "R/mod_prot_design_builder_* (save_results)",
       "kernel": "design builder (no assay kernel); creates PeptideQuantitativeData and saves state raw_data_s4 (R/mod_prot_design_state_helpers.R:101)",
-      "evidence": ["R/mod_prot_design_state_helpers.R:14 commitDIAReferenceState on the reference path; :101 saveState(raw_data_s4) on the in-memory path"],
-      "writes": ["state raw_data_s4 (PeptideQuantitativeData)", "contrasts_tbl, config_list (.GlobalEnv)"],
-      "global_statistics": [], "merge": null,
-      "holders": ["R/mod_prot_design_state_helpers.R:101 saveState", ":180-181 uniprot_dat_cln (+ .GlobalEnv)", "R/mod_prot_design_builder_server_helpers.R:137,139 newDIASavedReactiveVal (reference-aware)"],
-      "mode": "in_process", "flag": null, "notes": []
+      "evidence": [
+        "R/mod_prot_design_state_helpers.R:14 commitDIAReferenceState on the reference path; :101 saveState(raw_data_s4) on the in-memory path"
+      ],
+      "writes": [
+        "state raw_data_s4 (PeptideQuantitativeData)",
+        "contrasts_tbl, config_list (.GlobalEnv)"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "holders": [
+        "R/mod_prot_design_state_helpers.R:101 saveState",
+        ":180-181 uniprot_dat_cln (+ .GlobalEnv)",
+        "R/mod_prot_design_builder_server_helpers.R:137,139 newDIASavedReactiveVal (reference-aware)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": []
     },
     {
-      "id": "qvalue", "label": "Q-Value Filter", "unit": "feature_group", "grouping": "protein_id_column", "in_journey": true,
+      "id": "qvalue",
+      "label": "Q-Value Filter",
+      "unit": "feature_group",
+      "grouping": "protein_id_column",
+      "in_journey": true,
       "module": "R/mod_prot_qc_peptide_qvalue.R: observeEvent(apply_qvalue_filter) :405 -> runPeptideQvalueApplyObserver :286 -> runPeptideQvalueApplyStep :78",
       "kernel": "srlQvalueProteotypicPeptideClean (R/func_prot_qc_peptide_methods.R:533) -> srlQvalueProteotypicPeptideCleanHelper (R/func_prot_qc_peptide_confidence_filters.R:83) -> classifyPeptideBiologicalExclusions (R/func_prot_qc_exclusion_helpers.R:161) and .annotateProteinIdentificationEvidence (R/func_prot_qc_peptide_evidence_filters.R:69); reference path runDIAReferenceQvalue (R/utils_workflow_dia_state.R:1660) -> produceDIAConfidenceTables (:1886)",
       "evidence": [
@@ -43,17 +77,44 @@
         "R/func_prot_qc_peptide_evidence_filters.R:51-66 group_by(protein_id_column) n_distinct(Stripped.Sequence), n_distinct(Modified.Sequence) over all runs; :100-102 joined back by protein_id_column",
         "R/utils_workflow_dia_state.R:1895-1926 the reference path computes the per-protein evidence lookup as a pass, then streams rows at :1944-1959 with global offsets (:1871, :1945)"
       ],
-      "reads_outside_assay": ["contaminant manifest (R/func_prot_qc_exclusion_helpers.R:66-146)", "@args thresholds (methods.R:564-625)", "design only through cleanDesignMatrixPeptide (methods.R:728)"],
-      "writes": ["peptide_data", "design_matrix (cleaned)", "args$srlQvalueProteotypicPeptideClean (thresholds, confidence_metric_columns, biological_exclusion_summary/ledger, contaminant_manifest_provenance)", "reference path: support ledger, qvalue_progress product"],
-      "global_statistics": [{"name": "source_row_offsets", "why": ".source_row_id is a whole-table row ordinal (confidence_filters.R:242); batches need their global offset"}],
-      "merge": {"design_matrix": "recomputed once on the merged output", "ledgers": "concatenated", "summary counts": "summed"},
-      "holders": ["R/mod_prot_qc_peptide_qvalue.R:212 .savePeptideQcState(qvalue_filtered)"],
+      "reads_outside_assay": [
+        "contaminant manifest (R/func_prot_qc_exclusion_helpers.R:66-146)",
+        "@args thresholds (methods.R:564-625)",
+        "design only through cleanDesignMatrixPeptide (methods.R:728)"
+      ],
+      "writes": [
+        "peptide_data",
+        "design_matrix (cleaned)",
+        "args$srlQvalueProteotypicPeptideClean (thresholds, confidence_metric_columns, biological_exclusion_summary/ledger, contaminant_manifest_provenance)",
+        "reference path: support ledger, qvalue_progress product"
+      ],
+      "global_statistics": [
+        {
+          "name": "source_row_offsets",
+          "why": ".source_row_id is a whole-table row ordinal (confidence_filters.R:242); batches need their global offset"
+        }
+      ],
+      "merge": {
+        "design_matrix": "recomputed once on the merged output",
+        "ledgers": "concatenated",
+        "summary counts": "summed"
+      },
+      "holders": [
+        "R/mod_prot_qc_peptide_qvalue.R:212 .savePeptideQcState(qvalue_filtered)"
+      ],
       "mode": "in_process (reference path exists: runDIAReferenceQvalue, partitioned by protein)",
       "flag": null,
-      "notes": ["The GUI q-value inputs are validated then replaced by the fixed cutoff (confidence_filters.R:121-123; mod_prot_qc_peptide_qvalue.R:142-144).", "Identification evidence is counted after the decoy/contaminant exclusion (confidence_filters.R:262-263) and frozen for later steps."]
+      "notes": [
+        "The GUI q-value inputs are validated then replaced by the fixed cutoff (confidence_filters.R:121-123; mod_prot_qc_peptide_qvalue.R:142-144).",
+        "Identification evidence is counted after the decoy/contaminant exclusion (confidence_filters.R:262-263) and frozen for later steps."
+      ]
     },
     {
-      "id": "protein_peptide", "label": "Protein Evidence (min peptides per protein)", "unit": "feature_group", "grouping": "protein_id_column", "in_journey": true,
+      "id": "protein_peptide",
+      "label": "Protein Evidence (min peptides per protein)",
+      "unit": "feature_group",
+      "grouping": "protein_id_column",
+      "in_journey": true,
       "module": "R/mod_prot_qc_peptide_protein.R: observeEvent(apply_protein_peptide_filter) :328 -> runProteinPeptideApplyObserver :208 -> runProteinPeptideApplyStep :80",
       "kernel": "filterMinNumPeptidesPerProtein (R/func_prot_qc_peptide_methods.R:311) -> filterMinNumPeptidesPerProteinHelper (R/func_prot_qc_peptide_evidence_filters.R:122); reference path runDIAReferencePeptideGroups (R/utils_workflow_dia_qc_rollup.R:274, group = protein_id_column at :322)",
       "evidence": [
@@ -61,19 +122,39 @@
         "R/func_prot_qc_peptide_evidence_filters.R:172-189 fallback recomputes per protein (group_by protein at :51)",
         "R/func_prot_qc_peptide_evidence_filters.R:260-266 inner_join by protein_id_column then threshold"
       ],
-      "reads_outside_assay": ["@args thresholds (methods.R:325-361)", "design only through cleanDesignMatrixPeptide (methods.R:379)"],
-      "writes": ["peptide_data", "design_matrix (cleaned)", "args$filterMinNumPeptidesPerProtein", "removal ledger"],
+      "reads_outside_assay": [
+        "@args thresholds (methods.R:325-361)",
+        "design only through cleanDesignMatrixPeptide (methods.R:379)"
+      ],
+      "writes": [
+        "peptide_data",
+        "design_matrix (cleaned)",
+        "args$filterMinNumPeptidesPerProtein",
+        "removal ledger"
+      ],
       "global_statistics": [],
-      "merge": {"design_matrix": "recomputed once", "ledgers": "concatenated", "summary counts": "summed"},
-      "holders": ["R/mod_prot_qc_peptide_protein.R:151 .savePeptideQcState(protein_peptide_filtered)"],
+      "merge": {
+        "design_matrix": "recomputed once",
+        "ledgers": "concatenated",
+        "summary counts": "summed"
+      },
+      "holders": [
+        "R/mod_prot_qc_peptide_protein.R:151 .savePeptideQcState(protein_peptide_filtered)"
+      ],
       "mode": "in_process (reference path: runDIAReferencePeptideGroups)",
       "flag": null,
-      "notes": ["The decision uses the counts frozen by the q-value step, so peptides removed in between do not change it (evidence_filters.R:4-7, 109-111)."]
+      "notes": [
+        "The decision uses the counts frozen by the q-value step, so peptides removed in between do not change it (evidence_filters.R:4-7, 109-111)."
+      ]
     },
     {
-      "id": "rollup", "label": "Precursor Rollup (P14)", "unit": "complete_sample", "grouping": "sample_id", "in_journey": true,
+      "id": "rollup",
+      "label": "Precursor Rollup (P14)",
+      "unit": "complete_sample",
+      "grouping": "sample_id",
+      "in_journey": true,
       "module": "R/mod_prot_qc_peptide_rollup.R: observeEvent(apply_rollup) :308 -> runPeptideRollupApplyObserver :197 -> runPeptideRollupApplyStep :101",
-      "kernel": "legacy rollUpPrecursorToPeptide (R/func_prot_rollup_methods.R:393) -> rollUpPrecursorToPeptideHelper (:175) -> .rollupSummarisePrepared (:77); P14 replacement kernel: computeDIARelationalRollup (R/utils_workflow_dia_relational_rollup.R:394) -> persistDIARelationalRollup (:249), SQL in prepareDIARelationalAggregate (:196); exactness proven against the R kernel (CORE P14 oracle)",
+      "kernel": "legacy rollUpPrecursorToPeptide (R/func_prot_rollup_methods.R:393) -> rollUpPrecursorToPeptideHelper (:175) -> .rollupSummarisePrepared (:77); P14 replacement kernel: computeDIARelationalRollup (R/utils_workflow_dia_relational_rollup.R:394) -> persistDIARelationalRollup (:249), SQL in prepareDIARelationalAggregate (:196); exactness proven against the R kernel (CORE P14 oracle); batches through partitionBySamples with the CORE-010 admission (KIT-006); declared by diaPrecursorRollupOperation",
       "evidence": [
         "R/func_prot_rollup_methods.R:78-79 group_by(.rollup_sample, .rollup_protein, .rollup_peptide); sums :112-113, :129-131",
         "R/utils_workflow_dia_relational_rollup.R:206-211 dia_r_sum(list(raw ORDER BY .multischolar_order)) GROUP BY sample, protein, peptide",
@@ -82,21 +163,51 @@
         "R/func_prot_rollup_methods.R:339-349 Protein.Ids collapse is group_by(protein) over all samples; :317-334 frozen evidence join",
         "R/utils_workflow_dia_relational_rollup.R:290-293 row_number() OVER (ORDER BY sample, protein, peptide) per batch; :379-380 the kernel declares independence_unit = complete_sample, global_validation = completed_before_batching"
       ],
-      "reads_outside_assay": ["slots is_logged_data, sample_id, protein_id_column, raw/norm quantity columns (rollup_methods.R:397-403)", "design only through cleanDesignMatrixPeptide (:431)"],
-      "writes": ["peptide_data (Peptide.RawQuantity, Peptide.Normalised)", "raw_quantity_column, norm_quantity_column slots", "args$rollUpPrecursorToPeptide$rollup_summary", "design_matrix (cleaned)", "reference path: counts reference, components (qc_rollup.R:1017-1025)"],
-      "global_statistics": [
-        {"name": "protein_annotation_lookup", "why": "Protein.Ids collapse spans all samples of a protein (rollup_methods.R:339-349); computed once from the full input (relational_rollup.R:258-267)"},
-        {"name": "frozen_evidence_lookup", "why": "per-protein evidence join and conflict check (relational_rollup.R:129-133, 258-267)"},
-        {"name": "global_validation", "why": "duplicate/key/finite checks over the whole input before batching (relational_rollup.R:111-133)"}
+      "reads_outside_assay": [
+        "slots is_logged_data, sample_id, protein_id_column, raw/norm quantity columns (rollup_methods.R:397-403)",
+        "design only through cleanDesignMatrixPeptide (:431)"
       ],
-      "merge": {"row order": "batches contiguous in sample sort order; row_number is per batch (relational_rollup.R:290)", "summary": "counts summed", "design_matrix": "recomputed once"},
-      "holders": ["R/mod_prot_qc_peptide_rollup.R:141 .savePeptideQcState(precursor_rollup)"],
+      "writes": [
+        "peptide_data (Peptide.RawQuantity, Peptide.Normalised)",
+        "raw_quantity_column, norm_quantity_column slots",
+        "args$rollUpPrecursorToPeptide$rollup_summary",
+        "design_matrix (cleaned)",
+        "reference path: counts reference, components (qc_rollup.R:1017-1025)"
+      ],
+      "global_statistics": [
+        {
+          "name": "protein_annotation_lookup",
+          "why": "Protein.Ids collapse spans all samples of a protein (rollup_methods.R:339-349); computed once from the full input (relational_rollup.R:258-267)"
+        },
+        {
+          "name": "frozen_evidence_lookup",
+          "why": "per-protein evidence join and conflict check (relational_rollup.R:129-133, 258-267)"
+        },
+        {
+          "name": "global_validation",
+          "why": "duplicate/key/finite checks over the whole input before batching (relational_rollup.R:111-133)"
+        }
+      ],
+      "merge": {
+        "row order": "batches contiguous in sample sort order; row_number is per batch (relational_rollup.R:290)",
+        "summary": "counts summed",
+        "design_matrix": "recomputed once"
+      },
+      "holders": [
+        "R/mod_prot_qc_peptide_rollup.R:141 .savePeptideQcState(precursor_rollup)"
+      ],
       "mode": "in_process in production (legacy backend, no worker cap: computeDIAReferencePrecursorRollup(..., 'legacy')); worker dispatch P14 via utils_workflow_execution.R:1818 under the managed action",
       "flag": null,
-      "notes": ["dia_r_sum orders values by .multischolar_order so the floating-point sum matches R exactly; any re-partitioning must keep source order inside each (sample, protein, peptide) group."]
+      "notes": [
+        "dia_r_sum orders values by .multischolar_order so the floating-point sum matches R exactly; any re-partitioning must keep source order inside each (sample, protein, peptide) group."
+      ]
     },
     {
-      "id": "intensity", "label": "Intensity Filter", "unit": "feature_group", "grouping": "protein_id_column + peptide_sequence_column (after the global quantile pre-pass)", "in_journey": true,
+      "id": "intensity",
+      "label": "Intensity Filter",
+      "unit": "feature_group",
+      "grouping": "protein_id_column + peptide_sequence_column (after the global quantile pre-pass)",
+      "in_journey": true,
       "module": "R/mod_prot_qc_peptide_intensity.R: observeEvent(apply_intensity_filter) :448 -> runPeptideIntensityApplyObserver :351 -> runPeptideIntensityApplyStep :201",
       "kernel": "peptideIntensityFiltering (R/func_prot_qc_peptide_methods.R:5) -> peptideIntensityFilteringHelper (R/func_prot_qc_peptide_group_filters.R:42); reference path runDIAReferencePeptideGroups calls the helper per protein group after the global threshold (R/utils_workflow_dia_qc_rollup.R:329-340, 362-373)",
       "evidence": [
@@ -106,19 +217,43 @@
         "R/func_prot_qc_peptide_group_filters.R:403-413 group_by(protein, peptide, design group) n_distinct(run); :439-452 group_by(protein, peptide) passing_group_count >= min_groups; :464-471 anti_join of removed (protein, peptide)",
         "R/func_prot_qc_peptide_group_filters.R:296-315 input runs must equal the design runs"
       ],
-      "reads_outside_assay": ["design_matrix (run, grouping variable)", "@args parameters (methods.R:48-78)"],
-      "writes": ["peptide_data", "design_matrix (cleaned)", "args$peptideIntensityFiltering (min_peptide_intensity_threshold, support_table, removal_ledger, filter_summary)"],
-      "global_statistics": [{"name": "min_peptide_intensity_threshold", "why": "ceiling(quantile(all finite quantities, p)) (methods.R:107-116); the pre-pass is part of the declaration, recorded in the identity"}],
-      "merge": {"design_matrix": "recomputed once", "support_table and removal_ledger": "concatenated", "filter_summary counts": "summed"},
-      "holders": ["R/mod_prot_qc_peptide_intensity.R:275 .savePeptideQcState(intensity_filtered)"],
+      "reads_outside_assay": [
+        "design_matrix (run, grouping variable)",
+        "@args parameters (methods.R:48-78)"
+      ],
+      "writes": [
+        "peptide_data",
+        "design_matrix (cleaned)",
+        "args$peptideIntensityFiltering (min_peptide_intensity_threshold, support_table, removal_ledger, filter_summary)"
+      ],
+      "global_statistics": [
+        {
+          "name": "min_peptide_intensity_threshold",
+          "why": "ceiling(quantile(all finite quantities, p)) (methods.R:107-116); the pre-pass is part of the declaration, recorded in the identity"
+        }
+      ],
+      "merge": {
+        "design_matrix": "recomputed once",
+        "support_table and removal_ledger": "concatenated",
+        "filter_summary counts": "summed"
+      },
+      "holders": [
+        "R/mod_prot_qc_peptide_intensity.R:275 .savePeptideQcState(intensity_filtered)"
+      ],
       "mode": "in_process (reference path: runDIAReferencePeptideGroups)",
       "flag": null,
-      "notes": ["Partitioned-path defect for KIT-009: the helper aborts when any design run is absent from a group's rows (group_filters.R:296-315), while the reference loop passes the full design to every protein group (qc_rollup.R:312, 360). A per-group declaration must pass the design restricted to the runs present, or the kernel's exactness test will stop; no test covers this section today."]
+      "notes": [
+        "Partitioned-path defect for KIT-009: the helper aborts when any design run is absent from a group's rows (group_filters.R:296-315), while the reference loop passes the full design to every protein group (qc_rollup.R:312, 360). A per-group declaration must pass the design restricted to the runs present, or the kernel's exactness test will stop; no test covers this section today."
+      ]
     },
     {
-      "id": "sample", "label": "Sample Quality (min peptides per sample)", "unit": "complete_sample", "grouping": "sample_id", "in_journey": true,
+      "id": "sample",
+      "label": "Sample Quality (min peptides per sample)",
+      "unit": "complete_sample",
+      "grouping": "sample_id",
+      "in_journey": true,
       "module": "R/mod_prot_qc_peptide_sample.R: observeEvent(apply_sample_filter) :529; under the qualification member the managed action minimum_peptides_per_sample (:582-588) -> utils_workflow_execution.R:1820 computeDIAReferenceSampleFilter; otherwise runPeptideSampleApplyObserver :609 -> runPeptideSampleApplyStep :175",
-      "kernel": "filterMinNumPeptidesPerSample (R/func_prot_qc_peptide_methods.R:421) -> filterMinNumPeptidesPerSampleHelper (R/func_prot_qc_peptide_evidence_filters.R:290); reference: computeDIAReferenceSampleFilter (R/utils_workflow_dia_qc_rollup.R:1254) with prepareDIASampleFilterCounts (:1121, fixed 3 batches)",
+      "kernel": "filterMinNumPeptidesPerSample (R/func_prot_qc_peptide_methods.R:421) -> filterMinNumPeptidesPerSampleHelper (R/func_prot_qc_peptide_evidence_filters.R:290); reference: computeDIAReferenceSampleFilter (R/utils_workflow_dia_qc_rollup.R:1254) with prepareDIASampleFilterCounts: adaptive complete-sample batches (floor three) through partitionBySamples / chooseCompleteGroupBatches (R/utils_workflow_partitions.R, KIT-006); declared by diaSampleFilterOperation",
       "evidence": [
         "R/func_prot_qc_peptide_evidence_filters.R:386-393 transmute(sample, protein, peptide) |> distinct() |> count(sample)",
         "R/func_prot_qc_peptide_evidence_filters.R:394-397 passes if count >= threshold or in inclusion_list; :408-409 inner_join of passing samples",
@@ -126,34 +261,79 @@
         "R/func_prot_qc_peptide_evidence_filters.R:429 inclusion_entries_absent_from_data = setdiff(inclusion_list, input samples) (whole-table provenance value)",
         "R/utils_workflow_dia_qc_rollup.R:1304-1307 count(DISTINCT (protein, peptide)) GROUP BY sample; :1141-1169 batched over complete samples; :1402-1405 the kernel declares complete_sample_after_global_validation"
       ],
-      "reads_outside_assay": ["design_matrix (validation)", "inclusion_list from @args (methods.R:439-447)"],
-      "writes": ["peptide_data", "design_matrix (cleaned)", "args$filterMinNumPeptidesPerSample (cutoff, inclusion_list, support_table, removal_ledger, filter_summary)", "reference: support/removal components and counts (qc_rollup.R:1387-1397)"],
-      "global_statistics": [{"name": "design_validation_and_inclusion_absence", "why": "unique design runs, input runs a subset of the design, and the inclusion-absence set (evidence_filters.R:362-384, 429); recomputed globally by computeDIAReferenceSampleFilter (qc_rollup.R:1360)"}],
-      "merge": {"counts": "summed", "non-additive summary fields": "recomputed globally (not taken from the first batch)", "design_matrix": "recomputed once", "ledgers": "concatenated"},
-      "holders": ["R/mod_prot_qc_peptide_sample.R:245 .savePeptideQcState(sample_filtered)", ":504/:515 managed_action holds filteredS4 on the native arm"],
+      "reads_outside_assay": [
+        "design_matrix (validation)",
+        "inclusion_list from @args (methods.R:439-447)"
+      ],
+      "writes": [
+        "peptide_data",
+        "design_matrix (cleaned)",
+        "args$filterMinNumPeptidesPerSample (cutoff, inclusion_list, support_table, removal_ledger, filter_summary)",
+        "reference: support/removal components and counts (qc_rollup.R:1387-1397)"
+      ],
+      "global_statistics": [
+        {
+          "name": "design_validation_and_inclusion_absence",
+          "why": "unique design runs, input runs a subset of the design, and the inclusion-absence set (evidence_filters.R:362-384, 429); recomputed globally by computeDIAReferenceSampleFilter (qc_rollup.R:1360)"
+        }
+      ],
+      "merge": {
+        "counts": "summed",
+        "non-additive summary fields": "recomputed globally (not taken from the first batch)",
+        "design_matrix": "recomputed once",
+        "ledgers": "concatenated"
+      },
+      "holders": [
+        "R/mod_prot_qc_peptide_sample.R:245 .savePeptideQcState(sample_filtered)",
+        ":504/:515 managed_action holds filteredS4 on the native arm"
+      ],
       "mode": "worker (physical variant) under the journey's launch record; in_process in the production default (worker_cap 12 GiB on the reference path)",
       "flag": null,
-      "notes": ["Merge defect for KIT-009/KIT-014: runDIAReferencePeptideGroups merges only sum_fields and takes other summary fields from the first group (qc_rollup.R:344-347, 391-396); the complete-sample declaration must recompute inclusion_entries_absent_from_data globally as computeDIAReferenceSampleFilter does."]
+      "notes": [
+        "Merge defect for KIT-009/KIT-014: runDIAReferencePeptideGroups merges only sum_fields and takes other summary fields from the first group (qc_rollup.R:344-347, 391-396); the complete-sample declaration must recompute inclusion_entries_absent_from_data globally as computeDIAReferenceSampleFilter does."
+      ]
     },
     {
-      "id": "replicate", "label": "Replicate Filter", "unit": "feature_group", "grouping": "protein_id_column + peptide_sequence_column", "in_journey": true,
+      "id": "replicate",
+      "label": "Replicate Filter",
+      "unit": "feature_group",
+      "grouping": "protein_id_column + peptide_sequence_column",
+      "in_journey": true,
       "module": "R/mod_prot_qc_peptide_replicate.R: observeEvent(apply_replicate_filter) :303 -> runPeptideReplicateApplyObserver :235 -> runPeptideReplicateApplyStep :127",
       "kernel": "removePeptidesWithOnlyOneReplicate (R/func_prot_qc_peptide_methods.R:243) -> removePeptidesWithOnlyOneReplicateHelper (R/func_prot_qc_peptide_technical_replicate_filters.R:92)",
       "evidence": [
         "R/func_prot_qc_peptide_technical_replicate_filters.R:151-158 design mapping run -> replicate group; :173-180 distinct(run, protein, peptide) joined to the mapping",
         "R/func_prot_qc_peptide_technical_replicate_filters.R:185-194 group_by(replicate_group, protein, peptide) n_distinct(run); :211-217 group_by(protein, peptide) any group with >= 2 runs; :224-228 inner_join of retained features"
       ],
-      "reads_outside_assay": ["design_matrix (replicate_group_column; GUI input with fallbacks, methods.R:250-258)"],
-      "writes": ["peptide_data", "design_matrix (cleaned)", "args$removePeptidesWithOnlyOneReplicate (support_table, removal_ledger, filter_summary)"],
+      "reads_outside_assay": [
+        "design_matrix (replicate_group_column; GUI input with fallbacks, methods.R:250-258)"
+      ],
+      "writes": [
+        "peptide_data",
+        "design_matrix (cleaned)",
+        "args$removePeptidesWithOnlyOneReplicate (support_table, removal_ledger, filter_summary)"
+      ],
       "global_statistics": [],
-      "merge": {"design_matrix": "recomputed once", "ledgers": "concatenated", "summary counts": "summed"},
-      "holders": ["R/mod_prot_qc_peptide_replicate.R:168 .savePeptideQcState(replicate_filtered)"],
+      "merge": {
+        "design_matrix": "recomputed once",
+        "ledgers": "concatenated",
+        "summary counts": "summed"
+      },
+      "holders": [
+        "R/mod_prot_qc_peptide_replicate.R:168 .savePeptideQcState(replicate_filtered)"
+      ],
       "mode": "in_process (reference path: runDIAReferencePeptideGroups by protein)",
       "flag": null,
-      "notes": ["Retention policy is supported_in_any_group (methods.R:276): a feature with two runs in any replicate group is kept everywhere."]
+      "notes": [
+        "Retention policy is supported_in_any_group (methods.R:276): a feature with two runs in any replicate group is kept everywhere."
+      ]
     },
     {
-      "id": "imputation", "label": "Imputation", "unit": "feature_group", "grouping": "protein_id_column + peptide_sequence_column within design technical-replicate groups", "in_journey": true,
+      "id": "imputation",
+      "label": "Imputation",
+      "unit": "feature_group",
+      "grouping": "protein_id_column + peptide_sequence_column within design technical-replicate groups",
+      "in_journey": true,
       "module": "R/mod_prot_qc_peptide_impute.R: observeEvent(apply_imputation) :418 -> runPeptideImputationApplyObserver :305 -> runPeptideImputationStep :129",
       "kernel": "peptideMissingValueImputation (R/func_pept_s4_missingness.R:5) -> peptideMissingValueImputationHelper (R/func_pept_imputation_helpers.R:110)",
       "evidence": [
@@ -162,17 +342,41 @@
         "R/func_pept_imputation_helpers.R:395, 496-503 row order from .impute_source_order and design order",
         "no set.seed/rnorm/runif/sample on this path; imputePerCol (helpers:11-22, rnorm at :20) has no caller"
       ],
-      "reads_outside_assay": ["design_matrix (technical_replicate_id, optional exclusion column; missingness.R:47-50, 77)"],
-      "writes": ["peptide_data (Peptide.Imputed, is_imputed; generated rows for unobserved run x feature pairs)", "design_matrix (cleaned)", "args$peptideMissingValueImputation (support_table, imputation_summary)", "qc_params.RDS (impute.R:196-205)"],
-      "global_statistics": [{"name": "source_row_order", "why": "exact row order needs global source ordinals and design order (handled by the reference path at qc_rollup.R:356-358, 402-421, 495)"}],
-      "merge": {"generated rows": "appended per batch, ordered by design order", "design_matrix": "recomputed once", "summary counts": "summed"},
-      "holders": ["R/mod_prot_qc_peptide_impute.R:209 .savePeptideQcState(imputed)"],
+      "reads_outside_assay": [
+        "design_matrix (technical_replicate_id, optional exclusion column; missingness.R:47-50, 77)"
+      ],
+      "writes": [
+        "peptide_data (Peptide.Imputed, is_imputed; generated rows for unobserved run x feature pairs)",
+        "design_matrix (cleaned)",
+        "args$peptideMissingValueImputation (support_table, imputation_summary)",
+        "qc_params.RDS (impute.R:196-205)"
+      ],
+      "global_statistics": [
+        {
+          "name": "source_row_order",
+          "why": "exact row order needs global source ordinals and design order (handled by the reference path at qc_rollup.R:356-358, 402-421, 495)"
+        }
+      ],
+      "merge": {
+        "generated rows": "appended per batch, ordered by design order",
+        "design_matrix": "recomputed once",
+        "summary counts": "summed"
+      },
+      "holders": [
+        "R/mod_prot_qc_peptide_impute.R:209 .savePeptideQcState(imputed)"
+      ],
       "mode": "in_process (reference path: runDIAReferencePeptideGroups by protein)",
       "flag": null,
-      "notes": ["Imputes the raw quantity column (missingness.R:78) by the arithmetic mean of linear raw values within technical replicates."]
+      "notes": [
+        "Imputes the raw quantity column (missingness.R:78) by the arithmetic mean of linear raw values within technical replicates."
+      ]
     },
     {
-      "id": "iq", "label": "IQ Protein Rollup", "unit": "feature_group", "grouping": "protein_id_column (primary_id); peptides by peptide_sequence_column", "in_journey": true,
+      "id": "iq",
+      "label": "IQ Protein Rollup",
+      "unit": "feature_group",
+      "grouping": "protein_id_column (primary_id); peptides by peptide_sequence_column",
+      "in_journey": true,
       "module": "R/mod_prot_qc_protein_rollup.R: runProteinIqRollupApplyObserver :571 -> runProteinIqRollupApplyStep :228",
       "kernel": "iq::process_long_format (injected :232, called :323-332) -> iq::fast_preprocess -> iq::fast_MaxLFQ; reference input writer writeDIAIQInput (R/utils_workflow_dia_qc_rollup.R:722-742)",
       "evidence": [
@@ -181,17 +385,40 @@
         "iq::fast_MaxLFQ estimates each protein from its own rows only (installed iq package)",
         "R/mod_prot_qc_protein_rollup.R:369-376 survivingSamples = samples present in the IQ output; the design is filtered to them (dataset-level)"
       ],
-      "reads_outside_assay": ["design_matrix (:284, :293, :373-374)", "peptide lineage / args$protein_accession_provenance (:303-306)"],
-      "writes": ["new ProteinQuantitativeData: protein_quant_table, protein_id_table, design_matrix (surviving samples), args", "peptide_values_imputed.tsv, iq_output_file.txt (:288-291, :321)"],
-      "global_statistics": [{"name": "surviving_sample_set", "why": "the union over all batches of samples with a positive value (:369-376); the design must be filtered once on the merged output"}],
-      "merge": {"design_matrix": "recomputed once from the union of surviving samples", "protein_id_table": "concatenated", "column order": "from the design, not the data (:293-297)"},
-      "holders": ["R/mod_prot_qc_protein_rollup.R:425 .savePeptideQcState(protein_s4_created)"],
+      "reads_outside_assay": [
+        "design_matrix (:284, :293, :373-374)",
+        "peptide lineage / args$protein_accession_provenance (:303-306)"
+      ],
+      "writes": [
+        "new ProteinQuantitativeData: protein_quant_table, protein_id_table, design_matrix (surviving samples), args",
+        "peptide_values_imputed.tsv, iq_output_file.txt (:288-291, :321)"
+      ],
+      "global_statistics": [
+        {
+          "name": "surviving_sample_set",
+          "why": "the union over all batches of samples with a positive value (:369-376); the design must be filtered once on the merged output"
+        }
+      ],
+      "merge": {
+        "design_matrix": "recomputed once from the union of surviving samples",
+        "protein_id_table": "concatenated",
+        "column order": "from the design, not the data (:293-297)"
+      },
+      "holders": [
+        "R/mod_prot_qc_protein_rollup.R:425 .savePeptideQcState(protein_s4_created)"
+      ],
       "mode": "in_process",
       "flag": null,
-      "notes": ["IQ writes constant Q.Value columns (:307-309), so its filter_double_less is a no-op; the default qc-plots.pdf lands in the working directory."]
+      "notes": [
+        "IQ writes constant Q.Value columns (:307-309), so its filter_double_less is a no-op; the default qc-plots.pdf lands in the working directory."
+      ]
     },
     {
-      "id": "accession", "label": "Accession Cleanup", "unit": "row", "grouping": "rows of protein_id_table (one per protein group on the DIA branch)", "in_journey": true,
+      "id": "accession",
+      "label": "Accession Cleanup",
+      "unit": "row",
+      "grouping": "rows of protein_id_table (one per protein group on the DIA branch)",
+      "in_journey": true,
       "module": "R/mod_prot_qc_protein_cleanup.R: runProteinAccessionCleanupApplyObserver :294 -> runProteinAccessionCleanupStep :117",
       "kernel": "chooseBestProteinAccession (R/func_prot_s4_accession_methods.R:10-253) -> chooseBestProteinAccessionHelper (R/func_prot_annotation_accession_ranking_helpers.R:18-160)",
       "evidence": [
@@ -199,17 +426,34 @@
         "R/func_prot_annotation_accession_ranking_helpers.R:42-48 row-wise split of the accession string; :59-63 left_join to the FASTA table; :118-121, :139-147 rank within the group",
         "non-DIA branch :128-130, :183-209 merges rows sharing a best accession (not taken for DIA)"
       ],
-      "reads_outside_assay": ["aa_seq_tbl_final FASTA table (.GlobalEnv; mod :149-151)", "workflowData$fasta_metadata (:180-185)"],
-      "writes": ["protein_id_table (+ uniprot_acc)", "args$protein_accession_cleanup, args$chooseBestProteinAccession (includes the FASTA table)", "accession_cleanup_results.RDS (non-reference)"],
+      "reads_outside_assay": [
+        "aa_seq_tbl_final FASTA table (.GlobalEnv; mod :149-151)",
+        "workflowData$fasta_metadata (:180-185)"
+      ],
+      "writes": [
+        "protein_id_table (+ uniprot_acc)",
+        "args$protein_accession_cleanup, args$chooseBestProteinAccession (includes the FASTA table)",
+        "accession_cleanup_results.RDS (non-reference)"
+      ],
       "global_statistics": [],
-      "merge": {"protein_id_table": "concatenated"},
-      "holders": ["R/mod_prot_qc_protein_cleanup.R:228 saveState(protein_accession_cleaned)"],
+      "merge": {
+        "protein_id_table": "concatenated"
+      },
+      "holders": [
+        "R/mod_prot_qc_protein_cleanup.R:228 saveState(protein_accession_cleaned)"
+      ],
       "mode": "in_process",
       "flag": null,
-      "notes": ["The whole FASTA table is stored into @args by updateParamInObject (accession_methods.R:72)."]
+      "notes": [
+        "The whole FASTA table is stored into @args by updateParamInObject (accession_methods.R:72)."
+      ]
     },
     {
-      "id": "protein_intensity", "label": "Protein Intensity Filter", "unit": "whole_matrix", "grouping": null, "in_journey": true,
+      "id": "protein_intensity",
+      "label": "Protein Intensity Filter",
+      "unit": "whole_matrix",
+      "grouping": null,
+      "in_journey": true,
       "module": "R/mod_prot_qc_protein_intensity.R: runProteinIntensityFilterApplyObserver :273 -> runProteinIntensityFilterApplyStep :120",
       "kernel": "removeRowsWithMissingValuesPercent (R/func_prot_s4_qc_filter_methods.R:130-428) -> removeRowsWithMissingValuesPercentHelper (R/func_prot_qc_filtering_helpers.R:157-277); cutoffs from updateMissingValueParameters (R/func_general_parameter_helpers.R:143)",
       "evidence": [
@@ -217,17 +461,43 @@
         "R/func_prot_qc_filtering_helpers.R:204 join design; :227-229 samples per group; :239-251 per (protein, group) missing count and per-protein percent of failing groups; :259 anti_join",
         "R/func_general_parameter_helpers.R:148, 170-187 cutoffs from design replicate counts with grouping 'group'"
       ],
-      "reads_outside_assay": ["design_matrix", "config_list (.GlobalEnv) through updateMissingValueParameters"],
-      "writes": ["protein_quant_table", "design_matrix (cleaned)", "args$removeRowsWithMissingValuesPercent (grouping, cutoffs, percentile)", "config_list (.GlobalEnv)"],
-      "global_statistics": [{"name": "min_protein_intensity_threshold", "why": "dataset-wide quantile (filtering_helpers.R:216-220); audit A2 keeps this step whole-matrix (runProjected)"}, {"name": "group_sizes", "why": "num_per_group and total_num_of_groups from the sample columns and design (:227-245)"}],
+      "reads_outside_assay": [
+        "design_matrix",
+        "config_list (.GlobalEnv) through updateMissingValueParameters"
+      ],
+      "writes": [
+        "protein_quant_table",
+        "design_matrix (cleaned)",
+        "args$removeRowsWithMissingValuesPercent (grouping, cutoffs, percentile)",
+        "config_list (.GlobalEnv)"
+      ],
+      "global_statistics": [
+        {
+          "name": "min_protein_intensity_threshold",
+          "why": "dataset-wide quantile (filtering_helpers.R:216-220); audit A2 keeps this step whole-matrix (runProjected)"
+        },
+        {
+          "name": "group_sizes",
+          "why": "num_per_group and total_num_of_groups from the sample columns and design (:227-245)"
+        }
+      ],
       "merge": null,
-      "holders": ["R/mod_prot_qc_protein_intensity.R:193 saveState(protein_intensity_filtered)"],
+      "holders": [
+        "R/mod_prot_qc_protein_intensity.R:193 saveState(protein_intensity_filtered)"
+      ],
       "mode": "in_process",
       "flag": null,
-      "notes": ["The same method re-runs after RUV (mod_prot_norm_ruv_helpers.R:319-321; utils_workflow_dia_products.R:353), recomputing the quantile on corrected values with the args stored by the first run.", "The ceiling() on the log2-scale quantile (up to one log2 unit stricter) was removed 2026-10-09 at the five proteomics sites; the lipidomics and metabolomics intensity filters keep theirs until their stage (KIT-031/032)."]
+      "notes": [
+        "The same method re-runs after RUV (mod_prot_norm_ruv_helpers.R:319-321; utils_workflow_dia_products.R:353), recomputing the quantile on corrected values with the args stored by the first run.",
+        "The ceiling() on the log2-scale quantile (up to one log2 unit stricter) was removed 2026-10-09 at the five proteomics sites; the lipidomics and metabolomics intensity filters keep theirs until their stage (KIT-031/032)."
+      ]
     },
     {
-      "id": "duplicates", "label": "Duplicate Removal", "unit": "feature_group", "grouping": "protein_id_column (fallback Protein.Ids)", "in_journey": true,
+      "id": "duplicates",
+      "label": "Duplicate Removal",
+      "unit": "feature_group",
+      "grouping": "protein_id_column (fallback Protein.Ids)",
+      "in_journey": true,
       "module": "R/mod_prot_qc_protein_dedup.R: runProteinDuplicateRemovalApplyObserver :179 -> runProteinDuplicateRemovalStep :74",
       "kernel": "inline dplyr in runProteinDuplicateRemovalStep",
       "evidence": [
@@ -235,33 +505,64 @@
         "R/mod_prot_qc_protein_dedup.R:121-127 group_by(protein_id_column) summarise(across(numeric, aggregationFn(na.rm = TRUE)))"
       ],
       "reads_outside_assay": [],
-      "writes": ["protein_quant_table", "state config (aggregation_method, duplicates_found, num_duplicates)"],
+      "writes": [
+        "protein_quant_table",
+        "state config (aggregation_method, duplicates_found, num_duplicates)"
+      ],
       "global_statistics": [],
-      "merge": {"counts": "summed"},
-      "holders": ["R/mod_prot_qc_protein_dedup.R:131 saveState(duplicates_removed)"],
+      "merge": {
+        "counts": "summed"
+      },
+      "holders": [
+        "R/mod_prot_qc_protein_dedup.R:131 saveState(duplicates_removed)"
+      ],
       "mode": "in_process",
       "flag": null,
-      "notes": ["The kernel lives in the module, not in a func_* file; KIT-015 declares it from there without rewriting it."]
+      "notes": [
+        "The kernel lives in the module, not in a func_* file; KIT-015 declares it from there without rewriting it."
+      ]
     },
     {
-      "id": "protein_replicate", "label": "Protein Replicate Filter", "unit": "row", "grouping": null, "in_journey": true,
+      "id": "protein_replicate",
+      "label": "Protein Replicate Filter",
+      "unit": "row",
+      "grouping": null,
+      "in_journey": true,
       "module": "R/mod_prot_qc_protein_replicate.R: runProteinReplicateFilterApplyObserver :226 -> runProteinReplicateFilterApplyStep :80 (grouping default 'group', :375)",
       "kernel": "removeProteinsWithOnlyOneReplicate (R/func_prot_s4_qc_filter_methods.R:51-127) -> removeProteinsWithOnlyOneReplicateHelper (R/func_prot_qc_filtering_helpers.R:42-88)",
       "evidence": [
         "R/func_prot_qc_filtering_helpers.R:54 left_join design; :55-56 group_by(grouping, protein); :72-77 keep proteins with > 1 value in > 1 groups; :82-84 inner_join",
         "R/func_prot_s4_qc_filter_methods.R:92-97 pivot_longer; :112-117 pivot_wider; :119 cleanDesignMatrix"
       ],
-      "reads_outside_assay": ["design_matrix (grouping column)"],
-      "writes": ["protein_quant_table", "design_matrix (cleaned)", "args$removeProteinsWithOnlyOneReplicate", "remove_proteins_with_only_one_rep.tsv, qc_params.RDS (non-reference)"],
+      "reads_outside_assay": [
+        "design_matrix (grouping column)"
+      ],
+      "writes": [
+        "protein_quant_table",
+        "design_matrix (cleaned)",
+        "args$removeProteinsWithOnlyOneReplicate",
+        "remove_proteins_with_only_one_rep.tsv, qc_params.RDS (non-reference)"
+      ],
       "global_statistics": [],
-      "merge": {"design_matrix": "recomputed once", "protein_counts": "summed"},
-      "holders": ["R/mod_prot_qc_protein_replicate.R:168 saveState(protein_replicate_filtered)"],
+      "merge": {
+        "design_matrix": "recomputed once",
+        "protein_counts": "summed"
+      },
+      "holders": [
+        "R/mod_prot_qc_protein_replicate.R:168 saveState(protein_replicate_filtered)"
+      ],
       "mode": "in_process (multidplyr partition optional; reference mode forces local, mod :103-104)",
       "flag": null,
-      "notes": ["The rule is at least 2 non-NA values in at least 2 groups of the biological grouping variable (:72, :76)."]
+      "notes": [
+        "The rule is at least 2 non-NA values in at least 2 groups of the biological grouping variable (:72, :76)."
+      ]
     },
     {
-      "id": "normalisation_ruv", "label": "Normalisation and RUV", "unit": "whole_matrix", "grouping": null, "in_journey": true,
+      "id": "normalisation_ruv",
+      "label": "Normalisation and RUV",
+      "unit": "whole_matrix",
+      "grouping": null,
+      "in_journey": true,
       "module": "R/mod_prot_norm_workflow_helpers.R: runProtNormNormalizationWorkflow :451 (reference: runDIAReferenceNormalization, R/utils_workflow_dia_products.R:299) -> runProtNormBetweenSamplesStep :23; RUV: R/mod_prot_norm_ruv_helpers.R resolveProtNormRuvParameters :98, applyProtNormRuvCorrectionStep :274, finalizeProtNormRuvCleanupStep :301",
       "kernel": "normaliseBetweenSamples (R/func_prot_s4_norm_methods.R:48-106) -> limma::normalizeCyclicLoess (:77); findBestNegCtrlPercentage (R/func_prot_norm_optimization_helpers.R:584-901) -> getNegCtrlProtAnova (R/func_prot_s4_norm_controls.R:62-128); ruvCancor (norm_methods.R:108-170); ruvIII_C_Varying (norm_methods.R:174-239) -> RUVIIIC::RUVIII_C_Varying; then removeRowsWithMissingValuesPercent",
       "evidence": [
@@ -271,44 +572,98 @@
         "R/func_prot_s4_norm_methods.R: M = replicate matrix from resolveProtRuvReplicateBlocks (technical replicates = group x replicate blocks when the design has duplicates, else ruv_grouping_variable; R/func_prot_norm_optimization_helpers.R); RUVIII_C_Varying(k, Y = all samples x all proteins, M, potentialControls)",
         "R/mod_prot_norm_ruv_helpers.R:319-321 post-RUV removeRowsWithMissingValuesPercent (dataset-wide quantile again)"
       ],
-      "reads_outside_assay": ["design_matrix (grouping variable, pool detection)", "config_list (.GlobalEnv)", "GUI inputs"],
-      "writes": ["protein_quant_table", "design_matrix (cleaned)", "args$normaliseBetweenSamples, args$ruvIII_C_Varying (grouping, k, ctrl)", "normData holders and ruv_optimization_result", "ruv_optimization_results.RDS, normalized_protein_matrix_pre_ruv.tsv, 11_RUV_filtered plot, QC plots", "reference path: owned values normalized-science and ruv-science, product dia-normalization-ruv, state ruv_corrected"],
+      "reads_outside_assay": [
+        "design_matrix (grouping variable, pool detection)",
+        "config_list (.GlobalEnv)",
+        "GUI inputs"
+      ],
+      "writes": [
+        "protein_quant_table",
+        "design_matrix (cleaned)",
+        "args$normaliseBetweenSamples, args$ruvIII_C_Varying (grouping, k, ctrl)",
+        "normData holders and ruv_optimization_result",
+        "ruv_optimization_results.RDS, normalized_protein_matrix_pre_ruv.tsv, 11_RUV_filtered plot, QC plots",
+        "reference path: owned values normalized-science and ruv-science, product dia-normalization-ruv, state ruv_corrected"
+      ],
       "global_statistics": [],
       "merge": null,
-      "holders": ["R/mod_prot_norm_workflow_helpers.R:47 normalized_protein_obj, :105 ruv_normalized_obj, :128 saveState(normalized)", "R/mod_prot_norm_ruv_helpers.R:295, :375 ruv_normalized_obj; :380 saveState(ruv_corrected)"],
+      "holders": [
+        "R/mod_prot_norm_workflow_helpers.R:47 normalized_protein_obj, :105 ruv_normalized_obj, :128 saveState(normalized)",
+        "R/mod_prot_norm_ruv_helpers.R:295, :375 ruv_normalized_obj; :380 saveState(ruv_corrected)"
+      ],
       "mode": "in_process (reference path: runDIAReferenceNormalization, one declaration for normalisation + RUV per audit B4)",
       "flag": null,
-      "notes": ["Changed 2026-10-09 (user decision): RUV-III uses technical replicates (group x replicate blocks) as its replicate sets when the design has them, else the grouping variable; the structure used is recorded in args$ruvIII_C_Varying$ruv_replicate_structure. Control selection (ANOVA by group) and the canonical-correlation k search keep the biological grouping.", "Control-protein ties at q = 1 make the control set depend on row order (:487): the projected object must preserve row order."]
+      "notes": [
+        "Changed 2026-10-09 (user decision): RUV-III uses technical replicates (group x replicate blocks) as its replicate sets when the design has them, else the grouping variable; the structure used is recorded in args$ruvIII_C_Varying$ruv_replicate_structure. Control selection (ANOVA by group) and the canonical-correlation k search keep the biological grouping.",
+        "Control-protein ties at q = 1 make the control set depend on row order (:487): the projected object must preserve row order."
+      ]
     },
     {
-      "id": "correlation", "label": "Correlation Filtering", "unit": "whole_matrix", "grouping": null, "in_journey": true,
+      "id": "correlation",
+      "label": "Correlation Filtering",
+      "unit": "whole_matrix",
+      "grouping": null,
+      "in_journey": true,
       "module": "R/mod_prot_norm_workflow_helpers.R: runProtNormApplyCorrelationObserver :633 -> R/mod_prot_norm_correlation_helpers.R runProtNormApplyCorrelationWorkflow :380 -> runProtNormCorrelationVectorStep :295, runProtNormCorrelationFilterStep :328; reference: runDIAReferenceCorrelation (R/utils_workflow_dia_products.R:494)",
       "kernel": "pearsonCorForSamplePairs (R/func_prot_s4_qc_correlation_methods.R:103-215); filterSamplesByProteinCorrelationThreshold (R/func_prot_s4_qc_filter_methods.R:445-503) -> filterSamplesByProteinCorrelationThresholdHelper (R/func_prot_qc_correlation_helpers.R:365-443)",
       "evidence": [
         "R/func_prot_s4_qc_correlation_methods.R:139 cor(mat, pearson, pairwise.complete.obs) over all proteins; :147 join sample -> group; :176 within-group pairs; :192 drop pool/qc groups",
         "R/func_prot_qc_correlation_helpers.R:392-398 keep a sample if any of its pairs has r >= threshold; :418-421 unpaired samples kept; :429-430 column select"
       ],
-      "reads_outside_assay": ["design_matrix (grouping column)"],
-      "writes": ["protein_quant_table (sample columns dropped)", "design_matrix (cleaned)", "args$filterSamplesByProteinCorrelationThreshold (pair table, threshold)", "12_correlation_filtered plot, final PCA, final matrix TSV", "reference path: products dia-pearson-pairs and dia-pearson-selection, state correlation_filtered"],
-      "global_statistics": [{"name": "pairwise_within_group_correlations", "why": "computed once over the full matrix (:139); the threshold is then a per-sample column selection"}],
+      "reads_outside_assay": [
+        "design_matrix (grouping column)"
+      ],
+      "writes": [
+        "protein_quant_table (sample columns dropped)",
+        "design_matrix (cleaned)",
+        "args$filterSamplesByProteinCorrelationThreshold (pair table, threshold)",
+        "12_correlation_filtered plot, final PCA, final matrix TSV",
+        "reference path: products dia-pearson-pairs and dia-pearson-selection, state correlation_filtered"
+      ],
+      "global_statistics": [
+        {
+          "name": "pairwise_within_group_correlations",
+          "why": "computed once over the full matrix (:139); the threshold is then a per-sample column selection"
+        }
+      ],
       "merge": null,
-      "holders": ["R/mod_prot_norm_correlation_helpers.R:159 ruv_normalised_for_da_analysis_obj (saveDIAOwnedValue; raw S4 on the default path), :174 saveState(correlation_filtered), :354/:372 correlation_filtered_obj"],
+      "holders": [
+        "R/mod_prot_norm_correlation_helpers.R:159 ruv_normalised_for_da_analysis_obj (saveDIAOwnedValue; raw S4 on the default path), :174 saveState(correlation_filtered), :354/:372 correlation_filtered_obj"
+      ],
       "mode": "in_process (reference path: runDIAReferenceCorrelation)",
       "flag": null,
       "notes": []
     },
     {
-      "id": "session_export", "label": "Filtered session export", "unit": "store", "in_journey": true,
+      "id": "session_export",
+      "label": "Filtered session export",
+      "unit": "store",
+      "in_journey": true,
       "module": "R/mod_prot_norm_session_helpers.R (export_filtered_session)",
       "kernel": "none (serialises r6_complete_states, current_s4_object and correlation_filtered_s4 to RDS, :81-84, :262)",
-      "evidence": ["R/mod_prot_norm_session_helpers.R:81 session_data$r6_complete_states = state_manager$states (every state, full S4); :83-84 two more copies of the current S4"],
-      "writes": ["filtered session RDS under the project"],
-      "global_statistics": [], "merge": null,
-      "holders": ["R/mod_prot_norm_session_helpers.R:81, :83-84 duplicate copies (transient)"],
-      "mode": "in_process", "flag": null, "notes": ["KIT-011/KIT-018 own the native session path; the legacy RDS session stays readable."]
+      "evidence": [
+        "R/mod_prot_norm_session_helpers.R:81 session_data$r6_complete_states = state_manager$states (every state, full S4); :83-84 two more copies of the current S4"
+      ],
+      "writes": [
+        "filtered session RDS under the project"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "holders": [
+        "R/mod_prot_norm_session_helpers.R:81, :83-84 duplicate copies (transient)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "KIT-011/KIT-018 own the native session path; the legacy RDS session stays readable."
+      ]
     },
     {
-      "id": "da", "label": "Differential abundance", "unit": "whole_matrix", "grouping": null, "in_journey": true,
+      "id": "da",
+      "label": "Differential abundance",
+      "unit": "whole_matrix",
+      "grouping": null,
+      "in_journey": true,
       "module": "R/mod_prot_da_handlers_run_analysis.R: da_server_run_analysis_handler :2 (reference: runDIAReferenceDaAnalysis, R/utils_workflow_dia_da.R:265); legacy loop over contrasts :104-110",
       "kernel": "differentialAbundanceAnalysis (R/func_prot_da_model_methods.R:5-63) -> differentialAbundanceAnalysisHelper (:87-596) -> runTestsContrasts (R/func_prot_da_model_stats.R:413+) -> fitProtDaBaseModel (:225-268) / fitDIAExecutionBaseModel (R/utils_workflow_dia_da.R:66-95) -> applyProtDaContrastModel (:277-307) -> adjustProtDaResultTable (:317-356)",
       "evidence": [
@@ -317,28 +672,64 @@
         "R/func_prot_da_model_stats.R:327-353 qvalue over all valid p-values per contrast (BH fallback)",
         "R/func_prot_da_model_methods.R:343 design rownames = sample_id; :346 full matrix; :356 contrast = contrasts_tbl[,1]"
       ],
-      "reads_outside_assay": ["design_matrix (group, replicates)", "contrasts_tbl (workflow or .GlobalEnv; utils_workflow_dia_da.R:271-275)", "protein_id_table", "uniprot_dat_cln (workflow or .GlobalEnv; :379-383)"],
-      "writes": ["per contrast: da_proteins_long, da_proteins_wide, contrasts_results_table, significant_rows, norm_counts, num_sig_da_molecules(_first_go), qvalue_warnings, plots", "args$differentialAbundanceAnalysis(+Helper), args$daAnalysisUI", "reference path: table components, products, da_fit, manifest da-result-references, published TSV/XLSX/PNG/PDF/HTML (utils_workflow_dia_da.R:314-408)"],
+      "reads_outside_assay": [
+        "design_matrix (group, replicates)",
+        "contrasts_tbl (workflow or .GlobalEnv; utils_workflow_dia_da.R:271-275)",
+        "protein_id_table",
+        "uniprot_dat_cln (workflow or .GlobalEnv; :379-383)"
+      ],
+      "writes": [
+        "per contrast: da_proteins_long, da_proteins_wide, contrasts_results_table, significant_rows, norm_counts, num_sig_da_molecules(_first_go), qvalue_warnings, plots",
+        "args$differentialAbundanceAnalysis(+Helper), args$daAnalysisUI",
+        "reference path: table components, products, da_fit, manifest da-result-references, published TSV/XLSX/PNG/PDF/HTML (utils_workflow_dia_da.R:314-408)"
+      ],
       "global_statistics": [],
       "merge": null,
-      "holders": ["R/mod_prot_da_handlers_init.R:40, :207 da_data$current_s4_object (duplicate of the state)", "R/mod_prot_da_handlers_run_analysis.R:158-231 @args writes force a full copy; :211 saveState(current state); :354 da_results_list with theObject; :437 workflow_data$da_analysis_results_list (duplicate)"],
+      "holders": [
+        "R/mod_prot_da_handlers_init.R:40, :207 da_data$current_s4_object (duplicate of the state)",
+        "R/mod_prot_da_handlers_run_analysis.R:158-231 @args writes force a full copy; :211 saveState(current state); :354 da_results_list with theObject; :437 workflow_data$da_analysis_results_list (duplicate)"
+      ],
       "mode": "in_process (reference path: runDIAReferenceDaAnalysis)",
       "flag": null,
-      "notes": ["Blocking hard-codes the design columns group and replicates (stats.R:229-233) rather than the slots; the DA checks for a global group_mapping object (methods.R:399)."]
+      "notes": [
+        "Blocking hard-codes the design columns group and replicates (stats.R:229-233) rather than the slots; the DA checks for a global group_mapping object (methods.R:399)."
+      ]
     },
     {
-      "id": "enrichment", "label": "Enrichment", "unit": "whole_matrix", "grouping": "per contrast", "in_journey": false,
+      "id": "enrichment",
+      "label": "Enrichment",
+      "unit": "whole_matrix",
+      "grouping": "per contrast",
+      "in_journey": false,
       "module": "R/mod_prot_enrich_analysis_helpers.R: runProtEnrichAnalysisBody :493 -> prepareProtEnrichProcessExecution :81 -> executeProtEnrichProcessEnrichments :119-138 (aborts for native DIA manifests at :531-534)",
       "kernel": "processEnrichments (R/func_general_enrichment_orchestration.R:20) -> perform_enrichment (R/func_general_enrichment_engine_helpers.R:10; gprofiler2::gost :130-143) or clusterProfiler::enricher (:575-599)",
-      "evidence": ["R/func_general_enrichment_orchestration.R:119-123, 163, 190 significant/up/down subsets per contrast; :217-218 custom background = the contrast's whole DA table; :240-250 gost(domain_scope = custom)"],
-      "reads_outside_assay": ["remote g:Profiler service", "go annotations / uniprot", "organism mapping"],
-      "writes": ["enrichment results object (per contrast tables and plots), PNGs, state enrichment_completed"],
-      "global_statistics": [{"name": "per_contrast_da_table", "why": "the background universe and significant set are the complete DA table of the contrast"}],
+      "evidence": [
+        "R/func_general_enrichment_orchestration.R:119-123, 163, 190 significant/up/down subsets per contrast; :217-218 custom background = the contrast's whole DA table; :240-250 gost(domain_scope = custom)"
+      ],
+      "reads_outside_assay": [
+        "remote g:Profiler service",
+        "go annotations / uniprot",
+        "organism mapping"
+      ],
+      "writes": [
+        "enrichment results object (per contrast tables and plots), PNGs, state enrichment_completed"
+      ],
+      "global_statistics": [
+        {
+          "name": "per_contrast_da_table",
+          "why": "the background universe and significant set are the complete DA table of the contrast"
+        }
+      ],
       "merge": null,
-      "holders": ["R/mod_prot_enrich_registration_helpers.R:401-402, :527, :539 duplicate copies of the S4 and the DA list", "R/mod_prot_enrich_state_helpers.R:225 saveState(enrichment_completed), :435, :438 duplicate results, :474 diverged S4 copy"],
+      "holders": [
+        "R/mod_prot_enrich_registration_helpers.R:401-402, :527, :539 duplicate copies of the S4 and the DA list",
+        "R/mod_prot_enrich_state_helpers.R:225 saveState(enrichment_completed), :435, :438 duplicate results, :474 diverged S4 copy"
+      ],
       "mode": "in_process; not in the KIT-001 journey (KIT-016 owns the enrichment declaration)",
       "flag": null,
-      "notes": ["The g:Profiler path depends on a remote database version; exactness across time is not guaranteed offline."]
+      "notes": [
+        "The g:Profiler path depends on a remote database version; exactness across time is not guaranteed offline."
+      ]
     }
   ],
   "science_notes_for_the_user": [
@@ -349,8 +740,20 @@
     "Step 2 (min peptides per protein) uses the evidence counts frozen by the q-value step."
   ],
   "partitioned_path_defects_for_later_tickets": [
-    {"ticket": "KIT-013/KIT-014", "step": "sample", "defect": "Observed 2026-10-09 (kit-lifecycle-complete attempt 3): when the sample filter removes every sample the GUI accepts a 0-row state and carries it through the replicate filter and imputation; IQ then fails with a misleading 'output file not created within timeout'. A step that empties the assay should refuse with a clear message."},
-    {"ticket": "fixed 2026-10-09 (9075b361)", "step": "intensity", "defect": "peptideIntensityFilteringHelper refused protein-group batches lacking runs where the group was not observed; the per-group reference loop now passes require_complete_design_runs = FALSE (exact per-group result; unit test test-prot-qc-peptide-intensity-group-batches.R)."},
-    {"ticket": "KIT-009/KIT-014", "step": "sample", "defect": "runDIAReferencePeptideGroups merges only sum_fields and copies other summary fields from the first group (qc_rollup.R:344-347, 391-396); non-additive provenance fields must be recomputed globally."}
+    {
+      "ticket": "KIT-013/KIT-014",
+      "step": "sample",
+      "defect": "Observed 2026-10-09 (kit-lifecycle-complete attempt 3): when the sample filter removes every sample the GUI accepts a 0-row state and carries it through the replicate filter and imputation; IQ then fails with a misleading 'output file not created within timeout'. A step that empties the assay should refuse with a clear message."
+    },
+    {
+      "ticket": "fixed 2026-10-09 (9075b361)",
+      "step": "intensity",
+      "defect": "peptideIntensityFilteringHelper refused protein-group batches lacking runs where the group was not observed; the per-group reference loop now passes require_complete_design_runs = FALSE (exact per-group result; unit test test-prot-qc-peptide-intensity-group-batches.R)."
+    },
+    {
+      "ticket": "KIT-009/KIT-014",
+      "step": "sample",
+      "defect": "runDIAReferencePeptideGroups merges only sum_fields and copies other summary fields from the first group (qc_rollup.R:344-347, 391-396); non-additive provenance fields must be recomputed globally."
+    }
   ]
 }

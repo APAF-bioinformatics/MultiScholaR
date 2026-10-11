@@ -442,3 +442,41 @@ test_that("the operation pair decision needs every member eligible and each cand
     gap$cases[["candidate-1"]]$operation$max_sample_interval <- 0.3
     expect_identical(unname(h$kitOperationDecision(gap, cases, b)$failing_rule), "measurement_valid")
 })
+
+test_that("the sample-filter verifier fingerprints a result exactly as the CORE native-oracle recipe did", {
+    skip_if_not_installed("fastduckdb")
+    h <- kitHarness()
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small", if (exists("workflow_test_root")) workflow_test_root else here::here()))
+    root <- withr::local_tempdir()
+    store <- newWorkflowEntityStore(root, basename(root), "DIA")
+    manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    manager$saveState("protein_peptide_filtered", object, list(), "input")
+    value <- computeDIAReferenceSampleFilter(manager, getDIAStateReference(manager),
+        list(peptides_per_sample_cutoff = 3L, inclusion_list = NULL), output_mode = "physical")
+    actual <- h$kitFingerprintFilterResult(manager, value$checkpoint, api)
+    # The CORE recipe (tools/profiling/workflow_perf106.R, verifyPerf106Result), applied here verbatim.
+    reference <- value$checkpoint$components$peptide_data
+    scope <- newWorkflowTableReadScope(store, reference, reader = "fastduckdb")
+    hashes <- character()
+    for (offset in seq.int(0L, max(0L, scope$metadata$rows - 1L), by = 10000L)) {
+        page <- readSavedWorkflowTable(store, reference, scope$metadata$columns, offset = offset,
+            limit = min(10000L, scope$metadata$rows - offset), scope = scope)$data
+        hashes[[length(hashes) + 1L]] <- digest::digest(page, algo = "sha256")
+    }
+    rows <- scope$metadata$rows
+    columns <- scope$metadata$columns
+    releaseWorkflowTableReadScope(scope)
+    design <- materializeDIATable(manager$.context, value$checkpoint$components$design_matrix)
+    support <- lapply(value$checkpoint$support$filterMinNumPeptidesPerSample, function(r) materializeDIATable(manager$.context, r))
+    expect_identical(actual$page_hashes, hashes)
+    expect_identical(actual$rows, rows)
+    expect_identical(actual$samples, nrow(design))
+    expect_identical(actual$columns, columns)
+    expect_identical(actual$design_sha256, digest::digest(design, algo = "sha256"))
+    expect_identical(actual$summary_sha256, digest::digest(value$checkpoint$slots$args$filterMinNumPeptidesPerSample$filter_summary, algo = "sha256"))
+    expect_identical(actual$support_sha256, digest::digest(support, algo = "sha256"))
+    expect_gt(length(hashes), 0L)
+})
