@@ -433,16 +433,15 @@ test_that("native legacy import validates and persists before replacing the GUI 
     expect_null(workflow$state_manager$.context$export_pending)
 })
 
-test_that("native pre-import activation is explicit and does not migrate Limpa or other formats", {
+test_that("native import is the DIA-NN/IQ default and does not migrate Limpa or other formats", {
     paths <- makeDIANativeGuiPaths(withr::local_tempdir())
     workflow <- new.env(parent = emptyenv())
     workflow$state_manager <- WorkflowState$new(audit_enabled = FALSE)
     session <- makeDIANativeFixtureSession()
-    withr::local_options(multischolar.dia_native_sessions = FALSE)
+    # KIT-011: no option gate; the former `multischolar.dia_native_sessions = FALSE` arm no longer exists.
+    withr::local_options(multischolar.dia_native_sessions = NULL)
+    expect_true(isDIANativeDefaultEnabled())
     original <- workflow$state_manager
-    initializeDIANativeImport(workflow, paths, session, "diann", "iq")
-    expect_identical(workflow$state_manager, original)
-    withr::local_options(multischolar.dia_native_sessions = TRUE)
     initializeDIANativeImport(workflow, paths, session, "fragpipe", "iq")
     expect_identical(workflow$state_manager, original)
     initializeDIANativeImport(workflow, paths, session, "diann", "limpa")

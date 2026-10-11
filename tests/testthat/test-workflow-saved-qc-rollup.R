@@ -111,65 +111,6 @@ test_that("rollup collection does not allocate a complete numeric column per bat
         file.path(dirname(receipt), "rollup-collection.Rprofmem"), overwrite = FALSE))
 })
 
-test_that("saved rollup uses the matching envelope after reopen without decoding the predecessor", {
-    root <- withr::local_tempdir()
-    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
-    object@args$rollUpPrecursorToPeptide$core_utilisation <- newDIAWorkerSpec(2L)
-    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "envelope", "DIA"),
-        WorkflowState$new(audit_enabled = FALSE))
-    manager$.context$sql_rollup <- TRUE
-    manager$saveState("protein_peptide_filtered", object, list(), "source")
-    prepareDIACapacityRollupInput(manager, object)
-    source <- manager$.context$snapshot$states$protein_peptide_filtered
-    preparation <- manager$.context$snapshot$rollup_input
-    expect_identical(manager$getState(), object)
-    expect_identical(manager$getHistory(), c("initial", "protein_peptide_filtered"))
-    closeDIAStateAdapter(manager)
-    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "envelope", "DIA"), reopen = TRUE)
-    withr::defer(closeDIAStateAdapter(manager))
-    manager$.context$sql_rollup <- TRUE
-    workflow <- new.env(parent = emptyenv())
-    workflow$state_manager <- manager
-    original_reader <- hydrateSavedWorkflowCheckpoint
-    decoded <- character()
-    now <- function() as.POSIXct("2026-09-23 00:00:00", tz = "UTC")
-    result <- testthat::with_mocked_bindings(
-        withDIAStateScope(manager, function() runPeptideRollupApplyStep(workflow, nowFn = now)),
-        hydrateSavedWorkflowCheckpoint = function(store, reference) {
-            if (identical(reference$entity_id, source$entity_id)) stop("full predecessor decoded")
-            decoded <<- c(decoded, reference$entity_id)
-            original_reader(store, reference)
-        })
-    expect_true(preparation$envelope$entity_id %in% decoded)
-    expect_false(source$entity_id %in% decoded)
-    expect_identical(manager$getHistory(), c("initial", "protein_peptide_filtered", "precursor_rollup"))
-    expect_identical(diaStateOwnership(manager)$working_records, 0L)
-    expect_identical(manager$.context$store$open_resources, 0L)
-    expect_identical(manager$revertToState("protein_peptide_filtered"), object)
-    expected <- testthat::with_mocked_bindings(
-        withDIAStateScope(manager, function() runPeptideRollupApplyStep(workflow, nowFn = now)),
-        getDIARollupEnvelope = function(...) NULL)
-    expect_identical(result, expected)
-    expect_identical(manager$revertToState("protein_peptide_filtered"), object)
-    manager$.context$rollup_input$source <- "different-generation"
-    expect_error(getDIARollupEnvelope(manager, source$entity_id), class = "saved_entity_scope")
-    manager$.context$rollup_input <- manager$.context$snapshot$rollup_input
-    manager$audit_enabled <- TRUE
-    expect_null(getDIARollupEnvelope(manager, source$entity_id))
-    manager$audit_enabled <- FALSE
-    manager$.context$rollup_input$envelope <- NULL
-    expect_null(getDIARollupEnvelope(manager, source$entity_id))
-    manager$.context$rollup_input <- preparation
-    path <- file.path(manager$.context$store$directory, preparation$envelope$payload$relative_path)
-    writeBin(as.raw(1:8), path)
-    before <- manager$.context$head
-    expect_error(withDIAStateScope(manager, function() runPeptideRollupApplyStep(workflow)),
-        class = "saved_entity_corrupt")
-    expect_identical(manager$.context$head, before)
-    expect_identical(manager$current_state, "protein_peptide_filtered")
-    expect_identical(manager$.context$store$open_resources, 0L)
-})
-
 test_that("optimized R rollup matches the frozen pre-repair kernel on compatibility cases", {
     receipt <- Sys.getenv("MULTISCHOLAR_DIA008_RECEIPT")
     skip_if(!nzchar(receipt), "frozen installed-kernel oracle is exercised under the guarded runner")

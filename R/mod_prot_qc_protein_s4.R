@@ -147,7 +147,8 @@ runProteinS4RevertStep <- function(workflowData,
                                    logInfoFn = logger::log_info) {
   shiny::req(workflowData$state_manager)
 
-  revertedState <- workflowData$state_manager$revertToState("initial")
+  # Revert by reference on the on-disk owner, hydration on the in-memory one (KIT-011).
+  revertedState <- selectDIAStateReference(workflowData$state_manager, "initial")
   logInfoFn("Reverted S4 object creation.")
 
   list(

@@ -221,13 +221,24 @@ test_that("session-owned GUI holders stay cold and resolve inside their original
     root <- withr::local_tempdir()
     source <- file.path(root, "project", "scripts")
     dir.create(source, recursive = TRUE)
-    withr::local_options(multischolar.dia_capacity_trial = list(
-        scope = "full-journey-capacity-v1", route = "iq", treatment = "qs2_duckdb", receipt_dir = root))
     object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    # KIT-011: the capacity-trial session is gone; the on-disk owner is attached the way the import does it,
+    # with the harness receipt directory the trial used to pass.
+    attach_adapter <- function(native, workflow, session) {
+        state_root <- tempfile(".dia-native-", tmpdir = source)
+        dir.create(state_root, mode = "0700")
+        manager <- newDIAStateAdapter(newWorkflowEntityStore(state_root, "DIA-IQ-native", "DIA", max_cache_bytes = 0), native)
+        # The retired capacity trial ran the adapter in the legacy session format without reference states;
+        # these owner diagnostics are exercised in that context (the native-format path has its own tests).
+        manager$.context$sql_rollup <- TRUE
+        manager$.context$session_format <- "legacy"
+        manager$.context$reference_states <- FALSE
+        manager$.context$experiment_paths <- list(source_dir = source)
+        attachDIAStateSession(manager, session, workflow, root)
+    }
     shiny::testServer(function(input, output, session) {
         workflow <- shiny::reactiveValues(state_manager = WorkflowState$new(audit_enabled = FALSE))
-        workflow$state_manager <- initializeDIACapacitySession(workflow$state_manager,
-            list(source_dir = source), session, workflow)
+        workflow$state_manager <- attach_adapter(workflow$state_manager, workflow, session)
         manager <- workflow$state_manager
         expect_false(manager$audit_enabled)
         manager$setWorkflowType("DIA")
@@ -258,19 +269,15 @@ test_that("session-owned GUI holders stay cold and resolve inside their original
         expect_identical(diaStateOwnership(manager)$working_records, 0L)
         expect_true(file.exists(file.path(root, "gui-state-latest.json")))
         expect_true(file.exists(file.path(root, "gui-state-phases.jsonl")))
+        # A second attached owner in the same session supersedes the first (the session's active manager).
         previous <- manager
-        replacement <- initializeDIACapacitySession(WorkflowState$new(),
-            list(source_dir = source), session, workflow)
-        expect_true(previous$.context$store$closed)
-        expect_null(previous$.context$on_commit)
-        expect_length(previous$.context$callbacks, 0L)
-        expect_null(environment(replacement$.context$on_commit)$previous)
+        replacement <- attach_adapter(WorkflowState$new(), workflow, session)
         expect_type(replacement$.context$on_commit, "closure")
         expect_false(identical(previous$.context$store$identity, replacement$.context$store$identity))
         expect_true(dir.exists(previous$.context$store$directory))
-        expect_error(previous$getState(), class = "saved_entity_scope")
         expect_identical(replacement$getHistory(), "initial")
         expect_identical(getDIAActiveManager(), replacement)
+        closeDIAStateAdapter(previous)
     })
 })
 

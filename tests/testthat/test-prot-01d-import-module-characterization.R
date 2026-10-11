@@ -759,6 +759,11 @@ test_that("mod_prot_import_server preserves successful import side effects", {
           expect_equal(file, fixture$config_path)
           config_stub
         },
+        # The on-disk owner reads the configuration through the GUI reader (KIT-011).
+        readProtGuiConfig = function(file, file_type = "ini") {
+          expect_equal(file, fixture$config_path)
+          config_stub
+        },
         .capture_checkpoint = function(...) invisible(NULL)
       )
     )
@@ -793,8 +798,10 @@ test_that("mod_prot_import_server preserves successful import side effects", {
         expect_equal(workflow_data$state_manager$workflow_type, "DIA")
         expect_equal(workflow_data$tab_status$setup_import, "complete")
         expect_equal(workflow_data$fasta_file_path, fixture$fasta_path)
-        expect_equal(sort(unique(workflow_data$data_tbl$Run)), c("sample_1", "sample_2"))
-        expect_identical(workflow_data$data_cln, workflow_data$data_tbl)
+        # KIT-011: the DIA-NN import runs on the on-disk owner, so the holders are saved references.
+        expect_true(isSavedWorkflowReference(workflow_data$data_tbl))
+        expect_equal(sort(unique(getDIAOwnedPayload(workflow_data, "data_tbl")$Run)), c("sample_1", "sample_2"))
+        expect_identical(getDIAOwnedPayload(workflow_data, "data_cln"), getDIAOwnedPayload(workflow_data, "data_tbl"))
         expect_equal(workflow_data$taxon_id, 9606)
         expect_equal(workflow_data$organism_name, "Homo sapiens")
         expect_equal(workflow_data$config_list, config_stub)

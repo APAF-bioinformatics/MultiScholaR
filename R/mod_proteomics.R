@@ -296,9 +296,8 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
         logger::log_error(paste("Peptide checkpoint open failed:", conditionMessage(error)))
       })
     })
-    workflow_data$state_manager <- initializeDIACapacitySession(
-      workflow_data$state_manager, experiment_paths, session, workflow_data
-    )
+    # The on-disk DIA state manager is attached at import (initializeDIANativeImport, KIT-011); the
+    # capacity-trial session of the PERF era is gone.
 
     # Load aa_seq_tbl_final from scripts directory if resuming session
     if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {

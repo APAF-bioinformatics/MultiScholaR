@@ -488,3 +488,70 @@ test_that("the sample-filter verifier fingerprints a result exactly as the CORE 
     expect_identical(actual$support_sha256, digest::digest(support, algo = "sha256"))
     expect_gt(length(hashes), 0L)
 })
+
+test_that("a ticket journey pair runs both builds as users run them and is decided per completed step against a control that may guard", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$builds$kit_011 <- list(library = "/lib/e", build = strrep("e", 64), exact_sum = "sum-e")
+    b$tickets[["011"]] <- list(kind = "journey", control = "core_018", candidate = "kit_011", record = FALSE)
+    cases <- h$kitCases(b, "kit-journey-011")
+    expect_identical(vapply(cases, `[[`, "", "id"), c("control-1", "candidate-1"))
+    expect_identical(vapply(cases, `[[`, "", "library"), c("/lib/n", "/lib/e"))
+    expect_false(cases[[1]]$record)
+    expect_identical(cases[[2]]$selector, "kit:journey-011:candidate:1")
+    expect_identical(h$kitSelectorStage("kit:journey-011:candidate:1"), list(stage = "kit-journey-011", id = "candidate-1"))
+    expect_identical(h$kitMemberSeconds("kit-journey-011", b), 3600L)
+    expect_error(h$kitCases(b, "kit-journey-012"), "journey pair")
+    steps <- h$kitStepIds()
+    receipt <- kitSyntheticReceipt(cases, h, edit = function(r) {
+        # The control (in-memory default) guards in imputation after eight steps; the candidate completes lower.
+        control <- r$cases[["control-1"]]$operation
+        control$status <- "memory_guard"; control$outer_guard <- "memory_guard"; control$peak_bytes <- 16.6e9
+        control$sampled_anon_bytes <- 6e9
+        control$resident_end_bytes <- NA_real_; control$populations_complete <- FALSE
+        control$phase_status[steps[10:18]] <- NULL; control$phase_status$imputation <- "failed"
+        control$phase_peak_anon_bytes <- as.list(stats::setNames(c(2.7, 3.5, 6.4, 6.6, 9.7, 9.3, 9.3, 9.3, 14.3) * 1e9, steps[1:9]))
+        r$cases[["control-1"]]$operation <- control
+        r$cases[["control-1"]]$verifier_completion <- list(accepted = TRUE)
+        candidate <- r$cases[["candidate-1"]]$operation
+        candidate$sampled_anon_bytes <- 5.7e9
+        # Import and design do not differ between the paths; the data steps do.
+        candidate$phase_peak_anon_bytes <- as.list(stats::setNames(c(2.7e9, 3.5e9, rep(3e9, length(steps) - 2L)), steps))
+        r$cases[["candidate-1"]]$operation <- candidate
+        r
+    })
+    decision <- h$kitJourneyTicketDecision(receipt, cases, b)
+    expect_identical(decision$status, "accepted")
+    expect_identical(decision$control_outcome, "memory_guard")
+    expect_true(decision$control_peak_is_lower_bound)
+    expect_identical(decision$steps_compared, steps[1:8])
+    # The control's anonymous peak at the guard (6e9 in the synthetic receipt) is a lower bound; 5.7 / 6 = 0.95.
+    expect_equal(decision$whole_slice_anon_ratio, 5.7 / 6, tolerance = 1e-6)
+    expect_equal(decision$step_ratios$rollup, 3 / 9.7, tolerance = 1e-6)
+    expect_false(decision$promotion_authorized)
+    not_reduced <- receipt
+    not_reduced$cases[["candidate-1"]]$operation$sampled_anon_bytes <- 5.8e9
+    rejected <- h$kitJourneyTicketDecision(not_reduced, cases, b)
+    expect_identical(rejected$status, "rejected")
+    expect_identical(rejected$failing_rule, "required_reduction")
+    worse_step <- receipt
+    worse_step$cases[["candidate-1"]]$operation$phase_peak_anon_bytes$import <- 2.7e9 * 1.03
+    expect_identical(h$kitJourneyTicketDecision(worse_step, cases, b)$failing_rule, "step_not_worse")
+    guarded <- receipt
+    guarded$cases[["candidate-1"]]$operation$status <- "memory_guard"
+    expect_identical(h$kitJourneyTicketDecision(guarded, cases, b)$status, "invalid")
+    unverified <- receipt
+    unverified$cases[["candidate-1"]]$verifier_completion$accepted <- FALSE
+    expect_identical(unname(h$kitJourneyTicketDecision(unverified, cases, b)$failing_rule), "verifier_accepted")
+    complete_control <- receipt
+    complete_control$cases[["control-1"]] <- receipt$cases[["candidate-1"]]
+    complete_control$cases[["control-1"]]$operation$sampled_anon_bytes <- 6e9
+    complete_control$cases[["control-1"]]$operation$phase_peak_anon_bytes <- as.list(stats::setNames(c(2.7e9, 3.5e9, rep(4e9, length(steps) - 2L)), steps))
+    both <- h$kitJourneyTicketDecision(complete_control, cases, b)
+    expect_identical(both$status, "accepted")
+    expect_equal(both$whole_slice_anon_ratio, 0.95)
+    expect_equal(both$resident_end_ratio, 1)
+    oracles <- h$kitOracleJourneyPopulations(b)
+    expect_identical(names(oracles), steps)
+    expect_null(oracles$import$fingerprint)
+})

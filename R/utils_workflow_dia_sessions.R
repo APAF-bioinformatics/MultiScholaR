@@ -662,12 +662,11 @@ openDIANativeSession <- function(path, project_root) {
         dependencies = dependencies, directory = directory, manifest = manifest)
 }
 
-#' Gate ordinary DIA activation until the explicitly approved release decision.
-#' @return Effective native-DIA default/override flag.
+#' The on-disk native DIA path is the production default (KIT-011, user decision 2026-10-11): no
+#' option gate remains. The platform limits stay in `initializeDIANativeImport` (Linux, DIA-NN, IQ).
+#' @return TRUE.
 #' @noRd
-isDIANativeDefaultEnabled <- function() {
-    isTRUE(getOption("multischolar.dia_native_sessions", FALSE))
-}
+isDIANativeDefaultEnabled <- function() TRUE
 
 #' Select the DIA-IQ owner before import or configuration creates heavy values.
 #' @param workflow_data Existing GUI bus.

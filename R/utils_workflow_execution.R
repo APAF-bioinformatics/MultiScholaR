@@ -924,8 +924,8 @@ workflowManagedMain <- function(arguments) {
         if (any(results$failed > 0 | results$error)) stop("installed lifecycle checks failed")
         return(invisible(NULL))
     }
-    # A KIT journey record runs the production native DIA session path from import onward.
-    if (isTRUE(config$journey$native_sessions)) options(multischolar.dia_native_sessions = TRUE)
+    # The native DIA session path is the production default (KIT-011); a KIT journey record no longer
+    # has to switch it on (`config$journey$native_sessions` stays recorded for the harness).
     shiny::runApp(run_app(workflow_execution = app), host = "127.0.0.1",
         port = config$port, launch.browser = FALSE)
 }

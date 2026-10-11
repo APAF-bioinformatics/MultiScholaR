@@ -161,7 +161,6 @@ runProteinPeptideApplyStep <- function(workflowData,
 
   releaseDIAWorkingReference(workflowData$state_manager, predecessor)
   currentS4 <- NULL
-  prepareDIACapacityRollupInput(workflowData$state_manager, filteredS4)
   proteinCount <- .countPeptideProteinGroups(filteredS4)
 
   resultText <- paste(

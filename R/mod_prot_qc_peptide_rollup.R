@@ -107,22 +107,14 @@ runPeptideRollupApplyStep <- function(workflowData,
   shiny::req(workflowData$state_manager)
   manager <- workflowData$state_manager
   predecessor <- getDIACurrentReference(manager)
-  sql_rollup <- inherits(manager, "DIAStateAdapter") && isTRUE(manager$.context$sql_rollup)
-  if (sql_rollup) {
-    rollup_result <- computeDIACapacityRollup(manager)
-  }
-  currentS4 <- if (sql_rollup) getDIARollupEnvelope(manager, rollup_result$source_entity_id) else NULL
-  if (is.null(currentS4)) currentS4 <- getDIAExecutionState(manager, "rollUpPrecursorToPeptide")
+  # The in-memory manager runs the R kernel in process; the adapter took the reference path above
+  # (the non-exact capacity rollup arm of the PERF era was removed in KIT-011).
+  currentS4 <- getDIAExecutionState(manager, "rollUpPrecursorToPeptide")
   shiny::req(currentS4)
 
   logInfoFn("QC Step: Applying precursor rollup")
 
-  if (sql_rollup) {
-    rollupFn <- applySavedWorkflowPrecursorRollup
-    rolledUpS4 <- rollupFn(currentS4, rollup_result = rollup_result)
-  } else {
-    rolledUpS4 <- rollupFn(currentS4)
-  }
+  rolledUpS4 <- rollupFn(currentS4)
 
   if (is.null(workflowData$qc_params)) {
     workflowData$qc_params <- list()

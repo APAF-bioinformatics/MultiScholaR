@@ -125,6 +125,10 @@ b$operation_lifecycle <- list(ceiling_seconds = 300L,
     fault = list(name = "after_aggregate", operation = "precursor_rollup", population = "screen_p14",
         failed_phase = "ordered_result_stage", error_pattern = "CORE-004 forced failure after the aggregate stage",
         mechanism = "the worker's phase hook raises after the ordered result stage completes; the action completes as worker_failed and the head stays on the input"))
+# KIT-011: the journey pair as users run the GUI (no launch record): the kit_006 control (in-memory default,
+# expected to end at the memory guard as KIT-005's production default did) against the kit_011 candidate
+# (on-disk default), verified against the KIT-005 per-step oracles; required reduction per completed step.
+if (!is.null(b$builds$kit_011)) b$tickets[["011"]] <- list(kind = "journey", control = "kit_006", candidate = "kit_011", record = FALSE)
 # KIT-007: the registry changes the operation launch path, so its lifecycle pair runs on the kit_007 build.
 if (!is.null(b$builds$kit_007)) b$operation_lifecycle$build <- "kit_007"
 # Operation pairs per ticket (control and candidate builds; one or two (operation, population) pairs):

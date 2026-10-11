@@ -31,7 +31,6 @@ runDIAIsolatedMechanism <- function(manager, mechanism, native_session, source_d
         history <- manager$state_history
         manager$state_history <- history[seq_len(match(manager$current_state, unlist(history)))]
         manager$.context$sql_rollup <- TRUE
-        withDIAStateScope(manager, function() prepareDIACapacityRollupInput(manager, manager$getState()))
         withDIAStateScope(manager, function() {
             runPeptideRollupApplyStep(workflow)
             invisible(NULL)

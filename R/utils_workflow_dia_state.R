@@ -1507,6 +1507,12 @@ newDIASavedReactiveVal <- function(value, label, reactiveValFn = shiny::reactive
     result
 }
 
+#' Omic-agnostic name of the saved reactive value (KIT-011): a reactive holding a saved reference
+#' whose getter resolves the payload through the active state owner. `newDIASavedReactiveVal` stays
+#' as the DIA module's name for it.
+#' @noRd
+savedReactiveVal <- newDIASavedReactiveVal
+
 #' Read an internal reactive reference without hydrating its payload.
 #' @param value Existing getter with optional private reference accessor.
 #' @return Saved descriptor or unchanged native getter result.
@@ -1514,49 +1520,6 @@ newDIASavedReactiveVal <- function(value, label, reactiveValFn = shiny::reactive
 getDIAReactiveReference <- function(value) {
     reference <- attr(value, "dia_reference", exact = TRUE)
     if (is.function(reference)) reference() else value()
-}
-
-#' Construct a session-owned adapter only for the explicit capacity harness option.
-#' @param native Existing WorkflowState created by the application.
-#' @param paths Existing experiment paths.
-#' @param session Existing Shiny session.
-#' @param workflow_data Existing reactive state bus for the bounded metadata trigger.
-#' @return Original manager unless the named experiment is explicitly selected.
-#' @noRd
-initializeDIACapacitySession <- function(native, paths, session, workflow_data) {
-    trial <- getOption("multischolar.dia_capacity_trial")
-    if (is.null(trial)) return(native)
-    if (!identical(trial$scope, "full-journey-capacity-v1") || !identical(trial$route, "iq") ||
-        !identical(trial$treatment, "qs2_duckdb") || !is.character(trial$receipt_dir) ||
-        length(trial$receipt_dir) != 1L || !dir.exists(trial$receipt_dir)) {
-        cli::cli_abort("invalid experimental DIA activation", class = "saved_entity_scope")
-    }
-    root <- normalizePath(paths$source_dir, mustWork = TRUE)
-    receipt_dir <- normalizePath(trial$receipt_dir, mustWork = TRUE)
-    if (!startsWith(root, paste0(receipt_dir, "/"))) {
-        cli::cli_abort("DIA trial project escapes request", class = "saved_entity_scope")
-    }
-    previous <- session$userData$dia_capacity_manager
-    if (inherits(previous, "DIAStateAdapter")) closeDIAStateAdapter(previous)
-    # The callbacks below capture this frame; do not retain a retired manager.
-    previous <- NULL
-    # A replacement in the same project path is still a new incarnation. Retain
-    # the previous immutable store for recovery; never overwrite its marker/head.
-    state_root <- tempfile(".dia-capacity-", tmpdir = root)
-    if (!dir.create(state_root)) {
-        cli::cli_abort("cannot create DIA capacity storage", class = "saved_entity_write")
-    }
-    store <- newWorkflowEntityStore(state_root, "DIA-IQ-capacity", "DIA", max_cache_bytes = 0)
-    manager <- newDIAStateAdapter(store, native)
-    manager$.context$sql_rollup <- TRUE
-    manager$.context$session_format <- if (identical(trial$session_format, "native_v1")) "native_v1" else "legacy"
-    manager$.context$reference_states <- identical(manager$.context$session_format, "native_v1")
-    manager$.context$experiment_paths <- paths
-    if (!is.null(trial$reclaim_memory) && (!is.logical(trial$reclaim_memory) ||
-        length(trial$reclaim_memory) != 1L || is.na(trial$reclaim_memory)))
-        cli::cli_abort("invalid experimental reclamation policy", class = "saved_entity_scope")
-    manager$.context$reclaim_enabled <- isTRUE(trial$reclaim_memory) && manager$.context$reference_states
-    attachDIAStateSession(manager, session, workflow_data, receipt_dir, trial$scope)
 }
 
 #' Attach one adapter lifetime to existing Shiny flush and project boundaries.
@@ -1567,7 +1530,7 @@ initializeDIACapacitySession <- function(native, paths, session, workflow_data) 
 #' @return Attached manager.
 #' @noRd
 attachDIAStateSession <- function(manager, session, workflow_data, receipt_dir = NULL,
-    scope = "full-journey-capacity-v1") {
+    scope = "dia-native-session") {
     manager$.context$on_commit <- function() {
         workflow_data$state_update_trigger <- Sys.time()
     }
@@ -1636,90 +1599,6 @@ attachDIAStateSession <- function(manager, session, workflow_data, receipt_dir =
     manager$.context$callbacks <- callbacks
     write_receipt("initialized")
     manager
-}
-
-#' Persist the tested rollup projection while its preceding scientific result exists.
-#' @param manager Native or experimental state owner.
-#' @param object Current complete scientific result.
-#' @return NULL invisibly; no-op outside the explicit SQL trial.
-#' @noRd
-prepareDIACapacityRollupInput <- function(manager, object) {
-    if (!inherits(manager, "DIAStateAdapter") || !isTRUE(manager$.context$sql_rollup)) {
-        return(invisible(NULL))
-    }
-    context <- manager$.context
-    reference <- context$snapshot$states[[manager$current_state]]
-    input <- saveWorkflowPrecursorRollupInput(context$store, object,
-        basename(tempfile("dia-rollup-")), list(input = reference$payload$sha256,
-            design = "checkpoint-owned", parameters = "native-rollup-contract",
-            selectors = "complete-population-rollup-columns",
-            software = as.character(utils::packageVersion("MultiScholaR"))))
-    context$rollup_input <- list(source = reference$entity_id, input = input)
-    if (identical(manager$audit_enabled, FALSE)) {
-        envelope <- object
-        methods::slot(envelope, "peptide_data") <- methods::slot(envelope, "peptide_data")[0, , drop = FALSE]
-        envelope <- prepareDIAStateRecord(list(data = envelope, config = NULL,
-            source = reference$entity_id, description = "rollup non-assay envelope"))
-        context$rollup_input$envelope <- saveDIAStateValue(context, envelope,
-            "rollup-envelope", codec = "rds")
-    }
-    # Auxiliary preparation follows the scientific commit; it does not add a
-    # scientific state and remains available after project reopen/revert.
-    snapshot <- context$snapshot
-    snapshot$rollup_input <- context$rollup_input
-    publishDIAStateHead(context, snapshot)
-    invisible(NULL)
-}
-
-#' Resolve only the matching non-assay predecessor when auditing is disabled.
-#' @param manager Existing DIA adapter.
-#' @param source_id Predecessor identity bound to the computed result.
-#' @return Executable S4 envelope, or NULL for the unchanged full-state path.
-#' @noRd
-getDIARollupEnvelope <- function(manager, source_id) {
-    if (!inherits(manager, "DIAStateAdapter") || !identical(manager$audit_enabled, FALSE)) return(NULL)
-    context <- manager$.context
-    reference <- context$snapshot$states[[manager$current_state]]
-    preparation <- context$rollup_input %||% context$snapshot$rollup_input
-    if (!identical(reference$entity_id, source_id)) {
-        cli::cli_abort("rollup predecessor changed during execution", class = "saved_entity_scope")
-    }
-    if (is.null(preparation$envelope)) return(NULL)
-    if (!identical(preparation$source, source_id)) {
-        cli::cli_abort("rollup envelope generation differs", class = "saved_entity_scope")
-    }
-    envelope <- resolveDIAStateValue(context, preparation$envelope)
-    if (!identical(envelope$source, source_id) ||
-        !methods::is(envelope$data, "PeptideQuantitativeData") ||
-        nrow(methods::slot(envelope$data, "peptide_data")) != 0L) {
-        cli::cli_abort("rollup envelope is invalid", class = "saved_entity_corrupt")
-    }
-    bindDIAExecutionObject(manager, envelope$data, "rollUpPrecursorToPeptide")
-}
-
-#' Execute the existing saved rollup, closing its query before audit hydration.
-#' @param manager Experimental state owner.
-#' @return Original rollup result shape; no database lease survives.
-#' @noRd
-computeDIACapacityRollup <- function(manager) {
-    context <- manager$.context
-    reference <- context$snapshot$states[[manager$current_state]]
-    if (is.null(context$rollup_input)) context$rollup_input <- context$snapshot$rollup_input
-    if (!identical(context$rollup_input$source, reference$entity_id)) {
-        # Revert/skipped-predecessor paths remain usable; their extra read is measured.
-        prepareDIACapacityRollupInput(manager, manager$getState())
-    }
-    # The experimental capacity trial is the one explicit caller of the non-exact arm.
-    result <- computeSavedWorkflowPrecursorRollup(context$store, context$rollup_input$input,
-        non_exact = TRUE)
-    if (context$store$open_resources != 0L) {
-        cli::cli_abort("DIA rollup retained a database lease", class = "saved_entity_resource")
-    }
-    if (!identical(context$snapshot$states[[manager$current_state]]$entity_id, reference$entity_id)) {
-        cli::cli_abort("rollup predecessor changed during execution", class = "saved_entity_scope")
-    }
-    result$source_entity_id <- reference$entity_id
-    result
 }
 
 #' Atomically accept validated external session history without retaining its payloads.

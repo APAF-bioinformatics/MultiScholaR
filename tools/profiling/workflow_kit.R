@@ -43,7 +43,7 @@ kitMemberSeconds <- function(stage, bindings = NULL) {
     if (grepl("^kit-lifecycle-operation-", stage)) return(as.integer(bindings$operation_lifecycle$ceiling_seconds %||% 300L))
     if (grepl("^kit-lifecycle-", stage)) return(as.integer(bindings$lifecycle$ceiling_seconds %||% 300L))
     if (grepl("^kit-0[0-9]{2}$", stage)) return(600L)
-    if (stage == "kit-journey") {
+    if (startsWith(stage, "kit-journey")) {
         seconds <- bindings$journey$ceiling_seconds
         if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 14400)
             stop("the journey ceiling is not fixed in the bindings (at most 4 h, protocol v1.2)")
@@ -95,7 +95,7 @@ kitControl <- function(bindings) {
 #'   and a `binding` digest of everything that fixes it.
 #' @noRd
 kitCases <- function(bindings, stage) {
-    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey|0[0-9]{2})$", stage))
+    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2})?|0[0-9]{2})$", stage))
     build_of <- function(build_key) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
@@ -167,6 +167,17 @@ kitCases <- function(bindings, stage) {
             spec$control, "full", "none", "kit:journey:default:1", record = FALSE)
         return(cases)
     }
+    if (grepl("^kit-journey-0[0-9]{2}$", stage)) {
+        # A ticket's journey pair (KIT-011): control and candidate builds run the whole journey as users run
+        # it (`record = FALSE`: no launch record, the build's own production default), one member each.
+        ticket <- sub("kit-journey-", "", stage, fixed = TRUE)
+        spec <- bindings$tickets[[ticket]]
+        if (is.null(spec) || !identical(spec$kind, "journey")) stop("KIT-", ticket, " has no bound journey pair")
+        record <- isTRUE(spec$record)
+        return(list(
+            journey_case("control-1", "control", 1L, spec$control, "full", "none", paste0("kit:journey-", ticket, ":control:1"), record = record),
+            journey_case("candidate-1", "candidate", 1L, spec$candidate, "full", "none", paste0("kit:journey-", ticket, ":candidate:1"), record = record)))
+    }
     ticket <- sub("kit-", "", stage, fixed = TRUE)
     spec <- bindings$tickets[[ticket]]
     if (is.null(spec)) stop("KIT-", ticket, " has no bound operation, population, control and candidate builds")
@@ -224,7 +235,7 @@ kitOperationDecision <- function(receipt, cases, bindings) {
 #' Map a verifier selector back to its stage and case id.
 #' @noRd
 kitSelectorStage <- function(selection) {
-    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:(control|candidate):[12])$", selection))
+    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}:(control|candidate):1|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:(control|candidate):[12])$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("kit-lifecycle-", paste(parts[-1L], collapse = "-")), id = "member"))
     list(stage = paste0("kit-", parts[[1L]]), id = paste(parts[[2L]], parts[[3L]], sep = "-"))
@@ -498,6 +509,66 @@ kitJourneyDecision <- function(receipt, cases, bindings) {
         failing_rule = unlist(lapply(members, `[[`, "failing_rule")), members = members, noise = noise,
         production_default = if (length(default)) list(recorded = default[[1L]]$eligible, failing_rule = default[[1L]]$failing_rule,
             outcome = default[[1L]]$outcome) else NULL,
+        promotion_authorized = FALSE)
+}
+
+#' The KIT-005 per-step oracles as a populations list, for `kitReproduceMismatches` against a member's
+#' in-run populations.
+#' @noRd
+kitOracleJourneyPopulations <- function(bindings) {
+    steps <- kitStepIds()
+    stats::setNames(lapply(steps, function(step) {
+        oracle <- bindings$oracles[[paste0("journey_", step)]]
+        if (is.null(oracle) || is.null(oracle$class) || !length(oracle$components)) return(list(fingerprint = NULL))
+        list(fingerprint = oracle)
+    }), steps)
+}
+
+#' Decision for a ticket's journey pair (KIT-011; protocol section 3 and the KIT-005 acceptance as amended
+#' by the user): the control is the build users run today and may end at a protocol guard; the candidate
+#' must complete the whole journey with its states verified against the KIT-005 oracles. The required
+#' reduction (0.95) is judged on the whole-slice anonymous peak: when the control completed, against its
+#' peak; when the control ended at a guard, against the anonymous peak it had reached, which is a lower
+#' bound of its true peak, so the test is only stricter (`control_peak_is_lower_bound`). Per step, on
+#' every step the control completed, the candidate may not be worse than 1.02 x the control (the per-step
+#' guard of KIT-017); the ratios are reported. `resident_end_bytes` is reported for both and ratioed when
+#' both completed.
+#' @return `status` (`accepted`, `rejected` or `invalid`), per-step ratios and the failing rule.
+#' @noRd
+kitJourneyTicketDecision <- function(receipt, cases, bindings) {
+    seconds <- kitMemberSeconds(paste0("kit-", strsplit(cases[[1L]]$selector, ":", fixed = TRUE)[[1L]][[2L]]), bindings)
+    members <- list()
+    for (case in cases) {
+        item <- receipt$cases[[case$id]]
+        op <- item$operation
+        failing <- if (case$role == "control") kitDefaultIneligible(item, seconds) else kitIneligible(item, seconds, "journey")
+        if (is.null(failing) && case$role == "candidate" && !isTRUE(op$populations_complete)) failing <- "populations_incomplete"
+        members[[case$id]] <- list(role = case$role, eligible = is.null(failing), failing_rule = failing,
+            outcome = if (case$role == "control") kitDefaultOutcome(op) else if (identical(op$status, "complete")) "complete" else NULL,
+            peak_anon_bytes = op$sampled_anon_bytes, peak_bytes = op$peak_bytes, resident_end_bytes = op$resident_end_bytes,
+            elapsed_seconds = op$elapsed_seconds, max_sample_interval = op$max_sample_interval, gaps_above_250ms = op$gaps_above_250ms,
+            phase_peak_anon_bytes = op$phase_peak_anon_bytes, phase_seconds = op$phase_seconds, phase_status = op$phase_status)
+    }
+    control <- members[["control-1"]]
+    candidate <- members[["candidate-1"]]
+    invalid <- unlist(lapply(members, `[[`, "failing_rule"))
+    if (length(invalid)) return(list(status = "invalid", failing_rule = invalid, members = members, promotion_authorized = FALSE))
+    completed <- names(control$phase_status)[unlist(control$phase_status) == "complete"]
+    completed <- completed[vapply(completed, function(step) is.finite(control$phase_peak_anon_bytes[[step]] %||% NA_real_) &&
+        is.finite(candidate$phase_peak_anon_bytes[[step]] %||% NA_real_), logical(1))]
+    step_ratios <- vapply(completed, function(step) candidate$phase_peak_anon_bytes[[step]] / control$phase_peak_anon_bytes[[step]], numeric(1))
+    control_complete <- identical(control$outcome, "complete")
+    whole_ratio <- candidate$peak_anon_bytes / control$peak_anon_bytes
+    resident_ratio <- if (control_complete && is.finite(control$resident_end_bytes) && is.finite(candidate$resident_end_bytes))
+        candidate$resident_end_bytes / control$resident_end_bytes else NA_real_
+    not_worse_steps <- length(step_ratios) >= 1L && all(step_ratios <= 1.02)
+    reduced <- is.finite(whole_ratio) && whole_ratio <= 0.95
+    status <- if (!not_worse_steps) "rejected" else if (!reduced) "rejected" else "accepted"
+    list(status = status, failing_rule = if (!not_worse_steps) "step_not_worse" else if (!reduced) "required_reduction" else NULL,
+        members = members, control_outcome = control$outcome, control_peak_is_lower_bound = !control_complete,
+        steps_compared = completed, step_ratios = as.list(step_ratios),
+        whole_slice_anon_ratio = whole_ratio, resident_end_ratio = resident_ratio,
+        resident_end_bytes = list(control = control$resident_end_bytes, candidate = candidate$resident_end_bytes),
         promotion_authorized = FALSE)
 }
 
@@ -889,11 +960,30 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
     files <- kitFingerprintFiles(journey$project)
     stopifnot(identical(files[c("path", "bytes", "sha256", "method")], journey$files[c("path", "bytes", "sha256", "method")]))
     receipt$files <- nrow(files)
-    if (!isTRUE(case$record)) {
-        # Production default: in-memory state, no store, no populations; completion and measures only.
-        stopifnot(is.null(journey$store), is.numeric(operation$resident_end_bytes), is.finite(operation$resident_end_bytes),
+    if (!isTRUE(case$record) && is.null(journey$store)) {
+        # Production default on an in-memory build: no store, no populations; completion and measures only.
+        stopifnot(is.numeric(operation$resident_end_bytes), is.finite(operation$resident_end_bytes),
             all(is.finite(unlist(operation$phase_peak_anon_bytes[steps]))))
         receipt$populations <- NULL
+        receipt$status <- "complete"
+        return(receipt)
+    }
+    if (!isTRUE(case$record)) {
+        # Production default on a build whose default is the on-disk path (KIT-011): the in-run populations are
+        # recomputed from the immutable store and every state must equal the KIT-005 per-step oracle.
+        store_dir <- journey$store
+        stopifnot(dir.exists(store_dir), isTRUE(journey$populations_complete))
+        recomputed <- kitFingerprintStore(store_dir, api)
+        stopifnot(identical(recomputed$head_sha256, journey$final_head_sha256))
+        for (step in names(journey$populations)) {
+            population <- journey$populations[[step]]
+            if (is.null(population$state)) next
+            stopifnot(kitStateFingerprintMatches(population$fingerprint, recomputed$states[[population$state]]))
+        }
+        receipt$oracle_mismatches <- kitReproduceMismatches(kitOracleJourneyPopulations(bindings), journey$populations)
+        stopifnot(!length(receipt$oracle_mismatches))
+        receipt$populations <- lapply(journey$populations, \(p) list(state = p$state, entity_id = p$entity_id, rows = p$rows))
+        receipt$oracle <- "KIT-005 journey_<step> fingerprints"
         receipt$status <- "complete"
         return(receipt)
     }

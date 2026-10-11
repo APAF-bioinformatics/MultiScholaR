@@ -136,12 +136,20 @@ test_that("active-owner diagnostics record cleanup and failure without payload t
     root <- withr::local_tempdir()
     source <- file.path(root, "project", "scripts")
     dir.create(source, recursive = TRUE)
-    withr::local_options(multischolar.dia_capacity_trial = list(scope = "full-journey-capacity-v1",
-        route = "iq", treatment = "qs2_duckdb", receipt_dir = root))
     shiny::testServer(function(input, output, session) {
         workflow <- shiny::reactiveValues(state_manager = WorkflowState$new(audit_enabled = FALSE))
-        manager <- initializeDIACapacitySession(workflow$state_manager, list(source_dir = source),
-            session, workflow)
+        # KIT-011: the on-disk owner attached as the import does it, with the harness receipt directory.
+        state_root <- tempfile(".dia-native-", tmpdir = source)
+        dir.create(state_root, mode = "0700")
+        manager <- newDIAStateAdapter(newWorkflowEntityStore(state_root, "DIA-IQ-native", "DIA", max_cache_bytes = 0),
+            workflow$state_manager)
+        # The retired capacity trial ran the adapter in the legacy session format without reference states;
+        # these owner diagnostics are exercised in that context (the native-format path has its own tests).
+        manager$.context$sql_rollup <- TRUE
+        manager$.context$session_format <- "legacy"
+        manager$.context$reference_states <- FALSE
+        manager$.context$experiment_paths <- list(source_dir = source)
+        manager <- attachDIAStateSession(manager, session, workflow, root)
         workflow$state_manager <- manager
         saved <- newDIASavedReactiveVal(NULL, "late-owner")
         shiny::observeEvent(input$apply, {
@@ -425,7 +433,6 @@ test_that("peptide Apply releases consumed inputs before counts and Parquet prep
         config$config_list <- object@args
         update <- function(...) updateConfigParameter(..., env = config)
         count_original <- .countPeptideProteinGroups
-        prepare_original <- prepareDIACapacityRollupInput
         observations <- character()
         observe <- function(frame, label) {
             predecessor <- get("predecessor", frame, inherits = FALSE)
@@ -440,10 +447,6 @@ test_that("peptide Apply releases consumed inputs before counts and Parquet prep
             .countPeptideProteinGroups = function(theObject) {
                 if (exists("predecessor", parent.frame(), inherits = FALSE)) observe(parent.frame(), "count")
                 count_original(theObject)
-            },
-            prepareDIACapacityRollupInput = function(manager, object) {
-                observe(parent.frame(), "prepare")
-                prepare_original(manager, object)
             })
         now <- function() as.POSIXct("2026-09-22 00:00:00", tz = "UTC")
         withDIAStateScope(manager, function() {
@@ -461,7 +464,8 @@ test_that("peptide Apply releases consumed inputs before counts and Parquet prep
             expect_identical(manager$.context$hydrates, reads)
             expect_identical(diaStateOwnership(manager)$working_records, 1L)
         })
-        expect_identical(observations, c("count", "prepare", "count", "prepare", "count"))
+        # KIT-011: the capacity arm's rollup-input preparation after the protein-evidence filter is gone.
+        expect_identical(observations, c("count", "count", "count"))
         expect_identical(manager$revertToState("raw_data_s4"), object)
         info <- diaStateOwnership(manager)
         expect_identical(info$working_records, 0L)

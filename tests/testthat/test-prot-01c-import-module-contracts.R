@@ -2322,8 +2322,10 @@ test_that("mod_prot_import_server stores successful import side effects", {
         expect_equal(workflowData$state_manager$workflow_type, "DIA")
         expect_equal(workflowData$tab_status$setup_import, "complete")
         expect_equal(workflowData$fasta_file_path, fixture$fastaPath)
-        expect_equal(sort(unique(workflowData$data_tbl$Run)), c("sample_1", "sample_2"))
-        expect_identical(workflowData$data_cln, workflowData$data_tbl)
+        # KIT-011: the DIA-NN import runs on the on-disk owner, so the holders are saved references.
+        expect_true(isSavedWorkflowReference(workflowData$data_tbl))
+        expect_equal(sort(unique(getDIAOwnedPayload(workflowData, "data_tbl")$Run)), c("sample_1", "sample_2"))
+        expect_identical(getDIAOwnedPayload(workflowData, "data_cln"), getDIAOwnedPayload(workflowData, "data_tbl"))
         expect_equal(workflowData$taxon_id, 9606)
         expect_equal(workflowData$organism_name, "Homo sapiens")
         expect_equal(workflowData$config_list, configStub)
