@@ -1,0 +1,109 @@
+{
+ "schema": "em.ticket_series_evidence_audit.result.v1",
+ "mode": "post_hoc",
+ "audit_date": "2026-10-11",
+ "scope": {
+  "ticket_ids": [
+   "KIT-006"
+  ],
+  "commit": "53ec213d",
+  "claim_classes": [
+   "exactness_full_size",
+   "not_worse",
+   "promotion_to_control",
+   "rerun_and_correction_authority"
+  ]
+ },
+ "authority": {
+  "route_valid": true,
+  "artifacts": [
+   {
+    "path": "docs/qa/workflow-execution/kit/protocol.md",
+    "sha256": "a5867e9cea97a72892fc7fb972b75d18e644d2b0e27adf49823c544eed8bf068",
+    "version": "1.3"
+   },
+   {
+    "commit": "53ec213d",
+    "note": "KIT-006 closeout"
+   },
+   {
+    "build": "kit_006",
+    "install": "core/browser-smoke.qBR5tm",
+    "source_commit": "62fb9aec"
+   },
+   {
+    "stage": "kit-006",
+    "decision": "accepted"
+   }
+  ]
+ },
+ "findings": [
+  {
+   "id": "PX-01",
+   "severity": "low",
+   "layer": "provenance",
+   "summary": "correction 1 record names harness_commit 8d8efccc while its harness sha is the file committed at 53ec213d",
+   "repair": "outcome sentence; label uncommitted harness in future correction scripts",
+   "blocked": "none"
+  },
+  {
+   "id": "PX-02",
+   "severity": "low",
+   "layer": "generator",
+   "summary": "journey.pair.control stays kit_001 after the promotion to kit_006 (pair built before the promotion block)",
+   "repair": "reorder or derive from b$control; regenerate",
+   "blocked": "none"
+  },
+  {
+   "id": "PX-03",
+   "severity": "info",
+   "layer": "decision_record",
+   "summary": "P14 pair batches NULL in the decision (receipts predate science_execution); verification records carry them",
+   "repair": "none",
+   "blocked": "none"
+  },
+  {
+   "id": "PX-04",
+   "severity": "info",
+   "layer": "budget",
+   "summary": "four counted members; two refused 3 s launches recorded",
+   "repair": "none",
+   "blocked": "none"
+  },
+  {
+   "id": "PX-05",
+   "severity": "info",
+   "layer": "host_hygiene",
+   "summary": "two inactive user units listed",
+   "repair": "reset-failed",
+   "blocked": "none"
+  }
+ ],
+ "tests": [
+  {
+   "name": "audit_inventory.py",
+   "result": "passed"
+  },
+  {
+   "name": "member receipts recomputed from traces",
+   "result": "passed"
+  },
+  {
+   "name": "verification records (pages, exact_sum per build, native filter record)",
+   "result": "passed"
+  },
+  {
+   "name": "rerun and correction bookkeeping",
+   "result": "passed"
+  }
+ ],
+ "closeout": {
+  "implementation_verified": true,
+  "execution_complete": true,
+  "decision_supported": true,
+  "promotion_authorized": true,
+  "claim_scope": "complete-sample partitioner exact on full_p14 and full_primary and not worse than kit_001 (0.991 / 0.996); no reduction claimed"
+ },
+ "blockers": [],
+ "next_action": "KIT-007; PX-01/PX-02 text and generator fixes at a convenient closeout"
+}
