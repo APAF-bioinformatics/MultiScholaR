@@ -41,6 +41,8 @@ Versus KIT-005's native-path members on `kit_001` (5.67 / 5.51 GiB anonymous, 3.
 - The control's peak is a guard reading, so the reduction ratio (0.358) is an upper bound of the true ratio; the protocol forbids a finite denominator from a guard, and the rule here uses the lower bound only in the stricter direction.
 - The oracle check is cross-build: states, support entries, summaries and every content-addressed product are judged; the operation identity products are reported (per-build software identity).
 - Scope: DIA-NN with the IQ route on Linux. Limpa and other formats keep the in-memory manager (unchanged, unmeasured here).
+- Publication files (post-hoc audit PY-02): the candidate's 528 result files were fingerprinted but not compared with any reference; a file comparison exists only between members of the same build (KIT-005), so the exactness claim covers states, support entries, summaries and content-addressed products, not files.
+- Per-step assets (post-hoc audit PY-01): the plot and asset products attached to a step by the driver are judged from the in-run fingerprint (their hashes equal the oracle's); the recomputed state fingerprints carry only the record's own products. A later ticket may recompute the per-step assets from the head's product history.
 
 ## Declared runs (as authorised; recorded above)
 
