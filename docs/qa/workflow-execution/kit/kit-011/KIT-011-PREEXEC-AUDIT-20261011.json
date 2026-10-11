@@ -1,0 +1,99 @@
+{
+ "schema": "em.ticket_series_evidence_audit.result.v1",
+ "mode": "audit_only",
+ "audit_date": "2026-10-11",
+ "scope": {
+  "ticket_ids": [
+   "KIT-011"
+  ],
+  "commit": "65f0ef2e",
+  "claim_classes": [
+   "default_path_switch",
+   "capacity_arm_removed",
+   "harness_pair_rule",
+   "oracle_exactness_assumption"
+  ]
+ },
+ "authority": {
+  "route_valid": true,
+  "artifacts": [
+   {
+    "path": "docs/qa/workflow-execution/kit/protocol.md",
+    "sha256": "a5867e9cea97a72892fc7fb972b75d18e644d2b0e27adf49823c544eed8bf068",
+    "version": "1.3"
+   },
+   {
+    "commit": "65f0ef2e"
+   }
+  ]
+ },
+ "findings": [
+  {
+   "id": "PX-01",
+   "severity": "medium",
+   "layer": "decision_design",
+   "summary": "per-step not-worse guard covers import/design where the paths share code and KIT-005 measured import at 1.07",
+   "repair": "user decision: keep, or apply the guard from the first saved state",
+   "blocked": "decision rule"
+  },
+  {
+   "id": "PX-02",
+   "severity": "medium",
+   "layer": "exactness_assumption",
+   "summary": "candidate verified against kit_001 oracles with no whole-journey cross-build check since; a benign difference would void a 65-minute member",
+   "repair": "screen lifecycle member on kit_011 compared to the KIT-001 screen populations before the pair (guarded run, user's go)",
+   "blocked": "pair launch by recommendation"
+  },
+  {
+   "id": "PX-03",
+   "severity": "low",
+   "layer": "ticket_metadata",
+   "summary": "files_to_modify out of date",
+   "repair": "ticket revision at closeout",
+   "blocked": "none"
+  },
+  {
+   "id": "PX-04",
+   "severity": "info",
+   "layer": "behaviour",
+   "summary": "legacy session adoption and route-mismatch refusal become default",
+   "repair": "claim limits sentence",
+   "blocked": "none"
+  },
+  {
+   "id": "PX-05",
+   "severity": "info",
+   "layer": "compatibility",
+   "summary": "attach scope label renamed; receipts only",
+   "repair": "none",
+   "blocked": "none"
+  },
+  {
+   "id": "PX-06",
+   "severity": "info",
+   "layer": "storage",
+   "summary": "old stores carry rollup_input; no reader; reopen of a KIT-005 store not re-tested",
+   "repair": "ten-second kitReadHead check",
+   "blocked": "none"
+  }
+ ],
+ "tests": [
+  {
+   "name": "audit_inventory.py",
+   "result": "passed"
+  },
+  {
+   "name": "19 affected files",
+   "result": "passed except the known native-session installed-runtime failure"
+  }
+ ],
+ "closeout": {
+  "implementation_verified": true,
+  "execution_complete": false,
+  "decision_supported": false,
+  "promotion_authorized": false,
+  "claim_scope": "on-disk path is the DIA-NN/IQ default on Linux in the source tree; no memory claim"
+ },
+ "blockers": [],
+ "next_action": "decide PX-01; PX-02 screen member; then install and pair"
+}
