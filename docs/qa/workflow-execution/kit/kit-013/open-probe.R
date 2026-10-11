@@ -91,6 +91,31 @@ shiny::testServer(function(input, output, session) {}, {
         stopifnot(!is.null(view$current_s4_object) || !is.null(view$final_state_name) || is.list(view))
         step(paste0("after_open_", i), workflow$state_manager, round(proc.time()[["elapsed"]] - started, 1))
     }
+    # Audit PX-03: a Save from the opened session after the replaced stores are gone, and a reopen of it.
+    manager <- workflow$state_manager
+    ctx <- manager$.context
+    metadata <- resolveDIAStateValue(ctx, ctx$native_metadata_reference)
+    # The GUI rebuilds metadata from the bus (collectDIANativeSessionMetadata); the stored view still
+    # carries the legacy history aliases the exporter refuses, so they are dropped here.
+    metadata[intersect(names(metadata), c("r6_complete_states", "current_s4_object",
+        "correlation_filtered_s4", "state_manager"))] <- NULL
+    export_dir <- file.path(work, "export-after-open")
+    dir.create(export_dir)
+    started <- proc.time()[["elapsed"]]
+    exported <- runDIANativeSessionExport(manager, metadata, export_dir,
+        extra_references = ctx$native_extra_references, dependencies = resolveDIANativeDependencies(manager))
+    reopen_dir <- file.path(work, "reopen-after-export")
+    dir.create(reopen_dir)
+    reopened <- openDIANativeSession(exported$publication$archive_path, reopen_dir)
+    record$save_after_open <<- list(seconds = round(proc.time()[["elapsed"]] - started, 1),
+        archive = basename(exported$publication$archive_path),
+        archive_bytes = file.size(exported$publication$archive_path),
+        reopened_state = reopened$manager$current_state,
+        reopened_states = length(reopened$manager$.context$snapshot$states),
+        states_identical = identical(names(reopened$manager$.context$snapshot$states), names(ctx$snapshot$states)))
+    closeDIAStateAdapter(reopened$manager)
+    cat(sprintf("save_after_open: %s (%.1f MB) reopened at %s with %d states\n", record$save_after_open$archive,
+        record$save_after_open$archive_bytes / 1e6, record$save_after_open$reopened_state, record$save_after_open$reopened_states))
     closeDIAStateAdapter(workflow$state_manager)
 })
 folders <- vapply(record$steps, function(s) paste(s$private_folders, collapse = ","), character(1))

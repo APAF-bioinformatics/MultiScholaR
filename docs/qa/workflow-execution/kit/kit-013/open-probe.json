@@ -2,7 +2,7 @@
   "schema": "kit.open_probe.v1",
   "ticket": "KIT-013",
   "date": "2026-10-12",
-  "head_commit": "32499f43edd563487248a17f5fc32eaf103afde4",
+  "head_commit": "16b1f056d53c833d92c114f7165a8661ece14571",
   "session": {
     "source": "kit-lifecycle-complete member project (kit_011 screen journey)",
     "build": "kit_011",
@@ -27,11 +27,11 @@
     },
     {
       "label": "after_open_1",
-      "seconds": 8.7,
-      "private_folders": ".dia-native-import-65ad6725c3719",
+      "seconds": 5.8,
+      "private_folders": ".dia-native-import-8c9df16231648",
       "private_folder_bytes": 233448650,
       "live_store": {
-        "store": ".dia-native-import-65ad6725c3719",
+        "store": ".dia-native-import-8c9df16231648",
         "entities": 123,
         "closure": 122,
         "dead": 1,
@@ -43,11 +43,11 @@
     },
     {
       "label": "after_open_2",
-      "seconds": 7.3,
-      "private_folders": ".dia-native-import-65ad61b996ee9",
+      "seconds": 5.2,
+      "private_folders": ".dia-native-import-8c9df662d875a",
       "private_folder_bytes": 233448650,
       "live_store": {
-        "store": ".dia-native-import-65ad61b996ee9",
+        "store": ".dia-native-import-8c9df662d875a",
         "entities": 123,
         "closure": 122,
         "dead": 1,
@@ -58,10 +58,18 @@
       }
     }
   ],
+  "save_after_open": {
+    "seconds": 5.8,
+    "archive": "filtered_session_20261012_102039_native-export-8c9dfb165b9a.msdia.tar",
+    "archive_bytes": 184135680,
+    "reopened_state": "correlation_filtered",
+    "reopened_states": 16,
+    "states_identical": true
+  },
   "result": {
     "before_folders": ".dia-native-196fa7150afb0d",
-    "after_first_open": ".dia-native-import-65ad6725c3719",
-    "after_second_open": ".dia-native-import-65ad61b996ee9",
+    "after_first_open": ".dia-native-import-8c9df16231648",
+    "after_second_open": ".dia-native-import-8c9df662d875a",
     "replaced_folder_removed_each_time": true,
     "removed_bytes": [325625600, 233448650]
   }

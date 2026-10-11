@@ -868,3 +868,56 @@ test_that("KIT-013 items 2 and 5: a failed Open leaves no restored file and a su
         closeDIAStateAdapter(workflow$state_manager)
     })
 })
+
+test_that("KIT-013 audit PX-01: a QC-time configuration update does not fire the design sync observer", {
+    recipe <- readWorkflowCheckpointRecipe("small")
+    recipe$n_proteins <- 8L; recipe$n_samples <- 8L
+    recipe$peptides_per_protein <- 4L; recipe$forms_per_peptide <- 2L
+    object <- makeWorkflowCheckpointPeptide(recipe)
+    root <- withr::local_tempdir()
+    native <- WorkflowState$new(audit_enabled = FALSE)
+    native$saveState("intensity_filtered", object, list(), "input")
+    workflow <- shiny::reactiveValues(state_manager = native, data_tbl = object@peptide_data,
+        data_cln = object@peptide_data, config_list = list(globalParameters = list(workflow_type = "DIA"),
+            srlQvalueProteotypicPeptideClean = list(qvalue_threshold = 0.05)),
+        data_type = "peptide", column_mapping = list(run_col = "Run", protein_col = "Protein.Group",
+            peptide_col = "Stripped.Sequence", raw_quantity_col = "Precursor.Quantity",
+            norm_quantity_col = "Precursor.Normalised"))
+    shiny::testServer(function(input, output, session) {}, {
+        session$userData$workflow_data <- workflow
+        manager <- stageDIAGUIReferenceOwner(native, list(source_dir = root))
+        adoptDIAGUIReferenceOwner(manager, workflow, session)
+        builder <- createProtDesignBuilderState()
+        initial_runs <- 0L
+        sync_runs <- 0L
+        initial_state <- shiny::reactive({
+            initial_runs <<- initial_runs + 1L
+            buildDIAReferenceDesignState(manager, workflow$data_tbl, workflow$config_list, workflow$column_mapping)
+        })
+        count_design <- function(value) { sync_runs <<- sync_runs + 1L; builder$designMatrix(value) }
+        observer <- registerProtDesignInitialStateSyncObserver(input, session,
+            initialState = initial_state, dataTbl = function() workflow$data_tbl,
+            designMatrix = count_design, dataClnReactive = builder$dataClnReactive,
+            groups = builder$groups, factors = builder$factors, contrasts = builder$contrasts,
+            removedSamples = builder$removedSamples, resultRv = builder$resultRv)
+        session$flushReact()
+        # On adoption the observer consumes the pending Design result and returns before writing selections.
+        expect_identical(sync_runs, 0L)
+        expect_identical(initial_runs, 1L)
+        # A QC Apply writes the configuration through the bus environment (correction 1): neither the
+        # initial-state reactive nor the sync observer runs again.
+        state <- manager$getState("intensity_filtered")
+        updated <- suppressMessages(updateConfigParameter(state, "srlQvalueProteotypicPeptideClean", "qvalue_threshold", 0.01))
+        expect_equal(shiny::isolate(workflow$config_list)$srlQvalueProteotypicPeptideClean$qvalue_threshold, 0.01)
+        session$flushReact()
+        expect_identical(sync_runs, 0L)
+        expect_identical(initial_runs, 1L)
+        # The design initial state is rebuilt only on its own events (a new data reference or Reset).
+        session$setInputs(reset_changes = 1)
+        session$flushReact()
+        expect_identical(sync_runs, 1L)
+        expect_identical(initial_runs, 2L)
+        observer$destroy()
+        closeDIAStateAdapter(manager)
+    })
+})
