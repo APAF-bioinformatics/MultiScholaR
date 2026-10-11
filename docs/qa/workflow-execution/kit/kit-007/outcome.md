@@ -1,6 +1,6 @@
 # KIT-007: operation registry replaces the hard-wired switches
 
-Status 2026-10-11: **implemented; the lifecycle pair is declared and waits for the user's go.** Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-007: two lifecycle members, 5 min each); protocol v1.3. Control: `kit_006` (`core/browser-smoke.qBR5tm`).
+Status 2026-10-11: **complete.** Lifecycle pair observed on the `kit_007` build (`core/browser-smoke.BThWyC`, source `c3b40a47`); the control stays `kit_006` (placement change, no memory decision). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-007: two lifecycle members, 5 min each); protocol v1.3. Control: `kit_006` (`core/browser-smoke.qBR5tm`).
 
 ## What was built
 
@@ -12,7 +12,18 @@ Status 2026-10-11: **implemented; the lifecycle pair is declared and waits for t
 
 Grep evidence (acceptance 1): after the change the only operation literal in `R/utils_workflow_execution.R` is the constant `workflowFixtureOperation`; every former site (`prepareWorkflowHeadAcceptance`, `beginWorkflowGUIAction`, `launchWorkflowApplication`, `computeWorkflowFixture`, `workflowWorkerMain`, `publishWorkflowFixtureResult`, `finishWorkflowExecutionJob`, the fixture runner, `validateWorkflowActionParameters`, `computeWorkflowPeptideAction`, `workflowQualificationVariant` (both programmes), `publishWorkflowPeptideResult` (label, omic type, directories), `workflowActionSpec`, `validateWorkflowActionInput`, `resolveWorkflowActionParameters`, `completeWorkflowAction`) reads the registry entry.
 
-## Declared runs (waiting for the user's go)
+## Results
+
+Install: `kit_007` = `core/browser-smoke.BThWyC` from `c3b40a47`, empty runtime patch, bound as `operation_lifecycle$build`; both stages validated (24 GiB available, no managed unit). The KIT-005 stage directories are archived as `kit-lifecycle-operation-*.kit-005`.
+
+| Stage | Member | Decision | Elapsed | Slice peak | Anonymous peak | Max gap | Evidence |
+|---|---|---|---|---|---|---|---|
+| `kit-lifecycle-operation-complete` | P14 on `screen_p14` through the installed dispatch resolved from the registry | `lifecycle_complete_observed` (every P14 phase; 48 pages equal to the P14 screen oracle; verifier accepted) | 20 s | 1.411 GiB | 1.311 GiB | 60 ms | stage receipt, `member/verification.rds` |
+| `kit-lifecycle-operation-fail` | same with the `after_aggregate` worker fault | `lifecycle_failure_observed` (`worker_failed`, error "CORE-004 forced failure after the aggregate stage", head unchanged on the input component `5b6a36c5…`) | 13 s | 1.371 GiB | 1.266 GiB | 70 ms | same |
+
+Zero swap, every gap under 250 ms, slices stopped. One launch each, no correction. The members ran under the registry-driven adapters vehicle (operation list from the installed registry).
+
+## Declared runs (as authorised; recorded above)
 
 1. **Install** (recorded, not counted): the KIT-007 tree at its commit into `<proof>/core`, bound as `kit_007`; bindings regenerated (`operation_lifecycle$build = kit_007`); both lifecycle stages validate.
 2. **Lifecycle pair on `screen_p14`, 300 s each, on `kit_007`**: `kit-lifecycle-operation-complete` (P14 through the installed action dispatch resolved from the registry; every P14 phase; pages equal to the P14 screen oracle) and `kit-lifecycle-operation-fail` (the `after_aggregate` fault inside the worker; `worker_failed`; head unchanged on the input component). The KIT-005 stage directories are archived first as `kit-lifecycle-operation-*.kit-005`.
