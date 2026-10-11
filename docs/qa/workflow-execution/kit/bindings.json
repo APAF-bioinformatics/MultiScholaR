@@ -3631,6 +3631,12 @@
           "population": "full_primary"
         }
       ]
+    },
+    "011": {
+      "kind": "journey",
+      "control": "kit_006",
+      "candidate": "kit_011",
+      "record": false
     }
   },
   "lifecycle": {
@@ -3640,7 +3646,8 @@
       "after_step": "intensity",
       "failed_step": "sample",
       "mechanism": "application-guard-inject.rds written after the intensity filter (the first post-rollup step) completes; the application monitor stops the slice (injected_guard_stop); the sample-filter step fails on disconnection; the head must equal the intensity-filter snapshot"
-    }
+    },
+    "build": "kit_011"
   },
   "harness": {
     "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime",
