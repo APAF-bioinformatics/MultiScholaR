@@ -31,3 +31,9 @@
         , "-------------------------------------------------------------------"
     )
 }
+
+.onLoad <- function(libname, pkgname) {
+    # The operation registry is identical in the controller and every fresh worker process (KIT-007).
+    registerBuiltinWorkflowOperations()
+    invisible(NULL)
+}

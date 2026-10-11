@@ -152,3 +152,106 @@ newWorkflowOperationStore <- function(manager, declaration, source, identity) {
         },
         created = function() created)
 }
+
+# Operation registry (KIT-007). One process-level registry, keyed by operation name, carries every
+# per-operation fact the execution layer used to name by hand: the input role and class, the
+# parameter validator, resolver and byte limit, the compute handler, the completion and
+# publication roles, the step label, the allowed qualification variants and the diagnostic-only
+# flag. Entries hold handler *names*, never closures: handlers never travel in requests, and the
+# execution layer resolves a name in its own environment at the call site. The registry is filled
+# at namespace load (`.onLoad`) and on first use, so the controller and every fresh worker
+# `Rscript` resolve the same entries from `request$operation`.
+
+.workflowOperationRegistry <- new.env(parent = emptyenv())
+
+#' Validate one registry entry.
+#' @noRd
+validateWorkflowOperationEntry <- function(entry) {
+    scalar <- function(value) is.character(value) && length(value) == 1L && !is.na(value) && nzchar(value)
+    flag <- function(value) is.logical(value) && length(value) == 1L && !is.na(value)
+    valid <- is.list(entry) && scalar(entry$name) && scalar(entry$input) && entry$input %in% c("checkpoint", "peptide") &&
+        scalar(entry$input_class) && scalar(entry$compute) && entry$compute %in% c("fixture", "peptide") &&
+        scalar(entry$handler) && scalar(entry$validate) && (is.null(entry$resolve) || scalar(entry$resolve)) &&
+        is.numeric(entry$parameter_limit) && length(entry$parameter_limit) == 1L && entry$parameter_limit > 0 &&
+        is.character(entry$parameters) && !anyDuplicated(entry$parameters) &&
+        scalar(entry$completion) && entry$completion %in% c("fixture", "peptide") &&
+        scalar(entry$publication) && entry$publication %in% c("fixture", "peptide") &&
+        (is.null(entry$step_label) || scalar(entry$step_label)) && scalar(entry$omic_type) &&
+        is.character(entry$variants) && is.character(entry$gui_variants) &&
+        flag(entry$diagnostic_only) && flag(entry$inclusion_absence) &&
+        (is.null(entry$declaration) || is.list(entry$declaration))
+    if (!isTRUE(valid)) cli::cli_abort("workflow operation registry entry is invalid", class = "workflow_operation_invalid")
+    if (!is.null(entry$declaration)) {
+        validateWorkflowOperation(entry$declaration)
+        if (!identical(entry$declaration$name, entry$name) || !identical(entry$declaration$input_class, entry$input_class))
+            cli::cli_abort("registry entry {.val {entry$name}} does not match its declaration", class = "workflow_operation_invalid")
+    }
+    entry
+}
+
+#' Register one operation.
+#' @param entry Entry list (see `validateWorkflowOperationEntry`); an existing name is replaced only
+#'   when `replace = TRUE`.
+#' @return The entry, invisibly.
+#' @noRd
+registerWorkflowOperation <- function(entry, replace = FALSE) {
+    entry <- validateWorkflowOperationEntry(entry)
+    if (!replace && exists(entry$name, envir = .workflowOperationRegistry, inherits = FALSE))
+        cli::cli_abort("operation {.val {entry$name}} is already registered", class = "workflow_operation_invalid")
+    assign(entry$name, entry, envir = .workflowOperationRegistry)
+    invisible(entry)
+}
+
+#' Names of the registered operations (built-ins registered on first use).
+#' @noRd
+workflowOperationNames <- function() {
+    if (!length(ls(.workflowOperationRegistry))) registerBuiltinWorkflowOperations()
+    sort(ls(.workflowOperationRegistry))
+}
+
+#' Look up one registered operation; an unregistered or malformed name refuses with the
+#' execution layer's class.
+#' @noRd
+workflowOperationEntry <- function(operation) {
+    if (!is.character(operation) || length(operation) != 1L || is.na(operation))
+        cli::cli_abort("operation adapter is not qualified", class = "workflow_execution_unsupported")
+    if (!length(ls(.workflowOperationRegistry))) registerBuiltinWorkflowOperations()
+    entry <- get0(operation, envir = .workflowOperationRegistry, inherits = FALSE)
+    if (is.null(entry)) cli::cli_abort("operation adapter is not qualified", class = "workflow_execution_unsupported")
+    entry
+}
+
+#' The one operation a `gui`-mode qualification record may name (the PERF-107 phase-A entry).
+#' @noRd
+workflowGuiQualifiedOperation <- function() {
+    names <- Filter(function(name) length(workflowOperationEntry(name)$gui_variants) > 0L, workflowOperationNames())
+    if (length(names) != 1L) cli::cli_abort("exactly one operation may carry a GUI qualification", class = "workflow_execution_unsupported")
+    names[[1L]]
+}
+
+#' Register the built-in operations: the diagnostic fixture and the two DIA declarations of KIT-006.
+#' Called from `.onLoad` and from the first lookup in a process that bypassed it.
+#' @noRd
+registerBuiltinWorkflowOperations <- function() {
+    rm(list = ls(.workflowOperationRegistry), envir = .workflowOperationRegistry)
+    registerWorkflowOperation(list(name = "wfx_fixture", input = "checkpoint", input_class = "PeptideQuantitativeData",
+        compute = "fixture", handler = "computeWorkflowFixture", validate = "validateWorkflowFixtureParameters", resolve = NULL,
+        parameter_limit = 65536, parameters = c("mode", "seconds", "bytes"), completion = "fixture", publication = "fixture",
+        step_label = NULL, omic_type = "proteomics", variants = character(), gui_variants = character(),
+        diagnostic_only = TRUE, inclusion_absence = FALSE, declaration = NULL))
+    registerWorkflowOperation(list(name = "precursor_rollup", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "peptide", handler = "computeWorkflowPrecursorRollupAction", validate = "validateWorkflowPrecursorRollupParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = character(), completion = "peptide", publication = "peptide",
+        step_label = "4_precursor_rollup", omic_type = "proteomics", variants = "p14", gui_variants = character(),
+        diagnostic_only = FALSE, inclusion_absence = FALSE, declaration = diaPrecursorRollupOperation()))
+    # The frozen 4,000-sample filter includes duplicate/whitespace-bearing inclusion arguments: its
+    # parameter bytes keep the larger finite cap.
+    registerWorkflowOperation(list(name = "minimum_peptides_per_sample", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "peptide", handler = "computeWorkflowSampleFilterAction", validate = "validateWorkflowSampleFilterParameters",
+        resolve = "resolveWorkflowSampleFilterParameters", parameter_limit = 262144,
+        parameters = c("peptides_per_sample_cutoff", "inclusion_list"), completion = "peptide", publication = "peptide",
+        step_label = "6_sample_filtered", omic_type = "proteomics", variants = c("native", "physical", "selection"),
+        gui_variants = c("native", "physical"), diagnostic_only = FALSE, inclusion_absence = TRUE,
+        declaration = diaSampleFilterOperation()))
+    invisible(workflowOperationNames())
+}

@@ -113,6 +113,9 @@ test_that("KIT stages expand to fixed cases with bound corpora, builds and diges
     expect_identical(op$input$entity_id, strrep("2", 64))
     expect_identical(op$library, "/lib/n")
     expect_false(op$expect_failure)
+    lifecycle_build <- b
+    lifecycle_build$operation_lifecycle$build <- "kit_006"
+    expect_identical(h$kitCases(lifecycle_build, "kit-lifecycle-operation-complete")[[1]]$library, "/lib/k")
     op_fail <- h$kitCases(b, "kit-lifecycle-operation-fail")[[1]]
     expect_identical(op_fail$fault, "after_aggregate")
     expect_true(op_fail$expect_failure)

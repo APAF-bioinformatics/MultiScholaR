@@ -332,8 +332,12 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
     skip_if(!file.exists(request_path), "no frozen member")
     request <- readRDS(request_path)
     skip_if(!identical(request$programme, "perf106-repair-v2"), "different programme")
+    # The operation list comes from the installed build's registry (KIT-007); a build without a
+    # registry (the controls before KIT-007) keeps the two frozen names.
+    registry <- get0("workflowOperationNames", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    operations <- if (is.function(registry)) setdiff(registry(), "wfx_fixture") else c("minimum_peptides_per_sample", "precursor_rollup")
     stopifnot(identical(request$schema, 1L),
-        request$operation %in% c("minimum_peptides_per_sample", "precursor_rollup"),
+        request$operation %in% operations,
         request$variant %in% c("native", "physical", "selection", "p14"),
         is.character(request$fault), length(request$fault) == 1L,
         request$fault %in% c("none", "publication", "worker_failure", "cancel", "worker_loss", "monitor_loss",

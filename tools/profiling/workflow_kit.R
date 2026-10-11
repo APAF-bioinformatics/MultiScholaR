@@ -139,7 +139,10 @@ kitCases <- function(bindings, stage) {
         kind <- sub("kit-lifecycle-operation-", "", stage, fixed = TRUE)
         fault <- bindings$operation_lifecycle$fault
         if (is.null(fault)) stop("the operation lifecycle fault is not bound")
-        return(list(operation_case("member", "candidate", 1L, kitControl(bindings), fault$operation, fault$population,
+        # The lifecycle pair proves a changed launch path on the build that changed it (KIT-007: `operation_lifecycle$build`);
+        # without a named build it runs on the control, as KIT-005 did.
+        return(list(operation_case("member", "candidate", 1L, bindings$operation_lifecycle$build %||% kitControl(bindings),
+            fault$operation, fault$population,
             fault = if (kind == "fail") fault$name else "none", selector = paste0("kit:lifecycle:operation:", kind))))
     }
     if (startsWith(stage, "kit-lifecycle-")) {

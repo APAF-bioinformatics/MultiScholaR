@@ -178,7 +178,7 @@ prepareWorkflowHeadAcceptance <- function(context, reference) {
     snapshot <- hydrateSavedWorkflowCheckpoint(context$store, reference)
     accepted <- list(reference = pending$reference, summary = pending$summary,
         dependencies = pending$dependencies, state_reference = snapshot$states[[snapshot$current_state]],
-        operation = pending$operation %||% "wfx_fixture")
+        operation = pending$operation %||% workflowFixtureOperation)
     result_path <- file.path(paths$request_dir, "accepted-result.rds")
     writeWorkflowExecutionMessage(result_path, accepted)
     syncSavedWorkflowPaths(context$store, result_path)
@@ -494,12 +494,12 @@ WorkflowExecutionApplication <- R6::R6Class("WorkflowExecutionApplication", clon
 beginWorkflowGUIAction <- function(application, manager, operation, publication) {
     entered <- proc.time()[["elapsed"]]
     checkWorkflowApplication(application)
-    workflowActionSpec(operation)
+    entry <- workflowActionSpec(operation)
     if (!is.list(publication) || !identical(sort(names(publication)),
         sort(c("experiment_label", "experiment_paths", "omic_type"))) ||
         !is.character(publication$experiment_label) || length(publication$experiment_label) != 1L ||
         is.na(publication$experiment_label) || !nzchar(publication$experiment_label) ||
-        !identical(publication$omic_type, "proteomics") ||
+        !identical(publication$omic_type, entry$omic_type) ||
         !is.list(publication$experiment_paths) || hasMutableWorkflowEntityOwner(publication) ||
         as.numeric(object.size(publication)) > 65536) {
         cli::cli_abort("invalid GUI publication context", class = "workflow_execution_invalid")
@@ -765,7 +765,7 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
             record <- workflowGuiLaunchRecord(readRDS(member_path),
                 digest::digest(file = member_path, algo = "sha256"))
             config[names(record)] <- record
-            if (!is.null(config$qualification)) workflowQualificationVariant(config, "minimum_peptides_per_sample")
+            if (!is.null(config$qualification)) workflowQualificationVariant(config, workflowGuiQualifiedOperation())
         }
     }
     if (mode != "gui") {
@@ -1147,7 +1147,7 @@ workflowMonitorMain <- function(arguments) {
 #' @return Existing reference/summary/checkpoint structures, never a hydrated assay.
 #' @noRd
 computeWorkflowFixture <- function(request) {
-    if (!isTRUE(request$config$policy$diagnostic) || request$operation != "wfx_fixture")
+    if (!isTRUE(request$config$policy$diagnostic) || !isTRUE(workflowActionSpec(request$operation)$diagnostic_only))
         cli::cli_abort("operation has no qualified adapter", class = "workflow_execution_unsupported")
     store <- newWorkflowEntityStore(request$project_root, request$owner$project_id, request$owner$workflow_id)
     on.exit(closeWorkflowEntityStore(store))
@@ -1175,7 +1175,7 @@ computeWorkflowFixture <- function(request) {
         result <- parallel::mccollect(child)
         if (inherits(result[[1L]], "try-error") || is.null(result[[1L]])) stop("allocation child failed")
     }
-    list(checkpoint = record$data, config = record$config, state_name = "wfx_fixture",
+    list(checkpoint = record$data, config = record$config, state_name = workflowFixtureOperation,
         reference = record$data$components$peptide_data, dependencies = record$data$dependencies,
         summary = list(operation = "identity_fixture", input = request$input_references$state$entity_id))
 }
@@ -1489,7 +1489,7 @@ publishWorkflowFixtureResult <- function(owner, paths) {
     result <- readRDS(result_path)
     if (!identical(getDIAStateReference(owner$manager), result$state_reference))
         cli::cli_abort("publication belongs to a superseded state", class = "workflow_execution_stale")
-    if (workflowActionSpec(result$operation %||% "wfx_fixture")$publication == "peptide") {
+    if (workflowActionSpec(result$operation %||% workflowFixtureOperation)$publication == "peptide") {
         publishWorkflowPeptideResult(owner, paths, result)
         journal$status <- "complete"
         journal$delivery_generation <- owner$control$generation
@@ -1625,8 +1625,8 @@ finishWorkflowExecutionJob <- function(owner, status) {
         accounting_delta = delta, staged_bytes_at_teardown = staged_bytes,
         staged_basis = "new entity/map/summary payloads plus request outputs and owned pending files; retained input links excluded",
         new_entity_count = length(new_entities),
-        spill_attempts = if (job$request$operation == "wfx_fixture") 0L else NA_integer_,
-        spill_basis = if (job$request$operation == "wfx_fixture")
+        spill_attempts = if (isTRUE(workflowActionSpec(job$request$operation)$diagnostic_only)) 0L else NA_integer_,
+        spill_basis = if (isTRUE(workflowActionSpec(job$request$operation)$diagnostic_only))
             "identity fixture uses no database or spill-capable algorithm" else
             "engine spill disabled; attempted spill is not independently counted",
         measurement_valid = !is.null(monitor) && monitor$max_observation_interval <= 0.1 &&
@@ -1746,7 +1746,7 @@ workflowControllerFaultMain <- function(application) {
             stop("fault controller was not killed by the test")
         }
     }, .package = "MultiScholaR")
-    runWorkflowAction("wfx_fixture", list(state = getDIAStateReference(manager)), list(mode = "identity"), owner)
+    runWorkflowAction(workflowFixtureOperation, list(state = getDIAStateReference(manager)), list(mode = "identity"), owner)
     repeat {
         value <- pollWorkflowAction(owner)
         if (!value$status %in% c("admitting", "running")) stop("fault boundary was not reached")
@@ -1781,41 +1781,54 @@ createWorkflowApplicationSlice <- function(stem, policy) {
 #' @return NULL invisibly or explicit refusal before dispatch.
 #' @noRd
 validateWorkflowActionParameters <- function(operation, parameters, policy, resolved = TRUE) {
-    workflowActionSpec(operation)
-    # The frozen 4,000-sample filter includes duplicate/whitespace-bearing inclusion
-    # arguments. Preserve those native argument bytes under a finite operation-specific cap.
-    parameter_limit <- if (operation == "minimum_peptides_per_sample") 262144 else 65536
+    entry <- workflowActionSpec(operation)
     if (!is.list(parameters) || hasMutableWorkflowEntityOwner(parameters) ||
-        as.numeric(object.size(parameters)) > parameter_limit || anyDuplicated(names(parameters)))
+        as.numeric(object.size(parameters)) > entry$parameter_limit || anyDuplicated(names(parameters)))
         cli::cli_abort("unsupported execution parameters", class = "workflow_execution_invalid")
-    if (operation == "precursor_rollup") {
-        if (length(parameters)) cli::cli_abort("P14 has no caller-selectable execution settings")
-        diaRollupNativeInfo()
-    } else if (operation == "minimum_peptides_per_sample") {
-        allowed <- c("peptides_per_sample_cutoff", "inclusion_list")
-        if (length(parameters) && (is.null(names(parameters)) ||
-            anyNA(names(parameters)) || any(!names(parameters) %in% allowed)) ||
-            resolved && !setequal(names(parameters), allowed))
-            cli::cli_abort("sample filter parameters required or unknown parameter supplied")
-        k <- parameters$peptides_per_sample_cutoff
-        if ((resolved || !is.null(k)) && (!is.numeric(k) || length(k) != 1L ||
-            !is.finite(k) || k < 1 || k > .Machine$integer.max || k != floor(k)))
-            cli::cli_abort("cutoff must be a positive integer")
-        if (!is.null(parameters$inclusion_list) && !is.character(parameters$inclusion_list))
-            cli::cli_abort("inclusion entries must be character")
-    } else {
-        if (!isTRUE(policy$diagnostic)) cli::cli_abort("fixture requires diagnostic policy")
-        if (is.null(names(parameters)) || any(!names(parameters) %in% c("mode", "seconds", "bytes")) ||
-            !is.character(parameters$mode) || length(parameters$mode) != 1L || is.na(parameters$mode) ||
-            !parameters$mode %in% c("identity", "fail", "sleep", "allocate", "forbidden_commit"))
-            cli::cli_abort("unsupported execution parameters", class = "workflow_execution_invalid")
-        if (parameters$mode == "sleep" && (!is.numeric(parameters$seconds) || length(parameters$seconds) != 1L ||
-            !is.finite(parameters$seconds) || parameters$seconds < 0 || parameters$seconds > 60))
-            cli::cli_abort("invalid fixture delay")
-        if (parameters$mode == "allocate" && (!is.numeric(parameters$bytes) || length(parameters$bytes) != 1L ||
-            !is.finite(parameters$bytes) || parameters$bytes < 8 || parameters$bytes > 2 * 1024^3 || parameters$bytes %% 8 != 0))
-            cli::cli_abort("invalid bounded allocation fixture")
-    }
+    # The entry names its validator; it is resolved here so a sourced copy of this file dispatches its own.
+    get(entry$validate, mode = "function")(parameters, policy, resolved)
+    invisible(NULL)
+}
+
+#' P14 takes no caller-selectable settings; the native artifact must be present.
+#' @noRd
+validateWorkflowPrecursorRollupParameters <- function(parameters, policy, resolved = TRUE) {
+    if (length(parameters)) cli::cli_abort("P14 has no caller-selectable execution settings")
+    diaRollupNativeInfo()
+    invisible(NULL)
+}
+
+#' The sample filter's cutoff and inclusion list, complete once resolved.
+#' @noRd
+validateWorkflowSampleFilterParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("peptides_per_sample_cutoff", "inclusion_list")
+    if (length(parameters) && (is.null(names(parameters)) ||
+        anyNA(names(parameters)) || any(!names(parameters) %in% allowed)) ||
+        resolved && !setequal(names(parameters), allowed))
+        cli::cli_abort("sample filter parameters required or unknown parameter supplied")
+    k <- parameters$peptides_per_sample_cutoff
+    if ((resolved || !is.null(k)) && (!is.numeric(k) || length(k) != 1L ||
+        !is.finite(k) || k < 1 || k > .Machine$integer.max || k != floor(k)))
+        cli::cli_abort("cutoff must be a positive integer")
+    if (!is.null(parameters$inclusion_list) && !is.character(parameters$inclusion_list))
+        cli::cli_abort("inclusion entries must be character")
+    invisible(NULL)
+}
+
+#' The diagnostic fixture's modes, under a diagnostic policy only.
+#' @noRd
+validateWorkflowFixtureParameters <- function(parameters, policy, resolved = TRUE) {
+    if (!isTRUE(policy$diagnostic)) cli::cli_abort("fixture requires diagnostic policy")
+    if (is.null(names(parameters)) || any(!names(parameters) %in% c("mode", "seconds", "bytes")) ||
+        !is.character(parameters$mode) || length(parameters$mode) != 1L || is.na(parameters$mode) ||
+        !parameters$mode %in% c("identity", "fail", "sleep", "allocate", "forbidden_commit"))
+        cli::cli_abort("unsupported execution parameters", class = "workflow_execution_invalid")
+    if (parameters$mode == "sleep" && (!is.numeric(parameters$seconds) || length(parameters$seconds) != 1L ||
+        !is.finite(parameters$seconds) || parameters$seconds < 0 || parameters$seconds > 60))
+        cli::cli_abort("invalid fixture delay")
+    if (parameters$mode == "allocate" && (!is.numeric(parameters$bytes) || length(parameters$bytes) != 1L ||
+        !is.finite(parameters$bytes) || parameters$bytes < 8 || parameters$bytes > 2 * 1024^3 || parameters$bytes %% 8 != 0))
+        cli::cli_abort("invalid bounded allocation fixture")
     invisible(NULL)
 }
 
@@ -1835,15 +1848,24 @@ computeWorkflowPeptideAction <- function(request) {
     if (!is.null(request$config$qualification) && !identical(request$token$qualification,
         digest::digest(request$config$qualification, algo = "sha256")))
         cli::cli_abort("qualification variant token differs", class = "workflow_execution_invalid")
-    value <- switch(request$operation,
-        precursor_rollup = computeDIAReferencePrecursorRollup(manager, request$input_references$state,
-            worker_cap = request$worker_cap),
-        minimum_peptides_per_sample = computeDIAReferenceSampleFilter(manager,
-            request$input_references$state, request$parameters, worker_cap = request$worker_cap,
-            output_mode = variant),
-        cli::cli_abort("scientific adapter unavailable"))
+    entry <- workflowActionSpec(request$operation)
+    if (!identical(entry$compute, "peptide")) cli::cli_abort("scientific adapter unavailable")
+    value <- get(entry$handler, mode = "function")(manager, request, variant)
     value$operation <- request$operation
     value
+}
+
+#' Compute handlers named by the registry: each runs the unchanged reference entry point of its
+#' declaration with the dispatched worker cap and the qualification variant.
+#' @noRd
+computeWorkflowPrecursorRollupAction <- function(manager, request, variant) {
+    computeDIAReferencePrecursorRollup(manager, request$input_references$state, worker_cap = request$worker_cap)
+}
+
+#' @noRd
+computeWorkflowSampleFilterAction <- function(manager, request, variant) {
+    computeDIAReferenceSampleFilter(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, output_mode = variant)
 }
 
 #' Resolve only server-owned finite qualification variants for installed actions.
@@ -1859,7 +1881,7 @@ workflowQualificationVariant <- function(config, operation) {
             "member_sha256", "deadline")) &&
         identical(qualification$programme, "perf107-phase-a") &&
         is.character(qualification$variant) && length(qualification$variant) == 1L &&
-        !is.na(qualification$variant) && qualification$variant %in% c("native", "physical") &&
+        !is.na(qualification$variant) && qualification$variant %in% workflowActionSpec(operation)$gui_variants &&
         is.character(qualification$entry) && length(qualification$entry) == 1L &&
         !is.na(qualification$entry) && qualification$entry %in% c("reference", "resident") &&
         is.character(qualification$member_sha256) &&
@@ -1867,8 +1889,7 @@ workflowQualificationVariant <- function(config, operation) {
         !is.na(qualification$member_sha256) &&
         grepl("^[a-f0-9]{64}$", qualification$member_sha256) &&
         is.numeric(qualification$deadline) && length(qualification$deadline) == 1L &&
-        !is.na(qualification$deadline) && qualification$deadline %in% c(900, 1800) &&
-        identical(operation, "minimum_peptides_per_sample")) {
+        !is.na(qualification$deadline) && qualification$deadline %in% c(900, 1800)) {
         return(qualification$variant)
     }
     if (!identical(config$mode, "adapters") ||
@@ -1880,9 +1901,7 @@ workflowQualificationVariant <- function(config, operation) {
         !is.numeric(qualification$deadline) || length(qualification$deadline) != 1L ||
         is.na(qualification$deadline) || !qualification$deadline %in% c(300, 600, 1800) ||
         !is.character(qualification$variant) || length(qualification$variant) != 1L ||
-        is.na(qualification$variant) || !qualification$variant %in% c("native", "physical", "selection", "p14") ||
-        !identical(operation, if (qualification$variant == "p14")
-            "precursor_rollup" else "minimum_peptides_per_sample"))
+        is.na(qualification$variant) || !qualification$variant %in% workflowActionSpec(operation)$variants)
         cli::cli_abort("unsupported qualification variant", class = "workflow_execution_invalid")
     qualification$variant
 }
@@ -1895,6 +1914,7 @@ workflowQualificationVariant <- function(config, operation) {
 #' @noRd
 publishWorkflowPeptideResult <- function(owner, paths, result) {
     manager <- owner$manager
+    entry <- workflowActionSpec(result$operation)
     record <- readDIAStateMetadata(manager, result$state_reference)
     envelope <- hydrateSavedWorkflowEntity(manager$.context$store, record$data$products$qc_progress)
     checkSavedWorkflowConsumerPayload("scientific_product", envelope)
@@ -1903,11 +1923,11 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
     if (!file.exists(context_path)) {
         root <- file.path(paths$request_dir, "required-output")
         dir.create(root, showWarnings = FALSE)
-        directories <- setupDirectories(root, "proteomics")
+        directories <- setupDirectories(root, entry$omic_type)
         directories$proteomics_dia_baseline_smoke <- directories$proteomics
         publication <- list(directories = directories,
             experiment_paths = directories$proteomics,
-            omic_type = "proteomics", experiment_label = "dia_baseline_smoke")
+            omic_type = entry$omic_type, experiment_label = "dia_baseline_smoke")
         writeWorkflowExecutionMessage(context_path, publication)
     } else {
         publication <- readRDS(context_path)
@@ -1919,12 +1939,12 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
         } else if (is.list(publication) && is.list(publication$proteomics)) {
             publication <- list(directories = publication,
                 experiment_paths = publication$proteomics,
-                omic_type = "proteomics", experiment_label = "dia_baseline_smoke")
+                omic_type = entry$omic_type, experiment_label = "dia_baseline_smoke")
         }
     }
     if (!is.list(publication) || !is.list(publication$directories) ||
         !is.list(publication$experiment_paths) ||
-        !identical(publication$omic_type, "proteomics") ||
+        !identical(publication$omic_type, entry$omic_type) ||
         !is.character(publication$experiment_label) ||
         length(publication$experiment_label) != 1L || is.na(publication$experiment_label) ||
         !nzchar(publication$experiment_label) || hasMutableWorkflowEntityOwner(publication) ||
@@ -1941,7 +1961,7 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
     device <- grDevices::dev.cur()
     on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device))
     arguments <- list(data = product$filteringSummary,
-        step_name = if (result$operation == "precursor_rollup") "4_precursor_rollup" else "6_sample_filtered",
+        step_name = workflowActionSpec(result$operation)$step_label,
         omic_type = publication$omic_type, experiment_label = publication$experiment_label,
         return_grid = TRUE, overwrite = TRUE, project_dirs = directories)
     workflowExecutionBoundary("publication")
@@ -1950,19 +1970,16 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
     invisible(NULL)
 }
 
-#' Describe only the existing finite operations; handlers never travel in requests.
-#' @param operation Internal operation identifier.
-#' @return Server-owned handler names and input role.
+#' The diagnostic fixture's name: the one operation that is not a scientific declaration.
 #' @noRd
-workflowActionSpec <- function(operation) {
-    if (!is.character(operation) || length(operation) != 1L || is.na(operation))
-        cli::cli_abort("operation adapter is not qualified", class = "workflow_execution_unsupported")
-    switch(operation,
-        wfx_fixture = list(input = "checkpoint", compute = "fixture", completion = "fixture", publication = "fixture"),
-        precursor_rollup = list(input = "peptide", compute = "peptide", completion = "peptide", publication = "peptide"),
-        minimum_peptides_per_sample = list(input = "peptide", compute = "peptide", completion = "peptide", publication = "peptide"),
-        cli::cli_abort("operation adapter is not qualified", class = "workflow_execution_unsupported"))
-}
+workflowFixtureOperation <- "wfx_fixture"
+
+#' Describe one registered operation (KIT-007: the registry entry, whose handler names never travel
+#' in requests). An unregistered or malformed name refuses with `workflow_execution_unsupported`.
+#' @param operation Internal operation identifier.
+#' @return The registry entry: input role and class, handler names, limits, labels and variants.
+#' @noRd
+workflowActionSpec <- function(operation) workflowOperationEntry(operation)
 
 #' Validate the registered scientific role without collecting assay data.
 #' @param operation,manager,input_references Existing operation, owner and descriptors.
@@ -1979,7 +1996,7 @@ validateWorkflowActionInput <- function(operation, manager, input_references) {
     if (spec$input == "peptide") {
         roles <- c("sample_id", "protein_id_column", "peptide_sequence_column")
         columns <- record$dimensions$columns
-        valid <- identical(record$class, "PeptideQuantitativeData") &&
+        valid <- identical(record$class, spec$input_class) &&
             all(c("peptide_data", "design_matrix") %in% names(record$components)) &&
             all(vapply(roles, function(role) {
                 value <- record$slots[[role]]
@@ -1998,17 +2015,23 @@ validateWorkflowActionInput <- function(operation, manager, input_references) {
 #' @noRd
 resolveWorkflowActionParameters <- function(operation, manager, reference, parameters, policy) {
     validateWorkflowActionParameters(operation, parameters, policy, resolved = FALSE)
-    if (operation != "minimum_peptides_per_sample") return(parameters)
+    entry <- workflowActionSpec(operation)
+    if (is.null(entry$resolve)) return(parameters)
+    value <- get(entry$resolve, mode = "function")(manager, reference, parameters)
+    validateWorkflowActionParameters(operation, value, policy)
+    value
+}
+
+#' The sample filter's native resolver: the real method's parameter precedence on empty tables.
+#' @noRd
+resolveWorkflowSampleFilterParameters <- function(manager, reference, parameters) {
     prototype <- readDIAExecutionComponents(manager, reference, fields = character())
     # Invoke the real method's parameter resolver and call stack with empty tables.
     # Do not mirror its precedence or hydrate the scientific assay.
     arguments <- c(list(theObject = prototype, core_utilisation = NA), parameters)
     resolved <- do.call(filterMinNumPeptidesPerSample, arguments)
     native <- resolved@args$filterMinNumPeptidesPerSample
-    value <- list(peptides_per_sample_cutoff = native$peptides_per_sample_cutoff,
-        inclusion_list = native$inclusion_list)
-    validateWorkflowActionParameters(operation, value, policy)
-    value
+    list(peptides_per_sample_cutoff = native$peptides_per_sample_cutoff, inclusion_list = native$inclusion_list)
 }
 
 #' Complete the registered result only under the controller's existing acceptance lease.
@@ -2019,7 +2042,8 @@ completeWorkflowAction <- function(owner, operation, value) {
     assertWorkflowController()
     if (is.null(owner$accepting)) cli::cli_abort("result acceptance lease required",
         class = "workflow_execution_busy")
-    if (workflowActionSpec(operation)$completion == "fixture")
+    entry <- workflowActionSpec(operation)
+    if (entry$completion == "fixture")
         return(commitDIAReferenceState(owner$manager, value$state_name, value$checkpoint,
             value$config, "guarded fixture computation"))
     workflow <- new.env(parent = emptyenv())
@@ -2027,7 +2051,7 @@ completeWorkflowAction <- function(owner, operation, value) {
     workflow$qc_params <- list(peptide_qc = list())
     finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name,
         value$description, value$config, value$section, value$counts,
-        observed_inclusion_absence = if (operation == "minimum_peptides_per_sample")
+        observed_inclusion_absence = if (isTRUE(entry$inclusion_absence))
             value$summary$inclusion_entries_absent_from_data else NULL)
 }
 

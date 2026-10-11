@@ -125,6 +125,8 @@ b$operation_lifecycle <- list(ceiling_seconds = 300L,
     fault = list(name = "after_aggregate", operation = "precursor_rollup", population = "screen_p14",
         failed_phase = "ordered_result_stage", error_pattern = "CORE-004 forced failure after the aggregate stage",
         mechanism = "the worker's phase hook raises after the ordered result stage completes; the action completes as worker_failed and the head stays on the input"))
+# KIT-007: the registry changes the operation launch path, so its lifecycle pair runs on the kit_007 build.
+if (!is.null(b$builds$kit_007)) b$operation_lifecycle$build <- "kit_007"
 # Operation pairs per ticket (control and candidate builds; one or two (operation, population) pairs):
 # KIT-006 binds the P14 rollup on full_p14 (P14 page oracle) and the sample filter on full_primary
 # (the native filter oracle), both at the kit_001 control against the kit_006 candidate once installed.
