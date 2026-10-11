@@ -3573,7 +3573,7 @@
     "ceiling_seconds": 14400,
     "ceiling_note": "KIT-005 / protocol v1.2: data steps scale about 20 x from 8 to 300 samples (attempt 1: q-value 296 s, evidence 190 s); 4 h, the protocol maximum",
     "pair": {
-      "control": "kit_001",
+      "control": "kit_006",
       "candidate": null,
       "reps": 2,
       "production_default": true
@@ -3581,6 +3581,7 @@
     "baseline": {
       "stage": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey",
       "member": "control-1",
+      "control": "kit_001",
       "final_head_sha256": "c409d7ad418efa137800fb3bde3c90cf594763ac2d0d1f677d89dcbe4d798a6b",
       "verified_by": "control-2 (reproduced)",
       "decision": "baseline_recorded"

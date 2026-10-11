@@ -136,6 +136,9 @@ if (!is.null(b$builds$kit_006)) {
         note = "complete-sample partitioner (partitionBySamples) under the P14 rollup and the physical sample filter; accepted against kit_001 (stage kit-006, 2026-10-11): exact on both oracles, slice peak 0.991 x (P14) and 0.996 x (sample filter) the control; the control for KIT-007 onward")
     b$control <- "kit_006"
 }
+# The journey pair's control is the current control (KIT-006 audit PX-02: the pair was built above, before the
+# promotion); KIT-005's own stage is recorded under journey$baseline with its control named there.
+b$journey$pair$control <- b$control
 if (!is.null(b$builds$kit_006)) b$tickets[["006"]] <- list(control = "kit_001", candidate = "kit_006",
     pairs = list(list(operation = "precursor_rollup", population = "full_p14"),
         list(operation = "minimum_peptides_per_sample", population = "full_primary")))
@@ -146,8 +149,8 @@ if (!is.null(journey_stage)) {
     stopifnot(identical(result$status, "complete"), isTRUE(result$populations_complete))
     receipt <- readRDS(file.path(journey_stage, "stage.rds"))
     stopifnot(identical(receipt$status, "complete"), identical(receipt$decision$status, "baseline_recorded"))
-    b$journey$baseline <- list(stage = journey_stage, member = "control-1", final_head_sha256 = result$final_head_sha256,
-        verified_by = "control-2 (reproduced)", decision = receipt$decision$status)
+    b$journey$baseline <- list(stage = journey_stage, member = "control-1", control = "kit_001",
+        final_head_sha256 = result$final_head_sha256, verified_by = "control-2 (reproduced)", decision = receipt$decision$status)
     for (step in names(result$populations)) {
         population <- result$populations[[step]]
         if (is.null(population$state) || is.null(population$fingerprint)) next
