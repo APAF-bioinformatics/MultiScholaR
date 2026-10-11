@@ -656,8 +656,10 @@ kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L, memo = NUL
     if (is.data.frame(value)) return(list(.df = digest::digest(kitMaskPaths(value), algo = "sha256"), dim = dim(value)))
     if (is.list(value)) {
         names_ <- names(value) %||% rep("", length(value))
+        # `declaration` is the storage-format field KIT-002 added to checkpoint records (additive; records without
+        # it read as before): a record's science is the same with or without it (KIT-011 correction 1).
         value <- value[!(names_ %in% c("timestamp", "mtime", "dependencies", "product_dependencies", "da_dependencies",
-            "owned_components", "component_dependencies") | grepl("timestamp$", names_))]
+            "owned_components", "component_dependencies", "declaration") | grepl("timestamp$", names_))]
         return(lapply(value, kitCanonical, store = store, api = api, depth = depth + 1L, memo = memo))
     }
     kitMaskPaths(value)

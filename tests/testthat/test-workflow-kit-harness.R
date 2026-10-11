@@ -308,6 +308,11 @@ test_that("canonical fingerprints drop run-specific ids, times and plot objects 
     expect_identical(h$kitCanonical(a)$normalized$sha256, strrep("1", 64))
     expect_identical(h$kitCanonical(a)$plot, "<gg>")
     expect_null(h$kitCanonical(a)$timestamp)
+    # The KIT-002 record field `declaration` is storage format, not science (KIT-011 correction 1).
+    with_declaration <- list(data = list(schema = "dia.component_checkpoint.v2", class = "ProteinQuantitativeData",
+        declaration = list(class = "ProteinQuantitativeData", version = 1L), slots = list(sample_id = "Run")))
+    without <- with_declaration; without$data$declaration <- NULL
+    expect_identical(h$kitCanonical(with_declaration), h$kitCanonical(without))
     expect_false(identical(h$kitCanonical(a), h$kitCanonical(c(a, list(extra = 1)))))
     fingerprint <- function(sha) list(class = "ProteinQuantitativeData", rows = 10L, summary_sha256 = "s",
         components = list(protein_quant_table = list(kind = "table", sha256 = sha)), support = list(), products = list())
