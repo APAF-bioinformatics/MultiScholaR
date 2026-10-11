@@ -48,9 +48,15 @@
       "outcome": "control",
       "build": "kit_001",
       "note": "core_018 source plus the KIT journey launch record, RUV-III technical-replicate structure and quantile-ceiling removal (user decisions 2026-10-09) plus the KIT-005 ceiling constant (launch-record deadline up to 14400 s, protocol v1.2) the once-per-sweep RUV canonical-correlation input, the sweep's k validity rule and the RUV-III guards (user decisions 2026-10-10; branch kit-control-ceiling 8e77d92d); the earlier installs browser-smoke.y8rDOi (9075b361), browser-smoke.sMOGTK (0f96397b) and browser-smoke.3nBUjx (42a7a4bb) are superseded and stay recorded; the KIT control until KIT-006 accepts"
+    },
+    {
+      "ticket": "KIT-006",
+      "outcome": "control",
+      "build": "kit_006",
+      "note": "complete-sample partitioner (partitionBySamples) under the P14 rollup and the physical sample filter; accepted against kit_001 (stage kit-006, 2026-10-11): exact on both oracles, slice peak 0.991 x (P14) and 0.996 x (sample filter) the control; the control for KIT-007 onward"
     }
   ],
-  "control": "kit_001",
+  "control": "kit_006",
   "control_note": "kit_001 = core_018 source (906c50dc) + KIT journey launch record, RUV-III technical-replicate structure, quantile-ceiling removal (2026-10-09) + launch-record deadline up to 14400 s (protocol v1.2), RUV sweep canonical-correlation input prepared once per sweep, sweep k validity rule and RUV-III guards (2026-10-10); source 8e77d92d on branch kit-control-ceiling; install browser-smoke.X9aj9P",
   "populations": {
     "screen_p14": {
@@ -3628,13 +3634,13 @@
     "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "6e15b6f6dbb7c22fe059407ffe97692ae7b8804c014fca187374c7b6da0d00a7",
+      "tools/profiling/workflow_kit.R": "a4afa9f71de5eb5d0ed96af7039f4dc7318f1b3510e3beaf48278567236a9a97",
       "tools/profiling/workflow_kit_driver.R": "98037c37d9bd76034d1862296cd7124cce9262436e996fa401f34e67354e33af",
       "tools/profiling/workflow_kit_coordinator.R": "bff63b7352ca52a5b2c96a1cd0f317cc3685b1e005480a8a1e2986ec71210431",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "f03a6163ba9fa39b14913c7f0c7c4236aaa01671478b4051338e700135266aee",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "78116fdb91ee8cd09a2ffcc0fe49b17ff4868595b14cd7071881fc2cf2b13503",
-      "tests/testthat/test-workflow-kit-harness.R": "4bc60b6b86f69e39bd99e3998111628cf06f42fdb0355f83999e7b6de8a522ce",
+      "tests/testthat/test-workflow-kit-harness.R": "9c54feff9f5cac90ec2cbad6a03d89705927a43e3d5a9d4ccb1c34d41d06941a",
       "tests/testthat/test-workflow-execution-adapters.R": "1e6a6cdf9ba8236f28bfc7e0a7924c362264c1bb9a33e79356c9e645e32f7ec0",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

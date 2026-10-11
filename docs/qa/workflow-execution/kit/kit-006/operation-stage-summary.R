@@ -19,7 +19,8 @@ member <- function(id) {
         anon_peak_gib = gib(op$sampled_anon_bytes), swap_bytes = op$swap_bytes, max_sample_interval_s = op$max_sample_interval,
         samples = op$samples, outer_guard = op$outer_guard, verifier_accepted = isTRUE(item$verifier_completion$accepted),
         verification_status = verification$status,
-        batches = op$science_execution$admission$batches %||% verification$execution$admission$batches,
+        batches = op$science_execution$admission$batches %||% verification$execution$admission$batches %||%
+            (if (length(op$science_execution$admission$count_batch_sizes)) length(op$science_execution$admission$count_batch_sizes) else NULL),
         batch_sizes = op$science_execution$batch_sizes %||% verification$execution$batch_sizes %||%
             op$science_execution$admission$count_batch_sizes %||% verification$execution$admission$count_batch_sizes,
         admission_estimated_gib = gib(op$science_execution$admission$estimated_bytes %||% verification$execution$admission$estimated_bytes),

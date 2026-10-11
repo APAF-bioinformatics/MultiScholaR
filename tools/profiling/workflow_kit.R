@@ -193,7 +193,9 @@ kitOperationDecision <- function(receipt, cases, bindings) {
         members[[case$id]] <- list(role = case$role, pair = case$rep, operation = case$operation, population = case$population,
             failing_rule = kitIneligible(item, seconds, "operation"), peak_bytes = op$peak_bytes,
             peak_anon_bytes = op$sampled_anon_bytes, elapsed_seconds = op$elapsed_seconds,
-            batches = op$science_execution$admission$batches %||% op$science_execution$batch_sizes)
+            batches = op$science_execution$admission$batches %||%
+                (if (length(op$science_execution$batch_sizes)) length(op$science_execution$batch_sizes) else NULL) %||%
+                (if (length(op$science_execution$admission$count_batch_sizes)) length(op$science_execution$admission$count_batch_sizes) else NULL))
     }
     invalid <- Filter(\(m) !is.null(m$failing_rule), members)
     pairs <- list()
@@ -984,10 +986,13 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
         stopifnot(identical(actual$page_hashes, expected$page_hashes), identical(actual$rows, expected$rows),
             identical(actual$samples, expected$samples), identical(actual$columns, expected$columns),
             identical(actual$design_sha256, expected$design_sha256), identical(actual$summary_sha256, expected$summary_sha256),
-            identical(actual$support_sha256, expected$support_sha256), identical(execution$output_mode, "physical"),
-            is.numeric(execution$admission$batches), execution$admission$batches >= 3L)
+            identical(actual$support_sha256, expected$support_sha256), identical(execution$output_mode, "physical"))
+        # The control's fixed-three policy records `count_batch_sizes` only; the adaptive admission records
+        # `batches` as well (KIT-006 rerun 1: the verifier refused the control for the missing field).
+        batches <- execution$admission$batches %||% length(execution$admission$count_batch_sizes)
+        stopifnot(is.numeric(batches), length(batches) == 1L, batches >= 3L)
         receipt$filter <- actual[c("rows", "samples", "design_sha256", "summary_sha256", "support_sha256")]
-        receipt$batches <- execution$admission$batches
+        receipt$batches <- batches
     } else {
         oracle <- bindings$oracles[[paste0("operation_", case$population)]]
         stopifnot(!is.null(oracle), identical(hashes$sha256, oracle$sha256))

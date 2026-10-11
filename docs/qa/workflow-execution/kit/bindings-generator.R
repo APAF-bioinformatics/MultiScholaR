@@ -129,6 +129,13 @@ b$operation_lifecycle <- list(ceiling_seconds = 300L,
 # KIT-006 binds the P14 rollup on full_p14 (P14 page oracle) and the sample filter on full_primary
 # (the native filter oracle), both at the kit_001 control against the kit_006 candidate once installed.
 b$tickets <- list()
+if (!is.null(b$builds$kit_006)) {
+    # KIT-006 accepted 2026-10-11 (stage kit-006: P14 0.991 x, sample filter 0.996 x the kit_001 control, both exact):
+    # the KIT-006 build is the control from here (protocol section 2); the ticket binding keeps the control it ran against.
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-006", outcome = "control", build = "kit_006",
+        note = "complete-sample partitioner (partitionBySamples) under the P14 rollup and the physical sample filter; accepted against kit_001 (stage kit-006, 2026-10-11): exact on both oracles, slice peak 0.991 x (P14) and 0.996 x (sample filter) the control; the control for KIT-007 onward")
+    b$control <- "kit_006"
+}
 if (!is.null(b$builds$kit_006)) b$tickets[["006"]] <- list(control = "kit_001", candidate = "kit_006",
     pairs = list(list(operation = "precursor_rollup", population = "full_p14"),
         list(operation = "minimum_peptides_per_sample", population = "full_primary")))

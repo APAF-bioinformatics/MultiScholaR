@@ -416,6 +416,8 @@ test_that("the operation pair decision needs every member eligible and each cand
         r$cases[["candidate-1"]]$operation$peak_bytes <- 5e9 * 1.01
         r$cases[["candidate-2"]]$operation$peak_bytes <- 5e9 * 0.9
         r$cases[["candidate-2"]]$operation$science_execution$admission$batches <- 5L
+        # A control build's fixed-three policy records count_batch_sizes only (KIT-006 correction 1).
+        r$cases[["control-2"]]$operation$science_execution <- list(admission = list(count_batch_sizes = c(100L, 100L, 100L)))
         r
     })
     decision <- h$kitOperationDecision(receipt, cases, b)
@@ -425,6 +427,7 @@ test_that("the operation pair decision needs every member eligible and each cand
     expect_false(decision$pairs[["1"]]$reduction)
     expect_true(decision$pairs[["2"]]$reduction)
     expect_identical(decision$pairs[["2"]]$batches$candidate, 5L)
+    expect_identical(decision$pairs[["2"]]$batches$control, 3L)
     expect_identical(decision$pairs[["2"]]$operation, "minimum_peptides_per_sample")
     expect_false(decision$promotion_authorized)
     worse <- receipt
