@@ -1,0 +1,84 @@
+{
+ "schema": "audit-evidence-contracts.result.v1",
+ "mode": "post_hoc",
+ "ticket": "KIT-013",
+ "date": "2026-10-12",
+ "audited": {
+  "ticket_commit": "a7ba04f3",
+  "code_commits": [
+   "57bd0539",
+   "3c3c56b3"
+  ],
+  "installs": [
+   "core/browser-smoke.AtAouT",
+   "core/browser-smoke.4tV6jg"
+  ]
+ },
+ "states": {
+  "implementation_verified": "partial",
+  "execution_complete": true,
+  "decision_supported": true,
+  "promotion_authorized": "not_applicable",
+  "claim_scope": "outcome claim limits plus PX-02, PX-03"
+ },
+ "findings": [
+  {
+   "id": "PX-01",
+   "severity": "high",
+   "verdict": "PLAUSIBLE",
+   "blocks": "implementation",
+   "summary": "QC-time configuration writes now reach the reactive bus field the design initial-state reactive depends on"
+  },
+  {
+   "id": "PX-02",
+   "severity": "medium",
+   "verdict": "CONFIRMED",
+   "blocks": "claim",
+   "summary": "open-probe.json head_commit names the pre-ticket HEAD"
+  },
+  {
+   "id": "PX-03",
+   "severity": "medium",
+   "verdict": "CONFIRMED",
+   "blocks": "claim",
+   "summary": "Save after an Open that removed the replaced store is unexercised"
+  },
+  {
+   "id": "PX-04",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "workflowConfigEnvironment reports config_list as existing when the bus holds none"
+  },
+  {
+   "id": "PX-05",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "regression line checked on a retired premise, decision recorded in its note"
+  },
+  {
+   "id": "PX-06",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "MEMORY.md index hook still names core_018"
+  },
+  {
+   "id": "PX-07",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "outcome test table omits two counts; installed runs described in prose"
+  },
+  {
+   "id": "PX-08",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "residual global reads already recorded as claim limits"
+  }
+ ],
+ "repairs_made": [],
+ "register": "KIT-013-POSTHOC-AUDIT-20261012.md"
+}
