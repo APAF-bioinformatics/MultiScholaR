@@ -495,6 +495,42 @@ workflowSessionApplication <- function(session) {
     if (inherits(application, "WorkflowExecutionApplication") && !isTRUE(application$closed)) application else NULL
 }
 
+#' The completion context a GUI step hands to the managed action (KIT-008, audit PE-02): the bus's
+#' accumulated peptide QC parameters and the prior filtering progress, so the controller's completion
+#' writes the same `qc_progress` product the in-process path writes.
+#' @param workflow_data Workflow bus.
+#' @return List `peptide_qc` (list) and `prior_progress` (slot list or NULL).
+#' @noRd
+workflowCompletionContext <- function(workflow_data) {
+    qc_params <- shiny::isolate(workflow_data$qc_params)
+    prior <- shiny::isolate(workflow_data$filtering_progress)
+    list(peptide_qc = qc_params$peptide_qc %||% list(),
+        prior_progress = if (methods::is(prior, "FilteringProgress")) stats::setNames(
+            lapply(methods::slotNames(prior), function(name) methods::slot(prior, name)), methods::slotNames(prior)) else NULL)
+}
+
+#' Bound the completion context: plain data only, no live owners, at most 4 MiB.
+#' @noRd
+validateWorkflowCompletionContext <- function(context) {
+    if (is.null(context)) return(NULL)
+    if (!is.list(context) || !is.list(context$peptide_qc) || hasMutableWorkflowEntityOwner(context) ||
+        as.numeric(object.size(context)) > 4194304)
+        cli::cli_abort("unsupported completion context", class = "workflow_execution_invalid")
+    context
+}
+
+#' The workflow owner the controller finishes a worker result on: the project owner plus the GUI's
+#' accumulated QC parameters and prior progress from the completion context (empty without one).
+#' @noRd
+newWorkflowCompletionWorkflow <- function(manager, context = NULL) {
+    workflow <- new.env(parent = emptyenv())
+    workflow$state_manager <- manager
+    workflow$qc_params <- list(peptide_qc = context$peptide_qc %||% list())
+    if (is.list(context$prior_progress) && length(context$prior_progress))
+        workflow$filtering_progress <- do.call(methods::new, c(list(Class = "FilteringProgress"), context$prior_progress))
+    workflow
+}
+
 #' Recover the bounded display product of one accepted managed peptide action (both registered
 #' peptide operations publish their progress product under `qc_progress`).
 #' @param manager Reference-backed owner.
@@ -508,7 +544,11 @@ readManagedPeptideResult <- function(manager, result, workflow_data) {
     envelope <- hydrateSavedWorkflowEntity(manager$.context$store, product)
     checkSavedWorkflowConsumerPayload("scientific_product", envelope)
     value <- c(list(stateReference = result$state_reference), envelope$value)
-    workflow_data$qc_params <- value$qcParams
+    # Merge the step's entries into the bus (audit PE-02): earlier steps' parameters are kept.
+    qc_params <- shiny::isolate(workflow_data$qc_params) %||% list()
+    if (is.null(qc_params$peptide_qc)) qc_params$peptide_qc <- list()
+    for (name in names(value$qcParams$peptide_qc)) qc_params$peptide_qc[[name]] <- value$qcParams$peptide_qc[[name]]
+    workflow_data$qc_params <- qc_params
     value
 }
 
@@ -618,7 +658,8 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
             action$owner <- owner
             action$phase <- "running"
             action$worker_request_id <- runWorkflowAction(operation, list(state = getDIAStateReference(manager)),
-                parameters, owner, reservation = action$reservation)
+                parameters, owner, reservation = action$reservation,
+                completion_context = workflowCompletionContext(workflow_data))
             managed_action(action)
         }, error = function(error) fail(action, error))
         invisible(NULL)
@@ -1401,7 +1442,7 @@ workflowWorkerMain <- function(arguments) {
 #' @return Request ID immediately after monitor launch; pollWorkflowAction advances it.
 #' @noRd
 runWorkflowAction <- function(operation, input_references, parameters, resource_policy,
-    reservation = NULL) {
+    reservation = NULL, completion_context = NULL) {
     entered <- proc.time()[["elapsed"]]
     owner <- resource_policy
     if (!inherits(owner, "WorkflowExecutionController") || owner$closed) cli::cli_abort("controller required")
@@ -1466,6 +1507,9 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
         parameters = parameters, token = token, owner = store$identity, project_root = dirname(store$directory),
         directory = paths$request_dir, config = app$config)
     job$request <- request
+    # KIT-008 (audit PE-02): the GUI's accumulated QC parameters and prior progress travel with the job so the
+    # controller's completion writes the same progress product the in-process path writes.
+    job$completion_context <- validateWorkflowCompletionContext(completion_context)
     job$paths <- paths
     job$admission <- admission
     job$stage <- "admitting"
@@ -1655,7 +1699,7 @@ acceptWorkflowActionResult <- function(owner, message) {
     writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "pending-result.rds"), value)
     owner$accepting <- token$request_id
     on.exit(owner$accepting <- NULL)
-    completeWorkflowAction(owner, job$request$operation, value)
+    completeWorkflowAction(owner, job$request$operation, value, context = job$completion_context)
     owner$accepting <- NULL
     journal <- readWorkflowExecutionJournal(job$paths)
     journal$status <- "publication_pending"
@@ -2217,7 +2261,7 @@ resolveWorkflowSampleFilterParameters <- function(manager, reference, parameters
 #' @param owner,operation,value Leased controller, registered ID and immutable result.
 #' @return Existing checkpoint/handoff result.
 #' @noRd
-completeWorkflowAction <- function(owner, operation, value) {
+completeWorkflowAction <- function(owner, operation, value, context = NULL) {
     assertWorkflowController()
     if (is.null(owner$accepting)) cli::cli_abort("result acceptance lease required",
         class = "workflow_execution_busy")
@@ -2225,9 +2269,7 @@ completeWorkflowAction <- function(owner, operation, value) {
     if (entry$completion == "fixture")
         return(commitDIAReferenceState(owner$manager, value$state_name, value$checkpoint,
             value$config, "guarded fixture computation"))
-    workflow <- new.env(parent = emptyenv())
-    workflow$state_manager <- owner$manager
-    workflow$qc_params <- list(peptide_qc = list())
+    workflow <- newWorkflowCompletionWorkflow(owner$manager, context)
     finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name,
         value$description, value$config, value$section, value$counts,
         observed_inclusion_absence = if (isTRUE(entry$inclusion_absence))

@@ -246,7 +246,7 @@ kitOperationDecision <- function(receipt, cases, bindings) {
 #' Map a verifier selector back to its stage and case id.
 #' @noRd
 kitSelectorStage <- function(selection) {
-    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}:(control|candidate):1|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:(control|candidate):[12])$", selection))
+    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:(control|candidate):[12])$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("kit-lifecycle-", paste(parts[-1L], collapse = "-")), id = "member"))
     list(stage = paste0("kit-", parts[[1L]]), id = paste(parts[[2L]], parts[[3L]], sep = "-"))
@@ -1057,9 +1057,11 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         receipt$status <- "complete"
         return(receipt)
     }
-    if (!isTRUE(case$record)) {
+    if (!isTRUE(case$record) && identical(case$corpus, "full")) {
         # Production default on a build whose default is the on-disk path (KIT-011): the in-run populations are
-        # recomputed from the immutable store and every state must equal the KIT-005 per-step oracle.
+        # recomputed from the immutable store and every state must equal the KIT-005 per-step oracle. The
+        # oracles are the 300-sample corpus's; a screen member without a record (KIT-008's gui member) takes
+        # the self-consistency branch below and is reproduced against its reference screen member by its decision.
         store_dir <- journey$store
         stopifnot(dir.exists(store_dir), isTRUE(journey$populations_complete))
         recomputed <- kitFingerprintStore(store_dir, api)

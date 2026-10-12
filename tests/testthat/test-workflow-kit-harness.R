@@ -600,6 +600,7 @@ test_that("a ticket's gui-mode member runs the screen journey with no record on 
     expect_false(case$record)
     expect_identical(case$selector, "kit:gui-008:candidate:1")
     expect_identical(h$kitMemberSeconds("kit-gui-008", b), 600L)
+    expect_identical(h$kitSelectorStage("kit:gui-008:candidate:1"), list(stage = "kit-gui-008", id = "candidate-1"))
     expect_error(h$kitCases(b, "kit-gui-009"), "no bound gui member")
     # Member directory with the driver's populations, two completed worker requests and the reference member.
     member <- file.path(b$harness$root, "kit-gui-008", "member")

@@ -313,7 +313,7 @@ mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, expe
 
     # Step 2: Precursor Rollup (chunk 11)
     shiny::observeEvent(input$apply_rollup, {
-      if (!is.null(workflowSessionApplication(session))) {
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
         managed_step$apply(list())
         return(invisible(NULL))
       }

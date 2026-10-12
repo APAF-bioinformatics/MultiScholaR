@@ -276,8 +276,9 @@ test_that("the precursor rollup takes the managed worker under a managed applica
         },
         finishWorkflowGUIAction = function(reservation, status, ...) { reservation$closed <- TRUE; list() },
         getDIAStateReference = function(...) reference,
-        runWorkflowAction = function(operation, input_references, parameters, owner, reservation) {
-            dispatched[[length(dispatched) + 1L]] <<- list(operation = operation, parameters = parameters)
+        runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
+            dispatched[[length(dispatched) + 1L]] <<- list(operation = operation, parameters = parameters,
+                context = completion_context)
             "worker-rollup"
         },
         pollWorkflowAction = function(...) list(status = "complete"),
@@ -299,6 +300,7 @@ test_that("the precursor rollup takes the managed worker under a managed applica
         expect_length(dispatched, 1L)
         expect_identical(dispatched[[1L]]$operation, "precursor_rollup")
         expect_identical(dispatched[[1L]]$parameters, list())
+        expect_identical(dispatched[[1L]]$context$peptide_qc, list())
         expect_identical(in_process, 0L)
         action <- managed_step$active()
         expect_identical(action$phase, "awaiting_browser")
@@ -311,6 +313,60 @@ test_that("the precursor rollup takes the managed worker under a managed applica
         session$setInputs(apply_rollup = 2)
         session$flushReact()
         expect_length(dispatched, 1L)
+        expect_identical(in_process, 1L)
+    })
+})
+
+test_that("the managed completion carries the bus's QC parameters and prior progress, and the result reader merges them (KIT-008 audit PE-02)", {
+    progress <- methods::new("FilteringProgress")
+    progress@steps <- "3_protein_peptide_filtered"
+    progress@proteins <- 5
+    workflow <- shiny::reactiveValues(qc_params = list(peptide_qc = list(qvalue = list(threshold = 0.01),
+        protein_peptide = list(min = 2))), filtering_progress = progress)
+    context <- workflowCompletionContext(workflow)
+    expect_identical(names(context$peptide_qc), c("qvalue", "protein_peptide"))
+    expect_identical(context$prior_progress$steps, "3_protein_peptide_filtered")
+    expect_identical(validateWorkflowCompletionContext(context), context)
+    expect_error(validateWorkflowCompletionContext(list(peptide_qc = "x")), class = "workflow_execution_invalid")
+    manager <- structure(list(), class = "DIAStateAdapter")
+    completion <- newWorkflowCompletionWorkflow(manager, context)
+    expect_identical(completion$qc_params$peptide_qc, context$peptide_qc)
+    expect_s4_class(completion$filtering_progress, "FilteringProgress")
+    expect_identical(completion$filtering_progress@steps, "3_protein_peptide_filtered")
+    bare <- newWorkflowCompletionWorkflow(manager, NULL)
+    expect_identical(bare$qc_params, list(peptide_qc = list()))
+    expect_null(bare$filtering_progress)
+    # The result reader merges the step's entry into the bus instead of replacing the bus.
+    testthat::local_mocked_bindings(
+        readDIAStateMetadata = function(...) list(data = list(products = list(qc_progress = "product"))),
+        hydrateSavedWorkflowEntity = function(...) list(value = list(resultText = "ok", qcParams = list(peptide_qc = list(
+            qvalue = list(threshold = 0.01), protein_peptide = list(min = 2), sample_filter = list(cutoff = 100))))),
+        checkSavedWorkflowConsumerPayload = function(...) invisible(TRUE),
+        .package = "MultiScholaR")
+    reference <- list(entity_id = "accepted")
+    value <- readManagedPeptideResult(list(.context = list(store = NULL)), list(state_reference = reference), workflow)
+    expect_identical(value$stateReference, reference)
+    expect_identical(names(shiny::isolate(workflow$qc_params)$peptide_qc), c("qvalue", "protein_peptide", "sample_filter"))
+    expect_identical(shiny::isolate(workflow$qc_params)$peptide_qc$qvalue$threshold, 0.01)
+})
+
+test_that("a managed launch with an in-memory owner runs the declaration in process (KIT-008 audit PE-04)", {
+    native <- WorkflowState$new(audit_enabled = FALSE)
+    workflow <- shiny::reactiveValues(state_manager = native, qc_params = list())
+    application <- WorkflowExecutionApplication$new()
+    application$config <- list(mode = "gui", root = withr::local_tempdir())
+    dispatched <- 0L
+    in_process <- 0L
+    testthat::local_mocked_bindings(
+        workflowSessionApplication = function(...) application,
+        beginWorkflowGUIAction = function(...) { dispatched <<- dispatched + 1L; stop("must not reserve") },
+        runPeptideRollupApplyObserver = function(...) { in_process <<- in_process + 1L; list(status = "success") },
+        .package = "MultiScholaR")
+    shiny::testServer(mod_prot_qc_peptide_rollup_server,
+        args = list(workflow_data = workflow, omic_type = "proteomics", experiment_label = "audit", experiment_paths = list()), {
+        session$setInputs(apply_rollup = 1)
+        session$flushReact()
+        expect_identical(dispatched, 0L)
         expect_identical(in_process, 1L)
     })
 })

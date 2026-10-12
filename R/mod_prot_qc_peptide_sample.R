@@ -389,7 +389,7 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
 
     # Step 5: Sample Quality Filter (chunk 14)
     shiny::observeEvent(input$apply_sample_filter, {
-      if (!is.null(workflowSessionApplication(session))) {
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
         managed_step$apply(list(peptides_per_sample_cutoff = input$min_peptides_per_sample))
         return(invisible(NULL))
       }
