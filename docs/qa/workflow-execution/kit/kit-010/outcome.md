@@ -21,7 +21,7 @@ Status 2026-10-12: **implemented and verified in process; counted pair pending t
 | Variant | Elapsed | Output rows | Pages | Exact |
 |---|---|---|---|---|
 | whole (the GUI's in-process path) | 19 s | 2,500 | one object | yes |
-| rows | 4 s | 2,500 | 1 (the wide table is 2,500 rows; admission 0.3 GiB at the normal cap) | yes |
+| rows | 4 s | 2,500 | 1 (the wide table is 2,500 rows; admission 0.18 GiB at the normal cap) | yes |
 
 Two bookkeeping corrections were needed to reproduce the oracle's summary and are part of the compute, not the harness: the kernel's arguments are recorded under the module's alias name as well (the kernel's quirk), and the state configuration carries the GUI's `output_file` path (masked by the canonical form) and the recorded core count.
 
