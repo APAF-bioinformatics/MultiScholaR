@@ -372,8 +372,12 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
         # The bound population's head state (KIT-009: a journey population); the CORE populations sit at the
         # protein-evidence state.
         selectDIAStateReference(manager, if (is.null(request$input_state)) "protein_peptide_filtered" else request$input_state)
-        stopifnot(identical(readDIAStateMetadata(manager)$data$components$peptide_data$entity_id,
-            request$input_entity_id))
+        # The input is checked by the state's assay component, named by the class declaration (KIT-010: a
+        # protein state's wide table; builds before KIT-002 have no declaration and keep the peptide table).
+        record <- readDIAStateMetadata(manager)$data
+        declare <- get0("workflowClassDeclaration", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+        assay <- if (is.function(declare)) declare(record$class)$assay else "peptide_data"
+        stopifnot(identical(record$components[[assay]]$entity_id, request$input_entity_id))
     }
     withr::defer(closeDIAStateAdapter(manager))
     owner <- newWorkflowExecutionController(manager, app)
