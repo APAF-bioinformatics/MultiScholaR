@@ -55,11 +55,11 @@
     },
     "kit_008": {
       "ticket": "KIT-008",
-      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.Hag4dl/library",
-      "build": "244282970f1fff7c726f2916ecf5c992d49fdfaacdf4b239f65d25c66ea1bb0b",
-      "exact_sum": "43f277b7c6f0ddf5a18d783c8b8a35f3c91178e5cac07473d5f20d391250dee5",
-      "install_member": "browser-smoke.Hag4dl",
-      "source_commit": "690bc7f4a7d3b65efa1aa04b74ab2a6dc872312b",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.otE3Ck/library",
+      "build": "1d37655967014d1afffac3b60e8609d5af42fd5294de72c2bf904fc431c27388",
+      "exact_sum": "6837dc42e4fae3fbd7a1bf592c92bdc3cf9931434f4de19136ad2fbb18ee85a5",
+      "install_member": "browser-smoke.otE3Ck",
+      "source_commit": "9fe8028df9f9a0ed1b093fdc2a98a33eb167fb44",
       "runtime_patch_bytes": 0
     }
   },
@@ -3659,7 +3659,7 @@
       "corpus": "screen",
       "reference": "kit-lifecycle-complete",
       "operations": ["precursor_rollup", "minimum_peptides_per_sample"],
-      "ceiling_seconds": 600
+      "ceiling_seconds": 900
     }
   },
   "lifecycle": {
@@ -3684,13 +3684,13 @@
     "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "49468eddc4320e6189d566a2257384804d394c9e684cc403b051de3fea082d3c",
+      "tools/profiling/workflow_kit.R": "25447219f069abdb386bd33fa8675a2ae61366a1b5d0e71b41a893cf2300cd25",
       "tools/profiling/workflow_kit_driver.R": "98037c37d9bd76034d1862296cd7124cce9262436e996fa401f34e67354e33af",
       "tools/profiling/workflow_kit_coordinator.R": "f99525f44a9514c323a4fb2a5118b73b76dd962de48ec66275626becf536197e",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "6cf642a60238409762668207f204ec071930b0bc398477900a1a25bbf82a5717",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "a4ae5d04c0f02b39311f0a908329d566c8ecdb156999d399f5002965987edc3e",
-      "tests/testthat/test-workflow-kit-harness.R": "bc6c43b4df060db00247392db7725e7098d81b501ccd3ed988bc21929d0af379",
+      "tests/testthat/test-workflow-kit-harness.R": "48daa92e3be87be2feb2520b1b03ed1e91d93f38ffa612562250efa42976bd2a",
       "tests/testthat/test-workflow-execution-adapters.R": "4afe236a5b6802367be99278b42bad0f51350858fcb7c8ea8c913f4f4b70351f",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

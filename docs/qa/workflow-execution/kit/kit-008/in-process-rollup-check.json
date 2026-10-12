@@ -2,14 +2,14 @@
   "schema": "kit.in_process_rollup_check.v1",
   "ticket": "KIT-008",
   "date": "2026-10-12",
-  "head_commit": "79732fc0f6f07739f8deea9e04f2b9faab56c330",
+  "head_commit": "9fe8028df9f9a0ed1b093fdc2a98a33eb167fb44",
   "population": {
     "name": "screen_p14",
     "rows": 960000,
     "entity_id": "5b6a36c58a74f6735bcb80a20331cc7a417c44aeafb67ebb4cc06fe2577c5f76"
   },
   "legacy": {
-    "seconds": 19.2,
+    "seconds": 16.5,
     "rows": 480000,
     "pages": 48,
     "summary_sha256": "d03f856a511334f2a67aaeb77839fcf5ea115d103e77d94fe90ab606cf9b40c2",
@@ -17,7 +17,7 @@
     "query_owner": null
   },
   "p14": {
-    "seconds": 5.9,
+    "seconds": 6.4,
     "rows": 480000,
     "pages": 48,
     "summary_sha256": "d03f856a511334f2a67aaeb77839fcf5ea115d103e77d94fe90ab606cf9b40c2",
