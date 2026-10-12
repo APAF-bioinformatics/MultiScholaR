@@ -70,6 +70,15 @@
       "install_member": "browser-smoke.s292Da",
       "source_commit": "a7a469091bb9ea6df46b8c895077b31e37c004ef",
       "runtime_patch_bytes": 0
+    },
+    "kit_010": {
+      "ticket": "KIT-010",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.IaLhTL/library",
+      "build": "1a3e481f9bcaac0054c659f718a99967f3a880f8f19af99d5591e9d427115e10",
+      "exact_sum": "19a0e7c721468705f522cb007efe6e4556e7065d42733db98e49fa1fc273de84",
+      "install_member": "browser-smoke.IaLhTL",
+      "source_commit": "acc8687e95416578404b1837d8fcea73b02e084b",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -3635,7 +3644,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-12",
+        "date": "2026-10-13",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -3719,6 +3728,25 @@
           }
         }
       ]
+    },
+    "010": {
+      "control": "kit_010",
+      "candidate": "kit_010",
+      "pairs": [
+        {
+          "operation": "protein_replicate_filter",
+          "population": "journey_duplicates",
+          "oracle": "journey_protein_replicate",
+          "parameters": {
+            "grouping_variable": "group",
+            "parallel_cores": 4
+          },
+          "variants": {
+            "control": "whole",
+            "candidate": "rows"
+          }
+        }
+      ]
     }
   },
   "lifecycle": {
@@ -3743,13 +3771,13 @@
     "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "1084dbccd15df1d39d4e7268f531c99fba645d9fd029a2ff46dcc3737a2dabda",
+      "tools/profiling/workflow_kit.R": "6c3d42634852807690fd4289719dfb0df729f41d3eff26d049afb7997eb1f601",
       "tools/profiling/workflow_kit_driver.R": "98037c37d9bd76034d1862296cd7124cce9262436e996fa401f34e67354e33af",
       "tools/profiling/workflow_kit_coordinator.R": "d683c346b5ee0ab514804471fe90c8bf391fe4cf756c8714b6d5f17f9b5d5677",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "6cf642a60238409762668207f204ec071930b0bc398477900a1a25bbf82a5717",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "a4ae5d04c0f02b39311f0a908329d566c8ecdb156999d399f5002965987edc3e",
-      "tests/testthat/test-workflow-kit-harness.R": "f64dc17bf88b4f1cbb3b607c6b19bd8ecb090b04bfcf5523bbe34bec964548f7",
+      "tests/testthat/test-workflow-kit-harness.R": "de9425baa6b6a08ce0964dc6aef458721f29bb3cb32eb61b1d7db0550424275e",
       "tests/testthat/test-workflow-execution-adapters.R": "96510f1f21571e2a96f91091dca7a743ad2221bc7d856f8d78fb9f8d308137a3",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",
