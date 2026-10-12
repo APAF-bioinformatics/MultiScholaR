@@ -1422,8 +1422,10 @@ workflowWorkerMain <- function(arguments) {
     if (!identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")) stop("worker role is missing")
     result <- tryCatch({
         handler <- workflowActionSpec(request$operation)$compute
+        # The registry's compute role selects the worker's entry: the fixture, or the scientific action for
+        # the peptide and protein roles (KIT-010), whose handler the entry names.
         value <- switch(handler, fixture = computeWorkflowFixture(request),
-            peptide = computeWorkflowPeptideAction(request),
+            peptide = , protein = computeWorkflowPeptideAction(request),
             cli::cli_abort("operation adapter unavailable", class = "workflow_execution_unsupported"))
         list(schema = 1L, status = "complete", token = request$token, result = value)
     }, error = function(error) list(schema = 1L, status = "failed", token = request$token,

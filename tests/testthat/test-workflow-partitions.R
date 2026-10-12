@@ -446,3 +446,32 @@ test_that("the protein publication phase publishes the replicate filter's table 
     expect_true(any(grepl("13_protein_replicate_filtered_combined_plots[.]png$", published)))
     expect_identical(getDIAStateReference(manager), completed$stateReference)
 })
+
+test_that("the worker entry point computes a protein operation from a frozen request (KIT-010 attempt 2: the worker's dispatch by compute role)", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    store_root <- withr::local_tempdir()
+    manager <- proteinFixtureManager(object, store_root)
+    withr::defer(closeDIAStateAdapter(manager))
+    store <- manager$.context$store
+    reference <- getDIAStateReference(manager)
+    directory <- withr::local_tempdir()
+    # The build identity needs the installed runtime; the request and the worker see the same mocked value.
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64), .package = "MultiScholaR")
+    request <- list(schema = 1L, build = workflowExecutionBuildIdentity(), operation = "protein_replicate_filter",
+        input_references = list(state = reference), parameters = list(grouping_variable = "group", parallel_cores = 4L),
+        token = list(request_id = "wfx-test"), owner = store$identity, project_root = dirname(store$directory),
+        directory = directory, config = list(mode = "adapters"), worker_cap = 12 * 1024^3)
+    path <- file.path(directory, "request.rds")
+    writeWorkflowExecutionMessage(path, request)
+    withr::local_envvar(MULTISCHOLAR_WORKFLOW_WORKER = "1")
+    closeDIAStateAdapter(manager)
+    expect_null(suppressMessages(workflowWorkerMain(c(path, digest::digest(file = path, algo = "sha256")))))
+    result <- readRDS(file.path(directory, "worker-result.rds"))
+    expect_identical(result$status, "complete")
+    expect_identical(result$result$operation, "protein_replicate_filter")
+    expect_identical(result$result$execution$variant, "rows")
+    expect_true(isDIAComponentCheckpoint(result$result$checkpoint))
+    expect_identical(result$result$checkpoint$class, "ProteinQuantitativeData")
+    # Every registered compute role is one the worker's entry point dispatches.
+    for (name in workflowOperationNames()) expect_true(workflowActionSpec(name)$compute %in% c("fixture", "peptide", "protein"), info = name)
+})
