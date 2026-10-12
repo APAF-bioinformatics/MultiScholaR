@@ -249,6 +249,8 @@ kitSelectorStage <- function(selection) {
     stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:(control|candidate):[12])$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("kit-lifecycle-", paste(parts[-1L], collapse = "-")), id = "member"))
+    # A ticket's gui member is the single case `member` (KIT-008 correction 1: the verifier looked for `candidate-1`).
+    if (startsWith(parts[[1L]], "gui-")) return(list(stage = paste0("kit-", parts[[1L]]), id = "member"))
     list(stage = paste0("kit-", parts[[1L]]), id = paste(parts[[2L]], parts[[3L]], sep = "-"))
 }
 
@@ -644,7 +646,9 @@ kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL) {
     worker_ran <- all(vapply(required, function(name) isTRUE(result$dispatched[[name]]$complete >= 1L), logical(1)))
     if (is.null(result$failing_rule) && !worker_ran) result$failing_rule <- "worker_dispatch_missing"
     # Reproduction against the bound reference screen member (populations saved by its driver).
-    reference_path <- file.path(bindings$harness$root, spec$reference %||% "kit-lifecycle-complete", "member", "journey-result.rds")
+    runtime_root <- bindings$root %||% bindings$harness$root
+    reference_path <- if (is.null(runtime_root)) "" else
+        file.path(runtime_root, spec$reference %||% "kit-lifecycle-complete", "member", "journey-result.rds")
     candidate_path <- if (is.null(member_dir)) NULL else file.path(member_dir, "journey-result.rds")
     if (is.null(result$failing_rule) && file.exists(reference_path) && !is.null(candidate_path) && file.exists(candidate_path)) {
         reference <- readRDS(reference_path)

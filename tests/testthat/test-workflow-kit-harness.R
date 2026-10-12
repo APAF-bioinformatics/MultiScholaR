@@ -589,7 +589,7 @@ test_that("a ticket journey pair runs both builds as users run them and is decid
 test_that("a ticket's gui-mode member runs the screen journey with no record on its build and is decided on completion, dispatch and reproduction (KIT-008)", {
     h <- kitHarness()
     b <- kitSyntheticBindings()
-    b$harness$root <- withr::local_tempdir()
+    b$root <- withr::local_tempdir()
     cases <- h$kitCases(b, "kit-gui-008")
     expect_length(cases, 1L)
     case <- cases[[1L]]
@@ -600,11 +600,12 @@ test_that("a ticket's gui-mode member runs the screen journey with no record on 
     expect_false(case$record)
     expect_identical(case$selector, "kit:gui-008:candidate:1")
     expect_identical(h$kitMemberSeconds("kit-gui-008", b), 600L)
-    expect_identical(h$kitSelectorStage("kit:gui-008:candidate:1"), list(stage = "kit-gui-008", id = "candidate-1"))
+    # The verifier must find the stage's one case by the id the coordinator gave it (KIT-008 correction 1).
+    expect_identical(h$kitSelectorStage("kit:gui-008:candidate:1"), list(stage = "kit-gui-008", id = case$id))
     expect_error(h$kitCases(b, "kit-gui-009"), "no bound gui member")
     # Member directory with the driver's populations, two completed worker requests and the reference member.
-    member <- file.path(b$harness$root, "kit-gui-008", "member")
-    reference <- file.path(b$harness$root, "kit-lifecycle-complete", "member")
+    member <- file.path(b$root, "kit-gui-008", "member")
+    reference <- file.path(b$root, "kit-lifecycle-complete", "member")
     dir.create(member, recursive = TRUE); dir.create(reference, recursive = TRUE)
     populations <- list(rollup = list(fingerprint = list(components = list(peptide_data = list(sha256 = "a")),
         support = list(), products = list(`dia-rollup-progress:1` = list(sha256 = "p")), summary_sha256 = "s", rows = 10L)))
