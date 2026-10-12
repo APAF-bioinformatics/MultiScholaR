@@ -1,0 +1,36 @@
+# KIT-008: production worker dispatch for P14 and the sample filter
+
+Status 2026-10-12: **implemented**; the counted `gui`-mode member waits for the user's go. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-008: one `gui`-mode managed member on the screen corpus, 10 min); protocol v1.3. Control: `kit_011` (`core/browser-smoke.AFaqC1`). Predecessor cases: PERF-107 (Apply, next consumer, Revert routing), PERF-113; audit findings B18, B19, B20, B21.
+
+## What was built
+
+1. **Dispatch rule (B18).** `workflowSessionApplication(session)` returns the managed application a session carries (set by `workflowManagedServer` under `launchWorkflowApplication`: Linux, systemd) or NULL. A module runs a registered operation on the managed worker when the application is present, and the same declaration in process otherwise (plain `run_app()`, macOS, Windows). No qualification flag takes part: the registry entry now carries the production variant an unqualified launch runs (`default_variant`: `p14` for the rollup, `physical` for the sample filter), and `workflowQualificationVariant` returns it when no qualification is bound.
+2. **One reference module pattern.** `installWorkflowManagedStep(session, input, workflow_data, operation, publication, ui, deliver)` in `R/utils_workflow_execution.R` is the managed-step state machine both modules use: it reserves the application's one heavy action, starts the operation on the worker, polls it, delivers the accepted product to the module's outputs, requires the browser's acknowledgement of the delivered content before closing the action, retries a pending publication without dispatching science again, and releases the action on Revert, project replacement and session end. `readManagedPeptideResult` reads the accepted product for both operations.
+3. **P14 in production (B21, hand-off item 8).** The rollup module dispatches `precursor_rollup` through the step under a managed application, so the GUI rollup gets the admission cap and recovery. In process, `runDIAReferencePrecursorRollup` now runs the declaration's backend (P14, the exact ordered-sum aggregate the worker runs) instead of the legacy row-indexed path. Backend switch checked before the member: [in-process-rollup-check.R](in-process-rollup-check.R), [in-process-rollup-check.json](in-process-rollup-check.json): on `screen_p14` (960,000 rows) legacy and P14 produce the same 48 output pages (480,000 rows), equal to the bound P14 screen oracle; legacy 19.2 s, P14 5.9 s in process.
+4. **Sample filter in production.** The sample module dispatches `minimum_peptides_per_sample` through the step without the `perf107-phase-a` gate; in process it runs `runDIAReferenceSampleFilter` (the declaration's physical mode, KIT-006's adaptive complete-sample batches, then the shared finishing step), no longer the native per-group loop. `workflowPeptideSampleQualification`, `runWorkflowNativeSampleControl`, the frozen-member ownership check and the mid-journey staging branch are gone (B19: after KIT-011 the owner is on disk from import).
+5. **Qualification surface retired.** `workflowGuiLaunchRecord` accepts the KIT journey record only; `launchWorkflowApplication`'s gui-member qualification validation, the PERF-107 branch of `workflowQualificationVariant`, `workflowGuiQualifiedOperation`, the entry fixture (`runWorkflowGUIEntryFixture`, `workflowEntryHook`) and `finishWorkflowGUIAction`'s PERF-107 browser-membership requirement are removed. The application keeps its generic `entry_hook` slot (KIT-013) with nothing installed. `runPerf107GuiLifecycle` in the CORE-pinned driver is untouched, retired harness history (its scenarios were retired at KIT-013).
+6. **Harness.** Stage `kit-gui-0NN`: one journey member on the ticket's bound build and corpus, launched with no record (the build's production default under a managed application), ceiling 600 s. Decision `kitGuiMemberDecision`: every step complete within the ceiling, populations complete and verified, every state, support entry and summary reproducing the reference screen member (`kit-lifecycle-complete`, the KIT-011 screen member on the control build; the per-build identity products reported, not judged), and a completed worker request for both operations in the member's project store. `bindings$tickets$008 = {kind gui, build kit_008, corpus screen}`.
+7. **Tests.** `test-perf107-entry.R` retired (fixture tests; its hook-dispatch test moved to `test-workflow-execution-launch-record.R`); `test-perf107-audit.R` re-pointed (pending-publication retry on the dispatch rule; the native control, lifecycle classification and scientific-verification tests of the retired scenarios removed; a rollup dispatch test added: worker under a managed application, in-process declaration otherwise); `test-perf107-consumers.R` gains the in-process sample filter exactness check (physical declaration equals the native method, state committed); `test-perf107-checkpoints.R` and `test-perf107-synthetic.R` unchanged (checkpoints and the synthetic corpus are live); `test-perf-107.R` re-pointed to the dispatch rule and the shared acknowledgement machinery; registry and launch-record tests updated; harness tests cover the `kit-gui` stage and decision.
+
+Grep evidence (acceptance 3): no `perf107-phase-a`, `workflowPeptideSampleQualification`, `qualification$entry` or `entry_fixture` reference remains in `R/`; `qualification` survives only for the adapters vehicle (`perf106-repair-v2` timed members) and in documentation.
+
+## Results
+
+| Check | Evidence | Result |
+|---|---|---|
+| Legacy vs P14 page identity on `screen_p14` (before the member) | `in-process-rollup-check.json` | identical 48 pages, 480,000 rows; both equal the P14 screen oracle |
+| In-process sample filter through the declaration equals the native method | `test-perf107-consumers.R` | passes |
+| Rollup: worker under a managed application, in-process declaration otherwise; pending publication retried without a second dispatch | `test-perf107-audit.R` | passes |
+| Harness stage and decision | `test-workflow-kit-harness.R` (224) | passes |
+
+Test files run after the change (working tree, proof library on `R_LIBS`): registry 35, launch record 25, perf-107 21, perf107-audit 63, perf107-consumers 29, perf107-checkpoints 49, perf107-synthetic 12, kit harness 224, operations 66, execution 64 (10 skipped installed-only), adapters (6 skipped installed-only), peptide sample shared 48, orchestrator shared 15, peptide module contracts 772, saved QC rollup 59, perf-106 193, memory mechanism member (13 skipped installed-only); all green.
+
+## Member (counted, pending the user's go)
+
+MEMBERSECTION
+
+## Claim limits
+
+- The in-process sample filter changed mechanism (native per-group loop to the physical declaration); exactness rests on KIT-006's accepted stage (full_primary and screen) and the new unit check, not on a new counted run.
+- The managed path's browser acknowledgement keeps the PERF-107 message name (`multischolar-perf107-ready`) and JavaScript globals as the wire contract; only the server-side qualification logic was retired.
+- Memory refusals mention free host memory through the existing admission messages (CORE-010); no GUI message text was changed in this ticket.
