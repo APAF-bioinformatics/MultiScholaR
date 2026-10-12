@@ -15,10 +15,14 @@ test_that("the registry carries the three built-in operations with every fact th
     filter <- workflowActionSpec("minimum_peptides_per_sample")
     expect_identical(filter$step_label, "6_sample_filtered")
     expect_identical(filter$parameter_limit, 262144)
-    expect_identical(filter$gui_variants, c("native", "physical"))
+    # KIT-008: the production variant an unqualified launch runs, in the worker and in process.
+    expect_identical(filter$default_variant, "physical")
+    expect_identical(rollup$default_variant, "p14")
+    expect_null(fixture$default_variant)
+    expect_identical(workflowQualificationVariant(list(mode = "gui"), "minimum_peptides_per_sample"), "physical")
+    expect_identical(workflowQualificationVariant(list(mode = "gui"), "precursor_rollup"), "p14")
     expect_identical(filter$resolve, "resolveWorkflowSampleFilterParameters")
     expect_true(filter$inclusion_absence)
-    expect_identical(workflowGuiQualifiedOperation(), "minimum_peptides_per_sample")
     for (name in names) expect_true(exists(workflowActionSpec(name)$handler, mode = "function"))
     for (name in names) expect_true(exists(workflowActionSpec(name)$validate, mode = "function"))
 })
@@ -64,11 +68,11 @@ test_that("a fresh R process resolves the same registry from the operation name 
         lapply(get("workflowOperationNames", ns)(), function(name) {
             entry <- get("workflowActionSpec", ns)(name)
             entry[c("input", "input_class", "compute", "handler", "validate", "resolve", "parameter_limit",
-                "completion", "publication", "step_label", "variants", "gui_variants", "diagnostic_only")]
+                "completion", "publication", "step_label", "variants", "default_variant", "diagnostic_only")]
         })
     }, args = list(root = root, library_path = library_path))
     local <- lapply(workflowOperationNames(), function(name) workflowActionSpec(name)[c("input", "input_class", "compute",
         "handler", "validate", "resolve", "parameter_limit", "completion", "publication", "step_label", "variants",
-        "gui_variants", "diagnostic_only")])
+        "default_variant", "diagnostic_only")])
     expect_identical(remote, local)
 })

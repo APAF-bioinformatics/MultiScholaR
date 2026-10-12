@@ -1,0 +1,31 @@
+{
+  "schema": "kit.in_process_rollup_check.v1",
+  "ticket": "KIT-008",
+  "date": "2026-10-12",
+  "head_commit": "79732fc0f6f07739f8deea9e04f2b9faab56c330",
+  "population": {
+    "name": "screen_p14",
+    "rows": 960000,
+    "entity_id": "5b6a36c58a74f6735bcb80a20331cc7a417c44aeafb67ebb4cc06fe2577c5f76"
+  },
+  "legacy": {
+    "seconds": 19.2,
+    "rows": 480000,
+    "pages": 48,
+    "summary_sha256": "d03f856a511334f2a67aaeb77839fcf5ea115d103e77d94fe90ab606cf9b40c2",
+    "profile": null,
+    "query_owner": null
+  },
+  "p14": {
+    "seconds": 5.9,
+    "rows": 480000,
+    "pages": 48,
+    "summary_sha256": "d03f856a511334f2a67aaeb77839fcf5ea115d103e77d94fe90ab606cf9b40c2",
+    "profile": "P14",
+    "query_owner": "fastduckdb_c",
+    "exact_sum_sha256": "071cee6851e5edc78c2f2ff0595a6ac9144b643272c8273bf12ca92f447e0876"
+  },
+  "page_identical": true,
+  "p14_equals_oracle": true,
+  "legacy_equals_oracle": true
+}

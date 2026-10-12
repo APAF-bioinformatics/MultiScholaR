@@ -484,63 +484,205 @@ WorkflowExecutionApplication <- R6::R6Class("WorkflowExecutionApplication", clon
     public = list(config = NULL, cgroup = NULL, controllers = list(), active = NULL,
         sessions = 0L, pid = NULL, closed = FALSE, entry_hook = NULL))
 
-#' Resolve the entry hook a managed launch installs on the application (KIT-013 item 4).
-#' @param config Frozen application configuration (`application.rds`).
-#' @return The hook `function(command, workflow_data, session, experiment_paths)` the sample module
-#'   runs for an `entry_hook` input, or NULL when the launch record asked for none. Today the one
-#'   hook is the PERF-107 small entry fixture, selected by the record's `entry_fixture_test` flag.
+#' The dispatch rule (KIT-008, audit B18): a module runs a registered operation on the managed worker
+#' when its Shiny session carries a `WorkflowExecutionApplication` (set by `workflowManagedServer`
+#' under `launchWorkflowApplication`: Linux, systemd); otherwise the same declaration runs in process.
+#' @param session Current Shiny session.
+#' @return The managed application, or NULL for an unmanaged launch (`run_app()`, macOS, Windows).
 #' @noRd
-workflowEntryHook <- function(config) {
-    if (is.list(config) && isTRUE(config$entry_fixture_test)) runWorkflowGUIEntryFixture else NULL
+workflowSessionApplication <- function(session) {
+    application <- if (is.null(session)) NULL else session$userData$workflow_execution
+    if (inherits(application, "WorkflowExecutionApplication") && !isTRUE(application$closed)) application else NULL
 }
 
-#' Prepare or inspect only the explicitly bound small GUI entry fixture (the harness entry hook,
-#' installed by `workflowManagedMain` through `workflowEntryHook`; KIT-013 moved it out of the module).
-#' @param command Fixed setup or post-completion inspection command.
-#' @param workflow_data,session,experiment_paths Existing GUI ownership and paths.
-#' @return Metadata pointing at a saved verification store; no assay handoff.
+#' Recover the bounded display product of one accepted managed peptide action (both registered
+#' peptide operations publish their progress product under `qc_progress`).
+#' @param manager Reference-backed owner.
+#' @param result Accepted worker/controller result.
+#' @param workflow_data Existing GUI workflow bus.
+#' @return The display handoff (`stateReference`, text, summary, `qcParams`) without assay hydration.
 #' @noRd
-runWorkflowGUIEntryFixture <- function(command, workflow_data, session, experiment_paths) {
-  qualification <- workflowPeptideSampleQualification(session)
-  application <- session$userData$workflow_execution
-  if (is.null(qualification) || !isTRUE(application$config$entry_fixture_test) ||
-      !identical(as.numeric(qualification$deadline), 900) ||
-      !is.character(command) || length(command) != 1L || is.na(command) ||
-      !command %in% c("prepare_reference", "capture_sample_filtered", "capture_imputed")) {
-    stop("entry fixture is not authorized")
-  }
-  checkWorkflowApplication(application)
-  if (!is.null(application$active)) stop("entry fixture cannot overlap an action")
-  manager <- workflow_data$state_manager
-  expected_state <- switch(command, prepare_reference = "intensity_filtered",
-    capture_sample_filtered = "sample_filtered", capture_imputed = "imputed")
-  if (!identical(manager$current_state, expected_state)) stop("entry fixture state differs")
-  rows <- if (usesDIAReferenceStates(manager)) {
-    readDIAStateMetadata(manager)$data$dimensions$rows
-  } else nrow(manager$getState()@peptide_data)
-  if (!is.numeric(rows) || length(rows) != 1L || !is.finite(rows) || rows > 2000 || rows < 0) {
-    stop("entry fixture exceeds the small verification boundary")
-  }
-  if (command == "prepare_reference") {
-    if (!identical(qualification$entry, "reference") || usesDIAReferenceStates(manager)) {
-      stop("entry fixture already prepared or wrong route")
+readManagedPeptideResult <- function(manager, result, workflow_data) {
+    record <- readDIAStateMetadata(manager, result$state_reference)
+    product <- record$data$products$qc_progress
+    envelope <- hydrateSavedWorkflowEntity(manager$.context$store, product)
+    checkSavedWorkflowConsumerPayload("scientific_product", envelope)
+    value <- c(list(stateReference = result$state_reference), envelope$value)
+    workflow_data$qc_params <- value$qcParams
+    value
+}
+
+#' Install one module's managed-step state machine (KIT-008: the reference module pattern shared by the
+#' precursor rollup and the sample filter). The step reserves the application's one heavy action, runs
+#' the registered operation on the managed worker, polls it, delivers the accepted product to the module's
+#' outputs, and closes the action only after the browser acknowledges the delivered content.
+#' @param session,input,workflow_data The module's session, inputs and the workflow bus.
+#' @param operation Registered operation name.
+#' @param publication Immutable publication context (`experiment_label`, `experiment_paths`, `omic_type`).
+#' @param ui Output names inside the module namespace: `text`, `plot`, the `ack` input, the working
+#'   `notification` id, the `label` for messages and the `step_label` that identifies the content.
+#' @param deliver Function(result) that renders the accepted result into the module's outputs and
+#'   returns the plot grid.
+#' @param read_result Function(manager, accepted, workflow_data) returning the display handoff.
+#' @return An environment: `apply(parameters)` starts or retries an action; `active()` the current
+#'   action or NULL; `cancel(reason)` releases a running action (Revert, session end).
+#' @noRd
+installWorkflowManagedStep <- function(session, input, workflow_data, operation, publication, ui, deliver,
+    read_result = readManagedPeptideResult) {
+    step <- new.env(parent = emptyenv())
+    managed_action <- shiny::reactiveVal(NULL)
+    pending_publication <- shiny::reactiveVal(NULL)
+    working <- paste("Applying", ui$label, "...")
+    failure_prefix <- paste0("Error applying ", ui$label, ":")
+    ready_message <- function(action) {
+        session$sendCustomMessage("multischolar-perf107-ready", list(
+            request_id = action$reservation$id, content_id = action$content_id,
+            expected_text = action$expected_text, plot_identity = action$content_id,
+            input_id = session$ns(ui$ack), text_id = session$ns(ui$text), plot_id = session$ns(ui$plot)))
     }
-    manager <- stageDIAGUIReferenceOwner(manager, experiment_paths)
-    manager <- adoptDIAGUIReferenceOwner(manager, workflow_data, session)
-  } else if (!usesDIAReferenceStates(manager)) {
-    # Snapshot only AFTER GUI completion; the native action retains its original
-    # owner and scientific call. The existing codec strips worker handles.
-    manager <- stageDIAGUIReferenceOwner(manager, experiment_paths)
-    on.exit(closeDIAStateAdapter(manager), add = TRUE)
-  }
-  list(status = "complete", command = command,
-    root = dirname(manager$.context$store$directory), current_state = manager$current_state,
-    rows = rows, qualification = qualification,
-    measured_action_active = !is.null(application$active), verification_only = TRUE,
-    ownership = diaStateOwnership(manager))
+    fail <- function(action, error, status = "error") {
+        if (identical(status, "publication_pending")) pending_publication(action)
+        if (!is.null(action$owner) && !is.null(action$owner$job)) cancelWorkflowAction(action$owner, status)
+        if (!is.null(action$reservation) && !action$reservation$closed) finishWorkflowGUIAction(action$reservation, status)
+        managed_action(NULL)
+        shiny::removeNotification(ui$notification)
+        message <- paste(failure_prefix, conditionMessage(error))
+        logger::log_error(message)
+        shiny::showNotification(message, type = "error", duration = 15)
+        invisible(NULL)
+    }
+    deliver_action <- function(action, result) {
+        plot_grid <- withDIAStateScope(workflow_data$state_manager, function() deliver(result))
+        content_id <- digest::digest(list(result$resultText,
+            result$stateReference$entity_id %||% workflow_data$state_manager$current_state, ui$step_label), algo = "sha256")
+        action$result <- result
+        action$plot_grid <- plot_grid
+        action$content_id <- content_id
+        action$accepted_manager <- workflow_data$state_manager
+        action$accepted_reference <- getDIAStateReference(workflow_data$state_manager)
+        # Match renderText's output conversion exactly, including its treatment of a final newline.
+        action$expected_text <- paste(utils::capture.output(cat(result$resultText)), collapse = "\n")
+        if (is.function(ui$plot_identity)) ui$plot_identity(content_id)
+        action$ack_started <- proc.time()[["elapsed"]]
+        action$phase <- "awaiting_browser"
+        managed_action(action)
+        session$onFlushed(function() ready_message(action), once = TRUE)
+        invisible(NULL)
+    }
+    step$active <- function() managed_action()
+    step$pending <- function() pending_publication()
+    step$cancel <- function(reason) {
+        pending_publication(NULL)
+        action <- shiny::isolate(managed_action())
+        if (is.null(action)) return(invisible(NULL))
+        if (!is.null(action$owner) && !is.null(action$owner$job)) cancelWorkflowAction(action$owner, reason)
+        if (!action$reservation$closed) finishWorkflowGUIAction(action$reservation, reason)
+        managed_action(NULL)
+        shiny::removeNotification(ui$notification)
+        invisible(NULL)
+    }
+    step$apply <- function(parameters) {
+        application <- workflowSessionApplication(session)
+        if (is.null(application)) cli::cli_abort("no managed application on this session", class = "workflow_execution_scope")
+        if (!is.null(shiny::isolate(managed_action()))) {
+            shiny::showNotification(paste("A", ui$label, "action is already running"), type = "warning")
+            return(invisible(NULL))
+        }
+        action <- list(owner = NULL, phase = "starting")
+        action$reservation <- tryCatch(beginWorkflowGUIAction(application, workflow_data$state_manager,
+            operation, publication), error = function(error) error)
+        if (inherits(action$reservation, "error")) {
+            shiny::showNotification(conditionMessage(action$reservation), type = "error", duration = 15)
+            return(invisible(NULL))
+        }
+        shiny::showNotification(working, id = ui$notification, duration = NULL)
+        tryCatch({
+            manager <- workflow_data$state_manager
+            if (!inherits(manager, "DIAStateAdapter") || !usesDIAReferenceStates(manager))
+                stop("the managed worker needs the on-disk state owner (DIA-NN import on Linux)")
+            pending <- shiny::isolate(pending_publication())
+            if (!is.null(pending)) {
+                if (!identical(pending$owner$manager, manager) || !identical(pending$parameters, parameters))
+                    stop("retry pending publication with its original parameters first")
+                action$owner <- pending$owner
+                action$worker_request_id <- pending$worker_request_id
+                action$parameters <- pending$parameters
+                accepted <- resumeWorkflowAction(action$owner, action$worker_request_id)
+                deliver_action(action, read_result(manager, accepted, workflow_data))
+                pending_publication(NULL)
+                return(invisible(NULL))
+            }
+            action$parameters <- parameters
+            owner <- manager$.context$store$execution_owner
+            if (is.null(owner)) owner <- newWorkflowExecutionController(manager, application)
+            action$owner <- owner
+            action$phase <- "running"
+            action$worker_request_id <- runWorkflowAction(operation, list(state = getDIAStateReference(manager)),
+                parameters, owner, reservation = action$reservation)
+            managed_action(action)
+        }, error = function(error) fail(action, error))
+        invisible(NULL)
+    }
+    shiny::observe({
+        action <- managed_action()
+        if (is.null(action) || !identical(action$phase, "running")) return()
+        if (!identical(workflow_data$state_manager, action$owner$manager)) {
+            fail(action, simpleError("project was replaced"), "project_replaced")
+            return()
+        }
+        shiny::invalidateLater(50, session)
+        result <- tryCatch(pollWorkflowAction(action$owner), error = function(error) error)
+        if (inherits(result, "error")) { fail(action, result); return() }
+        if (result$status %in% c("admitting", "running")) return()
+        if (!identical(result$status, "complete")) {
+            fail(action, simpleError(paste("managed action ended:", result$status)), result$status)
+            return()
+        }
+        tryCatch({
+            accepted <- resumeWorkflowAction(action$owner, action$worker_request_id)
+            deliver_action(action, read_result(workflow_data$state_manager, accepted, workflow_data))
+        }, error = function(error) fail(action, error))
+    })
+    shiny::observe({
+        action <- managed_action()
+        if (is.null(action) || !identical(action$phase, "awaiting_browser")) return()
+        if (!identical(workflow_data$state_manager, action$accepted_manager) ||
+            !identical(getDIAStateReference(workflow_data$state_manager), action$accepted_reference)) {
+            fail(action, simpleError("result was superseded"), "stale")
+            return()
+        }
+        if (proc.time()[["elapsed"]] - action$ack_started >= 30) {
+            fail(action, simpleError("browser acknowledgement timed out"), "browser_ack_timeout")
+            return()
+        }
+        shiny::invalidateLater(1000, session)
+        ready_message(action)
+    })
+    shiny::observeEvent(input[[ui$ack]], {
+        action <- managed_action()
+        acknowledgement <- input[[ui$ack]]
+        if (is.null(action) || !identical(action$phase, "awaiting_browser") || !is.list(acknowledgement) ||
+            !identical(acknowledgement$request_id, action$reservation$id) ||
+            !identical(acknowledgement$content_id, action$content_id) || !isTRUE(acknowledgement$plot_ready) ||
+            !is.numeric(acknowledgement$stable_ms) || length(acknowledgement$stable_ms) != 1L ||
+            !is.finite(acknowledgement$stable_ms) || acknowledgement$stable_ms < 200) return()
+        if (!identical(workflow_data$state_manager, action$accepted_manager) ||
+            !identical(getDIAStateReference(workflow_data$state_manager), action$accepted_reference)) {
+            fail(action, simpleError("result was superseded"), "stale")
+            return()
+        }
+        receipt <- tryCatch(finishWorkflowGUIAction(action$reservation, "complete",
+            list(request_id = acknowledgement$request_id, content_id = acknowledgement$content_id,
+                plot_ready = TRUE, stable_seconds = acknowledgement$stable_ms / 1000)), error = function(error) error)
+        if (inherits(receipt, "error")) { fail(action, receipt); return() }
+        managed_action(NULL)
+        shiny::removeNotification(ui$notification)
+        logger::log_info(paste(ui$label, "applied successfully"))
+        shiny::showNotification(paste(ui$label, "applied successfully"), type = "message")
+    })
+    if (is.function(session$onSessionEnded)) session$onSessionEnded(function() step$cancel("session_ended"))
+    step
 }
-
-
 
 #' Open the one application-wide GUI action before reading scientific payloads.
 #' @param application Managed application owner attached to the Shiny session.
@@ -647,11 +789,6 @@ finishWorkflowGUIAction <- function(reservation, status, acknowledgement = NULL)
         if (identical(application$active, reservation$id)) application$active <- NULL
     }, add = TRUE)
     browser <- workflowBrowserMembership(application)
-    if (success && identical(application$config$qualification$programme,
-        "perf107-phase-a") && !isTRUE(browser$valid)) {
-        cli::cli_abort("browser is outside the guarded application",
-            class = "workflow_execution_unsupported")
-    }
     monitor <- NULL
     if (identical(application$config$mode, "gui")) {
         snapshot_id <- sub("^gui-", "wfx-", reservation$id)
@@ -823,7 +960,6 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
             record <- workflowGuiLaunchRecord(readRDS(member_path),
                 digest::digest(file = member_path, algo = "sha256"))
             config[names(record)] <- record
-            if (!is.null(config$qualification)) workflowQualificationVariant(config, workflowGuiQualifiedOperation())
         }
     }
     if (mode != "gui") {
@@ -957,7 +1093,6 @@ workflowManagedMain <- function(arguments) {
         cli::cli_abort("application policy differs from server policy")
     app <- WorkflowExecutionApplication$new()
     app$config <- config
-    app$entry_hook <- workflowEntryHook(config)
     app$cgroup <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))
     app$pid <- Sys.getpid()
     checkWorkflowApplication(app)
@@ -990,29 +1125,27 @@ workflowManagedMain <- function(arguments) {
 }
 
 #' Interpret a bounded GUI launch record (`gui-member.rds`) into frozen configuration fields.
-#' @param member Record list; `perf107-phase-a` carries a qualification, `kit-journey-v1`
-#'   switches the controller to native DIA sessions with a deadline of at most 4 hours (protocol v1.2).
+#' @param member Record list; `kit-journey-v1` keeps the journey's deadline (at most 4 hours, protocol
+#'   v1.2) and guard-injection flag. The PERF-107 qualification record is retired (KIT-008): production
+#'   dispatch no longer depends on a qualification, and its lifecycle scenarios were retired at KIT-013.
 #' @param member_sha256 Hash of the record file.
-#' @return Named list of configuration fields (`qualification` or `journey`, plus the test flags).
+#' @return Named list of configuration fields (`journey` plus the guard flag).
 #' @noRd
 workflowGuiLaunchRecord <- function(member, member_sha256) {
     if (!is.list(member) || !identical(member$schema, 1L)) {
-        cli::cli_abort("GUI qualification member is invalid")
+        cli::cli_abort("GUI launch record is invalid")
     }
-    guard <- isTRUE(member$guard_stop_test)
-    if (identical(member$programme, "kit-journey-v1")) {
-        deadline <- member$deadline
-        if (!is.numeric(deadline) || length(deadline) != 1L || !is.finite(deadline) ||
-            deadline < 60 || deadline > 14400 || isTRUE(member$entry_fixture_test)) {
-            cli::cli_abort("KIT journey record is invalid")
-        }
-        return(list(journey = list(programme = "kit-journey-v1", native_sessions = TRUE,
-            deadline = as.numeric(deadline), member_sha256 = member_sha256),
-            allow_guard_injection = guard, entry_fixture_test = FALSE))
+    if (!identical(member$programme, "kit-journey-v1")) {
+        cli::cli_abort("GUI launch record names an unsupported programme", class = "workflow_execution_unsupported")
     }
-    list(qualification = list(programme = member$programme, variant = member$variant,
-        entry = member$entry, member_sha256 = member_sha256, deadline = member$deadline),
-        allow_guard_injection = guard, entry_fixture_test = isTRUE(member$entry_fixture_test))
+    deadline <- member$deadline
+    if (!is.numeric(deadline) || length(deadline) != 1L || !is.finite(deadline) ||
+        deadline < 60 || deadline > 14400) {
+        cli::cli_abort("KIT journey record is invalid")
+    }
+    list(journey = list(programme = "kit-journey-v1", native_sessions = TRUE,
+        deadline = as.numeric(deadline), member_sha256 = member_sha256),
+        allow_guard_injection = isTRUE(member$guard_stop_test))
 }
 
 #' Close every controller, then always release the application monitor.
@@ -1934,23 +2067,8 @@ computeWorkflowSampleFilterAction <- function(manager, request, variant) {
 #' @noRd
 workflowQualificationVariant <- function(config, operation) {
     qualification <- config$qualification
-    if (is.null(qualification)) return("legacy")
-    if (identical(config$mode, "gui") && is.list(qualification) &&
-        identical(names(qualification), c("programme", "variant", "entry",
-            "member_sha256", "deadline")) &&
-        identical(qualification$programme, "perf107-phase-a") &&
-        is.character(qualification$variant) && length(qualification$variant) == 1L &&
-        !is.na(qualification$variant) && qualification$variant %in% workflowActionSpec(operation)$gui_variants &&
-        is.character(qualification$entry) && length(qualification$entry) == 1L &&
-        !is.na(qualification$entry) && qualification$entry %in% c("reference", "resident") &&
-        is.character(qualification$member_sha256) &&
-        length(qualification$member_sha256) == 1L &&
-        !is.na(qualification$member_sha256) &&
-        grepl("^[a-f0-9]{64}$", qualification$member_sha256) &&
-        is.numeric(qualification$deadline) && length(qualification$deadline) == 1L &&
-        !is.na(qualification$deadline) && qualification$deadline %in% c(900, 1800)) {
-        return(qualification$variant)
-    }
+    # KIT-008: an unqualified launch (production, managed or not) runs the registry's production variant.
+    if (is.null(qualification)) return(workflowActionSpec(operation)$default_variant %||% "legacy")
     if (!identical(config$mode, "adapters") ||
         !is.list(qualification) || !identical(names(qualification),
             c("programme", "variant", "member_sha256", "deadline")) ||

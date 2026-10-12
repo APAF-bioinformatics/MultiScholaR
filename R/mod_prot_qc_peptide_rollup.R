@@ -295,9 +295,28 @@ mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, expe
   shiny::moduleServer(id, function(input, output, session) {
     
     rollup_plot <- shiny::reactiveVal(NULL)
-    
+    rollup_plot_identity <- shiny::reactiveVal("Precursor rollup summary")
+
+    # KIT-008: the P14 rollup runs on the managed worker (admission cap, recovery) when the session carries a
+    # managed application; an unmanaged launch runs the same declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "precursor_rollup",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "rollup_results", plot = "rollup_plot", ack = "workflow_ack", notification = "rollup_working",
+        label = "precursor rollup", step_label = "4_precursor_rollup", plot_identity = rollup_plot_identity),
+      deliver = function(result) {
+        arguments <- list(output = output, rollupPlot = rollup_plot, rollupResult = result,
+          omicType = omic_type, experimentLabel = experiment_label)
+        if (!is.null(experiment_paths)) arguments$projectDirs <- stats::setNames(list(experiment_paths),
+          paste(omic_type, experiment_label, sep = "_"))
+        do.call(updatePeptideRollupOutputs, arguments)
+      })
+
     # Step 2: Precursor Rollup (chunk 11)
     shiny::observeEvent(input$apply_rollup, {
+      if (!is.null(workflowSessionApplication(session))) {
+        managed_step$apply(list())
+        return(invisible(NULL))
+      }
       apply_arguments <- list(
         workflowData = workflow_data,
         output = output,
@@ -311,6 +330,7 @@ mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, expe
     
     # Revert Precursor Rollup
     shiny::observeEvent(input$revert_rollup, {
+      managed_step$cancel("reverted")
       runPeptideRollupRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -321,6 +341,6 @@ mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, expe
     output$rollup_plot <- shiny::renderPlot({
       shiny::req(rollup_plot())
       grid::grid.draw(rollup_plot())
-    })
+    }, alt = function() rollup_plot_identity())
   })
 }

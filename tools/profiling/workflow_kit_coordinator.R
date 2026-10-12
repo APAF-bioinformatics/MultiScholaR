@@ -15,7 +15,7 @@ if (length(args) == 4L && grepl("^--rerun=", args[[4L]])) {
     rerun_cases <- strsplit(sub("^--rerun=", "", args[[4L]]), ",", fixed = TRUE)[[1L]]
     args <- args[1:3]
 }
-stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2})?|0[0-9]{2})$", args[[1L]]))
+stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2})?|gui-0[0-9]{2}|0[0-9]{2})$", args[[1L]]))
 stage <- args[[1L]]
 library_path <- normalizePath(args[[2L]])
 root <- args[[3L]]
@@ -366,6 +366,8 @@ tryCatch({
         if (startsWith(stage, "kit-lifecycle-")) helpers$kitLifecycleDecision(receipt, all_cases, bindings) else
         if (stage == "kit-journey") helpers$kitJourneyDecision(receipt, all_cases, bindings) else
         if (startsWith(stage, "kit-journey-")) helpers$kitJourneyTicketDecision(receipt, all_cases, bindings) else
+        if (startsWith(stage, "kit-gui-")) helpers$kitGuiMemberDecision(receipt, all_cases, bindings,
+            member_dir = file.path(stage_root, all_cases[[1L]]$id)) else
         helpers$kitOperationDecision(receipt, all_cases, bindings)
     saveRDS(receipt$decision, file.path(stage_root, "decision.rds"))
     receipt$status <- "complete"

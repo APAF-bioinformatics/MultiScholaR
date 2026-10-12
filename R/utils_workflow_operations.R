@@ -177,7 +177,8 @@ validateWorkflowOperationEntry <- function(entry) {
         scalar(entry$completion) && entry$completion %in% c("fixture", "peptide") &&
         scalar(entry$publication) && entry$publication %in% c("fixture", "peptide") &&
         (is.null(entry$step_label) || scalar(entry$step_label)) && scalar(entry$omic_type) &&
-        is.character(entry$variants) && is.character(entry$gui_variants) &&
+        is.character(entry$variants) &&
+        (is.null(entry$default_variant) || (scalar(entry$default_variant) && entry$default_variant %in% entry$variants)) &&
         flag(entry$diagnostic_only) && flag(entry$inclusion_absence) &&
         (is.null(entry$declaration) || is.list(entry$declaration))
     if (!isTRUE(valid)) cli::cli_abort("workflow operation registry entry is invalid", class = "workflow_operation_invalid")
@@ -221,15 +222,8 @@ workflowOperationEntry <- function(operation) {
     entry
 }
 
-#' The one operation a `gui`-mode qualification record may name (the PERF-107 phase-A entry).
-#' @noRd
-workflowGuiQualifiedOperation <- function() {
-    names <- Filter(function(name) length(workflowOperationEntry(name)$gui_variants) > 0L, workflowOperationNames())
-    if (length(names) != 1L) cli::cli_abort("exactly one operation may carry a GUI qualification", class = "workflow_execution_unsupported")
-    names[[1L]]
-}
-
 #' Register the built-in operations: the diagnostic fixture and the two DIA declarations of KIT-006.
+#' `default_variant` (KIT-008) is the variant an unqualified launch runs, in the worker and in process.
 #' Called from `.onLoad` and from the first lookup in a process that bypassed it.
 #' @noRd
 registerBuiltinWorkflowOperations <- function() {
@@ -237,12 +231,12 @@ registerBuiltinWorkflowOperations <- function() {
     registerWorkflowOperation(list(name = "wfx_fixture", input = "checkpoint", input_class = "PeptideQuantitativeData",
         compute = "fixture", handler = "computeWorkflowFixture", validate = "validateWorkflowFixtureParameters", resolve = NULL,
         parameter_limit = 65536, parameters = c("mode", "seconds", "bytes"), completion = "fixture", publication = "fixture",
-        step_label = NULL, omic_type = "proteomics", variants = character(), gui_variants = character(),
+        step_label = NULL, omic_type = "proteomics", variants = character(), default_variant = NULL,
         diagnostic_only = TRUE, inclusion_absence = FALSE, declaration = NULL))
     registerWorkflowOperation(list(name = "precursor_rollup", input = "peptide", input_class = "PeptideQuantitativeData",
         compute = "peptide", handler = "computeWorkflowPrecursorRollupAction", validate = "validateWorkflowPrecursorRollupParameters",
         resolve = NULL, parameter_limit = 65536, parameters = character(), completion = "peptide", publication = "peptide",
-        step_label = "4_precursor_rollup", omic_type = "proteomics", variants = "p14", gui_variants = character(),
+        step_label = "4_precursor_rollup", omic_type = "proteomics", variants = "p14", default_variant = "p14",
         diagnostic_only = FALSE, inclusion_absence = FALSE, declaration = diaPrecursorRollupOperation()))
     # The frozen 4,000-sample filter includes duplicate/whitespace-bearing inclusion arguments: its
     # parameter bytes keep the larger finite cap.
@@ -251,7 +245,9 @@ registerBuiltinWorkflowOperations <- function() {
         resolve = "resolveWorkflowSampleFilterParameters", parameter_limit = 262144,
         parameters = c("peptides_per_sample_cutoff", "inclusion_list"), completion = "peptide", publication = "peptide",
         step_label = "6_sample_filtered", omic_type = "proteomics", variants = c("native", "physical", "selection"),
-        gui_variants = c("native", "physical"), diagnostic_only = FALSE, inclusion_absence = TRUE,
+        # KIT-008: production runs the KIT-006 mechanism (adaptive complete-sample batches); the native R
+        # control and the selection arm stay reachable through an explicit adapters qualification.
+        default_variant = "physical", diagnostic_only = FALSE, inclusion_absence = TRUE,
         declaration = diaSampleFilterOperation()))
     invisible(workflowOperationNames())
 }

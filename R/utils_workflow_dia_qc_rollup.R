@@ -240,10 +240,34 @@ runDIAReferencePrecursorRollup <- function(workflow) {
     pending <- if (manager$current_state == "precursor_rollup") resumeDIAQvalueOutput(manager, before) else NULL
     if (!is.null(pending)) return(pending)
     assertDIAExportReady(manager)
-    value <- computeDIAReferencePrecursorRollup(manager, getDIAStateReference(manager), "legacy")
+    # KIT-008: the in-process path runs the declaration's own backend (P14, the exact ordered-sum aggregate
+    # the worker runs), no longer the legacy row-indexed path; the two were checked page-identical.
+    value <- computeDIAReferencePrecursorRollup(manager, getDIAStateReference(manager), "P14")
     manager$.context$last_rollup_execution <- value$execution
     finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name,
         value$description, value$config, value$section, value$counts)
+}
+
+#' Apply the sample filter in process through the same declaration the managed worker runs (KIT-008):
+#' the KIT-006 physical mode (adaptive complete-sample batches), then the shared finishing step.
+#' @param workflow Session workflow owner.
+#' @param parameters `peptides_per_sample_cutoff` and optional `inclusion_list`.
+#' @return References, bounded progress and text; no scientific table escapes.
+#' @noRd
+runDIAReferenceSampleFilter <- function(workflow, parameters) {
+    manager <- workflow$state_manager
+    before <- readDIAStateMetadata(manager)
+    pending <- if (identical(manager$current_state, "sample_filtered")) resumeDIAQvalueOutput(manager, before) else NULL
+    if (!is.null(pending)) return(pending)
+    assertDIAExportReady(manager)
+    entry <- workflowActionSpec("minimum_peptides_per_sample")
+    reference <- getDIAStateReference(manager)
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    parameters <- resolveWorkflowSampleFilterParameters(manager, reference, parameters)
+    value <- computeDIAReferenceSampleFilter(manager, reference, parameters, output_mode = entry$default_variant)
+    finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description,
+        value$config, value$section, value$counts,
+        observed_inclusion_absence = value$summary$inclusion_entries_absent_from_data)
 }
 
 #' Apply a verified full-population rollup result with the legacy S4 bookkeeping.

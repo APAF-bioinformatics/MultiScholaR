@@ -192,6 +192,14 @@ if (!is.null(b$builds$kit_011)) {
     b$journey$pair$control <- b$control
 }
 
+# KIT-008: one `gui`-mode managed member on the KIT-008 build (production worker dispatch for P14 and the sample
+# filter): the screen journey launched with no record under a managed application, verified against the KIT-011
+# screen member (`kit-lifecycle-complete`), with the two worker dispatches required; 10 min ceiling.
+if (!is.null(b$builds$kit_008)) {
+    b$tickets[["008"]] <- list(kind = "gui", build = "kit_008", corpus = "screen", reference = "kit-lifecycle-complete",
+        operations = c("precursor_rollup", "minimum_peptides_per_sample"), ceiling_seconds = 600L)
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",

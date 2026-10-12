@@ -28,7 +28,9 @@ kitSyntheticBindings <- function() {
                 parameters = list(peptides_per_sample_cutoff = 3000L, inclusion_list = list("run_0076", "run_0077")))),
         tickets = list(`006` = list(control = "core_018", candidate = "kit_006",
             pairs = list(list(operation = "precursor_rollup", population = "full_p14"),
-                list(operation = "minimum_peptides_per_sample", population = "full_primary")))))
+                list(operation = "minimum_peptides_per_sample", population = "full_primary"))),
+            `008` = list(kind = "gui", build = "kit_006", corpus = "screen", reference = "kit-lifecycle-complete",
+                operations = c("precursor_rollup", "minimum_peptides_per_sample"), ceiling_seconds = 600L)))
 }
 
 kitSyntheticOperationReceipt <- function(cases, h, edit = NULL) {
@@ -582,4 +584,63 @@ test_that("a ticket journey pair runs both builds as users run them and is decid
     oracles <- h$kitOracleJourneyPopulations(b)
     expect_identical(names(oracles), steps)
     expect_null(oracles$import$fingerprint)
+})
+
+test_that("a ticket's gui-mode member runs the screen journey with no record on its build and is decided on completion, dispatch and reproduction (KIT-008)", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$harness$root <- withr::local_tempdir()
+    cases <- h$kitCases(b, "kit-gui-008")
+    expect_length(cases, 1L)
+    case <- cases[[1L]]
+    expect_identical(case$kind, "journey")
+    expect_identical(case$role, "candidate")
+    expect_identical(case$library, "/lib/k")
+    expect_identical(case$corpus, "screen")
+    expect_false(case$record)
+    expect_identical(case$selector, "kit:gui-008:candidate:1")
+    expect_identical(h$kitMemberSeconds("kit-gui-008", b), 600L)
+    expect_error(h$kitCases(b, "kit-gui-009"), "no bound gui member")
+    # Member directory with the driver's populations, two completed worker requests and the reference member.
+    member <- file.path(b$harness$root, "kit-gui-008", "member")
+    reference <- file.path(b$harness$root, "kit-lifecycle-complete", "member")
+    dir.create(member, recursive = TRUE); dir.create(reference, recursive = TRUE)
+    populations <- list(rollup = list(fingerprint = list(components = list(peptide_data = list(sha256 = "a")),
+        support = list(), products = list(`dia-rollup-progress:1` = list(sha256 = "p")), summary_sha256 = "s", rows = 10L)))
+    saveRDS(list(status = "complete", populations = populations), file.path(reference, "journey-result.rds"))
+    saveRDS(list(status = "complete", populations = populations), file.path(member, "journey-result.rds"))
+    for (operation in c("precursor_rollup", "minimum_peptides_per_sample")) {
+        wfx <- file.path(member, "project", ".workflow-entities", ".workflow-export", paste0("wfx-", operation))
+        dir.create(wfx, recursive = TRUE)
+        saveRDS(list(schema = 1L, operation = operation), file.path(wfx, "request.rds"))
+        writeLines('{"status":"complete"}', file.path(wfx, "journal.json"))
+    }
+    receipt <- kitSyntheticReceipt(cases, h)
+    decision <- h$kitGuiMemberDecision(receipt, cases, b, member_dir = member)
+    expect_identical(decision$status, "gui_member_observed")
+    expect_identical(decision$dispatched$precursor_rollup$complete, 1L)
+    expect_identical(decision$dispatched$minimum_peptides_per_sample$complete, 1L)
+    expect_identical(decision$reproduction$fingerprint_mismatches, 0L)
+    expect_false(decision$promotion_authorized)
+    # Without the sample-filter dispatch the member is rejected; a changed state is a reference mismatch.
+    unlink(file.path(member, "project", ".workflow-entities", ".workflow-export", "wfx-minimum_peptides_per_sample"), recursive = TRUE)
+    rejected <- h$kitGuiMemberDecision(receipt, cases, b, member_dir = member)
+    expect_identical(rejected$status, "rejected")
+    expect_identical(rejected$failing_rule, "worker_dispatch_missing")
+    wfx <- file.path(member, "project", ".workflow-entities", ".workflow-export", "wfx-minimum_peptides_per_sample")
+    dir.create(wfx, recursive = TRUE)
+    saveRDS(list(schema = 1L, operation = "minimum_peptides_per_sample"), file.path(wfx, "request.rds"))
+    writeLines('{"status":"complete"}', file.path(wfx, "journal.json"))
+    changed <- populations
+    changed$rollup$fingerprint$components$peptide_data$sha256 <- "b"
+    saveRDS(list(status = "complete", populations = changed), file.path(member, "journey-result.rds"))
+    mismatch <- h$kitGuiMemberDecision(receipt, cases, b, member_dir = member)
+    expect_identical(mismatch$status, "rejected")
+    expect_identical(mismatch$failing_rule, "reference_mismatch")
+    expect_identical(mismatch$reproduction$mismatches, "rollup/components/peptide_data")
+    # An incomplete journey or a rejected verifier is invalid, never rejected.
+    partial <- kitSyntheticReceipt(cases, h, function(r) { r$cases$member$operation$populations_complete <- FALSE; r })
+    expect_identical(h$kitGuiMemberDecision(partial, cases, b, member_dir = member)$status, "invalid")
+    unverified <- kitSyntheticReceipt(cases, h, function(r) { r$cases$member$verifier_completion$accepted <- FALSE; r })
+    expect_identical(unname(h$kitGuiMemberDecision(unverified, cases, b, member_dir = member)$failing_rule), "verifier_accepted")
 })

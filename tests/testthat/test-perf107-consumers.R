@@ -75,3 +75,23 @@ test_that("physical filter and grouped consumers preserve inclusion and exclusio
         closeDIAStateAdapter(manager)
     }
 })
+
+test_that("the in-process sample filter runs the declaration's physical mode and commits the native result (KIT-008)", {
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    native <- WorkflowState$new(audit_enabled = FALSE)
+    native$saveState("intensity_filtered", object, list(), "input")
+    root <- withr::local_tempdir()
+    manager <- stageDIAGUIReferenceOwner(native, list(source_dir = root))
+    withr::defer(closeDIAStateAdapter(manager))
+    workflow <- list2env(list(state_manager = manager, qc_params = list(peptide_qc = list())))
+    expected <- filterMinNumPeptidesPerSample(object, peptides_per_sample_cutoff = 1, core_utilisation = NA)
+    testthat::local_mocked_bindings(
+        runDIAReferencePeptideGroups = function(...) stop("the native per-group path is not the production declaration"),
+        .package = "MultiScholaR")
+    result <- runPeptideSampleApplyStep(workflow, 1)
+    expect_identical(manager$current_state, "sample_filtered")
+    expect_true(isSavedWorkflowReference(result$stateReference))
+    expect_identical(manager$getState("sample_filtered")@peptide_data, expected@peptide_data)
+    expect_match(result$resultText, "Sample")
+    expect_true(is.list(workflow$qc_params$peptide_qc))
+})

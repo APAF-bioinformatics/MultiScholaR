@@ -43,6 +43,7 @@ kitMemberSeconds <- function(stage, bindings = NULL) {
     if (grepl("^kit-lifecycle-operation-", stage)) return(as.integer(bindings$operation_lifecycle$ceiling_seconds %||% 300L))
     if (grepl("^kit-lifecycle-", stage)) return(as.integer(bindings$lifecycle$ceiling_seconds %||% 300L))
     if (grepl("^kit-0[0-9]{2}$", stage)) return(600L)
+    if (grepl("^kit-gui-0[0-9]{2}$", stage)) return(as.integer(bindings$tickets[[sub("kit-gui-", "", stage)]]$ceiling_seconds %||% 600L))
     if (startsWith(stage, "kit-journey")) {
         seconds <- bindings$journey$ceiling_seconds
         if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 14400)
@@ -95,7 +96,7 @@ kitControl <- function(bindings) {
 #'   and a `binding` digest of everything that fixes it.
 #' @noRd
 kitCases <- function(bindings, stage) {
-    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2})?|0[0-9]{2})$", stage))
+    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2})?|gui-0[0-9]{2}|0[0-9]{2})$", stage))
     build_of <- function(build_key) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
@@ -178,6 +179,15 @@ kitCases <- function(bindings, stage) {
         return(list(
             journey_case("control-1", "control", 1L, spec$control, "full", "none", paste0("kit:journey-", ticket, ":control:1"), record = record),
             journey_case("candidate-1", "candidate", 1L, spec$candidate, "full", "none", paste0("kit:journey-", ticket, ":candidate:1"), record = record)))
+    }
+    if (grepl("^kit-gui-0[0-9]{2}$", stage)) {
+        # A ticket's `gui`-mode managed member (KIT-008): one journey on the bound corpus and build, launched
+        # with no record (the build's production default under a managed application), a candidate only.
+        ticket <- sub("kit-gui-", "", stage, fixed = TRUE)
+        spec <- bindings$tickets[[ticket]]
+        if (is.null(spec) || !identical(spec$kind, "gui")) stop("KIT-", ticket, " has no bound gui member")
+        return(list(journey_case("member", "candidate", 1L, spec$build, spec$corpus %||% "screen", "none",
+            paste0("kit:gui-", ticket, ":candidate:1"), record = FALSE)))
     }
     ticket <- sub("kit-", "", stage, fixed = TRUE)
     spec <- bindings$tickets[[ticket]]
@@ -585,6 +595,68 @@ kitJourneyTicketDecision <- function(receipt, cases, bindings) {
         whole_slice_anon_ratio = whole_ratio, resident_end_ratio = resident_ratio,
         resident_end_bytes = list(control = control$resident_end_bytes, candidate = candidate$resident_end_bytes),
         promotion_authorized = FALSE)
+}
+
+#' Decide a ticket's `gui`-mode managed member (KIT-008; protocol: completion and exactness, peak recorded).
+#' The member completes every journey step within its ceiling, its populations are complete and verified,
+#' every state, support entry and summary reproduces the bound reference screen member (the KIT-011 screen
+#' member on the control build; the per-build identity products reported, not judged), and the two
+#' production dispatches ran on the managed worker (completed worker journals for both operations in
+#' the member's project store).
+#' @return `status` (`gui_member_observed`, `rejected` or `invalid`), the failing rule, the dispatch
+#'   counts and the reproduction result.
+#' @noRd
+kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL) {
+    stopifnot(length(cases) == 1L)
+    case <- cases[[1L]]
+    ticket <- sub("^kit:gui-([0-9]{3}):.*$", "\\1", case$selector)
+    spec <- bindings$tickets[[ticket]]
+    item <- receipt$cases[[case$id]]
+    op <- item$operation
+    result <- list(status = "invalid", failing_rule = NULL, promotion_authorized = FALSE, ticket = ticket)
+    result$failing_rule <- kitIneligible(item, kitMemberSeconds(paste0("kit-gui-", ticket), bindings), "journey")
+    steps <- kitStepIds()
+    status <- op$phase_status
+    if (is.null(result$failing_rule) && !(all(steps %in% names(status)) && all(unlist(status[steps]) == "complete")))
+        result$failing_rule <- "phase_timing"
+    if (is.null(result$failing_rule) && !isTRUE(op$populations_complete)) result$failing_rule <- "populations_incomplete"
+    result$peak_bytes <- op$peak_bytes
+    result$peak_anon_bytes <- op$sampled_anon_bytes
+    result$resident_end_bytes <- op$resident_end_bytes
+    result$elapsed_seconds <- op$elapsed_seconds
+    # Dispatch evidence: completed worker journals under the member's project store, by operation.
+    dispatched <- list()
+    if (!is.null(member_dir) && dir.exists(member_dir)) {
+        requests <- list.files(member_dir, "^request[.]rds$", recursive = TRUE, full.names = TRUE, all.files = TRUE)
+        requests <- requests[grepl("/[.]workflow-export/wfx-", requests)]
+        for (path in requests) {
+            request <- tryCatch(readRDS(path), error = function(error) NULL)
+            operation <- request$operation %||% NA_character_
+            if (is.na(operation)) next
+            journal_path <- file.path(dirname(path), "journal.json")
+            status <- if (file.exists(journal_path)) tryCatch(jsonlite::read_json(journal_path)$status, error = function(error) NULL) else NULL
+            dispatched[[operation]] <- c(dispatched[[operation]], status %||% NA_character_)
+        }
+    }
+    result$dispatched <- lapply(dispatched, function(statuses) list(requests = length(statuses),
+        complete = sum(statuses == "complete", na.rm = TRUE)))
+    required <- spec$operations %||% c("precursor_rollup", "minimum_peptides_per_sample")
+    worker_ran <- all(vapply(required, function(name) isTRUE(result$dispatched[[name]]$complete >= 1L), logical(1)))
+    if (is.null(result$failing_rule) && !worker_ran) result$failing_rule <- "worker_dispatch_missing"
+    # Reproduction against the bound reference screen member (populations saved by its driver).
+    reference_path <- file.path(bindings$harness$root, spec$reference %||% "kit-lifecycle-complete", "member", "journey-result.rds")
+    candidate_path <- if (is.null(member_dir)) NULL else file.path(member_dir, "journey-result.rds")
+    if (is.null(result$failing_rule) && file.exists(reference_path) && !is.null(candidate_path) && file.exists(candidate_path)) {
+        reference <- readRDS(reference_path)
+        candidate <- readRDS(candidate_path)
+        mismatches <- kitReproduceMismatches(reference$populations, candidate$populations, ignore_products = kitOperationIdentityProducts)
+        result$reference <- spec$reference %||% "kit-lifecycle-complete"
+        result$reproduction <- list(fingerprint_mismatches = length(mismatches), mismatches = mismatches)
+        if (length(mismatches)) result$failing_rule <- "reference_mismatch"
+    } else if (is.null(result$failing_rule)) result$failing_rule <- "reference_unavailable"
+    if (is.null(result$failing_rule)) result$status <- "gui_member_observed" else if (
+        result$failing_rule %in% c("worker_dispatch_missing", "reference_mismatch")) result$status <- "rejected"
+    result
 }
 
 #' Mask run-specific absolute paths so args summaries compare across members.

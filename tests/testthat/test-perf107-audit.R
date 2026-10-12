@@ -43,27 +43,6 @@ test_that("DIA owner replacement retains the existing QC layout", {
     })
 })
 
-test_that("lifecycle classification consumes exact receipts and service outcomes", {
-    harness <- new.env(parent = baseenv())
-    sys.source(test_path("..", "..", "tools", "profiling",
-        "workflow_checkpoint_dia_driver.R"), harness)
-    decide <- harness$perf107LifecycleSucceeded
-    for (scenario in c("diagnostic", "science")) {
-        receipt <- list(schema = 1L, scenario = scenario,
-            status = if (scenario == "science") "science_complete" else "topology_complete")
-        expect_true(decide(scenario, 0L, receipt, NULL))
-        expect_false(decide(scenario, 1L, receipt, NULL))
-        expect_false(decide(scenario, 0L, NULL, NULL))
-        expect_false(decide(scenario, 0L, receipt, list(reason = "memory_guard")))
-        receipt$status <- "failed"
-        expect_false(decide(scenario, 0L, receipt, NULL))
-    }
-    expect_false(decide("topology", 0L, list(status = "topology_complete"), NULL))
-    expect_false(decide("guard-stop", 1L, NULL, list(schema = 1L, reason = "memory_guard")))
-    expect_true(decide("guard-stop", 1L, NULL,
-        list(schema = 1L, reason = "injected_guard_stop")))
-})
-
 test_that("browser acknowledgement checks the accepted visible content", {
     node <- Sys.getenv("MULTISCHOLAR_PERF107_NODE", Sys.which("node"))
     skip_if(!nzchar(node), "Node is required for the JavaScript contract")
@@ -74,29 +53,6 @@ test_that("browser acknowledgement checks the accepted visible content", {
         script)), stdout = TRUE, stderr = TRUE)
     expect_identical(attr(result, "status") %||% 0L, 0L, info = paste(result, collapse = "\n"))
     expect_true(any(grepl("ack lifecycle contract passed", result, fixed = TRUE)))
-})
-
-test_that("reference native control really calls the native scientific method", {
-    rlang::local_bindings(config_list = list(filterMinNumPeptidesPerSample =
-        list(peptides_per_sample_cutoff = 1)),
-        .env = .GlobalEnv)
-    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
-    native <- WorkflowState$new(audit_enabled = FALSE)
-    native$saveState("input", object, list(), "input")
-    root <- withr::local_tempdir()
-    manager <- stageDIAGUIReferenceOwner(native, list(source_dir = root))
-    withr::defer(closeDIAStateAdapter(manager))
-    workflow <- list2env(list(state_manager = manager, qc_params = list()))
-    expected <- filterMinNumPeptidesPerSample(object,
-        peptides_per_sample_cutoff = 1, core_utilisation = NA)
-    testthat::local_mocked_bindings(
-        runDIAReferencePeptideGroups = function(...) stop("incorrect grouped control"),
-        .package = "MultiScholaR"
-    )
-    result <- runWorkflowNativeSampleControl(workflow, 1)
-    expect_identical(result$filteredS4@peptide_data, expected@peptide_data)
-    expect_identical(manager$current_state, "sample_filtered")
-    expect_gt(diaStateOwnership(manager)$full_s4_reads, 0L)
 })
 
 test_that("the supervisor cleans only its validated request-owned slice", {
@@ -126,22 +82,6 @@ test_that("the supervisor cleans only its validated request-owned slice", {
     expect_identical(readLines(log), before)
 })
 
-test_that("small scientific verification rejects changed values and evidence", {
-    harness <- new.env(parent = baseenv())
-    sys.source(test_path("..", "..", "tools", "profiling",
-        "workflow_checkpoint_dia_driver.R"), harness)
-    expected <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
-    expect_true(harness$verifyPerf107ScientificState(expected, expected, "filter"))
-    changed <- expected
-    changed@peptide_data$Precursor.Quantity[[1L]] <- -1
-    expect_error(harness$verifyPerf107ScientificState(changed, expected, "filter"),
-        "peptide_data")
-    changed <- expected
-    changed@args$filter <- list(support_table = data.frame(support = 1L))
-    expect_error(harness$verifyPerf107ScientificState(changed, expected, "filter"),
-        "support_table")
-})
-
 test_that("receipt write failure releases the GUI reservation", {
     root <- withr::local_tempdir()
     application <- WorkflowExecutionApplication$new()
@@ -169,15 +109,6 @@ test_that("receipt write failure releases the GUI reservation", {
     lock <- filelock::lock(file.path(root, ".heavy-action.lock"), timeout = 0)
     expect_false(is.null(lock))
     filelock::unlock(lock)
-    application$config$qualification <- list(programme = "perf107-phase-a")
-    action <- beginWorkflowGUIAction(application, WorkflowState$new(audit_enabled = FALSE),
-        "minimum_peptides_per_sample", list(experiment_label = "test",
-            experiment_paths = list(source_dir = root), omic_type = "proteomics"))
-    expect_error(finishWorkflowGUIAction(action, "complete", list(request_id = action$id,
-        content_id = "expected", plot_ready = TRUE, stable_seconds = 0.2)),
-        class = "workflow_execution_unsupported")
-    expect_null(application$active)
-    expect_true(action$closed)
 })
 
 test_that("Apply retries pending publication without dispatching science again", {
@@ -186,14 +117,18 @@ test_that("Apply retries pending publication without dispatching science again",
     owner <- new.env()
     owner$manager <- manager
     owner$job <- NULL
-    manager$.context <- list(store = list(execution_owner = owner))
+    manager$.context <- list(store = list(execution_owner = owner), reference_states = TRUE)
     manager$current_state <- "sample_filtered"
     workflow <- shiny::reactiveValues(state_manager = manager, qc_params = list())
     dispatches <- retries <- 0L
     completed <- character()
     reference <- list(entity_id = "accepted")
+    application <- WorkflowExecutionApplication$new()
+    application$config <- list(mode = "gui", root = withr::local_tempdir())
     testthat::local_mocked_bindings(
-        workflowPeptideSampleQualification = function(...) list(entry = "reference", variant = "physical"),
+        # KIT-008: the dispatch rule is the managed application on the session, not a qualification.
+        workflowSessionApplication = function(...) application,
+        usesDIAReferenceStates = function(...) TRUE,
         beginWorkflowGUIAction = function(...) list2env(list(id = "gui-one", closed = FALSE)),
         finishWorkflowGUIAction = function(reservation, status, ...) {
             completed <<- c(completed, status)
@@ -204,7 +139,7 @@ test_that("Apply retries pending publication without dispatching science again",
         runWorkflowAction = function(...) { dispatches <<- dispatches + 1L; "worker-one" },
         pollWorkflowAction = function(...) list(status = "publication_pending"),
         resumeWorkflowAction = function(...) { retries <<- retries + 1L; list(state_reference = reference) },
-        readManagedPeptideSampleResult = function(...) list(resultText = "accepted\n", stateReference = reference),
+        readManagedPeptideResult = function(...) list(resultText = "accepted\n", stateReference = reference),
         withDIAStateScope = function(manager, operation) operation(),
         updatePeptideSampleOutputs = function(output, samplePlot, ...) {
             output$sample_results <- shiny::renderText("accepted")
@@ -313,5 +248,69 @@ test_that("adoption failure preserves live assays and successful adoption releas
             restored$manager), object@peptide_data)
         closeDIAStateAdapter(restored$manager)
         closeDIAStateAdapter(staged)
+    })
+})
+
+test_that("the precursor rollup takes the managed worker under a managed application and the in-process declaration otherwise (KIT-008)", {
+    manager <- new.env()
+    class(manager) <- c("DIAStateAdapter", "environment")
+    owner <- new.env()
+    owner$manager <- manager
+    owner$job <- NULL
+    manager$.context <- list(store = list(execution_owner = owner), reference_states = TRUE)
+    manager$current_state <- "protein_peptide_filtered"
+    workflow <- shiny::reactiveValues(state_manager = manager, qc_params = list())
+    reference <- list(entity_id = "accepted")
+    dispatched <- list()
+    in_process <- 0L
+    application <- WorkflowExecutionApplication$new()
+    application$config <- list(mode = "gui", root = withr::local_tempdir())
+    managed <- application
+    testthat::local_mocked_bindings(
+        workflowSessionApplication = function(...) managed,
+        usesDIAReferenceStates = function(...) TRUE,
+        beginWorkflowGUIAction = function(application, manager, operation, publication) {
+            expect_identical(operation, "precursor_rollup")
+            expect_identical(publication$omic_type, "proteomics")
+            list2env(list(id = "gui-rollup", closed = FALSE))
+        },
+        finishWorkflowGUIAction = function(reservation, status, ...) { reservation$closed <- TRUE; list() },
+        getDIAStateReference = function(...) reference,
+        runWorkflowAction = function(operation, input_references, parameters, owner, reservation) {
+            dispatched[[length(dispatched) + 1L]] <<- list(operation = operation, parameters = parameters)
+            "worker-rollup"
+        },
+        pollWorkflowAction = function(...) list(status = "complete"),
+        resumeWorkflowAction = function(...) list(state_reference = reference),
+        readManagedPeptideResult = function(...) list(resultText = "rolled\n", stateReference = reference),
+        withDIAStateScope = function(manager, operation) operation(),
+        updatePeptideRollupOutputs = function(output, rollupPlot, ...) {
+            output$rollup_results <- shiny::renderText("rolled")
+            rollupPlot(grid::textGrob("rolled"))
+        },
+        runDIAReferencePrecursorRollup = function(workflow) { in_process <<- in_process + 1L; list(resultText = "in process\n") },
+        .package = "MultiScholaR"
+    )
+    shiny::testServer(mod_prot_qc_peptide_rollup_server,
+        args = list(workflow_data = workflow, omic_type = "proteomics",
+            experiment_label = "audit", experiment_paths = list()), {
+        session$setInputs(apply_rollup = 1)
+        session$flushReact()
+        expect_length(dispatched, 1L)
+        expect_identical(dispatched[[1L]]$operation, "precursor_rollup")
+        expect_identical(dispatched[[1L]]$parameters, list())
+        expect_identical(in_process, 0L)
+        action <- managed_step$active()
+        expect_identical(action$phase, "awaiting_browser")
+        expect_identical(action$expected_text, "rolled")
+        session$setInputs(workflow_ack = list(request_id = action$reservation$id,
+            content_id = action$content_id, plot_ready = TRUE, stable_ms = 250))
+        expect_null(managed_step$active())
+        # No managed application on the session: the same declaration runs in process.
+        managed <<- NULL
+        session$setInputs(apply_rollup = 2)
+        session$flushReact()
+        expect_length(dispatched, 1L)
+        expect_identical(in_process, 1L)
     })
 })

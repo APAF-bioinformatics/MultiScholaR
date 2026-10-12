@@ -1,4 +1,4 @@
-test_that("PERF-107 accepts only its frozen GUI qualification binding", {
+test_that("a GUI launch carries no qualification (KIT-008): a PERF-107 record is refused and the production variants apply", {
     config <- list(mode = "gui", qualification = list(
         programme = "perf107-phase-a",
         variant = "physical",
@@ -6,14 +6,10 @@ test_that("PERF-107 accepts only its frozen GUI qualification binding", {
         member_sha256 = strrep("a", 64L),
         deadline = 900
     ))
-    expect_identical(workflowQualificationVariant(config,
-        "minimum_peptides_per_sample"), "physical")
-    changed <- config
-    changed$qualification$entry <- "unknown"
-    expect_error(workflowQualificationVariant(changed,
-        "minimum_peptides_per_sample"), class = "workflow_execution_invalid")
-    expect_error(workflowQualificationVariant(config, "precursor_rollup"),
+    expect_error(workflowQualificationVariant(config, "minimum_peptides_per_sample"),
         class = "workflow_execution_invalid")
+    expect_identical(workflowQualificationVariant(list(mode = "gui"), "minimum_peptides_per_sample"), "physical")
+    expect_identical(workflowQualificationVariant(list(mode = "gui"), "precursor_rollup"), "p14")
 })
 
 test_that("PERF-107 acknowledgement handler is registered in the static app head", {
@@ -26,7 +22,8 @@ test_that("PERF-107 acknowledgement handler is registered in the static app head
     expect_gt(matches[[1L]], 0L)
     expect_match(application, "setTimeout(install, 25)", fixed = TRUE)
     expect_match(application, "MultiScholaRPerf107AckState")
-    expect_match(paste(deparse(body(mod_prot_qc_peptide_sample_server)),
+    # The acknowledgement state machine is shared by both production dispatches (KIT-008).
+    expect_match(paste(deparse(body(installWorkflowManagedStep)),
         collapse = "\n"), "browser acknowledgement timed out")
     expect_false(grepl(marker, module, fixed = TRUE))
 })
