@@ -1,6 +1,6 @@
 # KIT-012: holders to references
 
-Status 2026-10-12: **in progress; stopped before any code change or counted run for a scope decision** (below). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-012: a journey pair, control the KIT-008 build, candidate; the reclamation default decided before launch); protocol v1.3. Control: `kit_011` (`core/browser-smoke.AFaqC1`); the pair's control is `kit_008` (`core/browser-smoke.otE3Ck`) as the ledger names it. Predecessor cases: PERF-125, PERF-126, PERF-107 holders; audit findings B26, B27, B28.
+Status 2026-10-12: **complete without a counted run (user decision A).** Acceptance 1 met by KIT-011's default (survey below); acceptance 2 withdrawn as not measurable by this mechanism; the two journey members return to the ledger; the reclamation default stays off; the Glimma namespace cost is handed to KIT-016 (DA display products). Harness pre-step (oracles under the current canonical form) and the `resident_end` pair rule kept for KIT-017. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-012: a journey pair, control the KIT-008 build, candidate; the reclamation default decided before launch); protocol v1.3. Control: `kit_011` (`core/browser-smoke.AFaqC1`); the pair's control is `kit_008` (`core/browser-smoke.otE3Ck`) as the ledger names it. Predecessor cases: PERF-125, PERF-126, PERF-107 holders; audit findings B26, B27, B28.
 
 ## Pre-step done: the KIT-005 oracles under the current canonical form
 
@@ -47,16 +47,16 @@ Holders at the end of the DA step: `current_s4_object` a 5.6 kB reference, the m
 
 A walk of every loaded namespace, the store's caches, the session's user data, Shiny's globals and the options after the DA step ([da-resident-probe-walk.json](da-resident-probe-walk.json)) finds no other owner; the walk itself forces the lazy-loaded data of the newly loaded namespaces (about 0.35 GiB more), which is why the clean record is the run without it.
 
-## Scope decision needed before any code or counted run
+## Scope decision (user decision A, 2026-10-12)
 
 1. **Acceptance 1 is met by KIT-011's work**: on the DIA default no module holds an S4 across steps (table above). There is nothing left for this ticket's mechanism to convert on the measured path.
 2. **Acceptance 2 cannot be reached by this mechanism**: the required reduction is ≥ 5 % of `resident_end_bytes` (about 150 MB of the 3.02 GiB the KIT-011 candidate ended at). The end-of-journey resident memory above the pre-DA level is the Glimma namespace tree (0.44 GiB) plus allocator and DuckDB working memory, not holders. A `kit_012` build with no holder change would measure at the KIT-005 noise (control-1 vs control-2 resident end 0.983) and the pair would be `rejected` on `required_reduction` by construction.
 3. **Reclamation (B26)** is not reachable in production: `reclaim_enabled` is set FALSE at every adapter creation and no code sets it TRUE; `reclaimWorkflowMemory` is a gc plus an allocator page release, which the probe shows returns about 0.2 GiB after DA. Enabling it would be a second mechanism and would not touch the namespace cost. Recommended default for this ticket: unchanged (off).
 
-Options for the user:
+Options put to the user (A chosen):
 
 - **A (recommended).** Close KIT-012 on acceptance 1 with this record (holders are references on the DIA default; the KIT-001 worklist's in-memory branches stay for the in-memory owner), withdraw acceptance 2 as not measurable by this mechanism, spend no counted member (ledger amendment: the two journey members return to the budget), keep the harness pre-step and the `resident_end` rule for KIT-017's closure pair, and record the Glimma namespace cost as a discovery for a later ticket (interactive volcano written and rendered outside the application process, or Glimma loaded only on demand of the interactive view; KIT-016 owns the DA display products).
 - **B.** Run the pair as declared (control `kit_008`, candidate a `kit_012` build with no holder change beyond this record), accepting the predictable `rejected` as the recorded unfavourable result.
 - **C.** Retarget KIT-012's one mechanism to the measured owner (the DA step's Glimma publication out of the application process) and judge it with the pair under the `resident_end` rule; that is a new mechanism and a ticket revision, and the expected reduction (about 0.4 GiB of 3.0, 13 %) would be predeclared from the namespace check.
 
-No code was changed in `R/`; nothing was launched.
+No code was changed in `R/`; nothing was launched. Ticket rev 1.1; ledger row 2026-10-12; KIT-016 carries the hand-off.
