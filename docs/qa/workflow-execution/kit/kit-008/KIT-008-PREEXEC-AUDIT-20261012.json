@@ -1,0 +1,80 @@
+{
+ "schema": "audit-evidence-contracts.result.v1",
+ "mode": "audit_only",
+ "ticket": "KIT-008",
+ "date": "2026-10-12",
+ "audited": {
+  "code_commit": "690bc7f4",
+  "bindings_commit": "a069288f",
+  "install": "core/browser-smoke.Hag4dl",
+  "stage": "kit-gui-008"
+ },
+ "states": {
+  "implementation_verified": "partial",
+  "execution_complete": false,
+  "decision_supported": false,
+  "promotion_authorized": "not_applicable",
+  "claim_scope": "outcome claim limits"
+ },
+ "findings": [
+  {
+   "id": "PE-01",
+   "severity": "blocker",
+   "verdict": "CONFIRMED",
+   "blocks": "execution",
+   "summary": "verifier rejects the gui selector and judges a screen member against the 300-sample oracles"
+  },
+  {
+   "id": "PE-02",
+   "severity": "blocker",
+   "verdict": "CONFIRMED",
+   "blocks": "implementation,decision",
+   "summary": "worker completion writes a different qc_progress product and the result reader replaces the bus qc_params"
+  },
+  {
+   "id": "PE-03",
+   "severity": "high",
+   "verdict": "PLAUSIBLE",
+   "blocks": "execution",
+   "summary": "600 s ceiling against a 486 s in-process reference plus two worker dispatches"
+  },
+  {
+   "id": "PE-04",
+   "severity": "medium",
+   "verdict": "CONFIRMED",
+   "blocks": "implementation",
+   "summary": "managed non-DIA sessions error instead of running in process"
+  },
+  {
+   "id": "PE-05",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "reference member sound"
+  },
+  {
+   "id": "PE-06",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "ack timeout low risk"
+  },
+  {
+   "id": "PE-07",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "idle observers in unmanaged sessions"
+  },
+  {
+   "id": "PE-08",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "claim",
+   "summary": "rollup check record predates the commit"
+  }
+ ],
+ "repairs_made": [],
+ "launch": "blocked",
+ "register": "KIT-008-PREEXEC-AUDIT-20261012.md"
+}
