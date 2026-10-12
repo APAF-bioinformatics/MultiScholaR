@@ -1,6 +1,6 @@
 # KIT-008: production worker dispatch for P14 and the sample filter
 
-Status 2026-10-12: **implemented**; the counted `gui`-mode member waits for the user's go. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-008: one `gui`-mode managed member on the screen corpus, 15 min after the user's amendment of 2026-10-12); protocol v1.3. Control: `kit_011` (`core/browser-smoke.AFaqC1`). Predecessor cases: PERF-107 (Apply, next consumer, Revert routing), PERF-113; audit findings B18, B19, B20, B21.
+Status 2026-10-12: **complete.** Stage `kit-gui-008` decided `gui_member_observed` after two verifier-only corrections (member measurement untouched). Placement only: no memory decision, no promotion; the control stays `kit_011`. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-008: one `gui`-mode managed member on the screen corpus, 15 min after the user's amendment of 2026-10-12); protocol v1.3. Control: `kit_011` (`core/browser-smoke.AFaqC1`). Predecessor cases: PERF-107 (Apply, next consumer, Revert routing), PERF-113; audit findings B18, B19, B20, B21.
 
 ## What was built
 
@@ -29,9 +29,29 @@ Pre-execution audit 2026-10-12: [KIT-008-PREEXEC-AUDIT-20261012.md](KIT-008-PREE
 
 ## Member (counted, pending the user's go)
 
-MEMBERSECTION
+Stage `kit-gui-008` (launched 2026-10-12 11:56 after the pre-execution audit repairs, user "go"): one journey on the screen corpus, build `kit_008` = `core/browser-smoke.otE3Ck` (source `9fe8028d`), no launch record, managed application, ceiling 900 s.
+
+| Measure | Value |
+|---|---|
+| Decision | `gui_member_observed` (after corrections 1 and 2) |
+| Elapsed | 303 s |
+| Whole-slice peak | 2.462 GiB |
+| Anonymous peak | 2.119 GiB |
+| Resident end | 1.745 GiB |
+| Worker dispatches | `precursor_rollup` 1 request, complete; `minimum_peptides_per_sample` 1 request, complete |
+| Journey | 18 steps complete, 18 populations, in-run fingerprints equal to the immutable store, 527 publication files |
+| Reproduction of the KIT-011 screen member (`kit-lifecycle-complete`) | 0 mismatches over every state's tables, support entries, summary and products (the operation identity products reported, not judged) |
+
+Against the KIT-011 screen member (in process, 486 s, 2.53 GiB slice, 2.10 GiB anonymous) the member ran faster with the same states; time is reported, memory recorded, nothing judged beyond completion, dispatch and exactness.
+
+Corrections (verifier and decision only; the member was never rerun; the launch decision and the first recomputation are kept in `stage.rds$decisions_before_correction`; script [member-verifier-correction.R](member-verifier-correction.R)):
+
+1. The verifier never ran at launch: `kitSelectorStage` mapped `kit:gui-008:candidate:1` to case id `candidate-1` while the stage's one case is `member`, so `verifyKitMember` aborted before writing a record (`member/verification-launch.log`), and the decision read the reference member under a bindings field the real bindings do not carry. Both fixed; the verifier ran from the corrected harness against the frozen bindings; the recomputed decision was `rejected` with 13 summary mismatches from the sample-filter state onward.
+2. Those mismatches were bookkeeping, not science (user decision "1"): every table, support entry and product was equal; the sample-filter state's args recorded `core_utilisation = NA` (declaration run) where the native loop recorded its eight-worker multidplyr spec and copied the support references into the args, and the two word the step description differently; every later state's summary carried that args section forward. The canonical form now drops `core_utilisation`, the args-embedded `support_table`/`removal_ledger` copies and the step description (KIT-011 correction 1 did the same for the `declaration` field), and the gui decision recomputes both members' state fingerprints from their immutable stores under the current form. Recomputed: 0 mismatches.
 
 ## Claim limits
+
+- **Hand-off to KIT-012.** The KIT-005 oracle fingerprints bound in `bindings.json` were computed under the earlier canonical form (native-loop args, descriptions). Before KIT-012's journey pair, the generator must recompute them from control-1's immutable store under the corrected form (`kitFingerprintStore`), or the pair's candidate (which now runs the two steps as declarations) would mismatch on bookkeeping as this member did. Recorded in the ledger.
 
 - The in-process sample filter changed mechanism (native per-group loop to the physical declaration); exactness rests on KIT-006's accepted stage (full_primary and screen) and the new unit check, not on a new counted run.
 - The managed path's browser acknowledgement keeps the PERF-107 message name (`multischolar-perf107-ready`) and JavaScript globals as the wire contract; only the server-side qualification logic was retired.

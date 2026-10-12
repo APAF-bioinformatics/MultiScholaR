@@ -646,3 +646,17 @@ test_that("a ticket's gui-mode member runs the screen journey with no record on 
     unverified <- kitSyntheticReceipt(cases, h, function(r) { r$cases$member$verifier_completion$accepted <- FALSE; r })
     expect_identical(unname(h$kitGuiMemberDecision(unverified, cases, b, member_dir = member)$failing_rule), "verifier_accepted")
 })
+
+test_that("the canonical form drops the recorded worker specification, the args-embedded support copies and the step description (KIT-008 correction 2)", {
+    h <- kitHarness()
+    native <- list(filterMinNumPeptidesPerSample = list(peptides_per_sample_cutoff = 3L,
+        core_utilisation = list(schema = 1L, backend = "multidplyr", workers = 8L), support_table = list(entity_id = "a",
+            payload = list(sha256 = "s")), removal_ledger = list(entity_id = "b", payload = list(sha256 = "r")),
+        filter_summary = list(kept = 2L)))
+    declaration <- list(filterMinNumPeptidesPerSample = list(peptides_per_sample_cutoff = 3L, core_utilisation = NA,
+        filter_summary = list(kept = 2L)))
+    expect_identical(h$kitCanonical(native), h$kitCanonical(declaration))
+    changed <- declaration
+    changed$filterMinNumPeptidesPerSample$filter_summary$kept <- 1L
+    expect_false(identical(h$kitCanonical(native), h$kitCanonical(changed)))
+})

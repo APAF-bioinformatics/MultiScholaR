@@ -608,7 +608,7 @@ kitJourneyTicketDecision <- function(receipt, cases, bindings) {
 #' @return `status` (`gui_member_observed`, `rejected` or `invalid`), the failing rule, the dispatch
 #'   counts and the reproduction result.
 #' @noRd
-kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL) {
+kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL, api = NULL) {
     stopifnot(length(cases) == 1L)
     case <- cases[[1L]]
     ticket <- sub("^kit:gui-([0-9]{3}):.*$", "\\1", case$selector)
@@ -653,6 +653,26 @@ kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL) {
     if (is.null(result$failing_rule) && file.exists(reference_path) && !is.null(candidate_path) && file.exists(candidate_path)) {
         reference <- readRDS(reference_path)
         candidate <- readRDS(candidate_path)
+        # With an api the state fingerprints of both members are recomputed from their immutable stores under the
+        # current canonical form (a correction to that form after the run then applies to both sides, as the
+        # journey verifier does); the per-step assets the driver attached stay as recorded.
+        if (!is.null(api)) {
+            recompute <- function(journey) {
+                fresh <- kitFingerprintStore(journey$store, api)
+                for (step in names(journey$populations)) {
+                    state <- journey$populations[[step]]$state
+                    if (is.null(state) || is.null(fresh$states[[state]])) next
+                    merged <- journey$populations[[step]]$fingerprint
+                    for (field in c("components", "support", "summary_sha256", "rows")) merged[[field]] <- fresh$states[[state]][[field]]
+                    for (name in names(fresh$states[[state]]$products)) merged$products[[name]] <- fresh$states[[state]]$products[[name]]
+                    journey$populations[[step]]$fingerprint <- merged
+                }
+                journey
+            }
+            reference <- recompute(reference)
+            candidate <- recompute(candidate)
+            result$fingerprints <- "recomputed from both stores under the current canonical form"
+        }
         mismatches <- kitReproduceMismatches(reference$populations, candidate$populations, ignore_products = kitOperationIdentityProducts)
         result$reference <- spec$reference %||% "kit-lifecycle-complete"
         result$reproduction <- list(fingerprint_mismatches = length(mismatches), mismatches = mismatches)
@@ -734,8 +754,13 @@ kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L, memo = NUL
         names_ <- names(value) %||% rep("", length(value))
         # `declaration` is the storage-format field KIT-002 added to checkpoint records (additive; records without
         # it read as before): a record's science is the same with or without it (KIT-011 correction 1).
+        # `core_utilisation` is the recorded worker-cluster specification of a kernel run (NA for a declaration run in
+        # a worker, the multidplyr spec for the native loop); `support_table`/`removal_ledger` inside an args section
+        # are the native loop's copies of the support entries the checkpoint carries and compares separately
+        # (KIT-008 correction 2, user decision 2026-10-12: execution bookkeeping, not science).
         value <- value[!(names_ %in% c("timestamp", "mtime", "dependencies", "product_dependencies", "da_dependencies",
-            "owned_components", "component_dependencies", "declaration") | grepl("timestamp$", names_))]
+            "owned_components", "component_dependencies", "declaration", "core_utilisation", "support_table", "removal_ledger") |
+            grepl("timestamp$", names_))]
         return(lapply(value, kitCanonical, store = store, api = api, depth = depth + 1L, memo = memo))
     }
     kitMaskPaths(value)
@@ -772,8 +797,10 @@ kitFingerprintState <- function(store, reference, api, memo = NULL) {
         }
         list()
     }
+    # The step description is display text (the declaration and the native loop word it differently); it is
+    # recorded on the state, not part of the exactness summary (KIT-008 correction 2).
     summary <- list(class = spec$class, slots = kitCanonical(spec$slots), dimensions = spec$dimensions,
-        config = kitCanonical(record$config), description = record$description)
+        config = kitCanonical(record$config))
     list(class = spec$class, rows = spec$dimensions$rows,
         components = walk(spec$components), support = walk(spec$support), products = walk(spec$products),
         summary_sha256 = digest::digest(summary, algo = "sha256"))
