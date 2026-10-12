@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-12",
+  "created": "2026-10-13",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -73,11 +73,11 @@
     },
     "kit_010": {
       "ticket": "KIT-010",
-      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.IaLhTL/library",
-      "build": "1a3e481f9bcaac0054c659f718a99967f3a880f8f19af99d5591e9d427115e10",
-      "exact_sum": "19a0e7c721468705f522cb007efe6e4556e7065d42733db98e49fa1fc273de84",
-      "install_member": "browser-smoke.IaLhTL",
-      "source_commit": "acc8687e95416578404b1837d8fcea73b02e084b",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.CZRMll/library",
+      "build": "b24c590e396f9abc8ed054b01487c3cd4266cbb4fc6b631d24597f8e6a48f352",
+      "exact_sum": "1aa9b615922714db27559d9ec03d334711074d3c6ec2c894530117c71da6b58e",
+      "install_member": "browser-smoke.CZRMll",
+      "source_commit": "8cf5619564148a21472353a7786f32e33f0ca2ca",
       "runtime_patch_bytes": 0
     }
   },
