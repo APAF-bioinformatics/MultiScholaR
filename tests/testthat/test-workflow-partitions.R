@@ -1,4 +1,5 @@
-# KIT-006: the complete-sample partitioner and the two declarations on it; KIT-009: the feature-group partitioner.
+# KIT-006: the complete-sample partitioner and the two declarations on it; KIT-009: the feature-group partitioner;
+# KIT-010: the row partitioner and wide-table sample projection.
 
 test_that("complete-group batches never split a group and keep the declared order", {
     groups <- sprintf("run_%03d", 1:32)
@@ -284,4 +285,140 @@ test_that("a peptide-group section computed outside a session and without a glob
     expect_identical(value$state_name, "imputed")
     expect_identical(value$checkpoint$slots$args$peptideMissingValueImputation$proportion_missing_values, 0.5)
     expect_false(exists("config_list", envir = globalenv(), inherits = FALSE))
+})
+
+# KIT-010: the row partitioner, wide-table projection and the protein replicate filter on the row unit.
+
+proteinFixtureManager <- function(object, root, state = "duplicates_removed") {
+    store <- newWorkflowEntityStore(root, basename(root), "DIA")
+    manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    manager$.context$reference_states <- TRUE
+    manager$saveState(state, object, list(), "fixture")
+    manager
+}
+
+wideProteinRecipe <- function() {
+    recipe <- readWorkflowCheckpointRecipe("small")
+    recipe$n_samples <- 300L
+    recipe$n_proteins <- 300L
+    recipe$peptides_per_protein <- 1L
+    recipe$forms_per_peptide <- 1L
+    recipe
+}
+
+test_that("row pages cover a long table in source order, the kernel once per page, and refuse above the cap", {
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    # 4,608 rows: more than one 10,000-row page needs a larger table; repeat the rows to 23,040.
+    big <- object
+    big@peptide_data <- do.call(rbind, replicate(5L, object@peptide_data, simplify = FALSE))
+    rownames(big@peptide_data) <- NULL
+    manager <- peptideGroupFixtureManager(big, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    checkpoint <- readDIAStateMetadata(manager)$data
+    scope <- newWorkflowTableReadScope(manager$.context$store, checkpoint$components$peptide_data, reader = "arrow")
+    withr::defer(releaseWorkflowTableReadScope(scope))
+    columns <- c(object@sample_id, object@protein_id_column, object@peptide_sequence_column)
+    offsets <- integer(); first <- character()
+    value <- partitionByRows(scope, columns, kernel = function(page, index, offset) {
+        offsets[[index]] <<- offset
+        first[[index]] <<- as.character(page[[object@protein_id_column]][[1L]])
+        nrow(page)
+    }, consume = function(rows, index) NULL, worker_cap = 12 * 1024^3, working_bytes_per_row = 256,
+        overhead_bytes = 1e6, policy = "test-rows")
+    expect_identical(value$batches, 3L)
+    expect_identical(value$batch_sizes, c(10000L, 10000L, 3040L))
+    expect_identical(value$rows, 23040L)
+    expect_identical(offsets, c(0L, 10000L, 20000L))
+    expect_identical(first, as.character(big@peptide_data[[object@protein_id_column]][c(1L, 10001L, 20001L)]))
+    expect_identical(value$admission$page_rows, 10000L)
+    expect_identical(value$admission$estimated_bytes, 1e6 + 10000 * (value$admission$row_bytes + 256))
+    expect_error(partitionByRows(scope, columns, kernel = function(page, index, offset) NULL,
+        consume = function(value, index) NULL, worker_cap = value$admission$estimated_bytes - 1,
+        working_bytes_per_row = 256, overhead_bytes = 1e6, policy = "p"), class = "workflow_execution_unsupported")
+})
+
+test_that("a wide 300-sample protein table streams in row pages with every column and projects to a subset of samples (audit B24)", {
+    object <- makeWorkflowCheckpointProtein(wideProteinRecipe())
+    expect_identical(ncol(object@protein_quant_table), 301L)
+    manager <- proteinFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    reference <- getDIAStateReference(manager)
+    checkpoint <- readDIAStateMetadata(manager)$data
+    component <- checkpoint$components$protein_quant_table
+    expect_identical(component$metadata$shape[[2L]], 301L)
+    scope <- newWorkflowTableReadScope(manager$.context$store, component, reader = "duckdb")
+    withr::defer(releaseWorkflowTableReadScope(scope))
+    seen <- NULL
+    value <- partitionByRows(scope, scope$metadata$columns, kernel = function(page, index, offset) {
+        expect_identical(names(page), names(object@protein_quant_table))
+        page
+    }, consume = function(page, index) seen <<- rbind(seen, page), worker_cap = 12 * 1024^3,
+        working_bytes_per_row = 48 * 301, overhead_bytes = 1e6, policy = "test-wide")
+    expect_identical(value$batches, 1L)
+    expect_identical(value$admission$columns, 301L)
+    rownames(seen) <- NULL
+    expect_equal(seen, object@protein_quant_table, ignore_attr = TRUE)
+    # Sample projection through the declaration: the protein key and 150 of the 300 sample columns.
+    samples <- object@design_matrix$Run[seq_len(150L)]
+    projected <- readDIAExecutionComponents(manager, reference, fields = "protein_quant_table",
+        columns = list(protein_quant_table = c("Protein.Group", samples)))
+    expect_identical(names(projected@protein_quant_table), c("Protein.Group", samples))
+    expect_identical(nrow(projected@protein_quant_table), 300L)
+    expect_equal(projected@protein_quant_table[[samples[[150L]]]], object@protein_quant_table[[samples[[150L]]]])
+    # The design follows the projection, so the object is valid with the selected samples only.
+    expect_identical(as.character(projected@design_matrix$Run), as.character(samples))
+})
+
+test_that("the protein replicate filter on row pages equals the whole-object kernel and the native method (KIT-010)", {
+    object <- makeWorkflowCheckpointProtein(wideProteinRecipe())
+    # Make the decision non-trivial: blank out one group's values for a tenth of the proteins.
+    design <- object@design_matrix
+    runs_in_group <- design$Run[design$group == unique(design$group)[[1L]]]
+    drop <- seq(1L, nrow(object@protein_quant_table), by = 10L)
+    for (run in runs_in_group) object@protein_quant_table[drop, run] <- NA_real_
+    native <- removeProteinsWithOnlyOneReplicate(object, NA, grouping_variable = "group")
+    expect_lt(nrow(native@protein_quant_table), nrow(object@protein_quant_table))
+    for (variant in c("whole", "rows")) {
+        manager <- proteinFixtureManager(object, withr::local_tempdir())
+        reference <- getDIAStateReference(manager)
+        value <- computeDIAReferenceProteinReplicateFilter(manager, reference, list(grouping_variable = "group", parallel_cores = 4L),
+            variant = variant)
+        expect_identical(value$state_name, "protein_replicate_filtered")
+        expect_identical(value$execution$variant, variant)
+        expect_identical(value$config$parallel_cores, 4L)
+        table <- materializeDIATable(manager$.context, value$reference)
+        expect_equal(table, native@protein_quant_table, ignore_attr = TRUE, info = variant)
+        design_out <- materializeDIATable(manager$.context, value$checkpoint$components$design_matrix)
+        expect_equal(design_out, native@design_matrix, ignore_attr = TRUE, info = variant)
+        expect_identical(value$checkpoint$slots$args$removeProteinsWithOnlyOneReplicate$grouping_variable, "group")
+        expect_identical(value$protein_count, nrow(native@protein_quant_table))
+        expect_identical(value$checkpoint$dimensions$rows, nrow(native@protein_quant_table))
+        if (variant == "rows") {
+            expect_identical(value$execution$admission$policy, "row-pages-v1")
+            expect_identical(value$execution$batches, 1L)
+        }
+        expect_identical(getDIAStateReference(manager), reference)
+        closeDIAStateAdapter(manager)
+    }
+})
+
+test_that("the protein replicate filter is a declaration on the row unit and completes through the protein completion", {
+    declaration <- diaProteinReplicateFilterOperation()
+    expect_identical(declaration$unit, "row")
+    expect_identical(declaration$name, "protein_replicate_filter")
+    expect_identical(unname(declaration$merge[["protein_quant_table"]]), "concatenate")
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- proteinFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    reference <- getDIAStateReference(manager)
+    value <- runProjected(manager, declaration, reference, list(grouping_variable = "group", parallel_cores = 1L))
+    expect_identical(value$execution$variant, "rows")
+    workflow <- list2env(list(state_manager = manager, qc_params = list(peptide_qc = list())))
+    result <- completeDIAProteinAction(workflow, value)
+    expect_identical(manager$current_state, "protein_replicate_filtered")
+    expect_true(isSavedWorkflowReference(result$stateReference))
+    expect_identical(result$proteinCount, value$protein_count)
+    native <- removeProteinsWithOnlyOneReplicate(object, NA, grouping_variable = "group")
+    expect_equal(manager$getState("protein_replicate_filtered")@protein_quant_table, native@protein_quant_table, ignore_attr = TRUE)
+    expect_true(!is.null(manager$.context$snapshot$output_products[[result$stateReference$entity_id]]))
 })

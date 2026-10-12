@@ -895,12 +895,14 @@ kitFindStore <- function(project) {
 #' checks the member's input by its `peptide_data` component id, while a journey population is bound by its
 #' state descriptor's id; both are recorded on the member.
 #' @noRd
-kitPopulationInputComponent <- function(store_dir, state, api, field = "peptide_data") {
+kitPopulationInputComponent <- function(store_dir, state, api, field = NULL) {
     head <- kitReadHead(store_dir, api)
     stopifnot(identical(head$current_state, state))
     store <- kitOpenStore(store_dir, api)
     on.exit(api("closeWorkflowEntityStore")(store), add = TRUE)
     record <- api("hydrateSavedWorkflowCheckpoint")(store, head$references[[state]])
+    # The class declaration names the assay component (KIT-010: a protein state's wide table).
+    if (is.null(field)) field <- api("workflowClassDeclaration")(record$data$class)$assay
     component <- record$data$components[[field]]$entity_id
     stopifnot(is.character(component), length(component) == 1L, nzchar(component))
     component
@@ -1227,7 +1229,8 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
     stopifnot(!identical(journal$status, "conflict"), !identical(completion$status, "guard_payload_invalid"),
         !isTRUE(completion$monitor_lost_after_result), identical(completion$status, expected_status),
         isTRUE(completion$cleanup$worker_stopped), isTRUE(completion$cleanup$monitor_stopped))
-    input_component <- checkpoint$components$peptide_data
+    # The head state's assay component, named by the class declaration (a peptide long table or a protein wide table).
+    input_component <- checkpoint$components[[api("workflowClassDeclaration")(checkpoint$class)$assay]]
     if (case$expect_failure) {
         fault <- bindings$operation_lifecycle$fault
         stopifnot(identical(journal$status, "worker_failed"), identical(worker$status, "failed"),

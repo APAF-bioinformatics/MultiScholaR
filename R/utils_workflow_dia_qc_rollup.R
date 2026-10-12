@@ -904,7 +904,7 @@ readDIAProteinLineage <- function(manager, reference, protein_column) {
 #' @param field Name of that temporary S4 field.
 #' @return Bounded display result and state reference; legacy callers are unchanged.
 #' @noRd
-finishDIAProteinAction <- function(workflow, result, field) {
+finishDIAProteinAction <- function(workflow, result, field, publish = TRUE) {
     manager <- workflow$state_manager
     if (!usesDIAReferenceStates(manager)) return(result)
     object <- result[[field]]
@@ -929,8 +929,34 @@ finishDIAProteinAction <- function(workflow, result, field) {
     snapshot <- manager$.context$snapshot
     snapshot$output_products[[result$stateReference$entity_id]] <- product
     publishDIAStateHead(manager$.context, snapshot)
-    publishDIAProteinTables(manager, result)
+    # A worker-completed action publishes its files in the controller's publication phase (KIT-010).
+    if (publish) publishDIAProteinTables(manager, result)
     result
+}
+
+#' Complete a worker-computed protein action under the controller's acceptance lease (KIT-010):
+#' commit the state, then record the bounded display product as the GUI's finishing step does; the
+#' files and figures are published afterwards by `publishWorkflowProteinResult`.
+#' @param workflow Completion workflow (`newWorkflowCompletionWorkflow`).
+#' @param value Compute-only result of a protein operation.
+#' @return The display handoff with `stateReference`.
+#' @noRd
+completeDIAProteinAction <- function(workflow, value) {
+    manager <- workflow$state_manager
+    commitDIAReferenceState(manager, value$state_name, value$checkpoint, value$config, value$description)
+    object <- readDIAExecutionComponents(manager)
+    protein_count <- value$protein_count %||% length(unique(object@protein_quant_table[[object@protein_id_column]]))
+    text <- paste(
+        "Protein Replicate Filter Applied Successfully\n",
+        "============================================\n",
+        sprintf("Proteins remaining: %d\n", protein_count),
+        sprintf("Grouping variable: %s\n", value$config$grouping_variable),
+        sprintf("Parallel cores used: %d\n", 1L),
+        sprintf("Output file: %s\n", basename(value$config$output_file)),
+        "State saved as: 'protein_replicate_filtered'\n",
+        "\nProtein filtering pipeline complete!")
+    finishDIAProteinAction(workflow, list(filteredS4 = object, outputFile = value$config$output_file,
+        proteinCount = protein_count, resultText = text), "filteredS4", publish = FALSE)
 }
 
 #' Complete protein file publication using accepted results, without rerunning science.
@@ -1337,6 +1363,139 @@ diaPeptideImputationOperation <- function() {
         global_statistics = c(source_row_order =
             "the output keeps the input's source ordinals and the design order for generated rows, assigned by the writer once over the whole output"),
         merge = c(design_matrix = "design", peptide_data = "concatenate", support_table = "concatenate", counts = "sum"))
+}
+
+#' Declared working-set bytes per wide row and sample column of the protein replicate filter (KIT-010):
+#' the kernel pivots each page to long form (one row per protein and sample), joins the design and
+#' counts, then pivots back; about two long copies per cell. An admission estimate, not a measurement.
+#' @noRd
+diaProteinRowWorkingBytesPerColumn <- 48
+
+#' Compute the protein replicate filter on a saved protein state without committing it (KIT-010).
+#'
+#' `rows` (production) runs the unchanged `removeProteinsWithOnlyOneReplicate` kernel once per page of
+#' rows of the wide protein table through `partitionByRows`, streams the retained rows to the bounded
+#' table writer and recomputes the design once on the merged output; `whole` hydrates the object and
+#' runs the kernel once, as the GUI's in-process step does (the control arm of the measurement).
+#' @param manager,reference Owner and the saved input state.
+#' @param parameters `grouping_variable` (required) and `parallel_cores` (recorded in the state
+#'   configuration as the GUI records it; the kernel runs locally).
+#' @param worker_cap Admitted worker memory in bytes.
+#' @param variant `rows` or `whole`.
+#' @return Compute-only contract: `checkpoint`, `reference`, `state_name`, `description`, `config`,
+#'   `section`, `protein_count` and `execution` (variant, pages, admission).
+#' @noRd
+computeDIAReferenceProteinReplicateFilter <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
+    variant = "rows") {
+    if (!is.character(variant) || length(variant) != 1L || !variant %in% c("whole", "rows"))
+        cli::cli_abort("unsupported protein replicate filter variant", class = "workflow_execution_unsupported")
+    grouping <- parameters$grouping_variable
+    if (!is.character(grouping) || length(grouping) != 1L || is.na(grouping) || !nzchar(grouping))
+        cli::cli_abort("grouping variable required", class = "workflow_execution_invalid")
+    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) || worker_cap <= 0)
+        cli::cli_abort("invalid admitted worker capacity", class = "workflow_execution_unsupported")
+    context <- manager$.context
+    before <- readDIAStateMetadata(manager, reference)
+    checkpoint <- before$data
+    if (!identical(checkpoint$class, "ProteinQuantitativeData"))
+        cli::cli_abort("protein replicate filter needs a protein state", class = "workflow_execution_unsupported")
+    section <- "removeProteinsWithOnlyOneReplicate"
+    state_name <- "protein_replicate_filtered"
+    description <- "Applied protein replicate filter (removed single-replicate proteins)"
+    # The state configuration records the output path as the GUI does (an absolute path under the project's
+    # protein QC directory); a worker without experiment paths records one under its working directory.
+    output_file <- file.path(context$experiment_paths$protein_qc_dir %||% file.path(normalizePath(getwd()), "protein_qc"),
+        "remove_proteins_with_only_one_rep.tsv")
+    # The GUI calls the kernel through its injectable alias, and the kernel records its arguments under the
+    # calling name as well (KIT-004 lesson): the same alias keeps the recorded arguments identical.
+    removeProteinsWithOnlyOneReplicateFn <- removeProteinsWithOnlyOneReplicate
+    config <- list(grouping_variable = grouping, parallel_cores = as.integer(parameters$parallel_cores %||% 1L),
+        output_file = output_file)
+    result <- function(checkpoint, protein_count, execution) list(checkpoint = checkpoint,
+        reference = checkpoint$components$protein_quant_table, state_name = state_name, description = description,
+        config = config, section = section, protein_count = protein_count, execution = execution)
+    if (variant == "whole") {
+        object <- readDIAExecutionComponents(manager, reference)
+        filtered <- removeProteinsWithOnlyOneReplicateFn(object, NA, grouping_variable = grouping)
+        filtered <- inheritDIAExecutionSource(filtered, manager, reference)
+        protein_count <- length(unique(filtered@protein_quant_table[[filtered@protein_id_column]]))
+        out <- checkpointDIAExecutionResult(manager, filtered)
+        object <- filtered <- NULL
+        return(result(out, protein_count, list(variant = "whole", rows = out$dimensions$rows)))
+    }
+    template <- readDIAExecutionComponents(manager, reference, fields = "design_matrix")
+    source <- checkpoint$components$protein_quant_table
+    scope <- newWorkflowTableReadScope(context$store, source,
+        reader = if (source$metadata$shape[[2L]] > 64L) "duckdb" else "arrow")
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    columns <- scope$metadata$columns
+    # The output keeps the input's columns (the kernel returns every sample for a retained protein), so the
+    # writer's contract is the input prototype's; a page that retains nothing adds no rows.
+    metadata <- workflowSavedTableMetadata(template@protein_quant_table, ".rownames", 3L)
+    metadata$rows <- NULL
+    identity <- newSavedWorkflowScientificIdentity(source$entity_id, checkpoint$components$design_matrix$entity_id,
+        digest::digest(list(section, grouping), algo = "sha256"), "row-pages-protein-replicate-v1", context$software)
+    args <- NULL
+    execution <- NULL
+    retained <- 0L
+    output <- saveWorkflowTable(context$store, NULL, basename(tempfile("dia-protein-rows-")), identity, ".rownames",
+        metadata = metadata, write_fn = function(path, restoration) {
+            writer <- openWorkflowTableWriter(path, restoration, context$store$progress)
+            on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+            partition <- partitionByRows(scope, columns,
+                kernel = function(page, index, offset) {
+                    object <- template
+                    object@protein_quant_table <- page
+                    filtered <- removeProteinsWithOnlyOneReplicateFn(object, NA, grouping_variable = grouping)
+                    if (is.null(args)) args <<- filtered@args
+                    filtered@protein_quant_table
+                },
+                consume = function(table, index) {
+                    if (!is.data.frame(table) || !nrow(table)) return(invisible(NULL))
+                    table <- as.data.frame(table)[, restoration$columns, drop = FALSE]
+                    rownames(table) <- NULL
+                    retained <<- retained + nrow(table)
+                    appendWorkflowTableWriter(writer, completeWorkflowTableBatch(table, restoration))
+                    invisible(NULL)
+                },
+                worker_cap = worker_cap, working_bytes_per_row = diaProteinRowWorkingBytesPerColumn * length(columns),
+                overhead_bytes = 2 * 67108864 + 2 * 8388608, policy = "row-pages-v1")
+            execution <<- c(list(variant = "rows"), partition[c("batches", "batch_sizes", "rows", "admission")])
+            if (is.null(writer$output)) appendWorkflowTableWriter(writer,
+                completeWorkflowTableBatch(template@protein_quant_table, restoration))
+            finishWorkflowTableWriter(writer)
+        })
+    releaseWorkflowTableReadScope(scope)
+    if (is.null(args)) {
+        # No page ran (an empty input): the kernel's recorded arguments on the prototype.
+        args <- removeProteinsWithOnlyOneReplicateFn(template, NA, grouping_variable = grouping)@args
+    }
+    rememberDIAWorkers(context, args)
+    checkpoint$slots$args <- prepareDIAStateRecord(list(data = NULL, config = args))$config
+    cleaned <- cleanDesignMatrix(template)
+    checkpoint$components$design_matrix <- saveDIATableComponent(context, cleaned@design_matrix)
+    checkpoint$components$protein_quant_table <- output
+    checkpoint$dimensions <- list(rows = retained, columns = columns, samples = nrow(cleaned@design_matrix))
+    checkpoint$dependencies <- collectDIANativeReferences(list(reference, checkpoint$dependencies,
+        checkpoint$components, checkpoint$support, checkpoint$products))
+    protein_count <- retained
+    result(checkpoint, protein_count, execution)
+}
+
+#' The protein replicate filter as a declaration on the row unit (KIT-010): pages of rows of the wide
+#' protein table, the unchanged kernel once per page, retained rows concatenated, the design recomputed
+#' once, protein counts summed. The kernel runs the compute-only entry point.
+#' @return Declaration from `newWorkflowOperation`.
+#' @noRd
+diaProteinReplicateFilterOperation <- function() {
+    newWorkflowOperation(name = "protein_replicate_filter", input_class = "ProteinQuantitativeData",
+        fields = "design_matrix", unit = "row",
+        kernel = function(object, parameters, store) computeDIAReferenceProteinReplicateFilter(store$manager, store$source,
+            parameters[c("grouping_variable", "parallel_cores")], worker_cap = parameters$worker_cap %||% 12 * 1024^3,
+            variant = parameters$variant %||% "rows"),
+        output_class = "ProteinQuantitativeData", parameters = c("grouping_variable", "parallel_cores"),
+        product_type = "dia.protein_replicate_filter_result",
+        merge = c(design_matrix = "design", protein_quant_table = "concatenate", protein_counts = "sum"))
 }
 
 #' Execute the unchanged native method with the shared bounded persistence layer.

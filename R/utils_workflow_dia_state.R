@@ -368,8 +368,27 @@ rebuildDIACheckpointObject <- function(context, spec, fields = TRUE, columns = l
         if (wanted(field, element)) materializeDIATable(context, component, columns[[field]]) else prototype(component)
     }
     slots <- spec$slots
+    # Sample projection of a wide assay (KIT-010): the design is hydrated and restricted to the selected
+    # sample columns whatever `fields` says, so the rebuilt object's sample sets agree.
+    assay_selection <- if (!is.null(declaration$assay)) columns[[declaration$assay]] else NULL
+    projected_wide <- identical(declaration$layout, "wide") && !is.null(assay_selection)
     for (field in names(spec$components)) {
         component <- spec$components[[field]]
+        if (projected_wide && identical(field, declaration$design) && isWorkflowTableReference(component)) {
+            # Only a selection that names sample columns restricts the design; a projection to identifier
+            # columns alone keeps the design as `fields` requests it.
+            design <- materializeDIATable(context, component)
+            sample_slot <- slots[["sample_id"]]
+            selected <- if (is.character(sample_slot) && length(sample_slot) == 1L && sample_slot %in% names(design))
+                as.character(design[[sample_slot]]) %in% assay_selection else logical()
+            if (any(selected)) {
+                design <- design[selected, , drop = FALSE]
+                rownames(design) <- NULL
+                slots[[field]] <- design
+                next
+            }
+            design <- NULL
+        }
         if (field %in% declaration$lists) {
             elements <- lapply(names(component), function(name) {
                 item <- component[[name]]

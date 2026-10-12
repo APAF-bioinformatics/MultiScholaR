@@ -254,6 +254,18 @@ if (!is.null(b$builds$kit_009)) {
     b$journey$pair$control <- b$control
 }
 
+# KIT-010: the protein replicate filter as an operation on the row partitioner, control and candidate on the
+# KIT-005 protein population (input: the state after duplicate removal, `journey_duplicates`; oracle: the state
+# after the replicate filter, `journey_protein_replicate`), with the journey's recorded parameters (grouping
+# `group`, 4 cores recorded). Both arms run the one kit_010 build: `whole` is the GUI's in-process path, `rows`
+# the partitioner (the KIT-009 precedent: the control build carries no such operation).
+if (!is.null(b$builds$kit_010)) {
+    b$tickets[["010"]] <- list(control = "kit_010", candidate = "kit_010",
+        pairs = list(list(operation = "protein_replicate_filter", population = "journey_duplicates", oracle = "journey_protein_replicate",
+            parameters = list(grouping_variable = "group", parallel_cores = 4L),
+            variants = list(control = "whole", candidate = "rows"))))
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and

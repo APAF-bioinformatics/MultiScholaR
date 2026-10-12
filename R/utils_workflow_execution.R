@@ -1725,8 +1725,10 @@ publishWorkflowFixtureResult <- function(owner, paths) {
     result <- readRDS(result_path)
     if (!identical(getDIAStateReference(owner$manager), result$state_reference))
         cli::cli_abort("publication belongs to a superseded state", class = "workflow_execution_stale")
-    if (workflowActionSpec(result$operation %||% workflowFixtureOperation)$publication == "peptide") {
-        publishWorkflowPeptideResult(owner, paths, result)
+    publication <- workflowActionSpec(result$operation %||% workflowFixtureOperation)$publication
+    if (publication %in% c("peptide", "protein")) {
+        if (publication == "protein") publishWorkflowProteinResult(owner, paths, result) else
+            publishWorkflowPeptideResult(owner, paths, result)
         journal$status <- "complete"
         journal$delivery_generation <- owner$control$generation
         writeWorkflowExportJournal(paths, journal)
@@ -2067,6 +2069,22 @@ validateWorkflowPeptideImputationParameters <- function(parameters, policy, reso
     invisible(NULL)
 }
 
+#' The protein replicate filter's grouping variable and the recorded core count (KIT-010).
+#' @noRd
+validateWorkflowProteinReplicateParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("grouping_variable", "parallel_cores")
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !"grouping_variable" %in% names(parameters))
+        cli::cli_abort("replicate filter parameters required or unknown parameter supplied")
+    g <- parameters$grouping_variable
+    if ((resolved || !is.null(g)) && (!is.character(g) || length(g) != 1L || is.na(g) || !nzchar(g)))
+        cli::cli_abort("grouping variable must be a single column name")
+    cores <- parameters$parallel_cores
+    if (!is.null(cores) && (!is.numeric(cores) || length(cores) != 1L || !is.finite(cores) || cores < 1 || cores != floor(cores)))
+        cli::cli_abort("parallel cores must be a positive integer")
+    invisible(NULL)
+}
+
 #' The diagnostic fixture's modes, under a diagnostic policy only.
 #' @noRd
 validateWorkflowFixtureParameters <- function(parameters, policy, resolved = TRUE) {
@@ -2101,7 +2119,7 @@ computeWorkflowPeptideAction <- function(request) {
         digest::digest(request$config$qualification, algo = "sha256")))
         cli::cli_abort("qualification variant token differs", class = "workflow_execution_invalid")
     entry <- workflowActionSpec(request$operation)
-    if (!identical(entry$compute, "peptide")) cli::cli_abort("scientific adapter unavailable")
+    if (!entry$compute %in% c("peptide", "protein")) cli::cli_abort("scientific adapter unavailable")
     value <- get(entry$handler, mode = "function")(manager, request, variant)
     value$operation <- request$operation
     value
@@ -2118,6 +2136,12 @@ computeWorkflowPrecursorRollupAction <- function(manager, request, variant) {
 computeWorkflowSampleFilterAction <- function(manager, request, variant) {
     computeDIAReferenceSampleFilter(manager, request$input_references$state, request$parameters,
         worker_cap = request$worker_cap, output_mode = variant)
+}
+
+#' @noRd
+computeWorkflowProteinReplicateAction <- function(manager, request, variant) {
+    computeDIAReferenceProteinReplicateFilter(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
 }
 
 #' @noRd
@@ -2215,6 +2239,67 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
     invisible(NULL)
 }
 
+#' Publish an accepted protein action's files and figures through the existing protein output path
+#' (KIT-010): the required tables under the publication directories, then the filtering figures.
+#' @param owner Leased controller.
+#' @param paths Request-owned publication paths.
+#' @param result Accepted immutable result references.
+#' @return NULL invisibly after required output acknowledgement.
+#' @noRd
+publishWorkflowProteinResult <- function(owner, paths, result) {
+    manager <- owner$manager
+    entry <- workflowActionSpec(result$operation)
+    reference <- result$state_reference
+    product <- manager$.context$snapshot$output_products[[reference$entity_id]]
+    if (is.null(product)) cli::cli_abort("protein output product is missing", class = "workflow_execution_invalid")
+    envelope <- hydrateSavedWorkflowEntity(manager$.context$store, product)
+    checkSavedWorkflowConsumerPayload("scientific_product", envelope)
+    display <- envelope$value
+    display$stateReference <- reference
+    context_path <- file.path(paths$request_dir, "publication-context.rds")
+    if (!file.exists(context_path)) {
+        root <- file.path(paths$request_dir, "required-output")
+        dir.create(root, showWarnings = FALSE)
+        directories <- setupDirectories(root, entry$omic_type)
+        directories$proteomics_dia_baseline_smoke <- directories$proteomics
+        publication <- list(directories = directories, experiment_paths = directories$proteomics,
+            omic_type = entry$omic_type, experiment_label = "dia_baseline_smoke")
+        writeWorkflowExecutionMessage(context_path, publication)
+    } else {
+        publication <- readRDS(context_path)
+        if (identical(sort(names(publication)), sort(c("experiment_label", "experiment_paths", "omic_type")))) {
+            publication$directories <- stats::setNames(list(publication$experiment_paths),
+                paste(publication$omic_type, publication$experiment_label, sep = "_"))
+        } else if (is.list(publication) && is.list(publication$proteomics)) {
+            publication <- list(directories = publication, experiment_paths = publication$proteomics,
+                omic_type = entry$omic_type, experiment_label = "dia_baseline_smoke")
+        }
+    }
+    if (!is.list(publication) || !is.list(publication$directories) || !is.list(publication$experiment_paths) ||
+        !identical(publication$omic_type, entry$omic_type) || !is.character(publication$experiment_label) ||
+        length(publication$experiment_label) != 1L || is.na(publication$experiment_label) ||
+        !nzchar(publication$experiment_label) || hasMutableWorkflowEntityOwner(publication) ||
+        as.numeric(object.size(publication)) > 65536) {
+        cli::cli_abort("publication context is invalid", class = "workflow_execution_invalid")
+    }
+    manager$.context$experiment_paths <- publication$experiment_paths
+    workflowExecutionBoundary("publication")
+    publishDIAProteinTables(manager, display)
+    rlang::local_bindings(config_list = readDIAStateMetadata(manager, reference)$config,
+        project_dirs = publication$directories, .env = .GlobalEnv)
+    withr::local_options(multischolar.test_mode = FALSE)
+    withr::local_envvar(MULTISCHOLAR_TEST_MODE = "false")
+    grDevices::pdf(NULL)
+    device <- grDevices::dev.cur()
+    on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device))
+    arguments <- list(data = display$filteringSummary, step_name = entry$step_label,
+        omic_type = publication$omic_type, experiment_label = publication$experiment_label,
+        return_grid = TRUE, overwrite = TRUE, project_dirs = publication$directories,
+        progress_owner = new.env(parent = emptyenv()))
+    publishDIAQvalueOutput(manager, display, arguments, updateProteinFiltering)
+    invisible(NULL)
+}
+
 #' The diagnostic fixture's name: the one operation that is not a scientific declaration.
 #' @noRd
 workflowFixtureOperation <- "wfx_fixture"
@@ -2292,6 +2377,7 @@ completeWorkflowAction <- function(owner, operation, value, context = NULL) {
         return(commitDIAReferenceState(owner$manager, value$state_name, value$checkpoint,
             value$config, "guarded fixture computation"))
     workflow <- newWorkflowCompletionWorkflow(owner$manager, context)
+    if (entry$completion == "protein") return(completeDIAProteinAction(workflow, value))
     finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name,
         value$description, value$config, value$section, value$counts,
         observed_inclusion_absence = if (isTRUE(entry$inclusion_absence))

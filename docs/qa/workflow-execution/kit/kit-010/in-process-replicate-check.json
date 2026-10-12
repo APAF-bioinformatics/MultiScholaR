@@ -1,0 +1,62 @@
+{
+  "schema": "kit.in_process_replicate_check.v1",
+  "ticket": "KIT-010",
+  "date": "2026-10-12",
+  "head_commit": "a0076839ece6d860175e3678ccf953ed8f7929bf",
+  "population": {
+    "name": "journey_duplicates",
+    "state": "duplicates_removed",
+    "rows": 2500,
+    "entity_id": "b244e6ddf168b8c1c19ce3cc0c8cac50eeb234de57046bc208d09d2e690acec4"
+  },
+  "oracle": {
+    "name": "journey_protein_replicate",
+    "rows": 2500
+  },
+  "parameters": {
+    "grouping_variable": "group",
+    "parallel_cores": 4
+  },
+  "whole": {
+    "variant": "whole",
+    "compute_seconds": 17.5,
+    "seconds": 19.3,
+    "rows": 2500,
+    "proteins": 2500,
+    "execution": {
+      "variant": "whole",
+      "rows": 2500
+    },
+    "mismatches": [],
+    "products_reported": ["qvalue_progress", "qc_progress"],
+    "exact": true
+  },
+  "rows": {
+    "variant": "rows",
+    "compute_seconds": 2.6,
+    "seconds": 4.4,
+    "rows": 2500,
+    "proteins": 2500,
+    "execution": {
+      "variant": "rows",
+      "batches": 1,
+      "batch_sizes": 2500,
+      "rows": 2500,
+      "admission": {
+        "estimated_bytes": 192744944,
+        "worker_cap": 12884901888,
+        "page_rows": 2500,
+        "row_bytes": 2396,
+        "working_bytes_per_row": 14304,
+        "overhead_bytes": 150994944,
+        "columns": 298,
+        "policy": "row-pages-v1",
+        "limitation": "admission estimate; kernel cgroup guard remains authoritative"
+      }
+    },
+    "mismatches": [],
+    "products_reported": ["qvalue_progress", "qc_progress"],
+    "exact": true
+  },
+  "both_exact": true
+}

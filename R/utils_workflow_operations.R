@@ -170,12 +170,12 @@ validateWorkflowOperationEntry <- function(entry) {
     scalar <- function(value) is.character(value) && length(value) == 1L && !is.na(value) && nzchar(value)
     flag <- function(value) is.logical(value) && length(value) == 1L && !is.na(value)
     valid <- is.list(entry) && scalar(entry$name) && scalar(entry$input) && entry$input %in% c("checkpoint", "peptide") &&
-        scalar(entry$input_class) && scalar(entry$compute) && entry$compute %in% c("fixture", "peptide") &&
+        scalar(entry$input_class) && scalar(entry$compute) && entry$compute %in% c("fixture", "peptide", "protein") &&
         scalar(entry$handler) && scalar(entry$validate) && (is.null(entry$resolve) || scalar(entry$resolve)) &&
         is.numeric(entry$parameter_limit) && length(entry$parameter_limit) == 1L && entry$parameter_limit > 0 &&
         is.character(entry$parameters) && !anyDuplicated(entry$parameters) &&
-        scalar(entry$completion) && entry$completion %in% c("fixture", "peptide") &&
-        scalar(entry$publication) && entry$publication %in% c("fixture", "peptide") &&
+        scalar(entry$completion) && entry$completion %in% c("fixture", "peptide", "protein") &&
+        scalar(entry$publication) && entry$publication %in% c("fixture", "peptide", "protein") &&
         (is.null(entry$step_label) || scalar(entry$step_label)) && scalar(entry$omic_type) &&
         is.character(entry$variants) &&
         (is.null(entry$default_variant) || (scalar(entry$default_variant) && entry$default_variant %in% entry$variants)) &&
@@ -223,7 +223,7 @@ workflowOperationEntry <- function(operation) {
 }
 
 #' Register the built-in operations: the diagnostic fixture, the two DIA declarations of KIT-006 and the
-#' imputation declaration of KIT-009.
+#' imputation declaration of KIT-009 and the protein replicate filter of KIT-010.
 #' `default_variant` (KIT-008) is the variant an unqualified launch runs, in the worker and in process.
 #' Called from `.onLoad` and from the first lookup in a process that bypassed it.
 #' @noRd
@@ -258,5 +258,13 @@ registerBuiltinWorkflowOperations <- function() {
         completion = "peptide", publication = "peptide", step_label = "8_imputed", omic_type = "proteomics",
         variants = c("grouped", "partitioned"), default_variant = "partitioned", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaPeptideImputationOperation()))
+    # KIT-010: the protein replicate filter on the row partitioner; `whole` is the GUI's in-process path (the
+    # object hydrated, the kernel once; the control arm of the measurement), `rows` the production variant.
+    registerWorkflowOperation(list(name = "protein_replicate_filter", input = "checkpoint", input_class = "ProteinQuantitativeData",
+        compute = "protein", handler = "computeWorkflowProteinReplicateAction", validate = "validateWorkflowProteinReplicateParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = c("grouping_variable", "parallel_cores"),
+        completion = "protein", publication = "protein", step_label = "13_protein_replicate_filtered", omic_type = "proteomics",
+        variants = c("whole", "rows"), default_variant = "rows", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaProteinReplicateFilterOperation()))
     invisible(workflowOperationNames())
 }

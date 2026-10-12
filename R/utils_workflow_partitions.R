@@ -3,7 +3,8 @@
 # chooses the fewest batches that fit the admitted worker memory, the batches are visited in the
 # declared sample order, and the step's own kernels stage and consume each batch. A step whose unit is
 # the feature group runs as batches of whole groups delivered by the group cursor, the kernel once per
-# batch. Nothing here names a scientific table, column or operation.
+# batch (KIT-009). A step whose unit is the row runs as pages of rows over a long or a wide table, the
+# kernel once per page (KIT-010). Nothing here names a scientific table, column or operation.
 
 #' Upper bound of a per-batch quantity when `n` ordered groups are split into `batches` batches:
 #' the sum of the largest `ceiling(n / batches)` values, so any one batch is bounded whatever the
@@ -126,4 +127,56 @@ partitionByFeatureGroup <- function(scope, columns, group, kernel, consume, work
     cursor$close()
     list(batches = index, batch_sizes = batch_sizes, groups = length(cursor$group_sizes),
         admission = admission, dependencies = cursor$dependencies)
+}
+
+#' Run a step over pages of rows of a long or wide table, the kernel once per page (KIT-010).
+#'
+#' Pages come from the row streamer (`streamWorkflowTableRows`: 10,000 rows per page, every requested
+#' column, a wide table read in 64-column blocks), in source order. The admission estimate is one page's
+#' working set from the declared working bytes per row plus the step's fixed overhead, refused above the
+#' cap and recorded. The kernel runs once per page and `consume` receives each kernel value in page
+#' order; no page is retained here.
+#' @param scope Existing table read scope on the input.
+#' @param columns Columns the kernel reads (all of a wide assay's sample columns, when declared wide).
+#' @param kernel `function(page, index, offset)`: `page` is one batch of rows, `offset` its first
+#'   row's zero-based position in the source.
+#' @param consume `function(value, index)` run with each kernel value in page order.
+#' @param worker_cap Admitted worker memory in bytes.
+#' @param working_bytes_per_row Declared working-set bytes per row (the kernel's copies and
+#'   intermediates), beside the row itself.
+#' @param overhead_bytes Fixed bytes the step holds whatever the page (transfer buffers, writers).
+#' @param policy Name recorded with the admission.
+#' @return `batches`, `batch_sizes` (rows per page), `rows` and `admission`.
+#' @noRd
+partitionByRows <- function(scope, columns, kernel, consume, worker_cap, working_bytes_per_row,
+    overhead_bytes, policy) {
+    stopifnot(is.function(kernel), is.function(consume), is.numeric(working_bytes_per_row),
+        length(working_bytes_per_row) == 1L, is.finite(working_bytes_per_row), working_bytes_per_row >= 0,
+        is.numeric(overhead_bytes), length(overhead_bytes) == 1L, is.finite(overhead_bytes), overhead_bytes >= 0)
+    checkWorkflowTableReadScope(scope)
+    if (!is.character(columns) || !length(columns) || anyDuplicated(columns) || !all(columns %in% scope$metadata$columns))
+        cli::cli_abort("invalid row partition projection", class = "saved_entity_limit")
+    row_bytes <- workflowProjectedRowBytes(scope$metadata, columns)
+    page_rows <- min(10000L, max(1L, scope$metadata$rows))
+    estimate <- overhead_bytes + page_rows * (row_bytes + working_bytes_per_row)
+    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) || worker_cap <= 0 ||
+        estimate > worker_cap) cli::cli_abort(
+        "row-page working-memory estimate exceeds admitted worker capacity",
+        class = "workflow_execution_unsupported")
+    admission <- list(estimated_bytes = estimate, worker_cap = worker_cap, page_rows = page_rows,
+        row_bytes = row_bytes, working_bytes_per_row = working_bytes_per_row, overhead_bytes = overhead_bytes,
+        columns = length(columns), policy = policy,
+        limitation = "admission estimate; kernel cgroup guard remains authoritative")
+    batch_sizes <- integer()
+    index <- 0L
+    streamWorkflowTableRows(scope, columns, function(page, offset, row_names) {
+        if (!nrow(page) && index > 0L) return(invisible(NULL))
+        index <<- index + 1L
+        batch_sizes[[index]] <<- nrow(page)
+        value <- kernel(page, index, offset)
+        consume(value, index)
+        page <- value <- NULL
+        invisible(NULL)
+    })
+    list(batches = index, batch_sizes = batch_sizes, rows = sum(batch_sizes), admission = admission)
 }

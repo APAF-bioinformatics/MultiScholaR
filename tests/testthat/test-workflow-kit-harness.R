@@ -686,6 +686,15 @@ test_that("a journey population's input component is read from its snapshot head
     expect_true(is.character(component) && nzchar(component))
     expect_false(identical(component, state_id))
     expect_error(h$kitPopulationInputComponent(store_dir, "imputed", api))
+    # A protein state's assay is its wide table, named by the class declaration (KIT-010).
+    protein <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    root2 <- withr::local_tempdir()
+    manager2 <- newDIAStateAdapter(newWorkflowEntityStore(root2, "kit010-input", "DIA"), WorkflowState$new(audit_enabled = FALSE))
+    manager2$.context$reference_states <- TRUE
+    manager2$saveState("duplicates_removed", protein, list(), "fixture")
+    expected <- readDIAStateMetadata(manager2)$data$components$protein_quant_table$entity_id
+    closeDIAStateAdapter(manager2)
+    expect_identical(h$kitPopulationInputComponent(file.path(root2, ".workflow-entities"), "duplicates_removed", api), expected)
 })
 
 test_that("a ticket's gui-mode member runs the screen journey with no record on its build and is decided on completion, dispatch and reproduction (KIT-008)", {

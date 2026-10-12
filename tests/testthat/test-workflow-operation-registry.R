@@ -2,7 +2,20 @@
 
 test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
-    expect_identical(names, c("minimum_peptides_per_sample", "peptide_imputation", "precursor_rollup", "wfx_fixture"))
+    expect_identical(names, c("minimum_peptides_per_sample", "peptide_imputation", "precursor_rollup", "protein_replicate_filter", "wfx_fixture"))
+    # KIT-010: the protein replicate filter as an operation on the row unit with the protein completion and publication.
+    replicate <- workflowActionSpec("protein_replicate_filter")
+    expect_identical(replicate$input, "checkpoint")
+    expect_identical(replicate$input_class, "ProteinQuantitativeData")
+    expect_identical(replicate$compute, "protein")
+    expect_identical(replicate$completion, "protein")
+    expect_identical(replicate$publication, "protein")
+    expect_identical(replicate$variants, c("whole", "rows"))
+    expect_identical(replicate$default_variant, "rows")
+    expect_identical(replicate$declaration$unit, "row")
+    expect_error(validateWorkflowProteinReplicateParameters(list(parallel_cores = 2L), list()), "required")
+    expect_error(validateWorkflowProteinReplicateParameters(list(grouping_variable = "group", parallel_cores = 0), list()), "cores")
+    expect_null(validateWorkflowProteinReplicateParameters(list(grouping_variable = "group"), list()))
     # KIT-009: the imputation step as an operation on the feature-group unit.
     imputation <- workflowActionSpec("peptide_imputation")
     expect_identical(imputation$step_label, "8_imputed")
@@ -51,7 +64,7 @@ test_that("unregistered or malformed operations refuse with the execution layer'
     entry <- workflowActionSpec("precursor_rollup")
     expect_error(registerWorkflowOperation(entry), class = "workflow_operation_invalid")
     broken <- entry
-    broken$completion <- "protein"
+    broken$completion <- "lipid"
     expect_error(registerWorkflowOperation(broken, replace = TRUE), class = "workflow_operation_invalid")
     mismatched <- entry
     mismatched$name <- "renamed"
@@ -64,7 +77,7 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         expect_error(validateWorkflowActionInput("precursor_rollup", NULL, list(state = "owned")), class = "workflow_execution_unsupported"),
         isSavedWorkflowReference = function(x) identical(x, "owned"), isDIAComponentCheckpoint = function(x) TRUE,
         readDIAStateMetadata = function(...) list(data = record))
-    expect_identical(sort(workflowOperationNames()), sort(c("minimum_peptides_per_sample", "peptide_imputation", "precursor_rollup", "wfx_fixture")))
+    expect_identical(sort(workflowOperationNames()), sort(c("minimum_peptides_per_sample", "peptide_imputation", "precursor_rollup", "protein_replicate_filter", "wfx_fixture")))
 })
 
 test_that("a fresh R process resolves the same registry from the operation name alone", {
