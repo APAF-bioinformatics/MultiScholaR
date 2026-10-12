@@ -347,6 +347,8 @@ test_that("runProteinAccessionCleanupStep applies cleanup, tracks workflow state
   )
   timestamp <- as.POSIXct("2026-04-16 16:30:00", tz = "UTC")
   source_dir <- tempdir()
+  # The step reads the FASTA table from the workflow bus (KIT-013), not from the global environment.
+  workflow_data$aa_seq_tbl_final <- data.frame(database_id = c("P1", "P2"), sequence = c("AAA", "BBB"))
 
   result <- runProteinAccessionCleanupStep(
     workflowData = workflow_data,

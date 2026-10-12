@@ -2138,8 +2138,25 @@ computeWorkflowSampleFilterAction <- function(manager, request, variant) {
         worker_cap = request$worker_cap, output_mode = variant)
 }
 
+#' The experiment paths of a request's publication context, when the controller wrote one beside the
+#' request (a GUI action), else NULL (KIT-010: the worker records the project's output path in the state
+#' configuration as the GUI does).
+#' @noRd
+workflowRequestExperimentPaths <- function(request) {
+    path <- if (is.character(request$directory) && length(request$directory) == 1L)
+        file.path(request$directory, "publication-context.rds") else NULL
+    if (is.null(path) || !file.exists(path)) return(NULL)
+    publication <- tryCatch(readRDS(path), error = function(error) NULL)
+    if (!is.list(publication)) return(NULL)
+    if (is.list(publication$experiment_paths)) return(publication$experiment_paths)
+    if (is.list(publication$proteomics)) return(publication$proteomics)
+    NULL
+}
+
 #' @noRd
 computeWorkflowProteinReplicateAction <- function(manager, request, variant) {
+    paths <- workflowRequestExperimentPaths(request)
+    if (!is.null(paths)) manager$.context$experiment_paths <- paths
     computeDIAReferenceProteinReplicateFilter(manager, request$input_references$state, request$parameters,
         worker_cap = request$worker_cap, variant = variant)
 }

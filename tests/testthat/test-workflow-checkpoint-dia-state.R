@@ -417,7 +417,17 @@ test_that("all peptide reference adapters preserve native science and configurat
             })
         expect_true(isSavedWorkflowReference(result$stateReference), info = name)
         expect_false(any(vapply(result, isS4, logical(1))), info = name)
-        expect_equal(manager$getState(), native$getState(), tolerance = 1e-12, info = name)
+        actual_state <- manager$getState()
+        native_state <- native$getState()
+        if (name %in% c("sample", "replicate", "imputation")) {
+            # Since KIT-008 the adapter's sample filter stores its support table and removal ledger as checkpoint
+            # support entries; `getState()` restores them into the arguments after the finishing step's sample
+            # bookkeeping, so the section's elements come back in another order. Same names, same values.
+            section <- "filterMinNumPeptidesPerSample"
+            expect_setequal(names(actual_state@args[[section]]), names(native_state@args[[section]]))
+            actual_state@args[[section]] <- actual_state@args[[section]][names(native_state@args[[section]])]
+        }
+        expect_equal(actual_state, native_state, tolerance = 1e-12, info = name)
         expect_equal(readDIAStateMetadata(manager)$config, native$states[[native$current_state]]$config, info = name)
         expect_identical(result$resultText, expected$resultText, info = name)
         expect_identical(manager$.context$store$open_resources, 0L, info = name)

@@ -100,3 +100,14 @@ test_that("a fresh R process resolves the same registry from the operation name 
         "default_variant", "diagnostic_only")])
     expect_identical(remote, local)
 })
+
+test_that("a worker request's publication context supplies the experiment paths the protein compute records (KIT-010 audit PE-03)", {
+    request_dir <- withr::local_tempdir()
+    expect_null(workflowRequestExperimentPaths(list(directory = request_dir)))
+    expect_null(workflowRequestExperimentPaths(list()))
+    saveRDS(list(experiment_label = "x", omic_type = "proteomics", experiment_paths = list(protein_qc_dir = "/p/protein_qc")),
+        file.path(request_dir, "publication-context.rds"))
+    expect_identical(workflowRequestExperimentPaths(list(directory = request_dir))$protein_qc_dir, "/p/protein_qc")
+    saveRDS(list(proteomics = list(protein_qc_dir = "/q/protein_qc")), file.path(request_dir, "publication-context.rds"))
+    expect_identical(workflowRequestExperimentPaths(list(directory = request_dir))$protein_qc_dir, "/q/protein_qc")
+})

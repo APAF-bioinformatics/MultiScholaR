@@ -138,6 +138,8 @@ test_that("MCI-007.3 accession cleanup covers delimiters, contaminants, isoforms
     )
   )
   workflow <- module_ci_prot_protein_workflow(object)
+  # The step reads the FASTA table from the workflow bus (KIT-013), not from the global environment.
+  workflow$aa_seq_tbl_final <- data.frame(database_id = c("P1", "P2", "P3"))
   cleaned_object <- object
   cleaned_object@protein_quant_table <- data.frame(
     Protein.Ids = c("P2", "P3"),
