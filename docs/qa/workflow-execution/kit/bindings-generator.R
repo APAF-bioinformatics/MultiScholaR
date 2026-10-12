@@ -245,6 +245,13 @@ if (!is.null(b$builds$kit_009)) {
         pairs = list(list(operation = "peptide_imputation", population = "journey_replicate", oracle = "journey_imputation",
             parameters = list(proportion_missing_values = 0.5, exclusion_column = NULL),
             variants = list(control = "grouped", candidate = "partitioned"))))
+    # KIT-009 accepted 2026-10-12 (stage kit-009: both arms exact against journey_imputation, the partitioned arm
+    # 0.962 x the grouped arm's slice peak and 0.952 x its anonymous peak, 625 batches each): the KIT-009 build is
+    # the control from here (protocol section 2).
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-009", outcome = "control", build = "kit_009",
+        note = "feature-group partitioner under the peptide-group family and the peptide_imputation operation; accepted against the pre-KIT-009 loop on the same build (stage kit-009, 2026-10-12): exact, slice peak 0.962 x, anonymous 0.952 x; the control for KIT-010 onward")
+    b$control <- "kit_009"
+    b$journey$pair$control <- b$control
 }
 
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with

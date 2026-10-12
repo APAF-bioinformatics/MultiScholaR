@@ -1,0 +1,82 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-009",
+  "stage": "kit-009",
+  "date": "2026-10-12",
+  "head_commit": "046c4a9ff6d56f1bd90f2993c4747534a251aa7a",
+  "decision": "accepted",
+  "failing_rule": null,
+  "pair": {
+    "operation": "peptide_imputation",
+    "population": "journey_replicate",
+    "peak_ratio": 0.962150106065646,
+    "peak_anon_ratio": 0.951662113386643,
+    "elapsed_ratio": 0.866296980899517,
+    "not_worse": true,
+    "reduction": false,
+    "batches": {
+      "control": 625,
+      "candidate": 625
+    }
+  },
+  "members": {
+    "control-1": {
+      "status": "complete",
+      "variant": "grouped",
+      "elapsed_seconds": 438.210000000021,
+      "peak_bytes": 3755560960,
+      "anonymous_peak_bytes": 2875629568,
+      "swap_bytes": 0,
+      "max_sample_interval": 0.0700000000069849,
+      "batches": 625,
+      "groups": 2500,
+      "engine_limit_bytes": 1000000000,
+      "admission": null,
+      "verification": {
+        "status": "complete",
+        "oracle": "journey_imputation",
+        "rows": 11826409,
+        "components": 2,
+        "support": 8,
+        "products_reported": ["qvalue_progress", "qc_progress"]
+      }
+    },
+    "candidate-1": {
+      "status": "complete",
+      "variant": "partitioned",
+      "elapsed_seconds": 379.619999999995,
+      "peak_bytes": 3613413376,
+      "anonymous_peak_bytes": 2736627712,
+      "swap_bytes": 0,
+      "max_sample_interval": 0.0700000000069849,
+      "batches": 625,
+      "groups": 2500,
+      "engine_limit_bytes": 1000000000,
+      "admission": {
+        "estimated_bytes": 1536441264,
+        "worker_cap": 15360176128,
+        "batch_rows": 55508,
+        "largest_group_rows": 55508,
+        "row_bytes": 60,
+        "working_bytes_per_row": 2048,
+        "overhead_bytes": 1419430400,
+        "policy": "feature-group-cursor-batches-v1",
+        "limitation": "admission estimate; kernel cgroup guard remains authoritative"
+      },
+      "verification": {
+        "status": "complete",
+        "oracle": "journey_imputation",
+        "rows": 11826409,
+        "components": 2,
+        "support": 8,
+        "products_reported": ["qvalue_progress", "qc_progress"]
+      }
+    }
+  },
+  "attempts": [
+    {
+      "name": "attempt1-harness",
+      "outcome": "both members refused by the adapters vehicle before any work (journey population bound by its state descriptor); harness corrected; user amendment: both members rerun"
+    }
+  ]
+}

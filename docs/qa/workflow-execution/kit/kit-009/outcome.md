@@ -1,6 +1,6 @@
 # KIT-009: feature-group partitioner
 
-Status 2026-10-12: **implemented and verified in process; counted pair pending the user's decision on the control arm and "go".** Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-009: control and candidate on the imputation population, 10 min each); protocol v1.3. Control: `kit_011` (`core/browser-smoke.AFaqC1`). Predecessor cases: PERF-113, PERF-114, PERF-116; audit findings A1, B22, B23.
+Status 2026-10-12: **accepted and complete.** Stage `kit-009` decision `accepted` (user decision: one build, two arms; user amendment: both members rerun after the attempt 1 harness failure); `kit_009` (`core/browser-smoke.s292Da`, source `a7a46909`) is the control from KIT-010 onward. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-009: control and candidate on the imputation population, 10 min each); protocol v1.3. Control: `kit_011` (`core/browser-smoke.AFaqC1`). Predecessor cases: PERF-113, PERF-114, PERF-116; audit findings A1, B22, B23.
 
 ## Unit gate (simulation setup 1)
 
@@ -34,7 +34,23 @@ partitions 132 (new: partitioner, per-section exactness, declaration, private co
 
 Stage `kit-009` launched as bound (user decision: one build, two arms). Both members were refused by the adapters vehicle within seconds, before any kernel ran (`controller_failed`; no worker request, no measurement): the vehicle checks the member's input by its `peptide_data` component id, while a journey population is bound by its state descriptor's id (the CORE populations of KIT-006 are bound by the component itself), so `input_entity_id` never matched. The stage directory is kept as `kit-009.attempt1-harness`. Correction: the coordinator records the bound state's assay component (`kitPopulationInputComponent`) as `input_entity_id` and the state descriptor as `input_state_entity_id`; the verifier accepts either; harness test added (255 green). A rerun of both members needs the user's ledger amendment (as KIT-006 attempt 1 did).
 
-## Declared runs (pending the user's decision and "go")
+## Results (stage `kit-009`, 2026-10-12; tracked summary [kit-009-stage.json](kit-009-stage.json))
+
+| Member | Arm | Status | Elapsed | Slice peak | Anonymous peak | Max gap | Batches | Verified |
+|---|---|---|---|---|---|---|---|---|
+| control-1 | kit_009, `grouped` (the loop before KIT-009, fixed 1 GB engine) | complete | 438 s | 3.498 GiB | 2.678 GiB | 70 ms | 625 | exact against `journey_imputation`: 2 components, 8 support entries, args summary; products reported |
+| candidate-1 | kit_009, `partitioned` (admission 1.43 GiB at the 14.3 GiB cap, engine 1 GB) | complete | 380 s | 3.365 GiB | 2.549 GiB | 70 ms | 625 | exact, same record |
+
+Pair ratios (candidate / control): slice peak 0.962, anonymous 0.952, elapsed 0.866. `not_worse` holds; no reduction claimed (0.962 is above the 0.95 rule and the batches did not change; the difference is the engine's share and the loop's bookkeeping). Zero swap, every gap under 250 ms, slices stopped. Predeclared batch rule held (625 = 625). Decision `accepted` (`kitOperationDecision`); placement: `kit_009` becomes the control (protocol section 2).
+
+### Claim limits
+
+- One member per arm; the arms share the build, so the comparison isolates the partitioner, its admission and the engine bound, not a build-versus-build difference (the control build has no imputation operation; recorded deviation, user decision).
+- Exactness covers the state's components, support entries and args summary; the two progress products are reported (the worker has no GUI progress context).
+- The protein-evidence, intensity and replicate sections run on the partitioner in the GUI from this build but were measured only on the fixture (per-section exactness); their counted members belong to KIT-014.
+- Times are reported, not judged.
+
+## Declared runs (as authorised; recorded above)
 
 The ledger names the pair "control and candidate on the imputation population". The imputation step is a worker operation only from this ticket's build onward: the control build `kit_011` has no `peptide_imputation` operation, so a build-versus-build pair cannot run it. The smallest pair that isolates the mechanism is **one build, two arms**: `control-1` = `kit_009` with variant `grouped` (the per-group loop exactly as it stood, fixed 1 GB engine limit) and `candidate-1` = `kit_009` with variant `partitioned` (the partitioner, admission, cap-bounded engine), both on `journey_replicate` with the journey's parameters, verified against `journey_imputation`, 600 s each. Both arms take the same batches (the cursor's delivery bound), so the expected outcome is `not_worse` within noise with no reduction (as KIT-006's pairs were); the decision stays `kitOperationDecision` (kernel peak and anonymous peak ≤ 1.02 × the control's, exact). The alternative is a rebuilt control (`kit_011` source plus the operation registration), which measures the same thing at the cost of an extra install.
 
