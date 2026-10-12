@@ -670,6 +670,24 @@ test_that("an operation pair may bind each arm's registry variant, its parameter
     expect_identical(h$kitOracleStateMismatches(missing, b$oracles$journey_imputation), "support/names")
 })
 
+test_that("a journey population's input component is read from its snapshot head and differs from the state descriptor (KIT-009 attempt 1)", {
+    h <- kitHarness()
+    api <- function(name) get(name, envir = asNamespace("MultiScholaR"))
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    root <- withr::local_tempdir()
+    store <- newWorkflowEntityStore(root, "kit009-input", "DIA")
+    manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    manager$.context$reference_states <- TRUE
+    manager$saveState("replicate_filtered", object, list(), "fixture")
+    state_id <- getDIAStateReference(manager)$entity_id
+    closeDIAStateAdapter(manager)
+    store_dir <- file.path(root, ".workflow-entities")
+    component <- h$kitPopulationInputComponent(store_dir, "replicate_filtered", api)
+    expect_true(is.character(component) && nzchar(component))
+    expect_false(identical(component, state_id))
+    expect_error(h$kitPopulationInputComponent(store_dir, "imputed", api))
+})
+
 test_that("a ticket's gui-mode member runs the screen journey with no record on its build and is decided on completion, dispatch and reproduction (KIT-008)", {
     h <- kitHarness()
     b <- kitSyntheticBindings()

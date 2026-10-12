@@ -891,6 +891,21 @@ kitFindStore <- function(project) {
     dirname(heads)
 }
 
+#' The assay component a bound journey population's state carries (KIT-009 attempt 1): the adapters vehicle
+#' checks the member's input by its `peptide_data` component id, while a journey population is bound by its
+#' state descriptor's id; both are recorded on the member.
+#' @noRd
+kitPopulationInputComponent <- function(store_dir, state, api, field = "peptide_data") {
+    head <- kitReadHead(store_dir, api)
+    stopifnot(identical(head$current_state, state))
+    store <- kitOpenStore(store_dir, api)
+    on.exit(api("closeWorkflowEntityStore")(store), add = TRUE)
+    record <- api("hydrateSavedWorkflowCheckpoint")(store, head$references[[state]])
+    component <- record$data$components[[field]]$entity_id
+    stopifnot(is.character(component), length(component) == 1L, nzchar(component))
+    component
+}
+
 #' Open an existing store read-only through the installed namespace.
 #' @noRd
 kitOpenStore <- function(store_dir, api) {
@@ -1189,8 +1204,11 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
     # The bound population is still valid and the store the member worked from carried the bound head
     # (for a journey population that is the per-step snapshot the coordinator materialised, KIT-005 audit PH-01).
     source_store <- operation$member$source_store %||% case$input$store
+    # A journey population is bound by its state descriptor (`input_state_entity_id` on the member); the CORE
+    # populations by their assay component (`input_entity_id`).
     stopifnot(identical(operation$status, expected_status), identical(member$status, expected_status),
-        identical(member$member$input_entity_id, case$input$entity_id), is.null(kitPopulationInvalid(case$input)),
+        identical(member$member$input_state_entity_id %||% member$member$input_entity_id, case$input$entity_id),
+        is.null(kitPopulationInvalid(case$input)),
         identical(digest::digest(file = file.path(source_store, "dia-state-head.rds"), algo = "sha256"), case$input$head_sha256))
     if (!is.null(case$input$state)) {
         source_head <- kitReadHead(source_store, api)

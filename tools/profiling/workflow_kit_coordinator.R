@@ -177,6 +177,10 @@ tryCatch({
             # A journey population is materialised as a per-step snapshot store under the member (the
             # entities reflinked, the bound checkpoint descriptor as the head); a core population is used in place.
             population_store <- helpers$kitPopulationStore(case$input, file.path(owned, "population-store"), api)
+            # The vehicle checks the input by its assay component; a journey population is bound by its state
+            # descriptor (KIT-009 attempt 1: both members refused before any work for that reason).
+            input_component <- if (is.null(case$input$head_entity)) case$input$entity_id else
+                helpers$kitPopulationInputComponent(population_store, case$input$state, api)
             member <- list(schema = 1L, programme = "perf106-repair-v2", preflight = FALSE,
                 # The pair's bound variant (KIT-009), else the production variant of the two KIT-006 operations.
                 operation = case$operation, variant = case$variant %||% (if (case$operation == "precursor_rollup") "p14" else "physical"),
@@ -184,7 +188,8 @@ tryCatch({
                 input_state = case$input$state,
                 fault = if (case$expect_failure) fault$name else "none", deadline = member_seconds,
                 parameters = case$parameters, source_store = population_store, bound_store = case$input$store,
-                source_head_sha256 = case$input$head_sha256, input_entity_id = case$input$entity_id,
+                source_head_sha256 = case$input$head_sha256, input_entity_id = input_component,
+                input_state_entity_id = case$input$entity_id,
                 phase_events = case$operation == "precursor_rollup", id = case$id, role = case$role, rep = case$rep,
                 population = case$population, binding = case$binding, stage = stage, selector = case$selector)
             saveRDS(member, file.path(owned, "timed-member.rds"))
