@@ -208,8 +208,10 @@ files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_drive
     "tests/testthat/helper-workflow-bulk-rollup.R", "tests/testdata/workflow-execution/qualification.json",
     "tests/testdata/workflow-checkpoints/scenarios.json", "tools/profiling/workflow_perf106.R",
     "tools/profiling/workflow_core.R")
+# The checkpoint driver left the CORE pin at KIT-013 (the entry fixture's input became the generic `entry_hook`;
+# its PERF-107 lifecycle scenarios are retired): it is hashed with the kit harness files above instead.
 core_pinned <- c("tools/profiling/run_workflow_checkpoint_proof.R", "tools/profiling/run_workflow_checkpoint_proof.sh",
-    "tools/profiling/workflow_checkpoint_dia_driver.R", "tools/profiling/workflow_perf106_repair.R")
+    "tools/profiling/workflow_perf106_repair.R")
 for (file in core_pinned) stopifnot(identical(hash(file.path(repo, file)), core$harness$files[[file]]))
 b$harness <- list(root = file.path(proof, "kit/runtime"),
     coordinator = "tools/profiling/workflow_kit_coordinator.R", driver = "tools/profiling/workflow_kit_driver.R",
