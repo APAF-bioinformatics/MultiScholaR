@@ -1,0 +1,423 @@
+{
+  "schema": "kit.da_resident_probe.v1",
+  "mode": "clean",
+  "ticket": "KIT-012",
+  "date": "2026-10-12",
+  "head_commit": "069a23e1294cbcba11c2654630291d09ca55e238",
+  "member": "kit-journey-011/candidate-1 (kit_011, 300-sample corpus, on-disk default)",
+  "trace": {
+    "anon_after_session_export_gib": 2.26,
+    "anon_after_da_gib": 3.09,
+    "resident_end_gib": 3.017
+  },
+  "allocator_release_supported": true,
+  "boundaries": [
+    {
+      "label": "start",
+      "seconds": "NA",
+      "anon_raw": 543895552,
+      "anon_after_gc": 544006144,
+      "anon_after_release": 534724608,
+      "live_r_heap": 360761032,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "store_open",
+      "seconds": "NA",
+      "anon_raw": 633040896,
+      "anon_after_gc": 633049088,
+      "anon_after_release": 548847616,
+      "live_r_heap": 381853904,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "session_loaded",
+      "seconds": 31.2,
+      "anon_raw": 647438336,
+      "anon_after_gc": 647438336,
+      "anon_after_release": 623386624,
+      "live_r_heap": 392488168,
+      "pages_released": true,
+      "holders": {
+        "bus": {
+          "contrasts_tbl": {
+            "kind": "data.frame 1 x 3",
+            "bytes": 1288
+          },
+          "uniprot_dat_cln": {
+            "kind": "data.frame 0 x 6",
+            "bytes": 2744
+          },
+          "design_matrix": {
+            "kind": "data.frame 300 x 9",
+            "bytes": 79856
+          },
+          "config_list": {
+            "kind": "list",
+            "bytes": 25560
+          },
+          "da_analysis_results_list": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        },
+        "da": {
+          "current_s4_object": {
+            "kind": "reference",
+            "bytes": 5600
+          },
+          "da_results_list": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_heatmap_plot": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_row_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_col_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "da_analysis",
+      "seconds": 93.9,
+      "anon_raw": 1502490624,
+      "anon_after_gc": 1502490624,
+      "anon_after_release": 1214005248,
+      "live_r_heap": 787130552,
+      "pages_released": true,
+      "holders": {
+        "bus": {
+          "contrasts_tbl": {
+            "kind": "data.frame 1 x 3",
+            "bytes": 1288
+          },
+          "uniprot_dat_cln": {
+            "kind": "data.frame 0 x 6",
+            "bytes": 2744
+          },
+          "design_matrix": {
+            "kind": "data.frame 300 x 9",
+            "bytes": 79856
+          },
+          "config_list": {
+            "kind": "list",
+            "bytes": 25560
+          },
+          "da_analysis_results_list": {
+            "kind": "list",
+            "bytes": 97784
+          }
+        },
+        "da": {
+          "current_s4_object": {
+            "kind": "reference",
+            "bytes": 5600
+          },
+          "da_results_list": {
+            "kind": "list",
+            "bytes": 97784
+          },
+          "current_heatmap_plot": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_row_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_col_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "results_table_page",
+      "seconds": 0.5,
+      "anon_raw": 1286230016,
+      "anon_after_gc": 1286246400,
+      "anon_after_release": 1272926208,
+      "live_r_heap": 787630952,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "static_volcano",
+      "seconds": 0.2,
+      "anon_raw": 1292894208,
+      "anon_after_gc": 1292906496,
+      "anon_after_release": 1201885184,
+      "live_r_heap": 770502400,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "interactive_volcano",
+      "seconds": 0.6,
+      "anon_raw": 1326411776,
+      "anon_after_gc": 1326518272,
+      "anon_after_release": 1227153408,
+      "live_r_heap": 776895336,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "heatmap",
+      "seconds": 0.1,
+      "anon_raw": 1234952192,
+      "anon_after_gc": 1234952192,
+      "anon_after_release": 1211125760,
+      "live_r_heap": 776829824,
+      "pages_released": true,
+      "holders": {
+        "bus": {
+          "contrasts_tbl": {
+            "kind": "data.frame 1 x 3",
+            "bytes": 1288
+          },
+          "uniprot_dat_cln": {
+            "kind": "data.frame 0 x 6",
+            "bytes": 2744
+          },
+          "design_matrix": {
+            "kind": "data.frame 300 x 9",
+            "bytes": 79856
+          },
+          "config_list": {
+            "kind": "list",
+            "bytes": 25560
+          },
+          "da_analysis_results_list": {
+            "kind": "list",
+            "bytes": 97784
+          }
+        },
+        "da": {
+          "current_s4_object": {
+            "kind": "reference",
+            "bytes": 5600
+          },
+          "da_results_list": {
+            "kind": "list",
+            "bytes": 97784
+          },
+          "current_heatmap_plot": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_row_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_col_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "holders_released",
+      "seconds": "NA",
+      "anon_raw": 1211154432,
+      "anon_after_gc": 1211154432,
+      "anon_after_release": 1211125760,
+      "live_r_heap": 776824368,
+      "pages_released": true,
+      "holders": {
+        "bus": {
+          "contrasts_tbl": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "uniprot_dat_cln": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "design_matrix": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "config_list": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "da_analysis_results_list": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        },
+        "da": {
+          "current_s4_object": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "da_results_list": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_heatmap_plot": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_row_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_col_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "store_closed",
+      "seconds": "NA",
+      "anon_raw": 1212264448,
+      "anon_after_gc": 1212264448,
+      "anon_after_release": 1210798080,
+      "live_r_heap": 776494632,
+      "pages_released": true,
+      "holders": null
+    }
+  ],
+  "session_view": {
+    "fields": ["r6_current_state_name", "r6_state_history", "contrasts_tbl", "design_matrix", "config_list", "export_timestamp", "normalization_method", "ruv_mode", "ruv_applied", "ruv_k", "correlation_threshold", "output_policy", "workflow_type", "report_template", "use_limpa", "limpa_applied", "limpa_parameters", "limpa_dpc_quant_results", "final_protein_count", "final_sample_count", "fasta_metadata", "accession_cleanup_results", "ruv_optimization_result", "qc_params", "protein_counts", "mixed_species_analysis", "aa_seq_tbl_final", "uniprot_dat_cln", "data_format", "data_type", "column_mapping", "current_s4_object", "correlation_filtered_s4", "state_metadata"],
+    "bytes": [136, 2240, 1288, 79856, 25560, 344, 120, 120, 56, 56, 56, 120, 112, 0, 56, 56, 0, 0, 56, 56, 2472, 2136, 663448, 26400, 664, 1488, 1790936, 2744, 112, 112, 1416, 5600, 5600, 51440],
+    "kinds": ["character", "list", "data.frame 1 x 3", "data.frame 300 x 9", "list", "POSIXct", "character", "character", "logical", "integer", "numeric", "character", "character", "NULL", "logical", "logical", "NULL", "NULL", "integer", "integer", "list", "list", "list", "list", "list", "list", "data.frame 2727 x 10", "data.frame 0 x 6", "character", "character", "list", "reference", "reference", "list"],
+    "current_state": "correlation_filtered",
+    "states": 16
+  },
+  "da": {
+    "contrasts": "treated_vs_control",
+    "results": 1,
+    "manifest_bytes": 97784,
+    "seconds": 93.9
+  },
+  "inventory_after_da": {
+    "adapter_context": {
+      "snapshot": 15013688,
+      "native_dependencies": 743632,
+      "native_extra_references": 35008,
+      "on_commit": 8840,
+      "da_base_fit_reference": 6880,
+      "native_metadata_reference": 5600,
+      "head": 5584,
+      "experiment_paths": 3144,
+      "callbacks": 2624,
+      "head_path": 272,
+      "software": 232,
+      "session_format": 120
+    },
+    "probe_frame": {
+      "loaded": 2668424,
+      "analysed": 98192,
+      "manifest": 97784,
+      "~": 3416,
+      "view_sizes": 3160,
+      "view_fields": 2728,
+      "da_data": 1936,
+      "workflow": 1936,
+      "settings": 712,
+      "uniprot_path": 232,
+      "contrast": 136,
+      "imported": 0
+    },
+    "global": {
+      "b": 1259192,
+      "journey": 1015008,
+      "inventory": 65424,
+      "boundary": 51760,
+      "describe": 38944,
+      "record": 27656,
+      "reachable": 25344,
+      "holder_kind": 23992,
+      "timed": 10088,
+      "live_heap": 6752,
+      "env_bytes": 6216,
+      "paths": 3144
+    }
+  },
+  "table_page": {
+    "rows": 100,
+    "full_population_rows": 4952,
+    "seconds": 0.5
+  },
+  "static_volcano": {
+    "plot_bytes": 17546384,
+    "seconds": 0.2
+  },
+  "interactive_volcano": {
+    "widget_bytes": 7641912,
+    "seconds": 0.6
+  },
+  "heatmap": {
+    "plot_bytes": "NA",
+    "seconds": 0.1,
+    "note": "no protein under the q-value threshold: the heatmap is NULL"
+  },
+  "inventory_after_release": {
+    "adapter_context": {
+      "snapshot": 15032328,
+      "native_dependencies": 743632,
+      "native_extra_references": 35008,
+      "on_commit": 8840,
+      "da_base_fit_reference": 6880,
+      "native_metadata_reference": 5600,
+      "head": 5584,
+      "experiment_paths": 3144,
+      "callbacks": 2624,
+      "head_path": 272,
+      "software": 232,
+      "session_format": 120
+    },
+    "probe_frame": {
+      "plot": 17546384,
+      "widget": 7641912,
+      "loaded": 2668424,
+      "analysed": 98192,
+      "~": 3416,
+      "view_sizes": 3160,
+      "view_fields": 2728,
+      "da_data": 1936,
+      "workflow": 1936,
+      "settings": 712,
+      "glimma": 464,
+      "heat": 464
+    },
+    "global": {
+      "b": 1259192,
+      "journey": 1015008,
+      "inventory": 65424,
+      "record": 56936,
+      "boundary": 51760,
+      "describe": 38944,
+      "reachable": 25344,
+      "holder_kind": 23992,
+      "timed": 10088,
+      "live_heap": 6752,
+      "env_bytes": 6216,
+      "paths": 3144
+    }
+  },
+  "result": {
+    "da_step_anon_raw_delta": 587513856,
+    "da_step_anon_after_release_delta": 587739136,
+    "da_step_live_r_heap_delta": 384341656,
+    "holders_released_anon_after_release_delta": 587739136,
+    "holders_released_live_r_heap_delta": 384336200,
+    "heatmap_anon_raw_minus_after_release": 23826432
+  }
+}

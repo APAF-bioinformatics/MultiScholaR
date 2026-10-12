@@ -556,10 +556,18 @@ kitOracleJourneyPopulations <- function(bindings) {
 #' every step the control completed, the candidate may not be worse than 1.02 x the control (the per-step
 #' guard of KIT-017); the ratios are reported. `resident_end_bytes` is reported for both and ratioed when
 #' both completed.
+#'
+#' The ticket binding's `rule` selects the required reduction (predeclared in the bindings before launch):
+#' `whole_slice_anon` (KIT-011, the default) as above; `resident_end` (KIT-012: holders to references) judges
+#' the reduction on `resident_end_bytes` (candidate <= 0.95 x control, both members complete, else `invalid`)
+#' with the whole-slice anonymous peak not worse than 1.02 x the control's and the same per-step guard.
 #' @return `status` (`accepted`, `rejected` or `invalid`), per-step ratios and the failing rule.
 #' @noRd
 kitJourneyTicketDecision <- function(receipt, cases, bindings) {
-    seconds <- kitMemberSeconds(paste0("kit-", strsplit(cases[[1L]]$selector, ":", fixed = TRUE)[[1L]][[2L]]), bindings)
+    ticket <- sub("^journey-", "", strsplit(cases[[1L]]$selector, ":", fixed = TRUE)[[1L]][[2L]])
+    rule <- bindings$tickets[[ticket]]$rule %||% "whole_slice_anon"
+    stopifnot(rule %in% c("whole_slice_anon", "resident_end"))
+    seconds <- kitMemberSeconds(paste0("kit-journey-", ticket), bindings)
     members <- list()
     for (case in cases) {
         item <- receipt$cases[[case$id]]
@@ -589,9 +597,20 @@ kitJourneyTicketDecision <- function(receipt, cases, bindings) {
     resident_ratio <- if (control_complete && is.finite(control$resident_end_bytes) && is.finite(candidate$resident_end_bytes))
         candidate$resident_end_bytes / control$resident_end_bytes else NA_real_
     not_worse_steps <- length(guarded) >= 1L && all(step_ratios[guarded] <= 1.02)
-    reduced <- is.finite(whole_ratio) && whole_ratio <= 0.95
-    status <- if (!not_worse_steps) "rejected" else if (!reduced) "rejected" else "accepted"
-    list(status = status, failing_rule = if (!not_worse_steps) "step_not_worse" else if (!reduced) "required_reduction" else NULL,
+    if (identical(rule, "resident_end")) {
+        # The resident-end rule needs both members' end-of-journey readings: a control that ended at a guard has none.
+        if (!control_complete || !is.finite(resident_ratio))
+            return(list(status = "invalid", failing_rule = "resident_end_unobserved", rule = rule, members = members,
+                control_outcome = control$outcome, promotion_authorized = FALSE))
+        reduced <- resident_ratio <= 0.95
+        not_worse_whole <- is.finite(whole_ratio) && whole_ratio <= 1.02
+        failing <- if (!not_worse_steps) "step_not_worse" else if (!not_worse_whole) "whole_slice_not_worse" else
+            if (!reduced) "required_reduction" else NULL
+    } else {
+        reduced <- is.finite(whole_ratio) && whole_ratio <= 0.95
+        failing <- if (!not_worse_steps) "step_not_worse" else if (!reduced) "required_reduction" else NULL
+    }
+    list(status = if (is.null(failing)) "accepted" else "rejected", failing_rule = failing, rule = rule,
         members = members, control_outcome = control$outcome, control_peak_is_lower_bound = !control_complete,
         steps_compared = completed, steps_guarded = guarded, step_ratios = as.list(step_ratios),
         whole_slice_anon_ratio = whole_ratio, resident_end_ratio = resident_ratio,

@@ -1,0 +1,56 @@
+{
+  "schema": "kit.da_namespace_check.v1",
+  "ticket": "KIT-012",
+  "date": "2026-10-12",
+  "head_commit": "069a23e1294cbcba11c2654630291d09ca55e238",
+  "steps": [
+    {
+      "label": "after load_all",
+      "anon_bytes": 535138304,
+      "live_r_heap": 358478560,
+      "ncells": 4360258,
+      "vcells": 14288014,
+      "namespaces": 155
+    },
+    {
+      "label": "after limma",
+      "anon_bytes": 535138304,
+      "live_r_heap": 358491208,
+      "ncells": 4360365,
+      "vcells": 14288846,
+      "namespaces": 155
+    },
+    {
+      "label": "after openxlsx",
+      "anon_bytes": 535138304,
+      "live_r_heap": 358494904,
+      "ncells": 4360401,
+      "vcells": 14289056,
+      "namespaces": 155
+    },
+    {
+      "label": "after htmlwidgets",
+      "anon_bytes": 535138304,
+      "live_r_heap": 358495672,
+      "ncells": 4360411,
+      "vcells": 14289082,
+      "namespaces": 155
+    },
+    {
+      "label": "after Glimma",
+      "anon_bytes": 1003765760,
+      "live_r_heap": 675781528,
+      "ncells": 8874848,
+      "vcells": 22348755,
+      "namespaces": 175
+    }
+  ],
+  "namespaces_loaded": ["abind", "Biobase", "BiocGenerics", "BiocParallel", "DelayedArray", "DESeq2", "edgeR", "GenomicRanges", "Glimma", "IRanges", "locfit", "MatrixGenerics", "matrixStats", "S4Arrays", "S4Vectors", "Seqinfo", "SparseArray", "stats4", "SummarizedExperiment", "XVector"],
+  "result": {
+    "anon_delta_bytes": 468627456,
+    "live_r_heap_delta": 317302968,
+    "ncells_delta": 4514590,
+    "vcells_delta": 8060741,
+    "namespaces_added": 20
+  }
+}

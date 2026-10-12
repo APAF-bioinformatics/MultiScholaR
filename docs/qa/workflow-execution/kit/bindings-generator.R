@@ -153,6 +153,40 @@ if (!is.null(journey_stage)) {
     stopifnot(identical(receipt$status, "complete"), identical(receipt$decision$status, "baseline_recorded"))
     b$journey$baseline <- list(stage = journey_stage, member = "control-1", control = "kit_001",
         final_head_sha256 = result$final_head_sha256, verified_by = "control-2 (reproduced)", decision = receipt$decision$status)
+    # The oracle fingerprints are recomputed from control-1's immutable store under the harness's current canonical
+    # form (KIT-008 correction 2 dropped `core_utilisation`, the args-embedded support copies and the step description;
+    # KIT-011 correction 1 dropped `declaration`), overlaid on the in-run record as the verifier overlays a candidate's:
+    # class, rows, components, support and the args summary from the store, the state record's products recomputed,
+    # the per-step assets the driver attached kept from the in-run fingerprint. Otherwise a candidate whose steps run
+    # as declarations mismatches the oracles on bookkeeping, as the KIT-008 member did (KIT-012 pre-step).
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    stores <- unique(vapply(Filter(function(p) !is.null(p$state), result$populations), `[[`, character(1), "store"))
+    stopifnot(length(stores) == 1L, dir.exists(stores))
+    recomputed <- harness$kitFingerprintStore(stores, api)
+    stopifnot(identical(recomputed$head_sha256, result$final_head_sha256))
+    oracle_changes <- list()
+    for (step in names(result$populations)) {
+        population <- result$populations[[step]]
+        if (is.null(population$state) || is.null(population$fingerprint)) next
+        fresh <- recomputed$states[[population$state]]
+        stopifnot(!is.null(fresh), identical(population$fingerprint$class, fresh$class), identical(population$fingerprint$rows, fresh$rows),
+            setequal(names(population$fingerprint$components), names(fresh$components)),
+            setequal(names(population$fingerprint$support), names(fresh$support)))
+        changed <- character()
+        for (field in c("components", "support", "summary_sha256"))
+            if (!identical(population$fingerprint[[field]], fresh[[field]])) changed <- c(changed, field)
+        for (name in names(fresh$products))
+            if (!identical(population$fingerprint$products[[name]], fresh$products[[name]])) changed <- c(changed, paste0("products/", name))
+        merged <- population$fingerprint
+        for (field in c("components", "support", "summary_sha256")) merged[[field]] <- fresh[[field]]
+        for (name in names(fresh$products)) merged$products[[name]] <- fresh$products[[name]]
+        result$populations[[step]]$fingerprint <- merged
+        if (length(changed)) oracle_changes[[step]] <- changed
+    }
+    b$journey$baseline$oracle_canonical_form <- list(
+        recomputed_from = stores, date = format(Sys.Date()), harness = "tools/profiling/workflow_kit.R (kitFingerprintStore)",
+        note = "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
+        changed = oracle_changes)
     for (step in names(result$populations)) {
         population <- result$populations[[step]]
         if (is.null(population$state) || is.null(population$fingerprint)) next
@@ -199,6 +233,14 @@ if (!is.null(b$builds$kit_011)) {
 if (!is.null(b$builds$kit_008)) {
     b$tickets[["008"]] <- list(kind = "gui", build = "kit_008", corpus = "screen", reference = "kit-lifecycle-complete",
         operations = c("precursor_rollup", "minimum_peptides_per_sample"), ceiling_seconds = 900L)
+}
+
+# KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
+# the production worker dispatch) against the kit_012 candidate (holders to references), decided on
+# `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and
+# the per-step guard; verified against the KIT-005 per-step oracles under the current canonical form (above).
+if (!is.null(b$builds$kit_012)) {
+    b$tickets[["012"]] <- list(kind = "journey", control = "kit_008", candidate = "kit_012", record = FALSE, rule = "resident_end")
 }
 
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",

@@ -586,6 +586,54 @@ test_that("a ticket journey pair runs both builds as users run them and is decid
     expect_null(oracles$import$fingerprint)
 })
 
+test_that("a ticket journey pair bound with the resident-end rule is decided on resident_end_bytes with the peak not worse (KIT-012)", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$builds$kit_012 <- list(library = "/lib/t", build = strrep("t", 64), exact_sum = "sum-t")
+    b$tickets[["012"]] <- list(kind = "journey", control = "kit_006", candidate = "kit_012", record = FALSE, rule = "resident_end")
+    cases <- h$kitCases(b, "kit-journey-012")
+    expect_identical(vapply(cases, `[[`, "", "library"), c("/lib/k", "/lib/t"))
+    expect_identical(cases[[2]]$selector, "kit:journey-012:candidate:1")
+    steps <- h$kitStepIds()
+    receipt <- kitSyntheticReceipt(cases, h, edit = function(r) {
+        control <- r$cases[["control-1"]]$operation
+        control$sampled_anon_bytes <- 5.5e9; control$resident_end_bytes <- 3.0e9
+        r$cases[["control-1"]]$operation <- control
+        candidate <- r$cases[["candidate-1"]]$operation
+        candidate$sampled_anon_bytes <- 5.6e9; candidate$resident_end_bytes <- 2.85e9
+        r$cases[["candidate-1"]]$operation <- candidate
+        r
+    })
+    decision <- h$kitJourneyTicketDecision(receipt, cases, b)
+    expect_identical(decision$status, "accepted")
+    expect_identical(decision$rule, "resident_end")
+    expect_equal(decision$resident_end_ratio, 0.95)
+    expect_equal(decision$whole_slice_anon_ratio, 5.6 / 5.5, tolerance = 1e-6)
+    expect_identical(decision$steps_guarded, steps[3:18])
+    not_reduced <- receipt
+    not_reduced$cases[["candidate-1"]]$operation$resident_end_bytes <- 2.86e9
+    expect_identical(h$kitJourneyTicketDecision(not_reduced, cases, b)$failing_rule, "required_reduction")
+    worse_peak <- receipt
+    worse_peak$cases[["candidate-1"]]$operation$sampled_anon_bytes <- 5.5e9 * 1.03
+    expect_identical(h$kitJourneyTicketDecision(worse_peak, cases, b)$failing_rule, "whole_slice_not_worse")
+    worse_step <- receipt
+    worse_step$cases[["candidate-1"]]$operation$phase_peak_anon_bytes$da <- 3e9 * 1.03
+    expect_identical(h$kitJourneyTicketDecision(worse_step, cases, b)$failing_rule, "step_not_worse")
+    # A control that ended at a guard has no resident-end reading: the pair is invalid, never rejected.
+    guarded <- receipt
+    guarded$cases[["control-1"]]$operation$status <- "memory_guard"
+    guarded$cases[["control-1"]]$operation$outer_guard <- "memory_guard"
+    guarded$cases[["control-1"]]$operation$resident_end_bytes <- NA_real_
+    guarded$cases[["control-1"]]$operation$populations_complete <- FALSE
+    invalid <- h$kitJourneyTicketDecision(guarded, cases, b)
+    expect_identical(invalid$status, "invalid")
+    expect_identical(invalid$failing_rule, "resident_end_unobserved")
+    # The KIT-011 rule is the default when a ticket binds no rule.
+    b$tickets[["012"]]$rule <- NULL
+    expect_identical(h$kitJourneyTicketDecision(receipt, cases, b)$rule, "whole_slice_anon")
+    expect_identical(h$kitJourneyTicketDecision(receipt, cases, b)$failing_rule, "required_reduction")
+})
+
 test_that("a ticket's gui-mode member runs the screen journey with no record on its build and is decided on completion, dispatch and reproduction (KIT-008)", {
     h <- kitHarness()
     b <- kitSyntheticBindings()

@@ -1713,7 +1713,7 @@
       },
       "support": [],
       "products": [],
-      "summary_sha256": "fcaed9d9065824111ff0bd40663bb94542a2442351ef09c51e94df67b31e8553"
+      "summary_sha256": "f00bbe22e79ba18d9a96fcedb9a650c368d6080b455107a5a8da780798ba8ef9"
     },
     "journey_qvalue": {
       "class": "PeptideQuantitativeData",
@@ -1747,7 +1747,7 @@
           "sha256": "d698027aa984d1c469badc4d2902d9cbb46ccc7d9e48bd02c67a45d86e409c29"
         }
       },
-      "summary_sha256": "2b22989b7acfa8697672034c018581dcea9eacccc419283ec6b0269eb41074b7"
+      "summary_sha256": "5f30ef849dd7f8b4a7f17d56eaa3d3d6bf607ff45b415dab11bbf7fbdfb490ab"
     },
     "journey_protein_peptide": {
       "class": "PeptideQuantitativeData",
@@ -1786,7 +1786,7 @@
           "sha256": "f0f32d298cef7f317d78f543a0ea876cac5d74a500d81f6ab97752b306a445b3"
         }
       },
-      "summary_sha256": "6eb48d0c8a9e672e9293d1b8e7661d2089888023ad161540d35cad3dc10c2000"
+      "summary_sha256": "d293cf489a563ea71b72e620742c1064053f1d3cd6c0c5d5357b40c51f29ffc1"
     },
     "journey_rollup": {
       "class": "PeptideQuantitativeData",
@@ -1825,7 +1825,7 @@
           "sha256": "7c113f2c3215b9d15e33cb52d574bda408b8f86a1954b1eff8f2618b55a9ff7e"
         }
       },
-      "summary_sha256": "8f24d975b41933e372ae64b1a9838cbb71ff0eb145f8a707dc183d4f9cf4c427"
+      "summary_sha256": "5faa35ae63828219ed75e16f8989ec39c24056bf40034cd005629a679145db4e"
     },
     "journey_intensity": {
       "class": "PeptideQuantitativeData",
@@ -1876,7 +1876,7 @@
           "sha256": "326232b881da444c51c31a42d2ce2190a4cda2c6c3d263fac559b08fec9ca2c5"
         }
       },
-      "summary_sha256": "33c0e2c416a53ea4ebdbb766e749f7ee63f72ab6b35908254b5b032c03da1bca"
+      "summary_sha256": "50cc43c3a7a61ebd8613cbda8fbc08849f8a58ab8a1ad829fa38bce1a5c75b9d"
     },
     "journey_sample": {
       "class": "PeptideQuantitativeData",
@@ -1939,7 +1939,7 @@
           "sha256": "18af54fcc8bc50b1f211fff022286028ad47a1a0691e00da1fc64dcb85802b39"
         }
       },
-      "summary_sha256": "2682b59da078f305e5cdd34f1d60af079ea7795572cf50b3b0d0feb0d899a39d"
+      "summary_sha256": "3fb756f4f860b06854b00652df4b5f2c0a6db15d7fc3a374119a82f7804763b5"
     },
     "journey_replicate": {
       "class": "PeptideQuantitativeData",
@@ -2014,7 +2014,7 @@
           "sha256": "2887b4bd2b0a65dd731be7eeea14cae201b14ac123943720b8178ff619f0cd82"
         }
       },
-      "summary_sha256": "dc1f56ac93debe10174a0259d891cd5797102dd869b791273bbb1adb58976437"
+      "summary_sha256": "4b8264e19733004df4ca52e5d55ca312e12882c821f95d5e8fa86a3ab8782567"
     },
     "journey_imputation": {
       "class": "PeptideQuantitativeData",
@@ -2095,7 +2095,7 @@
           "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
         }
       },
-      "summary_sha256": "47f7743857462fe8ac0e5d870c763cc7216afa475c6744b1f658069d8b5704fe"
+      "summary_sha256": "3eaaf48ca366e607770e78238bfc5032f8cba3aa52c3bb0ef5b99bd9184c236f"
     },
     "journey_iq": {
       "class": "ProteinQuantitativeData",
@@ -2188,7 +2188,7 @@
           "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
         }
       },
-      "summary_sha256": "b68f5ae7f6f6b7538c2217cda2d489c89ad51def005704030f9ea515482c9246"
+      "summary_sha256": "54e0c4a49a2e8ce85f249671f16adf2f59c8ba1702acc3338adb43e48ae87487"
     },
     "journey_accession": {
       "class": "ProteinQuantitativeData",
@@ -2287,7 +2287,7 @@
           "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
         }
       },
-      "summary_sha256": "7b671b8a6d077d4740255958855f1606026ad16e60f648dd07dbd7e3066985ab"
+      "summary_sha256": "8da75c62e5cb7ed56f6a1237b478cd19112f5548b2ef85fb2870ca83fc6add3c"
     },
     "journey_protein_intensity": {
       "class": "ProteinQuantitativeData",
@@ -2386,7 +2386,7 @@
           "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
         }
       },
-      "summary_sha256": "a259f87532ff07182a0844d99de172ecc188f81bbda98f8123df653088e37d04"
+      "summary_sha256": "9913c34979000bff524d62e6cd0defab16975e75ac54a9ac3eb7f19e9f221d2b"
     },
     "journey_duplicates": {
       "class": "ProteinQuantitativeData",
@@ -2485,7 +2485,7 @@
           "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
         }
       },
-      "summary_sha256": "858dfd8c29f5bb3ade92aa118825c1e95bdc0441f40f72cc4da314ab022d2413"
+      "summary_sha256": "f913c03298f26c4628203f62533847e4b3dc7f2cabec0c4fe6b1b20ea6184467"
     },
     "journey_protein_replicate": {
       "class": "ProteinQuantitativeData",
@@ -2584,7 +2584,7 @@
           "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
         }
       },
-      "summary_sha256": "fba6c555a1de2b19320a22f6fca4e573c13e77323c46e381fe543c35598bb167"
+      "summary_sha256": "204d9c8297eb1ae0f20708c7e0aaa7f950aef68703a6ee49cb5800adf7b2d11e"
     },
     "journey_normalisation_ruv": {
       "class": "ProteinQuantitativeData",
@@ -2690,7 +2690,7 @@
         "normalization_science": {
           "kind": "scientific_product",
           "product_type": "dia-normalization-ruv",
-          "sha256": "bd9f0c35dd5bef4a08b864f2d9d573d41430a56521392b5a701ec3d72a328127"
+          "sha256": "3ce7cf0a830d2bb7b62c74cd5c74403467cf08f5d2f6d25c789a1a69cd3b1d6d"
         },
         "rendered_asset:22111db166cf": {
           "kind": "rendered_asset",
@@ -2818,7 +2818,7 @@
           "sha256": "feaf5458fbadf86d2112e49c04c29b796f1708a347d2b4eea7b19caa0c161ebe"
         }
       },
-      "summary_sha256": "2e5d9215f30e213a9cb3f3ef6b8f0eecf066307aed3177d9ffe3c1e4c3630abb"
+      "summary_sha256": "72e9e60cbed7146b40215ba7eded6bd78234025e02e2d8e3bb31885e212d0dfe"
     },
     "journey_correlation": {
       "class": "ProteinQuantitativeData",
@@ -2943,7 +2943,7 @@
           "sha256": "f380b7d85da444a82eb879388410e9e68ef76eaaed1e93fda86beaaf6ae209ad"
         }
       },
-      "summary_sha256": "324a73fa73c3af04e01ac49652cfa00de1fc74ace52bf231b15ac72871ebcfb5"
+      "summary_sha256": "6e86bb1378800d79f59700d31b65858652d2069169ac96c1bded0b39309d123b"
     },
     "journey_session_export": {
       "class": "ProteinQuantitativeData",
@@ -3053,7 +3053,7 @@
           "sha256": "636d5ec5cc47c9592d6a57cc41244ebf013aee1c68fe77157520266b103ce7c2"
         }
       },
-      "summary_sha256": "324a73fa73c3af04e01ac49652cfa00de1fc74ace52bf231b15ac72871ebcfb5"
+      "summary_sha256": "6e86bb1378800d79f59700d31b65858652d2069169ac96c1bded0b39309d123b"
     },
     "journey_da": {
       "class": "ProteinQuantitativeData",
@@ -3178,7 +3178,7 @@
           "sha256": "e87b9d2a830df0f2ea7a7850939699cf45393a99b4df2489bf863cd87042f1f0"
         }
       },
-      "summary_sha256": "324a73fa73c3af04e01ac49652cfa00de1fc74ace52bf231b15ac72871ebcfb5"
+      "summary_sha256": "6e86bb1378800d79f59700d31b65858652d2069169ac96c1bded0b39309d123b"
     }
   },
   "corpora": {
@@ -3617,7 +3617,32 @@
       "control": "kit_001",
       "final_head_sha256": "c409d7ad418efa137800fb3bde3c90cf594763ac2d0d1f677d89dcbe4d798a6b",
       "verified_by": "control-2 (reproduced)",
-      "decision": "baseline_recorded"
+      "decision": "baseline_recorded",
+      "oracle_canonical_form": {
+        "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
+        "date": "2026-10-12",
+        "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
+        "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
+        "changed": {
+          "design": "summary_sha256",
+          "qvalue": "summary_sha256",
+          "protein_peptide": "summary_sha256",
+          "rollup": "summary_sha256",
+          "intensity": "summary_sha256",
+          "sample": "summary_sha256",
+          "replicate": "summary_sha256",
+          "imputation": "summary_sha256",
+          "iq": "summary_sha256",
+          "accession": "summary_sha256",
+          "protein_intensity": "summary_sha256",
+          "duplicates": "summary_sha256",
+          "protein_replicate": "summary_sha256",
+          "normalisation_ruv": ["summary_sha256", "products/normalization_science"],
+          "correlation": "summary_sha256",
+          "session_export": "summary_sha256",
+          "da": "summary_sha256"
+        }
+      }
     }
   },
   "operation_lifecycle": {
@@ -3684,13 +3709,13 @@
     "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "7bf9fa120804e6d74ec21de0038ed13f0bafe9df1367cf3ebc9c412ebec14907",
+      "tools/profiling/workflow_kit.R": "426f0152ea2849e5d2d91e66915fa503ad7cd9fcc1c5bfc1ee076a15afb07359",
       "tools/profiling/workflow_kit_driver.R": "98037c37d9bd76034d1862296cd7124cce9262436e996fa401f34e67354e33af",
       "tools/profiling/workflow_kit_coordinator.R": "bd0fe2a665955f8b1b01538be06922e393ac78e915770bb9182652c6033f182c",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "6cf642a60238409762668207f204ec071930b0bc398477900a1a25bbf82a5717",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "a4ae5d04c0f02b39311f0a908329d566c8ecdb156999d399f5002965987edc3e",
-      "tests/testthat/test-workflow-kit-harness.R": "4fa305332658b5125a587e1af353579041629dd4fb8cb780cf9803e522b5369c",
+      "tests/testthat/test-workflow-kit-harness.R": "5c4141a3521275646fa4a0e3d7c074a4dc42e713dcd3ec041c067a2b3ea447d5",
       "tests/testthat/test-workflow-execution-adapters.R": "4afe236a5b6802367be99278b42bad0f51350858fcb7c8ea8c913f4f4b70351f",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

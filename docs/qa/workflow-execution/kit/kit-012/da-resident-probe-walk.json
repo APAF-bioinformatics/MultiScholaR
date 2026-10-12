@@ -1,0 +1,580 @@
+{
+  "schema": "kit.da_resident_probe.v1",
+  "mode": "walk",
+  "ticket": "KIT-012",
+  "date": "2026-10-12",
+  "head_commit": "069a23e1294cbcba11c2654630291d09ca55e238",
+  "member": "kit-journey-011/candidate-1 (kit_011, 300-sample corpus, on-disk default)",
+  "trace": {
+    "anon_after_session_export_gib": 2.26,
+    "anon_after_da_gib": 3.09,
+    "resident_end_gib": 3.017
+  },
+  "allocator_release_supported": true,
+  "boundaries": [
+    {
+      "label": "start",
+      "seconds": "NA",
+      "anon_raw": 543907840,
+      "anon_after_gc": 544018432,
+      "anon_after_release": 534806528,
+      "live_r_heap": 360761032,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "store_open",
+      "seconds": "NA",
+      "anon_raw": 633069568,
+      "anon_after_gc": 633077760,
+      "anon_after_release": 548937728,
+      "live_r_heap": 381853904,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "session_loaded",
+      "seconds": 57.7,
+      "anon_raw": 647475200,
+      "anon_after_gc": 647479296,
+      "anon_after_release": 623452160,
+      "live_r_heap": 392488168,
+      "pages_released": true,
+      "holders": {
+        "bus": {
+          "contrasts_tbl": {
+            "kind": "data.frame 1 x 3",
+            "bytes": 1288
+          },
+          "uniprot_dat_cln": {
+            "kind": "data.frame 0 x 6",
+            "bytes": 2744
+          },
+          "design_matrix": {
+            "kind": "data.frame 300 x 9",
+            "bytes": 79856
+          },
+          "config_list": {
+            "kind": "list",
+            "bytes": 25560
+          },
+          "da_analysis_results_list": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        },
+        "da": {
+          "current_s4_object": {
+            "kind": "reference",
+            "bytes": 5600
+          },
+          "da_results_list": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_heatmap_plot": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_row_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_col_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "da_analysis",
+      "seconds": 183.8,
+      "anon_raw": 2251558912,
+      "anon_after_gc": 2196520960,
+      "anon_after_release": 1858027520,
+      "live_r_heap": 1291101944,
+      "pages_released": true,
+      "holders": {
+        "bus": {
+          "contrasts_tbl": {
+            "kind": "data.frame 1 x 3",
+            "bytes": 1288
+          },
+          "uniprot_dat_cln": {
+            "kind": "data.frame 0 x 6",
+            "bytes": 2744
+          },
+          "design_matrix": {
+            "kind": "data.frame 300 x 9",
+            "bytes": 79856
+          },
+          "config_list": {
+            "kind": "list",
+            "bytes": 25560
+          },
+          "da_analysis_results_list": {
+            "kind": "list",
+            "bytes": 97816
+          }
+        },
+        "da": {
+          "current_s4_object": {
+            "kind": "reference",
+            "bytes": 5600
+          },
+          "da_results_list": {
+            "kind": "list",
+            "bytes": 97816
+          },
+          "current_heatmap_plot": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_row_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_col_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "results_table_page",
+      "seconds": 0.8,
+      "anon_raw": 1927589888,
+      "anon_after_gc": 1927589888,
+      "anon_after_release": 1910403072,
+      "live_r_heap": 1372245904,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "static_volcano",
+      "seconds": 0.4,
+      "anon_raw": 1931579392,
+      "anon_after_gc": 1931583488,
+      "anon_after_release": 1896230912,
+      "live_r_heap": 1354848136,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "interactive_volcano",
+      "seconds": 0.9,
+      "anon_raw": 2013458432,
+      "anon_after_gc": 2013462528,
+      "anon_after_release": 1912135680,
+      "live_r_heap": 1361240864,
+      "pages_released": true,
+      "holders": null
+    },
+    {
+      "label": "heatmap",
+      "seconds": 0.2,
+      "anon_raw": 1918509056,
+      "anon_after_gc": 1918509056,
+      "anon_after_release": 1912152064,
+      "live_r_heap": 1361169832,
+      "pages_released": true,
+      "holders": {
+        "bus": {
+          "contrasts_tbl": {
+            "kind": "data.frame 1 x 3",
+            "bytes": 1288
+          },
+          "uniprot_dat_cln": {
+            "kind": "data.frame 0 x 6",
+            "bytes": 2744
+          },
+          "design_matrix": {
+            "kind": "data.frame 300 x 9",
+            "bytes": 79856
+          },
+          "config_list": {
+            "kind": "list",
+            "bytes": 25560
+          },
+          "da_analysis_results_list": {
+            "kind": "list",
+            "bytes": 97816
+          }
+        },
+        "da": {
+          "current_s4_object": {
+            "kind": "reference",
+            "bytes": 5600
+          },
+          "da_results_list": {
+            "kind": "list",
+            "bytes": 97816
+          },
+          "current_heatmap_plot": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_row_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_col_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "holders_released",
+      "seconds": "NA",
+      "anon_raw": 1912176640,
+      "anon_after_gc": 1912176640,
+      "anon_after_release": 1912152064,
+      "live_r_heap": 1361164376,
+      "pages_released": true,
+      "holders": {
+        "bus": {
+          "contrasts_tbl": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "uniprot_dat_cln": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "design_matrix": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "config_list": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "da_analysis_results_list": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        },
+        "da": {
+          "current_s4_object": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "da_results_list": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_heatmap_plot": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_row_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          },
+          "current_col_clusters": {
+            "kind": "NULL",
+            "bytes": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "store_closed",
+      "seconds": "NA",
+      "anon_raw": 2212073472,
+      "anon_after_gc": 2212073472,
+      "anon_after_release": 1996173312,
+      "live_r_heap": 1360839376,
+      "pages_released": true,
+      "holders": null
+    }
+  ],
+  "session_view": {
+    "fields": ["r6_current_state_name", "r6_state_history", "contrasts_tbl", "design_matrix", "config_list", "export_timestamp", "normalization_method", "ruv_mode", "ruv_applied", "ruv_k", "correlation_threshold", "output_policy", "workflow_type", "report_template", "use_limpa", "limpa_applied", "limpa_parameters", "limpa_dpc_quant_results", "final_protein_count", "final_sample_count", "fasta_metadata", "accession_cleanup_results", "ruv_optimization_result", "qc_params", "protein_counts", "mixed_species_analysis", "aa_seq_tbl_final", "uniprot_dat_cln", "data_format", "data_type", "column_mapping", "current_s4_object", "correlation_filtered_s4", "state_metadata"],
+    "bytes": [136, 2240, 1288, 79856, 25560, 344, 120, 120, 56, 56, 56, 120, 112, 0, 56, 56, 0, 0, 56, 56, 2472, 2136, 663448, 26400, 664, 1488, 1790936, 2744, 112, 112, 1416, 5600, 5600, 51440],
+    "kinds": ["character", "list", "data.frame 1 x 3", "data.frame 300 x 9", "list", "POSIXct", "character", "character", "logical", "integer", "numeric", "character", "character", "NULL", "logical", "logical", "NULL", "NULL", "integer", "integer", "list", "list", "list", "list", "list", "list", "data.frame 2727 x 10", "data.frame 0 x 6", "character", "character", "list", "reference", "reference", "list"],
+    "current_state": "correlation_filtered",
+    "states": 16
+  },
+  "reachable_after_session_load": {
+    "MultiScholaR/.S3MethodsClasses": 31928,
+    "MultiScholaR/.workflowOperationRegistry": 25352,
+    "MultiScholaR/WorkflowEntityStore": 481872,
+    "MultiScholaR/WorkflowExecutionApplication": 217936,
+    "MultiScholaR/WorkflowExecutionController": 217824,
+    "MultiScholaR/WorkflowState": 474048,
+    "namespace/rmarkdown": 20862936,
+    "namespace/vctrs": 30339416,
+    "namespace/usethis": 17898112,
+    "namespace/bslib": 17631064,
+    "namespace/plotly": 42109312,
+    "namespace/igraph": 69930904,
+    "namespace/Matrix": 50196224,
+    "namespace/future": 28958344,
+    "namespace/shiny": 28727560,
+    "namespace/base": 55761416,
+    "namespace/stats": 109456384,
+    "namespace/tools": 154940504,
+    "namespace/graphics": 21767880,
+    "namespace/grid": 26364120,
+    "namespace/data.table": 36671112,
+    "namespace/limma": 49617320,
+    "namespace/dplyr": 21144936,
+    "namespace/lattice": 46420816,
+    "namespace/knitr": 23952608,
+    "namespace/cli": 28196520,
+    "namespace/arrow": 29697944,
+    "namespace/utils": 60484088,
+    "namespace/ggplot2": 77540224,
+    "namespace/methods": 55610632,
+    "namespace/openxlsx": 22444512,
+    "namespace/rlang": 23342352,
+    "store/cache_bytes": 0,
+    "store/records": 722264,
+    "store/cache": 0,
+    "store/fields": 4008,
+    "session/userData": 0,
+    "shiny/.globals": 89144,
+    "options/largest": {
+      "device": 266800,
+      "devtools.ellipsis_action": 91800,
+      "callr.condition_handler_cli_message": 8296
+    },
+    "gc/ncells_used": 12453265,
+    "gc/vcells_used": 31504459
+  },
+  "da": {
+    "contrasts": "treated_vs_control",
+    "results": 1,
+    "manifest_bytes": 97816,
+    "seconds": 183.8
+  },
+  "inventory_after_da": {
+    "adapter_context": {
+      "snapshot": 15013784,
+      "native_dependencies": 743632,
+      "native_extra_references": 35008,
+      "on_commit": 8840,
+      "da_base_fit_reference": 6880,
+      "native_metadata_reference": 5600,
+      "head": 5584,
+      "experiment_paths": 3144,
+      "callbacks": 2624,
+      "head_path": 272,
+      "software": 232,
+      "session_format": 120
+    },
+    "probe_frame": {
+      "loaded": 2668424,
+      "analysed": 98224,
+      "manifest": 97816,
+      "~": 3416,
+      "view_sizes": 3160,
+      "view_fields": 2728,
+      "da_data": 1936,
+      "workflow": 1936,
+      "settings": 712,
+      "uniprot_path": 232,
+      "contrast": 136,
+      "imported": 0
+    },
+    "global": {
+      "b": 1259192,
+      "journey": 1015008,
+      "reachable": 138848,
+      "inventory": 65424,
+      "boundary": 51760,
+      "env_bytes": 47992,
+      "describe": 38944,
+      "record": 34520,
+      "holder_kind": 23992,
+      "timed": 10088,
+      "live_heap": 6752,
+      "paths": 3144
+    }
+  },
+  "reachable_after_da": {
+    "MultiScholaR/.S3MethodsClasses": 31928,
+    "MultiScholaR/.workflowOperationRegistry": 25352,
+    "MultiScholaR/WorkflowEntityStore": 481872,
+    "MultiScholaR/WorkflowExecutionApplication": 217936,
+    "MultiScholaR/WorkflowExecutionController": 217824,
+    "MultiScholaR/WorkflowState": 474048,
+    "namespace/methods": 55610632,
+    "namespace/stats": 109456384,
+    "namespace/edgeR": 27321592,
+    "namespace/lattice": 46420816,
+    "namespace/MASS": 21187376,
+    "namespace/openxlsx": 22444512,
+    "namespace/limma": 49617320,
+    "namespace/plotly": 42109312,
+    "namespace/rmarkdown": 20862936,
+    "namespace/utils": 60484088,
+    "namespace/GenomicRanges": 17411152,
+    "namespace/IRanges": 68143136,
+    "namespace/S4Vectors": 32686064,
+    "namespace/DelayedArray": 21361776,
+    "namespace/tools": 154940504,
+    "namespace/DESeq2": 19298464,
+    "namespace/mixOmics": 141172224,
+    "namespace/usethis": 17898112,
+    "namespace/dplyr": 21144936,
+    "namespace/base": 55764680,
+    "namespace/data.table": 36671112,
+    "namespace/knitr": 23952608,
+    "namespace/arrow": 29697944,
+    "namespace/grid": 26364120,
+    "namespace/vctrs": 30339416,
+    "namespace/cli": 28196520,
+    "namespace/rlang": 23342352,
+    "namespace/graphics": 21767880,
+    "namespace/Matrix": 50196224,
+    "namespace/future": 28958344,
+    "namespace/ggplot2": 77540224,
+    "namespace/shiny": 28727560,
+    "namespace/igraph": 69930904,
+    "namespace/bslib": 17631064,
+    "store/cache_bytes": 0,
+    "store/records": 839704,
+    "store/cache": 0,
+    "store/fields": 4128,
+    "session/userData": 0,
+    "shiny/.globals": 89144,
+    "options/largest": {
+      "device": 266800,
+      "devtools.ellipsis_action": 91800,
+      "callr.condition_handler_cli_message": 8296
+    },
+    "gc/ncells_used": 18135950,
+    "gc/vcells_used": 44575069
+  },
+  "table_page": {
+    "rows": 100,
+    "full_population_rows": 4952,
+    "seconds": 0.8
+  },
+  "static_volcano": {
+    "plot_bytes": 17546384,
+    "seconds": 0.4
+  },
+  "interactive_volcano": {
+    "widget_bytes": 7641912,
+    "seconds": 0.9
+  },
+  "heatmap": {
+    "plot_bytes": "NA",
+    "seconds": 0.2,
+    "note": "no protein under the q-value threshold: the heatmap is NULL"
+  },
+  "inventory_after_release": {
+    "adapter_context": {
+      "snapshot": 15032440,
+      "native_dependencies": 743632,
+      "native_extra_references": 35008,
+      "on_commit": 8840,
+      "da_base_fit_reference": 6880,
+      "native_metadata_reference": 5600,
+      "head": 5584,
+      "experiment_paths": 3144,
+      "callbacks": 2624,
+      "head_path": 272,
+      "software": 232,
+      "session_format": 120
+    },
+    "probe_frame": {
+      "plot": 17546384,
+      "widget": 7641912,
+      "loaded": 2668424,
+      "analysed": 98224,
+      "~": 3416,
+      "view_sizes": 3160,
+      "view_fields": 2728,
+      "da_data": 1936,
+      "workflow": 1936,
+      "settings": 712,
+      "glimma": 464,
+      "heat": 464
+    },
+    "global": {
+      "b": 1259192,
+      "journey": 1015008,
+      "reachable": 138848,
+      "record": 71880,
+      "inventory": 65424,
+      "boundary": 51760,
+      "env_bytes": 47992,
+      "describe": 38944,
+      "holder_kind": 23992,
+      "timed": 10088,
+      "live_heap": 6752,
+      "paths": 3144
+    }
+  },
+  "reachable_after_release": {
+    "MultiScholaR/.S3MethodsClasses": 31928,
+    "MultiScholaR/.workflowOperationRegistry": 25352,
+    "MultiScholaR/WorkflowEntityStore": 481872,
+    "MultiScholaR/WorkflowExecutionApplication": 217936,
+    "MultiScholaR/WorkflowExecutionController": 217824,
+    "MultiScholaR/WorkflowState": 474048,
+    "namespace/methods": 55610632,
+    "namespace/stats": 109456384,
+    "namespace/edgeR": 27321592,
+    "namespace/lattice": 46420816,
+    "namespace/MASS": 21187376,
+    "namespace/openxlsx": 22444512,
+    "namespace/limma": 49617320,
+    "namespace/plotly": 42109312,
+    "namespace/rmarkdown": 20862936,
+    "namespace/utils": 60484088,
+    "namespace/GenomicRanges": 17411152,
+    "namespace/IRanges": 68143136,
+    "namespace/S4Vectors": 32686064,
+    "namespace/DelayedArray": 21361776,
+    "namespace/tools": 154940504,
+    "namespace/DESeq2": 19298464,
+    "namespace/mixOmics": 141172224,
+    "namespace/usethis": 17898112,
+    "namespace/dplyr": 21144936,
+    "namespace/base": 55764680,
+    "namespace/data.table": 36671112,
+    "namespace/knitr": 23952608,
+    "namespace/arrow": 29697944,
+    "namespace/grid": 26364120,
+    "namespace/vctrs": 30339416,
+    "namespace/cli": 28196520,
+    "namespace/rlang": 23342352,
+    "namespace/graphics": 21767880,
+    "namespace/Matrix": 50196224,
+    "namespace/future": 28958344,
+    "namespace/ggplot2": 77540224,
+    "namespace/shiny": 28727560,
+    "namespace/igraph": 69930904,
+    "namespace/bslib": 17631064,
+    "store/cache_bytes": 0,
+    "store/records": 857056,
+    "store/cache": 0,
+    "store/fields": 4264,
+    "session/userData": 0,
+    "shiny/.globals": 89144,
+    "options/largest": {
+      "device": 266800,
+      "devtools.ellipsis_action": 91800,
+      "callr.condition_handler_cli_message": 8296
+    },
+    "gc/ncells_used": 18120922,
+    "gc/vcells_used": 43303202
+  },
+  "result": {
+    "da_step_anon_raw_delta": 1271033856,
+    "da_step_anon_after_release_delta": 1288699904,
+    "da_step_live_r_heap_delta": 968681664,
+    "holders_released_anon_after_release_delta": 1288699904,
+    "holders_released_live_r_heap_delta": 968676208,
+    "heatmap_anon_raw_minus_after_release": 6356992
+  }
+}
