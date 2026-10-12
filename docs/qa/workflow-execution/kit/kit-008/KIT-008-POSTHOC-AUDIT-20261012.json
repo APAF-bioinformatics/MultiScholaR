@@ -1,0 +1,84 @@
+{
+ "schema": "audit-evidence-contracts.result.v1",
+ "mode": "post_hoc",
+ "ticket": "KIT-008",
+ "date": "2026-10-12",
+ "audited": {
+  "ticket_commit": "1b048961",
+  "code_commits": [
+   "690bc7f4",
+   "9fe8028d",
+   "b95df99b",
+   "1b048961"
+  ],
+  "install": "core/browser-smoke.otE3Ck",
+  "stage": "kit-gui-008"
+ },
+ "states": {
+  "implementation_verified": true,
+  "execution_complete": true,
+  "decision_supported": true,
+  "promotion_authorized": "not_applicable",
+  "claim_scope": "outcome claim limits plus PH-01, PH-03"
+ },
+ "findings": [
+  {
+   "id": "PH-01",
+   "severity": "medium",
+   "verdict": "CONFIRMED",
+   "blocks": "future execution",
+   "summary": "coordinator's gui decision does not recompute fingerprints (no api), so the next kit-gui launch would reject on bookkeeping"
+  },
+  {
+   "id": "PH-02",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "claim",
+   "summary": "stale harness test count in the outcome"
+  },
+  {
+   "id": "PH-03",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "claim",
+   "summary": "verification record from correction 1 reused under correction 2"
+  },
+  {
+   "id": "PH-04",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "support-table exclusion relies on the support walk"
+  },
+  {
+   "id": "PH-05",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "two verifier-only corrections, within precedent"
+  },
+  {
+   "id": "PH-06",
+   "severity": "low",
+   "verdict": "CONFIRMED",
+   "blocks": "claim",
+   "summary": "P14 oracle acceptance met through a two-step chain"
+  },
+  {
+   "id": "PH-07",
+   "severity": "informational",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "protocol text unchanged; harness rule change recorded"
+  },
+  {
+   "id": "PH-08",
+   "severity": "informational",
+   "verdict": "CONFIRMED",
+   "blocks": "none",
+   "summary": "KIT-012 oracle pre-step recorded"
+  }
+ ],
+ "repairs_made": [],
+ "register": "KIT-008-POSTHOC-AUDIT-20261012.md"
+}
