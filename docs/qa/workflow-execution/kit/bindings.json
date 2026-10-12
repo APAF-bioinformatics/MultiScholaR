@@ -3778,7 +3778,7 @@
       "tools/profiling/run_workflow_kit.sh": "6cf642a60238409762668207f204ec071930b0bc398477900a1a25bbf82a5717",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "a4ae5d04c0f02b39311f0a908329d566c8ecdb156999d399f5002965987edc3e",
       "tests/testthat/test-workflow-kit-harness.R": "de9425baa6b6a08ce0964dc6aef458721f29bb3cb32eb61b1d7db0550424275e",
-      "tests/testthat/test-workflow-execution-adapters.R": "96510f1f21571e2a96f91091dca7a743ad2221bc7d856f8d78fb9f8d308137a3",
+      "tests/testthat/test-workflow-execution-adapters.R": "d315a2847fd76dfb0733b286e4ca3aca1724bfff12400c2e99182320917a6548",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",
       "tests/testdata/workflow-execution/qualification.json": "18f9b76d7c1e054151d2fd70ad517c5db26d7fca4c7a93040c30f7fb69061f4f",
