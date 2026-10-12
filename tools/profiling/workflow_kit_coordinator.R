@@ -367,7 +367,9 @@ tryCatch({
         if (stage == "kit-journey") helpers$kitJourneyDecision(receipt, all_cases, bindings) else
         if (startsWith(stage, "kit-journey-")) helpers$kitJourneyTicketDecision(receipt, all_cases, bindings) else
         if (startsWith(stage, "kit-gui-")) helpers$kitGuiMemberDecision(receipt, all_cases, bindings,
-            member_dir = file.path(stage_root, all_cases[[1L]]$id)) else
+            # Both members' fingerprints are recomputed from their stores under the current canonical form at launch
+            # (KIT-008 post-hoc audit PH-01), so a reference member saved under an earlier form never rejects a new one.
+            member_dir = file.path(stage_root, all_cases[[1L]]$id), api = api) else
         helpers$kitOperationDecision(receipt, all_cases, bindings)
     saveRDS(receipt$decision, file.path(stage_root, "decision.rds"))
     receipt$status <- "complete"

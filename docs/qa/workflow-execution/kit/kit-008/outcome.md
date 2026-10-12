@@ -21,9 +21,9 @@ Grep evidence (acceptance 3): no `perf107-phase-a`, `workflowPeptideSampleQualif
 | Legacy vs P14 page identity on `screen_p14` (before the member) | `in-process-rollup-check.json` | identical 48 pages, 480,000 rows; both equal the P14 screen oracle |
 | In-process sample filter through the declaration equals the native method | `test-perf107-consumers.R` | passes |
 | Rollup: worker under a managed application, in-process declaration otherwise; pending publication retried without a second dispatch | `test-perf107-audit.R` | passes |
-| Harness stage and decision | `test-workflow-kit-harness.R` (224) | passes |
+| Harness stage and decision | `test-workflow-kit-harness.R` (227) | passes |
 
-Test files run after the change (working tree, proof library on `R_LIBS`): registry 35, launch record 25, perf-107 21, perf107-audit 63, perf107-consumers 29, perf107-checkpoints 49, perf107-synthetic 12, kit harness 224, operations 66, execution 64 (10 skipped installed-only), adapters (6 skipped installed-only), peptide sample shared 48, orchestrator shared 15, peptide module contracts 772, saved QC rollup 59, perf-106 193, memory mechanism member (13 skipped installed-only); all green.
+Test files run after the change (working tree, proof library on `R_LIBS`): registry 35, launch record 25, perf-107 21, perf107-audit 63, perf107-consumers 29, perf107-checkpoints 49, perf107-synthetic 12, kit harness 227, operations 66, execution 64 (10 skipped installed-only), adapters (6 skipped installed-only), peptide sample shared 48, orchestrator shared 15, peptide module contracts 772, saved QC rollup 59, perf-106 193, memory mechanism member (13 skipped installed-only); all green.
 
 Pre-execution audit 2026-10-12: [KIT-008-PREEXEC-AUDIT-20261012.md](KIT-008-PREEXEC-AUDIT-20261012.md), remediation [KIT-008-PREEXEC-REMEDIATION-20261012.md](KIT-008-PREEXEC-REMEDIATION-20261012.md) (the managed completion now carries the bus's QC parameters and prior progress so the worker's progress product equals the in-process one; the verifier takes the self-consistency branch for a screen member without a record; managed non-DIA sessions run in process; ceiling 900 s by user amendment).
 
@@ -48,6 +48,8 @@ Corrections (verifier and decision only; the member was never rerun; the launch 
 
 1. The verifier never ran at launch: `kitSelectorStage` mapped `kit:gui-008:candidate:1` to case id `candidate-1` while the stage's one case is `member`, so `verifyKitMember` aborted before writing a record (`member/verification-launch.log`), and the decision read the reference member under a bindings field the real bindings do not carry. Both fixed; the verifier ran from the corrected harness against the frozen bindings; the recomputed decision was `rejected` with 13 summary mismatches from the sample-filter state onward.
 2. Those mismatches were bookkeeping, not science (user decision "1"): every table, support entry and product was equal; the sample-filter state's args recorded `core_utilisation = NA` (declaration run) where the native loop recorded its eight-worker multidplyr spec and copied the support references into the args, and the two word the step description differently; every later state's summary carried that args section forward. The canonical form now drops `core_utilisation`, the args-embedded `support_table`/`removal_ledger` copies and the step description (KIT-011 correction 1 did the same for the `declaration` field), and the gui decision recomputes both members' state fingerprints from their immutable stores under the current form. Recomputed: 0 mismatches.
+
+Post-hoc audit 2026-10-12: [KIT-008-POSTHOC-AUDIT-20261012.md](KIT-008-POSTHOC-AUDIT-20261012.md), remediation [KIT-008-POSTHOC-REMEDIATION-20261012.md](KIT-008-POSTHOC-REMEDIATION-20261012.md) (the coordinator's gui decision now recomputes both members' fingerprints from their stores at launch).
 
 ## Claim limits
 
