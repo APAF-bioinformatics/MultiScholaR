@@ -60,6 +60,7 @@ for (file in files) {
 source_hashes <- stats::setNames(vapply(file.path(snapshot, files),
     \(file) digest::digest(file = file, algo = "sha256"), character(1)), files)
 if (is.null(rerun_cases)) receipt$source_hashes <- source_hashes else receipt$reruns[[rerun_index]]$source_hashes <- source_hashes
+`%||%` <- function(x, y) if (is.null(x)) y else x
 helpers <- new.env(parent = globalenv())
 sys.source(file.path(snapshot, "tools/profiling/workflow_checkpoint_dia_driver.R"), helpers)
 sys.source(file.path(snapshot, "tools/profiling/workflow_kit.R"), helpers)
@@ -177,7 +178,10 @@ tryCatch({
             # entities reflinked, the bound checkpoint descriptor as the head); a core population is used in place.
             population_store <- helpers$kitPopulationStore(case$input, file.path(owned, "population-store"), api)
             member <- list(schema = 1L, programme = "perf106-repair-v2", preflight = FALSE,
-                operation = case$operation, variant = if (case$operation == "precursor_rollup") "p14" else "physical",
+                # The pair's bound variant (KIT-009), else the production variant of the two KIT-006 operations.
+                operation = case$operation, variant = case$variant %||% (if (case$operation == "precursor_rollup") "p14" else "physical"),
+                # A journey population's head state (the adapters vehicle selects it; the KIT-006 populations sit at the protein-evidence state).
+                input_state = case$input$state,
                 fault = if (case$expect_failure) fault$name else "none", deadline = member_seconds,
                 parameters = case$parameters, source_store = population_store, bound_store = case$input$store,
                 source_head_sha256 = case$input$head_sha256, input_entity_id = case$input$entity_id,

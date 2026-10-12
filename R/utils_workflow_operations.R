@@ -222,7 +222,8 @@ workflowOperationEntry <- function(operation) {
     entry
 }
 
-#' Register the built-in operations: the diagnostic fixture and the two DIA declarations of KIT-006.
+#' Register the built-in operations: the diagnostic fixture, the two DIA declarations of KIT-006 and the
+#' imputation declaration of KIT-009.
 #' `default_variant` (KIT-008) is the variant an unqualified launch runs, in the worker and in process.
 #' Called from `.onLoad` and from the first lookup in a process that bypassed it.
 #' @noRd
@@ -249,5 +250,13 @@ registerBuiltinWorkflowOperations <- function() {
         # control and the selection arm stay reachable through an explicit adapters qualification.
         default_variant = "physical", diagnostic_only = FALSE, inclusion_absence = TRUE,
         declaration = diaSampleFilterOperation()))
+    # KIT-009: the imputation step on the feature-group partitioner; `grouped` is the per-group loop as it
+    # stood before KIT-009 (the control arm of the measurement), `partitioned` the production variant.
+    registerWorkflowOperation(list(name = "peptide_imputation", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "peptide", handler = "computeWorkflowPeptideImputationAction", validate = "validateWorkflowPeptideImputationParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = c("proportion_missing_values", "exclusion_column"),
+        completion = "peptide", publication = "peptide", step_label = "8_imputed", omic_type = "proteomics",
+        variants = c("grouped", "partitioned"), default_variant = "partitioned", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaPeptideImputationOperation()))
     invisible(workflowOperationNames())
 }

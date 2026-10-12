@@ -1,8 +1,19 @@
 # KIT-007: the operation registry behind the execution layer.
 
-test_that("the registry carries the three built-in operations with every fact the execution layer reads", {
+test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
-    expect_identical(names, c("minimum_peptides_per_sample", "precursor_rollup", "wfx_fixture"))
+    expect_identical(names, c("minimum_peptides_per_sample", "peptide_imputation", "precursor_rollup", "wfx_fixture"))
+    # KIT-009: the imputation step as an operation on the feature-group unit.
+    imputation <- workflowActionSpec("peptide_imputation")
+    expect_identical(imputation$step_label, "8_imputed")
+    expect_identical(imputation$variants, c("grouped", "partitioned"))
+    expect_identical(imputation$default_variant, "partitioned")
+    expect_identical(imputation$declaration$unit, "feature_group")
+    expect_identical(imputation$declaration$parameters, c("proportion_missing_values", "exclusion_column"))
+    expect_identical(workflowQualificationVariant(list(mode = "gui"), "peptide_imputation"), "partitioned")
+    expect_error(validateWorkflowPeptideImputationParameters(list(proportion_missing_values = 1.5), list()), "proportion")
+    expect_error(validateWorkflowPeptideImputationParameters(list(exclusion_column = "x"), list()), "required")
+    expect_null(validateWorkflowPeptideImputationParameters(list(proportion_missing_values = 0.5, exclusion_column = NULL), list()))
     fixture <- workflowActionSpec("wfx_fixture")
     expect_true(fixture$diagnostic_only)
     expect_identical(fixture$compute, "fixture")
@@ -53,7 +64,7 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         expect_error(validateWorkflowActionInput("precursor_rollup", NULL, list(state = "owned")), class = "workflow_execution_unsupported"),
         isSavedWorkflowReference = function(x) identical(x, "owned"), isDIAComponentCheckpoint = function(x) TRUE,
         readDIAStateMetadata = function(...) list(data = record))
-    expect_identical(sort(workflowOperationNames()), sort(c("minimum_peptides_per_sample", "precursor_rollup", "wfx_fixture")))
+    expect_identical(sort(workflowOperationNames()), sort(c("minimum_peptides_per_sample", "peptide_imputation", "precursor_rollup", "wfx_fixture")))
 })
 
 test_that("a fresh R process resolves the same registry from the operation name alone", {

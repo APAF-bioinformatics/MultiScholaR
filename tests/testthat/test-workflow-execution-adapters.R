@@ -336,9 +336,13 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
     # registry (the controls before KIT-007) keeps the two frozen names.
     registry <- get0("workflowOperationNames", envir = asNamespace("MultiScholaR"), inherits = FALSE)
     operations <- if (is.function(registry)) setdiff(registry(), "wfx_fixture") else c("minimum_peptides_per_sample", "precursor_rollup")
+    # The variants come from the registry entry (KIT-009: the imputation's grouped and partitioned arms).
+    variants <- if (is.function(registry) && request$operation %in% operations)
+        get("workflowActionSpec", envir = asNamespace("MultiScholaR"))(request$operation)$variants else
+        c("native", "physical", "selection", "p14")
     stopifnot(identical(request$schema, 1L),
         request$operation %in% operations,
-        request$variant %in% c("native", "physical", "selection", "p14"),
+        request$variant %in% variants,
         is.character(request$fault), length(request$fault) == 1L,
         request$fault %in% c("none", "publication", "worker_failure", "cancel", "worker_loss", "monitor_loss",
             "after_aggregate"))
@@ -365,7 +369,9 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
         stopifnot(identical(original_head, request$source_head_sha256))
         manager <- copyDIAReplayCheckpoint(request$source_store, owned)
         manager$.context$reference_states <- TRUE
-        selectDIAStateReference(manager, "protein_peptide_filtered")
+        # The bound population's head state (KIT-009: a journey population); the CORE populations sit at the
+        # protein-evidence state.
+        selectDIAStateReference(manager, if (is.null(request$input_state)) "protein_peptide_filtered" else request$input_state)
         stopifnot(identical(readDIAStateMetadata(manager)$data$components$peptide_data$entity_id,
             request$input_entity_id))
     }

@@ -114,11 +114,13 @@ kitCases <- function(bindings, stage) {
                 step_map = bindings$step_map_sha256), algo = "sha256"),
             selector = selector)
     }
-    operation_case <- function(id, role, rep, build_key, operation, population_key, fault, selector) {
+    operation_case <- function(id, role, rep, build_key, operation, population_key, fault, selector,
+        variant = NULL, oracle = NULL, parameters = NULL) {
         build <- build_of(build_key)
         population <- bindings$populations[[population_key]]
         if (is.null(population)) stop("population ", population_key, " is not bound")
-        parameters <- population$parameters
+        # A pair may bind the operation's parameters itself (KIT-009: a journey population carries none).
+        if (is.null(parameters)) parameters <- population$parameters
         if (!length(parameters)) parameters <- list()
         # The bindings are read without simplification, so a JSON array arrives as a list of scalars;
         # the pinned action validator wants atomic vectors (KIT-006 attempt 1: "inclusion entries must be
@@ -128,12 +130,15 @@ kitCases <- function(bindings, stage) {
                 unlist(value, use.names = FALSE) else value)
         list(id = id, kind = "operation", role = role, control = role == "control", rep = rep, fault = fault,
             operation = operation, population = population_key, parameters = parameters,
+            # KIT-009: the pair may name the registry variant each arm runs and the journey oracle of its output.
+            variant = variant, oracle = oracle,
             input = list(store = population$store, head_sha256 = population$head_sha256, rows = population$rows,
                 entity_id = population$entity_id, head_entity = population$head_entity, state = population$state),
             library = build$library, expected_build = build$build, exact_sum = build$exact_sum,
             expect_failure = fault != "none",
-            binding = digest::digest(list(population = population, build = build, stage = stage, rep = rep,
-                operation = operation, protocol = bindings$protocol_sha256), algo = "sha256"),
+            binding = digest::digest(c(list(population = population, build = build, stage = stage, rep = rep,
+                operation = operation, protocol = bindings$protocol_sha256),
+                if (!is.null(variant)) list(variant = variant, parameters = parameters, oracle = oracle)), algo = "sha256"),
             selector = selector)
     }
     if (grepl("^kit-lifecycle-operation-", stage)) {
@@ -198,8 +203,10 @@ kitCases <- function(bindings, stage) {
     stopifnot(length(pairs) >= 1L, length(pairs) <= 2L)
     cases <- list()
     for (i in seq_along(pairs)) for (role in c("control", "candidate")) {
+        pair <- pairs[[i]]
         cases[[length(cases) + 1L]] <- operation_case(paste(role, i, sep = "-"), role, i, spec[[role]],
-            pairs[[i]]$operation, pairs[[i]]$population, "none", paste("kit", ticket, role, i, sep = ":"))
+            pair$operation, pair$population, "none", paste("kit", ticket, role, i, sep = ":"),
+            variant = pair$variants[[role]], oracle = pair$oracle, parameters = pair$parameters)
     }
     cases
 }
@@ -1246,6 +1253,18 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
         stopifnot(is.numeric(batches), length(batches) == 1L, batches >= 3L)
         receipt$filter <- actual[c("rows", "samples", "design_sha256", "summary_sha256", "support_sha256")]
         receipt$batches <- batches
+    } else if (!is.null(case$oracle)) {
+        # A journey oracle (KIT-005 `journey_<step>`): the member's head state, fingerprinted from its own store
+        # under the current canonical form, must reproduce the oracle's components, support entries and args
+        # summary; products are reported (the worker's progress product has no GUI context).
+        oracle <- bindings$oracles[[case$oracle]]
+        stopifnot(!is.null(oracle), !is.null(oracle$class))
+        actual <- kitFingerprintState(store, api("getDIAStateReference")(manager), api)
+        mismatches <- kitOracleStateMismatches(actual, oracle)
+        stopifnot(!length(mismatches))
+        receipt$oracle <- case$oracle
+        receipt$state <- list(class = actual$class, rows = actual$rows, components = length(actual$components),
+            support = length(actual$support), products_reported = names(actual$products))
     } else {
         oracle <- bindings$oracles[[paste0("operation_", case$population)]]
         stopifnot(!is.null(oracle), identical(hashes$sha256, oracle$sha256))
@@ -1254,6 +1273,24 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
     receipt$execution <- execution
     receipt$status <- "complete"
     receipt
+}
+
+#' Compare one state fingerprint with a journey oracle: class, rows, every component and support entry
+#' by name and hash, and the args summary; products are not judged (KIT-009).
+#' @return Character vector of mismatching entries (empty when the state reproduces the oracle).
+#' @noRd
+kitOracleStateMismatches <- function(actual, oracle) {
+    mismatches <- character()
+    if (!identical(actual$class, oracle$class)) mismatches <- c(mismatches, "class")
+    if (!identical(as.integer(actual$rows), as.integer(oracle$rows))) mismatches <- c(mismatches, "rows")
+    for (kind in c("components", "support")) {
+        if (!setequal(names(actual[[kind]]), names(oracle[[kind]]))) mismatches <- c(mismatches, paste0(kind, "/names"))
+        for (name in intersect(names(actual[[kind]]), names(oracle[[kind]])))
+            if (!identical(actual[[kind]][[name]]$sha256, oracle[[kind]][[name]]$sha256))
+                mismatches <- c(mismatches, paste0(kind, "/", name))
+    }
+    if (!identical(actual$summary_sha256, oracle$summary_sha256)) mismatches <- c(mismatches, "summary")
+    mismatches
 }
 
 #' Fingerprint a sample-filter result exactly as the CORE repair recorded its native oracle

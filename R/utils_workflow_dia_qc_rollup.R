@@ -288,12 +288,25 @@ applySavedWorkflowPrecursorRollup <- function(theObject, rollup_result, core_uti
     cleanDesignMatrixPeptide(theObject)
 }
 
-#' Apply the existing DIA peptide kernel to complete scientific groups.
-#' @param workflow Session workflow owner.
-#' @param section Existing peptide-method configuration section.
-#' @param parameters Explicit GUI scientific parameters.
-#' @param state_name,description Existing checkpoint identity and description.
-#' @return References, bounded progress and text; no scientific table escapes.
+#' State written by each section of the peptide-group family (the GUI passes the name; the worker
+#' operation reads it here).
+#' @noRd
+diaPeptideGroupStates <- c(filterMinNumPeptidesPerProtein = "protein_peptide_filtered",
+    peptideIntensityFiltering = "intensity_filtered", removePeptidesWithOnlyOneReplicate = "replicate_filtered",
+    peptideMissingValueImputation = "imputed")
+
+#' Declared working-set bytes per hydrated input row of a peptide-group kernel (KIT-009): the kernel's
+#' grouped copies, joins and support rows beside the hydrated row itself. An admission estimate, not a
+#' measurement; the kernel cgroup guard stays authoritative.
+#' @noRd
+diaPeptideGroupWorkingBytes <- 2048
+
+#' Run a peptide-group section on the current head and commit its state (GUI entry; contract unchanged).
+#' @param workflow Session owner (`state_manager`, `qc_params`, `filtering_progress`).
+#' @param section Configuration section of the family (`diaPeptideGroupStates`).
+#' @param parameters Caller-selected parameters of the section.
+#' @param state_name,description Existing state name and display text.
+#' @return Display result containing references and summaries only.
 #' @noRd
 runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_name, description) {
     manager <- workflow$state_manager
@@ -301,12 +314,51 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
     pending <- if (identical(manager$current_state, state_name)) resumeDIAQvalueOutput(manager, before) else NULL
     if (!is.null(pending)) return(pending)
     assertDIAExportReady(manager)
+    value <- computeDIAReferencePeptideGroups(manager, getDIAStateReference(manager), section, parameters,
+        state_name = state_name, description = description)
+    finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description,
+        value$config, value$section, value$counts)
+}
+
+#' Compute one peptide-group section of a saved state without committing it (KIT-009).
+#'
+#' Batches of whole protein groups are hydrated in the kernel's expected shape and the unchanged
+#' kernel runs once per batch; the results stream through the bounded table writer. `partitioned`
+#' (production) runs the batches through `partitionByFeatureGroup`: the admission estimate is
+#' recorded and refused above the cap, and the query engine is bounded by the cap (an eighth, at most
+#' 1 GiB). `grouped` is the per-group loop as it stood before KIT-009 (fixed 1 GB engine limit, no
+#' admission), kept as the control arm of the measurement. Both deliver the same batches.
+#' @param manager,reference Owner and the saved input state.
+#' @param section Configuration section of the family.
+#' @param parameters Caller-selected parameters of the section.
+#' @param worker_cap Admitted worker memory in bytes.
+#' @param variant `partitioned` or `grouped`.
+#' @param state_name,description Output state and display text; the description defaults to the
+#'   module's wording for the imputation step (the worker operation).
+#' @return Compute-only contract: `checkpoint`, `reference`, `summary`, `dependencies`, `counts`,
+#'   `execution` (variant, engine limit, batches, admission), `state_name`, `description`, `config`
+#'   and `section`, as `finishDIAReferencePeptideStep` consumes them.
+#' @noRd
+computeDIAReferencePeptideGroups <- function(manager, reference, section, parameters, worker_cap = 12 * 1024^3,
+    variant = "partitioned", state_name = NULL, description = NULL) {
+    if (!is.character(section) || length(section) != 1L || !section %in% names(diaPeptideGroupStates))
+        cli::cli_abort("unsupported peptide-group section", class = "workflow_execution_unsupported")
+    if (!is.character(variant) || length(variant) != 1L || !variant %in% c("grouped", "partitioned"))
+        cli::cli_abort("unsupported peptide-group variant", class = "workflow_execution_unsupported")
+    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) || worker_cap <= 0)
+        cli::cli_abort("invalid admitted worker capacity", class = "workflow_execution_unsupported")
+    if (is.null(state_name)) state_name <- diaPeptideGroupStates[[section]]
+    if (is.null(description)) {
+        if (section != "peptideMissingValueImputation") cli::cli_abort("a state description is required")
+        description <- "Applied missing value imputation using technical replicates"
+    }
     context <- manager$.context
+    before <- readDIAStateMetadata(manager, reference)
     checkpoint <- before$data
-    checkpoint$dependencies <- collectDIANativeReferences(list(getDIAStateReference(manager),
+    checkpoint$dependencies <- collectDIANativeReferences(list(reference,
         checkpoint$dependencies, checkpoint$components, checkpoint$support, checkpoint$products))
     source <- checkpoint$components$peptide_data
-    object <- readDIAExecutionComponents(manager, fields = "design_matrix")
+    object <- readDIAExecutionComponents(manager, reference, fields = "design_matrix")
     args <- object@args[[section]] %||% list()
     if (section == "filterMinNumPeptidesPerProtein") {
         args$peptides_per_protein_cutoff <- parameters$num_peptides_per_protein_thresh
@@ -330,14 +382,27 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
             "peptides_intensity_cutoff_percentile")],
         filterMinNumPeptidesPerSample = parameters["peptides_per_sample_cutoff"],
         peptideMissingValueImputation = updates, list())
+    # The configuration the step keeps in step with the object's args: the session's bus in the GUI, the
+    # global copy in a script that has one, else (a worker process or a bare script) a private copy seeded
+    # from the saved state's configuration, so no process-wide binding is created or required (KIT-009).
+    config_env <- workflowConfigEnvironment()
+    if (!exists("config_list", envir = config_env, inherits = FALSE)) {
+        config_env <- new.env(parent = emptyenv())
+        config_env$config_list <- before$config %||% list()
+    }
     for (parameter in names(ui_updates)) object <- updateConfigParameter(object,
-        function_name = section, parameter_name = parameter, new_value = ui_updates[[parameter]])
+        function_name = section, parameter_name = parameter, new_value = ui_updates[[parameter]], env = config_env)
     args <- object@args[[section]]
     design <- object@design_matrix
     scope <- newWorkflowTableReadScope(context$store, source)
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
     con <- scope$connection
-    DBI::dbExecute(con, "SET memory_limit = '1GB'")
+    # Engine memory: the grouped variant keeps the per-group loop's fixed limit; the partitioned variant
+    # bounds the engine by the admitted cap (an eighth, at most the loop's 1 GB), the rest being the kernel's
+    # working set.
+    engine_bytes <- if (variant == "grouped") 1e9 else min(1e9, floor(worker_cap / 8))
+    if (variant == "grouped") DBI::dbExecute(con, "SET memory_limit = '1GB'") else
+        DBI::dbExecute(con, paste0("SET memory_limit = '", floor(engine_bytes / 1048576), "MB'"))
     DBI::dbExecute(con, "SET threads = 2")
     q <- \(name) as.character(DBI::dbQuoteIdentifier(con, name))
     if (any(c(".dia_source_order", ".dia_design_order", ".dia_feature_order") %in% scope$metadata$columns)) {
@@ -370,18 +435,15 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
         "retained_feature_count", "removed_feature_count", "non_finite_measurement_count",
         "input_sample_count", "retained_sample_count", "removed_sample_count")
     result_args <- args
-    cursor <- openWorkflowTableGroups(scope, scientific_columns, group)
-    checkpoint$dependencies <- collectDIANativeReferences(list(checkpoint$dependencies, cursor$dependencies))
-    on.exit(cursor$close(), add = TRUE)
+    counts <- NULL
     generated_rows <- 0L
-    repeat {
-        part <- cursor$next_group()
-        if (is.null(part)) break
+    # The kernel runs once per batch of whole groups; the consumer streams its tables to the writers.
+    kernel <- function(part, index) {
         positions <- attr(part, "workflow_source_order") %||% integer()
         attr(part, "workflow_source_order") <- NULL
         part$.dia_source_order <- positions
-        object@peptide_data <- part
-        object@design_matrix <- design
+        object@peptide_data <<- part
+        object@design_matrix <<- design
         if (section == "peptideIntensityFiltering") {
             result <- peptideIntensityFilteringHelper(part, design,
                 min_peptide_intensity_threshold = threshold, sample_id_column = object@sample_id,
@@ -395,27 +457,32 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
                 groupwise_percentage_cutoff = args$groupwise_percentage_cutoff %||% 1,
                 max_groups_percentage_cutoff = args$max_groups_percentage_cutoff %||% 50,
                 return_filter_result = TRUE, require_complete_design_runs = FALSE)
-            result_args <- utils::modifyList(args, list(
+            result_args <<- utils::modifyList(args, list(
                 grouping_variable = parameters$grouping_variable %||% "group",
                 groupwise_percentage_cutoff = args$groupwise_percentage_cutoff %||% 1,
                 max_groups_percentage_cutoff = args$max_groups_percentage_cutoff %||% 50,
                 core_utilisation = args$core_utilisation %||% NA,
                 peptide_quantity_column = args$peptide_quantity_column %||% object@norm_quantity_column,
                 min_peptide_intensity_threshold = threshold))
-            result_args$support_table <- result$support_table
-            result_args$removal_ledger <- result$removal_ledger
-            result_args$filter_summary <- result$summary
+            result_args$support_table <<- result$support_table
+            result_args$removal_ledger <<- result$removal_ledger
+            result_args$filter_summary <<- result$summary
         } else {
-            object <- do.call(get(section, mode = "function"), c(list(theObject = object), parameters))
-            result_args <- object@args[[section]]
+            object <<- do.call(get(section, mode = "function"), c(list(theObject = object), parameters))
+            result_args <<- object@args[[section]]
             result <- list(data = object@peptide_data, support_table = result_args$support_table,
                 removal_ledger = result_args$removal_ledger,
                 summary = result_args$filter_summary %||% result_args$imputation_summary)
         }
+        # The hydrated batch travels with its result: the consumer's generated-row ordering reads it.
+        result$part <- part
+        result
+    }
+    consume <- function(result, index) {
         if (!is.null(result$summary)) {
-            if (is.null(summary)) summary <- result$summary else {
+            if (is.null(summary)) summary <<- result$summary else {
                 for (name in intersect(sum_fields, names(result$summary))) {
-                    summary[[name]] <- (summary[[name]] %||% 0L) + result$summary[[name]]
+                    summary[[name]] <<- (summary[[name]] %||% 0L) + result$summary[[name]]
                 }
             }
         }
@@ -427,6 +494,7 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
                     as.character(design[[object@sample_id]]))
                 table$.dia_feature_order <- rep(0L, nrow(table))
                 technical <- object@technical_replicate_id
+                part <- result$part
                 if (section == "peptideMissingValueImputation" && length(technical) == 1L &&
                     technical %in% names(design) && nrow(part)) {
                     observed <- data.frame(.group = as.character(design[[technical]][match(
@@ -445,8 +513,8 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
                 }
             }
             if (is.null(restoration[[field]])) {
-                restoration[[field]] <- workflowSavedTableMetadata(table, ".rownames", 3L)
-                offsets[[field]] <- 0L
+                restoration[[field]] <<- workflowSavedTableMetadata(table, ".rownames", 3L)
+                offsets[[field]] <<- 0L
             }
             if (field == "data") {
                 generated <- is.na(table$.dia_source_order)
@@ -454,7 +522,7 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
                     additions <- table[generated, , drop = FALSE]
                     for (start in seq.int(1L, nrow(additions), by = 10000L)) {
                         at <- seq.int(start, min(nrow(additions), start + 9999L))
-                        generated_rows <- appendWorkflowTableBatch(scope, "dia_group_generated",
+                        generated_rows <<- appendWorkflowTableBatch(scope, "dia_group_generated",
                             additions[at, , drop = FALSE], generated_rows)
                     }
                 }
@@ -466,20 +534,46 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
             }
             for (start in seq.int(1L, max(1L, nrow(table)), by = 10000L)) {
                 at <- if (nrow(table)) seq.int(start, min(nrow(table), start + 9999L)) else integer()
-                offsets[[field]] <- appendWorkflowTableBatch(scope, paste0("dia_group_", field),
+                offsets[[field]] <<- appendWorkflowTableBatch(scope, paste0("dia_group_", field),
                     table[at, , drop = FALSE], offsets[[field]],
                     key_column = if (field == "data") ".dia_source_order" else ".rownames")
             }
         }
-        object@peptide_data <- object@peptide_data[0, , drop = FALSE]
-        result <- part <- table <- NULL
+        object@peptide_data <<- object@peptide_data[0, , drop = FALSE]
+        result <- table <- part <- NULL
+        invisible(NULL)
     }
-    cursor$close()
+    execution <- list(variant = variant, engine_limit_bytes = engine_bytes)
+    if (variant == "grouped") {
+        cursor <- openWorkflowTableGroups(scope, scientific_columns, group)
+        checkpoint$dependencies <- collectDIANativeReferences(list(checkpoint$dependencies, cursor$dependencies))
+        on.exit(cursor$close(), add = TRUE)
+        batches <- 0L
+        batch_sizes <- integer()
+        repeat {
+            part <- cursor$next_group()
+            if (is.null(part)) break
+            batches <- batches + 1L
+            batch_sizes[[batches]] <- nrow(part)
+            consume(kernel(part, batches), batches)
+            part <- NULL
+        }
+        cursor$close()
+        execution$batches <- batches
+        execution$batch_sizes <- batch_sizes
+        execution$groups <- length(cursor$group_sizes)
+    } else {
+        partition <- partitionByFeatureGroup(scope, scientific_columns, group, kernel, consume, worker_cap,
+            working_bytes_per_row = diaPeptideGroupWorkingBytes,
+            overhead_bytes = engine_bytes + 268435456 + 2 * 67108864 + 2 * 8388608,
+            policy = "feature-group-cursor-batches-v1")
+        checkpoint$dependencies <- collectDIANativeReferences(list(checkpoint$dependencies, partition$dependencies))
+        execution <- c(execution, partition[c("batches", "batch_sizes", "groups", "admission")])
+    }
     identity <- newSavedWorkflowScientificIdentity(source$entity_id,
         checkpoint$components$design_matrix$entity_id, digest::digest(list(section, parameters), algo = "sha256"),
         "complete-declared-groups", context$software)
     references <- list()
-    counts <- NULL
     for (field in names(restoration)) {
         path <- finishWorkflowTableBatch(scope, paste0("dia_group_", field), identity)
         if (field == "data") {
@@ -570,8 +664,10 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
     checkpoint$dimensions <- list(rows = restoration$data$rows,
         columns = restoration$data$columns)
     releaseWorkflowTableReadScope(scope)
-    finishDIAReferencePeptideStep(workflow, checkpoint, state_name, description,
-        c(parameters, list(filter_summary = summary)), section, counts)
+    list(checkpoint = checkpoint, reference = references$data, summary = summary,
+        dependencies = checkpoint$dependencies, counts = counts, execution = execution,
+        state_name = state_name, description = description,
+        config = c(parameters, list(filter_summary = summary)), section = section)
 }
 
 #' Commit a peptide table and its bounded progress without reading the assay.
@@ -1222,6 +1318,25 @@ diaSampleFilterOperation <- function() {
             "unique design runs, input runs a subset of the design, and the inclusion-absence set, computed once over the whole input"),
         merge = c(design_matrix = "design", peptide_data = "concatenate", support_table = "concatenate",
             removal_ledger = "concatenate", counts = "sum"))
+}
+
+#' The peptide missing-value imputation as a declaration on the feature-group partitioner (KIT-009):
+#' batches of whole protein groups, the unchanged `peptideMissingValueImputation` kernel once per batch,
+#' generated rows appended in source and design order, support concatenated, counts summed, the design
+#' recomputed once by the shared finishing step. The kernel runs the compute-only entry point.
+#' @return Declaration from `newWorkflowOperation`.
+#' @noRd
+diaPeptideImputationOperation <- function() {
+    newWorkflowOperation(name = "peptide_imputation", input_class = "PeptideQuantitativeData",
+        fields = "design_matrix", unit = "feature_group",
+        kernel = function(object, parameters, store) computeDIAReferencePeptideGroups(store$manager, store$source,
+            "peptideMissingValueImputation", parameters[c("proportion_missing_values", "exclusion_column")],
+            worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "partitioned"),
+        output_class = "PeptideQuantitativeData", parameters = c("proportion_missing_values", "exclusion_column"),
+        product_type = "dia.peptide_imputation_result",
+        global_statistics = c(source_row_order =
+            "the output keeps the input's source ordinals and the design order for generated rows, assigned by the writer once over the whole output"),
+        merge = c(design_matrix = "design", peptide_data = "concatenate", support_table = "concatenate", counts = "sum"))
 }
 
 #' Execute the unchanged native method with the shared bounded persistence layer.

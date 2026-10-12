@@ -634,6 +634,42 @@ test_that("a ticket journey pair bound with the resident-end rule is decided on 
     expect_identical(h$kitJourneyTicketDecision(receipt, cases, b)$failing_rule, "required_reduction")
 })
 
+test_that("an operation pair may bind each arm's registry variant, its parameters and a journey oracle (KIT-009)", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$builds$kit_009 <- list(library = "/lib/i", build = strrep("i", 64), exact_sum = "sum-i")
+    b$populations$journey_replicate <- list(step = "replicate", state = "replicate_filtered", store = "/store/journey",
+        head_sha256 = strrep("7", 64), head_entity = "dia-state-head7", entity_id = strrep("8", 64), rows = 5515154L)
+    b$oracles$journey_imputation <- list(class = "PeptideQuantitativeData", rows = 11826409L,
+        components = list(peptide_data = list(sha256 = "p"), design_matrix = list(sha256 = "d")),
+        support = list(`peptideMissingValueImputation/support_table` = list(sha256 = "s")), products = list(qc_progress = list(sha256 = "q")),
+        summary_sha256 = "sum")
+    b$tickets[["009"]] <- list(control = "kit_009", candidate = "kit_009",
+        pairs = list(list(operation = "peptide_imputation", population = "journey_replicate", oracle = "journey_imputation",
+            parameters = list(proportion_missing_values = 0.5, exclusion_column = NULL),
+            variants = list(control = "grouped", candidate = "partitioned"))))
+    cases <- h$kitCases(b, "kit-009")
+    expect_identical(vapply(cases, `[[`, "", "id"), c("control-1", "candidate-1"))
+    expect_identical(vapply(cases, `[[`, "", "variant"), c("grouped", "partitioned"))
+    expect_identical(vapply(cases, `[[`, "", "library"), c("/lib/i", "/lib/i"))
+    expect_identical(cases[[1]]$oracle, "journey_imputation")
+    expect_identical(cases[[1]]$input$state, "replicate_filtered")
+    expect_identical(cases[[2]]$parameters$proportion_missing_values, 0.5)
+    expect_false(identical(cases[[1]]$binding, cases[[2]]$binding))
+    # The KIT-006 pairs carry no variant: the coordinator keeps their production variants.
+    expect_null(h$kitCases(b, "kit-006")[[1]]$variant)
+    actual <- b$oracles$journey_imputation
+    expect_identical(h$kitOracleStateMismatches(actual, b$oracles$journey_imputation), character())
+    changed <- actual
+    changed$components$peptide_data$sha256 <- "x"
+    changed$summary_sha256 <- "other"
+    changed$products <- list()
+    expect_identical(h$kitOracleStateMismatches(changed, b$oracles$journey_imputation), c("components/peptide_data", "summary"))
+    missing <- actual
+    missing$support <- list()
+    expect_identical(h$kitOracleStateMismatches(missing, b$oracles$journey_imputation), "support/names")
+})
+
 test_that("a ticket's gui-mode member runs the screen journey with no record on its build and is decided on completion, dispatch and reproduction (KIT-008)", {
     h <- kitHarness()
     b <- kitSyntheticBindings()

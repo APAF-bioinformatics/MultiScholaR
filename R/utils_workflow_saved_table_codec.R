@@ -1783,6 +1783,7 @@ openWorkflowContiguousGroups <- function(scope, columns, group, directory, depen
     reader <- openWorkflowArrowCursor(scope, columns)
     iterator <- new.env(parent = emptyenv())
     iterator$dependencies <- dependencies
+    iterator$group_sizes <- as.integer(directory$size)
     iterator$at <- 1L
     iterator$loaded <- iterator$delivered <- 0L
     iterator$pending <- iterator$source <- iterator$row_names <- NULL
@@ -1887,6 +1888,8 @@ openWorkflowTableGroups <- function(scope, columns, group, group_order = "first"
     iterator <- new.env(parent = emptyenv())
     iterator$dependencies <- list(index$reference, index$value$groups, index$value$positions,
         scope$physical_reference)
+    # The group directory's sizes, for an admission estimate before the first batch (KIT-009).
+    iterator$group_sizes <- as.integer(directory$size)
     iterator$at <- 1L
     iterator$delivered_groups <- 0L
     iterator$cohort <- NULL

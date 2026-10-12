@@ -235,6 +235,18 @@ if (!is.null(b$builds$kit_008)) {
         operations = c("precursor_rollup", "minimum_peptides_per_sample"), ceiling_seconds = 900L)
 }
 
+# KIT-009: the imputation step as an operation on the feature-group partitioner, control and candidate on the
+# KIT-005 imputation population (input: the state after the replicate filter, `journey_replicate`; oracle: the
+# state after imputation, `journey_imputation`), with the journey's recorded parameters (proportion 0.5, no
+# exclusion column). Both arms run the one kit_009 build: `grouped` is the per-group loop as it stood before
+# KIT-009, `partitioned` the partitioner (user decision pending at generation; see kit-009/outcome.md).
+if (!is.null(b$builds$kit_009)) {
+    b$tickets[["009"]] <- list(control = "kit_009", candidate = "kit_009",
+        pairs = list(list(operation = "peptide_imputation", population = "journey_replicate", oracle = "journey_imputation",
+            parameters = list(proportion_missing_values = 0.5, exclusion_column = NULL),
+            variants = list(control = "grouped", candidate = "partitioned"))))
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and

@@ -2051,6 +2051,22 @@ validateWorkflowSampleFilterParameters <- function(parameters, policy, resolved 
     invisible(NULL)
 }
 
+#' The imputation's proportion threshold and optional design exclusion column (KIT-009).
+#' @noRd
+validateWorkflowPeptideImputationParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("proportion_missing_values", "exclusion_column")
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !"proportion_missing_values" %in% names(parameters))
+        cli::cli_abort("imputation parameters required or unknown parameter supplied")
+    p <- parameters$proportion_missing_values
+    if ((resolved || !is.null(p)) && (!is.numeric(p) || length(p) != 1L || !is.finite(p) || p < 0 || p > 1))
+        cli::cli_abort("proportion of missing values must lie in [0, 1]")
+    exclusion <- parameters$exclusion_column
+    if (!is.null(exclusion) && (!is.character(exclusion) || length(exclusion) != 1L))
+        cli::cli_abort("exclusion column must be a single name")
+    invisible(NULL)
+}
+
 #' The diagnostic fixture's modes, under a diagnostic policy only.
 #' @noRd
 validateWorkflowFixtureParameters <- function(parameters, policy, resolved = TRUE) {
@@ -2102,6 +2118,12 @@ computeWorkflowPrecursorRollupAction <- function(manager, request, variant) {
 computeWorkflowSampleFilterAction <- function(manager, request, variant) {
     computeDIAReferenceSampleFilter(manager, request$input_references$state, request$parameters,
         worker_cap = request$worker_cap, output_mode = variant)
+}
+
+#' @noRd
+computeWorkflowPeptideImputationAction <- function(manager, request, variant) {
+    computeDIAReferencePeptideGroups(manager, request$input_references$state, "peptideMissingValueImputation",
+        request$parameters, worker_cap = request$worker_cap, variant = variant)
 }
 
 #' Resolve only server-owned finite qualification variants for installed actions.
