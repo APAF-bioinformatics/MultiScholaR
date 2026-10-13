@@ -207,6 +207,12 @@ kitCases <- function(bindings, stage) {
         for (i in seq_along(members)) {
             member <- members[[i]]
             if (is.null(member$variant) || is.null(member$oracle)) stop("single member ", i, " binds no variant or oracle")
+            # A bound input file (KIT-015: the accession member's FASTA table) must still carry its bound hash.
+            for (name in names(member$inputs)) {
+                input <- member$inputs[[name]]
+                if (!file.exists(input$path) || !identical(digest::digest(file = input$path, algo = "sha256"), input$sha256))
+                    stop("single member ", i, ": bound input ", name, " is missing or changed")
+            }
             cases[[length(cases) + 1L]] <- operation_case(paste0("single-", i), "single", i, spec$build, member$operation,
                 member$population, "none", paste("kit", ticket, "single", i, sep = ":"),
                 variant = member$variant, oracle = member$oracle, parameters = member$parameters)

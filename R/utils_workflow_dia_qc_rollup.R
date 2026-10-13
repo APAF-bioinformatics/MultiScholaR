@@ -957,25 +957,10 @@ finishDIAProteinAction <- function(workflow, result, field, publish = TRUE) {
 #' @return The display handoff with `stateReference`.
 #' @noRd
 completeDIAProteinAction <- function(workflow, value, publish = FALSE) {
-    manager <- workflow$state_manager
-    # KIT-015: a protein value that carries its own display text and product field finishes through the
-    # shared protein finishing step; the KIT-010 replicate value keeps its completion below (the GUI's
-    # in-process path passes `publish = TRUE`).
-    if (!is.null(value$field)) return(finishDIAReferenceProteinStep(workflow, value, publish = publish))
-    commitDIAReferenceState(manager, value$state_name, value$checkpoint, value$config, value$description)
-    object <- readDIAExecutionComponents(manager)
-    protein_count <- value$protein_count %||% length(unique(object@protein_quant_table[[object@protein_id_column]]))
-    text <- paste(
-        "Protein Replicate Filter Applied Successfully\n",
-        "============================================\n",
-        sprintf("Proteins remaining: %d\n", protein_count),
-        sprintf("Grouping variable: %s\n", value$config$grouping_variable),
-        sprintf("Parallel cores used: %d\n", 1L),
-        sprintf("Output file: %s\n", basename(value$config$output_file)),
-        "State saved as: 'protein_replicate_filtered'\n",
-        "\nProtein filtering pipeline complete!")
-    finishDIAProteinAction(workflow, list(filteredS4 = object, outputFile = value$config$output_file,
-        proteinCount = protein_count, resultText = text), "filteredS4", publish = publish)
+    # KIT-015: every protein value carries its display text and product field and finishes through the shared
+    # protein finishing step (the GUI's in-process paths pass `publish = TRUE`).
+    if (is.null(value$field)) cli::cli_abort("protein value without a product field", class = "workflow_execution_invalid")
+    finishDIAReferenceProteinStep(workflow, value, publish = publish)
 }
 
 #' Complete protein file publication using accepted results, without rerunning science.
@@ -1490,9 +1475,20 @@ computeDIAReferenceProteinReplicateFilter <- function(manager, reference, parame
     removeProteinsWithOnlyOneReplicateFn <- removeProteinsWithOnlyOneReplicate
     config <- list(grouping_variable = grouping, parallel_cores = as.integer(parameters$parallel_cores %||% 1L),
         output_file = output_file)
+    # The value carries its display text and product field (KIT-015 audit PE-04: one completion shape).
     result <- function(checkpoint, protein_count, execution) list(checkpoint = checkpoint,
         reference = checkpoint$components$protein_quant_table, state_name = state_name, description = description,
-        config = config, section = section, protein_count = protein_count, execution = execution)
+        config = config, section = section, protein_count = protein_count, execution = execution,
+        text = paste(
+            "Protein Replicate Filter Applied Successfully\n",
+            "============================================\n",
+            sprintf("Proteins remaining: %d\n", protein_count),
+            sprintf("Grouping variable: %s\n", grouping),
+            sprintf("Parallel cores used: %d\n", 1L),
+            sprintf("Output file: %s\n", basename(output_file)),
+            "State saved as: 'protein_replicate_filtered'\n",
+            "\nProtein filtering pipeline complete!"),
+        field = "filteredS4", qc_name = NULL, qc = NULL, outputFile = output_file, proteinCount = protein_count)
     if (variant == "whole") {
         object <- readDIAExecutionComponents(manager, reference)
         filtered <- removeProteinsWithOnlyOneReplicateFn(object, NA, grouping_variable = grouping)

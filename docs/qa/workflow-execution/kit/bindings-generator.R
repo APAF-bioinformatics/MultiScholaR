@@ -314,7 +314,9 @@ if (!is.null(b$builds$kit_015)) {
         list(operation = "protein_iq_rollup", population = "journey_imputation", oracle = "journey_iq", variant = "whole",
             parameters = list()),
         list(operation = "protein_accession_cleanup", population = "journey_iq", oracle = "journey_accession", variant = "whole",
-            parameters = list(delimiter = ";", aggregation_method = "mean", fasta_table = fasta)),
+            parameters = list(delimiter = ";", aggregation_method = "mean", fasta_table = fasta),
+            # The bound file's hash: the case expansion refuses a changed FASTA table before any member runs (audit PE-03).
+            inputs = list(fasta_table = list(path = fasta, sha256 = hash(fasta)))),
         list(operation = "protein_intensity_filter", population = "journey_accession", oracle = "journey_protein_intensity",
             variant = "whole", parameters = list(strict_mode = FALSE, min_reps_per_group = 2L, min_groups = 2L,
                 proteins_intensity_cutoff_percentile = 1L)),

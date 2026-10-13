@@ -76,9 +76,12 @@ computeDIAReferenceIQRollup <- function(manager, reference, parameters = list(),
     writeDIAIQInput(manager, peptideReference, peptideValuesImputedFile, sampleMapping, sampleColumn, intensityColumn, write_fn)
     lineage <- readDIAProteinLineage(manager, peptideReference, proteinColumn)
     iqOutputFile <- file.path(paths$protein_qc_dir, "iq_output_file.txt")
+    # The declaration passes no QC plot file (audit A6, KIT-015 pre-execution audit PE-01): IQ's default
+    # `qc-plots.pdf` would land in the process working directory (the worker's home); the plot is no
+    # component or product of the step.
     process_long_format(peptideValuesImputedFile, output_filename = iqOutputFile, sample_id = sampleColumn,
         primary_id = proteinColumn, secondary_id = peptideColumn, intensity_col = intensityColumn,
-        filter_double_less = c("Q.Value" = "0.01", "PG.Q.Value" = "0.01"), normalization = "none")
+        filter_double_less = c("Q.Value" = "0.01", "PG.Q.Value" = "0.01"), normalization = "none", pdf_out = NULL)
     if (!file.exists(iqOutputFile)) cli::cli_abort("IQ output file not created", class = "workflow_execution_invalid")
     proteinLog2Quant <- read_fn(iqOutputFile, .name_repair = "minimal")
     restored <- vapply(colnames(proteinLog2Quant), function(col) {

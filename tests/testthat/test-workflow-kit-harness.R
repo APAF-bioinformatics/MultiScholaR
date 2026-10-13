@@ -846,6 +846,15 @@ test_that("a ticket may bind single members: one operation member per step on on
     late$cases[["single-1"]]$operation$elapsed_seconds <- 601
     expect_identical(h$kitSingleDecision(late, cases, b)$status, "invalid")
     expect_identical(h$kitSingleDecision(late, cases, b)$failing_rule, "elapsed_within_ceiling")
+    # A member's bound input file must still carry its bound hash (KIT-015 audit PE-03).
+    fasta <- withr::local_tempfile(fileext = ".RDS")
+    saveRDS(data.frame(database_id = "P1"), fasta)
+    hashed <- b
+    hashed$tickets[["014"]]$members[[2]]$parameters$fasta_table <- fasta
+    hashed$tickets[["014"]]$members[[2]]$inputs <- list(fasta_table = list(path = fasta, sha256 = digest::digest(file = fasta, algo = "sha256")))
+    expect_identical(h$kitCases(hashed, "kit-014")[[2]]$parameters$fasta_table, fasta)
+    saveRDS(data.frame(database_id = "P2"), fasta)
+    expect_error(h$kitCases(hashed, "kit-014"), "missing or changed")
     # A member without a bound variant or oracle refuses at expansion; more than five members too.
     bare <- b
     bare$tickets[["014"]]$members[[1]]$oracle <- NULL
