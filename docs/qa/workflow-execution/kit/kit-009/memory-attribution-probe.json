@@ -1,0 +1,78 @@
+{
+  "schema": "kit.memory_attribution_probe.v1",
+  "ticket": "KIT-009",
+  "date": "2026-10-13",
+  "head_commit": "222fca2f1765697982b5b1f236f8916f233d8369",
+  "population": {
+    "name": "journey_replicate",
+    "rows": 5515154
+  },
+  "parameters": {
+    "proportion_missing_values": 0.5,
+    "exclusion_column": null
+  },
+  "anon_after_load": 551215104,
+  "phases": {
+    "normal_cap": {
+      "engine_limit_bytes": 1000000000,
+      "anon_at_start": 620027904,
+      "kernel_phase_peak": 2009427968,
+      "kernel_phase_seconds": 500,
+      "output_phase_peak": 2659930112,
+      "output_phase_seconds": 204.4,
+      "finish_phase_peak": "NA",
+      "finish_phase_seconds": 0,
+      "anon_after_close": 1905049600
+    },
+    "reduced_cap": {
+      "engine_limit_bytes": 268435456,
+      "anon_at_start": 1909112832,
+      "kernel_phase_peak": 2737270784,
+      "kernel_phase_seconds": 541.4,
+      "output_phase_peak": 2677436416,
+      "output_phase_seconds": 220.3,
+      "finish_phase_peak": "NA",
+      "finish_phase_seconds": 0,
+      "anon_after_close": 1747636224
+    }
+  },
+  "marks": [
+    {
+      "label": "loaded",
+      "uptime": 21123.01
+    },
+    {
+      "label": "normal_cap:start",
+      "uptime": 21124.24
+    },
+    {
+      "label": "batches_done",
+      "uptime": 21624.26
+    },
+    {
+      "label": "normal_cap:finish_done",
+      "uptime": 21828.63
+    },
+    {
+      "label": "normal_cap:closed",
+      "uptime": 21829.21
+    },
+    {
+      "label": "reduced_cap:start",
+      "uptime": 21830.54
+    },
+    {
+      "label": "batches_done",
+      "uptime": 22371.95
+    },
+    {
+      "label": "reduced_cap:finish_done",
+      "uptime": 22592.25
+    },
+    {
+      "label": "reduced_cap:closed",
+      "uptime": 22592.87
+    }
+  ],
+  "samples": 2910
+}

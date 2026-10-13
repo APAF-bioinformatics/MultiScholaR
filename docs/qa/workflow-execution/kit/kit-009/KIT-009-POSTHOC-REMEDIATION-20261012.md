@@ -9,3 +9,14 @@ Register: [KIT-009-POSTHOC-AUDIT-20261012.md](KIT-009-POSTHOC-AUDIT-20261012.md)
 | PH-03 to PH-06, PH-08 | Accepted without change (recorded). | — |
 
 No code changed; the completion and the control (`kit_009`) stand.
+
+## Addendum 2026-10-13: the attribution probe's second mode (PH-03, and KIT-010 pre-execution PE-07)
+
+[memory-attribution-probe.json](memory-attribution-probe.json) (both runs in one process; the second starts from the first's retained 1.78 GiB):
+
+| Run | Engine limit | Start | Kernel-phase peak (500 to 540 s) | Output-phase peak (about 210 s) |
+|---|---|---|---|---|
+| normal cap | 1 GB | 0.58 GiB | 1.87 GiB | 2.48 GiB |
+| reduced cap | 268 MB | 1.78 GiB | 2.55 GiB | 2.49 GiB |
+
+The kernel phase rises 1.29 GiB above its start at the 1 GB engine limit and 0.77 GiB at 268 MB: the engine's budget is used during the batches, about 0.5 GiB of it. The output phase peaks at the same reading in both runs, so the step's peak is the ordered output write whatever the engine limit, as the KIT-009 audit found. PH-03 is refined, not changed.
