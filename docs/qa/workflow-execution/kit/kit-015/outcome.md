@@ -1,6 +1,6 @@
 # KIT-015: protein QC declarations
 
-Status 2026-10-14: **implemented; single members declared, waiting for the user's go.** Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-015: up to five single members, exactness and completion, 10 min each); protocol v1.3 (single members: oracle hash, peak recorded, no ratio; the memory decision is KIT-017's). Control: `kit_014` (`core/browser-smoke.Dl22nP`). Predecessor cases: PERF-114, PERF-115, PERF-117, PERF-118; audit findings A2, A4, A5, A6, A11.
+Status 2026-10-14: **implemented and installed (`kit_015` = `core/browser-smoke.Zi0y8A`, source `31603afc`); four single members declared, waiting for the user's go.** Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-015: up to five single members, exactness and completion, 10 min each); protocol v1.3 (single members: oracle hash, peak recorded, no ratio; the memory decision is KIT-017's). Control: `kit_014` (`core/browser-smoke.Dl22nP`). Predecessor cases: PERF-114, PERF-115, PERF-117, PERF-118; audit findings A2, A4, A5, A6, A11.
 
 ## Unit gate (simulation setup 1)
 
@@ -43,4 +43,8 @@ Every step exact on the first run (the parameters were bound from the oracle sta
 
 ## Declared runs (as authorised; ledger row KIT-015: up to five single members, 10 min each)
 
-_(filled before launch)_
+Four single members on the one `kit_015` build (the replicate filter was measured by KIT-010), each on the KIT-005 population the journey fed it with the parameters its oracle state records, verified against the journey's next state; exactness and completion only (protocol: peak recorded, no ratio, no control member; the memory decision is KIT-017's).
+
+1. **Install** (recorded, not counted): the KIT-015 tree at its commit into `<proof>/core`, bound as `kit_015`; bindings regenerated (`tickets$015`, kind `single`; the accession member binds `fasta_table` to the control journey project's `aa_seq_tbl_final.RDS`, read-only); `run_workflow_kit.sh validate kit-015` must pass.
+2. **Stage `kit-015`, four counted single members, 600 s ceiling each**, in order: `single-1` (`protein_iq_rollup` on `journey_imputation`, oracle `journey_iq`; IQ's working files under the worker's request directory, published by the controller), `single-2` (`protein_accession_cleanup` on `journey_iq`, oracle `journey_accession`), `single-3` (`protein_intensity_filter` on `journey_accession`, oracle `journey_protein_intensity`), `single-4` (`protein_duplicate_removal` on `journey_protein_intensity`, oracle `journey_duplicates`); each in its own slice (16 GiB cap, 15.5 GiB early stop, 12 GiB start headroom, 2 GiB host floor, 250 ms gap rule); the verifier runs outside the slice after each member.
+3. **Decision (predeclared, `kitSingleDecision`)**: every member eligible and exact against its oracle → `accepted` (placement: `kit_015` becomes the control, protocol section 2); an oracle mismatch → `rejected`; any other rule → `invalid`; recorded either way; one correction rerun of a single member only for a demonstrated harness failure. Expected: all four exact (the in-process check above); the IQ member is the closest to the ceiling (210 s in process) and the first member to run a peptide-input operation with the protein compute role on the worker (the launch chain was exercised in process: registry, handler, worker entry point from a frozen request, completion, the result reader; the publication phase for `protein_s4_created` copies IQ's files from the request directory).

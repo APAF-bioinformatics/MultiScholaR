@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-13",
+  "created": "2026-10-14",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -87,6 +87,15 @@
       "exact_sum": "a1b8da5ba95c264fb7e42b27bd28cac51e42aab4a91a8ed4fb098b9c7f9de169",
       "install_member": "browser-smoke.Dl22nP",
       "source_commit": "6cb49ed00485564f7a3ca30d9b8d5a32c8e4708e",
+      "runtime_patch_bytes": 0
+    },
+    "kit_015": {
+      "ticket": "KIT-015",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.Zi0y8A/library",
+      "build": "4dc3803a48284fdee3efdd7d6bd330805af51d1c09d5ca62d381f1bc46cbff44",
+      "exact_sum": "95a17a77243c5cc93d92b8a8657cbdd7716907696fca7b5af2fe92c86059c33d",
+      "install_member": "browser-smoke.Zi0y8A",
+      "source_commit": "31603afcd3000dabb54707674777daa7827e7428",
       "runtime_patch_bytes": 0
     }
   },
@@ -3665,7 +3674,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-13",
+        "date": "2026-10-14",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -3816,6 +3825,51 @@
           "variant": "partitioned",
           "parameters": {
             "replicate_group_column": "replicates"
+          }
+        }
+      ]
+    },
+    "015": {
+      "kind": "single",
+      "build": "kit_015",
+      "members": [
+        {
+          "operation": "protein_iq_rollup",
+          "population": "journey_imputation",
+          "oracle": "journey_iq",
+          "variant": "whole",
+          "parameters": []
+        },
+        {
+          "operation": "protein_accession_cleanup",
+          "population": "journey_iq",
+          "oracle": "journey_accession",
+          "variant": "whole",
+          "parameters": {
+            "delimiter": ";",
+            "aggregation_method": "mean",
+            "fasta_table": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/aa_seq_tbl_final.RDS"
+          }
+        },
+        {
+          "operation": "protein_intensity_filter",
+          "population": "journey_accession",
+          "oracle": "journey_protein_intensity",
+          "variant": "whole",
+          "parameters": {
+            "strict_mode": false,
+            "min_reps_per_group": 2,
+            "min_groups": 2,
+            "proteins_intensity_cutoff_percentile": 1
+          }
+        },
+        {
+          "operation": "protein_duplicate_removal",
+          "population": "journey_protein_intensity",
+          "oracle": "journey_duplicates",
+          "variant": "whole",
+          "parameters": {
+            "aggregation_method": "mean"
           }
         }
       ]
