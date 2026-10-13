@@ -264,6 +264,13 @@ if (!is.null(b$builds$kit_010)) {
         pairs = list(list(operation = "protein_replicate_filter", population = "journey_duplicates", oracle = "journey_protein_replicate",
             parameters = list(grouping_variable = "group", parallel_cores = 4L),
             variants = list(control = "whole", candidate = "rows"))))
+    # KIT-010 accepted 2026-10-13 (stage kit-010, third launch: both arms exact against journey_protein_replicate, the
+    # rows arm 0.994 x the whole arm's slice peak and 0.998 x its anonymous peak): the KIT-010 build is the control
+    # from here (protocol section 2).
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-010", outcome = "control", build = "kit_010",
+        note = "row partitioner and wide-assay sample projection under the protein replicate filter (protein_replicate_filter operation, protein worker roles); accepted against the GUI's in-process path on the same build (stage kit-010, 2026-10-13): exact, slice peak 0.994 x, anonymous 0.998 x; the control for KIT-014 onward")
+    b$control <- "kit_010"
+    b$journey$pair$control <- b$control
 }
 
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with

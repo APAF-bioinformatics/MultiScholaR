@@ -1,6 +1,6 @@
 # KIT-010: row partitioner and wide-table sample projection
 
-Status 2026-10-12: **implemented and verified in process; counted pair pending the user's "go".** Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-010: control and candidate on the protein population, replicate filter, 10 min each); protocol v1.3. Control: `kit_009` (`core/browser-smoke.s292Da`). Predecessor case: PERF-114 (protein filters); audit findings A2, B23, B24.
+Status 2026-10-13: **accepted and complete.** Stage `kit-010` decision `accepted` on the third launch (user decision: one build, two arms; user amendments: both members rerun after the attempt 1 harness and attempt 2 worker-dispatch failures, neither of which ran a kernel); `kit_010` (`core/browser-smoke.nIs2QB`, source `e061fa69`) is the control from KIT-014 onward. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-010: control and candidate on the protein population, replicate filter, 10 min each); protocol v1.3. Control: `kit_009` (`core/browser-smoke.s292Da`). Predecessor case: PERF-114 (protein filters); audit findings A2, B23, B24.
 
 ## Unit gate (simulation setup 1)
 
@@ -37,7 +37,24 @@ Stage `kit-010` launched as bound. Both members were refused by the adapters veh
 
 Both members launched, admitted and started a worker; both workers ended `failed` within seconds with "operation adapter unavailable": the worker entry point (`workflowWorkerMain`) dispatched the scientific action for the `peptide` compute role only, so the new `protein` role, accepted by the registry validator and by the controller's compute helper, had no entry in the worker. No kernel ran; the members are `worker_failed`, not measurements. The stage directory is kept as `kit-010.attempt2-worker-dispatch`. Correction: the worker dispatches the peptide and protein roles to the scientific action; a test now runs the worker entry point end to end on the protein fixture from a frozen request and asserts every registered compute role is one the worker dispatches. Package code changed, so the tree was reinstalled: `kit_010` = `core/browser-smoke.nIs2QB` from `e061fa69` (empty runtime patch), bound; stage validates. A rerun of both members needs the user's ledger amendment.
 
-## Declared runs (pending "go")
+## Results (stage `kit-010`, 2026-10-13; tracked summary [kit-010-stage.json](kit-010-stage.json))
+
+| Member | Arm | Status | Elapsed | Slice peak | Anonymous peak | Max gap | Pages | Verified |
+|---|---|---|---|---|---|---|---|---|
+| control-1 | kit_010, `whole` (the GUI's in-process path) | complete | 37 s | 1.303 GiB | 1.269 GiB | 70 ms | one object | exact against `journey_protein_replicate`: 3 components, 10 support entries, args summary; products reported |
+| candidate-1 | kit_010, `rows` (one page; admission 0.18 GiB at the cap) | complete | 29 s | 1.295 GiB | 1.266 GiB | 70 ms | 1 | exact, same record |
+
+Pair ratios (candidate / control): slice peak 0.994, anonymous 0.998, elapsed 0.768. `not_worse` holds; no reduction claimed (both arms measure the slice floor, as predeclared; the protein table is about 6 MB). Zero swap, every gap under 250 ms, slices stopped. Predeclared page rule held (one page). Decision `accepted` (`kitOperationDecision`); placement: `kit_010` becomes the control (protocol section 2).
+
+### Claim limits
+
+- The arms share the build (user decision; the control build carries no protein operation): the pair isolates the row partitioner, its admission and the writer path, not a build-versus-build difference.
+- Both members measure the three-process floor (about 1.3 GiB at this population); the memory claim is "not worse", the real claim is mechanism and exactness.
+- Exactness covers the state's components, support entries and args summary; the two progress products are reported.
+- The GUI's protein replicate step keeps its in-process path until KIT-015 declares the protein QC steps; the `rows` variant has no production caller before that.
+- Times are reported, not judged.
+
+## Declared runs (as authorised; recorded above)
 
 The pair follows the KIT-009 precedent (the control build carries no such operation): **one build, two arms** on `journey_duplicates` with the journey's parameters, verified against `journey_protein_replicate`, 600 s each: `control-1` = `kit_010` variant `whole`, `candidate-1` = `kit_010` variant `rows`. The protein table is small (2,500 x 298, about 6 MB), so both members measure the slice floor; the expected outcome is `not_worse` within noise with no reduction, and the claim is mechanism and exactness. Decision `kitOperationDecision` (kernel peak and anonymous peak ≤ 1.02 × the control's, exact) → `accepted`; placement: `kit_010` becomes the control (protocol section 2).
 

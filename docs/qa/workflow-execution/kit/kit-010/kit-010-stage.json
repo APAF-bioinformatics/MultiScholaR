@@ -1,0 +1,86 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-010",
+  "stage": "kit-010",
+  "date": "2026-10-13",
+  "head_commit": "ba0ba9e015f95c3d5131a0bf4ff007fea589f086",
+  "decision": "accepted",
+  "failing_rule": null,
+  "pair": {
+    "operation": "protein_replicate_filter",
+    "population": "journey_duplicates",
+    "peak_ratio": 0.993751371917758,
+    "peak_anon_ratio": 0.997907641617489,
+    "elapsed_ratio": 0.768491321762401,
+    "not_worse": true,
+    "reduction": false,
+    "batches": {
+      "control": null,
+      "candidate": 1
+    }
+  },
+  "members": {
+    "control-1": {
+      "status": "complete",
+      "variant": "whole",
+      "elapsed_seconds": 37.4500000000007,
+      "peak_bytes": 1399500800,
+      "anonymous_peak_bytes": 1362489344,
+      "swap_bytes": 0,
+      "max_sample_interval": 0.069999999999709,
+      "batches": null,
+      "groups": null,
+      "engine_limit_bytes": null,
+      "admission": null,
+      "verification": {
+        "status": "complete",
+        "oracle": "journey_protein_replicate",
+        "rows": 2500,
+        "components": 3,
+        "support": 10,
+        "products_reported": ["qvalue_progress", "qc_progress"]
+      }
+    },
+    "candidate-1": {
+      "status": "complete",
+      "variant": "rows",
+      "elapsed_seconds": 28.7800000000025,
+      "peak_bytes": 1390755840,
+      "anonymous_peak_bytes": 1359638528,
+      "swap_bytes": 0,
+      "max_sample_interval": 0.069999999999709,
+      "batches": 1,
+      "groups": null,
+      "engine_limit_bytes": null,
+      "admission": {
+        "estimated_bytes": 192744944,
+        "worker_cap": 12473679872,
+        "page_rows": 2500,
+        "row_bytes": 2396,
+        "working_bytes_per_row": 14304,
+        "overhead_bytes": 150994944,
+        "columns": 298,
+        "policy": "row-pages-v1",
+        "limitation": "admission estimate; kernel cgroup guard remains authoritative"
+      },
+      "verification": {
+        "status": "complete",
+        "oracle": "journey_protein_replicate",
+        "rows": 2500,
+        "components": 3,
+        "support": 10,
+        "products_reported": ["qvalue_progress", "qc_progress"]
+      }
+    }
+  },
+  "attempts": [
+    {
+      "name": "attempt1-harness",
+      "outcome": "both members refused by the adapters vehicle before any work (its input check named the peptide component); vehicle corrected; user amendment: both members rerun"
+    },
+    {
+      "name": "attempt2-worker-dispatch",
+      "outcome": "both workers failed before any kernel ran (the worker entry point dispatched the peptide compute role only); worker corrected, reinstalled; user amendment: both members rerun"
+    }
+  ]
+}
