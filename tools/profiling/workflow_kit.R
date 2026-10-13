@@ -197,6 +197,22 @@ kitCases <- function(bindings, stage) {
     ticket <- sub("kit-", "", stage, fixed = TRUE)
     spec <- bindings$tickets[[ticket]]
     if (is.null(spec)) stop("KIT-", ticket, " has no bound operation, population, control and candidate builds")
+    if (identical(spec$kind, "single")) {
+        # A ticket's single members (protocol section 2, KIT-014/015/018): one operation member per step on the one
+        # bound build, exactness and completion only, no control and no ratio; `single-i` in the bound order, each
+        # with its own operation, population, oracle, registry variant and parameters.
+        members <- spec$members
+        stopifnot(length(members) >= 1L, length(members) <= 5L)
+        cases <- list()
+        for (i in seq_along(members)) {
+            member <- members[[i]]
+            if (is.null(member$variant) || is.null(member$oracle)) stop("single member ", i, " binds no variant or oracle")
+            cases[[length(cases) + 1L]] <- operation_case(paste0("single-", i), "single", i, spec$build, member$operation,
+                member$population, "none", paste("kit", ticket, "single", i, sep = ":"),
+                variant = member$variant, oracle = member$oracle, parameters = member$parameters)
+        }
+        return(cases)
+    }
     # A ticket binds one or two pairs (operation, population); pair i is members control-i and
     # candidate-i, control first then candidate, pair after pair (KIT-006: full_p14 then full_primary).
     pairs <- spec$pairs %||% list(list(operation = spec$operation, population = spec$population))
@@ -250,10 +266,35 @@ kitOperationDecision <- function(receipt, cases, bindings) {
         promotion_authorized = FALSE)
 }
 
+#' Decide a ticket's single members (protocol section 2: exactness and completion only). Every member must be
+#' eligible and verified exact against its oracle; peaks and times are recorded, no ratio is formed and no
+#' control is involved. `accepted` when every member is exact and eligible; `rejected` when a member completed
+#' but its verifier refused it (an inexact or incomplete state); `invalid` when any other eligibility rule fails.
+#' @noRd
+kitSingleDecision <- function(receipt, cases, bindings) {
+    seconds <- kitMemberSeconds(paste0("kit-", strsplit(cases[[1L]]$selector, ":", fixed = TRUE)[[1L]][[2L]]), bindings)
+    members <- list()
+    for (case in cases) {
+        item <- receipt$cases[[case$id]]
+        op <- item$operation
+        members[[case$id]] <- list(role = "single", member = case$rep, operation = case$operation, population = case$population,
+            oracle = case$oracle, variant = case$variant, failing_rule = kitIneligible(item, seconds, "operation"),
+            exact = isTRUE(item$verifier_completion$accepted) && identical(op$status, "complete"),
+            peak_bytes = op$peak_bytes, peak_anon_bytes = op$sampled_anon_bytes, elapsed_seconds = op$elapsed_seconds,
+            batches = op$science_execution$admission$batches %||%
+                (if (length(op$science_execution$batch_sizes)) length(op$science_execution$batch_sizes) else NULL))
+    }
+    failing <- Filter(Negate(is.null), lapply(members, `[[`, "failing_rule"))
+    status <- if (!length(failing)) "accepted" else
+        if (all(vapply(failing, identical, logical(1), "verifier_accepted"))) "rejected" else "invalid"
+    list(status = status, rule = "exactness_and_completion", members = members,
+        failing_rule = if (length(failing)) unlist(failing, use.names = FALSE) else NULL, promotion_authorized = FALSE)
+}
+
 #' Map a verifier selector back to its stage and case id.
 #' @noRd
 kitSelectorStage <- function(selection) {
-    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:(control|candidate):[12])$", selection))
+    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:((control|candidate):[12]|single:[1-5]))$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("kit-lifecycle-", paste(parts[-1L], collapse = "-")), id = "member"))
     # A ticket's gui member is the single case `member` (KIT-008 correction 1: the verifier looked for `candidate-1`).

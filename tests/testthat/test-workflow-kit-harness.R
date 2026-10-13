@@ -786,3 +786,66 @@ test_that("the canonical form drops the recorded worker specification, the args-
     changed$filterMinNumPeptidesPerSample$filter_summary$kept <- 1L
     expect_false(identical(h$kitCanonical(native), h$kitCanonical(changed)))
 })
+
+test_that("a ticket may bind single members: one operation member per step on one build, exactness and completion only (KIT-014)", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$builds$kit_014 <- list(library = "/lib/q", build = strrep("q", 64), exact_sum = "sum-q")
+    population <- function(step, state, n) list(step = step, state = state, store = "/store/journey", head_sha256 = strrep(n, 64),
+        head_entity = paste0("dia-state-head", n), entity_id = strrep(n, 64), rows = 100L)
+    b$populations$journey_design <- population("design", "raw_data_s4", "1")
+    b$populations$journey_qvalue <- population("qvalue", "qvalue_filtered", "2")
+    b$tickets[["014"]] <- list(kind = "single", build = "kit_014", members = list(
+        list(operation = "peptide_qvalue_filter", population = "journey_design", oracle = "journey_qvalue", variant = "streamed",
+            parameters = list(qvalue_threshold = 0.01, proteotypic_only = TRUE)),
+        list(operation = "peptide_protein_evidence_filter", population = "journey_qvalue", oracle = "journey_protein_peptide",
+            variant = "partitioned", parameters = list(num_peptides_per_protein_thresh = 1, num_peptidoforms_per_protein_thresh = 1))))
+    cases <- h$kitCases(b, "kit-014")
+    expect_identical(vapply(cases, `[[`, "", "id"), c("single-1", "single-2"))
+    expect_identical(vapply(cases, `[[`, "", "role"), c("single", "single"))
+    expect_false(any(vapply(cases, `[[`, logical(1), "control")))
+    expect_identical(vapply(cases, `[[`, "", "kind"), c("operation", "operation"))
+    expect_identical(vapply(cases, `[[`, "", "variant"), c("streamed", "partitioned"))
+    expect_identical(vapply(cases, `[[`, "", "oracle"), c("journey_qvalue", "journey_protein_peptide"))
+    expect_identical(vapply(cases, `[[`, "", "library"), c("/lib/q", "/lib/q"))
+    expect_identical(cases[[1]]$input$state, "raw_data_s4")
+    expect_identical(cases[[2]]$parameters$num_peptides_per_protein_thresh, 1)
+    expect_identical(cases[[2]]$selector, "kit:014:single:2")
+    expect_false(identical(cases[[1]]$binding, cases[[2]]$binding))
+    expect_identical(h$kitSelectorStage("kit:014:single:2"), list(stage = "kit-014", id = "single-2"))
+    expect_error(h$kitSelectorStage("kit:014:single:6"))
+    expect_identical(h$kitMemberSeconds("kit-014", b), 600L)
+    receipt <- kitSyntheticOperationReceipt(cases, h, edit = function(r) {
+        for (id in names(r$cases)) r$cases[[id]]$operation$sampled_anon_bytes <- 3e9
+        r$cases[["single-2"]]$operation$science_execution <- list(admission = list(batches = 12L))
+        r
+    })
+    decision <- h$kitSingleDecision(receipt, cases, b)
+    expect_identical(decision$status, "accepted")
+    expect_identical(decision$rule, "exactness_and_completion")
+    expect_null(decision$failing_rule)
+    expect_null(decision$pairs)
+    expect_true(all(vapply(decision$members, `[[`, logical(1), "exact")))
+    expect_identical(decision$members[["single-1"]]$peak_bytes, 5e9)
+    expect_identical(decision$members[["single-1"]]$peak_anon_bytes, 3e9)
+    expect_identical(decision$members[["single-2"]]$batches, 12L)
+    expect_identical(decision$members[["single-2"]]$oracle, "journey_protein_peptide")
+    expect_false(decision$promotion_authorized)
+    # A member the verifier refused (inexact against its oracle) rejects; any other rule failing is invalid.
+    inexact <- receipt
+    inexact$cases[["single-2"]]$verifier_completion <- list(accepted = FALSE)
+    expect_identical(h$kitSingleDecision(inexact, cases, b)$status, "rejected")
+    expect_identical(h$kitSingleDecision(inexact, cases, b)$failing_rule, "verifier_accepted")
+    expect_false(h$kitSingleDecision(inexact, cases, b)$members[["single-2"]]$exact)
+    late <- receipt
+    late$cases[["single-1"]]$operation$elapsed_seconds <- 601
+    expect_identical(h$kitSingleDecision(late, cases, b)$status, "invalid")
+    expect_identical(h$kitSingleDecision(late, cases, b)$failing_rule, "elapsed_within_ceiling")
+    # A member without a bound variant or oracle refuses at expansion; more than five members too.
+    bare <- b
+    bare$tickets[["014"]]$members[[1]]$oracle <- NULL
+    expect_error(h$kitCases(bare, "kit-014"), "variant or oracle")
+    many <- b
+    many$tickets[["014"]]$members <- rep(b$tickets[["014"]]$members, 3)
+    expect_error(h$kitCases(many, "kit-014"))
+})

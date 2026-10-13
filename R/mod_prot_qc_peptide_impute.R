@@ -402,21 +402,46 @@ runPeptideImputationRevertObserver <- function(workflow_data,
   })
 }
 
-bindPeptideImputationPlot <- function(output, imputationPlot) {
-  output$imputation_plot <- renderPlot({
+bindPeptideImputationPlot <- function(output, imputationPlot, plotIdentity = NULL) {
+  output$imputation_plot <- if (is.null(plotIdentity)) renderPlot({
     req(imputationPlot())
     grid.draw(imputationPlot())
-  })
+  }) else renderPlot({
+    req(imputationPlot())
+    grid.draw(imputationPlot())
+  }, alt = function() plotIdentity())
 }
 
 mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, experiment_label, experiment_paths = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     
     imputation_plot <- shiny::reactiveVal(NULL)
+    imputation_plot_identity <- shiny::reactiveVal("Missing value imputation summary")
+
+    # KIT-014: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "peptide_imputation",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "imputation_results", plot = "imputation_plot", ack = "workflow_ack", notification = "imputation_working",
+        label = "missing value imputation", step_label = "8_imputed", plot_identity = imputation_plot_identity),
+      deliver = function(result) {
+        arguments <- list(output = output, imputationPlot = imputation_plot, imputationResult = result, omicType = omic_type, experimentLabel = experiment_label)
+        if (!is.null(experiment_paths)) arguments$projectDirs <- stats::setNames(list(experiment_paths),
+          paste(omic_type, experiment_label, sep = "_"))
+        do.call(updatePeptideImputationOutputs, arguments)
+      })
     
     # Step 7: Missing Value Imputation (chunk 16)
     shiny::observeEvent(input$apply_imputation, {
       shiny::req(workflow_data$state_manager)
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+        parameters <- list(proportion_missing_values = input$proportion_missing_values)
+        exclusion <- input$exclusion_column
+        if (!is.null(exclusion) && length(exclusion) > 0L && !is.na(exclusion[[1L]]) &&
+            nzchar(trimws(as.character(exclusion[[1L]])))) parameters$exclusion_column <- trimws(as.character(exclusion[[1L]]))
+        managed_step$apply(parameters)
+        return(invisible(NULL))
+      }
 
       apply_arguments <- list(
         workflow_data = workflow_data,
@@ -437,12 +462,13 @@ mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, expe
     
     # Revert Imputation
     shiny::observeEvent(input$revert_imputation, {
+      managed_step$cancel("reverted")
       runPeptideImputationRevertObserver(
         workflow_data = workflow_data,
         output = output
       )
     })
     
-    bindPeptideImputationPlot(output = output, imputationPlot = imputation_plot)
+    bindPeptideImputationPlot(output = output, imputationPlot = imputation_plot, plotIdentity = imputation_plot_identity)
   })
 }

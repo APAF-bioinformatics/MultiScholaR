@@ -1651,14 +1651,20 @@ test_that("mod_prot_qc_peptide_intensity_server delegates the remaining server w
                                                       workflowData,
                                                       intensityPlot,
                                                       omicType,
-                                                      experimentLabel) {
+                                                      experimentLabel,
+                                                      runApplyObserverFn = NULL,
+                                                      runRevertObserverFn = NULL,
+                                                      plotIdentityFn = NULL, ...) {
         captured$args <<- list(
           input = input,
           output = output,
           workflowData = workflowData,
           intensityPlot = intensityPlot,
           omicType = omicType,
-          experimentLabel = experimentLabel
+          experimentLabel = experimentLabel,
+          runApplyObserverFn = runApplyObserverFn,
+          runRevertObserverFn = runRevertObserverFn,
+          plotIdentityFn = plotIdentityFn
         )
         invisible(list(reason = "wired"))
       }
@@ -1681,6 +1687,10 @@ test_that("mod_prot_qc_peptide_intensity_server delegates the remaining server w
       expect_null(captured$args$intensityPlot())
       expect_identical(captured$args$omicType, "proteomics")
       expect_identical(captured$args$experimentLabel, "DIA Experiment")
+      # KIT-014: the server hands the bootstrap the managed-step dispatch for apply and revert and the plot identity.
+      expect_true(is.function(captured$args$runApplyObserverFn))
+      expect_true(is.function(captured$args$runRevertObserverFn))
+      expect_true(is.function(captured$args$plotIdentityFn))
     }
   )
 })
@@ -2004,7 +2014,7 @@ test_that("bindPeptideImputationPlot binds the rendered plot output to the store
   helper_under_test <- makeFunctionWithOverrides(
     bindPeptideImputationPlot,
     list(
-      renderPlot = function(expr) {
+      renderPlot = function(expr, alt = NA, ...) {
         force(expr)
         "rendered_plot"
       },
@@ -2055,7 +2065,7 @@ test_that("mod_prot_qc_peptide_impute_server wires apply and revert observers th
         )
         invisible(NULL)
       },
-      bindPeptideImputationPlot = function(output, imputationPlot) {
+      bindPeptideImputationPlot = function(output, imputationPlot, plotIdentity = NULL) {
         captured$bind <<- list(
           output = output,
           imputationPlot = imputationPlot

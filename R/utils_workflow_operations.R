@@ -222,8 +222,9 @@ workflowOperationEntry <- function(operation) {
     entry
 }
 
-#' Register the built-in operations: the diagnostic fixture, the two DIA declarations of KIT-006 and the
-#' imputation declaration of KIT-009 and the protein replicate filter of KIT-010.
+#' Register the built-in operations: the diagnostic fixture, the two DIA declarations of KIT-006, the
+#' imputation declaration of KIT-009, the protein replicate filter of KIT-010 and the four remaining peptide
+#' QC declarations of KIT-014.
 #' `default_variant` (KIT-008) is the variant an unqualified launch runs, in the worker and in process.
 #' Called from `.onLoad` and from the first lookup in a process that bypassed it.
 #' @noRd
@@ -258,6 +259,38 @@ registerBuiltinWorkflowOperations <- function() {
         completion = "peptide", publication = "peptide", step_label = "8_imputed", omic_type = "proteomics",
         variants = c("grouped", "partitioned"), default_variant = "partitioned", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaPeptideImputationOperation()))
+    # KIT-014: the remaining peptide QC steps. The three feature-group sections share the family's variants
+    # (`grouped`: the per-group loop before KIT-009, the adapters-only control arm; `partitioned`: production);
+    # the Q-value step has one path, `streamed` (the evidence pre-pass over whole protein groups, then the
+    # ordered row stream).
+    registerWorkflowOperation(list(name = "peptide_qvalue_filter", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "peptide", handler = "computeWorkflowPeptideQvalueAction", validate = "validateWorkflowPeptideQvalueParameters",
+        resolve = NULL, parameter_limit = 65536,
+        parameters = c("qvalue_threshold", "global_qvalue_threshold", "global_pg_qvalue_threshold", "proteotypic_only",
+            "confidence_provenance_mode"),
+        completion = "peptide", publication = "peptide", step_label = "2_qval_filtered", omic_type = "proteomics",
+        variants = "streamed", default_variant = "streamed", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaQvalueFilterOperation()))
+    registerWorkflowOperation(list(name = "peptide_protein_evidence_filter", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "peptide", handler = "computeWorkflowPeptideProteinEvidenceAction",
+        validate = "validateWorkflowPeptideProteinEvidenceParameters", resolve = NULL, parameter_limit = 65536,
+        parameters = c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh"),
+        completion = "peptide", publication = "peptide", step_label = "3_protein_peptide_filtered", omic_type = "proteomics",
+        variants = c("grouped", "partitioned"), default_variant = "partitioned", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaPeptideProteinEvidenceOperation()))
+    registerWorkflowOperation(list(name = "peptide_intensity_filter", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "peptide", handler = "computeWorkflowPeptideIntensityAction", validate = "validateWorkflowPeptideIntensityParameters",
+        resolve = NULL, parameter_limit = 65536,
+        parameters = c("strict_mode", "min_reps_per_group", "min_groups", "peptides_intensity_cutoff_percentile", "grouping_variable"),
+        completion = "peptide", publication = "peptide", step_label = "5_intensity_filtered", omic_type = "proteomics",
+        variants = c("grouped", "partitioned"), default_variant = "partitioned", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaPeptideIntensityFilterOperation()))
+    registerWorkflowOperation(list(name = "peptide_replicate_filter", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "peptide", handler = "computeWorkflowPeptideReplicateAction", validate = "validateWorkflowPeptideReplicateParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = "replicate_group_column",
+        completion = "peptide", publication = "peptide", step_label = "7_replicate_filtered", omic_type = "proteomics",
+        variants = c("grouped", "partitioned"), default_variant = "partitioned", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaPeptideReplicateFilterOperation()))
     # KIT-010: the protein replicate filter on the row partitioner; `whole` is the GUI's in-process path (the
     # object hydrated, the kernel once; the control arm of the measurement), `rows` the production variant.
     registerWorkflowOperation(list(name = "protein_replicate_filter", input = "checkpoint", input_class = "ProteinQuantitativeData",

@@ -295,6 +295,18 @@ diaPeptideGroupStates <- c(filterMinNumPeptidesPerProtein = "protein_peptide_fil
     peptideIntensityFiltering = "intensity_filtered", removePeptidesWithOnlyOneReplicate = "replicate_filtered",
     peptideMissingValueImputation = "imputed")
 
+#' Registered operation of each section of the family (KIT-014) and the module's description of its state.
+#' @noRd
+diaPeptideGroupOperations <- c(filterMinNumPeptidesPerProtein = "peptide_protein_evidence_filter",
+    peptideIntensityFiltering = "peptide_intensity_filter", removePeptidesWithOnlyOneReplicate = "peptide_replicate_filter",
+    peptideMissingValueImputation = "peptide_imputation")
+
+#' @noRd
+diaPeptideGroupDescriptions <- c(filterMinNumPeptidesPerProtein = "Applied minimum peptides per protein filter",
+    peptideIntensityFiltering = "Applied peptide intensity filter",
+    removePeptidesWithOnlyOneReplicate = "Applied distinct-run replicate support filter (supported in any group)",
+    peptideMissingValueImputation = "Applied missing value imputation using technical replicates")
+
 #' Declared working-set bytes per hydrated input row of a peptide-group kernel (KIT-009): the kernel's
 #' grouped copies, joins and support rows beside the hydrated row itself. An admission estimate, not a
 #' measurement; the kernel cgroup guard stays authoritative.
@@ -302,6 +314,8 @@ diaPeptideGroupStates <- c(filterMinNumPeptidesPerProtein = "protein_peptide_fil
 diaPeptideGroupWorkingBytes <- 2048
 
 #' Run a peptide-group section on the current head and commit its state (GUI entry; contract unchanged).
+#' KIT-014: each section is a registered declaration (`diaPeptideGroupOperations`); an unmanaged launch
+#' runs the same declaration the worker runs, in process, with the registry's production variant.
 #' @param workflow Session owner (`state_manager`, `qc_params`, `filtering_progress`).
 #' @param section Configuration section of the family (`diaPeptideGroupStates`).
 #' @param parameters Caller-selected parameters of the section.
@@ -314,8 +328,12 @@ runDIAReferencePeptideGroups <- function(workflow, section, parameters, state_na
     pending <- if (identical(manager$current_state, state_name)) resumeDIAQvalueOutput(manager, before) else NULL
     if (!is.null(pending)) return(pending)
     assertDIAExportReady(manager)
+    if (!is.character(section) || length(section) != 1L || !section %in% names(diaPeptideGroupOperations))
+        cli::cli_abort("unsupported peptide-group section", class = "workflow_execution_unsupported")
+    entry <- workflowActionSpec(diaPeptideGroupOperations[[section]])
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
     value <- computeDIAReferencePeptideGroups(manager, getDIAStateReference(manager), section, parameters,
-        state_name = state_name, description = description)
+        variant = entry$default_variant, state_name = state_name, description = description)
     finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description,
         value$config, value$section, value$counts)
 }
@@ -348,10 +366,7 @@ computeDIAReferencePeptideGroups <- function(manager, reference, section, parame
     if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) || worker_cap <= 0)
         cli::cli_abort("invalid admitted worker capacity", class = "workflow_execution_unsupported")
     if (is.null(state_name)) state_name <- diaPeptideGroupStates[[section]]
-    if (is.null(description)) {
-        if (section != "peptideMissingValueImputation") cli::cli_abort("a state description is required")
-        description <- "Applied missing value imputation using technical replicates"
-    }
+    if (is.null(description)) description <- diaPeptideGroupDescriptions[[section]]
     context <- manager$.context
     before <- readDIAStateMetadata(manager, reference)
     checkpoint <- before$data
@@ -1363,6 +1378,66 @@ diaPeptideImputationOperation <- function() {
         global_statistics = c(source_row_order =
             "the output keeps the input's source ordinals and the design order for generated rows, assigned by the writer once over the whole output"),
         merge = c(design_matrix = "design", peptide_data = "concatenate", support_table = "concatenate", counts = "sum"))
+}
+
+#' The protein identification evidence filter (minimum peptides and peptidoforms per protein) as a
+#' declaration on the feature-group partitioner (KIT-014): batches of whole protein groups, the unchanged
+#' `filterMinNumPeptidesPerProtein` kernel once per batch on the counts frozen by the Q-value step, ledgers
+#' concatenated, counts summed, the design recomputed once by the shared finishing step. The kernel runs
+#' the compute-only entry point of the family.
+#' @return Declaration from `newWorkflowOperation`.
+#' @noRd
+diaPeptideProteinEvidenceOperation <- function() {
+    newWorkflowOperation(name = "peptide_protein_evidence_filter", input_class = "PeptideQuantitativeData",
+        fields = "design_matrix", unit = "feature_group",
+        kernel = function(object, parameters, store) computeDIAReferencePeptideGroups(store$manager, store$source,
+            "filterMinNumPeptidesPerProtein", parameters[c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh")],
+            worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "partitioned"),
+        output_class = "PeptideQuantitativeData",
+        parameters = c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh"),
+        product_type = "dia.protein_evidence_filter_result",
+        merge = c(design_matrix = "design", peptide_data = "concatenate", removal_ledger = "concatenate", counts = "sum"))
+}
+
+#' The peptide intensity filter as a declaration on the feature-group partitioner (KIT-014): the dataset-wide
+#' intensity quantile is the declared global statistic, computed once over the whole input before any batch
+#' (audit A1); then the unchanged `peptideIntensityFilteringHelper` once per batch of whole protein groups,
+#' support table and removal ledger concatenated, counts summed, the design recomputed once.
+#' @return Declaration from `newWorkflowOperation`.
+#' @noRd
+diaPeptideIntensityFilterOperation <- function() {
+    newWorkflowOperation(name = "peptide_intensity_filter", input_class = "PeptideQuantitativeData",
+        fields = "design_matrix", unit = "feature_group",
+        kernel = function(object, parameters, store) computeDIAReferencePeptideGroups(store$manager, store$source,
+            "peptideIntensityFiltering", parameters[c("strict_mode", "min_reps_per_group", "min_groups",
+                "peptides_intensity_cutoff_percentile", "grouping_variable")],
+            worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "partitioned"),
+        output_class = "PeptideQuantitativeData",
+        parameters = c("strict_mode", "min_reps_per_group", "min_groups", "peptides_intensity_cutoff_percentile",
+            "grouping_variable"),
+        product_type = "dia.peptide_intensity_filter_result",
+        global_statistics = c(min_peptide_intensity_threshold =
+            "the percentile of every finite quantity in the whole table, computed once before any batch"),
+        merge = c(design_matrix = "design", peptide_data = "concatenate", support_table = "concatenate",
+            removal_ledger = "concatenate", counts = "sum"))
+}
+
+#' The peptide replicate support filter as a declaration on the feature-group partitioner (KIT-014): batches
+#' of whole protein groups, the unchanged `removePeptidesWithOnlyOneReplicate` kernel once per batch against
+#' the design's replicate groups, support table and removal ledger concatenated, counts summed, the design
+#' recomputed once.
+#' @return Declaration from `newWorkflowOperation`.
+#' @noRd
+diaPeptideReplicateFilterOperation <- function() {
+    newWorkflowOperation(name = "peptide_replicate_filter", input_class = "PeptideQuantitativeData",
+        fields = "design_matrix", unit = "feature_group",
+        kernel = function(object, parameters, store) computeDIAReferencePeptideGroups(store$manager, store$source,
+            "removePeptidesWithOnlyOneReplicate", parameters["replicate_group_column"],
+            worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "partitioned"),
+        output_class = "PeptideQuantitativeData", parameters = "replicate_group_column",
+        product_type = "dia.peptide_replicate_filter_result",
+        merge = c(design_matrix = "design", peptide_data = "concatenate", support_table = "concatenate",
+            removal_ledger = "concatenate", counts = "sum"))
 }
 
 #' Declared working-set bytes per wide row and sample column of the protein replicate filter (KIT-010):

@@ -531,8 +531,17 @@ newWorkflowCompletionWorkflow <- function(manager, context = NULL) {
     workflow
 }
 
-#' Recover the bounded display product of one accepted managed peptide action (both registered
-#' peptide operations publish their progress product under `qc_progress`).
+#' The progress product of a peptide QC state: `qc_progress` for the family and the sample filter,
+#' `qvalue_progress` for the Q-value step (KIT-014).
+#' @noRd
+workflowPeptideProgressProduct <- function(record) {
+    product <- record$products$qc_progress %||% record$products$qvalue_progress
+    if (is.null(product)) cli::cli_abort("peptide progress product is missing", class = "workflow_execution_invalid")
+    product
+}
+
+#' Recover the bounded display product of one accepted managed peptide action (the peptide operations
+#' publish their progress product under `qc_progress`, the Q-value step under `qvalue_progress`).
 #' @param manager Reference-backed owner.
 #' @param result Accepted worker/controller result.
 #' @param workflow_data Existing GUI workflow bus.
@@ -540,7 +549,7 @@ newWorkflowCompletionWorkflow <- function(manager, context = NULL) {
 #' @noRd
 readManagedPeptideResult <- function(manager, result, workflow_data) {
     record <- readDIAStateMetadata(manager, result$state_reference)
-    product <- record$data$products$qc_progress
+    product <- workflowPeptideProgressProduct(record$data)
     envelope <- hydrateSavedWorkflowEntity(manager$.context$store, product)
     checkSavedWorkflowConsumerPayload("scientific_product", envelope)
     value <- c(list(stateReference = result$state_reference), envelope$value)
@@ -2071,6 +2080,88 @@ validateWorkflowPeptideImputationParameters <- function(parameters, policy, reso
     invisible(NULL)
 }
 
+#' The Q-value filter's fixed confidence contract (KIT-014): three thresholds in (0, 1], the proteotypic
+#' flag and the provenance mode.
+#' @noRd
+validateWorkflowPeptideQvalueParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("qvalue_threshold", "global_qvalue_threshold", "global_pg_qvalue_threshold", "proteotypic_only",
+        "confidence_provenance_mode")
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !setequal(names(parameters), allowed))
+        cli::cli_abort("Q-value parameters required or unknown parameter supplied")
+    for (name in allowed[1:3]) {
+        value <- parameters[[name]]
+        if ((resolved || !is.null(value)) && (!is.numeric(value) || length(value) != 1L || !is.finite(value) ||
+            value <= 0 || value > 1))
+            cli::cli_abort("confidence thresholds must lie in (0, 1]")
+    }
+    flag <- parameters$proteotypic_only
+    if ((resolved || !is.null(flag)) && (!is.logical(flag) || length(flag) != 1L || is.na(flag)))
+        cli::cli_abort("proteotypic flag must be TRUE or FALSE")
+    mode <- parameters$confidence_provenance_mode
+    if ((resolved || !is.null(mode)) && (!is.character(mode) || length(mode) != 1L ||
+        !mode %in% c("diann_main_report", "upstream_prefiltered")))
+        cli::cli_abort("unsupported confidence provenance mode")
+    invisible(NULL)
+}
+
+#' The protein identification evidence filter's two positive integer thresholds (KIT-014).
+#' @noRd
+validateWorkflowPeptideProteinEvidenceParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh")
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !setequal(names(parameters), allowed))
+        cli::cli_abort("protein evidence parameters required or unknown parameter supplied")
+    for (name in allowed) {
+        value <- parameters[[name]]
+        if ((resolved || !is.null(value)) && (!is.numeric(value) || length(value) != 1L || !is.finite(value) ||
+            value < 1 || value != floor(value)))
+            cli::cli_abort("evidence thresholds must be positive integers")
+    }
+    invisible(NULL)
+}
+
+#' The peptide intensity filter's strict flag, replicate and group minimums, percentile and optional
+#' grouping variable (KIT-014).
+#' @noRd
+validateWorkflowPeptideIntensityParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("strict_mode", "min_reps_per_group", "min_groups", "peptides_intensity_cutoff_percentile", "grouping_variable")
+    required <- allowed[1:4]
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !all(required %in% names(parameters)))
+        cli::cli_abort("intensity filter parameters required or unknown parameter supplied")
+    strict <- parameters$strict_mode
+    if ((resolved || !is.null(strict)) && (!is.logical(strict) || length(strict) != 1L || is.na(strict)))
+        cli::cli_abort("strict mode must be TRUE or FALSE")
+    for (name in c("min_reps_per_group", "min_groups")) {
+        value <- parameters[[name]]
+        if ((resolved || !is.null(value)) && (!is.numeric(value) || length(value) != 1L || !is.finite(value) ||
+            value < 1 || value != floor(value)))
+            cli::cli_abort("replicate and group minimums must be positive integers")
+    }
+    percentile <- parameters$peptides_intensity_cutoff_percentile
+    if ((resolved || !is.null(percentile)) && (!is.numeric(percentile) || length(percentile) != 1L ||
+        !is.finite(percentile) || percentile < 0 || percentile > 100))
+        cli::cli_abort("intensity percentile must lie in [0, 100]")
+    grouping <- parameters$grouping_variable
+    if (!is.null(grouping) && (!is.character(grouping) || length(grouping) != 1L || is.na(grouping) || !nzchar(grouping)))
+        cli::cli_abort("grouping variable must be a single column name")
+    invisible(NULL)
+}
+
+#' The peptide replicate filter's replicate group column (KIT-014).
+#' @noRd
+validateWorkflowPeptideReplicateParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- "replicate_group_column"
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !setequal(names(parameters), allowed))
+        cli::cli_abort("replicate filter parameters required or unknown parameter supplied")
+    column <- parameters$replicate_group_column
+    if ((resolved || !is.null(column)) && (!is.character(column) || length(column) != 1L || is.na(column) || !nzchar(column)))
+        cli::cli_abort("replicate group column must be a single column name")
+    invisible(NULL)
+}
+
 #' The protein replicate filter's grouping variable and the recorded core count (KIT-010).
 #' @noRd
 validateWorkflowProteinReplicateParameters <- function(parameters, policy, resolved = TRUE) {
@@ -2169,6 +2260,32 @@ computeWorkflowPeptideImputationAction <- function(manager, request, variant) {
         request$parameters, worker_cap = request$worker_cap, variant = variant)
 }
 
+#' The KIT-014 peptide QC handlers: each section of the peptide-group family through its compute-only entry
+#' point, and the Q-value filter through its own.
+#' @noRd
+computeWorkflowPeptideProteinEvidenceAction <- function(manager, request, variant) {
+    computeDIAReferencePeptideGroups(manager, request$input_references$state, "filterMinNumPeptidesPerProtein",
+        request$parameters, worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+computeWorkflowPeptideIntensityAction <- function(manager, request, variant) {
+    computeDIAReferencePeptideGroups(manager, request$input_references$state, "peptideIntensityFiltering",
+        request$parameters, worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+computeWorkflowPeptideReplicateAction <- function(manager, request, variant) {
+    computeDIAReferencePeptideGroups(manager, request$input_references$state, "removePeptidesWithOnlyOneReplicate",
+        request$parameters, worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+computeWorkflowPeptideQvalueAction <- function(manager, request, variant) {
+    computeDIAReferenceQvalue(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
 #' Resolve only server-owned finite qualification variants for installed actions.
 #' @param config Frozen application configuration, never GUI scientific parameters.
 #' @param operation Existing registered action identifier.
@@ -2202,7 +2319,7 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
     manager <- owner$manager
     entry <- workflowActionSpec(result$operation)
     record <- readDIAStateMetadata(manager, result$state_reference)
-    envelope <- hydrateSavedWorkflowEntity(manager$.context$store, record$data$products$qc_progress)
+    envelope <- hydrateSavedWorkflowEntity(manager$.context$store, workflowPeptideProgressProduct(record$data))
     checkSavedWorkflowConsumerPayload("scientific_product", envelope)
     product <- envelope$value
     context_path <- file.path(paths$request_dir, "publication-context.rds")
@@ -2397,6 +2514,8 @@ completeWorkflowAction <- function(owner, operation, value, context = NULL) {
             value$config, "guarded fixture computation"))
     workflow <- newWorkflowCompletionWorkflow(owner$manager, context)
     if (entry$completion == "protein") return(completeDIAProteinAction(workflow, value))
+    # KIT-014: the Q-value step keeps its own finishing step and product (`qvalue_progress`).
+    if (identical(value$section, "srlQvalueProteotypicPeptideClean")) return(finishDIAReferenceQvalueStep(workflow, value))
     finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name,
         value$description, value$config, value$section, value$counts,
         observed_inclusion_absence = if (isTRUE(entry$inclusion_absence))

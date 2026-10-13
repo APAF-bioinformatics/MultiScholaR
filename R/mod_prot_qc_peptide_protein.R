@@ -322,9 +322,28 @@ mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, exp
   shiny::moduleServer(id, function(input, output, session) {
     
     protein_peptide_plot <- shiny::reactiveVal(NULL)
+    protein_peptide_plot_identity <- shiny::reactiveVal("Protein identification evidence filtering summary")
+
+    # KIT-014: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "peptide_protein_evidence_filter",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "protein_peptida_results", plot = "protein_peptide_plot", ack = "workflow_ack", notification = "protein_peptide_working",
+        label = "protein identification evidence filter", step_label = "3_protein_peptide_filtered", plot_identity = protein_peptide_plot_identity),
+      deliver = function(result) {
+        arguments <- list(output = output, proteinPeptidePlot = protein_peptide_plot, proteinPeptideResult = result, omicType = omic_type, experimentLabel = experiment_label)
+        if (!is.null(experiment_paths)) arguments$projectDirs <- stats::setNames(list(experiment_paths),
+          paste(omic_type, experiment_label, sep = "_"))
+        do.call(updateProteinPeptideOutputs, arguments)
+      })
     
     # Step 4: Protein Peptide Count Filter (chunk 13)
     shiny::observeEvent(input$apply_protein_peptide_filter, {
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+        managed_step$apply(list(num_peptides_per_protein_thresh = input$min_peptides_per_protein,
+          num_peptidoforms_per_protein_thresh = input$min_peptidoforms_per_protein))
+        return(invisible(NULL))
+      }
       apply_arguments <- list(
         workflowData = workflow_data,
         minPeptidesPerProtein = input$min_peptides_per_protein,
@@ -340,6 +359,7 @@ mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, exp
     
     # Revert Protein Peptide Filter
     shiny::observeEvent(input$revert_protein_peptide, {
+      managed_step$cancel("reverted")
       runProteinPeptideRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -350,6 +370,6 @@ mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, exp
     output$protein_peptide_plot <- shiny::renderPlot({
       shiny::req(protein_peptide_plot())
       grid::grid.draw(protein_peptide_plot())
-    })
+    }, alt = function() protein_peptide_plot_identity())
   })
 }

@@ -178,7 +178,7 @@ withSharedPeptideImputationPackageMocks <- function(server_env,
       renderText = function(expr) {
       eval(substitute(expr), parent.frame())
       },
-      renderPlot = function(expr) {
+      renderPlot = function(expr, alt = NA, ...) {
       eval(substitute(expr), parent.frame())
       "rendered-plot"
       },
@@ -229,7 +229,7 @@ withSharedPeptideImputationUiMocks <- function(captured,
     renderText = function(expr) {
       eval(substitute(expr), parent.frame())
     },
-    renderPlot = function(expr) {
+    renderPlot = function(expr, alt = NA, ...) {
       if (evaluate_plot) {
         eval(substitute(expr), parent.frame())
       }

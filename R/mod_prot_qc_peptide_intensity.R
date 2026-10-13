@@ -428,7 +428,8 @@ setupPeptideIntensityServerBootstrap <- function(input,
                                                  observeEventFn = shiny::observeEvent,
                                                  renderPlotFn = shiny::renderPlot,
                                                  reqFn = shiny::req,
-                                                 gridDrawFn = grid::grid.draw, experimentPaths = NULL) {
+                                                 gridDrawFn = grid::grid.draw, experimentPaths = NULL,
+                                                 plotIdentityFn = NULL) {
   thresholdPreview <- reactiveFn({
     buildThresholdPreviewFn(
       workflowData = workflowData,
@@ -468,10 +469,13 @@ setupPeptideIntensityServerBootstrap <- function(input,
     )
   })
 
-  output$intensity_plot <- renderPlotFn({
+  output$intensity_plot <- if (is.null(plotIdentityFn)) renderPlotFn({
     reqFn(intensityPlot())
     gridDrawFn(intensityPlot())
-  })
+  }) else renderPlotFn({
+    reqFn(intensityPlot())
+    gridDrawFn(intensityPlot())
+  }, alt = function() plotIdentityFn())
 
   list(
     thresholdPreview = thresholdPreview,
@@ -482,6 +486,21 @@ setupPeptideIntensityServerBootstrap <- function(input,
 mod_prot_qc_peptide_intensity_server <- function(id, workflow_data, omic_type, experiment_label, experiment_paths = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     intensity_plot <- shiny::reactiveVal(NULL)
+    intensity_plot_identity <- shiny::reactiveVal("Peptide intensity filtering summary")
+
+    # KIT-014: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "peptide_intensity_filter",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "intensity_results", plot = "intensity_plot", ack = "workflow_ack", notification = "intensity_working",
+        label = "peptide intensity filter", step_label = "5_intensity_filtered", plot_identity = intensity_plot_identity),
+      deliver = function(result) {
+        arguments <- list(output = output, intensityPlot = intensity_plot, intensityResult = result,
+          omicType = omic_type, experimentLabel = experiment_label)
+        if (!is.null(experiment_paths)) arguments$projectDirs <- stats::setNames(list(experiment_paths),
+          paste(omic_type, experiment_label, sep = "_"))
+        do.call(updatePeptideIntensityOutputs, arguments)
+      })
 
     apply_arguments <- list(
       input = input,
@@ -489,7 +508,21 @@ mod_prot_qc_peptide_intensity_server <- function(id, workflow_data, omic_type, e
       workflowData = workflow_data,
       intensityPlot = intensity_plot,
       omicType = omic_type,
-      experimentLabel = experiment_label
+      experimentLabel = experiment_label,
+      runApplyObserverFn = function(...) {
+        if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+          managed_step$apply(list(strict_mode = isTRUE(input$use_strict_mode), min_reps_per_group = input$min_reps_per_group,
+            min_groups = input$min_groups, peptides_intensity_cutoff_percentile = input$intensity_cutoff_percentile,
+            grouping_variable = "group"))
+          return(invisible(NULL))
+        }
+        runPeptideIntensityApplyObserver(...)
+      },
+      runRevertObserverFn = function(...) {
+        managed_step$cancel("reverted")
+        runPeptideIntensityRevertObserver(...)
+      },
+      plotIdentityFn = intensity_plot_identity
     )
     if (!is.null(experiment_paths)) apply_arguments$experimentPaths <- experiment_paths
     do.call(setupPeptideIntensityServerBootstrap, apply_arguments)

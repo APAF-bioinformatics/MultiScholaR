@@ -379,6 +379,8 @@ tryCatch({
             # Both members' fingerprints are recomputed from their stores under the current canonical form at launch
             # (KIT-008 post-hoc audit PH-01), so a reference member saved under an earlier form never rejects a new one.
             member_dir = file.path(stage_root, all_cases[[1L]]$id), api = api) else
+        # A ticket's single members (KIT-014): exactness and completion only, no pair ratio.
+        if (identical(bindings$tickets[[sub("kit-", "", stage, fixed = TRUE)]]$kind, "single")) helpers$kitSingleDecision(receipt, all_cases, bindings) else
         helpers$kitOperationDecision(receipt, all_cases, bindings)
     saveRDS(receipt$decision, file.path(stage_root, "decision.rds"))
     receipt$status <- "complete"

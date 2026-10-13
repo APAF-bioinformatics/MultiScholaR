@@ -475,3 +475,153 @@ test_that("the worker entry point computes a protein operation from a frozen req
     # Every registered compute role is one the worker's entry point dispatches.
     for (name in workflowOperationNames()) expect_true(workflowActionSpec(name)$compute %in% c("fixture", "peptide", "protein"), info = name)
 })
+
+test_that("the protein evidence, intensity and replicate filters are declarations on the feature-group unit whose kernels run the family's compute-only entry point (KIT-014)", {
+    precursor <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    rolled <- filterMinNumPeptidesPerSample(rollUpPrecursorToPeptide(precursor, core_utilisation = NA),
+        peptides_per_sample_cutoff = 3L, inclusion_list = NULL, core_utilisation = NA)
+    rlang::local_bindings(config_list = list(filterMinNumPeptidesPerProtein = list(), peptideIntensityFiltering = list(),
+        removePeptidesWithOnlyOneReplicate = list(replicate_group_column = "replicates")), .env = .GlobalEnv)
+    entries <- list(
+        list(declaration = diaPeptideProteinEvidenceOperation(), name = "peptide_protein_evidence_filter",
+            section = "filterMinNumPeptidesPerProtein", state = "protein_peptide_filtered", object = precursor,
+            parameters = list(num_peptides_per_protein_thresh = 2L, num_peptidoforms_per_protein_thresh = 1L),
+            native = function(object) filterMinNumPeptidesPerProtein(object, num_peptides_per_protein_thresh = 2L,
+                num_peptidoforms_per_protein_thresh = 1L)),
+        list(declaration = diaPeptideIntensityFilterOperation(), name = "peptide_intensity_filter",
+            section = "peptideIntensityFiltering", state = "intensity_filtered", object = rolled,
+            parameters = list(strict_mode = FALSE, min_reps_per_group = 1L, min_groups = 1L,
+                peptides_intensity_cutoff_percentile = 5, grouping_variable = "group"), native = NULL),
+        list(declaration = diaPeptideReplicateFilterOperation(), name = "peptide_replicate_filter",
+            section = "removePeptidesWithOnlyOneReplicate", state = "replicate_filtered", object = rolled,
+            parameters = list(replicate_group_column = "replicates"),
+            native = function(object) removePeptidesWithOnlyOneReplicate(object, replicate_group_column = "replicates")))
+    for (entry in entries) {
+        declaration <- entry$declaration
+        expect_identical(declaration$unit, "feature_group", info = entry$name)
+        expect_identical(declaration$name, entry$name)
+        expect_identical(unname(declaration$merge[["peptide_data"]]), "concatenate")
+        expect_identical(unname(declaration$merge[["design_matrix"]]), "design")
+        expect_identical(unname(declaration$merge[["counts"]]), "sum")
+        expect_identical(workflowActionSpec(entry$name)$default_variant, "partitioned")
+        expect_identical(workflowActionSpec(entry$name)$variants, c("grouped", "partitioned"))
+        manager <- peptideGroupFixtureManager(entry$object, withr::local_tempdir())
+        reference <- getDIAStateReference(manager)
+        value <- runProjected(manager, declaration, reference, entry$parameters)
+        expect_identical(value$state_name, entry$state)
+        expect_identical(value$section, entry$section)
+        expect_identical(value$execution$variant, "partitioned")
+        workflow <- list2env(list(state_manager = manager, qc_params = list(peptide_qc = list())))
+        result <- finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description, value$config,
+            value$section, value$counts)
+        expect_identical(manager$current_state, entry$state)
+        expect_true(isSavedWorkflowReference(result$stateReference))
+        expect_identical(nrow(manager$getState(entry$state)@peptide_data), value$checkpoint$dimensions$rows)
+        if (is.function(entry$native)) {
+            native <- entry$native(entry$object)
+            expect_identical(nrow(manager$getState(entry$state)@peptide_data), nrow(native@peptide_data), info = entry$name)
+        }
+        closeDIAStateAdapter(manager)
+    }
+    # The intensity declaration carries the dataset-wide quantile as its global statistic (audit A1).
+    expect_true("min_peptide_intensity_threshold" %in% names(diaPeptideIntensityFilterOperation()$global_statistics))
+    # The GUI entry point of the family goes through the registry (an unknown section refuses before any work).
+    expect_identical(unname(diaPeptideGroupOperations[names(diaPeptideGroupStates)]),
+        c("peptide_protein_evidence_filter", "peptide_intensity_filter", "peptide_replicate_filter", "peptide_imputation"))
+})
+
+test_that("the Q-value filter is a declaration whose compute-only entry point equals the module's kernel on the fixture and whose finishing step commits the state with its progress product (KIT-014)", {
+    declaration <- diaQvalueFilterOperation()
+    expect_identical(declaration$unit, "feature_group")
+    expect_identical(declaration$name, "peptide_qvalue_filter")
+    expect_setequal(names(declaration$global_statistics), c("protein_identification_evidence", "source_row_offsets"))
+    expect_identical(workflowActionSpec("peptide_qvalue_filter")$variants, "streamed")
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    # The design step records the retained columns on the object (the kernel's default set carries no sample id).
+    object@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids <- names(object@peptide_data)
+    rlang::local_bindings(config_list = list(srlQvalueProteotypicPeptideClean = list()), .env = .GlobalEnv)
+    parameters <- list(qvalue_threshold = 0.01, global_qvalue_threshold = 0.01, global_pg_qvalue_threshold = 0.01,
+        proteotypic_only = TRUE, confidence_provenance_mode = "diann_main_report")
+    validateWorkflowActionParameters("peptide_qvalue_filter", parameters, workflowExecutionPolicy(FALSE))
+    expect_error(validateWorkflowActionParameters("peptide_qvalue_filter", parameters[-1L], workflowExecutionPolicy(FALSE)))
+    # The module's kernel on the in-memory owner (the path the GUI took before KIT-011).
+    native_state <- WorkflowState$new(audit_enabled = FALSE)
+    native_state$saveState("raw_data_s4", object, list(), "fixture")
+    native_workflow <- list2env(list(state_manager = native_state, qc_params = list()))
+    native <- runPeptideQvalueApplyStep(native_workflow, 0.01, 0.01, TRUE, logInfoFn = function(...) NULL,
+        logWarnFn = function(...) NULL)$filteredS4
+    manager <- peptideGroupFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    reference <- getDIAStateReference(manager)
+    value <- runProjected(manager, declaration, reference, parameters)
+    expect_identical(value$state_name, "qvalue_filtered")
+    expect_identical(value$section, "srlQvalueProteotypicPeptideClean")
+    expect_identical(value$execution$variant, "streamed")
+    expect_identical(value$checkpoint$dimensions$rows, nrow(native@peptide_data))
+    expect_identical(value$exclusion_summary$excluded_rows,
+        native@args$srlQvalueProteotypicPeptideClean$biological_exclusion_summary$excluded_rows)
+    expect_identical(value$qc$qvalue_threshold, 0.01)
+    expect_true(grepl(paste("Proteins remaining:", value$proteins), value$text, fixed = TRUE))
+    expect_null(value$checkpoint$products$qvalue_progress)
+    workflow <- list2env(list(state_manager = manager, qc_params = list(peptide_qc = list(sample_filter = list(cutoff = 3L)))))
+    result <- finishDIAReferenceQvalueStep(workflow, value)
+    expect_identical(manager$current_state, "qvalue_filtered")
+    expect_true(isSavedWorkflowReference(result$stateReference))
+    record <- readDIAStateMetadata(manager)$data
+    expect_true(isSavedWorkflowReference(record$products$qvalue_progress))
+    expect_true(isSavedWorkflowReference(record$support$srlQvalueProteotypicPeptideClean$biological_exclusion_ledger))
+    expect_identical(names(workflow$qc_params$peptide_qc), c("sample_filter", "qvalue_filter"))
+    expect_identical(result$qcParams$peptide_qc$qvalue_filter$proteotypic_only, TRUE)
+    committed <- manager$getState("qvalue_filtered")
+    expect_identical(nrow(committed@peptide_data), nrow(native@peptide_data))
+    expect_identical(sort(unique(committed@peptide_data$Protein.Ids)), sort(unique(native@peptide_data$Protein.Ids)))
+    # The progress product is the one the managed result reader and the publication read for this step.
+    expect_identical(workflowPeptideProgressProduct(record)$entity_id, record$products$qvalue_progress$entity_id)
+})
+
+test_that("the controller's completion finishes a Q-value result through the step's own finishing step and the worker entry point computes it from a frozen request (KIT-014 launch chain)", {
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    object@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids <- names(object@peptide_data)
+    store_root <- withr::local_tempdir()
+    manager <- peptideGroupFixtureManager(object, store_root)
+    withr::defer(closeDIAStateAdapter(manager))
+    store <- manager$.context$store
+    reference <- getDIAStateReference(manager)
+    parameters <- list(qvalue_threshold = 0.01, global_qvalue_threshold = 0.01, global_pg_qvalue_threshold = 0.01,
+        proteotypic_only = TRUE, confidence_provenance_mode = "diann_main_report")
+    directory <- withr::local_tempdir()
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("e", 64), .package = "MultiScholaR")
+    request <- list(schema = 1L, build = workflowExecutionBuildIdentity(), operation = "peptide_qvalue_filter",
+        input_references = list(state = reference), parameters = parameters,
+        token = list(request_id = "wfx-test"), owner = store$identity, project_root = dirname(store$directory),
+        directory = directory, config = list(mode = "adapters"), worker_cap = 12 * 1024^3)
+    path <- file.path(directory, "request.rds")
+    writeWorkflowExecutionMessage(path, request)
+    closeDIAStateAdapter(manager)
+    # No global configuration in the worker: the template keeps a private copy seeded from the saved state.
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1"),
+        expect_null(suppressMessages(workflowWorkerMain(c(path, digest::digest(file = path, algo = "sha256"))))))
+    result <- readRDS(file.path(directory, "worker-result.rds"))
+    expect_identical(result$status, "complete")
+    expect_identical(result$result$operation, "peptide_qvalue_filter")
+    expect_identical(result$result$section, "srlQvalueProteotypicPeptideClean")
+    expect_identical(result$result$execution$variant, "streamed")
+    expect_true(isDIAComponentCheckpoint(result$result$checkpoint))
+    # The completion branch: a Q-value value finishes through its own step under the controller's acceptance lease.
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(dirname(store$directory), store$identity$project_id, store$identity$workflow_id), reopen = TRUE)
+    withr::defer(closeDIAStateAdapter(manager))
+    testthat::local_mocked_bindings(assertWorkflowController = function(...) invisible(TRUE), .package = "MultiScholaR")
+    owner <- list(manager = manager, accepting = TRUE)
+    completed <- completeWorkflowAction(owner, "peptide_qvalue_filter", result$result, context = list(peptide_qc = list()))
+    expect_identical(manager$current_state, "qvalue_filtered")
+    expect_true(isSavedWorkflowReference(completed$stateReference))
+    expect_true(isSavedWorkflowReference(readDIAStateMetadata(manager)$data$products$qvalue_progress))
+    # Every KIT-014 operation names handlers and validators that exist and the compute role the worker dispatches.
+    for (name in c("peptide_qvalue_filter", "peptide_protein_evidence_filter", "peptide_intensity_filter", "peptide_replicate_filter")) {
+        entry <- workflowActionSpec(name)
+        expect_true(is.function(get(entry$handler, mode = "function")), info = name)
+        expect_true(is.function(get(entry$validate, mode = "function")), info = name)
+        expect_identical(entry$compute, "peptide")
+        expect_identical(entry$completion, "peptide")
+    }
+})

@@ -400,9 +400,30 @@ mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, expe
   shiny::moduleServer(id, function(input, output, session) {
     
     qvalue_plot <- shiny::reactiveVal(NULL)
+    qvalue_plot_identity <- shiny::reactiveVal("Q-value filtering summary")
+
+    # KIT-014: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "peptide_qvalue_filter",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "qvalue_results", plot = "qvalue_plot", ack = "workflow_ack", notification = "qvalue_working",
+        label = "Q-value filter", step_label = "2_qval_filtered", plot_identity = qvalue_plot_identity),
+      deliver = function(result) {
+        arguments <- list(output = output, qvaluePlot = qvalue_plot, qvalueResult = result, omicType = omic_type, experimentLabel = experiment_label)
+        if (!is.null(experiment_paths)) arguments$projectDirs <- stats::setNames(list(experiment_paths),
+          paste(omic_type, experiment_label, sep = "_"))
+        do.call(updatePeptideQvalueOutputs, arguments)
+      })
     
     # Step 1: Q-Value Filter (chunk 10)
     shiny::observeEvent(input$apply_qvalue_filter, {
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+        managed_step$apply(list(qvalue_threshold = .diaNnIdentificationQvalueCutoff,
+          global_qvalue_threshold = .diaNnIdentificationQvalueCutoff,
+          global_pg_qvalue_threshold = .diaNnIdentificationQvalueCutoff,
+          proteotypic_only = TRUE, confidence_provenance_mode = "diann_main_report"))
+        return(invisible(NULL))
+      }
       apply_arguments <- list(
         workflowData = workflow_data,
         qvalueThreshold = .diaNnIdentificationQvalueCutoff,
@@ -419,6 +440,7 @@ mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, expe
     
     # Revert Q-Value Filter
     shiny::observeEvent(input$revert_qvalue, {
+      managed_step$cancel("reverted")
       runPeptideQvalueRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -429,6 +451,6 @@ mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, expe
     output$qvalue_plot <- shiny::renderPlot({
       shiny::req(qvalue_plot())
       grid::grid.draw(qvalue_plot())
-    })
+    }, alt = function() qvalue_plot_identity())
   })
 }

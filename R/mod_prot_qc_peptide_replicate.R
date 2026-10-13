@@ -298,9 +298,27 @@ mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, e
   shiny::moduleServer(id, function(input, output, session) {
     
     replicate_plot <- shiny::reactiveVal(NULL)
+    replicate_plot_identity <- shiny::reactiveVal("Peptide replicate support filtering summary")
+
+    # KIT-014: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "peptide_replicate_filter",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "replicate_results", plot = "replicate_plot", ack = "workflow_ack", notification = "replicate_working",
+        label = "peptide replicate filter", step_label = "7_replicate_filtered", plot_identity = replicate_plot_identity),
+      deliver = function(result) {
+        arguments <- list(output = output, replicatePlot = replicate_plot, replicateResult = result, omicType = omic_type, experimentLabel = experiment_label)
+        if (!is.null(experiment_paths)) arguments$projectDirs <- stats::setNames(list(experiment_paths),
+          paste(omic_type, experiment_label, sep = "_"))
+        do.call(updatePeptideReplicateOutputs, arguments)
+      })
     
     # Step 6: Replicate Filter (chunk 15)
     shiny::observeEvent(input$apply_replicate_filter, {
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+        managed_step$apply(list(replicate_group_column = input$replicate_group_column))
+        return(invisible(NULL))
+      }
       apply_arguments <- list(
         workflowData = workflow_data,
         replicateGroupColumn = input$replicate_group_column,
@@ -315,6 +333,7 @@ mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, e
     
     # Revert Replicate Filter
     shiny::observeEvent(input$revert_replicate, {
+      managed_step$cancel("reverted")
       runPeptideReplicateRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -325,6 +344,6 @@ mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, e
     output$replicate_plot <- shiny::renderPlot({
       shiny::req(replicate_plot())
       grid::grid.draw(replicate_plot())
-    })
+    }, alt = function() replicate_plot_identity())
   })
 }

@@ -1636,7 +1636,9 @@ restoreDIAStateSession <- function(manager, records, history, current) {
     invisible(NULL)
 }
 
-#' Run confidence predicates and global evidence over an accepted saved assay.
+#' Run confidence predicates and global evidence over an accepted saved assay (GUI entry; contract unchanged).
+#' KIT-014: the step is the registered declaration `peptide_qvalue_filter`; the GUI runs its compute-only
+#' entry point in process with the registry's production variant and commits through the shared finishing step.
 #' @param workflow Existing GUI owner.
 #' @param qvalue,global_qvalue,proteotypic,global_pg,mode Existing fixed confidence contract.
 #' @param now_fn Existing clock seam.
@@ -1645,7 +1647,6 @@ restoreDIAStateSession <- function(manager, records, history, current) {
 runDIAReferenceQvalue <- function(workflow, qvalue, global_qvalue, proteotypic,
     global_pg, mode, now_fn) {
     manager <- workflow$state_manager
-    context <- manager$.context
     if (isTRUE(manager$audit_enabled)) {
         cli::cli_abort("reference confidence filtering requires the declared audit-off route",
             class = "saved_entity_unsupported")
@@ -1656,8 +1657,45 @@ runDIAReferenceQvalue <- function(workflow, qvalue, global_qvalue, proteotypic,
         workflow$qc_params <- pending$qcParams
         return(pending)
     }
+    entry <- workflowActionSpec("peptide_qvalue_filter")
+    parameters <- list(qvalue_threshold = qvalue, global_qvalue_threshold = global_qvalue,
+        global_pg_qvalue_threshold = global_pg, proteotypic_only = isTRUE(proteotypic),
+        confidence_provenance_mode = mode)
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    value <- computeDIAReferenceQvalue(manager, getDIAStateReference(manager), parameters,
+        variant = entry$default_variant, now_fn = now_fn)
+    finishDIAReferenceQvalueStep(workflow, value, now_fn = now_fn)
+}
+
+#' Compute the Q-value and proteotypic filter on a saved state without committing it (KIT-014).
+#'
+#' The unchanged kernel supplies parameter resolution, validation and the output schema on a zero-row
+#' template; the real population runs the exact declared rules: one pass over whole protein groups builds
+#' the bounded per-protein identification evidence lookup (the declaration's global statistic), then the
+#' rows stream in source order with their global offsets through `produceDIAConfidenceTables` (the
+#' `streamed` variant, the reference path as it stood before this ticket).
+#' @param manager,reference Owner and the saved input state.
+#' @param parameters `qvalue_threshold`, `global_qvalue_threshold`, `global_pg_qvalue_threshold`,
+#'   `proteotypic_only` and `confidence_provenance_mode`.
+#' @param worker_cap Admitted worker memory in bytes (recorded; the step streams pages and keeps its
+#'   evidence lookup under its own 64 MiB bound).
+#' @param variant `streamed`.
+#' @param now_fn Clock seam for the QC parameter record.
+#' @return Compute-only contract: `checkpoint` (components, support, args and dimensions of the output
+#'   state, no product), `reference`, `summary` (the filtering progress), `exclusion_summary`,
+#'   `dependencies`, `counts`, `execution`, `state_name`, `description`, `config`, `section`, `text`,
+#'   `qc` (the step's QC parameter record) and `params` (the resolved kernel parameters).
+#' @noRd
+computeDIAReferenceQvalue <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
+    variant = "streamed", now_fn = Sys.time) {
+    if (!is.character(variant) || length(variant) != 1L || !identical(variant, "streamed"))
+        cli::cli_abort("unsupported Q-value variant", class = "workflow_execution_unsupported")
+    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) || worker_cap <= 0)
+        cli::cli_abort("invalid admitted worker capacity", class = "workflow_execution_unsupported")
+    context <- manager$.context
+    before <- readDIAStateMetadata(manager, reference)
     checkpoint <- before$data
-    checkpoint$dependencies <- collectDIANativeReferences(list(getDIAStateReference(manager),
+    checkpoint$dependencies <- collectDIANativeReferences(list(reference,
         checkpoint$dependencies, checkpoint$components, checkpoint$support, checkpoint$products))
     source <- checkpoint$components$peptide_data
     scope <- newWorkflowTableReadScope(context$store, source, reader = "arrow")
@@ -1671,12 +1709,24 @@ runDIAReferenceQvalue <- function(workflow, qvalue, global_qvalue, proteotypic,
     prototype <- do.call(methods::new, c(list(Class = checkpoint$class), slots))
     local_state <- WorkflowState$new(audit_enabled = FALSE)
     local_state$saveState("raw_data_s4", prototype, before$config, before$description)
-    local_workflow <- list2env(list(state_manager = local_state, qc_params = workflow$qc_params),
+    local_workflow <- list2env(list(state_manager = local_state, qc_params = list(peptide_qc = list())),
         parent = emptyenv())
+    # The configuration the template keeps in step with the object's args: the session's bus in the GUI,
+    # the global copy in a script that has one, else (a worker process or a bare script) a private copy
+    # seeded from the saved state's configuration (KIT-009).
+    config_env <- workflowConfigEnvironment()
+    if (!exists("config_list", envir = config_env, inherits = FALSE)) {
+        config_env <- new.env(parent = emptyenv())
+        config_env$config_list <- before$config %||% list()
+    }
+    update_config <- function(...) updateConfigParameter(..., env = config_env)
     # The existing R method supplies parameter resolution, validation and output
     # schema on zero rows. Real populations below use the exact declared rules.
-    template <- runPeptideQvalueApplyStep(local_workflow, qvalue, global_qvalue, proteotypic,
-        nowFn = now_fn, globalPGQvalueThreshold = global_pg, confidenceProvenanceMode = mode)
+    template <- runPeptideQvalueApplyStep(local_workflow, parameters$qvalue_threshold,
+        parameters$global_qvalue_threshold, isTRUE(parameters$proteotypic_only),
+        updateConfigParameterFn = update_config, nowFn = now_fn,
+        globalPGQvalueThreshold = parameters$global_pg_qvalue_threshold,
+        confidenceProvenanceMode = parameters$confidence_provenance_mode)
     result_object <- template$filteredS4
     params <- result_object@args$srlQvalueProteotypicPeptideClean
     protein <- checkpoint$slots$protein_id_column
@@ -1718,24 +1768,72 @@ runDIAReferenceQvalue <- function(workflow, qvalue, global_qvalue, proteotypic,
         summary$excluded_rows), text, fixed = TRUE)
     text <- sub(params$biological_exclusion_summary$classification_status,
         classification_status, text, fixed = TRUE)
+    list(checkpoint = checkpoint, reference = result, summary = progress, exclusion_summary = summary,
+        dependencies = checkpoint$dependencies, counts = produced$counts,
+        execution = list(variant = variant, worker_cap = worker_cap, rows = summary$biological_rows,
+            excluded_rows = summary$excluded_rows, classification_status = classification_status),
+        state_name = "qvalue_filtered", description = "Applied Q-value and proteotypic peptide filter",
+        config = config, section = "srlQvalueProteotypicPeptideClean", text = text,
+        qc = local_workflow$qc_params$peptide_qc$qvalue_filter, params = params, proteins = proteins)
+}
+
+#' Commit a computed Q-value result with its bounded progress product (KIT-014): the GUI in process and
+#' the controller's completion of a worker result share this step.
+#' @param workflow Session owner (`state_manager`, `qc_params`, optional `filtering_progress`).
+#' @param value Compute-only contract from `computeDIAReferenceQvalue`.
+#' @param now_fn Existing clock seam for the commit timestamp.
+#' @return Display result containing references and summaries only.
+#' @noRd
+finishDIAReferenceQvalueStep <- function(workflow, value, now_fn = Sys.time) {
+    manager <- workflow$state_manager
+    context <- manager$.context
+    checkpoint <- value$checkpoint
+    qc_params <- shiny::isolate(workflow$qc_params) %||% list()
+    if (is.null(qc_params$peptide_qc)) qc_params$peptide_qc <- list()
+    qc_params$peptide_qc$qvalue_filter <- value$qc
+    workflow$qc_params <- qc_params
     prior <- shiny::isolate(workflow$filtering_progress)
     prior_slots <- if (methods::is(prior, "FilteringProgress")) stats::setNames(
         lapply(methods::slotNames(prior), \(name) methods::slot(prior, name)), methods::slotNames(prior)) else NULL
-    product <- list(filteringSummary = progress, resultText = text, priorProgress = prior_slots,
-        qcParams = local_workflow$qc_params)
+    product <- list(filteringSummary = value$summary, resultText = value$text, priorProgress = prior_slots,
+        qcParams = qc_params)
     if (as.numeric(object.size(product)) > 67108864) {
         cli::cli_abort("Q-value progress exceeds product limits", class = "saved_entity_limit")
     }
-    identity <- newSavedWorkflowScientificIdentity(result$entity_id,
-        checkpoint$components$design_matrix$entity_id, digest::digest(params, algo = "sha256"),
+    identity <- newSavedWorkflowScientificIdentity(checkpoint$components$peptide_data$entity_id,
+        checkpoint$components$design_matrix$entity_id, digest::digest(value$params, algo = "sha256"),
         "qvalue-progress", context$software)
     checkpoint$products$qvalue_progress <- saveWorkflowConsumerEntity(context$store,
         newSavedWorkflowScientificProduct(product, "dia-qvalue-progress"),
         basename(tempfile("dia-qvalue-progress-")), identity, "scientific_product")
-    reference <- commitDIAReferenceState(manager, "qvalue_filtered", checkpoint, config,
-        "Applied Q-value and proteotypic peptide filter", timestamp = now_fn())
-    workflow$qc_params <- local_workflow$qc_params
+    reference <- commitDIAReferenceState(manager, value$state_name, checkpoint, value$config,
+        value$description, timestamp = now_fn())
     c(list(stateReference = reference), product)
+}
+
+#' The Q-value and proteotypic filter as a declaration on the feature-group unit (KIT-014): the unchanged
+#' `srlQvalueProteotypicPeptideClean` kernel resolves the parameters and the output schema; the population
+#' runs the exact declared rules with the per-protein identification evidence computed once over whole
+#' protein groups before the rows stream in source order (both global statistics, step map `qvalue`).
+#' The kernel runs the compute-only entry point.
+#' @return Declaration from `newWorkflowOperation`.
+#' @noRd
+diaQvalueFilterOperation <- function() {
+    newWorkflowOperation(name = "peptide_qvalue_filter", input_class = "PeptideQuantitativeData",
+        fields = "design_matrix", unit = "feature_group",
+        kernel = function(object, parameters, store) computeDIAReferenceQvalue(store$manager, store$source,
+            parameters[c("qvalue_threshold", "global_qvalue_threshold", "global_pg_qvalue_threshold",
+                "proteotypic_only", "confidence_provenance_mode")],
+            worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "streamed"),
+        output_class = "PeptideQuantitativeData",
+        parameters = c("qvalue_threshold", "global_qvalue_threshold", "global_pg_qvalue_threshold",
+            "proteotypic_only", "confidence_provenance_mode"),
+        product_type = "dia.qvalue_filter_result",
+        global_statistics = c(protein_identification_evidence =
+            "distinct peptide and peptidoform counts per protein over all runs, computed once over whole protein groups and joined to every accepted row",
+            source_row_offsets = ".source_row_id is a whole-table row ordinal; the rows stream in source order with their global offsets"),
+        merge = c(design_matrix = "design", peptide_data = "concatenate", biological_exclusion_ledger = "concatenate",
+            counts = "sum"))
 }
 
 
