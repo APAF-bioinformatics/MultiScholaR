@@ -29,6 +29,14 @@ generateProtDAVolcanoPlotGlimma <- function(
   output_dir = NULL,
   ...
 ) {
+  if (isDIAResultManifest(da_results_list) && !is.null(selected_contrast)) {
+    # KIT-016: the page published at DA time is a saved rendered asset; the module shows it without rebuilding
+    # the widget and without loading Glimma in the application process (the fallback below rebuilds it for a
+    # result published before the asset existed or at another threshold).
+    page <- resolveDIAInteractiveVolcanoAsset(da_results_list, selected_contrast, da_q_val_thresh)
+    if (!is.null(page)) return(shiny::tags$iframe(srcdoc = page, style = "width:100%;height:820px;border:0;",
+      title = paste("Interactive volcano", selected_contrast)))
+  }
   requireOptionalPackage("Glimma", "interactive volcano plots")
   logger::log_info("--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---")
 

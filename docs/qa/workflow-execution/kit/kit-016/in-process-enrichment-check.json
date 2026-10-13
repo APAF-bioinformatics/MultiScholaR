@@ -1,0 +1,42 @@
+{
+  "schema": "kit.in_process_enrichment_check.v1",
+  "ticket": "KIT-016",
+  "date": "2026-10-14",
+  "head_commit": "f9599cba704987b3b882e4b416faf2cb335fc22c",
+  "project": "kit-gui-008 member (screen, 8 samples)",
+  "glimma_loaded_before_da": false,
+  "glimma_loaded_after_da_publication": true,
+  "volcano": {
+    "contrast": "treated_vs_control",
+    "product_rows": 4790,
+    "product_columns": ["Protein.Group", "comparison", "log2FC", "raw_pvalue", "fdr_qvalue", "Protein.Ids"],
+    "product_seconds": 0.5,
+    "hit_seconds": 0,
+    "same_product": true,
+    "products_added": 1,
+    "static_plot": true,
+    "static_seconds": 0.1,
+    "interactive_asset_bytes": 1730918,
+    "interactive_shown": true,
+    "interactive_seconds": 0.2
+  },
+  "enrichment": {
+    "contrast": "treated_vs_control",
+    "seconds": 1.9,
+    "analysis_method": {
+      "method": "gprofiler2",
+      "supported": true,
+      "species_id": "hsapiens",
+      "species_name": "Homo sapiens",
+      "description": "gprofiler2 analysis for Homo sapiens"
+    },
+    "service": "gprofiler2:gprofiler2_test_double",
+    "product_service": "gprofiler2:gprofiler2_test_double",
+    "product_results": "0733dd7a27d3077982f6e6fd16fcc04afa327abd73640554dfb631fe7164c923",
+    "exact_against_direct_double": true,
+    "current_state": "enrichment_completed",
+    "completed_state_class": "EnrichmentResults",
+    "restored_exact": true,
+    "contrasts": "grouptreated-groupcontrol"
+  }
+}

@@ -29,7 +29,8 @@ generateProtDAVolcanoStatic <- function(
   prior_plot <- ggplot2::get_last_plot()
   on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
   if (isDIAResultManifest(da_results_list)) {
-    da_results_list <- readDIAResultDisplay(da_results_list, selected_contrast, expression = FALSE)
+    # KIT-016: the display columns are a saved product of the contrast's result table, rebuilt here on demand.
+    da_results_list <- list(da_proteins_long = generateDIAReferenceVolcanoProduct(da_results_list, selected_contrast)$data)
   }
   if (is.null(da_results_list) || is.null(da_results_list$da_proteins_long)) {
     return(NULL)

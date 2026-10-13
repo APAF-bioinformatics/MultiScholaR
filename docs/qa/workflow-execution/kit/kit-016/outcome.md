@@ -1,0 +1,33 @@
+# KIT-016: enrichment declaration and DA display products
+
+Status 2026-10-14: **complete** (no counted member, as the ledger says; in-process verification recorded). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-016: none; in-process verification on the test double, recorded); protocol v1.3. Control: `kit_015` (`core/browser-smoke.hXymGJ`). Predecessor cases: PERF-124, PERF-126; audit findings A10, B28; hand-off from KIT-012 (Glimma's namespaces).
+
+## What was built
+
+1. **Enrichment declaration** (`R/utils_workflow_dia_da.R`): `diaEnrichmentOperation()` (whole matrix over `processEnrichments`, input the DA manifest's source `ProteinQuantitativeData` state, output class `EnrichmentResults` (KIT-003), parameters `taxon_id`, cutoffs, `exclude_iea`, `correction_method`, `protein_id_column`, `contrast_names` and `results` (the contrast result table ids); extra inputs `da_results` (the module's `da_results_for_enrichment`), `pathway_dir`, `go_annotations`, `process_fn`; `factors$cacheable = FALSE`). `runDIAReferenceEnrichment(workflow, manifest, arguments, process_fn)` runs it through `runProjected` (no cache lookup), derives the service identity from the results (`diaEnrichmentServiceIdentity`: a live gost result's `meta$version`, the double's `deterministic_backend`, clusterProfiler's package version; `unavailable` otherwise) and saves a provenance product (`dia-enrichment-results`: service, parameters, result ids, contrasts, summaries) under an identity that includes the service identity, rooted on the source state and the result tables. The enrichment module body (`runProtEnrichAnalysisBody`) runs the declaration on a native session's manifest instead of refusing: the manifest's per-contrast results become the module's DA results data, the source state's design and id table its object (hydrated without the quant table), the published DA tables (`da_output_dir`) the enrichment input through the unchanged `createDAResultsForEnrichment`; annotations come from the bus, the source directory or the test-mode double; the completed `EnrichmentResults` is saved as a state through the adapter (KIT-003 result class).
+2. **DA display products** (`R/utils_workflow_dia_da.R`, `R/func_prot_da_volcano_static.R`, `R/func_prot_da_volcano_glimma.R`): `generateDIAReferenceVolcanoProduct(manifest, contrast)` saves the contrast's display columns once per result table (`dia-volcano-display`, identity `DA-volcano-display` + result id, rooted) and the static volcano builder rebuilds the plot from it on demand; `writeDIAInteractiveVolcanoOutputs(..., manager)` saves each contrast's self-contained page as a rendered asset (identity `DA-volcano-interactive` + result id + threshold) during the DA publication, and `generateProtDAVolcanoPlotGlimma` shows the saved page in an iframe before requiring Glimma (a result published before the asset existed, or another threshold, rebuilds the widget as before). The heatmap was already a saved product (`generateDIAReferenceHeatmap`, KIT-004); recorded, unchanged.
+
+## Stored-format addition (audit B28)
+
+New product kinds, additive: `dia-volcano-display` (scientific product, schema `dia_volcano_display_v1`), the interactive volcano page as a `rendered_asset` (`text/html`), `dia-enrichment-results` (scientific product, schema `dia_enrichment_product_v1`). Reverted code ignores them; nothing existing changed shape.
+
+## Tests (working tree, proof library on `R_LIBS`)
+
+`test-workflow-dia-products.R` 38 (new: the enrichment declaration validates, runs the double on the manifest's source state, records the service identity `gprofiler2:gprofiler2_test_double`, saves a provenance product with the result ids and a new product on every run (not cacheable); its enrichment data and summaries are hash-identical to the double called directly on the same arguments; the results checkpoint and restore as the KIT-003 result class; the static volcano display is saved once per result table, a second request hits, the rebuilt plot's data equals the kernel's plot on the same table; the interactive page saves and resolves as a rendered asset, the builder returns the iframe without loading Glimma, another threshold has no asset; the DA publication with the owner saves the real Glimma page as the asset byte for byte), enrichment module contracts 1253, module characterization 143, e2e doubles 34, volcano 54 (1 skip), heatmap 3 (1 skip), Glimma direct 5, Glimma plot 2, general enrichment 105; all green. Pre-existing, identical at the committed baseline (`f9599cba`, clean worktree): `test-module-ci-prot-enrich.R` MCI-010.2 (1 error) and `test-general-enrichment-shared.R` (2 errors).
+
+## In-process verification on the screen project
+
+[in-process-enrichment-check.R](in-process-enrichment-check.R) → [in-process-enrichment-check.json](in-process-enrichment-check.json), on a reflinked copy of the KIT-008 screen member's project (8 samples, on-disk default), opened as the DA tab's Open does, the DA step rerun through the KIT-004 declaration (its publication now saves the interactive pages as assets), then the products and the enrichment module body in test mode:
+
+| Check | Result |
+|---|---|
+| Glimma loaded before the DA step / after its publication | no / yes (the publication builds the pages in process; claim limit) |
+| Static volcano display product (`treated_vs_control`) | saved once: 4,790 rows, 6 columns, 0.5 s; second request a hit (0 s, same data); one product added; the static plot rebuilt from it in 0.1 s |
+| Interactive volcano asset | resolved from the store (1.73 MB page); the builder returned the iframe in 0.2 s without rebuilding the widget |
+| Enrichment on the manifest (deterministic double, `gprofiler2` for Homo sapiens) | 1.9 s; service identity `gprofiler2:gprofiler2_test_double` on the product; enrichment data and summaries hash-identical to the double called directly on the module's process arguments (the pre-ticket kernel path); state `enrichment_completed` holds an `EnrichmentResults` that restores identical |
+
+## Claim limits
+
+- Exactness of the enrichment declaration is proven on the deterministic double (the module's test-mode kernel), never against the live service (audit A10); a live run's results depend on the remote database version, which the product records.
+- The interactive volcano asset removes the widget rebuild (and Glimma) from the render path; the DA publication still builds the pages in the application process, so the KIT-012 resident-memory reduction (Glimma's namespaces) is not realised by this ticket; it needs the DA publication outside the process and is handed to KIT-017's journey pair (its `resident_end` rule) for measurement.
+- No counted member (ledger: none).

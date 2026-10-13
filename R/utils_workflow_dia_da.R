@@ -393,7 +393,7 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
                     cli::cli_abort("required DA outputs did not complete", class = "saved_entity_outputs_pending")
                 }
                 interactive_files <- writeDIAInteractiveVolcanoOutputs(manifest,
-                    staged$publication_graphs_dir, annotations, settings$da_q_val_thresh)
+                    staged$publication_graphs_dir, annotations, settings$da_q_val_thresh, manager = manager)
                 safe <- gsub("[^A-Za-z0-9_-]", "_", names(manifest$results))
                 required <- c(file.path(staged$da_output_dir, as.vector(outer(
                     paste0("da_proteins_", safe, "_long_annot"), c("tsv", "xlsx"), paste, sep = "."))),
@@ -418,6 +418,158 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
     })
 }
 
+#' The service identity an enrichment run reports (KIT-016): the g:Profiler database version carried by each
+#' gost result's metadata, the deterministic backend's name under the test double, or the clusterProfiler
+#' package version; `unavailable` when a run reports none.
+#' @param results `EnrichmentResults`.
+#' @return Sorted unique character vector.
+#' @noRd
+diaEnrichmentServiceIdentity <- function(results) {
+    found <- character()
+    for (contrast in names(results@enrichment_data)) {
+        for (direction in names(results@enrichment_data[[contrast]])) {
+            entry <- results@enrichment_data[[contrast]][[direction]]
+            if (is.null(entry)) next
+            if (is.list(entry) && !isS4(entry)) {
+                # A live gost result reports the database version in its metadata; the deterministic double marks
+                # every result row with its backend name.
+                version <- entry$meta$version
+                if (is.null(version) && is.data.frame(entry$result) && "deterministic_backend" %in% names(entry$result))
+                    version <- unique(as.character(entry$result$deterministic_backend))
+                version <- version[!is.na(version) & nzchar(version)]
+                if (is.character(version) && length(version)) found <- c(found, paste0("gprofiler2:", version))
+            } else if (isS4(entry) && methods::is(entry, "enrichResult")) {
+                found <- c(found, paste0("clusterProfiler:", as.character(utils::packageVersion("clusterProfiler"))))
+            }
+        }
+    }
+    if (!length(found)) "unavailable" else sort(unique(found))
+}
+
+#' The enrichment analysis as a declaration (KIT-016): whole matrix over the unchanged `processEnrichments`
+#' kernel (or the deterministic test double the module selects in test mode), the DA results, annotations
+#' and pathway directory as extra inputs beside the declared parameters; the output class is the KIT-003
+#' `EnrichmentResults`. The declaration is not cacheable (`factors$cacheable`): the g:Profiler database the
+#' call reaches is known only after the call, so its identity is saved with the product afterwards.
+#' @noRd
+diaEnrichmentOperation <- function() {
+    newWorkflowOperation("enrichment", "ProteinQuantitativeData", fields = "design_matrix", unit = "whole_matrix",
+        output_class = "EnrichmentResults", product_type = "dia-enrichment-results",
+        factors = list(cacheable = FALSE, service = "enrichment"),
+        parameters = c("taxon_id", "up_cutoff", "down_cutoff", "q_cutoff", "exclude_iea", "correction_method",
+            "protein_id_column", "contrast_names", "results"),
+        global_statistics = c(per_contrast_da_table =
+            "the background universe and the significant set are the complete DA table of each contrast"),
+        kernel = function(object, parameters, store) {
+            process <- parameters$process_fn %||% processEnrichments
+            arguments <- list(da_results = parameters$da_results, taxon_id = parameters$taxon_id,
+                up_cutoff = parameters$up_cutoff, down_cutoff = parameters$down_cutoff, q_cutoff = parameters$q_cutoff,
+                pathway_dir = parameters$pathway_dir, go_annotations = parameters$go_annotations,
+                exclude_iea = parameters$exclude_iea, protein_id_column = parameters$protein_id_column,
+                contrast_names = parameters$contrast_names, correction_method = parameters$correction_method)
+            results <- do.call(process, arguments)
+            if (!methods::is(results, "EnrichmentResults"))
+                cli::cli_abort("enrichment kernel returned no EnrichmentResults", class = "workflow_operation_output")
+            list(results = results, service = diaEnrichmentServiceIdentity(results))
+        })
+}
+
+#' Run the enrichment declaration on a DA manifest's source state and record its product (KIT-016).
+#' @param workflow Session owner (`state_manager`).
+#' @param manifest Accepted `dia.da_results.v1` manifest.
+#' @param arguments The module's `processEnrichments` arguments (`da_results`, `taxon_id`, cutoffs,
+#'   `pathway_dir`, `go_annotations`, `exclude_iea`, `protein_id_column`, `contrast_names`,
+#'   `correction_method`).
+#' @param process_fn The selected kernel: `processEnrichments`, or the deterministic double in test mode.
+#' @return `list(results, service, reference)`: the `EnrichmentResults`, the reported service identity and
+#'   the saved product reference (identity: source state, the contrast result tables, the declared
+#'   parameters and the service identity; rooted on the source and the result tables).
+#' @noRd
+runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn = NULL) {
+    manager <- workflow$state_manager
+    if (!isDIAResultManifest(manifest)) cli::cli_abort("enrichment needs a DA result manifest", class = "saved_entity_invalid")
+    declaration <- diaEnrichmentOperation()
+    results <- vapply(names(manifest$results), function(name)
+        manifest$results[[name]]$tables$da_proteins_long$entity_id %||% NA_character_, character(1))
+    parameters <- c(arguments[setdiff(declaration$parameters, "results")], list(results = results,
+        da_results = arguments$da_results, pathway_dir = arguments$pathway_dir,
+        go_annotations = arguments$go_annotations, process_fn = process_fn))
+    value <- runProjected(manager, declaration, manifest$source, parameters)
+    identity <- diaComponentScientificIdentity(manager, manifest$source, "enrichment",
+        c(parameters[declaration$parameters], list(service = value$service)))
+    product <- list(schema = "dia_enrichment_product_v1", service = value$service,
+        parameters = parameters[setdiff(declaration$parameters, "results")], results = results,
+        contrasts = names(value$results@enrichment_data), summaries = value$results@enrichment_summaries)
+    reference <- saveWorkflowConsumerEntity(manager$.context$store,
+        newSavedWorkflowScientificProduct(product, declaration$product_type,
+            provenance = list(service = value$service, cacheable = FALSE)),
+        basename(tempfile("dia-enrichment-")), identity, "scientific_product", factors = declaration$factors)
+    tables <- lapply(manifest$results, function(result) result$tables$da_proteins_long)
+    rootDIAProduct(manager, reference, c(list(manifest$source), tables))
+    list(results = value$results, service = value$service, reference = reference)
+}
+
+#' The static volcano display as a saved product (KIT-016): the selected display columns of one contrast's
+#' result table, saved once per result table and rebuilt into the plot on demand by the unchanged
+#' `generateProtDAVolcanoStatic` kernel (thresholds and labels are render choices, not identity).
+#' @param manifest,contrast Accepted results and selected contrast.
+#' @return The product (`schema`, `data`, `columns`, `rows`, `comparison`, `protein_id_column`).
+#' @noRd
+generateDIAReferenceVolcanoProduct <- function(manifest, contrast) {
+    manager <- getDIAActiveManager()
+    selected <- selectDIAContrastReference(manifest, contrast)
+    reference <- selected$tables$da_proteins_long
+    identity <- diaComponentScientificIdentity(manager, manifest$source, "DA-volcano-display",
+        list(result = reference$entity_id))
+    hit <- resolveSavedWorkflowEntity(manager$.context$store, "scientific_product", identity)
+    if (identical(hit$status, "hit")) return(hit$value$value)
+    columns <- intersect(unique(c(manifest$protein_id_column, "comparison", "log2FC", "raw_pvalue", "fdr_qvalue",
+        "gene_name", "gene_names", "Protein.Ids", "Entry", "description")), selected$columns)
+    data <- readDIAContrastOutput(selected, "da_proteins_long", columns)$da_proteins_long
+    product <- list(schema = "dia_volcano_display_v1", contrast = contrast, comparison = selected$comparison,
+        protein_id_column = manifest$protein_id_column, columns = columns, rows = nrow(data), data = data)
+    if (as.numeric(object.size(product)) > 67108864)
+        cli::cli_abort("volcano display exceeds product limits", class = "saved_entity_limit")
+    saved <- saveWorkflowConsumerEntity(manager$.context$store,
+        newSavedWorkflowScientificProduct(product, "dia-volcano-display"),
+        basename(tempfile("dia-volcano-")), identity, "scientific_product")
+    rootDIAProduct(manager, saved, list(manifest$source, reference))
+    product
+}
+
+#' Identity of one contrast's interactive volcano asset (KIT-016): the result table and the display
+#' threshold it was rendered at; the annotation table joins at publication and is not part of the identity.
+#' @noRd
+diaInteractiveVolcanoIdentity <- function(manager, manifest, contrast, qvalue) {
+    selected <- selectDIAContrastReference(manifest, contrast)
+    diaComponentScientificIdentity(manager, manifest$source, "DA-volcano-interactive",
+        list(result = selected$tables$da_proteins_long$entity_id, qvalue = as.numeric(qvalue)))
+}
+
+#' Save one contrast's self-contained interactive volcano page as a rendered asset (KIT-016), rooted on the
+#' source state and the contrast's result table.
+#' @noRd
+saveDIAInteractiveVolcanoAsset <- function(manager, manifest, contrast, qvalue, bytes) {
+    identity <- diaInteractiveVolcanoIdentity(manager, manifest, contrast, qvalue)
+    # The page's display box in the module (the asset envelope needs positive dimensions).
+    asset <- newSavedWorkflowRenderedAsset(bytes, "text/html", c(1200L, 820L))
+    reference <- saveWorkflowConsumerEntity(manager$.context$store, asset,
+        basename(tempfile("dia-volcano-html-")), identity, "rendered_asset")
+    rootDIAProduct(manager, reference, list(manifest$source, selectDIAContrastReference(manifest, contrast)$tables$da_proteins_long))
+    reference
+}
+
+#' Resolve one contrast's saved interactive volcano page (KIT-016).
+#' @return The HTML as a string, or NULL when no asset exists for the result and threshold.
+#' @noRd
+resolveDIAInteractiveVolcanoAsset <- function(manifest, contrast, qvalue) {
+    manager <- getDIAActiveManager()
+    identity <- diaInteractiveVolcanoIdentity(manager, manifest, contrast, qvalue)
+    hit <- resolveSavedWorkflowEntity(manager$.context$store, "rendered_asset", identity)
+    if (!identical(hit$status, "hit") || !identical(hit$value$status, "available")) return(NULL)
+    rawToChar(hit$value$bytes)
+}
+
 #' Export linked-expression volcano widgets from accepted result references.
 #' @param manifest Accepted DIA result manifest.
 #' @param directory Owned publication staging directory.
@@ -425,7 +577,7 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
 #' @param qvalue Display significance threshold.
 #' @return Paths to HTML files and their portable dependency files.
 #' @noRd
-writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, qvalue) {
+writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, qvalue, manager = NULL) {
     target <- file.path(directory, "Interactive_Volcano_Plots")
     dir.create(target, recursive = TRUE, showWarnings = FALSE)
     temporary <- tempfile("dia-volcano-assets-")
@@ -445,6 +597,10 @@ writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, 
         if (!file.copy(html, file.path(target, filename), overwrite = TRUE))
             cli::cli_abort("cannot stage interactive volcano HTML",
                 class = "saved_entity_outputs_pending")
+        # KIT-016: the self-contained page is also a saved rendered asset, so the module renders it on demand
+        # without rebuilding the widget (and without loading Glimma) in the application process.
+        if (!is.null(manager)) saveDIAInteractiveVolcanoAsset(manager, manifest, contrast, qvalue,
+            readBin(html, "raw", n = file.size(html)))
         widget <- NULL
     }
     list.files(target, recursive = TRUE, full.names = TRUE)

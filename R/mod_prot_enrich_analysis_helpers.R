@@ -524,9 +524,15 @@ runProtEnrichAnalysisBody <- function(input,
                                       incProgressFn = shiny::incProgress,
                                       globalEnv = NULL,
                                       catFn = cat) {
+  manifest <- NULL
   if (isDIAResultManifest(enrichmentData$da_results_data)) {
-    cli::cli_abort("active enrichment requires an explicit compatibility export for this native DIA session",
-      class = "saved_entity_unsupported")
+    # KIT-016: on the native session the enrichment runs as the registered declaration on the DA manifest's
+    # source state. The module's inputs are the manifest's per-contrast results (keyed by contrast), the source
+    # state's design and id table (hydrated without the quant table) and the DA tables the DA step published.
+    manifest <- enrichmentData$da_results_data
+    enrichmentData$current_s4_object <- readDIAExecutionComponents(workflowData$state_manager, manifest$source,
+      fields = c("design_matrix", "protein_id_table"))
+    enrichmentData$da_results_data <- manifest$results
   }
 
   selectedContrast <- input$selected_contrast
@@ -584,7 +590,16 @@ runProtEnrichAnalysisBody <- function(input,
     processEnrichmentsFn = processEnrichmentsFn
   )
 
-  enrichmentResults <- executeProcessEnrichmentsFn(
+  enrichmentResults <- if (!is.null(manifest)) {
+    captureCheckpointFn(enrichmentArgs$checkpointArgs, "cp10", "enrichment_input")
+    declared <- runDIAReferenceEnrichment(workflowData, manifest, enrichmentArgs$processArgs,
+      process_fn = selectedProcessEnrichmentsFn)
+    enrichmentData$enrichment_service <- declared$service
+    enrichmentData$enrichment_product <- declared$reference
+    catFn(sprintf("   ENRICHMENT Step: enrichment declaration completed (service %s)\n",
+      paste(declared$service, collapse = ", ")))
+    declared$results
+  } else executeProcessEnrichmentsFn(
     enrichmentArgs = enrichmentArgs,
     upCutoff = input$up_cutoff,
     downCutoff = input$down_cutoff,
