@@ -292,6 +292,12 @@ if (!is.null(b$builds$kit_014)) {
                 peptides_intensity_cutoff_percentile = 1L, grouping_variable = "group")),
         list(operation = "peptide_replicate_filter", population = "journey_sample", oracle = "journey_replicate", variant = "partitioned",
             parameters = list(replicate_group_column = "replicates"))))
+    # KIT-014 accepted 2026-10-13 (stage kit-014: all four single members exact against their journey oracles; peaks
+    # recorded, no ratio): the KIT-014 build is the control from here (protocol section 2, latest accepted build).
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-014", outcome = "control", build = "kit_014",
+        note = "peptide QC declarations (peptide_qvalue_filter, peptide_protein_evidence_filter, peptide_intensity_filter, peptide_replicate_filter) and the managed-step dispatch in the five peptide QC modules; accepted as four single members (stage kit-014, 2026-10-13): exact, anonymous peaks 2.47 / 2.37 / 2.24 / 2.23 GiB; the control for KIT-015 onward")
+    b$control <- "kit_014"
+    b$journey$pair$control <- b$control
 }
 
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with

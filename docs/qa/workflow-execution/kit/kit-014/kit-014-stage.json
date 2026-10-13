@@ -1,0 +1,82 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-014",
+  "stage": "kit-014",
+  "date": "2026-10-13",
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "promotion_authorized": false
+  },
+  "members": [
+    {
+      "id": "single-1",
+      "operation": "peptide_qvalue_filter",
+      "variant": "streamed",
+      "population": "journey_design",
+      "oracle": "journey_qvalue",
+      "status": "complete",
+      "exact": true,
+      "failing_rule": null,
+      "elapsed_seconds": 310.650000000001,
+      "peak_bytes": 3022188544,
+      "peak_anon_bytes": 2654294016,
+      "batches": null,
+      "max_sample_interval": 0.0700000000069849,
+      "swap_bytes": 0,
+      "slice_stopped": true
+    },
+    {
+      "id": "single-2",
+      "operation": "peptide_protein_evidence_filter",
+      "variant": "partitioned",
+      "population": "journey_qvalue",
+      "oracle": "journey_protein_peptide",
+      "status": "complete",
+      "exact": true,
+      "failing_rule": null,
+      "elapsed_seconds": 217.699999999997,
+      "peak_bytes": 3177152512,
+      "peak_anon_bytes": 2548854784,
+      "batches": 667,
+      "max_sample_interval": 0.0600000000049477,
+      "swap_bytes": 0,
+      "slice_stopped": true
+    },
+    {
+      "id": "single-3",
+      "operation": "peptide_intensity_filter",
+      "variant": "partitioned",
+      "population": "journey_rollup",
+      "oracle": "journey_intensity",
+      "status": "complete",
+      "exact": true,
+      "failing_rule": null,
+      "elapsed_seconds": 247.579999999994,
+      "peak_bytes": 2844491776,
+      "peak_anon_bytes": 2406297600,
+      "batches": 627,
+      "max_sample_interval": 0.149999999994179,
+      "swap_bytes": 0,
+      "slice_stopped": true
+    },
+    {
+      "id": "single-4",
+      "operation": "peptide_replicate_filter",
+      "variant": "partitioned",
+      "population": "journey_sample",
+      "oracle": "journey_replicate",
+      "status": "complete",
+      "exact": true,
+      "failing_rule": null,
+      "elapsed_seconds": 199.490000000005,
+      "peak_bytes": 2854952960,
+      "peak_anon_bytes": 2393079808,
+      "batches": 625,
+      "max_sample_interval": 0.0600000000049477,
+      "swap_bytes": 0,
+      "slice_stopped": true
+    }
+  ]
+}

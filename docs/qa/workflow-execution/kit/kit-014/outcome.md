@@ -1,6 +1,6 @@
 # KIT-014: peptide QC declarations
 
-Status 2026-10-13: **implemented and installed (`kit_014` = `core/browser-smoke.Dl22nP`, source `6cb49ed0`); four single members declared, waiting for the user's go.** Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-014: up to five single members, exactness and completion, 10 min each); protocol v1.3 (single members: oracle hash, peak recorded, no ratio; the memory decision is KIT-017's). Control: `kit_010` (`core/browser-smoke.nIs2QB`). Predecessor cases: PERF-113, PERF-114, PERF-116.
+Status 2026-10-13: **accepted and complete.** Stage `kit-014` decision `accepted` (four single members, one launch, no correction); `kit_014` (`core/browser-smoke.Dl22nP`, source `6cb49ed0`) is the control from KIT-015 onward (protocol section 2). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-014: up to five single members, exactness and completion, 10 min each); protocol v1.3 (single members: oracle hash, peak recorded, no ratio; the memory decision is KIT-017's). Control: `kit_010` (`core/browser-smoke.nIs2QB`). Predecessor cases: PERF-113, PERF-114, PERF-116.
 
 ## Unit gate (simulation setup 1)
 
@@ -34,6 +34,24 @@ In each of the six peptide QC modules the kernel call sits after the on-disk ear
 | replicate | `peptide_replicate_filter` (`partitioned`) | `journey_sample` (5,515,154) | `journey_replicate` | 182 s | 625 | yes |
 
 Records: [in-process-peptide-qc-check-attempt1-parameters.json](in-process-peptide-qc-check-attempt1-parameters.json) (first run: Q-value and replicate exact; protein evidence and intensity inexact on the args summary and, for the intensity filter, the support table) and [in-process-peptide-qc-check-protein_peptide-intensity.json](in-process-peptide-qc-check-protein_peptide-intensity.json) (the two steps rerun on the corrected parameters, exact). The first run bound the driver's settings list (peptidoforms 1; intensity 1 replicate, 1 group, percentile 0.1); the oracle states record what the journey ran, the GUI's defaults (peptidoforms 2; intensity 2 replicates, 2 groups, percentile 1), as integers (the journey's bindings override only the sample filter's cutoff). Every difference was a parameter value or its integer type (the field-level diff is in the session record); the declarations were not changed. The members bind the oracle states' values.
+
+## Results (stage `kit-014`, 2026-10-13, user "go"; tracked summary [kit-014-stage.json](kit-014-stage.json))
+
+| Member | Operation (variant) | Population → oracle | Status | Elapsed | Slice peak | Anonymous peak | Max gap | Batches | Verified |
+|---|---|---|---|---|---|---|---|---|---|
+| single-1 | `peptide_qvalue_filter` (`streamed`) | `journey_design` → `journey_qvalue` | complete | 311 s | 2.815 GiB | 2.472 GiB | 70 ms | (evidence pass + row stream) | exact |
+| single-2 | `peptide_protein_evidence_filter` (`partitioned`) | `journey_qvalue` → `journey_protein_peptide` | complete | 218 s | 2.959 GiB | 2.374 GiB | 60 ms | 667 | exact |
+| single-3 | `peptide_intensity_filter` (`partitioned`) | `journey_rollup` → `journey_intensity` | complete | 248 s | 2.649 GiB | 2.241 GiB | 150 ms | 627 | exact |
+| single-4 | `peptide_replicate_filter` (`partitioned`) | `journey_sample` → `journey_replicate` | complete | 199 s | 2.659 GiB | 2.229 GiB | 60 ms | 625 | exact |
+
+Every member eligible (zero swap, every gap under 250 ms, slices stopped, under the 600 s ceiling) and exact against its journey oracle (class, rows, every component and support entry, args summary; products reported). Decision `accepted` (`kitSingleDecision`, rule `exactness_and_completion`); no ratio and no memory claim (protocol: single members; the memory decision is KIT-017's). Placement: `kit_014` becomes the control (latest accepted build).
+
+### Claim limits
+
+- Exactness and completion only: the peaks are recorded, not judged; they sit on the operation-member floor (about 2.1 GiB before any kernel, KIT-009 probe) and are not compared with any control.
+- Exactness covers the state's components, support entries and args summary; the progress products are reported (the worker has no GUI progress context).
+- The members ran the declarations through the adapters vehicle (worker dispatch from a frozen request); the GUI's managed-step dispatch for these five modules is covered by the module tests, not by a `gui`-mode member.
+- The in-memory owner path of the modules (unreachable on the DIA default) still calls the kernels (grep evidence above).
 
 ## Declared runs (as authorised; ledger row KIT-014: up to five single members, 10 min each)
 
