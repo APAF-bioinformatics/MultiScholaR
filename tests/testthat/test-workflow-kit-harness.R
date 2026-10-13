@@ -697,6 +697,21 @@ test_that("a journey population's input component is read from its snapshot head
     expect_identical(h$kitPopulationInputComponent(file.path(root2, ".workflow-entities"), "duplicates_removed", api), expected)
 })
 
+test_that("the adapters vehicle names a member's input component through the class declaration, not a fixed table (KIT-010 audit PH-01)", {
+    root <- if (exists("workflow_test_root")) workflow_test_root else here::here()
+    vehicle <- readLines(file.path(root, "tests/testthat/test-workflow-execution-adapters.R"))
+    # The KIT member path: the lines around the input-state selection (the frozen PERF-106 member above it keeps
+    # its own peptide check).
+    at <- grep("request\\$input_state", vehicle)[[1L]]
+    timed <- vehicle[max(1L, at - 6L):min(length(vehicle), at + 8L)]
+    expect_false(any(grepl("components\\$peptide_data\\$entity_id", timed)))
+    expect_true(any(grepl("workflowClassDeclaration", timed)))
+    # The worker entry point dispatches every compute role the registry validator admits.
+    worker <- readLines(file.path(root, "R/utils_workflow_execution.R"))
+    switch_line <- worker[grep("peptide = , protein = computeWorkflowPeptideAction", worker)]
+    expect_length(switch_line, 1L)
+})
+
 test_that("a ticket's gui-mode member runs the screen journey with no record on its build and is decided on completion, dispatch and reproduction (KIT-008)", {
     h <- kitHarness()
     b <- kitSyntheticBindings()

@@ -52,6 +52,8 @@ Pair ratios (candidate / control): slice peak 0.994, anonymous 0.998, elapsed 0.
 - Both members measure the three-process floor (about 1.3 GiB at this population); the memory claim is "not worse", the real claim is mechanism and exactness.
 - Exactness covers the state's components, support entries and args summary; the two progress products are reported.
 - The GUI's protein replicate step keeps its in-process path until KIT-015 declares the protein QC steps; the `rows` variant has no production caller before that.
+- An adapters member has no project and no reservation, so its worker records the working-directory fallback as the state's `output_file` (masked by the canonical form, no consumer); a GUI action's worker records the project's protein QC path from the request's publication context (post-hoc audit PH-02).
+- The ggplot2 S7 class registration (`0a598d39`) postdates the control install: `kit_010` itself still fails the protein QC density plot's dispatch under ggplot2 4; the next ticket's build carries the repair (post-hoc audit PH-03).
 - Times are reported, not judged.
 
 ## Declared runs (as authorised; recorded above)

@@ -33,6 +33,23 @@ A unit is a property of the kernel's code and is determined by reading it, with 
 - One mechanism per ticket; a valid unfavourable result is recorded, never retried.
 - A new workflow writes one class declaration, one declaration per step, its kernels and its modules on the request/poll pattern. Nothing else. Lipidomics (KIT-031) is the acceptance test: if it needs new infrastructure, that is a kit gap.
 
+## Before a counted member exercises a new operation role or class
+
+KIT-010 needed three launches because its pre-execution checks covered the compute, the controller's completion
+and publication and the verifier, but not the adapters vehicle's input check nor the worker entry point's dispatch:
+plain code paths that only the installed member reached. Before a counted member runs an operation with a new
+compute role, input class or variant, exercise the whole chain in process on the fixture, and keep the exercise as
+a test where one fits:
+
+1. the registry entry validates and names handlers that exist (`test-workflow-operation-registry.R`);
+2. the controller's compute helper reaches the handler (`computeWorkflowPeptideAction` by compute role);
+3. the worker entry point dispatches the role from a frozen request (`workflowWorkerMain`; the KIT-010 test in
+   `test-workflow-partitions.R` is the template);
+4. the adapters vehicle's checks hold for the population kind (the input component is the class declaration's
+   assay; the variant is in the registry entry; the input state is the population's);
+5. the completion and publication phases run on the fixture;
+6. the verifier's branch compares the member's state with its oracle (the in-process check on the real population).
+
 ## Stages
 
 1. DIA proof (KIT-001–017): driver and step map, class declarations, runner, harness, partitioners, registry, production dispatch, on-disk state manager by default, reference-holding modules, app defects, step declarations, closure.
