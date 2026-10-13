@@ -250,6 +250,19 @@ runProteinIqRollupApplyStep <- function(workflowData,
     experimentPaths$protein_qc_dir <- file.path(science_request$request_dir, "protein")
     dir.create(experimentPaths$peptide_qc_dir)
     dir.create(experimentPaths$protein_qc_dir)
+    # KIT-015: an unmanaged launch runs the registered declaration in process (the IQ files under the science
+    # request directories, published by the finishing step as before).
+    entry <- workflowActionSpec("protein_iq_rollup")
+    value <- computeDIAReferenceIQRollup(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+      list(peptide_qc_dir = experimentPaths$peptide_qc_dir, protein_qc_dir = experimentPaths$protein_qc_dir),
+      variant = entry$default_variant, process_long_format = processLongFormatFn, write_fn = writeTsvFn, read_fn = readTsvFn)
+    if (length(value$dropped_samples)) {
+      droppedList <- paste(value$dropped_samples, collapse = ", ")
+      logWarnFn(paste0("Protein Processing: ", length(value$dropped_samples), " samples dropped during IQ rollup: ", droppedList))
+      showNotificationFn(paste("Warning: The following samples were dropped during protein rollup due to low peptide quality:",
+        droppedList), type = "warning", duration = 10)
+    }
+    return(finishDIAReferenceProteinStep(workflowData, value))
   }
   peptideS4 <- if (reference_mode) readDIAExecutionComponents(workflowData$state_manager,
     fields = "design_matrix") else workflowData$state_manager$getState(currentState)
@@ -686,17 +699,32 @@ runProteinIqRollupRevertObserver <- function(workflowData,
   })
 }
 
-bindProteinIqRollupPlot <- function(output, iqRollupPlot) {
-  output$iq_rollup_plot <- renderPlot({
+bindProteinIqRollupPlot <- function(output, iqRollupPlot, plotIdentity = NULL) {
+  output$iq_rollup_plot <- if (is.null(plotIdentity)) renderPlot({
     req(iqRollupPlot())
     grid.draw(iqRollupPlot())
-  })
+  }) else renderPlot({
+    req(iqRollupPlot())
+    grid.draw(iqRollupPlot())
+  }, alt = function() plotIdentity())
 }
 
 mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
     iq_rollup_plot <- shiny::reactiveVal(NULL)
+    iq_rollup_plot_identity <- shiny::reactiveVal("IQ protein rollup summary")
+    iq_rollup_plot_value <- iq_rollup_plot
+
+    # KIT-015: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "protein_iq_rollup",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "iq_rollup_results", plot = "iq_rollup_plot", ack = "workflow_ack", notification = "iq_rollup_working",
+        label = "IQ protein rollup", step_label = "9_protein_s4_created", plot_identity = iq_rollup_plot_identity),
+      deliver = function(result) updateProteinIqRollupOutputs(output = output, iqRollupPlot = iq_rollup_plot_value, iqRollupResult = result,
+        omicType = omic_type, experimentLabel = experiment_label),
+      read_result = readManagedProteinResult)
     shiny::observeEvent(workflow_data$state_manager, {
       if (isDIANativeSession(workflow_data$state_manager)) {
         shiny::updateRadioButtons(session, "rollup_method", selected = "iq")
@@ -723,6 +751,11 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
       } else {
         runProteinIqRollupApplyStep
       }
+      if (identical(rollupMethod, "iq") && !is.null(workflowSessionApplication(session)) &&
+          usesDIAReferenceStates(workflow_data$state_manager)) {
+        managed_step$apply(list())
+        return(invisible(NULL))
+      }
 
       runProteinIqRollupApplyObserver(
         workflowData = workflow_data,
@@ -737,6 +770,7 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
     
     # Revert IQ Rollup
     shiny::observeEvent(input$revert_iq_rollup, {
+      managed_step$cancel("reverted")
       runProteinIqRollupRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -745,7 +779,8 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
 
     bindProteinIqRollupPlot(
       output = output,
-      iqRollupPlot = iq_rollup_plot
+      iqRollupPlot = iq_rollup_plot,
+      plotIdentity = iq_rollup_plot_identity
     )
   })
 }

@@ -201,13 +201,15 @@ test_that("mod_prot_qc_protein_server forwards DIA orchestration to available su
             invisible(NULL)
           }
         } else {
-          function(id, workflow_data, omic_type, experiment_label) {
+          # KIT-015: the common modules take the experiment paths too (their managed step's publication context).
+          function(id, workflow_data, experiment_paths = NULL, omic_type, experiment_label) {
             call_log <<- c(call_log, x)
             call_args[[x]] <<- list(
               id = id,
               workflowData = workflow_data,
               omicType = omic_type,
-              experimentLabel = experiment_label
+              experimentLabel = experiment_label,
+              experimentPaths = experiment_paths
             )
             invisible(NULL)
           }
@@ -767,7 +769,7 @@ test_that("bindProteinAccessionCleanupPlot binds the rendered plot output to the
   helper_under_test <- makeFunctionWithOverrides(
     bindProteinAccessionCleanupPlot,
     list(
-      renderPlot = function(expr) {
+      renderPlot = function(expr, alt = NA, ...) {
         force(expr)
         "rendered_plot"
       },
@@ -848,7 +850,7 @@ test_that("mod_prot_qc_protein_cleanup_server wires the render binding through t
   server_under_test <- makeFunctionWithOverrides(
     mod_prot_qc_protein_cleanup_server,
     list(
-      bindProteinAccessionCleanupPlot = function(output, accessionCleanupPlot) {
+      bindProteinAccessionCleanupPlot = function(output, accessionCleanupPlot, plotIdentity = NULL) {
         captured$bind <<- list(
           output = output,
           accessionCleanupPlot = accessionCleanupPlot
@@ -1264,7 +1266,7 @@ test_that("bindProteinDuplicateRemovalPlot binds the rendered plot output to the
   helper_under_test <- makeFunctionWithOverrides(
     bindProteinDuplicateRemovalPlot,
     list(
-      renderPlot = function(expr) {
+      renderPlot = function(expr, alt = NA, ...) {
         force(expr)
         "rendered_plot"
       },
@@ -1290,7 +1292,7 @@ test_that("mod_prot_qc_protein_dedup_server wires the render binding through the
   server_under_test <- makeFunctionWithOverrides(
     mod_prot_qc_protein_dedup_server,
     list(
-      bindProteinDuplicateRemovalPlot = function(output, duplicateRemovalPlot) {
+      bindProteinDuplicateRemovalPlot = function(output, duplicateRemovalPlot, plotIdentity = NULL) {
         captured$bind <<- list(
           output = output,
           duplicateRemovalPlot = duplicateRemovalPlot
@@ -2045,7 +2047,7 @@ test_that("bindProteinIntensityFilterPlot binds the rendered plot output to the 
   helper_under_test <- makeFunctionWithOverrides(
     bindProteinIntensityFilterPlot,
     list(
-      renderPlot = function(expr) {
+      renderPlot = function(expr, alt = NA, ...) {
         force(expr)
         "rendered_plot"
       },
@@ -2137,7 +2139,7 @@ test_that("mod_prot_qc_protein_intensity_server wires the render binding through
   server_under_test <- makeFunctionWithOverrides(
     mod_prot_qc_protein_intensity_server,
     list(
-      bindProteinIntensityFilterPlot = function(output, proteinIntensityFilterPlot) {
+      bindProteinIntensityFilterPlot = function(output, proteinIntensityFilterPlot, plotIdentity = NULL) {
         captured$bind <<- list(
           output = output,
           proteinIntensityFilterPlot = proteinIntensityFilterPlot
@@ -2773,7 +2775,7 @@ test_that("bindProteinReplicateFilterPlot binds the rendered plot output to the 
   helper_under_test <- makeFunctionWithOverrides(
     bindProteinReplicateFilterPlot,
     list(
-      renderPlot = function(expr) {
+      renderPlot = function(expr, alt = NA, ...) {
         force(expr)
         "rendered_plot"
       },
@@ -2863,7 +2865,7 @@ test_that("mod_prot_qc_protein_replicate_server wires the render binding through
   server_under_test <- makeFunctionWithOverrides(
     mod_prot_qc_protein_replicate_server,
     list(
-      bindProteinReplicateFilterPlot = function(output, proteinReplicateFilterPlot) {
+      bindProteinReplicateFilterPlot = function(output, proteinReplicateFilterPlot, plotIdentity = NULL) {
         captured$bind <<- list(
           output = output,
           proteinReplicateFilterPlot = proteinReplicateFilterPlot
@@ -3648,7 +3650,7 @@ test_that("bindProteinIqRollupPlot binds the rendered plot output to the stored 
   helper_under_test <- makeFunctionWithOverrides(
     bindProteinIqRollupPlot,
     list(
-      renderPlot = function(expr) {
+      renderPlot = function(expr, alt = NA, ...) {
         force(expr)
         "rendered_plot"
       },
@@ -3675,7 +3677,7 @@ test_that("mod_prot_qc_protein_rollup_server wires the render binding through th
   server_under_test <- makeFunctionWithOverrides(
     mod_prot_qc_protein_rollup_server,
     list(
-      bindProteinIqRollupPlot = function(output, iqRollupPlot) {
+      bindProteinIqRollupPlot = function(output, iqRollupPlot, plotIdentity = NULL) {
         captured$bind <<- list(
           output = output,
           iqRollupPlot = iqRollupPlot

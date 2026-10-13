@@ -127,10 +127,18 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
                                                removeRowsWithMissingValuesPercentFn = removeRowsWithMissingValuesPercent,
                                                logInfoFn = logger::log_info,
                                                nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager) &&
-      identical(workflowData$state_manager$current_state, "protein_intensity_filtered")) {
-    pending <- resumeDIAProteinAction(workflowData, "protein_intensity_filtered")
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    pending <- if (identical(workflowData$state_manager$current_state, "protein_intensity_filtered"))
+      resumeDIAProteinAction(workflowData, "protein_intensity_filtered") else NULL
     if (!is.null(pending)) return(pending)
+    # KIT-015: an unmanaged launch runs the registered declaration in process with its production variant.
+    entry <- workflowActionSpec("protein_intensity_filter")
+    parameters <- list(strict_mode = isTRUE(useStrictMode), min_reps_per_group = minRepsPerGroup, min_groups = minGroups,
+      proteins_intensity_cutoff_percentile = intensityCutoffPercentile)
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    value <- computeDIAReferenceProteinIntensityFilter(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+      parameters, variant = entry$default_variant, now_fn = nowFn)
+    return(finishDIAReferenceProteinStep(workflowData, value))
   }
 
   shiny::req(workflowData$state_manager)
@@ -381,20 +389,40 @@ runProteinIntensityFilterRevertObserver <- function(workflowData,
   })
 }
 
-bindProteinIntensityFilterPlot <- function(output, proteinIntensityFilterPlot) {
-  output$protein_intensity_filter_plot <- renderPlot({
+bindProteinIntensityFilterPlot <- function(output, proteinIntensityFilterPlot, plotIdentity = NULL) {
+  output$protein_intensity_filter_plot <- if (is.null(plotIdentity)) renderPlot({
     req(proteinIntensityFilterPlot())
     grid.draw(proteinIntensityFilterPlot())
-  })
+  }) else renderPlot({
+    req(proteinIntensityFilterPlot())
+    grid.draw(proteinIntensityFilterPlot())
+  }, alt = function() plotIdentity())
 }
 
-mod_prot_qc_protein_intensity_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_protein_intensity_server <- function(id, workflow_data, experiment_paths = NULL, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
     protein_intensity_filter_plot <- shiny::reactiveVal(NULL)
+    protein_intensity_filter_plot_identity <- shiny::reactiveVal("Protein intensity filtering summary")
+    protein_intensity_filter_plot_value <- protein_intensity_filter_plot
+
+    # KIT-015: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "protein_intensity_filter",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "protein_intensity_filter_results", plot = "protein_intensity_filter_plot", ack = "workflow_ack", notification = "protein_intensity_filter_working",
+        label = "protein intensity filter", step_label = "11_protein_intensity_filtered", plot_identity = protein_intensity_filter_plot_identity),
+      deliver = function(result) updateProteinIntensityFilterOutputs(output = output, proteinIntensityFilterPlot = protein_intensity_filter_plot_value, intensityFilterResult = result,
+        omicType = omic_type, experimentLabel = experiment_label),
+      read_result = readManagedProteinResult)
     
     # Step 3: Protein Intensity Filter (chunks 20+21 combined)
     shiny::observeEvent(input$apply_protein_intensity_filter, {
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+        managed_step$apply(list(strict_mode = isTRUE(input$use_strict_mode), min_reps_per_group = input$min_reps_per_group,
+          min_groups = input$min_groups, proteins_intensity_cutoff_percentile = input$proteins_intensity_cutoff_percentile))
+        return(invisible(NULL))
+      }
       runProteinIntensityFilterApplyObserver(
         workflowData = workflow_data,
         useStrictMode = isTRUE(input$use_strict_mode),
@@ -410,6 +438,7 @@ mod_prot_qc_protein_intensity_server <- function(id, workflow_data, omic_type, e
     
     # Revert Protein Intensity Filter
     shiny::observeEvent(input$revert_protein_intensity_filter, {
+      managed_step$cancel("reverted")
       runProteinIntensityFilterRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -418,7 +447,8 @@ mod_prot_qc_protein_intensity_server <- function(id, workflow_data, omic_type, e
 
     bindProteinIntensityFilterPlot(
       output = output,
-      proteinIntensityFilterPlot = protein_intensity_filter_plot
+      proteinIntensityFilterPlot = protein_intensity_filter_plot,
+      plotIdentity = protein_intensity_filter_plot_identity
     )
   })
 }

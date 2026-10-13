@@ -2162,6 +2162,75 @@ validateWorkflowPeptideReplicateParameters <- function(parameters, policy, resol
     invisible(NULL)
 }
 
+#' The IQ rollup declares no scientific parameters; the working directories travel outside the identity
+#' (KIT-015).
+#' @noRd
+validateWorkflowProteinIQRollupParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("peptide_qc_dir", "protein_qc_dir")
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) || any(!names(parameters) %in% allowed)))
+        cli::cli_abort("unknown IQ rollup parameter supplied")
+    for (name in allowed) {
+        value <- parameters[[name]]
+        if (!is.null(value) && (!is.character(value) || length(value) != 1L || is.na(value) || !nzchar(value)))
+            cli::cli_abort("IQ working directories must be single paths")
+    }
+    invisible(NULL)
+}
+
+#' The accession cleanup's delimiter, aggregation method and optional FASTA table path (KIT-015).
+#' @noRd
+validateWorkflowProteinAccessionParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("delimiter", "aggregation_method", "fasta_table")
+    required <- allowed[1:2]
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !all(required %in% names(parameters)))
+        cli::cli_abort("accession cleanup parameters required or unknown parameter supplied")
+    for (name in allowed) {
+        value <- parameters[[name]]
+        if ((resolved && name %in% required || !is.null(value)) &&
+            (!is.character(value) || length(value) != 1L || is.na(value) || !nzchar(value)))
+            cli::cli_abort("accession cleanup parameters must be single strings")
+    }
+    invisible(NULL)
+}
+
+#' The protein intensity filter's strict flag, replicate and group minimums and percentile (KIT-015).
+#' @noRd
+validateWorkflowProteinIntensityParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("strict_mode", "min_reps_per_group", "min_groups", "proteins_intensity_cutoff_percentile")
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !setequal(names(parameters), allowed))
+        cli::cli_abort("protein intensity filter parameters required or unknown parameter supplied")
+    strict <- parameters$strict_mode
+    if ((resolved || !is.null(strict)) && (!is.logical(strict) || length(strict) != 1L || is.na(strict)))
+        cli::cli_abort("strict mode must be TRUE or FALSE")
+    for (name in c("min_reps_per_group", "min_groups")) {
+        value <- parameters[[name]]
+        if ((resolved || !is.null(value)) && (!is.numeric(value) || length(value) != 1L || !is.finite(value) ||
+            value < 1 || value != floor(value)))
+            cli::cli_abort("replicate and group minimums must be positive integers")
+    }
+    percentile <- parameters$proteins_intensity_cutoff_percentile
+    if ((resolved || !is.null(percentile)) && (!is.numeric(percentile) || length(percentile) != 1L ||
+        !is.finite(percentile) || percentile < 0 || percentile > 100))
+        cli::cli_abort("intensity percentile must lie in [0, 100]")
+    invisible(NULL)
+}
+
+#' The duplicate removal's aggregation function name (KIT-015).
+#' @noRd
+validateWorkflowProteinDuplicateParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- "aggregation_method"
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !setequal(names(parameters), allowed))
+        cli::cli_abort("duplicate removal parameters required or unknown parameter supplied")
+    method <- parameters$aggregation_method
+    if ((resolved || !is.null(method)) && (!is.character(method) || length(method) != 1L || is.na(method) ||
+        !method %in% c("mean", "median", "sum", "max", "min")))
+        cli::cli_abort("aggregation method must be one of mean, median, sum, max, min")
+    invisible(NULL)
+}
+
 #' The protein replicate filter's grouping variable and the recorded core count (KIT-010).
 #' @noRd
 validateWorkflowProteinReplicateParameters <- function(parameters, policy, resolved = TRUE) {
@@ -2251,6 +2320,40 @@ computeWorkflowProteinReplicateAction <- function(manager, request, variant) {
     paths <- workflowRequestExperimentPaths(request)
     if (!is.null(paths)) manager$.context$experiment_paths <- paths
     computeDIAReferenceProteinReplicateFilter(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
+#' The KIT-015 protein QC handlers: the worker's request directory holds IQ's working files until the
+#' controller's publication phase copies them; the accession cleanup reads the FASTA table from the bound
+#' path or the owner's source directory.
+#' @noRd
+computeWorkflowProteinIQRollupAction <- function(manager, request, variant) {
+    paths <- workflowRequestExperimentPaths(request)
+    if (!is.null(paths)) manager$.context$experiment_paths <- paths
+    parameters <- request$parameters
+    if (is.null(parameters$peptide_qc_dir)) parameters$peptide_qc_dir <- file.path(request$directory, "iq", "peptide")
+    if (is.null(parameters$protein_qc_dir)) parameters$protein_qc_dir <- file.path(request$directory, "iq", "protein")
+    computeDIAReferenceIQRollup(manager, request$input_references$state, parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+computeWorkflowProteinAccessionAction <- function(manager, request, variant) {
+    paths <- workflowRequestExperimentPaths(request)
+    if (!is.null(paths)) manager$.context$experiment_paths <- paths
+    computeDIAReferenceAccessionCleanup(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+computeWorkflowProteinIntensityAction <- function(manager, request, variant) {
+    computeDIAReferenceProteinIntensityFilter(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+computeWorkflowProteinDuplicateAction <- function(manager, request, variant) {
+    computeDIAReferenceProteinDuplicateRemoval(manager, request$input_references$state, request$parameters,
         worker_cap = request$worker_cap, variant = variant)
 }
 

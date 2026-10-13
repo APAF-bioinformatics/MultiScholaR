@@ -185,7 +185,7 @@ withSharedProteinReplicateUiMocks <- function(server_env,
     renderText = function(expr) {
       eval(substitute(expr), parent.frame())
     },
-    renderPlot = function(expr) {
+    renderPlot = function(expr, alt = NA, ...) {
       if (evaluate_plot) {
         eval(substitute(expr), parent.frame())
       }
@@ -207,7 +207,7 @@ withSharedProteinReplicateUiMocks <- function(server_env,
   )
 
   testthat::local_mocked_bindings(
-    renderPlot = function(expr) {
+    renderPlot = function(expr, alt = NA, ...) {
       if (evaluate_plot) {
         eval(substitute(expr), parent.frame())
       }

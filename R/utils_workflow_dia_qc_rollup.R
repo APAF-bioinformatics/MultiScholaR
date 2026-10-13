@@ -956,8 +956,12 @@ finishDIAProteinAction <- function(workflow, result, field, publish = TRUE) {
 #' @param value Compute-only result of a protein operation.
 #' @return The display handoff with `stateReference`.
 #' @noRd
-completeDIAProteinAction <- function(workflow, value) {
+completeDIAProteinAction <- function(workflow, value, publish = FALSE) {
     manager <- workflow$state_manager
+    # KIT-015: a protein value that carries its own display text and product field finishes through the
+    # shared protein finishing step; the KIT-010 replicate value keeps its completion below (the GUI's
+    # in-process path passes `publish = TRUE`).
+    if (!is.null(value$field)) return(finishDIAReferenceProteinStep(workflow, value, publish = publish))
     commitDIAReferenceState(manager, value$state_name, value$checkpoint, value$config, value$description)
     object <- readDIAExecutionComponents(manager)
     protein_count <- value$protein_count %||% length(unique(object@protein_quant_table[[object@protein_id_column]]))
@@ -971,7 +975,7 @@ completeDIAProteinAction <- function(workflow, value) {
         "State saved as: 'protein_replicate_filtered'\n",
         "\nProtein filtering pipeline complete!")
     finishDIAProteinAction(workflow, list(filteredS4 = object, outputFile = value$config$output_file,
-        proteinCount = protein_count, resultText = text), "filteredS4", publish = FALSE)
+        proteinCount = protein_count, resultText = text), "filteredS4", publish = publish)
 }
 
 #' Complete protein file publication using accepted results, without rerunning science.

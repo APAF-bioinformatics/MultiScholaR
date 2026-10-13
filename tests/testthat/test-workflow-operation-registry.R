@@ -4,6 +4,7 @@ test_that("the registry carries the built-in operations with every fact the exec
     names <- workflowOperationNames()
     expect_identical(names, c("minimum_peptides_per_sample", "peptide_imputation", "peptide_intensity_filter",
         "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter", "precursor_rollup",
+        "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup",
         "protein_replicate_filter", "wfx_fixture"))
     # KIT-010: the protein replicate filter as an operation on the row unit with the protein completion and publication.
     replicate <- workflowActionSpec("protein_replicate_filter")
@@ -81,6 +82,7 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         readDIAStateMetadata = function(...) list(data = record))
     expect_identical(sort(workflowOperationNames()), sort(c("minimum_peptides_per_sample", "peptide_imputation", "peptide_intensity_filter",
         "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter", "precursor_rollup",
+        "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup",
         "protein_replicate_filter", "wfx_fixture")))
 })
 

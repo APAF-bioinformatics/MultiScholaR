@@ -223,8 +223,8 @@ workflowOperationEntry <- function(operation) {
 }
 
 #' Register the built-in operations: the diagnostic fixture, the two DIA declarations of KIT-006, the
-#' imputation declaration of KIT-009, the protein replicate filter of KIT-010 and the four remaining peptide
-#' QC declarations of KIT-014.
+#' imputation declaration of KIT-009, the protein replicate filter of KIT-010, the four remaining peptide
+#' QC declarations of KIT-014 and the four protein QC declarations of KIT-015.
 #' `default_variant` (KIT-008) is the variant an unqualified launch runs, in the worker and in process.
 #' Called from `.onLoad` and from the first lookup in a process that bypassed it.
 #' @noRd
@@ -291,6 +291,32 @@ registerBuiltinWorkflowOperations <- function() {
         completion = "peptide", publication = "peptide", step_label = "7_replicate_filtered", omic_type = "proteomics",
         variants = c("grouped", "partitioned"), default_variant = "partitioned", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaPeptideReplicateFilterOperation()))
+    # KIT-015: the protein QC steps, each placed whole (2,500 proteins wide); `whole` is their one variant.
+    registerWorkflowOperation(list(name = "protein_iq_rollup", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "protein", handler = "computeWorkflowProteinIQRollupAction", validate = "validateWorkflowProteinIQRollupParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = character(),
+        completion = "protein", publication = "protein", step_label = "9_protein_s4_created", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaProteinIQRollupOperation()))
+    registerWorkflowOperation(list(name = "protein_accession_cleanup", input = "checkpoint", input_class = "ProteinQuantitativeData",
+        compute = "protein", handler = "computeWorkflowProteinAccessionAction", validate = "validateWorkflowProteinAccessionParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = c("delimiter", "aggregation_method"),
+        completion = "protein", publication = "protein", step_label = "10_protein_accession_cleaned", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaProteinAccessionCleanupOperation()))
+    registerWorkflowOperation(list(name = "protein_intensity_filter", input = "checkpoint", input_class = "ProteinQuantitativeData",
+        compute = "protein", handler = "computeWorkflowProteinIntensityAction", validate = "validateWorkflowProteinIntensityParameters",
+        resolve = NULL, parameter_limit = 65536,
+        parameters = c("strict_mode", "min_reps_per_group", "min_groups", "proteins_intensity_cutoff_percentile"),
+        completion = "protein", publication = "protein", step_label = "11_protein_intensity_filtered", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaProteinIntensityFilterOperation()))
+    registerWorkflowOperation(list(name = "protein_duplicate_removal", input = "checkpoint", input_class = "ProteinQuantitativeData",
+        compute = "protein", handler = "computeWorkflowProteinDuplicateAction", validate = "validateWorkflowProteinDuplicateParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = "aggregation_method",
+        completion = "protein", publication = "protein", step_label = "12_duplicates_removed", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaProteinDuplicateRemovalOperation()))
     # KIT-010: the protein replicate filter on the row partitioner; `whole` is the GUI's in-process path (the
     # object hydrated, the kernel once; the control arm of the measurement), `rows` the production variant.
     registerWorkflowOperation(list(name = "protein_replicate_filter", input = "checkpoint", input_class = "ProteinQuantitativeData",

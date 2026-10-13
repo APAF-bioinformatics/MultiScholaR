@@ -106,15 +106,15 @@ withSharedProtProteinSubmoduleMocks <- function(server_env, captured) {
   )
   localProtProteinQcNamespaceBinding(
     server_env, "mod_prot_qc_protein_cleanup_server",
-    record_server("cleanup"), mock_frame
+    record_server("cleanup", needs_paths = TRUE), mock_frame
   )
   localProtProteinQcNamespaceBinding(
     server_env, "mod_prot_qc_protein_intensity_server",
-    record_server("intensity_filter"), mock_frame
+    record_server("intensity_filter", needs_paths = TRUE), mock_frame
   )
   localProtProteinQcNamespaceBinding(
     server_env, "mod_prot_qc_protein_dedup_server",
-    record_server("duplicate_removal"), mock_frame
+    record_server("duplicate_removal", needs_paths = TRUE), mock_frame
   )
   localProtProteinQcNamespaceBinding(
     server_env, "mod_prot_qc_protein_replicate_server",

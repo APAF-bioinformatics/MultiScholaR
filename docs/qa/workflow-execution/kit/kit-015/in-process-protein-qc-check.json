@@ -1,0 +1,122 @@
+{
+  "schema": "kit.in_process_protein_qc_check.v1",
+  "ticket": "KIT-015",
+  "date": "2026-10-14",
+  "head_commit": "d1ae8e94ee54f6cc69d1bade1ab26612f4fd4245",
+  "steps": [
+    {
+      "step": "iq",
+      "operation": "protein_iq_rollup",
+      "population": "journey_imputation",
+      "oracle": "journey_iq",
+      "variant": "whole",
+      "parameters": {},
+      "input_rows": 11826409,
+      "oracle_rows": 2500,
+      "compute_seconds": 197,
+      "seconds": 209.8,
+      "anon_before": 633352192,
+      "anon_after": 2333974528,
+      "rows": 2500,
+      "protein_count": 2500,
+      "execution": {
+        "variant": "whole",
+        "worker_cap": 12884901888,
+        "rows": 2500,
+        "samples": 297,
+        "dropped_samples": []
+      },
+      "mismatches": [],
+      "products_reported": ["qvalue_progress", "qc_progress"],
+      "exact": true
+    },
+    {
+      "step": "accession",
+      "operation": "protein_accession_cleanup",
+      "population": "journey_iq",
+      "oracle": "journey_accession",
+      "variant": "whole",
+      "parameters": {
+        "delimiter": ";",
+        "aggregation_method": "mean",
+        "fasta_table": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/aa_seq_tbl_final.RDS"
+      },
+      "input_rows": 2500,
+      "oracle_rows": 2500,
+      "compute_seconds": 16.7,
+      "seconds": 18.5,
+      "anon_before": 2285420544,
+      "anon_after": 2295980032,
+      "rows": 2500,
+      "protein_count": 2500,
+      "execution": {
+        "variant": "whole",
+        "worker_cap": 12884901888,
+        "rows": 2500,
+        "cleanup_applied": true
+      },
+      "mismatches": [],
+      "products_reported": ["qvalue_progress", "qc_progress"],
+      "exact": true
+    },
+    {
+      "step": "protein_intensity",
+      "operation": "protein_intensity_filter",
+      "population": "journey_accession",
+      "oracle": "journey_protein_intensity",
+      "variant": "whole",
+      "parameters": {
+        "strict_mode": false,
+        "min_reps_per_group": 2,
+        "min_groups": 2,
+        "proteins_intensity_cutoff_percentile": 1
+      },
+      "input_rows": 2500,
+      "oracle_rows": 2500,
+      "compute_seconds": 18.8,
+      "seconds": 20.5,
+      "anon_before": 2296000512,
+      "anon_after": 2298122240,
+      "rows": 2500,
+      "protein_count": 2500,
+      "execution": {
+        "variant": "whole",
+        "worker_cap": 12884901888,
+        "rows": 2500,
+        "groupwise_percentage_cutoff": 98,
+        "max_groups_percentage_cutoff": 33.333
+      },
+      "mismatches": [],
+      "products_reported": ["qvalue_progress", "qc_progress"],
+      "exact": true
+    },
+    {
+      "step": "duplicates",
+      "operation": "protein_duplicate_removal",
+      "population": "journey_protein_intensity",
+      "oracle": "journey_duplicates",
+      "variant": "whole",
+      "parameters": {
+        "aggregation_method": "mean"
+      },
+      "input_rows": 2500,
+      "oracle_rows": 2500,
+      "compute_seconds": 23.1,
+      "seconds": 25.5,
+      "anon_before": 2298888192,
+      "anon_after": 2299281408,
+      "rows": 2500,
+      "protein_count": 2500,
+      "execution": {
+        "variant": "whole",
+        "worker_cap": 12884901888,
+        "rows": 2500,
+        "duplicates": 0
+      },
+      "mismatches": [],
+      "products_reported": ["qvalue_progress", "qc_progress"],
+      "exact": true
+    }
+  ],
+  "all_exact": true
+}

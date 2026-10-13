@@ -465,3 +465,98 @@ test_that("the KIT-014 peptide QC modules take the managed worker under a manage
             text = "imputation_results", plot = "imputationPlot", expected = list(proportion_missing_values = 0.5)))
     for (spec in specs) checkManagedPeptideModule(spec)
 })
+
+# KIT-015: every protein QC module dispatches its registered operation to the managed worker under a managed
+# application and runs the same declaration in process otherwise.
+checkManagedProteinModule <- function(spec) {
+    manager <- new.env()
+    class(manager) <- c("DIAStateAdapter", "environment")
+    owner <- new.env()
+    owner$manager <- manager
+    owner$job <- NULL
+    manager$.context <- list(store = list(execution_owner = owner), reference_states = TRUE)
+    manager$current_state <- "imputed"
+    workflow <- shiny::reactiveValues(state_manager = manager, qc_params = list())
+    reference <- list(entity_id = "accepted")
+    dispatched <- list()
+    in_process <- 0L
+    application <- WorkflowExecutionApplication$new()
+    application$config <- list(mode = "gui", root = withr::local_tempdir())
+    managed <- application
+    mocks <- list(
+        workflowSessionApplication = function(...) managed,
+        usesDIAReferenceStates = function(...) TRUE,
+        isDIANativeSession = function(...) FALSE,
+        beginWorkflowGUIAction = function(application, manager, operation, publication) {
+            expect_identical(operation, spec$operation)
+            expect_identical(publication$omic_type, "proteomics")
+            expect_identical(publication$experiment_paths, list(source_dir = "/x"))
+            list2env(list(id = paste0("gui-", spec$operation), closed = FALSE))
+        },
+        finishWorkflowGUIAction = function(reservation, status, ...) { reservation$closed <- TRUE; list() },
+        getDIAStateReference = function(...) reference,
+        runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
+            dispatched[[length(dispatched) + 1L]] <<- list(operation = operation, parameters = parameters)
+            paste0("worker-", operation)
+        },
+        pollWorkflowAction = function(...) list(status = "complete"),
+        resumeWorkflowAction = function(...) list(state_reference = reference),
+        readManagedProteinResult = function(...) list(resultText = "done\n", stateReference = reference),
+        withDIAStateScope = function(manager, operation) operation())
+    mocks[[spec$outputs]] <- function(output, ...) {
+        arguments <- list(...)
+        output[[spec$text]] <- shiny::renderText("done")
+        arguments[[spec$plot]](grid::textGrob("done"))
+    }
+    mocks[[spec$in_process]] <- function(...) { in_process <<- in_process + 1L; list(resultText = "in process\n") }
+    do.call(testthat::local_mocked_bindings, c(mocks, list(.package = "MultiScholaR", .env = environment())))
+    shiny::testServer(spec$server,
+        args = list(workflow_data = workflow, omic_type = "proteomics", experiment_label = "audit", experiment_paths = list(source_dir = "/x")), {
+        do.call(session$setInputs, c(spec$inputs, stats::setNames(list(1), spec$apply)))
+        session$flushReact()
+        expect_length(dispatched, 1L)
+        expect_identical(dispatched[[1L]]$operation, spec$operation)
+        expect_identical(dispatched[[1L]]$parameters, spec$expected)
+        expect_identical(in_process, 0L)
+        action <- managed_step$active()
+        expect_identical(action$phase, "awaiting_browser")
+        expect_identical(action$expected_text, "done")
+        session$setInputs(workflow_ack = list(request_id = action$reservation$id,
+            content_id = action$content_id, plot_ready = TRUE, stable_ms = 250))
+        expect_null(managed_step$active())
+        managed <<- NULL
+        do.call(session$setInputs, stats::setNames(list(2), spec$apply))
+        session$flushReact()
+        expect_length(dispatched, 1L)
+        # The replicate module observes its apply input on the module and the root scope (pre-existing), so its
+        # in-process path runs once per observer here.
+        expect_identical(in_process, spec$in_process_calls %||% 1L)
+    })
+    invisible(TRUE)
+}
+
+test_that("the KIT-015 protein QC modules take the managed worker under a managed application and the in-process declaration otherwise", {
+    specs <- list(
+        list(server = mod_prot_qc_protein_rollup_server, apply = "apply_iq_rollup", inputs = list(rollup_method = "iq"),
+            operation = "protein_iq_rollup", in_process = "runProteinIqRollupApplyObserver", outputs = "updateProteinIqRollupOutputs",
+            text = "iq_rollup_results", plot = "iqRollupPlot", expected = list()),
+        list(server = mod_prot_qc_protein_cleanup_server, apply = "apply_accession_cleanup",
+            inputs = list(delimiter = ";", aggregation_method = "mean"),
+            operation = "protein_accession_cleanup", in_process = "runProteinAccessionCleanupApplyObserver", outputs = "updateProteinAccessionCleanupOutputs",
+            text = "accession_cleanup_results", plot = "accessionCleanupPlot", expected = list(delimiter = ";", aggregation_method = "mean")),
+        list(server = mod_prot_qc_protein_intensity_server, apply = "apply_protein_intensity_filter",
+            inputs = list(use_strict_mode = FALSE, min_reps_per_group = 2, min_groups = 2, proteins_intensity_cutoff_percentile = 1),
+            operation = "protein_intensity_filter", in_process = "runProteinIntensityFilterApplyObserver", outputs = "updateProteinIntensityFilterOutputs",
+            text = "protein_intensity_filter_results", plot = "proteinIntensityFilterPlot",
+            expected = list(strict_mode = FALSE, min_reps_per_group = 2, min_groups = 2, proteins_intensity_cutoff_percentile = 1)),
+        list(server = mod_prot_qc_protein_dedup_server, apply = "apply_duplicate_removal",
+            inputs = list(duplicate_aggregation_method = "mean"),
+            operation = "protein_duplicate_removal", in_process = "runProteinDuplicateRemovalApplyObserver", outputs = "updateProteinDuplicateRemovalOutputs",
+            text = "duplicate_removal_results", plot = "duplicateRemovalPlot", expected = list(aggregation_method = "mean")),
+        list(server = mod_prot_qc_protein_replicate_server, apply = "apply_protein_replicate_filter",
+            inputs = list(protein_grouping_variable = "group", parallel_cores = 4),
+            operation = "protein_replicate_filter", in_process = "runProteinReplicateFilterApplyObserver", outputs = "updateProteinReplicateFilterOutputs",
+            text = "protein_replicate_filter_results", plot = "proteinReplicateFilterPlot", expected = list(grouping_variable = "group", parallel_cores = 4),
+            in_process_calls = 2L))
+    for (spec in specs) checkManagedProteinModule(spec)
+})

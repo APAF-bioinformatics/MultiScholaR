@@ -89,10 +89,22 @@ runProteinReplicateFilterApplyStep <- function(workflowData,
                                                newClusterFn = if (exists("new_cluster")) get("new_cluster") else NULL,
                                                isTestModeFn = is_test_mode,
                                                nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager) &&
-      identical(workflowData$state_manager$current_state, "protein_replicate_filtered")) {
-    pending <- resumeDIAProteinAction(workflowData, "protein_replicate_filtered")
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    pending <- if (identical(workflowData$state_manager$current_state, "protein_replicate_filtered"))
+      resumeDIAProteinAction(workflowData, "protein_replicate_filtered") else NULL
     if (!is.null(pending)) return(pending)
+    # KIT-015: an unmanaged launch runs the KIT-010 declaration in process with its production variant (`rows`).
+    entry <- workflowActionSpec("protein_replicate_filter")
+    parameters <- list(grouping_variable = groupingVariable, parallel_cores = parallelCores)
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    value <- computeDIAReferenceProteinReplicateFilter(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+      parameters, variant = entry$default_variant)
+    qc_params <- shiny::isolate(workflowData$qc_params) %||% list()
+    if (is.null(qc_params$protein_qc)) qc_params$protein_qc <- list()
+    qc_params$protein_qc$replicate_filter <- list(grouping_variable = groupingVariable, parallel_cores = parallelCores,
+      timestamp = nowFn(), effective_parallel_cores = 1L)
+    workflowData$qc_params <- qc_params
+    return(completeDIAProteinAction(workflowData, value, publish = TRUE))
   }
 
   shiny::req(workflowData$state_manager)
@@ -351,11 +363,14 @@ runProteinReplicateFilterRevertObserver <- function(workflowData,
   })
 }
 
-bindProteinReplicateFilterPlot <- function(output, proteinReplicateFilterPlot) {
-  output$protein_replicate_filter_plot <- renderPlot({
+bindProteinReplicateFilterPlot <- function(output, proteinReplicateFilterPlot, plotIdentity = NULL) {
+  output$protein_replicate_filter_plot <- if (is.null(plotIdentity)) renderPlot({
     req(proteinReplicateFilterPlot())
     grid.draw(proteinReplicateFilterPlot())
-  })
+  }) else renderPlot({
+    req(proteinReplicateFilterPlot())
+    grid.draw(proteinReplicateFilterPlot())
+  }, alt = function() plotIdentity())
 }
 
 mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
@@ -366,8 +381,23 @@ mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_p
     ))
     
     protein_replicate_filter_plot <- shiny::reactiveVal(NULL)
+    protein_replicate_filter_plot_identity <- shiny::reactiveVal("Protein replicate filtering summary")
+    protein_replicate_filter_plot_value <- protein_replicate_filter_plot
 
+    # KIT-015: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "protein_replicate_filter",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "protein_replicate_filter_results", plot = "protein_replicate_filter_plot", ack = "workflow_ack", notification = "protein_replicate_filter_working",
+        label = "protein replicate filter", step_label = "13_protein_replicate_filtered", plot_identity = protein_replicate_filter_plot_identity),
+      deliver = function(result) updateProteinReplicateFilterOutputs(output = output, proteinReplicateFilterPlot = protein_replicate_filter_plot_value, replicateFilterResult = result,
+        omicType = omic_type, experimentLabel = experiment_label),
+      read_result = readManagedProteinResult)
     runApplyObserver <- function(groupingVariable, parallelCores) {
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+        managed_step$apply(list(grouping_variable = groupingVariable %||% "group", parallel_cores = parallelCores %||% 4))
+        return(invisible(NULL))
+      }
       runProteinReplicateFilterApplyObserver(
         workflowData = workflow_data,
         experimentPaths = experiment_paths,
@@ -403,6 +433,7 @@ mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_p
     
     # Revert Protein Replicate Filter
     shiny::observeEvent(input$revert_protein_replicate_filter, {
+      managed_step$cancel("reverted")
       runProteinReplicateFilterRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -411,7 +442,8 @@ mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_p
 
     bindProteinReplicateFilterPlot(
       output = output,
-      proteinReplicateFilterPlot = protein_replicate_filter_plot
+      proteinReplicateFilterPlot = protein_replicate_filter_plot,
+      plotIdentity = protein_replicate_filter_plot_identity
     )
   })
 }

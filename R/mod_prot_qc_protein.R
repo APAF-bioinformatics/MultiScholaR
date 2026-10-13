@@ -41,21 +41,21 @@ getProtQcProteinCommonModuleSpecs <- function() {
       title = "Accession Cleanup",
       uiFn = "mod_prot_qc_protein_cleanup_ui",
       serverFn = "mod_prot_qc_protein_cleanup_server",
-      needsExperimentPaths = FALSE
+      needsExperimentPaths = TRUE
     ),
     list(
       id = "intensity_filter",
       title = "Protein Intensity Filter",
       uiFn = "mod_prot_qc_protein_intensity_ui",
       serverFn = "mod_prot_qc_protein_intensity_server",
-      needsExperimentPaths = FALSE
+      needsExperimentPaths = TRUE
     ),
     list(
       id = "duplicate_removal",
       title = "Duplicate Removal",
       uiFn = "mod_prot_qc_protein_dedup_ui",
       serverFn = "mod_prot_qc_protein_dedup_server",
-      needsExperimentPaths = FALSE
+      needsExperimentPaths = TRUE
     ),
     list(
       id = "replicate_filter",
@@ -94,6 +94,8 @@ runProtQcProteinSubmodule <- function(moduleSpec,
     return(invisible(NULL))
   }
 
+  # KIT-015: every protein module takes the experiment paths (its managed step's publication context) in the
+  # third position, as the rollup and replicate modules always did.
   callArgs <- list(moduleSpec$id, workflow_data)
   if (isTRUE(moduleSpec$needsExperimentPaths)) {
     callArgs <- c(callArgs, list(experiment_paths))

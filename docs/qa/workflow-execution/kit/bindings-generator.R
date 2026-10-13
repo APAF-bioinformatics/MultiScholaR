@@ -300,6 +300,28 @@ if (!is.null(b$builds$kit_014)) {
     b$journey$pair$control <- b$control
 }
 
+# KIT-015: the four protein QC steps not measured by KIT-010 as single members on the one kit_015 build (protocol
+# section 2: exactness and completion only). Each runs on the KIT-005 population the journey fed it with the parameters
+# its oracle state records, verified against the journey's next state: the IQ rollup (`journey_imputation` ->
+# `journey_iq`), the accession cleanup (`journey_iq` -> `journey_accession`; the journey's FASTA table from its project,
+# read-only), the protein intensity filter (`journey_accession` -> `journey_protein_intensity`) and the duplicate removal
+# (`journey_protein_intensity` -> `journey_duplicates`); the replicate filter was measured by KIT-010.
+if (!is.null(b$builds$kit_015)) {
+    if (is.null(journey_stage)) stop("kit_015 needs the kit_journey stage for the FASTA table")
+    fasta <- file.path(journey_stage, "control-1/project/dia_baseline_smoke/scripts/proteomics/aa_seq_tbl_final.RDS")
+    if (!file.exists(fasta)) stop("the control journey's FASTA table is missing: ", fasta)
+    b$tickets[["015"]] <- list(kind = "single", build = "kit_015", members = list(
+        list(operation = "protein_iq_rollup", population = "journey_imputation", oracle = "journey_iq", variant = "whole",
+            parameters = list()),
+        list(operation = "protein_accession_cleanup", population = "journey_iq", oracle = "journey_accession", variant = "whole",
+            parameters = list(delimiter = ";", aggregation_method = "mean", fasta_table = fasta)),
+        list(operation = "protein_intensity_filter", population = "journey_accession", oracle = "journey_protein_intensity",
+            variant = "whole", parameters = list(strict_mode = FALSE, min_reps_per_group = 2L, min_groups = 2L,
+                proteins_intensity_cutoff_percentile = 1L)),
+        list(operation = "protein_duplicate_removal", population = "journey_protein_intensity", oracle = "journey_duplicates",
+            variant = "whole", parameters = list(aggregation_method = "mean"))))
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and

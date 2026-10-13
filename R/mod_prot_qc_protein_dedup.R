@@ -75,10 +75,17 @@ runProteinDuplicateRemovalStep <- function(workflowData,
                                           aggregationMethod,
                                           aggregationResolverFn = base::get,
                                           logInfoFn = logger::log_info) {
-  if (usesDIAReferenceStates(workflowData$state_manager) &&
-      identical(workflowData$state_manager$current_state, "duplicates_removed")) {
-    pending <- resumeDIAProteinAction(workflowData, "duplicates_removed")
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    pending <- if (identical(workflowData$state_manager$current_state, "duplicates_removed"))
+      resumeDIAProteinAction(workflowData, "duplicates_removed") else NULL
     if (!is.null(pending)) return(pending)
+    # KIT-015: an unmanaged launch runs the registered declaration in process with its production variant.
+    entry <- workflowActionSpec("protein_duplicate_removal")
+    parameters <- list(aggregation_method = aggregationMethod)
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    value <- computeDIAReferenceProteinDuplicateRemoval(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+      parameters, variant = entry$default_variant, aggregation_resolver = aggregationResolverFn)
+    return(finishDIAReferenceProteinStep(workflowData, value))
   }
 
   shiny::req(workflowData$state_manager)
@@ -284,20 +291,39 @@ runProteinDuplicateRemovalRevertObserver <- function(workflowData,
   })
 }
 
-bindProteinDuplicateRemovalPlot <- function(output, duplicateRemovalPlot) {
-  output$duplicate_removal_plot <- renderPlot({
+bindProteinDuplicateRemovalPlot <- function(output, duplicateRemovalPlot, plotIdentity = NULL) {
+  output$duplicate_removal_plot <- if (is.null(plotIdentity)) renderPlot({
     req(duplicateRemovalPlot())
     grid.draw(duplicateRemovalPlot())
-  })
+  }) else renderPlot({
+    req(duplicateRemovalPlot())
+    grid.draw(duplicateRemovalPlot())
+  }, alt = function() plotIdentity())
 }
 
-mod_prot_qc_protein_dedup_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_protein_dedup_server <- function(id, workflow_data, experiment_paths = NULL, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
     duplicate_removal_plot <- shiny::reactiveVal(NULL)
+    duplicate_removal_plot_identity <- shiny::reactiveVal("Duplicate protein removal summary")
+    duplicate_removal_plot_value <- duplicate_removal_plot
+
+    # KIT-015: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "protein_duplicate_removal",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "duplicate_removal_results", plot = "duplicate_removal_plot", ack = "workflow_ack", notification = "duplicate_removal_working",
+        label = "duplicate protein removal", step_label = "12_duplicates_removed", plot_identity = duplicate_removal_plot_identity),
+      deliver = function(result) updateProteinDuplicateRemovalOutputs(output = output, duplicateRemovalPlot = duplicate_removal_plot_value, duplicateRemovalResult = result,
+        omicType = omic_type, experimentLabel = experiment_label),
+      read_result = readManagedProteinResult)
     
     # Step 4: Duplicate Protein Removal (chunk 22)
     shiny::observeEvent(input$apply_duplicate_removal, {
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+        managed_step$apply(list(aggregation_method = input$duplicate_aggregation_method))
+        return(invisible(NULL))
+      }
       runProteinDuplicateRemovalApplyObserver(
         workflowData = workflow_data,
         aggregationMethod = input$duplicate_aggregation_method,
@@ -310,6 +336,7 @@ mod_prot_qc_protein_dedup_server <- function(id, workflow_data, omic_type, exper
     
     # Revert Duplicate Removal
     shiny::observeEvent(input$revert_duplicate_removal, {
+      managed_step$cancel("reverted")
       runProteinDuplicateRemovalRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -318,7 +345,8 @@ mod_prot_qc_protein_dedup_server <- function(id, workflow_data, omic_type, exper
     
     bindProteinDuplicateRemovalPlot(
       output = output,
-      duplicateRemovalPlot = duplicate_removal_plot
+      duplicateRemovalPlot = duplicate_removal_plot,
+      plotIdentity = duplicate_removal_plot_identity
     )
   })
 }

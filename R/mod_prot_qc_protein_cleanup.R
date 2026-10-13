@@ -124,10 +124,18 @@ runProteinAccessionCleanupStep <- function(workflowData,
                                            saveRdsFn = saveRDS,
                                            existsFn = exists,
                                            getFn = get) {
-  if (usesDIAReferenceStates(workflowData$state_manager) &&
-      identical(workflowData$state_manager$current_state, "protein_accession_cleaned")) {
-    pending <- resumeDIAProteinAction(workflowData, "protein_accession_cleaned")
+  if (usesDIAReferenceStates(workflowData$state_manager)) {
+    pending <- if (identical(workflowData$state_manager$current_state, "protein_accession_cleaned"))
+      resumeDIAProteinAction(workflowData, "protein_accession_cleaned") else NULL
     if (!is.null(pending)) return(pending)
+    # KIT-015: an unmanaged launch runs the registered declaration in process with its production variant.
+    entry <- workflowActionSpec("protein_accession_cleanup")
+    parameters <- list(delimiter = delimiter, aggregation_method = aggregationMethod)
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    value <- computeDIAReferenceAccessionCleanup(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+      parameters, variant = entry$default_variant, seqinr = shiny::isolate(workflowData$aa_seq_tbl_final),
+      fasta_metadata = shiny::isolate(workflowData$fasta_metadata), now_fn = nowFn)
+    return(finishDIAReferenceProteinStep(workflowData, value))
   }
 
   shiny::req(workflowData$state_manager)
@@ -399,20 +407,39 @@ runProteinAccessionCleanupRevertObserver <- function(workflowData,
   })
 }
 
-bindProteinAccessionCleanupPlot <- function(output, accessionCleanupPlot) {
-  output$accession_cleanup_plot <- renderPlot({
+bindProteinAccessionCleanupPlot <- function(output, accessionCleanupPlot, plotIdentity = NULL) {
+  output$accession_cleanup_plot <- if (is.null(plotIdentity)) renderPlot({
     req(accessionCleanupPlot())
     grid.draw(accessionCleanupPlot())
-  })
+  }) else renderPlot({
+    req(accessionCleanupPlot())
+    grid.draw(accessionCleanupPlot())
+  }, alt = function() plotIdentity())
 }
 
-mod_prot_qc_protein_cleanup_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_prot_qc_protein_cleanup_server <- function(id, workflow_data, experiment_paths = NULL, omic_type, experiment_label) {
   shiny::moduleServer(id, function(input, output, session) {
     
     accession_cleanup_plot <- shiny::reactiveVal(NULL)
+    accession_cleanup_plot_identity <- shiny::reactiveVal("Protein accession cleanup summary")
+    accession_cleanup_plot_value <- accession_cleanup_plot
+
+    # KIT-015: the managed worker when the session carries a managed application (KIT-008 pattern), else the
+    # same registered declaration in process.
+    managed_step <- installWorkflowManagedStep(session, input, workflow_data, "protein_accession_cleanup",
+      publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
+      ui = list(text = "accession_cleanup_results", plot = "accession_cleanup_plot", ack = "workflow_ack", notification = "accession_cleanup_working",
+        label = "protein accession cleanup", step_label = "10_protein_accession_cleaned", plot_identity = accession_cleanup_plot_identity),
+      deliver = function(result) updateProteinAccessionCleanupOutputs(output = output, accessionCleanupPlot = accession_cleanup_plot_value, cleanupResult = result,
+        omicType = omic_type, experimentLabel = experiment_label),
+      read_result = readManagedProteinResult)
     
     # Step 2: Protein Accession Cleanup (chunk 19)
     shiny::observeEvent(input$apply_accession_cleanup, {
+      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+        managed_step$apply(list(delimiter = input$delimiter, aggregation_method = input$aggregation_method))
+        return(invisible(NULL))
+      }
       runProteinAccessionCleanupApplyObserver(
         workflowData = workflow_data,
         delimiter = input$delimiter,
@@ -426,6 +453,7 @@ mod_prot_qc_protein_cleanup_server <- function(id, workflow_data, omic_type, exp
     
     # Revert Accession Cleanup
     shiny::observeEvent(input$revert_accession_cleanup, {
+      managed_step$cancel("reverted")
       runProteinAccessionCleanupRevertObserver(
         workflowData = workflow_data,
         output = output
@@ -434,7 +462,8 @@ mod_prot_qc_protein_cleanup_server <- function(id, workflow_data, omic_type, exp
 
     bindProteinAccessionCleanupPlot(
       output = output,
-      accessionCleanupPlot = accession_cleanup_plot
+      accessionCleanupPlot = accession_cleanup_plot,
+      plotIdentity = accession_cleanup_plot_identity
     )
   })
 }
