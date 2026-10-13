@@ -54,8 +54,11 @@
 ##----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-# Set up S4 class definitions for ggplot objects
+# Set up S4 class definitions for ggplot objects. ggplot2 up to 3.5 classes a plot c("gg", "ggplot");
+# ggplot2 4.0 builds plots on S7 and classes them c("ggplot2::ggplot", "ggplot", "ggplot2::gg", "S7_object", "gg"),
+# so the S7 class is registered as extending "ggplot" and the existing "ggplot" methods keep dispatching.
 setOldClass(c("gg", "ggplot"))
+setOldClass(c("ggplot2::ggplot", "ggplot"))
 
 
 
