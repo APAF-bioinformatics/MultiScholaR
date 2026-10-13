@@ -65,14 +65,17 @@ phases <- list()
 for (i in seq_along(engines)) {
     label <- names(engines)[[i]]
     start <- at(paste0(label, ":start"))
+    # The compute exit mark may be absent (base::trace does not always fire on the traced exit); the output
+    # phase then runs to the finishing step's own mark.
+    compute_end <- if (length(compute_marks) >= i) compute_marks[[i]]$uptime else at(paste0(label, ":finish_done"))
     phases[[label]] <- list(engine_limit_bytes = engines[[label]],
         anon_at_start = trace$anon[which.min(abs(trace$uptime - start))],
         kernel_phase_peak = phase_peak(start, batches_marks[[i]]$uptime),
         kernel_phase_seconds = round(batches_marks[[i]]$uptime - start, 1),
-        output_phase_peak = phase_peak(batches_marks[[i]]$uptime, compute_marks[[i]]$uptime),
-        output_phase_seconds = round(compute_marks[[i]]$uptime - batches_marks[[i]]$uptime, 1),
-        finish_phase_peak = phase_peak(compute_marks[[i]]$uptime, at(paste0(label, ":finish_done"))),
-        finish_phase_seconds = round(at(paste0(label, ":finish_done")) - compute_marks[[i]]$uptime, 1),
+        output_phase_peak = phase_peak(batches_marks[[i]]$uptime, compute_end),
+        output_phase_seconds = round(compute_end - batches_marks[[i]]$uptime, 1),
+        finish_phase_peak = phase_peak(compute_end, at(paste0(label, ":finish_done"))),
+        finish_phase_seconds = round(at(paste0(label, ":finish_done")) - compute_end, 1),
         anon_after_close = trace$anon[which.min(abs(trace$uptime - at(paste0(label, ":closed"))))])
 }
 record <- list(schema = "kit.memory_attribution_probe.v1", ticket = "KIT-009", date = format(Sys.Date()),
