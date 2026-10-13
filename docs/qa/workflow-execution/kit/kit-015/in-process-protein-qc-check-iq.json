@@ -1,0 +1,35 @@
+{
+  "schema": "kit.in_process_protein_qc_check.v1",
+  "ticket": "KIT-015",
+  "date": "2026-10-14",
+  "head_commit": "3ad4127417dfa1953329f610c2beeae6c3a7afb4",
+  "steps": [
+    {
+      "step": "iq",
+      "operation": "protein_iq_rollup",
+      "population": "journey_imputation",
+      "oracle": "journey_iq",
+      "variant": "whole",
+      "parameters": {},
+      "input_rows": 11826409,
+      "oracle_rows": 2500,
+      "compute_seconds": 186,
+      "seconds": 198.4,
+      "anon_before": 632987648,
+      "anon_after": 2284474368,
+      "rows": 2500,
+      "protein_count": 2500,
+      "execution": {
+        "variant": "whole",
+        "worker_cap": 12884901888,
+        "rows": 2500,
+        "samples": 297,
+        "dropped_samples": []
+      },
+      "mismatches": [],
+      "products_reported": ["qvalue_progress", "qc_progress"],
+      "exact": true
+    }
+  ],
+  "all_exact": true
+}
