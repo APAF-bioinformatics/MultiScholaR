@@ -322,6 +322,12 @@ if (!is.null(b$builds$kit_015)) {
                 proteins_intensity_cutoff_percentile = 1L)),
         list(operation = "protein_duplicate_removal", population = "journey_protein_intensity", oracle = "journey_duplicates",
             variant = "whole", parameters = list(aggregation_method = "mean"))))
+    # KIT-015 accepted 2026-10-14 (stage kit-015: all four single members exact against their journey oracles; peaks
+    # recorded, no ratio): the KIT-015 build is the control from here (protocol section 2, latest accepted build).
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-015", outcome = "control", build = "kit_015",
+        note = "protein QC declarations (protein_iq_rollup, protein_accession_cleanup, protein_intensity_filter, protein_duplicate_removal) and the managed-step dispatch in the five protein modules; accepted as four single members (stage kit-015, 2026-10-14): exact, anonymous peaks 2.57 / 1.19 / 1.18 / 1.34 GiB; the control for KIT-016 onward")
+    b$control <- "kit_015"
+    b$journey$pair$control <- b$control
 }
 
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with

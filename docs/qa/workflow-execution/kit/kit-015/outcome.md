@@ -1,6 +1,6 @@
 # KIT-015: protein QC declarations
 
-Status 2026-10-14: **implemented, audited before launch and installed (`kit_015` = `core/browser-smoke.hXymGJ`, source `3ad41274`, after the pre-execution audit repairs; the earlier install `Zi0y8A` from `31603afc` is recorded, never run); four single members declared, waiting for the user's go.** Pre-execution audit: [KIT-015-PREEXEC-AUDIT-20261014.md](KIT-015-PREEXEC-AUDIT-20261014.md) (6 findings, none blocking) and its [remediation](KIT-015-PREEXEC-REMEDIATION-20261014.md); the IQ step rerun in process after the repairs: exact, 198 s ([in-process-protein-qc-check-iq.json](in-process-protein-qc-check-iq.json)). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-015: up to five single members, exactness and completion, 10 min each); protocol v1.3 (single members: oracle hash, peak recorded, no ratio; the memory decision is KIT-017's). Control: `kit_014` (`core/browser-smoke.Dl22nP`). Predecessor cases: PERF-114, PERF-115, PERF-117, PERF-118; audit findings A2, A4, A5, A6, A11.
+Status 2026-10-14: **accepted and complete.** Stage `kit-015` decision `accepted` (four single members, one launch, no correction); `kit_015` (`core/browser-smoke.hXymGJ`, source `3ad41274`, after the pre-execution audit repairs; the earlier install `Zi0y8A` from `31603afc` is recorded, never run) is the control from KIT-016 onward (protocol section 2). Pre-execution audit: [KIT-015-PREEXEC-AUDIT-20261014.md](KIT-015-PREEXEC-AUDIT-20261014.md) (6 findings, none blocking) and its [remediation](KIT-015-PREEXEC-REMEDIATION-20261014.md); the IQ step rerun in process after the repairs: exact, 198 s ([in-process-protein-qc-check-iq.json](in-process-protein-qc-check-iq.json)). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-015: up to five single members, exactness and completion, 10 min each); protocol v1.3 (single members: oracle hash, peak recorded, no ratio; the memory decision is KIT-017's). Control: `kit_014` (`core/browser-smoke.Dl22nP`). Predecessor cases: PERF-114, PERF-115, PERF-117, PERF-118; audit findings A2, A4, A5, A6, A11.
 
 ## Unit gate (simulation setup 1)
 
@@ -40,6 +40,25 @@ Pre-existing failures, identical at the committed baseline (`619fa1ad`, checked 
 | duplicate removal | `protein_duplicate_removal` | `journey_protein_intensity` | `journey_duplicates` | 26 s | 2,500 | yes |
 
 Every step exact on the first run (the parameters were bound from the oracle states' configurations: delimiter `;`, aggregation `mean`; flexible intensity filter with 2 replicates, 2 groups, percentile 1; KIT-014 lesson).
+
+## Results (stage `kit-015`, 2026-10-14, user "go"; tracked summary [kit-015-stage.json](kit-015-stage.json))
+
+| Member | Operation (variant `whole`) | Population → oracle | Status | Elapsed | Slice peak | Anonymous peak | Max gap | Verified |
+|---|---|---|---|---|---|---|---|---|
+| single-1 | `protein_iq_rollup` | `journey_imputation` (11,826,409 rows) → `journey_iq` | complete | 241 s | 4.759 GiB | 2.569 GiB | 130 ms | exact |
+| single-2 | `protein_accession_cleanup` (FASTA table bound, hash checked) | `journey_iq` → `journey_accession` | complete | 31 s | 1.205 GiB | 1.186 GiB | 60 ms | exact |
+| single-3 | `protein_intensity_filter` | `journey_accession` → `journey_protein_intensity` | complete | 32 s | 1.193 GiB | 1.177 GiB | 60 ms | exact |
+| single-4 | `protein_duplicate_removal` | `journey_protein_intensity` → `journey_duplicates` | complete | 39 s | 1.366 GiB | 1.340 GiB | 60 ms | exact |
+
+Every member eligible (zero swap, every gap under 250 ms, slices stopped, under the 600 s ceiling) and exact against its journey oracle (class, rows, every component and support entry, args summary; products reported). Decision `accepted` (`kitSingleDecision`, rule `exactness_and_completion`); no ratio and no memory claim (protocol: single members; the memory decision is KIT-017's). Placement: `kit_015` becomes the control (latest accepted build). The IQ member's slice peak (4.76 GiB against 2.57 GiB anonymous) is file cache: IQ's 11.8-million-row input file written and read back inside the slice.
+
+### Claim limits
+
+- Exactness and completion only: peaks recorded, not judged, on the operation-member floor; no comparison with any control.
+- Every step placed whole; the step map's units and the declarations' merge rules are carried, not exercised (2,500 proteins).
+- The accession applied path is proven on the real population and the member (cleanup applied with the journey's FASTA table), not on the fixture.
+- The GUI's managed dispatch for the five protein modules is covered by mocked module tests; the closure journey pair (KIT-017) is the first real-browser observation.
+- The modules' in-memory owner path still calls the kernels (grep evidence above), unreachable on the DIA default.
 
 ## Declared runs (as authorised; ledger row KIT-015: up to five single members, 10 min each)
 

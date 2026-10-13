@@ -1,0 +1,82 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-015",
+  "stage": "kit-015",
+  "date": "2026-10-14",
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "promotion_authorized": false
+  },
+  "members": [
+    {
+      "id": "single-1",
+      "operation": "protein_iq_rollup",
+      "variant": "whole",
+      "population": "journey_imputation",
+      "oracle": "journey_iq",
+      "status": "complete",
+      "exact": true,
+      "failing_rule": null,
+      "elapsed_seconds": 241.349999999991,
+      "peak_bytes": 5109542912,
+      "peak_anon_bytes": 2758537216,
+      "batches": null,
+      "max_sample_interval": 0.130000000004657,
+      "swap_bytes": 0,
+      "slice_stopped": true
+    },
+    {
+      "id": "single-2",
+      "operation": "protein_accession_cleanup",
+      "variant": "whole",
+      "population": "journey_iq",
+      "oracle": "journey_accession",
+      "status": "complete",
+      "exact": true,
+      "failing_rule": null,
+      "elapsed_seconds": 30.5100000000093,
+      "peak_bytes": 1293365248,
+      "peak_anon_bytes": 1272954880,
+      "batches": null,
+      "max_sample_interval": 0.0600000000122236,
+      "swap_bytes": 0,
+      "slice_stopped": true
+    },
+    {
+      "id": "single-3",
+      "operation": "protein_intensity_filter",
+      "variant": "whole",
+      "population": "journey_accession",
+      "oracle": "journey_protein_intensity",
+      "status": "complete",
+      "exact": true,
+      "failing_rule": null,
+      "elapsed_seconds": 31.5500000000029,
+      "peak_bytes": 1281040384,
+      "peak_anon_bytes": 1264234496,
+      "batches": null,
+      "max_sample_interval": 0.0600000000122236,
+      "swap_bytes": 0,
+      "slice_stopped": true
+    },
+    {
+      "id": "single-4",
+      "operation": "protein_duplicate_removal",
+      "variant": "whole",
+      "population": "journey_protein_intensity",
+      "oracle": "journey_duplicates",
+      "status": "complete",
+      "exact": true,
+      "failing_rule": null,
+      "elapsed_seconds": 38.6100000000006,
+      "peak_bytes": 1466896384,
+      "peak_anon_bytes": 1439039488,
+      "batches": null,
+      "max_sample_interval": 0.0600000000122236,
+      "swap_bytes": 0,
+      "slice_stopped": true
+    }
+  ]
+}

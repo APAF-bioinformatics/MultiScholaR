@@ -141,9 +141,15 @@
       "outcome": "control",
       "build": "kit_014",
       "note": "peptide QC declarations (peptide_qvalue_filter, peptide_protein_evidence_filter, peptide_intensity_filter, peptide_replicate_filter) and the managed-step dispatch in the five peptide QC modules; accepted as four single members (stage kit-014, 2026-10-13): exact, anonymous peaks 2.47 / 2.37 / 2.24 / 2.23 GiB; the control for KIT-015 onward"
+    },
+    {
+      "ticket": "KIT-015",
+      "outcome": "control",
+      "build": "kit_015",
+      "note": "protein QC declarations (protein_iq_rollup, protein_accession_cleanup, protein_intensity_filter, protein_duplicate_removal) and the managed-step dispatch in the five protein modules; accepted as four single members (stage kit-015, 2026-10-14): exact, anonymous peaks 2.57 / 1.19 / 1.18 / 1.34 GiB; the control for KIT-016 onward"
     }
   ],
-  "control": "kit_014",
+  "control": "kit_015",
   "control_note": "kit_001 = core_018 source (906c50dc) + KIT journey launch record, RUV-III technical-replicate structure, quantile-ceiling removal (2026-10-09) + launch-record deadline up to 14400 s (protocol v1.2), RUV sweep canonical-correlation input prepared once per sweep, sweep k validity rule and RUV-III guards (2026-10-10); source 8e77d92d on branch kit-control-ceiling; install browser-smoke.X9aj9P",
   "populations": {
     "screen_p14": {
@@ -3660,7 +3666,7 @@
     "ceiling_seconds": 14400,
     "ceiling_note": "KIT-005 / protocol v1.2: data steps scale about 20 x from 8 to 300 samples (attempt 1: q-value 296 s, evidence 190 s); 4 h, the protocol maximum",
     "pair": {
-      "control": "kit_014",
+      "control": "kit_015",
       "candidate": null,
       "reps": 2,
       "production_default": true
