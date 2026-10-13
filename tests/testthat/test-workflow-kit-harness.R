@@ -831,12 +831,17 @@ test_that("a ticket may bind single members: one operation member per step on on
     expect_identical(decision$members[["single-2"]]$batches, 12L)
     expect_identical(decision$members[["single-2"]]$oracle, "journey_protein_peptide")
     expect_false(decision$promotion_authorized)
-    # A member the verifier refused (inexact against its oracle) rejects; any other rule failing is invalid.
+    # A member whose verifier named an oracle mismatch rejects; a verifier refusal for a harness reason, or any
+    # other rule failing, is invalid (KIT-014 audit PH-01).
     inexact <- receipt
-    inexact$cases[["single-2"]]$verifier_completion <- list(accepted = FALSE)
+    inexact$cases[["single-2"]]$verifier_completion <- list(accepted = FALSE, reason = "Error: oracle mismatch: components/peptide_data, summary")
     expect_identical(h$kitSingleDecision(inexact, cases, b)$status, "rejected")
-    expect_identical(h$kitSingleDecision(inexact, cases, b)$failing_rule, "verifier_accepted")
+    expect_identical(h$kitSingleDecision(inexact, cases, b)$failing_rule, "oracle_mismatch")
     expect_false(h$kitSingleDecision(inexact, cases, b)$members[["single-2"]]$exact)
+    refused <- receipt
+    refused$cases[["single-2"]]$verifier_completion <- list(accepted = FALSE, reason = "Error: identical(operation$binding, case$binding) is not TRUE")
+    expect_identical(h$kitSingleDecision(refused, cases, b)$status, "invalid")
+    expect_identical(h$kitSingleDecision(refused, cases, b)$failing_rule, "verifier_accepted")
     late <- receipt
     late$cases[["single-1"]]$operation$elapsed_seconds <- 601
     expect_identical(h$kitSingleDecision(late, cases, b)$status, "invalid")

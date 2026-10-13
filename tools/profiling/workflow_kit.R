@@ -269,7 +269,8 @@ kitOperationDecision <- function(receipt, cases, bindings) {
 #' Decide a ticket's single members (protocol section 2: exactness and completion only). Every member must be
 #' eligible and verified exact against its oracle; peaks and times are recorded, no ratio is formed and no
 #' control is involved. `accepted` when every member is exact and eligible; `rejected` when a member completed
-#' but its verifier refused it (an inexact or incomplete state); `invalid` when any other eligibility rule fails.
+#' but its state is inexact against its oracle (the verifier's log names an oracle mismatch; KIT-014 audit PH-01);
+#' `invalid` when any other eligibility rule fails, a verifier refusal for a harness reason included.
 #' @noRd
 kitSingleDecision <- function(receipt, cases, bindings) {
     seconds <- kitMemberSeconds(paste0("kit-", strsplit(cases[[1L]]$selector, ":", fixed = TRUE)[[1L]][[2L]]), bindings)
@@ -285,8 +286,11 @@ kitSingleDecision <- function(receipt, cases, bindings) {
                 (if (length(op$science_execution$batch_sizes)) length(op$science_execution$batch_sizes) else NULL))
     }
     failing <- Filter(Negate(is.null), lapply(members, `[[`, "failing_rule"))
-    status <- if (!length(failing)) "accepted" else
-        if (all(vapply(failing, identical, logical(1), "verifier_accepted"))) "rejected" else "invalid"
+    inexact <- vapply(names(failing), function(id) identical(failing[[id]], "verifier_accepted") &&
+        grepl("oracle mismatch", receipt$cases[[id]]$verifier_completion$reason %||% "", fixed = TRUE), logical(1))
+    for (id in names(failing)[inexact]) members[[id]]$failing_rule <- "oracle_mismatch"
+    status <- if (!length(failing)) "accepted" else if (all(inexact)) "rejected" else "invalid"
+    failing <- Filter(Negate(is.null), lapply(members, `[[`, "failing_rule"))
     list(status = status, rule = "exactness_and_completion", members = members,
         failing_rule = if (length(failing)) unlist(failing, use.names = FALSE) else NULL, promotion_authorized = FALSE)
 }
@@ -1323,7 +1327,9 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
         stopifnot(!is.null(oracle), !is.null(oracle$class))
         actual <- kitFingerprintState(store, api("getDIAStateReference")(manager), api)
         mismatches <- kitOracleStateMismatches(actual, oracle)
-        stopifnot(!length(mismatches))
+        # An inexact state is named as such in the verifier's log (KIT-014 audit PH-01: the single-member decision
+        # tells an oracle mismatch from a harness refusal by this message).
+        if (length(mismatches)) stop("oracle mismatch: ", paste(mismatches, collapse = ", "))
         receipt$oracle <- case$oracle
         receipt$state <- list(class = actual$class, rows = actual$rows, components = length(actual$components),
             support = length(actual$support), products_reported = names(actual$products))
