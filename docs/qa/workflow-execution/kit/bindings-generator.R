@@ -275,7 +275,8 @@ if (!is.null(b$builds$kit_010)) {
 
 # KIT-014: the four peptide QC steps not measured by KIT-009 as single members on the one kit_014 build (protocol
 # section 2: exactness and completion only, peak recorded, no ratio, no control member). Each runs on the KIT-005
-# population the journey fed it with the journey's recorded parameters, verified against the state the journey
+# population the journey fed it with the parameters its oracle state records (the state's configuration, integers as the
+# journey's inputs arrived; the driver's settings list names other values the GUI did not take), verified against the state the journey
 # produced from it: the Q-value filter (raw design state -> `journey_qvalue`), the protein identification evidence
 # filter (`journey_qvalue` -> `journey_protein_peptide`), the intensity filter (`journey_rollup` -> `journey_intensity`)
 # and the replicate filter (`journey_sample` -> `journey_replicate`); the imputation step was measured by KIT-009.
@@ -285,10 +286,10 @@ if (!is.null(b$builds$kit_014)) {
             parameters = list(qvalue_threshold = 0.01, global_qvalue_threshold = 0.01, global_pg_qvalue_threshold = 0.01,
                 proteotypic_only = TRUE, confidence_provenance_mode = "diann_main_report")),
         list(operation = "peptide_protein_evidence_filter", population = "journey_qvalue", oracle = "journey_protein_peptide",
-            variant = "partitioned", parameters = list(num_peptides_per_protein_thresh = 1, num_peptidoforms_per_protein_thresh = 1)),
+            variant = "partitioned", parameters = list(num_peptides_per_protein_thresh = 1L, num_peptidoforms_per_protein_thresh = 2L)),
         list(operation = "peptide_intensity_filter", population = "journey_rollup", oracle = "journey_intensity", variant = "partitioned",
-            parameters = list(strict_mode = FALSE, min_reps_per_group = 1, min_groups = 1,
-                peptides_intensity_cutoff_percentile = 0.1, grouping_variable = "group")),
+            parameters = list(strict_mode = FALSE, min_reps_per_group = 2L, min_groups = 2L,
+                peptides_intensity_cutoff_percentile = 1L, grouping_variable = "group")),
         list(operation = "peptide_replicate_filter", population = "journey_sample", oracle = "journey_replicate", variant = "partitioned",
             parameters = list(replicate_group_column = "replicates"))))
 }

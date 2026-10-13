@@ -1,0 +1,82 @@
+{
+  "schema": "kit.in_process_peptide_qc_check.v1",
+  "ticket": "KIT-014",
+  "date": "2026-10-13",
+  "head_commit": "bdf69f41c8874acee8a66a5b8dd7261b88a8c6f9",
+  "steps": [
+    {
+      "step": "protein_peptide",
+      "operation": "peptide_protein_evidence_filter",
+      "population": "journey_qvalue",
+      "oracle": "journey_protein_peptide",
+      "variant": "partitioned",
+      "parameters": {
+        "num_peptides_per_protein_thresh": 1,
+        "num_peptidoforms_per_protein_thresh": 2
+      },
+      "input_rows": 5846578,
+      "oracle_rows": 5846578,
+      "compute_seconds": 176.6,
+      "seconds": 178.3,
+      "anon_before": 629817344,
+      "anon_after": 2055286784,
+      "rows": 5846578,
+      "batches": 667,
+      "groups": 2500,
+      "engine_limit_bytes": 1000000000,
+      "admission": {
+        "estimated_bytes": 1544323724,
+        "worker_cap": 12884901888,
+        "batch_rows": 58801,
+        "largest_group_rows": 58801,
+        "row_bytes": 76,
+        "working_bytes_per_row": 2048,
+        "overhead_bytes": 1419430400,
+        "policy": "feature-group-cursor-batches-v1",
+        "limitation": "admission estimate; kernel cgroup guard remains authoritative"
+      },
+      "mismatches": [],
+      "products_reported": ["qvalue_progress", "qc_progress"],
+      "exact": true
+    },
+    {
+      "step": "intensity",
+      "operation": "peptide_intensity_filter",
+      "population": "journey_rollup",
+      "oracle": "journey_intensity",
+      "variant": "partitioned",
+      "parameters": {
+        "strict_mode": false,
+        "min_reps_per_group": 2,
+        "min_groups": 2,
+        "peptides_intensity_cutoff_percentile": 1,
+        "grouping_variable": "group"
+      },
+      "input_rows": 5521570,
+      "oracle_rows": 5521570,
+      "compute_seconds": 204,
+      "seconds": 206,
+      "anon_before": 2304675840,
+      "anon_after": 1960026112,
+      "rows": 5521570,
+      "batches": 627,
+      "groups": 2500,
+      "engine_limit_bytes": 1000000000,
+      "admission": {
+        "estimated_bytes": 1536555096,
+        "worker_cap": 12884901888,
+        "batch_rows": 55562,
+        "largest_group_rows": 55562,
+        "row_bytes": 60,
+        "working_bytes_per_row": 2048,
+        "overhead_bytes": 1419430400,
+        "policy": "feature-group-cursor-batches-v1",
+        "limitation": "admission estimate; kernel cgroup guard remains authoritative"
+      },
+      "mismatches": [],
+      "products_reported": ["qvalue_progress", "qc_progress"],
+      "exact": true
+    }
+  ],
+  "all_exact": true
+}

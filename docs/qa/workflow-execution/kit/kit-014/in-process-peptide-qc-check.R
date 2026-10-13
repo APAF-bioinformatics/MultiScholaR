@@ -3,7 +3,7 @@
 # journey's state that fed it, materialised as a snapshot store by the harness so the evidence store is never
 # written: the Q-value filter on the raw design state (`journey_design`), the protein identification evidence
 # filter on `journey_qvalue`, the intensity filter on `journey_rollup` and the replicate filter on `journey_sample`,
-# with the journey's recorded parameters and the registry's production variant; the state is committed through
+# with the parameters its oracle state records (integers, as the journey's inputs arrived) and the registry's production variant; the state is committed through
 # the step's finishing step and its fingerprint under the current canonical form is compared with the journey's
 # next state as the member verifier compares it (components, support entries, args summary; products reported).
 # Not a counted run; the record is written beside this script.
@@ -19,9 +19,9 @@ steps <- list(
         parameters = list(qvalue_threshold = 0.01, global_qvalue_threshold = 0.01, global_pg_qvalue_threshold = 0.01,
             proteotypic_only = TRUE, confidence_provenance_mode = "diann_main_report")),
     list(name = "protein_peptide", operation = "peptide_protein_evidence_filter", population = "journey_qvalue",
-        oracle = "journey_protein_peptide", parameters = list(num_peptides_per_protein_thresh = 1, num_peptidoforms_per_protein_thresh = 1)),
+        oracle = "journey_protein_peptide", parameters = list(num_peptides_per_protein_thresh = 1L, num_peptidoforms_per_protein_thresh = 2L)),
     list(name = "intensity", operation = "peptide_intensity_filter", population = "journey_rollup", oracle = "journey_intensity",
-        parameters = list(strict_mode = FALSE, min_reps_per_group = 1, min_groups = 1, peptides_intensity_cutoff_percentile = 0.1,
+        parameters = list(strict_mode = FALSE, min_reps_per_group = 2L, min_groups = 2L, peptides_intensity_cutoff_percentile = 1L,
             grouping_variable = "group")),
     list(name = "replicate", operation = "peptide_replicate_filter", population = "journey_sample", oracle = "journey_replicate",
         parameters = list(replicate_group_column = "replicates")))
