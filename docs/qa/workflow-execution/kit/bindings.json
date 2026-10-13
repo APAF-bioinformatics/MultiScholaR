@@ -79,6 +79,15 @@
       "install_member": "browser-smoke.nIs2QB",
       "source_commit": "e061fa69d22a3c0597692a8400242458e38b9af7",
       "runtime_patch_bytes": 0
+    },
+    "kit_014": {
+      "ticket": "KIT-014",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.Dl22nP/library",
+      "build": "541c3d7880d907939a33a4c8af114ae1b15af783d53ea03cbbaa2be134f0382c",
+      "exact_sum": "a1b8da5ba95c264fb7e42b27bd28cac51e42aab4a91a8ed4fb098b9c7f9de169",
+      "install_member": "browser-smoke.Dl22nP",
+      "source_commit": "6cb49ed00485564f7a3ca30d9b8d5a32c8e4708e",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -3753,6 +3762,57 @@
           }
         }
       ]
+    },
+    "014": {
+      "kind": "single",
+      "build": "kit_014",
+      "members": [
+        {
+          "operation": "peptide_qvalue_filter",
+          "population": "journey_design",
+          "oracle": "journey_qvalue",
+          "variant": "streamed",
+          "parameters": {
+            "qvalue_threshold": 0.01,
+            "global_qvalue_threshold": 0.01,
+            "global_pg_qvalue_threshold": 0.01,
+            "proteotypic_only": true,
+            "confidence_provenance_mode": "diann_main_report"
+          }
+        },
+        {
+          "operation": "peptide_protein_evidence_filter",
+          "population": "journey_qvalue",
+          "oracle": "journey_protein_peptide",
+          "variant": "partitioned",
+          "parameters": {
+            "num_peptides_per_protein_thresh": 1,
+            "num_peptidoforms_per_protein_thresh": 2
+          }
+        },
+        {
+          "operation": "peptide_intensity_filter",
+          "population": "journey_rollup",
+          "oracle": "journey_intensity",
+          "variant": "partitioned",
+          "parameters": {
+            "strict_mode": false,
+            "min_reps_per_group": 2,
+            "min_groups": 2,
+            "peptides_intensity_cutoff_percentile": 1,
+            "grouping_variable": "group"
+          }
+        },
+        {
+          "operation": "peptide_replicate_filter",
+          "population": "journey_sample",
+          "oracle": "journey_replicate",
+          "variant": "partitioned",
+          "parameters": {
+            "replicate_group_column": "replicates"
+          }
+        }
+      ]
     }
   },
   "lifecycle": {
@@ -3777,13 +3837,13 @@
     "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "6c3d42634852807690fd4289719dfb0df729f41d3eff26d049afb7997eb1f601",
+      "tools/profiling/workflow_kit.R": "4043119d7ac7e9445e309bf9c646f3db1f64327626a6383b7d89af65caa9cd43",
       "tools/profiling/workflow_kit_driver.R": "98037c37d9bd76034d1862296cd7124cce9262436e996fa401f34e67354e33af",
-      "tools/profiling/workflow_kit_coordinator.R": "d683c346b5ee0ab514804471fe90c8bf391fe4cf756c8714b6d5f17f9b5d5677",
+      "tools/profiling/workflow_kit_coordinator.R": "f7b826d4a2560ac2e289aed4a9a62fd6629e5e204bb4f53b0462a6bb80c6b536",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "6cf642a60238409762668207f204ec071930b0bc398477900a1a25bbf82a5717",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "a4ae5d04c0f02b39311f0a908329d566c8ecdb156999d399f5002965987edc3e",
-      "tests/testthat/test-workflow-kit-harness.R": "22bfd635ee161654aeb0468560f2f05351bea70627fa94a56ee92cf24e3cbef4",
+      "tests/testthat/test-workflow-kit-harness.R": "26d5a9c5fd1de307640024dde3b17fc94455a18cab3fb944f7be70fdc32e565b",
       "tests/testthat/test-workflow-execution-adapters.R": "d315a2847fd76dfb0733b286e4ca3aca1724bfff12400c2e99182320917a6548",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

@@ -1,6 +1,6 @@
 # KIT-014: peptide QC declarations
 
-Status 2026-10-13: **implemented; single members declared, waiting for the user's go.** Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-014: up to five single members, exactness and completion, 10 min each); protocol v1.3 (single members: oracle hash, peak recorded, no ratio; the memory decision is KIT-017's). Control: `kit_010` (`core/browser-smoke.nIs2QB`). Predecessor cases: PERF-113, PERF-114, PERF-116.
+Status 2026-10-13: **implemented and installed (`kit_014` = `core/browser-smoke.Dl22nP`, source `6cb49ed0`); four single members declared, waiting for the user's go.** Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-014: up to five single members, exactness and completion, 10 min each); protocol v1.3 (single members: oracle hash, peak recorded, no ratio; the memory decision is KIT-017's). Control: `kit_010` (`core/browser-smoke.nIs2QB`). Predecessor cases: PERF-113, PERF-114, PERF-116.
 
 ## Unit gate (simulation setup 1)
 
@@ -24,8 +24,21 @@ In each of the six peptide QC modules the kernel call sits after the on-disk ear
 
 ## In-process check on the 300-sample populations (before the members)
 
-_(filled after the run)_
+[in-process-peptide-qc-check.R](in-process-peptide-qc-check.R): each step on the KIT-005 control journey's state that fed it, materialised as a snapshot store by the harness, through `runProjected` on the registry's declaration with its production variant, committed through its finishing step and fingerprinted under the current canonical form against the journey's next state (components, support entries, args summary; products reported). Not counted.
 
-## Declared runs (as authorised)
+| Step | Operation | Input (rows) | Oracle | Elapsed | Batches | Exact |
+|---|---|---|---|---|---|---|
+| Q-value | `peptide_qvalue_filter` (`streamed`) | `journey_design` (5,846,578) | `journey_qvalue` | 302 s | (evidence pass + row stream) | yes |
+| protein evidence | `peptide_protein_evidence_filter` (`partitioned`) | `journey_qvalue` (5,846,578) | `journey_protein_peptide` | 178 s | 667 | yes |
+| intensity | `peptide_intensity_filter` (`partitioned`) | `journey_rollup` (5,521,570) | `journey_intensity` | 206 s | 627 | yes |
+| replicate | `peptide_replicate_filter` (`partitioned`) | `journey_sample` (5,515,154) | `journey_replicate` | 182 s | 625 | yes |
 
-_(filled before launch)_
+Records: [in-process-peptide-qc-check-attempt1-parameters.json](in-process-peptide-qc-check-attempt1-parameters.json) (first run: Q-value and replicate exact; protein evidence and intensity inexact on the args summary and, for the intensity filter, the support table) and [in-process-peptide-qc-check-protein_peptide-intensity.json](in-process-peptide-qc-check-protein_peptide-intensity.json) (the two steps rerun on the corrected parameters, exact). The first run bound the driver's settings list (peptidoforms 1; intensity 1 replicate, 1 group, percentile 0.1); the oracle states record what the journey ran, the GUI's defaults (peptidoforms 2; intensity 2 replicates, 2 groups, percentile 1), as integers (the journey's bindings override only the sample filter's cutoff). Every difference was a parameter value or its integer type (the field-level diff is in the session record); the declarations were not changed. The members bind the oracle states' values.
+
+## Declared runs (as authorised; ledger row KIT-014: up to five single members, 10 min each)
+
+Four single members on the one `kit_014` build (the imputation step was measured by KIT-009), each on the KIT-005 population the journey fed it with the parameters its oracle state records, verified against the journey's next state; exactness and completion only (protocol: peak recorded, no ratio, no control member; the memory decision is KIT-017's).
+
+1. **Install** (recorded, not counted): the KIT-014 tree at its commit into `<proof>/core`, bound as `kit_014`; bindings regenerated (`tickets$014`, kind `single`); `run_workflow_kit.sh validate kit-014` must pass.
+2. **Stage `kit-014`, four counted single members, 600 s ceiling each**, in order: `single-1` (`peptide_qvalue_filter`, `streamed`, on `journey_design`, oracle `journey_qvalue`), `single-2` (`peptide_protein_evidence_filter`, `partitioned`, on `journey_qvalue`, oracle `journey_protein_peptide`), `single-3` (`peptide_intensity_filter`, `partitioned`, on `journey_rollup`, oracle `journey_intensity`), `single-4` (`peptide_replicate_filter`, `partitioned`, on `journey_sample`, oracle `journey_replicate`); each in its own slice (16 GiB cap, 15.5 GiB early stop, 12 GiB start headroom, 2 GiB host floor, 250 ms gap rule); the verifier runs outside the slice after each member.
+3. **Decision (predeclared, `kitSingleDecision`)**: every member eligible and exact against its oracle → `accepted` (the build becomes the control per protocol section 2: no memory claim is made by this ticket, so placement follows the latest accepted build rule); a verifier refusal → `rejected`; any other rule → `invalid`; recorded either way; one correction rerun of a single member only for a demonstrated harness failure. Expected: all four exact (the in-process check above); the Q-value member's elapsed time is the closest to the ceiling (302 s in process).
