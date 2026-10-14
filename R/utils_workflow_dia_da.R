@@ -314,7 +314,8 @@ diaContrastOperation <- function() {
 #' @return Reference manifest after required outputs have completed; the module edge updates the
 #'   selectors and notifies.
 #' @noRd
-runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contrasts = NULL, annotations = NULL) {
+runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contrasts = NULL, annotations = NULL,
+    publish = TRUE) {
     manager <- workflow$state_manager
     withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "da")
@@ -378,45 +379,86 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
         snapshot$da_dependencies[[manifest_reference$entity_id]] <- collectDIANativeReferences(
             list(manifest$source, manifest$results))
         publishDIAStateHead(context, snapshot)
-        publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
-            paths[c("da_output_dir", "publication_graphs_dir")], function(staged) {
-                metadata_object <- readDIAExecutionComponents(manager, source, fields = "design_matrix")
-                metadata_object@args$outputDaResultsAllContrasts <- list(uniprot_tbl = annotations,
-                    da_output_dir = staged$da_output_dir, publication_graphs_dir = staged$publication_graphs_dir,
-                    file_prefix = "da_proteins", args_row_id = manifest$protein_id_column,
-                    gene_names_column = "gene_names", uniprot_id_column = "Entry",
-                    da_q_val_thresh = settings$da_q_val_thresh, fdr_column = "fdr_qvalue", log2fc_column = "log2FC")
-                if (!isTRUE(outputDaResultsAllContrasts(metadata_object, manifest$results,
-                    uniprot_tbl = annotations, da_output_dir = staged$da_output_dir,
-                    publication_graphs_dir = staged$publication_graphs_dir, file_prefix = "da_proteins",
-                    args_row_id = manifest$protein_id_column, gene_names_column = "gene_names", uniprot_id_column = "Entry"))) {
-                    cli::cli_abort("required DA outputs did not complete", class = "saved_entity_outputs_pending")
-                }
-                interactive_files <- writeDIAInteractiveVolcanoOutputs(manifest,
-                    staged$publication_graphs_dir, annotations, settings$da_q_val_thresh, manager = manager)
-                safe <- gsub("[^A-Za-z0-9_-]", "_", names(manifest$results))
-                required <- c(file.path(staged$da_output_dir, as.vector(outer(
-                    paste0("da_proteins_", safe, "_long_annot"), c("tsv", "xlsx"), paste, sep = "."))),
-                    file.path(staged$publication_graphs_dir, "Volcano_Plots", as.vector(outer(safe,
-                        c("png", "pdf"), paste, sep = "."))),
-                    file.path(staged$publication_graphs_dir, "Volcano_Plots", "all_volcano_plots_combined.pdf"),
-                    file.path(staged$publication_graphs_dir, "NumSigDaMolecules",
-                        paste0("da_proteins_num_sig_da_molecules.", c("tab", "xlsx"))))
-                required <- c(required, interactive_files)
-                if (any(!file.exists(required)) || any(file.size(required) <= 0)) cli::cli_abort(
-                    "required DA files are incomplete", class = "saved_entity_outputs_pending")
-                list(completed = TRUE)
-            }, identity = digest::digest(list(manifest, output_schema = 2L), algo = "sha256"))
-        da_data$da_results_list <- manifest
-        da_data$analysis_complete <- TRUE
-        workflow$da_analysis_results_list <- manifest
-        status <- workflow$tab_status
-        status$differential_expression <- status$differential_abundance <- "complete"
-        status$enrichment_analysis <- "pending"
-        workflow$tab_status <- status
+        # KIT-019: under a managed application the DA module requests the publication from the worker
+        # (`da_publication`); in process the publication runs here as before.
+        if (publish) publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
+            paths[c("da_output_dir", "publication_graphs_dir")], function(staged)
+                produceDIADaPublication(manager, manifest, annotations, settings$da_q_val_thresh, staged),
+            identity = diaDaPublicationIdentity(manifest))
+        if (publish) completeDIADaDisplay(da_data, workflow, manifest)
         manifest
     })
 }
+
+#' The publication identity of one accepted DA manifest (the request key of its action outputs).
+#' @noRd
+diaDaPublicationIdentity <- function(manifest) digest::digest(list(manifest, output_schema = 2L), algo = "sha256")
+
+#' The DA tab's status text once a manifest is accepted (the render and the managed step's expected text).
+#' @noRd
+diaDaStatusText <- function(contrasts) paste("[OK] Analysis Complete\n",
+    sprintf("Contrasts analyzed: %d\n", contrasts), "Results available in all tabs")
+
+#' Hand an accepted DA manifest to the module's holders and the tab status (after its publication).
+#' @noRd
+completeDIADaDisplay <- function(da_data, workflow, manifest) {
+    da_data$da_results_list <- manifest
+    da_data$analysis_complete <- TRUE
+    workflow$da_analysis_results_list <- manifest
+    status <- workflow$tab_status
+    status$differential_expression <- status$differential_abundance <- "complete"
+    status$enrichment_analysis <- "pending"
+    workflow$tab_status <- status
+    invisible(manifest)
+}
+
+#' Produce the DA publication into staged directories (KIT-019: the one body the in-process path and the
+#' worker share): the annotated exports, the static volcano and NumSig figures through the unchanged
+#' `outputDaResultsAllContrasts` kernel, and the interactive Glimma pages; every required file must exist.
+#' @param manager Owner (the active manager of the session scope).
+#' @param manifest Accepted `dia.da_results.v1` manifest.
+#' @param annotations UniProt annotation table or NULL.
+#' @param qvalue Display significance threshold.
+#' @param staged `list(da_output_dir, publication_graphs_dir)` staging directories.
+#' @param save_assets Save each page as a rendered asset here (the in-process owner); the worker leaves that
+#'   to the controller's publication, which holds the head.
+#' @return `list(completed = TRUE)`.
+#' @noRd
+produceDIADaPublication <- function(manager, manifest, annotations, qvalue, staged, save_assets = TRUE) {
+    metadata_object <- readDIAExecutionComponents(manager, manifest$source, fields = "design_matrix")
+    metadata_object@args$outputDaResultsAllContrasts <- list(uniprot_tbl = annotations,
+        da_output_dir = staged$da_output_dir, publication_graphs_dir = staged$publication_graphs_dir,
+        file_prefix = "da_proteins", args_row_id = manifest$protein_id_column,
+        gene_names_column = "gene_names", uniprot_id_column = "Entry",
+        da_q_val_thresh = qvalue, fdr_column = "fdr_qvalue", log2fc_column = "log2FC")
+    if (!isTRUE(outputDaResultsAllContrasts(metadata_object, manifest$results,
+        uniprot_tbl = annotations, da_output_dir = staged$da_output_dir,
+        publication_graphs_dir = staged$publication_graphs_dir, file_prefix = "da_proteins",
+        args_row_id = manifest$protein_id_column, gene_names_column = "gene_names", uniprot_id_column = "Entry"))) {
+        cli::cli_abort("required DA outputs did not complete", class = "saved_entity_outputs_pending")
+    }
+    interactive_files <- writeDIAInteractiveVolcanoOutputs(manifest, staged$publication_graphs_dir, annotations, qvalue,
+        manager = if (save_assets) manager else NULL)
+    assertDIADaPublicationFiles(manifest, staged, interactive_files)
+    list(completed = TRUE)
+}
+
+#' The files a DA publication must have staged, by contrast (the exports, the figures, the pages).
+#' @noRd
+assertDIADaPublicationFiles <- function(manifest, staged, interactive_files) {
+    safe <- gsub("[^A-Za-z0-9_-]", "_", names(manifest$results))
+    required <- c(file.path(staged$da_output_dir, as.vector(outer(
+        paste0("da_proteins_", safe, "_long_annot"), c("tsv", "xlsx"), paste, sep = "."))),
+        file.path(staged$publication_graphs_dir, "Volcano_Plots", as.vector(outer(safe, c("png", "pdf"), paste, sep = "."))),
+        file.path(staged$publication_graphs_dir, "Volcano_Plots", "all_volcano_plots_combined.pdf"),
+        file.path(staged$publication_graphs_dir, "NumSigDaMolecules", paste0("da_proteins_num_sig_da_molecules.", c("tab", "xlsx"))),
+        interactive_files)
+    missing <- required[!file.exists(required) | file.size(required) <= 0]
+    if (length(missing)) cli::cli_abort(c("required DA files are incomplete", i = paste(basename(missing), collapse = ", ")),
+        class = "saved_entity_outputs_pending")
+    invisible(required)
+}
+
 
 #' The service identity an enrichment run reports (KIT-016): the g:Profiler database version carried by each
 #' gost result's metadata, the deterministic backend's name under the test double, or the clusterProfiler

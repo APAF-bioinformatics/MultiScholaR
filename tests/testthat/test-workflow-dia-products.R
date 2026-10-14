@@ -29,12 +29,20 @@ diaProductsManifest <- function(manager, contrast = "groupB-groupA", friendly = 
         raw_pvalue = stats::runif(length(ids)), fdr_qvalue = stats::runif(length(ids)),
         gene_name = paste0("G", seq_along(ids))))
     reference <- saveDIATableComponent(manager$.context, table)
+    # The contrast's NumSig product as the DA declaration saves it (the publication kernel aggregates them).
+    numsig <- data.frame(comparison = friendly, status = c("Up", "Down", "Not significant"),
+        counts = c(3L, 2L, length(ids) - 5L), stringsAsFactors = FALSE)
+    numsig_reference <- saveWorkflowConsumerEntity(manager$.context$store,
+        newSavedWorkflowScientificProduct(list(table = numsig), "dia-num_sig_da_molecules_first_go"),
+        basename(tempfile("dia-numsig-")), diaComponentScientificIdentity(manager, source, "DA-numsig-fixture", list(contrast = contrast)),
+        "scientific_product")
     list(schema = "dia.da_results.v1", source = source, protein_id_column = object@protein_id_column,
         sample_id = object@sample_id,
         contrasts = data.frame(contrasts = contrast, friendly_names = friendly, full_format = paste0(contrast, "=1"),
             stringsAsFactors = FALSE),
         results = stats::setNames(list(list(schema = "dia.contrast_reference.v1", source = source, contrast = contrast,
-            comparison = friendly, tables = list(da_proteins_long = reference), products = list(),
+            comparison = friendly, tables = list(da_proteins_long = reference),
+            products = list(num_sig_da_molecules_first_go = numsig_reference),
             columns = names(table), rows = nrow(table))), contrast),
         parameters = list(formula = "~ group", qvalue = 0.05, lfc = 0, weights = NA), table = table)
 }
@@ -217,4 +225,104 @@ test_that("the RUV optimisation result is read from the accepted normalisation p
         expect_identical(resolved$optimization_results, ruv$optimization_results)
         expect_identical(resolved$best_percentage, 0.2)
     })
+})
+
+diaProductsCommitManifest <- function(manager, manifest) {
+    context <- manager$.context
+    reference <- saveDIAStateValue(context, manifest, "da-result-references", codec = "rds")
+    snapshot <- context$snapshot
+    snapshot$da_results <- reference
+    publishDIAStateHead(context, snapshot)
+    reference
+}
+
+test_that("the DA publication worker handler stages the exports, figures and pages under the request directory without saving assets (KIT-019)", {
+    skip_if_not_installed("Glimma")
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    manifest <- diaProductsManifest(manager)
+    manifest_reference <- diaProductsCommitManifest(manager, manifest)
+    head <- getDIAStateReference(manager)
+    annotations <- data.frame(Entry = manifest$table$Protein.Group[1:3], gene_names = c("A", "B", "C"), stringsAsFactors = FALSE)
+    annotations_reference <- saveDIADisplayTable(manager, annotations)
+    directory <- withr::local_tempdir()
+    request <- list(operation = "da_publication", input_references = list(state = head),
+        parameters = list(annotations = annotations_reference), directory = directory, worker_cap = 12 * 1024^3)
+    products_before <- length(manager$.context$snapshot$products)
+    value <- suppressMessages(computeWorkflowDaPublicationAction(manager, request, "whole"))
+    expect_identical(value$reference$entity_id, head$entity_id)
+    expect_identical(value$state_reference$entity_id, head$entity_id)
+    expect_true(isDIAComponentCheckpoint(value$checkpoint))
+    expect_identical(value$manifest_reference$entity_id, manifest_reference$entity_id)
+    expect_true(any(grepl("^da_output_dir/da_proteins_groupB-groupA_long_annot[.]tsv$", value$files)))
+    expect_true(any(grepl("^publication_graphs_dir/Volcano_Plots/groupB-groupA[.]png$", value$files)))
+    expect_true(any(grepl("^publication_graphs_dir/Interactive_Volcano_Plots/groupB_vs_groupA[.]html$", value$files)))
+    expect_true(any(grepl("NumSigDaMolecules/da_proteins_num_sig_da_molecules[.]tab$", value$files)))
+    # The annotations joined: the export carries the gene names column.
+    export <- vroom::vroom(file.path(directory, "da-publication", "da_output_dir", "da_proteins_groupB-groupA_long_annot.tsv"),
+        show_col_types = FALSE)
+    expect_true("gene_names" %in% names(export))
+    # No asset and no product saved by the worker; the head is unchanged.
+    expect_identical(length(manager$.context$snapshot$products), products_before)
+    expect_identical(getDIAStateReference(manager)$entity_id, head$entity_id)
+    expect_lt(as.numeric(object.size(value)), 8388608)
+    # Not the head: refused before any work.
+    stale <- request
+    stale$input_references$state <- manifest$results[[1]]$tables$da_proteins_long
+    expect_error(computeWorkflowDaPublicationAction(manager, stale, "whole"), class = "workflow_execution_stale")
+    # The completion republishes the head unchanged and names the head state.
+    workflow <- list2env(list(state_manager = manager))
+    completed <- completeDIADaPublication(workflow, value)
+    expect_identical(completed$stateReference$entity_id, head$entity_id)
+    expect_identical(getDIAStateReference(manager)$entity_id, head$entity_id)
+    # The controller's publication moves the staged files into the project and saves the pages as assets.
+    root <- withr::local_tempdir()
+    request_dir <- file.path(root, "request")
+    dir.create(request_dir)
+    file.copy(file.path(directory, "da-publication"), request_dir, recursive = TRUE)
+    owner <- list(manager = manager, control = list(generation = 1L))
+    result <- list(operation = "da_publication", state_reference = head)
+    withDIAProductsSession(manager, suppressMessages(publishWorkflowDaResult(owner, list(request_dir = request_dir, root = root), result)))
+    published <- list.files(file.path(request_dir, "required-output"), recursive = TRUE)
+    expect_true(any(grepl("da_proteins_groupB-groupA_long_annot[.]tsv$", published)))
+    expect_true(any(grepl("Volcano_Plots/all_volcano_plots_combined[.]pdf$", published)))
+    expect_true(any(grepl("Interactive_Volcano_Plots/groupB_vs_groupA[.]html$", published)))
+    withDIAProductsSession(manager, {
+        page <- resolveDIAInteractiveVolcanoAsset(manifest, "groupB_vs_groupA", 0.05)
+        expect_true(is.character(page) && nchar(page) > 1000)
+        expect_identical(page, rawToChar(readBin(file.path(directory, "da-publication", "publication_graphs_dir",
+            "Interactive_Volcano_Plots", "groupB_vs_groupA.html"), "raw", n = 1e8)))
+        read <- readManagedDaResult(manager, result, NULL)
+        expect_identical(read$manifest$source$entity_id, head$entity_id)
+        expect_identical(read$resultText, diaDaStatusText(1L))
+        expect_identical(read$stateReference$entity_id, head$entity_id)
+    })
+})
+
+test_that("the worker entry point runs the DA publication from a frozen request (KIT-019; README pre-launch chain)", {
+    skip_if_not_installed("Glimma")
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    manifest <- diaProductsManifest(manager)
+    diaProductsCommitManifest(manager, manifest)
+    head <- getDIAStateReference(manager)
+    store <- manager$.context$store
+    directory <- withr::local_tempdir()
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64), .package = "MultiScholaR")
+    request <- list(schema = 1L, build = workflowExecutionBuildIdentity(), operation = "da_publication",
+        input_references = list(state = head), parameters = list(annotations = NULL),
+        token = list(request_id = "wfx-test"), owner = store$identity, project_root = dirname(store$directory),
+        directory = directory, config = list(mode = "adapters"), worker_cap = 12 * 1024^3)
+    path <- file.path(directory, "request.rds")
+    writeWorkflowExecutionMessage(path, request)
+    withr::local_envvar(MULTISCHOLAR_WORKFLOW_WORKER = "1")
+    closeDIAStateAdapter(manager)
+    expect_null(suppressMessages(workflowWorkerMain(c(path, digest::digest(file = path, algo = "sha256")))))
+    result <- readRDS(file.path(directory, "worker-result.rds"))
+    expect_identical(result$status, "complete")
+    expect_identical(result$result$operation, "da_publication")
+    expect_identical(result$result$reference$entity_id, head$entity_id)
+    expect_true(file.exists(file.path(directory, "da-publication", "publication_graphs_dir", "Interactive_Volcano_Plots", "groupB_vs_groupA.html")))
 })

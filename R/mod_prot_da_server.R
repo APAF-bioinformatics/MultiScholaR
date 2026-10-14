@@ -22,6 +22,7 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
       da_results_list = NULL,
       contrasts_available = NULL,
       analysis_complete = FALSE,
+      volcano_plot_identity = NULL,
       current_s4_object = NULL,
       formula_from_s4 = NULL,
       current_row_clusters = NULL,
@@ -39,7 +40,8 @@ mod_prot_da_server <- function(id, workflow_data, experiment_paths, omic_type, e
     da_server_load_session_handler(input, output, session, da_data, workflow_data, experiment_paths)
 
     # Handler 3: DA Analysis Execution
-    da_server_run_analysis_handler(input, output, session, ns, da_data, workflow_data, experiment_paths)
+    da_server_run_analysis_handler(input, output, session, ns, da_data, workflow_data, experiment_paths,
+      omic_type = omic_type, experiment_label = experiment_label)
 
     # Handler 4: Volcano Plot Rendering (Restored)
     da_server_volcano_render_handler(input, output, session, ns, da_data, experiment_paths)

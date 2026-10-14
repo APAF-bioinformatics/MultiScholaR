@@ -328,11 +328,7 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
   # Display analysis status
   output$da_status <- shiny::renderText({
     if (da_data$analysis_complete) {
-      paste(
-        "[OK] Analysis Complete\n",
-        sprintf("Contrasts analyzed: %d\n", length(da_data$contrasts_available)),
-        "Results available in all tabs"
-      )
+      diaDaStatusText(length(da_data$contrasts_available))
     } else {
       "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start"
     }

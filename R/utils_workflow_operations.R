@@ -174,8 +174,8 @@ validateWorkflowOperationEntry <- function(entry) {
         scalar(entry$handler) && scalar(entry$validate) && (is.null(entry$resolve) || scalar(entry$resolve)) &&
         is.numeric(entry$parameter_limit) && length(entry$parameter_limit) == 1L && entry$parameter_limit > 0 &&
         is.character(entry$parameters) && !anyDuplicated(entry$parameters) &&
-        scalar(entry$completion) && entry$completion %in% c("fixture", "peptide", "protein") &&
-        scalar(entry$publication) && entry$publication %in% c("fixture", "peptide", "protein") &&
+        scalar(entry$completion) && entry$completion %in% c("fixture", "peptide", "protein", "da") &&
+        scalar(entry$publication) && entry$publication %in% c("fixture", "peptide", "protein", "da") &&
         (is.null(entry$step_label) || scalar(entry$step_label)) && scalar(entry$omic_type) &&
         is.character(entry$variants) &&
         (is.null(entry$default_variant) || (scalar(entry$default_variant) && entry$default_variant %in% entry$variants)) &&
@@ -325,5 +325,14 @@ registerBuiltinWorkflowOperations <- function() {
         completion = "protein", publication = "protein", step_label = "13_protein_replicate_filtered", omic_type = "proteomics",
         variants = c("whole", "rows"), default_variant = "rows", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaProteinReplicateFilterOperation()))
+    # KIT-019: the DA publication phase (the annotated exports, the static volcano and NumSig figures and the
+    # interactive Glimma pages) as a worker operation on the accepted DA manifest; the DA kernel (limma) stays in
+    # process. Completion records nothing new (the manifest is already committed); publication moves the worker's
+    # staged files into the project and saves the pages as the KIT-016 rendered assets.
+    registerWorkflowOperation(list(name = "da_publication", input = "checkpoint", input_class = "ProteinQuantitativeData",
+        compute = "protein", handler = "computeWorkflowDaPublicationAction", validate = "validateWorkflowDaPublicationParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = "annotations",
+        completion = "da", publication = "da", step_label = "14_da_published", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE))
     invisible(workflowOperationNames())
 }

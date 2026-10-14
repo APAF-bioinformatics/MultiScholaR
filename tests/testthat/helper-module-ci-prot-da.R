@@ -478,7 +478,7 @@ module_ci_prot_da_render_mocks <- function(captured = new.env(parent = emptyenv(
       }
       invisible(values[[1L]])
     },
-    renderPlot = function(expr) eval(substitute(expr), parent.frame()),
+    renderPlot = function(expr, alt = NA, ...) eval(substitute(expr), parent.frame()),
     renderPrint = function(expr) paste(capture.output(eval(substitute(expr), parent.frame())), collapse = "\n"),
     renderText = function(expr) eval(substitute(expr), parent.frame()),
     renderUI = function(expr) eval(substitute(expr), parent.frame()),

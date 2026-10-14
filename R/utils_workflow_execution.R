@@ -1737,7 +1737,8 @@ publishWorkflowFixtureResult <- function(owner, paths) {
     if (!identical(getDIAStateReference(owner$manager), result$state_reference))
         cli::cli_abort("publication belongs to a superseded state", class = "workflow_execution_stale")
     publication <- workflowActionSpec(result$operation %||% workflowFixtureOperation)$publication
-    if (publication %in% c("peptide", "protein")) {
+    if (publication %in% c("peptide", "protein", "da")) {
+        if (publication == "da") publishWorkflowDaResult(owner, paths, result) else
         if (publication == "protein") publishWorkflowProteinResult(owner, paths, result) else
             publishWorkflowPeptideResult(owner, paths, result)
         journal$status <- "complete"
@@ -2357,6 +2358,121 @@ computeWorkflowProteinDuplicateAction <- function(manager, request, variant) {
         worker_cap = request$worker_cap, variant = variant)
 }
 
+#' The DA publication's one parameter (KIT-019): the annotation table as a saved reference, or absent.
+#' @noRd
+validateWorkflowDaPublicationParameters <- function(parameters, policy, resolved = TRUE) {
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% "annotations")))
+        cli::cli_abort("DA publication takes only an annotations reference")
+    annotations <- parameters$annotations
+    if (!is.null(annotations) && !isSavedWorkflowReference(annotations))
+        cli::cli_abort("annotations must be a saved table reference")
+    invisible(NULL)
+}
+
+#' The DA publication in the worker (KIT-019): the accepted manifest from the head snapshot, the annotation
+#' table from its reference, the files staged under the request directory (`da-publication/<role>`); the
+#' publication kernels resolve their tables through the active manager, so the worker runs them inside a
+#' session scope that names this owner. The pages are not saved as assets here (the controller holds the head).
+#' @return The completion value: the head checkpoint and reference (nothing new is committed) and the inventory.
+#' @noRd
+computeWorkflowDaPublicationAction <- function(manager, request, variant) {
+    paths <- workflowRequestExperimentPaths(request)
+    if (!is.null(paths)) manager$.context$experiment_paths <- paths
+    head <- getDIAStateReference(manager)
+    if (!identical(head$entity_id, request$input_references$state$entity_id))
+        cli::cli_abort("DA publication input is not the head state", class = "workflow_execution_stale")
+    manifest_reference <- manager$.context$snapshot$da_results
+    if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
+    manifest <- resolveDIAStateValue(manager$.context, manifest_reference)
+    # The DA step recommits the head with its UI arguments after the manifest captured its source, so the two
+    # references differ while the scientific state is one: the components must be identical.
+    head_record <- readDIAStateMetadata(manager, head)$data
+    if (!isDIAResultManifest(manifest) || !identical(readDIAStateMetadata(manager, manifest$source)$data$components,
+        head_record$components))
+        cli::cli_abort("DA manifest does not belong to the head state", class = "workflow_execution_stale")
+    # As the in-process path: no annotation table means an empty one.
+    annotations <- if (!is.null(request$parameters$annotations))
+        materializeDIATable(manager$.context, request$parameters$annotations) else data.frame()
+    root <- file.path(request$directory, "da-publication")
+    staged <- stats::setNames(lapply(c("da_output_dir", "publication_graphs_dir"), function(role) {
+        path <- file.path(root, role)
+        dir.create(path, recursive = TRUE, showWarnings = FALSE)
+        path
+    }), c("da_output_dir", "publication_graphs_dir"))
+    session <- shiny::MockShinySession$new()
+    session$userData$dia_capacity_manager <- manager
+    shiny::withReactiveDomain(session, withDIAStateScope(manager, function()
+        produceDIADaPublication(manager, manifest, annotations, manifest$parameters$qvalue, staged, save_assets = FALSE)))
+    files <- list.files(root, recursive = TRUE)
+    list(checkpoint = head_record, reference = head, state_reference = head,
+        state_name = manager$current_state, manifest_reference = manifest_reference,
+        summary = list(files = length(files), bytes = sum(file.size(file.path(root, files)))), files = files)
+}
+
+#' Complete a DA publication (KIT-019): nothing new is committed (the manifest was committed before the request);
+#' the head is republished unchanged so the controller's acceptance records the head state as the result.
+#' @noRd
+completeDIADaPublication <- function(workflow, value) {
+    manager <- workflow$state_manager
+    head <- getDIAStateReference(manager)
+    if (!identical(head$entity_id, value$reference$entity_id))
+        cli::cli_abort("DA publication result belongs to a superseded head", class = "workflow_execution_stale")
+    context <- manager$.context
+    publishDIAStateHead(context, context$snapshot)
+    list(stateReference = head, manifest_reference = value$manifest_reference)
+}
+
+#' Publish the worker's staged DA files into the project (KIT-019) through the owner's action-output
+#' journal, and save each contrast's page as the KIT-016 rendered asset (the controller holds the head).
+#' @noRd
+publishWorkflowDaResult <- function(owner, paths, result) {
+    manager <- owner$manager
+    entry <- workflowActionSpec(result$operation)
+    reference <- result$state_reference
+    context_path <- file.path(paths$request_dir, "publication-context.rds")
+    publication <- if (file.exists(context_path)) readRDS(context_path) else NULL
+    experiment_paths <- if (is.list(publication) && is.list(publication$experiment_paths)) publication$experiment_paths else
+        if (is.list(publication) && is.list(publication$proteomics)) publication$proteomics else {
+            root <- file.path(paths$request_dir, "required-output")
+            dir.create(root, showWarnings = FALSE)
+            setupDirectories(root, entry$omic_type)$proteomics
+        }
+    if (!is.list(experiment_paths) || is.null(experiment_paths$da_output_dir) || is.null(experiment_paths$publication_graphs_dir))
+        cli::cli_abort("publication context is invalid", class = "workflow_execution_invalid")
+    manager$.context$experiment_paths <- experiment_paths
+    manifest_reference <- manager$.context$snapshot$da_results
+    if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
+    manifest <- resolveDIAStateValue(manager$.context, manifest_reference)
+    staged_root <- file.path(paths$request_dir, "da-publication")
+    workflowExecutionBoundary("publication")
+    publishDIAActionOutputs(manager, reference, "da", experiment_paths[c("da_output_dir", "publication_graphs_dir")],
+        function(staged) {
+            for (role in names(staged)) {
+                members <- list.files(file.path(staged_root, role), full.names = TRUE, all.files = TRUE, no.. = TRUE)
+                if (length(members) && !all(file.copy(members, staged[[role]], recursive = TRUE)))
+                    cli::cli_abort("cannot stage the worker's DA files", class = "saved_entity_outputs_pending")
+            }
+            pages <- file.path(staged$publication_graphs_dir, "Interactive_Volcano_Plots",
+                paste0(gsub("[^A-Za-z0-9_-]", "_", manifest$contrasts$friendly_names), ".html"))
+            assertDIADaPublicationFiles(manifest, staged, pages)
+            for (i in seq_along(pages)) saveDIAInteractiveVolcanoAsset(manager, manifest, manifest$contrasts$friendly_names[[i]],
+                manifest$parameters$qvalue, readBin(pages[[i]], "raw", n = file.size(pages[[i]])))
+            list(completed = TRUE)
+        }, identity = diaDaPublicationIdentity(manifest))
+    invisible(NULL)
+}
+
+#' Recover the accepted DA manifest for the module after the managed publication (KIT-019).
+#' @noRd
+readManagedDaResult <- function(manager, result, workflow_data) {
+    manifest_reference <- manager$.context$snapshot$da_results
+    if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
+    manifest <- resolveDIAStateValue(manager$.context, manifest_reference)
+    list(stateReference = result$state_reference, manifest = manifest,
+        resultText = diaDaStatusText(nrow(manifest$contrasts)))
+}
+
 #' @noRd
 computeWorkflowPeptideImputationAction <- function(manager, request, variant) {
     computeDIAReferencePeptideGroups(manager, request$input_references$state, "peptideMissingValueImputation",
@@ -2617,6 +2733,7 @@ completeWorkflowAction <- function(owner, operation, value, context = NULL) {
             value$config, "guarded fixture computation"))
     workflow <- newWorkflowCompletionWorkflow(owner$manager, context)
     if (entry$completion == "protein") return(completeDIAProteinAction(workflow, value))
+    if (entry$completion == "da") return(completeDIADaPublication(workflow, value))
     # KIT-014: the Q-value step keeps its own finishing step and product (`qvalue_progress`).
     if (identical(value$section, "srlQvalueProteotypicPeptideClean")) return(finishDIAReferenceQvalueStep(workflow, value))
     finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name,

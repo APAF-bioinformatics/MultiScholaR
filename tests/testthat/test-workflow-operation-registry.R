@@ -2,7 +2,7 @@
 
 test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
-    expect_identical(names, c("minimum_peptides_per_sample", "peptide_imputation", "peptide_intensity_filter",
+    expect_identical(names, c("da_publication", "minimum_peptides_per_sample", "peptide_imputation", "peptide_intensity_filter",
         "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter", "precursor_rollup",
         "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup",
         "protein_replicate_filter", "wfx_fixture"))
@@ -80,7 +80,7 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         expect_error(validateWorkflowActionInput("precursor_rollup", NULL, list(state = "owned")), class = "workflow_execution_unsupported"),
         isSavedWorkflowReference = function(x) identical(x, "owned"), isDIAComponentCheckpoint = function(x) TRUE,
         readDIAStateMetadata = function(...) list(data = record))
-    expect_identical(sort(workflowOperationNames()), sort(c("minimum_peptides_per_sample", "peptide_imputation", "peptide_intensity_filter",
+    expect_identical(sort(workflowOperationNames()), sort(c("da_publication", "minimum_peptides_per_sample", "peptide_imputation", "peptide_intensity_filter",
         "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter", "precursor_rollup",
         "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup",
         "protein_replicate_filter", "wfx_fixture")))
@@ -116,4 +116,19 @@ test_that("a worker request's publication context supplies the experiment paths 
     expect_identical(workflowRequestExperimentPaths(list(directory = request_dir))$protein_qc_dir, "/p/protein_qc")
     saveRDS(list(proteomics = list(protein_qc_dir = "/q/protein_qc")), file.path(request_dir, "publication-context.rds"))
     expect_identical(workflowRequestExperimentPaths(list(directory = request_dir))$protein_qc_dir, "/q/protein_qc")
+})
+
+test_that("the DA publication is a registered worker operation with its own completion and publication roles (KIT-019)", {
+    entry <- workflowActionSpec("da_publication")
+    expect_identical(entry$input, "checkpoint")
+    expect_identical(entry$input_class, "ProteinQuantitativeData")
+    expect_identical(entry$compute, "protein")
+    expect_identical(entry$completion, "da")
+    expect_identical(entry$publication, "da")
+    expect_identical(entry$parameters, "annotations")
+    expect_null(entry$declaration)
+    for (name in c(entry$handler, entry$validate)) expect_true(is.function(get(name, mode = "function")))
+    expect_error(validateWorkflowDaPublicationParameters(list(other = 1), NULL), "annotations")
+    expect_error(validateWorkflowDaPublicationParameters(list(annotations = "a-path"), NULL), "saved table reference")
+    expect_null(validateWorkflowDaPublicationParameters(list(), NULL))
 })

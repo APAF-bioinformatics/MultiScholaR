@@ -28,7 +28,8 @@ da_server_volcano_render_handler <- function(input, output, session, ns, da_data
   })
 
   # Render Static Volcano Plot
-  output$volcano_plot_static <- shiny::renderPlot({
+  # KIT-019: the managed publication's browser acknowledgement reads the plot's identity from its alt text.
+  output$volcano_plot_static <- shiny::renderPlot(alt = function() da_data$volcano_plot_identity %||% NA_character_, {
     shiny::req(input$volcano_contrast, da_data$da_results_list)
 
     # Call the dedicated static volcano generation helper.
