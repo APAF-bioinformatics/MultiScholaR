@@ -379,11 +379,19 @@ if (!is.null(b$builds$kit_024)) {
 # control, both guard readings), not judged by this pair.
 # `KIT_017_CORPUS=screen` binds the screen corpus for the pair's lifecycle run before the counted launch (both members
 # self-verified on the screen corpus; not counted); the counted pair binds the full corpus (the default).
+# The first screen run (2026-10-15, attempt 1) failed both members: the candidate's RUV grid page request found no
+# state owner (Shiny serves the widget's page requests outside any reactive domain; the browser's error dialog then
+# blocked the driver) and the control's application monitor died reading the worker registration file in the window
+# after the controller unlinked it. Both are repaired in the package, so the candidate is the repaired install
+# `kit_017` (the kit_024 source plus the two repairs) when it is bound; the control build keeps the monitor race.
 if (!is.null(b$builds$kit_024)) {
     corpus_017 <- Sys.getenv("KIT_017_CORPUS", "full")
     stopifnot(corpus_017 %in% c("full", "screen"))
-    b$tickets[["017"]] <- list(kind = "journey", control = b$control, candidate = "kit_024", record = FALSE,
+    candidate_017 <- if (!is.null(b$builds$kit_017)) "kit_017" else "kit_024"
+    b$tickets[["017"]] <- list(kind = "journey", control = b$control, candidate = candidate_017, record = FALSE,
         rule = "resident_end", corpus = corpus_017)
+    if (!is.null(b$builds$kit_017)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-017", outcome = "candidate",
+        build = "kit_017", note = "kit_024 plus the two screen-run repairs (page readers take the owner from the render; the application monitor tolerates the worker registration vanishing); the closure pair's candidate")
 }
 
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with

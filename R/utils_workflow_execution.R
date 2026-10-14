@@ -1275,8 +1275,10 @@ workflowMonitorMain <- function(arguments) {
             if (current >= request$config$policy$early_stop) stop_reason <- "memory_guard"
             if (host < request$config$policy$host_floor) stop_reason <- "host_headroom"
             active_path <- file.path(request$directory, "application-active-worker.rds")
-            if (file.exists(active_path)) {
-                active <- readRDS(active_path)
+            # The controller unlinks the registration when its worker completes; a read that lands in that
+            # window sees no file (KIT-017 screen run: the monitor died and took the application with it).
+            active <- if (file.exists(active_path)) tryCatch(readRDS(active_path), error = function(e) NULL) else NULL
+            if (!is.null(active)) {
                 valid_active <- is.list(active) && identical(active$schema, 1L) &&
                     is.character(active$request_id) && length(active$request_id) == 1L &&
                     grepl("^wfx-[a-f0-9]{32}$", active$request_id) &&

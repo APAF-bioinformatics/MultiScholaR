@@ -375,8 +375,11 @@ saveDIADisplayTable <- function(manager, table) {
 #' @param offset,limit Page position and size (at most 10,000 rows per read).
 #' @return `list(data, rows)`: the page and the matching row count.
 #' @noRd
-readDIADisplayTablePage <- function(reference, columns = NULL, filter = NULL, offset = 0L, limit = 1000L) {
-    manager <- getDIAActiveManager()
+readDIADisplayTablePage <- function(reference, columns = NULL, filter = NULL, offset = 0L, limit = 1000L,
+    manager = getDIAActiveManager()) {
+    # KIT-017 screen run: the widget's page requests are served by Shiny's request handler, which carries no
+    # reactive domain and no open scope, so a render resolves the owner once and the pager passes it here.
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("no state owner for the display table page", class = "dia_owner_missing")
     store <- manager$.context$store
     if (!isWorkflowTableReference(reference)) cli::cli_abort("not a saved display table", class = "saved_entity_invalid")
     scope <- newWorkflowTableReadScope(store, reference, "duckdb")

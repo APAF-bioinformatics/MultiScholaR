@@ -195,10 +195,11 @@ renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
         # the store read); the widget shows the row count.
         filter <- if (identical(directionFilter, "all")) NULL else
           list(column = "directionality", value = if (identical(directionFilter, "up")) "positive" else "negative")
-        first <- readDIADisplayTablePage(gprofilerResultsTable, filter = filter, limit = 25L)
+        manager <- getDIAActiveManager()
+        first <- readDIADisplayTablePage(gprofilerResultsTable, filter = filter, limit = 25L, manager = manager)
         pager$rows <- first$rows
         pager$read <- function(offset, limit) readDIADisplayTablePage(gprofilerResultsTable, filter = filter,
-          offset = offset, limit = limit)$data
+          offset = offset, limit = limit, manager = manager)$data
         currentResults <- first$data
       } else {
       currentResults <- gprofilerResults
@@ -377,10 +378,11 @@ renderProtEnrichClusterProfilerResultsTable <- function(clusterprofilerResults,
       if (isWorkflowTableReference(clusterprofilerResultsTable)) {
         # KIT-024: server-side pages from the store, the direction filter applied in the read.
         filter <- if (identical(directionFilter, "all")) NULL else list(column = "directionality", value = directionFilter)
-        first <- readDIADisplayTablePage(clusterprofilerResultsTable, filter = filter, limit = 25L)
+        manager <- getDIAActiveManager()
+        first <- readDIADisplayTablePage(clusterprofilerResultsTable, filter = filter, limit = 25L, manager = manager)
         pager$rows <- first$rows
         pager$read <- function(offset, limit) readDIADisplayTablePage(clusterprofilerResultsTable, filter = filter,
-          offset = offset, limit = limit)$data
+          offset = offset, limit = limit, manager = manager)$data
         currentResults <- first$data
       } else {
       currentResults <- clusterprofilerResults

@@ -16,10 +16,13 @@ da_server_table_render_handler <- function(input, output, session, da_data) {
           qvalue <- input$da_q_val_thresh
           lfc <- input$treat_lfc_cutoff
           page_length <- as.integer(input$table_max_rows %||% 25L)
-          first <- readDIAResultPage(manifest, contrast, significance, qvalue, lfc, limit = max(1L, min(page_length, 10000L)))
+          # The owner is resolved here, in the render; the page requests run outside any reactive domain.
+          manager <- getDIAActiveManager()
+          first <- readDIAResultPage(manifest, contrast, significance, qvalue, lfc, limit = max(1L, min(page_length, 10000L)),
+            manager = manager)
           pager$rows <- as.integer(if (identical(significance, "all")) first$full_population_rows else first$counts[[significance]])
           pager$read <- function(offset, limit) readDIAResultPage(manifest, contrast, significance, qvalue, lfc,
-            offset = offset, limit = limit)$data
+            offset = offset, limit = limit, manager = manager)$data
           return(DT::datatable(first$data, options = diaDisplayTableOptions(page_length, scrollX = TRUE,
             dom = "Bfrtip", buttons = c("copy", "csv", "excel")), extensions = "Buttons", rownames = FALSE) |>
             DT::formatRound(columns = c("log2FC", "raw_pvalue", "fdr_qvalue"), digits = 4))

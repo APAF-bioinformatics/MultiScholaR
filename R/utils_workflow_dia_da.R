@@ -122,8 +122,9 @@ selectDIAContrastReference <- function(manifest, contrast) {
 #' @return Display data and full-population counts; statistics are never recomputed.
 #' @noRd
 readDIAResultPage <- function(manifest, contrast, significance = "all", qvalue = 0.05,
-    lfc = 0, offset = 0L, limit = 100L) {
-    manager <- getDIAActiveManager()
+    lfc = 0, offset = 0L, limit = 100L, manager = getDIAActiveManager()) {
+    # KIT-017 screen run: the widget's page requests carry no reactive domain; the render passes the owner.
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("no state owner for the result page", class = "dia_owner_missing")
     result <- selectDIAContrastReference(manifest, contrast)
     reference <- result$tables$da_proteins_long
     if (length(limit) != 1L || !is.finite(limit) || limit < 1 || limit > 10000 || limit != floor(limit) ||

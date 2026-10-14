@@ -311,14 +311,16 @@ renderProtNormRuvOptimizationTable <- function(
     reference <- resolveProtNormRuvOptimizationTable(normData)
     pager$read <- NULL
     optimization_table <- if (isWorkflowTableReference(reference)) {
+      # The owner is resolved here, in the render; the page requests run outside any reactive domain.
+      manager <- getDIAActiveManager()
       pager$rows <- reference$metadata$shape[[1L]]
       pager$read <- function(offset, limit) prepareOptimizationResultsTableFn(list(
-        optimization_results = readDIADisplayTablePage(reference, offset = offset, limit = limit)$data,
+        optimization_results = readDIADisplayTablePage(reference, offset = offset, limit = limit, manager = manager)$data,
         best_percentage = NULL))$results
       prepareOptimizationResultsTableFn(list(
-        optimization_results = readDIADisplayTablePage(reference, limit = 10L)$data,
+        optimization_results = readDIADisplayTablePage(reference, limit = 10L, manager = manager)$data,
         best_percentage = normData$ruv_optimization_result$best_percentage %||%
-          resolveDIARuvOptimizationResult(getDIAActiveManager())$best_percentage))
+          resolveDIARuvOptimizationResult(manager)$best_percentage))
     } else prepareOptimizationResultsTableFn(normData$ruv_optimization_result)
 
     datatable_output <- datatableFn(

@@ -1210,7 +1210,9 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         # Production default ended at a protocol guard (KIT-005 acceptance as amended 2026-10-11): the
         # completed steps' peaks are the record; no store, no populations, no file fingerprints.
         outcome <- kitDefaultOutcome(operation)
-        stopifnot(!is.null(outcome), is.null(journey$store))
+        if (is.null(outcome)) stop("journey ", operation$status, " at step ", operation$failed_step %||% "?", ": ",
+            operation$error %||% "", "; nothing to verify")
+        stopifnot(is.null(journey$store))
         completed <- names(status)[unlist(status) == "complete"]
         stopifnot(length(completed) >= 1L, all(is.finite(unlist(operation$phase_peak_anon_bytes[completed]))))
         receipt$guard <- list(outcome = outcome, completed_steps = completed,

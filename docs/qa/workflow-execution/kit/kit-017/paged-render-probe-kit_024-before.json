@@ -1,0 +1,19 @@
+{
+  "schema": "kit.paged_render_probe.v1",
+  "ticket": "KIT-017",
+  "label": "kit_024-before",
+  "date": "2026-10-15",
+  "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.70tjXp/library",
+  "build": "c0d77a6ddfcf5a92363844f952b5a3ee9248b78943d3945f5e70b9cad6ab9dd5",
+  "rows": 20,
+  "request_without_owner": {
+    "ok": false,
+    "class": "saved_entity_invalid",
+    "message": "invalid saved-entity handle"
+  },
+  "request_with_render_owner": {
+    "ok": false,
+    "class": "simpleError",
+    "message": "unused argument (manager = manager)"
+  }
+}

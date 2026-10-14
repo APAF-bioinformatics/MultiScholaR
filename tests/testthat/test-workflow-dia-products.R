@@ -435,3 +435,21 @@ test_that("after an Open the RUV grid and the enrichment tables resolve from the
         expect_false(restoreProtEnrichResultsFromState(enrichment_data, workflow))
     })
 })
+
+test_that("the page readers take the owner from the render, because the widget's page requests run outside any reactive domain (KIT-017)", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    table <- data.frame(term = paste0("GO:", seq_len(12)), stringsAsFactors = FALSE)
+    reference <- withDIAProductsSession(manager, saveDIADisplayTable(manager, table))
+    # Shiny serves the widget's page requests with no reactive domain and no open scope (the KIT-017 screen run:
+    # the RUV grid's first page request failed and the browser's error dialog blocked the driver).
+    expect_null(getDIAActiveManager())
+    expect_error(readDIADisplayTablePage(reference, limit = 1L), class = "dia_owner_missing")
+    pager <- new.env(parent = emptyenv())
+    pager$rows <- 12L
+    pager$read <- function(offset, limit) readDIADisplayTablePage(reference, offset = offset, limit = limit, manager = manager)$data
+    page <- diaDisplayTableFilter(pager)(data.frame(), list(start = 10L, length = 10L, draw = 1L, escape = "true"))
+    expect_identical(page$data$term, table$term[11:12])
+    expect_identical(page$recordsTotal, 12L)
+})
