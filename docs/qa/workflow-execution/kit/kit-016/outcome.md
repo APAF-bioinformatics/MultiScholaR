@@ -17,7 +17,7 @@ New product kinds, additive: `dia-volcano-display` (scientific product, schema `
 
 ## In-process verification on the screen project
 
-[in-process-enrichment-check.R](in-process-enrichment-check.R) → [in-process-enrichment-check.json](in-process-enrichment-check.json), on a reflinked copy of the KIT-008 screen member's project (8 samples, on-disk default), opened as the DA tab's Open does, the DA step rerun through the KIT-004 declaration (its publication now saves the interactive pages as assets), then the products and the enrichment module body in test mode:
+[in-process-enrichment-check.R](in-process-enrichment-check.R) → [in-process-enrichment-check.json](in-process-enrichment-check.json) (the first record ran on the working tree committed as `54c14d48`; the committed record was regenerated after the post-hoc audit remediation, [KIT-016-POSTHOC-REMEDIATION-20261014.md](KIT-016-POSTHOC-REMEDIATION-20261014.md), and names that commit), on a reflinked copy of the KIT-008 screen member's project (8 samples, on-disk default), opened as the DA tab's Open does, the DA step rerun through the KIT-004 declaration (its publication now saves the interactive pages as assets), then the products and the enrichment module body in test mode:
 
 | Check | Result |
 |---|---|

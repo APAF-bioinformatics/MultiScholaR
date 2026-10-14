@@ -1,0 +1,10 @@
+# KIT-016 post-hoc audit remediation (2026-10-14)
+
+Audit: [KIT-016-POSTHOC-AUDIT-20261014.md](KIT-016-POSTHOC-AUDIT-20261014.md) (unchanged). User: "fix findings". Repairs for PH-02, PH-03 and PH-04; PH-01 is a user decision and stays open; PH-05 to PH-07 are informational and need no change.
+
+| ID | Repair | Closure evidence |
+|---|---|---|
+| PH-01 | None (user decision: which ticket implements the DA publication outside the process, or stage closure with the 0.4 GiB resident cost recorded open). | Open. Recorded in the KIT-017 hand-off as a pending decision. |
+| PH-02 | `test-workflow-dia-products.R`: `diaEnrichmentServiceIdentity` on a gost-shaped entry (`meta$version`), the double's `deterministic_backend` column, a mixed results object (sorted unique), an empty results object and entries without results (`unavailable`). The clusterProfiler branch stays untested (constructing an `enrichResult` needs that package's constructor; not in the proof library's test path). | `test-workflow-dia-products.R` 43 pass, 0 fail at `14bf0c73` (38 before, 5 new assertions in one test). |
+| PH-03 | `runProtEnrichAnalysisBody`: the hydrated prototype serves the run only; `on.exit` restores `manifest$source` into `enrichmentData$current_s4_object`, so the holder is a reference after the step as KIT-012 recorded. | In-process record `holder_is_reference = true` (record regenerated at `14bf0c73`); `test-prot-11-enrichment-module-contracts.R` 1253 pass, 0 fail.. |
+| PH-04 | The leftover reflinked copy at `~/.cache/multischolar-kit016-enrichment-check` removed; the script's body now runs inside `main()` so `on.exit` removes the working copy; the record regenerated at the remediation commit so `head_commit` names the code it ran (the first record ran on the tree committed as `54c14d48`; `outcome.md` says so). | Record regenerated at `14bf0c73`: `head_commit` `14bf0c73`, `holder_is_reference` true, enrichment exact against the direct double, restored state exact, interactive page shown, volcano product 4,790 rows (unchanged); the working copy is absent after the run. |
