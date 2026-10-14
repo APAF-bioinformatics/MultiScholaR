@@ -439,7 +439,17 @@ test_that("the protein publication phase publishes the replicate filter's table 
     owner <- list(manager = manager, control = list(generation = 1L))
     paths <- list(request_dir = request_dir, root = root)
     result <- list(operation = "protein_replicate_filter", state_reference = completed$stateReference)
+    # KIT-023: the controller's publication phase binds nothing into the global environment (the figure writer
+    # takes its directories as an argument); observed at the figure boundary.
+    globals_before <- sort(ls(.GlobalEnv, all.names = TRUE))
+    seen <- new.env()
+    testthat::local_mocked_bindings(workflowExportBoundary = function(phase) {
+        if (identical(phase, "before_qvalue_figures")) seen$globals <- sort(ls(.GlobalEnv, all.names = TRUE))
+        invisible(NULL)
+    }, .package = "MultiScholaR")
     invisible(capture.output(suppressMessages(publishWorkflowProteinResult(owner, paths, result)), type = "output"))
+    expect_identical(seen$globals, globals_before)
+    expect_false(any(c("project_dirs", "config_list") %in% setdiff(seen$globals, globals_before)))
     published <- list.files(file.path(request_dir, "required-output"), recursive = TRUE)
     expect_true(any(grepl("remove_proteins_with_only_one_rep[.]tsv$", published)))
     expect_true(any(grepl("qc_params[.]RDS$", published)))

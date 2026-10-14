@@ -1023,10 +1023,9 @@ publishDIAProteinProgress <- function(result, step_name, omic_type, experiment_l
         omic_type = omic_type, experiment_label = experiment_label, return_grid = TRUE, overwrite = TRUE)
     if (is.null(result$stateReference)) return(do.call(render_fn, arguments))
     manager <- getDIAActiveManager()
-    directories <- if (exists("project_dirs", envir = .GlobalEnv, inherits = FALSE))
-        get("project_dirs", envir = .GlobalEnv) else list()
+    # KIT-023: the owner's experiment paths, never the global `project_dirs`.
     key <- paste(omic_type, experiment_label, sep = "_")
-    if (is.null(directories[[key]])) directories[[key]] <- manager$.context$experiment_paths
+    directories <- stats::setNames(list(manager$.context$experiment_paths), key)
     arguments$project_dirs <- directories
     publishDIAQvalueOutput(manager, result, arguments, render_fn)
 }

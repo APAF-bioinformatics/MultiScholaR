@@ -2572,7 +2572,8 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
     }
     directories <- publication$directories
     manager$.context$experiment_paths <- publication$experiment_paths
-    rlang::local_bindings(config_list = record$config, project_dirs = directories, .env = .GlobalEnv)
+    # KIT-023: no global binding. The figure writer takes `project_dirs` as an argument and nothing in its chain
+    # reads `config_list`; the controller is the application process, where a global would be shared by sessions.
     withr::local_options(multischolar.test_mode = FALSE)
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "false")
     grDevices::pdf(NULL)
@@ -2637,8 +2638,7 @@ publishWorkflowProteinResult <- function(owner, paths, result) {
     manager$.context$experiment_paths <- publication$experiment_paths
     workflowExecutionBoundary("publication")
     publishDIAProteinTables(manager, display)
-    rlang::local_bindings(config_list = readDIAStateMetadata(manager, reference)$config,
-        project_dirs = publication$directories, .env = .GlobalEnv)
+    # KIT-023: no global binding (see publishWorkflowPeptideResult).
     withr::local_options(multischolar.test_mode = FALSE)
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "false")
     grDevices::pdf(NULL)

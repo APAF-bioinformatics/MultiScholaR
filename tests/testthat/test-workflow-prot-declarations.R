@@ -253,8 +253,16 @@ test_that("the controller's publication phase publishes every protein state's fi
         request_dir <- file.path(root, "request")
         dir.create(request_dir)
         owner <- list(manager = manager, control = list(generation = 1L))
+        # KIT-023: the publication phase adds no global (the test's own config binding is already in place).
+        globals_before <- sort(ls(.GlobalEnv, all.names = TRUE))
+        seen <- new.env()
+        testthat::local_mocked_bindings(workflowExportBoundary = function(phase) {
+            if (identical(phase, "before_qvalue_figures")) seen$globals <- sort(ls(.GlobalEnv, all.names = TRUE))
+            invisible(NULL)
+        }, .package = "MultiScholaR")
         invisible(capture.output(suppressMessages(publishWorkflowProteinResult(owner, list(request_dir = request_dir, root = root),
             list(operation = operation, state_reference = completed$stateReference))), type = "output"))
+        expect_identical(seen$globals, globals_before)
         list.files(file.path(request_dir, "required-output"), recursive = TRUE)
     }
     request <- withr::local_tempdir()
