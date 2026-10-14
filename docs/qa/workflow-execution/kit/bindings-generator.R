@@ -334,8 +334,12 @@ if (!is.null(b$builds$kit_015)) {
 # control, no ratio): the journey driven from import through the design step on the 300-sample corpus as users run
 # it (no launch record), the import and design states verified against the KIT-005 `journey_import` and
 # `journey_design` oracles, the peak recorded.
+# `KIT_018_CORPUS=screen` binds the screen corpus for the lifecycle run of the stop-after path (pre-execution audit
+# PE-02; not counted); the counted member binds the full corpus (the default).
 if (!is.null(b$builds$kit_018)) {
-    b$tickets[["018"]] <- list(kind = "single_journey", build = "kit_018", corpus = "full", stop_after = "design")
+    corpus_018 <- Sys.getenv("KIT_018_CORPUS", "full")
+    stopifnot(corpus_018 %in% c("full", "screen"))
+    b$tickets[["018"]] <- list(kind = "single_journey", build = "kit_018", corpus = corpus_018, stop_after = "design")
 }
 
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with

@@ -872,7 +872,8 @@ test_that("a ticket may bind a single journey member that stops after a step: ex
     cases <- h$kitCases(b, "kit-journey-018")
     expect_length(cases, 1L)
     case <- cases[[1L]]
-    expect_identical(case$id, "member")
+    expect_identical(case$id, "candidate-1")
+    expect_identical(h$kitSelectorStage(case$selector)$id, case$id)
     expect_identical(case$kind, "journey")
     expect_identical(case$role, "candidate")
     expect_false(case$record)
@@ -893,7 +894,7 @@ test_that("a ticket may bind a single journey member that stops after a step: ex
     expect_error(h$kitCases(bare, "kit-journey-018"), "build or stop_after")
     expect_identical(h$kitMemberSeconds("kit-journey-018", b), as.integer(b$journey$ceiling_seconds))
     receipt <- kitSyntheticReceipt(cases, h, edit = function(r) {
-        op <- r$cases[["member"]]$operation
+        op <- r$cases[["candidate-1"]]$operation
         op$status <- "complete"
         op$populations_complete <- TRUE
         op$phase_status <- list(import = "complete", design = "complete")
@@ -901,8 +902,8 @@ test_that("a ticket may bind a single journey member that stops after a step: ex
         op$phase_seconds <- list(import = 100, design = 50)
         op$sampled_anon_bytes <- 2.5e9
         op$resident_end_bytes <- 1.5e9
-        r$cases[["member"]]$operation <- op
-        r$cases[["member"]]$verifier_completion <- list(accepted = TRUE)
+        r$cases[["candidate-1"]]$operation <- op
+        r$cases[["candidate-1"]]$verifier_completion <- list(accepted = TRUE)
         r
     })
     decision <- h$kitSingleJourneyDecision(receipt, cases, b)
@@ -918,19 +919,19 @@ test_that("a ticket may bind a single journey member that stops after a step: ex
     # A step after the stop is not expected; a missing step before it is a phase failure; an oracle mismatch rejects;
     # a harness refusal by the verifier is invalid.
     short <- receipt
-    short$cases[["member"]]$operation$phase_status <- list(import = "complete")
+    short$cases[["candidate-1"]]$operation$phase_status <- list(import = "complete")
     expect_identical(h$kitSingleJourneyDecision(short, cases, b)$status, "invalid")
     expect_identical(h$kitSingleJourneyDecision(short, cases, b)$failing_rule, "phase_timing")
     inexact <- receipt
-    inexact$cases[["member"]]$verifier_completion <- list(accepted = FALSE, reason = "Error: oracle mismatch: design/components/peptide_data")
+    inexact$cases[["candidate-1"]]$verifier_completion <- list(accepted = FALSE, reason = "Error: oracle mismatch: design/components/peptide_data")
     expect_identical(h$kitSingleJourneyDecision(inexact, cases, b)$status, "rejected")
     expect_identical(h$kitSingleJourneyDecision(inexact, cases, b)$failing_rule, "oracle_mismatch")
     expect_false(h$kitSingleJourneyDecision(inexact, cases, b)$member$exact)
     refused <- receipt
-    refused$cases[["member"]]$verifier_completion <- list(accepted = FALSE, reason = "Error: identical(operation$binding, case$binding) is not TRUE")
+    refused$cases[["candidate-1"]]$verifier_completion <- list(accepted = FALSE, reason = "Error: identical(operation$binding, case$binding) is not TRUE")
     expect_identical(h$kitSingleJourneyDecision(refused, cases, b)$status, "invalid")
     expect_identical(h$kitSingleJourneyDecision(refused, cases, b)$failing_rule, "verifier_accepted")
     incomplete <- receipt
-    incomplete$cases[["member"]]$operation$populations_complete <- FALSE
+    incomplete$cases[["candidate-1"]]$operation$populations_complete <- FALSE
     expect_identical(h$kitSingleJourneyDecision(incomplete, cases, b)$failing_rule, "populations_incomplete")
 })

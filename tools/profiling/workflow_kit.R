@@ -187,7 +187,8 @@ kitCases <- function(bindings, stage) {
             # corpus, no launch record, the journey driven from import through `stop_after` only; exactness of the
             # states it leaves against the KIT-005 oracles and completion, peak recorded, no control and no ratio.
             if (is.null(spec$build) || is.null(spec$stop_after)) stop("KIT-", ticket, " single journey binds no build or stop_after")
-            return(list(journey_case("member", "candidate", 1L, spec$build, spec$corpus %||% "full", "none",
+            # The case id is the one its selector maps back to (KIT-018 pre-execution audit PE-01; KIT-008 correction 1).
+            return(list(journey_case("candidate-1", "candidate", 1L, spec$build, spec$corpus %||% "full", "none",
                 paste0("kit:journey-", ticket, ":candidate:1"), record = FALSE, stop_after = spec$stop_after)))
         }
         if (is.null(spec) || !identical(spec$kind, "journey")) stop("KIT-", ticket, " has no bound journey pair")
