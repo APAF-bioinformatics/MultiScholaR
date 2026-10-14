@@ -33,6 +33,14 @@ A unit is a property of the kernel's code and is determined by reading it, with 
 - One mechanism per ticket; a valid unfavourable result is recorded, never retried.
 - A new workflow writes one class declaration, one declaration per step, its kernels and its modules on the request/poll pattern. Nothing else. Lipidomics (KIT-031) is the acceptance test: if it needs new infrastructure, that is a kit gap.
 
+## Kernel contracts the kit adapts to (KIT-022, for the KIT-017 checklist)
+
+Kernels are never rewritten, and three of their idioms are therefore adapted to, not removed. They are named here so the closure checklist reads them as adapters, not as kit design:
+
+- **Legacy globals at publication.** The peptide and protein publication phases bind `config_list` and `project_dirs` into the global environment for the duration of the legacy figure writers (`publishWorkflowPeptideResult`, `publishWorkflowProteinResult` in `R/utils_workflow_execution.R`; the read in `publishDIAQvalueOutput`'s caller in `R/utils_workflow_dia_qc_rollup.R`). The bindings are local to the call and restored afterwards; nothing else in the kit reads or writes the global environment (KIT-013).
+- **Call-stack parameter resolution.** The kernels resolve their parameters with `checkParamsObjectFunctionSimplify` (a `dynGet` over the calling frames, falling back to the object's `args` under the calling function's name). The kit always calls a kernel with explicit arguments and through the kernel's own name (declaration bodies call the legacy `…Fn` aliases so the recorded args keep their name; `uniprot_tbl` must be a table, an empty one when there is none).
+- **The active owner.** Kit-level readers (`readDIAContrastOutput`, the DA display and product functions) find the store through `getDIAActiveManager()`, which resolves the innermost open `withDIAStateScope` owner first and the Shiny session's owner second (KIT-022). Kit code, workers and scripts open the scope; modules rely on the session.
+
 ## Before a counted member exercises a new operation role or class
 
 KIT-010 needed three launches because its pre-execution checks covered the compute, the controller's completion

@@ -2372,8 +2372,8 @@ validateWorkflowDaPublicationParameters <- function(parameters, policy, resolved
 
 #' The DA publication in the worker (KIT-019): the accepted manifest from the head snapshot, the annotation
 #' table from its reference, the files staged under the request directory (`da-publication/<role>`); the
-#' publication kernels resolve their tables through the active manager, so the worker runs them inside a
-#' session scope that names this owner. The pages are not saved as assets here (the controller holds the head).
+#' publication kernels resolve their tables through the active owner, which the state scope names (KIT-022).
+#' The pages are not saved as assets here (the controller holds the head).
 #' @return The completion value: the head checkpoint and reference (nothing new is committed) and the inventory.
 #' @noRd
 computeWorkflowDaPublicationAction <- function(manager, request, variant) {
@@ -2385,11 +2385,9 @@ computeWorkflowDaPublicationAction <- function(manager, request, variant) {
     manifest_reference <- manager$.context$snapshot$da_results
     if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
     manifest <- resolveDIAStateValue(manager$.context, manifest_reference)
-    # The DA step recommits the head with its UI arguments after the manifest captured its source, so the two
-    # references differ while the scientific state is one: the components must be identical.
+    # KIT-022: the manifest's source is the head (the DA step commits its arguments before the contrasts).
     head_record <- readDIAStateMetadata(manager, head)$data
-    if (!isDIAResultManifest(manifest) || !identical(readDIAStateMetadata(manager, manifest$source)$data$components,
-        head_record$components))
+    if (!isDIAResultManifest(manifest) || !identical(manifest$source$entity_id, head$entity_id))
         cli::cli_abort("DA manifest does not belong to the head state", class = "workflow_execution_stale")
     # As the in-process path: no annotation table means an empty one.
     annotations <- if (!is.null(request$parameters$annotations))
@@ -2400,10 +2398,9 @@ computeWorkflowDaPublicationAction <- function(manager, request, variant) {
         dir.create(path, recursive = TRUE, showWarnings = FALSE)
         path
     }), c("da_output_dir", "publication_graphs_dir"))
-    session <- shiny::MockShinySession$new()
-    session$userData$dia_capacity_manager <- manager
-    shiny::withReactiveDomain(session, withDIAStateScope(manager, function()
-        produceDIADaPublication(manager, manifest, annotations, manifest$parameters$qvalue, staged, save_assets = FALSE)))
+    # KIT-022: the state scope names its owner for the publication kernels' readers; no session is needed.
+    withDIAStateScope(manager, function()
+        produceDIADaPublication(manager, manifest, annotations, manifest$parameters$qvalue, staged, save_assets = FALSE))
     files <- list.files(root, recursive = TRUE)
     list(checkpoint = head_record, reference = head, state_reference = head,
         state_name = manager$current_state, manifest_reference = manifest_reference,

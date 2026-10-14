@@ -1192,6 +1192,10 @@ withDIAStateScope <- function(manager, operation) {
     if (!inherits(manager, "DIAStateAdapter")) return(operation())
     context <- manager$.context
     checkWorkflowEntityStore(context$store)
+    # KIT-022: the scope names its owner for `getDIAActiveManager()` while it is open.
+    depth <- length(.diaActiveScope$stack)
+    .diaActiveScope$stack[[depth + 1L]] <- manager
+    on.exit(.diaActiveScope$stack <- .diaActiveScope$stack[seq_len(depth)], add = TRUE)
     action <- beginWorkflowTableAction(context$store)
     on.exit(endWorkflowTableAction(context$store, action), add = TRUE)
     context$scope_depth <- context$scope_depth + 1L
@@ -1280,11 +1284,20 @@ closeDIAStateAdapter <- function(manager) {
 #' @return Internal manager or NULL; never a global live handle.
 #' @noRd
 getDIAActiveManager <- function() {
+    # KIT-022: the innermost `withDIAStateScope` owner first (kit code, workers and scripts), then the Shiny
+    # session's owner (the modules), so kit-level readers need no session.
+    stack <- .diaActiveScope$stack
+    if (length(stack)) return(stack[[length(stack)]])
     session <- shiny::getDefaultReactiveDomain()
     if (is.null(session)) return(NULL)
     manager <- session$userData$dia_capacity_manager
     if (inherits(manager, "DIAStateAdapter")) manager else NULL
 }
+
+#' The stack of owners of the open `withDIAStateScope` calls in this process (KIT-022).
+#' @noRd
+.diaActiveScope <- new.env(parent = emptyenv())
+.diaActiveScope$stack <- list()
 
 #' Bind a saved section's exact worker count only at scientific execution.
 #' @param manager Native or experimental manager.
@@ -1686,6 +1699,8 @@ runDIAReferenceQvalue <- function(workflow, qvalue, global_qvalue, proteotypic,
 #'   `dependencies`, `counts`, `execution`, `state_name`, `description`, `config`, `section`, `text`,
 #'   `qc` (the step's QC parameter record) and `params` (the resolved kernel parameters).
 #' @noRd
+diaQvalueWorkingBytes <- 2048
+
 computeDIAReferenceQvalue <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
     variant = "streamed", now_fn = Sys.time) {
     if (!is.character(variant) || length(variant) != 1L || !identical(variant, "streamed"))
@@ -1735,6 +1750,17 @@ computeDIAReferenceQvalue <- function(manager, reference, parameters, worker_cap
     retained <- unique(c(params$input_matrix_column_ids, protein, peptide, "Modified.Sequence"))
     retained <- unique(c(retained[retained %in% names(empty) | retained == slots$norm_quantity_column],
         confidence[confidence %in% names(empty)]))
+    # KIT-022 (KIT-014 audit PH-02): the admission estimate the family has, before any work: one streamed page
+    # (10,000 rows of the retained columns, or fewer within 64 MiB) plus the declared working bytes per row, beside
+    # the evidence lookup's own 64 MiB bound; refused above the cap, recorded with the execution.
+    row_bytes <- workflowProjectedRowBytes(scope$metadata, retained)
+    batch_rows <- min(10000, floor(67108864 / max(1, row_bytes)))
+    estimate <- 67108864 + batch_rows * (row_bytes + diaQvalueWorkingBytes)
+    if (estimate > worker_cap) cli::cli_abort(
+        "Q-value working-memory estimate exceeds admitted worker capacity", class = "workflow_execution_unsupported")
+    admission <- list(estimated_bytes = estimate, worker_cap = worker_cap, batch_rows = batch_rows, row_bytes = row_bytes,
+        working_bytes_per_row = diaQvalueWorkingBytes, overhead_bytes = 67108864, policy = "qvalue-streamed-page-v1",
+        limitation = "admission estimate; kernel cgroup guard remains authoritative")
     produced <- produceDIAConfidenceTables(scope, retained, params, slots,
         result_object@peptide_data, params$biological_exclusion_ledger, context$software)
     result <- produced$reference
@@ -1771,7 +1797,7 @@ computeDIAReferenceQvalue <- function(manager, reference, parameters, worker_cap
     list(checkpoint = checkpoint, reference = result, summary = progress, exclusion_summary = summary,
         dependencies = checkpoint$dependencies, counts = produced$counts,
         execution = list(variant = variant, worker_cap = worker_cap, rows = summary$biological_rows,
-            excluded_rows = summary$excluded_rows, classification_status = classification_status),
+            excluded_rows = summary$excluded_rows, classification_status = classification_status, admission = admission),
         state_name = "qvalue_filtered", description = "Applied Q-value and proteotypic peptide filter",
         config = config, section = "srlQvalueProteotypicPeptideClean", text = text,
         qc = local_workflow$qc_params$peptide_qc$qvalue_filter, params = params, proteins = proteins)

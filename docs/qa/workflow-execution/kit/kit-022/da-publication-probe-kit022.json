@@ -1,0 +1,41 @@
+{
+  "schema": "kit.da_publication_probe.v1",
+  "ticket": "KIT-019",
+  "date": "2026-10-14",
+  "head_commit": "befc0e3fcb457618b0b4c2cf68356e41f39a8303",
+  "project_label": "kit-gui-008 member (screen, 8 samples)",
+  "application": {
+    "glimma_loaded_before_da": false,
+    "anon_before_da_bytes": 658620416,
+    "kernel_seconds": 9,
+    "anon_after_kernel_bytes": 714199040,
+    "publication_seconds": 1.9,
+    "anon_after_publication_bytes": 714801152,
+    "glimma_loaded_after_da": false,
+    "namespaces_added": ["BiocParallel", "corpcor", "ellipse", "MASS", "matrixStats", "mixOmics", "rARPACK"],
+    "status_text": "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
+    "interactive_shown": true,
+    "interactive_seconds": 0.1
+  },
+  "worker": {
+    "seconds": 9.6,
+    "glimma_loaded": true,
+    "anon_bytes": 1046962176,
+    "files": 10,
+    "bytes": 4572591
+  },
+  "project": {
+    "1": "kit-gui-008 member (screen, 8 samples)",
+    "da_exports": ["da_proteins_grouptreated-groupcontrol_long_annot.tsv", "da_proteins_grouptreated-groupcontrol_long_annot.xlsx"],
+    "volcano_files": ["all_volcano_plots_combined.pdf", "grouptreated-groupcontrol.pdf", "grouptreated-groupcontrol.png"],
+    "interactive_files": "treated_vs_control.html",
+    "numsig_files": ["da_proteins_num_sig_da_molecules.pdf", "da_proteins_num_sig_da_molecules.png", "da_proteins_num_sig_da_molecules.tab", "da_proteins_num_sig_da_molecules.xlsx"],
+    "completed_outputs": {
+      "da": true
+    }
+  },
+  "result": {
+    "glimma_kept_out_of_application": true,
+    "anon_delta_da_step_bytes": 56180736
+  }
+}

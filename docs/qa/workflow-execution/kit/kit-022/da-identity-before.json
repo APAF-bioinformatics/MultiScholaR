@@ -1,0 +1,30 @@
+{
+  "schema": "kit.da_identity_check.v1",
+  "ticket": "KIT-022",
+  "label": "before",
+  "date": "2026-10-14",
+  "head_commit": "befc0e3fcb457618b0b4c2cf68356e41f39a8303",
+  "state_before_da": "836b257e18fbbe56ec76f9fb1c62af808e29853eddc5726efd81f2a537eb0db0",
+  "manifest_source": "836b257e18fbbe56ec76f9fb1c62af808e29853eddc5726efd81f2a537eb0db0",
+  "head_after_da": "7821d0c434660f8202381e2faa0abb63aae6918a16d71aa8dc3d225144f6cdba",
+  "source_is_head": false,
+  "contrasts": {
+    "grouptreated-groupcontrol": {
+      "rows": 4790,
+      "table_sha256": "e346d5b893f0b97b52ab1bb752bfcd0eeaf07044437825fac635a8d688db1df4",
+      "products": {
+        "num_sig_da_molecules_first_go": "b7f840489e2d77fad6c1d75a2fe9be2836d917ba037062b5ace966f49ec24f83",
+        "num_sig_da_molecules": "60a958fbb9a411fd1b8c46845f406f24c1e0c3020e3442402a9c8459fa7ae3f4"
+      },
+      "identity_sha256": "f543f564756ba81bf1bdcfafbf38a6445a4a5a406cad687e99321ebfee3a9525"
+    }
+  },
+  "state_products": ["240d1aa02877177574ba1bdc1e1d613f4dd06bc16d03a8fde37ac2fab63b9111", "3c66c08e55cf477b5cabc00f43be9c218ad54d64f72dad0d1e9824582149ae1c"],
+  "second_run_hits": true,
+  "second_run_source_is_head": false,
+  "da_args": {
+    "q_value_threshold": 0.05,
+    "log_fold_change_cutoff": 0,
+    "formula_string": "~ 0 + group"
+  }
+}

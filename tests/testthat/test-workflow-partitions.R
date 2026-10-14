@@ -557,6 +557,14 @@ test_that("the Q-value filter is a declaration whose compute-only entry point eq
     expect_identical(value$state_name, "qvalue_filtered")
     expect_identical(value$section, "srlQvalueProteotypicPeptideClean")
     expect_identical(value$execution$variant, "streamed")
+    # KIT-022 (KIT-014 audit PH-02): the admission estimate is recorded, and a cap below it refuses before any work.
+    admission <- value$execution$admission
+    expect_true(is.numeric(admission$estimated_bytes) && admission$estimated_bytes > 67108864)
+    expect_identical(admission$worker_cap, 12 * 1024^3)
+    expect_identical(admission$policy, "qvalue-streamed-page-v1")
+    expect_true(admission$batch_rows >= 1 && admission$batch_rows <= 10000)
+    expect_error(computeDIAReferenceQvalue(manager, reference, parameters, worker_cap = 67108864 + 1),
+        class = "workflow_execution_unsupported")
     expect_identical(value$checkpoint$dimensions$rows, nrow(native@peptide_data))
     expect_identical(value$exclusion_summary$excluded_rows,
         native@args$srlQvalueProteotypicPeptideClean$biological_exclusion_summary$excluded_rows)

@@ -334,23 +334,9 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
             protein_id_column = spec$slots$protein_id_column, sample_id = spec$slots$sample_id,
             contrasts = contrasts, results = list(), parameters = list(formula = settings$formula_string,
                 qvalue = settings$da_q_val_thresh, lfc = settings$treat_lfc_cutoff, weights = NA))
-        context <- manager$.context
-        context$da_reference_execution <- TRUE
-        context$da_source_reference <- source
-        on.exit({ context$da_reference_execution <- FALSE; context$da_source_reference <- NULL }, add = TRUE)
-        operation <- diaContrastOperation()
-        for (i in seq_len(nrow(contrasts))) {
-            name <- contrasts$contrasts[[i]]
-            run <- runSavedOperation(manager, operation, source, c(manifest$parameters,
-                list(contrast = contrasts$full_format[[i]], annotations = spec$components$protein_id_table$entity_id,
-                    name = name, comparison = contrasts$friendly_names[[i]])))
-            if (identical(run$status, "computed")) {
-                snapshot <- context$snapshot
-                snapshot$da_dependencies[[run$reference$entity_id]] <- collectDIANativeReferences(run$value)
-                publishDIAStateHead(context, snapshot)
-            }
-            manifest$results[[name]] <- run$value
-        }
+        # KIT-022: the DA UI arguments are committed onto the current state before the contrast loop, so the
+        # manifest's source is the head state the module and the worker see (one reference per scientific state).
+        # The contrast identity strips these arguments, so the contrast products are unchanged by the commit.
         workflow$da_ui_params <- list(q_value_threshold = settings$da_q_val_thresh,
             log_fold_change_cutoff = settings$treat_lfc_cutoff, treat_enabled = settings$treat_lfc_cutoff > 0,
             formula_string = settings$formula_string, timestamp = Sys.time())
@@ -372,6 +358,27 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
                 checkpoint$slots$args$differentialAbundanceAnalysisHelper <- defaults
             commitDIAReferenceState(manager, manager$current_state, checkpoint,
                 state_record$config, state_record$description)
+            source <- getDIAStateReference(manager)
+            manifest$source <- source
+            # The module's holder follows the head (a reference, KIT-012), so a rerun starts from the head too.
+            da_data$current_s4_object <- source
+        }
+        context <- manager$.context
+        context$da_reference_execution <- TRUE
+        context$da_source_reference <- source
+        on.exit({ context$da_reference_execution <- FALSE; context$da_source_reference <- NULL }, add = TRUE)
+        operation <- diaContrastOperation()
+        for (i in seq_len(nrow(contrasts))) {
+            name <- contrasts$contrasts[[i]]
+            run <- runSavedOperation(manager, operation, source, c(manifest$parameters,
+                list(contrast = contrasts$full_format[[i]], annotations = spec$components$protein_id_table$entity_id,
+                    name = name, comparison = contrasts$friendly_names[[i]])))
+            if (identical(run$status, "computed")) {
+                snapshot <- context$snapshot
+                snapshot$da_dependencies[[run$reference$entity_id]] <- collectDIANativeReferences(run$value)
+                publishDIAStateHead(context, snapshot)
+            }
+            manifest$results[[name]] <- run$value
         }
         snapshot <- context$snapshot
         manifest_reference <- saveDIAStateValue(context, manifest, "da-result-references", codec = "rds")

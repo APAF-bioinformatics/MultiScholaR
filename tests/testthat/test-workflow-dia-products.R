@@ -326,3 +326,28 @@ test_that("the worker entry point runs the DA publication from a frozen request 
     expect_identical(result$result$reference$entity_id, head$entity_id)
     expect_true(file.exists(file.path(directory, "da-publication", "publication_graphs_dir", "Interactive_Volcano_Plots", "groupB_vs_groupA.html")))
 })
+
+test_that("the active owner resolves from the open state scope before the session (KIT-022)", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    other <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(other))
+    expect_null(getDIAActiveManager())
+    seen <- withDIAStateScope(manager, function() {
+        inner <- withDIAStateScope(other, function() getDIAActiveManager())
+        list(inner = inner, outer = getDIAActiveManager())
+    })
+    expect_identical(seen$inner, other)
+    expect_identical(seen$outer, manager)
+    expect_null(getDIAActiveManager())
+    # An error inside the scope still pops it.
+    expect_error(withDIAStateScope(manager, function() stop("boom")), "boom")
+    expect_null(getDIAActiveManager())
+    # A kit-level reader works inside the scope with no session at all.
+    manifest <- diaProductsManifest(manager)
+    page <- withDIAStateScope(manager, function() readDIAResultPage(manifest, "groupB_vs_groupA", limit = 5L))
+    expect_identical(nrow(page$data), 5L)
+    # The session's owner still serves the modules outside any scope.
+    withDIAProductsSession(manager, expect_identical(getDIAActiveManager(), manager))
+})

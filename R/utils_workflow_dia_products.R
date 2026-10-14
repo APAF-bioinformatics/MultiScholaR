@@ -234,7 +234,11 @@ diaComponentScientificIdentity <- function(manager, reference, operation, parame
     spec <- readDIAStateMetadata(manager, reference)$data
     assay <- spec$components$protein_quant_table %||% spec$components$peptide_data
     scientific_slots <- spec$slots
-    scientific_slots$args[c("daAnalysisUI", "outputDaResultsAllContrasts")] <- NULL
+    # The DA step's argument records are not identity: the UI block and the publication settings (KIT-004), and the
+    # DA defaults the step commits (`differentialAbundanceAnalysis`, its helper), which duplicate the contrast
+    # operation's explicit parameters (KIT-022: the commit precedes the contrasts, so the head carries them).
+    scientific_slots$args[c("daAnalysisUI", "outputDaResultsAllContrasts", "differentialAbundanceAnalysis",
+        "differentialAbundanceAnalysisHelper")] <- NULL
     newSavedWorkflowScientificIdentity(assay$entity_id,
         spec$components$design_matrix$entity_id,
         digest::digest(list(operation, parameters, slots = scientific_slots), algo = "sha256"),
