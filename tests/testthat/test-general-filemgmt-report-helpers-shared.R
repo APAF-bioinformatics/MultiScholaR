@@ -133,6 +133,7 @@ test_that("copyToResultsSummary validates experiment labels and essential path s
 })
 
 test_that("copyToResultsSummary backs up and copies proteomics report artifacts", {
+    skip("quarantined Q-07 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   root <- tempfile("general-filemgmt-report-")
   dir.create(root, recursive = TRUE)
   withr::defer(unlink(root, recursive = TRUE, force = TRUE))

@@ -497,7 +497,7 @@ module_ci_prot_da_render_mocks <- function(captured = new.env(parent = emptyenv(
     .env = .local_envir
   )
   testthat::local_mocked_bindings(
-    renderDT = function(expr) eval(substitute(expr), parent.frame()),
+    renderDT = function(expr, ...) eval(substitute(expr), parent.frame()),
     datatable = function(data, options = NULL, extensions = NULL, ...) {
       captured$datatable_calls[[length(captured$datatable_calls) + 1L]] <<- list(
         data = data,

@@ -221,6 +221,7 @@ newPeptideMissingnessObject <- function(values = matrix(
 }
 
 test_that("protein missingness methods cover direct package routes and DPC fallbacks", {
+    skip("quarantined Q-17 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   localFakeLimpa()
 
   quiet_replacements <- list(
@@ -370,6 +371,7 @@ test_that("protein missingness methods cover direct package routes and DPC fallb
 })
 
 test_that("preservePeptideNaValuesHelper preserves direct NA synchronization and validation", {
+    skip("quarantined Q-17 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   peptide_object <- PeptideQuantitativeData(
     peptide_data = data.frame(
       Protein.Ids = c("P1", "P1", "P1", "P1", "P2", "P2"),

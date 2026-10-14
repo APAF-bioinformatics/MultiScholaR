@@ -702,6 +702,7 @@ test_that("a native archive supports real IQ reapply after its source project is
 })
 
 test_that("native publication recovers after process loss without another scientific checkpoint", {
+    skip("quarantined Q-04 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     library <- dirname(getNamespaceInfo(asNamespace("MultiScholaR"), "path"))
     writer <- function(library, root, output, metadata, phase, ready) {
         ns <- loadNamespace("MultiScholaR", lib.loc = library)

@@ -359,7 +359,12 @@ diaNormalizationOperation <- function() {
 #' @noRd
 saveDIADisplayTable <- function(manager, table) {
     if (!is.data.frame(table) || !nrow(table) || !ncol(table)) return(NULL)
-    saveDIATableComponent(manager$.context, as.data.frame(table, stringsAsFactors = FALSE))
+    # Only atomic columns are displayable and saveable (a g:Profiler result carries list columns such as
+    # `parents`); the module's download handlers keep the full frame.
+    table <- as.data.frame(table, stringsAsFactors = FALSE)
+    table <- table[vapply(table, function(column) is.atomic(column) && is.null(dim(column)), logical(1))]
+    if (!ncol(table)) return(NULL)
+    saveDIATableComponent(manager$.context, table)
 }
 
 #' Read one page of a saved display table (KIT-018), optionally restricted to the rows whose `filter$column`
@@ -393,6 +398,52 @@ readDIADisplayTablePage <- function(reference, columns = NULL, filter = NULL, of
     page <- if (length(chosen)) readWorkflowSelectedOrdinals(store, reference, columns, chosen, scope = scope) else
         read(columns, 0L, 1L)[0L, , drop = FALSE]
     list(data = page, rows = length(selected))
+}
+
+#' A server-side page filter for the table widget over a saved table (KIT-024): the widget asks for a page
+#' (`start`, `length`, `draw`) and the store serves it through `read_page(offset, limit)`; ordering and searching
+#' are not applied (the renders disable them), so the row count is the table's. Without an installed pager
+#' (`pager$read` NULL: an in-memory table) the widget's own filter runs.
+#' @param pager Environment with `read` (`function(offset, limit)` returning a data frame) and `rows`.
+#' @return `function(data, params)` for `DT::renderDT(funcFilter = )`.
+#' @noRd
+diaDisplayTableFilter <- function(pager) {
+    default_filter <- utils::getFromNamespace("dataTablesFilter", "DT")
+    function(data, params) {
+        if (is.null(pager$read)) return(default_filter(data, params))
+        rows <- as.integer(pager$rows)
+        start <- max(0L, as.integer(params$start %||% 0L))
+        length <- as.integer(params$length %||% 10L)
+        if (is.na(length) || length < 0L) length <- rows
+        length <- min(max(length, 1L), 10000L)
+        page <- if (start < rows) pager$read(start, length) else pager$read(0L, 1L)[0L, , drop = FALSE]
+        page <- as.data.frame(lapply(page, function(column)
+            if (is.factor(column) || inherits(column, c("Date", "POSIXt"))) as.character(column) else column),
+            stringsAsFactors = FALSE, check.names = FALSE)
+        rownames(page) <- NULL
+        if (!identical(params$escape, "false")) for (j in seq_len(ncol(page)))
+            if (is.character(page[[j]])) page[[j]] <- htmltools::htmlEscape(page[[j]])
+        list(draw = as.integer(params$draw %||% 0L), recordsTotal = rows, recordsFiltered = rows, data = page,
+            DT_rows_all = seq_len(rows), DT_rows_current = seq.int(start + 1L, length.out = nrow(page)))
+    }
+}
+
+#' The table widget options the paged renders share (KIT-024): server-side pages, no client ordering or search
+#' (the store serves rows in source order), a visible row count.
+#' @noRd
+diaDisplayTableOptions <- function(page_length = 25L, ...) list(pageLength = page_length, ordering = FALSE,
+    searching = FALSE, serverSide = TRUE, processing = TRUE, ...)
+
+#' The enrichment method an `EnrichmentResults` object was produced with (KIT-024): `clusterprofiler` when its
+#' entries are `enrichResult` objects, else `gprofiler2`.
+#' @noRd
+diaEnrichmentMethodOf <- function(results) {
+    for (contrast in names(results@enrichment_data)) for (direction in names(results@enrichment_data[[contrast]])) {
+        entry <- results@enrichment_data[[contrast]][[direction]]
+        if (isS4(entry) && methods::is(entry, "enrichResult")) return("clusterprofiler")
+        if (is.list(entry)) return("gprofiler2")
+    }
+    "gprofiler2"
 }
 
 #' The RUV optimisation result of the accepted normalisation (KIT-018): read from the saved normalisation

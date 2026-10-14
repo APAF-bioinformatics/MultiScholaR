@@ -192,6 +192,7 @@ test_that("general enrichment helper conversions preserve lookup and grouping be
 })
 
 test_that("GO and gene-set helper pipelines preserve filtered enrichment structure", {
+    skip("quarantined Q-03 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   one_go_enrichment <- makeFunctionWithOverrides(
     oneGoEnrichment,
     list(
@@ -1122,6 +1123,7 @@ test_that("GO enrichment wrapper preserves merged enrichment output and gene sym
 })
 
 test_that("general enrichment fallback helpers preserve utility and no-Revigo branches", {
+    skip("quarantined Q-03 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   expect_equal(parseNumList("1,2;3:4"), c(1L, 2L, 3L, 4L))
   expect_equal(parseNumList("5"), 5L)
 

@@ -483,7 +483,7 @@ test_that("the worker entry point computes a protein operation from a frozen req
     expect_true(isDIAComponentCheckpoint(result$result$checkpoint))
     expect_identical(result$result$checkpoint$class, "ProteinQuantitativeData")
     # Every registered compute role is one the worker's entry point dispatches.
-    for (name in workflowOperationNames()) expect_true(workflowActionSpec(name)$compute %in% c("fixture", "peptide", "protein"), info = name)
+    for (name in workflowOperationNames()) expect_true(workflowActionSpec(name)$compute %in% c("fixture", "peptide", "protein", "in_process"), info = name)
 })
 
 test_that("the protein evidence, intensity and replicate filters are declarations on the feature-group unit whose kernels run the family's compute-only entry point (KIT-014)", {

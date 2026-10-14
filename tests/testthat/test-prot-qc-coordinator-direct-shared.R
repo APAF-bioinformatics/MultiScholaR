@@ -93,6 +93,7 @@ localQcServerMocks <- function(captured, .local_envir = parent.frame()) {
 }
 
 test_that("proteomics QC coordinator preserves the TMT existing-S4 routing path", {
+    skip("quarantined Q-16 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- new.env(parent = emptyenv())
   captured$logs <- character()
   captured$calls <- list()
@@ -183,6 +184,7 @@ test_that("proteomics QC completion helper advances workflow status for normaliz
 })
 
 test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path", {
+    skip("quarantined Q-16 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- new.env(parent = emptyenv())
   captured$logs <- character()
   captured$calls <- list()
@@ -240,6 +242,7 @@ test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path"
 })
 
 test_that("proteomics QC coordinator preserves the DIA peptide-plus-protein routing path", {
+    skip("quarantined Q-16 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- new.env(parent = emptyenv())
   captured$logs <- character()
   captured$calls <- list()

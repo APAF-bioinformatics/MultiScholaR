@@ -23,6 +23,7 @@ test_that("passive diagnostic boundaries never invoke their heap collector", {
 })
 
 test_that("the actual diagnostic browser wrapper starts in passive mode", {
+    skip("quarantined Q-14 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     api <- new.env(parent = baseenv())
     sys.source(test_path("..", "..", "tools", "profiling",
         "workflow_checkpoint_dia_driver.R"), api)

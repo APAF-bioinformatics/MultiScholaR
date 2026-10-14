@@ -744,7 +744,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
 beginWorkflowGUIAction <- function(application, manager, operation, publication) {
     entered <- proc.time()[["elapsed"]]
     checkWorkflowApplication(application)
-    entry <- workflowActionSpec(operation)
+    entry <- assertWorkflowOperationDispatchable(operation)
     if (!is.list(publication) || !identical(sort(names(publication)),
         sort(c("experiment_label", "experiment_paths", "omic_type"))) ||
         !is.character(publication$experiment_label) || length(publication$experiment_label) != 1L ||
@@ -1474,6 +1474,7 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     if ((!outer && !is.null(app$active)) || !is.null(owner$job)) {
         cli::cli_abort("another heavy action is active", class = "workflow_execution_busy")
     }
+    assertWorkflowOperationDispatchable(operation)
     validateWorkflowActionParameters(operation, parameters, app$config$policy, resolved = FALSE)
     if (!is.list(input_references) || !identical(names(input_references), "state") ||
         !isSavedWorkflowReference(input_references$state))
@@ -2357,6 +2358,10 @@ computeWorkflowProteinDuplicateAction <- function(manager, request, variant) {
     computeDIAReferenceProteinDuplicateRemoval(manager, request$input_references$state, request$parameters,
         worker_cap = request$worker_cap, variant = variant)
 }
+
+#' An in-process declaration's parameters are validated by its own runner, never by a worker request (KIT-024).
+#' @noRd
+validateWorkflowInProcessParameters <- function(parameters, policy, resolved = TRUE) invisible(NULL)
 
 #' The DA publication's one parameter (KIT-019): the annotation table as a saved reference, or absent.
 #' @noRd

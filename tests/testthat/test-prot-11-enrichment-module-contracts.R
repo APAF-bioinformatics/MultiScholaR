@@ -6232,8 +6232,8 @@ test_that("formatProtEnrichGprofilerSummaryText reports empty results before ana
 test_that("renderProtEnrichGprofilerResultsTable returns placeholder table before analysis", {
   rendered <- renderProtEnrichGprofilerResultsTable(
     gprofilerResults = data.frame(),
-    renderDtFn = function(expr) force(expr),
-    datatableFn = function(data, options = NULL, extensions = NULL) {
+    renderDtFn = function(expr, ...) force(expr),
+    datatableFn = function(data, options = NULL, extensions = NULL, ...) {
       list(data = data, options = options, extensions = extensions)
     },
     formatRoundFn = function(x, columns, digits) {
@@ -6256,8 +6256,8 @@ test_that("renderProtEnrichGprofilerResultsTable filters directional rows and tr
       stringsAsFactors = FALSE
     ),
     directionFilter = "up",
-    renderDtFn = function(expr) force(expr),
-    datatableFn = function(data, options = NULL, extensions = NULL) {
+    renderDtFn = function(expr, ...) force(expr),
+    datatableFn = function(data, options = NULL, extensions = NULL, ...) {
       list(data = data, options = options, extensions = extensions)
     },
     formatRoundFn = function(x, columns, digits) {
@@ -6281,8 +6281,8 @@ test_that("renderProtEnrichGprofilerResultsTable surfaces table-building errors"
       pvalue = 0.01,
       stringsAsFactors = FALSE
     ),
-    renderDtFn = function(expr) force(expr),
-    datatableFn = function(data, options = NULL, extensions = NULL) {
+    renderDtFn = function(expr, ...) force(expr),
+    datatableFn = function(data, options = NULL, extensions = NULL, ...) {
       list(data = data, options = options, extensions = extensions)
     },
     formatRoundFn = function(x, columns, digits) {
@@ -6429,8 +6429,8 @@ test_that("formatProtEnrichClusterProfilerSummaryText reports empty results befo
 test_that("renderProtEnrichClusterProfilerResultsTable returns placeholder table before analysis", {
   rendered <- renderProtEnrichClusterProfilerResultsTable(
     clusterprofilerResults = data.frame(),
-    renderDtFn = function(expr) force(expr),
-    datatableFn = function(data, options = NULL, extensions = NULL) {
+    renderDtFn = function(expr, ...) force(expr),
+    datatableFn = function(data, options = NULL, extensions = NULL, ...) {
       list(data = data, options = options, extensions = extensions)
     },
     formatRoundFn = function(x, columns, digits) {
@@ -6453,8 +6453,8 @@ test_that("renderProtEnrichClusterProfilerResultsTable filters directional rows 
       stringsAsFactors = FALSE
     ),
     directionFilter = "up",
-    renderDtFn = function(expr) force(expr),
-    datatableFn = function(data, options = NULL, extensions = NULL) {
+    renderDtFn = function(expr, ...) force(expr),
+    datatableFn = function(data, options = NULL, extensions = NULL, ...) {
       list(data = data, options = options, extensions = extensions)
     },
     formatRoundFn = function(x, columns, digits) {
@@ -6478,8 +6478,8 @@ test_that("renderProtEnrichClusterProfilerResultsTable surfaces table-building e
       pvalue = 0.01,
       stringsAsFactors = FALSE
     ),
-    renderDtFn = function(expr) force(expr),
-    datatableFn = function(data, options = NULL, extensions = NULL) {
+    renderDtFn = function(expr, ...) force(expr),
+    datatableFn = function(data, options = NULL, extensions = NULL, ...) {
       list(data = data, options = options, extensions = extensions)
     },
     formatRoundFn = function(x, columns, digits) {
@@ -6611,8 +6611,8 @@ test_that("formatProtEnrichStringDbSummaryText reports placeholder feature summa
 test_that("renderProtEnrichStringDbResultsTable returns placeholder table before analysis", {
   rendered <- renderProtEnrichStringDbResultsTable(
     stringdbResults = data.frame(),
-    renderDtFn = function(expr) force(expr),
-    datatableFn = function(data, options = NULL, extensions = NULL) {
+    renderDtFn = function(expr, ...) force(expr),
+    datatableFn = function(data, options = NULL, extensions = NULL, ...) {
       list(data = data, options = options, extensions = extensions)
     }
   )
@@ -6633,8 +6633,8 @@ test_that("renderProtEnrichStringDbResultsTable filters significant rows and lim
     filterSignificant = TRUE,
     enrichmentPValThresh = 0.05,
     maxResults = 1,
-    renderDtFn = function(expr) force(expr),
-    datatableFn = function(data, options = NULL, extensions = NULL) {
+    renderDtFn = function(expr, ...) force(expr),
+    datatableFn = function(data, options = NULL, extensions = NULL, ...) {
       list(data = data, options = options, extensions = extensions)
     }
   )
@@ -6651,8 +6651,8 @@ test_that("renderProtEnrichStringDbResultsTable surfaces table-building errors",
     stringdbResults = data.frame(network = "ppi:1", stringsAsFactors = FALSE),
     filterSignificant = TRUE,
     enrichmentPValThresh = 0.05,
-    renderDtFn = function(expr) force(expr),
-    datatableFn = function(data, options = NULL, extensions = NULL) {
+    renderDtFn = function(expr, ...) force(expr),
+    datatableFn = function(data, options = NULL, extensions = NULL, ...) {
       list(data = data, options = options, extensions = extensions)
     }
   )

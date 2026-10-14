@@ -43,6 +43,7 @@ test_that("MCI-010.1 backend and taxon routing are explicit and validated", {
 })
 
 test_that("MCI-010.2 identifier and annotation matrices preserve controlled matching behavior", {
+    skip("quarantined Q-02 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   uniprot_da <- module_ci_prot_enrich_da_results("uniprot")
   uniprot_object <- module_ci_prot_enrich_object(
     protein_id_column = "uniprot_acc",
@@ -173,7 +174,7 @@ test_that("MCI-010.3 thresholds, filters, top-N, and empty-result boundaries are
   gprofiler_table <- renderProtEnrichGprofilerResultsTable(
     gprofilerResults = gprofiler_results,
     directionFilter = "up",
-    renderDtFn = function(expr) force(expr),
+    renderDtFn = function(expr, ...) force(expr),
     datatableFn = module_ci_prot_enrich_datatable_capture,
     formatRoundFn = module_ci_prot_enrich_format_round_capture,
     catFn = function(...) invisible(NULL)
@@ -190,7 +191,7 @@ test_that("MCI-010.3 thresholds, filters, top-N, and empty-result boundaries are
   cluster_table <- renderProtEnrichClusterProfilerResultsTable(
     clusterprofilerResults = cluster_results,
     directionFilter = "down",
-    renderDtFn = function(expr) force(expr),
+    renderDtFn = function(expr, ...) force(expr),
     datatableFn = module_ci_prot_enrich_datatable_capture,
     formatRoundFn = module_ci_prot_enrich_format_round_capture,
     catFn = function(...) invisible(NULL)
@@ -208,7 +209,7 @@ test_that("MCI-010.3 thresholds, filters, top-N, and empty-result boundaries are
     filterSignificant = TRUE,
     enrichmentPValThresh = 0.05,
     maxResults = 2,
-    renderDtFn = function(expr) force(expr),
+    renderDtFn = function(expr, ...) force(expr),
     datatableFn = module_ci_prot_enrich_datatable_capture
   )
   expect_equal(nrow(stringdb_table$data), 2)

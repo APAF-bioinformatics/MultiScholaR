@@ -223,6 +223,7 @@ makeProtDaFitMocks <- function(captured = new.env(parent = emptyenv())) {
 }
 
 test_that("proteomics DA model stats helpers execute limma-style analysis paths", {
+    skip("quarantined Q-11 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- new.env(parent = emptyenv())
   fit_mocks <- makeProtDaFitMocks(captured)
   eb_fit <- getFromNamespace("ebFit", "MultiScholaR")

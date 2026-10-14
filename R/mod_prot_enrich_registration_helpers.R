@@ -587,6 +587,8 @@ registerProtEnrichSelectedContrastObserver <- function(input,
                                                        catFn = cat) {
   selectedContrastObserver <- observeFn({
     reqFn(input$selected_contrast)
+    # KIT-024: after an Open the results come back from the `enrichment_completed` state on first use.
+    restoreProtEnrichResultsFromState(enrichmentData, workflowData)
     reqFn(enrichmentData$analysis_complete)
     reqFn(enrichmentData$all_enrichment_results)
 

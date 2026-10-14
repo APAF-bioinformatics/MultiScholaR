@@ -1,16 +1,27 @@
 # Handler 6: Results Table Rendering
 da_server_table_render_handler <- function(input, output, session, da_data) {
+  # KIT-024: on the native session the results table is paged server-side from the store (the significance
+  # selection applied in the read); the widget shows the selection's row count.
+  pager <- new.env(parent = emptyenv())
   output$da_results_table <- DT::renderDT({
     shiny::req(input$table_contrast, da_data$da_results_list)
+    pager$read <- NULL
 
     tryCatch(
       {
         if (isDIAResultManifest(da_data$da_results_list)) {
-          page <- readDIAResultPage(da_data$da_results_list, input$table_contrast,
-            input$table_significance, input$da_q_val_thresh, input$treat_lfc_cutoff,
-            limit = input$table_max_rows)
-          return(DT::datatable(page$data, options = list(pageLength = 25, scrollX = TRUE,
-            dom = "Bfrtip", buttons = c("copy", "csv", "excel")), extensions = "Buttons") |>
+          manifest <- da_data$da_results_list
+          contrast <- input$table_contrast
+          significance <- input$table_significance %||% "all"
+          qvalue <- input$da_q_val_thresh
+          lfc <- input$treat_lfc_cutoff
+          page_length <- as.integer(input$table_max_rows %||% 25L)
+          first <- readDIAResultPage(manifest, contrast, significance, qvalue, lfc, limit = max(1L, min(page_length, 10000L)))
+          pager$rows <- as.integer(if (identical(significance, "all")) first$full_population_rows else first$counts[[significance]])
+          pager$read <- function(offset, limit) readDIAResultPage(manifest, contrast, significance, qvalue, lfc,
+            offset = offset, limit = limit)$data
+          return(DT::datatable(first$data, options = diaDisplayTableOptions(page_length, scrollX = TRUE,
+            dom = "Bfrtip", buttons = c("copy", "csv", "excel")), extensions = "Buttons", rownames = FALSE) |>
             DT::formatRound(columns = c("log2FC", "raw_pvalue", "fdr_qvalue"), digits = 4))
         }
         # Get DA results from the new format
@@ -83,7 +94,7 @@ da_server_table_render_handler <- function(input, output, session, da_data) {
         DT::datatable(data.frame(Message = paste("Error:", e$message)))
       }
     )
-  })
+  }, server = TRUE, funcFilter = diaDisplayTableFilter(pager))
 
   # Summary statistics
   output$da_summary_stats <- shiny::renderText({

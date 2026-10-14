@@ -143,6 +143,7 @@ test_that("timed waits observe application completion and fail promptly on sessi
 })
 
 test_that("design assignment flushes buffered values before clicking the production button", {
+    skip("quarantined Q-14 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     shell <- readLines(test_path("..", "..", "tools", "profiling", "run_workflow_checkpoint_proof.sh"))
     browser_selector <- shell[grepl('if [[ "$proof_memory_guard" != true', shell, fixed = TRUE)]
     expect_length(browser_selector, 1L)

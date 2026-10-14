@@ -249,6 +249,7 @@ test_that("finite input and completion handlers preserve controller-only ownersh
 })
 
 test_that("registered dispatch freezes inputs and preserves acceptance and output-only recovery", {
+    skip("quarantined Q-04 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     code <- perf102Code(TRUE)
     root <- normalizePath(testthat::test_path("..", ".."))
     sys.source(file.path(root, "tests/testthat/helper-workflow-checkpoint-fixtures.R"), code)

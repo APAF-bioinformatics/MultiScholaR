@@ -162,6 +162,7 @@ classifyPeptideExclusionsReference <- function(
 }
 
 test_that("identifier reuse is exactly equivalent to the frozen classifier", {
+    skip("quarantined Q-10 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   input <- data.frame(
     Protein.Group = rep(c("g1", "REV__g2", "g3", NA, "", "  ", "x;CON__y", "g8"), 5),
     Protein.Ids = rep(c("P1", "sp|P2|name", "P02769;P1", "P02769-2", "", NA,

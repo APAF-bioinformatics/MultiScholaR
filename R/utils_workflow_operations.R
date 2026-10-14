@@ -170,12 +170,14 @@ validateWorkflowOperationEntry <- function(entry) {
     scalar <- function(value) is.character(value) && length(value) == 1L && !is.na(value) && nzchar(value)
     flag <- function(value) is.logical(value) && length(value) == 1L && !is.na(value)
     valid <- is.list(entry) && scalar(entry$name) && scalar(entry$input) && entry$input %in% c("checkpoint", "peptide") &&
-        scalar(entry$input_class) && scalar(entry$compute) && entry$compute %in% c("fixture", "peptide", "protein") &&
-        scalar(entry$handler) && scalar(entry$validate) && (is.null(entry$resolve) || scalar(entry$resolve)) &&
+        scalar(entry$input_class) && scalar(entry$compute) && entry$compute %in% c("fixture", "peptide", "protein", "in_process") &&
+        # KIT-024: an in-process declaration names no worker handler; every other role must.
+        (if (identical(entry$compute, "in_process")) is.null(entry$handler) && !is.null(entry$declaration) else scalar(entry$handler)) &&
+        scalar(entry$validate) && (is.null(entry$resolve) || scalar(entry$resolve)) &&
         is.numeric(entry$parameter_limit) && length(entry$parameter_limit) == 1L && entry$parameter_limit > 0 &&
         is.character(entry$parameters) && !anyDuplicated(entry$parameters) &&
-        scalar(entry$completion) && entry$completion %in% c("fixture", "peptide", "protein", "da") &&
-        scalar(entry$publication) && entry$publication %in% c("fixture", "peptide", "protein", "da") &&
+        scalar(entry$completion) && entry$completion %in% c("fixture", "peptide", "protein", "da", "in_process") &&
+        scalar(entry$publication) && entry$publication %in% c("fixture", "peptide", "protein", "da", "in_process") &&
         (is.null(entry$step_label) || scalar(entry$step_label)) && scalar(entry$omic_type) &&
         is.character(entry$variants) &&
         (is.null(entry$default_variant) || (scalar(entry$default_variant) && entry$default_variant %in% entry$variants)) &&
@@ -334,5 +336,26 @@ registerBuiltinWorkflowOperations <- function() {
         resolve = NULL, parameter_limit = 65536, parameters = "annotations",
         completion = "da", publication = "da", step_label = "14_da_published", omic_type = "proteomics",
         variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE))
+    # KIT-024: the whole-matrix declarations that run in process only (KIT-004, KIT-016) are registered too, so the
+    # registry is the one place an operation is named (KIT-007); a dispatch of one to the worker is refused.
+    for (declaration in list(diaNormalizationOperation(), diaPearsonPairsOperation(), diaPearsonSelectionOperation(),
+        diaContrastOperation(), diaEnrichmentOperation())) {
+        registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
+            compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
+            parameter_limit = 65536, parameters = declaration$parameters %||% character(),
+            completion = "in_process", publication = "in_process", step_label = NULL, omic_type = "proteomics",
+            variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE,
+            declaration = declaration))
+    }
     invisible(workflowOperationNames())
+}
+
+#' Refuse to dispatch an in-process declaration to the worker (KIT-024).
+#' @noRd
+assertWorkflowOperationDispatchable <- function(operation) {
+    entry <- workflowActionSpec(operation)
+    if (identical(entry$compute, "in_process")) cli::cli_abort(
+        "operation {.val {operation}} runs in process only (whole-matrix declaration); it cannot be dispatched to a worker",
+        class = "workflow_execution_unsupported")
+    invisible(entry)
 }

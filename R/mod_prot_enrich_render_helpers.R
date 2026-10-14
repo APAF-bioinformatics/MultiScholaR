@@ -180,7 +180,9 @@ renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
                                                   formatRoundFn = DT::formatRound,
                                                   catFn = cat,
                                                   gprofilerResultsTable = NULL) {
+  pager <- new.env(parent = emptyenv())
   renderDtFn({
+    pager$read <- NULL
     if (is.null(gprofilerResults) || nrow(gprofilerResults) == 0) {
       return(datatableFn(data.frame(
         Message = "No gprofiler2 results available. Run analysis first."
@@ -189,10 +191,15 @@ renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
 
     tryCatch({
       if (isWorkflowTableReference(gprofilerResultsTable)) {
-        # KIT-018: the saved display table is paged from the store (the first page, at most 1,000 rows).
-        currentResults <- readDIADisplayTablePage(gprofilerResultsTable,
-          filter = if (identical(directionFilter, "all")) NULL else
-            list(column = "directionality", value = if (identical(directionFilter, "up")) "positive" else "negative"))$data
+        # KIT-024: the saved display table is paged server-side from the store (the direction filter applied in
+        # the store read); the widget shows the row count.
+        filter <- if (identical(directionFilter, "all")) NULL else
+          list(column = "directionality", value = if (identical(directionFilter, "up")) "positive" else "negative")
+        first <- readDIADisplayTablePage(gprofilerResultsTable, filter = filter, limit = 25L)
+        pager$rows <- first$rows
+        pager$read <- function(offset, limit) readDIADisplayTablePage(gprofilerResultsTable, filter = filter,
+          offset = offset, limit = limit)$data
+        currentResults <- first$data
       } else {
       currentResults <- gprofilerResults
 
@@ -206,13 +213,14 @@ renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
 
       datatableFn(
         currentResults,
-        options = list(
+        options = if (is.null(pager$read)) list(
           pageLength = 25,
           scrollX = TRUE,
           dom = "Bfrtip",
           buttons = c("copy", "csv", "excel")
-        ),
-        extensions = "Buttons"
+        ) else diaDisplayTableOptions(25L, scrollX = TRUE, dom = "Bfrtip", buttons = c("copy", "csv", "excel")),
+        extensions = "Buttons",
+        rownames = FALSE
       ) |>
         formatRoundFn(
           columns = intersect(c("pvalue", "p.adjust", "qvalue"), names(currentResults)),
@@ -222,7 +230,7 @@ renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
       catFn(paste("*** ERROR in gprofiler2 results table:", e$message, "\n"))
       datatableFn(data.frame(Message = paste("Error:", e$message)))
     })
-  })
+  }, server = TRUE, funcFilter = diaDisplayTableFilter(pager))
 }
 
 renderProtEnrichGprofilerPlot <- function(analysisComplete,
@@ -356,7 +364,9 @@ renderProtEnrichClusterProfilerResultsTable <- function(clusterprofilerResults,
                                                         formatRoundFn = DT::formatRound,
                                                         catFn = cat,
                                                         clusterprofilerResultsTable = NULL) {
+  pager <- new.env(parent = emptyenv())
   renderDtFn({
+    pager$read <- NULL
     if (is.null(clusterprofilerResults) || nrow(clusterprofilerResults) == 0) {
       return(datatableFn(data.frame(
         Message = "No clusterProfileR results available. Run analysis first."
@@ -365,10 +375,13 @@ renderProtEnrichClusterProfilerResultsTable <- function(clusterprofilerResults,
 
     tryCatch({
       if (isWorkflowTableReference(clusterprofilerResultsTable)) {
-        # KIT-018: the saved display table is paged from the store (the first page, at most 1,000 rows).
-        currentResults <- readDIADisplayTablePage(clusterprofilerResultsTable,
-          filter = if (identical(directionFilter, "all")) NULL else
-            list(column = "directionality", value = directionFilter))$data
+        # KIT-024: server-side pages from the store, the direction filter applied in the read.
+        filter <- if (identical(directionFilter, "all")) NULL else list(column = "directionality", value = directionFilter)
+        first <- readDIADisplayTablePage(clusterprofilerResultsTable, filter = filter, limit = 25L)
+        pager$rows <- first$rows
+        pager$read <- function(offset, limit) readDIADisplayTablePage(clusterprofilerResultsTable, filter = filter,
+          offset = offset, limit = limit)$data
+        currentResults <- first$data
       } else {
       currentResults <- clusterprofilerResults
 
@@ -381,13 +394,14 @@ renderProtEnrichClusterProfilerResultsTable <- function(clusterprofilerResults,
 
       datatableFn(
         currentResults,
-        options = list(
+        options = if (is.null(pager$read)) list(
           pageLength = 25,
           scrollX = TRUE,
           dom = "Bfrtip",
           buttons = c("copy", "csv", "excel")
-        ),
-        extensions = "Buttons"
+        ) else diaDisplayTableOptions(25L, scrollX = TRUE, dom = "Bfrtip", buttons = c("copy", "csv", "excel")),
+        extensions = "Buttons",
+        rownames = FALSE
       ) |>
         formatRoundFn(
           columns = intersect(c("pvalue", "p.adjust", "qvalue"), names(currentResults)),
@@ -397,7 +411,7 @@ renderProtEnrichClusterProfilerResultsTable <- function(clusterprofilerResults,
       catFn(sprintf("*** ERROR in clusterProfileR results table: %s ***\n", e$message))
       datatableFn(data.frame(Message = paste("Error:", e$message)))
     })
-  })
+  }, server = TRUE, funcFilter = diaDisplayTableFilter(pager))
 }
 
 renderProtEnrichStringDbResultsTable <- function(stringdbResults,

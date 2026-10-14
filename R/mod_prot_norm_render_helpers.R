@@ -304,22 +304,27 @@ renderProtNormRuvOptimizationTable <- function(
   formatStyleFn = DT::formatStyle,
   styleEqualFn = DT::styleEqual
 ) {
+  # KIT-024: on the on-disk default the grid is a saved display table paged server-side from the store; after an
+  # Open the reference is resolved from the accepted normalisation product. In memory, the widget's own filter runs.
+  pager <- new.env(parent = emptyenv())
   renderDataTableFn({
-    # KIT-018: on the on-disk default the grid is a saved display table, paged from the store.
-    optimization_table <- if (isWorkflowTableReference(normData$ruv_optimization_table)) {
+    reference <- resolveProtNormRuvOptimizationTable(normData)
+    pager$read <- NULL
+    optimization_table <- if (isWorkflowTableReference(reference)) {
+      pager$rows <- reference$metadata$shape[[1L]]
+      pager$read <- function(offset, limit) prepareOptimizationResultsTableFn(list(
+        optimization_results = readDIADisplayTablePage(reference, offset = offset, limit = limit)$data,
+        best_percentage = NULL))$results
       prepareOptimizationResultsTableFn(list(
-        optimization_results = readDIADisplayTablePage(normData$ruv_optimization_table, limit = 1000L)$data,
-        best_percentage = normData$ruv_optimization_result$best_percentage))
+        optimization_results = readDIADisplayTablePage(reference, limit = 10L)$data,
+        best_percentage = normData$ruv_optimization_result$best_percentage %||%
+          resolveDIARuvOptimizationResult(getDIAActiveManager())$best_percentage))
     } else prepareOptimizationResultsTableFn(normData$ruv_optimization_result)
 
     datatable_output <- datatableFn(
       optimization_table$results,
-      options = list(
-        pageLength = 10,
-        scrollY = "300px",
-        scrollCollapse = TRUE,
-        dom = "t"
-      ),
+      options = if (is.null(pager$read)) list(pageLength = 10, scrollY = "300px", scrollCollapse = TRUE, dom = "t") else
+        diaDisplayTableOptions(10L, scrollY = "300px", scrollCollapse = TRUE, dom = "tip"),
       rownames = FALSE
     )
 
@@ -333,7 +338,23 @@ renderProtNormRuvOptimizationTable <- function(
       target = "row",
       backgroundColor = styleEqualFn(optimization_table$bestPercentage, "#e6f3ff")
     )
-  })
+  }, server = TRUE, funcFilter = diaDisplayTableFilter(pager))
+}
+
+#' The RUV optimisation grid's saved table (KIT-024): the one the normalisation step saved in this session, else
+#' the grid of the accepted normalisation product (after an Open), saved as a display table on first use.
+#' @return Table reference, or NULL for an in-memory owner or before normalisation.
+#' @noRd
+resolveProtNormRuvOptimizationTable <- function(normData) {
+  reference <- normData$ruv_optimization_table
+  if (isWorkflowTableReference(reference)) return(reference)
+  manager <- getDIAActiveManager()
+  if (!usesDIAReferenceStates(manager)) return(NULL)
+  result <- resolveDIARuvOptimizationResult(manager)
+  if (is.null(result$optimization_results)) return(NULL)
+  reference <- saveDIADisplayTable(manager, result$optimization_results)
+  normData$ruv_optimization_table <- reference
+  reference
 }
 
 registerProtNormRenderOutputs <- function(

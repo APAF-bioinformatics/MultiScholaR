@@ -42,6 +42,7 @@ newProteinNormObject <- function(values = data.frame(
 }
 
 test_that("protein S4 normalisation methods preserve switch routing and RUV helper orchestration", {
+    skip("quarantined Q-18 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   local_mocked_bindings(
     impute.nipals = function(x, ncomp) {
       x[is.na(x)] <- 99

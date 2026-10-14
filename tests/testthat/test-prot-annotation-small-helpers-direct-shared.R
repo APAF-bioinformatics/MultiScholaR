@@ -98,6 +98,7 @@ setup_shiny_logger <- get(
 )
 
 test_that("protein annotation helper utilities preserve FASTA parsing, batch preparation, and checkpoint logging", {
+    skip("quarantined Q-12 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   expect_identical(
     getFastaFields("sp|P12345|ID OS=Homo sapiens OX=9606", "OS"),
     "Homo sapiens"

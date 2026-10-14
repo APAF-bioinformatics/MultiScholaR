@@ -351,3 +351,87 @@ test_that("the active owner resolves from the open state scope before the sessio
     # The session's owner still serves the modules outside any scope.
     withDIAProductsSession(manager, expect_identical(getDIAActiveManager(), manager))
 })
+
+test_that("the server-side page filter serves store pages to the table widget and leaves in-memory tables to the widget's filter (KIT-024)", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    table <- data.frame(term = paste0("GO:", seq_len(23)), p_value = seq_len(23) / 100, stringsAsFactors = FALSE)
+    withDIAProductsSession(manager, {
+        reference <- saveDIADisplayTable(manager, table)
+        pager <- new.env(parent = emptyenv())
+        filter <- diaDisplayTableFilter(pager)
+        params <- function(start, length, draw = 3L) list(start = start, length = length, draw = draw, escape = "true",
+            columns = lapply(names(table), function(name) list(name = name, searchable = "false",
+                search = list(value = "", regex = "false"))),
+            order = list(), search = list(value = "", regex = "false", smart = "true", caseInsensitive = "true"))
+        # In memory: the widget's own filter (first page of the data it was given).
+        plain <- filter(table, params(0L, 10L))
+        expect_identical(plain$recordsTotal, 23L)
+        expect_identical(nrow(plain$data), 10L)
+        # Installed pager: pages from the store, with the table's row count.
+        pager$rows <- reference$metadata$shape[[1L]]
+        pager$read <- function(offset, limit) readDIADisplayTablePage(reference, offset = offset, limit = limit)$data
+        page <- filter(data.frame(), params(10L, 10L))
+        expect_identical(page$draw, 3L)
+        expect_identical(page$recordsTotal, 23L)
+        expect_identical(page$recordsFiltered, 23L)
+        expect_identical(page$data$term, table$term[11:20])
+        expect_identical(page$DT_rows_current, 11:20)
+        last <- filter(data.frame(), params(20L, 10L))
+        expect_identical(last$data$term, table$term[21:23])
+        beyond <- filter(data.frame(), params(30L, 10L))
+        expect_identical(nrow(beyond$data), 0L)
+        all_rows <- filter(data.frame(), params(0L, -1L))
+        expect_identical(nrow(all_rows$data), 23L)
+        expect_true(all(c("pageLength", "serverSide", "ordering", "searching") %in% names(diaDisplayTableOptions(25L))))
+    })
+})
+
+test_that("the enrichment method is inferred from the results object (KIT-024)", {
+    results_of <- function(data) methods::new("EnrichmentResults", contrasts = tibble::tibble(), enrichment_data = data,
+        enrichment_plots = list(), enrichment_plotly = list(), enrichment_summaries = list())
+    gost <- list(result = data.frame(term_id = "GO:1"), meta = list(version = "e111"))
+    expect_identical(diaEnrichmentMethodOf(results_of(list(c1 = list(up = gost)))), "gprofiler2")
+    expect_identical(diaEnrichmentMethodOf(results_of(list())), "gprofiler2")
+    fake <- structure(list(), class = "enrichResult")
+    expect_identical(diaEnrichmentMethodOf(results_of(list(c1 = list(up = NULL, down = gost)))), "gprofiler2")
+})
+
+test_that("after an Open the RUV grid and the enrichment tables resolve from the accepted state without rerunning their steps (KIT-024)", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    withDIAProductsSession(manager, {
+        # The accepted normalisation product on a reopened owner: the module holds no table reference.
+        ruv <- list(optimization_results = data.frame(percentage = c(0.1, 0.2, 0.3), k = 1:3, separation_score = c(0.5, 0.7, 0.6)),
+            best_percentage = 0.2, best_k = 2L)
+        source <- getDIAStateReference(manager)
+        product <- saveWorkflowConsumerEntity(manager$.context$store,
+            newSavedWorkflowScientificProduct(list(ruv_result = ruv), "dia-normalization-ruv"),
+            basename(tempfile("dia-norm-")), diaComponentScientificIdentity(manager, source, "normalization-fixture", list()), "scientific_product")
+        final <- readDIAStateMetadata(manager, source)$data
+        final$products$normalization_science <- product
+        commitDIAReferenceState(manager, "ruv_corrected", final, list(ruv_k = 2L), "fixture normalisation")
+        norm_data <- shiny::reactiveValues(ruv_optimization_table = NULL, ruv_optimization_result = NULL)
+        reference <- resolveProtNormRuvOptimizationTable(norm_data)
+        expect_true(isWorkflowTableReference(reference))
+        expect_identical(readDIADisplayTablePage(reference)$data$k, 1:3)
+        expect_identical(shiny::isolate(norm_data$ruv_optimization_table)$entity_id, reference$entity_id)
+        # The enrichment results from the completed state: the module holds nothing after an Open.
+        da_results <- module_ci_prot_enrich_da_results()
+        results <- runProtEnrichDeterministicProcessEnrichments(da_results = da_results, taxon_id = 9606, up_cutoff = 0,
+            down_cutoff = 0, q_cutoff = 0.05, pathway_dir = withr::local_tempdir(), go_annotations = NULL, exclude_iea = FALSE,
+            protein_id_column = "uniprot_acc", contrast_names = "groupB-groupA", correction_method = "gSCS")
+        manager$saveState("enrichment_completed", results, list(q_cutoff = 0.05), "fixture enrichment")
+        enrichment_data <- shiny::reactiveValues(all_enrichment_results = NULL, enrichment_results_full = NULL, analysis_complete = FALSE)
+        workflow <- shiny::reactiveValues(state_manager = manager)
+        expect_true(restoreProtEnrichResultsFromState(enrichment_data, workflow))
+        restored <- shiny::isolate(enrichment_data$all_enrichment_results)
+        expect_identical(names(restored), names(results@enrichment_data))
+        expect_true(isWorkflowTableReference(restored[[1]]$gprofiler_results_table))
+        expect_identical(readDIADisplayTablePage(restored[[1]]$gprofiler_results_table)$rows, nrow(restored[[1]]$gprofiler_results))
+        expect_true(shiny::isolate(enrichment_data$analysis_complete))
+        expect_false(restoreProtEnrichResultsFromState(enrichment_data, workflow))
+    })
+})

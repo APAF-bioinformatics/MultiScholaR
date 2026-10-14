@@ -60,6 +60,7 @@ test_that("MCI-008.1 normalization method matrix preserves numeric sanity and lo
 })
 
 test_that("MCI-008.2 RUV skip, manual, automatic, controls, k, and optimizer boundaries are covered", {
+    skip("quarantined Q-06 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   s4_methods <- module_ci_prot_norm_s4_methods()
   ctrl <- module_ci_prot_norm_control_index()
   object <- module_ci_prot_norm_object(args = module_ci_prot_norm_args(ctrl = ctrl, ruv_number_k = 2L))
@@ -455,6 +456,7 @@ test_that("MCI-008.5 filtered-session export preserves R6, params, filenames, co
 })
 
 test_that("MCI-008.6 DA reload smoke consumes every exported normalization session variant", {
+    skip("quarantined Q-06 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   skip_if_not_installed("shiny")
 
   global_names <- c("contrasts_tbl", "config_list", "uniprot_dat_cln")

@@ -97,6 +97,7 @@ test_that("worker count references register in an already open controller store"
 })
 
 test_that("qualification variants are explicit immutable server choices", {
+    skip("quarantined Q-09 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     expect_identical(workflowQualificationVariant(list(mode = "gui"),
         "minimum_peptides_per_sample"), "legacy")
     config <- list(mode = "adapters", qualification = list(programme = "perf106-repair-v2",

@@ -147,7 +147,7 @@ test_that("renderProtNormRuvOptimizationTable formats highlighted rows when resu
 
   rendered <- renderProtNormRuvOptimizationTable(
     normData = new.env(parent = emptyenv()),
-    renderDataTableFn = function(expr) force(expr),
+    renderDataTableFn = function(expr, ...) force(expr),
     prepareOptimizationResultsTableFn = function(x) {
       list(
         hasResults = TRUE,

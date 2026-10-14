@@ -84,7 +84,7 @@ localShinyRenderMocks <- function(captured, .local_envir = parent.frame()) {
 
 localDtRenderMocks <- function(captured, .local_envir = parent.frame()) {
   testthat::local_mocked_bindings(
-    renderDT = function(expr) {
+    renderDT = function(expr, ...) {
       eval(substitute(expr), parent.frame())
     },
     datatable = function(data, options = NULL, extensions = NULL, ...) {

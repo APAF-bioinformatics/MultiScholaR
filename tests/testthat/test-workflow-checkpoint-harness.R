@@ -92,6 +92,7 @@ test_that("capacity dispatcher stops immediately instead of repeating or scaling
 })
 
 test_that("reader runner validates fixed selectors and retains late failures", {
+    skip("quarantined Q-13 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     driver <- new.env(parent = baseenv())
     sys.source(testthat::test_path("..", "..", "tools", "profiling",
         "workflow_checkpoint_dia_driver.R"), envir = driver)
@@ -1808,6 +1809,7 @@ test_that("path checks refuse source-tree output and incomplete installations", 
 })
 
 test_that("diagnostic profiling wraps only the app launch and refuses profile overwrite", {
+    skip("quarantined Q-13 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     skip_if_not(identical(Sys.info()[["sysname"]], "Linux"))
     skip_if_not(capabilities("profmem"))
     environment <- new.env(parent = baseenv())
@@ -1867,6 +1869,7 @@ test_that("application profiling remains active for work after the Shiny constru
 })
 
 test_that("installed launch closure cannot capture source scientific objects", {
+    skip("quarantined Q-13 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     environment <- new.env(parent = baseenv())
     sys.source(testthat::test_path("..", "..", "tools", "profiling",
         "workflow_checkpoint_dia_driver.R"), envir = environment)

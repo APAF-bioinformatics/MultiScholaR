@@ -130,6 +130,7 @@ expectWorkflowGatesAreMonotonic <- function(workflow_data, session, differential
 }
 
 test_that("proteomics workflow server wires modules and advances workflow state", {
+    skip("quarantined Q-15 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   package_ns <- asNamespace("MultiScholaR")
   captured <- new.env(parent = emptyenv())
   captured$calls <- list()

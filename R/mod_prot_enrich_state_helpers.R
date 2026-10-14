@@ -578,3 +578,31 @@ finalizeProtEnrichAnalysisBodyResults <- function(selectedContrast,
     enrichmentResults = enrichmentResults
   )
 }
+
+#' Restore the enrichment results from the `enrichment_completed` state (KIT-024): after an Open the module holds
+#' no results although the state carries the KIT-003 `EnrichmentResults`; on first use they are rebuilt into the
+#' per-contrast tables (and saved display tables on the on-disk default) exactly as the analysis builds them.
+#' @return TRUE when restored, FALSE when nothing was needed or nothing was available.
+#' @noRd
+restoreProtEnrichResultsFromState <- function(enrichmentData, workflowData,
+                                              buildAllContrastResultsFn = buildProtEnrichAllContrastResults) {
+  if (!is.null(shiny::isolate(enrichmentData$all_enrichment_results))) return(FALSE)
+  manager <- if (is.null(workflowData)) NULL else shiny::isolate(workflowData$state_manager)
+  if (is.null(manager) || !"enrichment_completed" %in% unlist(manager$getHistory())) return(FALSE)
+  results <- manager$getState("enrichment_completed")
+  if (!methods::is(results, "EnrichmentResults")) return(FALSE)
+  methodInfo <- list(method = diaEnrichmentMethodOf(results))
+  allContrastResults <- buildAllContrastResultsFn(enrichmentResults = results, methodInfo = methodInfo)
+  if (usesDIAReferenceStates(manager)) {
+    for (contrastName in names(allContrastResults)) {
+      allContrastResults[[contrastName]]$gprofiler_results_table <- saveDIADisplayTable(manager,
+        allContrastResults[[contrastName]]$gprofiler_results)
+      allContrastResults[[contrastName]]$clusterprofiler_results_table <- saveDIADisplayTable(manager,
+        allContrastResults[[contrastName]]$clusterprofiler_results)
+    }
+  }
+  enrichmentData$all_enrichment_results <- allContrastResults
+  enrichmentData$enrichment_results_full <- results
+  enrichmentData$analysis_complete <- TRUE
+  TRUE
+}

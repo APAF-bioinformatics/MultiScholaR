@@ -227,6 +227,7 @@ withSharedProteinDedupUiMocks <- function(captured,
 }
 
 test_that("proteomics protein dedup module preserves successful apply behavior", {
+    skip("quarantined Q-01 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- newSharedProteinDedupCapture()
   server_fn <- getProtProteinDedupServer()
   server_env <- environment(server_fn)

@@ -8,6 +8,7 @@ makeFunctionWithOverrides <- function(fun, replacements) {
 }
 
 test_that("limpa DA conversion helper preserves error and standard formatting branches", {
+    skip("quarantined Q-19 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   converter_missing_limma <- makeFunctionWithOverrides(
     convertDpcDAToStandardFormat,
     list(

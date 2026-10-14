@@ -2,7 +2,8 @@
 
 test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
-    expect_identical(names, c("da_publication", "minimum_peptides_per_sample", "peptide_imputation", "peptide_intensity_filter",
+    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "minimum_peptides_per_sample",
+        "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_imputation", "peptide_intensity_filter",
         "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter", "precursor_rollup",
         "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup",
         "protein_replicate_filter", "wfx_fixture"))
@@ -50,7 +51,7 @@ test_that("the registry carries the built-in operations with every fact the exec
     expect_identical(workflowQualificationVariant(list(mode = "gui"), "precursor_rollup"), "p14")
     expect_identical(filter$resolve, "resolveWorkflowSampleFilterParameters")
     expect_true(filter$inclusion_absence)
-    for (name in names) expect_true(exists(workflowActionSpec(name)$handler, mode = "function"))
+    for (name in names) if (!identical(workflowActionSpec(name)$compute, "in_process")) expect_true(exists(workflowActionSpec(name)$handler, mode = "function"), info = name)
     for (name in names) expect_true(exists(workflowActionSpec(name)$validate, mode = "function"))
 })
 
@@ -80,10 +81,11 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         expect_error(validateWorkflowActionInput("precursor_rollup", NULL, list(state = "owned")), class = "workflow_execution_unsupported"),
         isSavedWorkflowReference = function(x) identical(x, "owned"), isDIAComponentCheckpoint = function(x) TRUE,
         readDIAStateMetadata = function(...) list(data = record))
-    expect_identical(sort(workflowOperationNames()), sort(c("da_publication", "minimum_peptides_per_sample", "peptide_imputation", "peptide_intensity_filter",
-        "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter", "precursor_rollup",
-        "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup",
-        "protein_replicate_filter", "wfx_fixture")))
+    expect_identical(sort(workflowOperationNames()), sort(c("DA-contrast-output", "da_publication", "enrichment",
+        "minimum_peptides_per_sample", "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_imputation",
+        "peptide_intensity_filter", "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter",
+        "precursor_rollup", "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter",
+        "protein_iq_rollup", "protein_replicate_filter", "wfx_fixture")))
 })
 
 test_that("a fresh R process resolves the same registry from the operation name alone", {
@@ -131,4 +133,22 @@ test_that("the DA publication is a registered worker operation with its own comp
     expect_error(validateWorkflowDaPublicationParameters(list(other = 1), NULL), "annotations")
     expect_error(validateWorkflowDaPublicationParameters(list(annotations = "a-path"), NULL), "saved table reference")
     expect_null(validateWorkflowDaPublicationParameters(list(), NULL))
+})
+
+test_that("the whole-matrix declarations are registered as in-process operations that refuse worker dispatch (KIT-024)", {
+    for (name in c("normalization-ruv", "pearson-pairs", "pearson-selection", "DA-contrast-output", "enrichment")) {
+        entry <- workflowActionSpec(name)
+        expect_identical(entry$compute, "in_process")
+        expect_null(entry$handler)
+        expect_identical(entry$completion, "in_process")
+        expect_identical(entry$declaration$name, name)
+        expect_error(assertWorkflowOperationDispatchable(name), class = "workflow_execution_unsupported")
+    }
+    expect_identical(assertWorkflowOperationDispatchable("protein_intensity_filter")$compute, "protein")
+    # An in-process entry must carry its declaration and no handler; a worker entry must name a handler.
+    expect_error(validateWorkflowOperationEntry(list(name = "x", input = "checkpoint", input_class = "ProteinQuantitativeData",
+        compute = "in_process", handler = "h", validate = "validateWorkflowInProcessParameters", resolve = NULL,
+        parameter_limit = 1, parameters = character(), completion = "in_process", publication = "in_process",
+        omic_type = "proteomics", variants = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE)),
+        class = "workflow_operation_invalid")
 })

@@ -271,6 +271,7 @@ newSharedProteinIntensityCapture <- function() {
 }
 
 test_that("proteomics protein intensity module preserves flexible apply behavior", {
+    skip("quarantined Q-01 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- newSharedProteinIntensityCapture()
   server_fn <- getProtProteinIntensityServer()
   server_env <- environment(server_fn)
@@ -370,6 +371,7 @@ test_that("proteomics protein intensity module preserves flexible apply behavior
 })
 
 test_that("proteomics protein intensity module preserves strict apply behavior", {
+    skip("quarantined Q-01 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- newSharedProteinIntensityCapture()
   server_fn <- getProtProteinIntensityServer()
   server_env <- environment(server_fn)

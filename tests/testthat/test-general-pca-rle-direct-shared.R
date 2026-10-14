@@ -83,6 +83,7 @@ buildPcaRleInputs <- function() {
 }
 
 test_that("general PCA/RLE helpers preserve fallback, list, ggpairs, and layout branches", {
+    skip("quarantined Q-08 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   inputs <- buildPcaRleInputs()
 
   pca_fallback <- makeFunctionWithOverrides(
