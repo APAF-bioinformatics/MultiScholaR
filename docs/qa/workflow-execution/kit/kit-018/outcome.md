@@ -1,6 +1,6 @@
 # KIT-018: design checkpoint verification, reports from products, legacy-session adoption
 
-Status 2026-10-14: **implemented** (`6a7304e7`); candidate install and the counted single journey member pending the user's go. Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-018: 1 single journey member, import to design); protocol v1.3 (single members: exactness and completion only, peak recorded, no ratio). Control: `kit_015` (`core/browser-smoke.hXymGJ`). Predecessor cases: PERF-112, PERF-125, PERF-127, PERF-104 (legacy sessions); audit B32.
+Status 2026-10-14: **complete** (stage `kit-journey-018` accepted; one counted single journey member, as the ledger says). Install kit_018 = `core/browser-smoke.yXPrcl` (`6a7304e7`). Pre-execution audit: [KIT-018-PREEXEC-AUDIT-20261014.md](KIT-018-PREEXEC-AUDIT-20261014.md), remediation [KIT-018-PREEXEC-REMEDIATION-20261014.md](KIT-018-PREEXEC-REMEDIATION-20261014.md). Authority: `tickets/kit/00-KIT-PLAN.md` (run ledger KIT-018: 1 single journey member, import to design); protocol v1.3 (single members: exactness and completion only, peak recorded, no ratio). Control: `kit_015` (`core/browser-smoke.hXymGJ`). Predecessor cases: PERF-112, PERF-125, PERF-127, PERF-104 (legacy sessions); audit B32.
 
 ## What was verified or built
 
@@ -33,6 +33,11 @@ Status 2026-10-14: **implemented** (`6a7304e7`); candidate install and the count
 | test-metab-05-summary-module-characterization.R | 160 pass, 9 skips |
 | test-prot-04a-design-module-characterization.R | 230 pass |
 
-## Counted member
+## Runs
 
-Pending: one single journey member (import to design, 300-sample corpus, kit_018 build, exactness against `journey_import` and `journey_design`, completion, peak recorded).
+| Run | Result |
+|---|---|
+| Screen lifecycle run (not counted; audit PE-02; user "screen"; [kit-journey-018-screen-lifecycle-stage.json](kit-journey-018-screen-lifecycle-stage.json)) | accepted: import 11 s, design 17 s, 43 s, 1.21 GiB anonymous peak; verified against its own store; the stop-after path observed through completion and verification |
+| Counted single journey member, 300-sample corpus, kit_018 ([kit-journey-018-stage.json](kit-journey-018-stage.json), [stage-summary.R](stage-summary.R)) | **accepted** (`kitSingleJourneyDecision`, exactness and completion): import 57 s, design 143 s, 225 s in all; anonymous peak 3.16 GiB (import 2.76, design 3.16), slice peak 3.53 GiB, resident end 3.16 GiB; zero swap, sampling gap 100 ms, slice stopped; the design state (`raw_data_s4`, 5,846,578 rows) exact against the KIT-005 `journey_design` oracle under the current canonical form (no mismatch, no canonical-form difference); the import state (`initial`) reported |
+
+No ratio is formed (protocol v1.3 single members). Per protocol section 2 the latest accepted build is the control: **kit_018** from here (bindings regenerated at closure).

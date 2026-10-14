@@ -1,0 +1,64 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-018",
+  "stage": "kit-journey-018-screen-lifecycle",
+  "date": "2026-10-14",
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "steps": ["import", "design"],
+    "stop_after": "design",
+    "promotion_authorized": false
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "screen",
+    "build": "73faa8f6e3e3b53e3c6023e2a78dcdccaa0a8e98e8853a348b42fc95ed615f0b",
+    "status": "complete",
+    "exact": true,
+    "elapsed_seconds": 43.0400000000081,
+    "peak_bytes": 1418534912,
+    "peak_anon_bytes": 1303879680,
+    "resident_end_bytes": 1303793664,
+    "phase_seconds": {
+      "import": 10.9799999999959,
+      "design": 16.8800000000047
+    },
+    "phase_peak_anon_bytes": {
+      "import": 1139003392,
+      "design": 1303879680
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete"
+    },
+    "max_sample_interval": 0.069999999992433,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": null,
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "489b4c0722940485a64e95f82e5fb3dfaff5c08db5ad4ba05b06f076f6524bf4",
+        "rows": null,
+        "fingerprints": 1
+      },
+      "design": {
+        "state": "raw_data_s4",
+        "entity_id": "ba7d5296fac456f4090529cccfba6ab9703e3876ab6f5aaf20acbf824df3c53a",
+        "rows": 320872,
+        "fingerprints": 3
+      }
+    },
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": 18
+  }
+}

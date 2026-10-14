@@ -340,6 +340,12 @@ if (!is.null(b$builds$kit_018)) {
     corpus_018 <- Sys.getenv("KIT_018_CORPUS", "full")
     stopifnot(corpus_018 %in% c("full", "screen"))
     b$tickets[["018"]] <- list(kind = "single_journey", build = "kit_018", corpus = corpus_018, stop_after = "design")
+    # KIT-018 accepted 2026-10-14 (stage kit-journey-018: the single journey member complete through design, exact against
+    # journey_design; 225 s, 3.16 GiB anonymous peak, no ratio): the KIT-018 build is the control from here (protocol section 2).
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-018", outcome = "control", build = "kit_018",
+        note = "design default verified, reports from the accepted normalisation product, RUV and enrichment tables as paged display tables, legacy adoption verified; accepted as one single journey member (stage kit-journey-018, 2026-10-14): import and design exact, 225 s, 3.16 GiB anonymous peak; the control for KIT-019 onward")
+    b$control <- "kit_018"
+    b$journey$pair$control <- b$control
 }
 
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
