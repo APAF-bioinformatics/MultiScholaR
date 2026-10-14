@@ -3955,7 +3955,7 @@
     "member": "tools/profiling/workflow_kit_member.R",
     "runner": "tools/profiling/run_workflow_kit.sh",
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
-    "protocol_sha256": "a5867e9cea97a72892fc7fb972b75d18e644d2b0e27adf49823c544eed8bf068",
+    "protocol_sha256": "5065d3bacffa87943fed7e71be18190841689065e5a8d15297e1d5dc0361c073",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
     "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
     "core_pinned_unchanged": true,
