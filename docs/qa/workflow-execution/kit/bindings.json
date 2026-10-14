@@ -115,6 +115,15 @@
       "install_member": "browser-smoke.cDoGhF",
       "source_commit": "aa2c3031a937760b0f60d297aa6b24b1d3bb458a",
       "runtime_patch_bytes": 0
+    },
+    "kit_022": {
+      "ticket": "KIT-022",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.MfYKZr/library",
+      "build": "c4410c2e32944fff5406ba38cccdcbbce756d731e7fc05eee35d01fc5452a050",
+      "exact_sum": "22dfba0c09cd669ba6a9b771d34398ab24e7fc6742f18d3a3bfc91cb71554489",
+      "install_member": "browser-smoke.MfYKZr",
+      "source_commit": "780f0b5056c42505cc54b0455f3fe5343ff2c499",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -177,6 +186,12 @@
       "outcome": "candidate",
       "build": "kit_019",
       "note": "DA publication as the da_publication worker operation (the limma kernel stays in process); no counted member (probe recorded: Glimma absent from the application-side process); the final stage-1 build, KIT-017's candidate"
+    },
+    {
+      "ticket": "KIT-022",
+      "outcome": "candidate",
+      "build": "kit_022",
+      "note": "DA arguments committed before the contrasts (manifest source = head), the active owner from the state scope, the Q-value admission estimate, the kernel contracts named; no counted member; the final stage-1 build, KIT-017's candidate (supersedes kit_019)"
     }
   ],
   "control": "kit_018",

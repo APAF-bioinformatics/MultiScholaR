@@ -1,6 +1,6 @@
 # KIT-022: kit debt before closure
 
-Status 2026-10-14: STATUS_LINE. Authority: `tickets/kit/00-KIT-PLAN.md` (decision row 2026-10-14; run ledger KIT-022: none, one install recorded); protocol v1.3. Control `kit_018`; this build is KIT-017's candidate.
+Status 2026-10-14: **complete** (no counted member, as the ledger says; one install recorded: kit_022 = `core/browser-smoke.MfYKZr`, `780f0b50`, bound as KIT-017's candidate; the control stays `kit_018`). Authority: `tickets/kit/00-KIT-PLAN.md` (decision row 2026-10-14; run ledger KIT-022: none, one install recorded); protocol v1.3. Control `kit_018`; this build is KIT-017's candidate.
 
 ## The four items
 
