@@ -369,6 +369,23 @@ if (!is.null(b$builds$kit_024)) {
         note = "every declaration registered, server-side paged renders resolved from the accepted state, baseline test quarantine, KIT-023's global-free publication phases; no counted member; the final stage-1 build, KIT-017's candidate (supersedes kit_022)")
 }
 
+# KIT-017: the DIA stage closure pair (protocol section 4, ticket journey pair; ticket revision 1.1): the control is the
+# latest accepted build (kit_018) and the candidate the final stage-1 build (kit_024), each one journey member as users
+# run the GUI (no launch record) on the 300-sample corpus in one session, the candidate's states verified against the
+# KIT-005 oracles. Rule `resident_end` (the one memory mechanism between the two builds is KIT-019's DA publication
+# through the worker, whose claim is end-of-journey resident memory): candidate resident_end <= 0.95 x the control's,
+# the whole-slice anonymous peak not worse than 1.02 x, the per-step guard from the first saved state. The stage's
+# whole-slice reduction is reported against the production-default baselines (KIT-005 default-1 and KIT-011's
+# control, both guard readings), not judged by this pair.
+# `KIT_017_CORPUS=screen` binds the screen corpus for the pair's lifecycle run before the counted launch (both members
+# self-verified on the screen corpus; not counted); the counted pair binds the full corpus (the default).
+if (!is.null(b$builds$kit_024)) {
+    corpus_017 <- Sys.getenv("KIT_017_CORPUS", "full")
+    stopifnot(corpus_017 %in% c("full", "screen"))
+    b$tickets[["017"]] <- list(kind = "journey", control = b$control, candidate = "kit_024", record = FALSE,
+        rule = "resident_end", corpus = corpus_017)
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and

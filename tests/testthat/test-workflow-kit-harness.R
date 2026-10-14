@@ -521,6 +521,11 @@ test_that("a ticket journey pair runs both builds as users run them and is decid
     expect_identical(vapply(cases, `[[`, "", "id"), c("control-1", "candidate-1"))
     expect_identical(vapply(cases, `[[`, "", "library"), c("/lib/n", "/lib/e"))
     expect_false(cases[[1]]$record)
+    expect_identical(vapply(cases, `[[`, "", "corpus"), c("full", "full"))
+    # KIT-017: a pair bound to the screen corpus is its lifecycle run (both members on the screen corpus, not counted).
+    screen <- b
+    screen$tickets[["011"]]$corpus <- "screen"
+    expect_identical(vapply(h$kitCases(screen, "kit-journey-011"), `[[`, "", "corpus"), c("screen", "screen"))
     expect_identical(cases[[2]]$selector, "kit:journey-011:candidate:1")
     expect_identical(h$kitSelectorStage("kit:journey-011:candidate:1"), list(stage = "kit-journey-011", id = "candidate-1"))
     expect_identical(h$kitMemberSeconds("kit-journey-011", b), 3600L)
