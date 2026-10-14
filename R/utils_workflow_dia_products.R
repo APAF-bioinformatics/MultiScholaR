@@ -347,6 +347,66 @@ diaNormalizationOperation <- function() {
 #' @param post_qc,ruv_qc,grouping Existing callbacks.
 #' @return TRUE after science, required tables and plots have completed.
 #' @noRd
+#' Save a display table (KIT-018): a bounded data frame the module renders, saved once as a result table
+#' (content-addressed, so a repeated save is a hit) and paged on demand by `readDIADisplayTablePage`.
+#' @param manager Session owner.
+#' @param table Data frame; NULL or zero rows save nothing.
+#' @return Table reference, or NULL.
+#' @noRd
+saveDIADisplayTable <- function(manager, table) {
+    if (!is.data.frame(table) || !nrow(table) || !ncol(table)) return(NULL)
+    saveDIATableComponent(manager$.context, as.data.frame(table, stringsAsFactors = FALSE))
+}
+
+#' Read one page of a saved display table (KIT-018), optionally restricted to the rows whose `filter$column`
+#' equals `filter$value` (the column is scanned in 10,000-row reads; the selected rows are read by ordinal).
+#' @param reference Table reference from `saveDIADisplayTable`.
+#' @param columns Columns to read; NULL for every column the table has.
+#' @param filter NULL or `list(column, value)`.
+#' @param offset,limit Page position and size (at most 10,000 rows per read).
+#' @return `list(data, rows)`: the page and the matching row count.
+#' @noRd
+readDIADisplayTablePage <- function(reference, columns = NULL, filter = NULL, offset = 0L, limit = 1000L) {
+    manager <- getDIAActiveManager()
+    store <- manager$.context$store
+    if (!isWorkflowTableReference(reference)) cli::cli_abort("not a saved display table", class = "saved_entity_invalid")
+    scope <- newWorkflowTableReadScope(store, reference, "duckdb")
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    if (is.null(columns)) columns <- scope$metadata$columns
+    rows <- reference$metadata$shape[[1L]]
+    read <- function(columns, offset, limit) readSavedWorkflowTable(store, reference, columns, offset = offset,
+        limit = limit, scope = scope, reader = "duckdb")$data
+    if (is.null(filter)) return(list(data = read(columns, offset, limit), rows = rows))
+    selected <- integer()
+    at <- 0L
+    while (at < rows) {
+        count <- min(10000L, rows - at)
+        part <- read(filter$column, at, count)
+        selected <- c(selected, at + which(part[[filter$column]] == filter$value))
+        at <- at + count
+    }
+    chosen <- selected[seq.int(offset + 1L, length.out = max(0L, min(limit, length(selected) - offset)))]
+    page <- if (length(chosen)) readWorkflowSelectedOrdinals(store, reference, columns, chosen, scope = scope) else
+        read(columns, 0L, 1L)[0L, , drop = FALSE]
+    list(data = page, rows = length(selected))
+}
+
+#' The RUV optimisation result of the accepted normalisation (KIT-018): read from the saved normalisation
+#' product the current normalised state references, never from a module copy or an RDS file.
+#' @param manager Session owner; NULL or a non-reference owner gives NULL.
+#' @return The `ruv_result` list the normalisation declaration produced, or NULL before normalisation.
+#' @noRd
+resolveDIARuvOptimizationResult <- function(manager) {
+    if (!usesDIAReferenceStates(manager)) return(NULL)
+    history <- manager$getHistory()
+    for (state in intersect(c("correlation_filtered", "ruv_corrected", "normalized"), history)) {
+        record <- tryCatch(readDIAStateMetadata(manager, getDIAStateReference(manager, state))$data, error = function(e) NULL)
+        product <- record$products$normalization_science
+        if (!is.null(product)) return(hydrateSavedWorkflowEntity(manager$.context$store, product)$value$ruv_result)
+    }
+    NULL
+}
+
 runDIAReferenceNormalization <- function(settings, workflow, norm_data, paths, omic_type,
     experiment_label, post_qc, ruv_qc, grouping) {
     prior_plot <- ggplot2::get_last_plot()
@@ -371,6 +431,8 @@ runDIAReferenceNormalization <- function(settings, workflow, norm_data, paths, o
         norm_data$control_genes_index <- saved$controls
         norm_data$ruv_optimization_result <- saved$ruv_result
         workflow$ruv_optimization_result <- saved$ruv_result
+        # KIT-018: the optimisation grid is a saved display table the module pages on demand.
+        norm_data$ruv_optimization_table <- saveDIADisplayTable(manager, saved$ruv_result$optimization_results)
         skipped <- identical(settings$ruv_mode, "skip")
         final <- readDIAStateMetadata(manager, saved$final)$data
         config <- list(norm_method = settings$norm_method, ruv_mode = settings$ruv_mode,

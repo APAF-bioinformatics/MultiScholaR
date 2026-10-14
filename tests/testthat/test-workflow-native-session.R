@@ -423,6 +423,10 @@ test_that("native legacy import validates and persists before replacing the GUI 
     expect_true(ingestDIANativeLegacySession(legacy, workflow, session, paths$source_dir, paths))
     withr::defer(closeDIAStateAdapter(workflow$state_manager))
     expect_true(isDIANativeSession(workflow$state_manager))
+    # KIT-018: the adopted history is a reference history (every state a saved reference, no resident S4).
+    expect_true(usesDIAReferenceStates(workflow$state_manager))
+    for (state in workflow$state_manager$getHistory())
+        expect_true(isSavedWorkflowReference(getDIAStateReference(workflow$state_manager, state)))
     expect_identical(workflow$state_manager$getState(), fixture$final)
     expect_identical(workflow$state_manager$revertToState("raw_data_s4"), fixture$raw)
     expect_identical(workflow$state_manager$.context$full_reads, 0L)
@@ -433,6 +437,27 @@ test_that("native legacy import validates and persists before replacing the GUI 
     expect_identical(readRDS(file.path(paths$protein_qc_dir,
         "normalised_results_cln_with_replicates.RDS")), fixture$final)
     expect_null(workflow$state_manager$.context$export_pending)
+})
+
+test_that("the design checkpoint on the DIA default commits a reference state through newDIAPeptideCheckpoint (KIT-018)", {
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(withr::local_tempdir(), "design-default", "DIA"),
+        WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    design <- object@design_matrix
+    design$tech_rep_group <- NULL
+    workflow <- list2env(list(state_manager = manager, design_matrix = design, config_list = object@args,
+        data_cln = saveDIATableComponent(manager$.context, object@peptide_data)), parent = emptyenv())
+    expect_true(usesDIAReferenceStates(manager))
+    expect_identical(buildProtDesignStateCheckpoint(workflow, "DIA", "Import"), "raw_data_s4")
+    expect_identical(manager$current_state, "raw_data_s4")
+    expect_true(isSavedWorkflowReference(getDIAStateReference(manager, "raw_data_s4")))
+    expect_identical(workflow$design_matrix$tech_rep_group, paste(design$group, design$replicates, sep = "_"))
+    restored <- manager$getState("raw_data_s4")
+    expect_s4_class(restored, "PeptideQuantitativeData")
+    expect_identical(nrow(restored@peptide_data), nrow(object@peptide_data))
+    expect_identical(restored@design_matrix$tech_rep_group, workflow$design_matrix$tech_rep_group)
 })
 
 test_that("native import is the DIA-NN/IQ default and does not migrate Limpa or other formats", {

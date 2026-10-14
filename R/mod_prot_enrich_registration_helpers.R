@@ -169,7 +169,8 @@ registerProtEnrichGprofilerResultsTableOutput <- function(output,
                                                           renderResultsTableFn = renderProtEnrichGprofilerResultsTable) {
   gprofilerResultsTable <- renderResultsTableFn(
     gprofilerResults = enrichmentData$gprofiler_results,
-    directionFilter = input$gprofiler_direction_filter
+    directionFilter = input$gprofiler_direction_filter,
+    gprofilerResultsTable = enrichmentData$gprofiler_results_table
   )
 
   output$gprofiler_results_table <- gprofilerResultsTable
@@ -198,7 +199,8 @@ registerProtEnrichClusterProfilerResultsTableOutput <- function(output,
                                                                 renderResultsTableFn = renderProtEnrichClusterProfilerResultsTable) {
   clusterprofilerResultsTable <- renderResultsTableFn(
     clusterprofilerResults = enrichmentData$clusterprofiler_results,
-    directionFilter = input$clusterprofiler_direction_filter
+    directionFilter = input$clusterprofiler_direction_filter,
+    clusterprofilerResultsTable = enrichmentData$clusterprofiler_results_table
   )
 
   output$clusterprofiler_results_table <- clusterprofilerResultsTable
@@ -618,6 +620,8 @@ registerProtEnrichSelectedContrastObserver <- function(input,
       enrichmentData$gprofiler_results <- contrastState$gprofilerResults
       enrichmentData$clusterprofiler_results <- contrastState$clusterprofilerResults
       enrichmentData$stringdb_results <- contrastState$stringdbResults
+      enrichmentData$gprofiler_results_table <- contrastState$gprofilerResultsTable
+      enrichmentData$clusterprofiler_results_table <- contrastState$clusterprofilerResultsTable
 
       if (!is.null(contrastState$gprofilerResults)) {
         catFn(sprintf(
@@ -650,6 +654,8 @@ registerProtEnrichSelectedContrastObserver <- function(input,
       enrichmentData$gprofiler_results <- NULL
       enrichmentData$clusterprofiler_results <- NULL
       enrichmentData$stringdb_results <- NULL
+      enrichmentData$gprofiler_results_table <- NULL
+      enrichmentData$clusterprofiler_results_table <- NULL
     }
 
     contrastState

@@ -141,8 +141,14 @@ kitSnapshotAfterStep <- function(project, api) {
 #' @noRd
 runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, application_root, events, api) {
     steps <- kitJourneySteps()
+    # KIT-018: a single journey member runs import through `journey$stop_after` only.
+    if (!is.null(journey$stop_after)) {
+        last <- match(journey$stop_after, vapply(steps, `[[`, character(1), "id"))
+        stopifnot(!is.na(last))
+        steps <- steps[seq_len(last)]
+    }
     record <- list(status = "running", populations = list(), completed = character(), store = NULL,
-        corpus = journey$corpus_key, project = NULL, files = NULL)
+        corpus = journey$corpus_key, project = NULL, files = NULL, stop_after = journey$stop_after)
     # Everything the GUI writes lands under the member's project parent; that is the project root.
     project <- function() project_parent
     settings <- journey$settings

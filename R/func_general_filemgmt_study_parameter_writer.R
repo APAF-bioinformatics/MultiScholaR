@@ -86,9 +86,14 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
     if (!is.null(workflow_data)) {
         cat("WORKFLOW ARGS: Checking for RUV optimization results in workflow_data\n")
 
+        # KIT-018: on the on-disk DIA default the accepted normalisation product is the source.
+        accepted_ruv <- tryCatch(resolveDIARuvOptimizationResult(workflow_data$state_manager), error = function(e) NULL)
         # Check multiple possible locations for RUV optimization results
         # First check for plural (metabolomics per-assay format)
-        if (!is.null(workflow_data$ruv_optimization_results)) {
+        if (!is.null(accepted_ruv)) {
+            ruv_optimization_result <- accepted_ruv
+            cat("WORKFLOW ARGS: Found RUV optimization results in the accepted normalisation product\n")
+        } else if (!is.null(workflow_data$ruv_optimization_results)) {
             ruv_optimization_result <- workflow_data$ruv_optimization_results
             cat("WORKFLOW ARGS: Found RUV optimization results in workflow_data$ruv_optimization_results (plural)\n")
         } else if (!is.null(workflow_data$ruv_optimization_result)) {

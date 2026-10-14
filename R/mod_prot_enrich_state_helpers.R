@@ -374,12 +374,23 @@ captureProtEnrichPostProcessResults <- function(selectedContrast,
                                                 methodInfo,
                                                 buildAllContrastResultsFn = buildProtEnrichAllContrastResults,
                                                 resolveSelectedContrastResultsFn = resolveProtEnrichSelectedContrastResults,
-                                                catFn = cat) {
+                                                catFn = cat,
+                                                workflowData = NULL) {
   if (!is.null(enrichmentResults) && !is.null(enrichmentResults@enrichment_data)) {
     allContrastResults <- buildAllContrastResultsFn(
       enrichmentResults = enrichmentResults,
       methodInfo = methodInfo
     )
+    # KIT-018: on the on-disk default each contrast's result table is also a saved display table the
+    # results tables page from the store (content-addressed; the in-memory frames stay for plots and downloads).
+    if (!is.null(workflowData) && usesDIAReferenceStates(workflowData$state_manager)) {
+      for (contrastName in names(allContrastResults)) {
+        allContrastResults[[contrastName]]$gprofiler_results_table <- saveDIADisplayTable(
+          workflowData$state_manager, allContrastResults[[contrastName]]$gprofiler_results)
+        allContrastResults[[contrastName]]$clusterprofiler_results_table <- saveDIADisplayTable(
+          workflowData$state_manager, allContrastResults[[contrastName]]$clusterprofiler_results)
+      }
+    }
 
     enrichmentData$all_enrichment_results <- allContrastResults
 
@@ -393,6 +404,8 @@ captureProtEnrichPostProcessResults <- function(selectedContrast,
       enrichmentData$gprofiler_results <- initialContrastState$gprofilerResults
       enrichmentData$clusterprofiler_results <- initialContrastState$clusterprofilerResults
       enrichmentData$stringdb_results <- initialContrastState$stringdbResults
+      enrichmentData$gprofiler_results_table <- initialContrastState$gprofilerResultsTable
+      enrichmentData$clusterprofiler_results_table <- initialContrastState$clusterprofilerResultsTable
       catFn(sprintf(
         "   ENRICHMENT Step: Set initial display to contrast '%s'\n",
         initialContrastState$rawContrastName
@@ -532,7 +545,8 @@ finalizeProtEnrichAnalysisBodyResults <- function(selectedContrast,
     methodInfo = methodInfo,
     buildAllContrastResultsFn = buildAllContrastResultsFn,
     resolveSelectedContrastResultsFn = resolveSelectedContrastResultsFn,
-    catFn = catFn
+    catFn = catFn,
+    workflowData = workflowData
   )
 
   persistenceResult <- persistAnalysisResultsFn(

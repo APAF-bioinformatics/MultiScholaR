@@ -4717,7 +4717,7 @@ test_that("finalizeProtEnrichAnalysisBodyResults captures, persists, and returns
                                            methodInfo,
                                            buildAllContrastResultsFn,
                                            resolveSelectedContrastResultsFn,
-                                           catFn) {
+                                           catFn, workflowData = NULL) {
       recorded$steps <- c(recorded$steps, "capture")
       expect_equal(selectedContrast, "A vs B")
       expect_equal(enrichmentResults, "raw_results")
@@ -5749,7 +5749,7 @@ test_that("registerProtEnrichGprofilerResultsTableOutput wires rendering through
     output = output,
     input = input,
     enrichmentData = enrichment_data,
-    renderResultsTableFn = function(gprofilerResults, directionFilter) {
+    renderResultsTableFn = function(gprofilerResults, directionFilter, gprofilerResultsTable = NULL) {
       recorded$args <- list(
         gprofilerResults = gprofilerResults,
         directionFilter = directionFilter
@@ -5811,7 +5811,7 @@ test_that("registerProtEnrichClusterProfilerResultsTableOutput wires rendering t
     output = output,
     input = input,
     enrichmentData = enrichment_data,
-    renderResultsTableFn = function(clusterprofilerResults, directionFilter) {
+    renderResultsTableFn = function(clusterprofilerResults, directionFilter, clusterprofilerResultsTable = NULL) {
       recorded$args <- list(
         clusterprofilerResults = clusterprofilerResults,
         directionFilter = directionFilter

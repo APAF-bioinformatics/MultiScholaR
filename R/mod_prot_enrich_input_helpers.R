@@ -424,7 +424,9 @@ resolveProtEnrichSelectedContrastResults <- function(selectedContrast, allEnrich
     availableContrasts = availableContrasts,
     gprofilerResults = if (!is.null(contrastResults)) contrastResults$gprofiler_results else NULL,
     clusterprofilerResults = if (!is.null(contrastResults)) contrastResults$clusterprofiler_results else NULL,
-    stringdbResults = if (!is.null(contrastResults)) contrastResults$stringdb_results else NULL
+    stringdbResults = if (!is.null(contrastResults)) contrastResults$stringdb_results else NULL,
+    gprofilerResultsTable = if (!is.null(contrastResults)) contrastResults$gprofiler_results_table else NULL,
+    clusterprofilerResultsTable = if (!is.null(contrastResults)) contrastResults$clusterprofiler_results_table else NULL
   )
 }
 

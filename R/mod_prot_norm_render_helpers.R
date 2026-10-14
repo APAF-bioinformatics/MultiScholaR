@@ -192,7 +192,8 @@ createProtNormReactiveState <- function(
     post_norm_filtering_plot = NULL,
     filtering_summary_text = NULL,
     plot_refresh_trigger = 0,
-    ruv_optimization_result = NULL
+    ruv_optimization_result = NULL,
+    ruv_optimization_table = NULL
   )
 }
 
@@ -304,7 +305,12 @@ renderProtNormRuvOptimizationTable <- function(
   styleEqualFn = DT::styleEqual
 ) {
   renderDataTableFn({
-    optimization_table <- prepareOptimizationResultsTableFn(normData$ruv_optimization_result)
+    # KIT-018: on the on-disk default the grid is a saved display table, paged from the store.
+    optimization_table <- if (isWorkflowTableReference(normData$ruv_optimization_table)) {
+      prepareOptimizationResultsTableFn(list(
+        optimization_results = readDIADisplayTablePage(normData$ruv_optimization_table, limit = 1000L)$data,
+        best_percentage = normData$ruv_optimization_result$best_percentage))
+    } else prepareOptimizationResultsTableFn(normData$ruv_optimization_result)
 
     datatable_output <- datatableFn(
       optimization_table$results,

@@ -156,7 +156,9 @@ summariseProtSummaryWorkflowMetadata <- function(workflowData,
       globalParameters = globalParameters,
       da_ui_params = tryCatch(workflowData$da_ui_params, error = function(e) NULL),
       enrichment_ui_params = tryCatch(workflowData$enrichment_ui_params, error = function(e) NULL),
-      ruv_optimization_result = tryCatch(workflowData$ruv_optimization_result, error = function(e) NULL)
+      # KIT-018: the accepted normalisation product first; the module copy for in-memory owners.
+      ruv_optimization_result = tryCatch(resolveDIARuvOptimizationResult(workflowData$state_manager), error = function(e) NULL) %||%
+        tryCatch(workflowData$ruv_optimization_result, error = function(e) NULL)
     )
   )
 }

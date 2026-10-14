@@ -330,6 +330,14 @@ if (!is.null(b$builds$kit_015)) {
     b$journey$pair$control <- b$control
 }
 
+# KIT-018: one single journey member on the kit_018 build (protocol section 2: exactness and completion only, no
+# control, no ratio): the journey driven from import through the design step on the 300-sample corpus as users run
+# it (no launch record), the import and design states verified against the KIT-005 `journey_import` and
+# `journey_design` oracles, the peak recorded.
+if (!is.null(b$builds$kit_018)) {
+    b$tickets[["018"]] <- list(kind = "single_journey", build = "kit_018", corpus = "full", stop_after = "design")
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and

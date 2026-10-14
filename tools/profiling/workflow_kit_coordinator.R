@@ -296,6 +296,7 @@ tryCatch({
                 design = corpus_spec$files[["design.tsv"]]$path)
             journey <- bindings$journey
             journey$corpus_key <- case$corpus
+            journey$stop_after <- case$stop_after
             fault <- if (case$expect_failure) bindings$lifecycle$fault else NULL
             # The browser driver runs in its own process per member (correction 3), outside the slice.
             saveRDS(list(schema = 1L, application_root = application_root, corpus = corpus, journey = journey, fault = fault,
@@ -374,6 +375,8 @@ tryCatch({
     receipt$decision <- if (startsWith(stage, "kit-lifecycle-operation-")) helpers$kitOperationLifecycleDecision(receipt, all_cases, bindings) else
         if (startsWith(stage, "kit-lifecycle-")) helpers$kitLifecycleDecision(receipt, all_cases, bindings) else
         if (stage == "kit-journey") helpers$kitJourneyDecision(receipt, all_cases, bindings) else
+        if (startsWith(stage, "kit-journey-") && identical(bindings$tickets[[sub("kit-journey-", "", stage, fixed = TRUE)]]$kind, "single_journey"))
+            helpers$kitSingleJourneyDecision(receipt, all_cases, bindings) else
         if (startsWith(stage, "kit-journey-")) helpers$kitJourneyTicketDecision(receipt, all_cases, bindings) else
         if (startsWith(stage, "kit-gui-")) helpers$kitGuiMemberDecision(receipt, all_cases, bindings,
             # Both members' fingerprints are recomputed from their stores under the current canonical form at launch

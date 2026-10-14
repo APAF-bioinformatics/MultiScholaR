@@ -178,7 +178,8 @@ renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
                                                   renderDtFn = DT::renderDT,
                                                   datatableFn = DT::datatable,
                                                   formatRoundFn = DT::formatRound,
-                                                  catFn = cat) {
+                                                  catFn = cat,
+                                                  gprofilerResultsTable = NULL) {
   renderDtFn({
     if (is.null(gprofilerResults) || nrow(gprofilerResults) == 0) {
       return(datatableFn(data.frame(
@@ -187,6 +188,12 @@ renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
     }
 
     tryCatch({
+      if (isWorkflowTableReference(gprofilerResultsTable)) {
+        # KIT-018: the saved display table is paged from the store (the first page, at most 1,000 rows).
+        currentResults <- readDIADisplayTablePage(gprofilerResultsTable,
+          filter = if (identical(directionFilter, "all")) NULL else
+            list(column = "directionality", value = if (identical(directionFilter, "up")) "positive" else "negative"))$data
+      } else {
       currentResults <- gprofilerResults
 
       if (!identical(directionFilter, "all") &&
@@ -194,6 +201,7 @@ renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
         directionValue <- if (identical(directionFilter, "up")) "positive" else "negative"
         currentResults <- currentResults |>
           dplyr::filter(directionality == directionValue)
+      }
       }
 
       datatableFn(
@@ -346,7 +354,8 @@ renderProtEnrichClusterProfilerResultsTable <- function(clusterprofilerResults,
                                                         renderDtFn = DT::renderDT,
                                                         datatableFn = DT::datatable,
                                                         formatRoundFn = DT::formatRound,
-                                                        catFn = cat) {
+                                                        catFn = cat,
+                                                        clusterprofilerResultsTable = NULL) {
   renderDtFn({
     if (is.null(clusterprofilerResults) || nrow(clusterprofilerResults) == 0) {
       return(datatableFn(data.frame(
@@ -355,12 +364,19 @@ renderProtEnrichClusterProfilerResultsTable <- function(clusterprofilerResults,
     }
 
     tryCatch({
+      if (isWorkflowTableReference(clusterprofilerResultsTable)) {
+        # KIT-018: the saved display table is paged from the store (the first page, at most 1,000 rows).
+        currentResults <- readDIADisplayTablePage(clusterprofilerResultsTable,
+          filter = if (identical(directionFilter, "all")) NULL else
+            list(column = "directionality", value = directionFilter))$data
+      } else {
       currentResults <- clusterprofilerResults
 
       if (!identical(directionFilter, "all") &&
           "directionality" %in% names(currentResults)) {
         currentResults <- currentResults |>
           dplyr::filter(directionality == directionFilter)
+      }
       }
 
       datatableFn(

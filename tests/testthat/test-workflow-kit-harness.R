@@ -863,3 +863,74 @@ test_that("a ticket may bind single members: one operation member per step on on
     many$tickets[["014"]]$members <- rep(b$tickets[["014"]]$members, 3)
     expect_error(h$kitCases(many, "kit-014"))
 })
+
+test_that("a ticket may bind a single journey member that stops after a step: exactness and completion only (KIT-018)", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$builds$kit_018 <- list(library = "/lib/r", build = strrep("r", 64), exact_sum = "sum-r")
+    b$tickets[["018"]] <- list(kind = "single_journey", build = "kit_018", corpus = "full", stop_after = "design")
+    cases <- h$kitCases(b, "kit-journey-018")
+    expect_length(cases, 1L)
+    case <- cases[[1L]]
+    expect_identical(case$id, "member")
+    expect_identical(case$kind, "journey")
+    expect_identical(case$role, "candidate")
+    expect_false(case$record)
+    expect_identical(case$stop_after, "design")
+    expect_identical(case$corpus, "full")
+    expect_identical(case$library, "/lib/r")
+    expect_identical(case$selector, "kit:journey-018:candidate:1")
+    expect_identical(h$kitSelectorStage(case$selector), list(stage = "kit-journey-018", id = "candidate-1"))
+    # The stop step is part of the binding; an unknown step or a missing build refuses at expansion.
+    later <- b
+    later$tickets[["018"]]$stop_after <- "qvalue"
+    expect_false(identical(h$kitCases(later, "kit-journey-018")[[1L]]$binding, case$binding))
+    bad <- b
+    bad$tickets[["018"]]$stop_after <- "nowhere"
+    expect_error(h$kitCases(bad, "kit-journey-018"), "stop_after")
+    bare <- b
+    bare$tickets[["018"]]$build <- NULL
+    expect_error(h$kitCases(bare, "kit-journey-018"), "build or stop_after")
+    expect_identical(h$kitMemberSeconds("kit-journey-018", b), as.integer(b$journey$ceiling_seconds))
+    receipt <- kitSyntheticReceipt(cases, h, edit = function(r) {
+        op <- r$cases[["member"]]$operation
+        op$status <- "complete"
+        op$populations_complete <- TRUE
+        op$phase_status <- list(import = "complete", design = "complete")
+        op$phase_peak_anon_bytes <- list(import = 2e9, design = 2.5e9)
+        op$phase_seconds <- list(import = 100, design = 50)
+        op$sampled_anon_bytes <- 2.5e9
+        op$resident_end_bytes <- 1.5e9
+        r$cases[["member"]]$operation <- op
+        r$cases[["member"]]$verifier_completion <- list(accepted = TRUE)
+        r
+    })
+    decision <- h$kitSingleJourneyDecision(receipt, cases, b)
+    expect_identical(decision$status, "accepted")
+    expect_identical(decision$rule, "exactness_and_completion")
+    expect_null(decision$failing_rule)
+    expect_identical(decision$steps, c("import", "design"))
+    expect_identical(decision$stop_after, "design")
+    expect_true(decision$member$exact)
+    expect_identical(decision$member$peak_anon_bytes, 2.5e9)
+    expect_identical(names(decision$member$phase_status), c("import", "design"))
+    expect_false(decision$promotion_authorized)
+    # A step after the stop is not expected; a missing step before it is a phase failure; an oracle mismatch rejects;
+    # a harness refusal by the verifier is invalid.
+    short <- receipt
+    short$cases[["member"]]$operation$phase_status <- list(import = "complete")
+    expect_identical(h$kitSingleJourneyDecision(short, cases, b)$status, "invalid")
+    expect_identical(h$kitSingleJourneyDecision(short, cases, b)$failing_rule, "phase_timing")
+    inexact <- receipt
+    inexact$cases[["member"]]$verifier_completion <- list(accepted = FALSE, reason = "Error: oracle mismatch: design/components/peptide_data")
+    expect_identical(h$kitSingleJourneyDecision(inexact, cases, b)$status, "rejected")
+    expect_identical(h$kitSingleJourneyDecision(inexact, cases, b)$failing_rule, "oracle_mismatch")
+    expect_false(h$kitSingleJourneyDecision(inexact, cases, b)$member$exact)
+    refused <- receipt
+    refused$cases[["member"]]$verifier_completion <- list(accepted = FALSE, reason = "Error: identical(operation$binding, case$binding) is not TRUE")
+    expect_identical(h$kitSingleJourneyDecision(refused, cases, b)$status, "invalid")
+    expect_identical(h$kitSingleJourneyDecision(refused, cases, b)$failing_rule, "verifier_accepted")
+    incomplete <- receipt
+    incomplete$cases[["member"]]$operation$populations_complete <- FALSE
+    expect_identical(h$kitSingleJourneyDecision(incomplete, cases, b)$failing_rule, "populations_incomplete")
+})

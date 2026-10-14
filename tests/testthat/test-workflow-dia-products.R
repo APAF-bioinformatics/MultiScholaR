@@ -162,3 +162,59 @@ test_that("the DA publication saves the interactive pages as assets when it gets
             n = file.size(grep("groupB_vs_groupA[.]html$", files, value = TRUE)))))
     })
 })
+
+test_that("a display table is saved once and paged from the store, with a column filter (KIT-018)", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    table <- data.frame(term = paste0("GO:", seq_len(25)), p_value = seq_len(25) / 100,
+        directionality = rep(c("positive", "negative"), length.out = 25), stringsAsFactors = FALSE)
+    withDIAProductsSession(manager, {
+        expect_null(saveDIADisplayTable(manager, NULL))
+        expect_null(saveDIADisplayTable(manager, table[0L, ]))
+        reference <- saveDIADisplayTable(manager, table)
+        expect_true(isWorkflowTableReference(reference))
+        expect_identical(saveDIADisplayTable(manager, table)$entity_id, reference$entity_id)
+        page <- readDIADisplayTablePage(reference, limit = 10L)
+        expect_identical(page$rows, 25L)
+        expect_identical(nrow(page$data), 10L)
+        expect_identical(names(page$data), names(table))
+        expect_identical(page$data$term, table$term[1:10])
+        up <- readDIADisplayTablePage(reference, filter = list(column = "directionality", value = "positive"))
+        expect_identical(up$rows, 13L)
+        expect_identical(up$data$term, table$term[table$directionality == "positive"])
+        second <- readDIADisplayTablePage(reference, columns = "term", filter = list(column = "directionality", value = "negative"),
+            offset = 10L, limit = 5L)
+        expect_identical(second$rows, 12L)
+        expect_identical(second$data$term, table$term[table$directionality == "negative"][11:12])
+        none <- readDIADisplayTablePage(reference, filter = list(column = "directionality", value = "other"))
+        expect_identical(none$rows, 0L)
+        expect_identical(nrow(none$data), 0L)
+        expect_error(readDIADisplayTablePage(list(), limit = 1L), class = "saved_entity_invalid")
+    })
+})
+
+test_that("the RUV optimisation result is read from the accepted normalisation product (KIT-018)", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    expect_null(resolveDIARuvOptimizationResult(NULL))
+    expect_null(resolveDIARuvOptimizationResult(WorkflowState$new(audit_enabled = FALSE)))
+    withDIAProductsSession(manager, {
+        expect_null(resolveDIARuvOptimizationResult(manager))
+        ruv <- list(optimization_results = data.frame(percentage = c(0.1, 0.2), k = c(1L, 2L), separation_score = c(0.5, 0.7)),
+            best_percentage = 0.2, best_k = 2L)
+        source <- getDIAStateReference(manager)
+        identity <- diaComponentScientificIdentity(manager, source, "normalization-fixture", list())
+        product <- saveWorkflowConsumerEntity(manager$.context$store,
+            newSavedWorkflowScientificProduct(list(ruv_result = ruv), "dia-normalization-ruv"),
+            basename(tempfile("dia-norm-")), identity, "scientific_product")
+        final <- readDIAStateMetadata(manager, source)$data
+        final$products$normalization_science <- product
+        commitDIAReferenceState(manager, "ruv_corrected", final, list(ruv_k = 2L), "fixture normalisation")
+        expect_identical(manager$current_state, "ruv_corrected")
+        resolved <- resolveDIARuvOptimizationResult(manager)
+        expect_identical(resolved$optimization_results, ruv$optimization_results)
+        expect_identical(resolved$best_percentage, 0.2)
+    })
+})
