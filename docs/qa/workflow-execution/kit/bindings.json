@@ -3898,7 +3898,7 @@
     "018": {
       "kind": "single_journey",
       "build": "kit_018",
-      "corpus": "screen",
+      "corpus": "full",
       "stop_after": "design"
     }
   },
