@@ -1,0 +1,18 @@
+{
+  "schema": "kit.paged_render_probe.v1",
+  "ticket": "KIT-017",
+  "label": "kit_017-after",
+  "date": "2026-10-15",
+  "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.UpIfdA/library",
+  "build": "3ac78fa72eee6cabebc19a7a02760eeac9933fc67690615e2c1638b49fc88146",
+  "rows": 20,
+  "request_without_owner": {
+    "ok": false,
+    "class": "dia_owner_missing",
+    "message": "no state owner for the display table page"
+  },
+  "request_with_render_owner": {
+    "ok": true,
+    "rows": 10
+  }
+}

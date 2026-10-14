@@ -133,6 +133,15 @@
       "install_member": "browser-smoke.70tjXp",
       "source_commit": "28075aa1b81132c806e8ecc2cef7f67f102ab15d",
       "runtime_patch_bytes": 0
+    },
+    "kit_017": {
+      "ticket": "KIT-017",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.UpIfdA/library",
+      "build": "3ac78fa72eee6cabebc19a7a02760eeac9933fc67690615e2c1638b49fc88146",
+      "exact_sum": "80ede4868fe383316cec974e771d147f45dd7f8e5856ab0a25d1c0a240ecf049",
+      "install_member": "browser-smoke.UpIfdA",
+      "source_commit": "9293655c5ce2794a72f6f1d59a8d17ff9248628a",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -207,6 +216,12 @@
       "outcome": "candidate",
       "build": "kit_024",
       "note": "every declaration registered, server-side paged renders resolved from the accepted state, baseline test quarantine, KIT-023's global-free publication phases; no counted member; the final stage-1 build, KIT-017's candidate (supersedes kit_022)"
+    },
+    {
+      "ticket": "KIT-017",
+      "outcome": "candidate",
+      "build": "kit_017",
+      "note": "kit_024 plus the two screen-run repairs (page readers take the owner from the render; the application monitor tolerates the worker registration vanishing); the closure pair's candidate"
     }
   ],
   "control": "kit_018",
@@ -3955,7 +3970,7 @@
     "017": {
       "kind": "journey",
       "control": "kit_018",
-      "candidate": "kit_024",
+      "candidate": "kit_017",
       "record": false,
       "rule": "resident_end",
       "corpus": "screen"
@@ -3983,7 +3998,7 @@
     "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "340d02795620161e1fa8f3eb49c3dbcd0c823ba1ac1893d50f30ab305012b0a3",
+      "tools/profiling/workflow_kit.R": "885e0b9c9c9e9a7155a50efa7c966e9f1dd35a30bbaa3a25a363ec9e07763014",
       "tools/profiling/workflow_kit_driver.R": "6c2132b45078b2ce6fa3fbd853ee23e2a5eddf3aaafdac0709cd51969f5946c5",
       "tools/profiling/workflow_kit_coordinator.R": "5b9d85de35f7f2b5aaefc7d29f55ec79ac0d1ae3524b0720056d714a3604f7c6",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
