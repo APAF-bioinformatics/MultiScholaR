@@ -1,0 +1,54 @@
+{
+  "schema": "em.ticket_series_evidence_audit.result.v1",
+  "mode": "audit_only",
+  "date": "2026-10-14",
+  "scope": {
+    "ticket_ids": ["KIT-025", "KIT-026", "KIT-027", "KIT-028", "KIT-029", "KIT-033"],
+    "files": ["tickets/kit/KIT-025.md", "tickets/kit/KIT-026.md", "tickets/kit/KIT-027.md", "tickets/kit/KIT-028.md", "tickets/kit/KIT-029.md", "tickets/kit/KIT-033.md", "tickets/kit/00-KIT-PLAN.md"],
+    "claim_classes": ["reference_accuracy", "implementation_conformance", "decision_design", "fit_for_purpose"],
+    "worktree_head": "6d28dbab",
+    "dirty_baseline": "22 modified files in R/ and tests/ (KIT-024 in progress), untouched"
+  },
+  "authority": {"artifacts": ["tickets/kit/00-KIT-PLAN.md", "docs/qa/workflow-execution/kit/protocol.md v1.4", "AGENTS.md"], "route_valid": true},
+  "evidence_layers": [
+    {"layer": "documentation_or_graph_integrity", "artifacts": ["audit_inventory.py exit 0", "tickets-index.json"], "claim_limit": "no empirical claim"},
+    {"layer": "implementation_conformance", "artifacts": ["two independent read-only reference passes; auditor spot checks"], "claim_limit": "code read, not executed"}
+  ],
+  "tests": [
+    {"name": "read_only_inventory", "result": "pass (3 false-positive link findings: backtick index notation)", "validity_layer": "documentation_or_graph_integrity"},
+    {"name": "reference_verification", "result": "findings", "validity_layer": "implementation_conformance"}
+  ],
+  "findings": [
+    {"id": "AR-01", "severity": "high", "ticket": "KIT-025", "category": "reference_accuracy", "blocked_state": "implementation", "summary": "RemoteSha and a .git beside the installed package do not exist on R CMD INSTALL builds; use workflowExecutionBuildIdentity() and an install-written source commit field."},
+    {"id": "AR-02", "severity": "medium", "ticket": "KIT-025", "category": "reference_accuracy", "blocked_state": "implementation", "summary": "Commit anchors wrong (:1159 is saveDIAStateRecord); publishDIAStateHead has ~30 callers; anchor on state_history growth."},
+    {"id": "AR-03", "severity": "medium", "ticket": "KIT-025", "category": "implementation_conformance", "blocked_state": "implementation", "summary": "Variant not available at completeWorkflowAction or runSavedOperation as described; derive from request config / parameters$variant."},
+    {"id": "AR-04", "severity": "medium", "ticket": "KIT-025", "category": "scientific_validity", "blocked_state": "implementation", "summary": "Seed hash cannot restore RNG; step map has no RNG field; no DIA step uses RNG. Replace with seed=NA plus a no-RNG test and a declared-seed rule."},
+    {"id": "AR-05", "severity": "high", "ticket": "KIT-027", "category": "scientific_validity", "blocked_state": "implementation", "summary": "config.ini keys differ from args names; name-based user_set/default provenance would be wrong. Add an explicit defaults map per registry entry."},
+    {"id": "AR-06", "severity": "high", "ticket": "KIT-028", "category": "fit_for_purpose", "blocked_state": "implementation", "summary": "Journey driver is browser-driven with no parameters; import/design/export/DA-args are not registry ops; 16 distinct states not 18. Define replay scope and add a programmatic journey."},
+    {"id": "AR-07", "severity": "high", "ticket": "KIT-029", "category": "reference_accuracy", "blocked_state": "implementation", "summary": "RenderReport takes no params and reads base_dir/scripts/<omic>/; inst/reports/shared not found. Render with rmarkdown::render directly."},
+    {"id": "AR-08", "severity": "medium", "ticket": "KIT-026", "category": "implementation_conformance", "blocked_state": "implementation", "summary": "Report path not retained; design usually GUI-built; FASTA sha absent in production (KIT-015 binding is the derived RDS). Hash at import; design_initial entity id; fasta_sha256 as a declared parameter."},
+    {"id": "AR-09", "severity": "low", "ticket": "KIT-026", "category": "reference_accuracy", "blocked_state": "none", "summary": "UniProt release header unverified; g:Profiler value is the database version. Record query_date always; label fields precisely."},
+    {"id": "AR-10", "severity": "medium", "ticket": "KIT-027", "category": "decision_design", "blocked_state": "implementation", "summary": "hydrates increments on metadata reads (use full_s4_reads); dimensions is sizes[[state]]; lineage from previous_state, not component_dependencies."},
+    {"id": "AR-11", "severity": "medium", "ticket": "KIT-029", "category": "engineering", "blocked_state": "implementation", "summary": "kitFingerprintFiles would hash the docx/xlsx bundle; exclude or write outside the tree."},
+    {"id": "AR-12", "severity": "medium", "ticket": "KIT-029/033", "category": "verification", "blocked_state": "execution", "summary": "No real report render test exists (rmarkdown::render mocked); pandoc not declared. Add a skip-without-pandoc real render test."},
+    {"id": "AR-13", "severity": "medium", "ticket": "KIT-027", "category": "completeness", "blocked_state": "implementation", "summary": "step_label NULL for five in-process ops; fall back to state name or label them."},
+    {"id": "AR-14", "severity": "medium", "ticket": "manuscript", "category": "scientific_validity", "blocked_state": "decision", "summary": "DIA imputation is the deterministic replicate-group mean; the Methods' down-shifted-normal sentence describes dead code."},
+    {"id": "AR-15", "severity": "low", "ticket": "series", "category": "fit_for_purpose", "blocked_state": "decision", "summary": "Other omics inherit via dependency only; claim limit must be stated for the paper."},
+    {"id": "AR-16", "severity": "low", "ticket": "KIT-025", "category": "engineering", "blocked_state": "implementation", "summary": "Environment table keyed on absent sha; key by build."},
+    {"id": "AR-17", "severity": "low", "ticket": "KIT-025..028", "category": "documentation", "blocked_state": "implementation", "summary": "'18 screen states' is wrong (16 distinct)."},
+    {"id": "AR-18", "severity": "low", "ticket": "KIT-028", "category": "decision_design", "blocked_state": "execution", "summary": "Edited-record criterion must name a parameter whose edit changes fixture output."},
+    {"id": "AR-19", "severity": "low", "ticket": "plan", "category": "protocol", "blocked_state": "decision", "summary": "Replay member kind not in protocol v1.4; user decision needed when KIT-028 lands."}
+  ],
+  "blockers": ["AR-01", "AR-05", "AR-06", "AR-07"],
+  "repairs": [],
+  "deviations": [],
+  "formal_verification": {"used": false, "obligations": [], "limits": ["no deterministic property worth a prover at ticket stage"]},
+  "closeout": {
+    "implementation_verified": false,
+    "execution_complete": true,
+    "decision_supported": false,
+    "promotion_authorized": false,
+    "claim_scope": "Documentation and implementation-conformance audit of six unimplemented tickets; no runtime or scientific claim."
+  },
+  "next_action": "Ticket revision 1.1 closing the blocking findings, recorded in REMEDIATION-20261014.md; the audit file is not edited."
+}
