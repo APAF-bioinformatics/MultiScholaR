@@ -282,11 +282,10 @@ installCheckpointGuiTraces <- function(context, namespace, functions = NULL) {
     if (is.null(functions)) functions <- c(
         "importProtImportDataByFormat", "applyProtImportResultToWorkflow",
         "processProtImportFastaData", "buildProtDesignStateCheckpoint",
-        "completeProtDesignPostCheckpoint", "initializeDIACapacitySession",
+        "completeProtDesignPostCheckpoint",
         "saveDIAStateValue", "resolveDIAStateValue", "saveDIAStateRecord",
         "getDIAExecutionState", "startDIAWorkerCluster", "materializeDIAStates",
         "runPeptideQvalueApplyStep", "runProteinPeptideApplyStep",
-        "prepareDIACapacityRollupInput", "computeDIACapacityRollup",
         "runPeptideRollupApplyStep", "runPeptideIntensityApplyStep",
         "runPeptideSampleApplyStep", "runPeptideReplicateApplyStep",
         "runPeptideImputationStep", "runProtNormNormalizationWorkflow",
@@ -367,7 +366,8 @@ installCheckpointGuiTraces <- function(context, namespace, functions = NULL) {
                 context$allocator_pending <- TRUE
             }
         }
-        if (phase == "exit" && name == "initializeDIACapacitySession") {
+        # KIT-011 removed the capacity session; the owner observation now follows the import adoption (KIT-034, Q-20).
+        if (phase == "exit" && name == "applyProtImportResultToWorkflow") {
             checkpointGuiObserveOwners(context, frame)
         }
     }

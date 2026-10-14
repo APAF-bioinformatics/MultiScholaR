@@ -97,9 +97,9 @@ test_that("worker count references register in an already open controller store"
 })
 
 test_that("qualification variants are explicit immutable server choices", {
-    skip("quarantined Q-09 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
+    # KIT-008: an unqualified launch runs the registry's production variant (KIT-034, quarantine Q-09).
     expect_identical(workflowQualificationVariant(list(mode = "gui"),
-        "minimum_peptides_per_sample"), "legacy")
+        "minimum_peptides_per_sample"), workflowActionSpec("minimum_peptides_per_sample")$default_variant)
     config <- list(mode = "adapters", qualification = list(programme = "perf106-repair-v2",
         variant = "physical", member_sha256 = strrep("a", 64), deadline = 300L))
     for (variant in c("native", "physical", "selection")) {

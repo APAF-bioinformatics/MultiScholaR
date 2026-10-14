@@ -1,6 +1,5 @@
 # Small audit-repair fixtures. No benchmark, GUI or managed worker is launched.
 test_that("PERF member identities bind the frozen candidate and distinct executions", {
-    skip("quarantined Q-05 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     code <- perf102Code()
     base <- perf102Evidence(code)
     evaluate <- function(x) code$evaluateWorkflowQualification(x, base$bindings)
@@ -43,7 +42,6 @@ test_that("PERF member identities bind the frozen candidate and distinct executi
 })
 
 test_that("PERF collection validation rejects missing extra and malformed names", {
-    skip("quarantined Q-05 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     code <- perf102Code()
     corrupt <- function(value, kind) {
         if (kind == "extra") value <- c(value, list(extra = value[[1L]]))
@@ -75,7 +73,6 @@ test_that("PERF collection validation rejects missing extra and malformed names"
 })
 
 test_that("action refusal releases actual counters and locks before ownership transfer", {
-    skip("quarantined Q-05 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     code <- perf102Code()
     root <- withr::local_tempdir()
     peak <- NULL

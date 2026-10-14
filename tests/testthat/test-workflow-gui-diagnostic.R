@@ -131,7 +131,6 @@ test_that("a real browser survives a long blocking action with diagnostic pollin
 })
 
 test_that("the installed journey trace list resolves and can be removed", {
-    skip("quarantined Q-20 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     api <- new.env(parent = baseenv())
     sys.source(test_path("..", "..", "tools", "profiling", "workflow_checkpoint_gui_diagnostic.R"), api)
     root <- withr::local_tempdir()
@@ -153,7 +152,6 @@ test_that("the installed journey trace list resolves and can be removed", {
 })
 
 test_that("export memory traces identify actual hydration and serialization including failure", {
-    skip("quarantined Q-20 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
     api <- new.env(parent = baseenv())
     sys.source(test_path("..", "..", "tools", "profiling", "workflow_checkpoint_gui_diagnostic.R"), api)
     root <- withr::local_tempdir()

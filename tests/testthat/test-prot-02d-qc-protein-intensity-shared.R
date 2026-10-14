@@ -4,7 +4,8 @@ library(testthat)
 if (!methods::isClass("FakeSharedProteinIntensityState")) {
   methods::setClass(
     "FakeSharedProteinIntensityState",
-    slots = c(args = "list", protein_quant_table = "data.frame")
+    # KIT-015's apply step counts proteins through the declared id column (KIT-034, quarantine Q-01).
+    slots = c(args = "list", protein_quant_table = "data.frame", protein_id_column = "character")
   )
 }
 
@@ -37,7 +38,8 @@ makeSharedProteinIntensityState <- function(groupwise = 1,
     protein_quant_table = data.frame(
       Protein.Ids = proteins,
       stringsAsFactors = FALSE
-    )
+    ),
+    protein_id_column = "Protein.Ids"
   )
 }
 
@@ -47,7 +49,8 @@ copySharedProteinIntensityState <- function(theObject,
   methods::new(
     "FakeSharedProteinIntensityState",
     args = args,
-    protein_quant_table = protein_quant_table
+    protein_quant_table = protein_quant_table,
+    protein_id_column = theObject@protein_id_column
   )
 }
 
@@ -271,7 +274,6 @@ newSharedProteinIntensityCapture <- function() {
 }
 
 test_that("proteomics protein intensity module preserves flexible apply behavior", {
-    skip("quarantined Q-01 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- newSharedProteinIntensityCapture()
   server_fn <- getProtProteinIntensityServer()
   server_env <- environment(server_fn)
@@ -371,7 +373,6 @@ test_that("proteomics protein intensity module preserves flexible apply behavior
 })
 
 test_that("proteomics protein intensity module preserves strict apply behavior", {
-    skip("quarantined Q-01 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- newSharedProteinIntensityCapture()
   server_fn <- getProtProteinIntensityServer()
   server_env <- environment(server_fn)

@@ -4,7 +4,8 @@ library(testthat)
 if (!methods::isClass("FakeSharedProteinDedupState")) {
   methods::setClass(
     "FakeSharedProteinDedupState",
-    slots = c(protein_quant_table = "data.frame")
+    # KIT-015's apply step reads the declared id column (KIT-034, quarantine Q-01).
+    slots = c(protein_quant_table = "data.frame", protein_id_column = "character")
   )
 }
 
@@ -31,7 +32,8 @@ makeSharedProteinDedupState <- function(proteins = c("P1", "P1", "P2"),
       sample1 = sample1,
       sample2 = sample2,
       stringsAsFactors = FALSE
-    )
+    ),
+    protein_id_column = "Protein.Ids"
   )
 }
 
@@ -227,7 +229,6 @@ withSharedProteinDedupUiMocks <- function(captured,
 }
 
 test_that("proteomics protein dedup module preserves successful apply behavior", {
-    skip("quarantined Q-01 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- newSharedProteinDedupCapture()
   server_fn <- getProtProteinDedupServer()
   server_env <- environment(server_fn)

@@ -481,8 +481,8 @@ newCheckpointBrowser <- function(library_path, run_dir, seed = 20260428L, profil
             app <- fixed_launch()
             if (isTRUE(fixed_design_memory)) helpers$checkpointAllocatorBoundary(diagnostic, "startup")
             helpers$installCheckpointGuiTraces(diagnostic, asNamespace("MultiScholaR"),
-                functions = if (isTRUE(fixed_design_memory)) c("initializeDIACapacitySession",
-                    "importProtImportDataByFormat", "applyProtImportResultToWorkflow") else NULL)
+                functions = if (isTRUE(fixed_design_memory)) c("importProtImportDataByFormat",
+                    "applyProtImportResultToWorkflow") else NULL)
             if (!isTRUE(fixed_design_memory) && identical(fixed_profile, "ruv_pearson"))
                 helpers$installCheckpointRuvPearsonTraces(diagnostic, asNamespace("MultiScholaR"))
             shiny::onStop(function() helpers$stopCheckpointGuiDiagnostic(diagnostic), session = NULL)

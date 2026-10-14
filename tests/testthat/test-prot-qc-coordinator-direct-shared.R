@@ -48,6 +48,20 @@ localQcServerMocks <- function(captured, .local_envir = parent.frame()) {
       captured$output <- output
       invisible(NULL)
     },
+    # The coordinator keeps the workflow type in a reactive value set by an observer (KIT-034, quarantine Q-16):
+    # both run eagerly here, as the other eager mocks do.
+    reactiveVal = function(value = NULL) {
+      current <- value
+      function(new_value) {
+        if (missing(new_value)) return(current)
+        current <<- new_value
+        invisible(current)
+      }
+    },
+    observe = function(x, ..., priority = 0) {
+      eval(substitute(x), parent.frame())
+      invisible(NULL)
+    },
     renderUI = function(expr) {
       eval(substitute(expr), parent.frame())
     },
@@ -93,7 +107,6 @@ localQcServerMocks <- function(captured, .local_envir = parent.frame()) {
 }
 
 test_that("proteomics QC coordinator preserves the TMT existing-S4 routing path", {
-    skip("quarantined Q-16 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- new.env(parent = emptyenv())
   captured$logs <- character()
   captured$calls <- list()
@@ -184,7 +197,6 @@ test_that("proteomics QC completion helper advances workflow status for normaliz
 })
 
 test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path", {
-    skip("quarantined Q-16 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- new.env(parent = emptyenv())
   captured$logs <- character()
   captured$calls <- list()
@@ -242,7 +254,6 @@ test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path"
 })
 
 test_that("proteomics QC coordinator preserves the DIA peptide-plus-protein routing path", {
-    skip("quarantined Q-16 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   captured <- new.env(parent = emptyenv())
   captured$logs <- character()
   captured$calls <- list()

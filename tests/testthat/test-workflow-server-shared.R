@@ -130,7 +130,6 @@ expectWorkflowGatesAreMonotonic <- function(workflow_data, session, differential
 }
 
 test_that("proteomics workflow server wires modules and advances workflow state", {
-    skip("quarantined Q-15 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
   package_ns <- asNamespace("MultiScholaR")
   captured <- new.env(parent = emptyenv())
   captured$calls <- list()
@@ -212,7 +211,9 @@ test_that("proteomics workflow server wires modules and advances workflow state"
       ))
       expect_true(is.function(captured$calls$norm$args[[5]]))
       expect_equal(captured$calls$norm$args[[5]](), "normalization")
-      expect_true(exists("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE))
+      # KIT-013 moved the proteomics globals onto the workflow bus (KIT-034, quarantine Q-15).
+      expect_false(exists("aa_seq_tbl_final", envir = .GlobalEnv, inherits = FALSE))
+      expect_false(is.null(shiny::isolate(workflow_data$aa_seq_tbl_final)))
 
       progress_markup <- renderSharedOutput(output$workflow_progress)
       expect_match(progress_markup, "Import", fixed = TRUE)

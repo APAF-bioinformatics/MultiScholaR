@@ -148,7 +148,7 @@ test_that("retry cleanup cannot remove a store root or unexpected files", {
 })
 
 test_that("SIGKILL at storage boundaries is recovered by a fresh R process", {
-    skip("quarantined Q-04 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
+    skipIfNoInstalledRuntime()
     skip_on_os("windows")
     library <- dirname(getNamespaceInfo(asNamespace("MultiScholaR"), "path"))
     writer <- function(root, library, phase, ready) {
@@ -215,7 +215,7 @@ test_that("SIGKILL at storage boundaries is recovered by a fresh R process", {
 })
 
 test_that("concurrent writers cannot overwrite an accepted request", {
-    skip("quarantined Q-04 (docs/qa/workflow-execution/kit/quarantined-tests.md)")
+    skipIfNoInstalledRuntime()
     library <- dirname(getNamespaceInfo(asNamespace("MultiScholaR"), "path"))
     writer <- function(root, library, label, value) {
         .libPaths(c(library, .libPaths()))
