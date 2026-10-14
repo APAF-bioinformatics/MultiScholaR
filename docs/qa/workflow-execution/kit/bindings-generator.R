@@ -348,6 +348,13 @@ if (!is.null(b$builds$kit_018)) {
     b$journey$pair$control <- b$control
 }
 
+# KIT-019: the DA publication through the managed worker (no counted member; one install recorded). The build is
+# bound as the final stage-1 candidate for KIT-017's closure pair; the control stays the latest accepted build.
+if (!is.null(b$builds$kit_019)) {
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-019", outcome = "candidate", build = "kit_019",
+        note = "DA publication as the da_publication worker operation (the limma kernel stays in process); no counted member (probe recorded: Glimma absent from the application-side process); the final stage-1 build, KIT-017's candidate")
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and
