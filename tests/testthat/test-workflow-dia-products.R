@@ -82,6 +82,20 @@ test_that("the enrichment declaration runs the kernel on the DA manifest's sourc
     expect_error(runDIAReferenceEnrichment(workflow, list(schema = "other"), arguments), class = "saved_entity_invalid")
 })
 
+test_that("the enrichment service identity reads a live gost result, the double and reports unavailable otherwise (KIT-016 audit PH-02)", {
+    results_of <- function(data) methods::new("EnrichmentResults", contrasts = tibble::tibble(), enrichment_data = data,
+        enrichment_plots = list(), enrichment_plotly = list(), enrichment_summaries = list())
+    gost <- list(result = data.frame(term_id = "GO:0008150", p_value = 0.01), meta = list(version = "e111_eg58_p18_f463989"))
+    double <- list(result = data.frame(term_id = "GO:0008150", deterministic_backend = "gprofiler2_test_double"))
+    expect_identical(diaEnrichmentServiceIdentity(results_of(list(c1 = list(up = gost, down = NULL)))),
+        "gprofiler2:e111_eg58_p18_f463989")
+    expect_identical(diaEnrichmentServiceIdentity(results_of(list(c1 = list(up = double)))), "gprofiler2:gprofiler2_test_double")
+    expect_identical(diaEnrichmentServiceIdentity(results_of(list(c1 = list(up = gost, down = double), c2 = list(up = gost)))),
+        c("gprofiler2:e111_eg58_p18_f463989", "gprofiler2:gprofiler2_test_double"))
+    expect_identical(diaEnrichmentServiceIdentity(results_of(list())), "unavailable")
+    expect_identical(diaEnrichmentServiceIdentity(results_of(list(c1 = list(up = NULL, down = list(result = NULL))))), "unavailable")
+})
+
 test_that("the static volcano display is a saved product of the contrast's result table, rebuilt on demand with unchanged content (KIT-016)", {
     object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
     manager <- diaProductsFixtureManager(object, withr::local_tempdir())

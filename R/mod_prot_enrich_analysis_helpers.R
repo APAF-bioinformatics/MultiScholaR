@@ -532,6 +532,8 @@ runProtEnrichAnalysisBody <- function(input,
     manifest <- enrichmentData$da_results_data
     enrichmentData$current_s4_object <- readDIAExecutionComponents(workflowData$state_manager, manifest$source,
       fields = c("design_matrix", "protein_id_table"))
+    # The holder keeps the source reference across steps (KIT-012); the hydrated prototype serves this run only.
+    on.exit(enrichmentData$current_s4_object <- manifest$source, add = TRUE)
     enrichmentData$da_results_data <- manifest$results
   }
 

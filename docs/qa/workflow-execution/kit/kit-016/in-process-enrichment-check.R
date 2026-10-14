@@ -9,6 +9,8 @@
 # result class on the adapter. Not a counted run; the record is written beside this script.
 # Usage: R_LIBS=<proof>/core/browser-smoke.X9aj9P/library Rscript docs/qa/workflow-execution/kit/kit-016/in-process-enrichment-check.R
 suppressMessages(devtools::load_all(quiet = TRUE))
+# The body runs inside a function so `on.exit` removes the working copy (audit PH-04).
+main <- function() {
 repo <- normalizePath(".")
 h <- new.env(parent = globalenv())
 sys.source(file.path(repo, "tools/profiling/workflow_kit.R"), h)
@@ -108,6 +110,7 @@ shiny::testServer(function(input, output, session) {}, {
         product_results = unname(product$results),
         exact_against_direct_double = identical(digest::digest(declared@enrichment_data), digest::digest(direct@enrichment_data)) &&
             identical(digest::digest(declared@enrichment_summaries), digest::digest(direct@enrichment_summaries)),
+        holder_is_reference = isSavedWorkflowReference(shiny::isolate(enrichmentData$current_s4_object)),
         current_state = state, completed_state_class = class(restored)[[1L]],
         restored_exact = identical(digest::digest(restored@enrichment_data), digest::digest(declared@enrichment_data)),
         contrasts = names(declared@enrichment_data))
@@ -117,3 +120,5 @@ jsonlite::write_json(record, file.path(repo, "docs/qa/workflow-execution/kit/kit
     auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null")
 cat("RESULT enrichment exact:", record$enrichment$exact_against_direct_double, " volcano shown:", record$volcano$interactive_shown,
     " state:", record$enrichment$current_state, "\n")
+}
+main()
