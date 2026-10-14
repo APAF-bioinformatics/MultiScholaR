@@ -362,6 +362,13 @@ if (!is.null(b$builds$kit_022)) {
         note = "DA arguments committed before the contrasts (manifest source = head), the active owner from the state scope, the Q-value admission estimate, the kernel contracts named; no counted member; the final stage-1 build, KIT-017's candidate (supersedes kit_019)")
 }
 
+# KIT-024: kit consistency before closure (no counted member; one install recorded). The build supersedes kit_022
+# as the final stage-1 candidate for KIT-017's closure pair; the control stays the latest accepted build.
+if (!is.null(b$builds$kit_024)) {
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-024", outcome = "candidate", build = "kit_024",
+        note = "every declaration registered, server-side paged renders resolved from the accepted state, baseline test quarantine, KIT-023's global-free publication phases; no counted member; the final stage-1 build, KIT-017's candidate (supersedes kit_022)")
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and

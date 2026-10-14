@@ -1,6 +1,6 @@
 # KIT-024: kit consistency before closure
 
-Status 2026-10-14: **complete** (no counted member; one install recorded: INSTALL_LINE). Authority: `tickets/kit/00-KIT-PLAN.md` (decision row 2026-10-14, best-practice pass; run ledger KIT-024: none, one install recorded); protocol v1.4. Control `kit_018`; this build is KIT-017's candidate.
+Status 2026-10-14: **complete** (no counted member; one install recorded: kit_024 = `core/browser-smoke.70tjXp`, `28075aa1`, bound as KIT-017's candidate; the control stays `kit_018`). Authority: `tickets/kit/00-KIT-PLAN.md` (decision row 2026-10-14, best-practice pass; run ledger KIT-024: none, one install recorded); protocol v1.4. Control `kit_018`; this build is KIT-017's candidate.
 
 ## The three items
 
