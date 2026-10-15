@@ -136,11 +136,11 @@
     },
     "kit_017": {
       "ticket": "KIT-017",
-      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.sOtQzu/library",
-      "build": "ef51b55043f663c240f58c692b0035fb5b669fe23bc9357f49e859735a9898ff",
-      "exact_sum": "c013f31de0b52e4af669aa10a3dbb80ea55b00cf37e2693169913f70dc72b1e1",
-      "install_member": "browser-smoke.sOtQzu",
-      "source_commit": "c9635938a37d0640fef7b142f477a060d68bd5a9",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.c1cAdn/library",
+      "build": "7e162d5168873a8e093cf1226df640b28184c219fd0976b71cb28559cfc6783f",
+      "exact_sum": "215b2cf69c87b0e7216ab192dc3905b356965d3639444c47028d0c67dbf08f17",
+      "install_member": "browser-smoke.c1cAdn",
+      "source_commit": "7efb6ccd8ca587485731c8e7996c45d700711174",
       "runtime_patch_bytes": 0
     }
   },
@@ -221,7 +221,7 @@
       "ticket": "KIT-017",
       "outcome": "candidate",
       "build": "kit_017",
-      "note": "kit_024 plus the screen-run repairs (page readers take the owner from the render and the served page is unnamed as DT serves it; the application monitor tolerates the worker registration vanishing); the first install core/browser-smoke.UpIfdA (9293655c) is superseded by the round-two install (c9635938); the closure pair's candidate"
+      "note": "kit_024 plus the screen-run repairs (page readers take the owner from the render and the served page is unnamed as DT serves it; the application monitor tolerates the worker registration vanishing); the installs core/browser-smoke.UpIfdA (9293655c) and core/browser-smoke.sOtQzu (c9635938) are superseded by the install from 7efb6ccd, which adds the managed step's completion context for the peptide role only (counted pair attempt 1, CP-02); the closure pair's candidate"
     }
   ],
   "control": "kit_018",
@@ -3973,7 +3973,7 @@
       "candidate": "kit_017",
       "record": false,
       "rule": "resident_end",
-      "corpus": "full"
+      "corpus": "screen"
     }
   },
   "lifecycle": {
