@@ -582,6 +582,7 @@ kitOperationIdentityProducts <- "^dia-(normalization-ruv|pearson-pairs|pearson-s
 
 kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL) {
     mismatches <- character()
+    additional <- character()
     keep <- function(names) if (is.null(ignore_products)) names else names[!grepl(ignore_products, names)]
     for (step in names(reference)) {
         expected <- reference[[step]]$fingerprint
@@ -592,7 +593,15 @@ kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL)
             names_expected <- names(expected[[kind]])
             names_actual <- names(actual[[kind]])
             if (kind == "products") { names_expected <- keep(names_expected); names_actual <- keep(names_actual) }
-            if (!setequal(names_expected, names_actual))
+            if (kind == "products") {
+                # A product the oracle does not carry was introduced by a ticket after the oracle was recorded
+                # (KIT-016's rendered volcano page on the DA state; KIT-017 counted pair): it is reported as an
+                # additional product, every oracle product is still judged, and a missing oracle product mismatches.
+                extra <- setdiff(names_actual, names_expected)
+                if (length(extra)) additional <- c(additional, paste0(step, "/", extra))
+                if (length(setdiff(names_expected, names_actual)))
+                    mismatches <- c(mismatches, paste0(step, "/", kind, "/names"))
+            } else if (!setequal(names_expected, names_actual))
                 mismatches <- c(mismatches, paste0(step, "/", kind, "/names"))
             for (name in intersect(names_expected, names_actual)) {
                 if (!identical(expected[[kind]][[name]]$sha256, actual[[kind]][[name]]$sha256))
@@ -602,6 +611,8 @@ kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL)
         if (!identical(expected$summary_sha256, actual$summary_sha256)) mismatches <- c(mismatches, paste0(step, "/summary"))
         if (!identical(expected$rows, actual$rows)) mismatches <- c(mismatches, paste0(step, "/rows"))
     }
+    # Carried as an attribute only when present, so a plain mismatch vector compares as before.
+    if (length(additional)) attr(mismatches, "additional_products") <- additional
     mismatches
 }
 
@@ -1268,6 +1279,8 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         if (!is.null(case$stop_after)) oracles <- oracles[intersect(names(oracles), names(journey$populations))]
         receipt$oracle_mismatches <- kitReproduceMismatches(oracles, recomputed_populations,
             ignore_products = kitOperationIdentityProducts)
+        receipt$additional_products <- attr(receipt$oracle_mismatches, "additional_products")
+        attr(receipt$oracle_mismatches, "additional_products") <- NULL
         receipt$operation_identity_products <- unlist(lapply(journey$populations, function(p)
             grep(kitOperationIdentityProducts, names(p$fingerprint$products), value = TRUE)), use.names = FALSE)
         stopifnot(!length(receipt$oracle_mismatches))

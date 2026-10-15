@@ -152,3 +152,11 @@ test_that("the whole-matrix declarations are registered as in-process operations
         omic_type = "proteomics", variants = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE)),
         class = "workflow_operation_invalid")
 })
+
+test_that("a managed step hands the peptide QC completion context only to the peptide completion role (KIT-017)", {
+    bus <- list(qc_params = list(peptide_qc = list(min_peptides = 2L)), filtering_progress = NULL)
+    peptide <- workflowManagedCompletionContext("peptide_qvalue_filter", bus)
+    expect_identical(peptide$peptide_qc, list(min_peptides = 2L))
+    expect_null(workflowManagedCompletionContext("da_publication", bus))
+    expect_null(workflowManagedCompletionContext("protein_accession_cleanup", bus))
+})

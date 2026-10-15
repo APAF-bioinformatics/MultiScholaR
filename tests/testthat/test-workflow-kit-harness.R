@@ -329,7 +329,8 @@ test_that("canonical fingerprints drop run-specific ids, times and plot objects 
         list(step = list(fingerprint = list(class = "ProteinQuantitativeData", rows = 10L, summary_sha256 = "s",
             components = list(protein_quant_table = list(kind = "table", sha256 = "x")), support = list(), products = products)))
     }
-    expect_identical(h$kitReproduceMismatches(with_identity("a", strrep("1", 12)), with_identity("b", strrep("2", 12))), "step/products/names")
+    # The missing oracle product mismatches; the other build's identity product rides along as an additional product (KIT-017).
+    expect_identical(as.character(h$kitReproduceMismatches(with_identity("a", strrep("1", 12)), with_identity("b", strrep("2", 12)))), "step/products/names")
     expect_length(h$kitReproduceMismatches(with_identity("a", strrep("1", 12)), with_identity("b", strrep("2", 12)),
         ignore_products = h$kitOperationIdentityProducts), 0L)
     science_changed <- with_identity("b", strrep("2", 12))
@@ -939,4 +940,20 @@ test_that("a ticket may bind a single journey member that stops after a step: ex
     incomplete <- receipt
     incomplete$cases[["candidate-1"]]$operation$populations_complete <- FALSE
     expect_identical(h$kitSingleJourneyDecision(incomplete, cases, b)$failing_rule, "populations_incomplete")
+})
+
+test_that("a product the oracle does not carry is reported as additional, a missing oracle product mismatches (KIT-017)", {
+    h <- kitHarness()
+    entry <- function(name) list(sha256 = strrep(substr(name, 1, 1), 64))
+    fp <- function(products) list(fingerprint = list(class = "ProteinQuantitativeData", rows = 3L,
+        components = list(protein_quant_table = entry("a")), support = list(),
+        products = stats::setNames(lapply(products, entry), products)))
+    oracle <- list(da = fp(c("da_fit:0ac83c189c9d", "qc_progress")))
+    superset <- list(da = fp(c("da_fit:0ac83c189c9d", "qc_progress", "rendered_asset:96b0df0ef478")))
+    result <- h$kitReproduceMismatches(oracle, superset)
+    expect_length(result, 0L)
+    expect_identical(attr(result, "additional_products"), "da/rendered_asset:96b0df0ef478")
+    subset <- list(da = fp("qc_progress"))
+    expect_identical(as.character(h$kitReproduceMismatches(oracle, subset)), "da/products/names")
+    expect_length(attr(h$kitReproduceMismatches(oracle, subset), "additional_products"), 0L)
 })

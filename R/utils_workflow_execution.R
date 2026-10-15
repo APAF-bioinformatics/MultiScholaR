@@ -509,6 +509,16 @@ workflowCompletionContext <- function(workflow_data) {
             lapply(methods::slotNames(prior), function(name) methods::slot(prior, name)), methods::slotNames(prior)) else NULL)
 }
 
+#' The completion context a managed step hands over: the peptide QC completion role reads it (the bus's
+#' peptide QC parameters and the prior filtering progress); every other role gets none. KIT-017 counted pair:
+#' the DA publication step handed over the 300-sample filtering progress, which exceeds the 4 MiB bound, and the
+#' step failed at full size while the screen corpus passed.
+#' @noRd
+workflowManagedCompletionContext <- function(operation, workflow_data) {
+    entry <- workflowOperationEntry(operation)
+    if (identical(entry$completion, "peptide")) workflowCompletionContext(workflow_data) else NULL
+}
+
 #' Bound the completion context: plain data only, no live owners, at most 4 MiB.
 #' @noRd
 validateWorkflowCompletionContext <- function(context) {
@@ -668,7 +678,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
             action$phase <- "running"
             action$worker_request_id <- runWorkflowAction(operation, list(state = getDIAStateReference(manager)),
                 parameters, owner, reservation = action$reservation,
-                completion_context = workflowCompletionContext(workflow_data))
+                completion_context = workflowManagedCompletionContext(operation, workflow_data))
             managed_action(action)
         }, error = function(error) fail(action, error))
         invisible(NULL)
