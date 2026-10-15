@@ -23,28 +23,20 @@ setMethod(
     message("*** ENTERING differentialAbundanceAnalysis METHOD ***")
     message(sprintf("*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***"))
 
-    # Try to catch the index error immediately
-    tryCatch(
-      {
-        message("*** Testing parameter access ***")
-        if (!is.null(contrasts_tbl)) {
-          test <- contrasts_tbl[[1]]
-          message("*** Parameter access successful ***")
-        }
-      },
-      error = function(e) {
-        message(sprintf("*** IMMEDIATE ERROR: %s ***", e$message))
-        message(sprintf("*** ERROR CLASS: %s ***", class(e)))
-        stop(e)
-      }
-    )
+    # Bounds-safe parameter validation using purrr::pluck
+    first_col <- purrr::pluck(contrasts_tbl, 1, .default = NULL)
+    if (!is.null(first_col)) {
+      message("*** Parameter access successful ***")
+    }
 
     message("--- Entering differentialAbundanceAnalysis ---")
     message(sprintf("   differentialAbundanceAnalysis: theObject class = %s", class(theObject)))
     message(sprintf("   differentialAbundanceAnalysis: contrasts_tbl provided = %s", !is.null(contrasts_tbl)))
     if (!is.null(contrasts_tbl)) {
       message(sprintf("   differentialAbundanceAnalysis: contrasts_tbl dims = %d x %d", nrow(contrasts_tbl), ncol(contrasts_tbl)))
-      message(sprintf("   differentialAbundanceAnalysis: contrasts_tbl content = %s", paste(contrasts_tbl[[1]], collapse = ", ")))
+      if (!is.null(first_col)) {
+        message(sprintf("   differentialAbundanceAnalysis: contrasts_tbl content = %s", paste(first_col, collapse = ", ")))
+      }
     }
 
     # Wrap the helper function call in tryCatch to get better error info
@@ -111,19 +103,14 @@ setMethod(
       message(sprintf("      contrasts_tbl class: %s", class(contrasts_tbl)))
       message(sprintf("      contrasts_tbl type: %s", typeof(contrasts_tbl)))
       message("      contrasts_tbl print:")
-      print(contrasts_tbl)
-      message("      Trying to access contrasts_tbl[[1]]...")
-      tryCatch(
-        {
-          first_col <- contrasts_tbl[[1]]
-          message(sprintf("      SUCCESS: contrasts_tbl[[1]] class: %s", class(first_col)))
-          message(sprintf("      SUCCESS: contrasts_tbl[[1]] length: %d", length(first_col)))
-          message(sprintf("      SUCCESS: contrasts_tbl[[1]] content: %s", paste(first_col, collapse = ", ")))
-        },
-        error = function(e) {
-          message(sprintf("      ERROR accessing contrasts_tbl[[1]]: %s", e$message))
-        }
-      )
+      first_col <- purrr::pluck(contrasts_tbl, 1, .default = NULL)
+      if (!is.null(first_col)) {
+        message(sprintf("      SUCCESS: contrasts_tbl[[1]] class: %s", class(first_col)))
+        message(sprintf("      SUCCESS: contrasts_tbl[[1]] length: %d", length(first_col)))
+        message(sprintf("      SUCCESS: contrasts_tbl[[1]] content: %s", paste(first_col, collapse = ", ")))
+      } else {
+        message("      contrasts_tbl has no columns or is empty")
+      }
     }
 
     message("   DEBUG66: Initial parameter inspection")

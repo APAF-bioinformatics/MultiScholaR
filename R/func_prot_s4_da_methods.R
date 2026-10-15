@@ -25,19 +25,14 @@
       message(sprintf("      contrasts_tbl class: %s", class(contrasts_tbl)))
       message(sprintf("      contrasts_tbl type: %s", typeof(contrasts_tbl)))
       message("      contrasts_tbl print:")
-      print(contrasts_tbl)
-      message("      Trying to access contrasts_tbl[[1]]...")
-      tryCatch(
-        {
-          first_col <- contrasts_tbl[[1]]
-          message(sprintf("      SUCCESS: contrasts_tbl[[1]] class: %s", class(first_col)))
-          message(sprintf("      SUCCESS: contrasts_tbl[[1]] length: %d", length(first_col)))
-          message(sprintf("      SUCCESS: contrasts_tbl[[1]] content: %s", paste(first_col, collapse = ", ")))
-        },
-        error = function(e) {
-          message(sprintf("      ERROR accessing contrasts_tbl[[1]]: %s", e$message))
-        }
-      )
+      first_col <- purrr::pluck(contrasts_tbl, 1, .default = NULL)
+      if (!is.null(first_col)) {
+        message(sprintf("      SUCCESS: contrasts_tbl[[1]] class: %s", class(first_col)))
+        message(sprintf("      SUCCESS: contrasts_tbl[[1]] length: %d", length(first_col)))
+        message(sprintf("      SUCCESS: contrasts_tbl[[1]] content: %s", paste(first_col, collapse = ", ")))
+      } else {
+        message("      contrasts_tbl has no columns or is empty")
+      }
     }
 
     message("   DEBUG66: Initial parameter inspection")
