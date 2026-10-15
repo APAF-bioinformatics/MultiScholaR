@@ -385,18 +385,11 @@ updateMetaboliteFiltering <- function(theObject,
     message("--- End of Plot Saving Diagnostics ---")
 
 
-    if (length(plot_list) > 0) {
-        if (!is.null(plot_list[[1]])) {}
-    }
-
     if (return_grid) {
-        # Check conditions one by one
-        cond1 <- length(plot_list) > 0
-        cond2 <- !is.null(plot_list[[1]])
-        cond3 <- if (cond2) inherits(plot_list[[1]], "ggplot") else FALSE
+        first_plot <- purrr::pluck(plot_list, 1, .default = NULL)
+        can_build_grid <- !is.null(first_plot) && inherits(first_plot, "ggplot")
 
-
-        if (cond1 && cond2 && cond3) {
+        if (can_build_grid) {
             # Use arrangeGrob (not grid.arrange) to create grob without drawing
             # This allows the grob to be stored in a reactiveVal and rendered later by Shiny
             # CRITICAL: Wrap in pdf(NULL)/dev.off() to prevent "cannot open file 'Rplots.pdf'" error
