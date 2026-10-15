@@ -412,6 +412,9 @@ readDIADisplayTablePage <- function(reference, columns = NULL, filter = NULL, of
 #' @noRd
 diaDisplayTableFilter <- function(pager) {
     default_filter <- utils::getFromNamespace("dataTablesFilter", "DT")
+    # The widget reads each row as an array, so the page is unnamed the way the widget's own filter unnames it
+    # (KIT-017 screen run: a named page serialised as objects and the widget's error dialog blocked the browser).
+    clean <- utils::getFromNamespace("cleanDataFrame", "DT")
     function(data, params) {
         if (is.null(pager$read)) return(default_filter(data, params))
         rows <- as.integer(pager$rows)
@@ -426,7 +429,7 @@ diaDisplayTableFilter <- function(pager) {
         rownames(page) <- NULL
         if (!identical(params$escape, "false")) for (j in seq_len(ncol(page)))
             if (is.character(page[[j]])) page[[j]] <- htmltools::htmlEscape(page[[j]])
-        list(draw = as.integer(params$draw %||% 0L), recordsTotal = rows, recordsFiltered = rows, data = page,
+        list(draw = as.integer(params$draw %||% 0L), recordsTotal = rows, recordsFiltered = rows, data = clean(page),
             DT_rows_all = seq_len(rows), DT_rows_current = seq.int(start + 1L, length.out = nrow(page)))
     }
 }

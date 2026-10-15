@@ -376,10 +376,10 @@ test_that("the server-side page filter serves store pages to the table widget an
         expect_identical(page$draw, 3L)
         expect_identical(page$recordsTotal, 23L)
         expect_identical(page$recordsFiltered, 23L)
-        expect_identical(page$data$term, table$term[11:20])
+        expect_identical(page$data[[1L]], table$term[11:20])
         expect_identical(page$DT_rows_current, 11:20)
         last <- filter(data.frame(), params(20L, 10L))
-        expect_identical(last$data$term, table$term[21:23])
+        expect_identical(last$data[[1L]], table$term[21:23])
         beyond <- filter(data.frame(), params(30L, 10L))
         expect_identical(nrow(beyond$data), 0L)
         all_rows <- filter(data.frame(), params(0L, -1L))
@@ -450,6 +450,8 @@ test_that("the page readers take the owner from the render, because the widget's
     pager$rows <- 12L
     pager$read <- function(offset, limit) readDIADisplayTablePage(reference, offset = offset, limit = limit, manager = manager)$data
     page <- diaDisplayTableFilter(pager)(data.frame(), list(start = 10L, length = 10L, draw = 1L, escape = "true"))
-    expect_identical(page$data$term, table$term[11:12])
+    expect_identical(page$data[[1L]], table$term[11:12])
     expect_identical(page$recordsTotal, 12L)
+    # The widget reads each row as an array (as DT's own filter serves it), not as an object keyed by column.
+    expect_identical(as.character(jsonlite::toJSON(page$data, dataframe = "rows")), '[["GO:11"],["GO:12"]]')
 })

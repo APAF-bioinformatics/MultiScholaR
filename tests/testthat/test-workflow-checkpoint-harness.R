@@ -2088,3 +2088,21 @@ test_that("small export verifier rejects wrong counts, missing history and chang
     table[[2L]][1L] <- 999
     expect_error(environment$checkCheckpointSessionContents(session, final, table))
 })
+
+test_that("the managed browser driver records and dismisses a native dialog and fails the next command by name (KIT-017)", {
+    skipIfNoBrowserRuntime()
+    root <- normalizePath(test_path("..", ".."))
+    driver_env <- new.env(parent = baseenv())
+    sys.source(file.path(root, "tools", "profiling", "workflow_checkpoint_dia_driver.R"), driver_env)
+    chrome <- chromote::Chromote$new()
+    withr::defer(chrome$close())
+    session <- chrome$new_session()
+    driver <- driver_env$newCheckpointManagedDriver(session)
+    expect_identical(driver$get_js("1 + 1"), 2L)
+    session$Runtime$evaluate(expression = "setTimeout(function(){ alert('table widget error'); }, 20)", wait_ = FALSE)
+    deadline <- proc.time()[["elapsed"]] + 10
+    # Chromote delivers events while R runs its event loop; pump it while waiting for the dialog.
+    while (!length(driver$dialogs) && proc.time()[["elapsed"]] < deadline) later::run_now(0.05)
+    expect_identical(driver$dialogs, "alert: table widget error")
+    expect_error(driver$get_js("1 + 1"), "browser dialog: alert: table widget error")
+})

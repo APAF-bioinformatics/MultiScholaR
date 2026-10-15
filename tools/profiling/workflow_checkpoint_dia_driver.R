@@ -610,10 +610,23 @@ stabilizeCheckpointManagedBrowser <- function(driver, url, timeout = 60) {
 newCheckpointManagedDriver <- function(session) {
     driver <- new.env(parent = emptyenv())
     driver$get_chromote_session <- function() session
+    # A native browser dialog (the table widget's error alert, a `confirm`) blocks the renderer, so every later
+    # command times out at the wait budget with no cause (KIT-017 screen runs). The dialog's text is recorded,
+    # the dialog is dismissed, and the next command fails by name.
+    driver$dialogs <- character()
+    session$Page$enable()
+    session$Page$javascriptDialogOpening(callback = function(event) {
+        driver$dialogs <- c(driver$dialogs, paste0(event$type %||% "dialog", ": ", event$message %||% ""))
+        session$Page$handleJavaScriptDialog(accept = TRUE, wait_ = FALSE)
+    })
+    driver$check_dialogs <- function() {
+        if (length(driver$dialogs)) stop("browser dialog: ", paste(driver$dialogs, collapse = " | "))
+    }
     driver$get_js <- function(script, timeout = NULL) {
         if (!is.character(script) || length(script) != 1L || is.na(script)) {
             stop("managed browser script is invalid")
         }
+        driver$check_dialogs()
         result <- session$Runtime$evaluate(expression = script,
             awaitPromise = TRUE, returnByValue = TRUE,
             timeout_ = if (is.null(timeout)) 30 else timeout / 1000)
