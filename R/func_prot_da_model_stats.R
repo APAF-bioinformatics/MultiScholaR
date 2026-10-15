@@ -74,7 +74,8 @@ runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
   # print(design_m)
   # print( paste( "nrow(weights)", nrow(weights), "nrow(design_m)", nrow(design_m)))
 
-  if (!is.na(weights)) {
+  has_weights <- !is.null(weights) && length(weights) > 0 && any(!is.na(weights))
+  if (has_weights) {
     if (nrow(weights) == nrow(design_m)) {
       design_m <- cbind(design_m, weights)
     } else {
@@ -143,52 +144,54 @@ runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
 #' @seealso [getTypeOfGrouping()]
 #' @export
 runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA, type_of_grouping, design_matrix, formula_string, contrast_variable = "group", weights = NA) {
-  r <- list()
-  for (i in 1:nrow(test_pairs)) {
+  if (is.null(test_pairs) || nrow(test_pairs) == 0) {
+    return(list())
+  }
+
+  pair_indices <- seq_len(nrow(test_pairs))
+  results_list <- purrr::map(pair_indices, function(i) {
+    group_A <- as.character(test_pairs[i, "A"])
+    group_B <- as.character(test_pairs[i, "B"])
+    comparison <- paste(group_B, " vs ", group_A, sep = "")
+
     rows_to_keep <- rownames(data)
 
-
-    if (length(sample_rows_list) > 0) {
-      if (!is.na(sample_rows_list) &
-        #  Check that sample group exists as names inside sample_rows_list
-        length(which(c(test_pairs[i, "A"], test_pairs[i, "B"]) %in% names(sample_rows_list))) > 0) {
-        rows_to_keep <- unique(
-          sample_rows_list[[test_pairs[[i, "A"]]]],
-          sample_rows_list[[test_pairs[[i, "B"]]]]
-        )
+    has_sample_rows <- is.list(sample_rows_list) && length(sample_rows_list) > 0
+    if (has_sample_rows) {
+      rows_A <- purrr::pluck(sample_rows_list, group_A, .default = NULL)
+      rows_B <- purrr::pluck(sample_rows_list, group_B, .default = NULL)
+      combined_rows <- c(rows_A, rows_B)
+      if (length(combined_rows) > 0) {
+        rows_to_keep <- intersect(unique(combined_rows), rownames(data))
       }
     }
 
-    tmp <- data[rows_to_keep, sample_columns]
-    rep <- colnames(tmp)
+    tmp <- data[rows_to_keep, sample_columns, drop = FALSE]
 
-    # print( paste( test_pairs[i,]$A, test_pairs[i,]$B) )
-    A <- tmp[, type_of_grouping[test_pairs[i, ]$A][[1]]]
-    B <- tmp[, type_of_grouping[test_pairs[i, ]$B][[1]]]
+    cols_A <- purrr::pluck(type_of_grouping, group_A, .default = NULL)
+    cols_B <- purrr::pluck(type_of_grouping, group_B, .default = NULL)
+
+    A <- tmp[, cols_A, drop = FALSE]
+    B <- tmp[, cols_B, drop = FALSE]
 
     subset_weights <- NA
-
-    if (!is.na(weights)) {
-      subset_weights <- weights[c(colnames(A), colnames(B)), ]
+    has_weights <- !is.null(weights) && length(weights) > 0 && any(!is.na(weights))
+    if (has_weights) {
+      samples_ab <- c(colnames(A), colnames(B))
+      if (!is.null(rownames(weights)) && all(samples_ab %in% rownames(weights))) {
+        subset_weights <- weights[samples_ab, , drop = FALSE]
+      } else {
+        subset_weights <- weights
+      }
     }
 
-    # print(colnames(A))
-    # print(colnames(B))
-    tmp <- unname(cbind(A, B))
-    Aname <- paste(test_pairs[i, ]$A, 1:max(1, ncol(A)), sep = "_")
-    Bname <- paste(test_pairs[i, ]$B, 1:max(1, ncol(B)), sep = "_")
-    colnames(tmp) <- c(Aname, Bname)
+    tmp_comb <- unname(cbind(A, B))
+    Aname <- paste(group_A, seq_len(max(1, ncol(A))), sep = "_")
+    Bname <- paste(group_B, seq_len(max(1, ncol(B))), sep = "_")
+    colnames(tmp_comb) <- c(Aname, Bname)
 
-    selected_sample_ids <- c(type_of_grouping[test_pairs[i, ]$A][[1]], type_of_grouping[test_pairs[i, ]$B][[1]])
+    selected_sample_ids <- c(cols_A, cols_B)
     design_matrix_subset <- design_matrix[selected_sample_ids, , drop = FALSE]
-
-    # print("My design matrix 1")
-    # print( selected_sample_ids)
-    # print(design_matrix)
-    # print( dim(design_matrix))
-
-    group_A <- test_pairs[i, ]$A
-    group_B <- test_pairs[i, ]$B
 
     x <- runTest(ID, A, B, group_A, group_B,
       design_matrix = design_matrix_subset,
@@ -196,11 +199,15 @@ runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA
       weights = subset_weights
     )
 
-    comparison <- paste(group_B, " vs ", group_A, sep = "")
+    list(
+      comparison = comparison,
+      entry = list(results = x$table, counts = t(cbind(A, B)), fit.eb = x$fit.eb)
+    )
+  })
 
-    r[[comparison]] <- list(results = x$table, counts = t(cbind(A, B)), fit.eb = x$fit.eb)
-  }
-  r
+  comparisons <- purrr::map_chr(results_list, purrr::pluck, "comparison")
+  entries <- purrr::map(results_list, purrr::pluck, "entry")
+  stats::setNames(entries, comparisons)
 }
 
 # ----------------------------------------------------------------------------
