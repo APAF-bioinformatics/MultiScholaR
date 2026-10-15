@@ -32,7 +32,7 @@ The candidate's defect (CP-02) is repaired in the working tree (`workflowManaged
 
 | Commit | Suite (343 files) | `R CMD check` (tarball from a clean worktree under `/home`, proof library on `R_LIBS`, suggests not forced) |
 |---|---|---|
-| `c439ce88` (binding, harness only) | 29,627 pass, 0 fail, 1 error, 139 skip | 3 warnings, 3 notes ([logs](regression-logs/)) |
+| `c439ce88` (binding, harness only) | 29,627 pass, 0 fail, 1 error, 139 skip | 3 warnings, 3 notes ([logs](check-logs/)) |
 | `9293655c` (round-one repairs) | 29,631 pass, 0 fail, 1 error, 139 skip | 3 warnings, 3 notes |
 | `c9635938` (round-two repairs, the candidate's source) | 29,632 pass, 0 fail, 1 error, 140 skip | 3 warnings, 3 notes |
 
