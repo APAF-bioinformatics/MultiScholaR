@@ -57,6 +57,10 @@ a test where one fits:
    assay; the variant is in the registry entry; the input state is the population's);
 5. the completion and publication phases run on the fixture;
 6. the verifier's branch compares the member's state with its oracle (the in-process check on the real population).
+7. (KIT-017 post-hoc audit PH-03) before a pair rule is bound to a memory mechanism, the mechanism's slice cost at the
+   step it changes is measured on the screen corpus and the owner of that step's peak is named from the trace (a
+   child process such as pandoc shows as a ramp-and-drop; the worker's baseline as a plateau step). A rule bound to
+   a resident-memory claim is still judged on the slice's step peaks.
 
 ## Stages
 
