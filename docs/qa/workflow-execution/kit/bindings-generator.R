@@ -391,7 +391,7 @@ if (!is.null(b$builds$kit_024)) {
     b$tickets[["017"]] <- list(kind = "journey", control = b$control, candidate = candidate_017, record = FALSE,
         rule = "resident_end", corpus = corpus_017)
     if (!is.null(b$builds$kit_017)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-017", outcome = "candidate",
-        build = "kit_017", note = "kit_024 plus the two screen-run repairs (page readers take the owner from the render; the application monitor tolerates the worker registration vanishing); the closure pair's candidate")
+        build = "kit_017", note = "kit_024 plus the screen-run repairs (page readers take the owner from the render and the served page is unnamed as DT serves it; the application monitor tolerates the worker registration vanishing); the first install core/browser-smoke.UpIfdA (9293655c) is superseded by the round-two install (c9635938); the closure pair's candidate")
 }
 
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with

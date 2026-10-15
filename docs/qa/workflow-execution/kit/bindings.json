@@ -136,11 +136,11 @@
     },
     "kit_017": {
       "ticket": "KIT-017",
-      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.UpIfdA/library",
-      "build": "3ac78fa72eee6cabebc19a7a02760eeac9933fc67690615e2c1638b49fc88146",
-      "exact_sum": "80ede4868fe383316cec974e771d147f45dd7f8e5856ab0a25d1c0a240ecf049",
-      "install_member": "browser-smoke.UpIfdA",
-      "source_commit": "9293655c5ce2794a72f6f1d59a8d17ff9248628a",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.sOtQzu/library",
+      "build": "ef51b55043f663c240f58c692b0035fb5b669fe23bc9357f49e859735a9898ff",
+      "exact_sum": "c013f31de0b52e4af669aa10a3dbb80ea55b00cf37e2693169913f70dc72b1e1",
+      "install_member": "browser-smoke.sOtQzu",
+      "source_commit": "c9635938a37d0640fef7b142f477a060d68bd5a9",
       "runtime_patch_bytes": 0
     }
   },
@@ -221,7 +221,7 @@
       "ticket": "KIT-017",
       "outcome": "candidate",
       "build": "kit_017",
-      "note": "kit_024 plus the two screen-run repairs (page readers take the owner from the render; the application monitor tolerates the worker registration vanishing); the closure pair's candidate"
+      "note": "kit_024 plus the screen-run repairs (page readers take the owner from the render and the served page is unnamed as DT serves it; the application monitor tolerates the worker registration vanishing); the first install core/browser-smoke.UpIfdA (9293655c) is superseded by the round-two install (c9635938); the closure pair's candidate"
     }
   ],
   "control": "kit_018",
@@ -4003,7 +4003,7 @@
       "tools/profiling/workflow_kit_coordinator.R": "5b9d85de35f7f2b5aaefc7d29f55ec79ac0d1ae3524b0720056d714a3604f7c6",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "6cf642a60238409762668207f204ec071930b0bc398477900a1a25bbf82a5717",
-      "tools/profiling/workflow_checkpoint_dia_driver.R": "564da5cf5d9185e7b76dc1d76c6dee1977fa6ff7b695d2f0c4c16433dfa0ebb8",
+      "tools/profiling/workflow_checkpoint_dia_driver.R": "b71240c8a945c9db2518a65a4e029c503dd8aa66c7319e4cbccd99bd3ea0af07",
       "tests/testthat/test-workflow-kit-harness.R": "a9bf08017e584485280746f17a00c21daabc3d1bed5e6136c3a9df942d152989",
       "tests/testthat/test-workflow-execution-adapters.R": "d315a2847fd76dfb0733b286e4ca3aca1724bfff12400c2e99182320917a6548",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
