@@ -60,6 +60,8 @@ a test where one fits:
 
 ## Stages
 
+Stage 1 (DIA) closed 2026-10-15 at `ced86a66` (KIT-017, [outcome](kit-017/outcome.md), [checklist](kit-017/kit-checklist.md)): the pair's required resident-end reduction met, the per-step guard failed on the DA publication worker's footprint (owned by KIT-036); the control stays `kit_018`.
+
 1. DIA proof (KIT-001–017): driver and step map, class declarations, runner, harness, partitioners, registry, production dispatch, on-disk state manager by default, reference-holding modules, app defects, step declarations, closure.
 2. LFQ/TMT (KIT-020–021).
 3. Lipidomics and metabolomics (KIT-030–032).
