@@ -640,10 +640,10 @@ writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, 
         if (is.null(widget)) cli::cli_abort("interactive volcano output is missing",
             class = "saved_entity_outputs_pending")
         filename <- paste0(gsub("[^A-Za-z0-9_-]", "_", contrast), ".html")
-        # saveWidget retains dependency files even with selfcontained = TRUE.
-        # Only the embedded HTML belongs to the durable publication inventory.
+        # One self-contained file, written in R (KIT-036): saveWidget's pandoc pass over this page is the DA
+        # step's memory peak (KIT-017 audit PH-01). Only the HTML belongs to the durable publication inventory.
         html <- file.path(temporary, filename)
-        htmlwidgets::saveWidget(widget, html, selfcontained = TRUE)
+        saveSelfContainedWidget(widget, html)
         if (!file.copy(html, file.path(target, filename), overwrite = TRUE))
             cli::cli_abort("cannot stage interactive volcano HTML",
                 class = "saved_entity_outputs_pending")

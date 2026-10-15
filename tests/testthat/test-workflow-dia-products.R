@@ -455,3 +455,38 @@ test_that("the page readers take the owner from the render, because the widget's
     # The widget reads each row as an array (as DT's own filter serves it), not as an object keyed by column.
     expect_identical(as.character(jsonlite::toJSON(page$data, dataframe = "rows")), '[["GO:11"],["GO:12"]]')
 })
+
+test_that("a self-contained widget page is written in R with the same data and dependencies as the pandoc page, without pandoc (KIT-036)", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(rmarkdown::pandoc_available(), "the pandoc reference page needs pandoc")
+    set.seed(36)
+    widget <- Glimma::glimmaXY(x = stats::rnorm(20), y = stats::rnorm(20), html = NULL)
+    inline <- file.path(withr::local_tempdir(), "inline.html")
+    reference <- file.path(withr::local_tempdir(), "pandoc.html")
+    htmlwidgets::saveWidget(widget, reference, selfcontained = TRUE)
+    testthat::local_mocked_bindings(pandoc_convert = function(...) stop("pandoc must not run"), .package = "rmarkdown")
+    written <- saveSelfContainedWidget(widget, inline)
+    expect_identical(attr(written, "writer"), "inline")
+    read <- function(path) readChar(path, file.size(path), useBytes = TRUE)
+    page <- read(inline)
+    # The widget's data payload is the same JSON in both pages.
+    # The widget's element id is drawn at render time; the JSON payload itself must be identical.
+    payload <- function(text) sub("data-for=\"[^\"]+\"", "data-for=\"\"",
+        regmatches(text, gregexpr("<script type=\"application/json\" data-for=\"[^\"]+\">.*?</script>", text, perl = TRUE))[[1L]])
+    expect_identical(payload(page), payload(read(reference)))
+    # Every dependency's script and stylesheet is inlined verbatim; nothing is referenced by path.
+    deps <- htmltools::resolveDependencies(htmltools::renderTags(htmltools::as.tags(widget, standalone = TRUE))$dependencies)
+    for (dependency in deps) {
+        root <- dependency$src$file
+        if (!is.null(dependency$package)) root <- system.file(root, package = dependency$package)
+        for (name in c(dependency$script, dependency$stylesheet))
+            expect_true(grepl(readChar(file.path(root, name), file.size(file.path(root, name)), useBytes = TRUE), page, fixed = TRUE, useBytes = TRUE), info = name)
+    }
+    expect_false(grepl("<script src=", page, fixed = TRUE))
+    expect_false(grepl("<link href=", page, fixed = TRUE))
+    expect_match(page, "^<!DOCTYPE html>")
+    # The pandoc writer stays available behind the option.
+    withr::local_options(multischolar.widget_pandoc = TRUE)
+    testthat::local_mocked_bindings(saveWidget = function(widget, file, ...) { writeLines("pandoc", file); invisible(file) }, .package = "htmlwidgets")
+    expect_identical(attr(saveSelfContainedWidget(widget, inline), "writer"), "pandoc")
+})

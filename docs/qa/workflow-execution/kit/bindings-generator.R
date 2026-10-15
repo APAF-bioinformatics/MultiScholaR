@@ -394,6 +394,20 @@ if (!is.null(b$builds$kit_024)) {
         build = "kit_017", note = "kit_024 plus the screen-run repairs (page readers take the owner from the render and the served page is unnamed as DT serves it; the application monitor tolerates the worker registration vanishing); the installs core/browser-smoke.UpIfdA (9293655c) and core/browser-smoke.sOtQzu (c9635938) are superseded by the install from 7efb6ccd, which adds the managed step's completion context for the peptide role only (counted pair attempt 1, CP-02); the closure pair's candidate")
 }
 
+# KIT-036: self-contained pages without pandoc (the KIT-017 audit's root cause: pandoc's pass over the Glimma page is
+# the DA step's peak, a 2.84 GiB child process on the 300-sample page; the R writer peaks at 1.13 GiB with no child).
+# Journey pair as KIT-017 bound it: control kit_018, candidate kit_036 (kit_017's source plus KIT-037 and KIT-036),
+# rule `resident_end` with the per-step guard; two journey members from the user (2026-10-16). `KIT_036_CORPUS=screen`
+# binds the screen corpus for the pair's lifecycle run (not counted; KIT-037's live check).
+if (!is.null(b$builds$kit_036)) {
+    corpus_036 <- Sys.getenv("KIT_036_CORPUS", "full")
+    stopifnot(corpus_036 %in% c("full", "screen"))
+    b$tickets[["036"]] <- list(kind = "journey", control = b$control, candidate = "kit_036", record = FALSE,
+        rule = "resident_end", corpus = corpus_036)
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-036", outcome = "candidate", build = "kit_036",
+        note = "self-contained widget pages written in R (no pandoc pass) and the DA managed step acknowledged on its status text (KIT-037); the closure pair rerun's candidate")
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and

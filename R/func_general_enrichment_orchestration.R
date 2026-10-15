@@ -440,11 +440,7 @@ processEnrichments <- function(da_results,
 
           tryCatch({
             # Save the interactive Plotly HTML file
-            htmlwidgets::saveWidget(
-              plots[[direction]]$interactive,
-              file_path,
-              selfcontained = TRUE
-            )
+            saveSelfContainedWidget(plots[[direction]]$interactive, file_path) # KIT-036: no pandoc pass
             message(paste("  Successfully saved:", file_path)) # Debug success
             
             # Save the static ggplot as PNG
@@ -804,11 +800,7 @@ processEnrichments <- function(da_results,
                 # Save the widget
                 tryCatch({
                   # Save HTML interactive plot
-                  htmlwidgets::saveWidget(
-                    interactive_plot, # Pass the plot object directly
-                    file_path,
-                    selfcontained = TRUE
-                  )
+                  saveSelfContainedWidget(interactive_plot, file_path) # KIT-036: no pandoc pass
                   message(paste("  Successfully saved:", file_path))
                   
                   # Save static ggplot as PNG

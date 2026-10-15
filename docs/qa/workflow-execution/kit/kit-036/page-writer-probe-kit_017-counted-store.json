@@ -1,0 +1,32 @@
+{
+  "schema": "kit.page_writer_probe.v1",
+  "ticket": "KIT-036",
+  "label": "kit_017-counted-store",
+  "date": "2026-10-16",
+  "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.X9aj9P/library",
+  "member": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-017/candidate-1",
+  "writers": {
+    "inline": {
+      "writer": "inline",
+      "seconds": 9.4,
+      "r_peak_before_bytes": 694497280,
+      "r_peak_bytes": 1216909312,
+      "page_bytes": 14695098,
+      "page": "treated_vs_control.html",
+      "glimma_loaded": true,
+      "child_peak_bytes": 0,
+      "child": []
+    },
+    "pandoc": {
+      "writer": "pandoc",
+      "seconds": 15.8,
+      "r_peak_before_bytes": 694505472,
+      "r_peak_bytes": 1214545920,
+      "page_bytes": 14690907,
+      "page": "treated_vs_control.html",
+      "glimma_loaded": true,
+      "child_peak_bytes": 3049775104,
+      "child": "pandoc"
+    }
+  }
+}
