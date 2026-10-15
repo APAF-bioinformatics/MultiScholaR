@@ -62,7 +62,7 @@ KIT-008, KIT-011, KIT-013 and KIT-015 completed with regression checks that ran 
 
 ## F. Measured at closure
 
-Filled from stage `kit-journey-017` in [outcome.md](outcome.md) after the counted pair runs.
+Stage `kit-journey-017` ([outcome.md](outcome.md)): both members complete and verified against the KIT-005 oracles; resident end 0.927 × (met); whole slice 1.077 × and the DA step 1.129 × (the publication worker inside the slice; `rejected`, `step_not_worse`); stage claim against the production-default baselines 0.40 × the guard reading with the journey complete. Every one of the 16 data-step declarations ran through the managed journey on both builds and reproduced its oracle.
 
 ## G. Hand-off
 
