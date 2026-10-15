@@ -21,6 +21,10 @@ Status 2026-10-16: **implemented; install and pair pending.** Revision 1.1 (the 
 
 Expected from the KIT-017 traces: the candidate's DA step about 3.5 GiB against the control's 5.41 (the worker baseline and the widget build remain; the 2.8 GiB child is gone), the whole-slice peak back at the rollup step, resident end unchanged near 0.93 ×.
 
+## Screen lifecycle run (2026-10-16 10:02–10:25, not counted; stage archived as `kit-journey-036-screen-lifecycle`, decision kept as [screen-lifecycle-decision.rds](screen-lifecycle-decision.rds))
+
+Both members complete and verified: control `kit_018` 566 s, 2.14 GiB anonymous, 1.82 GiB resident end, DA step 1.93 GiB; candidate `kit_036` 557 s, 2.14 GiB anonymous, 1.37 GiB resident end, DA step 2.14 GiB. Whole slice 1.000 (KIT-017's screen read 1.128), resident end 0.755, DA step 1.109 (KIT-017's screen read 1.32): the pandoc transient is gone from the step and what remains above the control is the worker's baseline on an 8-sample page (+0.21 GiB). The candidate's `da_publication` completion record reads `status complete`, `browser_acknowledged TRUE`, `measurement_valid TRUE` (KIT-037's live check; every KIT-017 run had read `browser_ack_timeout`). The screen decision (`rejected`, the DA step on 8 samples) is the lifecycle observation, not the claim.
+
 ## Pair
 
 _Filled from stage `kit-journey-036`._

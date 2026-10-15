@@ -3996,7 +3996,7 @@
       "candidate": "kit_036",
       "record": false,
       "rule": "resident_end",
-      "corpus": "screen"
+      "corpus": "full"
     }
   },
   "lifecycle": {

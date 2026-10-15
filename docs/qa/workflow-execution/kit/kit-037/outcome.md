@@ -21,7 +21,7 @@ After the worker publishes and the controller completes, the managed step waits 
 | `test-perf107-audit.R`, `test-perf-107.R` (the acknowledgement state machine, the head script) | 193, 21 pass |
 | `test-module-ci-prot-da.R`, `test-prot-07b-da-handlers-compat.R`, `test-workflow-saved-da.R` | 245, 55, 109 pass |
 | Full suite at `9a886fbc` | _running_ |
-| Live: KIT-036 screen pair, `da_publication` completion records | _pending_ |
+| Live: KIT-036 screen pair (2026-10-16 10:02–10:25, candidate `kit_036` which carries this ticket), the `da_publication` completion record | `status complete`, `browser_acknowledged TRUE`, `measurement_valid TRUE`; no error notification; the control (`kit_018`, before this ticket) still times out |
 
 ## Claim limits
 
