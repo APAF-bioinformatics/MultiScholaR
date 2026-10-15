@@ -132,13 +132,14 @@ runKeggEnrichment <- function(ranked_list,
     if (nrow(chebi_to_kegg_lookup) > 0) {
       # Create a new ranked list with KEGG IDs
       message("   runKeggEnrichment Step: Creating ranked list with KEGG IDs...")
-      kegg_ranked_list <- numeric()
-      for (i in 1:nrow(chebi_to_kegg_lookup)) {
-        chebi_id <- chebi_to_kegg_lookup$ChEBI[i]
-        kegg_id <- chebi_to_kegg_lookup$KEGG[i]
-        if (chebi_id %in% names(ranked_list)) {
-          kegg_ranked_list[kegg_id] <- ranked_list[chebi_id]
-        }
+      matching_rows <- chebi_to_kegg_lookup[chebi_to_kegg_lookup$ChEBI %in% names(ranked_list), , drop = FALSE]
+      kegg_ranked_list <- if (nrow(matching_rows) > 0) {
+        stats::setNames(
+          as.numeric(ranked_list[matching_rows$ChEBI]),
+          as.character(matching_rows$KEGG)
+        )
+      } else {
+        numeric()
       }
       
       message(paste("Created KEGG ranked list with", length(kegg_ranked_list), "entries"))
@@ -188,13 +189,16 @@ runKeggEnrichment <- function(ranked_list,
         
         # Show top and bottom values to verify ordering
         message("   runKeggEnrichment: Top 5 entries in ranked list:")
-        for (i in 1:min(5, length(kegg_ranked_list))) {
+        top_indices <- seq_len(min(5L, length(kegg_ranked_list)))
+        purrr::walk(top_indices, function(i) {
           message(sprintf("     %s: %.6f", names(kegg_ranked_list)[i], kegg_ranked_list[i]))
-        }
+        })
         message("   runKeggEnrichment: Bottom 5 entries in ranked list:")
-        for (i in (length(kegg_ranked_list) - min(4, length(kegg_ranked_list) - 1)):length(kegg_ranked_list)) {
+        bottom_start <- max(1L, length(kegg_ranked_list) - 4L)
+        bottom_indices <- seq(from = bottom_start, to = length(kegg_ranked_list))
+        purrr::walk(bottom_indices, function(i) {
           message(sprintf("     %s: %.6f", names(kegg_ranked_list)[i], kegg_ranked_list[i]))
-        }
+        })
         
         # CRITICAL SECTION - WHERE THE ISSUE LIKELY IS
         message("   runKeggEnrichment Step: Creating TERM2GENE mapping with KEGG IDs...")
@@ -236,7 +240,7 @@ runKeggEnrichment <- function(ranked_list,
           sample_pathway_compounds <- head(species_specific_pathway_to_compound_tbl$compound, 5)
           sample_prefixed_ids <- head(names(prefixed_kegg_ranked_list), 10)
           
-          for (compound in sample_prefixed_ids) {
+          purrr::walk(sample_prefixed_ids, function(compound) {
             matching_idx <- which(species_specific_pathway_to_compound_tbl$compound == compound)
             message(sprintf("   runKeggEnrichment DEBUG: Compound '%s' appears %d times in pathway table", 
                           compound, length(matching_idx)))
@@ -245,7 +249,7 @@ runKeggEnrichment <- function(ranked_list,
               message(sprintf("   runKeggEnrichment DEBUG: Found in pathways: %s", 
                             paste(sample_pathways, collapse=", ")))
             }
-          }
+          })
         }
         
         # Use prefixed list regardless of whether mapping succeeded
