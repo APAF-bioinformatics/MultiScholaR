@@ -47,7 +47,6 @@ plotOneVolcano <- function(input_data, input_title,
     )) +
     geom_point(aes(col = label)) +
     scale_colour_manual(values = avail_colours) +
-    geom_hline(yintercept = -log10(q_val_thresh)) +
     theme_bw() +
     xlab(expression(Log[2](`fold-change`))) +
     ylab(expression(-log[10](`q-value`))) +
@@ -61,6 +60,11 @@ plotOneVolcano <- function(input_data, input_title,
     theme(plot.title = element_text(size = 12)) +
     theme(legend.text = element_text(size = 12)) # +
   # theme(legend.title = element_text(size = 12))
+
+  if (!is.null(q_val_thresh) && !is.na(q_val_thresh) && q_val_thresh > 0) {
+    volcano_plot <- volcano_plot +
+      geom_hline(yintercept = -log10(q_val_thresh))
+  }
 
   if (!is.na(log2FC_thresh)) {
     volcano_plot <- volcano_plot +
@@ -118,7 +122,6 @@ plotOneVolcanoNoVerticalLines <- function(input_data, input_title,
     scale_colour_manual(values = avail_colours) +
     # geom_vline(xintercept = 1, colour = "black", size = 0.2) +
     # geom_vline(xintercept = -1, colour = "black", size = 0.2) +
-    geom_hline(yintercept = -log10(q_val_thresh)) +
     theme_bw() +
     xlab(expression(Log[2](`fold-change`))) +
     ylab(expression(-log[10](FDR))) +
@@ -132,6 +135,11 @@ plotOneVolcanoNoVerticalLines <- function(input_data, input_title,
     theme(plot.title = element_text(size = 12)) +
     theme(legend.text = element_text(size = 12)) # +
   # theme(legend.title = element_text(size = 12))
+
+  if (!is.null(q_val_thresh) && !is.na(q_val_thresh) && q_val_thresh > 0) {
+    volcano_plot <- volcano_plot +
+      geom_hline(yintercept = -log10(q_val_thresh))
+  }
 
   volcano_plot
 }
@@ -642,14 +650,18 @@ plotVolcano <- function(
     ) +
     geom_vline(xintercept = 1, colour = "black", linewidth = 0.2) +
     geom_vline(xintercept = -1, colour = "black", linewidth = 0.2) +
-    geom_hline(yintercept = -log10(q_val_thresh)) +
     theme_bw() +
     xlab("Log fold changes") +
     ylab("-log10 q-value") +
     theme(legend.position = "none")
 
+  if (!is.null(q_val_thresh) && !is.na(q_val_thresh) && q_val_thresh > 0) {
+    volplot_gg.all <- volplot_gg.all +
+      geom_hline(yintercept = -log10(q_val_thresh))
+  }
+
   volplot_gg.plot <- volplot_gg.all
-  if (!is.na(formula_string) | formula_string != "") {
+  if (!is.null(formula_string) && !is.na(formula_string) && nzchar(trimws(formula_string))) {
     volplot_gg.plot <- volplot_gg.all +
       facet_grid(as.formula(formula_string),
         labeller = labeller(facet_category = label_wrap_gen(width = 10))
