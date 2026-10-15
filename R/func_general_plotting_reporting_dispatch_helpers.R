@@ -26,7 +26,7 @@ printPValuesDistribution <- function(selected_data, p_value_column = raw_pvalue,
       position = "identity"
     )
 
-  if (!is.na(formula_string)) {
+  if (!is.null(formula_string) && !is.na(formula_string) && nzchar(trimws(formula_string))) {
     pvalhist <- pvalhist +
       facet_grid(as.formula(formula_string))
   }
@@ -46,7 +46,7 @@ gg_save_logging <- function(
   width = 7,
   height = 7
 ) {
-  for (format_ext in plots_format) {
+  purrr::walk(plots_format, function(format_ext) {
     file_name <- paste0(file_name_part, format_ext)
     captured_output <- capture.output(
       ggsave(
@@ -58,7 +58,7 @@ gg_save_logging <- function(
       type = "message"
     )
     logdebug(captured_output)
-  }
+  })
 }
 
 # ----------------------------------------------------------------------------
@@ -67,28 +67,28 @@ gg_save_logging <- function(
 #' @export
 summarizeQCPlot <- function(qc_figure) {
   cat("RLE Plots:\n")
-  for (plot_name in names(qc_figure@rle_plots)) {
+  purrr::walk(names(qc_figure@rle_plots), function(plot_name) {
     cat(paste(" -", plot_name, "\n"))
-    print(qc_figure@rle_plots[[plot_name]])
-  }
+    print(purrr::pluck(qc_figure@rle_plots, plot_name, .default = NULL))
+  })
 
   cat("\nPCA Plots:\n")
-  for (plot_name in names(qc_figure@pca_plots)) {
+  purrr::walk(names(qc_figure@pca_plots), function(plot_name) {
     cat(paste(" -", plot_name, "\n"))
-    print(qc_figure@pca_plots[[plot_name]])
-  }
+    print(purrr::pluck(qc_figure@pca_plots, plot_name, .default = NULL))
+  })
 
   cat("\nDensity Plots:\n")
-  for (plot_name in names(qc_figure@density_plots)) {
+  purrr::walk(names(qc_figure@density_plots), function(plot_name) {
     cat(paste(" -", plot_name, "\n"))
-    print(qc_figure@density_plots[[plot_name]])
-  }
+    print(purrr::pluck(qc_figure@density_plots, plot_name, .default = NULL))
+  })
 
   cat("\nPearson Correlation Plots:\n")
-  for (plot_name in names(qc_figure@pearson_plots)) {
+  purrr::walk(names(qc_figure@pearson_plots), function(plot_name) {
     cat(paste(" -", plot_name, "\n"))
-    print(qc_figure@pearson_plots[[plot_name]])
-  }
+    print(purrr::pluck(qc_figure@pearson_plots, plot_name, .default = NULL))
+  })
 }
 
 # ----------------------------------------------------------------------------
