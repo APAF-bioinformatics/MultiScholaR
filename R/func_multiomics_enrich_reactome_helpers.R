@@ -71,7 +71,7 @@ runReactomeEnrichment <- function(ranked_list,
         message(sprintf("   runReactomeEnrichment DEBUG: Trying partial match for '%s'", reactome_organism))
         possible_matches <- unique_organisms[grepl(reactome_organism, unique_organisms, ignore.case = TRUE)]
         if (length(possible_matches) > 0) {
-          selected_organism <- possible_matches[1]  # Use first match
+          selected_organism <- purrr::pluck(possible_matches, 1, .default = "Homo sapiens")
           message(paste("Using closest matching organism:", selected_organism))
           chebi_to_reactome <- chebi_to_reactome |> 
             dplyr::filter(organism == selected_organism)
@@ -175,13 +175,16 @@ runReactomeEnrichment <- function(ranked_list,
     
     # Show top and bottom values to verify ordering
     message("   runReactomeEnrichment: Top 5 entries in ranked list:")
-    for (i in 1:min(5, length(reactome_ranked_list))) {
+    top_indices <- seq_len(min(5L, length(reactome_ranked_list)))
+    purrr::walk(top_indices, function(i) {
       message(sprintf("     %s: %.6f", names(reactome_ranked_list)[i], reactome_ranked_list[i]))
-    }
+    })
     message("   runReactomeEnrichment: Bottom 5 entries in ranked list:")
-    for (i in (length(reactome_ranked_list) - min(4, length(reactome_ranked_list) - 1)):length(reactome_ranked_list)) {
+    bottom_start <- max(1L, length(reactome_ranked_list) - 4L)
+    bottom_indices <- seq(from = bottom_start, to = length(reactome_ranked_list))
+    purrr::walk(bottom_indices, function(i) {
       message(sprintf("     %s: %.6f", names(reactome_ranked_list)[i], reactome_ranked_list[i]))
-    }
+    })
     
     # Create TERM2GENE mapping
     message("   runReactomeEnrichment Step: Creating TERM2GENE mapping...")
@@ -229,11 +232,11 @@ runReactomeEnrichment <- function(ranked_list,
     if (length(duplicated_terms) > 0) {
       message(sprintf("   runReactomeEnrichment WARNING: Found %d duplicate pathway IDs", length(duplicated_terms)))
       message("Sample duplicates:")
-      for (dup_term in head(duplicated_terms, 3)) {
+      purrr::walk(head(duplicated_terms, 3), function(dup_term) {
         dup_entries <- term2name |> dplyr::filter(term == dup_term)
         message(sprintf("   Term: %s has %d entries:", dup_term, nrow(dup_entries)))
         print(dup_entries)
-      }
+      })
     } else {
       message("   runReactomeEnrichment DEBUG: No duplicate pathway IDs found in TERM2NAME")
     }
