@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-15",
+  "created": "2026-10-16",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -142,6 +142,15 @@
       "install_member": "browser-smoke.c1cAdn",
       "source_commit": "7efb6ccd8ca587485731c8e7996c45d700711174",
       "runtime_patch_bytes": 0
+    },
+    "kit_036": {
+      "ticket": "KIT-036",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.h6QeDJ/library",
+      "build": "ff5f79fb61ec9eb0b9a4b8c3003739eceb82e337c56df604a1915731da57cf0f",
+      "exact_sum": "d115f0eca23360e98a8095fa5b56f61f6b94c4046ddd9964ee733b6ed9879ebd",
+      "install_member": "browser-smoke.h6QeDJ",
+      "source_commit": "6c9c49018f2175bc85937cef216689e06b7a41f3",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -222,6 +231,12 @@
       "outcome": "candidate",
       "build": "kit_017",
       "note": "kit_024 plus the screen-run repairs (page readers take the owner from the render and the served page is unnamed as DT serves it; the application monitor tolerates the worker registration vanishing); the installs core/browser-smoke.UpIfdA (9293655c) and core/browser-smoke.sOtQzu (c9635938) are superseded by the install from 7efb6ccd, which adds the managed step's completion context for the peptide role only (counted pair attempt 1, CP-02); the closure pair's candidate"
+    },
+    {
+      "ticket": "KIT-036",
+      "outcome": "candidate",
+      "build": "kit_036",
+      "note": "self-contained widget pages written in R (no pandoc pass) and the DA managed step acknowledged on its status text (KIT-037); the closure pair rerun's candidate"
     }
   ],
   "control": "kit_018",
@@ -3755,7 +3770,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-15",
+        "date": "2026-10-16",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -3974,6 +3989,14 @@
       "record": false,
       "rule": "resident_end",
       "corpus": "full"
+    },
+    "036": {
+      "kind": "journey",
+      "control": "kit_018",
+      "candidate": "kit_036",
+      "record": false,
+      "rule": "resident_end",
+      "corpus": "screen"
     }
   },
   "lifecycle": {
