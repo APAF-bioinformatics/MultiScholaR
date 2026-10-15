@@ -721,7 +721,9 @@ setMethod( f = "ruvCancorFast"
              }
 
              # Skip expensive DPC imputation - use simple approach for optimization
-             peptide_matrix_working <- log2(peptide_matrix + 1)  # Add small constant to avoid log(0)
+             peptide_matrix_prep <- peptide_matrix
+             peptide_matrix_prep[peptide_matrix_prep < 0] <- 0
+             peptide_matrix_working <- log2(peptide_matrix_prep + 1)  # Add small constant to avoid log(0)
 
              # Handle missing values with simple method if requested
              if (simple_imputation_method != "none" && anyNA(peptide_matrix_working)) {
