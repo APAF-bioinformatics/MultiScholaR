@@ -83,18 +83,18 @@ plotPcaHelper <- function(data,
     # 1. Filter by presence in samples
     # Keep features that have values in at least 5% of the samples.
     num_samples <- ncol(data)
-    min_samples_present <- floor(0.05 * num_samples)
-    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, ]
+    min_samples_present <- max(1L, floor(0.05 * num_samples))
+    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, , drop = FALSE]
 
     # 2. Filter by Coefficient of Variation (CV) on the already filtered data
-    if (nrow(data_abundant) > 1) {
+    if (!is.null(nrow(data_abundant)) && nrow(data_abundant) > 1) {
       cvs <- apply(data_abundant, 1, function(x) {
         if (all(is.na(x))) {
-          return(NA)
+          return(NA_real_)
         }
         s <- sd(x, na.rm = TRUE)
         m <- mean(x, na.rm = TRUE)
-        if (is.na(s) || is.na(m) || abs(m) < 1e-6) {
+        if (!is.finite(s) || !is.finite(m) || abs(m) < 1e-6) {
           return(0)
         }
         s / m
@@ -104,7 +104,7 @@ plotPcaHelper <- function(data,
       cv_threshold <- quantile(cvs, cv_percentile, na.rm = TRUE)
 
       if (!is.na(cv_threshold) && cv_threshold > 0) {
-        data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
+        data_filtered <- data_abundant[which(cvs >= cv_threshold), , drop = FALSE]
         message(sprintf("   [plotPcaHelper] Filtering by CV. Rows before: %d, Rows after: %d", nrow(data), nrow(data_filtered)))
       } else {
         data_filtered <- data_abundant
@@ -362,18 +362,18 @@ plotPcaListHelper <- function(data,
     # 1. Filter by presence in samples
     # Keep features that have values in at least 5% of the samples.
     num_samples <- ncol(data)
-    min_samples_present <- floor(0.05 * num_samples)
-    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, ]
+    min_samples_present <- max(1L, floor(0.05 * num_samples))
+    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, , drop = FALSE]
 
     # 2. Filter by Coefficient of Variation (CV) on the already filtered data
-    if (nrow(data_abundant) > 1) {
+    if (!is.null(nrow(data_abundant)) && nrow(data_abundant) > 1) {
       cvs <- apply(data_abundant, 1, function(x) {
         if (all(is.na(x))) {
-          return(NA)
+          return(NA_real_)
         }
         s <- sd(x, na.rm = TRUE)
         m <- mean(x, na.rm = TRUE)
-        if (is.na(s) || is.na(m) || abs(m) < 1e-6) {
+        if (!is.finite(s) || !is.finite(m) || abs(m) < 1e-6) {
           return(0)
         }
         s / m
@@ -383,7 +383,7 @@ plotPcaListHelper <- function(data,
       cv_threshold <- quantile(cvs, cv_percentile, na.rm = TRUE)
 
       if (!is.na(cv_threshold) && cv_threshold > 0) {
-        data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
+        data_filtered <- data_abundant[which(cvs >= cv_threshold), , drop = FALSE]
         message(sprintf("   [plotPcaHelper] Filtering by CV. Rows before: %d, Rows after: %d", nrow(data), nrow(data_filtered)))
       } else {
         data_filtered <- data_abundant
@@ -397,7 +397,11 @@ plotPcaListHelper <- function(data,
   # --- END of modification ---
 
 
-  pca.res <- mixOmics::pca(t(as.matrix(data_filtered)), ncomp = ncomp)
+  requested_components <- as.integer(ncomp)[1]
+  if (is.na(requested_components) || requested_components < 1L) {
+    requested_components <- 2L
+  }
+  pca.res <- mixOmics::pca(t(as.matrix(data_filtered)), ncomp = requested_components)
   proportion_explained <- pca.res$prop_expl_var
 
   temp_tbl <- pca.res$variates$X |>
