@@ -316,21 +316,47 @@ setMethod(
       stop("theObject must be a ggplot object. Got class: ", paste(class(theObject), collapse = ", "))
     }
 
-    # Extract data directly from the ggplot object
-    if (!is.null(theObject$data) && is.data.frame(theObject$data)) {
-      pca_data <- as_tibble(theObject$data)
+    # 1. Primary: Direct ggplot data
+    if (!is.null(theObject$data) && is.data.frame(theObject$data) &&
+        all(c("PC1", "PC2") %in% colnames(theObject$data))) {
+      pca_data <- tibble::as_tibble(theObject$data)
     } else {
-      # Fall back to other extraction methods
-      pca_data <- as_tibble(ggplot_build(theObject)$data[[1]])
+      # 2. Functional layer inspection using purrr::detect (no loops)
+      layer_match <- purrr::detect(
+        theObject$layers,
+        function(l) !is.null(l$data) && is.data.frame(l$data) && all(c("PC1", "PC2") %in% colnames(l$data))
+      )
 
-      # If the data doesn't have PC1/PC2, try to extract from the plot's environment
-      if (!("PC1" %in% colnames(pca_data) && "PC2" %in% colnames(pca_data))) {
-        # Try to get the data from the plot's environment
-        if (exists("data", envir = environment(theObject$mapping$x))) {
-          pca_data <- as_tibble(get("data", envir = environment(theObject$mapping$x)))
+      if (!is.null(layer_match)) {
+        pca_data <- tibble::as_tibble(layer_match$data)
+      } else {
+        # 3. Check ggplot_build output safely with purrr::pluck
+        built <- tryCatch(ggplot_build(theObject), error = function(e) NULL)
+        first_built_data <- purrr::pluck(built, "data", 1, .default = NULL)
+
+        if (!is.null(first_built_data) && is.data.frame(first_built_data) &&
+            all(c("PC1", "PC2") %in% colnames(first_built_data))) {
+          pca_data <- tibble::as_tibble(first_built_data)
         } else {
-          stop("Could not extract PCA data from the ggplot object")
+          # 4. Check mapping environment safely (guard against defunct NULL environment)
+          x_mapping <- theObject$mapping$x
+          env <- if (!is.null(x_mapping)) environment(x_mapping) else NULL
+
+          if (!is.null(env) && is.environment(env) && exists("data", envir = env, inherits = FALSE)) {
+            cand <- get("data", envir = env, inherits = FALSE)
+            if (is.data.frame(cand) && all(c("PC1", "PC2") %in% colnames(cand))) {
+              pca_data <- tibble::as_tibble(cand)
+            } else {
+              pca_data <- NULL
+            }
+          } else {
+            pca_data <- NULL
+          }
         }
+      }
+
+      if (is.null(pca_data)) {
+        stop("Could not extract PCA data from the ggplot object", call. = FALSE)
       }
     }
 
