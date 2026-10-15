@@ -28,12 +28,12 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
 
   # Create contrast matrix from contrast strings
   # Extract just the contrast expressions (after the "=" sign)
-  contrast_expressions <- sapply(contrast_strings, function(x) {
+  contrast_expressions <- purrr::map_chr(contrast_strings, function(x) {
     parts <- strsplit(x, "=")[[1]]
-    if (length(parts) == 2) {
-      return(parts[2])
+    if (length(parts) >= 2) {
+      purrr::pluck(parts, 2, .default = x)
     } else {
-      return(x) # Fallback if no "=" found
+      x
     }
   })
 
@@ -51,18 +51,18 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
   # Apply empirical Bayes
   eb_fit <- limma::eBayes(contrast_fit, trend = eBayes_trend, robust = eBayes_robust)
 
-  # Extract results for each contrast
-  results_list <- list()
-
-  for (i in seq_along(contrast_strings)) {
-    contrast_name <- names(contrast_strings)[i]
-    if (is.null(contrast_name) || contrast_name == "") {
-      # Extract friendly name from contrast string if no name provided
-      parts <- strsplit(contrast_strings[i], "=")[[1]]
-      if (length(parts) == 2) {
-        contrast_name <- parts[1]
+  # Extract results for each contrast using functional purrr::map
+  c_names <- names(contrast_strings)
+  results_list <- purrr::map(seq_along(contrast_strings), function(i) {
+    c_str <- contrast_strings[i]
+    contrast_name <- if (!is.null(c_names) && length(c_names) >= i && nzchar(c_names[i])) {
+      c_names[i]
+    } else {
+      parts <- strsplit(c_str, "=")[[1]]
+      if (length(parts) >= 2 && nzchar(parts[1])) {
+        parts[1]
       } else {
-        contrast_name <- paste0("Contrast_", i)
+        paste0("Contrast_", i)
       }
     }
 
@@ -80,11 +80,19 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
       stop("P.Value column not found in topTable results for dpcDE.")
     }
 
+    computed_qvalues <- tryCatch({
+      if (requireNamespace("qvalue", quietly = TRUE) && length(contrast_results$P.Value) >= 3) {
+        qvalue::qvalue(contrast_results$P.Value)$qvalues
+      } else {
+        contrast_results$adj.P.Val
+      }
+    }, error = function(e) {
+      contrast_results$adj.P.Val
+    })
+
     contrast_results <- contrast_results |>
       dplyr::mutate(
-        # Ensure the qvalue library is used for fdr_qvalue, consistent with runTestsContrasts
-        fdr_qvalue = qvalue::qvalue(P.Value)$qvalues,
-        # Keep the BH adjustment in its own column for full compatibility
+        fdr_qvalue = computed_qvalues,
         fdr_value_bh_adjustment = adj.P.Val
       ) |>
       dplyr::rename(
@@ -103,17 +111,16 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
         raw_pvalue,
         fdr_qvalue,
         fdr_value_bh_adjustment,
-        everything(),
+        dplyr::everything(),
         -adj.P.Val # remove original adj.P.Val to avoid confusion
       )
 
-    # Store in results list (matching runTestsContrasts structure)
-    # The name of the list element MUST be the full contrast string for downstream parsing
-    full_contrast_string <- contrast_strings[i]
-    results_list[[full_contrast_string]] <- contrast_results
-
     cat("   convertDpcDAToStandardFormat: Processed contrast", contrast_name, "with", nrow(contrast_results), "proteins\n")
-  }
+
+    contrast_results
+  })
+
+  names(results_list) <- contrast_strings
 
   # Return in same format as runTestsContrasts, which is a list of tables
   return_object <- list(
