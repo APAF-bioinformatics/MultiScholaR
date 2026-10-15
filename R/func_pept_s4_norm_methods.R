@@ -811,7 +811,10 @@ setMethod( f = "ruvCancor"
              }
 
              # Remove or winsorize extreme values
-             peptide_matrix_clean <- apply(log2(peptide_matrix), 2, function(x) {
+             log2_mat <- peptide_matrix
+             log2_mat[log2_mat <= 0] <- NA
+             log2_mat <- log2(log2_mat)
+             peptide_matrix_clean <- apply(log2_mat, 2, function(x) {
                q <- quantile(x, probs = c(0.01, 0.99), na.rm=TRUE)
                x[x < q[1]] <- q[1]
                x[x > q[2]] <- q[2]
