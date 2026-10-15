@@ -45,8 +45,11 @@ extractOrganismsFromFasta <- function(fasta_file_path) {
   # Helper function to extract field value from FASTA header
   # Replicates getFastaFields logic inline for efficiency
   extractField <- function(header_string, field_name) {
+    if (is.null(header_string) || is.na(header_string) || !nzchar(trimws(header_string))) {
+      return(NA_character_)
+    }
     pattern <- paste0(field_name, "=")
-    if (!stringr::str_detect(header_string, pattern)) {
+    if (!isTRUE(stringr::str_detect(header_string, pattern))) {
       return(NA_character_)
     }
     # Extract the field value (everything after = until next field or end)
@@ -58,37 +61,39 @@ extractOrganismsFromFasta <- function(fasta_file_path) {
     return(trimws(extracted))
   }
   
-  # Parse each header
-  result_list <- vector("list", length(headers))
-  
-  for (i in seq_along(headers)) {
-    header <- headers[i]
-    
+  # Parse each header functionally without loops
+  organism_tbl <- purrr::map(headers, function(header) {
+    if (is.null(header) || is.na(header) || !nzchar(trimws(header))) {
+      return(list(
+        uniprot_acc = NA_character_,
+        organism_name = NA_character_,
+        taxon_id = NA_integer_
+      ))
+    }
+
     # Extract accession from standard UniProt format: >sp|ACCESSION|ID or >tr|ACCESSION|ID
     parts <- strsplit(header, "\\|", fixed = FALSE)[[1]]
-    
+
     if (length(parts) >= 2) {
       accession <- parts[2]
     } else {
-      # Fallback: use first word
-      accession <- strsplit(header, "\\s+")[[1]][1]
-      accession <- sub("^>", "", accession)
+      # Fallback: use first word with bounds-safe pluck
+      words <- strsplit(header, "\\s+")[[1]]
+      first_word <- purrr::pluck(words, 1, .default = NA_character_)
+      accession <- if (!is.na(first_word)) sub("^>", "", first_word) else NA_character_
     }
-    
+
     # Extract organism fields
     organism_name <- extractField(header, "OS")
     taxon_id_str <- extractField(header, "OX")
     taxon_id <- suppressWarnings(as.integer(taxon_id_str))
-    
-    result_list[[i]] <- list(
+
+    list(
       uniprot_acc = accession
       , organism_name = organism_name
       , taxon_id = taxon_id
     )
-  }
-  
-  # Bind into tibble
-  organism_tbl <- dplyr::bind_rows(result_list)
+  }) |> dplyr::bind_rows()
   
   # Count organisms found
   n_with_organism <- sum(!is.na(organism_tbl$organism_name))
