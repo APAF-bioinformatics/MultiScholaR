@@ -519,6 +519,18 @@ workflowManagedCompletionContext <- function(operation, workflow_data) {
     if (identical(entry$completion, "peptide")) workflowCompletionContext(workflow_data) else NULL
 }
 
+#' The browser's ready message for a managed step: the accepted text and, when the step shows a plot at
+#' completion, the plot's output id. A step whose completion shows no plot (`ui$plot` NULL: the DA publication,
+#' whose static volcano renders only when its sub-tab is shown; KIT-017 audit PH-04, KIT-037) is acknowledged on
+#' its text alone and the browser reports the absent plot as ready.
+#' @noRd
+workflowManagedReadyPayload <- function(ns, action, ui) {
+    list(request_id = action$reservation$id, content_id = action$content_id,
+        expected_text = action$expected_text, plot_identity = action$content_id,
+        input_id = ns(ui$ack), text_id = ns(ui$text),
+        plot_id = if (is.null(ui$plot)) NULL else ns(ui$plot))
+}
+
 #' Bound the completion context: plain data only, no live owners, at most 4 MiB.
 #' @noRd
 validateWorkflowCompletionContext <- function(context) {
@@ -593,12 +605,8 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
     pending_publication <- shiny::reactiveVal(NULL)
     working <- paste("Applying", ui$label, "...")
     failure_prefix <- paste0("Error applying ", ui$label, ":")
-    ready_message <- function(action) {
-        session$sendCustomMessage("multischolar-perf107-ready", list(
-            request_id = action$reservation$id, content_id = action$content_id,
-            expected_text = action$expected_text, plot_identity = action$content_id,
-            input_id = session$ns(ui$ack), text_id = session$ns(ui$text), plot_id = session$ns(ui$plot)))
-    }
+    ready_message <- function(action) session$sendCustomMessage("multischolar-perf107-ready",
+        workflowManagedReadyPayload(session$ns, action, ui))
     fail <- function(action, error, status = "error") {
         if (identical(status, "publication_pending")) pending_publication(action)
         if (!is.null(action$owner) && !is.null(action$owner$job)) cancelWorkflowAction(action$owner, status)

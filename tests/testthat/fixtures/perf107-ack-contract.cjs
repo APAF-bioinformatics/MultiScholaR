@@ -54,4 +54,16 @@ assert.equal(callbacks.size, 1, 'replacement request cancels previous polling');
 image.alt = 'three'; image.src = 'three'; tick(400);
 assert.equal(sent.length, 2);
 assert.equal(sent[1].request_id, 'three');
+// KIT-037: a step that shows no plot at completion (plot_id null) is acknowledged on its text alone.
+text.textContent = 'old';
+handler({...message, request_id: 'four', content_id: 'four', plot_identity: 'four', plot_id: null});
+tick(400);
+assert.equal(sent.length, 2, 'text must still match before a plotless step acknowledges');
+text.textContent = message.expected_text;
+tick(150);
+assert.equal(sent.length, 2, 'stable interval still required without a plot');
+tick(200);
+assert.equal(sent.length, 3);
+assert.equal(sent[2].request_id, 'four');
+assert.equal(sent[2].plot_ready, true);
 console.log('ack lifecycle contract passed');

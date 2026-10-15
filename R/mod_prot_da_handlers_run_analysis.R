@@ -11,7 +11,9 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
   managed_step <- installWorkflowManagedStep(session, input, workflow_data, "da_publication",
     publication = list(experiment_label = experiment_label %||% "dia_baseline_smoke", experiment_paths = experiment_paths,
       omic_type = omic_type),
-    ui = list(text = "da_status", plot = "volcano_plot_static", ack = "workflow_ack", notification = "da_publication",
+    # KIT-037: the step is acknowledged on the status text it shows at completion; the static volcano renders
+    # only when its sub-tab is shown, so its identity is an observation (the alt text), not the acknowledgement.
+    ui = list(text = "da_status", plot = NULL, ack = "workflow_ack", notification = "da_publication",
       label = "DA publication", step_label = "14_da_published",
       plot_identity = function(id) da_data$volcano_plot_identity <- id),
     deliver = function(result) {

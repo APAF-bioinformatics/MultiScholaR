@@ -160,3 +160,18 @@ test_that("a managed step hands the peptide QC completion context only to the pe
     expect_null(workflowManagedCompletionContext("da_publication", bus))
     expect_null(workflowManagedCompletionContext("protein_accession_cleanup", bus))
 })
+
+test_that("a managed step that shows no plot at completion is acknowledged on its text alone (KIT-037)", {
+    action <- list(reservation = list(id = "gui-one"), content_id = "content", expected_text = "[OK] Analysis Complete")
+    ns <- function(id) paste0("da-", id)
+    with_plot <- workflowManagedReadyPayload(ns, action, list(text = "status", plot = "grid", ack = "workflow_ack"))
+    expect_identical(with_plot$plot_id, "da-grid")
+    expect_identical(with_plot$text_id, "da-status")
+    without <- workflowManagedReadyPayload(ns, action, list(text = "da_status", plot = NULL, ack = "workflow_ack"))
+    expect_null(without$plot_id)
+    expect_identical(without$expected_text, "[OK] Analysis Complete")
+    expect_identical(without$input_id, "da-workflow_ack")
+    # The DA module binds no plot to its managed step; the volcano identity stays an observation.
+    body <- paste(deparse(da_server_run_analysis_handler), collapse = "\n")
+    expect_match(body, "plot = NULL")
+})
