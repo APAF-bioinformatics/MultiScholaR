@@ -3973,7 +3973,7 @@
       "candidate": "kit_017",
       "record": false,
       "rule": "resident_end",
-      "corpus": "screen"
+      "corpus": "full"
     }
   },
   "lifecycle": {
