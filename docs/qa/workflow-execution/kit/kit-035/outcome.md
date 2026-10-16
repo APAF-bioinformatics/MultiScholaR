@@ -1,6 +1,6 @@
 # KIT-035: technical replicates declared once
 
-Status 2026-10-16: **implemented; tests, install and the full suite pending** (filled below as they land).
+Status 2026-10-16: **complete.** Install `kit_035` recorded (control stays `kit_036`); no counted member; the `journey_da` oracle unchanged.
 
 ## What changed (one mechanism)
 
@@ -19,7 +19,7 @@ Status 2026-10-16: **implemented; tests, install and the full suite pending** (f
 
 Tests: `test-prot-07d-da-model-stats-shared.R` 37 pass (new: the declared block, the four reasons, the spanned fixture now standard), `test-prot-ruv-replicate-structure.R` 21 pass (new: both resolvers agree; `group` on a spanned design), `test-workflow-dia-products.R` 149, `test-workflow-saved-da.R` 109 (the exact base-fit resolver carries the provenance factors), norm module contracts 562, DA module 245, metabolomics DA 44.
 
-`R CMD check` at the ticket's commit flagged a code/documentation mismatch for `runTestsContrasts` (its two new arguments); documented at `bd7c591e` ([r-cmd-check-bd7c591e.log](r-cmd-check-bd7c591e.log)): 3 warnings, 3 notes, nothing new. Full suite at `ae87566c` (first run): 343 files, 29,658 pass, 1 fail, 4 errors; besides the PERF-101 runner artefact, four files failed and were classified against the ticket's own change (all four green at the previous commit, `6c9c4901`): three mocked `runTestsContrasts` stand-ins (`test-prot-da-compat-shared.R`, `test-metab-02q-da-analysis-helper-characterization.R`, `test-metab-s4-da-methods-direct-shared.R`) had fixed signatures and refused the two new arguments (now `...`), and `test-tech-reps-limma.R` expected `duplicateCorrelation` on a design with one biological sample per group, which the design spans (the case this ticket makes standard); its fixture now has two biological samples per group, each run twice, so the expectation holds on an estimable design. Full suite at the final commit: _pending_.
+`R CMD check` at the ticket's commit flagged a code/documentation mismatch for `runTestsContrasts` (its two new arguments); documented at `bd7c591e` ([r-cmd-check-bd7c591e.log](r-cmd-check-bd7c591e.log)): 3 warnings, 3 notes, nothing new. Full suite at `ae87566c` (first run): 343 files, 29,658 pass, 1 fail, 4 errors; besides the PERF-101 runner artefact, four files failed and were classified against the ticket's own change (all four green at the previous commit, `6c9c4901`): three mocked `runTestsContrasts` stand-ins (`test-prot-da-compat-shared.R`, `test-metab-02q-da-analysis-helper-characterization.R`, `test-metab-s4-da-methods-direct-shared.R`) had fixed signatures and refused the two new arguments (now `...`), and `test-tech-reps-limma.R` expected `duplicateCorrelation` on a design with one biological sample per group, which the design spans (the case this ticket makes standard); its fixture now has two biological samples per group, each run twice, so the expectation holds on an estimable design. Full suite at the final commit `5a0d32b3` ([logs](check-logs/)): 343 files, 29,689 pass, 0 fail, 140 skip; the one error is the PERF-101 runner artefact. `R CMD check` 3 warnings, 3 notes.
 
 ## Claim limits
 
