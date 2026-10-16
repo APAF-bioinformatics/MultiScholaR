@@ -7,7 +7,11 @@
 #' namespace versions are the record's environment table, keyed by `build`.
 #' @return List `build`, `version`, `source_commit`, `r_version`, `platform`, `packages` (named character).
 #' @noRd
+.workflowSoftwareIdentityCache <- new.env(parent = emptyenv())
+
 workflowSoftwareIdentity <- function() {
+    # Constant per process (KIT-025 audit PH-04): computed once, 155 package reads otherwise at every commit.
+    if (!is.null(.workflowSoftwareIdentityCache$value)) return(.workflowSoftwareIdentityCache$value)
     description <- utils::packageDescription("MultiScholaR")
     field <- function(name) {
         value <- description[[name]]
@@ -22,8 +26,9 @@ workflowSoftwareIdentity <- function() {
     # version and the loaded source, as the adapter's own software digest does.
     build <- tryCatch(workflowExecutionBuildIdentity(), error = function(error)
         digest::digest(list(source_load = TRUE, version = field("Version")), algo = "sha256"))
-    list(build = build, version = field("Version"), source_commit = source_commit,
+    .workflowSoftwareIdentityCache$value <- list(build = build, version = field("Version"), source_commit = source_commit,
         r_version = R.version.string, platform = R.version$platform, packages = packages)
+    .workflowSoftwareIdentityCache$value
 }
 
 resolveWorkflowGitInfo <- function() {

@@ -539,3 +539,30 @@ test_that("the head records who produced each state and under what software, and
     expect_setequal(names(manager$.context$snapshot$step_provenance), c("initial", manager$.context$snapshot$state_history[-1]))
     expect_false("declared_state" %in% names(manager$.context$snapshot$step_provenance))
 })
+
+test_that("a section names the operation of an in-process commit, a pending operation wins, and a product-only operation leaves nothing behind (KIT-025 audit PH-01, PH-02)", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    withDIAProductsSession(manager, {
+        head <- getDIAStateReference(manager)
+        record <- readDIAStateMetadata(manager, head)
+        # The in-process finishing step names the operation from its section.
+        setDIAStepProvenanceForSection(manager, "removeProteinsWithOnlyOneReplicate")
+        commitDIAReferenceState(manager, "by_section", record$data, record$config, "in process")
+        # A pending operation (the worker completion's) is not overridden by the section.
+        setDIAStepProvenance(manager, "protein_replicate_filter", "whole", c("grouping_variable", "parallel_cores"))
+        setDIAStepProvenanceForSection(manager, "removeProteinsWithOnlyOneReplicate")
+        commitDIAReferenceState(manager, "by_worker", record$data, record$config, "worker completion")
+        # A product-only operation clears its pending provenance; the next commit is legacy.
+        setDIAStepProvenance(manager, "DA-contrast-output", "whole", c("formula", "contrast"))
+        clearDIAStepProvenance(manager)
+        commitDIAReferenceState(manager, "after_products", record$data, record$config, "no producer")
+    })
+    provenance <- manager$.context$snapshot$step_provenance
+    expect_identical(provenance$by_section$operation, "protein_replicate_filter")
+    expect_identical(provenance$by_section$variant, workflowActionSpec("protein_replicate_filter")$default_variant)
+    expect_identical(provenance$by_section$parameter_names, workflowActionSpec("protein_replicate_filter")$parameters)
+    expect_identical(provenance$by_worker$variant, "whole")
+    expect_identical(provenance$after_products$operation, "legacy")
+})

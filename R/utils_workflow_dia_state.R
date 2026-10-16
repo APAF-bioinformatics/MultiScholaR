@@ -586,6 +586,25 @@ setDIAStepProvenance <- function(manager, operation, variant = NA_character_, pa
     invisible(NULL)
 }
 
+#' Drop a pending provenance that no commit will consume: a product-only operation (the DA contrasts) sets one
+#' through `runSavedOperation` and commits no state (KIT-025 audit PH-01).
+#' @noRd
+clearDIAStepProvenance <- function(manager) {
+    if (inherits(manager, "DIAStateAdapter")) manager$.context$pending_provenance <- NULL
+    invisible(NULL)
+}
+
+#' Name a registered step's provenance from the section its compute recorded, unless an operation already set
+#' it (the worker completion carries the request's variant): the in-process finishing steps (KIT-025 audit PH-02).
+#' @noRd
+setDIAStepProvenanceForSection <- function(manager, section) {
+    if (!inherits(manager, "DIAStateAdapter") || !is.null(manager$.context$pending_provenance)) return(invisible(NULL))
+    operation <- workflowOperationForSection(section)
+    if (!length(operation)) return(invisible(NULL))
+    entry <- workflowActionSpec(operation)
+    setDIAStepProvenance(manager, operation, entry$default_variant %||% NA_character_, entry$parameters, entry$declaration$fixed)
+}
+
 #' @noRd
 takeDIAStepProvenance <- function(context) {
     pending <- context$pending_provenance
@@ -1889,6 +1908,7 @@ computeDIAReferenceQvalue <- function(manager, reference, parameters, worker_cap
 finishDIAReferenceQvalueStep <- function(workflow, value, now_fn = Sys.time) {
     manager <- workflow$state_manager
     context <- manager$.context
+    setDIAStepProvenanceForSection(manager, value$section) # KIT-025: the in-process path names its operation
     checkpoint <- value$checkpoint
     qc_params <- shiny::isolate(workflow$qc_params) %||% list()
     if (is.null(qc_params$peptide_qc)) qc_params$peptide_qc <- list()

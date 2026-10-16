@@ -186,7 +186,9 @@ test_that("no registered DIA kernel draws random numbers; randomness would be a 
         seen <<- c(seen, name)
         text <- paste(deparse(fn), collapse = "\n")
         hits <- if (grepl(rng, text, perl = TRUE)) name else character()
-        called <- unique(unlist(regmatches(text, gregexpr("[A-Za-z][A-Za-z0-9_.]*(?=\\()", text, perl = TRUE))))
+        called <- unique(c(unlist(regmatches(text, gregexpr("[A-Za-z][A-Za-z0-9_.]*(?=\\()", text, perl = TRUE))),
+            # do.call("name", ...) and do.call(name, ...) targets (KIT-025 audit PH-05)
+            gsub("^do\\.call\\(\\s*[\"']?|[\"']?$", "", unlist(regmatches(text, gregexpr("do\\.call\\(\\s*[\"']?[A-Za-z][A-Za-z0-9_.]*[\"']?", text, perl = TRUE))))))
         for (callee in intersect(called, ls(ns))) {
             value <- get(callee, ns)
             if (is.function(value)) hits <- c(hits, scan(value, callee, depth + 1L))
@@ -201,4 +203,14 @@ test_that("no registered DIA kernel draws random numbers; randomness would be a 
     }
     expect_identical(unique(hits), character(0))
     expect_gt(length(seen), 20L)
+})
+
+test_that("every registered worker step's section maps to its operation, and the in-process finishers name it (KIT-025 audit PH-02)", {
+    registerBuiltinWorkflowOperations()
+    workers <- Filter(function(name) !identical(workflowOperationEntry(name)$compute, "in_process") && name != "wfx_fixture" &&
+        name != "da_publication", workflowOperationNames())
+    expect_setequal(unname(workflowSectionOperations), workers)
+    expect_identical(workflowOperationForSection("rollUpPrecursorToPeptide"), "precursor_rollup")
+    expect_length(workflowOperationForSection("not a section"), 0L)
+    expect_null(workflowOperationForSection(NULL))
 })

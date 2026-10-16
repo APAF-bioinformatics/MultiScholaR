@@ -114,6 +114,9 @@ test_that("the reference DA GUI publishes native-equivalent tables and serves pr
         session$setInputs(go = 1L)
         session$flushReact()
         expect_true(isDIAResultManifest(da$da_results_list))
+        # KIT-025 audit PH-01: the contrasts commit no state, so the DA step leaves no provenance pending.
+        expect_null(manager$.context$pending_provenance)
+        expect_identical(manager$.context$snapshot$step_provenance$correlation_filtered$operation, "legacy")
         interactive_files <- list.files(file.path(paths$publication_graphs_dir,
             "Interactive_Volcano_Plots"), recursive = TRUE, full.names = TRUE)
         expect_true(length(interactive_files) > 0L && all(file.size(interactive_files) > 0))

@@ -697,6 +697,7 @@ finishDIAReferencePeptideStep <- function(workflow, checkpoint, state_name, desc
     counts = NULL, observed_inclusion_absence = NULL) {
     manager <- workflow$state_manager
     context <- manager$.context
+    setDIAStepProvenanceForSection(manager, section) # KIT-025: the in-process path names its operation
     scope <- newWorkflowTableReadScope(context$store, checkpoint$components$peptide_data, reader = "arrow")
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
     prototype <- readDIAExecutionComponents(manager, fields = "design_matrix")

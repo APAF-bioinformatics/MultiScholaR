@@ -339,6 +339,7 @@ computeDIAReferenceProteinDuplicateRemoval <- function(manager, reference, param
 #' @noRd
 finishDIAReferenceProteinStep <- function(workflow, value, publish = TRUE) {
     manager <- workflow$state_manager
+    setDIAStepProvenanceForSection(manager, value$section) # KIT-025: the in-process path names its operation
     commitDIAReferenceState(manager, value$state_name, value$checkpoint, value$config, value$description)
     object <- readDIAExecutionComponents(manager)
     if (!is.null(value$qc_name)) {

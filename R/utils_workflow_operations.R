@@ -36,6 +36,24 @@ newWorkflowOperation <- function(name, input_class, fields, columns = list(), un
         fixed = fixed))
 }
 
+#' The registered operation behind a kernel section (KIT-025 audit PH-02): the in-process finishing steps name
+#' their state's operation from the section the compute recorded, so a registered step run without a managed
+#' application is attributed to its declaration rather than recorded as `legacy`.
+#' @noRd
+workflowSectionOperations <- c(srlQvalueProteotypicPeptideClean = "peptide_qvalue_filter",
+    filterMinNumPeptidesPerProtein = "peptide_protein_evidence_filter", rollUpPrecursorToPeptide = "precursor_rollup",
+    peptideIntensityFiltering = "peptide_intensity_filter", filterMinNumPeptidesPerSample = "minimum_peptides_per_sample",
+    removePeptidesWithOnlyOneReplicate = "peptide_replicate_filter", peptideMissingValueImputation = "peptide_imputation",
+    protein_rollup = "protein_iq_rollup", chooseBestProteinAccession = "protein_accession_cleanup",
+    removeRowsWithMissingValuesPercent = "protein_intensity_filter", resolveProteinDuplicateRows = "protein_duplicate_removal",
+    removeProteinsWithOnlyOneReplicate = "protein_replicate_filter")
+
+#' @noRd
+workflowOperationForSection <- function(section) {
+    if (!is.character(section) || length(section) != 1L || is.na(section)) return(NULL)
+    unname(workflowSectionOperations[section])[!is.na(workflowSectionOperations[section])]
+}
+
 #' Check an operation declaration against the class registry.
 #' @return The declaration, unchanged.
 #' @noRd

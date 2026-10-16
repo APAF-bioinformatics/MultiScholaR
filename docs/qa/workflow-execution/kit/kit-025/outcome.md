@@ -25,11 +25,14 @@ Status 2026-10-16: **complete.** Control `kit_036` (unchanged; no counted member
 | `test-workflow-operation-registry.R` (new: no registered DIA kernel, handler or callee to four levels draws random numbers) | 136 pass |
 | `test-workflow-checkpoint-dia-state.R` | 236 pass |
 | `test-workflow-native-session.R`, `test-workflow-kit-harness.R`, `test-workflow-partitions.R`, `test-perf-003.R` | 500, 332, 306, 137 pass |
+| Post-hoc audit remediation (2026-10-16, [record](KIT-025-POSTHOC-REMEDIATION-20261016.md)): the check's in-process registered step, the protein replicate filter run from `duplicates_removed` on the fixture through `runProjected` and the protein completion | entry `protein_replicate_filter`, variant `rows`, parameter names `grouping_variable`, `parallel_cores`, both present in the state's recorded arguments or config (`in_process_names_recorded`); products 173, registry 140, operations 69, saved-DA 111 (the DA wrapper leaves nothing pending), partitions 306, perf-003 137, checkpoint-state 236 pass |
 | Install `kit_025` (`run_workflow_kit.sh install`, the CORE-pinned install then the stamp): on the installed library `workflowSoftwareIdentity()$build` equals `workflowExecutionBuildIdentity()` and `source_commit` is the 40-character `23c9c8b2f9ba59204d64bfe8f523a0c6ac29b275`, equal to the run's `source-commit.txt`; bound in the bindings (`outcome recorded`, control `kit_036`) | verified |
 | Full suite at `23c9c8b2` from a clean worktree ([logs](check-logs/)) | 343 files, 29,713 pass, 0 fail, 140 skip; the one error is the PERF-101 runner artefact; `R CMD check` 3 warnings, 3 notes. The follow-up commit `03a33b70` changes only the KIT runner script and records. |
 
 `study_parameters.txt` and the session manifest: neither the study-parameters writer (`createStudyParametersFile`) nor the native session export reads `step_provenance` or `software_environments` (grep: no reference), so both are unchanged by construction; the session manifest schema string is untouched.
 
 ## Claim limits
+
+The no-RNG scan follows the package's own call graph by name (direct calls and `do.call` targets) to four levels; it does not follow S4 dispatch or other packages' internals (audit PH-05).
 
 The fixture's pre-existing states carry `legacy` entries by construction; entries naming a registered operation are produced by commits made on this build (unit-tested on the worker completion path and the runner, observed live by the next managed journey, KIT-028's replay). The DA step's own parameters live in the DA manifest (`parameters`, `model`), not on a state entry, because that step amends the head state rather than producing a new one.

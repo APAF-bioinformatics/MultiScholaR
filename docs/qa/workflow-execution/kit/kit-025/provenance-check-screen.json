@@ -3,7 +3,7 @@
   "ticket": "KIT-025",
   "label": "screen",
   "date": "2026-10-16",
-  "head_commit": "76a5a254b16d6a7f6b9babf56ae9298a20cc1ab7",
+  "head_commit": "ead47b5f7f25e9eaaa9ac978f24425b867fdc07d",
   "limma_warnings": [],
   "state_history": ["initial", "raw_data_s4", "qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"],
   "provenance_complete": true,
@@ -16,7 +16,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:43.438+1100"
+      "committed_at": "2026-10-16T22:50:34.361+1100"
     },
     "raw_data_s4": {
       "operation": "legacy",
@@ -26,7 +26,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:43.513+1100"
+      "committed_at": "2026-10-16T22:50:34.363+1100"
     },
     "qvalue_filtered": {
       "operation": "legacy",
@@ -36,7 +36,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:43.587+1100"
+      "committed_at": "2026-10-16T22:50:34.366+1100"
     },
     "protein_peptide_filtered": {
       "operation": "legacy",
@@ -46,7 +46,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:43.661+1100"
+      "committed_at": "2026-10-16T22:50:34.368+1100"
     },
     "precursor_rollup": {
       "operation": "legacy",
@@ -56,7 +56,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:43.750+1100"
+      "committed_at": "2026-10-16T22:50:34.370+1100"
     },
     "intensity_filtered": {
       "operation": "legacy",
@@ -66,7 +66,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:43.825+1100"
+      "committed_at": "2026-10-16T22:50:34.372+1100"
     },
     "sample_filtered": {
       "operation": "legacy",
@@ -76,7 +76,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:43.900+1100"
+      "committed_at": "2026-10-16T22:50:34.374+1100"
     },
     "replicate_filtered": {
       "operation": "legacy",
@@ -86,7 +86,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:43.978+1100"
+      "committed_at": "2026-10-16T22:50:34.376+1100"
     },
     "imputed": {
       "operation": "legacy",
@@ -96,7 +96,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:44.051+1100"
+      "committed_at": "2026-10-16T22:50:34.378+1100"
     },
     "protein_s4_created": {
       "operation": "legacy",
@@ -106,7 +106,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:44.126+1100"
+      "committed_at": "2026-10-16T22:50:34.380+1100"
     },
     "protein_accession_cleaned": {
       "operation": "legacy",
@@ -116,7 +116,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:44.199+1100"
+      "committed_at": "2026-10-16T22:50:34.382+1100"
     },
     "protein_intensity_filtered": {
       "operation": "legacy",
@@ -126,7 +126,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:44.274+1100"
+      "committed_at": "2026-10-16T22:50:34.384+1100"
     },
     "duplicates_removed": {
       "operation": "legacy",
@@ -136,7 +136,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:44.346+1100"
+      "committed_at": "2026-10-16T22:50:34.386+1100"
     },
     "protein_replicate_filtered": {
       "operation": "legacy",
@@ -146,7 +146,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:44.437+1100"
+      "committed_at": "2026-10-16T22:50:34.388+1100"
     },
     "ruv_corrected": {
       "operation": "legacy",
@@ -156,7 +156,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:44.510+1100"
+      "committed_at": "2026-10-16T22:50:34.390+1100"
     },
     "correlation_filtered": {
       "operation": "legacy",
@@ -166,7 +166,7 @@
       "source_commit": null,
       "defaults_sha256": "bfb289dd65cea08061b29531d216a502e25cdf3aadb1eac9e9b16afa02e26d30",
       "seed": "NA",
-      "committed_at": "2026-10-16T19:10:44.587+1100"
+      "committed_at": "2026-10-16T22:50:34.392+1100"
     }
   },
   "registered_operations_resolve": true,
@@ -194,8 +194,8 @@
     "consensus_correlation": "NA"
   },
   "state_before_da": "836b257e18fbbe56ec76f9fb1c62af808e29853eddc5726efd81f2a537eb0db0",
-  "manifest_source": "d81b920a1eb462305ebebd8eaa8f7eaf5dae344f4c4ee7e444f9270ca219333e",
-  "head_after_da": "d81b920a1eb462305ebebd8eaa8f7eaf5dae344f4c4ee7e444f9270ca219333e",
+  "manifest_source": "20d0d5b935905645e84d32d274f2bf8f7c34ed4702f208dc414ffde0e3054b35",
+  "head_after_da": "20d0d5b935905645e84d32d274f2bf8f7c34ed4702f208dc414ffde0e3054b35",
   "source_is_head": true,
   "contrasts": {
     "grouptreated-groupcontrol": {
@@ -205,7 +205,7 @@
         "num_sig_da_molecules_first_go": "b7f840489e2d77fad6c1d75a2fe9be2836d917ba037062b5ace966f49ec24f83",
         "num_sig_da_molecules": "60a958fbb9a411fd1b8c46845f406f24c1e0c3020e3442402a9c8459fa7ae3f4"
       },
-      "identity_sha256": "a24ab25427448fb24f2b3d7283ee7075af7c45ec5ee534d5c024858f3b1f9ec1"
+      "identity_sha256": "bd5136f387b260e58729acd252edb9abb0a522288784a831ab0b1ef59c8fa3a8"
     }
   },
   "state_products": ["240d1aa02877177574ba1bdc1e1d613f4dd06bc16d03a8fde37ac2fab63b9111", "3c66c08e55cf477b5cabc00f43be9c218ad54d64f72dad0d1e9824582149ae1c"],
@@ -227,6 +227,17 @@
   "states_differing": "correlation_filtered",
   "head_sha256": {
     "before": "ce0b4e0e3b68616e02ef67ec626943b8b69427da1779811dd93646a6c5a2cbc8",
-    "after": "8198ccc930c4d30741aca7f474fc5b43348d94cc2b3e8f5df21bb279b555a5a5"
-  }
+    "after": "783871b8ca6d32eb4419f9fa2532913860e9d4ec29098f3d45c655ae81d8a7b5"
+  },
+  "in_process_entry": {
+    "operation": "protein_replicate_filter",
+    "variant": "rows",
+    "parameter_names": ["grouping_variable", "parallel_cores"],
+    "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+  },
+  "in_process_names_recorded": {
+    "grouping_variable": true,
+    "parallel_cores": true
+  },
+  "in_process_section": "removeProteinsWithOnlyOneReplicate"
 }

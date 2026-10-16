@@ -387,6 +387,7 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
             }
             manifest$results[[name]] <- run$value
         }
+        clearDIAStepProvenance(manager) # KIT-025 audit PH-01: the contrasts commit no state
         snapshot <- context$snapshot
         # KIT-035: the model that ran, from the base fit's recorded factors (provenance; not part of any identity).
         fit_factors <- manager$.context$da_base_fit_reference$metadata$factors

@@ -144,6 +144,31 @@ record$states_compared <- names(same)
 # The DA step commits its arguments onto the head state (KIT-022), so that one state's summary moves by the run itself.
 record$states_differing <- names(same)[!same]
 record$head_sha256 <- list(before = fingerprints_before$head_sha256, after = fingerprints_after$head_sha256)
+# After the fingerprints (the revert truncates the history): the in-process registered step on the live owner.
+# KIT-025 audit PH-03: a registered step run in process on the fixture (the protein replicate filter from
+# `duplicates_removed`), so a non-legacy entry exists, and every parameter name it records is a name in the
+# state's `slots$args[[section]]` or `config`.
+# The session's owner closed with the session; reopen the live store for the in-process step.
+live_root <- dirname(live_dir)
+live_identity <- readSavedStoreIdentity(file.path(live_dir, "store.json"))
+live <- newDIAStateAdapter(newWorkflowEntityStore(live_root, live_identity$project_id, live_identity$workflow_id, max_cache_bytes = 0), reopen = TRUE)
+live$.context$session_format <- "native_v1"; live$.context$reference_states <- TRUE; live$.context$experiment_paths <- paths
+in_process <- tryCatch(withDIAStateScope(live, function() {
+selectDIAStateReference(live, "duplicates_removed")
+value <- runProjected(live, diaProteinReplicateFilterOperation(), getDIAStateReference(live),
+    list(grouping_variable = "group", parallel_cores = 1L))
+owner <- list2env(list(state_manager = live, qc_params = list(peptide_qc = list())))
+completeDIAProteinAction(owner, value)
+snapshot <- live$.context$snapshot
+provenance <- snapshot$step_provenance
+entry <- provenance$protein_replicate_filtered
+state <- readDIAStateMetadata(live, getDIAStateReference(live, "protein_replicate_filtered"))
+recorded <- unique(c(names(state$data$slots$args[[value$section]]), names(state$config), names(unlist(state$data$slots$args, recursive = FALSE))))
+record$in_process_entry <<- entry[c("operation", "variant", "parameter_names", "build")]
+record$in_process_names_recorded <<- stats::setNames(as.list(entry$parameter_names %in% recorded), entry$parameter_names)
+record$in_process_section <<- value$section
+}), error = function(e) { cat("IN-PROCESS ERROR:", paste(class(e), collapse = "/"), "|", conditionMessage(e), "\n"); print(rlang::trace_back()); NULL })
+cat("IN-PROCESS entry:", record$in_process_entry$operation, record$in_process_entry$variant, "| names recorded in args/config:", paste(names(record$in_process_names_recorded), unlist(record$in_process_names_recorded), sep = "=", collapse = " "), "\n")
 cat("PROVENANCE complete:", record$provenance_complete, "| registered resolve:", record$registered_operations_resolve,
     "| parameter names match:", record$parameter_names_match_registry, "| state fingerprints identical:", record$state_fingerprints_identical,
     "(", length(same), "states; differing:", paste(record$states_differing, collapse = ","), ") | head differs:", !identical(record$head_sha256$before, record$head_sha256$after), "\n")
