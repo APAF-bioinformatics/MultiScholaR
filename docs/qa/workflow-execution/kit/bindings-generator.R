@@ -413,6 +413,14 @@ if (!is.null(b$builds$kit_036)) {
     b$journey$pair$control <- b$control
 }
 
+# KIT-035: technical replicates declared once (science; no counted member; one install recorded). The DA model and
+# RUV-III take their replicate block from the object's declared `technical_replicate_id`; on the synthetic corpora the
+# block equals the former `group_replicates` string, so the journey_da oracle is unchanged. The control stays kit_036.
+if (!is.null(b$builds$kit_035)) {
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-035", outcome = "recorded", build = "kit_035",
+        note = "the DA block and RUV-III's replicate structure from the one declaration (technical_replicate_id); a spanned block is standard lmFit with the reason recorded; DA tables identical on the screen project, the 300-sample oracle unchanged; no counted member, control unchanged (kit_036)")
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and

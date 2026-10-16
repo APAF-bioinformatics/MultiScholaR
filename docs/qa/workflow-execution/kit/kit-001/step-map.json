@@ -667,13 +667,13 @@
       "module": "R/mod_prot_da_handlers_run_analysis.R: da_server_run_analysis_handler :2 (reference: runDIAReferenceDaAnalysis, R/utils_workflow_dia_da.R:265); legacy loop over contrasts :104-110",
       "kernel": "differentialAbundanceAnalysis (R/func_prot_da_model_methods.R:5-63) -> differentialAbundanceAnalysisHelper (:87-596) -> runTestsContrasts (R/func_prot_da_model_stats.R:413+) -> fitProtDaBaseModel (:225-268) / fitDIAExecutionBaseModel (R/utils_workflow_dia_da.R:66-95) -> applyProtDaContrastModel (:277-307) -> adjustProtDaResultTable (:317-356)",
       "evidence": [
-        "R/func_prot_da_model_stats.R:229-233 block = paste(group, replicates) when the design has a replicates column; :244-251 duplicateCorrelation consensus over all proteins then lmFit(block)",
+        "R/func_prot_da_model_stats.R fitProtDaBaseModel: the block from the object's declared technical replicate column (technical_replicate_id, `tech_rep_group` from the design step) through resolveProtTechnicalReplicateBlock, shared with RUV-III (KIT-035); a block spanned by the design's group is standard lmFit with block_reason recorded, otherwise duplicateCorrelation consensus over all proteins then lmFit(block)",
         "R/func_prot_da_model_stats.R:289-296 contrasts.fit, eBayes(trend, robust) over all proteins, treat(lfc)",
         "R/func_prot_da_model_stats.R:327-353 qvalue over all valid p-values per contrast (BH fallback)",
         "R/func_prot_da_model_methods.R:343 design rownames = sample_id; :346 full matrix; :356 contrast = contrasts_tbl[,1]"
       ],
       "reads_outside_assay": [
-        "design_matrix (group, replicates)",
+        "design_matrix (group_id, technical_replicate_id columns)",
         "contrasts_tbl (workflow or .GlobalEnv; utils_workflow_dia_da.R:271-275)",
         "protein_id_table",
         "uniprot_dat_cln (workflow or .GlobalEnv; :379-383)"
@@ -692,7 +692,7 @@
       "mode": "in_process (reference path: runDIAReferenceDaAnalysis)",
       "flag": null,
       "notes": [
-        "Blocking hard-codes the design columns group and replicates (stats.R:229-233) rather than the slots; the DA checks for a global group_mapping object (methods.R:399)."
+        "KIT-035: the DA model and RUV-III take their replicate block from the one declaration (technical_replicate_id); the fit artifact, the da_fit factors and the manifest's `model` record group_id, technical_replicate_id, block_reason, uses_duplicate_correlation and consensus_correlation. The DA checks for a global group_mapping object (methods.R:399)."
       ]
     },
     {

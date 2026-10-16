@@ -351,13 +351,46 @@ ruvCompleteControlRows <- function(theObject) {
   rowSums(!is.finite(values)) == 0L
 }
 
+#' The technical replicate block of a design, from the object's one declaration (KIT-035)
+#'
+#' The protein object declares its technical replicate column once (`technical_replicate_id`, set by the design
+#' step to `tech_rep_group`); the DA model's block and RUV-III's replicate structure both come from it. The block
+#' is the declared column's value, prefixed by the group where a value recurs across groups (a plain replicate
+#' index), so blocks are nested in groups and the string equals the `group_replicates` block the DA model used
+#' before. A design carries technical replicates only when the block has duplicates and is not spanned by the
+#' design's group: a block that equals its group within every group level is already encoded by the design
+#' matrix, limma would set the intrablock correlation to zero, and RUV-III's replicate matrix would equal the
+#' group's, so such a design is standard, with the reason recorded.
+#' @param design_matrix Ordered sample metadata.
+#' @param group_id,technical_replicate_id Column names from the object's slots.
+#' @return List `block` (character per row, or NULL), `technical` (logical), `reason` (one of
+#'   `technical_replicates`, `spanned_by_design`, `no_duplicates`, `no_declaration`, `missing_values`), `blocks`.
+#' @noRd
+resolveProtTechnicalReplicateBlock <- function(design_matrix, group_id, technical_replicate_id) {
+  stopifnot(is.data.frame(design_matrix))
+  declared <- is.character(technical_replicate_id) && length(technical_replicate_id) == 1L &&
+    is.character(group_id) && length(group_id) == 1L &&
+    all(c(group_id, technical_replicate_id) %in% names(design_matrix))
+  if (!declared) return(list(block = NULL, technical = FALSE, reason = "no_declaration", blocks = 0L))
+  group <- as.character(design_matrix[[group_id]])
+  value <- design_matrix[[technical_replicate_id]]
+  if (anyNA(value)) return(list(block = NULL, technical = FALSE, reason = "missing_values", blocks = 0L))
+  value <- as.character(value)
+  nested <- all(vapply(split(group, value), function(g) length(unique(g)) == 1L, logical(1)))
+  block <- if (nested) value else paste(group, value, sep = "_")
+  if (!anyDuplicated(block)) return(list(block = block, technical = FALSE, reason = "no_duplicates", blocks = length(block)))
+  spanned <- all(vapply(split(block, group), function(b) length(unique(b)) == 1L, logical(1)))
+  list(block = block, technical = !spanned, reason = if (spanned) "spanned_by_design" else "technical_replicates",
+    blocks = length(unique(block)))
+}
+
 resolveProtRuvReplicateBlocks <- function(design_matrix, sample_id, group_id, technical_replicate_id,
                                           ruv_grouping_variable) {
   stopifnot(is.data.frame(design_matrix), sample_id %in% names(design_matrix))
-  technical <- all(c(group_id, technical_replicate_id) %in% names(design_matrix))
-  block <- if (technical) paste(design_matrix[[group_id]], design_matrix[[technical_replicate_id]], sep = "_") else NULL
-  if (technical && anyDuplicated(block) > 0L && !anyNA(design_matrix[[technical_replicate_id]])) {
-    design_matrix$.ruv_replicate_block <- block
+  # KIT-035: the same declaration and rule as the DA model (`resolveProtTechnicalReplicateBlock`).
+  replicate <- resolveProtTechnicalReplicateBlock(design_matrix, group_id, technical_replicate_id)
+  if (isTRUE(replicate$technical)) {
+    design_matrix$.ruv_replicate_block <- replicate$block
     structure <- "technical_replicates"
   } else {
     if (!ruv_grouping_variable %in% names(design_matrix)) {

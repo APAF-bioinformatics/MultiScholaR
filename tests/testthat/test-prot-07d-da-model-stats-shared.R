@@ -312,7 +312,9 @@ test_that("proteomics DA model stats helpers execute limma-style analysis paths"
       treat_lfc_cutoff = 0.5
     )
     expect_named(replicate_result$results, "A_vs_B=groupB-groupA")
-    expect_equal(captured$duplicate_correlation, 1L)
+    # KIT-035: a replicate block equal to the group is spanned by the design; standard lmFit, no duplicateCorrelation
+    # (limma would have set the intrablock correlation to zero and warned).
+    expect_equal(captured$duplicate_correlation, 0L)
     expect_equal(replicate_result$results[[1]]$fdr_qvalue, p.adjust(c(0.001, 0.002), method = "BH"))
   })
 })
@@ -609,4 +611,46 @@ test_that("proteomics DA output helpers write expected result artifacts", {
   expect_true("da_proteins_wide.xlsx" %in% captured$xlsx_paths)
   expect_equal(colnames(captured$interactive$counts_tbl), c("S1", "S2", "S3", "S4"))
   expect_equal(unname(captured$interactive$groups), c("A", "A", "B", "B"))
+})
+
+test_that("the DA base model takes its block from the declared technical replicate column and records why (KIT-035)", {
+  fit_base <- getFromNamespace("fitProtDaBaseModel", "MultiScholaR")
+  calls <- new.env(parent = emptyenv())
+  mocks <- list(
+    duplicateCorrelationFn = function(object, design, block, ...) { calls$dc <- (calls$dc %||% 0L) + 1L; list(consensus.correlation = 0.42) },
+    lmFitFn = function(object, design, block = NULL, correlation = NULL, ...) list(block = block, correlation = correlation))
+  data <- matrix(stats::rnorm(32), nrow = 4, dimnames = list(paste0("P", 1:4), paste0("S", 1:8)))
+  design_m <- stats::model.matrix(~ 0 + group, data.frame(group = rep(c("A", "B"), each = 4)))
+  rownames(design_m) <- colnames(data)
+  base <- data.frame(Run = colnames(data), group = rep(c("A", "B"), each = 4), stringsAsFactors = FALSE, row.names = colnames(data))
+  run <- function(design, technical_replicate_id = "tech_rep_group") do.call(fit_base, c(list(data, design_m, design, colnames(data)),
+    mocks, list(group_id = "group", technical_replicate_id = technical_replicate_id)))
+  # True technical replicates: two blocks per group, each with two runs; the declared values are already nested in the group.
+  technical <- base; technical$tech_rep_group <- c("A_1", "A_1", "A_2", "A_2", "B_3", "B_3", "B_4", "B_4")
+  fit <- run(technical)
+  expect_true(fit$uses_duplicate_correlation)
+  expect_identical(fit$block_reason, "technical_replicates")
+  expect_identical(fit$block, technical$tech_rep_group)
+  expect_identical(fit$technical_replicate_id, "tech_rep_group")
+  expect_equal(fit$consensus_correlation, 0.42)
+  expect_identical(fit$fit$correlation, 0.42)
+  expect_identical(calls$dc, 1L)
+  # A plain replicate index that recurs across groups is prefixed by the group, the block the model used before.
+  index <- base; index$tech_rep_group <- c(1, 1, 2, 2, 1, 1, 2, 2)
+  expect_identical(run(index)$block, c("A_1", "A_1", "A_2", "A_2", "B_1", "B_1", "B_2", "B_2"))
+  expect_identical(calls$dc, 2L) # two blocks per group: technical replicates, duplicateCorrelation ran again
+  # A block equal to the group is spanned by the design: standard lmFit, the reason recorded, no duplicateCorrelation.
+  spanned <- base; spanned$tech_rep_group <- c("A_1", "A_1", "A_1", "A_1", "B_1", "B_1", "B_1", "B_1")
+  fit <- run(spanned)
+  expect_false(fit$uses_duplicate_correlation)
+  expect_identical(fit$block_reason, "spanned_by_design")
+  expect_null(fit$fit$block)
+  expect_identical(calls$dc, 2L)
+  # No duplicates, no declaration, missing values.
+  unique <- base; unique$tech_rep_group <- paste0("r", 1:8)
+  expect_identical(run(unique)$block_reason, "no_duplicates")
+  expect_identical(run(base)$block_reason, "no_declaration")
+  missing <- technical; missing$tech_rep_group[2] <- NA
+  expect_identical(run(missing)$block_reason, "missing_values")
+  expect_identical(calls$dc, 2L)
 })

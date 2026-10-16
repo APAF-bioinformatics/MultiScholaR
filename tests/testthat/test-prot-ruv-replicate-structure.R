@@ -40,3 +40,19 @@ test_that("ruvIII_C_Varying records the replicate structure it used", {
     expect_identical(corrected@args$ruvIII_C_Varying$ruv_replicate_structure, expected)
     expect_identical(corrected@args$ruvIII_C_Varying$ruv_grouping_variable, "group")
 })
+
+test_that("RUV-III and the DA model read the same declared block on the same design (KIT-035)", {
+    design <- data.frame(Run = paste0("S", 1:8), group = rep(c("A", "B"), each = 4),
+        tech_rep_group = c("A_1", "A_1", "A_2", "A_2", "B_3", "B_3", "B_4", "B_4"), stringsAsFactors = FALSE)
+    declared <- resolveProtTechnicalReplicateBlock(design, "group", "tech_rep_group")
+    ruv <- resolveProtRuvReplicateBlocks(design, "Run", "group", "tech_rep_group", "group")
+    expect_true(declared$technical)
+    expect_identical(ruv$structure, "technical_replicates")
+    expect_identical(ruv$design$.ruv_replicate_block, declared$block)
+    # Spanned by the design (one block per group): no technical replicates for either, RUV-III by group.
+    spanned <- design; spanned$tech_rep_group <- paste0(spanned$group, "_1")
+    expect_identical(resolveProtTechnicalReplicateBlock(spanned, "group", "tech_rep_group")$reason, "spanned_by_design")
+    by_group <- resolveProtRuvReplicateBlocks(spanned, "Run", "group", "tech_rep_group", "group")
+    expect_identical(by_group$structure, "group")
+    expect_identical(by_group$design$.ruv_replicate_block, spanned$group)
+})

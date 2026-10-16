@@ -164,6 +164,7 @@ setMethod(
             data_matrix,
             contrast_strings = contrasts_tbl$contrasts,
             design_matrix = theObject@design_matrix,
+            group_id = theObject@group_id, technical_replicate_id = theObject@technical_replicate_id, # KIT-035
             formula_string = formula_string,
             treat_lfc_cutoff = treat_lfc_cutoff,
             eBayes_trend = eBayes_trend,

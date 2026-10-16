@@ -225,20 +225,20 @@ runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA
 fitProtDaBaseModel <- function(data_subset, design_m, design_matrix,
     samples_in_model, duplicateCorrelationFn = limma::duplicateCorrelation,
     lmFitFn = limma::lmFit, counterFn = \(operation) invisible(NULL),
-    messageFn = message) {
-  has_replicates <- "replicates" %in% colnames(design_matrix)
-  block <- NULL
+    messageFn = message, group_id = "group", technical_replicate_id = "replicates") {
+  # KIT-035: the block comes from the object's declared technical replicate column (the design step sets
+  # `tech_rep_group`; the class default is `replicates`), through the rule RUV-III shares. A block spanned by the
+  # design is standard lmFit with the reason recorded, never duplicateCorrelation with a zeroed correlation.
+  design_subset <- design_matrix[samples_in_model, , drop = FALSE]
+  replicate <- resolveProtTechnicalReplicateBlock(design_subset, group_id, technical_replicate_id)
+  block <- replicate$block
   duplicate_correlation <- NULL
-  if (has_replicates) {
-    design_subset <- design_matrix[samples_in_model, , drop = FALSE]
-    block <- paste(design_subset$group, design_subset$replicates, sep = "_")
-  }
-  uses_duplicate_correlation <- !is.null(block) && any(duplicated(block))
+  uses_duplicate_correlation <- isTRUE(replicate$technical)
   if (uses_duplicate_correlation) {
     messageFn("   runTestsContrasts: Detected technical replicates. Calculating duplicateCorrelation...")
     messageFn(sprintf(
-      "   runTestsContrasts: Block defined by group_replicates. %d unique blocks for %d samples.",
-      length(unique(block)), length(block)
+      "   runTestsContrasts: Block defined by %s. %d unique blocks for %d samples.",
+      technical_replicate_id, length(unique(block)), length(block)
     ))
     counterFn("duplicateCorrelation")
     duplicate_correlation <- duplicateCorrelationFn(data_subset,
@@ -250,15 +250,18 @@ fitProtDaBaseModel <- function(data_subset, design_m, design_matrix,
     fit <- lmFitFn(data_subset, design = design_m, block = block,
       correlation = duplicate_correlation$consensus.correlation)
   } else {
-    messageFn(if (has_replicates)
-      "   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit..." else
-      "   runTestsContrasts: 'replicates' column not found. Running standard lmFit...")
+    messageFn(switch(replicate$reason,
+      no_declaration = sprintf("   runTestsContrasts: technical replicate column '%s' not found. Running standard lmFit...", technical_replicate_id),
+      spanned_by_design = "   runTestsContrasts: Replicate block is spanned by the design (no technical replicates). Running standard lmFit...",
+      missing_values = "   runTestsContrasts: Replicate column has missing values. Running standard lmFit...",
+      "   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit..."))
     counterFn("lmFit")
     fit <- lmFitFn(data_subset, design = design_m)
   }
   list(schema = "prot_da_base_fit_v1", fit = fit,
     sample_ids = colnames(data_subset), feature_ids = rownames(data_subset),
     design_columns = colnames(design_m), block = block,
+    group_id = group_id, technical_replicate_id = technical_replicate_id, block_reason = replicate$reason,
     uses_duplicate_correlation = uses_duplicate_correlation,
     consensus_correlation = if (is.null(duplicate_correlation)) NA_real_ else
       duplicate_correlation$consensus.correlation)
@@ -420,7 +423,9 @@ runTestsContrasts <- function(data,
                               weights = NA,
                               treat_lfc_cutoff = NA,
                               eBayes_trend = FALSE,
-                              eBayes_robust = FALSE) {
+                              eBayes_robust = FALSE,
+                              group_id = "group",
+                              technical_replicate_id = "replicates") {
   message("--- Entering runTestsContrasts ---")
   message(sprintf("   runTestsContrasts: data dims = %d x %d, %d contrasts", nrow(data), ncol(data), length(contrast_strings)))
   message(sprintf("   runTestsContrasts: contrasts = %s", paste(contrast_strings, collapse = ", ")))
@@ -470,7 +475,8 @@ runTestsContrasts <- function(data,
   samples_in_model <- rownames(design_m)
 
   base_fit_artifact <- fitDIAExecutionBaseModel(data_subset, design_m,
-    design_matrix, samples_in_model, formula_string, weights)
+    design_matrix, samples_in_model, formula_string, weights,
+    group_id = group_id, technical_replicate_id = technical_replicate_id)
 
   saved_manager <- getDIAActiveManager()
   saved_identity <- NULL

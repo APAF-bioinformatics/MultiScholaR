@@ -1,0 +1,53 @@
+{
+  "schema": "kit.da_identity_check.v2",
+  "ticket": "KIT-035",
+  "label": "after",
+  "date": "2026-10-16",
+  "head_commit": "2ab3212e9609218dfd84161cc67d260d86b43c52",
+  "limma_warnings": [],
+  "base_fit_factors": {
+    "route": "iq",
+    "layer": "base_fit",
+    "uses_duplicate_correlation": false,
+    "consensus_correlation": "NA",
+    "group_id": "group",
+    "technical_replicate_id": "tech_rep_group",
+    "block_reason": "spanned_by_design"
+  },
+  "manifest_model": {
+    "group_id": "group",
+    "technical_replicate_id": "tech_rep_group",
+    "block_reason": "spanned_by_design",
+    "uses_duplicate_correlation": false,
+    "consensus_correlation": "NA"
+  },
+  "state_before_da": "836b257e18fbbe56ec76f9fb1c62af808e29853eddc5726efd81f2a537eb0db0",
+  "manifest_source": "9827f8d8cbbd99d0e97de08635f4cf5f12eb9fb6534490c174a2a484c82a2a02",
+  "head_after_da": "9827f8d8cbbd99d0e97de08635f4cf5f12eb9fb6534490c174a2a484c82a2a02",
+  "source_is_head": true,
+  "contrasts": {
+    "grouptreated-groupcontrol": {
+      "rows": 4790,
+      "table_sha256": "e346d5b893f0b97b52ab1bb752bfcd0eeaf07044437825fac635a8d688db1df4",
+      "products": {
+        "num_sig_da_molecules_first_go": "b7f840489e2d77fad6c1d75a2fe9be2836d917ba037062b5ace966f49ec24f83",
+        "num_sig_da_molecules": "60a958fbb9a411fd1b8c46845f406f24c1e0c3020e3442402a9c8459fa7ae3f4"
+      },
+      "identity_sha256": "ede3655a36fcdd0a2592c5fa8f0a78bb26737060457b3f962b9d9fc878bf1e80"
+    }
+  },
+  "state_products": ["240d1aa02877177574ba1bdc1e1d613f4dd06bc16d03a8fde37ac2fab63b9111", "3c66c08e55cf477b5cabc00f43be9c218ad54d64f72dad0d1e9824582149ae1c"],
+  "slot_names_changed": "args",
+  "arg_names_changed": ["daAnalysisUI", "differentialAbundanceAnalysis"],
+  "second_run": {
+    "hits": true,
+    "source_is_head": true,
+    "holder_is_head": true
+  },
+  "identity_equal_in_process": true,
+  "da_args": {
+    "q_value_threshold": 0.05,
+    "log_fold_change_cutoff": 0,
+    "formula_string": "~ 0 + group"
+  }
+}

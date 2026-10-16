@@ -63,14 +63,18 @@ invalidateDIAVisibleResults <- function(da_data, workflow) {
 #' @param formula,weights Existing model identity, including the scalar NA policy.
 #' @return Existing base-fit artifact, never a replacement numerical implementation.
 #' @noRd
-fitDIAExecutionBaseModel <- function(data, design_m, design, samples, formula, weights) {
+fitDIAExecutionBaseModel <- function(data, design_m, design, samples, formula, weights,
+    group_id = "group", technical_replicate_id = "replicates") {
     manager <- getDIAActiveManager()
     if (!usesDIAReferenceStates(manager) || !isTRUE(manager$.context$da_reference_execution)) {
-        return(fitProtDaBaseModel(data, design_m, design, samples))
+        return(fitProtDaBaseModel(data, design_m, design, samples, group_id = group_id,
+            technical_replicate_id = technical_replicate_id))
     }
     selected_design <- design[samples, , drop = FALSE]
-    block <- if ("replicates" %in% names(design))
-        paste(selected_design$group, selected_design$replicates, sep = "_") else NULL
+    # KIT-035: the block from the declaration (the same string as the group_replicates block it replaces, so the
+    # base-fit identity of an existing store is unchanged).
+    replicate <- resolveProtTechnicalReplicateBlock(selected_design, group_id, technical_replicate_id)
+    block <- replicate$block
     identity <- newWorkflowDiaBaseFitIdentity(data, selected_design, formula, block, weights,
         "accepted-normalized-component", "accepted-ruv-component", manager$.context$software)
     found <- findSavedWorkflowEntities(manager$.context$store, list(kind = "da_fit", identity = identity), max_matches = 2L)
@@ -83,10 +87,12 @@ fitDIAExecutionBaseModel <- function(data, design_m, design, samples, formula, w
         return(list(schema = "prot_da_base_fit_v1", fit = value$fit,
             feature_ids = value$feature_ids, sample_ids = value$sample_ids,
             design_columns = value$design_columns, block = block,
-            uses_duplicate_correlation = !is.null(block) && any(duplicated(block)),
+            group_id = group_id, technical_replicate_id = technical_replicate_id, block_reason = replicate$reason,
+            uses_duplicate_correlation = isTRUE(replicate$technical),
             consensus_correlation = hit$reference$metadata$factors$consensus_correlation))
     }
-    fit <- fitProtDaBaseModel(data, design_m, design, samples)
+    fit <- fitProtDaBaseModel(data, design_m, design, samples, group_id = group_id,
+        technical_replicate_id = technical_replicate_id)
     reference <- saveWorkflowDiaBaseFit(manager$.context$store, fit,
         basename(tempfile("dia-base-fit-")), identity)
     rootDIAProduct(manager, reference, list(manager$.context$da_source_reference))
@@ -382,6 +388,11 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
             manifest$results[[name]] <- run$value
         }
         snapshot <- context$snapshot
+        # KIT-035: the model that ran, from the base fit's recorded factors (provenance; not part of any identity).
+        fit_factors <- manager$.context$da_base_fit_reference$metadata$factors
+        manifest$model <- list(group_id = fit_factors$group_id, technical_replicate_id = fit_factors$technical_replicate_id,
+            block_reason = fit_factors$block_reason, uses_duplicate_correlation = fit_factors$uses_duplicate_correlation,
+            consensus_correlation = fit_factors$consensus_correlation)
         manifest_reference <- saveDIAStateValue(context, manifest, "da-result-references", codec = "rds")
         snapshot$da_results <- manifest_reference
         snapshot$da_dependencies[[manifest_reference$entity_id]] <- collectDIANativeReferences(
@@ -763,7 +774,10 @@ saveWorkflowDiaBaseFit <- function(store, base_fit_artifact, request_id, identit
     saveWorkflowConsumerEntity(store, envelope, request_id, identity, "da_fit",
         factors = list(route = "iq", layer = "base_fit",
             uses_duplicate_correlation = base_fit_artifact$uses_duplicate_correlation,
-            consensus_correlation = base_fit_artifact$consensus_correlation))
+            consensus_correlation = base_fit_artifact$consensus_correlation,
+            # KIT-035: which model ran and why (provenance for the analysis record).
+            group_id = base_fit_artifact$group_id, technical_replicate_id = base_fit_artifact$technical_replicate_id,
+            block_reason = base_fit_artifact$block_reason))
 }
 
 #' Resolve one exact DIA base fit without fitting.
@@ -773,11 +787,14 @@ saveWorkflowDiaBaseFit <- function(store, base_fit_artifact, request_id, identit
 #' @return Explicit fit hit or miss.
 #' @noRd
 resolveWorkflowDiaBaseFit <- function(store, identity,
-    uses_duplicate_correlation, consensus_correlation) {
+    uses_duplicate_correlation, consensus_correlation, group_id = "group", technical_replicate_id = "replicates",
+    block_reason = if (isTRUE(uses_duplicate_correlation)) "technical_replicates" else "no_duplicates") {
+    # KIT-035: the saved factors carry the model's provenance, so an exact resolve names it too.
     resolveSavedWorkflowEntity(store, "da_fit", identity,
         factors = list(route = "iq", layer = "base_fit",
             uses_duplicate_correlation = uses_duplicate_correlation,
-            consensus_correlation = consensus_correlation))
+            consensus_correlation = consensus_correlation,
+            group_id = group_id, technical_replicate_id = technical_replicate_id, block_reason = block_reason))
 }
 
 #' Save the complete contrasted result without recomputing statistics on hits.

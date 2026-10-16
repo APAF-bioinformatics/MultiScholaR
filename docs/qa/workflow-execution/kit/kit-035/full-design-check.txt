@@ -1,0 +1,2 @@
+300-sample design: reason technical_replicates technical TRUE blocks 102 | block equals the former group_replicates string: TRUE 
+stored da_fit factors: route=iq layer=base_fit uses_duplicate_correlation=TRUE consensus_correlation=0.383312070074278 

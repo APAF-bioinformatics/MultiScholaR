@@ -267,6 +267,7 @@
     contrasts_results <- runTestsContrasts(protein_quant_matrix,
       contrast_strings = contrast_strings_to_use,
       design_matrix = theObject@design_matrix,
+      group_id = theObject@group_id, technical_replicate_id = theObject@technical_replicate_id, # KIT-035
       formula_string = formula_string,
       weights = NA,
       treat_lfc_cutoff = as.double(treat_lfc_cutoff),
