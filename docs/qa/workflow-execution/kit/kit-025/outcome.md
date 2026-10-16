@@ -1,6 +1,6 @@
 # KIT-025: step provenance recorded at commit
 
-Status 2026-10-16: **implemented; tests, the install and the full suite pending** (filled as they land). Control `kit_036`; candidate installed by this ticket (`kit_025`).
+Status 2026-10-16: **complete.** Control `kit_036` (unchanged; no counted member); install `kit_025` recorded with its source commit.
 
 ## State-history writers (enumerated before the change)
 
@@ -24,9 +24,9 @@ Status 2026-10-16: **implemented; tests, the install and the full suite pending*
 | `test-workflow-operations.R` (the runner leaves its declaration's provenance pending) | 69 pass |
 | `test-workflow-operation-registry.R` (new: no registered DIA kernel, handler or callee to four levels draws random numbers) | 136 pass |
 | `test-workflow-checkpoint-dia-state.R` | 236 pass |
-| `test-workflow-native-session.R`, `test-workflow-kit-harness.R`, `test-workflow-partitions.R`, `test-perf-003.R` | _pending_ |
-| Install `kit_025` with `Config/MultiScholaR/SourceCommit`; `source_commit` on the installed build | _pending_ |
-| Full suite at the ticket's commit | _pending_ |
+| `test-workflow-native-session.R`, `test-workflow-kit-harness.R`, `test-workflow-partitions.R`, `test-perf-003.R` | 500, 332, 306, 137 pass |
+| Install `kit_025` (`run_workflow_kit.sh install`, the CORE-pinned install then the stamp): on the installed library `workflowSoftwareIdentity()$build` equals `workflowExecutionBuildIdentity()` and `source_commit` is the 40-character `23c9c8b2f9ba59204d64bfe8f523a0c6ac29b275`, equal to the run's `source-commit.txt`; bound in the bindings (`outcome recorded`, control `kit_036`) | verified |
+| Full suite at `23c9c8b2` from a clean worktree ([logs](check-logs/)) | 343 files, 29,713 pass, 0 fail, 140 skip; the one error is the PERF-101 runner artefact; `R CMD check` 3 warnings, 3 notes. The follow-up commit `03a33b70` changes only the KIT runner script and records. |
 
 `study_parameters.txt` and the session manifest: neither the study-parameters writer (`createStudyParametersFile`) nor the native session export reads `step_provenance` or `software_environments` (grep: no reference), so both are unchanged by construction; the session manifest schema string is untouched.
 
