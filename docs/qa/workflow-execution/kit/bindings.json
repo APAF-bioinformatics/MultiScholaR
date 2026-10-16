@@ -234,12 +234,12 @@
     },
     {
       "ticket": "KIT-036",
-      "outcome": "candidate",
+      "outcome": "control",
       "build": "kit_036",
-      "note": "self-contained widget pages written in R (no pandoc pass) and the DA managed step acknowledged on its status text (KIT-037); the closure pair rerun's candidate"
+      "note": "self-contained widget pages written in R (no pandoc pass) and the DA managed step acknowledged on its status text (KIT-037); accepted against kit_018 (stage kit-journey-036, 2026-10-16): resident end 0.921, whole slice 1.005, DA step 0.675"
     }
   ],
-  "control": "kit_018",
+  "control": "kit_036",
   "control_note": "kit_001 = core_018 source (906c50dc) + KIT journey launch record, RUV-III technical-replicate structure, quantile-ceiling removal (2026-10-09) + launch-record deadline up to 14400 s (protocol v1.2), RUV sweep canonical-correlation input prepared once per sweep, sweep k validity rule and RUV-III guards (2026-10-10); source 8e77d92d on branch kit-control-ceiling; install browser-smoke.X9aj9P",
   "populations": {
     "screen_p14": {
@@ -3756,7 +3756,7 @@
     "ceiling_seconds": 14400,
     "ceiling_note": "KIT-005 / protocol v1.2: data steps scale about 20 x from 8 to 300 samples (attempt 1: q-value 296 s, evidence 190 s); 4 h, the protocol maximum",
     "pair": {
-      "control": "kit_018",
+      "control": "kit_036",
       "candidate": null,
       "reps": 2,
       "production_default": true

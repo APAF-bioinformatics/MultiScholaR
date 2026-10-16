@@ -404,8 +404,13 @@ if (!is.null(b$builds$kit_036)) {
     stopifnot(corpus_036 %in% c("full", "screen"))
     b$tickets[["036"]] <- list(kind = "journey", control = b$control, candidate = "kit_036", record = FALSE,
         rule = "resident_end", corpus = corpus_036)
-    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-036", outcome = "candidate", build = "kit_036",
-        note = "self-contained widget pages written in R (no pandoc pass) and the DA managed step acknowledged on its status text (KIT-037); the closure pair rerun's candidate")
+    # KIT-036 accepted 2026-10-16 (stage kit-journey-036: both members complete and verified; resident end 0.921,
+    # whole slice 1.005, DA step 0.675 against kit_018): the KIT-036 build is the control from here (protocol section 2),
+    # and stage 1 ends on an accepted build.
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-036", outcome = "control", build = "kit_036",
+        note = "self-contained widget pages written in R (no pandoc pass) and the DA managed step acknowledged on its status text (KIT-037); accepted against kit_018 (stage kit-journey-036, 2026-10-16): resident end 0.921, whole slice 1.005, DA step 0.675")
+    b$control <- "kit_036"
+    b$journey$pair$control <- b$control
 }
 
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with

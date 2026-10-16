@@ -64,7 +64,7 @@ a test where one fits:
 
 ## Stages
 
-Stage 1 (DIA) closed 2026-10-15 at `ced86a66` (KIT-017, [outcome](kit-017/outcome.md), [checklist](kit-017/kit-checklist.md)): the pair's required resident-end reduction met, the per-step guard failed on the DA publication worker's footprint (owned by KIT-036); the control stays `kit_018`.
+Stage 1 (DIA) closed 2026-10-15 at `ced86a66` (KIT-017, [outcome](kit-017/outcome.md), [checklist](kit-017/kit-checklist.md)): the pair's required resident-end reduction met, the per-step guard failed on the DA step. The [post-hoc audit](kit-017/KIT-017-POSTHOC-AUDIT-20261016.md) named the cause (pandoc's self-contained pass over the Glimma page); KIT-036 ([outcome](kit-036/outcome.md)) removed it and was accepted on 2026-10-16 (DA step 0.675, resident end 0.921), so stage 1 ends on an accepted build and `kit_036` is the control.
 
 1. DIA proof (KIT-001–017): driver and step map, class declarations, runner, harness, partitioners, registry, production dispatch, on-disk state manager by default, reference-holding modules, app defects, step declarations, closure.
 2. LFQ/TMT (KIT-020–021).
