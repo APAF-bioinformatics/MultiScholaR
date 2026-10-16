@@ -1,6 +1,6 @@
 # KIT-037: DA managed step acknowledges on what it shows
 
-Status 2026-10-16: **implemented at `9a886fbc`**; the live check is KIT-036's screen pair (both members' `da_publication` completion records must read `status complete`, `browser_acknowledged TRUE`); completion follows that observation and the full suite at this commit.
+Status 2026-10-16: **complete.** Implemented at `9a886fbc`; observed live on KIT-036's screen pair (the candidate's `da_publication` record `status complete`, `browser_acknowledged TRUE`, `measurement_valid TRUE`); full suite at the commit green.
 
 ## The defect (KIT-017 post-hoc audit PH-04)
 
@@ -20,7 +20,7 @@ After the worker publishes and the controller completes, the managed step waits 
 | `test-workflow-operation-registry.R` (new: the payload without a plot; the DA handler binds no plot) | 134 pass |
 | `test-perf107-audit.R`, `test-perf-107.R` (the acknowledgement state machine, the head script) | 193, 21 pass |
 | `test-module-ci-prot-da.R`, `test-prot-07b-da-handlers-compat.R`, `test-workflow-saved-da.R` | 245, 55, 109 pass |
-| Full suite at `9a886fbc` | _running_ |
+| Full suite at `9a886fbc` from a clean worktree ([logs](check-logs/)) | 343 files, 29,645 pass, 0 fail, 140 skip; the one error is the PERF-101 snapshot test, the known runner artefact (passes alone); `R CMD check` 3 warnings, 3 notes, nothing new |
 | Live: KIT-036 screen pair (2026-10-16 10:02–10:25, candidate `kit_036` which carries this ticket), the `da_publication` completion record | `status complete`, `browser_acknowledged TRUE`, `measurement_valid TRUE`; no error notification; the control (`kit_018`, before this ticket) still times out |
 
 ## Claim limits
