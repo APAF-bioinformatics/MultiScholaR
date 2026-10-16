@@ -7,23 +7,22 @@ devtools::load_all(".")
 
 test_that("runTestsContrasts handles technical replicates correctly", {
   # 1. Create mock data with technical replicates
-  # 2 biological samples, each with 2 technical replicates = 4 total runs
-  # Biological Sample 1: Bio1_Rep1, Bio1_Rep2 (Group: A)
-  # Biological Sample 2: Bio2_Rep1, Bio2_Rep2 (Group: B)
-  
+  # 4 biological samples, each with 2 technical replicates = 8 total runs, two biological samples per group.
+  # (KIT-035: with one biological sample per group the block equals the group, the design spans it and limma
+  # cannot estimate a within-block correlation; such a design is standard, with the reason recorded.)
   data_matrix <- matrix(
-    c(10, 10.2, 12, 12.1,  # Protein 1
-      15, 14.8, 13, 13.2), # Protein 2
+    c(10, 10.2, 10.5, 10.4, 12, 12.1, 11.8, 11.9,  # Protein 1
+      15, 14.8, 15.1, 15.3, 13, 13.2, 12.9, 13.1), # Protein 2
     nrow = 2, byrow = TRUE
   )
-  colnames(data_matrix) <- c("S1", "S2", "S3", "S4")
+  colnames(data_matrix) <- paste0("S", 1:8)
   rownames(data_matrix) <- c("P1", "P2")
   
   # Design matrix with replicates column
   design_matrix <- data.frame(
-    Run = c("S1", "S2", "S3", "S4"),
-    group = c("A", "A", "B", "B"),
-    replicates = c(1, 1, 2, 2), # Biological replicate IDs
+    Run = paste0("S", 1:8),
+    group = rep(c("A", "B"), each = 4),
+    replicates = c(1, 1, 2, 2, 3, 3, 4, 4), # Biological sample ids; each run twice (technical replicates)
     stringsAsFactors = FALSE
   )
   rownames(design_matrix) <- design_matrix$Run

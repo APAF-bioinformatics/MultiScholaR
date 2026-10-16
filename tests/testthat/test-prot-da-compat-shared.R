@@ -64,7 +64,7 @@ test_that("protein_deAnalysisWrapperFunction preserves orchestration and DA resu
                                    weights,
                                    treat_lfc_cutoff,
                                    eBayes_trend,
-                                   eBayes_robust) {
+                                   eBayes_robust, ...) { # KIT-035: group_id, technical_replicate_id pass through
         list(
           results = data.frame(
             uniprot_acc = c("P1", "P2"),

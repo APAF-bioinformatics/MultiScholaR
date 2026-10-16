@@ -138,7 +138,8 @@ runTestsContrasts <- function(
   formula_string,
   treat_lfc_cutoff,
   eBayes_trend,
-  eBayes_robust
+  eBayes_robust,
+  ... # KIT-035: group_id, technical_replicate_id pass through
 ) {
   run_tests_calls[[length(run_tests_calls) + 1]] <<- list(
     data_matrix = data_matrix,

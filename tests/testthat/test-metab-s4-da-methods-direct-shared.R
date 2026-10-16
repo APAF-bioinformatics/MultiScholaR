@@ -96,7 +96,7 @@ test_that("metabolite S4 DA helper preserves numeric-group remapping and namespa
                                    formula_string,
                                    treat_lfc_cutoff,
                                    eBayes_trend,
-                                   eBayes_robust) {
+                                   eBayes_robust, ...) { # KIT-035: group_id, technical_replicate_id pass through
         helper_calls$rownames <- rownames(data_matrix)
         helper_calls$contrast_strings <- contrast_strings
         helper_calls$design_groups <- design_matrix$group
