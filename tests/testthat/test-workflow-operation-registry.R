@@ -175,3 +175,30 @@ test_that("a managed step that shows no plot at completion is acknowledged on it
     body <- paste(deparse(da_server_run_analysis_handler), collapse = "\n")
     expect_match(body, "plot = NULL")
 })
+
+test_that("no registered DIA kernel draws random numbers; randomness would be a declared seed parameter (KIT-025)", {
+    registerBuiltinWorkflowOperations()
+    ns <- asNamespace("MultiScholaR")
+    rng <- "\\b(set\\.seed|rnorm|runif|sample|sample\\.int|rbinom|rpois)\\s*\\("
+    seen <- character()
+    scan <- function(fn, name, depth) {
+        if (depth > 4L || name %in% seen) return(character())
+        seen <<- c(seen, name)
+        text <- paste(deparse(fn), collapse = "\n")
+        hits <- if (grepl(rng, text, perl = TRUE)) name else character()
+        called <- unique(unlist(regmatches(text, gregexpr("[A-Za-z][A-Za-z0-9_.]*(?=\\()", text, perl = TRUE))))
+        for (callee in intersect(called, ls(ns))) {
+            value <- get(callee, ns)
+            if (is.function(value)) hits <- c(hits, scan(value, callee, depth + 1L))
+        }
+        hits
+    }
+    hits <- character()
+    for (name in workflowOperationNames()) {
+        entry <- workflowOperationEntry(name)
+        if (!is.null(entry$handler)) hits <- c(hits, scan(get(entry$handler, ns), entry$handler, 1L))
+        if (!is.null(entry$declaration$kernel)) hits <- c(hits, scan(entry$declaration$kernel, paste0(name, ":kernel"), 1L))
+    }
+    expect_identical(unique(hits), character(0))
+    expect_gt(length(seen), 20L)
+})

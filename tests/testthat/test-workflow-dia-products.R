@@ -490,3 +490,52 @@ test_that("a self-contained widget page is written in R with the same data and d
     testthat::local_mocked_bindings(saveWidget = function(widget, file, ...) { writeLines("pandoc", file); invisible(file) }, .package = "htmlwidgets")
     expect_identical(attr(saveSelfContainedWidget(widget, inline), "writer"), "pandoc")
 })
+
+test_that("the head records who produced each state and under what software, and nothing on the state record (KIT-025)", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    snapshot <- manager$.context$snapshot
+    expect_identical(snapshot$step_provenance$initial$operation, "import")
+    software <- workflowSoftwareIdentity()
+    expect_match(software$build, "^[0-9a-f]{64}$")
+    installed <- nzchar(system.file("R", "MultiScholaR.rdb", package = "MultiScholaR"))
+    if (installed) expect_identical(software$build, workflowExecutionBuildIdentity())
+    expect_true(is.character(software$source_commit) && length(software$source_commit) == 1L)
+    expect_true(all(c("MultiScholaR", "limma") %in% names(software$packages)))
+    expect_match(software$r_version, "^R version")
+    expect_identical(names(snapshot$software_environments), software$build)
+    # A commit with no pending provenance is legacy; one after an operation set it carries the operation.
+    withDIAProductsSession(manager, {
+        head <- getDIAStateReference(manager)
+        record <- readDIAStateMetadata(manager, head)
+        checkpoint <- record$data
+        before <- digest::digest(list(checkpoint$slots, checkpoint$dimensions, record$config), algo = "sha256")
+        commitDIAReferenceState(manager, "legacy_state", checkpoint, record$config, "no operation")
+        setDIAStepProvenance(manager, "protein_intensity_filter", "whole", c("strict_mode", "min_reps_per_group"),
+            fixed = list(normalization = "none"))
+        commitDIAReferenceState(manager, "declared_state", checkpoint, record$config, "declared operation")
+        commitDIAReferenceState(manager, "after_state", checkpoint, record$config, "pending consumed")
+    })
+    provenance <- manager$.context$snapshot$step_provenance
+    expect_setequal(names(provenance), c("initial", manager$.context$snapshot$state_history[-1]))
+    expect_identical(provenance$legacy_state$operation, "legacy")
+    expect_identical(provenance$declared_state$operation, "protein_intensity_filter")
+    expect_identical(provenance$declared_state$variant, "whole")
+    expect_identical(provenance$declared_state$parameter_names, c("strict_mode", "min_reps_per_group"))
+    expect_identical(provenance$declared_state$fixed, list(normalization = "none"))
+    expect_identical(provenance$declared_state$build, software$build)
+    expect_match(provenance$declared_state$defaults_sha256, "^[0-9a-f]{64}$")
+    expect_true(is.na(provenance$declared_state$seed))
+    expect_identical(provenance$after_state$operation, "legacy")
+    # The state record is untouched: slots, dimensions and config hash as before.
+    after <- withDIAProductsSession(manager, {
+        r <- readDIAStateMetadata(manager, getDIAStateReference(manager, "declared_state"))
+        digest::digest(list(r$data$slots, r$data$dimensions, r$config), algo = "sha256")
+    })
+    expect_identical(after, before)
+    # A revert drops the provenance of the states it drops; a reopened store keeps its entries.
+    withDIAProductsSession(manager, selectDIAStateReference(manager, "legacy_state"))
+    expect_setequal(names(manager$.context$snapshot$step_provenance), c("initial", manager$.context$snapshot$state_history[-1]))
+    expect_false("declared_state" %in% names(manager$.context$snapshot$step_provenance))
+})

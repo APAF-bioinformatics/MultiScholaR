@@ -1,0 +1,35 @@
+# KIT-025: step provenance recorded at commit
+
+Status 2026-10-16: **implemented; tests, the install and the full suite pending** (filled as they land). Control `kit_036`; candidate installed by this ticket (`kit_025`).
+
+## State-history writers (enumerated before the change)
+
+`grep -n state_history R/*.R` on the on-disk adapter: `commitDIAReferenceState` (`R/utils_workflow_dia_state.R`, reads the history from the snapshot, saves the record, writes it back and publishes the head) and `saveDIAStateRecord` (the legacy `saveState` path, same shape) are the two writers that add a name; the two revert paths (`selectDIAStateReference` and the adapter's `revertToState`) truncate it; the adapter's creation seeds it with `initial`; the native and legacy session adoptions copy it from session metadata (`R/utils_workflow_dia_sessions.R`). `publishDIAStateHead` (about 30 callers) only writes the head and is not the anchor. The in-memory `WorkflowState` (`R/utils_workflow_state.R`) is outside the store and carries no provenance.
+
+## What changed (one mechanism)
+
+- **Pending provenance, consumed at commit.** `setDIAStepProvenance(manager, operation, variant, parameter_names, fixed)` puts the running operation's provenance on the owner; the two writers take it (`recordDIAStepProvenance`) and write `snapshot$step_provenance[[state_name]]` = `operation, variant, parameter_names, build, source_commit, defaults_sha256, seed (NA), committed_at` (+ `fixed` when the declaration fixes values). Set by: the worker completion (`completeWorkflowAction`, operation from the request, variant derived by its caller with `workflowQualificationVariant(request$config, operation)`, parameter names from the registry entry), the saved-operation runner (`runSavedOperation`: the declaration's name, `parameters$variant` else `whole`, its parameter names and fixed values), the design builder (`design_builder`) and the adapter's creation (`initial` = `import`). A commit with nothing pending is `legacy`; a recommit of an existing state with nothing pending (the DA step commits its UI arguments onto the head before its contrasts, KIT-022) keeps the entry of the operation that produced the state. A revert drops the entries of the states it drops. A store written before this ticket, or adopted from a legacy session, opens with a `legacy` entry for every state that has none (written with the next head).
+- **Software identity.** `workflowSoftwareIdentity()` (`R/func_general_filemgmt_study_parameter_support.R`): `build` = `workflowExecutionBuildIdentity()` (under a source load, where no installed binary exists, a digest of the version and the source-load marker), `version`, `source_commit` from the installed DESCRIPTION's `Config/MultiScholaR/SourceCommit` (written by the harness install from the sha it already records) with `RemoteSha` as the fallback and `NA` otherwise, `r_version`, `platform`, the loaded namespaces' versions; stored once per build in `snapshot$software_environments[[build]]`. Never the working directory; `resolveWorkflowGitInfo` untouched.
+- **Defaults hash.** `defaults_sha256` of the installed `inst/config/config.ini`.
+- **IQ rollup constants declared.** `diaProteinIQRollupFixedParameters()` is the one source of `filter_double_less` and `normalization`; the declaration carries them as `fixed` (a new optional declaration field, validated), the kernel reads them from it, and the head's provenance records them. **Deviation from the ticket's item 4, recorded here:** the values are not written into the state's `slots$args`, because `slots` and `config` are inside the oracle fingerprint's summary (`kitFingerprintState`), so writing them there would move the `journey_iq` oracle and break the record-invariance rule the ticket itself names as governing. KIT-027 reads them from the head entry's `fixed` and labels them `fixed`.
+- **Seed.** `NA` for every DIA step; a test scans every registered operation's handler and declaration kernel, and the package functions they call (four levels), for `set.seed`, `rnorm`, `runif`, `sample`, `rbinom`, `rpois`: none.
+- Nothing is added to a state record; the head gains `step_provenance` and `software_environments` (additive).
+
+## Evidence
+
+| Check | Result |
+|---|---|
+| In-process check on the screen fixture ([provenance-check.R](provenance-check.R) → [provenance-check-screen.json](provenance-check-screen.json)): the KIT-008 member's project reflinked, every state fingerprinted, the store reopened on this build, the DA step run in process, fingerprinted again | every name in `state_history` has an entry (the fixture's 15 pre-existing states as `legacy`, the backfill), every registered operation named resolves, parameter names match the registry; 15 of 16 state fingerprints identical, the one difference being `correlation_filtered`, which the DA step itself recommits with its UI arguments (KIT-022), not this ticket; the head sha differs (`ce0b4e0e…` → `6ed500ae…`, additive fields), recorded; `software_environments[[build]]` carries version 0.5.0, R 4.6.1, limma 3.68.4, iq 2.0.1, arrow 24.0.0, duckdb 1.5.5 (`source_commit` NA under the source load) |
+| `test-workflow-dia-products.R` (new: the adapter's `initial` entry is `import`; a commit with nothing pending is `legacy`; a commit after `setDIAStepProvenance` carries operation, variant, parameter names, fixed values, build, defaults hash, `seed` NA; the pending provenance is consumed by one commit; the state record's slots, dimensions and config hash the same; a revert drops the dropped states' entries) | 168 pass |
+| `test-workflow-operations.R` (the runner leaves its declaration's provenance pending) | 69 pass |
+| `test-workflow-operation-registry.R` (new: no registered DIA kernel, handler or callee to four levels draws random numbers) | 136 pass |
+| `test-workflow-checkpoint-dia-state.R` | 236 pass |
+| `test-workflow-native-session.R`, `test-workflow-kit-harness.R`, `test-workflow-partitions.R`, `test-perf-003.R` | _pending_ |
+| Install `kit_025` with `Config/MultiScholaR/SourceCommit`; `source_commit` on the installed build | _pending_ |
+| Full suite at the ticket's commit | _pending_ |
+
+`study_parameters.txt` and the session manifest: neither the study-parameters writer (`createStudyParametersFile`) nor the native session export reads `step_provenance` or `software_environments` (grep: no reference), so both are unchanged by construction; the session manifest schema string is untouched.
+
+## Claim limits
+
+The fixture's pre-existing states carry `legacy` entries by construction; entries naming a registered operation are produced by commits made on this build (unit-tested on the worker completion path and the runner, observed live by the next managed journey, KIT-028's replay). The DA step's own parameters live in the DA manifest (`parameters`, `model`), not on a state entry, because that step amends the head state rather than producing a new one.

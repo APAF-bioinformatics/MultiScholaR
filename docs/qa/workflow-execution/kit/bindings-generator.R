@@ -421,6 +421,14 @@ if (!is.null(b$builds$kit_035)) {
         note = "the DA block and RUV-III's replicate structure from the one declaration (technical_replicate_id); a spanned block is standard lmFit with the reason recorded; DA tables identical on the screen project, the 300-sample oracle unchanged; no counted member, control unchanged (kit_036)")
 }
 
+# KIT-025: step provenance recorded at commit (no counted member; one install recorded with the source commit in the
+# installed DESCRIPTION). The head gains step_provenance and software_environments; state records unchanged. Control
+# stays kit_036.
+if (!is.null(b$builds$kit_025)) {
+    b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-025", outcome = "recorded", build = "kit_025",
+        note = "the head snapshot records each state's operation, variant, parameter names, build, source commit and defaults hash (legacy for states committed before); software environment per build; IQ fixed parameters declared; no counted member, control unchanged (kit_036)")
+}
+
 # KIT-012: the journey pair as users run the GUI (no launch record): the kit_008 control (the on-disk default with
 # the production worker dispatch) against the kit_012 candidate (holders to references), decided on
 # `resident_end_bytes` (candidate <= 0.95 x control) with the whole-slice anonymous peak not worse than 1.02 x and

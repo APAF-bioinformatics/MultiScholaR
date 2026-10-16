@@ -67,6 +67,10 @@ test_that("the runner computes once under the existing identity and reuses the s
     declaration <- newCountingOperation(counter)
     withDIAStateScope(manager, function() {
         first <- runSavedOperation(manager, declaration, source, list(alpha = 1, extra = "kept"))
+        # KIT-025: the runner leaves the declaration's provenance pending for the state the wrapper commits next.
+        expect_identical(manager$.context$pending_provenance$operation, declaration$name)
+        expect_identical(manager$.context$pending_provenance$parameter_names, declaration$parameters)
+        expect_identical(manager$.context$pending_provenance$variant, "whole")
         expect_identical(first$status, "computed")
         expect_identical(counter$calls, 1L)
         expect_identical(first$value$rows, nrow(object@protein_quant_table))

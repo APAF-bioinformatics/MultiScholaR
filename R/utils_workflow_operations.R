@@ -28,10 +28,12 @@
 #' @return Validated declaration.
 #' @noRd
 newWorkflowOperation <- function(name, input_class, fields, columns = list(), unit, kernel, output_class = NULL,
-                                 parameters, product_type, global_statistics = NULL, merge = NULL, factors = list()) {
+                                 parameters, product_type, global_statistics = NULL, merge = NULL, factors = list(),
+                                 fixed = NULL) {
     validateWorkflowOperation(list(name = name, input_class = input_class, fields = fields, columns = columns,
         unit = unit, kernel = kernel, output_class = output_class, parameters = parameters,
-        product_type = product_type, global_statistics = global_statistics, merge = merge, factors = factors))
+        product_type = product_type, global_statistics = global_statistics, merge = merge, factors = factors,
+        fixed = fixed))
 }
 
 #' Check an operation declaration against the class registry.
@@ -49,6 +51,9 @@ validateWorkflowOperation <- function(declaration) {
         is.character(declaration$parameters) && !anyDuplicated(declaration$parameters) &&
         scalar(declaration$product_type) && is.list(declaration$factors) &&
         (is.null(declaration$output_class) || scalar(declaration$output_class)) &&
+        # KIT-025: a declaration may fix parameter values the kernel always uses; they are recorded on the head.
+        (is.null(declaration$fixed) || (is.list(declaration$fixed) && !is.null(names(declaration$fixed)) &&
+            all(nzchar(names(declaration$fixed))) && !anyDuplicated(names(declaration$fixed)))) &&
         named(declaration$global_statistics) && named(declaration$merge, c("design", "concatenate", "sum"))
     if (!isTRUE(valid)) {
         cli::cli_abort("workflow operation declaration is invalid", class = "workflow_operation_invalid")
@@ -89,6 +94,8 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
         cli::cli_abort("operation {.val {declaration$name}} is missing parameter{?s} {.val {missing}}",
             class = "workflow_operation_parameters")
     }
+    # KIT-025: the state the wrapper commits after this operation carries the declaration's provenance.
+    setDIAStepProvenance(manager, declaration$name, parameters$variant %||% "whole", declaration$parameters, declaration$fixed)
     spec <- readComponentMetadata(manager, source)$data
     if (!identical(spec$class, declaration$input_class)) {
         cli::cli_abort("operation {.val {declaration$name}} expects {.cls {declaration$input_class}}, the source is {.cls {spec$class}}",

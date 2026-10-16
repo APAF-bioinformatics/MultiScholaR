@@ -1,3 +1,31 @@
+#' The software that produced a state (KIT-025, analysis-record audit AR-01/AR-16)
+#'
+#' `build` is the sha256 of the installed package binary, the same value the worker request carries
+#' (`workflowExecutionBuildIdentity()`); `source_commit` is the commit the install was made from, written into
+#' the installed DESCRIPTION by the harness install (`Config/MultiScholaR/SourceCommit`), with `RemoteSha` (a
+#' `remotes` install from GitHub) as the fallback and `NA` otherwise; never the working directory. The loaded
+#' namespace versions are the record's environment table, keyed by `build`.
+#' @return List `build`, `version`, `source_commit`, `r_version`, `platform`, `packages` (named character).
+#' @noRd
+workflowSoftwareIdentity <- function() {
+    description <- utils::packageDescription("MultiScholaR")
+    field <- function(name) {
+        value <- description[[name]]
+        if (is.character(value) && length(value) == 1L && !is.na(value) && nzchar(trimws(value))) trimws(value) else NA_character_
+    }
+    source_commit <- field("Config/MultiScholaR/SourceCommit")
+    if (is.na(source_commit)) source_commit <- field("RemoteSha")
+    loaded <- sort(loadedNamespaces())
+    packages <- vapply(loaded, function(name) tryCatch(as.character(utils::packageVersion(name)),
+        error = function(error) NA_character_), character(1))
+    # Under a source load (tests, scripts) there is no installed binary; the build is then named from the
+    # version and the loaded source, as the adapter's own software digest does.
+    build <- tryCatch(workflowExecutionBuildIdentity(), error = function(error)
+        digest::digest(list(source_load = TRUE, version = field("Version")), algo = "sha256"))
+    list(build = build, version = field("Version"), source_commit = source_commit,
+        r_version = R.version.string, platform = R.version$platform, packages = packages)
+}
+
 resolveWorkflowGitInfo <- function() {
     tryCatch(
         {

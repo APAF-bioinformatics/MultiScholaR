@@ -566,6 +566,67 @@ materializeDIAStateRecord <- function(context, reference) {
 #' @param timestamp Original timestamp or the commit time.
 #' @return Immutable state reference.
 #' @noRd
+#' Step provenance on the head snapshot (KIT-025; analysis-record audit AR-02/AR-03)
+#'
+#' The head records who produced each state and under what software. The two `state_history` writers
+#' (`commitDIAReferenceState`, `saveDIAStateRecord`) take the pending provenance the running operation set
+#' (`setDIAStepProvenance`: the worker completion from the request, `runSavedOperation` from its declaration,
+#' the design builder and the import by name) and write `snapshot$step_provenance[[state_name]]`; a commit
+#' with no pending provenance is `legacy`. Nothing is added to a state record, so every fingerprint oracle is
+#' unchanged (the record-invariance rule). The software environment of a build is stored once per `build`.
+#' @param operation Registry name, or `legacy`, `design_builder`, `import`.
+#' @param variant Registry variant or NA.
+#' @param parameter_names The registry entry's declared parameter names (values stay in the state's `slots$args`).
+#' @param fixed Named list of the declaration's fixed parameter values, when it has any (the IQ rollup).
+#' @noRd
+setDIAStepProvenance <- function(manager, operation, variant = NA_character_, parameter_names = character(), fixed = NULL) {
+    if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
+    manager$.context$pending_provenance <- list(operation = operation, variant = variant,
+        parameter_names = as.character(parameter_names), fixed = fixed)
+    invisible(NULL)
+}
+
+#' @noRd
+takeDIAStepProvenance <- function(context) {
+    pending <- context$pending_provenance
+    context$pending_provenance <- NULL
+    if (is.null(pending)) list(operation = "legacy", variant = NA_character_, parameter_names = character(), fixed = NULL) else pending
+}
+
+#' @noRd
+diaStepProvenanceEntry <- function(snapshot, provenance, timestamp = Sys.time()) {
+    software <- workflowSoftwareIdentity()
+    if (is.null(snapshot$software_environments[[software$build]]))
+        snapshot$software_environments[[software$build]] <- software[c("version", "source_commit", "r_version", "platform", "packages")]
+    defaults <- system.file("config", "config.ini", package = "MultiScholaR")
+    entry <- list(operation = provenance$operation, variant = provenance$variant,
+        parameter_names = as.character(provenance$parameter_names), build = software$build,
+        source_commit = software$source_commit,
+        defaults_sha256 = if (nzchar(defaults)) digest::digest(file = defaults, algo = "sha256") else NA_character_,
+        seed = NA_real_, committed_at = format(timestamp, "%Y-%m-%dT%H:%M:%OS3%z"))
+    if (!is.null(provenance$fixed)) entry$fixed <- provenance$fixed
+    list(snapshot = snapshot, entry = entry)
+}
+
+#' @noRd
+recordDIAStepProvenance <- function(context, snapshot, state_name, timestamp = Sys.time()) {
+    pending <- context$pending_provenance
+    # A recommit of an existing state with no operation pending (the DA step commits its arguments onto the head
+    # before its contrasts, KIT-022) keeps the entry of the operation that produced the state.
+    if (is.null(pending) && !is.null(snapshot$step_provenance[[state_name]])) return(snapshot)
+    written <- diaStepProvenanceEntry(snapshot, takeDIAStepProvenance(context), timestamp)
+    snapshot <- written$snapshot
+    snapshot$step_provenance[[state_name]] <- written$entry
+    snapshot
+}
+
+#' @noRd
+truncateDIAStepProvenance <- function(snapshot) {
+    keep <- unlist(snapshot$state_history)
+    if (!is.null(snapshot$step_provenance)) snapshot$step_provenance <- snapshot$step_provenance[intersect(names(snapshot$step_provenance), keep)]
+    snapshot
+}
+
 commitDIAReferenceState <- function(manager, state_name, checkpoint, config, description,
     timestamp = Sys.time()) {
     assertWorkflowController()
@@ -609,6 +670,7 @@ commitDIAReferenceState <- function(manager, state_name, checkpoint, config, des
     snapshot$sizes[[state_name]] <- list(rows = checkpoint$dimensions$rows,
         columns = length(checkpoint$dimensions$columns),
         note = "component dimensions; no assay hydration or R heap-size estimate")
+    snapshot <- recordDIAStepProvenance(context, snapshot, state_name, timestamp)
     publishDIAStateHead(context, snapshot)
     if (is.function(context$store$progress)) context$store$progress(
         paste0("commit:", state_name), 1, 1, reference$entity_id, "checkpoint")
@@ -877,6 +939,7 @@ selectDIAStateReference <- function(manager, state_name) {
     if (is.na(index)) cli::cli_abort("state is outside selected history", class = "saved_entity_scope")
     snapshot$state_history <- snapshot$state_history[seq_len(index)]
     snapshot$current_state <- state_name
+    snapshot <- truncateDIAStepProvenance(snapshot)
     publishDIAStateHead(manager$.context, snapshot)
     reference
 }
@@ -997,6 +1060,10 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
     context$snapshot <- list(identity = store$identity, states = list(), audit = list(),
         current_state = native$current_state, state_history = native$state_history,
         workflow_type = native$workflow_type, audit_enabled = native$audit_enabled)
+    # KIT-025: the placeholder `initial` state is the import's; its provenance is written with the first head.
+    initial <- diaStepProvenanceEntry(context$snapshot, list(operation = "import", variant = NA_character_, parameter_names = character()))
+    context$snapshot <- initial$snapshot
+    context$snapshot$step_provenance <- list(initial = initial$entry)
     if (isTRUE(reopen)) {
         if (!file.exists(context$head_path) || file.size(context$head_path) > 65536) {
             cli::cli_abort("DIA state head is missing or oversized", class = "saved_entity_missing")
@@ -1007,6 +1074,13 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
             !is.list(snapshot$audit) || !(is.list(snapshot$state_history) ||
                 is.character(snapshot$state_history))) {
             cli::cli_abort("DIA state head identity differs", class = "saved_entity_scope")
+        }
+        # KIT-025: a store written before provenance was recorded (or adopted from a legacy session) opens with
+        # a `legacy` entry for every state that has none; the entries are written with the next head.
+        for (name in setdiff(unlist(snapshot$state_history), names(snapshot$step_provenance))) {
+            legacy <- diaStepProvenanceEntry(snapshot, list(operation = "legacy", variant = NA_character_, parameter_names = character()))
+            snapshot <- legacy$snapshot
+            snapshot$step_provenance[[name]] <- legacy$entry
         }
         context$snapshot <- snapshot
         context$reference_states <- isTRUE(snapshot$reference_states)
@@ -1071,6 +1145,7 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
         index <- which(snapshot$state_history == state_name)
         snapshot$state_history <- snapshot$state_history[1:index]
         snapshot$current_state <- state_name
+        snapshot <- truncateDIAStepProvenance(snapshot)
         publishDIAStateHead(context, snapshot)
         record$data
     }
@@ -1163,6 +1238,7 @@ saveDIAStateRecord <- function(context, state_name, s4_data_object, config_objec
     snapshot$state_history <- native$state_history
     id <- record$audit_metadata$record_id
     if (!is.null(id)) snapshot$audit[[id]] <- list(reference = reference, field = "audit_metadata")
+    snapshot <- recordDIAStepProvenance(context, snapshot, state_name)
     publishDIAStateHead(context, snapshot)
     invisible(NULL)
 }

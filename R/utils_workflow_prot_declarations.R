@@ -79,9 +79,10 @@ computeDIAReferenceIQRollup <- function(manager, reference, parameters = list(),
     # The declaration passes no QC plot file (audit A6, KIT-015 pre-execution audit PE-01): IQ's default
     # `qc-plots.pdf` would land in the process working directory (the worker's home); the plot is no
     # component or product of the step.
+    fixed <- diaProteinIQRollupFixedParameters()
     process_long_format(peptideValuesImputedFile, output_filename = iqOutputFile, sample_id = sampleColumn,
         primary_id = proteinColumn, secondary_id = peptideColumn, intensity_col = intensityColumn,
-        filter_double_less = c("Q.Value" = "0.01", "PG.Q.Value" = "0.01"), normalization = "none", pdf_out = NULL)
+        filter_double_less = fixed$filter_double_less, normalization = fixed$normalization, pdf_out = NULL)
     if (!file.exists(iqOutputFile)) cli::cli_abort("IQ output file not created", class = "workflow_execution_invalid")
     proteinLog2Quant <- read_fn(iqOutputFile, .name_repair = "minimal")
     restored <- vapply(colnames(proteinLog2Quant), function(col) {
@@ -382,12 +383,18 @@ readManagedProteinResult <- function(manager, result, workflow_data) {
 #' its own rows; the surviving sample set is the global statistic), placed whole: IQ reads the streamed
 #' input file itself. The kernel runs the compute-only entry point.
 #' @noRd
+#' The IQ rollup's fixed arguments (KIT-025): the values the kernel always passes to `iq::process_long_format`,
+#' declared once so the head's provenance records them (KIT-027 labels them `fixed`); not request parameters.
+#' @noRd
+diaProteinIQRollupFixedParameters <- function() list(filter_double_less = c("Q.Value" = "0.01", "PG.Q.Value" = "0.01"),
+    normalization = "none")
+
 diaProteinIQRollupOperation <- function() {
     newWorkflowOperation(name = "protein_iq_rollup", input_class = "PeptideQuantitativeData",
         fields = "design_matrix", unit = "feature_group",
         kernel = function(object, parameters, store) computeDIAReferenceIQRollup(store$manager, store$source,
             parameters, worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "whole"),
-        output_class = "ProteinQuantitativeData", parameters = character(),
+        output_class = "ProteinQuantitativeData", parameters = character(), fixed = diaProteinIQRollupFixedParameters(),
         product_type = "dia.protein_iq_rollup_result",
         global_statistics = c(surviving_sample_set =
             "the samples with a value in IQ's output over the whole run; the design is filtered once to them"),

@@ -11,6 +11,7 @@ buildProtDesignStateCheckpoint <- function(
   if (workflowType == "DIA" && usesDIAReferenceStates(workflowData$state_manager)) {
     checkpoint <- newDIAPeptideCheckpoint(workflowData$state_manager, workflowData$data_cln,
       workflowData$design_matrix, workflowData$config_list)
+    setDIAStepProvenance(workflowData$state_manager, "design_builder") # KIT-025
     commitDIAReferenceState(workflowData$state_manager, "raw_data_s4", checkpoint,
       checkpoint$slots$args, "Initial Peptide S4 object created after design matrix.")
     return("raw_data_s4")
