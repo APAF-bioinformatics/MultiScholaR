@@ -568,6 +568,13 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
         basename(tempfile("dia-enrichment-")), identity, "scientific_product", factors = declaration$factors)
     tables <- lapply(manifest$results, function(result) result$tables$da_proteins_long)
     rootDIAProduct(manager, reference, c(list(manifest$source), tables))
+    # KIT-026: the service each reported identity names, in the head beside the product.
+    for (service in setdiff(value$service, "unavailable")) {
+        parts <- strsplit(service, ":", fixed = TRUE)[[1L]]
+        recordWorkflowExternalResource(manager, parts[[1L]], paste(parts[-1L], collapse = ":"),
+            if (identical(parts[[1L]], "clusterProfiler")) "package_version" else "database_version",
+            query_summary = sprintf("enrichment of %d contrasts, taxon %s", length(results), arguments$taxon_id %||% NA))
+    }
     list(results = value$results, service = value$service, reference = reference)
 }
 

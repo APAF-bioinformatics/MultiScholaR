@@ -237,6 +237,8 @@ buildDIAReferenceDesignState <- function(manager, reference, config_list, column
             data_reference = cleaned_reference)
         snapshot <- context$snapshot
         snapshot$design_initial <- initial
+        # KIT-026: the GUI-built design has no input file; the head names the table it was built on.
+        snapshot$file_dependencies$design <- list(role = "design_builder", entity_id = cleaned_reference$entity_id)
         publishDIAStateHead(context, snapshot)
         releaseDIAReplacedOwner(manager, reference, cleaned_reference)
     }

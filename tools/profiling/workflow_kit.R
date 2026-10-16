@@ -893,8 +893,11 @@ kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L, memo = NUL
         # a worker, the multidplyr spec for the native loop); `support_table`/`removal_ledger` inside an args section
         # are the native loop's copies of the support entries the checkpoint carries and compares separately
         # (KIT-008 correction 2, user decision 2026-10-12: execution bookkeeping, not science).
+        # `fasta_sha256` is the input identity KIT-026 records on the accession cleanup's config; it is checked
+        # against the head's `fasta` input, and the cleanup's tables are compared as before.
         value <- value[!(names_ %in% c("timestamp", "mtime", "dependencies", "product_dependencies", "da_dependencies",
-            "owned_components", "component_dependencies", "declaration", "core_utilisation", "support_table", "removal_ledger") |
+            "owned_components", "component_dependencies", "declaration", "core_utilisation", "support_table", "removal_ledger",
+            "fasta_sha256") |
             grepl("timestamp$", names_))]
         return(lapply(value, kitCanonical, store = store, api = api, depth = depth + 1L, memo = memo))
     }

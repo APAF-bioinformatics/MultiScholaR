@@ -148,6 +148,8 @@ computeDIAReferenceAccessionCleanup <- function(manager, reference, parameters, 
     if (!identical(variant, "whole")) cli::cli_abort("unsupported accession cleanup variant", class = "workflow_execution_unsupported")
     delimiter <- parameters$delimiter
     aggregation <- parameters$aggregation_method
+    # KIT-026: the FASTA the import hashed (the head's `fasta` input) unless the caller declares one.
+    fasta_sha256 <- parameters$fasta_sha256 %||% manager$.context$snapshot$file_dependencies$fasta$sha256 %||% NA_character_
     if (is.null(seqinr)) {
         path <- parameters$fasta_table %||% file.path(manager$.context$experiment_paths$source_dir %||% "", "aa_seq_tbl_final.RDS")
         if (is.character(path) && length(path) == 1L && nzchar(path) && file.exists(path)) seqinr <- readRDS(path)
@@ -195,7 +197,7 @@ computeDIAReferenceAccessionCleanup <- function(manager, reference, parameters, 
         state_name = "protein_accession_cleaned",
         description = if (applied) "Applied protein accession cleanup" else "Skipped accession cleanup (no FASTA data)",
         config = list(delimiter = delimiter, aggregation_method = aggregation, cleanup_applied = applied,
-            active_protein_key = key_after),
+            active_protein_key = key_after, fasta_sha256 = fasta_sha256),
         section = "chooseBestProteinAccession", protein_count = protein_count,
         execution = list(variant = variant, worker_cap = worker_cap, rows = protein_count, cleanup_applied = applied),
         text = text, field = "cleanedS4", qc_name = "accession_cleanup", qc = results,
@@ -409,10 +411,10 @@ diaProteinAccessionCleanupOperation <- function() {
     newWorkflowOperation(name = "protein_accession_cleanup", input_class = "ProteinQuantitativeData",
         fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "row",
         kernel = function(object, parameters, store) computeDIAReferenceAccessionCleanup(store$manager, store$source,
-            parameters[c("delimiter", "aggregation_method", "fasta_table")],
+            parameters[c("delimiter", "aggregation_method", "fasta_table", "fasta_sha256")],
             worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "whole",
             seqinr = parameters$seqinr, fasta_metadata = parameters$fasta_metadata),
-        output_class = "ProteinQuantitativeData", parameters = c("delimiter", "aggregation_method"),
+        output_class = "ProteinQuantitativeData", parameters = c("delimiter", "aggregation_method", "fasta_sha256"),
         product_type = "dia.protein_accession_cleanup_result",
         merge = c(protein_id_table = "concatenate", protein_quant_table = "concatenate"))
 }

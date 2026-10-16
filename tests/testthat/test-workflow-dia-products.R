@@ -67,6 +67,12 @@ test_that("the enrichment declaration runs the kernel on the DA manifest's sourc
         process_fn = runProtEnrichDeterministicProcessEnrichments))
     expect_s4_class(declared$results, "EnrichmentResults")
     expect_identical(declared$service, "gprofiler2:gprofiler2_test_double")
+    # KIT-026: one external resource in the head for the reported service.
+    resources <- manager$.context$snapshot$external_resources
+    expect_length(resources, 1L)
+    expect_identical(resources[[1]][c("service", "release", "release_kind")],
+        list(service = "gprofiler2", release = "gprofiler2_test_double", release_kind = "database_version"))
+    expect_false(is.na(as.POSIXct(resources[[1]]$query_date, format = "%Y-%m-%dT%H:%M:%OS")))
     expect_true(isSavedWorkflowReference(declared$reference))
     # The pre-ticket kernel path on the same inputs gives the same enrichment data.
     direct <- do.call(runProtEnrichDeterministicProcessEnrichments, c(arguments, list(pathway_dir = withr::local_tempdir()))[names(arguments)])

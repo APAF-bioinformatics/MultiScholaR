@@ -165,6 +165,10 @@ submitStringDBEnrichment <- function(input_data_frame,
     )
   }
 
+  # KIT-026: the STRING release this client queries (the version in its API host) goes in the head.
+  recordWorkflowExternalResource(getDIAActiveManager(), "string-db", "12.0", "api_version",
+    query_summary = sprintf("valuesranks enrichment submit, species %s", species))
+
   parsed_json_response <- tryCatch({
     temp_parsed <- jsonlite::fromJSON(response_content_text,
                                       simplifyDataFrame = FALSE,

@@ -68,6 +68,7 @@ test_that("UniProt annotation helpers preserve cache, download, and empty-table 
     status_code = function(x) x$status,
     content = function(x, as = "parsed", encoding = NULL) x$text,
     timeout = function(seconds) seconds,
+    headers = function(x) list(`x-uniprot-release` = "2026_03"),
     .package = "httr"
   )
 
@@ -79,6 +80,17 @@ test_that("UniProt annotation helpers preserve cache, download, and empty-table 
     timeout = 60,
     api_delay = 0
   )
+
+  # KIT-026: under a DIA owner the first successful response's release header is recorded once.
+  manager <- newDIAStateAdapter(newWorkflowEntityStore(withr::local_tempdir(), "uniprot-release", "DIA"))
+  withr::defer(closeDIAStateAdapter(manager))
+  manager$.context$reference_states <- TRUE
+  withDIAStateScope(manager, function() directUniprotDownload(input_tbl = input_tbl, output_path = tempfile(fileext = ".tsv"),
+    taxon_id = 9606, batch_size = 1, timeout = 60, api_delay = 0))
+  resources <- manager$.context$snapshot$external_resources
+  expect_length(resources, 1L)
+  expect_identical(resources[[1]][c("service", "release", "release_kind")],
+    list(service = "uniprot", release = "2026_03", release_kind = "header"))
 
   request_log$status <- 500L
   failed_download <- directUniprotDownload(

@@ -2203,7 +2203,7 @@ validateWorkflowProteinIQRollupParameters <- function(parameters, policy, resolv
 #' The accession cleanup's delimiter, aggregation method and optional FASTA table path (KIT-015).
 #' @noRd
 validateWorkflowProteinAccessionParameters <- function(parameters, policy, resolved = TRUE) {
-    allowed <- c("delimiter", "aggregation_method", "fasta_table")
+    allowed <- c("delimiter", "aggregation_method", "fasta_table", "fasta_sha256")
     required <- allowed[1:2]
     if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
         any(!names(parameters) %in% allowed)) || resolved && !all(required %in% names(parameters)))

@@ -1,0 +1,55 @@
+{
+  "schema": "kit.inputs_check.v1",
+  "ticket": "KIT-026",
+  "label": "screen",
+  "date": "2026-10-17",
+  "head_commit": "883bf72e42e9c76001a083f905da289a1c851fed",
+  "reopened_roles": [null, null, null, null],
+  "roles": ["iq_output", null, "peptide_input", null, "diann_report", "fasta", "iq_output", "peptide_input"],
+  "corpus_inputs": {
+    "diann_report": {
+      "recorded": "87a99e83d1545ba8aabac0ff8b9db2caddb30902842ce08ab6230ac6ff91f196",
+      "corpus_binding": "87a99e83d1545ba8aabac0ff8b9db2caddb30902842ce08ab6230ac6ff91f196",
+      "sha256sum": "87a99e83d1545ba8aabac0ff8b9db2caddb30902842ce08ab6230ac6ff91f196",
+      "bytes_equal": true
+    },
+    "fasta": {
+      "recorded": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+      "corpus_binding": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+      "sha256sum": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+      "bytes_equal": true
+    }
+  },
+  "execution_inputs": {
+    "iq_output": {
+      "role": "iq_output",
+      "recorded": "e3b41cf624a396458cdabfe98f7d37813f2751c2b622b942400a0d3894d13006",
+      "sha256sum": "e3b41cf624a396458cdabfe98f7d37813f2751c2b622b942400a0d3894d13006"
+    },
+    "peptide_input": {
+      "role": "peptide_input",
+      "recorded": "05a7b47ee844dc971f844fc507cf204bb40230da71a58db997b57f3a48c712ab",
+      "sha256sum": "05a7b47ee844dc971f844fc507cf204bb40230da71a58db997b57f3a48c712ab"
+    }
+  },
+  "accession": {
+    "fasta_sha256": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+    "head_fasta": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+    "cleanup_applied": true,
+    "slots_args_has_fasta": false
+  },
+  "accession_provenance": {
+    "operation": "protein_accession_cleanup",
+    "parameter_names": ["delimiter", "aggregation_method", "fasta_sha256"],
+    "names_in_config": [true, true, true]
+  },
+  "states_compared": ["initial", "raw_data_s4", "qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered", "protein_s4_created", "protein_accession_cleaned"],
+  "state_fingerprints_identical": true,
+  "states_differing": [],
+  "recomputed_states_identical": [true, true],
+  "head_sha256": {
+    "before": "ce0b4e0e3b68616e02ef67ec626943b8b69427da1779811dd93646a6c5a2cbc8",
+    "inputs_recorded": "afaa2eea2943c4de7e4570384cd7eca5fe798d9d8d53db6291638f027042ffdb",
+    "after": "4811e75be559ea338f3f25e2dc90bc3f326fb358eda319f7a2c5fa29959e2435"
+  }
+}

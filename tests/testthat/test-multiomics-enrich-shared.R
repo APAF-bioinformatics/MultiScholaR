@@ -409,6 +409,19 @@ test_that("STRING submission helper preserves payload construction and failure h
   )
   expect_null(parse_error_result$job_id)
   expect_null(parse_error_result$submission_response$message)
+
+  # KIT-026: under a DIA owner a successful submit records the STRING release the client queries.
+  request_log$json_mode <- "success"
+  manager <- newDIAStateAdapter(newWorkflowEntityStore(withr::local_tempdir(), "string-release", "DIA"))
+  withr::defer(closeDIAStateAdapter(manager))
+  manager$.context$reference_states <- TRUE
+  withDIAStateScope(manager, function() submitStringDBEnrichment(input_data_frame = input_tbl,
+    identifier_column_name = "protein", value_column_name = "score", caller_identity = "demo-run",
+    api_key = "token-5", species = 9606))
+  resources <- manager$.context$snapshot$external_resources
+  expect_length(resources, 1L)
+  expect_identical(resources[[1]][c("service", "release", "release_kind")],
+    list(service = "string-db", release = "12.0", release_kind = "api_version"))
 })
 
 test_that("STRING download helpers preserve graph and table retrieval behavior", {

@@ -947,3 +947,78 @@ test_that("KIT-013 audit PX-01: a QC-time configuration update does not fire the
         closeDIAStateAdapter(manager)
     })
 })
+
+test_that("KIT-026: the head records inputs by role and external resources, and both survive export and open", {
+    skip_if_not(identical(Sys.info()[["sysname"]], "Linux"))
+    root <- withr::local_tempdir()
+    output <- withr::local_tempdir()
+    restored_root <- withr::local_tempdir()
+    fixture <- makeDIANativeSessionFixture(root)
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    report <- file.path(root, "report.tsv")
+    fasta <- file.path(root, "proteins.fasta")
+    design <- file.path(root, "design_matrix.tab")
+    writeLines(c("Run\tProtein.Group", "s1\tP1"), report)
+    writeLines(c(">sp|P1|ONE", "MPEPTIDE"), fasta)
+    writeLines(c("Run\tgroup", "s1\tA"), design)
+    legacy <- file.path(root, "iq_output_file.txt")
+    writeLines("legacy", legacy)
+    manager$.context$reference_states <- TRUE
+    # The import names its two paths by role; completion hashes them into the head.
+    registerDIAInputFiles(manager, c(diann_report = report, fasta = fasta))
+    completeDIAInputFiles(manager)
+    # The GUI-built design is recorded by entity id (built here as the older-session path derives its import
+    # summary); the directory import by its file.
+    manager$.context$reference_states <- FALSE
+    initial <- buildDIAReferenceDesignState(manager, saveDIAOwnedValue(data.frame(Run = "s1", Quantity = 1), "input", manager),
+        list(), list(run_col = "Run", quantity_col = "Quantity"))
+    expect_identical(manager$.context$snapshot$file_dependencies$design,
+        list(role = "design_builder", entity_id = initial$data_reference$entity_id))
+    manager$.context$reference_states <- TRUE
+    workflow <- list(state_manager = manager)
+    runProtDesignImportConfirmationFlow(workflow, list(source_dir = root), list(importPath = root, designFile = design,
+        fastaPath = NULL), list(), 9606, "human", NULL,
+        hydrateFastaSidecar = function(...) NULL, hydrateUniprotSidecar = function(...) NULL,
+        initializeWorkflowState = function(...) "DIA", buildStateCheckpointFn = function(...) "raw_data_s4",
+        completePostCheckpointFn = function(...) NULL)
+    recordWorkflowExternalResource(manager, "string-db", "12.0", "api_version", query_summary = "fixture")
+    # A dependency written before roles existed (an IQ output with its source) opens with role NA.
+    snapshot <- manager$.context$snapshot
+    snapshot$file_dependencies$iq_output_file <- c(list(source = legacy, destination = "execution/iq_output_file/iq_output_file.txt"),
+        describeDIANativeFile(legacy))
+    publishDIAStateHead(manager$.context, snapshot)
+    manager$.context$reference_states <- FALSE
+    inputs <- manager$.context$snapshot$file_dependencies
+    for (role in c("diann_report", "fasta", "design_file")) {
+        expect_identical(inputs[[role]]$role, role)
+        expect_null(inputs[[role]]$source)
+    }
+    expect_identical(inputs$diann_report$sha256, digest::digest(file = report, algo = "sha256"))
+    expect_identical(inputs$fasta$sha256, digest::digest(file = fasta, algo = "sha256"))
+    expect_identical(inputs$design_file$sha256, digest::digest(file = design, algo = "sha256"))
+    expect_identical(inputs$fasta$bytes, as.numeric(file.size(fasta)))
+    resources <- manager$.context$snapshot$external_resources
+    expect_length(resources, 1L)
+    expect_identical(resources[[1]][c("service", "release", "release_kind")],
+        list(service = "string-db", release = "12.0", release_kind = "api_version"))
+    expect_false(is.na(as.POSIXct(resources[[1]]$query_date, format = "%Y-%m-%dT%H:%M:%OS")))
+    # Recorded inputs are not archive members: only the dependency with a source is copied.
+    expect_identical(names(resolveDIANativeDependencies(manager)), "iq_output_file")
+    result <- runDIANativeSessionExport(manager, fixture$metadata, output,
+        dependencies = resolveDIANativeDependencies(manager))
+    expect_identical(result$publication$status, "complete")
+    closeDIAStateAdapter(manager)
+    imported <- openDIANativeSession(result$publication$archive_path, restored_root)
+    withr::defer(closeDIAStateAdapter(imported$manager))
+    restored <- imported$manager$.context$snapshot
+    expect_identical(restored$file_dependencies[c("diann_report", "fasta", "design", "design_file")],
+        inputs[c("diann_report", "fasta", "design", "design_file")])
+    expect_identical(restored$file_dependencies$iq_output_file$role, NA_character_)
+    expect_identical(restored$external_resources, resources)
+    # A worker never publishes the head.
+    withr::local_envvar(MULTISCHOLAR_WORKFLOW_WORKER = "1")
+    imported$manager$.context$reference_states <- TRUE
+    expect_null(recordWorkflowExternalResource(imported$manager, "uniprot", NA, "header"))
+    expect_length(imported$manager$.context$snapshot$external_resources, 1L)
+})

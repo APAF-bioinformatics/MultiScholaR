@@ -1011,6 +1011,8 @@ isDIANativeSession <- function(manager) {
 #' @noRd
 resolveDIANativeDependencies <- function(manager) {
     dependencies <- manager$.context$snapshot$file_dependencies %||% list()
+    # KIT-026: recorded inputs (the report, the FASTA, the design) carry no source; they are not archive members.
+    dependencies <- Filter(function(dependency) !is.null(dependency$source), dependencies)
     for (name in names(dependencies)) {
         restored <- manager$.context$native_dependencies[[name]]
         if (!is.null(restored) && identical(dependencies[[name]]$source, restored$source_provenance)) {

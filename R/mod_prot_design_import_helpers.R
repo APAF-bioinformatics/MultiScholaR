@@ -390,6 +390,10 @@ runProtDesignImportConfirmationFlow <- function(
     organismName = organismName
   )
 
+  # KIT-026: the directory import reads its design (and FASTA, when one is found) from files.
+  recordDIAWorkflowInputs(workflowData$state_manager, c(design_file = importArtifacts$designFile,
+    fasta = importArtifacts$fastaPath))
+
   stateName <- buildStateCheckpointFn(
     workflowData = workflowData,
     workflowType = workflowType,

@@ -674,7 +674,7 @@ commitDIAReferenceState <- function(manager, state_name, checkpoint, config, des
     for (field in intersect(c("iq_output_file", "peptide_input_file"), names(config))) {
         path <- config[[field]]
         if (is.character(path) && length(path) == 1L && !is.na(path)) {
-            dependency <- c(list(source = path,
+            dependency <- c(list(role = sub("_file$", "", field), source = path,
                 destination = paste("execution", field, basename(path), sep = "/")), describeDIANativeFile(path))
             snapshot$file_dependencies[[field]] <- dependency
             snapshot$file_dependencies[[paste0(field, "_", substr(reference$entity_id, 1L, 16L))]] <- dependency
@@ -1101,6 +1101,9 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
             snapshot <- legacy$snapshot
             snapshot$step_provenance[[name]] <- legacy$entry
         }
+        # KIT-026: inputs recorded before roles existed open with `role = NA`.
+        for (name in names(snapshot$file_dependencies))
+            if (is.null(snapshot$file_dependencies[[name]]$role)) snapshot$file_dependencies[[name]]$role <- NA_character_
         context$snapshot <- snapshot
         context$reference_states <- isTRUE(snapshot$reference_states)
         # Rebuild only the bounded index from accepted roots, never from orphan stages.
@@ -1237,7 +1240,7 @@ saveDIAStateRecord <- function(context, state_name, s4_data_object, config_objec
         path <- record$config[[field]]
         if (is.character(path) && length(path) == 1L && !is.na(path)) {
             description <- describeDIANativeFile(path)
-            snapshot$file_dependencies[[field]] <- c(list(source = path,
+            snapshot$file_dependencies[[field]] <- c(list(role = sub("_file$", "", field), source = path,
                 destination = paste("execution", field, basename(path), sep = "/")), description)
         }
     }
@@ -2007,6 +2010,48 @@ reclaimDIACompletedMemory <- function(manager) {
     invisible(result)
 }
 
+#' Record the analysis's external inputs in the head (KIT-026): each file by role with its name, bytes and
+#' sha256, each saved input by role with its entity id. These entries carry no `source`, so a session export
+#' records them without copying the file (`resolveDIANativeDependencies`).
+#' @param manager Current DIA owner; other owners are unchanged.
+#' @param paths Named character vector, role to an existing file.
+#' @param entities Named list, role to an entity id.
+#' @return NULL invisibly.
+#' @noRd
+recordDIAWorkflowInputs <- function(manager, paths = character(), entities = list()) {
+    if (!usesDIAReferenceStates(manager)) return(invisible(NULL))
+    snapshot <- manager$.context$snapshot
+    for (role in names(paths)) {
+        path <- paths[[role]]
+        snapshot$file_dependencies[[role]] <- list(role = role, name = basename(path),
+            bytes = as.numeric(workflowTableFileIdentity(path)$size), sha256 = hashWorkflowFile(path))
+    }
+    for (role in names(entities)) snapshot$file_dependencies[[role]] <- list(role = role, entity_id = entities[[role]])
+    publishDIAStateHead(manager$.context, snapshot)
+    invisible(NULL)
+}
+
+#' Record one external service the analysis queried (KIT-026), appended to `snapshot$external_resources`.
+#' A worker never publishes the head, so a query made inside a worker is not recorded.
+#' @param manager Current DIA owner; other owners are unchanged.
+#' @param service Service name (`gprofiler2`, `clusterProfiler`, `string-db`, `uniprot`).
+#' @param release Release the service reported or the client queried; NA when unknown.
+#' @param release_kind `database_version`, `package_version`, `api_version` or `header`.
+#' @param query_date Time of the query, recorded as ISO 8601.
+#' @param query_summary Short description of the query.
+#' @return NULL invisibly.
+#' @noRd
+recordWorkflowExternalResource <- function(manager, service, release, release_kind, query_date = Sys.time(),
+    query_summary = NA_character_) {
+    if (!usesDIAReferenceStates(manager) || identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")) return(invisible(NULL))
+    snapshot <- manager$.context$snapshot
+    snapshot$external_resources[[length(snapshot$external_resources) + 1L]] <- list(service = service,
+        release = if (length(release)) as.character(release[[1L]]) else NA_character_, release_kind = release_kind,
+        query_date = format(query_date, "%Y-%m-%dT%H:%M:%OS3%z"), query_summary = query_summary)
+    publishDIAStateHead(manager$.context, snapshot)
+    invisible(NULL)
+}
+
 #' Register immutable source-file identities for one managed import.
 #' @param manager Current adapter; ordinary workflows remain unchanged.
 #' @param paths Explicit report/FASTA paths consumed by this import.
@@ -2014,7 +2059,8 @@ reclaimDIACompletedMemory <- function(manager) {
 #' @noRd
 registerDIAInputFiles <- function(manager, paths) {
     if (!usesDIAReferenceStates(manager)) return(invisible(NULL))
-    paths <- unique(paths[file.exists(paths)])
+    # KIT-026: the caller names each path by its role (`diann_report`, `fasta`); the names survive to completion.
+    paths <- paths[file.exists(paths) & !duplicated(paths)]
     if (length(paths) > 16L) cli::cli_abort("import file leases exceed limits", class = "saved_entity_limit")
     manager$.context$input_file_leases <- lapply(paths, workflowTableFileIdentity)
     manager$.context$input_files_ready <- FALSE
@@ -2032,6 +2078,10 @@ completeDIAInputFiles <- function(manager) {
             cli::cli_abort("source file changed during import", class = "saved_entity_corrupt")
     }
     manager$.context$input_files_ready <- TRUE
+    leases <- manager$.context$input_file_leases
+    roles <- names(leases) %||% rep("", length(leases))
+    if (any(nzchar(roles))) recordDIAWorkflowInputs(manager,
+        vapply(leases[nzchar(roles)], `[[`, character(1), "path"))
     reference <- manager$.context$snapshot$gui_references$data_tbl
     if (!is.null(reference)) requestDIAReclamation(manager, reference,
         paste0("import-", reference$entity_id), "import")

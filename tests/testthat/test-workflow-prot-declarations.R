@@ -279,6 +279,13 @@ test_that("the controller's publication phase publishes every protein state's fi
     m2 <- proteinDeclarationFixtureManager(protein, withr::local_tempdir(), "protein_s4_created")
     withr::defer(closeDIAStateAdapter(m2))
     v2 <- computeDIAReferenceAccessionCleanup(m2, getDIAStateReference(m2), list(delimiter = ";", aggregation_method = "mean"))
+    # KIT-026: no FASTA recorded in the head, so the declared FASTA identity is NA; a recorded one is carried.
+    expect_identical(v2$config$fasta_sha256, NA_character_)
+    fasta <- file.path(withr::local_tempdir(), "proteins.fasta")
+    writeLines(c(">sp|P1|ONE", "MPEPTIDE"), fasta)
+    recordDIAWorkflowInputs(m2, c(fasta = fasta))
+    expect_identical(computeDIAReferenceAccessionCleanup(m2, getDIAStateReference(m2),
+        list(delimiter = ";", aggregation_method = "mean"))$config$fasta_sha256, digest::digest(file = fasta, algo = "sha256"))
     f2 <- publish("protein_accession_cleanup", m2, v2)
     expect_true(any(grepl("accession_cleanup_results[.]RDS$", f2)))
     expect_true(any(grepl("10_protein_accession_cleaned_combined_plots[.]png$", f2)))

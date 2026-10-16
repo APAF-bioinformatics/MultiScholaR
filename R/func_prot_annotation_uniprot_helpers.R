@@ -163,6 +163,7 @@ directUniprotDownload <- function(input_tbl,
   message(paste("Split into", length(chunks), "chunks for processing"))
   
   # Function to process one chunk
+  release_recorded <- FALSE
   process_chunk <- function(chunk, chunk_idx, total_chunks) {
     # Convert chunk_idx to integer (purrr::imap passes names as characters)
     chunk_idx <- as.integer(chunk_idx)
@@ -199,6 +200,15 @@ directUniprotDownload <- function(input_tbl,
     
     # Check if successful
     if (httr::status_code(response) == 200) {
+      # KIT-026: the release header of the first successful response, when the service sends one.
+      # Whether the live service sends `X-UniProt-Release` is unverified; the release is NA when it does not.
+      manager <- getDIAActiveManager()
+      if (!release_recorded && usesDIAReferenceStates(manager)) {
+        recordWorkflowExternalResource(manager, "uniprot",
+          httr::headers(response)[["x-uniprot-release"]] %||% NA_character_, "header",
+          query_summary = sprintf("uniprotkb search, organism_id %s", taxon_id))
+        release_recorded <<- TRUE
+      }
       message("   DEBUG66: Response status 200, processing content...")
       tryCatch({
         message("   DEBUG66: Extracting content from response...")

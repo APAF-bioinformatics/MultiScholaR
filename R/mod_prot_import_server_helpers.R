@@ -288,7 +288,10 @@ registerProtImportObservers <- function(
         initializeDIANativeImport(workflowData, experimentPaths, session, format,
           input$dia_quantification_method %||% "iq")
         withDIAStateScope(workflowData$state_manager, function() {
-        registerDIAInputFiles(workflowData$state_manager, c(search_results_path, fasta_path))
+        # KIT-026: the paths are named by role so the head records each input's hash at completion.
+        input_files <- c(search_results_path, fasta_path)
+        names(input_files) <- c(paste0(format, "_report"), "fasta")[seq_along(input_files)]
+        registerDIAInputFiles(workflowData$state_manager, input_files)
         data_import_result <- readDataWithStatusFn(
           format = format,
           searchResultsPath = search_results_path,

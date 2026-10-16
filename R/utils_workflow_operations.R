@@ -327,7 +327,7 @@ registerBuiltinWorkflowOperations <- function() {
         inclusion_absence = FALSE, declaration = diaProteinIQRollupOperation()))
     registerWorkflowOperation(list(name = "protein_accession_cleanup", input = "checkpoint", input_class = "ProteinQuantitativeData",
         compute = "protein", handler = "computeWorkflowProteinAccessionAction", validate = "validateWorkflowProteinAccessionParameters",
-        resolve = NULL, parameter_limit = 65536, parameters = c("delimiter", "aggregation_method"),
+        resolve = NULL, parameter_limit = 65536, parameters = c("delimiter", "aggregation_method", "fasta_sha256"),
         completion = "protein", publication = "protein", step_label = "10_protein_accession_cleaned", omic_type = "proteomics",
         variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaProteinAccessionCleanupOperation()))
