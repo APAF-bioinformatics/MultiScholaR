@@ -16,7 +16,8 @@ completeProtSummaryWorkflowArgsSave <- function(output,
                                                 fileExistsFn = file.exists,
                                                 writeLinesFn = writeLines,
                                                 timestampFn = Sys.time,
-                                                catFn = cat) {
+                                                catFn = cat,
+                                                writeAnalysisRecordFn = writeWorkflowAnalysisRecord) {
   tryCatch({
     finalS4State <- resolveFinalS4StateFn(workflowData)
     finalS4Object <- finalS4State$finalS4Object
@@ -53,6 +54,15 @@ completeProtSummaryWorkflowArgsSave <- function(output,
       studyParamsFile,
       "\n"
     )
+
+    # KIT-027: the analysis record, derived from the on-disk owner's head, beside study_parameters.txt.
+    if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+      recordFile <- file.path(projectDirs[[omicType]]$source_dir, "analysis_record.json")
+      tryCatch({
+        writeAnalysisRecordFn(workflowData$state_manager, recordFile)
+        catFn("SESSION SUMMARY: Wrote analysis_record.json at:", recordFile, "\n")
+      }, error = function(e) catFn("SESSION SUMMARY: analysis_record.json not written:", conditionMessage(e), "\n"))
+    }
 
     catFn("SESSION SUMMARY: Saving Integration S4 Object...\n")
     integrationDir <- projectDirs[[omicType]]$integration_dir

@@ -609,6 +609,7 @@ kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL)
             }
         }
         if (!identical(expected$summary_sha256, actual$summary_sha256)) mismatches <- c(mismatches, paste0(step, "/summary"))
+        if (isFALSE(actual$fasta_matches_input)) mismatches <- c(mismatches, paste0(step, "/fasta_sha256"))
         if (!identical(expected$rows, actual$rows)) mismatches <- c(mismatches, paste0(step, "/rows"))
     }
     # Carried as an attribute only when present, so a plain mismatch vector compares as before.
@@ -893,11 +894,8 @@ kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L, memo = NUL
         # a worker, the multidplyr spec for the native loop); `support_table`/`removal_ledger` inside an args section
         # are the native loop's copies of the support entries the checkpoint carries and compares separately
         # (KIT-008 correction 2, user decision 2026-10-12: execution bookkeeping, not science).
-        # `fasta_sha256` is the input identity KIT-026 records on the accession cleanup's config; it is checked
-        # against the head's `fasta` input, and the cleanup's tables are compared as before.
         value <- value[!(names_ %in% c("timestamp", "mtime", "dependencies", "product_dependencies", "da_dependencies",
-            "owned_components", "component_dependencies", "declaration", "core_utilisation", "support_table", "removal_ledger",
-            "fasta_sha256") |
+            "owned_components", "component_dependencies", "declaration", "core_utilisation", "support_table", "removal_ledger") |
             grepl("timestamp$", names_))]
         return(lapply(value, kitCanonical, store = store, api = api, depth = depth + 1L, memo = memo))
     }
@@ -937,11 +935,19 @@ kitFingerprintState <- function(store, reference, api, memo = NULL) {
     }
     # The step description is display text (the declaration and the native loop word it differently); it is
     # recorded on the state, not part of the exactness summary (KIT-008 correction 2).
+    # KIT-026/027: the accession cleanup's `config$fasta_sha256` is the input identity of the FASTA the import
+    # hashed; it is taken out of the summary at the top level of the config only, returned beside the fingerprint
+    # and checked against the store's `fasta` input by `kitFingerprintStore` / `kitReproduceMismatches`.
+    config <- record$config
+    fasta <- if (is.list(config)) config$fasta_sha256 else NULL
+    if (is.list(config)) config$fasta_sha256 <- NULL
     summary <- list(class = spec$class, slots = kitCanonical(spec$slots), dimensions = spec$dimensions,
-        config = kitCanonical(record$config))
-    list(class = spec$class, rows = spec$dimensions$rows,
+        config = kitCanonical(config))
+    out <- list(class = spec$class, rows = spec$dimensions$rows,
         components = walk(spec$components), support = walk(spec$support), products = walk(spec$products),
         summary_sha256 = digest::digest(summary, algo = "sha256"))
+    if (!is.null(fasta)) out$fasta_sha256 <- fasta
+    out
 }
 
 #' Fingerprint publication files under a project directory (store, logs and scratch excluded).
@@ -950,7 +956,8 @@ kitFingerprintState <- function(store, reference, api, memo = NULL) {
 #' @noRd
 kitFingerprintFiles <- function(project, previous = NULL) {
     files <- list.files(project, recursive = TRUE, full.names = TRUE, all.files = TRUE)
-    files <- files[!grepl("/[.]workflow-entities/|/[.]dia-(native|gui-adoption)-[^/]*/|[.]log$|/checkpoint-io[.]log$", files)]
+    # KIT-027: `analysis_record.json` carries its generation time; it is a view of the store, not a product.
+    files <- files[!grepl("/[.]workflow-entities/|/[.]dia-(native|gui-adoption)-[^/]*/|[.]log$|/checkpoint-io[.]log$|/analysis_record[.]json$", files)]
     files <- files[!dir.exists(files)]
     relative <- substring(files, nchar(project) + 2L)
     info <- file.info(files, extra_cols = FALSE)
@@ -1125,6 +1132,9 @@ kitFingerprintStore <- function(store_dir, api, states = NULL) {
     memo <- new.env(parent = emptyenv())
     result <- lapply(stats::setNames(names, names), \(name) kitFingerprintState(store, head$references[[name]], api, memo))
     snapshot <- api("hydrateSavedWorkflowCheckpoint")(store, readRDS(file.path(store_dir, "dia-state-head.rds")))
+    input_fasta <- snapshot$file_dependencies$fasta$sha256 %||% NA_character_
+    for (name in names(result)) if (!is.null(result[[name]]$fasta_sha256))
+        result[[name]]$fasta_matches_input <- identical(as.character(result[[name]]$fasta_sha256), as.character(input_fasta))
     products <- lapply(snapshot$products, \(reference) kitFingerprintReference(store, reference, api, memo))
     list(head_sha256 = head$head_sha256, states = result, products = products)
 }

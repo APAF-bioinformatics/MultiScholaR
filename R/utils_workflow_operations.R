@@ -217,6 +217,64 @@ validateWorkflowOperationEntry <- function(entry) {
     entry
 }
 
+#' Where each declared parameter's shipped default lives (KIT-027): `list(section, key)` in `config.ini` (the
+#' parameter and key names differ, so provenance is never inferred by name), `"fixed"` for a kernel constant,
+#' `"input"` for a value taken from the data or an earlier step (a list, a table, a hash) and `"no_default"` for
+#' a setting `config.ini` does not ship (the module's own default applies). Attached to each registry entry as
+#' `defaults`; a registry test asserts every declared parameter is mapped.
+#' @noRd
+workflowOperationDefaults <- local({
+    key <- function(section, key) list(section = section, key = key)
+    list(
+        wfx_fixture = list(mode = "input", seconds = "input", bytes = "input"),
+        precursor_rollup = list(),
+        minimum_peptides_per_sample = list(
+            peptides_per_sample_cutoff = key("filterMinNumPeptidesPerSample", "peptides_per_sample_cutoff"),
+            inclusion_list = key("filterMinNumPeptidesPerSample", "inclusion_list")),
+        peptide_imputation = list(
+            proportion_missing_values = key("peptideMissingValueImputation", "proportion_missing_values"),
+            exclusion_column = key("peptideMissingValueImputation", "exclusion_column")),
+        peptide_qvalue_filter = list(
+            qvalue_threshold = key("srlQvalueProteotypicPeptideClean", "qvalue_threshold"),
+            global_qvalue_threshold = key("srlQvalueProteotypicPeptideClean", "global_qvalue_threshold"),
+            global_pg_qvalue_threshold = key("srlQvalueProteotypicPeptideClean", "global_pg_qvalue_threshold"),
+            proteotypic_only = key("srlQvalueProteotypicPeptideClean", "choose_only_proteotypic_peptide"),
+            confidence_provenance_mode = key("srlQvalueProteotypicPeptideClean", "confidence_provenance_mode")),
+        peptide_protein_evidence_filter = list(
+            num_peptides_per_protein_thresh = key("filterMinNumPeptidesPerProtein", "peptides_per_protein_cutoff"),
+            num_peptidoforms_per_protein_thresh = key("filterMinNumPeptidesPerProtein", "peptidoforms_per_protein_cutoff")),
+        peptide_intensity_filter = list(
+            strict_mode = key("peptideIntensityFiltering", "strict_mode"),
+            min_reps_per_group = key("peptideIntensityFiltering", "min_reps_per_group"),
+            min_groups = key("peptideIntensityFiltering", "min_groups"),
+            peptides_intensity_cutoff_percentile = key("peptideIntensityFiltering", "peptides_intensity_cutoff_percentile"),
+            grouping_variable = key("peptideIntensityFiltering", "grouping_variable")),
+        peptide_replicate_filter = list(
+            replicate_group_column = key("removePeptidesWithOnlyOneReplicate", "replicate_group_column")),
+        protein_iq_rollup = list(),
+        protein_accession_cleanup = list(delimiter = key("chooseBestProteinAccession", "delim"),
+            aggregation_method = "no_default", fasta_sha256 = "input"),
+        protein_intensity_filter = list(strict_mode = "no_default", min_reps_per_group = "no_default",
+            min_groups = "no_default",
+            proteins_intensity_cutoff_percentile = key("removeRowsWithMissingValuesPercent", "proteins_intensity_cutoff_percentile")),
+        protein_duplicate_removal = list(aggregation_method = "no_default"),
+        protein_replicate_filter = list(grouping_variable = key("removeProteinsWithOnlyOneReplicate", "grouping_variable"),
+            parallel_cores = "no_default"),
+        `normalization-ruv` = list(norm_method = key("normaliseBetweenSamples", "method"), ruv_mode = "no_default",
+            auto_percentage_min = "no_default", auto_percentage_max = "no_default", separation_metric = "no_default",
+            k_penalty_weight = "no_default", adaptive_k_penalty = "no_default", ruv_percentage = "no_default",
+            ruv_k = key("ruvIII_C_Varying", "ruv_number_k"), grouping = key("ruvIII_C_Varying", "ruv_grouping_variable")),
+        `pearson-pairs` = list(group = "no_default", tech_rep_remove_regex = key("pearsonCorForSamplePairs", "tech_rep_remove_regex")),
+        `pearson-selection` = list(pairs = "input", threshold = "no_default"),
+        `DA-contrast-output` = list(formula = key("deAnalysisParameters", "formula_string"),
+            qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
+            weights = "no_default", contrast = "input", annotations = "input"),
+        da_publication = list(annotations = "input"),
+        enrichment = list(taxon_id = "input", up_cutoff = "no_default", down_cutoff = "no_default", q_cutoff = "no_default",
+            exclude_iea = "no_default", correction_method = "no_default", protein_id_column = "input",
+            contrast_names = "input", results = "input"))
+})
+
 #' Register one operation.
 #' @param entry Entry list (see `validateWorkflowOperationEntry`); an existing name is replaced only
 #'   when `replace = TRUE`.
@@ -224,6 +282,9 @@ validateWorkflowOperationEntry <- function(entry) {
 #' @noRd
 registerWorkflowOperation <- function(entry, replace = FALSE) {
     entry <- validateWorkflowOperationEntry(entry)
+    if (is.null(entry$defaults)) entry$defaults <- workflowOperationDefaults[[entry$name]]
+    if (length(setdiff(names(entry$defaults), entry$parameters)))
+        cli::cli_abort("registry entry {.val {entry$name}} maps an undeclared parameter", class = "workflow_operation_invalid")
     if (!replace && exists(entry$name, envir = .workflowOperationRegistry, inherits = FALSE))
         cli::cli_abort("operation {.val {entry$name}} is already registered", class = "workflow_operation_invalid")
     assign(entry$name, entry, envir = .workflowOperationRegistry)

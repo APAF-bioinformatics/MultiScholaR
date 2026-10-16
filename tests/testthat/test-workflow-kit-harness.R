@@ -957,3 +957,16 @@ test_that("a product the oracle does not carry is reported as additional, a miss
     expect_identical(as.character(h$kitReproduceMismatches(oracle, subset)), "da/products/names")
     expect_length(attr(h$kitReproduceMismatches(oracle, subset), "additional_products"), 0L)
 })
+
+test_that("KIT-027: fasta_sha256 is not dropped by name and the verifier flags a state whose FASTA differs from its input", {
+    h <- kitHarness()
+    nested <- list(a = list(fasta_sha256 = "x"))
+    expect_identical(h$kitCanonical(nested)$a$fasta_sha256, "x")
+    fingerprint <- list(class = "ProteinQuantitativeData", rows = 2L, components = list(), support = list(), products = list(),
+        summary_sha256 = strrep("e", 64))
+    reference <- list(accession = list(fingerprint = fingerprint))
+    matching <- list(accession = list(fingerprint = c(fingerprint, list(fasta_sha256 = strrep("f", 64), fasta_matches_input = TRUE))))
+    differing <- list(accession = list(fingerprint = c(fingerprint, list(fasta_sha256 = strrep("0", 64), fasta_matches_input = FALSE))))
+    expect_length(h$kitReproduceMismatches(reference, matching), 0L)
+    expect_identical(as.vector(h$kitReproduceMismatches(reference, differing)), "accession/fasta_sha256")
+})

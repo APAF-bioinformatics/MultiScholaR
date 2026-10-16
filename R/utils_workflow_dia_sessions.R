@@ -1076,6 +1076,7 @@ collectDIANativeGuiFiles <- function(manager, metadata) {
     add("source", "filtered_session_summary.txt")
     if (file.exists(file.path(roots$source, "config.ini"))) add("source", "config.ini")
     if (file.exists(file.path(roots$source, "study_parameters.txt"))) add("source", "study_parameters.txt")
+    if (file.exists(file.path(roots$source, "analysis_record.json"))) add("source", "analysis_record.json")
     if (!is.null(roots$peptide_qc) && file.exists(file.path(roots$peptide_qc, "peptide_values_imputed.tsv"))) {
         add("peptide_qc", "peptide_values_imputed.tsv")
     }

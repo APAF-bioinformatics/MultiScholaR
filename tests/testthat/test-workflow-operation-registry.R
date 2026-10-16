@@ -214,3 +214,15 @@ test_that("every registered worker step's section maps to its operation, and the
     expect_length(workflowOperationForSection("not a section"), 0L)
     expect_null(workflowOperationForSection(NULL))
 })
+
+test_that("every declared parameter of every registered operation has a defaults mapping (KIT-027)", {
+    for (operation in workflowOperationNames()) {
+        entry <- workflowOperationEntry(operation)
+        unmapped <- setdiff(entry$parameters, c(names(entry$defaults), names(entry$declaration$fixed)))
+        expect_identical(unmapped, character(), label = operation)
+        for (mapping in entry$defaults) {
+            expect_true(is.character(mapping) && mapping %in% c("fixed", "input", "no_default") ||
+                is.list(mapping) && is.character(mapping$section) && is.character(mapping$key), label = operation)
+        }
+    }
+})
