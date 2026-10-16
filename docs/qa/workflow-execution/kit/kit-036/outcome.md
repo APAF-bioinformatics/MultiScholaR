@@ -38,6 +38,10 @@ What changed at the DA step and why it is enough: the pandoc child process (2.84
 
 Against the production-default baselines (KIT-005 `default-1` and KIT-011's `kit_006` control, both at the memory guard in imputation at 15.40 GiB after 8 steps): the control build completes the journey at 5.69 GiB anonymous, 0.37 × the guard reading, and ends at 2.80 GiB resident.
 
+## Regression (standing rule)
+
+Full suite at `6c9c4901` from a clean worktree ([logs](check-logs/)): 343 files, 29,666 pass, 0 fail, 140 skip; the one error is the PERF-101 snapshot test, the known runner artefact (passes alone). `R CMD check` 3 warnings, 3 notes, nothing new against KIT-002's record.
+
 ## Claim limits
 
 The page's bytes differ from pandoc's (pandoc minifies whitespace slightly); the widget data and dependency contents are identical, and the page is a reported product, not an oracle. Pages with dependency attachments (none in this package's widgets today) still go through pandoc.
