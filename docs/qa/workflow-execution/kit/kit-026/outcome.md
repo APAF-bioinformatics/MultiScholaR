@@ -1,6 +1,6 @@
 # KIT-026: inputs and external resources in the head
 
-Status 2026-10-17: **implemented; install and full suite pending.** Control `kit_036` (unchanged; no counted member).
+Status 2026-10-17: **implemented and installed; full suite pending.** Control `kit_036` (unchanged; no counted member).
 
 ## What changed (one mechanism: the head names the analysis's external inputs)
 
@@ -28,6 +28,8 @@ Status 2026-10-17: **implemented; install and full suite pending.** Control `kit
 | `test-prot-annotation-uniprot-direct-shared.R` (one `uniprot` entry for three chunks, the header value) | 20 pass |
 | Enrichment module contracts: `test-prot-11-enrichment-module-contracts.R`, `test-prot-11a-…`, `test-module-ci-prot-enrich.R`, `test-e2e-enrichment-doubles.R` | 1253, 143, 92 (1 skip), 34 pass |
 | `test-workflow-operation-registry.R`, `test-workflow-operations.R`, `test-workflow-kit-harness.R` | 140, 69, 332 pass |
+
+Install `kit_026` (`run_workflow_kit.sh install`): `browser-smoke.qyJkTq`, installed `source_commit` `7909897b126e…` verified, the registry declares `fasta_sha256`; bindings regenerated (control `kit_036` unchanged).
 
 ## Cost of hashing the report
 

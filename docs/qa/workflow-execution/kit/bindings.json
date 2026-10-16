@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-16",
+  "created": "2026-10-17",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -168,6 +168,15 @@
       "exact_sum": "0ca5d58e2372d4f22c734b1b0ef47aef61c1c454d691a8274aa67c3c4cf5ed82",
       "install_member": "browser-smoke.gZ7dmg",
       "source_commit": "c25de1ee8a5f1096198ea9b88572559cb3b15da1",
+      "runtime_patch_bytes": 0
+    },
+    "kit_026": {
+      "ticket": "KIT-026",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.qyJkTq/library",
+      "build": "fe66468d623baa1dc9edf63d8b7d57f48c568ef19917734ca6aac64dd59af5bb",
+      "exact_sum": "f8234fe0de2504778e02f2334cf5843478a3ea685400114bea9a1bf60a406956",
+      "install_member": "browser-smoke.qyJkTq",
+      "source_commit": "7909897b126e9ed0d68e94b07eeb9e7f6d162620",
       "runtime_patch_bytes": 0
     }
   },
@@ -3800,7 +3809,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-16",
+        "date": "2026-10-17",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -4051,7 +4060,7 @@
     "step_map_sha256": "7becbb852abd4a0aa364c14493097381b99cd122d302ec7130f78dec80a737bb",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "87cd77b71c219277a4ff99daa8194b08b9c9ba38cd15382c857a0058e28de2e3",
+      "tools/profiling/workflow_kit.R": "eed87cc4646506bda52ab74c8c52515f070fc1ff7da6b5af38f9e3cdf41e386f",
       "tools/profiling/workflow_kit_driver.R": "6c2132b45078b2ce6fa3fbd853ee23e2a5eddf3aaafdac0709cd51969f5946c5",
       "tools/profiling/workflow_kit_coordinator.R": "5b9d85de35f7f2b5aaefc7d29f55ec79ac0d1ae3524b0720056d714a3604f7c6",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
