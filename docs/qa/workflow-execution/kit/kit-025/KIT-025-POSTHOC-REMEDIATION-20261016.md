@@ -11,3 +11,5 @@ Audit: [KIT-025-POSTHOC-AUDIT-20261016.md](KIT-025-POSTHOC-AUDIT-20261016.md) (u
 | PH-05 | The scan follows `do.call` targets; the remaining limits stated in the outcome. | `test-workflow-operation-registry.R`. |
 | PH-06 | Ticket revision 1.4: allowlist corrected; the superseded install recorded. | Ticket text. |
 | PH-07 | Plan rule: the four pinned files never in an allowlist; installs through `run_workflow_kit.sh install`. | `00-KIT-PLAN.md`. |
+
+All seven findings closed. Full suite at `c25de1ee` (clean worktree): 343 files, 29,724 pass, 0 fail, 140 skip, the one known PERF-101 runner artefact; `R CMD check` at baseline (3 warnings, 3 notes); logs in `check-logs/`. The remediated build is installed as `kit_025` (installed source commit `c25de1ee` verified) and the bindings regenerated at `d500bc72`.
