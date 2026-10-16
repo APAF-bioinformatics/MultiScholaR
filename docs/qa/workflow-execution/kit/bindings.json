@@ -151,6 +151,15 @@
       "install_member": "browser-smoke.h6QeDJ",
       "source_commit": "6c9c49018f2175bc85937cef216689e06b7a41f3",
       "runtime_patch_bytes": 0
+    },
+    "kit_035": {
+      "ticket": "KIT-035",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.4v2n4E/library",
+      "build": "cdeff961e6d632240b99cb2a845f18497ca1b431a53a2a7bd3510d4678bad199",
+      "exact_sum": "63dcc3cdb14ecbdaa47c1d4d510bc754c574985087dc135b97795fa6690407a7",
+      "install_member": "browser-smoke.4v2n4E",
+      "source_commit": "ae87566c77daa1461093e005a5a65c59917de969",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -237,6 +246,12 @@
       "outcome": "control",
       "build": "kit_036",
       "note": "self-contained widget pages written in R (no pandoc pass) and the DA managed step acknowledged on its status text (KIT-037); accepted against kit_018 (stage kit-journey-036, 2026-10-16): resident end 0.921, whole slice 1.005, DA step 0.675"
+    },
+    {
+      "ticket": "KIT-035",
+      "outcome": "recorded",
+      "build": "kit_035",
+      "note": "the DA block and RUV-III's replicate structure from the one declaration (technical_replicate_id); a spanned block is standard lmFit with the reason recorded; DA tables identical on the screen project, the 300-sample oracle unchanged; no counted member, control unchanged (kit_036)"
     }
   ],
   "control": "kit_036",
@@ -4018,7 +4033,7 @@
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
     "protocol_sha256": "5065d3bacffa87943fed7e71be18190841689065e5a8d15297e1d5dc0361c073",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
-    "step_map_sha256": "85d3f2ef4b0519c762b858d46687ea9eac9868ad90a3912683ad073a2b3ea2fa",
+    "step_map_sha256": "7becbb852abd4a0aa364c14493097381b99cd122d302ec7130f78dec80a737bb",
     "core_pinned_unchanged": true,
     "files": {
       "tools/profiling/workflow_kit.R": "87cd77b71c219277a4ff99daa8194b08b9c9ba38cd15382c857a0058e28de2e3",
