@@ -160,6 +160,15 @@
       "install_member": "browser-smoke.4v2n4E",
       "source_commit": "ae87566c77daa1461093e005a5a65c59917de969",
       "runtime_patch_bytes": 0
+    },
+    "kit_025": {
+      "ticket": "KIT-025",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.x7uo3e/library",
+      "build": "5c6695ee142c9488a8dfd7d911a8fb84fa42c9bce76527c3acd10ada9c2d6a17",
+      "exact_sum": "b20d247f9ec261c1f0d962edd08d0619ecd74284220535d2362b6d60c6216362",
+      "install_member": "browser-smoke.x7uo3e",
+      "source_commit": "23c9c8b2f9ba59204d64bfe8f523a0c6ac29b275",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -252,6 +261,12 @@
       "outcome": "recorded",
       "build": "kit_035",
       "note": "the DA block and RUV-III's replicate structure from the one declaration (technical_replicate_id); a spanned block is standard lmFit with the reason recorded; DA tables identical on the screen project, the 300-sample oracle unchanged; no counted member, control unchanged (kit_036)"
+    },
+    {
+      "ticket": "KIT-025",
+      "outcome": "recorded",
+      "build": "kit_025",
+      "note": "the head snapshot records each state's operation, variant, parameter names, build, source commit and defaults hash (legacy for states committed before); software environment per build; IQ fixed parameters declared; no counted member, control unchanged (kit_036)"
     }
   ],
   "control": "kit_036",
@@ -4040,7 +4055,7 @@
       "tools/profiling/workflow_kit_driver.R": "6c2132b45078b2ce6fa3fbd853ee23e2a5eddf3aaafdac0709cd51969f5946c5",
       "tools/profiling/workflow_kit_coordinator.R": "5b9d85de35f7f2b5aaefc7d29f55ec79ac0d1ae3524b0720056d714a3604f7c6",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
-      "tools/profiling/run_workflow_kit.sh": "6cf642a60238409762668207f204ec071930b0bc398477900a1a25bbf82a5717",
+      "tools/profiling/run_workflow_kit.sh": "b4ec2e8c89bbeab2a9e158c5b0bda2fceed0959d1efe9be8a9f606d1fe88ab72",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "b71240c8a945c9db2518a65a4e029c503dd8aa66c7319e4cbccd99bd3ea0af07",
       "tests/testthat/test-workflow-kit-harness.R": "f3084e08f82e1ab6ef980934956966edf8ad1745c6b667b30d49bd2e14108c93",
       "tests/testthat/test-workflow-execution-adapters.R": "d315a2847fd76dfb0733b286e4ca3aca1724bfff12400c2e99182320917a6548",

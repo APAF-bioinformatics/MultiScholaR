@@ -43,6 +43,29 @@ if [[ "${1:-}" == "--sample" ]]; then
     exit 0
 fi
 
+# KIT-025: the KIT install. The CORE-pinned runner installs the committed tree as before (it is not edited); the
+# installed package is then stamped with the commit it was built from (`Config/MultiScholaR/SourceCommit`, in the
+# DESCRIPTION file and in Meta/package.rds, which packageDescription reads), so the record's software identity
+# names the source commit. Usage: run_workflow_kit.sh install <previous library> <core dir>
+if [[ "${1:-}" == "install" ]]; then
+    [[ "$#" == 3 && -d "$2" && -d "$3" ]] || { echo "Usage: run_workflow_kit.sh install <previous library> <core dir>" >&2; exit 2; }
+    before="$(ls -d "$3"/browser-smoke.* 2>/dev/null | sort || true)"
+    bash "$kit_dir/run_workflow_checkpoint_proof.sh" --service install-corrected "$2" "$3"
+    run="$(comm -13 <(printf '%s\n' "$before") <(ls -d "$3"/browser-smoke.* | sort) | head -1)"
+    [[ -n "$run" && -f "$run/source-commit.txt" && -d "$run/library/MultiScholaR" ]] || { echo "install run directory not found" >&2; exit 1; }
+    sha="$(tr -d '[:space:]' < "$run/source-commit.txt")"
+    [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "source commit is not a 40-character sha" >&2; exit 1; }
+    Rscript --vanilla -e '
+        args <- commandArgs(TRUE); lib <- args[[1L]]; sha <- args[[2L]]
+        meta <- file.path(lib, "Meta", "package.rds"); pkg <- readRDS(meta)
+        pkg$DESCRIPTION["Config/MultiScholaR/SourceCommit"] <- sha; saveRDS(pkg, meta)
+        cat("Config/MultiScholaR/SourceCommit: ", sha, "\n", sep = "", file = file.path(lib, "DESCRIPTION"), append = TRUE)
+        stopifnot(identical(unname(read.dcf(file.path(lib, "DESCRIPTION"), fields = "Config/MultiScholaR/SourceCommit")[1L, 1L]), sha))
+    ' "$run/library/MultiScholaR" "$sha"
+    echo "INSTALLED $run $sha"
+    exit 0
+fi
+
 mode="${1:-}"; stage="${2:-}"; library="${3:-}"; rerun="${4:-}"
 [[ ( "$mode" == validate || "$mode" == run || ( "$mode" == rerun && "$rerun" =~ ^[a-z0-9-]+(,[a-z0-9-]+)*$ ) ) && "$stage" =~ ^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2})?|gui-0[0-9]{2}|0[0-9]{2})$ && -d "$library" ]] || {
     echo "Usage: run_workflow_kit.sh validate|run <stage> <library> | rerun <stage> <library> <member,member>" >&2; exit 2; }

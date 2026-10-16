@@ -458,8 +458,6 @@ if [[ "${1:-}" == "--service" ]]; then
         mkdir -- "$proof_run_dir/source" "$proof_run_dir/library"
         git -C "$proof_repo" rev-parse HEAD | tee "$proof_run_dir/source-commit.txt"
         git -C "$proof_repo" archive HEAD | tar -x -C "$proof_run_dir/source"
-        # KIT-025: the installed package carries the commit it was built from (the record's software identity).
-        printf 'Config/MultiScholaR/SourceCommit: %s\n' "$(cat "$proof_run_dir/source-commit.txt")" >> "$proof_run_dir/source/DESCRIPTION"
         git -C "$proof_repo" diff --binary HEAD -- R src configure DESCRIPTION NAMESPACE man/readConfigFile.Rd | tee "$proof_run_dir/runtime.patch" >/dev/null
         # A clean tree yields an empty patch, which git refuses to apply.
         if [[ -s "$proof_run_dir/runtime.patch" ]]; then git -C "$proof_run_dir/source" apply "$proof_run_dir/runtime.patch"; fi
