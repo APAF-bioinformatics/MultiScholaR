@@ -15,7 +15,9 @@ runTestsContrasts(
   weights = NA,
   treat_lfc_cutoff = NA,
   eBayes_trend = FALSE,
-  eBayes_robust = FALSE
+  eBayes_robust = FALSE,
+  group_id = "group",
+  technical_replicate_id = "replicates"
 )
 }
 \arguments{
@@ -35,6 +37,8 @@ The contrast string consists of variable that each consist of concatenating the 
 \item{fdr_value_column}{The name of the fdr-value column (tidyverse style).}
 
 \item{weights, treat_lfc_cutoff, eBayes_trend, eBayes_robust}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{group_id, technical_replicate_id}{Column names of the design's group and of the object's declared technical replicate column (KIT-035): the replicate block comes from the declared column, and a block spanned by the design runs standard lmFit with the reason recorded.}
 }
 \value{
 A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object.

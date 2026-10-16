@@ -413,6 +413,7 @@ buildProtDaResultTables <- function(contrast_artifact, contrast_strings,
 #' @return A list containing two elements. $results returns a list of tables containing logFC and q-values. $fit.eb returns the Empiracle Bayes output object.
 #' @export
 #' @param weights,treat_lfc_cutoff,eBayes_trend,eBayes_robust Runtime inputs used by this function; see the usage section for accepted values.
+#' @param group_id,technical_replicate_id Column names of the design's group and of the object's declared technical replicate column (KIT-035): the replicate block comes from the declared column, and a block spanned by the design runs standard lmFit with the reason recorded.
 runTestsContrasts <- function(data,
                               contrast_strings,
                               design_matrix,
