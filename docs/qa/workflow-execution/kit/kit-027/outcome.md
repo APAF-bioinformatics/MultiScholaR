@@ -1,6 +1,6 @@
 # KIT-027: the analysis record as a derived view
 
-Status 2026-10-17: **implemented; install and full suite pending.** Control `kit_036` (unchanged; no counted member).
+Status 2026-10-17: **implemented and installed; full suite pending.** Install `kit_027` (`run_workflow_kit.sh install`): `browser-smoke.tXkjVS`, installed `source_commit` `fb1aee89…` verified, the record functions present; bindings regenerated (control `kit_036` unchanged). Control `kit_036` (unchanged; no counted member).
 
 ## What changed (one mechanism: the record is built on demand from head metadata)
 

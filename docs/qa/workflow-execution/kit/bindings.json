@@ -178,6 +178,15 @@
       "install_member": "browser-smoke.qyJkTq",
       "source_commit": "7909897b126e9ed0d68e94b07eeb9e7f6d162620",
       "runtime_patch_bytes": 0
+    },
+    "kit_027": {
+      "ticket": "KIT-027",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.tXkjVS/library",
+      "build": "d0a276a3b94dd6cd2611b76063e4b8308775dea1d09660ae2e7562e6ca162eb0",
+      "exact_sum": "d61113495fe3ca760d6789e8e1daef06ae265dd51fb19077b4f29007f23fca6c",
+      "install_member": "browser-smoke.tXkjVS",
+      "source_commit": "fb1aee89ca0b6d8f7bfe242e7a6654f0abc094e8",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -4060,13 +4069,13 @@
     "step_map_sha256": "7becbb852abd4a0aa364c14493097381b99cd122d302ec7130f78dec80a737bb",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "eed87cc4646506bda52ab74c8c52515f070fc1ff7da6b5af38f9e3cdf41e386f",
+      "tools/profiling/workflow_kit.R": "2459357739449b2e0e6ca6093d42e81baed524a3c8b7807c241fe93f4ac0531b",
       "tools/profiling/workflow_kit_driver.R": "6c2132b45078b2ce6fa3fbd853ee23e2a5eddf3aaafdac0709cd51969f5946c5",
       "tools/profiling/workflow_kit_coordinator.R": "5b9d85de35f7f2b5aaefc7d29f55ec79ac0d1ae3524b0720056d714a3604f7c6",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "b4ec2e8c89bbeab2a9e158c5b0bda2fceed0959d1efe9be8a9f606d1fe88ab72",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "b71240c8a945c9db2518a65a4e029c503dd8aa66c7319e4cbccd99bd3ea0af07",
-      "tests/testthat/test-workflow-kit-harness.R": "f3084e08f82e1ab6ef980934956966edf8ad1745c6b667b30d49bd2e14108c93",
+      "tests/testthat/test-workflow-kit-harness.R": "413e29945c756b4f3f82e22dd1972caea7a5459d1c7867313a92a0663710b6bb",
       "tests/testthat/test-workflow-execution-adapters.R": "d315a2847fd76dfb0733b286e4ca3aca1724bfff12400c2e99182320917a6548",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",
