@@ -32,6 +32,7 @@ One live request on 2026-10-17 to `https://rest.uniprot.org/uniprotkb/search` (t
 | Summary tests: `test-module-ci-prot-summary.R`, `test-prot-12a-…`, `test-prot-12-summary-module-contracts.R` | 110, 62, 446 pass |
 | `test-workflow-operations.R`, `test-workflow-dia-products.R`, `test-workflow-native-session.R` | 69, 176, 521 pass (2 skip) |
 | Full suite at `fb1aee89` from a clean worktree ([logs](check-logs/)) | 344 files, 29,877 pass, 0 fail, 140 skip; the one error is the PERF-101 runner artefact; `R CMD check` 3 warnings, 3 notes (baseline). A first suite start at `6a91ffb4` was stopped when the install showed the Collate omission. |
+| Post-hoc audit remediation ([audit](KIT-027-POSTHOC-AUDIT-20261017.md), [record](KIT-027-POSTHOC-REMEDIATION-20261017.md)): declared values in step provenance, `preceded_by`, the DA section, the requested `ruv_k`, backfilled steps dated by their records, one FASTA comparison for both verifiers; full suite at `bd0b45ad`; reinstalled as `kit_027` (`QY8ksX`) | 344 files, 29,905 pass, 0 fail, 140 skip (one known runner artefact); check at baseline; screen check rerun (`record-check-screen-remediation.json`) |
 
 ## Claim limits
 

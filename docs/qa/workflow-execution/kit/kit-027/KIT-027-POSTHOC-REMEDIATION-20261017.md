@@ -14,3 +14,5 @@ The [audit](KIT-027-POSTHOC-AUDIT-20261017.md) is unchanged. PH-01 took the opti
 | PH-08 | A record failure shows a warning notification (no timeout); the summary completes. | Unit with a failing writer. |
 
 Limit (PH-02): if an operation fails after setting its provenance and before any commit, and a different operation then commits, the failed one is listed under `preceded_by`. Before this change, such a commit was attributed to the failed operation.
+
+All eight findings are closed. Affected files: harness 340, registry 219, operations 69, products 176, saved DA 111, checkpoint state 236, summary contracts 446, CI summary 110, execution 64, native session 521, analysis record 64 pass. The screen check was rerun as `screen-remediation`. The full suite at `bd0b45ad` (clean worktree): 344 files, 29,905 pass, 0 fail, 140 skip, with the one known PERF-101 runner artefact; `R CMD check` at baseline (3 warnings, 3 notes); logs in `check-logs/`. Reinstalled as `kit_027` (`QY8ksX`, source commit `bd0b45ad` verified, superseding `tXkjVS`); bindings regenerated at `44a5f5bb`.
