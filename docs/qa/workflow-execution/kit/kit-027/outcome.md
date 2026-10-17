@@ -1,6 +1,6 @@
 # KIT-027: the analysis record as a derived view
 
-Status 2026-10-17: **implemented and installed; full suite pending.** Install `kit_027` (`run_workflow_kit.sh install`): `browser-smoke.tXkjVS`, installed `source_commit` `fb1aee89…` verified, the record functions present; bindings regenerated (control `kit_036` unchanged). Control `kit_036` (unchanged; no counted member).
+Status 2026-10-17: **complete.** Install `kit_027` (`run_workflow_kit.sh install`): `browser-smoke.tXkjVS`, installed `source_commit` `fb1aee89…` verified, the record functions present; bindings regenerated (control `kit_036` unchanged). Control `kit_036` (unchanged; no counted member).
 
 ## What changed (one mechanism: the record is built on demand from head metadata)
 
@@ -31,6 +31,7 @@ One live request on 2026-10-17 to `https://rest.uniprot.org/uniprotkb/search` (t
 | `test-workflow-kit-harness.R` (new: nested `fasta_sha256` no longer dropped; the verifier flags a FASTA differing from its input) | 335 pass |
 | Summary tests: `test-module-ci-prot-summary.R`, `test-prot-12a-…`, `test-prot-12-summary-module-contracts.R` | 110, 62, 446 pass |
 | `test-workflow-operations.R`, `test-workflow-dia-products.R`, `test-workflow-native-session.R` | 69, 176, 521 pass (2 skip) |
+| Full suite at `fb1aee89` from a clean worktree ([logs](check-logs/)) | 344 files, 29,877 pass, 0 fail, 140 skip; the one error is the PERF-101 runner artefact; `R CMD check` 3 warnings, 3 notes (baseline). A first suite start at `6a91ffb4` was stopped when the install showed the Collate omission. |
 
 ## Claim limits
 
