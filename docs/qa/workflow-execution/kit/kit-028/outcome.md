@@ -1,6 +1,6 @@
 # KIT-028: replay a record, the completeness proof
 
-Status 2026-10-18: **implemented; install and full suite pending.** Control `kit_036` (unchanged; no counted member).
+Status 2026-10-18: **complete.** Install `kit_028` (`run_workflow_kit.sh install`): installed `source_commit` `e28c3b28…` verified, the replay function present; bindings regenerated (`aef82ea2`; control `kit_036` unchanged). Control `kit_036` (unchanged; no counted member).
 
 ## Origin (rev 1.2, user decision 2026-10-18)
 
@@ -56,6 +56,7 @@ The DA step is replayed after the states through `runDIAReferenceDaAnalysis`, wi
 | Replay check on the origin ([replay-check.R](replay-check.R) → [replay-check-screen.json](replay-check-screen.json); origin record [analysis_record-origin-screen.json](analysis_record-origin-screen.json)), installed `kit_027` library, in process | **Exact:** 16 states, 0 mismatches against the origin (319 s). **Edited** (minimum peptides per protein 1 → 16): identical before the filter; at the filter 281,343 rows, equal to the direct kernel call (`filterMinNumPeptidesPerProtein` on the origin's Q-value state), against the origin's 320,872; every later state differs (260 s). **Inputs:** a different FASTA refused before any step. **Legacy:** the Q-value step marked `legacy` stops with `workflow_replay_unsupported` naming `qvalue_filtered`. Total 594 s (ceiling 900 s). |
 | `test-workflow-analysis-record.R` (new: input refusal before the store opens, a missing input, a legacy step named, a moved import refused as a precondition) | 69 pass |
 | `test-workflow-kit-harness.R`, `test-workflow-operation-registry.R` | 340, 219 pass |
+| Test rule (user, 2026-10-18: targeted files, dependents, check, install; full suite at checkpoints) | Dependents of the changed functions (`buildWorkflowAnalysisRecord`, `writeWorkflowAnalysisRecord`, `replayWorkflowAnalysisRecord`, `kitMemberSeconds`, `kitPrepareReplayProject`, `kitReplayJourney`): only the two files above. `R CMD check` at `e28c3b28`: 3 warnings, 3 notes (baseline). The full suite started at `e28c3b28` before the rule changed runs on as a checkpoint; its result is recorded when it ends. |
 
 **Attempts of the replay check** (in process, not counted; recorded, not retried for a result):
 1. The exact replay passed. The edit then failed: the ticket's Q-value edit (0.01 → 0.001) is refused by the package ("DIA-NN identification q-value thresholds are fixed at 0.01"), a science-contract rule, so the ticket's edit cannot exist (rev 1.3).
