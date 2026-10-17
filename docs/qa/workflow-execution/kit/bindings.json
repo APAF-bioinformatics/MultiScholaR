@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-17",
+  "created": "2026-10-18",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -3818,7 +3818,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-17",
+        "date": "2026-10-18",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -4030,6 +4030,14 @@
       "corpus": "full",
       "stop_after": "design"
     },
+    "028": {
+      "kind": "single_journey",
+      "build": "kit_027",
+      "corpus": "screen",
+      "stop_after": "da",
+      "ceiling_seconds": 900,
+      "purpose": "replay_origin"
+    },
     "017": {
       "kind": "journey",
       "control": "kit_018",
@@ -4069,7 +4077,7 @@
     "step_map_sha256": "7becbb852abd4a0aa364c14493097381b99cd122d302ec7130f78dec80a737bb",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "f344b74423194d52e9ac69d0fd131020d2e82a3854a81191eab01a6043fd2d27",
+      "tools/profiling/workflow_kit.R": "d2de09d96097405904cb368cfd5af484b0dd42052147c7475128c8edf4e5c75e",
       "tools/profiling/workflow_kit_driver.R": "6c2132b45078b2ce6fa3fbd853ee23e2a5eddf3aaafdac0709cd51969f5946c5",
       "tools/profiling/workflow_kit_coordinator.R": "5b9d85de35f7f2b5aaefc7d29f55ec79ac0d1ae3524b0720056d714a3604f7c6",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",

@@ -45,7 +45,9 @@ kitMemberSeconds <- function(stage, bindings = NULL) {
     if (grepl("^kit-0[0-9]{2}$", stage)) return(600L)
     if (grepl("^kit-gui-0[0-9]{2}$", stage)) return(as.integer(bindings$tickets[[sub("kit-gui-", "", stage)]]$ceiling_seconds %||% 600L))
     if (startsWith(stage, "kit-journey")) {
-        seconds <- bindings$journey$ceiling_seconds
+        # KIT-028: a ticket's journey member may bind its own ceiling (the screen replay origin, 900 s).
+        ticket_seconds <- if (grepl("^kit-journey-0[0-9]{2}$", stage)) bindings$tickets[[sub("kit-journey-", "", stage)]]$ceiling_seconds
+        seconds <- ticket_seconds %||% bindings$journey$ceiling_seconds
         if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 14400)
             stop("the journey ceiling is not fixed in the bindings (at most 4 h, protocol v1.2)")
         return(as.integer(seconds))

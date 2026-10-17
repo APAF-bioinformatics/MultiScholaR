@@ -348,6 +348,15 @@ if (!is.null(b$builds$kit_018)) {
     b$journey$pair$control <- b$control
 }
 
+# KIT-028: the replay origin (user decision 2026-10-18): one single journey member on the kit_027 build (the first
+# build that records step provenance with values) on the screen corpus as users run it (no launch record), import
+# through DA, ceiling 900 s, one attempt. It measures nothing: its store is the record's origin, verified for
+# self-consistency as a screen member is; the replay is in process (KIT-028 items 1-2).
+if (!is.null(b$builds$kit_027)) {
+    b$tickets[["028"]] <- list(kind = "single_journey", build = "kit_027", corpus = "screen", stop_after = "da",
+        ceiling_seconds = 900L, purpose = "replay_origin")
+}
+
 # KIT-019: the DA publication through the managed worker (no counted member; one install recorded). The build is
 # bound as the final stage-1 candidate for KIT-017's closure pair; the control stays the latest accepted build.
 if (!is.null(b$builds$kit_019)) {
