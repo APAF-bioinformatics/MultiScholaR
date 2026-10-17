@@ -970,3 +970,16 @@ test_that("KIT-027: fasta_sha256 is not dropped by name and the verifier flags a
     expect_length(h$kitReproduceMismatches(reference, matching), 0L)
     expect_identical(as.vector(h$kitReproduceMismatches(reference, differing)), "accession/fasta_sha256")
 })
+
+test_that("KIT-027 audit PH-05: one FASTA comparison serves the journey and single-member verifiers", {
+    h <- kitHarness()
+    snapshot <- list(file_dependencies = list(fasta = list(sha256 = strrep("f", 64))))
+    expect_null(h$kitFastaMatchesInput(list(class = "x"), snapshot))
+    expect_true(h$kitFastaMatchesInput(list(fasta_sha256 = strrep("f", 64)), snapshot))
+    expect_false(h$kitFastaMatchesInput(list(fasta_sha256 = strrep("0", 64)), snapshot))
+    expect_true(h$kitFastaMatchesInput(list(fasta_sha256 = NA_character_), list()))
+    source_text <- paste(readLines(file.path(if (exists("workflow_test_root")) workflow_test_root else here::here(),
+        "tools/profiling/workflow_kit.R")), collapse = "\n")
+    # Both verifiers call it: the store fingerprint (journey members) and the single-member oracle check.
+    expect_identical(lengths(regmatches(source_text, gregexpr("kitFastaMatchesInput\\(", source_text))), 2L)
+})

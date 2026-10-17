@@ -579,11 +579,37 @@ materializeDIAStateRecord <- function(context, reference) {
 #' @param parameter_names The registry entry's declared parameter names (values stay in the state's `slots$args`).
 #' @param fixed Named list of the declaration's fixed parameter values, when it has any (the IQ rollup).
 #' @noRd
-setDIAStepProvenance <- function(manager, operation, variant = NA_character_, parameter_names = character(), fixed = NULL) {
+#' @param values Named list of the declared parameters' values as the operation received them (KIT-027 audit
+#'   PH-01: a step's config does not always record them under the declared names); bounded by
+#'   `boundDIAProvenanceValues`.
+setDIAStepProvenance <- function(manager, operation, variant = NA_character_, parameter_names = character(), fixed = NULL,
+    values = NULL) {
     if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
-    manager$.context$pending_provenance <- list(operation = operation, variant = variant,
-        parameter_names = as.character(parameter_names), fixed = fixed)
+    previous <- manager$.context$pending_provenance
+    pending <- list(operation = operation, variant = variant, parameter_names = as.character(parameter_names), fixed = fixed,
+        values = boundDIAProvenanceValues(values, parameter_names))
+    # KIT-027 audit PH-02: a second operation before the same commit (correlation's pairs, then its selection) keeps
+    # the first as `preceded_by`; the same operation set again (the DA contrasts) replaces it.
+    if (!is.null(previous) && !identical(previous$operation, operation))
+        pending$preceded_by <- c(previous$preceded_by, list(previous[c("operation", "variant", "parameter_names", "values")]))
+    manager$.context$pending_provenance <- pending
     invisible(NULL)
+}
+
+#' Keep the declared parameters' values that are small plain values (atomic vectors and lists of them, at most
+#' 64 KiB each); a table, a saved reference or a larger value is recorded by class and size only.
+#' @noRd
+boundDIAProvenanceValues <- function(values, parameter_names) {
+    if (!is.list(values) || !length(parameter_names)) return(NULL)
+    plain <- function(x) is.null(x) || is.atomic(x) && !is.data.frame(x) ||
+        is.list(x) && !is.data.frame(x) && !isSavedWorkflowReference(x) && all(vapply(x, plain, logical(1)))
+    out <- list()
+    for (name in intersect(as.character(parameter_names), names(values))) {
+        value <- values[[name]]
+        out[[name]] <- if (plain(value) && as.numeric(object.size(value)) <= 65536) value else
+            list(omitted = class(value)[[1L]], bytes = as.numeric(object.size(value)))
+    }
+    out
 }
 
 #' Drop a pending provenance that no commit will consume: a product-only operation (the DA contrasts) sets one
@@ -624,6 +650,9 @@ diaStepProvenanceEntry <- function(snapshot, provenance, timestamp = Sys.time())
         defaults_sha256 = if (nzchar(defaults)) digest::digest(file = defaults, algo = "sha256") else NA_character_,
         seed = NA_real_, committed_at = format(timestamp, "%Y-%m-%dT%H:%M:%OS3%z"))
     if (!is.null(provenance$fixed)) entry$fixed <- provenance$fixed
+    if (length(provenance$values)) entry$values <- provenance$values
+    if (length(provenance$preceded_by)) entry$preceded_by <- provenance$preceded_by
+    if (isTRUE(provenance$backfilled)) entry$backfilled <- TRUE
     list(snapshot = snapshot, entry = entry)
 }
 
@@ -1097,7 +1126,9 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
         # KIT-025: a store written before provenance was recorded (or adopted from a legacy session) opens with
         # a `legacy` entry for every state that has none; the entries are written with the next head.
         for (name in setdiff(unlist(snapshot$state_history), names(snapshot$step_provenance))) {
-            legacy <- diaStepProvenanceEntry(snapshot, list(operation = "legacy", variant = NA_character_, parameter_names = character()))
+            # KIT-027 audit PH-04: the entry is marked, since its build, defaults and time are the reopening's.
+            legacy <- diaStepProvenanceEntry(snapshot, list(operation = "legacy", variant = NA_character_, parameter_names = character(),
+                backfilled = TRUE))
             snapshot <- legacy$snapshot
             snapshot$step_provenance[[name]] <- legacy$entry
         }

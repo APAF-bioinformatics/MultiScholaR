@@ -113,7 +113,8 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
             class = "workflow_operation_parameters")
     }
     # KIT-025: the state the wrapper commits after this operation carries the declaration's provenance.
-    setDIAStepProvenance(manager, declaration$name, parameters$variant %||% "whole", declaration$parameters, declaration$fixed)
+    setDIAStepProvenance(manager, declaration$name, parameters$variant %||% "whole", declaration$parameters, declaration$fixed,
+        values = parameters)
     spec <- readComponentMetadata(manager, source)$data
     if (!identical(spec$class, declaration$input_class)) {
         cli::cli_abort("operation {.val {declaration$name}} expects {.cls {declaration$input_class}}, the source is {.cls {spec$class}}",

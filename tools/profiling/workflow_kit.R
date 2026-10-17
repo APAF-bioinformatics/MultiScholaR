@@ -1124,6 +1124,14 @@ kitCurrentInputComponentId <- function(store_dir, api) {
 #' Fingerprint every state and product the head references.
 #' @return Named list of `kitFingerprintState()` results plus `products`.
 #' @noRd
+#' Does a state's recorded FASTA identity equal its store's `fasta` input (NA equals NA)? NULL when the state
+#' records none (KIT-027 rev 1.2 item 6, audit PH-05).
+#' @noRd
+kitFastaMatchesInput <- function(fingerprint, snapshot) {
+    if (is.null(fingerprint$fasta_sha256)) return(NULL)
+    identical(as.character(fingerprint$fasta_sha256), as.character(snapshot$file_dependencies$fasta$sha256 %||% NA_character_))
+}
+
 kitFingerprintStore <- function(store_dir, api, states = NULL) {
     head <- kitReadHead(store_dir, api)
     store <- kitOpenStore(store_dir, api)
@@ -1132,9 +1140,8 @@ kitFingerprintStore <- function(store_dir, api, states = NULL) {
     memo <- new.env(parent = emptyenv())
     result <- lapply(stats::setNames(names, names), \(name) kitFingerprintState(store, head$references[[name]], api, memo))
     snapshot <- api("hydrateSavedWorkflowCheckpoint")(store, readRDS(file.path(store_dir, "dia-state-head.rds")))
-    input_fasta <- snapshot$file_dependencies$fasta$sha256 %||% NA_character_
     for (name in names(result)) if (!is.null(result[[name]]$fasta_sha256))
-        result[[name]]$fasta_matches_input <- identical(as.character(result[[name]]$fasta_sha256), as.character(input_fasta))
+        result[[name]]$fasta_matches_input <- kitFastaMatchesInput(result[[name]], snapshot)
     products <- lapply(snapshot$products, \(reference) kitFingerprintReference(store, reference, api, memo))
     list(head_sha256 = head$head_sha256, states = result, products = products)
 }
@@ -1413,6 +1420,8 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
         stopifnot(!is.null(oracle), !is.null(oracle$class))
         actual <- kitFingerprintState(store, api("getDIAStateReference")(manager), api)
         mismatches <- kitOracleStateMismatches(actual, oracle)
+        # KIT-027 audit PH-05: the accession cleanup's FASTA identity against the member store's own `fasta` input.
+        if (isFALSE(kitFastaMatchesInput(actual, manager$.context$snapshot))) mismatches <- c(mismatches, "fasta_sha256")
         # An inexact state is named as such in the verifier's log (KIT-014 audit PH-01: the single-member decision
         # tells an oracle mismatch from a harness refusal by this message).
         if (length(mismatches)) stop("oracle mismatch: ", paste(mismatches, collapse = ", "))

@@ -61,7 +61,12 @@ completeProtSummaryWorkflowArgsSave <- function(output,
       tryCatch({
         writeAnalysisRecordFn(workflowData$state_manager, recordFile)
         catFn("SESSION SUMMARY: Wrote analysis_record.json at:", recordFile, "\n")
-      }, error = function(e) catFn("SESSION SUMMARY: analysis_record.json not written:", conditionMessage(e), "\n"))
+      }, error = function(e) {
+        # KIT-027 audit PH-08: the summary completes, and the user is told the record is missing.
+        catFn("SESSION SUMMARY: analysis_record.json not written:", conditionMessage(e), "\n")
+        showNotificationFn(paste("The analysis record (analysis_record.json) was not written:", conditionMessage(e)),
+          type = "warning", duration = NULL)
+      })
     }
 
     catFn("SESSION SUMMARY: Saving Integration S4 Object...\n")

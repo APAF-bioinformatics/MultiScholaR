@@ -120,3 +120,81 @@ test_that("the summary page writes analysis_record.json after study_parameters.t
     expect_identical(calls[1:2], c("study_parameters", "analysis_record"))
     expect_identical(record_args, file.path(source_dir, "analysis_record.json"))
 })
+
+test_that("KIT-027 audit PH-01/02/03: declared values come from provenance, both correlation operations and the DA settings are recorded", {
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    protein <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    norm <- workflowOperationEntry("normalization-ruv")
+    requested <- list(norm_method = "cyclicloess", ruv_mode = "automatic", auto_percentage_min = 1, auto_percentage_max = 20,
+        separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, ruv_percentage = 5,
+        ruv_k = 5, grouping = "group")
+    setDIAStepProvenance(manager, "normalization-ruv", "whole", norm$parameters, values = requested)
+    # The commit's config records the chosen k as `ruv_k` (the optimisation picked 3).
+    manager$saveState("ruv_corrected", protein, list(norm_method = "cyclicloess", ruv_mode = "automatic", ruv_k = 3,
+        percentage_as_neg_ctrl = 5), "ruv")
+    setDIAStepProvenance(manager, "pearson-pairs", "whole", workflowOperationEntry("pearson-pairs")$parameters,
+        values = list(group = "group", tech_rep_remove_regex = "pool"))
+    setDIAStepProvenance(manager, "pearson-selection", "whole", workflowOperationEntry("pearson-selection")$parameters,
+        values = list(pairs = strrep("a", 64), threshold = 0.5, correlations = data.frame(x = 1)))
+    manager$saveState("correlation_filtered", protein, list(min_pearson_correlation_threshold = 0.5), "correlation")
+    manifest <- list(schema = "dia.da_results.v1", source = getDIAStateReference(manager, "correlation_filtered"),
+        contrasts = data.frame(contrasts = "B-A", friendly_names = "B_vs_A", full_format = "B_vs_A=B-A"),
+        results = list(), parameters = list(formula = "~ 0 + group", qvalue = 0.05, lfc = 0, weights = NA),
+        model = list(group_id = "group", technical_replicate_id = NA_character_, block_reason = "no_duplicates"))
+    snapshot <- manager$.context$snapshot
+    snapshot$da_results <- saveDIAStateValue(manager$.context, manifest, "da-manifest", codec = "rds")
+    publishDIAStateHead(manager$.context, snapshot)
+    record <- buildWorkflowAnalysisRecord(manager)
+    check <- validateWorkflowAnalysisRecord(record)
+    expect_true(check$valid)
+    expect_false(any(grepl("declared parameter not recorded", check$incomplete)))
+    by_state <- stats::setNames(record$steps, vapply(record$steps, `[[`, "", "state"))
+    named <- function(parameters) stats::setNames(parameters, vapply(parameters, `[[`, "", "name"))
+    ruv <- named(by_state$ruv_corrected$parameters)
+    expect_setequal(names(ruv), norm$parameters)
+    expect_identical(ruv$ruv_k$source, "provenance")
+    expect_identical(decodeWorkflowRecordValue(ruv$ruv_k$value), 5)
+    expect_identical(ruv$ruv_k$provenance, "default")
+    selection <- named(by_state$correlation_filtered$parameters)
+    expect_identical(decodeWorkflowRecordValue(selection$threshold$value), 0.5)
+    expect_identical(by_state$correlation_filtered$preceded_by[[1]]$operation, "pearson-pairs")
+    pairs <- named(by_state$correlation_filtered$preceded_by[[1]]$parameters)
+    expect_identical(pairs$tech_rep_remove_regex$provenance, "default")
+    # A table among the operation's inputs is never carried into the head.
+    expect_null(manager$.context$snapshot$step_provenance$correlation_filtered$values$correlations)
+    da <- record$analyses$differential_abundance
+    expect_identical(da$source_state, "correlation_filtered")
+    da_parameters <- named(da$parameters)
+    expect_identical(da_parameters$formula$provenance, "default")
+    expect_identical(da_parameters$qvalue$provenance, "default")
+    expect_identical(da_parameters$lfc$provenance, "default")
+    expect_identical(da$model$block_reason, "no_duplicates")
+})
+
+test_that("KIT-027 audit PH-04/07/08: backfilled steps, exact default comparison and a visible record failure", {
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    snapshot <- manager$.context$snapshot
+    snapshot$step_provenance$raw_data_s4$backfilled <- TRUE
+    snapshot$step_provenance$raw_data_s4$committed_at <- "2030-01-01T00:00:00.000+0000"
+    publishDIAStateHead(manager$.context, snapshot)
+    step <- Filter(function(x) identical(x$state, "raw_data_s4"), buildWorkflowAnalysisRecord(manager)$steps)[[1]]
+    expect_true(is.na(step$software$sha))
+    expect_true(is.na(step$defaults_sha256))
+    expect_false(identical(step$committed_at, "2030-01-01T00:00:00.000+0000"))
+    expect_true(workflowParameterMatchesDefault("(\\\\d+),x", "(\\\\d+),x"))
+    expect_true(workflowParameterMatchesDefault(c("pdf", "png"), "pdf,png"))
+    expect_false(workflowParameterMatchesDefault(0.0100000001, "0.01"))
+    expect_true(workflowParameterMatchesDefault(0.01, "0.01"))
+    notified <- NULL
+    completeProtSummaryWorkflowArgsSave(output = list(), values = list(), projectDirs = list(proteomics = list(
+            source_dir = withr::local_tempdir(), integration_dir = withr::local_tempdir(), base_dir = withr::local_tempdir())),
+        workflowData = list(state_manager = structure(list(), class = "DIAStateAdapter")), experimentLabel = "x", description = "d",
+        resolveFinalS4StateFn = function(...) list(finalS4Object = NULL), createWorkflowArgsFn = function(...) "study_parameters.txt",
+        writeAnalysisRecordFn = function(...) stop("disk full"), saveRDSFn = function(...) NULL, renderTextFn = function(...) NULL,
+        showNotificationFn = function(message, ...) notified <<- c(notified, message), catFn = function(...) NULL)
+    expect_true(any(grepl("analysis record .* not written: disk full", notified)))
+})

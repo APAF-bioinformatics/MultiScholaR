@@ -1732,7 +1732,7 @@ acceptWorkflowActionResult <- function(owner, message) {
     owner$accepting <- token$request_id
     on.exit(owner$accepting <- NULL)
     completeWorkflowAction(owner, job$request$operation, value, context = job$completion_context,
-        variant = workflowQualificationVariant(job$request$config, job$request$operation))
+        variant = workflowQualificationVariant(job$request$config, job$request$operation), values = job$request$parameters)
     owner$accepting <- NULL
     journal <- readWorkflowExecutionJournal(job$paths)
     journal$status <- "publication_pending"
@@ -2746,14 +2746,14 @@ resolveWorkflowSampleFilterParameters <- function(manager, reference, parameters
 #' @param owner,operation,value Leased controller, registered ID and immutable result.
 #' @return Existing checkpoint/handoff result.
 #' @noRd
-completeWorkflowAction <- function(owner, operation, value, context = NULL, variant = NULL) {
+completeWorkflowAction <- function(owner, operation, value, context = NULL, variant = NULL, values = NULL) {
     assertWorkflowController()
     if (is.null(owner$accepting)) cli::cli_abort("result acceptance lease required",
         class = "workflow_execution_busy")
     entry <- workflowActionSpec(operation)
     # KIT-025: the state this completion commits is the registered operation's, under the request's variant.
     setDIAStepProvenance(owner$manager, operation, variant %||% entry$default_variant %||% NA_character_,
-        entry$parameters, entry$declaration$fixed)
+        entry$parameters, entry$declaration$fixed, values = values)
     if (entry$completion == "fixture")
         return(commitDIAReferenceState(owner$manager, value$state_name, value$checkpoint,
             value$config, "guarded fixture computation"))

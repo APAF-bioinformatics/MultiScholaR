@@ -64,11 +64,33 @@ workflowParameterMatchesDefault <- function(value, shipped) {
     if (is.null(shipped)) shipped <- ""
     shipped <- trimws(as.character(shipped))
     if (is.null(value) || !length(value) || all(is.na(value))) return(!nzchar(paste(shipped, collapse = "")))
-    parts <- trimws(strsplit(paste(shipped, collapse = ","), ",", fixed = TRUE)[[1L]])
+    shipped <- paste(shipped, collapse = ",")
+    # KIT-027 audit PH-07: a shipped list is split on commas only for a multi-valued recorded value, so a single
+    # value containing a comma (a regex, a formula) is compared whole; numbers compare exactly.
+    parts <- if (length(value) > 1L) trimws(strsplit(shipped, ",", fixed = TRUE)[[1L]]) else shipped
+    if (length(parts) != length(value)) return(FALSE)
     if (is.logical(value)) return(identical(as.logical(value), as.logical(suppressWarnings(as.numeric(parts)))) ||
         identical(as.logical(value), as.logical(toupper(parts))))
-    if (is.numeric(value)) return(isTRUE(all.equal(as.numeric(value), suppressWarnings(as.numeric(parts)))))
+    if (is.numeric(value)) {
+        numbers <- suppressWarnings(as.numeric(parts))
+        return(!anyNA(numbers) && all(as.numeric(value) == numbers))
+    }
     identical(as.character(value), parts)
+}
+
+#' One step's declared parameters: each value from the kernel's `slots$args` section, else the values the
+#' operation received (head provenance, KIT-027 audit PH-01), else the state's `config`, with its source named.
+#' @noRd
+workflowRecordDeclaredParameters <- function(names_declared, entry, section, args, config, values, shipped) {
+    lapply(names_declared, function(name) {
+        in_args <- !is.null(section) && is.list(args[[section]]) && name %in% names(args[[section]])
+        in_values <- is.list(values) && name %in% names(values)
+        in_config <- is.list(config) && name %in% names(config)
+        value <- if (in_args) args[[section]][[name]] else if (in_values) values[[name]] else if (in_config) config[[name]] else NULL
+        source <- if (in_args) "args" else if (in_values) "provenance" else if (in_config) "config" else "missing"
+        list(name = name, source = source, value = encodeWorkflowRecordValue(value),
+            provenance = if (identical(source, "missing")) "unknown" else workflowParameterProvenance(entry$defaults[[name]], value, shipped))
+    })
 }
 
 #' Provenance of one declared parameter through its registry `defaults` mapping, never by name.
@@ -136,16 +158,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         names_declared <- as.character(provenance$parameter_names %||% character())
         parameters <- list()
         if (length(names_declared)) {
-            for (name in names_declared) {
-                in_args <- !is.null(section) && !is.null(args[[section]]) && name %in% names(args[[section]])
-                in_config <- is.list(config) && name %in% names(config)
-                value <- if (in_args) args[[section]][[name]] else if (in_config) config[[name]] else NULL
-                source <- if (in_args) "args" else if (in_config) "config" else "missing"
-                parameters[[length(parameters) + 1L]] <- list(name = name, source = source,
-                    value = encodeWorkflowRecordValue(value),
-                    provenance = if (identical(source, "missing")) "unknown" else
-                        workflowParameterProvenance(entry$defaults[[name]], value, shipped))
-            }
+            parameters <- workflowRecordDeclaredParameters(names_declared, entry, section, args, config, provenance$values, shipped)
             for (name in names(provenance$fixed)) parameters[[length(parameters) + 1L]] <- list(name = name, source = "fixed",
                 value = encodeWorkflowRecordValue(provenance$fixed[[name]]), provenance = "fixed")
         } else if (!is.null(args)) {
@@ -163,8 +176,28 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         })
         software <- snapshot$software_environments[[provenance$build %||% ""]]
         sizes <- snapshot$sizes[[state]]
+        # KIT-027 audit PH-04: a `legacy` entry written by the reopen backfill carries the reopening build, defaults
+        # and time; such a step is dated by its state record and its software is unknown.
+        committed_at <- provenance$committed_at %||% NA_character_
+        if (identical(operation, "legacy")) {
+            stamped <- if (inherits(record$timestamp, "POSIXt")) format(record$timestamp, "%Y-%m-%dT%H:%M:%OS3%z") else NA_character_
+            entry_time <- suppressWarnings(as.POSIXct(committed_at, format = "%Y-%m-%dT%H:%M:%OS%z"))
+            backfilled <- isTRUE(provenance$backfilled) || inherits(record$timestamp, "POSIXt") && !is.na(entry_time) &&
+                abs(as.numeric(difftime(entry_time, record$timestamp, units = "secs"))) > 60
+            if (!is.na(stamped)) committed_at <- stamped
+            if (backfilled) { software <- NULL; provenance$source_commit <- NA_character_; provenance$defaults_sha256 <- NA_character_ }
+        }
+        preceded_by <- lapply(provenance$preceded_by %||% list(), function(previous) {
+            previous_entry <- tryCatch(workflowOperationEntry(previous$operation), error = function(e) NULL)
+            previous_section <- unname(sections[previous$operation])
+            if (!length(previous_section) || is.na(previous_section)) previous_section <- NULL
+            list(operation = previous$operation, variant = previous$variant %||% NA_character_,
+                parameters = workflowRecordDeclaredParameters(as.character(previous$parameter_names %||% character()),
+                    previous_entry, previous_section, args, NULL, previous$values, shipped))
+        })
         steps[[i]] <- list(order = i, state = state, operation = operation, variant = provenance$variant %||% NA_character_,
-            step_label = entry$step_label %||% state, committed_at = provenance$committed_at %||% NA_character_,
+            preceded_by = preceded_by,
+            step_label = entry$step_label %||% state, committed_at = committed_at,
             seed = provenance$seed %||% NA_real_, result_entity_id = snapshot$states[[state]]$entity_id,
             input_entity_ids = if (is.null(input)) list() else list(input),
             software = list(version = software$version %||% NA_character_, sha = provenance$source_commit %||% NA_character_),
@@ -182,6 +215,25 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         design <- list(entity_id = last$data$components$design_matrix$entity_id, sample_id = slots$sample_id %||% NA_character_,
             group_id = slots$group_id %||% NA_character_, technical_replicate_id = slots$technical_replicate_id %||% NA_character_,
             rows = rows)
+    }
+    # KIT-027 audit PH-02: the DA step commits no state of its own; its settings are the accepted result manifest's.
+    analyses <- list()
+    if (isSavedWorkflowReference(snapshot$da_results)) {
+        manifest <- resolveDIAStateValue(context, snapshot$da_results)
+        da_entry <- tryCatch(workflowOperationEntry("DA-contrast-output"), error = function(e) NULL)
+        source_state <- names(snapshot$states)[vapply(snapshot$states, function(reference)
+            identical(reference$entity_id, manifest$source$entity_id), logical(1))]
+        analyses$differential_abundance <- list(operation = "DA-contrast-output",
+            source_state = if (length(source_state)) source_state[[1L]] else NA_character_,
+            source_entity_id = manifest$source$entity_id %||% NA_character_,
+            parameters = lapply(names(manifest$parameters), function(name) list(name = name, source = "manifest",
+                value = encodeWorkflowRecordValue(manifest$parameters[[name]]),
+                provenance = workflowParameterProvenance(da_entry$defaults[[name]], manifest$parameters[[name]], shipped))),
+            contrasts = lapply(seq_len(nrow(manifest$contrasts %||% data.frame())), function(j) as.list(manifest$contrasts[j, , drop = FALSE])),
+            model = manifest$model,
+            results = lapply(names(manifest$results), function(name) list(contrast = name,
+                entity_id = manifest$results[[name]]$tables$da_proteins_long$entity_id %||% NA_character_,
+                rows = manifest$results[[name]]$rows %||% NA_integer_)))
     }
     inputs <- list()
     for (name in names(snapshot$file_dependencies)) {
@@ -208,7 +260,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
                 list(name = name, version = as.character(current$packages[[name]])))),
         defaults_sha256 = installed_defaults,
         defaults_changed = any(!is.na(step_defaults) & step_defaults != installed_defaults),
-        inputs = inputs, design = design, steps = steps,
+        inputs = inputs, design = design, steps = steps, analyses = analyses,
         external_resources = lapply(snapshot$external_resources %||% list(), function(resource)
             resource[c("service", "release", "release_kind", "query_date", "query_summary")]),
         limits = list(
