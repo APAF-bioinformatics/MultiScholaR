@@ -187,6 +187,15 @@
       "install_member": "browser-smoke.QY8ksX",
       "source_commit": "bd0b45ad28656ca27a8361535db9d30be3e335bc",
       "runtime_patch_bytes": 0
+    },
+    "kit_028": {
+      "ticket": "KIT-028",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.gtWJX0/library",
+      "build": "530c9d13f0faf46bf8ed2ec52a0d2c8be642d96a580df5af6c246145812e520b",
+      "exact_sum": "0a0efde6cd1ce921c54237f14e477c0096253ec03028f08e66fa7d76d4007362",
+      "install_member": "browser-smoke.gtWJX0",
+      "source_commit": "e28c3b28f3c7de14f14b8c4d2368a4fb2dcdd739",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -4077,7 +4086,7 @@
     "step_map_sha256": "7becbb852abd4a0aa364c14493097381b99cd122d302ec7130f78dec80a737bb",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "d2de09d96097405904cb368cfd5af484b0dd42052147c7475128c8edf4e5c75e",
+      "tools/profiling/workflow_kit.R": "e8961a4e46cffcd2176b40b3486752b5d6d8463188b0e3ff7da7d6557ddda377",
       "tools/profiling/workflow_kit_driver.R": "6c2132b45078b2ce6fa3fbd853ee23e2a5eddf3aaafdac0709cd51969f5946c5",
       "tools/profiling/workflow_kit_coordinator.R": "5b9d85de35f7f2b5aaefc7d29f55ec79ac0d1ae3524b0720056d714a3604f7c6",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
