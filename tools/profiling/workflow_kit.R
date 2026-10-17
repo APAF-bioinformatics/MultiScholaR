@@ -1491,3 +1491,53 @@ kitFingerprintTablePages <- function(store, reference, api) {
 }
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
+
+#' Prepare a replay store (KIT-028) in a copy of the origin project: its head is cut to the record's precondition
+#' states (the import and the design), so the reopened index (rebuilt from the head's roots) finds no saved result
+#' of any later step. Refuses when a scientific product is still indexed.
+#' @param root Store root inside the copied project (the directory holding `.workflow-entities`); never the origin.
+#' @param preconditions Names of the precondition states, in order.
+#' @return The prepared store root.
+#' @noRd
+kitPrepareReplayProject <- function(root, preconditions, api) {
+    stopifnot(dir.exists(file.path(root, ".workflow-entities")))
+    identity <- api("readSavedStoreIdentity")(file.path(root, ".workflow-entities", "store.json"))
+    open <- function() api("newDIAStateAdapter")(api("newWorkflowEntityStore")(root, identity$project_id, identity$workflow_id), reopen = TRUE)
+    manager <- open()
+    snapshot <- manager$.context$snapshot
+    stopifnot(identical(unlist(snapshot$state_history)[seq_along(preconditions)], preconditions))
+    keep <- c("identity", "audit", "workflow_type", "audit_enabled", "software_environments", "gui_references",
+        "import_metadata", "design_initial", "design_current", "reference_states")
+    pruned <- snapshot[intersect(keep, names(snapshot))]
+    pruned$state_history <- as.list(preconditions)
+    pruned$current_state <- preconditions[[length(preconditions)]]
+    for (field in c("states", "step_provenance", "component_dependencies", "sizes", "state_metadata"))
+        pruned[[field]] <- snapshot[[field]][intersect(preconditions, names(snapshot[[field]]))]
+    # The import's inputs only; the execution inputs belong to later steps.
+    pruned$file_dependencies <- Filter(function(d) is.null(d$source), snapshot$file_dependencies)
+    api("publishDIAStateHead")(manager$.context, pruned)
+    api("closeDIAStateAdapter")(manager)
+    manager <- open()
+    on.exit(api("closeDIAStateAdapter")(manager), add = TRUE)
+    indexed <- api("findSavedWorkflowEntities")(manager$.context$store, list(kind = "scientific_product"), max_matches = 1L)
+    if (!identical(indexed$status, "miss")) stop("the prepared replay store still indexes a scientific product")
+    root
+}
+
+#' Replay a record on a prepared project and compare every state with the origin store (KIT-028): after each
+#' replayed step its state is fingerprinted; at the end the replay store and the origin store are fingerprinted
+#' and compared state by state (`head_sha256` differs by construction and is not compared).
+#' @return `list(states, mismatches, per_step)`: `mismatches` from `kitReproduceMismatches` over every state name.
+#' @noRd
+kitReplayJourney <- function(record, prepared_root, origin_root, inputs, paths, scratch, api) {
+    per_step <- list()
+    api("replayWorkflowAnalysisRecord")(record, prepared_root, inputs, paths, scratch, on_step = function(step, manager) {
+        per_step[[length(per_step) + 1L]] <<- list(state = step$state, operation = step$operation, at = format(Sys.time()))
+    })
+    origin <- kitFingerprintStore(file.path(origin_root, ".workflow-entities"), api)
+    replay <- kitFingerprintStore(file.path(prepared_root, ".workflow-entities"), api)
+    as_populations <- function(fingerprints) lapply(fingerprints$states, function(x) list(fingerprint = x))
+    list(states = names(replay$states), per_step = per_step,
+        mismatches = as.vector(kitReproduceMismatches(as_populations(origin), as_populations(replay))),
+        origin = origin, replay = replay)
+}

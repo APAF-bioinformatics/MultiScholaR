@@ -171,7 +171,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         products <- lapply(unname(record$data$products %||% list()), function(product) {
             if (!isSavedWorkflowReference(product)) return(NULL)
             list(entity_id = product$entity_id, kind = product$kind,
-                product_type = product$metadata$product_type %||% product$identity$type %||% NA_character_,
+                product_type = product$identity$selectors %||% NA_character_,
                 identity_sha256 = digest::digest(product$identity, algo = "sha256"))
         })
         software <- snapshot$software_environments[[provenance$build %||% ""]]
@@ -316,4 +316,156 @@ validateWorkflowAnalysisRecord <- function(record) {
     if (!length(record$inputs)) incomplete <- c(incomplete, "no inputs recorded")
     incomplete <- c(incomplete, "external resources: controller-process queries only")
     list(valid = !length(errors), errors = errors, incomplete = incomplete)
+}
+
+#' Decode a record step's parameters into the named list the operation receives: declared names only (a step
+#' without declared parameters lists its arguments, which are not request parameters), fixed constants excluded.
+#' @noRd
+workflowReplayParameters <- function(parameters, declared) {
+    out <- list()
+    for (parameter in parameters) {
+        if (identical(parameter$source, "fixed") || !parameter$name %in% declared) next
+        out[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
+    }
+    out
+}
+
+#' Replay an analysis record (KIT-028): the record alone, with hash-checked inputs, re-executes the analysis.
+#'
+#' The import and the GUI-built design are not registry operations: they are preconditions, verified (the
+#' store holds exactly those states, with the record's entity ids) and never re-executed. Every later step
+#' runs in process in `state_history` order with its recorded operation, variant and parameters: a worker
+#' declaration through its registry handler and the controller's completion, a peptide step's progress
+#' advanced as the GUI's display does; normalisation and correlation through `runSavedOperation` and the commit
+#' their reference wrappers make; DA through `runDIAReferenceDaAnalysis` with the recorded settings and
+#' contrasts (publication deferred). The store must hold nothing else, so no step can reuse a saved result.
+#' @param record Analysis record (as built, or read with `jsonlite::read_json(simplifyVector = FALSE)`).
+#' @param project_root Store root of the prepared project (the directory holding `.workflow-entities`).
+#' @param inputs Named character vector, record input role to the file to check (`diann_report`, `fasta`, ...).
+#' @param paths Experiment paths of the prepared project.
+#' @param scratch Directory for request and publication scratch.
+#' @param on_step Optional `function(step, manager)` called after each replayed step.
+#' @return `list(states, project_root)` after closing the owner.
+#' @noRd
+replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, scratch, worker_cap = 12 * 1024^3,
+    on_step = NULL) {
+    check <- validateWorkflowAnalysisRecord(record)
+    if (!check$valid) cli::cli_abort(c("the analysis record is malformed", check$errors), class = "workflow_replay_invalid")
+    # Inputs first: a record whose files do not match the project is refused before any step runs.
+    for (input in record$inputs) {
+        if (is.null(input$sha256) || is.na(input$sha256) || !input$role %in% c("diann_report", "fasta", "design_file")) next
+        path <- if (input$role %in% names(inputs)) inputs[[input$role]] else NULL
+        if (is.null(path) || !file.exists(path) || !identical(digest::digest(file = path, algo = "sha256"), input$sha256)) {
+            cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")
+        }
+    }
+    identity <- readSavedStoreIdentity(file.path(project_root, ".workflow-entities", "store.json"))
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(project_root, identity$project_id, identity$workflow_id), reopen = TRUE)
+    on.exit(closeDIAStateAdapter(manager), add = TRUE)
+    manager$.context$session_format <- "native_v1"
+    manager$.context$reference_states <- TRUE
+    manager$.context$experiment_paths <- paths
+    steps <- record$steps
+    operations <- vapply(steps, function(step) step$operation, character(1))
+    preconditions <- seq_len(sum(cumprod(operations %in% c("import", "design_builder"))))
+    history <- unlist(manager$.context$snapshot$state_history)
+    expected <- vapply(steps[preconditions], function(step) step$state, character(1))
+    if (!length(preconditions) || !identical(history, expected) || !all(vapply(steps[preconditions], function(step)
+        identical(manager$.context$snapshot$states[[step$state]]$entity_id, step$result_entity_id), logical(1)))) {
+        cli::cli_abort("the replay store does not hold exactly the record's import and design states", class = "workflow_replay_precondition")
+    }
+    workflow <- new.env(parent = emptyenv())
+    workflow$state_manager <- manager
+    workflow$qc_params <- list(peptide_qc = list())
+    progress <- new.env(parent = emptyenv())
+    directories <- setupDirectories(file.path(scratch, "progress"), "proteomics")
+    directories$proteomics_dia_baseline_smoke <- directories$proteomics
+    normalization_final <- NULL
+    for (step in steps[-preconditions]) {
+        operation <- step$operation
+        entry <- if (operation %in% c("legacy", "import", "design_builder")) NULL else
+            tryCatch(workflowOperationEntry(operation), error = function(e) NULL)
+        if (is.null(entry)) cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}",
+            class = "workflow_replay_unsupported")
+        parameters <- workflowReplayParameters(step$parameters, entry$parameters)
+        variant <- if (is.null(step$variant) || is.na(step$variant)) entry$default_variant else step$variant
+        withDIAStateScope(manager, function() {
+            if (entry$compute %in% c("peptide", "protein")) {
+                directory <- file.path(scratch, "requests", step$state)
+                dir.create(directory, recursive = TRUE, showWarnings = FALSE)
+                request <- list(operation = operation, input_references = list(state = getDIAStateReference(manager)),
+                    parameters = parameters, worker_cap = worker_cap, directory = directory)
+                value <- get(entry$handler, mode = "function")(manager, request, variant)
+                value$operation <- operation
+                setDIAStepProvenance(manager, operation, variant, entry$parameters, entry$declaration$fixed, values = parameters)
+                # The controller's completion (`completeWorkflowAction`) on the replay's one workflow owner.
+                workflow$filtering_progress <- progress$filtering_progress
+                if (entry$completion == "protein") completeDIAProteinAction(workflow, value)
+                else if (identical(value$section, "srlQvalueProteotypicPeptideClean")) finishDIAReferenceQvalueStep(workflow, value)
+                else finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description, value$config,
+                    value$section, value$counts, observed_inclusion_absence = if (isTRUE(entry$inclusion_absence))
+                        value$summary$inclusion_entries_absent_from_data else NULL)
+                if (entry$completion == "peptide") {
+                    # The GUI's display advances the session's filtering progress with the step's summary; the next
+                    # step's progress product records it as prior progress.
+                    record_now <- readDIAStateMetadata(manager)
+                    product <- hydrateSavedWorkflowEntity(manager$.context$store, workflowPeptideProgressProduct(record_now$data))$value
+                    grDevices::pdf(NULL)
+                    device <- grDevices::dev.cur()
+                    on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device), add = TRUE)
+                    updateProteinFiltering(product$filteringSummary, entry$step_label, omic_type = "proteomics",
+                        experiment_label = "dia_baseline_smoke", overwrite = TRUE, return_grid = FALSE,
+                        project_dirs = directories, progress_owner = progress)
+                }
+            } else if (identical(operation, "normalization-ruv")) {
+                # As `runDIAReferenceNormalization` commits: the operation's final checkpoint with its product.
+                run <- runSavedOperation(manager, diaNormalizationOperation(), getDIAStateReference(manager), parameters)
+                saved <- run$value
+                skipped <- identical(parameters$ruv_mode, "skip")
+                final <- readDIAStateMetadata(manager, saved$final)$data
+                config <- list(norm_method = parameters$norm_method, ruv_mode = parameters$ruv_mode,
+                    ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage)
+                if (skipped) config$ruv_applied <- FALSE
+                final$products$normalization_science <- run$reference
+                commitDIAReferenceState(manager, if (skipped) "normalized" else "ruv_corrected", final, config,
+                    if (skipped) "Post-normalization complete: RUV-III skipped by user" else
+                        "Post-normalization complete: RUV-III correction and missing value cleanup completed")
+                normalization_final <<- saved$final
+            } else if (identical(operation, "pearson-selection")) {
+                # As `runDIAReferenceCorrelation` commits: pairs, then selection, on the normalisation's final checkpoint.
+                previous <- Filter(function(p) identical(p$operation, "pearson-pairs"), step$preceded_by %||% list())
+                if (!length(previous) || is.null(normalization_final))
+                    cli::cli_abort("step {.val {step$state}} cannot be replayed without its pairs and normalisation", class = "workflow_replay_unsupported")
+                pairs_parameters <- workflowReplayParameters(previous[[1L]]$parameters, workflowOperationEntry("pearson-pairs")$parameters)
+                pairs <- runSavedOperation(manager, diaPearsonPairsOperation(), normalization_final, pairs_parameters)
+                selection <- runSavedOperation(manager, diaPearsonSelectionOperation(), normalization_final,
+                    list(pairs = pairs$reference$entity_id, threshold = parameters$threshold, correlations = pairs$value),
+                    dependencies = list(pairs$reference))
+                spec <- readDIAStateMetadata(manager, selection$value)$data
+                commitDIAReferenceState(manager, "correlation_filtered", spec,
+                    list(min_pearson_correlation_threshold = parameters$threshold), "Applied final sample correlation filter (chunk 28)")
+            } else {
+                cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}", class = "workflow_replay_unsupported")
+            }
+        })
+        if (!identical(manager$current_state, step$state))
+            cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
+        if (is.function(on_step)) on_step(step, manager)
+    }
+    da <- record$analyses$differential_abundance
+    if (!is.null(da)) {
+        settings <- list()
+        for (parameter in da$parameters) settings[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
+        contrasts <- do.call(rbind, lapply(da$contrasts, function(row) as.data.frame(lapply(row, unlist), stringsAsFactors = FALSE)))
+        da_data <- new.env(parent = emptyenv())
+        da_data$current_s4_object <- getDIAStateReference(manager)
+        da_data$contrasts_available <- contrasts$contrasts
+        da_workflow <- new.env(parent = emptyenv())
+        da_workflow$state_manager <- manager
+        da_workflow$contrasts_tbl <- contrasts
+        runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
+            treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths, contrasts = contrasts, publish = FALSE)
+        if (is.function(on_step)) on_step(list(state = manager$current_state, operation = "DA-contrast-output"), manager)
+    }
+    list(states = unlist(manager$.context$snapshot$state_history), project_root = project_root)
 }

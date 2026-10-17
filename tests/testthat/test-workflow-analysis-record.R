@@ -198,3 +198,33 @@ test_that("KIT-027 audit PH-04/07/08: backfilled steps, exact default comparison
         showNotificationFn = function(message, ...) notified <<- c(notified, message), catFn = function(...) NULL)
     expect_true(any(grepl("analysis record .* not written: disk full", notified)))
 })
+
+test_that("KIT-028: replay refuses mismatched inputs, a store beyond its preconditions and a legacy step", {
+    root <- withr::local_tempdir()
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "replay-test", "DIA"), WorkflowState$new(audit_enabled = FALSE))
+    manager$.context$reference_states <- TRUE
+    fasta <- file.path(root, "proteins.fasta")
+    writeLines(c(">sp|P1|ONE", "MPEPTIDE"), fasta)
+    recordDIAWorkflowInputs(manager, c(fasta = fasta))
+    record <- jsonlite::fromJSON(jsonlite::toJSON(buildWorkflowAnalysisRecord(manager), auto_unbox = TRUE, digits = I(17),
+        null = "null", na = "null"), simplifyVector = FALSE)
+    closeDIAStateAdapter(manager)
+    expect_identical(vapply(record$steps, `[[`, "", "operation"), "import")
+    other <- file.path(withr::local_tempdir(), "other.fasta")
+    writeLines(">sp|X|OTHER", other)
+    scratch <- withr::local_tempdir()
+    # Inputs are checked before the store is opened.
+    expect_error(replayWorkflowAnalysisRecord(record, file.path(root, "absent"), c(fasta = other), list(), scratch),
+        class = "workflow_replay_inputs")
+    expect_error(replayWorkflowAnalysisRecord(record, root, character(), list(), scratch), class = "workflow_replay_inputs")
+    # A legacy step after the preconditions stops replay, naming the step.
+    legacy <- record
+    legacy$steps[[2]] <- list(order = 2, state = "qvalue_filtered", operation = "legacy", step_label = "qvalue_filtered",
+        parameters = list(), products = list())
+    expect_error(replayWorkflowAnalysisRecord(legacy, root, c(fasta = fasta), list(), scratch),
+        regexp = "qvalue_filtered", class = "workflow_replay_unsupported")
+    # A record whose import state is not the store's is refused before any step.
+    moved <- record
+    moved$steps[[1]]$result_entity_id <- strrep("0", 64)
+    expect_error(replayWorkflowAnalysisRecord(moved, root, c(fasta = fasta), list(), scratch), class = "workflow_replay_precondition")
+})
