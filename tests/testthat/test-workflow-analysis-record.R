@@ -273,7 +273,9 @@ test_that("KIT-029: the record renders to DOCX and HTML with every parameter nam
         value = encodeWorkflowRecordValue(seq_len(300) + 0.5), provenance = "input")
     jsonlite::write_json(record, json, auto_unbox = TRUE, digits = I(17), null = "null", na = "null")
     out <- withr::local_tempdir()
-    docx <- renderWorkflowAnalysisRecord(json, out, "docx")
+    # Relative paths, as a caller in the project directory passes them (render changes directory first).
+    withr::local_dir(dirname(json))
+    docx <- renderWorkflowAnalysisRecord(basename(json), out, "docx")
     html <- renderWorkflowAnalysisRecord(json, out, "html")
     texts <- list(docx = docxText(docx), html = paste(readLines(html, warn = FALSE), collapse = "\n"))
     names_all <- unique(unlist(lapply(record$steps, function(step) vapply(step$parameters, `[[`, "", "name"))))

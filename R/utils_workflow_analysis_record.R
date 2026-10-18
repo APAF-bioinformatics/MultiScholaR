@@ -548,6 +548,10 @@ writeWorkflowAnalysisRecordWorkbook <- function(record, path) {
 #' @noRd
 renderWorkflowAnalysisRecord <- function(record_path, output_dir, format = c("docx", "html")) {
     format <- match.arg(format)
+    # `rmarkdown::render` changes directory before it reads its arguments, so both paths are made absolute here.
+    record_path <- normalizePath(record_path, mustWork = TRUE)
+    if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+    output_dir <- normalizePath(output_dir, mustWork = TRUE)
     template <- system.file("reports", "shared", "analysis_record_SI.rmd", package = "MultiScholaR")
     if (!nzchar(template)) cli::cli_abort("the analysis record template is not installed")
     work <- tempfile("analysis-record-render-")
@@ -556,7 +560,7 @@ renderWorkflowAnalysisRecord <- function(record_path, output_dir, format = c("do
     file.copy(template, work)
     rmarkdown::render(file.path(work, basename(template)), output_format = if (format == "docx") "word_document" else "html_document",
         output_file = paste0("analysis_record.", format), output_dir = output_dir, intermediates_dir = work,
-        params = list(record_path = normalizePath(record_path)), envir = new.env(parent = globalenv()), quiet = TRUE)
+        params = list(record_path = record_path), envir = new.env(parent = globalenv()), quiet = TRUE)
 }
 
 #' Export the record bundle (KIT-029): `analysis_record.json`, `.docx` and `.xlsx` in one directory.
