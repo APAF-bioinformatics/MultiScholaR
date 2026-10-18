@@ -1,0 +1,55 @@
+{
+  "schema": "em.ticket_series_evidence_audit.result.v1",
+  "mode": "post_hoc",
+  "date": "2026-10-19",
+  "scope": {
+    "ticket_ids": ["KIT-025", "KIT-026", "KIT-027", "KIT-028", "KIT-029", "KIT-033"],
+    "head": "1cfb78c3",
+    "artifacts": [
+      "docs/qa/workflow-execution/kit/kit-028/analysis_record-origin-screen.json",
+      "docs/qa/workflow-execution/kit/kit-029/analysis_record.docx",
+      "docs/qa/workflow-execution/kit/kit-029/analysis_record.xlsx",
+      "docs/qa/workflow-execution/kit/kit-033/DIANN_report-with-record.docx",
+      "docs/qa/workflow-execution/kit/kit-028/replay-check-screen.json",
+      "R/utils_workflow_analysis_record.R",
+      "inst/reports/shared/analysis_record_SI.rmd"
+    ],
+    "claim_classes": ["reproduction", "journal_submission", "claim_scope"]
+  },
+  "authority": {"artifacts": ["tickets/kit/00-KIT-PLAN.md", "AGENTS.md", "AUDIT-20261014.md", "REMEDIATION-20261014.md"], "route_valid": true},
+  "evidence_layers": [
+    {"layer": "implementation_conformance", "artifacts": ["code read against tickets"], "claim_limit": "not executed"},
+    {"layer": "semantic_or_construct_validity", "artifacts": ["record, DOCX, XLSX, report read against the two standards"], "claim_limit": "no runtime claim"},
+    {"layer": "runtime_behavior", "artifacts": ["kit-028 replay check, one host, one build"], "claim_limit": "not promoted to external reproduction"}
+  ],
+  "findings": [
+    {"id": "IM-01", "severity": "high", "standard": "reproduction", "blocked_state": "implementation", "summary": "Steps with no declared parameters dump the whole carried-forward S4 args as unknown and drop their fixed constants; IQ and P14 misrepresented; 'fixed' never occurs."},
+    {"id": "IM-02", "severity": "medium", "standard": "reproduction", "blocked_state": "implementation", "summary": "Realised RUV outcome (applied, k, percentage, n controls) not in the record; ruv_k = null labelled user_set."},
+    {"id": "IM-03", "severity": "medium", "standard": "reproduction", "blocked_state": "implementation", "summary": "Provenance vocabulary drifted from the schema; validator does not constrain it; no legend."},
+    {"id": "IM-04", "severity": "high", "standard": "journal", "blocked_state": "decision", "summary": "FASTA identified by hash only; no database name, release, date, entries, taxonomy."},
+    {"id": "IM-05", "severity": "high", "standard": "journal", "blocked_state": "decision", "summary": "No upstream search provenance (DIA-NN version, library, settings) and no data_availability block."},
+    {"id": "IM-06", "severity": "high", "standard": "journal", "blocked_state": "implementation", "summary": "The DIA-NN report prints version fields as NA; the record's software block is not overlaid."},
+    {"id": "IM-07", "severity": "medium", "standard": "journal", "blocked_state": "implementation", "summary": "SI written in kit vocabulary; descriptions carried but not printed; no parameter labels."},
+    {"id": "IM-08", "severity": "medium", "standard": "journal", "blocked_state": "decision", "summary": "Report template prints fixed interpretive conclusions not derived from data."},
+    {"id": "IM-09", "severity": "medium", "standard": "reproduction", "blocked_state": "implementation", "summary": "Numerical environment (BLAS, threads, OS, locale) and the build identity absent from the record."},
+    {"id": "IM-10", "severity": "medium", "standard": "claim_scope", "blocked_state": "decision", "summary": "Replay proven same build/host, Linux, post-import, DA publication deferred, no enrichment; claim must be bounded accordingly."},
+    {"id": "IM-11", "severity": "medium", "standard": "journal", "blocked_state": "decision", "summary": "No inst/CITATION; no per-kernel method citations; no scientific-package subset."},
+    {"id": "IM-12", "severity": "low", "standard": "reproduction", "blocked_state": "none", "summary": "Design recorded in full but in internal shape, not SDRF."},
+    {"id": "IM-13", "severity": "low", "standard": "reproduction", "blocked_state": "none", "summary": "No published JSON Schema for the record format."},
+    {"id": "IM-14", "severity": "low", "standard": "journal", "blocked_state": "none", "summary": "Bundle only after Generate Report; Excel cell cap documented."},
+    {"id": "IM-15", "severity": "low", "standard": "process", "blocked_state": "decision", "summary": "No series-level criterion reviewed the rendered record end to end; replay completeness and document completeness diverged."},
+    {"id": "IM-16", "severity": "low", "standard": "process", "blocked_state": "none", "summary": "What holds: byte-stable record, 918 values round-trip, 97 parameters rendered, no truncation, live UniProt header, honest claim limits."}
+  ],
+  "blockers": ["IM-01", "IM-04", "IM-05", "IM-06"],
+  "repairs": [],
+  "deviations": [],
+  "formal_verification": {"used": false, "obligations": [], "limits": []},
+  "closeout": {
+    "implementation_verified": false,
+    "execution_complete": true,
+    "decision_supported": false,
+    "promotion_authorized": false,
+    "claim_scope": "DIA on-disk path, same build and host, from the DIA-NN report onward; the record is complete for replay but not yet complete or readable as a publication supplement."
+  },
+  "next_action": "Remediation for IM-01/02/03/06/07/09 as bounded implementation; user decisions on IM-04/05/08/11; IM-15 review before release; bound the manuscript claim per IM-10."
+}
