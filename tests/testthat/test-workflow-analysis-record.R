@@ -306,3 +306,54 @@ test_that("KIT-029: report generation exports the record bundle for an on-disk o
     expect_true(run(TRUE, function(...) stop("pandoc missing")))
     expect_true(any(grepl("bundle was not exported: pandoc missing", notified)))
 })
+
+test_that("KIT-033: study_parameters.txt on the record path carries every value in full and the record's step parameters", {
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    source_dir <- withr::local_tempdir()
+    path <- suppressMessages(capture.output(file <- createWorkflowArgsFromConfig("record-test", source_dir_path = source_dir,
+        final_s4_object = getDIAStateReference(manager, "qvalue_filtered"),
+        workflow_data = list(state_manager = manager, config_list = list())), type = "output"))
+    text <- readLines(file.path(source_dir, "study_parameters.txt"))
+    expect_false(any(grepl("omitted|\\[list object\\]|\\.\\.\\.", text)))
+    # The 40-sample inclusion list is written in full.
+    inclusion <- grep("^  inclusion_list = ", text, value = TRUE)
+    expect_identical(length(strsplit(sub("^  inclusion_list = ", "", inclusion[[1]]), ", ")[[1]]), 40L)
+    expect_true("Analysis Record:" %in% text)
+    record <- buildWorkflowAnalysisRecord(manager)
+    for (step in Filter(function(s) !identical(s$operation, "legacy") && length(s$parameters), record$steps)) {
+        for (parameter in step$parameters) expect_true(sprintf("  %s [%s] = %s", parameter$name, parameter$provenance,
+            workflowRecordValueText(parameter$value)) %in% text, label = paste(step$state, parameter$name))
+    }
+})
+
+test_that("KIT-033: an owner without a record keeps the current writer", {
+    source_dir <- withr::local_tempdir()
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    object@args$filterMinNumPeptidesPerSample <- list(inclusion_list = paste0("s", 1:40))
+    suppressMessages(capture.output(createWorkflowArgsFromConfig("plain", source_dir_path = source_dir, final_s4_object = object,
+        workflow_data = list(state_manager = WorkflowState$new(audit_enabled = FALSE), config_list = list())), type = "output"))
+    text <- readLines(file.path(source_dir, "study_parameters.txt"))
+    expect_false("Analysis Record:" %in% text)
+    expect_true(any(grepl("^  inclusion_list = character vector \\[40 values", text)))
+})
+
+test_that("KIT-033: the report takes the record's values and names the defaults it shows", {
+    record <- list(steps = list(list(operation = "minimum_peptides_per_sample", parameters = list(
+        list(name = "peptides_per_sample_cutoff", value = encodeWorkflowRecordValue(300))))),
+        analyses = list(differential_abundance = list(parameters = list(list(name = "qvalue", value = encodeWorkflowRecordValue(0.1))))))
+    path <- withr::local_tempfile(fileext = ".json")
+    jsonlite::write_json(record, path, auto_unbox = TRUE, digits = I(17), null = "null", na = "null")
+    params <- list(min_peptides_per_sample = 500, s4_de_q_val_thresh = 0.05, proportion_samples_below_cutoff = 0.5,
+        missing_values_cutoff = 33.333, qvalue_threshold = 0.01)
+    study <- list(`Workflow Parameters` = list(`Parameters from Final S4 Object` = list(
+        removeRowsWithMissingValuesPercent = list(groupwise_percentage_cutoff = "60"),
+        srlQvalueProteotypicPeptideClean = list(qvalue_threshold = "0.01"))))
+    overlaid <- workflowRecordReportParameters(path, params, study)
+    expect_identical(overlaid$min_peptides_per_sample, 300)
+    expect_identical(overlaid$s4_de_q_val_thresh, 0.1)
+    expect_true(grepl("Parameter not recorded; default shown: proportion_samples_below_cutoff = 0.5", overlaid$record_defaults_note, fixed = TRUE))
+    expect_false(grepl("missing_values_cutoff|qvalue_threshold", overlaid$record_defaults_note))
+    expect_identical(workflowRecordReportParameters(file.path(dirname(path), "absent.json"), params, study), params)
+})

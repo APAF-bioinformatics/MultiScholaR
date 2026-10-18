@@ -1,0 +1,34 @@
+{
+  "schema": "kit.report_check.v1",
+  "ticket": "KIT-033",
+  "label": "screen",
+  "date": "2026-10-18",
+  "pandoc": "3.11",
+  "study_parameters": {
+    "lines": 536,
+    "truncation_marks": 0,
+    "analysis_record_section": true
+  },
+  "missing_section": {
+    "removed": "[filterMinNumPeptidesPerSample]",
+    "without_record": "Samples with fewer than 500 peptides",
+    "with_record": "Samples with fewer than 3000 peptides",
+    "recorded_cutoff": 3000,
+    "errors": null
+  },
+  "baseline": {
+    "1": null,
+    "seconds": 1.2892
+  },
+  "with_record": {
+    "1": null,
+    "seconds": 0.556
+  },
+  "without_record": {
+    "1": null,
+    "seconds": 0.513
+  },
+  "without_record_equals_baseline": true,
+  "with_record_differs": false,
+  "with_record_note": []
+}

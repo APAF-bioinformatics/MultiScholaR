@@ -30,6 +30,15 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
 
     cat("WORKFLOW ARGS: Starting parameter extraction\n")
 
+    # KIT-033: on the on-disk DIA path the analysis record is the source; values are written in full with the
+    # record's own formatter and the record's step parameters are added. Other owners keep the current writer.
+    manager <- if (!is.null(workflow_data)) shiny::isolate(workflow_data$state_manager) else NULL
+    analysis_record <- if (inherits(manager, "DIAStateAdapter") && usesDIAReferenceStates(manager))
+        tryCatch(buildWorkflowAnalysisRecord(manager), error = function(e) {
+            cat(sprintf("WORKFLOW ARGS: analysis record unavailable: %s\n", conditionMessage(e)))
+            NULL
+        }) else NULL
+
     # Extract parameters from S4 object @args if provided
     s4_params <- list()
     component_parameters <- isSavedWorkflowReference(final_s4_object) &&
@@ -795,7 +804,8 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             "  --------------------------------"
         )
 
-        formatParameterValue <- formatWorkflowParameterValue
+        formatParameterValue <- if (!is.null(analysis_record)) function(value)
+            workflowRecordValueText(encodeWorkflowRecordValue(value)) else formatWorkflowParameterValue
         s4_sections <- if (requireNamespace("purrr", quietly = TRUE)) {
             purrr::imap(s4_params, function(func_params, func_name) {
                 tryCatch(
@@ -932,7 +942,19 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
         tryCatch(
             {
                 # Check if formatConfigList exists before calling
-                if (exists("formatConfigList", mode = "function")) {
+                if (!is.null(analysis_record)) {
+                    # KIT-033: the same layout as formatConfigList, every value in full (the record's formatter).
+                    title <- function(name) tools::toTitleCase(gsub("[._]", " ", name))
+                    full <- function(items, indent) unlist(lapply(setdiff(names(items), c("internal_workflow_source_dir",
+                        "core_utilisation", "seqinr_obj")), function(name) {
+                        value <- items[[name]]
+                        pad <- strrep(" ", indent)
+                        if (is.list(value) && !is.data.frame(value) && length(value) && !is.null(names(value)))
+                            c(paste0(pad, title(name), ":"), full(value, indent + 2L)) else
+                            paste0(pad, title(name), ": ", workflowRecordValueText(encodeWorkflowRecordValue(value)))
+                    }))
+                    config_lines <- c(config_lines, full(clean_config, 0L))
+                } else if (exists("formatConfigList", mode = "function")) {
                     config_params <- formatConfigList(clean_config)
                     config_lines <- c(config_lines, config_params)
                     cat("WORKFLOW ARGS: formatConfigList completed successfully\n")
@@ -954,6 +976,29 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
 
     cat("WORKFLOW ARGS: Adding config lines to output\n")
     output_lines <- c(output_lines, config_lines)
+
+    # KIT-033: every step of the analysis record with its declared parameters, values as the record carries them.
+    if (!is.null(analysis_record)) {
+        record_lines <- c("", "Analysis Record:", "----------------", "")
+        for (step in analysis_record$steps) {
+            if (identical(step$operation, "legacy") || !length(step$parameters) && !length(step$preceded_by)) next
+            record_lines <- c(record_lines, sprintf("[%s. %s: %s]", step$order, step$state, step$operation))
+            for (previous in step$preceded_by %||% list()) for (parameter in previous$parameters)
+                record_lines <- c(record_lines, sprintf("  %s.%s [%s] = %s", previous$operation, parameter$name,
+                    parameter$provenance, workflowRecordValueText(parameter$value)))
+            for (parameter in step$parameters) record_lines <- c(record_lines, sprintf("  %s [%s] = %s", parameter$name,
+                parameter$provenance, workflowRecordValueText(parameter$value)))
+            record_lines <- c(record_lines, "")
+        }
+        for (name in names(analysis_record$analyses)) {
+            analysis <- analysis_record$analyses[[name]]
+            record_lines <- c(record_lines, sprintf("[%s: %s]", name, analysis$operation))
+            for (parameter in analysis$parameters) record_lines <- c(record_lines, sprintf("  %s [%s] = %s", parameter$name,
+                parameter$provenance, workflowRecordValueText(parameter$value)))
+            record_lines <- c(record_lines, "")
+        }
+        output_lines <- c(output_lines, record_lines)
+    }
 
     # Add contrasts information
     cat("WORKFLOW ARGS: Processing contrasts information\n")

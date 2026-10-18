@@ -574,3 +574,58 @@ exportWorkflowAnalysisRecordBundle <- function(manager, directory) {
     docx <- renderWorkflowAnalysisRecord(json, directory, "docx")
     invisible(c(json = json, docx = docx, xlsx = file.path(directory, "analysis_record.xlsx")))
 }
+
+#' Where a report variable comes from (KIT-033): the record's step operation and parameter (`DA` names the
+#' differential abundance analysis), and the `study_parameters.txt` section and key the parser reads.
+#' @noRd
+workflowRecordReportSources <- list(
+    qvalue_threshold = list(record = c("peptide_qvalue_filter", "qvalue_threshold"), file = c("srlQvalueProteotypicPeptideClean", "qvalue_threshold")),
+    proteotypic_peptide_only = list(record = c("peptide_qvalue_filter", "proteotypic_only"), file = c("srlQvalueProteotypicPeptideClean", "choose_only_proteotypic_peptide")),
+    intensity_cutoff_percentile = list(record = c("peptide_intensity_filter", "peptides_intensity_cutoff_percentile"), file = c("peptideIntensityFiltering", "peptides_intensity_cutoff_percentile")),
+    proportion_samples_below_cutoff = list(file = c("peptideIntensityFiltering", "peptides_proportion_of_samples_below_cutoff")),
+    missing_values_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "groupwise_percentage_cutoff")),
+    max_groups_percentage_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "max_groups_percentage_cutoff")),
+    min_peptidoforms_per_protein = list(record = c("peptide_protein_evidence_filter", "num_peptidoforms_per_protein_thresh"), file = c("filterMinNumPeptidesPerProtein", "peptidoforms_per_protein_cutoff")),
+    min_peptides_per_sample = list(record = c("minimum_peptides_per_sample", "peptides_per_sample_cutoff"), file = c("filterMinNumPeptidesPerSample", "peptides_per_sample_cutoff")),
+    normalisation_method = list(record = c("normalization-ruv", "norm_method"), file = c("normaliseBetweenSamples", "method")),
+    ruv_number_k = list(record = c("normalization-ruv", "ruv_k"), file = c("ruvIII_C_Varying", "ruv_number_k")),
+    s4_de_q_val_thresh = list(record = c("DA", "qvalue"), file = c("deAnalysisParameters", "de_q_val_thresh")),
+    s4_de_treat_lfc_cutoff = list(record = c("DA", "lfc"), file = c("deAnalysisParameters", "treat_lfc_cutoff")),
+    s4_formula_string = list(record = c("DA", "formula"), file = c("deAnalysisParameters", "formula_string")),
+    s4_ebayes_trend = list(file = c("deAnalysisParameters", "eBayes_trend")),
+    s4_ebayes_robust = list(file = c("deAnalysisParameters", "eBayes_robust")))
+
+#' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
+#' returned unchanged. With one, every report variable the record carries takes the record's value, and the
+#' variables neither the record nor `study_parameters.txt` carries are named in `record_defaults_note`: the
+#' report shows its default for them.
+#' @param record_path `analysis_record.json` beside `study_parameters.txt`.
+#' @param params The report's extracted parameters (`ExtractStudyParametersNew`).
+#' @param study_params The parsed `study_parameters.txt` (`ReadStudyParamsNew`).
+#' @noRd
+workflowRecordReportParameters <- function(record_path, params, study_params = list()) {
+    if (!file.exists(record_path)) return(params)
+    record <- jsonlite::read_json(record_path, simplifyVector = FALSE)
+    from_record <- function(operation, name) {
+        parameters <- if (identical(operation, "DA")) record$analyses$differential_abundance$parameters else {
+            steps <- Filter(function(step) identical(step$operation, operation), record$steps)
+            if (length(steps)) steps[[length(steps)]]$parameters else list()
+        }
+        hit <- Filter(function(parameter) identical(parameter$name, name), parameters)
+        if (length(hit)) decodeWorkflowRecordValue(hit[[1L]]$value) else NULL
+    }
+    file_params <- study_params[["Workflow Parameters"]][["Parameters from Final S4 Object"]] %||% list()
+    shown <- character()
+    for (variable in names(workflowRecordReportSources)) {
+        source <- workflowRecordReportSources[[variable]]
+        value <- if (!is.null(source$record)) from_record(source$record[[1L]], source$record[[2L]]) else NULL
+        if (!is.null(value) && length(value) == 1L && !is.na(value)) {
+            current <- params[[variable]]
+            params[[variable]] <- if (is.logical(current)) as.logical(value) else if (is.numeric(current)) as.numeric(value) else value
+        } else if (is.null(file_params[[source$file[[1L]]]][[source$file[[2L]]]]) && !is.null(params[[variable]])) {
+            shown <- c(shown, sprintf("%s = %s", variable, paste(format(params[[variable]]), collapse = ", ")))
+        }
+    }
+    params$record_defaults_note <- if (length(shown)) paste0(" Parameter not recorded; default shown: ", paste(shown, collapse = "; "), ".") else ""
+    params
+}
