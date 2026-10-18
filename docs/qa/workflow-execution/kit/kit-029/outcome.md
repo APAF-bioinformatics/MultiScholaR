@@ -1,6 +1,6 @@
 # KIT-029: supplementary rendering, DOCX and Excel from the record
 
-Status 2026-10-18: **implemented; install pending.** Control `kit_036` (unchanged; no counted member). Host pandoc 3.11 (`rmarkdown::pandoc_available()` TRUE).
+Status 2026-10-18: **complete.** Install `kit_029` from `17a93298` (`browser-smoke.IEXTAX`; the `8ad3bf29` install before the path fix, `mpzZBK`, is superseded): installed `source_commit` verified, a render from the installed template succeeded; bindings regenerated. Control `kit_036` (unchanged; no counted member). Host pandoc 3.11 (`rmarkdown::pandoc_available()` TRUE).
 
 ## What changed (one mechanism: rendering the record for people)
 
@@ -22,7 +22,7 @@ Deviation: the ticket names an "Export analysis record" action. A separate butto
 | Summary and report regressions: `test-prot-12-summary-module-contracts.R`, `test-prot-12a-…`, `test-general-filemgmt-report-helpers-shared.R` (the `RenderReport` tests), `test-lipid-14a-…`, `test-lipid-15-…`, `test-metab-05-…` | 446, 62, 84 (1 skip), 129, 134, 160 (9 skip) pass |
 | Report doubles (`helper-e2e-report-doubles.R`) | used by no test file (its one function, `install_report_template_double`, has no caller), so there is nothing to run |
 | Existing omic templates and `RenderReport` | `git diff` empty for `inst/reports/{proteomics,lipidomics,metabolomics}` and `R/func_general_filemgmt_report_render_helpers.R` |
-| `R CMD check` at `8ad3bf29` (clean worktree) | 3 warnings, 3 notes (baseline) |
+| `R CMD check` at `8ad3bf29` (clean worktree) | 3 warnings, 3 notes (baseline). The later fix commit `17a93298` changes four lines in one function and its test; it installed cleanly and the record tests (108) pass on it. |
 
 A bug was found by rendering the real record with a relative path: `rmarkdown::render` changes directory before it reads its arguments, so the record was not found. The renderer now normalises both paths, and the render test uses a relative path.
 
