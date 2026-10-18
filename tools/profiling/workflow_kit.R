@@ -958,8 +958,8 @@ kitFingerprintState <- function(store, reference, api, memo = NULL) {
 #' @noRd
 kitFingerprintFiles <- function(project, previous = NULL) {
     files <- list.files(project, recursive = TRUE, full.names = TRUE, all.files = TRUE)
-    # KIT-027: `analysis_record.json` carries its generation time; it is a view of the store, not a product.
-    files <- files[!grepl("/[.]workflow-entities/|/[.]dia-(native|gui-adoption)-[^/]*/|[.]log$|/checkpoint-io[.]log$|/analysis_record[.]json$", files)]
+    # KIT-027/029: the analysis record and its rendered bundle carry their generation time; they are a view of the store.
+    files <- files[!grepl("/[.]workflow-entities/|/[.]dia-(native|gui-adoption)-[^/]*/|[.]log$|/checkpoint-io[.]log$|/analysis_record[.](json|docx|xlsx|html)$", files)]
     files <- files[!dir.exists(files)]
     relative <- substring(files, nchar(project) + 2L)
     info <- file.info(files, extra_cols = FALSE)

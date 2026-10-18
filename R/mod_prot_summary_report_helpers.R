@@ -541,7 +541,9 @@ runProtSummaryReportProgress <- function(output,
                                          resolveReportTemplateFn = resolveProtSummaryReportTemplate,
                                          retrieveTemplateAssetFn = retrieveProtSummaryReportTemplateAsset,
                                          runReportGenerationFn = runProtSummaryReportGeneration,
-                                         incProgressFn = shiny::incProgress) {
+                                         incProgressFn = shiny::incProgress,
+                                         exportRecordFn = exportWorkflowAnalysisRecordBundle,
+                                         showNotificationFn = shiny::showNotification) {
   incProgressFn(0.1, detail = "Detecting workflow type...")
 
   reportTemplate <- resolveReportTemplateFn(
@@ -564,7 +566,7 @@ runProtSummaryReportProgress <- function(output,
 
   incProgressFn(0.5, detail = "Rendering report...")
 
-  runReportGenerationFn(
+  generated <- runReportGenerationFn(
     output = output,
     values = values,
     omicType = omicType,
@@ -572,5 +574,16 @@ runProtSummaryReportProgress <- function(output,
     description = description,
     templateFilename = templateFilename
   )
+
+  # KIT-029: the analysis record bundle (JSON, Word, Excel) beside the report, for an on-disk owner; a failure
+  # is shown and leaves the report as generated.
+  if (isTRUE(generated) && !is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+    incProgressFn(0.9, detail = "Exporting the analysis record...")
+    recordDir <- projectDirs[[omicType]]$study_report_dir %||% projectDirs[[omicType]]$results_summary_dir
+    tryCatch(exportRecordFn(workflowData$state_manager, recordDir), error = function(e) showNotificationFn(
+      paste("The analysis record bundle was not exported:", conditionMessage(e)), type = "warning", duration = NULL))
+  }
+
+  generated
 }
 

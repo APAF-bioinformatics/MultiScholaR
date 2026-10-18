@@ -228,3 +228,79 @@ test_that("KIT-028: replay refuses mismatched inputs, a store beyond its precond
     moved$steps[[1]]$result_entity_id <- strrep("0", 64)
     expect_error(replayWorkflowAnalysisRecord(moved, root, c(fasta = fasta), list(), scratch), class = "workflow_replay_precondition")
 })
+
+docxText <- function(path) {
+    directory <- withr::local_tempdir(.local_envir = parent.frame())
+    utils::unzip(path, files = "word/document.xml", exdir = directory)
+    xml <- paste(readLines(file.path(directory, "word", "document.xml"), warn = FALSE), collapse = "")
+    gsub("<[^>]+>", "", xml)
+}
+
+test_that("KIT-029: the workbook has one parameters row per record parameter and matches the record", {
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    json <- withr::local_tempfile(fileext = ".json")
+    writeWorkflowAnalysisRecord(manager, json)
+    record <- jsonlite::read_json(json, simplifyVector = FALSE)
+    long <- record
+    long$steps[[2]]$parameters[[length(long$steps[[2]]$parameters) + 1L]] <- list(name = "long_vector", source = "args",
+        value = encodeWorkflowRecordValue(seq_len(300) + 0.5), provenance = "input")
+    xlsx <- withr::local_tempfile(fileext = ".xlsx")
+    writeWorkflowAnalysisRecordWorkbook(long, xlsx)
+    parameters <- openxlsx::read.xlsx(xlsx, "parameters")
+    expected <- sum(vapply(long$steps, function(step) length(step$parameters) +
+        sum(vapply(step$preceded_by %||% list(), function(p) length(p$parameters), integer(1))), integer(1)))
+    expect_identical(nrow(parameters), as.integer(expected))
+    expect_identical(sort(openxlsx::read.xlsx(xlsx, "inputs")$sha256), sort(vapply(long$inputs, function(i) i$sha256 %||% NA_character_, "")[
+        !is.na(vapply(long$inputs, function(i) i$sha256 %||% NA_character_, ""))]))
+    expect_identical(openxlsx::read.xlsx(xlsx, "external_resources")$release, "12.0")
+    expect_identical(openxlsx::read.xlsx(xlsx, "software")$value[[1]], "MultiScholaR")
+    long_value <- parameters$value[parameters$name == "long_vector"]
+    expect_identical(length(strsplit(long_value, ", ", fixed = TRUE)[[1]]), 300L)
+})
+
+test_that("KIT-029: the record renders to DOCX and HTML with every parameter name, input hash and the full long vector", {
+    skip_if_not(rmarkdown::pandoc_available())
+    skip_if(!nzchar(system.file("reports", "shared", "analysis_record_SI.rmd", package = "MultiScholaR")))
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    json <- withr::local_tempfile(fileext = ".json")
+    writeWorkflowAnalysisRecord(manager, json)
+    record <- jsonlite::read_json(json, simplifyVector = FALSE)
+    record$steps[[2]]$parameters[[length(record$steps[[2]]$parameters) + 1L]] <- list(name = "long_vector", source = "args",
+        value = encodeWorkflowRecordValue(seq_len(300) + 0.5), provenance = "input")
+    jsonlite::write_json(record, json, auto_unbox = TRUE, digits = I(17), null = "null", na = "null")
+    out <- withr::local_tempdir()
+    docx <- renderWorkflowAnalysisRecord(json, out, "docx")
+    html <- renderWorkflowAnalysisRecord(json, out, "html")
+    texts <- list(docx = docxText(docx), html = paste(readLines(html, warn = FALSE), collapse = "\n"))
+    names_all <- unique(unlist(lapply(record$steps, function(step) vapply(step$parameters, `[[`, "", "name"))))
+    hashes <- Filter(Negate(is.null), lapply(record$inputs, `[[`, "sha256"))
+    for (kind in names(texts)) {
+        text <- texts[[kind]]
+        for (name in names_all) expect_true(grepl(name, text, fixed = TRUE), label = paste(kind, name))
+        for (hash in hashes) expect_true(grepl(hash, text, fixed = TRUE), label = paste(kind, hash))
+        expect_true(grepl("300.5", text, fixed = TRUE) && grepl("1.5, 2.5, 3.5", text, fixed = TRUE), label = paste(kind, "long vector"))
+    }
+})
+
+test_that("KIT-029: report generation exports the record bundle for an on-disk owner and shows a failure", {
+    exported <- NULL
+    notified <- NULL
+    workflow <- list(state_manager = structure(list(), class = "DIAStateAdapter"))
+    dirs <- list(proteomics = list(study_report_dir = withr::local_tempdir()))
+    run <- function(generated, export) runProtSummaryReportProgress(output = list(), values = list(), workflowData = workflow,
+        projectDirs = dirs, experimentLabel = "x", description = "d",
+        resolveReportTemplateFn = function(...) list(templateFilename = "t.rmd"), retrieveTemplateAssetFn = function(...) "t.rmd",
+        runReportGenerationFn = function(...) generated, incProgressFn = function(...) NULL,
+        exportRecordFn = export, showNotificationFn = function(message, ...) notified <<- c(notified, message))
+    expect_true(run(TRUE, function(manager, directory) exported <<- directory))
+    expect_identical(exported, dirs$proteomics$study_report_dir)
+    exported <- NULL
+    expect_false(run(FALSE, function(manager, directory) exported <<- directory))
+    expect_null(exported)
+    expect_true(run(TRUE, function(...) stop("pandoc missing")))
+    expect_true(any(grepl("bundle was not exported: pandoc missing", notified)))
+})

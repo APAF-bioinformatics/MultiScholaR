@@ -983,3 +983,15 @@ test_that("KIT-027 audit PH-05: one FASTA comparison serves the journey and sing
     # Both verifiers call it: the store fingerprint (journey members) and the single-member oracle check.
     expect_identical(lengths(regmatches(source_text, gregexpr("kitFastaMatchesInput\\(", source_text))), 2L)
 })
+
+test_that("KIT-029: the analysis record bundle leaves the project file fingerprint unchanged", {
+    h <- kitHarness()
+    project <- withr::local_tempdir()
+    dir.create(file.path(project, "results", "Study_report"), recursive = TRUE)
+    writeLines("a\tb", file.path(project, "results", "table.tsv"))
+    without <- h$kitFingerprintFiles(project)
+    for (name in c("analysis_record.json", "analysis_record.docx", "analysis_record.xlsx", "analysis_record.html"))
+        writeLines(name, file.path(project, "results", "Study_report", name))
+    with <- h$kitFingerprintFiles(project)
+    expect_identical(with[c("path", "bytes", "sha256", "method")], without[c("path", "bytes", "sha256", "method")])
+})

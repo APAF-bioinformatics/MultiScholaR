@@ -469,3 +469,104 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     }
     list(states = unlist(manager$.context$snapshot$state_history), project_root = project_root)
 }
+
+#' Text of one encoded record value, in full (KIT-029): atomic values comma-joined, lists as compact JSON,
+#' tables as their size and hash.
+#' @noRd
+workflowRecordValueText <- function(encoded) {
+    if (is.null(encoded)) return("NULL")
+    if (identical(encoded$type, "data.frame"))
+        return(sprintf("table: %s rows, columns %s (sha256 %s)", encoded$rows, paste(unlist(encoded$columns), collapse = ", "), encoded$sha256))
+    if (identical(encoded$type, "opaque")) return(paste0("<", paste(unlist(encoded$class), collapse = "/"), ">"))
+    value <- decodeWorkflowRecordValue(encoded)
+    if (is.list(value)) return(as.character(jsonlite::toJSON(value, auto_unbox = TRUE, digits = I(17), null = "null", na = "null")))
+    if (!length(value)) return("")
+    text <- if (is.double(value)) format(value, digits = 17, trim = TRUE) else as.character(value)
+    text[is.na(value)] <- "NA"
+    paste(if (is.null(names(value))) text else paste0(names(value), "=", text), collapse = ", ")
+}
+
+#' The record as the tables people read (KIT-029): one source for the rendered document and the workbook.
+#' @param record Analysis record (built or read back from JSON).
+#' @return Named list of data frames: `software`, `packages`, `inputs`, `design`, `steps`, `parameters`,
+#'   `analyses`, `external_resources`.
+#' @noRd
+workflowAnalysisRecordTables <- function(record) {
+    chr <- function(x) if (is.null(x) || !length(x)) NA_character_ else as.character(unlist(x)[[1L]])
+    frame <- function(rows, columns) {
+        if (!length(rows)) return(stats::setNames(as.data.frame(matrix(character(), 0L, length(columns))), columns))
+        out <- do.call(rbind, lapply(rows, function(row) as.data.frame(lapply(row[columns], chr), stringsAsFactors = FALSE)))
+        names(out) <- columns
+        out
+    }
+    software <- data.frame(field = c("package", "version", "source commit", "R", "platform", "defaults sha256", "defaults changed", "generated"),
+        value = c(chr(record$software$package), chr(record$software$version), chr(record$software$sha), chr(record$software$r_version),
+            chr(record$software$platform), chr(record$defaults_sha256), chr(record$defaults_changed), chr(record$generated_at)),
+        stringsAsFactors = FALSE)
+    packages <- frame(record$software$packages %||% list(), c("name", "version"))
+    inputs <- frame(record$inputs, c("role", "basename", "bytes", "sha256", "entity_id"))
+    design <- if (length(record$design$rows)) as.data.frame(lapply(as.data.frame(do.call(rbind, lapply(record$design$rows, function(row)
+        vapply(row, chr, character(1)))), stringsAsFactors = FALSE), as.character), stringsAsFactors = FALSE) else data.frame()
+    steps <- frame(lapply(record$steps, function(step) c(step[c("order", "state", "operation", "variant", "step_label", "committed_at")],
+        list(software_sha = step$software$sha, rows = step$dimensions$rows, columns = step$dimensions$columns,
+            preceded_by = paste(vapply(step$preceded_by %||% list(), function(p) chr(p$operation), ""), collapse = ", ")))),
+        c("order", "state", "operation", "variant", "step_label", "committed_at", "software_sha", "rows", "columns", "preceded_by"))
+    parameter_rows <- list()
+    for (step in record$steps) {
+        add <- function(parameters, operation) for (parameter in parameters) parameter_rows[[length(parameter_rows) + 1L]] <<- list(
+            order = step$order, step = step$state, operation = operation, name = parameter$name,
+            value = workflowRecordValueText(parameter$value), source = parameter$source, provenance = parameter$provenance)
+        for (previous in step$preceded_by %||% list()) add(previous$parameters, previous$operation)
+        add(step$parameters, step$operation)
+    }
+    parameters <- frame(parameter_rows, c("order", "step", "operation", "name", "value", "source", "provenance"))
+    analyses <- frame(unlist(lapply(names(record$analyses %||% list()), function(name) lapply(record$analyses[[name]]$parameters, function(parameter)
+        list(analysis = name, operation = record$analyses[[name]]$operation, source_state = record$analyses[[name]]$source_state,
+            name = parameter$name, value = workflowRecordValueText(parameter$value), provenance = parameter$provenance))), recursive = FALSE),
+        c("analysis", "operation", "source_state", "name", "value", "provenance"))
+    external <- frame(record$external_resources, c("service", "release", "release_kind", "query_date", "query_summary"))
+    list(software = software, packages = packages, inputs = inputs, design = design, steps = steps, parameters = parameters,
+        analyses = analyses, external_resources = external)
+}
+
+#' Write the record's workbook (KIT-029): sheets `software`, `inputs`, `design`, `parameters`, `external_resources`
+#' (and `steps`, `analyses`, `packages`), one row per step and parameter in `parameters`.
+#' @noRd
+writeWorkflowAnalysisRecordWorkbook <- function(record, path) {
+    tables <- workflowAnalysisRecordTables(record)
+    openxlsx::write.xlsx(tables[c("software", "inputs", "design", "parameters", "external_resources", "steps", "analyses", "packages")],
+        path, overwrite = TRUE)
+    invisible(path)
+}
+
+#' Render the record for people (KIT-029) with the shared template, not `RenderReport` (which reads per-omic
+#' templates and takes no parameters).
+#' @param record_path Analysis record JSON.
+#' @param output_dir Output directory.
+#' @param format `docx` (the omic reports' `word_document`) or `html`.
+#' @return The rendered file.
+#' @noRd
+renderWorkflowAnalysisRecord <- function(record_path, output_dir, format = c("docx", "html")) {
+    format <- match.arg(format)
+    template <- system.file("reports", "shared", "analysis_record_SI.rmd", package = "MultiScholaR")
+    if (!nzchar(template)) cli::cli_abort("the analysis record template is not installed")
+    work <- tempfile("analysis-record-render-")
+    dir.create(work)
+    on.exit(unlink(work, recursive = TRUE), add = TRUE)
+    file.copy(template, work)
+    rmarkdown::render(file.path(work, basename(template)), output_format = if (format == "docx") "word_document" else "html_document",
+        output_file = paste0("analysis_record.", format), output_dir = output_dir, intermediates_dir = work,
+        params = list(record_path = normalizePath(record_path)), envir = new.env(parent = globalenv()), quiet = TRUE)
+}
+
+#' Export the record bundle (KIT-029): `analysis_record.json`, `.docx` and `.xlsx` in one directory.
+#' @noRd
+exportWorkflowAnalysisRecordBundle <- function(manager, directory) {
+    if (!dir.exists(directory)) dir.create(directory, recursive = TRUE)
+    json <- file.path(directory, "analysis_record.json")
+    writeWorkflowAnalysisRecord(manager, json)
+    record <- jsonlite::read_json(json, simplifyVector = FALSE)
+    writeWorkflowAnalysisRecordWorkbook(record, file.path(directory, "analysis_record.xlsx"))
+    docx <- renderWorkflowAnalysisRecord(json, directory, "docx")
+    invisible(c(json = json, docx = docx, xlsx = file.path(directory, "analysis_record.xlsx")))
+}
