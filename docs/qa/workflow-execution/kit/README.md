@@ -20,7 +20,6 @@ A **step declaration** is six facts: input class, fields and columns read, indep
 | row | `partitionByRows` | q-value filter, protein replicate filter (wide), log transforms |
 | complete sample | `partitionBySamples` | min peptides per sample, P14 precursor-to-peptide rollup |
 | feature group | `partitionByFeatureGroup` | min peptides per protein, peptide replicate filter, imputation, duplicate resolution, IQ (checked per batch); the peptide intensity filter after a declared global-statistic pre-pass |
-| plex | `partitionByPlex` | TMT |
 | whole matrix | `runProjected` | protein missing-value filters (dataset-wide quantile), between-sample normalisation, RUV, correlation, limma, Limpa, edgeR, enrichment |
 | store | none | import adoption, design, reports, Save/Open |
 
@@ -67,8 +66,8 @@ a test where one fits:
 Stage 1 (DIA) closed 2026-10-15 at `ced86a66` (KIT-017, [outcome](kit-017/outcome.md), [checklist](kit-017/kit-checklist.md)): the pair's required resident-end reduction met, the per-step guard failed on the DA step. The [post-hoc audit](kit-017/KIT-017-POSTHOC-AUDIT-20261016.md) named the cause (pandoc's self-contained pass over the Glimma page); KIT-036 ([outcome](kit-036/outcome.md)) removed it and was accepted on 2026-10-16 (DA step 0.675, resident end 0.921), so stage 1 ends on an accepted build and `kit_036` is the control.
 
 1. DIA proof (KIT-001–017): driver and step map, class declarations, runner, harness, partitioners, registry, production dispatch, on-disk state manager by default, reference-holding modules, app defects, step declarations, closure.
-2. LFQ/TMT (KIT-020–021).
-3. Lipidomics and metabolomics (KIT-030–032).
+2. Stage 2, re-cut on 2026-10-19 ([review](REVIEW-20261019-stage2-recut.md)), in order: the record states what ran and reads for a reviewer (KIT-038, KIT-039; the 2026-10-19 audit's IM findings); LFQ/TMT imports on the owner, their sessions, reports and one measured LFQ pair plus a TMT exactness member (KIT-020, KIT-042, KIT-043, KIT-021); Limpa as three whole-matrix declarations and `fastlimpadpc` as a declared, recorded backend (KIT-046, KIT-047; the acceptance rule for a tolerance-aligned kernel is a user decision at KIT-047's closure); the owner on every platform by capability, not platform identity (KIT-044); the in-memory proteomics path retired (KIT-048); omic-agnostic `workflow*` names for the owner, scope, commit, component and display primitives with the DIA names kept as aliases (KIT-045). `partitionByPlex` is dropped: no kernel is per-plex.
+3. Lipidomics and metabolomics (KIT-030–032), on the single-path proteomics pattern and the KIT-045 names.
 4. Transcriptomics (KIT-040), after TRX-005 extracts the notebook kernels.
 5. Gates (KIT-050–052): the PERF-128/129/130 cases, carried verbatim.
 
