@@ -1,6 +1,6 @@
 # KIT-033: existing reports and study_parameters.txt from the record
 
-Status 2026-10-18: **implemented; install pending.** Control `kit_036` (unchanged; no counted member). Host pandoc 3.11.
+Status 2026-10-18: **complete.** `R CMD check` at `0120bd3a`: 3 warnings, 3 notes (baseline). Install `kit_033` (`browser-smoke.RV7cne`), installed `source_commit` `0120bd3a…` verified, the overlay present; bindings regenerated (control `kit_036` unchanged). Control `kit_036` (unchanged; no counted member). Host pandoc 3.11.
 
 ## What changed (one mechanism: one source of truth)
 
