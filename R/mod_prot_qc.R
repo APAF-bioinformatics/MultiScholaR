@@ -99,7 +99,9 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
         # Check if S4 object already exists from design matrix step
         # Both TMT and LFQ are protein-level workflows that use "protein_s4_initial" state
         s4_exists <- tryCatch({
-          s4_obj <- workflow_data$state_manager$getState("protein_s4_initial")
+          s4_obj <- if (inherits(workflow_data$state_manager, "DIAStateAdapter"))
+            getDIAStateReference(workflow_data$state_manager, "protein_s4_initial") else # KIT-020: no hydration on an owner
+            workflow_data$state_manager$getState("protein_s4_initial")
           exists <- !is.null(s4_obj)
           message(sprintf("   DEBUG66: %s - Checking for protein_s4_initial: exists = %s", workflow_type, exists))
           if (exists) {
@@ -177,7 +179,9 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
         # Check if S4 object already exists from design matrix step
         # Both TMT and LFQ are protein-level workflows that use "protein_s4_initial" state
         s4_exists <- tryCatch({
-          s4_obj <- workflow_data$state_manager$getState("protein_s4_initial")
+          s4_obj <- if (inherits(workflow_data$state_manager, "DIAStateAdapter"))
+            getDIAStateReference(workflow_data$state_manager, "protein_s4_initial") else # KIT-020: no hydration on an owner
+            workflow_data$state_manager$getState("protein_s4_initial")
           exists <- !is.null(s4_obj)
           message(sprintf("   DEBUG66: %s observeEvent - S4 exists = %s", workflow_type, exists))
           exists

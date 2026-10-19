@@ -421,7 +421,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     if (!check$valid) cli::cli_abort(c("the analysis record is malformed", check$errors), class = "workflow_replay_invalid")
     # Inputs first: a record whose files do not match the project is refused before any step runs.
     for (input in record$inputs) {
-        if (is.null(input$sha256) || is.na(input$sha256) || !input$role %in% c("diann_report", "fasta", "design_file")) next
+        if (is.null(input$sha256) || is.na(input$sha256) || !input$role %in% c("diann_report", "maxquant_report",
+            "fragpipe_report", "pd_tmt_report", "spectronaut_report", "fasta", "design_file")) next
         path <- if (input$role %in% names(inputs)) inputs[[input$role]] else NULL
         if (is.null(path) || !file.exists(path) || !identical(digest::digest(file = path, algo = "sha256"), input$sha256)) {
             cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")

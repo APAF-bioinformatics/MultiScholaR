@@ -1,0 +1,1397 @@
+[1] "Read globalParameters: number_of_cpus = 8"
+[1] "Read srlQvalueProteotypicPeptideClean: input_matrix_column_ids = Run, Precursor.Id, Protein.Group, Protein.Ids, Stripped.Sequence, Modified.Sequence, Precursor.Charge, Precursor.Quantity, Precursor.Normalised"
+[1] "Read plotRle: yaxis_limit = -3, 3"
+[1] "Read deAnalysisParameters: formula_string = ~ 0 + group"
+
+Paths for Omics Label: 'proteomics_maxquant' (Type: proteomics)
+  base_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project (5 items)
+  data_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/scripts/proteomics_maxquant (0 items)
+  results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant (6 items)
+  results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results_summary/proteomics_maxquant (4 items)
+  timestamp                      : 20261020_103318
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/publication_graphs/filtering_qc/20261020_103318 (0 items)
+  clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/integration (0 items)
+  pathway_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results_summary/proteomics_maxquant/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results_summary/proteomics_maxquant/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results_summary/proteomics_maxquant/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results_summary/proteomics_maxquant/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/data/UniProt (0 items)
+------------------------------------------
+Updated missing value parameters in both config_list and S4 object @args for function 'removeRowsWithMissingValuesPercent':
+    - Requiring at least 2 replicates in each passing group (varies by group size)
+    - Requiring at least 2 out of 2 groups to pass (0.000% failing groups allowed)
+    - groupwise_percentage_cutoff set to 33.333%
+    - max_groups_percentage_cutoff set to 0.000%
+
+
+Group details:
+    Group KO: 2 out of 3 replicates required (33.333% missing allowed)
+    Group WT: 2 out of 3 replicates required (33.333% missing allowed)
+[OK] S4 object @args and global config_list are now synchronized
+Updated @args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in S4 object.
+Updated config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in global environment.
++===========================================================================+
++===========================================================================+
+      Data State (protein_quant_table): Dims = 5 rows, 7 cols
+      Data State (design_matrix): Dims = 6 rows, 4 cols
+         Run, group, replicates, tech_rep_group
+      Helper Args: cols = Protein.Ids
+      Helper Args: sample_id = Run
+      Helper Args: row_id = Protein.Ids
+      Helper Args: grouping_variable = group
+      Helper Args: groupwise_percentage_cutoff = 33.333
+      Helper Args: max_groups_percentage_cutoff = 0
+      Helper Args: proteins_intensity_cutoff_percentile = 1
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+[1] "normalisation_method = cyclicloess"
++===========================================================================+
++===========================================================================+
+*** PEARSON: WARNING - tech_rep_remove_regex is deprecated, use exclude_pool_samples instead ***
+   [pearsonCorForSamplePairs] Matrix dimensions: 4 proteins x 6 samples
+   [pearsonCorForSamplePairs] Correlation matrix computed in 0.00 seconds
+*** PEARSON: No Pool/QC groups detected to exclude ***
+   [pearsonCorForSamplePairs] Final pair count: 6
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+   [filterSamplesByProteinCorrelationThresholdHelper] protein_intensity_table dims: 4 x 7
+   [filterSamplesByProteinCorrelationThresholdHelper] Threshold: 0.50
+   [filterSamplesByProteinCorrelationThresholdHelper] Total unique samples in pairs: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples passing correlation threshold: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Protein ID Column Name resolved to: 'Protein.Ids'
+   [filterSamplesByProteinCorrelationThresholdHelper] Calculating 'samples_to_keep_anyway'...
+      - Total columns: 7
+      - Pair samples: 6
+      - Cols NOT in pairs: 1
+      - Final 'samples_to_keep_anyway' (excluding ID col): 0
+character(0)
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples from pairs to keep: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Result dims: 4 x 7
++===========================================================================+
++===========================================================================+
+*** ENTERING differentialAbundanceAnalysis METHOD ***
+*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***
+*** Testing parameter access ***
+*** Parameter access successful ***
+--- Entering differentialAbundanceAnalysis ---
+   differentialAbundanceAnalysis: theObject class = ProteinQuantitativeData
+   differentialAbundanceAnalysis: contrasts_tbl provided = TRUE
+   differentialAbundanceAnalysis: contrasts_tbl dims = 1 x 1
+   differentialAbundanceAnalysis: contrasts_tbl content = KO_vs_WT=groupKO-groupWT
+   differentialAbundanceAnalysis: About to call differentialAbundanceAnalysisHelper...
+--- Entering differentialAbundanceAnalysisHelper ---
+   PARAMETER VALIDATION Step: Checking all input parameters...
+      theObject is NULL: FALSE
+      contrasts_tbl is NULL: FALSE
+      contrasts_tbl class: data.frame
+      contrasts_tbl type: list
+      contrasts_tbl print:
+                 contrasts
+1 KO_vs_WT=groupKO-groupWT
+      Trying to access contrasts_tbl[[1]]...
+      SUCCESS: contrasts_tbl[[1]] class: character
+      SUCCESS: contrasts_tbl[[1]] length: 1
+      SUCCESS: contrasts_tbl[[1]] content: KO_vs_WT=groupKO-groupWT
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper Step: Extracting parameters...
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper: formula_string = ~ 0 + group
+   differentialAbundanceAnalysisHelper: group_id = group
+   differentialAbundanceAnalysisHelper: da_q_val_thresh = 0.050000
+   differentialAbundanceAnalysisHelper Step: Processing group names...
+   differentialAbundanceAnalysisHelper: group_col length = 6
+   differentialAbundanceAnalysisHelper: group_col content = WT, WT, WT, KO, KO, KO
+   differentialAbundanceAnalysisHelper: any start with number? FALSE
+   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...
+   differentialAbundanceAnalysisHelper Step: Generating QC plots...
+[1] "WT_1" "WT_2" "WT_3" "KO_1" "KO_2" "KO_3"
+[1] "WT_1" "WT_2" "WT_3" "KO_1" "KO_2" "KO_3"
+[1] "WT" "WT" "WT" "KO" "KO" "KO"
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
+   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...
+[1] "Run"            "group"          "replicates"     "tech_rep_group"
+   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with 1 contrasts
+   differentialAbundanceAnalysisHelper: protein_quant_matrix dims = 4 x 6
+--- Entering runTestsContrasts ---
+   runTestsContrasts: data dims = 4 x 6, 1 contrasts
+   runTestsContrasts: contrasts = KO_vs_WT=groupKO-groupWT
+   runTestsContrasts: treat_lfc_cutoff = 0
+   runTestsContrasts: design_m dims = 6 x 2
+   runTestsContrasts: data_subset dims = 4 x 6
+   runTestsContrasts: Creating contrast matrix...
+   runTestsContrasts: contr.matrix dims = 2 x 1
+   runTestsContrasts: Running lmFit...
+   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...
+   runTestsContrasts: Running contrasts.fit...
+   runTestsContrasts: Running eBayes...
+   runTestsContrasts: Running treat analysis...
+   runTestsContrasts: Processing 1 contrasts with topTreat...
+      [map] Processing contrast: KO_vs_WT=groupKO-groupWT
+      About to call topTreat with coef = KO_vs_WT=groupKO-groupWT
+      [map] topTreat success: 4 rows
+      Adding qvalue column...
+      Diagnostic: Valid p-values: 4 of 4 total
+      Diagnostic: P-value range: [0.110775, 0.998025]
+      Diagnostic: P-value mean: 0.332687, median: 0.110973
+      qvalue() computation successful
+      Diagnostic: q_values_all has 4 non-NA values before assignment
+      Diagnostic: Assigned column has 4 non-NA values after mutate
+      qvalue column added
+      Adding FDR column...
+      FDR column added
+      Renaming P.Value column...
+      P.Value column renamed
+   [map] Completed processing contrast: KO_vs_WT=groupKO-groupWT
+--- Exiting runTestsContrasts ---
+   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!
+   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...
+   getSignificantData: list_of_da_tables class = list
+   getSignificantData: list_of_da_tables length = 1
+   getSignificantData: list_of_da_tables structure:
+List of 1
+ $ :List of 1
+  ..$ KO_vs_WT=groupKO-groupWT:'data.frame':	4 obs. of  9 variables:
+   getSignificantData: About to call get_row_binded_table for each list element...
+      get_row_binded_table: de_table_list class = list
+      get_row_binded_table: de_table_list length = 1
+      get_row_binded_table: de_table_list names:
+[1] "KO_vs_WT=groupKO-groupWT"
+         [map] Processing table, row_id_col = Protein.Ids
+         [map] Table class = data.frame
+         [map] Table is data.frame = TRUE
+         [map] row_id already in columns
+      get_row_binded_table: processed_list created
+      get_row_binded_table: processed_list length = 1
+         [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+         [map2] comparison_column already exists: TRUE
+      get_row_binded_table: output table created
+      get_row_binded_table: output dims = 4 x 10
+      get_row_binded_table: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+      get_row_binded_table: Any values contain '=' ? TRUE
+      get_row_binded_table: Separating on '=' delimiter
+      get_row_binded_table: Separation complete
+   getSignificantData: All tables bound
+   getSignificantData: logfc_tbl_all dims = 4 x 11
+   countStatDaGenesHelper: da_table class = list
+   countStatDaGenesHelper: da_table is list = TRUE
+   countStatDaGenesHelper: da_table length = 1
+   countStatDaGenesHelper: da_table names:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: da_table_updated created
+   countStatDaGenesHelper: da_table_updated length = 1
+   countStatDaGenesHelper: da_table_updated names:
+[1] "KO_vs_WT=groupKO-groupWT"
+      [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+   countStatDaGenesHelper: list_of_tables created
+   countStatDaGenesHelper: About to bind_rows...
+   countStatDaGenesHelper: bound_tables dims = 3 x 3
+   countStatDaGenesHelper: facet column added
+   countStatDaGenesHelper: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: About to separate_wider_delim on column: comparison
+   countStatDaGenesHelper: Looking for delimiter: =
+   countStatDaGenesHelper: Any values contain '=' ? TRUE
+   countStatDaGenesHelper: Separation complete
+   differentialAbundanceAnalysisHelper Step: Creating results tables...
+   createDaResultsLongFormat: Renaming columns for contrast KO vs WT
+   createDaResultsLongFormat: Renamed 12 columns
+--- Exiting differentialAbundanceAnalysisHelper ---
+   differentialAbundanceAnalysis: Helper function completed successfully!
+--- Exiting differentialAbundanceAnalysis ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress (5 items)
+  data_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/scripts/proteomics (0 items)
+  results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics (6 items)
+  results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results_summary/proteomics (4 items)
+  timestamp                      : 20261020_103343
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261020_103343 (0 items)
+  clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/integration (0 items)
+  pathway_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/data/UniProt (0 items)
+------------------------------------------
+Updated missing value parameters in both config_list and S4 object @args for function 'removeRowsWithMissingValuesPercent':
+    - Requiring at least 2 replicates in each passing group (varies by group size)
+    - Requiring at least 2 out of 2 groups to pass (0.000% failing groups allowed)
+    - groupwise_percentage_cutoff set to 33.333%
+    - max_groups_percentage_cutoff set to 0.000%
+
+
+Group details:
+    Group KO: 2 out of 3 replicates required (33.333% missing allowed)
+    Group WT: 2 out of 3 replicates required (33.333% missing allowed)
+[OK] S4 object @args and global config_list are now synchronized
+Updated @args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in S4 object.
+Updated config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in global environment.
++===========================================================================+
++===========================================================================+
+      Data State (protein_quant_table): Dims = 5 rows, 7 cols
+      Data State (design_matrix): Dims = 6 rows, 4 cols
+         Run, group, replicates, tech_rep_group
+      Helper Args: cols = Protein.Ids
+      Helper Args: sample_id = Run
+      Helper Args: row_id = Protein.Ids
+      Helper Args: grouping_variable = group
+      Helper Args: groupwise_percentage_cutoff = 33.333
+      Helper Args: max_groups_percentage_cutoff = 0
+      Helper Args: proteins_intensity_cutoff_percentile = 1
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+[1] "normalisation_method = cyclicloess"
++===========================================================================+
++===========================================================================+
+*** PEARSON: WARNING - tech_rep_remove_regex is deprecated, use exclude_pool_samples instead ***
+   [pearsonCorForSamplePairs] Matrix dimensions: 4 proteins x 6 samples
+   [pearsonCorForSamplePairs] Correlation matrix computed in 0.00 seconds
+*** PEARSON: No Pool/QC groups detected to exclude ***
+   [pearsonCorForSamplePairs] Final pair count: 6
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+   [filterSamplesByProteinCorrelationThresholdHelper] protein_intensity_table dims: 4 x 7
+   [filterSamplesByProteinCorrelationThresholdHelper] Threshold: 0.50
+   [filterSamplesByProteinCorrelationThresholdHelper] Total unique samples in pairs: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples passing correlation threshold: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Protein ID Column Name resolved to: 'Protein.Ids'
+   [filterSamplesByProteinCorrelationThresholdHelper] Calculating 'samples_to_keep_anyway'...
+      - Total columns: 7
+      - Pair samples: 6
+      - Cols NOT in pairs: 1
+      - Final 'samples_to_keep_anyway' (excluding ID col): 0
+character(0)
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples from pairs to keep: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Result dims: 4 x 7
++===========================================================================+
++===========================================================================+
+*** ENTERING differentialAbundanceAnalysis METHOD ***
+*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***
+*** Testing parameter access ***
+*** Parameter access successful ***
+--- Entering differentialAbundanceAnalysis ---
+   differentialAbundanceAnalysis: theObject class = ProteinQuantitativeData
+   differentialAbundanceAnalysis: contrasts_tbl provided = TRUE
+   differentialAbundanceAnalysis: contrasts_tbl dims = 1 x 1
+   differentialAbundanceAnalysis: contrasts_tbl content = KO_vs_WT=groupKO-groupWT
+   differentialAbundanceAnalysis: About to call differentialAbundanceAnalysisHelper...
+--- Entering differentialAbundanceAnalysisHelper ---
+   PARAMETER VALIDATION Step: Checking all input parameters...
+      theObject is NULL: FALSE
+      contrasts_tbl is NULL: FALSE
+      contrasts_tbl class: data.frame
+      contrasts_tbl type: list
+      contrasts_tbl print:
+                 contrasts
+1 KO_vs_WT=groupKO-groupWT
+      Trying to access contrasts_tbl[[1]]...
+      SUCCESS: contrasts_tbl[[1]] class: character
+      SUCCESS: contrasts_tbl[[1]] length: 1
+      SUCCESS: contrasts_tbl[[1]] content: KO_vs_WT=groupKO-groupWT
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper Step: Extracting parameters...
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper: formula_string = ~ 0 + group
+   differentialAbundanceAnalysisHelper: group_id = group
+   differentialAbundanceAnalysisHelper: da_q_val_thresh = 0.050000
+   differentialAbundanceAnalysisHelper Step: Processing group names...
+   differentialAbundanceAnalysisHelper: group_col length = 6
+   differentialAbundanceAnalysisHelper: group_col content = WT, WT, WT, KO, KO, KO
+   differentialAbundanceAnalysisHelper: any start with number? FALSE
+   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...
+   differentialAbundanceAnalysisHelper Step: Generating QC plots...
+[1] "WT_1" "WT_2" "WT_3" "KO_1" "KO_2" "KO_3"
+[1] "WT_1" "WT_2" "WT_3" "KO_1" "KO_2" "KO_3"
+[1] "WT" "WT" "WT" "KO" "KO" "KO"
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
+   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...
+[1] "Run"            "group"          "replicates"     "tech_rep_group"
+   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with 1 contrasts
+   differentialAbundanceAnalysisHelper: protein_quant_matrix dims = 4 x 6
+--- Entering runTestsContrasts ---
+   runTestsContrasts: data dims = 4 x 6, 1 contrasts
+   runTestsContrasts: contrasts = KO_vs_WT=groupKO-groupWT
+   runTestsContrasts: treat_lfc_cutoff = 0
+   runTestsContrasts: design_m dims = 6 x 2
+   runTestsContrasts: data_subset dims = 4 x 6
+   runTestsContrasts: Creating contrast matrix...
+   runTestsContrasts: contr.matrix dims = 2 x 1
+   runTestsContrasts: Running lmFit...
+   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...
+   runTestsContrasts: Running contrasts.fit...
+   runTestsContrasts: Running eBayes...
+   runTestsContrasts: Running treat analysis...
+   runTestsContrasts: Processing 1 contrasts with topTreat...
+      [map] Processing contrast: KO_vs_WT=groupKO-groupWT
+      About to call topTreat with coef = KO_vs_WT=groupKO-groupWT
+      [map] topTreat success: 4 rows
+      Adding qvalue column...
+      Diagnostic: Valid p-values: 4 of 4 total
+      Diagnostic: P-value range: [0.110775, 0.998025]
+      Diagnostic: P-value mean: 0.332687, median: 0.110973
+      qvalue() computation successful
+      Diagnostic: q_values_all has 4 non-NA values before assignment
+      Diagnostic: Assigned column has 4 non-NA values after mutate
+      qvalue column added
+      Adding FDR column...
+      FDR column added
+      Renaming P.Value column...
+      P.Value column renamed
+   [map] Completed processing contrast: KO_vs_WT=groupKO-groupWT
+--- Exiting runTestsContrasts ---
+   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!
+   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...
+   getSignificantData: list_of_da_tables class = list
+   getSignificantData: list_of_da_tables length = 1
+   getSignificantData: list_of_da_tables structure:
+List of 1
+ $ :List of 1
+  ..$ KO_vs_WT=groupKO-groupWT:'data.frame':	4 obs. of  9 variables:
+   getSignificantData: About to call get_row_binded_table for each list element...
+      get_row_binded_table: de_table_list class = list
+      get_row_binded_table: de_table_list length = 1
+      get_row_binded_table: de_table_list names:
+[1] "KO_vs_WT=groupKO-groupWT"
+         [map] Processing table, row_id_col = Protein.Ids
+         [map] Table class = data.frame
+         [map] Table is data.frame = TRUE
+         [map] row_id already in columns
+      get_row_binded_table: processed_list created
+      get_row_binded_table: processed_list length = 1
+         [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+         [map2] comparison_column already exists: TRUE
+      get_row_binded_table: output table created
+      get_row_binded_table: output dims = 4 x 10
+      get_row_binded_table: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+      get_row_binded_table: Any values contain '=' ? TRUE
+      get_row_binded_table: Separating on '=' delimiter
+      get_row_binded_table: Separation complete
+   getSignificantData: All tables bound
+   getSignificantData: logfc_tbl_all dims = 4 x 11
+   countStatDaGenesHelper: da_table class = list
+   countStatDaGenesHelper: da_table is list = TRUE
+   countStatDaGenesHelper: da_table length = 1
+   countStatDaGenesHelper: da_table names:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: da_table_updated created
+   countStatDaGenesHelper: da_table_updated length = 1
+   countStatDaGenesHelper: da_table_updated names:
+[1] "KO_vs_WT=groupKO-groupWT"
+      [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+   countStatDaGenesHelper: list_of_tables created
+   countStatDaGenesHelper: About to bind_rows...
+   countStatDaGenesHelper: bound_tables dims = 3 x 3
+   countStatDaGenesHelper: facet column added
+   countStatDaGenesHelper: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: About to separate_wider_delim on column: comparison
+   countStatDaGenesHelper: Looking for delimiter: =
+   countStatDaGenesHelper: Any values contain '=' ? TRUE
+   countStatDaGenesHelper: Separation complete
+   differentialAbundanceAnalysisHelper Step: Creating results tables...
+   createDaResultsLongFormat: Renaming columns for contrast KO vs WT
+   createDaResultsLongFormat: Renamed 12 columns
+--- Exiting differentialAbundanceAnalysisHelper ---
+   differentialAbundanceAnalysis: Helper function completed successfully!
+--- Exiting differentialAbundanceAnalysis ---
+maxquant | type LFQ | store MAXQUANT-native LFQ | design protein_s4_initial identity tables TRUE slots TRUE args TRUE | provenance design_builder | steps protein_intensity_filtered,duplicates_removed,protein_replicate_filtered | corr correlation_filtered | DA groupKO-groupWT 4 | record valid TRUE legacy FALSE workflow LFQ | replay 7 states 0 mismatches | export NA NA reopened LFQ correlation_filtered 
+
+Paths for Omics Label: 'proteomics_fragpipe' (Type: proteomics)
+  base_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project (5 items)
+  data_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/scripts/proteomics_fragpipe (0 items)
+  results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe (6 items)
+  results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results_summary/proteomics_fragpipe (4 items)
+  timestamp                      : 20261020_103401
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/publication_graphs/filtering_qc/20261020_103401 (0 items)
+  clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/integration (0 items)
+  pathway_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results_summary/proteomics_fragpipe/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results_summary/proteomics_fragpipe/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results_summary/proteomics_fragpipe/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results_summary/proteomics_fragpipe/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/data/UniProt (0 items)
+------------------------------------------
+Updated missing value parameters in both config_list and S4 object @args for function 'removeRowsWithMissingValuesPercent':
+    - Requiring at least 2 replicates in each passing group (varies by group size)
+    - Requiring at least 2 out of 2 groups to pass (0.000% failing groups allowed)
+    - groupwise_percentage_cutoff set to 33.333%
+    - max_groups_percentage_cutoff set to 0.000%
+
+
+Group details:
+    Group KO: 2 out of 3 replicates required (33.333% missing allowed)
+    Group WT: 2 out of 3 replicates required (33.333% missing allowed)
+[OK] S4 object @args and global config_list are now synchronized
+Updated @args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in S4 object.
+Updated config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in global environment.
++===========================================================================+
++===========================================================================+
+      Data State (protein_quant_table): Dims = 5 rows, 7 cols
+      Data State (design_matrix): Dims = 6 rows, 4 cols
+         Run, group, replicates, tech_rep_group
+      Helper Args: cols = Protein.Ids
+      Helper Args: sample_id = Run
+      Helper Args: row_id = Protein.Ids
+      Helper Args: grouping_variable = group
+      Helper Args: groupwise_percentage_cutoff = 33.333
+      Helper Args: max_groups_percentage_cutoff = 0
+      Helper Args: proteins_intensity_cutoff_percentile = 1
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+[1] "normalisation_method = cyclicloess"
++===========================================================================+
++===========================================================================+
+*** PEARSON: WARNING - tech_rep_remove_regex is deprecated, use exclude_pool_samples instead ***
+   [pearsonCorForSamplePairs] Matrix dimensions: 4 proteins x 6 samples
+   [pearsonCorForSamplePairs] Correlation matrix computed in 0.00 seconds
+*** PEARSON: No Pool/QC groups detected to exclude ***
+   [pearsonCorForSamplePairs] Final pair count: 6
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+   [filterSamplesByProteinCorrelationThresholdHelper] protein_intensity_table dims: 4 x 7
+   [filterSamplesByProteinCorrelationThresholdHelper] Threshold: 0.50
+   [filterSamplesByProteinCorrelationThresholdHelper] Total unique samples in pairs: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples passing correlation threshold: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Protein ID Column Name resolved to: 'Protein.Ids'
+   [filterSamplesByProteinCorrelationThresholdHelper] Calculating 'samples_to_keep_anyway'...
+      - Total columns: 7
+      - Pair samples: 6
+      - Cols NOT in pairs: 1
+      - Final 'samples_to_keep_anyway' (excluding ID col): 0
+character(0)
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples from pairs to keep: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Result dims: 4 x 7
++===========================================================================+
++===========================================================================+
+*** ENTERING differentialAbundanceAnalysis METHOD ***
+*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***
+*** Testing parameter access ***
+*** Parameter access successful ***
+--- Entering differentialAbundanceAnalysis ---
+   differentialAbundanceAnalysis: theObject class = ProteinQuantitativeData
+   differentialAbundanceAnalysis: contrasts_tbl provided = TRUE
+   differentialAbundanceAnalysis: contrasts_tbl dims = 1 x 1
+   differentialAbundanceAnalysis: contrasts_tbl content = KO_vs_WT=groupKO-groupWT
+   differentialAbundanceAnalysis: About to call differentialAbundanceAnalysisHelper...
+--- Entering differentialAbundanceAnalysisHelper ---
+   PARAMETER VALIDATION Step: Checking all input parameters...
+      theObject is NULL: FALSE
+      contrasts_tbl is NULL: FALSE
+      contrasts_tbl class: data.frame
+      contrasts_tbl type: list
+      contrasts_tbl print:
+                 contrasts
+1 KO_vs_WT=groupKO-groupWT
+      Trying to access contrasts_tbl[[1]]...
+      SUCCESS: contrasts_tbl[[1]] class: character
+      SUCCESS: contrasts_tbl[[1]] length: 1
+      SUCCESS: contrasts_tbl[[1]] content: KO_vs_WT=groupKO-groupWT
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper Step: Extracting parameters...
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper: formula_string = ~ 0 + group
+   differentialAbundanceAnalysisHelper: group_id = group
+   differentialAbundanceAnalysisHelper: da_q_val_thresh = 0.050000
+   differentialAbundanceAnalysisHelper Step: Processing group names...
+   differentialAbundanceAnalysisHelper: group_col length = 6
+   differentialAbundanceAnalysisHelper: group_col content = WT, WT, WT, KO, KO, KO
+   differentialAbundanceAnalysisHelper: any start with number? FALSE
+   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...
+   differentialAbundanceAnalysisHelper Step: Generating QC plots...
+[1] "WT_1" "WT_2" "WT_3" "KO_1" "KO_2" "KO_3"
+[1] "WT_1" "WT_2" "WT_3" "KO_1" "KO_2" "KO_3"
+[1] "WT" "WT" "WT" "KO" "KO" "KO"
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
+   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...
+[1] "Run"            "group"          "replicates"     "tech_rep_group"
+   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with 1 contrasts
+   differentialAbundanceAnalysisHelper: protein_quant_matrix dims = 4 x 6
+--- Entering runTestsContrasts ---
+   runTestsContrasts: data dims = 4 x 6, 1 contrasts
+   runTestsContrasts: contrasts = KO_vs_WT=groupKO-groupWT
+   runTestsContrasts: treat_lfc_cutoff = 0
+   runTestsContrasts: design_m dims = 6 x 2
+   runTestsContrasts: data_subset dims = 4 x 6
+   runTestsContrasts: Creating contrast matrix...
+   runTestsContrasts: contr.matrix dims = 2 x 1
+   runTestsContrasts: Running lmFit...
+   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...
+   runTestsContrasts: Running contrasts.fit...
+   runTestsContrasts: Running eBayes...
+   runTestsContrasts: Running treat analysis...
+   runTestsContrasts: Processing 1 contrasts with topTreat...
+      [map] Processing contrast: KO_vs_WT=groupKO-groupWT
+      About to call topTreat with coef = KO_vs_WT=groupKO-groupWT
+      [map] topTreat success: 4 rows
+      Adding qvalue column...
+      Diagnostic: Valid p-values: 4 of 4 total
+      Diagnostic: P-value range: [0.110775, 0.998025]
+      Diagnostic: P-value mean: 0.332687, median: 0.110973
+      qvalue() computation successful
+      Diagnostic: q_values_all has 4 non-NA values before assignment
+      Diagnostic: Assigned column has 4 non-NA values after mutate
+      qvalue column added
+      Adding FDR column...
+      FDR column added
+      Renaming P.Value column...
+      P.Value column renamed
+   [map] Completed processing contrast: KO_vs_WT=groupKO-groupWT
+--- Exiting runTestsContrasts ---
+   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!
+   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...
+   getSignificantData: list_of_da_tables class = list
+   getSignificantData: list_of_da_tables length = 1
+   getSignificantData: list_of_da_tables structure:
+List of 1
+ $ :List of 1
+  ..$ KO_vs_WT=groupKO-groupWT:'data.frame':	4 obs. of  9 variables:
+   getSignificantData: About to call get_row_binded_table for each list element...
+      get_row_binded_table: de_table_list class = list
+      get_row_binded_table: de_table_list length = 1
+      get_row_binded_table: de_table_list names:
+[1] "KO_vs_WT=groupKO-groupWT"
+         [map] Processing table, row_id_col = Protein.Ids
+         [map] Table class = data.frame
+         [map] Table is data.frame = TRUE
+         [map] row_id already in columns
+      get_row_binded_table: processed_list created
+      get_row_binded_table: processed_list length = 1
+         [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+         [map2] comparison_column already exists: TRUE
+      get_row_binded_table: output table created
+      get_row_binded_table: output dims = 4 x 10
+      get_row_binded_table: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+      get_row_binded_table: Any values contain '=' ? TRUE
+      get_row_binded_table: Separating on '=' delimiter
+      get_row_binded_table: Separation complete
+   getSignificantData: All tables bound
+   getSignificantData: logfc_tbl_all dims = 4 x 11
+   countStatDaGenesHelper: da_table class = list
+   countStatDaGenesHelper: da_table is list = TRUE
+   countStatDaGenesHelper: da_table length = 1
+   countStatDaGenesHelper: da_table names:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: da_table_updated created
+   countStatDaGenesHelper: da_table_updated length = 1
+   countStatDaGenesHelper: da_table_updated names:
+[1] "KO_vs_WT=groupKO-groupWT"
+      [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+   countStatDaGenesHelper: list_of_tables created
+   countStatDaGenesHelper: About to bind_rows...
+   countStatDaGenesHelper: bound_tables dims = 3 x 3
+   countStatDaGenesHelper: facet column added
+   countStatDaGenesHelper: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: About to separate_wider_delim on column: comparison
+   countStatDaGenesHelper: Looking for delimiter: =
+   countStatDaGenesHelper: Any values contain '=' ? TRUE
+   countStatDaGenesHelper: Separation complete
+   differentialAbundanceAnalysisHelper Step: Creating results tables...
+   createDaResultsLongFormat: Renaming columns for contrast KO vs WT
+   createDaResultsLongFormat: Renamed 12 columns
+--- Exiting differentialAbundanceAnalysisHelper ---
+   differentialAbundanceAnalysis: Helper function completed successfully!
+--- Exiting differentialAbundanceAnalysis ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress (5 items)
+  data_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/scripts/proteomics (0 items)
+  results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics (6 items)
+  results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results_summary/proteomics (4 items)
+  timestamp                      : 20261020_103423
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261020_103423 (0 items)
+  clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/integration (0 items)
+  pathway_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/data/UniProt (0 items)
+------------------------------------------
+Updated missing value parameters in both config_list and S4 object @args for function 'removeRowsWithMissingValuesPercent':
+    - Requiring at least 2 replicates in each passing group (varies by group size)
+    - Requiring at least 2 out of 2 groups to pass (0.000% failing groups allowed)
+    - groupwise_percentage_cutoff set to 33.333%
+    - max_groups_percentage_cutoff set to 0.000%
+
+
+Group details:
+    Group KO: 2 out of 3 replicates required (33.333% missing allowed)
+    Group WT: 2 out of 3 replicates required (33.333% missing allowed)
+[OK] S4 object @args and global config_list are now synchronized
+Updated @args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in S4 object.
+Updated config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in global environment.
++===========================================================================+
++===========================================================================+
+      Data State (protein_quant_table): Dims = 5 rows, 7 cols
+      Data State (design_matrix): Dims = 6 rows, 4 cols
+         Run, group, replicates, tech_rep_group
+      Helper Args: cols = Protein.Ids
+      Helper Args: sample_id = Run
+      Helper Args: row_id = Protein.Ids
+      Helper Args: grouping_variable = group
+      Helper Args: groupwise_percentage_cutoff = 33.333
+      Helper Args: max_groups_percentage_cutoff = 0
+      Helper Args: proteins_intensity_cutoff_percentile = 1
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+[1] "normalisation_method = cyclicloess"
++===========================================================================+
++===========================================================================+
+*** PEARSON: WARNING - tech_rep_remove_regex is deprecated, use exclude_pool_samples instead ***
+   [pearsonCorForSamplePairs] Matrix dimensions: 4 proteins x 6 samples
+   [pearsonCorForSamplePairs] Correlation matrix computed in 0.00 seconds
+*** PEARSON: No Pool/QC groups detected to exclude ***
+   [pearsonCorForSamplePairs] Final pair count: 6
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+   [filterSamplesByProteinCorrelationThresholdHelper] protein_intensity_table dims: 4 x 7
+   [filterSamplesByProteinCorrelationThresholdHelper] Threshold: 0.50
+   [filterSamplesByProteinCorrelationThresholdHelper] Total unique samples in pairs: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples passing correlation threshold: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Protein ID Column Name resolved to: 'Protein.Ids'
+   [filterSamplesByProteinCorrelationThresholdHelper] Calculating 'samples_to_keep_anyway'...
+      - Total columns: 7
+      - Pair samples: 6
+      - Cols NOT in pairs: 1
+      - Final 'samples_to_keep_anyway' (excluding ID col): 0
+character(0)
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples from pairs to keep: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Result dims: 4 x 7
++===========================================================================+
++===========================================================================+
+*** ENTERING differentialAbundanceAnalysis METHOD ***
+*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***
+*** Testing parameter access ***
+*** Parameter access successful ***
+--- Entering differentialAbundanceAnalysis ---
+   differentialAbundanceAnalysis: theObject class = ProteinQuantitativeData
+   differentialAbundanceAnalysis: contrasts_tbl provided = TRUE
+   differentialAbundanceAnalysis: contrasts_tbl dims = 1 x 1
+   differentialAbundanceAnalysis: contrasts_tbl content = KO_vs_WT=groupKO-groupWT
+   differentialAbundanceAnalysis: About to call differentialAbundanceAnalysisHelper...
+--- Entering differentialAbundanceAnalysisHelper ---
+   PARAMETER VALIDATION Step: Checking all input parameters...
+      theObject is NULL: FALSE
+      contrasts_tbl is NULL: FALSE
+      contrasts_tbl class: data.frame
+      contrasts_tbl type: list
+      contrasts_tbl print:
+                 contrasts
+1 KO_vs_WT=groupKO-groupWT
+      Trying to access contrasts_tbl[[1]]...
+      SUCCESS: contrasts_tbl[[1]] class: character
+      SUCCESS: contrasts_tbl[[1]] length: 1
+      SUCCESS: contrasts_tbl[[1]] content: KO_vs_WT=groupKO-groupWT
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper Step: Extracting parameters...
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper: formula_string = ~ 0 + group
+   differentialAbundanceAnalysisHelper: group_id = group
+   differentialAbundanceAnalysisHelper: da_q_val_thresh = 0.050000
+   differentialAbundanceAnalysisHelper Step: Processing group names...
+   differentialAbundanceAnalysisHelper: group_col length = 6
+   differentialAbundanceAnalysisHelper: group_col content = WT, WT, WT, KO, KO, KO
+   differentialAbundanceAnalysisHelper: any start with number? FALSE
+   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...
+   differentialAbundanceAnalysisHelper Step: Generating QC plots...
+[1] "WT_1" "WT_2" "WT_3" "KO_1" "KO_2" "KO_3"
+[1] "WT_1" "WT_2" "WT_3" "KO_1" "KO_2" "KO_3"
+[1] "WT" "WT" "WT" "KO" "KO" "KO"
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
+   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...
+[1] "Run"            "group"          "replicates"     "tech_rep_group"
+   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with 1 contrasts
+   differentialAbundanceAnalysisHelper: protein_quant_matrix dims = 4 x 6
+--- Entering runTestsContrasts ---
+   runTestsContrasts: data dims = 4 x 6, 1 contrasts
+   runTestsContrasts: contrasts = KO_vs_WT=groupKO-groupWT
+   runTestsContrasts: treat_lfc_cutoff = 0
+   runTestsContrasts: design_m dims = 6 x 2
+   runTestsContrasts: data_subset dims = 4 x 6
+   runTestsContrasts: Creating contrast matrix...
+   runTestsContrasts: contr.matrix dims = 2 x 1
+   runTestsContrasts: Running lmFit...
+   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...
+   runTestsContrasts: Running contrasts.fit...
+   runTestsContrasts: Running eBayes...
+   runTestsContrasts: Running treat analysis...
+   runTestsContrasts: Processing 1 contrasts with topTreat...
+      [map] Processing contrast: KO_vs_WT=groupKO-groupWT
+      About to call topTreat with coef = KO_vs_WT=groupKO-groupWT
+      [map] topTreat success: 4 rows
+      Adding qvalue column...
+      Diagnostic: Valid p-values: 4 of 4 total
+      Diagnostic: P-value range: [0.110775, 0.998025]
+      Diagnostic: P-value mean: 0.332687, median: 0.110973
+      qvalue() computation successful
+      Diagnostic: q_values_all has 4 non-NA values before assignment
+      Diagnostic: Assigned column has 4 non-NA values after mutate
+      qvalue column added
+      Adding FDR column...
+      FDR column added
+      Renaming P.Value column...
+      P.Value column renamed
+   [map] Completed processing contrast: KO_vs_WT=groupKO-groupWT
+--- Exiting runTestsContrasts ---
+   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!
+   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...
+   getSignificantData: list_of_da_tables class = list
+   getSignificantData: list_of_da_tables length = 1
+   getSignificantData: list_of_da_tables structure:
+List of 1
+ $ :List of 1
+  ..$ KO_vs_WT=groupKO-groupWT:'data.frame':	4 obs. of  9 variables:
+   getSignificantData: About to call get_row_binded_table for each list element...
+      get_row_binded_table: de_table_list class = list
+      get_row_binded_table: de_table_list length = 1
+      get_row_binded_table: de_table_list names:
+[1] "KO_vs_WT=groupKO-groupWT"
+         [map] Processing table, row_id_col = Protein.Ids
+         [map] Table class = data.frame
+         [map] Table is data.frame = TRUE
+         [map] row_id already in columns
+      get_row_binded_table: processed_list created
+      get_row_binded_table: processed_list length = 1
+         [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+         [map2] comparison_column already exists: TRUE
+      get_row_binded_table: output table created
+      get_row_binded_table: output dims = 4 x 10
+      get_row_binded_table: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+      get_row_binded_table: Any values contain '=' ? TRUE
+      get_row_binded_table: Separating on '=' delimiter
+      get_row_binded_table: Separation complete
+   getSignificantData: All tables bound
+   getSignificantData: logfc_tbl_all dims = 4 x 11
+   countStatDaGenesHelper: da_table class = list
+   countStatDaGenesHelper: da_table is list = TRUE
+   countStatDaGenesHelper: da_table length = 1
+   countStatDaGenesHelper: da_table names:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: da_table_updated created
+   countStatDaGenesHelper: da_table_updated length = 1
+   countStatDaGenesHelper: da_table_updated names:
+[1] "KO_vs_WT=groupKO-groupWT"
+      [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+   countStatDaGenesHelper: list_of_tables created
+   countStatDaGenesHelper: About to bind_rows...
+   countStatDaGenesHelper: bound_tables dims = 3 x 3
+   countStatDaGenesHelper: facet column added
+   countStatDaGenesHelper: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: About to separate_wider_delim on column: comparison
+   countStatDaGenesHelper: Looking for delimiter: =
+   countStatDaGenesHelper: Any values contain '=' ? TRUE
+   countStatDaGenesHelper: Separation complete
+   differentialAbundanceAnalysisHelper Step: Creating results tables...
+   createDaResultsLongFormat: Renaming columns for contrast KO vs WT
+   createDaResultsLongFormat: Renamed 12 columns
+--- Exiting differentialAbundanceAnalysisHelper ---
+   differentialAbundanceAnalysis: Helper function completed successfully!
+--- Exiting differentialAbundanceAnalysis ---
+fragpipe | type LFQ | store FRAGPIPE-native LFQ | design protein_s4_initial identity tables TRUE slots TRUE args TRUE | provenance design_builder | steps protein_intensity_filtered,duplicates_removed,protein_replicate_filtered | corr correlation_filtered | DA groupKO-groupWT 4 | record valid TRUE legacy FALSE workflow LFQ | replay 7 states 0 mismatches | export NA NA reopened LFQ correlation_filtered 
+
+Paths for Omics Label: 'proteomics_pd_tmt' (Type: proteomics)
+  base_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project (5 items)
+  data_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/scripts/proteomics_pd_tmt (0 items)
+  results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt (6 items)
+  results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results_summary/proteomics_pd_tmt (4 items)
+  timestamp                      : 20261020_103439
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/publication_graphs/filtering_qc/20261020_103439 (0 items)
+  clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/integration (0 items)
+  pathway_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results_summary/proteomics_pd_tmt/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results_summary/proteomics_pd_tmt/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results_summary/proteomics_pd_tmt/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results_summary/proteomics_pd_tmt/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/data/UniProt (0 items)
+------------------------------------------
+========================================
+=== Entering importProteomeDiscovererTMTData ===
+========================================
+   Arg: filepath = /home/doktersmol/Projects/APAF/MultiScholaR/tests/testdata/e2e/prot_tmt/pd_tmt_peptides.tsv
+   Arg: filepath class = character
+   Arg: filepath exists = TRUE
+   Step: Checking if file is ZIP...
+   File extension: tsv
+   Condition FALSE: File is NOT a ZIP archive
+   --- Entering process_single_file ---
+      Arg: file_path = /home/doktersmol/Projects/APAF/MultiScholaR/tests/testdata/e2e/prot_tmt/pd_tmt_peptides.tsv
+      Arg: batch_name = NULL
+      Step: Checking file extension...
+      Step: File is not .xlsx, using vroom
+      Step: Reading file with vroom...
+      Step: File read complete
+      Data State: Dims = 5 rows, 8 cols
+      Data State: Column names (first 10): Annotated.Sequence, Master.Protein.Accessions, Abundance: F1: 126, WT_1, Abundance: F2: 127N, WT_2, Abundance: F3: 127C, WT_3, Abundance: F4: 128N, KO_1, Abundance: F5: 128C, KO_2, Abundance: F6: 129N, KO_3
+      Found 6 abundance columns to pivot: 126_WT_1, 127N_WT_2, 127C_WT_3, 128N_KO_1, 128C_KO_2
+      Step: Pivoting 6 columns to long format...
+      Step: Pivot complete. Pivoted to 30 rows
+   --- Exiting process_single_file. Returning 30 rows ---
+   Step: Preparing return value...
+   Final data rows: 30
+========================================
+=== Exiting importProteomeDiscovererTMTData ===
+========================================
+Updated missing value parameters in both config_list and S4 object @args for function 'removeRowsWithMissingValuesPercent':
+    - Requiring at least 2 replicates in each passing group (varies by group size)
+    - Requiring at least 2 out of 2 groups to pass (0.000% failing groups allowed)
+    - groupwise_percentage_cutoff set to 33.333%
+    - max_groups_percentage_cutoff set to 0.000%
+
+
+Group details:
+    Group KO: 2 out of 3 replicates required (33.333% missing allowed)
+    Group WT: 2 out of 3 replicates required (33.333% missing allowed)
+[OK] S4 object @args and global config_list are now synchronized
+Updated @args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in S4 object.
+Updated config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in global environment.
++===========================================================================+
++===========================================================================+
+      Data State (protein_quant_table): Dims = 5 rows, 7 cols
+      Data State (design_matrix): Dims = 6 rows, 4 cols
+         Run, group, replicates, tech_rep_group
+      Helper Args: cols = Protein.Ids
+      Helper Args: sample_id = Run
+      Helper Args: row_id = Protein.Ids
+      Helper Args: grouping_variable = group
+      Helper Args: groupwise_percentage_cutoff = 33.333
+      Helper Args: max_groups_percentage_cutoff = 0
+      Helper Args: proteins_intensity_cutoff_percentile = 1
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+[1] "normalisation_method = cyclicloess"
++===========================================================================+
++===========================================================================+
+*** PEARSON: WARNING - tech_rep_remove_regex is deprecated, use exclude_pool_samples instead ***
+   [pearsonCorForSamplePairs] Matrix dimensions: 4 proteins x 6 samples
+   [pearsonCorForSamplePairs] Correlation matrix computed in 0.00 seconds
+*** PEARSON: No Pool/QC groups detected to exclude ***
+   [pearsonCorForSamplePairs] Final pair count: 6
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+   [filterSamplesByProteinCorrelationThresholdHelper] protein_intensity_table dims: 4 x 7
+   [filterSamplesByProteinCorrelationThresholdHelper] Threshold: 0.50
+   [filterSamplesByProteinCorrelationThresholdHelper] Total unique samples in pairs: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples passing correlation threshold: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Protein ID Column Name resolved to: 'Protein.Ids'
+   [filterSamplesByProteinCorrelationThresholdHelper] Calculating 'samples_to_keep_anyway'...
+      - Total columns: 7
+      - Pair samples: 6
+      - Cols NOT in pairs: 1
+      - Final 'samples_to_keep_anyway' (excluding ID col): 0
+character(0)
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples from pairs to keep: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Result dims: 4 x 7
++===========================================================================+
++===========================================================================+
+*** ENTERING differentialAbundanceAnalysis METHOD ***
+*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***
+*** Testing parameter access ***
+*** Parameter access successful ***
+--- Entering differentialAbundanceAnalysis ---
+   differentialAbundanceAnalysis: theObject class = ProteinQuantitativeData
+   differentialAbundanceAnalysis: contrasts_tbl provided = TRUE
+   differentialAbundanceAnalysis: contrasts_tbl dims = 1 x 1
+   differentialAbundanceAnalysis: contrasts_tbl content = KO_vs_WT=groupKO-groupWT
+   differentialAbundanceAnalysis: About to call differentialAbundanceAnalysisHelper...
+--- Entering differentialAbundanceAnalysisHelper ---
+   PARAMETER VALIDATION Step: Checking all input parameters...
+      theObject is NULL: FALSE
+      contrasts_tbl is NULL: FALSE
+      contrasts_tbl class: data.frame
+      contrasts_tbl type: list
+      contrasts_tbl print:
+                 contrasts
+1 KO_vs_WT=groupKO-groupWT
+      Trying to access contrasts_tbl[[1]]...
+      SUCCESS: contrasts_tbl[[1]] class: character
+      SUCCESS: contrasts_tbl[[1]] length: 1
+      SUCCESS: contrasts_tbl[[1]] content: KO_vs_WT=groupKO-groupWT
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper Step: Extracting parameters...
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper: formula_string = ~ 0 + group
+   differentialAbundanceAnalysisHelper: group_id = group
+   differentialAbundanceAnalysisHelper: da_q_val_thresh = 0.050000
+   differentialAbundanceAnalysisHelper Step: Processing group names...
+   differentialAbundanceAnalysisHelper: group_col length = 6
+   differentialAbundanceAnalysisHelper: group_col content = WT, WT, WT, KO, KO, KO
+   differentialAbundanceAnalysisHelper: any start with number? FALSE
+   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...
+   differentialAbundanceAnalysisHelper Step: Generating QC plots...
+[1] "126_WT_1"  "127N_WT_2" "127C_WT_3" "128N_KO_1" "128C_KO_2" "129N_KO_3"
+[1] "126_WT_1"  "127N_WT_2" "127C_WT_3" "128N_KO_1" "128C_KO_2" "129N_KO_3"
+[1] "WT" "WT" "WT" "KO" "KO" "KO"
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
+   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...
+[1] "Run"            "group"          "replicates"     "tech_rep_group"
+   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with 1 contrasts
+   differentialAbundanceAnalysisHelper: protein_quant_matrix dims = 4 x 6
+--- Entering runTestsContrasts ---
+   runTestsContrasts: data dims = 4 x 6, 1 contrasts
+   runTestsContrasts: contrasts = KO_vs_WT=groupKO-groupWT
+   runTestsContrasts: treat_lfc_cutoff = 0
+   runTestsContrasts: design_m dims = 6 x 2
+   runTestsContrasts: data_subset dims = 4 x 6
+   runTestsContrasts: Creating contrast matrix...
+   runTestsContrasts: contr.matrix dims = 2 x 1
+   runTestsContrasts: Running lmFit...
+   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...
+   runTestsContrasts: Running contrasts.fit...
+   runTestsContrasts: Running eBayes...
+   runTestsContrasts: Running treat analysis...
+   runTestsContrasts: Processing 1 contrasts with topTreat...
+      [map] Processing contrast: KO_vs_WT=groupKO-groupWT
+      About to call topTreat with coef = KO_vs_WT=groupKO-groupWT
+      [map] topTreat success: 4 rows
+      Adding qvalue column...
+      Diagnostic: Valid p-values: 4 of 4 total
+      Diagnostic: P-value range: [0.110775, 0.998025]
+      Diagnostic: P-value mean: 0.332687, median: 0.110973
+      qvalue() computation successful
+      Diagnostic: q_values_all has 4 non-NA values before assignment
+      Diagnostic: Assigned column has 4 non-NA values after mutate
+      qvalue column added
+      Adding FDR column...
+      FDR column added
+      Renaming P.Value column...
+      P.Value column renamed
+   [map] Completed processing contrast: KO_vs_WT=groupKO-groupWT
+--- Exiting runTestsContrasts ---
+   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!
+   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...
+   getSignificantData: list_of_da_tables class = list
+   getSignificantData: list_of_da_tables length = 1
+   getSignificantData: list_of_da_tables structure:
+List of 1
+ $ :List of 1
+  ..$ KO_vs_WT=groupKO-groupWT:'data.frame':	4 obs. of  9 variables:
+   getSignificantData: About to call get_row_binded_table for each list element...
+      get_row_binded_table: de_table_list class = list
+      get_row_binded_table: de_table_list length = 1
+      get_row_binded_table: de_table_list names:
+[1] "KO_vs_WT=groupKO-groupWT"
+         [map] Processing table, row_id_col = Protein.Ids
+         [map] Table class = data.frame
+         [map] Table is data.frame = TRUE
+         [map] row_id already in columns
+      get_row_binded_table: processed_list created
+      get_row_binded_table: processed_list length = 1
+         [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+         [map2] comparison_column already exists: TRUE
+      get_row_binded_table: output table created
+      get_row_binded_table: output dims = 4 x 10
+      get_row_binded_table: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+      get_row_binded_table: Any values contain '=' ? TRUE
+      get_row_binded_table: Separating on '=' delimiter
+      get_row_binded_table: Separation complete
+   getSignificantData: All tables bound
+   getSignificantData: logfc_tbl_all dims = 4 x 11
+   countStatDaGenesHelper: da_table class = list
+   countStatDaGenesHelper: da_table is list = TRUE
+   countStatDaGenesHelper: da_table length = 1
+   countStatDaGenesHelper: da_table names:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: da_table_updated created
+   countStatDaGenesHelper: da_table_updated length = 1
+   countStatDaGenesHelper: da_table_updated names:
+[1] "KO_vs_WT=groupKO-groupWT"
+      [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+   countStatDaGenesHelper: list_of_tables created
+   countStatDaGenesHelper: About to bind_rows...
+   countStatDaGenesHelper: bound_tables dims = 3 x 3
+   countStatDaGenesHelper: facet column added
+   countStatDaGenesHelper: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: About to separate_wider_delim on column: comparison
+   countStatDaGenesHelper: Looking for delimiter: =
+   countStatDaGenesHelper: Any values contain '=' ? TRUE
+   countStatDaGenesHelper: Separation complete
+   differentialAbundanceAnalysisHelper Step: Creating results tables...
+   createDaResultsLongFormat: Renaming columns for contrast KO vs WT
+   createDaResultsLongFormat: Renamed 12 columns
+--- Exiting differentialAbundanceAnalysisHelper ---
+   differentialAbundanceAnalysis: Helper function completed successfully!
+--- Exiting differentialAbundanceAnalysis ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress (5 items)
+  data_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/scripts/proteomics (0 items)
+  results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics (6 items)
+  results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results_summary/proteomics (4 items)
+  timestamp                      : 20261020_103459
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261020_103459 (0 items)
+  clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/integration (0 items)
+  pathway_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/data/UniProt (0 items)
+------------------------------------------
+Updated missing value parameters in both config_list and S4 object @args for function 'removeRowsWithMissingValuesPercent':
+    - Requiring at least 2 replicates in each passing group (varies by group size)
+    - Requiring at least 2 out of 2 groups to pass (0.000% failing groups allowed)
+    - groupwise_percentage_cutoff set to 33.333%
+    - max_groups_percentage_cutoff set to 0.000%
+
+
+Group details:
+    Group KO: 2 out of 3 replicates required (33.333% missing allowed)
+    Group WT: 2 out of 3 replicates required (33.333% missing allowed)
+[OK] S4 object @args and global config_list are now synchronized
+Updated @args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in S4 object.
+Updated config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in global environment.
++===========================================================================+
++===========================================================================+
+      Data State (protein_quant_table): Dims = 5 rows, 7 cols
+      Data State (design_matrix): Dims = 6 rows, 4 cols
+         Run, group, replicates, tech_rep_group
+      Helper Args: cols = Protein.Ids
+      Helper Args: sample_id = Run
+      Helper Args: row_id = Protein.Ids
+      Helper Args: grouping_variable = group
+      Helper Args: groupwise_percentage_cutoff = 33.333
+      Helper Args: max_groups_percentage_cutoff = 0
+      Helper Args: proteins_intensity_cutoff_percentile = 1
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+[1] "normalisation_method = cyclicloess"
++===========================================================================+
++===========================================================================+
+*** PEARSON: WARNING - tech_rep_remove_regex is deprecated, use exclude_pool_samples instead ***
+   [pearsonCorForSamplePairs] Matrix dimensions: 4 proteins x 6 samples
+   [pearsonCorForSamplePairs] Correlation matrix computed in 0.00 seconds
+*** PEARSON: No Pool/QC groups detected to exclude ***
+   [pearsonCorForSamplePairs] Final pair count: 6
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+   [filterSamplesByProteinCorrelationThresholdHelper] protein_intensity_table dims: 4 x 7
+   [filterSamplesByProteinCorrelationThresholdHelper] Threshold: 0.50
+   [filterSamplesByProteinCorrelationThresholdHelper] Total unique samples in pairs: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples passing correlation threshold: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Protein ID Column Name resolved to: 'Protein.Ids'
+   [filterSamplesByProteinCorrelationThresholdHelper] Calculating 'samples_to_keep_anyway'...
+      - Total columns: 7
+      - Pair samples: 6
+      - Cols NOT in pairs: 1
+      - Final 'samples_to_keep_anyway' (excluding ID col): 0
+character(0)
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples from pairs to keep: 6
+   [filterSamplesByProteinCorrelationThresholdHelper] Result dims: 4 x 7
++===========================================================================+
++===========================================================================+
+*** ENTERING differentialAbundanceAnalysis METHOD ***
+*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***
+*** Testing parameter access ***
+*** Parameter access successful ***
+--- Entering differentialAbundanceAnalysis ---
+   differentialAbundanceAnalysis: theObject class = ProteinQuantitativeData
+   differentialAbundanceAnalysis: contrasts_tbl provided = TRUE
+   differentialAbundanceAnalysis: contrasts_tbl dims = 1 x 1
+   differentialAbundanceAnalysis: contrasts_tbl content = KO_vs_WT=groupKO-groupWT
+   differentialAbundanceAnalysis: About to call differentialAbundanceAnalysisHelper...
+--- Entering differentialAbundanceAnalysisHelper ---
+   PARAMETER VALIDATION Step: Checking all input parameters...
+      theObject is NULL: FALSE
+      contrasts_tbl is NULL: FALSE
+      contrasts_tbl class: data.frame
+      contrasts_tbl type: list
+      contrasts_tbl print:
+                 contrasts
+1 KO_vs_WT=groupKO-groupWT
+      Trying to access contrasts_tbl[[1]]...
+      SUCCESS: contrasts_tbl[[1]] class: character
+      SUCCESS: contrasts_tbl[[1]] length: 1
+      SUCCESS: contrasts_tbl[[1]] content: KO_vs_WT=groupKO-groupWT
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper Step: Extracting parameters...
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "KO_vs_WT=groupKO-groupWT"
+   differentialAbundanceAnalysisHelper: formula_string = ~ 0 + group
+   differentialAbundanceAnalysisHelper: group_id = group
+   differentialAbundanceAnalysisHelper: da_q_val_thresh = 0.050000
+   differentialAbundanceAnalysisHelper Step: Processing group names...
+   differentialAbundanceAnalysisHelper: group_col length = 6
+   differentialAbundanceAnalysisHelper: group_col content = WT, WT, WT, KO, KO, KO
+   differentialAbundanceAnalysisHelper: any start with number? FALSE
+   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...
+   differentialAbundanceAnalysisHelper Step: Generating QC plots...
+[1] "126_WT_1"  "127N_WT_2" "127C_WT_3" "128N_KO_1" "128C_KO_2" "129N_KO_3"
+[1] "126_WT_1"  "127N_WT_2" "127C_WT_3" "128N_KO_1" "128C_KO_2" "129N_KO_3"
+[1] "WT" "WT" "WT" "KO" "KO" "KO"
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
++===========================================================================+
++===========================================================================+
+
+
++===========================================================================+
++===========================================================================+
+   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...
+[1] "Run"            "group"          "replicates"     "tech_rep_group"
+   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with 1 contrasts
+   differentialAbundanceAnalysisHelper: protein_quant_matrix dims = 4 x 6
+--- Entering runTestsContrasts ---
+   runTestsContrasts: data dims = 4 x 6, 1 contrasts
+   runTestsContrasts: contrasts = KO_vs_WT=groupKO-groupWT
+   runTestsContrasts: treat_lfc_cutoff = 0
+   runTestsContrasts: design_m dims = 6 x 2
+   runTestsContrasts: data_subset dims = 4 x 6
+   runTestsContrasts: Creating contrast matrix...
+   runTestsContrasts: contr.matrix dims = 2 x 1
+   runTestsContrasts: Running lmFit...
+   runTestsContrasts: No technical replicates detected (unique blocks). Running standard lmFit...
+   runTestsContrasts: Running contrasts.fit...
+   runTestsContrasts: Running eBayes...
+   runTestsContrasts: Running treat analysis...
+   runTestsContrasts: Processing 1 contrasts with topTreat...
+      [map] Processing contrast: KO_vs_WT=groupKO-groupWT
+      About to call topTreat with coef = KO_vs_WT=groupKO-groupWT
+      [map] topTreat success: 4 rows
+      Adding qvalue column...
+      Diagnostic: Valid p-values: 4 of 4 total
+      Diagnostic: P-value range: [0.110775, 0.998025]
+      Diagnostic: P-value mean: 0.332687, median: 0.110973
+      qvalue() computation successful
+      Diagnostic: q_values_all has 4 non-NA values before assignment
+      Diagnostic: Assigned column has 4 non-NA values after mutate
+      qvalue column added
+      Adding FDR column...
+      FDR column added
+      Renaming P.Value column...
+      P.Value column renamed
+   [map] Completed processing contrast: KO_vs_WT=groupKO-groupWT
+--- Exiting runTestsContrasts ---
+   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!
+   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...
+   getSignificantData: list_of_da_tables class = list
+   getSignificantData: list_of_da_tables length = 1
+   getSignificantData: list_of_da_tables structure:
+List of 1
+ $ :List of 1
+  ..$ KO_vs_WT=groupKO-groupWT:'data.frame':	4 obs. of  9 variables:
+   getSignificantData: About to call get_row_binded_table for each list element...
+      get_row_binded_table: de_table_list class = list
+      get_row_binded_table: de_table_list length = 1
+      get_row_binded_table: de_table_list names:
+[1] "KO_vs_WT=groupKO-groupWT"
+         [map] Processing table, row_id_col = Protein.Ids
+         [map] Table class = data.frame
+         [map] Table is data.frame = TRUE
+         [map] row_id already in columns
+      get_row_binded_table: processed_list created
+      get_row_binded_table: processed_list length = 1
+         [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+         [map2] comparison_column already exists: TRUE
+      get_row_binded_table: output table created
+      get_row_binded_table: output dims = 4 x 10
+      get_row_binded_table: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+      get_row_binded_table: Any values contain '=' ? TRUE
+      get_row_binded_table: Separating on '=' delimiter
+      get_row_binded_table: Separation complete
+   getSignificantData: All tables bound
+   getSignificantData: logfc_tbl_all dims = 4 x 11
+   countStatDaGenesHelper: da_table class = list
+   countStatDaGenesHelper: da_table is list = TRUE
+   countStatDaGenesHelper: da_table length = 1
+   countStatDaGenesHelper: da_table names:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: da_table_updated created
+   countStatDaGenesHelper: da_table_updated length = 1
+   countStatDaGenesHelper: da_table_updated names:
+[1] "KO_vs_WT=groupKO-groupWT"
+      [map2] Processing element with name: KO_vs_WT=groupKO-groupWT
+   countStatDaGenesHelper: list_of_tables created
+   countStatDaGenesHelper: About to bind_rows...
+   countStatDaGenesHelper: bound_tables dims = 3 x 3
+   countStatDaGenesHelper: facet column added
+   countStatDaGenesHelper: Checking comparison column values:
+[1] "KO_vs_WT=groupKO-groupWT"
+   countStatDaGenesHelper: About to separate_wider_delim on column: comparison
+   countStatDaGenesHelper: Looking for delimiter: =
+   countStatDaGenesHelper: Any values contain '=' ? TRUE
+   countStatDaGenesHelper: Separation complete
+   differentialAbundanceAnalysisHelper Step: Creating results tables...
+   createDaResultsLongFormat: Renaming columns for contrast KO vs WT
+   createDaResultsLongFormat: Renamed 12 columns
+--- Exiting differentialAbundanceAnalysisHelper ---
+   differentialAbundanceAnalysis: Helper function completed successfully!
+--- Exiting differentialAbundanceAnalysis ---
+pd_tmt | type TMT | store PD_TMT-native TMT | design protein_s4_initial identity tables TRUE slots TRUE args TRUE | provenance design_builder | steps protein_intensity_filtered,duplicates_removed,protein_replicate_filtered | corr correlation_filtered | DA groupKO-groupWT 4 | record valid TRUE legacy FALSE workflow TMT | replay 7 states 0 mismatches | export NA NA reopened TMT correlation_filtered 
+done 118 s

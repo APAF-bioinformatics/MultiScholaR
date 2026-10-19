@@ -188,7 +188,8 @@ applyProtImportResultToWorkflow <- function(
     , sanitizeRunNames = sanitizeProtImportRunNames
 ) {
   manager <- getDIAActiveManager()
-  candidate <- inherits(manager, "DIAStateAdapter") && identical(format, "diann")
+  # KIT-020: every format the owner serves (DIA-NN and the protein-level readers) takes the owned path.
+  candidate <- inherits(manager, "DIAStateAdapter") && !is.na(workflowTypeForImportFormat(format))
   if (candidate) {
     table <- prepareDIAParserTable(dataImportResult$data)
     if (isTRUE(sanitizeNames)) {
@@ -220,11 +221,8 @@ applyProtImportResultToWorkflow <- function(
 
   workflowData$data_cln <- workflowData$data_tbl
 
-  workflowType <- switch(format,
-    "pd_tmt" = "TMT",
-    "diann" = "DIA",
-    "LFQ"
-  )
+  workflowType <- workflowTypeForImportFormat(format)
+  if (is.na(workflowType)) workflowType <- "LFQ"
   workflowData$state_manager$setWorkflowType(workflowType)
   workflowData$fasta_file_path <- fastaPath
 

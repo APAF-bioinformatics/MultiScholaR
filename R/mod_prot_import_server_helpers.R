@@ -328,7 +328,7 @@ registerProtImportObservers <- function(
           processFasta = processFastaFn
         )
         manager <- getDIAActiveManager()
-        candidate <- inherits(manager, "DIAStateAdapter") && identical(format, "diann")
+        candidate <- inherits(manager, "DIAStateAdapter") && !is.na(workflowTypeForImportFormat(format))
         if (candidate) apply_arguments$deferFasta <- TRUE
         do.call(applyWorkflowWithStatusFn, apply_arguments)
         apply_arguments <- NULL

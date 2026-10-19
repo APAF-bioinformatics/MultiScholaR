@@ -75,7 +75,8 @@ test_that("DIA adapter scopes complete records and preserves native defaults", {
     saveRDS(ordinary, path)
     expect_identical(readRDS(path)$getState(), object)
     expect_false(inherits(ordinary, "DIAStateAdapter"))
-    expect_error(manager$setWorkflowType("LFQ"), class = "saved_entity_scope")
+    # KIT-020: the owner serves DIA, LFQ and TMT; other types are refused.
+    expect_error(manager$setWorkflowType("metabolomics_standard"), class = "saved_entity_scope")
 })
 
 test_that("DIA local helpers and SQL rollup do not materialize unused workers", {

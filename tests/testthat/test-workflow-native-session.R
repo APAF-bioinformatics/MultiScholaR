@@ -460,7 +460,7 @@ test_that("the design checkpoint on the DIA default commits a reference state th
     expect_identical(restored@design_matrix$tech_rep_group, workflow$design_matrix$tech_rep_group)
 })
 
-test_that("native import is the DIA-NN/IQ default and does not migrate Limpa or other formats", {
+test_that("native import is the DIA-NN/IQ default and does not migrate Limpa; the protein-level formats attach their own owner (KIT-020)", {
     paths <- makeDIANativeGuiPaths(withr::local_tempdir())
     workflow <- new.env(parent = emptyenv())
     workflow$state_manager <- WorkflowState$new(audit_enabled = FALSE)
@@ -469,8 +469,19 @@ test_that("native import is the DIA-NN/IQ default and does not migrate Limpa or 
     withr::local_options(multischolar.dia_native_sessions = NULL)
     expect_true(isDIANativeDefaultEnabled())
     original <- workflow$state_manager
-    initializeDIANativeImport(workflow, paths, session, "fragpipe", "iq")
+    # KIT-020: an unknown format never attaches; a protein-level format attaches an owner typed by the format.
+    initializeDIANativeImport(workflow, paths, session, "unknown_format", "iq")
     expect_identical(workflow$state_manager, original)
+    lfq <- new.env(parent = emptyenv()); lfq$state_manager <- WorkflowState$new(audit_enabled = FALSE)
+    initializeDIANativeImport(lfq, paths, session, "fragpipe", "iq")
+    withr::defer(closeDIAStateAdapter(lfq$state_manager))
+    expect_true(isDIANativeSession(lfq$state_manager))
+    expect_identical(lfq$state_manager$.context$store$identity$workflow_id, "LFQ")
+    expect_identical(lfq$state_manager$.context$store$identity$project_id, "FRAGPIPE-native")
+    lfq$state_manager$setWorkflowType("LFQ")
+    expect_identical(lfq$state_manager$workflow_type, "LFQ")
+    expect_error(initializeDIANativeImport(lfq, paths, session, "diann", "iq"), class = "saved_entity_scope")
+    expect_error(lfq$state_manager$setWorkflowType("metabolomics_standard"), class = "saved_entity_scope")
     initializeDIANativeImport(workflow, paths, session, "diann", "limpa")
     expect_identical(workflow$state_manager, original)
     initializeDIANativeImport(workflow, paths, session, "diann", "iq")
@@ -1021,4 +1032,55 @@ test_that("KIT-026: the head records inputs by role and external resources, and 
     imported$manager$.context$reference_states <- TRUE
     expect_null(recordWorkflowExternalResource(imported$manager, "uniprot", NA, "header"))
     expect_length(imported$manager$.context$snapshot$external_resources, 1L)
+})
+
+test_that("KIT-020: a MaxQuant import on an owner records its inputs and metadata, and the design commits protein_s4_initial with provenance", {
+    paths <- makeDIANativeGuiPaths(withr::local_tempdir())
+    session <- makeDIANativeFixtureSession()
+    fixture <- testthat::test_path("..", "testdata", "e2e", "prot_lfq")
+    workflow <- new.env(parent = emptyenv())
+    workflow$state_manager <- WorkflowState$new(audit_enabled = FALSE)
+    workflow$config_list <- list(globalParameters = list(workflow_type = "LFQ"))
+    initializeDIANativeImport(workflow, paths, session, "maxquant", "iq")
+    manager <- workflow$state_manager
+    withr::defer(closeDIAStateAdapter(manager))
+    expect_true(isDIANativeSession(manager))
+    design <- data.frame(Run = c("WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3"),
+        group = rep(c("WT", "KO"), each = 3L), replicates = rep(1:3, 2L), stringsAsFactors = FALSE)
+    withDIAStateScope(manager, function() {
+        registerDIAInputFiles(manager, c(maxquant_report = file.path(fixture, "proteinGroups.txt"), fasta = file.path(fixture, "proteins.fasta")))
+        imported <- importMaxQuantData(file.path(fixture, "proteinGroups.txt"))
+        type <- applyProtImportResultToWorkflow(workflow, imported, "maxquant", file.path(fixture, "proteins.fasta"),
+            logInfo = function(...) NULL, showNotification = function(...) NULL)
+        expect_identical(type, "LFQ")
+        expect_identical(manager$workflow_type, "LFQ")
+        expect_true(isSavedWorkflowReference(workflow$data_tbl))
+        metadata <- getDIAImportMetadata(manager)
+        expect_identical(metadata$data_type, "protein")
+        expect_identical(metadata$column_mapping$quantity_col, "Intensity")
+        expect_true(all(c("WT_1", "KO_3") %in% metadata$samples$Run))
+        completeDIAInputFiles(manager)
+        workflow$design_matrix <- design
+        expect_identical(buildProtDesignStateCheckpoint(workflow, "LFQ", "Import"), "protein_s4_initial")
+    })
+    expect_identical(manager$current_state, "protein_s4_initial")
+    reference <- getDIAStateReference(manager, "protein_s4_initial")
+    expect_true(isSavedWorkflowReference(reference))
+    record <- readDIAStateMetadata(manager, reference)
+    expect_identical(record$data$class, "ProteinQuantitativeData")
+    provenance <- manager$.context$snapshot$step_provenance$protein_s4_initial
+    expect_identical(provenance$operation, "design_builder")
+    expect_identical(provenance$fixed$transform, "log2(x + 1)")
+    inputs <- manager$.context$snapshot$file_dependencies
+    expect_true(any(vapply(inputs, function(d) identical(d$role, "maxquant_report"), logical(1))))
+    # The hydrated object equals the in-memory construction on the same table.
+    restored <- manager$getState("protein_s4_initial")
+    expect_s4_class(restored, "ProteinQuantitativeData")
+    expect_identical(sort(setdiff(names(restored@protein_quant_table), "Protein.Ids")), sort(design$Run))
+    expect_equal(restored@protein_quant_table$`WT_1`[restored@protein_quant_table$Protein.Ids == "P00001"], log2(1019.8 + 1))
+    analysis <- buildWorkflowAnalysisRecord(manager)
+    check <- validateWorkflowAnalysisRecord(analysis)
+    expect_true(check$valid)
+    expect_false(any(grepl("legacy step", check$incomplete)))
+    expect_identical(analysis$workflow, "LFQ")
 })

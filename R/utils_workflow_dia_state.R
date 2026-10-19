@@ -1216,8 +1216,9 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
         if (is.null(entry$field)) value else value[[entry$field]]
     })
     adapter$setWorkflowType <- function(type) {
-        if (!identical(type, "DIA")) {
-            cli::cli_abort("experimental saved state requires DIA IQ", class = "saved_entity_scope")
+        # KIT-020: the on-disk owner serves the DIA-NN route and the protein-level LFQ and TMT routes.
+        if (!is.character(type) || length(type) != 1L || !type %in% c("DIA", "LFQ", "TMT")) {
+            cli::cli_abort("the on-disk session serves the DIA, LFQ and TMT workflow types", class = "saved_entity_scope")
         }
         adapter$workflow_type <- type
     }

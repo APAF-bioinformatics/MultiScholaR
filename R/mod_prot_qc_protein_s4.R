@@ -57,14 +57,16 @@ runProteinS4CreationStep <- function(workflowData,
   logInfoFn("Protein S4 Creation: Starting process for protein-level workflow (e.g., TMT)")
 
   proteinIdCol <- workflowData$column_mapping$protein_col
-  if (!proteinIdCol %in% names(workflowData$data_cln)) {
+  # KIT-020: on an owner the imported table is a saved reference; read it through the owner.
+  dataCln <- getDIAOwnedPayload(workflowData, "data_cln")
+  if (!proteinIdCol %in% names(dataCln)) {
     stop(paste("Protein ID column", proteinIdCol, "not found in the data."))
   }
 
   proteinObj <- proteinQuantitativeDataFn(
-    protein_quant_table = workflowData$data_cln,
+    protein_quant_table = dataCln,
     protein_id_column = proteinIdCol,
-    protein_id_table = workflowData$data_cln |>
+    protein_id_table = dataCln |>
       dplyr::distinct(!!rlang::sym(proteinIdCol)),
     design_matrix = workflowData$design_matrix,
     sample_id = "Run",
@@ -73,6 +75,9 @@ runProteinS4CreationStep <- function(workflowData,
     args = workflowData$config_list
   )
 
+  # KIT-038/KIT-020: the second writer of protein_s4_initial records the same fixed transform.
+  setDIAStepProvenance(workflowData$state_manager, "design_builder",
+    fixed = list(pivot = "protein x run", transform = "none"))
   workflowData$state_manager$saveState(
     state_name = "protein_s4_initial",
     s4_data_object = proteinObj,
