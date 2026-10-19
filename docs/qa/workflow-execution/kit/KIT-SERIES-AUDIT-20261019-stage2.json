@@ -1,0 +1,154 @@
+{
+  "schema": "audit-evidence-contracts/result/v1",
+  "mode": "audit_only",
+  "date": "2026-10-19",
+  "scope": {
+    "tickets": [
+      "KIT-038",
+      "KIT-039",
+      "KIT-020",
+      "KIT-042",
+      "KIT-043",
+      "KIT-021",
+      "KIT-049",
+      "KIT-046",
+      "KIT-047",
+      "KIT-041",
+      "KIT-053",
+      "KIT-044",
+      "KIT-048",
+      "KIT-045",
+      "KIT-030",
+      "KIT-031",
+      "KIT-032",
+      "KIT-040",
+      "KIT-050",
+      "KIT-051",
+      "KIT-052"
+    ],
+    "documents": [
+      "tickets/kit/00-KIT-PLAN.md",
+      "tickets/kit/tickets-index.json",
+      "docs/qa/workflow-execution/kit/REVIEW-20261019-stage2-recut.md",
+      "docs/qa/workflow-execution/kit/limpa-workflow/script-map.md"
+    ],
+    "code": "performance-v2 @ 5e68cb17",
+    "register": "docs/qa/workflow-execution/kit/KIT-SERIES-AUDIT-20261019-stage2.md"
+  },
+  "authority": {
+    "artifacts": [
+      "AGENTS.md",
+      "docs/qa/workflow-execution/kit/protocol.md (v1.4)",
+      "conventions/R.md",
+      "tickets/kit/00-KIT-PLAN.md (plan_version 1.2)"
+    ],
+    "route_valid": true,
+    "dirty_worktree_baseline": "clean"
+  },
+  "findings": {
+    "count": 98,
+    "by_severity": {
+      "high": 14,
+      "medium": 49,
+      "low": 34,
+      "informational": 1
+    },
+    "by_pass": {
+      "A": 28,
+      "B": 32,
+      "C": 26,
+      "S": 12
+    },
+    "high": [
+      "A-01",
+      "A-02",
+      "A-03",
+      "A-11",
+      "A-25",
+      "B-01",
+      "B-02",
+      "B-05",
+      "B-10",
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04",
+      "S-04"
+    ],
+    "detail": "see the register; each finding carries observed evidence (file:line), the affected claim, the smallest sufficient repair and the blocked state",
+    "by_blocked_state": {
+      "implementation": 67,
+      "decision": 6,
+      "execution": 2,
+      "promotion": 1,
+      "documentation": 21
+    }
+  },
+  "repairs": [],
+  "tests": [
+    {
+      "command": "python3 audit_inventory.py --repo . --tickets-dir tickets/kit --index tickets/kit/tickets-index.json --ticket KIT-0NN ... --doc 00-KIT-PLAN.md --doc REVIEW-20261019-stage2-recut.md --doc limpa-workflow/script-map.md",
+      "result": "exit 2; four LINK_MISSING items are R [[...]] index notation inside backticks (false positives)"
+    },
+    {
+      "command": "next-openai-ticket.sh <id> for every index id",
+      "result": "all 21 valid before the audit (not re-run; no files changed)"
+    },
+    {
+      "command": "Rscript: limpa 1.4.0 dpcDE/dpcQuant/dpc signatures, voomaLmFitWithImputation(block=), dpcCN subset rule, RNG scan; iq 2.0.1 process_long_format na_string",
+      "result": "facts recorded under What holds"
+    }
+  ],
+  "graph": {
+    "duplicate_ids": 0,
+    "missing_dependencies": 0,
+    "cycles": 0,
+    "order_violations": 0,
+    "plan_vs_index_mismatches": [
+      "KIT-040 depends-on (plan says KIT-030; index and frontmatter say KIT-031)"
+    ],
+    "index_vs_frontmatter_mismatches": [
+      "KIT-037 time_estimate",
+      "KIT-036 time_estimate"
+    ]
+  },
+  "evidence_layers": {
+    "documentation_or_graph_integrity": "inventory script plus pass C",
+    "implementation_conformance": "passes A, B, C traced every anchor to code; no execution",
+    "semantic_or_construct_validity": "pass S: iq missing-value convention, limpa determinism and block support, RUV replicate structure, decision design of the counted members",
+    "runtime_behavior": "not established",
+    "controlled_incremental_utility": "not established"
+  },
+  "formal_verification": {
+    "used": false,
+    "reason": "no deterministic property in scope warranted a prover"
+  },
+  "closeout": {
+    "implementation_verified": false,
+    "execution_complete": true,
+    "decision_supported": false,
+    "promotion_authorized": false,
+    "claim_scope": "documentation and implementation-conformance against performance-v2 @ 5e68cb17, plus scientific-validity facts on limpa 1.4.0 and iq 2.0.1; no runtime, memory or utility claim"
+  },
+  "blockers": [
+    "KIT-038 revision 1.1 before it starts (A-01, A-02, A-03, A-04..A-10, S-12)",
+    "protocol v1.5 amendment before KIT-021 (S-10: A-25, A-26, C-24)",
+    "KIT-049 skip design (B-01, B-02, B-03)",
+    "KIT-046 design-step files and template map (B-05, B-09)",
+    "KIT-047 storage of the Limpa results (B-10, B-11, B-12, S-11) and engine/limpa requirement (S-09)",
+    "KIT-044 scope and hashers (C-01, C-02, C-03, C-04, C-10)",
+    "fastlimpadpc availability for the release (S-04)"
+  ],
+  "deviations": [
+    "none; audit only, no file in scope edited"
+  ],
+  "decisions_for_user": [
+    "protocol v1.5 (member kinds, oracle source, selectors)",
+    "LFQ pair design vs single journey (S-01)",
+    "DIA_LIMPA RUV replicate structure (S-02, B-26)",
+    "fastlimpadpc publication/vendoring and proof-library path (S-04)",
+    "P14 legacy backend off x86_64 Linux (C-04)",
+    "KIT-044 reduced to one mechanism (C-10, C-03)"
+  ],
+  "next_action": "write KIT-SERIES-REMEDIATION-20261019-stage2.md closing each finding by ticket revision; record the six decisions in the plan's decision record; revise KIT-038 to 1.1 before the next /openai-ticket; do not edit this audit"
+}
