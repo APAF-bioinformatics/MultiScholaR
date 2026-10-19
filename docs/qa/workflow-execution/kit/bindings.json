@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-18",
+  "created": "2026-10-19",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -3845,7 +3845,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-18",
+        "date": "2026-10-19",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -4099,7 +4099,7 @@
     "member": "tools/profiling/workflow_kit_member.R",
     "runner": "tools/profiling/run_workflow_kit.sh",
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
-    "protocol_sha256": "5065d3bacffa87943fed7e71be18190841689065e5a8d15297e1d5dc0361c073",
+    "protocol_sha256": "10b830f85a03df4641a60fd6a12b650b9c98115cb62c068f947cb2fdfe1ac20c",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
     "step_map_sha256": "7becbb852abd4a0aa364c14493097381b99cd122d302ec7130f78dec80a737bb",
     "core_pinned_unchanged": true,

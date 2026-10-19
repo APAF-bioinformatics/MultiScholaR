@@ -1,4 +1,4 @@
-# Proposed amendment: KIT measurement protocol v1.5 (2026-10-19, pending the user's decision)
+# Proposed amendment: KIT measurement protocol v1.5 (2026-10-19) — APPROVED by the user on 2026-10-19 and appended to `protocol.md` as section 7; this file is the record of the proposal.
 
 `protocol.md` (v1.4) is frozen; its SHA-256 is bound in `bindings.json`, and any change is a new version needing a user decision. This file is the proposal; nothing in it is in force until the user records the decision in the plan's decision record, after which the text below is appended to `protocol.md` as version 1.5 and the bindings are regenerated. KIT-021 and KIT-053 run no counted member before that.
 
