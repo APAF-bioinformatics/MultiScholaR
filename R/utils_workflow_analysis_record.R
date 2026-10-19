@@ -567,27 +567,35 @@ workflowAnalysisRecordTables <- function(record) {
         names(out) <- columns
         out
     }
-    software <- data.frame(field = c("package", "version", "source commit", "R", "platform", "defaults sha256", "defaults changed", "generated"),
-        value = c(chr(record$software$package), chr(record$software$version), chr(record$software$sha), chr(record$software$r_version),
-            chr(record$software$platform), chr(record$defaults_sha256), chr(record$defaults_changed), chr(record$generated_at)),
+    threads <- record$software$duckdb_threads
+    software <- data.frame(field = c("package", "version", "source commit", "build", "R", "platform", "BLAS", "LAPACK",
+            "OpenMP threads", "BLAS threads", "DuckDB threads", "OS", "locale", "defaults sha256", "defaults changed", "generated"),
+        value = c(chr(record$software$package), chr(record$software$version), chr(record$software$sha), chr(record$software$build),
+            chr(record$software$r_version), chr(record$software$platform), chr(record$software$blas), chr(record$software$lapack),
+            chr(record$software$omp_threads), chr(record$software$blas_threads),
+            if (is.list(threads)) paste(names(threads), unlist(threads), sep = " = ", collapse = "; ") else chr(threads),
+            chr(record$software$os_release), chr(record$software$locale),
+            chr(record$defaults_sha256), chr(record$defaults_changed), chr(record$generated_at)),
         stringsAsFactors = FALSE)
     packages <- frame(record$software$packages %||% list(), c("name", "version"))
     inputs <- frame(record$inputs, c("role", "basename", "bytes", "sha256", "entity_id"))
     design <- if (length(record$design$rows)) as.data.frame(lapply(as.data.frame(do.call(rbind, lapply(record$design$rows, function(row)
         vapply(row, chr, character(1)))), stringsAsFactors = FALSE), as.character), stringsAsFactors = FALSE) else data.frame()
     steps <- frame(lapply(record$steps, function(step) c(step[c("order", "state", "operation", "variant", "step_label", "committed_at")],
-        list(software_sha = step$software$sha, rows = step$dimensions$rows, columns = step$dimensions$columns,
+        list(description = step$description, software_sha = step$software$sha, rows = step$dimensions$rows, columns = step$dimensions$columns,
             preceded_by = paste(vapply(step$preceded_by %||% list(), function(p) chr(p$operation), ""), collapse = ", ")))),
-        c("order", "state", "operation", "variant", "step_label", "committed_at", "software_sha", "rows", "columns", "preceded_by"))
+        c("order", "state", "description", "operation", "variant", "step_label", "committed_at", "software_sha", "rows", "columns", "preceded_by"))
+    label_of <- function(operation, name) workflowParameterLabels[[operation]][[name]] %||% name
     parameter_rows <- list()
     for (step in record$steps) {
         add <- function(parameters, operation) for (parameter in parameters) parameter_rows[[length(parameter_rows) + 1L]] <<- list(
             order = step$order, step = step$state, operation = operation, name = parameter$name,
+            label = label_of(operation, parameter$name),
             value = workflowRecordValueText(parameter$value), source = parameter$source, provenance = parameter$provenance)
         for (previous in step$preceded_by %||% list()) add(previous$parameters, previous$operation)
         add(step$parameters, step$operation)
     }
-    parameters <- frame(parameter_rows, c("order", "step", "operation", "name", "value", "source", "provenance"))
+    parameters <- frame(parameter_rows, c("order", "step", "operation", "name", "label", "value", "source", "provenance"))
     analyses <- frame(unlist(lapply(names(record$analyses %||% list()), function(name) lapply(record$analyses[[name]]$parameters, function(parameter)
         list(analysis = name, operation = record$analyses[[name]]$operation, source_state = record$analyses[[name]]$source_state,
             name = parameter$name, value = workflowRecordValueText(parameter$value), provenance = parameter$provenance))), recursive = FALSE),
@@ -661,7 +669,18 @@ workflowRecordReportSources <- list(
     s4_de_treat_lfc_cutoff = list(record = c("DA", "lfc"), file = c("deAnalysisParameters", "treat_lfc_cutoff")),
     s4_formula_string = list(record = c("DA", "formula"), file = c("deAnalysisParameters", "formula_string")),
     s4_ebayes_trend = list(file = c("deAnalysisParameters", "eBayes_trend")),
-    s4_ebayes_robust = list(file = c("deAnalysisParameters", "eBayes_robust")))
+    s4_ebayes_robust = list(file = c("deAnalysisParameters", "eBayes_robust")),
+    # KIT-039 (IM-06): the software the record names, and the realised RUV outcome (IM-02) in the words the
+    # report's RUV sentence uses (`best_k`, `best_percentage`, `num_neg_ctrl`, `ruv_applied`).
+    software_version = list(record = c("software", "version")),
+    source_commit = list(record = c("software", "sha")),
+    build = list(record = c("software", "build")),
+    r_version = list(record = c("software", "r_version")),
+    blas = list(record = c("software", "blas")),
+    ruv_applied = list(record = c("outcomes", "normalization-ruv", "ruv_applied")),
+    best_k = list(record = c("outcomes", "normalization-ruv", "k")),
+    best_percentage = list(record = c("outcomes", "normalization-ruv", "negative_control_percentage")),
+    num_neg_ctrl = list(record = c("outcomes", "normalization-ruv", "negative_control_count")))
 
 #' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
 #' returned unchanged. With one, every report variable the record carries takes the record's value, and the
@@ -682,18 +701,37 @@ workflowRecordReportParameters <- function(record_path, params, study_params = l
         hit <- Filter(function(parameter) identical(parameter$name, name), parameters)
         if (length(hit)) decodeWorkflowRecordValue(hit[[1L]]$value) else NULL
     }
+    from_outcomes <- function(operation, name) {
+        steps <- Filter(function(step) identical(step$operation, operation), record$steps)
+        if (!length(steps)) return(NULL)
+        steps[[length(steps)]]$outcomes[[name]]
+    }
     file_params <- study_params[["Workflow Parameters"]][["Parameters from Final S4 Object"]] %||% list()
     shown <- character()
     for (variable in names(workflowRecordReportSources)) {
         source <- workflowRecordReportSources[[variable]]
-        value <- if (!is.null(source$record)) from_record(source$record[[1L]], source$record[[2L]]) else NULL
-        if (!is.null(value) && length(value) == 1L && !is.na(value)) {
+        kind <- if (is.null(source$record)) "file" else if (identical(source$record[[1L]], "software")) "software" else
+            if (identical(source$record[[1L]], "outcomes")) "outcomes" else "parameter"
+        value <- switch(kind,
+            software = record$software[[source$record[[2L]]]],
+            outcomes = from_outcomes(source$record[[2L]], source$record[[3L]]),
+            parameter = from_record(source$record[[1L]], source$record[[2L]]),
+            NULL)
+        if (!is.null(value) && is.atomic(value) && length(value) == 1L && !is.na(value)) {
             current <- params[[variable]]
-            params[[variable]] <- if (is.logical(current)) as.logical(value) else if (is.numeric(current)) as.numeric(value) else value
-        } else if (is.null(file_params[[source$file[[1L]]]][[source$file[[2L]]]]) && !is.null(params[[variable]])) {
+            # A parameter keeps the type the report's parser gave it (KIT-033); a software field or an outcome is
+            # taken as the record has it, because the parser's value for those is often a parse artefact (a
+            # logical TRUE for "Best k value" on the real journey) that would coerce the number away.
+            params[[variable]] <- if (kind %in% c("software", "outcomes")) value else
+                if (is.logical(current)) as.logical(value) else if (is.numeric(current)) as.numeric(value) else value
+        } else if (kind %in% c("software", "outcomes")) {
+            # A record without the field (written before KIT-038) leaves the report's own value, or "not recorded".
+            if (is.null(params[[variable]])) params[[variable]] <- "not recorded"
+        } else if (!is.null(source$file) && is.null(file_params[[source$file[[1L]]]][[source$file[[2L]]]]) && !is.null(params[[variable]])) {
             shown <- c(shown, sprintf("%s = %s", variable, paste(format(params[[variable]]), collapse = ", ")))
         }
     }
+    params$record_present <- TRUE
     params$record_defaults_note <- if (length(shown)) paste0(" Parameter not recorded; default shown: ", paste(shown, collapse = "; "), ".") else ""
     params
 }

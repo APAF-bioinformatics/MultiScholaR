@@ -276,6 +276,51 @@ workflowOperationDefaults <- local({
             contrast_names = "input", results = "input"))
 })
 
+#' A reader's label for every declared parameter (KIT-039, IM-07): one line per parameter, keyed by operation.
+#' The registry test asserts both directions: every declared parameter has a label and no label names an
+#' undeclared parameter.
+#' @noRd
+workflowParameterLabels <- local({
+    list(
+        wfx_fixture = list(mode = "Fixture mode", seconds = "Fixture duration (s)", bytes = "Fixture allocation (bytes)"),
+        precursor_rollup = list(),
+        minimum_peptides_per_sample = list(peptides_per_sample_cutoff = "Minimum peptides per sample",
+            inclusion_list = "Samples kept regardless of the cutoff"),
+        peptide_imputation = list(proportion_missing_values = "Maximum proportion of missing values imputed within a replicate group",
+            exclusion_column = "Column excluded from imputation"),
+        peptide_qvalue_filter = list(qvalue_threshold = "Run-level q-value threshold",
+            global_qvalue_threshold = "Global precursor q-value threshold", global_pg_qvalue_threshold = "Global protein-group q-value threshold",
+            proteotypic_only = "Keep proteotypic peptides only", confidence_provenance_mode = "Source of the confidence columns"),
+        peptide_protein_evidence_filter = list(num_peptides_per_protein_thresh = "Minimum unique peptides per protein",
+            num_peptidoforms_per_protein_thresh = "Minimum peptidoforms per protein"),
+        peptide_intensity_filter = list(strict_mode = "Strict mode (all groups must pass)",
+            min_reps_per_group = "Minimum replicates per group above the cutoff", min_groups = "Minimum groups passing",
+            peptides_intensity_cutoff_percentile = "Intensity cutoff percentile", grouping_variable = "Grouping variable"),
+        peptide_replicate_filter = list(replicate_group_column = "Replicate group column"),
+        protein_iq_rollup = list(),
+        protein_accession_cleanup = list(delimiter = "Protein group delimiter", aggregation_method = "Aggregation of duplicate accessions",
+            fasta_sha256 = "FASTA database (sha256)"),
+        protein_intensity_filter = list(strict_mode = "Strict mode (all groups must pass)",
+            min_reps_per_group = "Minimum replicates per group above the cutoff", min_groups = "Minimum groups passing",
+            proteins_intensity_cutoff_percentile = "Protein intensity cutoff percentile"),
+        protein_duplicate_removal = list(aggregation_method = "Aggregation of duplicate proteins"),
+        protein_replicate_filter = list(grouping_variable = "Grouping variable", parallel_cores = "Parallel cores"),
+        `normalization-ruv` = list(norm_method = "Between-sample normalisation method", ruv_mode = "RUV-III mode",
+            auto_percentage_min = "Negative-control percentage sweep, minimum", auto_percentage_max = "Negative-control percentage sweep, maximum",
+            separation_metric = "Separation metric for choosing k", k_penalty_weight = "Penalty weight on k",
+            adaptive_k_penalty = "Adaptive maximum k", ruv_percentage = "Negative-control percentage (manual mode)",
+            ruv_k = "Number of unwanted factors k (requested)", grouping = "RUV grouping variable"),
+        `pearson-pairs` = list(group = "Correlation grouping variable", tech_rep_remove_regex = "Pattern of samples excluded from correlation"),
+        `pearson-selection` = list(pairs = "Sample-pair correlations (input)", threshold = "Minimum Pearson correlation to keep a sample"),
+        `DA-contrast-output` = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
+            lfc = "Log fold-change cutoff (treat)", weights = "Observation weights", contrast = "Contrast (input)", annotations = "Annotations (input)"),
+        da_publication = list(annotations = "Annotations (input)"),
+        enrichment = list(taxon_id = "Taxon id", up_cutoff = "Up-regulation cutoff", down_cutoff = "Down-regulation cutoff",
+            q_cutoff = "Enrichment q-value threshold", exclude_iea = "Exclude electronic GO annotations",
+            correction_method = "Multiple-testing correction", protein_id_column = "Protein id column (input)",
+            contrast_names = "Contrasts (input)", results = "Differential results (input)"))
+})
+
 #' Register one operation.
 #' @param entry Entry list (see `validateWorkflowOperationEntry`); an existing name is replaced only
 #'   when `replace = TRUE`.

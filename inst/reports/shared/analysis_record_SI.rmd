@@ -46,13 +46,30 @@ show(tables$steps)
 
 ```{r steps, results = "asis"}
 for (step in record$steps) {
-    cat(sprintf("\n\n## %s. %s\n\n", step$order, step$state))
-    cat(sprintf("Operation `%s`%s, step label `%s`; committed %s.\n\n", step$operation,
+    sentence <- step$description
+    if (is.null(sentence) || is.na(sentence) || !nzchar(sentence)) sentence <- step$state
+    cat(sprintf("\n\n## %s. %s\n\n", step$order, sentence))
+    cat(sprintf("State `%s`; operation `%s`%s, step label `%s`; committed %s.\n\n", step$state, step$operation,
         if (!is.null(step$variant) && !identical(step$variant, NA)) sprintf(" (variant `%s`)", step$variant) else "",
         step$step_label, step$committed_at %||% "unknown"))
-    rows <- tables$parameters[tables$parameters$step == step$state, c("operation", "name", "value", "provenance"), drop = FALSE]
-    if (nrow(rows)) print(knitr::kable(rows, row.names = FALSE)) else cat("No parameters recorded.\n")
+    outcomes <- step$outcomes
+    if (is.list(outcomes) && length(outcomes)) cat("Outcome: ", paste(names(outcomes), vapply(outcomes, function(v)
+        if (is.null(v)) "NA" else paste(format(unlist(v)), collapse = ", "), ""), sep = " = ", collapse = "; "), ".\n\n", sep = "")
+    rows <- tables$parameters[tables$parameters$step == step$state, c("label", "name", "value", "provenance"), drop = FALSE]
+    if (nrow(rows)) print(knitr::kable(rows, row.names = FALSE, col.names = c("Parameter", "internal name", "value", "provenance"))) else cat("No parameters recorded.\n")
 }
+```
+
+## Provenance legend
+
+```{r legend, results = "asis"}
+legend <- data.frame(provenance = c("default", "user_set", "not_set", "no_shipped_default", "fixed", "input", "unknown"),
+    meaning = c("equals the shipped config.ini default", "differs from the shipped default",
+        "no value requested; the module's own fallback applied (the realised value is in the step's outcome)",
+        "config.ini ships no default for this setting; the module's own default applied",
+        "a constant the operation always passes", "a value taken from the data or an earlier step", "no registry mapping for the name"),
+    stringsAsFactors = FALSE)
+knitr::kable(legend, row.names = FALSE)
 ```
 
 ```{r analyses, results = "asis"}

@@ -437,3 +437,45 @@ test_that("KIT-038: the normalisation step states the realised RUV outcome and a
     expect_true(is.na(skipped$negative_control_count))
     expect_true(isTRUE(skipped$skipped))
 })
+
+test_that("KIT-039: the report overlay takes the software and the realised RUV outcome from the record, tolerating their absence", {
+    record <- list(software = list(version = "0.5.0", sha = "abc123", build = "deadbeef", r_version = "R 4.6.1", blas = "openblas"),
+        steps = list(list(operation = "normalization-ruv", parameters = list(), outcomes = list(ruv_applied = TRUE, k = 2,
+            negative_control_percentage = 10, negative_control_count = 242))),
+        analyses = list())
+    path <- withr::local_tempfile(fileext = ".json")
+    jsonlite::write_json(record, path, auto_unbox = TRUE, digits = I(17), null = "null", na = "null")
+    params <- list(ruv_applied = FALSE, best_k = 5, best_percentage = "1", num_neg_ctrl = "3", commit = "N/A")
+    overlaid <- workflowRecordReportParameters(path, params, list())
+    expect_identical(overlaid$software_version, "0.5.0")
+    expect_identical(overlaid$source_commit, "abc123")
+    expect_identical(overlaid$build, "deadbeef")
+    expect_true(overlaid$ruv_applied)
+    expect_equal(overlaid$best_k, 2)
+    expect_equal(overlaid$best_percentage, 10)
+    expect_equal(overlaid$num_neg_ctrl, 242)
+    expect_true(isTRUE(overlaid$record_present))
+    # A KIT-033-vintage record (no software fields beyond the parser's, no outcomes) does not fail.
+    old <- list(steps = list(list(operation = "normalization-ruv", parameters = list())), analyses = list())
+    jsonlite::write_json(old, path, auto_unbox = TRUE, digits = I(17), null = "null", na = "null")
+    tolerant <- workflowRecordReportParameters(path, params, list())
+    expect_identical(tolerant$software_version, "not recorded")
+    expect_false(tolerant$ruv_applied)
+    expect_equal(tolerant$best_k, 5)
+})
+
+test_that("KIT-039: the record tables carry the step sentence and a label for every parameter", {
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    record <- buildWorkflowAnalysisRecord(manager)
+    tables <- workflowAnalysisRecordTables(record)
+    expect_true("description" %in% names(tables$steps))
+    expect_identical(tables$steps$description[tables$steps$state == "qvalue_filtered"], "q-value filter")
+    expect_true("label" %in% names(tables$parameters))
+    declared <- tables$parameters[tables$parameters$provenance != "unknown", ]
+    expect_true(all(nzchar(declared$label)))
+    expect_identical(declared$label[declared$name == "qvalue_threshold"][[1]], "Run-level q-value threshold")
+    expect_true("build" %in% tables$software$field)
+    expect_true("BLAS" %in% tables$software$field)
+})

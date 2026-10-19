@@ -215,6 +215,17 @@ test_that("every registered worker step's section maps to its operation, and the
     expect_null(workflowOperationForSection(NULL))
 })
 
+test_that("every declared parameter has a reader's label and no label names an undeclared parameter (KIT-039)", {
+    for (operation in workflowOperationNames()) {
+        entry <- workflowOperationEntry(operation)
+        labels <- workflowParameterLabels[[operation]] %||% list()
+        expect_identical(setdiff(entry$parameters, names(labels)), character(), label = paste(operation, "unlabelled"))
+        expect_identical(setdiff(names(labels) %||% character(), entry$parameters), character(), label = paste(operation, "undeclared label"))
+        for (label in labels) expect_true(is.character(label) && length(label) == 1L && nzchar(label), label = operation)
+    }
+    expect_identical(setdiff(names(workflowParameterLabels), workflowOperationNames()), character())
+})
+
 test_that("every declared parameter of every registered operation has a defaults mapping (KIT-027)", {
     for (operation in workflowOperationNames()) {
         entry <- workflowOperationEntry(operation)

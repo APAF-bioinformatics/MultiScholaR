@@ -886,10 +886,17 @@ results_data <- tryCatch({
 
 # Version Information
 
-Repository: `r results_data$numbers$repository`
-Branch: `r results_data$numbers$branch`
-Commit: `r results_data$numbers$commit`
-Git Timestamp: `r results_data$numbers$git_timestamp`
+```{r version_information, echo=FALSE, results="asis"}
+# KIT-039: the software the analysis record names; the git fields of study_parameters.txt otherwise.
+if (isTRUE(results_data$numbers$record_present)) {
+  cat(sprintf("MultiScholaR version: %s  \nSource commit: %s  \nBuild: %s  \nR: %s  \nBLAS: %s  \n",
+    results_data$numbers$software_version, results_data$numbers$source_commit, results_data$numbers$build,
+    results_data$numbers$r_version, results_data$numbers$blas))
+} else {
+  cat(sprintf("Repository: %s  \nBranch: %s  \nCommit: %s  \nGit Timestamp: %s  \n",
+    results_data$numbers$repository, results_data$numbers$branch, results_data$numbers$commit, results_data$numbers$git_timestamp))
+}
+```
 
 ```{r QC_metrics, echo=FALSE, warning=FALSE, fig.cap="Figure 1: QC metrics across normalisation stages"}
 # Use NEW path variable

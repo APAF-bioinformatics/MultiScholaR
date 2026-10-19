@@ -1,0 +1,332 @@
+INFO [2026-10-19 18:48:16] --- Processing setup for omic type: proteomics ---
+INFO [2026-10-19 18:48:16] Ensured omic-specific data directory exists: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/data/proteomics
+INFO [2026-10-19 18:48:16] Ensured timestamped directory exists: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/publication_graphs/filtering_qc/20261019_184816
+INFO [2026-10-19 18:48:16] Creating directory structure for 'proteomics_dia_baseline_smoke'...
+INFO [2026-10-19 18:48:16] Copying scripts for proteomics from /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics to /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke...
+INFO [2026-10-19 18:48:16] Ensured UniProt annotation directory exists: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/data/UniProt
+INFO [2026-10-19 18:48:16] Stored paths for proteomics_dia_baseline_smoke.
+INFO [2026-10-19 18:48:16] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics_dia_baseline_smoke' (Type: proteomics)
+  base_dir                       : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke (5 items)
+  data_dir                       : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke (19 items)
+  results_dir                    : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke (6 items)
+  results_summary_dir            : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke (4 items)
+  timestamp                      : 20261019_184816
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/publication_graphs/filtering_qc/20261019_184816 (0 items)
+  clean_features_dir             : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/integration (0 items)
+  pathway_dir                    : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results/proteomics_dia_baseline_smoke/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/data/UniProt (0 items)
+------------------------------------------
+--- DEBUG66: Entering RenderReport ---
+   DEBUG66: omic_type = 'proteomics'
+   DEBUG66: experiment_label = 'dia_baseline_smoke'
+   DEBUG66: rmd_filename = 'DIANN_report.rmd'
+   DEBUG66: project_dirs_object_name = 'project_dirs'
+   DEBUG66: Input validation passed
+   DEBUG66: Calling getProjectPaths...
+--- DEBUG66: Entering getProjectPaths ---
+   DEBUG66: omic_type = 'proteomics'
+   DEBUG66: experiment_label = 'dia_baseline_smoke'
+   DEBUG66: project_dirs_object_name = 'project_dirs'
+   DEBUG66: project_dirs object found in global environment
+      DEBUG66: project_dirs has 1 keys
+      DEBUG66: Available keys: proteomics_dia_baseline_smoke
+   DEBUG66: Trying 3 potential keys: proteomics_dia_baseline_smoke, proteomics, proteomics_dia_baseline_smoke
+   DEBUG66: Trying key: 'proteomics_dia_baseline_smoke'
+   DEBUG66: SUCCESS - Found match with key: 'proteomics_dia_baseline_smoke'
+   DEBUG66: getProjectPaths completed
+      DEBUG66: current_paths is list: TRUE
+      DEBUG66: current_paths names: base_dir, omic_type, omic_label, results_dir, data_dir, source_dir, timestamp, integration_dir, publication_graphs_dir, qc_dir, time_dir, results_summary_dir, qc_figures_dir, publication_figures_dir, publication_tables_dir, study_report_dir, uniprot_annotation_dir, da_output_dir, pathway_dir, feature_qc_dir, subfeature_qc_dir, clean_features_dir, protein_qc_dir, peptide_qc_dir, clean_proteins_dir
+      DEBUG66: base_dir = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke
+      DEBUG66: results_summary_dir = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke
+      DEBUG66: source_dir = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke
+   DEBUG66: Path validation passed
+   DEBUG66: rmd_input_path = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics/DIANN_report.rmd
+   DEBUG66: Template file exists: TRUE
+   DEBUG66: Constructing output file path...
+   DEBUG66: output_file_path = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+   DEBUG66: output_ext = .docx
+INFO [2026-10-19 18:48:22] Attempting to render report:
+INFO [2026-10-19 18:48:22] - Rmd Source (Template): /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics/DIANN_report.rmd
+INFO [2026-10-19 18:48:22] - Output File: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+INFO [2026-10-19 18:48:22] - Params: omic_type='proteomics', experiment_label='dia_baseline_smoke'
+   DEBUG66: Reading study_parameters.txt...
+      DEBUG66: params_path = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/study_parameters.txt
+      DEBUG66: params file exists: TRUE
+   DEBUG66: workflow_name = 'dia_baseline_smoke'
+   DEBUG66: timestamp = '2026-10-19 18:48:20'
+   DEBUG66: About to call rmarkdown::render...
+      DEBUG66: Render parameters:
+         input = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics/DIANN_report.rmd
+         output_file = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+         output_format = NULL (using Rmd default)
+
+
+processing file: DIANN_report.rmd
+1/40                                   
+2/40 [setup]                           
+3/40                                   
+4/40 [Project Setup]                   
+5/40                                   
+6/40 [New Hierarchical Parser]         
+7/40                                   
+8/40 [Format Sample Details]           
+9/40                                   
+10/40 [Method Section]                  
+11/40                                   
+12/40 [Result Section]                  
+13/40                                   
+14/40 [Comment Section]                 
+15/40                                   
+16/40 [Opinions/Interpretations Section]
+17/40                                   
+18/40 [Differential Abundance Section]  
+19/40                                   
+20/40 [GO Enrichment Section]           
+21/40                                   
+22/40 [Sample Analysis Functions]       
+23/40                                   
+24/40 [Main Execution Function]         
+25/40                                   
+26/40 [version_information]             
+27/40                                   
+28/40 [QC_metrics]                      
+29/40                                   
+30/40 [NumSigDE_Plot]                   
+31/40                                   
+32/40 [NumSigDE Caption]                
+33/40                                   
+34/40 [grid_layout]                     
+35/40                                   
+36/40 [Volcano Plot Caption]            
+37/40                                   
+38/40 [GO Enrichment Plots]             
+39/40                                   
+40/40 [Go Enrichment Caption]           
+output file: DIANN_report.knit.md
+
+/usr/bin/pandoc +RTS -K512m -RTS DIANN_report.knit.md --to docx --from markdown+autolink_bare_uris+tex_math_single_backslash --output /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx --lua-filter /home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6/rmarkdown/rmarkdown/lua/pagebreak.lua --syntax-highlighting tango --extract-media /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke_files 
+
+Output created: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+   DEBUG66: rmarkdown::render returned: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+   DEBUG66: Output file exists: TRUE
+INFO [2026-10-19 18:48:23] Report successfully rendered to: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+--- DEBUG66: Exiting RenderReport ---
+   DEBUG66: Returning: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+[1] TRUE
+--- DEBUG66: Entering RenderReport ---
+   DEBUG66: omic_type = 'proteomics'
+   DEBUG66: experiment_label = 'dia_baseline_smoke'
+   DEBUG66: rmd_filename = 'DIANN_report.rmd'
+   DEBUG66: project_dirs_object_name = 'project_dirs'
+   DEBUG66: Input validation passed
+   DEBUG66: Calling getProjectPaths...
+--- DEBUG66: Entering getProjectPaths ---
+   DEBUG66: omic_type = 'proteomics'
+   DEBUG66: experiment_label = 'dia_baseline_smoke'
+   DEBUG66: project_dirs_object_name = 'project_dirs'
+   DEBUG66: project_dirs object found in global environment
+      DEBUG66: project_dirs has 1 keys
+      DEBUG66: Available keys: proteomics_dia_baseline_smoke
+   DEBUG66: Trying 3 potential keys: proteomics_dia_baseline_smoke, proteomics, proteomics_dia_baseline_smoke
+   DEBUG66: Trying key: 'proteomics_dia_baseline_smoke'
+   DEBUG66: SUCCESS - Found match with key: 'proteomics_dia_baseline_smoke'
+   DEBUG66: getProjectPaths completed
+      DEBUG66: current_paths is list: TRUE
+      DEBUG66: current_paths names: base_dir, omic_type, omic_label, results_dir, data_dir, source_dir, timestamp, integration_dir, publication_graphs_dir, qc_dir, time_dir, results_summary_dir, qc_figures_dir, publication_figures_dir, publication_tables_dir, study_report_dir, uniprot_annotation_dir, da_output_dir, pathway_dir, feature_qc_dir, subfeature_qc_dir, clean_features_dir, protein_qc_dir, peptide_qc_dir, clean_proteins_dir
+      DEBUG66: base_dir = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke
+      DEBUG66: results_summary_dir = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke
+      DEBUG66: source_dir = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke
+   DEBUG66: Path validation passed
+   DEBUG66: rmd_input_path = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics/DIANN_report.rmd
+   DEBUG66: Template file exists: TRUE
+   DEBUG66: Constructing output file path...
+   DEBUG66: output_file_path = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+   DEBUG66: output_ext = .docx
+INFO [2026-10-19 18:48:23] Attempting to render report:
+INFO [2026-10-19 18:48:23] - Rmd Source (Template): /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics/DIANN_report.rmd
+INFO [2026-10-19 18:48:23] - Output File: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+INFO [2026-10-19 18:48:23] - Params: omic_type='proteomics', experiment_label='dia_baseline_smoke'
+   DEBUG66: Reading study_parameters.txt...
+      DEBUG66: params_path = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/study_parameters.txt
+      DEBUG66: params file exists: TRUE
+   DEBUG66: workflow_name = 'dia_baseline_smoke'
+   DEBUG66: timestamp = '2026-10-19 18:48:20'
+   DEBUG66: About to call rmarkdown::render...
+      DEBUG66: Render parameters:
+         input = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics/DIANN_report.rmd
+         output_file = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+         output_format = NULL (using Rmd default)
+
+
+processing file: DIANN_report.rmd
+1/38                                   
+2/38 [setup]                           
+3/38                                   
+4/38 [Project Setup]                   
+5/38                                   
+6/38 [New Hierarchical Parser]         
+7/38                                   
+8/38 [Format Sample Details]           
+9/38                                   
+10/38 [Method Section]                  
+11/38                                   
+12/38 [Result Section]                  
+13/38                                   
+14/38 [Comment Section]                 
+15/38                                   
+16/38 [Opinions/Interpretations Section]
+17/38                                   
+18/38 [Differential Abundance Section]  
+19/38                                   
+20/38 [GO Enrichment Section]           
+21/38                                   
+22/38 [Sample Analysis Functions]       
+23/38                                   
+24/38 [Main Execution Function]         
+25/38                                   
+26/38 [QC_metrics]                      
+27/38                                   
+28/38 [NumSigDE_Plot]                   
+29/38                                   
+30/38 [NumSigDE Caption]                
+31/38                                   
+32/38 [grid_layout]                     
+33/38                                   
+34/38 [Volcano Plot Caption]            
+35/38                                   
+36/38 [GO Enrichment Plots]             
+37/38                                   
+38/38 [Go Enrichment Caption]           
+output file: DIANN_report.knit.md
+
+/usr/bin/pandoc +RTS -K512m -RTS DIANN_report.knit.md --to docx --from markdown+autolink_bare_uris+tex_math_single_backslash --output /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx --lua-filter /home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6/rmarkdown/rmarkdown/lua/pagebreak.lua --syntax-highlighting tango --extract-media /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke_files 
+
+Output created: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+   DEBUG66: rmarkdown::render returned: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+   DEBUG66: Output file exists: TRUE
+INFO [2026-10-19 18:48:24] Report successfully rendered to: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+--- DEBUG66: Exiting RenderReport ---
+   DEBUG66: Returning: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+--- DEBUG66: Entering RenderReport ---
+   DEBUG66: omic_type = 'proteomics'
+   DEBUG66: experiment_label = 'dia_baseline_smoke'
+   DEBUG66: rmd_filename = 'DIANN_report.rmd'
+   DEBUG66: project_dirs_object_name = 'project_dirs'
+   DEBUG66: Input validation passed
+   DEBUG66: Calling getProjectPaths...
+--- DEBUG66: Entering getProjectPaths ---
+   DEBUG66: omic_type = 'proteomics'
+   DEBUG66: experiment_label = 'dia_baseline_smoke'
+   DEBUG66: project_dirs_object_name = 'project_dirs'
+   DEBUG66: project_dirs object found in global environment
+      DEBUG66: project_dirs has 1 keys
+      DEBUG66: Available keys: proteomics_dia_baseline_smoke
+   DEBUG66: Trying 3 potential keys: proteomics_dia_baseline_smoke, proteomics, proteomics_dia_baseline_smoke
+   DEBUG66: Trying key: 'proteomics_dia_baseline_smoke'
+   DEBUG66: SUCCESS - Found match with key: 'proteomics_dia_baseline_smoke'
+   DEBUG66: getProjectPaths completed
+      DEBUG66: current_paths is list: TRUE
+      DEBUG66: current_paths names: base_dir, omic_type, omic_label, results_dir, data_dir, source_dir, timestamp, integration_dir, publication_graphs_dir, qc_dir, time_dir, results_summary_dir, qc_figures_dir, publication_figures_dir, publication_tables_dir, study_report_dir, uniprot_annotation_dir, da_output_dir, pathway_dir, feature_qc_dir, subfeature_qc_dir, clean_features_dir, protein_qc_dir, peptide_qc_dir, clean_proteins_dir
+      DEBUG66: base_dir = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke
+      DEBUG66: results_summary_dir = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke
+      DEBUG66: source_dir = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke
+   DEBUG66: Path validation passed
+   DEBUG66: rmd_input_path = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics/DIANN_report.rmd
+   DEBUG66: Template file exists: TRUE
+   DEBUG66: Constructing output file path...
+   DEBUG66: output_file_path = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+   DEBUG66: output_ext = .docx
+INFO [2026-10-19 18:48:24] Attempting to render report:
+INFO [2026-10-19 18:48:24] - Rmd Source (Template): /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics/DIANN_report.rmd
+INFO [2026-10-19 18:48:24] - Output File: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+INFO [2026-10-19 18:48:24] - Params: omic_type='proteomics', experiment_label='dia_baseline_smoke'
+   DEBUG66: Reading study_parameters.txt...
+      DEBUG66: params_path = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/study_parameters.txt
+      DEBUG66: params file exists: TRUE
+   DEBUG66: workflow_name = 'dia_baseline_smoke'
+   DEBUG66: timestamp = '2026-10-19 18:48:20'
+   DEBUG66: About to call rmarkdown::render...
+      DEBUG66: Render parameters:
+         input = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/scripts/proteomics/DIANN_report.rmd
+         output_file = /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+         output_format = NULL (using Rmd default)
+
+
+processing file: DIANN_report.rmd
+1/40                                   
+2/40 [setup]                           
+3/40                                   
+4/40 [Project Setup]                   
+5/40                                   
+6/40 [New Hierarchical Parser]         
+7/40                                   
+8/40 [Format Sample Details]           
+9/40                                   
+10/40 [Method Section]                  
+11/40                                   
+12/40 [Result Section]                  
+13/40                                   
+14/40 [Comment Section]                 
+15/40                                   
+16/40 [Opinions/Interpretations Section]
+17/40                                   
+18/40 [Differential Abundance Section]  
+19/40                                   
+20/40 [GO Enrichment Section]           
+21/40                                   
+22/40 [Sample Analysis Functions]       
+23/40                                   
+24/40 [Main Execution Function]         
+25/40                                   
+26/40 [version_information]             
+27/40                                   
+28/40 [QC_metrics]                      
+29/40                                   
+30/40 [NumSigDE_Plot]                   
+31/40                                   
+32/40 [NumSigDE Caption]                
+33/40                                   
+34/40 [grid_layout]                     
+35/40                                   
+36/40 [Volcano Plot Caption]            
+37/40                                   
+38/40 [GO Enrichment Plots]             
+39/40                                   
+40/40 [Go Enrichment Caption]           
+output file: DIANN_report.knit.md
+
+/usr/bin/pandoc +RTS -K512m -RTS DIANN_report.knit.md --to docx --from markdown+autolink_bare_uris+tex_math_single_backslash --output /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx --lua-filter /home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6/rmarkdown/rmarkdown/lua/pagebreak.lua --syntax-highlighting tango --extract-media /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke_files 
+
+Output created: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+   DEBUG66: rmarkdown::render returned: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+   DEBUG66: Output file exists: TRUE
+INFO [2026-10-19 18:48:24] Report successfully rendered to: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+--- DEBUG66: Exiting RenderReport ---
+   DEBUG66: Returning: /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/DIANN_report_proteomics_dia_baseline_smoke.docx
+[1] TRUE
+[1] TRUE
+[WARNING] Deprecated: --mathjax. Use --math-method=mathjax[:URL] instead.
+[1] TRUE
+RENDER baseline ok | with record ok | without ok 
+VERSION with record: Version Information MultiScholaR version: 0.5.0 Source commit: bd0b45ad28656ca27a8361535db9d30be3e335bc Build: 6b06594f329cd354c71ab100b9c8110b25708200070e88ede912184564dc953c R: R version 4.6.1 (2026-06-24) BLAS: not recorded ## Warning: Composite QC figure not found at /home/doktersmol/.cache/multischolar-kit039-report-screen/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/QC_figures/proteomics_co 
+  names software: TRUE | without = baseline: TRUE 
+RUV sentence:  | matches: NA 
+SI descriptions 16 present TRUE | labels 40 present TRUE | legend TRUE | outcomes TRUE 
+WORKBOOK rows 44 label column TRUE empty labels 0 
+STUDY lines 481 identical modulo timestamp TRUE | pandoc 3.11 
