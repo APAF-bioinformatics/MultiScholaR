@@ -152,10 +152,11 @@ ReadStudyParamsNew <- function(filepath) {
       next
     }
     
-    # Handle bullet points (e.g., "• Best percentage: 19.0%")
-    if (grepl("^•", line)) {
+    # Handle bullet points (e.g., "• Best percentage: 19.0%"; the writer emits "* Best k value: 2", KIT-039 fix:
+    # until then the "*" bullet stayed in the key and every RUV optimisation value read as missing)
+    if (grepl("^[•*]", line)) {
       # Remove bullet and parse as key-value
-      line <- sub("^•[[:space:]]*", "", line)
+      line <- sub("^[•*][[:space:]]*", "", line)
     }
     
     # Handle key-value pairs (can use : or =)
@@ -167,7 +168,7 @@ ReadStudyParamsNew <- function(filepath) {
       value <- trimws(parts[1, 2])
       
       # Clean up key (remove any remaining bullets)
-      key <- sub("^[•[:space:]]+", "", key)
+      key <- sub("^[•*[:space:]]+", "", key)
       
       # Only process if we have a valid key
       if (nchar(key) > 0) {
@@ -280,7 +281,7 @@ ExtractStudyParametersNew <- function(study_params) {
     },
     
     # RUV Auto-optimization Results (only populated when RUV was applied)
-    best_percentage = ruv_results$"Best percentage",
+    best_percentage = sub("%$", "", ruv_results$"Best percentage" %||% NA_character_), # the file writes "10.0%"; the sentence appends its own %
     best_k = ruv_results$"Best k value",
     separation_score = ruv_results$"Separation score",
     composite_score = ruv_results$"Composite score", 

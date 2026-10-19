@@ -1,0 +1,60 @@
+{
+  "schema": "kit.report_check.v1",
+  "ticket": "KIT-039",
+  "label": "parserfix",
+  "date": "2026-10-20",
+  "pandoc": "3.11",
+  "study_parameters": {
+    "lines": 481,
+    "identical_modulo_timestamp": true
+  },
+  "baseline": {
+    "1": null,
+    "seconds": 0.574
+  },
+  "with_record": {
+    "1": null,
+    "seconds": 1.2568
+  },
+  "without_record": {
+    "1": null,
+    "seconds": 0.4727
+  },
+  "version_with_record": "Version Information MultiScholaR version: 0.5.0 Source commit: bd0b45ad28656ca27a8361535db9d30be3e335bc Build: 6b06594f329cd354c71ab100b9c8110b25708200070e88ede912184564dc953c R: R version 4.6.1 (2026-06-24) BLAS: not recorded ## Warning: Composite QC figure not found at /home/doktersmol/.cache/multischolar-kit039-report-parserfix/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/QC_figures/proteomics",
+  "version_without_record": "Version Information Repository: NA Branch: NA Commit: NA Git Timestamp: NA ## Warning: Composite QC figure not found at /home/doktersmol/.cache/multischolar-kit039-report-parserfix/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/QC_figures/proteomics_composite_QC_figure.png\\n Differential Abundance Analysis DIFFERENTIAL ABUNDANCE ANALYSIS Differential abundance analysis of proteins was performed usi",
+  "version_baseline": "Version Information Repository: NA Branch: NA Commit: NA Git Timestamp: NA ## Warning: Composite QC figure not found at /home/doktersmol/.cache/multischolar-kit039-report-parserfix/dia_baseline_smoke/results_summary/proteomics_dia_baseline_smoke/QC_figures/proteomics_composite_QC_figure.png\\n Differential Abundance Analysis DIFFERENTIAL ABUNDANCE ANALYSIS Differential abundance analysis of proteins was performed usi",
+  "with_record_names_software": true,
+  "without_record_equals_baseline": false,
+  "first_difference": {
+    "position": 4016,
+    "baseline": "n-sample normalization were performed using the ‘cyclicloess’ method from the ‘limma’ R package (Ritchie et al., 2015). RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential abundance analysis. At",
+    "without_record": "n-sample normalization were performed using the ‘cyclicloess’ method from the ‘limma’ R package (Ritchie et al., 2015). To remove batch effects from biological data, the remove unwanted variation (RUVIII-C) method was used. The method relies on having a set of endogenous negative "
+  },
+  "ruv": {
+    "outcomes": {
+      "rows": 2395,
+      "columns": 8,
+      "ruv_applied": true,
+      "k": 2,
+      "negative_control_percentage": 10,
+      "negative_control_count": 242
+    },
+    "sentence": "identified that using 10% of features as empirical negative controls (242 proteins) provided the best separation of biological groups. Based on this, 2 unwanted components",
+    "matches": true
+  },
+  "si": {
+    "docx": "analysis_record.docx",
+    "html": "analysis_record.html",
+    "descriptions": 16,
+    "descriptions_present": true,
+    "labels": 40,
+    "labels_present": true,
+    "legend_present": true,
+    "outcome_lines": true
+  },
+  "workbook": {
+    "parameters_rows": 44,
+    "label_column": true,
+    "empty_labels": 0
+  }
+}
