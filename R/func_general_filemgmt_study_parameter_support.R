@@ -26,8 +26,22 @@ workflowSoftwareIdentity <- function() {
     # version and the loaded source, as the adapter's own software digest does.
     build <- tryCatch(workflowExecutionBuildIdentity(), error = function(error)
         digest::digest(list(source_load = TRUE, version = field("Version")), algo = "sha256"))
+    # KIT-038 (IM-09): the numerical environment a second host needs to match a result.
+    ext <- tryCatch(extSoftVersion(), error = function(error) character())
+    blas_threads <- if (requireNamespace("RhpcBLASctl", quietly = TRUE))
+        tryCatch(as.integer(RhpcBLASctl::blas_get_num_procs()), error = function(error) NA_integer_) else NA_integer_
+    os_release <- unname(Sys.info()[["release"]])
+    if (file.exists("/etc/os-release")) {
+        pretty <- grep("^PRETTY_NAME=", readLines("/etc/os-release", warn = FALSE), value = TRUE)
+        if (length(pretty)) os_release <- paste(os_release, gsub('^PRETTY_NAME=|"', "", pretty[[1L]]), sep = "; ")
+    }
     .workflowSoftwareIdentityCache$value <- list(build = build, version = field("Version"), source_commit = source_commit,
-        r_version = R.version.string, platform = R.version$platform, packages = packages)
+        r_version = R.version.string, platform = R.version$platform, packages = packages,
+        blas = unname(ext["BLAS"]) %||% NA_character_, lapack = unname(ext["LAPACK"]) %||% NA_character_,
+        omp_threads = Sys.getenv("OMP_NUM_THREADS", unset = NA_character_), blas_threads = blas_threads,
+        # The declared DuckDB thread constants (utils_workflow_dia_relational_rollup.R, utils_workflow_saved_table_codec.R).
+        duckdb_threads = list(rollup = 8L, codec_read = 2L, codec_bulk = 8L),
+        os_release = os_release, locale = Sys.getlocale("LC_COLLATE"))
     .workflowSoftwareIdentityCache$value
 }
 

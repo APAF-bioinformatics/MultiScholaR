@@ -220,7 +220,7 @@ validateWorkflowOperationEntry <- function(entry) {
 
 #' Where each declared parameter's shipped default lives (KIT-027): `list(section, key)` in `config.ini` (the
 #' parameter and key names differ, so provenance is never inferred by name), `"fixed"` for a kernel constant,
-#' `"input"` for a value taken from the data or an earlier step (a list, a table, a hash) and `"no_default"` for
+#' `"input"` for a value taken from the data or an earlier step (a list, a table, a hash) and `"no_shipped_default"` for
 #' a setting `config.ini` does not ship (the module's own default applies). Attached to each registry entry as
 #' `defaults`; a registry test asserts every declared parameter is mapped.
 #' @noRd
@@ -254,25 +254,25 @@ workflowOperationDefaults <- local({
             replicate_group_column = key("removePeptidesWithOnlyOneReplicate", "replicate_group_column")),
         protein_iq_rollup = list(),
         protein_accession_cleanup = list(delimiter = key("chooseBestProteinAccession", "delim"),
-            aggregation_method = "no_default", fasta_sha256 = "input"),
-        protein_intensity_filter = list(strict_mode = "no_default", min_reps_per_group = "no_default",
-            min_groups = "no_default",
+            aggregation_method = "no_shipped_default", fasta_sha256 = "input"),
+        protein_intensity_filter = list(strict_mode = "no_shipped_default", min_reps_per_group = "no_shipped_default",
+            min_groups = "no_shipped_default",
             proteins_intensity_cutoff_percentile = key("removeRowsWithMissingValuesPercent", "proteins_intensity_cutoff_percentile")),
-        protein_duplicate_removal = list(aggregation_method = "no_default"),
+        protein_duplicate_removal = list(aggregation_method = "no_shipped_default"),
         protein_replicate_filter = list(grouping_variable = key("removeProteinsWithOnlyOneReplicate", "grouping_variable"),
-            parallel_cores = "no_default"),
-        `normalization-ruv` = list(norm_method = key("normaliseBetweenSamples", "method"), ruv_mode = "no_default",
-            auto_percentage_min = "no_default", auto_percentage_max = "no_default", separation_metric = "no_default",
-            k_penalty_weight = "no_default", adaptive_k_penalty = "no_default", ruv_percentage = "no_default",
+            parallel_cores = "no_shipped_default"),
+        `normalization-ruv` = list(norm_method = key("normaliseBetweenSamples", "method"), ruv_mode = "no_shipped_default",
+            auto_percentage_min = "no_shipped_default", auto_percentage_max = "no_shipped_default", separation_metric = "no_shipped_default",
+            k_penalty_weight = "no_shipped_default", adaptive_k_penalty = "no_shipped_default", ruv_percentage = "no_shipped_default",
             ruv_k = key("ruvIII_C_Varying", "ruv_number_k"), grouping = key("ruvIII_C_Varying", "ruv_grouping_variable")),
-        `pearson-pairs` = list(group = "no_default", tech_rep_remove_regex = key("pearsonCorForSamplePairs", "tech_rep_remove_regex")),
-        `pearson-selection` = list(pairs = "input", threshold = "no_default"),
+        `pearson-pairs` = list(group = "no_shipped_default", tech_rep_remove_regex = key("pearsonCorForSamplePairs", "tech_rep_remove_regex")),
+        `pearson-selection` = list(pairs = "input", threshold = "no_shipped_default"),
         `DA-contrast-output` = list(formula = key("deAnalysisParameters", "formula_string"),
             qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
-            weights = "no_default", contrast = "input", annotations = "input"),
+            weights = "no_shipped_default", contrast = "input", annotations = "input"),
         da_publication = list(annotations = "input"),
-        enrichment = list(taxon_id = "input", up_cutoff = "no_default", down_cutoff = "no_default", q_cutoff = "no_default",
-            exclude_iea = "no_default", correction_method = "no_default", protein_id_column = "input",
+        enrichment = list(taxon_id = "input", up_cutoff = "no_shipped_default", down_cutoff = "no_shipped_default", q_cutoff = "no_shipped_default",
+            exclude_iea = "no_shipped_default", correction_method = "no_shipped_default", protein_id_column = "input",
             contrast_names = "input", results = "input"))
 })
 

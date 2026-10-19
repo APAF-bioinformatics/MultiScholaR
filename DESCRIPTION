@@ -392,6 +392,7 @@ Collate:
     'utils_workflow_dia_sessions.R'
     'zzz.R'
 Suggests:
+    RhpcBLASctl,
     duckplyr (>= 1.2.1),
     Biobase,
     circlize,

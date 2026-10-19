@@ -1,0 +1,1369 @@
+[1] TRUE
+INFO [2026-10-19 16:54:47] --- Processing setup for omic type: proteomics ---
+INFO [2026-10-19 16:54:47] Ensured omic-specific data directory exists: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/data/proteomics
+INFO [2026-10-19 16:54:47] Ensured timestamped directory exists: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447
+INFO [2026-10-19 16:54:47] Creating directory structure for 'proteomics'...
+WARN [2026-10-19 16:54:47] Source script directory not found for proteomics: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/scripts/proteomics. No scripts copied.
+INFO [2026-10-19 16:54:47] Ensured UniProt annotation directory exists: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/data/UniProt
+INFO [2026-10-19 16:54:47] Stored paths for proteomics.
+INFO [2026-10-19 16:54:47] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress (5 items)
+  data_dir                       : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/scripts/proteomics (0 items)
+  results_dir                    : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics (6 items)
+  results_summary_dir            : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results_summary/proteomics (4 items)
+  timestamp                      : 20261019_165447
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447 (0 items)
+  clean_features_dir             : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/integration (0 items)
+  pathway_dir                    : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/data/UniProt (0 items)
+------------------------------------------
+INFO [2026-10-19 16:54:47] Q-value filter: S4 class = PeptideQuantitativeData
+INFO [2026-10-19 16:54:47] Q-value filter: S4 @peptide_data has 0 rows, 15 columns
+INFO [2026-10-19 16:54:47] Q-value filter: input_matrix_column_ids length = 9
+INFO [2026-10-19 16:54:47] Q-value filter: input_matrix_column_ids values: ['Run', 'Precursor.Id', 'Protein.Group', 'Protein.Ids', 'Stripped.Sequence', 'Modified.Sequence', 'Precursor.Charge', 'Precursor.Quantity', 'Precursor.Normalised']
+INFO [2026-10-19 16:54:47] QC Step: Applying DIA-NN confidence filter at 0.01 for Q.Value, Global.Q.Value, and Global.PG.Q.Value
+Updated @args$srlQvalueProteotypicPeptideClean$qvalue_threshold in S4 object.
+Updated config_list$srlQvalueProteotypicPeptideClean$qvalue_threshold in global environment.
+Updated @args$srlQvalueProteotypicPeptideClean$global_qvalue_threshold in S4 object.
+Updated config_list$srlQvalueProteotypicPeptideClean$global_qvalue_threshold in global environment.
+Updated @args$srlQvalueProteotypicPeptideClean$global_pg_qvalue_threshold in S4 object.
+Updated config_list$srlQvalueProteotypicPeptideClean$global_pg_qvalue_threshold in global environment.
+Updated @args$srlQvalueProteotypicPeptideClean$choose_only_proteotypic_peptide in S4 object.
+Updated config_list$srlQvalueProteotypicPeptideClean$choose_only_proteotypic_peptide in global environment.
+Updated @args$srlQvalueProteotypicPeptideClean$confidence_provenance_mode in S4 object.
+Updated config_list$srlQvalueProteotypicPeptideClean$confidence_provenance_mode in global environment.
+--- DEBUG66 [updatePeptideFiltering]: Entry ---
+   [updatePeptideFiltering] Step Name: 2_qval_filtered
+   [updatePeptideFiltering] filtering_progress size: 1.5 Kb
+Plots will be saved to: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447
+   [updateProteinFiltering] Generating P1 (Protein Count Bar)...
+   [updateProteinFiltering] Generating P4 (Proteins Per Run Line)...
+      [P4] Binding 1 data frames...
+      [P4] Combined data rows: 8
+   [updateProteinFiltering] P4 Generated.
+   [updateProteinFiltering] Saving individual plots to /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447 in formats: png, pdf...
+      Saving proteins_total...
+      Saving proteins_per_run...
+      Saving peptides_total...
+      Saving peptides_per_protein...
+      Saving peptides_per_run...
+   [updateProteinFiltering] Printing individual plots...
+Updated @args$filterMinNumPeptidesPerProtein$peptides_per_protein_cutoff in S4 object.
+Updated config_list$filterMinNumPeptidesPerProtein$peptides_per_protein_cutoff in global environment.
+Updated @args$filterMinNumPeptidesPerProtein$peptidoforms_per_protein_cutoff in S4 object.
+Updated config_list$filterMinNumPeptidesPerProtein$peptidoforms_per_protein_cutoff in global environment.
+--- DEBUG66 [updatePeptideFiltering]: Entry ---
+   [updatePeptideFiltering] Step Name: 3_protein_peptide_filtered
+   [updatePeptideFiltering] filtering_progress size: 247.1 Kb
+Plots will be saved to: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447
+   [updateProteinFiltering] Generating P1 (Protein Count Bar)...
+   [updateProteinFiltering] Generating P4 (Proteins Per Run Line)...
+      [P4] Binding 2 data frames...
+      [P4] Combined data rows: 16
+   [updateProteinFiltering] P4 Generated.
+   [updateProteinFiltering] Saving individual plots to /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447 in formats: png, pdf...
+      Saving proteins_total...
+      Saving proteins_per_run...
+      Saving peptides_total...
+      Saving peptides_per_protein...
+      Saving peptides_per_run...
+   [updateProteinFiltering] Printing individual plots...
+--- DEBUG66 [updatePeptideFiltering]: Entry ---
+   [updatePeptideFiltering] Step Name: 4_precursor_rollup
+   [updatePeptideFiltering] filtering_progress size: 492.7 Kb
+Plots will be saved to: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447
+   [updateProteinFiltering] Generating P1 (Protein Count Bar)...
+   [updateProteinFiltering] Generating P4 (Proteins Per Run Line)...
+      [P4] Binding 3 data frames...
+      [P4] Combined data rows: 24
+   [updateProteinFiltering] P4 Generated.
+   [updateProteinFiltering] Saving individual plots to /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447 in formats: png, pdf...
+      Saving proteins_total...
+      Saving proteins_per_run...
+      Saving peptides_total...
+      Saving peptides_per_protein...
+      Saving peptides_per_run...
+   [updateProteinFiltering] Printing individual plots...
+Updated @args$peptideIntensityFiltering$strict_mode in S4 object.
+Updated config_list$peptideIntensityFiltering$strict_mode in global environment.
+Updated @args$peptideIntensityFiltering$min_reps_per_group in S4 object.
+Updated config_list$peptideIntensityFiltering$min_reps_per_group in global environment.
+Updated @args$peptideIntensityFiltering$min_groups in S4 object.
+Updated config_list$peptideIntensityFiltering$min_groups in global environment.
+Updated @args$peptideIntensityFiltering$peptides_intensity_cutoff_percentile in S4 object.
+Updated config_list$peptideIntensityFiltering$peptides_intensity_cutoff_percentile in global environment.
+--- DEBUG66 [updatePeptideFiltering]: Entry ---
+   [updatePeptideFiltering] Step Name: 5_intensity_filtered
+   [updatePeptideFiltering] filtering_progress size: 738.3 Kb
+Plots will be saved to: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447
+   [updateProteinFiltering] Generating P1 (Protein Count Bar)...
+   [updateProteinFiltering] Generating P4 (Proteins Per Run Line)...
+      [P4] Binding 4 data frames...
+      [P4] Combined data rows: 32
+   [updateProteinFiltering] P4 Generated.
+   [updateProteinFiltering] Saving individual plots to /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447 in formats: png, pdf...
+      Saving proteins_total...
+      Saving proteins_per_run...
+      Saving peptides_total...
+      Saving peptides_per_protein...
+      Saving peptides_per_run...
+   [updateProteinFiltering] Printing individual plots...
+--- DEBUG66 [updatePeptideFiltering]: Entry ---
+   [updatePeptideFiltering] Step Name: 6_sample_filtered
+   [updatePeptideFiltering] filtering_progress size: 983.9 Kb
+Plots will be saved to: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447
+   [updateProteinFiltering] Generating P1 (Protein Count Bar)...
+   [updateProteinFiltering] Generating P4 (Proteins Per Run Line)...
+      [P4] Binding 5 data frames...
+      [P4] Combined data rows: 39
+   [updateProteinFiltering] P4 Generated.
+   [updateProteinFiltering] Saving individual plots to /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447 in formats: png, pdf...
+      Saving proteins_total...
+      Saving proteins_per_run...
+      Saving peptides_total...
+      Saving peptides_per_protein...
+      Saving peptides_per_run...
+   [updateProteinFiltering] Printing individual plots...
+--- DEBUG66 [updatePeptideFiltering]: Entry ---
+   [updatePeptideFiltering] Step Name: 7_replicate_filtered
+   [updatePeptideFiltering] filtering_progress size: 1.2 Mb
+Plots will be saved to: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447
+   [updateProteinFiltering] Generating P1 (Protein Count Bar)...
+   [updateProteinFiltering] Generating P4 (Proteins Per Run Line)...
+      [P4] Binding 6 data frames...
+      [P4] Combined data rows: 46
+   [updateProteinFiltering] P4 Generated.
+   [updateProteinFiltering] Saving individual plots to /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447 in formats: png, pdf...
+      Saving proteins_total...
+      Saving proteins_per_run...
+      Saving peptides_total...
+      Saving peptides_per_protein...
+      Saving peptides_per_run...
+   [updateProteinFiltering] Printing individual plots...
+Updated @args$peptideMissingValueImputation$proportion_missing_values in S4 object.
+Updated config_list$peptideMissingValueImputation$proportion_missing_values in global environment.
+--- DEBUG66 [updatePeptideFiltering]: Entry ---
+   [updatePeptideFiltering] Step Name: 8_imputed
+   [updatePeptideFiltering] filtering_progress size: 1.4 Mb
+Plots will be saved to: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447
+   [updateProteinFiltering] Generating P1 (Protein Count Bar)...
+   [updateProteinFiltering] Generating P4 (Proteins Per Run Line)...
+      [P4] Binding 7 data frames...
+      [P4] Combined data rows: 53
+   [updateProteinFiltering] P4 Generated.
+   [updateProteinFiltering] Saving individual plots to /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261019_165447 in formats: png, pdf...
+      Saving proteins_total...
+      Saving proteins_per_run...
+      Saving peptides_total...
+      Saving peptides_per_protein...
+      Saving peptides_per_run...
+   [updateProteinFiltering] Printing individual plots...
+
+Command: --sample Run --primary Protein.Group --secondary Stripped.Sequence --quant Peptide.Imputed --filter-double-less Q.Value 0.01 --filter-double-less PG.Q.Value 0.01 --intensity_col_sep ; --na_string 0 /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/requests/protein_s4_created/iq/peptide/peptide_values_imputed.tsv 
+
+Sample column:
+    Run
+Protein column:
+    Protein.Group
+Ion column(s):
+    Stripped.Sequence
+Quant column:
+    Peptide.Imputed
+Double less filter(s):
+    Q.Value < 0.010000
+    PG.Q.Value < 0.010000
+Quant column separator:
+    ;
+Quant column NA string (in addition to NaN):
+    0
+
+Using 4 threads ...
+
+# lines read (excluding headers)      = 279240
+# quantitative values after filtering = 256505
+
+# samples  = 7
+# proteins = 2500
+Removing low intensities...
+
+nrow = 256505, # proteins = 2500, # samples = 7
+Using 15 threads...
+0%
+5%
+10%
+15%
+20%
+25%
+31%
+36%
+41%
+47%
+52%
+57%
+62%
+68%
+73%
+78%
+83%
+88%
+94%
+99%
+Completed.
+Writing to: /home/doktersmol/.cache/multischolar-kit038-screen/exact-scratch/requests/protein_s4_created/iq/protein/iq_output_file.txt
+Rows: 2500 Columns: 8
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: "\t"
+chr (1): Protein.Group
+dbl (7): S_001, S_002, S_003, S_004, S_005, S_006, S_007
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+
++===========================================================================+
+|           ENTERING chooseBestProteinAccession (DEBUG66)               |
++===========================================================================+
+
+>>> STEP 1: PARAMETER INPUTS (before checkParamsObjectFunctionSimplify) <<<
+   Input parameter 'delim' (user provided): ;
+   Input parameter 'seqinr_obj' is NULL: FALSE
+   Input parameter 'seqinr_accession_column': uniprot_acc
+   Input parameter 'replace_zero_with_na': TRUE
+   Input parameter 'aggregation_method': mean
+   Protein ID column from S4: Protein.Group
+   Protein table dimensions: 2500 rows x 8 cols
+   First 5 Protein IDs: SYN_calibration_P00001, SYN_calibration_P00002, SYN_calibration_P00003, SYN_calibration_P00004, SYN_calibration_P00005
+
+>>> STEP 2: PARAMETERS AFTER checkParamsObjectFunctionSimplify <<<
+   Resolved 'delim': ';'
+   Resolved 'seqinr_obj' is NULL: FALSE
+   Resolved 'seqinr_accession_column': uniprot_acc
+   Resolved 'replace_zero_with_na': TRUE
+   Resolved 'aggregation_method': mean
+
+
+
++===========================================================================+
+|      ENTERING chooseBestProteinAccessionHelper (DEBUG66)              |
++===========================================================================+
+
+>>> HELPER STEP 1: INPUTS <<<
+   Input 'delim' parameter: ';'
+   Input table dimensions: 5000 rows x 2 cols
+   First 5 accession values to split: SYN_calibration_P00001, NA, SYN_calibration_P00002, NA, SYN_calibration_P00003
+   row_id_column: uniprot_acc
+
+>>> HELPER STEP 2: SPLITTING ACCESSIONS (str_split with delim) <<<
+   After splitting and cleaning: 2727 rows
+   First 5 split/cleaned accessions: SYN_calibration_P00001, SYN_calibration_P00002, SYN_calibration_P00003, SYN_calibration_P00004, SYN_calibration_P00005
+
+>>> HELPER STEP 3: JOINING WITH FASTA DETAIL TABLE <<<
+   Detecting available FASTA metadata columns...
+   WARNING: 'gene_name' column not found in FASTA data. Using NA as default.
+   WARNING: 'cleaned_acc' column not found. Using row_id_column as fallback.
+   WARNING: 'protein_evidence' column not found. Using neutral value (3) for sorting.
+   WARNING: 'status' column not found. Using 'unknown' as default.
+   WARNING: 'is_isoform' column not found. Using 'Canonical' as default.
+   WARNING: 'isoform_num' column not found. Using 0 as default.
+   After joining with FASTA data: 2727 rows
+
+>>> HELPER STEP 4: SCORING AND RANKING ISOFORMS <<<
+   After scoring: 2727 rows
+
+>>> HELPER STEP 5: SELECTING BEST ACCESSION PER GENE & RECOMBINING <<<
+   [WARNING]  CRITICAL: Using 'delim' for recombining: ';'
+   Final output: 2500 rows
+   First 5 recombined accessions: SYN_calibration_P00001, SYN_calibration_P00002, SYN_calibration_P00003, SYN_calibration_P00004, SYN_calibration_P00005
+
++===========================================================================+
+|      EXITING chooseBestProteinAccessionHelper (DEBUG66)               |
++===========================================================================+
+
+Updated missing value parameters in both config_list and S4 object @args for function 'removeRowsWithMissingValuesPercent':
+    - Requiring at least 2 replicates in each passing group (varies by group size)
+    - Requiring at least 2 out of 3 groups to pass (33.333% failing groups allowed)
+    - groupwise_percentage_cutoff set to 33.333%
+    - max_groups_percentage_cutoff set to 33.333%
+
+
+Group details:
+    Group contrast: 2 out of 2 replicates required (0.000% missing allowed)
+    Group control: 2 out of 2 replicates required (0.000% missing allowed)
+    Group treated: 2 out of 3 replicates required (33.333% missing allowed)
+[OK] S4 object @args and global config_list are now synchronized
+Updated @args$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in S4 object.
+Updated config_list$removeRowsWithMissingValuesPercent$proteins_intensity_cutoff_percentile in global environment.
++===========================================================================+
+|  DEBUG66: Entering removeRowsWithMissingValuesPercent S4 Method          |
++===========================================================================+
+   DEBUG66 STEP 1: Extracting slots from S4 object...
+      DEBUG66: Extracting protein_quant_table...
+      DEBUG66: protein_quant_table extracted. Class: spec_tbl_df
+      DEBUG66: Extracting protein_id_column...
+      DEBUG66: protein_id_column = Protein.Group
+      DEBUG66: Extracting design_matrix...
+      DEBUG66: design_matrix extracted. Class: data.frame
+      DEBUG66: Extracting group_id...
+      DEBUG66: group_id = group
+      DEBUG66: Extracting sample_id...
+      DEBUG66: sample_id = Run
+      DEBUG66: Extracting technical_replicate_id...
+      DEBUG66: replicate_group_column = tech_rep_group
+   DEBUG66 STEP 2: Logging data dimensions...
+      Data State (protein_quant_table): Dims = 2500 rows, 8 cols
+      Data State (design_matrix): Dims = 7 rows, 9 cols
+      DEBUG66: design_matrix columns:
+         Run, group, factor1, factor2, factor3, batch, replicates, tech_reps, tech_rep_group
+      DEBUG66: About to call head(design_matrix)...
+      DEBUG66: head() completed successfully
+      DEBUG66: Skipping print() - known to cause hangs in Shiny context
+      DEBUG66: First row sample_id: calibration_run_002
+      DEBUG66: Checking protein_quant_table for NaN/Inf values...
+      DEBUG66: protein_quant_table has 0 NaN, 0 Inf, 0 NA values
+   DEBUG66 STEP 3: Resolving ruv_grouping_variable...
+      DEBUG66: Checking theObject@args...
+      DEBUG66: theObject@args has 21 entries
+      DEBUG66: Found ruv_grouping_variable in ruvIII_C_Varying: 'group'
+      DEBUG66: About to resolve ruv_grouping_variable...
+      DEBUG66: ruv_grouping_variable resolved = group
+      DEBUG66: Confirmed 'group' exists in design_matrix
+   DEBUG66 STEP 4: Resolving groupwise_percentage_cutoff...
+      DEBUG66: groupwise_percentage_cutoff resolved = 33.333
+   DEBUG66 STEP 5: Resolving max_groups_percentage_cutoff...
+      DEBUG66: max_groups_percentage_cutoff resolved = 33.333
+   DEBUG66 STEP 6: Resolving proteins_intensity_cutoff_percentile...
+      DEBUG66: proteins_intensity_cutoff_percentile resolved = 1
+   DEBUG66 STEP 7: Updating parameters in S4 object...
+      DEBUG66: Updating ruv_grouping_variable...
+      DEBUG66: ruv_grouping_variable updated
+      DEBUG66: Updating groupwise_percentage_cutoff...
+      DEBUG66: groupwise_percentage_cutoff updated
+      DEBUG66: Updating max_groups_percentage_cutoff...
+      DEBUG66: max_groups_percentage_cutoff updated
+      DEBUG66: Updating proteins_intensity_cutoff_percentile...
+      DEBUG66: proteins_intensity_cutoff_percentile updated
+   DEBUG66 STEP 8: Preparing to call helper function...
+      Helper Args: cols = Protein.Group
+      Helper Args: sample_id = Run
+      Helper Args: row_id = Protein.Group
+      Helper Args: grouping_variable = group
+      Helper Args: groupwise_percentage_cutoff = 33.333
+      Helper Args: max_groups_percentage_cutoff = 33.333
+      Helper Args: proteins_intensity_cutoff_percentile = 1
+   DEBUG66 STEP 9: CALLING removeRowsWithMissingValuesPercentHelper NOW...
++===========================================================================+
+|  DEBUG66: Entering removeRowsWithMissingValuesPercentHelper (OPTIMIZED)   |
++===========================================================================+
+   DEBUG66: Pivoting 2500 rows x 8 cols. Memory: 426.7 MB
+   DEBUG66: Pivot/Join complete. Long table: 17500 rows. Memory: 427.4 MB
+   DEBUG66: Threshold calculated: 20.9926
+   DEBUG66: Proteins to remove: 76
+   DEBUG66: Final table: 2424 rows. Memory: 427.9 MB
++===========================================================================+
+|  DEBUG66: Exiting removeRowsWithMissingValuesPercentHelper                |
++===========================================================================+
+   DEBUG66 STEP 10: Helper function returned successfully!
+      DEBUG66: New protein_quant_table dims = 2424 rows, 8 cols
+   DEBUG66 STEP 11: Cleaning design matrix...
+   DEBUG66: cleanDesignMatrix completed
++===========================================================================+
+|  DEBUG66: Exiting removeRowsWithMissingValuesPercent S4 Method           |
++===========================================================================+
+[1] "normalisation_method = cyclicloess"
+--- DEBUG66: Entering findBestNegCtrlPercentage ---
+   DEBUG66: percentage_range: 1-20
+   DEBUG66: adaptive_k_penalty: TRUE
+   DEBUG66: separation_metric: max_difference
+INFO [2026-10-19 16:57:14] Adaptive penalty enabled: Sample size = 7, Adaptive max_acceptable_k = 2 (original = 3)
+WARN [2026-10-19 16:57:14] Small dataset detected (n=7). Consider testing higher percentages (up to 30-50%) for better negative control identification.
+WARN [2026-10-19 16:57:14] Current range: 1-20%. May need wider range for optimal results.
+INFO [2026-10-19 16:57:14] Starting optimization of negative control percentage with k value consideration...
+INFO [2026-10-19 16:57:14] Testing 20 different percentages: 1-20%
+INFO [2026-10-19 16:57:14] K penalty weight: 0.5, Max acceptable k: 2
+INFO [2026-10-19 16:57:14] Using adaptive k penalty based on sample size
+INFO [2026-10-19 16:57:14] Processing 20 percentages using vectorized operations...
+   DEBUG66 Loop: Processing percentage 1%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 1
+   DEBUG66 S4 Param: num_neg_ctrl = 24
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 1
+   DEBUG66 Arg: num_neg_ctrl = 24
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 24
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 24 proteins
+   DEBUG66: Final control genes selected: 24
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 24 control genes
+      DEBUG66: realized_num_controls = 24
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9828
+      DEBUG66: composite_score = 0.4914
+   DEBUG66 Loop: Processing percentage 2%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 2
+   DEBUG66 S4 Param: num_neg_ctrl = 48
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 2
+   DEBUG66 Arg: num_neg_ctrl = 48
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 48
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 48 proteins
+   DEBUG66: Final control genes selected: 48
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 48 control genes
+      DEBUG66: realized_num_controls = 48
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9665
+      DEBUG66: composite_score = 0.4832
+   DEBUG66 Loop: Processing percentage 3%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 3
+   DEBUG66 S4 Param: num_neg_ctrl = 73
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 3
+   DEBUG66 Arg: num_neg_ctrl = 73
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 73
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 73 proteins
+   DEBUG66: Final control genes selected: 73
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 73 control genes
+      DEBUG66: realized_num_controls = 73
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9686
+      DEBUG66: composite_score = 0.4843
+   DEBUG66 Loop: Processing percentage 4%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 4
+   DEBUG66 S4 Param: num_neg_ctrl = 97
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 4
+   DEBUG66 Arg: num_neg_ctrl = 97
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 97
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 97 proteins
+   DEBUG66: Final control genes selected: 97
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 97 control genes
+      DEBUG66: realized_num_controls = 97
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9856
+      DEBUG66: composite_score = 0.4928
+   DEBUG66 Loop: Processing percentage 5%
+INFO [2026-10-19 16:57:23] Testing percentage 5/20: 5%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 5
+   DEBUG66 S4 Param: num_neg_ctrl = 121
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 5
+   DEBUG66 Arg: num_neg_ctrl = 121
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 121
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 121 proteins
+   DEBUG66: Final control genes selected: 121
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 121 control genes
+      DEBUG66: realized_num_controls = 121
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9727
+      DEBUG66: composite_score = 0.4864
+   DEBUG66 Loop: Processing percentage 6%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 6
+   DEBUG66 S4 Param: num_neg_ctrl = 145
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 6
+   DEBUG66 Arg: num_neg_ctrl = 145
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 145
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 145 proteins
+   DEBUG66: Final control genes selected: 145
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 145 control genes
+      DEBUG66: realized_num_controls = 145
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9588
+      DEBUG66: composite_score = 0.4794
+   DEBUG66 Loop: Processing percentage 7%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 7
+   DEBUG66 S4 Param: num_neg_ctrl = 170
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 7
+   DEBUG66 Arg: num_neg_ctrl = 170
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 170
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 170 proteins
+   DEBUG66: Final control genes selected: 170
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 170 control genes
+      DEBUG66: realized_num_controls = 170
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9746
+      DEBUG66: composite_score = 0.4873
+   DEBUG66 Loop: Processing percentage 8%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 8
+   DEBUG66 S4 Param: num_neg_ctrl = 194
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 8
+   DEBUG66 Arg: num_neg_ctrl = 194
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 194
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 194 proteins
+   DEBUG66: Final control genes selected: 194
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 194 control genes
+      DEBUG66: realized_num_controls = 194
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9922
+      DEBUG66: composite_score = 0.4961
+   DEBUG66 Loop: Processing percentage 9%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 9
+   DEBUG66 S4 Param: num_neg_ctrl = 218
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 9
+   DEBUG66 Arg: num_neg_ctrl = 218
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 218
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 218 proteins
+   DEBUG66: Final control genes selected: 218
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 218 control genes
+      DEBUG66: realized_num_controls = 218
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9882
+      DEBUG66: composite_score = 0.4941
+   DEBUG66 Loop: Processing percentage 10%
+INFO [2026-10-19 16:57:34] Testing percentage 10/20: 10%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 10
+   DEBUG66 S4 Param: num_neg_ctrl = 242
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 10
+   DEBUG66 Arg: num_neg_ctrl = 242
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 242
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 242 proteins
+   DEBUG66: Final control genes selected: 242
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 242 control genes
+      DEBUG66: realized_num_controls = 242
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9983
+      DEBUG66: composite_score = 0.4992
+   DEBUG66 Loop: Processing percentage 11%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 11
+   DEBUG66 S4 Param: num_neg_ctrl = 267
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 11
+   DEBUG66 Arg: num_neg_ctrl = 267
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 267
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 267 proteins
+   DEBUG66: Final control genes selected: 267
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 267 control genes
+      DEBUG66: realized_num_controls = 267
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9749
+      DEBUG66: composite_score = 0.4875
+   DEBUG66 Loop: Processing percentage 12%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 12
+   DEBUG66 S4 Param: num_neg_ctrl = 291
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 12
+   DEBUG66 Arg: num_neg_ctrl = 291
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 291
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 291 proteins
+   DEBUG66: Final control genes selected: 291
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 291 control genes
+      DEBUG66: realized_num_controls = 291
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9795
+      DEBUG66: composite_score = 0.4897
+   DEBUG66 Loop: Processing percentage 13%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 13
+   DEBUG66 S4 Param: num_neg_ctrl = 315
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 13
+   DEBUG66 Arg: num_neg_ctrl = 315
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 315
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 315 proteins
+   DEBUG66: Final control genes selected: 315
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 315 control genes
+      DEBUG66: realized_num_controls = 315
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9797
+      DEBUG66: composite_score = 0.4899
+   DEBUG66 Loop: Processing percentage 14%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 14
+   DEBUG66 S4 Param: num_neg_ctrl = 339
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 14
+   DEBUG66 Arg: num_neg_ctrl = 339
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 339
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 339 proteins
+   DEBUG66: Final control genes selected: 339
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 339 control genes
+      DEBUG66: realized_num_controls = 339
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9345
+      DEBUG66: composite_score = 0.4672
+   DEBUG66 Loop: Processing percentage 15%
+INFO [2026-10-19 16:57:45] Testing percentage 15/20: 15%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 15
+   DEBUG66 S4 Param: num_neg_ctrl = 364
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 15
+   DEBUG66 Arg: num_neg_ctrl = 364
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 364
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 364 proteins
+   DEBUG66: Final control genes selected: 364
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 364 control genes
+      DEBUG66: realized_num_controls = 364
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9226
+      DEBUG66: composite_score = 0.4613
+   DEBUG66 Loop: Processing percentage 16%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 16
+   DEBUG66 S4 Param: num_neg_ctrl = 388
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 16
+   DEBUG66 Arg: num_neg_ctrl = 388
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 388
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 388 proteins
+   DEBUG66: Final control genes selected: 388
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 388 control genes
+      DEBUG66: realized_num_controls = 388
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9326
+      DEBUG66: composite_score = 0.4663
+   DEBUG66 Loop: Processing percentage 17%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 17
+   DEBUG66 S4 Param: num_neg_ctrl = 412
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 17
+   DEBUG66 Arg: num_neg_ctrl = 412
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 412
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 412 proteins
+   DEBUG66: Final control genes selected: 412
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 412 control genes
+      DEBUG66: realized_num_controls = 412
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9562
+      DEBUG66: composite_score = 0.4781
+   DEBUG66 Loop: Processing percentage 18%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 18
+   DEBUG66 S4 Param: num_neg_ctrl = 436
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 18
+   DEBUG66 Arg: num_neg_ctrl = 436
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 436
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 436 proteins
+   DEBUG66: Final control genes selected: 436
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 436 control genes
+      DEBUG66: realized_num_controls = 436
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9663
+      DEBUG66: composite_score = 0.4831
+   DEBUG66 Loop: Processing percentage 19%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 19
+   DEBUG66 S4 Param: num_neg_ctrl = 461
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 19
+   DEBUG66 Arg: num_neg_ctrl = 461
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 461
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 461 proteins
+   DEBUG66: Final control genes selected: 461
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 461 control genes
+      DEBUG66: realized_num_controls = 461
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9450
+      DEBUG66: composite_score = 0.4725
+   DEBUG66 Loop: Processing percentage 20%
+INFO [2026-10-19 16:57:56] Testing percentage 20/20: 20%
+--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---
+   DEBUG66 S4 Param: ruv_grouping_variable = group
+   DEBUG66 S4 Param: percentage_as_neg_ctrl = 20
+   DEBUG66 S4 Param: num_neg_ctrl = 485
+   DEBUG66 S4 Param: exclude_pool_samples = TRUE
+   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...
+--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---
+   DEBUG66 Arg: grouping_variable = group
+   DEBUG66 Arg: percentage_as_neg_ctrl = 20
+   DEBUG66 Arg: num_neg_ctrl = 485
+   DEBUG66 Arg: exclude_pool_samples = TRUE
+   DEBUG66 Data State: data_matrix dims = 2424 x 7
+   DEBUG66 Data State: design_matrix dims = 7 x 1
+   DEBUG66: Target num_neg_ctrl = 485
+   DEBUG66: Checking for Pool/QC samples to exclude...
+*** NEG CTRL ANOVA: No Pool/QC groups detected - using all samples for ANOVA ***
+   DEBUG66: Preparing for ANOVA...
+   DEBUG66: ANOVA groups vector length: 7
+   DEBUG66: ANOVA p-values calculated. NA count: 0
+   DEBUG66: Calculating q-values...
+   DEBUG66: q-values calculated. Range: 0.0044 - 0.3570
+   DEBUG66: Proteins with q > 0.0500: 2047
+   DEBUG66: Selecting top 485 proteins
+   DEBUG66: Final control genes selected: 485
+--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---
+   DEBUG66 S4: Helper returned 485 control genes
+      DEBUG66: realized_num_controls = 485
+   DEBUG66 S4: Calling ruv_cancorplot...
+   DEBUG66 S4: ruv_cancorplot returned.
+      DEBUG66: separation_score = 0.9331
+      DEBUG66: composite_score = 0.4665
+INFO [2026-10-19 16:57:58] Optimization complete!
+INFO [2026-10-19 16:57:58] Best percentage: 10% (composite score: 0.4992)
+INFO [2026-10-19 16:57:58]   - Separation score: 0.9983
+INFO [2026-10-19 16:57:58]   - Best k value: 2
+INFO [2026-10-19 16:57:58]   - Number of control genes: 242
+--- DEBUG66: Exiting findBestNegCtrlPercentage ---
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
++===========================================================================+
+|  DEBUG66: Entering removeRowsWithMissingValuesPercent S4 Method          |
++===========================================================================+
+   DEBUG66 STEP 1: Extracting slots from S4 object...
+      DEBUG66: Extracting protein_quant_table...
+      DEBUG66: protein_quant_table extracted. Class: data.frame
+      DEBUG66: Extracting protein_id_column...
+      DEBUG66: protein_id_column = Protein.Group
+      DEBUG66: Extracting design_matrix...
+      DEBUG66: design_matrix extracted. Class: data.frame
+      DEBUG66: Extracting group_id...
+      DEBUG66: group_id = group
+      DEBUG66: Extracting sample_id...
+      DEBUG66: sample_id = Run
+      DEBUG66: Extracting technical_replicate_id...
+      DEBUG66: replicate_group_column = tech_rep_group
+   DEBUG66 STEP 2: Logging data dimensions...
+      Data State (protein_quant_table): Dims = 2424 rows, 8 cols
+      Data State (design_matrix): Dims = 7 rows, 9 cols
+      DEBUG66: design_matrix columns:
+         Run, group, factor1, factor2, factor3, batch, replicates, tech_reps, tech_rep_group
+      DEBUG66: About to call head(design_matrix)...
+      DEBUG66: head() completed successfully
+      DEBUG66: Skipping print() - known to cause hangs in Shiny context
+      DEBUG66: First row sample_id: calibration_run_002
+      DEBUG66: Checking protein_quant_table for NaN/Inf values...
+      DEBUG66: protein_quant_table has 0 NaN, 0 Inf, 0 NA values
+   DEBUG66 STEP 3: Resolving ruv_grouping_variable...
+      DEBUG66: Checking theObject@args...
+      DEBUG66: theObject@args has 24 entries
+      DEBUG66: Found ruv_grouping_variable in ruvIII_C_Varying: 'group'
+      DEBUG66: About to resolve ruv_grouping_variable...
+      DEBUG66: ruv_grouping_variable resolved = group
+      DEBUG66: Confirmed 'group' exists in design_matrix
+   DEBUG66 STEP 4: Resolving groupwise_percentage_cutoff...
+      DEBUG66: groupwise_percentage_cutoff resolved = 33.333
+   DEBUG66 STEP 5: Resolving max_groups_percentage_cutoff...
+      DEBUG66: max_groups_percentage_cutoff resolved = 33.333
+   DEBUG66 STEP 6: Resolving proteins_intensity_cutoff_percentile...
+      DEBUG66: proteins_intensity_cutoff_percentile resolved = 1
+   DEBUG66 STEP 7: Updating parameters in S4 object...
+      DEBUG66: Updating ruv_grouping_variable...
+      DEBUG66: ruv_grouping_variable updated
+      DEBUG66: Updating groupwise_percentage_cutoff...
+      DEBUG66: groupwise_percentage_cutoff updated
+      DEBUG66: Updating max_groups_percentage_cutoff...
+      DEBUG66: max_groups_percentage_cutoff updated
+      DEBUG66: Updating proteins_intensity_cutoff_percentile...
+      DEBUG66: proteins_intensity_cutoff_percentile updated
+   DEBUG66 STEP 8: Preparing to call helper function...
+      Helper Args: cols = Protein.Group
+      Helper Args: sample_id = Run
+      Helper Args: row_id = Protein.Group
+      Helper Args: grouping_variable = group
+      Helper Args: groupwise_percentage_cutoff = 33.333
+      Helper Args: max_groups_percentage_cutoff = 33.333
+      Helper Args: proteins_intensity_cutoff_percentile = 1
+   DEBUG66 STEP 9: CALLING removeRowsWithMissingValuesPercentHelper NOW...
++===========================================================================+
+|  DEBUG66: Entering removeRowsWithMissingValuesPercentHelper (OPTIMIZED)   |
++===========================================================================+
+   DEBUG66: Pivoting 2424 rows x 8 cols. Memory: 428.2 MB
+   DEBUG66: Pivot/Join complete. Long table: 16968 rows. Memory: 428.7 MB
+   DEBUG66: Threshold calculated: 17.7913
+   DEBUG66: Proteins to remove: 29
+   DEBUG66: Final table: 2395 rows. Memory: 429.2 MB
++===========================================================================+
+|  DEBUG66: Exiting removeRowsWithMissingValuesPercentHelper                |
++===========================================================================+
+   DEBUG66 STEP 10: Helper function returned successfully!
+      DEBUG66: New protein_quant_table dims = 2395 rows, 8 cols
+   DEBUG66 STEP 11: Cleaning design matrix...
+   DEBUG66: cleanDesignMatrix completed
++===========================================================================+
+|  DEBUG66: Exiting removeRowsWithMissingValuesPercent S4 Method           |
++===========================================================================+
++===========================================================================+
+|  DEBUG66: Entering pearsonCorForSamplePairs                               |
++===========================================================================+
+*** PEARSON: WARNING - tech_rep_remove_regex is deprecated, use exclude_pool_samples instead ***
+--- DEBUG66 [pearsonCorForSamplePairs]: Using optimized matrix correlation ---
+   [pearsonCorForSamplePairs] Matrix dimensions: 2395 proteins x 7 samples
+   [pearsonCorForSamplePairs] Correlation matrix computed in 0.00 seconds
+*** PEARSON: No Pool/QC groups detected to exclude ***
+   [pearsonCorForSamplePairs] Final pair count: 5
++===========================================================================+
+|  DEBUG66: Exiting pearsonCorForSamplePairs                                |
++===========================================================================+
++===========================================================================+
+|  DEBUG66: Entering filterSamplesByProteinCorrelationThreshold             |
++===========================================================================+
+--- DEBUG66 [filterSamplesByProteinCorrelationThresholdHelper]: Entry ---
+   [filterSamplesByProteinCorrelationThresholdHelper] protein_intensity_table dims: 2395 x 8
+   [filterSamplesByProteinCorrelationThresholdHelper] Threshold: 0.50
+   [filterSamplesByProteinCorrelationThresholdHelper] Total unique samples in pairs: 7
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples passing correlation threshold: 7
+   [filterSamplesByProteinCorrelationThresholdHelper] Protein ID Column Name resolved to: 'Protein.Group'
+   [filterSamplesByProteinCorrelationThresholdHelper] Calculating 'samples_to_keep_anyway'...
+      - Total columns: 8
+      - Pair samples: 7
+      - Cols NOT in pairs: 1
+      - Final 'samples_to_keep_anyway' (excluding ID col): 0
+character(0)
+   [filterSamplesByProteinCorrelationThresholdHelper] Samples from pairs to keep: 7
+   [filterSamplesByProteinCorrelationThresholdHelper] Result dims: 2395 x 8
++===========================================================================+
+|  DEBUG66: Exiting filterSamplesByProteinCorrelationThreshold              |
++===========================================================================+
+*** ENTERING differentialAbundanceAnalysis METHOD ***
+*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***
+*** Testing parameter access ***
+*** Parameter access successful ***
+--- Entering differentialAbundanceAnalysis ---
+   differentialAbundanceAnalysis: theObject class = ProteinQuantitativeData
+   differentialAbundanceAnalysis: contrasts_tbl provided = TRUE
+   differentialAbundanceAnalysis: contrasts_tbl dims = 1 x 1
+   differentialAbundanceAnalysis: contrasts_tbl content = treated_vs_control=grouptreated-groupcontrol
+   differentialAbundanceAnalysis: About to call differentialAbundanceAnalysisHelper...
+--- Entering differentialAbundanceAnalysisHelper ---
+   PARAMETER VALIDATION Step: Checking all input parameters...
+      theObject is NULL: FALSE
+      contrasts_tbl is NULL: FALSE
+      contrasts_tbl class: data.frame
+      contrasts_tbl type: list
+      contrasts_tbl print:
+                                     contrasts
+1 treated_vs_control=grouptreated-groupcontrol
+      Trying to access contrasts_tbl[[1]]...
+      SUCCESS: contrasts_tbl[[1]] class: character
+      SUCCESS: contrasts_tbl[[1]] length: 1
+      SUCCESS: contrasts_tbl[[1]] content: treated_vs_control=grouptreated-groupcontrol
+   DEBUG66: Initial parameter inspection
+      DEBUG66: theObject class = ProteinQuantitativeData
+      DEBUG66: contrasts_tbl param is.null = FALSE
+      DEBUG66: contrasts_tbl param class = data.frame
+      DEBUG66: contrasts_tbl param structure:
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "treated_vs_control=grouptreated-groupcontrol"
+   differentialAbundanceAnalysisHelper Step: Extracting parameters...
+   DEBUG66: After parameter extraction
+      DEBUG66: contrasts_tbl class = data.frame
+      DEBUG66: contrasts_tbl structure:
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "treated_vs_control=grouptreated-groupcontrol"
+   differentialAbundanceAnalysisHelper: formula_string = ~ 0 + group
+   differentialAbundanceAnalysisHelper: group_id = group
+   differentialAbundanceAnalysisHelper: da_q_val_thresh = 0.050000
+   differentialAbundanceAnalysisHelper Step: Processing group names...
+   differentialAbundanceAnalysisHelper: group_col length = 7
+   differentialAbundanceAnalysisHelper: group_col content = treated, contrast, control, treated, contrast, control, treated
+   differentialAbundanceAnalysisHelper: any start with number? FALSE
+   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...
+   differentialAbundanceAnalysisHelper Step: Generating QC plots...
+[1] "calibration_run_002" "calibration_run_003" "calibration_run_004"
+[4] "calibration_run_005" "calibration_run_006" "calibration_run_007"
+[7] "calibration_run_008"
+[1] "calibration_run_002" "calibration_run_003" "calibration_run_004"
+[4] "calibration_run_005" "calibration_run_006" "calibration_run_007"
+[7] "calibration_run_008"
+[1] "treated"  "contrast" "control"  "treated"  "contrast" "control"  "treated" 
++===========================================================================+
+|  DEBUG66: Entering plotPcaHelper                                          |
++===========================================================================+
+   DEBUG66 [plotPcaHelper] Arg: nrow(data) = 2395, ncol(data) = 7
+   DEBUG66 [plotPcaHelper] Arg: nrow(design_matrix) = 7
+   DEBUG66 [plotPcaHelper] Arg: grouping_variable = 'group'
+   DEBUG66 [plotPcaHelper] Arg: shape_variable = 'NULL'
+   DEBUG66 [plotPcaHelper] Arg: cv_percentile = 0.90
+   [plotPcaHelper] Filtering by CV. Rows before: 2395, Rows after: 240
+   DEBUG66 [plotPcaHelper] data_filtered dims: 240 x 7
+   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca() with 2 component(s)...
+   DEBUG66 [plotPcaHelper] pca.res class: pca
+   DEBUG66 [plotPcaHelper] Step: Creating temp_tbl with left_join...
+   DEBUG66 [plotPcaHelper] temp_tbl dims: 7 x 11
+   DEBUG66 [plotPcaHelper] Step: Building ggplot object...
+   DEBUG66 [plotPcaHelper] output object size: 389 Kb
++===========================================================================+
+|  DEBUG66: Exiting plotPcaHelper                                           |
++===========================================================================+
++===========================================================================+
+|  DEBUG66: Entering plotPcaHelper                                          |
++===========================================================================+
+   DEBUG66 [plotPcaHelper] Arg: nrow(data) = 2395, ncol(data) = 7
+   DEBUG66 [plotPcaHelper] Arg: nrow(design_matrix) = 7
+   DEBUG66 [plotPcaHelper] Arg: grouping_variable = 'group'
+   DEBUG66 [plotPcaHelper] Arg: shape_variable = 'NULL'
+   DEBUG66 [plotPcaHelper] Arg: cv_percentile = 0.90
+   [plotPcaHelper] Filtering by CV. Rows before: 2395, Rows after: 240
+   DEBUG66 [plotPcaHelper] data_filtered dims: 240 x 7
+   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca() with 2 component(s)...
+   DEBUG66 [plotPcaHelper] pca.res class: pca
+   DEBUG66 [plotPcaHelper] Step: Creating temp_tbl with left_join...
+   DEBUG66 [plotPcaHelper] temp_tbl dims: 7 x 11
+   DEBUG66 [plotPcaHelper] Step: Building ggplot object...
+   DEBUG66 [plotPcaHelper] output object size: 390.3 Kb
++===========================================================================+
+|  DEBUG66: Exiting plotPcaHelper                                           |
++===========================================================================+
+   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...
+   DEBUG66: About to prepare design matrix rownames
+      DEBUG66: theObject@sample_id = Run
+      DEBUG66: design_matrix dims before = 7 x 9
+      DEBUG66: design_matrix column names:
+[1] "Run"            "group"          "factor1"        "factor2"       
+[5] "factor3"        "batch"          "replicates"     "tech_reps"     
+[9] "tech_rep_group"
+      DEBUG66: design_matrix rownames set successfully
+   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with 1 contrasts
+   differentialAbundanceAnalysisHelper: protein_quant_matrix dims = 2395 x 7
+--- Entering runTestsContrasts ---
+   runTestsContrasts: data dims = 2395 x 7, 1 contrasts
+   runTestsContrasts: contrasts = treated_vs_control=grouptreated-groupcontrol
+   runTestsContrasts: treat_lfc_cutoff = 0
+   runTestsContrasts: design_m dims = 7 x 3
+   runTestsContrasts: data_subset dims = 2395 x 7
+   runTestsContrasts: Creating contrast matrix...
+   runTestsContrasts: contr.matrix dims = 3 x 1
+   runTestsContrasts: Running lmFit...
+   runTestsContrasts: Replicate block is spanned by the design (no technical replicates). Running standard lmFit...
+   runTestsContrasts: Running contrasts.fit...
+   runTestsContrasts: Running eBayes...
+   runTestsContrasts: Running treat analysis...
+   runTestsContrasts: Processing 1 contrasts with topTreat...
+      [map] Processing contrast: treated_vs_control=grouptreated-groupcontrol
+      About to call topTreat with coef = treated_vs_control=grouptreated-groupcontrol
+      [map] topTreat success: 2395 rows
+      Adding qvalue column...
+      Diagnostic: Valid p-values: 2395 of 2395 total
+      Diagnostic: P-value range: [0.000000, 0.998947]
+      Diagnostic: P-value mean: 0.214438, median: 0.061907
+      qvalue() computation successful
+      Diagnostic: q_values_all has 2395 non-NA values before assignment
+      Diagnostic: Assigned column has 2395 non-NA values after mutate
+      qvalue column added
+      Adding FDR column...
+      FDR column added
+      Renaming P.Value column...
+      P.Value column renamed
+   [map] Completed processing contrast: treated_vs_control=grouptreated-groupcontrol
+--- Exiting runTestsContrasts ---
+   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!
+   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...
+   DEBUG66: contrast_name for list naming = treated_vs_control=grouptreated-groupcontrol
+--- Entering getSignificantData (DEBUG66) ---
+   getSignificantData: list_of_da_tables class = list
+   getSignificantData: list_of_da_tables length = 1
+   getSignificantData: list_of_da_tables structure:
+List of 1
+ $ :List of 1
+  ..$ treated_vs_control=grouptreated-groupcontrol:'data.frame':	2395 obs. of  9 variables:
+   getSignificantData: About to call get_row_binded_table for each list element...
+   --- Entering get_row_binded_table (DEBUG66) ---
+      get_row_binded_table: de_table_list class = list
+      get_row_binded_table: de_table_list length = 1
+      get_row_binded_table: de_table_list names:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+         [map] Processing table, row_id_col = Protein.Group
+         [map] Table class = data.frame
+         [map] Table is data.frame = TRUE
+         [map] row_id already in columns
+      get_row_binded_table: processed_list created
+      get_row_binded_table: processed_list length = 1
+         [map2] Processing element with name: treated_vs_control=grouptreated-groupcontrol
+         [map2] comparison_column already exists: TRUE
+      get_row_binded_table: output table created
+      get_row_binded_table: output dims = 2395 x 10
+      get_row_binded_table: Checking comparison column values:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+      get_row_binded_table: Any values contain '=' ? TRUE
+      get_row_binded_table: Separating on '=' delimiter
+      get_row_binded_table: Separation complete
+   --- Exiting get_row_binded_table (DEBUG66) ---
+   getSignificantData: All tables bound
+   getSignificantData: logfc_tbl_all dims = 2395 x 11
+--- Exiting getSignificantData (DEBUG66) ---
+--- Entering countStatDaGenesHelper (DEBUG66) ---
+   countStatDaGenesHelper: da_table class = list
+   countStatDaGenesHelper: da_table is list = TRUE
+   countStatDaGenesHelper: da_table length = 1
+   countStatDaGenesHelper: da_table names:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+   countStatDaGenesHelper: da_table_updated created
+   countStatDaGenesHelper: da_table_updated length = 1
+   countStatDaGenesHelper: da_table_updated names:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+      [map2] Processing element with name: treated_vs_control=grouptreated-groupcontrol
+   countStatDaGenesHelper: list_of_tables created
+   countStatDaGenesHelper: About to bind_rows...
+   countStatDaGenesHelper: bound_tables dims = 3 x 3
+   countStatDaGenesHelper: facet column added
+   countStatDaGenesHelper: Checking comparison column values:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+   countStatDaGenesHelper: About to separate_wider_delim on column: comparison
+   countStatDaGenesHelper: Looking for delimiter: =
+   countStatDaGenesHelper: Any values contain '=' ? TRUE
+   countStatDaGenesHelper: Separation complete
+--- Exiting countStatDaGenesHelper (DEBUG66) ---
+   differentialAbundanceAnalysisHelper Step: Creating results tables...
+   DEBUG66: createDaResultsLongFormat - Starting norm_counts processing
+      DEBUG66: norm_counts_input_tbl dims = 2395 x 7
+      DEBUG66: group_pattern = (\d+)
+      DEBUG66: row_id = Protein.Group
+      DEBUG66: sample_id = Run
+      DEBUG66: group_id = group
+   DEBUG66: norm_counts processing completed
+   createDaResultsLongFormat: Renaming columns for contrast treated vs control
+   createDaResultsLongFormat: Renamed 10 columns
+--- Exiting differentialAbundanceAnalysisHelper ---
+   differentialAbundanceAnalysis: Helper function completed successfully!
+--- Exiting differentialAbundanceAnalysis ---
+There were 11 warnings (use warnings() to see them)
+REPLAY: 16 states, 0 mismatches | 260 s
+IQ rebuilt parameters: filter_double_less,normalization | P14: backend=P14[fixed] | design:  
+fixed rows 3 | no_default 0 | ruv outcomes rows 2395 columns 8 ruv_applied TRUE k 2 negative_control_percentage 10 negative_control_count 242 | requested ruv_k not_set | ruv_mode no_shipped_default 
+valid origin TRUE rebuilt TRUE bogus FALSE | build matches head TRUE | blas not recorded | replayed-store env recorded TRUE 
+STUDY lines 481 truncation 0 record section TRUE baseline FALSE outside-section identical | 268 s total

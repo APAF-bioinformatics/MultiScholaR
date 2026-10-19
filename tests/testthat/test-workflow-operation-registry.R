@@ -221,7 +221,7 @@ test_that("every declared parameter of every registered operation has a defaults
         unmapped <- setdiff(entry$parameters, c(names(entry$defaults), names(entry$declaration$fixed)))
         expect_identical(unmapped, character(), label = operation)
         for (mapping in entry$defaults) {
-            expect_true(is.character(mapping) && mapping %in% c("fixed", "input", "no_default") ||
+            expect_true(is.character(mapping) && mapping %in% c("fixed", "input", "no_shipped_default") ||
                 is.list(mapping) && is.character(mapping$section) && is.character(mapping$key), label = operation)
         }
     }

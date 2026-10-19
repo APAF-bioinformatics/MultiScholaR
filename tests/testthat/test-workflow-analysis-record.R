@@ -357,3 +357,83 @@ test_that("KIT-033: the report takes the record's values and names the defaults 
     expect_false(grepl("missing_values_cutoff|qvalue_threshold", overlaid$record_defaults_note))
     expect_identical(workflowRecordReportParameters(file.path(dirname(path), "absent.json"), params, study), params)
 })
+
+test_that("KIT-038: fixed constants are listed for every registered step, a legacy step alone dumps its arguments", {
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    rollup <- workflowOperationEntry("precursor_rollup")
+    expect_identical(rollup$declaration$fixed, list(backend = "P14"))
+    # A registered step that declares no parameters (the P14 rollup) lists its fixed constants and nothing else.
+    setDIAStepProvenance(manager, "precursor_rollup", "p14", rollup$parameters, fixed = rollup$declaration$fixed)
+    manager$saveState("rolled_up", fixture$peptide, list(), "rollup")
+    record <- buildWorkflowAnalysisRecord(manager)
+    by_state <- stats::setNames(record$steps, vapply(record$steps, `[[`, "", "state"))
+    rows <- by_state$rolled_up$parameters
+    expect_length(rows, 1L)
+    expect_identical(rows[[1]]$name, "backend")
+    expect_identical(rows[[1]]$provenance, "fixed")
+    expect_identical(decodeWorkflowRecordValue(rows[[1]]$value), "P14")
+    # The legacy raw_data_s4 step still lists its arguments whole; the provenance vocabulary is closed and validated.
+    raw <- by_state$raw_data_s4$parameters
+    expect_true(length(raw) > 1L)
+    expect_true(all(vapply(raw, `[[`, "", "provenance") == "unknown"))
+    expect_true(validateWorkflowAnalysisRecord(record)$valid)
+    expect_true(all(unlist(lapply(record$steps, function(step) vapply(step$parameters, `[[`, "", "provenance"))) %in%
+        workflowRecordProvenanceValues))
+    expect_false(any(unlist(lapply(record$steps, function(step) vapply(step$parameters, `[[`, "", "provenance"))) == "no_default"))
+    record$steps[[2]]$parameters[[1]]$provenance <- "no_default"
+    expect_true(validateWorkflowAnalysisRecord(record)$valid)
+    record$steps[[2]]$parameters[[1]]$provenance <- "bogus"
+    check <- validateWorkflowAnalysisRecord(record)
+    expect_false(check$valid)
+    expect_true(any(grepl("provenance vocabulary", check$errors)))
+    # Every step carries outcomes with its dimensions; the record and each step name the build.
+    expect_true(all(vapply(record$steps, function(step) is.list(step$outcomes) && !is.null(step$outcomes$rows), logical(1))))
+    expect_identical(record$software$build, manager$.context$snapshot$step_provenance$rolled_up$build)
+    expect_identical(by_state$rolled_up$software$build, record$software$build)
+    for (name in c("blas", "lapack", "os_release", "locale", "duckdb_threads")) expect_false(is.null(record$software[[name]]))
+    expect_identical(record$software$duckdb_threads$rollup, 8L)
+})
+
+test_that("KIT-038: the normalisation step states the realised RUV outcome and a requested NA is not_set", {
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    protein <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    norm <- workflowOperationEntry("normalization-ruv")
+    requested <- list(norm_method = "cyclicloess", ruv_mode = "automatic", auto_percentage_min = 1, auto_percentage_max = 20,
+        separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, ruv_percentage = 5,
+        ruv_k = NA, grouping = "group")
+    # The optimisation product carries the control index; the commit's config carries the realised k and percentage.
+    controls <- c(rep(TRUE, 7), rep(FALSE, 13))
+    product <- saveDIAStateValue(manager$.context, list(best_k = 3, controls = controls, percentage = 5), "normalization-science", codec = "rds")
+    checkpoint <- checkpointDIAExecutionResult(manager, protein)
+    checkpoint$products <- list(normalization_science = product)
+    setDIAStepProvenance(manager, "normalization-ruv", "whole", norm$parameters, values = requested)
+    commitDIAReferenceState(manager, "ruv_corrected", checkpoint, list(norm_method = "cyclicloess", ruv_mode = "automatic",
+        ruv_k = 3, percentage_as_neg_ctrl = 5), "ruv")
+    record <- buildWorkflowAnalysisRecord(manager)
+    expect_true(validateWorkflowAnalysisRecord(record)$valid)
+    by_state <- stats::setNames(record$steps, vapply(record$steps, `[[`, "", "state"))
+    named <- function(parameters) stats::setNames(parameters, vapply(parameters, `[[`, "", "name"))
+    ruv <- named(by_state$ruv_corrected$parameters)
+    expect_identical(ruv$ruv_k$provenance, "not_set")
+    expect_identical(ruv$ruv_mode$provenance, "no_shipped_default")
+    outcomes <- by_state$ruv_corrected$outcomes
+    expect_true(isTRUE(outcomes$ruv_applied))
+    expect_identical(outcomes$k, 3)
+    expect_identical(outcomes$negative_control_percentage, 5)
+    expect_identical(outcomes$negative_control_count, 7L)
+    # A skipped RUV commits `normalized`: applied FALSE, no k, no count; a skip flag in config surfaces as an outcome.
+    setDIAStepProvenance(manager, "normalization-ruv", "whole", norm$parameters, values = requested)
+    manager$saveState("normalized", protein, list(norm_method = "cyclicloess", ruv_mode = "skip", ruv_k = NA,
+        percentage_as_neg_ctrl = NA, ruv_applied = FALSE, skipped = TRUE), "skipped")
+    record <- buildWorkflowAnalysisRecord(manager)
+    by_state <- stats::setNames(record$steps, vapply(record$steps, `[[`, "", "state"))
+    skipped <- by_state$normalized$outcomes
+    expect_false(skipped$ruv_applied)
+    expect_true(is.na(skipped$k))
+    expect_true(is.na(skipped$negative_control_count))
+    expect_true(isTRUE(skipped$skipped))
+})

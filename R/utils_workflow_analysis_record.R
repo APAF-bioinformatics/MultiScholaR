@@ -97,10 +97,47 @@ workflowRecordDeclaredParameters <- function(names_declared, entry, section, arg
 #' @noRd
 workflowParameterProvenance <- function(mapping, value, shipped_config) {
     if (is.null(mapping)) return("unknown")
-    if (is.character(mapping)) return(switch(mapping, fixed = "fixed", input = "input", no_default = "no_default", "unknown"))
+    if (is.character(mapping)) return(switch(mapping, fixed = "fixed", input = "input",
+        no_shipped_default = "no_shipped_default", no_default = "no_shipped_default", "unknown"))
     shipped <- shipped_config[[mapping$section]][[mapping$key]]
     if (is.null(shipped)) return("unknown")
+    # KIT-038 (IM-02): a requested value that is NULL or NA was not set; it is neither the default nor a user value.
+    if (is.null(value) || !length(value) || all(is.na(value))) return("not_set")
     if (workflowParameterMatchesDefault(value, shipped)) "default" else "user_set"
+}
+
+#' The closed provenance vocabulary of a record parameter (KIT-038, IM-03). `no_default` is the KIT-027 spelling of
+#' `no_shipped_default`, accepted on read and never written.
+#' @noRd
+workflowRecordProvenanceValues <- c("default", "user_set", "not_set", "no_shipped_default", "fixed", "input", "unknown")
+workflowRecordProvenanceAliases <- c(no_default = "no_shipped_default")
+
+#' Realised outcomes of one step (KIT-038, IM-02): the dimensions every step has, whatever the commit put under
+#' `config$outcomes` or `config$skipped`, and for the normalisation step the realised RUV result.
+#' @noRd
+workflowRecordStepOutcomes <- function(context, state, operation, record, sizes) {
+    config <- record$config
+    outcomes <- list(rows = sizes$rows %||% NA_integer_, columns = sizes$columns %||% NA_integer_)
+    if (is.list(config$outcomes)) outcomes[names(config$outcomes)] <- config$outcomes
+    if (!is.null(config$skipped)) outcomes$skipped <- isTRUE(config$skipped)
+    if (identical(operation, "normalization-ruv")) {
+        applied <- identical(state, "ruv_corrected")
+        count <- NA_integer_
+        product <- record$data$products$normalization_science
+        if (applied && isSavedWorkflowReference(product)) {
+            hydrated <- tryCatch(hydrateSavedWorkflowEntity(context$store, product), error = function(error) NULL)
+            # A product hydrates as an entity whose `value` is the kernel's result; a plain saved value is the list itself.
+            saved <- if (is.list(hydrated$value)) hydrated$value else hydrated
+            controls <- saved$controls
+            if (is.logical(controls)) count <- sum(controls, na.rm = TRUE)
+            else if (is.numeric(controls) && !all(is.na(controls))) count <- length(controls[!is.na(controls)])
+        }
+        outcomes$ruv_applied <- applied
+        outcomes$k <- if (applied) config$ruv_k %||% NA_real_ else NA_real_
+        outcomes$negative_control_percentage <- if (applied) config$percentage_as_neg_ctrl %||% NA_real_ else NA_real_
+        outcomes$negative_control_count <- if (applied) count else NA_integer_
+    }
+    outcomes
 }
 
 #' Read the shipped `config.ini` as strings, section by key.
@@ -157,12 +194,21 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         if (!length(section) || is.na(section)) section <- NULL
         names_declared <- as.character(provenance$parameter_names %||% character())
         parameters <- list()
-        if (length(names_declared)) {
+        if (length(names_declared))
             parameters <- workflowRecordDeclaredParameters(names_declared, entry, section, args, config, provenance$values, shipped)
-            for (name in names(provenance$fixed)) parameters[[length(parameters) + 1L]] <- list(name = name, source = "fixed",
-                value = encodeWorkflowRecordValue(provenance$fixed[[name]]), provenance = "fixed")
-        } else if (!is.null(args)) {
-            # A legacy step names no parameters: its recorded arguments are listed whole.
+        # KIT-038 (IM-01): fixed constants are listed for every registered step, declared parameters or not; only a
+        # `legacy` step (no provenance) lists its recorded arguments whole.
+        fixed <- provenance$fixed
+        fixed_source <- "fixed"
+        if (!length(fixed) && !is.null(entry$declaration$fixed)) {
+            # The head entry predates the constant's declaration (a store written before KIT-038 declared the P14
+            # backend); the kernel passed it then as now, so the registry's constant is listed with its source named.
+            fixed <- entry$declaration$fixed
+            fixed_source <- "registry"
+        }
+        for (name in names(fixed)) parameters[[length(parameters) + 1L]] <- list(name = name, source = fixed_source,
+            value = encodeWorkflowRecordValue(fixed[[name]]), provenance = "fixed")
+        if (identical(operation, "legacy") && !is.null(args)) {
             for (name in names(args)) parameters[[length(parameters) + 1L]] <- list(name = name, source = "args",
                 value = encodeWorkflowRecordValue(args[[name]]), provenance = "unknown")
         }
@@ -200,9 +246,11 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             step_label = entry$step_label %||% state, committed_at = committed_at,
             seed = provenance$seed %||% NA_real_, result_entity_id = snapshot$states[[state]]$entity_id,
             input_entity_ids = if (is.null(input)) list() else list(input),
-            software = list(version = software$version %||% NA_character_, sha = provenance$source_commit %||% NA_character_),
+            software = list(version = software$version %||% NA_character_, sha = provenance$source_commit %||% NA_character_,
+                build = provenance$build %||% NA_character_),
             defaults_sha256 = provenance$defaults_sha256 %||% NA_character_,
             dimensions = list(rows = sizes$rows %||% NA_integer_, columns = sizes$columns %||% NA_integer_),
+            outcomes = workflowRecordStepOutcomes(context, state, operation, record, sizes),
             description = record$description %||% NA_character_,
             parameters = parameters, products = Filter(Negate(is.null), products),
             stored_as_object = isTRUE(record$legacy_object))
@@ -248,14 +296,26 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     builds <- unique(vapply(snapshot$step_provenance[history], function(p) p$build %||% NA_character_, character(1)))
     builds <- builds[!is.na(builds)]
     current <- snapshot$software_environments[[if (length(builds)) builds[[length(builds)]] else ""]]
+    # KIT-038 (IM-09): the numerical environment of the build that wrote the last step; an environment entry written
+    # by an earlier build carries none of these fields and reads "not recorded".
+    environment_field <- function(name) {
+        value <- current[[name]]
+        if (is.null(value)) "not recorded" else value
+    }
     step_defaults <- unique(vapply(steps, function(step) step$defaults_sha256, character(1)))
     list(schema = "multischolar.analysis_record.v1", generated_at = format(now, "%Y-%m-%dT%H:%M:%OS3%z"),
         workflow = snapshot$workflow_type %||% NA_character_,
         store_identity = list(project_id = context$store$identity$project_id %||% NA_character_,
             workflow_id = context$store$identity$workflow_id %||% NA_character_),
         software = list(package = "MultiScholaR", version = current$version %||% NA_character_,
-            sha = current$source_commit %||% NA_character_, r_version = current$r_version %||% NA_character_,
+            sha = current$source_commit %||% NA_character_,
+            build = if (length(builds)) builds[[length(builds)]] else NA_character_,
+            r_version = current$r_version %||% NA_character_,
             platform = current$platform %||% NA_character_,
+            blas = environment_field("blas"), lapack = environment_field("lapack"),
+            omp_threads = environment_field("omp_threads"), blas_threads = environment_field("blas_threads"),
+            duckdb_threads = environment_field("duckdb_threads"),
+            os_release = environment_field("os_release"), locale = environment_field("locale"),
             packages = lapply(names(current$packages %||% list()), function(name)
                 list(name = name, version = as.character(current$packages[[name]])))),
         defaults_sha256 = installed_defaults,
@@ -290,6 +350,9 @@ validateWorkflowAnalysisRecord <- function(record) {
     incomplete <- character()
     need <- function(condition, message) if (!isTRUE(condition)) errors <<- c(errors, message)
     scalar <- function(x) (is.character(x) || is.numeric(x) || is.logical(x)) && length(x) == 1L
+    # KIT-038 (IM-03): the vocabulary is closed; `no_default` is read as the KIT-027 spelling of `no_shipped_default`.
+    provenance_known <- function(x) is.character(x) && length(x) == 1L &&
+        x %in% c(workflowRecordProvenanceValues, names(workflowRecordProvenanceAliases))
     need(is.list(record), "record is not a list")
     if (!is.list(record)) return(list(valid = FALSE, errors = errors, incomplete = incomplete))
     need(identical(record$schema, "multischolar.analysis_record.v1"), "schema")
@@ -309,10 +372,15 @@ validateWorkflowAnalysisRecord <- function(record) {
         for (parameter in step$parameters) {
             need(is.list(parameter) && scalar(parameter$name) && scalar(parameter$source) && scalar(parameter$provenance),
                 paste0("parameter in ", step$state))
+            need(provenance_known(parameter$provenance), paste0("provenance vocabulary in ", step$state, "/", parameter$name %||% "?"))
             if (identical(parameter$source, "missing"))
                 incomplete <- c(incomplete, paste0("declared parameter not recorded: ", step$state, "/", parameter$name))
         }
+        for (previous in step$preceded_by %||% list()) for (parameter in previous$parameters %||% list())
+            need(provenance_known(parameter$provenance), paste0("provenance vocabulary in ", step$state, " (preceded_by)"))
     }
+    for (analysis in record$analyses %||% list()) for (parameter in analysis$parameters %||% list())
+        need(provenance_known(parameter$provenance), "provenance vocabulary in analyses")
     if (!length(record$inputs)) incomplete <- c(incomplete, "no inputs recorded")
     incomplete <- c(incomplete, "external resources: controller-process queries only")
     list(valid = !length(errors), errors = errors, incomplete = incomplete)

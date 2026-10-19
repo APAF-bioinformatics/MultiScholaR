@@ -642,7 +642,9 @@ takeDIAStepProvenance <- function(context) {
 diaStepProvenanceEntry <- function(snapshot, provenance, timestamp = Sys.time()) {
     software <- workflowSoftwareIdentity()
     if (is.null(snapshot$software_environments[[software$build]]))
-        snapshot$software_environments[[software$build]] <- software[c("version", "source_commit", "r_version", "platform", "packages")]
+        snapshot$software_environments[[software$build]] <- software[intersect(c("version", "source_commit", "r_version",
+            "platform", "packages", "blas", "lapack", "omp_threads", "blas_threads", "duckdb_threads", "os_release", "locale"),
+            names(software))]
     defaults <- system.file("config", "config.ini", package = "MultiScholaR")
     entry <- list(operation = provenance$operation, variant = provenance$variant,
         parameter_names = as.character(provenance$parameter_names), build = software$build,

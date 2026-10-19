@@ -11,7 +11,11 @@ buildProtDesignStateCheckpoint <- function(
   if (workflowType == "DIA" && usesDIAReferenceStates(workflowData$state_manager)) {
     checkpoint <- newDIAPeptideCheckpoint(workflowData$state_manager, workflowData$data_cln,
       workflowData$design_matrix, workflowData$config_list)
-    setDIAStepProvenance(workflowData$state_manager, "design_builder") # KIT-025
+    # KIT-025; KIT-038: the design step declares the three design roles it binds, with their values.
+    setDIAStepProvenance(workflowData$state_manager, "design_builder",
+      parameter_names = c("sample_id", "group_id", "technical_replicate_id"),
+      values = list(sample_id = checkpoint$slots$sample_id, group_id = checkpoint$slots$group_id,
+        technical_replicate_id = checkpoint$slots$technical_replicate_id))
     commitDIAReferenceState(workflowData$state_manager, "raw_data_s4", checkpoint,
       checkpoint$slots$args, "Initial Peptide S4 object created after design matrix.")
     return("raw_data_s4")
@@ -99,6 +103,9 @@ buildProtDesignStateCheckpoint <- function(
   }
 
   logger::log_info(paste("Saving S4 object to R6 state manager as:", stateName))
+  # KIT-038: on an owner (KIT-020) the protein-level design step records its fixed transform.
+  setDIAStepProvenance(workflowData$state_manager, "design_builder",
+    fixed = list(pivot = "protein x run", transform = "log2(x + 1)"))
   workflowData$state_manager$saveState(
     state_name = stateName,
     s4_data_object = s4Object,
