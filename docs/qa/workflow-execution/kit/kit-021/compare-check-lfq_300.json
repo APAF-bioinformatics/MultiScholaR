@@ -1,0 +1,53 @@
+{
+  "corpus": "lfq_300",
+  "corpus_sha256": "a89baaa3345a2b601d2e89810fa83595d02ae1164868edd82e9aa0a0cd4b06c4",
+  "rows": [
+    {
+      "contrast": "groupKO-groupWT",
+      "table": "da_proteins_long",
+      "owner": "9e777eedcb4056064d660751c71c8e896e482eebb89b3e3091a375c52eb98e38",
+      "control": "9e777eedcb4056064d660751c71c8e896e482eebb89b3e3091a375c52eb98e38",
+      "equal": true
+    },
+    {
+      "contrast": "groupKO-groupWT",
+      "table": "da_proteins_wide",
+      "owner": "b00c630b6a125a9caa4ba7cf44c2023eebba4f2e6e95c9730da6268bb1fc3b8b",
+      "control": "b00c630b6a125a9caa4ba7cf44c2023eebba4f2e6e95c9730da6268bb1fc3b8b",
+      "equal": true
+    },
+    {
+      "contrast": "groupKO-groupWT",
+      "table": "contrasts_results_table",
+      "owner": "24168f559d4af72c0fbc42c9c05d63496da5ccef42d392b999fde1dca681aca1",
+      "control": "24168f559d4af72c0fbc42c9c05d63496da5ccef42d392b999fde1dca681aca1",
+      "equal": true
+    }
+  ],
+  "equal": 3,
+  "total": 3,
+  "owner_rows": {
+    "groupKO-groupWT": 8000
+  },
+  "control_rows": {
+    "groupKO-groupWT": 8000
+  },
+  "owner_build": "88df93148eeef1521933daf9baf4bd567f168c5c",
+  "control_commit": null,
+  "control_states": {
+    "protein_s4_initial": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "protein_accession_cleaned": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "protein_intensity_filtered": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "duplicates_removed": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "protein_replicate_filtered": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "normalized": "3390abc5ad5df747238766bc76e65273e8ab94d42c810c9f5b4ec8d795469d8a",
+    "ruv_corrected": "641a214ccb9daf3f4f9dfb988677a24ae5ad9d6ddeba01996babbabbb65ac35d",
+    "correlation_filtered": "641a214ccb9daf3f4f9dfb988677a24ae5ad9d6ddeba01996babbabbb65ac35d"
+  },
+  "control_ruv": {
+    "k": 60,
+    "percentage": 1,
+    "controls": 8000
+  },
+  "control_seconds": 1090.5132
+}
