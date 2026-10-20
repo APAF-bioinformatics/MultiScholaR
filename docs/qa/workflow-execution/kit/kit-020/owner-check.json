@@ -85,7 +85,7 @@
     },
     "export": {
       "ok": true,
-      "archive": "filtered_session_20261020_110534_native-export-6e20e4879a9ea.msdia.tar",
+      "archive": "filtered_session_20261020_112626_native-export-8518e12aba7e5.msdia.tar",
       "manifest_workflow": "LFQ",
       "manifest_route": "protein",
       "reopened_type": "LFQ",
@@ -106,7 +106,219 @@
       "mismatches": []
     }
   },
-  "seconds": 42.60629415512085,
-  "head_commit": "9b04d147af98c9d28e233d7bf9eb945b5e764325",
-  "tree_clean": false
+  "fragpipe": {
+    "format": "fragpipe",
+    "type": "LFQ",
+    "store_identity": {
+      "project_id": "FRAGPIPE-native",
+      "workflow_id": "LFQ"
+    },
+    "workflow_type": "LFQ",
+    "import_metadata": {
+      "data_type": "protein",
+      "column_mapping": {
+        "protein_col": "Protein.Ids",
+        "run_col": "Run",
+        "quantity_col": "Intensity",
+        "qvalue_col": null
+      }
+    },
+    "design_state": "protein_s4_initial",
+    "design_identity": {
+      "tables_identical": true,
+      "design_identical": true,
+      "slots_identical": true,
+      "args_identical": true
+    },
+    "design_provenance": {
+      "operation": "design_builder",
+      "fixed": {
+        "pivot": "protein x run",
+        "transform": "log2(x + 1)"
+      }
+    },
+    "inputs": {
+      "fragpipe_report": {
+        "role": "fragpipe_report",
+        "sha256": "3c4a154b85143dd074a1f446117aa8621763fdc4e6683b74460d3305a4420ebc"
+      },
+      "fasta": {
+        "role": "fasta",
+        "sha256": "db934bbb4751ce376b4ab56af65c7f32eb6cd75b1215a677dfc2124589222f17"
+      }
+    },
+    "steps": {
+      "protein_intensity_filter": {
+        "state": "protein_intensity_filtered",
+        "rows": 4,
+        "columns": 7,
+        "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
+      },
+      "protein_duplicate_removal": {
+        "state": "duplicates_removed",
+        "rows": 4,
+        "columns": 7,
+        "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
+      },
+      "protein_replicate_filter": {
+        "state": "protein_replicate_filtered",
+        "rows": 4,
+        "columns": 7,
+        "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
+      }
+    },
+    "state_hashes": {
+      "protein_s4_initial": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
+      "protein_intensity_filtered": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "duplicates_removed": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "protein_replicate_filtered": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "normalized": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "correlation_filtered": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
+    },
+    "normalisation_state": "normalized",
+    "correlation_state": "correlation_filtered",
+    "da": {
+      "ok": true,
+      "contrasts": "groupKO-groupWT",
+      "rows": 4,
+      "table_hashes": {
+        "groupKO-groupWT": {
+          "da_proteins_long": "9bfacd2ab7c43f20146a732f8b82c98787f291a81aafee56fd7e6174a143d816",
+          "da_proteins_wide": "3053e5aa0e005dfc4519096bf2807ee7ac1eca23b98333b7c230e4f2a0c3e92b",
+          "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+        }
+      }
+    },
+    "export": {
+      "ok": true,
+      "archive": "filtered_session_20261020_112707_native-export-8518e62f68c7f.msdia.tar",
+      "manifest_workflow": "LFQ",
+      "manifest_route": "protein",
+      "reopened_type": "LFQ",
+      "reopened_state": "correlation_filtered"
+    },
+    "record": {
+      "valid": true,
+      "errors": [],
+      "legacy": false,
+      "workflow": "LFQ",
+      "states": ["initial", "protein_s4_initial", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "normalized", "correlation_filtered"],
+      "operations": ["import", "design_builder", "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "normalization-ruv", "pearson-selection"]
+    },
+    "store_fields": [".__enclos_env__", "execution_owner", "progress", "io_counts", "table_action", "closed", "open_resources", "table_bytes", "table_columns", "table_rows", "table_reads", "payload_decodes", "payload_reads", "cache_hits", "max_cache_bytes", "cache_bytes", "cache_order", "cache", "sync_command", "max_metadata_bytes", "max_entries", "metadata_bytes", "count", "records", "identity", "directory"],
+    "replay": {
+      "ok": true,
+      "states": 7,
+      "mismatches": []
+    }
+  },
+  "pd_tmt": {
+    "format": "pd_tmt",
+    "type": "TMT",
+    "store_identity": {
+      "project_id": "PD_TMT-native",
+      "workflow_id": "TMT"
+    },
+    "workflow_type": "TMT",
+    "import_metadata": {
+      "data_type": "protein",
+      "column_mapping": {
+        "protein_col": "Protein.Ids",
+        "run_col": "Run",
+        "quantity_col": "Abundance",
+        "batch_col": null
+      }
+    },
+    "design_state": "protein_s4_initial",
+    "design_identity": {
+      "tables_identical": true,
+      "design_identical": true,
+      "slots_identical": true,
+      "args_identical": true
+    },
+    "design_provenance": {
+      "operation": "design_builder",
+      "fixed": {
+        "pivot": "protein x run",
+        "transform": "log2(x + 1)"
+      }
+    },
+    "inputs": {
+      "pd_tmt_report": {
+        "role": "pd_tmt_report",
+        "sha256": "1cc8deec83630a67c5fa874f5b2dc635678c91e953db118929f0d9969bc872db"
+      },
+      "fasta": {
+        "role": "fasta",
+        "sha256": "db934bbb4751ce376b4ab56af65c7f32eb6cd75b1215a677dfc2124589222f17"
+      }
+    },
+    "steps": {
+      "protein_intensity_filter": {
+        "state": "protein_intensity_filtered",
+        "rows": 4,
+        "columns": 7,
+        "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
+      },
+      "protein_duplicate_removal": {
+        "state": "duplicates_removed",
+        "rows": 4,
+        "columns": 7,
+        "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
+      },
+      "protein_replicate_filter": {
+        "state": "protein_replicate_filtered",
+        "rows": 4,
+        "columns": 7,
+        "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
+      }
+    },
+    "state_hashes": {
+      "protein_s4_initial": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214",
+      "protein_intensity_filtered": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "duplicates_removed": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "protein_replicate_filtered": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "normalized": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
+      "correlation_filtered": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
+    },
+    "normalisation_state": "normalized",
+    "correlation_state": "correlation_filtered",
+    "da": {
+      "ok": true,
+      "contrasts": "groupKO-groupWT",
+      "rows": 4,
+      "table_hashes": {
+        "groupKO-groupWT": {
+          "da_proteins_long": "bfda9a07b0312313f150719a9da9670c7f4276e2127f969feb61d8c3518001ea",
+          "da_proteins_wide": "a86f26af1db2fbcde0bbad5d740f40da84c5fc21c40871e7c01b2503d0c14e80",
+          "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+        }
+      }
+    },
+    "export": {
+      "ok": true,
+      "archive": "filtered_session_20261020_112747_native-export-8518e6eb08f4a.msdia.tar",
+      "manifest_workflow": "TMT",
+      "manifest_route": "protein",
+      "reopened_type": "TMT",
+      "reopened_state": "correlation_filtered"
+    },
+    "record": {
+      "valid": true,
+      "errors": [],
+      "legacy": false,
+      "workflow": "TMT",
+      "states": ["initial", "protein_s4_initial", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "normalized", "correlation_filtered"],
+      "operations": ["import", "design_builder", "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "normalization-ruv", "pearson-selection"]
+    },
+    "store_fields": [".__enclos_env__", "execution_owner", "progress", "io_counts", "table_action", "closed", "open_resources", "table_bytes", "table_columns", "table_rows", "table_reads", "payload_decodes", "payload_reads", "cache_hits", "max_cache_bytes", "cache_bytes", "cache_order", "cache", "sync_command", "max_metadata_bytes", "max_entries", "metadata_bytes", "count", "records", "identity", "directory"],
+    "replay": {
+      "ok": true,
+      "states": 7,
+      "mismatches": []
+    }
+  },
+  "seconds": 124.39879417419434,
+  "head_commit": "137c280337e49e941baa5d0894489b52cdc35f31",
+  "tree_clean": true
 }

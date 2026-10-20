@@ -9,8 +9,8 @@ Paths for Omics Label: 'proteomics_maxquant' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/scripts/proteomics_maxquant (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results_summary/proteomics_maxquant (4 items)
-  timestamp                      : 20261020_103318
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/publication_graphs/filtering_qc/20261020_103318 (0 items)
+  timestamp                      : 20261020_112604
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/publication_graphs/filtering_qc/20261020_112604 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/project/results/proteomics_maxquant/da_proteins (0 items)
@@ -236,8 +236,8 @@ Paths for Omics Label: 'proteomics' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/scripts/proteomics (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results_summary/proteomics (4 items)
-  timestamp                      : 20261020_103343
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261020_103343 (0 items)
+  timestamp                      : 20261020_112629
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261020_112629 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/maxquant/replay-scratch/progress/results/proteomics/da_proteins (0 items)
@@ -456,7 +456,7 @@ List of 1
 --- Exiting differentialAbundanceAnalysisHelper ---
    differentialAbundanceAnalysis: Helper function completed successfully!
 --- Exiting differentialAbundanceAnalysis ---
-maxquant | type LFQ | store MAXQUANT-native LFQ | design protein_s4_initial identity tables TRUE slots TRUE args TRUE | provenance design_builder | steps protein_intensity_filtered,duplicates_removed,protein_replicate_filtered | corr correlation_filtered | DA groupKO-groupWT 4 | record valid TRUE legacy FALSE workflow LFQ | replay 7 states 0 mismatches | export NA NA reopened LFQ correlation_filtered 
+maxquant | type LFQ | store MAXQUANT-native LFQ | design protein_s4_initial identity tables TRUE slots TRUE args TRUE | provenance design_builder | steps protein_intensity_filtered,duplicates_removed,protein_replicate_filtered | corr correlation_filtered | DA groupKO-groupWT 4 | record valid TRUE legacy FALSE workflow LFQ | replay 7 states 0 mismatches | hashes 6 | export LFQ protein reopened LFQ correlation_filtered 
 
 Paths for Omics Label: 'proteomics_fragpipe' (Type: proteomics)
   base_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project (5 items)
@@ -464,8 +464,8 @@ Paths for Omics Label: 'proteomics_fragpipe' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/scripts/proteomics_fragpipe (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results_summary/proteomics_fragpipe (4 items)
-  timestamp                      : 20261020_103401
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/publication_graphs/filtering_qc/20261020_103401 (0 items)
+  timestamp                      : 20261020_112648
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/publication_graphs/filtering_qc/20261020_112648 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/project/results/proteomics_fragpipe/da_proteins (0 items)
@@ -691,8 +691,8 @@ Paths for Omics Label: 'proteomics' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/scripts/proteomics (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results_summary/proteomics (4 items)
-  timestamp                      : 20261020_103423
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261020_103423 (0 items)
+  timestamp                      : 20261020_112711
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261020_112711 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/fragpipe/replay-scratch/progress/results/proteomics/da_proteins (0 items)
@@ -911,7 +911,7 @@ List of 1
 --- Exiting differentialAbundanceAnalysisHelper ---
    differentialAbundanceAnalysis: Helper function completed successfully!
 --- Exiting differentialAbundanceAnalysis ---
-fragpipe | type LFQ | store FRAGPIPE-native LFQ | design protein_s4_initial identity tables TRUE slots TRUE args TRUE | provenance design_builder | steps protein_intensity_filtered,duplicates_removed,protein_replicate_filtered | corr correlation_filtered | DA groupKO-groupWT 4 | record valid TRUE legacy FALSE workflow LFQ | replay 7 states 0 mismatches | export NA NA reopened LFQ correlation_filtered 
+fragpipe | type LFQ | store FRAGPIPE-native LFQ | design protein_s4_initial identity tables TRUE slots TRUE args TRUE | provenance design_builder | steps protein_intensity_filtered,duplicates_removed,protein_replicate_filtered | corr correlation_filtered | DA groupKO-groupWT 4 | record valid TRUE legacy FALSE workflow LFQ | replay 7 states 0 mismatches | hashes 6 | export LFQ protein reopened LFQ correlation_filtered 
 
 Paths for Omics Label: 'proteomics_pd_tmt' (Type: proteomics)
   base_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project (5 items)
@@ -919,8 +919,8 @@ Paths for Omics Label: 'proteomics_pd_tmt' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/scripts/proteomics_pd_tmt (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results_summary/proteomics_pd_tmt (4 items)
-  timestamp                      : 20261020_103439
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/publication_graphs/filtering_qc/20261020_103439 (0 items)
+  timestamp                      : 20261020_112728
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/publication_graphs/filtering_qc/20261020_112728 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/project/results/proteomics_pd_tmt/da_proteins (0 items)
@@ -1173,8 +1173,8 @@ Paths for Omics Label: 'proteomics' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/scripts/proteomics (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results_summary/proteomics (4 items)
-  timestamp                      : 20261020_103459
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261020_103459 (0 items)
+  timestamp                      : 20261020_112750
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/publication_graphs/filtering_qc/20261020_112750 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit020-owner-check/pd_tmt/replay-scratch/progress/results/proteomics/da_proteins (0 items)
@@ -1393,5 +1393,5 @@ List of 1
 --- Exiting differentialAbundanceAnalysisHelper ---
    differentialAbundanceAnalysis: Helper function completed successfully!
 --- Exiting differentialAbundanceAnalysis ---
-pd_tmt | type TMT | store PD_TMT-native TMT | design protein_s4_initial identity tables TRUE slots TRUE args TRUE | provenance design_builder | steps protein_intensity_filtered,duplicates_removed,protein_replicate_filtered | corr correlation_filtered | DA groupKO-groupWT 4 | record valid TRUE legacy FALSE workflow TMT | replay 7 states 0 mismatches | export NA NA reopened TMT correlation_filtered 
-done 118 s
+pd_tmt | type TMT | store PD_TMT-native TMT | design protein_s4_initial identity tables TRUE slots TRUE args TRUE | provenance design_builder | steps protein_intensity_filtered,duplicates_removed,protein_replicate_filtered | corr correlation_filtered | DA groupKO-groupWT 4 | record valid TRUE legacy FALSE workflow TMT | replay 7 states 0 mismatches | hashes 6 | export TMT protein reopened TMT correlation_filtered 
+done 124 s
