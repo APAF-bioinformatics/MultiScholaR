@@ -1,0 +1,34 @@
+# KIT-043: LFQ and TMT reports and study_parameters.txt from the record
+
+Status 2026-10-20: **completed; implemented at `a918b5bb`** (ticket revision 1.1); real renders of both templates on the LFQ and TMT fixture owners with and without the record; the writer and the record bundle proven on both owners; tests, check and install below.
+
+## What changed (one mechanism: the record as the source for the two remaining proteomics templates)
+
+- `LFQ_report.rmd` and `TMT_report.rmd` call `workflowRecordReportParameters(file.path(report_source_dir, "analysis_record.json"), params, study_params)` after `ExtractStudyParametersLFQ`/`ExtractStudyParametersTMT`, as the DIA-NN templates do (KIT-033); the methods text appends the overlay's "Parameter not recorded; default shown" note; the Version Information section prints the record's software (version, source commit, build, R, BLAS) when a record is present and the git fields of `study_parameters.txt` otherwise (KIT-039's chunk). The two templates differ from each other only in their workflow wording, as before.
+- `workflowRecordReportSources` (`R/utils_workflow_analysis_record.R`) gains the two templates' variables: `proteins_intensity_cutoff_percentile`, `min_reps_per_group`, `min_groups` from the registry step `protein_intensity_filter`; `groupwise_percentage_cutoff` and `max_groups_percentage_cutoff` file-only (derived in the state's configuration, not declared, so the methods text names the default it shows when the file lacks them); `ui_de_q_value_threshold` and `ui_de_log_fold_change_cutoff` from the DA analysis (`qvalue`, `lfc`). The DIA-NN templates' variables and renders are unchanged (the new entries add keys their templates never print).
+- Item 2 (**verified only**): `createWorkflowArgsFromConfig` renders from the record on any owner with reference states and the summary page's record export is gated on the owner class; both apply to LFQ/TMT owners without change.
+- KIT-020 audit F-14 (the `route = "iq"` product factor on LFQ/TMT owners): neither template reads it; left as a cosmetic label.
+
+## Evidence
+
+- Render check ([report-check.R](report-check.R); [report-check-screen.json](report-check-screen.json) on this tree with `load_all`, [report-check-installed.json](report-check-installed.json) on the installed `kit_043` library; [log](report-check-installed.log); pandoc 3.11). The MaxQuant (LFQ) and Proteome Discoverer (TMT) fixtures run on the on-disk owner through DA with two non-default values (`proteins_intensity_cutoff_percentile = 2`, DA q-value `0.1`); `analysis_record.json` and `study_parameters.txt` are written by the writer; each template is rendered with the record, without it, with the previous commit's template without it (the baseline) and with the control build's (`kit_036`) template without it. On both fixtures:
+  - with the record, the DA text reads "q-values less than 0.1" (without it, the template default 0.05: the file's UI section does not carry the q-value); the methods text reads "below the 2nd percentile" with and without the record (without it the parser reads `study_parameters.txt`, itself rendered from the record, so the template default 1 would show only without both files); the Version Information section names the record's version and build and, on the installed build, its source commit (`Source commit: a918b5bb…`, `Build: 414bf521…`); no `NA`.
+  - without the record, the render equals the baseline's and the control build's, dates masked (the KIT-039 parser fix changes nothing on these fixtures: RUV is skipped and the section reads "not applied" either way).
+  - `study_parameters.txt` (270 lines): no truncation mark, every recorded step parameter present as the record writes it, the "Analysis Record:" section present, `analysis_record.json` beside it; the record lists 7 operations and the DA analysis with the non-default values.
+  - The DIA-NN templates are byte-identical to the baseline commit's.
+- Tests (proof library, `devtools::load_all`): `test-workflow-analysis-record.R` 187 pass (one new KIT-043 overlay test), `test-general-filemgmt-report-helpers-shared.R` 84; dependents (`workflowRecordReportSources`, `workflowRecordReportParameters`, `createWorkflowArgsFromConfig`, the summary module and the templates): `test-module-ci-prot-summary.R` 110, `test-prot-12-summary-module-contracts.R` 446, `test-prot-12a` 62, `test-module-ci-prot-da.R` 245, `test-e2e-test-mode-integration.R` 63, `test-metab-05` 160, `test-general-filemgmt-config-*` 33/24, `test-general-filemgmt-s4-contracts.R` 30, `test-workflow-server-shared.R` 70, `test-workflow-ui-shared.R` 51, `test-module-ui-wrapper-direct-shared.R` 45; 0 failures, 0 errors. The installed-library render check records `head_commit = a918b5bb`, a clean source tree, and the library's source commit.
+
+## Deviations and claim limits
+
+- The fixtures are five-protein e2e tables: the renders are text-complete (no composite QC figure, no enrichment plots: the templates print their "not found" warnings), which is what the comparison needs; the full-figure render on a real LFQ corpus is KIT-021's.
+- On the `load_all` run the record's `sha` is NULL (the source tree's DESCRIPTION has no `SourceCommit`), so the section reads "Source commit: not recorded"; the recorded evidence is the installed-library run.
+- RUV is skipped on these fixtures, so the realised-RUV sentence is exercised only in its "not applied" form (the applied form is the KIT-039 DIA-NN evidence; the code path is shared).
+
+## Check and install
+
+- `R CMD check --no-manual --no-tests` at `a918b5bb` (clean worktree, `_R_CHECK_FORCE_SUGGESTS_=false`, proof library on `R_LIBS`): 3 WARNINGs, 3 NOTEs, the baseline ([log](check-a918b5bb/r-cmd-check.log)).
+- Install `kit_043` = `core/browser-smoke.fFZHS8` (source commit `a918b5bb` verified on the installed `DESCRIPTION`); bindings regenerated; the recorded render check ran on this library. The control stays `kit_036` (no counted member).
+
+## Hand-off
+
+KIT-021 measures the complete LFQ/TMT path (owner, sessions, record, reports). Closes KIT-033's four-template item. Rollback: `git revert`; the two templates fall back to the parser.

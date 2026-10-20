@@ -1,0 +1,119 @@
+{
+  "schema": "kit.report_check.v1",
+  "ticket": "KIT-043",
+  "label": "screen",
+  "date": "2026-10-20",
+  "pandoc": "3.11",
+  "non_defaults": {
+    "proteins_intensity_cutoff_percentile": 2,
+    "da_qvalue": 0.10000000000000001
+  },
+  "maxquant": {
+    "format": "maxquant",
+    "type": "LFQ",
+    "template": "LFQ_report.rmd",
+    "study": {
+      "lines": 270,
+      "truncation_marks": 0,
+      "record_section": true,
+      "values_missing": [],
+      "record_beside": true,
+      "da_qvalue_recorded": true,
+      "intensity_recorded": true
+    },
+    "record": {
+      "workflow": "LFQ",
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "operations": ["import", "design_builder", "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "normalization-ruv", "pearson-selection"],
+      "da": true
+    },
+    "renders": {
+      "with_record": {
+        "1": null,
+        "seconds": 1.3677613735198975
+      },
+      "without_record": {
+        "1": null,
+        "seconds": 0.56227779388427734
+      },
+      "baseline": {
+        "1": null,
+        "seconds": 0.45056557655334473
+      },
+      "control": {
+        "1": null,
+        "seconds": 0.43262004852294922
+      }
+    },
+    "version_with_record": "Version Information MultiScholaR version: 0.5.0 Source commit: not recorded Build: 6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66 R: R version 4.6.1 (2026-06-24) BLAS: /usr/lib/libblas.so.3.12.0 ## Warning: Composite QC figure not found at /home/doktersmol/.cache/multischolar-kit043-report-screen/maxquant/results_summary/proteomics_maxquant/QC_figures/proteomics_composite_QC_figure.png\\n Differenti",
+    "version_without_record": "Version Information Repository: NA Branch: NA Commit: NA Git Timestamp: NA ## Warning: Composite QC figure not found at /home/doktersmol/.cache/multischolar-kit043-report-screen/maxquant/results_summary/proteomics_maxquant/QC_figures/proteomics_composite_QC_figure.png\\n Differential Abundance Analysis DIFFERENTIAL ABUNDANCE ANALYSIS Differential abundance analysis of proteins was performed using the adjusted abundan",
+    "with_record_names_software": false,
+    "with_record_prints_percentile": true,
+    "without_record_prints_default_percentile": false,
+    "with_record_prints_qvalue": true,
+    "without_record_prints_default_qvalue": true,
+    "defaults_note": [],
+    "without_record_equals_baseline": true,
+    "without_record_equals_control": true
+  },
+  "pd_tmt": {
+    "format": "pd_tmt",
+    "type": "TMT",
+    "template": "TMT_report.rmd",
+    "study": {
+      "lines": 270,
+      "truncation_marks": 0,
+      "record_section": true,
+      "values_missing": [],
+      "record_beside": true,
+      "da_qvalue_recorded": true,
+      "intensity_recorded": true
+    },
+    "record": {
+      "workflow": "TMT",
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "operations": ["import", "design_builder", "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "normalization-ruv", "pearson-selection"],
+      "da": true
+    },
+    "renders": {
+      "with_record": {
+        "1": null,
+        "seconds": 0.4442446231842041
+      },
+      "without_record": {
+        "1": null,
+        "seconds": 0.44791030883789062
+      },
+      "baseline": {
+        "1": null,
+        "seconds": 0.48232650756835938
+      },
+      "control": {
+        "1": null,
+        "seconds": 0.43853449821472168
+      }
+    },
+    "version_with_record": "Version Information MultiScholaR version: 0.5.0 Source commit: not recorded Build: 6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66 R: R version 4.6.1 (2026-06-24) BLAS: /usr/lib/libblas.so.3.12.0 ## Warning: Composite QC figure not found at /home/doktersmol/.cache/multischolar-kit043-report-screen/pd_tmt/results_summary/proteomics_pd_tmt/QC_figures/proteomics_composite_QC_figure.png\\n Differential A",
+    "version_without_record": "Version Information Repository: NA Branch: NA Commit: NA Git Timestamp: NA ## Warning: Composite QC figure not found at /home/doktersmol/.cache/multischolar-kit043-report-screen/pd_tmt/results_summary/proteomics_pd_tmt/QC_figures/proteomics_composite_QC_figure.png\\n Differential Abundance Analysis DIFFERENTIAL ABUNDANCE ANALYSIS Differential abundance analysis of proteins was performed using the adjusted abundance m",
+    "with_record_names_software": false,
+    "with_record_prints_percentile": true,
+    "without_record_prints_default_percentile": false,
+    "with_record_prints_qvalue": true,
+    "without_record_prints_default_qvalue": true,
+    "defaults_note": [],
+    "without_record_equals_baseline": true,
+    "without_record_equals_control": true
+  },
+  "diann_untouched": true,
+  "head_commit": "67bd81361fa9eebfa62724967459fc6ec2f4af89",
+  "tree_clean": false,
+  "seconds": 49.444827079772949
+}

@@ -92,7 +92,7 @@ run_case <- function(name, case) {
             directory <- file.path(base, "requests", step$operation); dir.create(directory, recursive = TRUE, showWarnings = FALSE)
             request <- list(operation = step$operation, input_references = list(state = getDIAStateReference(manager)),
                 parameters = step$parameters, worker_cap = 12 * 1024^3, directory = directory)
-            value <- get(entry$handler, mode = "function")(manager, request, variant)
+            value <- get(entry$handler, mode = "function", envir = ns)(manager, request, variant)
             value$operation <- step$operation
             setDIAStepProvenance(manager, step$operation, variant, entry$parameters, entry$declaration$fixed, values = step$parameters)
             completeDIAProteinAction(workflow, value)
