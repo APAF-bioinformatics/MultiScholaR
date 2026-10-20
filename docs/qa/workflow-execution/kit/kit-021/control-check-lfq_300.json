@@ -1,0 +1,63 @@
+{
+  "corpus": "lfq_300",
+  "corpus_sha256": "a89baaa3345a2b601d2e89810fa83595d02ae1164868edd82e9aa0a0cd4b06c4",
+  "format": "maxquant",
+  "state_hashes": {
+    "protein_s4_initial": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "protein_accession_cleaned": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "protein_intensity_filtered": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "duplicates_removed": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "protein_replicate_filtered": "1034b0f7c676f51233e29dab57cd72684a4fbe67f2d7f8a7c8cd3eec83c6399b",
+    "normalized": "3390abc5ad5df747238766bc76e65273e8ab94d42c810c9f5b4ec8d795469d8a",
+    "ruv_corrected": "641a214ccb9daf3f4f9dfb988677a24ae5ad9d6ddeba01996babbabbb65ac35d",
+    "correlation_filtered": "641a214ccb9daf3f4f9dfb988677a24ae5ad9d6ddeba01996babbabbb65ac35d"
+  },
+  "rows": {
+    "protein_s4_initial": 8000,
+    "protein_accession_cleaned": 8000,
+    "protein_intensity_filtered": 8000,
+    "duplicates_removed": 8000,
+    "protein_replicate_filtered": 8000,
+    "normalized": 8000,
+    "ruv_corrected": 8000,
+    "correlation_filtered": 8000
+  },
+  "steps": {
+    "import": 9.8861377239227295,
+    "design": 3.5849542617797852,
+    "accession": 385.45454478263855,
+    "protein_intensity": 4.585036039352417,
+    "duplicates": 19.452291250228882,
+    "protein_replicate": 2.4943795204162598,
+    "normalisation_ruv": 654.81333208084106,
+    "correlation": 1.7760515213012695,
+    "da": 8.0149013996124268
+  },
+  "control_reader_flagged_rows_dropped": 50,
+  "workflow_type": "LFQ",
+  "design_state": "protein_s4_initial",
+  "ruv": {
+    "k": 60,
+    "percentage": 1,
+    "controls": 8000
+  },
+  "da": {
+    "contrasts": "groupKO-groupWT",
+    "table_hashes": {
+      "groupKO-groupWT": {
+        "da_proteins_long": "9e777eedcb4056064d660751c71c8e896e482eebb89b3e3091a375c52eb98e38",
+        "da_proteins_wide": "b00c630b6a125a9caa4ba7cf44c2023eebba4f2e6e95c9730da6268bb1fc3b8b",
+        "contrasts_results_table": "24168f559d4af72c0fbc42c9c05d63496da5ccef42d392b999fde1dca681aca1"
+      }
+    },
+    "rows": {
+      "groupKO-groupWT": 8000
+    }
+  },
+  "seconds": 1090.5131814479828,
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.h6QeDJ/library/MultiScholaR",
+    "source_commit": null,
+    "version": "0.5.0"
+  }
+}
