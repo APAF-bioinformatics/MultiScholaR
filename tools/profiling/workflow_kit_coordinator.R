@@ -15,7 +15,7 @@ if (length(args) == 4L && grepl("^--rerun=", args[[4L]])) {
     rerun_cases <- strsplit(sub("^--rerun=", "", args[[4L]]), ",", fixed = TRUE)[[1L]]
     args <- args[1:3]
 }
-stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2})?|gui-0[0-9]{2}|0[0-9]{2})$", args[[1L]]))
+stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$", args[[1L]]))
 stage <- args[[1L]]
 library_path <- normalizePath(args[[2L]])
 root <- args[[3L]]
