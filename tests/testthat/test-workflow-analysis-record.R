@@ -375,16 +375,56 @@ test_that("KIT-043: the LFQ/TMT templates' variables take the protein intensity 
         removeRowsWithMissingValuesPercent = list(groupwise_percentage_cutoff = "60"))))
     overlaid <- workflowRecordReportParameters(path, params, study)
     expect_identical(overlaid$proteins_intensity_cutoff_percentile, 2)
-    expect_identical(overlaid$min_reps_per_group, 2L)
+    expect_null(overlaid$min_reps_per_group)
     expect_identical(overlaid$ui_de_q_value_threshold, 0.1)
     expect_identical(overlaid$ui_de_log_fold_change_cutoff, 0.5)
     expect_identical(overlaid$s4_de_q_val_thresh, 0.1)
     expect_identical(overlaid$software_version, "0.5.0")
     expect_identical(overlaid$source_commit, "abc123")
     expect_true(isTRUE(overlaid$record_present))
-    # The cross-group cutoff is neither recorded nor in the file: the methods text names the default it shows.
-    expect_true(grepl("max_groups_percentage_cutoff = 60", overlaid$record_defaults_note, fixed = TRUE))
-    expect_false(grepl("groupwise_percentage_cutoff|proteins_intensity_cutoff_percentile|ui_de_", overlaid$record_defaults_note))
+    # The cross-group cutoff is neither recorded nor in the file: the methods text names the default it shows, once
+    # (audit F-01: the source map holds every variable once).
+    expect_identical(overlaid$record_defaults_note, " Parameter not recorded; default shown: max_groups_percentage_cutoff = 60.")
+    expect_identical(anyDuplicated(names(workflowRecordReportSources)), 0L)
+    # The DIA-NN template's parameters (its parser's names): the same record gives its DA text the record's q-value
+    # and fold-change cutoff (audit F-02, declared), and no note it did not have before.
+    diann <- list(missing_values_cutoff = 60, max_groups_percentage_cutoff = 0, intensity_cutoff_percentile = 1,
+        ui_de_q_value_threshold = 0.05, ui_de_log_fold_change_cutoff = 0, s4_de_q_val_thresh = 0.05)
+    diann_study <- list(`Workflow Parameters` = list(`Parameters from Final S4 Object` = list(
+        removeRowsWithMissingValuesPercent = list(groupwise_percentage_cutoff = "60", max_groups_percentage_cutoff = "0"),
+        peptideIntensityFiltering = list(peptides_intensity_cutoff_percentile = "1"))))
+    overlaid_diann <- workflowRecordReportParameters(path, diann, diann_study)
+    expect_identical(overlaid_diann$ui_de_q_value_threshold, 0.1)
+    expect_identical(overlaid_diann$ui_de_log_fold_change_cutoff, 0.5)
+    expect_identical(overlaid_diann$record_defaults_note, "")
+})
+
+test_that("KIT-043: study_parameters.txt on a protein-only owner is rendered from the record (audit F-04)", {
+    root <- withr::local_tempdir()
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "protein-only", "LFQ"), WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    manager$setWorkflowType("LFQ")
+    protein <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    setDIAStepProvenance(manager, "design_builder", fixed = list(pivot = "protein x run", transform = "log2(x + 1)"))
+    manager$saveState("protein_s4_initial", protein, list(), "design")
+    entry <- workflowOperationEntry("protein_intensity_filter")
+    values <- list(strict_mode = FALSE, min_reps_per_group = 2L, min_groups = 2L, proteins_intensity_cutoff_percentile = 2L)
+    setDIAStepProvenance(manager, "protein_intensity_filter", "whole", entry$parameters, values = values)
+    manager$saveState("protein_intensity_filtered", protein, values, "intensity filter")
+    source_dir <- withr::local_tempdir()
+    invisible(suppressMessages(capture.output(createWorkflowArgsFromConfig("protein-only", source_dir_path = source_dir,
+        final_s4_object = getDIAStateReference(manager), workflow_data = list(state_manager = manager, config_list = list())), type = "output")))
+    text <- readLines(file.path(source_dir, "study_parameters.txt"))
+    expect_true("Analysis Record:" %in% text)
+    expect_false(any(grepl("omitted|\\[list object\\]|\\.\\.\\.", text)))
+    record <- buildWorkflowAnalysisRecord(manager)
+    expect_identical(record$workflow, "LFQ")
+    expect_false(any(vapply(record$steps, function(step) identical(step$operation, "legacy"), logical(1))))
+    for (step in Filter(function(s) length(s$parameters), record$steps)) for (parameter in step$parameters)
+        expect_true(sprintf("  %s [%s] = %s", parameter$name, parameter$provenance, workflowRecordValueText(parameter$value)) %in% text,
+            label = paste(step$state, parameter$name))
+    expect_true(any(grepl("proteins_intensity_cutoff_percentile [user_set] = 2", text, fixed = TRUE)))
 })
 
 test_that("KIT-038: fixed constants are listed for every registered step, a legacy step alone dumps its arguments", {

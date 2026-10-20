@@ -683,15 +683,14 @@ workflowRecordReportSources <- list(
     best_k = list(record = c("outcomes", "normalization-ruv", "k")),
     best_percentage = list(record = c("outcomes", "normalization-ruv", "negative_control_percentage")),
     num_neg_ctrl = list(record = c("outcomes", "normalization-ruv", "negative_control_count")),
-    # KIT-043: the LFQ and TMT templates' variables: the protein intensity filter (the registry step
-    # `protein_intensity_filter`; its groupwise and cross-group cutoffs are derived in the state's configuration,
-    # not declared, so they stay file-only) and the DA settings the templates print from the UI section.
+    # KIT-043: the LFQ and TMT templates' variables: the protein intensity cutoff percentile (the registry step
+    # `protein_intensity_filter`; the groupwise cutoff is derived in the state's configuration, not declared, so it
+    # stays file-only; `max_groups_percentage_cutoff` is listed above) and the DA settings the templates print from
+    # the UI section. The DIA-NN template prints the two `ui_de_*` variables too, so with a record its DA text
+    # takes the record's q-value and fold-change cutoff (the record is the authority; audit F-02).
     proteins_intensity_cutoff_percentile = list(record = c("protein_intensity_filter", "proteins_intensity_cutoff_percentile"),
         file = c("removeRowsWithMissingValuesPercent", "proteins_intensity_cutoff_percentile")),
     groupwise_percentage_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "groupwise_percentage_cutoff")),
-    max_groups_percentage_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "max_groups_percentage_cutoff")),
-    min_reps_per_group = list(record = c("protein_intensity_filter", "min_reps_per_group")),
-    min_groups = list(record = c("protein_intensity_filter", "min_groups")),
     ui_de_q_value_threshold = list(record = c("DA", "qvalue"), file = c("deAnalysisParameters", "de_q_val_thresh")),
     ui_de_log_fold_change_cutoff = list(record = c("DA", "lfc"), file = c("deAnalysisParameters", "treat_lfc_cutoff")))
 
