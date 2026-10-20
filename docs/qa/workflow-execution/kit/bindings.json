@@ -3772,6 +3772,10 @@
       },
       "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-107/browser-smoke.bc3l15/calibration",
       "expected_retained_samples": 297,
+      "report_file": "report.tsv",
+      "format": "diann",
+      "route": "DIA",
+      "notes": null,
       "files": {
         "report.tsv": {
           "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/perf-107/browser-smoke.bc3l15/calibration/report.tsv",
@@ -3818,6 +3822,10 @@
       },
       "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen-v2",
       "expected_retained_samples": 8,
+      "report_file": "report.tsv",
+      "format": "diann",
+      "route": "DIA",
+      "notes": null,
       "files": {
         "report.tsv": {
           "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/screen-v2/report.tsv",
@@ -3836,6 +3844,176 @@
         }
       },
       "note": "screen corpus v2: eight samples of the calibration recipe (same universe, proteins and cutoff) with counts 3000, 20000, 30000, 40000, 45000, 50000, 55000, 60000; about 56% of features pass the group-count intensity filter and the 3000 cutoff drops one sample"
+    },
+    "lfq_300": {
+      "profile": "lfq",
+      "synthetic": true,
+      "samples": 300,
+      "rows": 8100,
+      "recipe": {
+        "kind": "lfq",
+        "synthetic": true,
+        "seed": 20261020,
+        "samples": 300,
+        "proteins": 8000,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "differential_fraction": 0.1,
+        "missing_fraction": 0.08,
+        "flagged_rows": 50
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300",
+      "expected_retained_samples": 300,
+      "report_file": "proteinGroups.txt",
+      "format": "maxquant",
+      "route": "protein",
+      "notes": "8000 protein groups + 50 contaminant and 50 decoy rows (dropped by the reader); 8% missing written as 0; 10% of proteins differential (KO vs WT)",
+      "files": {
+        "proteinGroups.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300/proteinGroups.txt",
+          "bytes": 21421516,
+          "sha256": "d48c1a829062f036e74e3baf6b9e920b19fa16a658fb33ce5fe45b3dc4d756b3"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300/design.tsv",
+          "bytes": 4129,
+          "sha256": "094f18939826bcf2d2de62f82ced255a2374ac0cf7f6a1eae70f5385b85a19fb"
+        },
+        "proteins.fasta": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300/proteins.fasta",
+          "bytes": 1245786,
+          "sha256": "1400b0a35720ec648d9fcb8176452d47a6527cd7b52df529ef1a799a147ef0eb"
+        }
+      },
+      "generator": "tools/profiling/kit_protein_corpus.R"
+    },
+    "tmt_300": {
+      "profile": "tmt",
+      "synthetic": true,
+      "samples": 300,
+      "rows": 8000,
+      "recipe": {
+        "kind": "tmt",
+        "synthetic": true,
+        "seed": 20261021,
+        "samples": 300,
+        "proteins": 8000,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "differential_fraction": 0.1,
+        "missing_fraction": 0.02,
+        "flagged_rows": 0
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/tmt-300",
+      "expected_retained_samples": 300,
+      "report_file": "pd_proteins.tsv",
+      "format": "pd_tmt",
+      "route": "protein",
+      "notes": "8000 proteins across 30 TMT10 plexes (10 channels each); 2% missing written empty; 10% of proteins differential (KO vs WT); runs are <channel>_<sample>",
+      "files": {
+        "pd_proteins.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/tmt-300/pd_proteins.tsv",
+          "bytes": 22437381,
+          "sha256": "1f8162b6826284eabc4048940d9fa3b46003a8be7116d0be0533f8a8ffaf448f"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/tmt-300/design.tsv",
+          "bytes": 5869,
+          "sha256": "15e82456341e5437eff5ea7b6668616e5b4a25869f0ee9c51267c656498b6c85"
+        },
+        "proteins.fasta": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/tmt-300/proteins.fasta",
+          "bytes": 1245786,
+          "sha256": "1400b0a35720ec648d9fcb8176452d47a6527cd7b52df529ef1a799a147ef0eb"
+        }
+      },
+      "generator": "tools/profiling/kit_protein_corpus.R"
+    },
+    "lfq_fixture": {
+      "profile": "lfq_fixture",
+      "synthetic": true,
+      "samples": 6,
+      "rows": 5,
+      "recipe": {
+        "kind": "lfq_fixture",
+        "synthetic": true,
+        "seed": 20260428,
+        "samples": 6,
+        "proteins": 5,
+        "source": "/home/doktersmol/Projects/APAF/MultiScholaR/tests/testdata/e2e/prot_lfq"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-fixture",
+      "expected_retained_samples": 6,
+      "report_file": "proteinGroups.txt",
+      "format": "maxquant",
+      "route": "protein",
+      "notes": "the e2e fixture, copied; the screen lifecycle corpus for the protein route",
+      "files": {
+        "proteinGroups.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-fixture/proteinGroups.txt",
+          "bytes": 435,
+          "sha256": "ad2ba7383d9703f14986e520617f9cccf0c79a923f03f6f65b030f72265dcacb"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-fixture/design.tsv",
+          "bytes": 61,
+          "sha256": "af0c7db73f5b450b6cdad028ec95177b177343d13675833724237596aab8fd01"
+        },
+        "proteins.fasta": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-fixture/proteins.fasta",
+          "bytes": 546,
+          "sha256": "db934bbb4751ce376b4ab56af65c7f32eb6cd75b1215a677dfc2124589222f17"
+        }
+      },
+      "generator": "tools/profiling/kit_protein_corpus.R",
+      "normalisation": {
+        "ruv_mode": "skip"
+      }
+    },
+    "tmt_fixture": {
+      "profile": "tmt_fixture",
+      "synthetic": true,
+      "samples": 6,
+      "rows": 5,
+      "recipe": {
+        "kind": "tmt_fixture",
+        "synthetic": true,
+        "seed": 20260428,
+        "samples": 6,
+        "proteins": 5,
+        "source": "/home/doktersmol/Projects/APAF/MultiScholaR/tests/testdata/e2e/prot_tmt"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/tmt-fixture",
+      "expected_retained_samples": 6,
+      "report_file": "pd_tmt_peptides.tsv",
+      "format": "pd_tmt",
+      "route": "protein",
+      "notes": "the e2e fixture, copied; the screen lifecycle corpus for the protein route",
+      "files": {
+        "pd_tmt_peptides.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/tmt-fixture/pd_tmt_peptides.tsv",
+          "bytes": 458,
+          "sha256": "1cc8deec83630a67c5fa874f5b2dc635678c91e953db118929f0d9969bc872db"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/tmt-fixture/design.tsv",
+          "bytes": 96,
+          "sha256": "b1d3bd7b1a06c35876126a52f94b97d05571d1965541aa8f0c4b83251321bb16"
+        },
+        "proteins.fasta": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/tmt-fixture/proteins.fasta",
+          "bytes": 546,
+          "sha256": "db934bbb4751ce376b4ab56af65c7f32eb6cd75b1215a677dfc2124589222f17"
+        }
+      },
+      "generator": "tools/profiling/kit_protein_corpus.R",
+      "normalisation": {
+        "ruv_mode": "skip"
+      }
     }
   },
   "journey": {
@@ -4147,15 +4325,17 @@
     "protocol_sha256": "10b830f85a03df4641a60fd6a12b650b9c98115cb62c068f947cb2fdfe1ac20c",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
     "step_map_sha256": "7becbb852abd4a0aa364c14493097381b99cd122d302ec7130f78dec80a737bb",
+    "step_map_protein": "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json",
+    "step_map_protein_sha256": "9b58ddbfca35454c28a12c79f81651029ee9484384919d1f7d416b63f6953498",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "974e06c620fc484b45554a9981e25e719ed262c156dd9cd2ca0d526a439bc1bd",
-      "tools/profiling/workflow_kit_driver.R": "6c2132b45078b2ce6fa3fbd853ee23e2a5eddf3aaafdac0709cd51969f5946c5",
-      "tools/profiling/workflow_kit_coordinator.R": "5b9d85de35f7f2b5aaefc7d29f55ec79ac0d1ae3524b0720056d714a3604f7c6",
+      "tools/profiling/workflow_kit.R": "fc17039fd081ea7bcdfc300246a1c4c9dbd6e4de86b873b41ec67bf72c35d702",
+      "tools/profiling/workflow_kit_driver.R": "fdd365581d43a0ae2fa09327eb72c83c2d307f8da3861000c36add89f213552b",
+      "tools/profiling/workflow_kit_coordinator.R": "77f8823471facbd846208e238dbd0b6ba7b152b5898455718ed0a9034f5c66f5",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "b4ec2e8c89bbeab2a9e158c5b0bda2fceed0959d1efe9be8a9f606d1fe88ab72",
-      "tools/profiling/workflow_checkpoint_dia_driver.R": "b71240c8a945c9db2518a65a4e029c503dd8aa66c7319e4cbccd99bd3ea0af07",
-      "tests/testthat/test-workflow-kit-harness.R": "8c81558104a89628a087044a2c5249b12ce1800bb151dcb2aa469de8c1293b1c",
+      "tools/profiling/workflow_checkpoint_dia_driver.R": "74e61ee6eaf98e6133c8ab3891e21acdb060ebd4ae17a8fa23b264553c9236f7",
+      "tests/testthat/test-workflow-kit-harness.R": "26d5324024221f83628caffb91c5188ef58d5e80cf6289d43a6b2b923d7a9fad",
       "tests/testthat/test-workflow-execution-adapters.R": "d315a2847fd76dfb0733b286e4ca3aca1724bfff12400c2e99182320917a6548",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

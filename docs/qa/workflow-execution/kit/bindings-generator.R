@@ -56,10 +56,11 @@ b$populations <- core$populations[c("screen_p14", "full_p14", "full_primary")]
 b$oracles <- core$oracles
 # Corpora: PERF-107 synthetic DIA-NN cohorts. Full = calibration (300 samples); heldout stays reserved.
 synthetic <- jsonlite::read_json(file.path(repo, "docs/qa/workflow-execution/perf-107/synthetic-corpus.json"))
-bind_corpus <- function(directory, manifest) {
-    files <- c("report.tsv", "design.tsv", "proteins.fasta")
+# KIT-021: a corpus binds a file list (its report file first), the import format and the route its journey runs.
+bind_corpus <- function(directory, manifest, files = c("report.tsv", "design.tsv", "proteins.fasta"), format = "diann", route = "DIA") {
     list(profile = manifest$profile, synthetic = TRUE, samples = manifest$samples, rows = manifest$rows,
         recipe = manifest$recipe, directory = directory, expected_retained_samples = manifest$expected_retained_samples,
+        report_file = files[[1L]], format = format, route = route, notes = manifest$notes,
         files = stats::setNames(lapply(files, function(name) {
             file <- file.path(directory, name)
             stopifnot(identical(hash(file), manifest$files[[name]]$sha256))
@@ -90,6 +91,28 @@ stopifnot(identical(screen$samples, 8L), identical(screen$recipe$cutoff, 3000L),
     identical(as.integer(unlist(screen$recipe$counts)), screen_counts))
 b$corpora$screen <- bind_corpus(screen_dir, screen)
 b$corpora$screen$note <- "screen corpus v2: eight samples of the calibration recipe (same universe, proteins and cutoff) with counts 3000, 20000, 30000, 40000, 45000, 50000, 55000, 60000; about 56% of features pass the group-count intensity filter and the 3000 cutoff drops one sample"
+# KIT-021: the protein-level corpora in the real tool output formats (tools/profiling/kit_protein_corpus.R): a MaxQuant
+# proteinGroups.txt and a Proteome Discoverer protein export, 300 samples x 8,000 proteins each (seeded), and the two
+# e2e fixtures copied as the screen lifecycle corpora of the protein route. Generated once under the proof root.
+protein_corpora <- list(
+    lfq_300 = list(dir = "lfq-300", kind = "lfq", report = "proteinGroups.txt", format = "maxquant"),
+    tmt_300 = list(dir = "tmt-300", kind = "tmt", report = "pd_proteins.tsv", format = "pd_tmt"),
+    lfq_fixture = list(dir = "lfq-fixture", kind = "lfq_fixture", report = "proteinGroups.txt", format = "maxquant"),
+    tmt_fixture = list(dir = "tmt-fixture", kind = "tmt_fixture", report = "pd_tmt_peptides.tsv", format = "pd_tmt"))
+for (key in names(protein_corpora)) {
+    spec <- protein_corpora[[key]]
+    directory <- file.path(proof, "kit/corpus", spec$dir)
+    if (!file.exists(file.path(directory, "manifest.json"))) {
+        status <- system2(file.path(R.home("bin"), "Rscript"), c(shQuote(file.path(repo, "tools/profiling/kit_protein_corpus.R")), spec$kind, shQuote(directory)))
+        stopifnot(identical(status, 0L))
+    }
+    manifest <- jsonlite::read_json(file.path(directory, "manifest.json"))
+    b$corpora[[key]] <- bind_corpus(directory, manifest, files = c(spec$report, "design.tsv", "proteins.fasta"), format = spec$format, route = "protein")
+    b$corpora[[key]]$generator <- "tools/profiling/kit_protein_corpus.R"
+    # A five-protein fixture cannot carry the automatic RUV sweep (no valid negative-control percentage): its
+    # lifecycle members and oracle run the normalisation with RUV skipped; the 300-sample corpora keep the journey's settings.
+    if (grepl("_fixture$", key)) b$corpora[[key]]$normalisation <- list(ruv_mode = "skip")
+}
 # Journey: frozen settings (audit A13/A14). GUI defaults except the sample-filter cutoff, which is the
 # corpus's designed cutoff; the ruv_pearson profile of runCheckpointNormalizationActions; DA as runCheckpointDaActions.
 b$journey <- list(
@@ -357,6 +380,37 @@ if (!is.null(b$builds$kit_027)) {
         ceiling_seconds = 900L, purpose = "replay_origin")
 }
 
+# KIT-021: the LFQ and TMT single journey members on the kit_021 build (protocol v1.5: the whole journey of the protein
+# route, no stop step; exactness against in-process oracles recorded on the same build and corpus; completion and the
+# peaks recorded, no ratio, no control). Ticket key `021` is the LFQ member on the MaxQuant corpus and `021t` the TMT
+# member on the Proteome Discoverer corpus (user instruction 2026-10-20: both corpora in the real tool output formats),
+# each with its own ceiling (4 h, the protocol maximum). `KIT_021_CORPUS=lfq_fixture` / `KIT_021T_CORPUS=tmt_fixture`
+# bind the fixture corpora for the screen lifecycle runs (not counted; ceiling 1,800 s).
+if (!is.null(b$builds$kit_021)) {
+    corpus_021 <- Sys.getenv("KIT_021_CORPUS", "lfq_300"); stopifnot(corpus_021 %in% c("lfq_300", "lfq_fixture"))
+    corpus_021t <- Sys.getenv("KIT_021T_CORPUS", "tmt_300"); stopifnot(corpus_021t %in% c("tmt_300", "tmt_fixture"))
+    b$tickets[["021"]] <- list(kind = "single_journey", build = "kit_021", corpus = corpus_021, route = "protein", whole_journey = TRUE,
+        oracles = corpus_021, ceiling_seconds = if (identical(corpus_021, "lfq_300")) 14400L else 1800L)
+    b$tickets[["021t"]] <- list(kind = "single_journey", build = "kit_021", corpus = corpus_021t, route = "protein", whole_journey = TRUE,
+        oracles = corpus_021t, ceiling_seconds = if (identical(corpus_021t, "tmt_300")) 14400L else 1800L)
+}
+# KIT-021 oracles (protocol v1.5 item 1): per-step fingerprints of an in-process run of the bound build on each protein
+# corpus, recorded read-only by docs/qa/workflow-execution/kit/kit-021/oracle-record.R into oracles-<corpus>.rds; bound
+# under <corpus>_<step> as the KIT-005 oracles are bound under journey_<step>.
+for (key in names(protein_corpora)) {
+    oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-021", paste0("oracles-", key, ".rds"))
+    if (!file.exists(oracle_file)) next
+    recorded <- readRDS(oracle_file)
+    stopifnot(identical(recorded$corpus, key), identical(recorded$corpus_sha256, b$corpora[[key]]$files[[1L]]$sha256))
+    for (step in names(recorded$populations)) {
+        population <- recorded$populations[[step]]
+        b$populations[[paste0(key, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+            head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+            oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at)
+        b$oracles[[paste0(key, "_", step)]] <- population$fingerprint
+    }
+}
+
 # KIT-019: the DA publication through the managed worker (no counted member; one install recorded). The build is
 # bound as the final stage-1 candidate for KIT-017's closure pair; the control stays the latest accepted build.
 if (!is.null(b$builds$kit_019)) {
@@ -466,6 +520,9 @@ b$harness <- list(root = file.path(proof, "kit/runtime"),
     protocol_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/protocol.md")),
     step_map = "docs/qa/workflow-execution/kit/kit-001/step-map.json",
     step_map_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map.json")),
+    # KIT-021 (protocol v1.5 item 5): the protein route's own step map.
+    step_map_protein = "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json",
+    step_map_protein_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json")),
     core_pinned_unchanged = TRUE,
     files = as.list(stats::setNames(vapply(file.path(repo, files), hash, character(1), USE.NAMES = FALSE), files)))
 jsonlite::write_json(b, path, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)

@@ -74,6 +74,68 @@ test_that("the journey step map lists every DIA step in production order", {
     expect_null(steps[[17]]$state)
 })
 
+test_that("KIT-021: the protein route's step list, a whole-journey single member with a suffixed key and in-process oracles", {
+    h <- kitHarness()
+    # The DIA list is unchanged; the protein route has no peptide stage and no IQ rollup and its design commits protein_s4_initial.
+    expect_identical(h$kitStepIds("DIA"), h$kitStepIds())
+    protein <- h$kitStepIds("protein")
+    expect_identical(protein, c("import", "design", "accession", "protein_intensity", "duplicates", "protein_replicate",
+        "normalisation_ruv", "correlation", "session_export", "da"))
+    expect_identical(h$kitJourneySteps("protein")[[2]]$state, "protein_s4_initial")
+    expect_error(h$kitStepIds("limpa"), "route")
+    b <- kitSyntheticBindings()
+    b$builds$kit_021 <- list(library = "/lib/p", build = strrep("p", 64), exact_sum = "sum-p")
+    b$corpora$lfq_300 <- b$corpora$full
+    b$corpora$lfq_300$report_file <- "proteinGroups.txt"; b$corpora$lfq_300$format <- "maxquant"; b$corpora$lfq_300$route <- "protein"
+    b$harness$step_map_protein_sha256 <- strrep("m", 64)
+    b$tickets[["021"]] <- list(kind = "single_journey", build = "kit_021", corpus = "lfq_300", route = "protein", whole_journey = TRUE,
+        oracles = "lfq_300", ceiling_seconds = 14400L)
+    b$tickets[["021t"]] <- list(kind = "single_journey", build = "kit_021", corpus = "lfq_300", route = "protein", whole_journey = TRUE,
+        oracles = "lfq_300", ceiling_seconds = 1800L)
+    cases <- h$kitCases(b, "kit-journey-021")
+    expect_length(cases, 1L)
+    case <- cases[[1L]]
+    expect_identical(case$route, "protein")
+    expect_identical(case$oracles, "lfq_300")
+    expect_null(case$stop_after)
+    expect_identical(case$selector, "kit:journey-021:candidate:1")
+    expect_identical(h$kitSelectorStage("kit:journey-021t:candidate:1"), list(stage = "kit-journey-021t", id = "candidate-1"))
+    expect_identical(h$kitCases(b, "kit-journey-021t")[[1L]]$selector, "kit:journey-021t:candidate:1")
+    # Each key binds its own ceiling; the protein step map is part of the binding; a protein route without the map refuses.
+    expect_identical(h$kitMemberSeconds("kit-journey-021", b), 14400L)
+    expect_identical(h$kitMemberSeconds("kit-journey-021t", b), 1800L)
+    other <- b; other$harness$step_map_protein_sha256 <- strrep("n", 64)
+    expect_false(identical(h$kitCases(other, "kit-journey-021")[[1L]]$binding, case$binding))
+    none <- b; none$harness$step_map_protein_sha256 <- NULL
+    expect_error(h$kitCases(none, "kit-journey-021"), "protein step map")
+    # A single journey without a stop step must say so; the DIA stop-after form is unchanged.
+    bare <- b; bare$tickets[["021"]]$whole_journey <- NULL
+    expect_error(h$kitCases(bare, "kit-journey-021"), "build or stop_after")
+    # The oracles are looked up under the bound prefix for the route's steps.
+    b$oracles$lfq_300_design <- list(class = "ProteinQuantitativeData", components = list(protein_quant_table = "x"))
+    oracles <- h$kitOracleJourneyPopulations(b, "protein", "lfq_300")
+    expect_identical(names(oracles), protein)
+    expect_identical(oracles$design$fingerprint$class, "ProteinQuantitativeData")
+    expect_null(oracles$import$fingerprint)
+    # The decision takes the route's whole step list when there is no stop step.
+    receipt <- kitSyntheticReceipt(cases, h, edit = function(r) {
+        op <- r$cases[["candidate-1"]]$operation
+        op$status <- "complete"; op$populations_complete <- TRUE
+        op$phase_status <- stats::setNames(as.list(rep("complete", length(protein))), protein)
+        op$phase_peak_anon_bytes <- stats::setNames(as.list(rep(2e9, length(protein))), protein)
+        op$phase_seconds <- stats::setNames(as.list(rep(10, length(protein))), protein)
+        op$sampled_anon_bytes <- 2e9; op$resident_end_bytes <- 1.5e9
+        r$cases[["candidate-1"]]$operation <- op
+        r$cases[["candidate-1"]]$verifier_completion <- list(accepted = TRUE)
+        r
+    })
+    decision <- h$kitSingleJourneyDecision(receipt, cases, b)
+    expect_identical(decision$status, "accepted")
+    expect_identical(decision$steps, protein)
+    expect_identical(decision$ticket, "021")
+    expect_null(decision$stop_after)
+})
+
 test_that("KIT stages expand to fixed cases with bound corpora, builds and digests", {
     h <- kitHarness()
     b <- kitSyntheticBindings()

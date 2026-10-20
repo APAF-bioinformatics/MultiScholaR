@@ -1,0 +1,197 @@
+{
+  "schema": 1,
+  "owner": "KIT-021",
+  "date": "2026-10-20",
+  "route": "protein",
+  "rule": "The protein route (LFQ and TMT imports on the on-disk owner, KIT-020) runs the DIA route's protein QC, normalisation, correlation, export and DA steps unchanged; its units are the DIA step map's for those steps (kit-001/step-map.json, confirmed there). The two route-specific rows are the import (protein-level readers) and the design (the LFQ/TMT branch of the design builder). No step is declared here beyond those already declared for DIA; the rows carry no flag.",
+  "units": {
+    "row": "each row's result depends on that row only (given the design and any declared global statistics)",
+    "feature_group": "depends only on the rows of one feature group (the grouping column is named)",
+    "whole_matrix": "uses a statistic or model over all rows and samples; runs once on one projected object under the cap",
+    "store": "not a data kernel: import adoption, design, session export"
+  },
+  "open_flags": 0,
+  "steps": [
+    {
+      "id": "import",
+      "label": "Import",
+      "unit": "store",
+      "in_journey": true,
+      "module": "R/mod_prot_import_server_helpers.R (process_data observer; initializeDIANativeImport attaches the owner for maxquant/fragpipe/spectronaut/pd_tmt, KIT-020)",
+      "kernel": "importMaxQuantData / importFragPipeData / importSpectronautData / importProteomeDiscovererTMTData (R/func_prot_import_*)",
+      "writes": [
+        "workflow_data$data_tbl / data_cln (setDIAOwnedPayload)",
+        "import_metadata (recordDIAImportMetadata)"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "route-specific row (KIT-020)"
+      ]
+    },
+    {
+      "id": "design",
+      "label": "Design",
+      "unit": "store",
+      "in_journey": true,
+      "module": "R/mod_prot_design_state_helpers.R (buildProtDesignStateCheckpoint, LFQ/TMT branch: protein x run pivot, log2(x + 1))",
+      "kernel": "ProteinQuantitativeData constructor",
+      "writes": [
+        "state protein_s4_initial (adapter$saveState -> component checkpoint)"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "route-specific row (KIT-020)"
+      ]
+    },
+    {
+      "id": "accession",
+      "label": "Accession Cleanup",
+      "unit": "feature_group",
+      "in_journey": true,
+      "module": "R/mod_prot_qc_protein_cleanup.R (runProteinAccessionCleanupStep)",
+      "kernel": "chooseBestProteinAccession (protein method)",
+      "writes": [
+        "state protein_accession_cleaned"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "same kernel and unit as the DIA step map's row"
+      ]
+    },
+    {
+      "id": "protein_intensity",
+      "label": "Protein Intensity Filter",
+      "unit": "row",
+      "in_journey": true,
+      "module": "R/mod_prot_qc_protein_intensity.R (runProteinIntensityFilterApplyStep)",
+      "kernel": "removeRowsWithMissingValuesPercent",
+      "writes": [
+        "state protein_intensity_filtered"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "same kernel and unit as the DIA step map's row"
+      ]
+    },
+    {
+      "id": "duplicates",
+      "label": "Duplicate Removal",
+      "unit": "feature_group",
+      "in_journey": true,
+      "module": "R/mod_prot_qc_protein_dedup.R (runProteinDuplicateRemovalStep)",
+      "kernel": "resolveProteinDuplicateRows",
+      "writes": [
+        "state duplicates_removed"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "same kernel and unit as the DIA step map's row"
+      ]
+    },
+    {
+      "id": "protein_replicate",
+      "label": "Protein Replicate Filter",
+      "unit": "row",
+      "in_journey": true,
+      "module": "R/mod_prot_qc_protein_replicate.R (runProteinReplicateFilterApplyStep)",
+      "kernel": "removeProteinsWithOnlyOneReplicate",
+      "writes": [
+        "state protein_replicate_filtered"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "same kernel and unit as the DIA step map's row"
+      ]
+    },
+    {
+      "id": "normalisation_ruv",
+      "label": "Normalisation and RUV",
+      "unit": "whole_matrix",
+      "in_journey": true,
+      "module": "R/utils_workflow_dia_products.R (runDIAReferenceNormalization; normalization-ruv declaration)",
+      "kernel": "normaliseBetweenSamples, ruvIII_C_Varying",
+      "writes": [
+        "state ruv_corrected (or normalized when RUV is skipped)"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "same kernel and unit as the DIA step map's row"
+      ]
+    },
+    {
+      "id": "correlation",
+      "label": "Correlation Filtering",
+      "unit": "whole_matrix",
+      "in_journey": true,
+      "module": "R/utils_workflow_dia_products.R (runDIAReferenceCorrelation; pearson-pairs, pearson-selection)",
+      "kernel": "pearsonCorForSamplePairs, filterSamplesByProteinCorrelationThreshold",
+      "writes": [
+        "state correlation_filtered"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "same kernel and unit as the DIA step map's row"
+      ]
+    },
+    {
+      "id": "session_export",
+      "label": "Filtered session export",
+      "unit": "store",
+      "in_journey": true,
+      "module": "R/mod_prot_norm_session_helpers.R (runProtNormExportSessionWorkflow, native branch)",
+      "kernel": "runDIANativeSessionExport",
+      "writes": [
+        "no state; the native archive"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "same kernel and unit as the DIA step map's row"
+      ]
+    },
+    {
+      "id": "da",
+      "label": "Differential abundance",
+      "unit": "whole_matrix",
+      "in_journey": true,
+      "module": "R/utils_workflow_dia_da.R (runDIAReferenceDaAnalysis; DA-contrast-output declaration)",
+      "kernel": "differentialAbundanceAnalysis (limma)",
+      "writes": [
+        "DA arguments committed onto correlation_filtered; contrast products"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "same kernel and unit as the DIA step map's row"
+      ]
+    }
+  ]
+}

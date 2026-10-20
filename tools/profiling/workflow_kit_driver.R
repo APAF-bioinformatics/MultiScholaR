@@ -140,7 +140,7 @@ kitSnapshotAfterStep <- function(project, api) {
 #' @return Journey record: populations per step, files, final head, status.
 #' @noRd
 runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, application_root, events, api) {
-    steps <- kitJourneySteps()
+    steps <- kitJourneySteps(kitRouteOf(journey))
     # KIT-018: a single journey member runs import through `journey$stop_after` only.
     if (!is.null(journey$stop_after)) {
         last <- match(journey$stop_after, vapply(steps, `[[`, character(1), "id"))
@@ -186,7 +186,12 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
                     action$result, action$state, settings[[id]] %||% list())
             },
             protein = {
-                if (id == "iq") h$checkpointSetInput(driver, "proteomics_workflow-quality_control-qc_tabs_lfq", "Protein QC")
+                # The first protein step opens the Protein QC tab: the IQ rollup on the DIA route; on the protein route
+                # (KIT-021) there is no peptide stage, so the QC page is opened here too.
+                if (id == steps[[match("protein", vapply(steps, `[[`, "", "kind"))]]$id) {
+                    h$checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "qc")
+                    h$checkpointSetInput(driver, "proteomics_workflow-quality_control-qc_tabs_lfq", "Protein QC")
+                }
                 action <- protein_actions[[id]]
                 runKitQcAction(h, driver, protein_prefix, "protein_filter_tabs", action$tab, action$action,
                     action$result, action$state, settings[[id]] %||% list())

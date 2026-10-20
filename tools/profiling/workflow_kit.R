@@ -9,9 +9,23 @@
 #' `state` is the state-manager name the step leaves current (NULL for store-only steps);
 #' `on_disk_from` is the first step after which the adopted store holds the state.
 #' @noRd
-kitJourneySteps <- function() {
+kitJourneySteps <- function(route = "DIA") {
     step <- function(id, label, state, kind, module, action) list(id = id, label = label,
         state = state, kind = kind, module = module, action = action)
+    stopifnot(is.character(route), length(route) == 1L, route %in% c("DIA", "protein"))
+    # KIT-021: the protein-level route (LFQ and TMT imports, KIT-020): no peptide stage and no IQ rollup; the design
+    # commits `protein_s4_initial`; the protein QC, normalisation, export and DA steps are the DIA route's.
+    if (identical(route, "protein")) return(list(
+        step("import", "Import", "initial", "store", "mod_prot_import", "prot-import-process"),
+        step("design", "Design", "protein_s4_initial", "store", "mod_prot_design", "builder save_results"),
+        step("accession", "Accession Cleanup", "protein_accession_cleaned", "protein", "mod_prot_qc_protein_cleanup", "cleanup-apply_accession_cleanup"),
+        step("protein_intensity", "Protein Intensity Filter", "protein_intensity_filtered", "protein", "mod_prot_qc_protein_intensity", "intensity_filter-apply_protein_intensity_filter"),
+        step("duplicates", "Duplicate Removal", "duplicates_removed", "protein", "mod_prot_qc_protein_dedup", "duplicate_removal-apply_duplicate_removal"),
+        step("protein_replicate", "Protein Replicate Filter", "protein_replicate_filtered", "protein", "mod_prot_qc_protein_replicate", "replicate_filter-apply_protein_replicate_filter"),
+        step("normalisation_ruv", "Normalisation and RUV", "ruv_corrected", "normalisation", "mod_prot_norm", "run_normalization"),
+        step("correlation", "Correlation Filtering", "correlation_filtered", "normalisation", "mod_prot_norm", "apply_correlation_filter"),
+        step("session_export", "Filtered session export", NULL, "store", "mod_prot_norm", "export_filtered_session"),
+        step("da", "Differential abundance", "correlation_filtered", "da", "mod_prot_da", "run_da_analysis")))
     list(
         step("import", "Import", "initial", "store", "mod_prot_import", "prot-import-process"),
         step("design", "Design", "raw_data_s4", "store", "mod_prot_design", "builder save_results"),
@@ -35,7 +49,11 @@ kitJourneySteps <- function() {
 
 #' Journey step identifiers in order.
 #' @noRd
-kitStepIds <- function() vapply(kitJourneySteps(), `[[`, character(1), "id")
+kitStepIds <- function(route = "DIA") vapply(kitJourneySteps(route), `[[`, character(1), "id")
+
+#' A case's or journey's route (KIT-021): `DIA` unless bound otherwise.
+#' @noRd
+kitRouteOf <- function(x) x$route %||% "DIA"
 
 #' Member ceilings in seconds (plan run ledger): lifecycle members 5 min; journey members from the bindings.
 #' @noRd
@@ -46,7 +64,8 @@ kitMemberSeconds <- function(stage, bindings = NULL) {
     if (grepl("^kit-gui-0[0-9]{2}$", stage)) return(as.integer(bindings$tickets[[sub("kit-gui-", "", stage)]]$ceiling_seconds %||% 600L))
     if (startsWith(stage, "kit-journey")) {
         # KIT-028: a ticket's journey member may bind its own ceiling (the screen replay origin, 900 s).
-        ticket_seconds <- if (grepl("^kit-journey-0[0-9]{2}$", stage)) bindings$tickets[[sub("kit-journey-", "", stage)]]$ceiling_seconds
+        # KIT-021 (protocol v1.5): a ticket key may carry a one-letter suffix (`021t`), each key with its own ceiling.
+        ticket_seconds <- if (grepl("^kit-journey-0[0-9]{2}[a-z]?$", stage)) bindings$tickets[[sub("kit-journey-", "", stage)]]$ceiling_seconds
         seconds <- ticket_seconds %||% bindings$journey$ceiling_seconds
         if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 14400)
             stop("the journey ceiling is not fixed in the bindings (at most 4 h, protocol v1.2)")
@@ -98,25 +117,32 @@ kitControl <- function(bindings) {
 #'   and a `binding` digest of everything that fixes it.
 #' @noRd
 kitCases <- function(bindings, stage) {
-    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2})?|gui-0[0-9]{2}|0[0-9]{2})$", stage))
+    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$", stage))
     build_of <- function(build_key) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
         build
     }
-    journey_case <- function(id, role, rep, build_key, corpus_key, fault, selector, record = TRUE, stop_after = NULL) {
+    journey_case <- function(id, role, rep, build_key, corpus_key, fault, selector, record = TRUE, stop_after = NULL,
+        route = "DIA", oracles = NULL) {
         build <- build_of(build_key)
         corpus <- bindings$corpora[[corpus_key]]
         if (is.null(corpus)) stop("corpus ", corpus_key, " is not bound")
         # KIT-018: a single journey member stops after a named step (the driver runs the steps up to it).
-        if (!is.null(stop_after) && !(is.character(stop_after) && length(stop_after) == 1L && stop_after %in% kitStepIds()))
+        if (!is.null(stop_after) && !(is.character(stop_after) && length(stop_after) == 1L && stop_after %in% kitStepIds(route)))
             stop("stop_after names no journey step: ", paste(stop_after, collapse = ", "))
+        # KIT-021: a protein-route member is judged against the in-process oracles bound under `oracles` (protocol v1.5),
+        # recorded in the route's step map; the DIA route keeps the KIT-005 oracles and the DIA step map.
+        if (identical(route, "protein") && is.null(bindings$harness$step_map_protein_sha256)) stop("the protein step map is not bound")
         list(id = id, kind = "journey", role = role, control = role == "control", rep = rep, fault = fault,
-            corpus = corpus_key, record = record, stop_after = stop_after, library = build$library, expected_build = build$build,
+            corpus = corpus_key, record = record, stop_after = stop_after, route = route, oracles = oracles,
+            library = build$library, expected_build = build$build,
             exact_sum = build$exact_sum, expect_failure = fault != "none",
             binding = digest::digest(c(list(corpus = corpus$files, build = build, stage = stage, rep = rep, record = record,
                 journey = bindings$journey[setdiff(names(bindings$journey), "pair")], protocol = bindings$protocol_sha256,
-                step_map = bindings$step_map_sha256), if (!is.null(stop_after)) list(stop_after = stop_after)), algo = "sha256"),
+                step_map = if (identical(route, "protein")) bindings$harness$step_map_protein_sha256 else bindings$step_map_sha256),
+                if (!is.null(stop_after)) list(stop_after = stop_after),
+                if (!identical(route, "DIA")) list(route = route, oracles = oracles)), algo = "sha256"),
             selector = selector)
     }
     operation_case <- function(id, role, rep, build_key, operation, population_key, fault, selector,
@@ -179,7 +205,7 @@ kitCases <- function(bindings, stage) {
             spec$control, "full", "none", "kit:journey:default:1", record = FALSE)
         return(cases)
     }
-    if (grepl("^kit-journey-0[0-9]{2}$", stage)) {
+    if (grepl("^kit-journey-0[0-9]{2}[a-z]?$", stage)) {
         # A ticket's journey pair (KIT-011): control and candidate builds run the whole journey as users run
         # it (`record = FALSE`: no launch record, the build's own production default), one member each.
         ticket <- sub("kit-journey-", "", stage, fixed = TRUE)
@@ -188,10 +214,13 @@ kitCases <- function(bindings, stage) {
             # A ticket's single journey member (KIT-018; protocol section 2 single members): one build, the full
             # corpus, no launch record, the journey driven from import through `stop_after` only; exactness of the
             # states it leaves against the KIT-005 oracles and completion, peak recorded, no control and no ratio.
-            if (is.null(spec$build) || is.null(spec$stop_after)) stop("KIT-", ticket, " single journey binds no build or stop_after")
+            # KIT-021 (protocol v1.5 item 2): a single journey may bind no stop step and run its route's whole journey.
+            if (is.null(spec$build)) stop("KIT-", ticket, " single journey binds no build or stop_after")
+            if (is.null(spec$stop_after) && !identical(spec$whole_journey, TRUE)) stop("KIT-", ticket, " single journey binds no build or stop_after")
             # The case id is the one its selector maps back to (KIT-018 pre-execution audit PE-01; KIT-008 correction 1).
             return(list(journey_case("candidate-1", "candidate", 1L, spec$build, spec$corpus %||% "full", "none",
-                paste0("kit:journey-", ticket, ":candidate:1"), record = FALSE, stop_after = spec$stop_after)))
+                paste0("kit:journey-", ticket, ":candidate:1"), record = FALSE, stop_after = spec$stop_after,
+                route = spec$route %||% "DIA", oracles = spec$oracles)))
         }
         if (is.null(spec) || !identical(spec$kind, "journey")) stop("KIT-", ticket, " has no bound journey pair")
         record <- isTRUE(spec$record)
@@ -327,12 +356,12 @@ kitSingleDecision <- function(receipt, cases, bindings) {
 kitSingleJourneyDecision <- function(receipt, cases, bindings) {
     stopifnot(length(cases) == 1L)
     case <- cases[[1L]]
-    ticket <- sub("^kit:journey-([0-9]{3}):.*$", "\\1", case$selector)
+    ticket <- sub("^kit:journey-([0-9]{3}[a-z]?):.*$", "\\1", case$selector)
     seconds <- kitMemberSeconds(paste0("kit-journey-", ticket), bindings)
     item <- receipt$cases[[case$id]]
     op <- item$operation
-    steps <- kitStepIds()
-    steps <- steps[seq_len(match(case$stop_after, steps))]
+    steps <- kitStepIds(kitRouteOf(case))
+    if (!is.null(case$stop_after)) steps <- steps[seq_len(match(case$stop_after, steps))]
     failing <- kitIneligible(item, seconds, "journey")
     status <- op$phase_status
     if (is.null(failing) && !(all(steps %in% names(status)) && all(unlist(status[steps]) == "complete"))) failing <- "phase_timing"
@@ -353,7 +382,7 @@ kitSingleJourneyDecision <- function(receipt, cases, bindings) {
 #' Map a verifier selector back to its stage and case id.
 #' @noRd
 kitSelectorStage <- function(selection) {
-    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:((control|candidate):[12]|single:[1-5]))$", selection))
+    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}[a-z]?:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:((control|candidate):[12]|single:[1-5]))$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("kit-lifecycle-", paste(parts[-1L], collapse = "-")), id = "member"))
     # A ticket's gui member is the single case `member` (KIT-008 correction 1: the verifier looked for `candidate-1`).
@@ -657,10 +686,10 @@ kitJourneyDecision <- function(receipt, cases, bindings) {
 #' The KIT-005 per-step oracles as a populations list, for `kitReproduceMismatches` against a member's
 #' in-run populations.
 #' @noRd
-kitOracleJourneyPopulations <- function(bindings) {
-    steps <- kitStepIds()
+kitOracleJourneyPopulations <- function(bindings, route = "DIA", prefix = "journey") {
+    steps <- kitStepIds(route)
     stats::setNames(lapply(steps, function(step) {
-        oracle <- bindings$oracles[[paste0("journey_", step)]]
+        oracle <- bindings$oracles[[paste0(prefix, "_", step)]]
         if (is.null(oracle) || is.null(oracle$class) || !length(oracle$components)) return(list(fingerprint = NULL))
         list(fingerprint = oracle)
     }), steps)
@@ -1222,7 +1251,7 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
     for (name in names(corpus$files)) stopifnot(identical(digest::digest(file = corpus$files[[name]]$path,
         algo = "sha256"), corpus$files[[name]]$sha256))
     status <- operation$phase_status
-    steps <- kitStepIds()
+    steps <- kitStepIds(kitRouteOf(case))
     # KIT-018: a single journey member runs import through `stop_after` only; the later steps are not expected.
     if (!is.null(case$stop_after)) steps <- steps[seq_len(match(case$stop_after, steps))]
     if (case$expect_failure) {
@@ -1266,7 +1295,7 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         receipt$status <- "complete"
         return(receipt)
     }
-    if (!isTRUE(case$record) && identical(case$corpus, "full")) {
+    if (!isTRUE(case$record) && (identical(case$corpus, "full") || !is.null(case$oracles))) {
         # Production default on a build whose default is the on-disk path (KIT-011): the in-run populations are
         # recomputed from the immutable store and every state must equal the KIT-005 per-step oracle. The
         # oracles are the 300-sample corpus's; a screen member without a record (KIT-008's gui member) takes
@@ -1296,7 +1325,8 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         }
         # Cross-build: the operation identity products are reported, every state, support entry, summary and
         # other product is judged (KIT-011 screen check: identical states on kit_001 and kit_011).
-        oracles <- kitOracleJourneyPopulations(bindings)
+        # KIT-021: a protein-route member is judged against the in-process oracles bound for its corpus (protocol v1.5).
+        oracles <- kitOracleJourneyPopulations(bindings, kitRouteOf(case), case$oracles %||% "journey")
         # A member stopped after a step is judged on the steps it ran (KIT-018).
         if (!is.null(case$stop_after)) oracles <- oracles[intersect(names(oracles), names(journey$populations))]
         receipt$oracle_mismatches <- kitReproduceMismatches(oracles, recomputed_populations,
@@ -1307,7 +1337,8 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
             grep(kitOperationIdentityProducts, names(p$fingerprint$products), value = TRUE)), use.names = FALSE)
         stopifnot(!length(receipt$oracle_mismatches))
         receipt$populations <- lapply(journey$populations, \(p) list(state = p$state, entity_id = p$entity_id, rows = p$rows))
-        receipt$oracle <- "KIT-005 journey_<step> fingerprints"
+        receipt$oracle <- if (is.null(case$oracles)) "KIT-005 journey_<step> fingerprints" else
+            paste0("in-process ", case$oracles, "_<step> fingerprints (protocol v1.5)")
         receipt$status <- "complete"
         return(receipt)
     }

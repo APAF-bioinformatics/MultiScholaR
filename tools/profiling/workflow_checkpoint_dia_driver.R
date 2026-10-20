@@ -1523,7 +1523,8 @@ runCheckpointImportActions <- function(driver, run_dir, inputs) {
             jsonlite::toJSON(selection, auto_unbox = TRUE)))
         checkpointWaitForIdle(driver, timeout = checkpointWaitBudget())
     }
-    args <- list("diann")
+    # KIT-021: the import format comes with the corpus (`diann` for the DIA corpora).
+    args <- list(inputs$format %||% "diann")
     names(args) <- "proteomics_workflow-setup_import-format_override"
     do.call(driver$set_inputs, args)
     checkpointClickControl(driver, "prot-import-process")

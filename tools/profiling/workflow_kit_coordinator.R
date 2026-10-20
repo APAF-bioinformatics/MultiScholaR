@@ -292,11 +292,16 @@ tryCatch({
             group <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))
             startSampler(group, deadline_uptime, config$slice)
             corpus_spec <- bindings$corpora[[case$corpus]]
-            corpus <- list(report = corpus_spec$files[["report.tsv"]]$path, fasta = corpus_spec$files[["proteins.fasta"]]$path,
-                design = corpus_spec$files[["design.tsv"]]$path)
+            # KIT-021: a corpus names its report file and import format (the DIA corpora: report.tsv, diann).
+            corpus <- list(report = corpus_spec$files[[corpus_spec$report_file %||% "report.tsv"]]$path,
+                fasta = corpus_spec$files[["proteins.fasta"]]$path, design = corpus_spec$files[["design.tsv"]]$path,
+                format = corpus_spec$format %||% "diann")
             journey <- bindings$journey
             journey$corpus_key <- case$corpus
             journey$stop_after <- case$stop_after
+            journey$route <- kitRouteOf(case)
+            # KIT-021: a corpus may override normalisation settings (the fixtures skip RUV); part of the case binding through the corpus.
+            if (!is.null(corpus_spec$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, corpus_spec$normalisation)
             fault <- if (case$expect_failure) bindings$lifecycle$fault else NULL
             # The browser driver runs in its own process per member (correction 3), outside the slice.
             saveRDS(list(schema = 1L, application_root = application_root, corpus = corpus, journey = journey, fault = fault,
