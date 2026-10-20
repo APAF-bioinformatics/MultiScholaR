@@ -1,0 +1,79 @@
+{
+  "maxquant": {
+    "format": "maxquant",
+    "type": "LFQ",
+    "workflow_type": "LFQ",
+    "design_state": "protein_s4_initial",
+    "state_hashes": {
+      "protein_s4_initial": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
+      "protein_intensity_filtered": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "duplicates_removed": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "protein_replicate_filtered": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "normalized": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "correlation_filtered": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
+    },
+    "da": {
+      "rows": 4,
+      "table_hashes": {
+        "groupKO-groupWT": {
+          "da_proteins_long": "9bfacd2ab7c43f20146a732f8b82c98787f291a81aafee56fd7e6174a143d816",
+          "da_proteins_wide": "3053e5aa0e005dfc4519096bf2807ee7ac1eca23b98333b7c230e4f2a0c3e92b",
+          "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+        }
+      }
+    }
+  },
+  "fragpipe": {
+    "format": "fragpipe",
+    "type": "LFQ",
+    "workflow_type": "LFQ",
+    "design_state": "protein_s4_initial",
+    "state_hashes": {
+      "protein_s4_initial": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
+      "protein_intensity_filtered": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "duplicates_removed": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "protein_replicate_filtered": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "normalized": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "correlation_filtered": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
+    },
+    "da": {
+      "rows": 4,
+      "table_hashes": {
+        "groupKO-groupWT": {
+          "da_proteins_long": "9bfacd2ab7c43f20146a732f8b82c98787f291a81aafee56fd7e6174a143d816",
+          "da_proteins_wide": "3053e5aa0e005dfc4519096bf2807ee7ac1eca23b98333b7c230e4f2a0c3e92b",
+          "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+        }
+      }
+    }
+  },
+  "pd_tmt": {
+    "format": "pd_tmt",
+    "type": "TMT",
+    "workflow_type": "TMT",
+    "design_state": "protein_s4_initial",
+    "state_hashes": {
+      "protein_s4_initial": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214",
+      "protein_intensity_filtered": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "duplicates_removed": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "protein_replicate_filtered": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "normalized": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
+      "correlation_filtered": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
+    },
+    "da": {
+      "rows": 4,
+      "table_hashes": {
+        "groupKO-groupWT": {
+          "da_proteins_long": "bfda9a07b0312313f150719a9da9670c7f4276e2127f969feb61d8c3518001ea",
+          "da_proteins_wide": "a86f26af1db2fbcde0bbad5d740f40da84c5fc21c40871e7c01b2503d0c14e80",
+          "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+        }
+      }
+    }
+  },
+  "seconds": 9.7195808887481689,
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.h6QeDJ/library/MultiScholaR",
+    "source_commit": null
+  }
+}

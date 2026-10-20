@@ -286,7 +286,10 @@ registerProtImportObservers <- function(
     runProcessingSafelyFn(
       runProcessing = function() {
         initializeDIANativeImport(workflowData, experimentPaths, session, format,
-          input$dia_quantification_method %||% "iq")
+          input$dia_quantification_method %||% "iq",
+          data_type = if (identical(format, "spectronaut")) {
+            if (identical(input$spectronaut_quantity %||% "pg", "pg")) "protein" else "peptide"
+          })
         withDIAStateScope(workflowData$state_manager, function() {
         # KIT-026: the paths are named by role so the head records each input's hash at completion.
         input_files <- c(search_results_path, fasta_path)
@@ -328,7 +331,8 @@ registerProtImportObservers <- function(
           processFasta = processFastaFn
         )
         manager <- getDIAActiveManager()
-        candidate <- inherits(manager, "DIAStateAdapter") && !is.na(workflowTypeForImportFormat(format))
+        candidate <- inherits(manager, "DIAStateAdapter") &&
+          !is.na(workflowTypeForImportFormat(format, apply_arguments$dataImportResult$data_type))
         if (candidate) apply_arguments$deferFasta <- TRUE
         do.call(applyWorkflowWithStatusFn, apply_arguments)
         apply_arguments <- NULL

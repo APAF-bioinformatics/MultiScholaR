@@ -232,6 +232,9 @@ test_that("native imports reject corrupt files and unsafe archive members", {
     runDIANativeTar(c("--extract", "--file", result$publication$archive_path,
         "--directory", staging), file.path(staging, "unpack.log"))
     manifest <- jsonlite::read_json(file.path(staging, "manifest.json"))
+    # KIT-020 audit F-12: a DIA owner's manifest still names the DIA/iq route.
+    expect_identical(manifest$workflow, "DIA")
+    expect_identical(manifest$route, "iq")
     payload <- grep("payload[.]qs2$", names(manifest$files), value = TRUE)[[1L]]
     path <- file.path(staging, payload)
     bytes <- readBin(path, "raw", n = file.size(path))
@@ -482,6 +485,22 @@ test_that("native import is the DIA-NN/IQ default and does not migrate Limpa; th
     expect_identical(lfq$state_manager$workflow_type, "LFQ")
     expect_error(initializeDIANativeImport(lfq, paths, session, "diann", "iq"), class = "saved_entity_scope")
     expect_error(lfq$state_manager$setWorkflowType("metabolomics_standard"), class = "saved_entity_scope")
+    # KIT-020 audit F-09/F-12: the owner accepts a re-import of its own format and refuses another format of
+    # the same type.
+    expect_identical(initializeDIANativeImport(lfq, paths, session, "fragpipe", "iq"), lfq$state_manager)
+    expect_error(initializeDIANativeImport(lfq, paths, session, "maxquant", "iq"), class = "saved_entity_scope")
+    # KIT-020 audit F-03/F-11: a Spectronaut protein export attaches its own owner; the peptide export does not.
+    sp <- new.env(parent = emptyenv()); sp$state_manager <- WorkflowState$new(audit_enabled = FALSE)
+    sp_original <- sp$state_manager
+    initializeDIANativeImport(sp, paths, session, "spectronaut", "iq", data_type = "peptide")
+    expect_identical(sp$state_manager, sp_original)
+    initializeDIANativeImport(sp, paths, session, "spectronaut", "iq", data_type = "protein")
+    withr::defer(closeDIAStateAdapter(sp$state_manager))
+    expect_true(isDIANativeSession(sp$state_manager))
+    expect_identical(sp$state_manager$.context$store$identity$project_id, "SPECTRONAUT-native")
+    expect_identical(sp$state_manager$.context$store$identity$workflow_id, "LFQ")
+    expect_true(is.na(workflowTypeForImportFormat("diann", "protein")))
+    expect_identical(workflowTypeForImportFormat("diann", "peptide"), "DIA")
     initializeDIANativeImport(workflow, paths, session, "diann", "limpa")
     expect_identical(workflow$state_manager, original)
     initializeDIANativeImport(workflow, paths, session, "diann", "iq")
@@ -1083,4 +1102,23 @@ test_that("KIT-020: a MaxQuant import on an owner records its inputs and metadat
     expect_true(check$valid)
     expect_false(any(grepl("legacy step", check$incomplete)))
     expect_identical(analysis$workflow, "LFQ")
+    # KIT-020 audit F-07/F-12: the export's manifest takes its type from the store identity, not the manager's
+    # field; the LFQ manifest reopens as LFQ.
+    metadata <- list(design_matrix = restored@design_matrix,
+        contrasts_tbl = data.frame(contrasts = "groupKO-groupWT", friendly_names = "KO_vs_WT"),
+        config_list = restored@args, final_protein_count = nrow(restored@protein_quant_table),
+        final_sample_count = nrow(restored@design_matrix), workflow_type = "LFQ",
+        normalization_method = "none", ruv_mode = "skip", ruv_applied = FALSE)
+    manager$setWorkflowType("TMT")
+    result <- runDIANativeSessionExport(manager, metadata, withr::local_tempdir())
+    manager$setWorkflowType("LFQ")
+    staging <- withr::local_tempdir()
+    utils::untar(result$publication$archive_path, files = "manifest.json", exdir = staging)
+    manifest <- jsonlite::read_json(file.path(staging, "manifest.json"))
+    expect_identical(manifest$workflow, "LFQ")
+    expect_identical(manifest$route, "protein")
+    reopened <- openDIANativeSession(result$publication$archive_path, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(reopened$manager))
+    expect_identical(reopened$manager$workflow_type, "LFQ")
+    expect_identical(reopened$manager$current_state, "protein_s4_initial")
 })

@@ -299,10 +299,12 @@ stageDIANativeSession <- function(manager, metadata_reference, extra_references,
     for (member in setdiff(stage_members, names(inventory))) inventory[[member]] <-
         describeDIANativeFile(file.path(paths$request_dir, member), io_log)
     checkDIANativeMemberNames(c("manifest.json", names(inventory)))
+    # KIT-020 audit F-07: the store's workflow identity is the one source of the manifest's type (the manager's
+    # own field is the fresh default until an import sets it, and is not consulted).
     manifest <- list(schema = if (usesDIAReferenceStates(manager)) "multischolar.dia_native_session.v3" else
         "multischolar.dia_native_session.v1", request_id = request$request_id,
-        generation = request$generation, workflow = manager$workflow_type %||% "DIA",
-        route = workflowRouteForType(manager$workflow_type %||% "DIA"), identity = store$identity,
+        generation = request$generation, workflow = store$identity$workflow_id,
+        route = workflowRouteForType(store$identity$workflow_id), identity = store$identity,
         software = as.character(utils::packageVersion("MultiScholaR")),
         dependencies = dependency_map, files = inventory)
     jsonlite::write_json(manifest, file.path(paths$request_dir, "manifest.json"),
@@ -578,7 +580,7 @@ openDIANativeSession <- function(path, project_root) {
         }
     }
     identity <- readSavedStoreIdentity(file.path(directory, ".workflow-entities", "store.json"))
-    if (!identical(identity, manifest$identity)) {
+    if (!identical(identity, manifest$identity) || !identical(manifest$workflow, identity$workflow_id)) {
         cli::cli_abort("native session store identity differs", class = "saved_entity_scope")
     }
     store <- newWorkflowEntityStore(directory, identity$project_id, identity$workflow_id, max_cache_bytes = 0)
@@ -659,30 +661,36 @@ openDIANativeSession <- function(path, project_root) {
     }
     syncWorkflowExportPaths(c(directory, project_root), project_root)
     workflowExportBoundary("before_native_import_adoption")
+    # KIT-020 audit F-07: the store's workflow identity is authoritative for the reopened owner's type (the
+    # saved field may hold the fresh default of a manager whose import never set it); set after the generation
+    # check, which compares the archive's head with the store's.
+    if (!identical(manager$workflow_type, identity$workflow_id)) manager$setWorkflowType(identity$workflow_id)
     accepted <- TRUE
     list(manager = manager, metadata = metadata, extra_references = roots$extra,
         dependencies = dependencies, directory = directory, manifest = manifest)
 }
 
 #' The on-disk native DIA path is the production default (KIT-011, user decision 2026-10-11): no
-#' option gate remains. The platform limits stay in `initializeDIANativeImport` (Linux, DIA-NN, IQ).
+#' option gate remains. The platform limits stay in `initializeDIANativeImport` (Linux; the DIA-NN IQ route and
+#' the protein-level formats, KIT-020).
 #' @return TRUE.
 #' @noRd
 isDIANativeDefaultEnabled <- function() TRUE
 
-#' Select the DIA-IQ owner before import or configuration creates heavy values.
-#' @param workflow_data Existing GUI bus.
-#' @param paths Existing experiment paths.
-#' @param session Existing Shiny session.
 #' The proteomics workflow type an import format produces (KIT-020): DIA-NN precursors are `DIA`, Proteome
 #' Discoverer TMT abundances are `TMT`, the other protein-level readers are `LFQ`; an unknown format gives NA
-#' and never attaches the on-disk owner.
+#' and never attaches the on-disk owner. The owner serves peptide-level DIA-NN tables and protein-level tables
+#' of the other readers only (audit F-11): a Spectronaut peptide export (`quantity_type = "pep"`) gives NA.
 #' @param format Detected import format.
+#' @param data_type The reader's `data_type` (`protein` or `peptide`) when known; NULL before the file is read.
 #' @return One of `DIA`, `TMT`, `LFQ` or NA.
 #' @noRd
-workflowTypeForImportFormat <- function(format) {
+workflowTypeForImportFormat <- function(format, data_type = NULL) {
     if (!is.character(format) || length(format) != 1L) return(NA_character_)
-    switch(format, diann = "DIA", pd_tmt = "TMT", maxquant = , fragpipe = , spectronaut = "LFQ", NA_character_)
+    type <- switch(format, diann = "DIA", pd_tmt = "TMT", maxquant = , fragpipe = , spectronaut = "LFQ", NA_character_)
+    if (is.na(type) || is.null(data_type)) return(type)
+    expected <- if (identical(format, "diann")) "peptide" else "protein"
+    if (identical(data_type, expected)) type else NA_character_
 }
 
 #' The native session manifest's `route` for each workflow type (KIT-020): the DIA route is `iq`; the
@@ -690,6 +698,9 @@ workflowTypeForImportFormat <- function(format) {
 #' @noRd
 workflowRoutesByType <- c(DIA = "iq", LFQ = "protein", TMT = "protein")
 
+#' The manifest route of a workflow type.
+#' @param type One of `names(workflowRoutesByType)`.
+#' @return The route string; aborts with `saved_entity_scope` for any other type.
 #' @noRd
 workflowRouteForType <- function(type) {
     if (!is.character(type) || length(type) != 1L || !type %in% names(workflowRoutesByType))
@@ -697,17 +708,34 @@ workflowRouteForType <- function(type) {
     workflowRoutesByType[[type]]
 }
 
+#' The store label of the owner an import format attaches (KIT-020): `DIA-IQ-native` for DIA-NN, otherwise
+#' `<FORMAT>-native`.
+#' @param format Detected import format.
+#' @return The store's project id.
+#' @noRd
+workflowNativeStoreLabel <- function(format) {
+    if (identical(format, "diann")) "DIA-IQ-native" else paste0(toupper(format), "-native")
+}
+
+#' Select the on-disk owner before import or configuration creates heavy values.
+#' @param workflow_data Existing GUI bus.
+#' @param paths Existing experiment paths.
+#' @param session Existing Shiny session.
 #' @param format Detected import format.
 #' @param method Setup IQ/Limpa choice.
+#' @param data_type The reader's `data_type` when known before the read (the Spectronaut quantity choice).
 #' @return Current or newly attached state manager, invisibly.
 #' @noRd
-initializeDIANativeImport <- function(workflow_data, paths, session, format, method = "iq") {
+initializeDIANativeImport <- function(workflow_data, paths, session, format, method = "iq", data_type = NULL) {
     manager <- workflow_data$state_manager
-    workflow_type <- workflowTypeForImportFormat(format)
+    workflow_type <- workflowTypeForImportFormat(format, data_type)
     if (inherits(manager, "DIAStateAdapter")) {
-        # KIT-020: an owner serves one route, fixed by its store's workflow identity (the manager's own type is
-        # the fresh default until the import sets it); the same type (and, for DIA-NN, the IQ method) may be re-imported.
-        if (is.na(workflow_type) || !identical(manager$.context$store$identity$workflow_id, workflow_type) ||
+        # KIT-020: an owner serves one route, fixed by its store's identity (the manager's own type is the fresh
+        # default until the import sets it): the type must match, and an owner the import attached (a `-native`
+        # label) accepts only its own format (audit F-09); for DIA-NN only the IQ method.
+        identity <- manager$.context$store$identity
+        if (is.na(workflow_type) || !identical(identity$workflow_id, workflow_type) ||
+            (endsWith(identity$project_id, "-native") && !identical(identity$project_id, workflowNativeStoreLabel(format))) ||
             (identical(format, "diann") && !identical(method, "iq"))) {
             cli::cli_abort("reset the project before changing the route of an on-disk session", class = "saved_entity_scope")
         }
@@ -742,8 +770,7 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
     if (!dir.create(state_root, mode = "0700")) {
         cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
     }
-    store <- newWorkflowEntityStore(state_root, if (identical(format, "diann")) "DIA-IQ-native" else
-        paste0(toupper(format), "-native"), workflow_type, max_cache_bytes = 0)
+    store <- newWorkflowEntityStore(state_root, workflowNativeStoreLabel(format), workflow_type, max_cache_bytes = 0)
     manager <- newDIAStateAdapter(store, manager)
     manager$.context$sql_rollup <- TRUE
     manager$.context$session_format <- "native_v1"

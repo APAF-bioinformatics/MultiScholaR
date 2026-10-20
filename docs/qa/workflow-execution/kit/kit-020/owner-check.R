@@ -31,6 +31,14 @@ unlink(work, recursive = TRUE); dir.create(work, recursive = TRUE)
 on.exit(unlink(work, recursive = TRUE), add = TRUE)
 config <- readConfigFile(system.file("config", "config.ini", package = "MultiScholaR"), create_workers = FALSE)
 results <- list()
+# Audit F-01: canonical hashes of the protein table at every state and of the DA tables, compared with the
+# control build's in-memory run of the same kernels (control-check.R, kit_036 library).
+table_hash <- function(table) {
+    table <- as.data.frame(table)
+    table <- table[do.call(order, unname(as.list(table[, seq_len(min(2L, ncol(table))), drop = FALSE]))), order(names(table)), drop = FALSE]
+    rownames(table) <- NULL
+    digest::digest(lapply(table, function(column) if (is.numeric(column)) signif(column, 12) else as.character(column)), algo = "sha256")
+}
 run_case <- function(name, case) {
     out <- list(format = name, type = case$type)
     base <- file.path(work, name, "project"); dir.create(base, recursive = TRUE)
@@ -111,9 +119,13 @@ run_case <- function(name, case) {
             setDIAStepProvenance(manager, step$operation, variant, entry$parameters, entry$declaration$fixed, values = step$parameters)
             completeDIAProteinAction(workflow, value)
         })
-        record <- readDIAStateMetadata(manager)
-        out$steps[[step$operation]] <- list(state = manager$current_state, rows = record$dimensions$rows %||% NA, columns = record$dimensions$columns %||% NA)
+        object <- manager$getState(manager$current_state)
+        out$steps[[step$operation]] <- list(state = manager$current_state, rows = nrow(object@protein_quant_table),
+            columns = ncol(object@protein_quant_table), hash = table_hash(object@protein_quant_table))
+        object <- NULL
     }
+    out$state_hashes <- list(protein_s4_initial = table_hash(restored@protein_quant_table))
+    for (step in names(out$steps)) out$state_hashes[[out$steps[[step]]$state]] <- out$steps[[step]]$hash
     # Normalisation (RUV skipped on a five-protein fixture), correlation and DA, as the replay commits them.
     norm_parameters <- list(norm_method = "cyclicloess", ruv_mode = "skip", auto_percentage_min = 1, auto_percentage_max = 20,
         separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, ruv_percentage = 5, ruv_k = NA, grouping = "group")
@@ -136,6 +148,11 @@ run_case <- function(name, case) {
             "Applied final sample correlation filter (chunk 28)")
     })
     out$normalisation_state <- "normalized"; out$correlation_state <- manager$current_state
+    for (state in c("normalized", "correlation_filtered")) {
+        object <- manager$getState(state)
+        out$state_hashes[[state]] <- table_hash(object@protein_quant_table)
+        object <- NULL
+    }
     contrasts <- data.frame(contrasts = "groupKO-groupWT", friendly_names = "KO_vs_WT", full_format = "KO_vs_WT=groupKO-groupWT", stringsAsFactors = FALSE)
     da_data <- new.env(parent = emptyenv()); da_data$current_s4_object <- getDIAStateReference(manager); da_data$contrasts_available <- contrasts$contrasts
     da_workflow <- new.env(parent = emptyenv()); da_workflow$state_manager <- manager; da_workflow$contrasts_tbl <- contrasts
@@ -144,7 +161,11 @@ run_case <- function(name, case) {
         runDIAReferenceDaAnalysis(list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), da_data, da_workflow, paths,
             contrasts = contrasts, publish = FALSE)
         manifest <- resolveDIAStateValue(manager$.context, manager$.context$snapshot$da_results)
-        list(ok = TRUE, contrasts = names(manifest$results), rows = vapply(manifest$results, function(r) r$rows %||% NA_integer_, 1))
+        # The DA tables through the package's own contrast reader (the publisher's path).
+        tables <- lapply(manifest$results, function(r) withDIAStateScope(manager, function() lapply(
+            readDIAContrastOutput(r, fields = c("da_proteins_long", "da_proteins_wide", "contrasts_results_table")), table_hash)))
+        list(ok = TRUE, contrasts = names(manifest$results), rows = vapply(manifest$results, function(r) r$rows %||% NA_integer_, 1),
+            table_hashes = tables)
     }, error = function(e) list(ok = FALSE, error = conditionMessage(e)))
     out$da <- da
     # A native export of the owner carries the head's type in its manifest and reopens (KIT-020 item 4).
@@ -157,7 +178,10 @@ run_case <- function(name, case) {
         reopen_root <- file.path(work, name, "reopen"); dir.create(reopen_root)
         reopened <- openDIANativeSession(archive, reopen_root)
         on.exit(closeDIAStateAdapter(reopened$manager), add = TRUE)
-        manifest <- jsonlite::read_json(file.path(dirname(archive), "filtered_session_latest.json"))
+        # Audit F-02: the manifest is read from the archive itself.
+        extracted <- file.path(work, name, "manifest"); dir.create(extracted)
+        utils::untar(archive, files = "manifest.json", exdir = extracted)
+        manifest <- jsonlite::read_json(file.path(extracted, "manifest.json"))
         list(ok = TRUE, archive = basename(archive), manifest_workflow = manifest$workflow %||% NA, manifest_route = manifest$route %||% NA,
             reopened_type = reopened$manager$workflow_type, reopened_state = reopened$manager$current_state)
     }, error = function(e) list(ok = FALSE, error = conditionMessage(e)))
@@ -197,9 +221,10 @@ for (name in names(cases)) {
         "| corr", r$correlation_state, "| DA", if (isTRUE(r$da$ok)) paste(r$da$contrasts, r$da$rows) else paste("ERR", r$da$error),
         "| record valid", r$record$valid, "legacy", r$record$legacy, "workflow", r$record$workflow,
         "| replay", if (isTRUE(r$replay$ok)) paste(r$replay$states, "states", length(r$replay$mismatches), "mismatches") else paste("ERR", r$replay$error),
-        "| export", if (isTRUE(r$export$ok)) paste(r$export$manifest_workflow, r$export$manifest_route, "reopened", r$export$reopened_type, r$export$reopened_state) else paste("ERR", r$export$error), "\n")
+        "| hashes", length(r$state_hashes), "| export", if (isTRUE(r$export$ok)) paste(r$export$manifest_workflow, r$export$manifest_route, "reopened", r$export$reopened_type, r$export$reopened_state) else paste("ERR", r$export$error), "\n")
 }
 results$seconds <- as.numeric(difftime(Sys.time(), started, units = "secs"))
 results$head_commit <- system2("git", c("rev-parse", "HEAD"), stdout = TRUE)
+results$tree_clean <- length(system2("git", c("status", "--porcelain", "--", "R", "tests", "DESCRIPTION", "NAMESPACE"), stdout = TRUE)) == 0L
 jsonlite::write_json(results, file.path(repo, "docs/qa/workflow-execution/kit/kit-020", "owner-check.json"), auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = I(17))
 cat("done", round(results$seconds), "s\n")

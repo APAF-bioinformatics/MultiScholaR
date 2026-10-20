@@ -75,9 +75,10 @@ runProteinS4CreationStep <- function(workflowData,
     args = workflowData$config_list
   )
 
-  # KIT-038/KIT-020: the second writer of protein_s4_initial records the same fixed transform.
+  # KIT-038/KIT-020: the second writer of protein_s4_initial records what it does: the imported table is passed
+  # as it is (no pivot, no transform), unlike the design builder (protein x run pivot, log2(x + 1)).
   setDIAStepProvenance(workflowData$state_manager, "design_builder",
-    fixed = list(pivot = "protein x run", transform = "none"))
+    fixed = list(pivot = "none", transform = "none"))
   workflowData$state_manager$saveState(
     state_name = "protein_s4_initial",
     s4_data_object = proteinObj,

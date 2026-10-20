@@ -1,0 +1,179 @@
+{
+  "rows": [
+    {
+      "format": "maxquant",
+      "item": "protein_s4_initial",
+      "owner": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
+      "control": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
+      "equal": true
+    },
+    {
+      "format": "maxquant",
+      "item": "protein_intensity_filtered",
+      "owner": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "control": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "equal": true
+    },
+    {
+      "format": "maxquant",
+      "item": "duplicates_removed",
+      "owner": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "control": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "equal": true
+    },
+    {
+      "format": "maxquant",
+      "item": "protein_replicate_filtered",
+      "owner": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "control": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "equal": true
+    },
+    {
+      "format": "maxquant",
+      "item": "normalized",
+      "owner": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "control": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "equal": true
+    },
+    {
+      "format": "maxquant",
+      "item": "correlation_filtered",
+      "owner": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "control": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "equal": true
+    },
+    {
+      "format": "maxquant",
+      "item": "DA groupKO-groupWT da_proteins_long",
+      "owner": "9bfacd2ab7c43f20146a732f8b82c98787f291a81aafee56fd7e6174a143d816",
+      "control": "9bfacd2ab7c43f20146a732f8b82c98787f291a81aafee56fd7e6174a143d816",
+      "equal": true
+    },
+    {
+      "format": "maxquant",
+      "item": "DA groupKO-groupWT da_proteins_wide",
+      "owner": "3053e5aa0e005dfc4519096bf2807ee7ac1eca23b98333b7c230e4f2a0c3e92b",
+      "control": "3053e5aa0e005dfc4519096bf2807ee7ac1eca23b98333b7c230e4f2a0c3e92b",
+      "equal": true
+    },
+    {
+      "format": "maxquant",
+      "item": "DA groupKO-groupWT contrasts_results_table",
+      "owner": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0",
+      "control": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0",
+      "equal": true
+    },
+    {
+      "format": "fragpipe",
+      "item": "protein_s4_initial",
+      "control": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
+      "equal": false
+    },
+    {
+      "format": "fragpipe",
+      "item": "protein_intensity_filtered",
+      "control": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "equal": false
+    },
+    {
+      "format": "fragpipe",
+      "item": "duplicates_removed",
+      "control": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "equal": false
+    },
+    {
+      "format": "fragpipe",
+      "item": "protein_replicate_filtered",
+      "control": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "equal": false
+    },
+    {
+      "format": "fragpipe",
+      "item": "normalized",
+      "control": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "equal": false
+    },
+    {
+      "format": "fragpipe",
+      "item": "correlation_filtered",
+      "control": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "equal": false
+    },
+    {
+      "format": "fragpipe",
+      "item": "DA groupKO-groupWT da_proteins_long",
+      "control": "9bfacd2ab7c43f20146a732f8b82c98787f291a81aafee56fd7e6174a143d816",
+      "equal": false
+    },
+    {
+      "format": "fragpipe",
+      "item": "DA groupKO-groupWT da_proteins_wide",
+      "control": "3053e5aa0e005dfc4519096bf2807ee7ac1eca23b98333b7c230e4f2a0c3e92b",
+      "equal": false
+    },
+    {
+      "format": "fragpipe",
+      "item": "DA groupKO-groupWT contrasts_results_table",
+      "control": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0",
+      "equal": false
+    },
+    {
+      "format": "pd_tmt",
+      "item": "protein_s4_initial",
+      "control": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214",
+      "equal": false
+    },
+    {
+      "format": "pd_tmt",
+      "item": "protein_intensity_filtered",
+      "control": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "equal": false
+    },
+    {
+      "format": "pd_tmt",
+      "item": "duplicates_removed",
+      "control": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "equal": false
+    },
+    {
+      "format": "pd_tmt",
+      "item": "protein_replicate_filtered",
+      "control": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "equal": false
+    },
+    {
+      "format": "pd_tmt",
+      "item": "normalized",
+      "control": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
+      "equal": false
+    },
+    {
+      "format": "pd_tmt",
+      "item": "correlation_filtered",
+      "control": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
+      "equal": false
+    },
+    {
+      "format": "pd_tmt",
+      "item": "DA groupKO-groupWT da_proteins_long",
+      "control": "bfda9a07b0312313f150719a9da9670c7f4276e2127f969feb61d8c3518001ea",
+      "equal": false
+    },
+    {
+      "format": "pd_tmt",
+      "item": "DA groupKO-groupWT da_proteins_wide",
+      "control": "a86f26af1db2fbcde0bbad5d740f40da84c5fc21c40871e7c01b2503d0c14e80",
+      "equal": false
+    },
+    {
+      "format": "pd_tmt",
+      "item": "DA groupKO-groupWT contrasts_results_table",
+      "control": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0",
+      "equal": false
+    }
+  ],
+  "equal": 9,
+  "total": 27,
+  "owner_commit": "9b04d147af98c9d28e233d7bf9eb945b5e764325",
+  "control_commit": {}
+}

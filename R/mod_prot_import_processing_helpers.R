@@ -189,7 +189,7 @@ applyProtImportResultToWorkflow <- function(
 ) {
   manager <- getDIAActiveManager()
   # KIT-020: every format the owner serves (DIA-NN and the protein-level readers) takes the owned path.
-  candidate <- inherits(manager, "DIAStateAdapter") && !is.na(workflowTypeForImportFormat(format))
+  candidate <- inherits(manager, "DIAStateAdapter") && !is.na(workflowTypeForImportFormat(format, dataImportResult$data_type))
   if (candidate) {
     table <- prepareDIAParserTable(dataImportResult$data)
     if (isTRUE(sanitizeNames)) {
