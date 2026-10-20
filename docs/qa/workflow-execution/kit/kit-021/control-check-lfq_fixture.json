@@ -1,0 +1,55 @@
+{
+  "corpus": "lfq_fixture",
+  "corpus_sha256": "ad2ba7383d9703f14986e520617f9cccf0c79a923f03f6f65b030f72265dcacb",
+  "format": "maxquant",
+  "state_hashes": {
+    "protein_s4_initial": "ea1272763e891b7c2c2e407e720a691db01642bc9d7fa5d3c3416ed77b8f8e9a",
+    "protein_accession_cleaned": "ea1272763e891b7c2c2e407e720a691db01642bc9d7fa5d3c3416ed77b8f8e9a",
+    "protein_intensity_filtered": "313039fe8417b6faaf9c5e4f6342fcc1d498e5254f3e69d3d2822934126653e9",
+    "duplicates_removed": "313039fe8417b6faaf9c5e4f6342fcc1d498e5254f3e69d3d2822934126653e9",
+    "protein_replicate_filtered": "313039fe8417b6faaf9c5e4f6342fcc1d498e5254f3e69d3d2822934126653e9",
+    "normalized": "d299cda9d36c3c338d9b1095fbe7fe9a8264150308186c1eb94f5130c28cf11c",
+    "correlation_filtered": "d299cda9d36c3c338d9b1095fbe7fe9a8264150308186c1eb94f5130c28cf11c"
+  },
+  "rows": {
+    "protein_s4_initial": 5,
+    "protein_accession_cleaned": 5,
+    "protein_intensity_filtered": 4,
+    "duplicates_removed": 4,
+    "protein_replicate_filtered": 4,
+    "normalized": 4,
+    "correlation_filtered": 4
+  },
+  "steps": {
+    "import": 3.1535110473632812,
+    "design": 0.034285068511962891,
+    "accession": 0.1065981388092041,
+    "protein_intensity": 1.7554233074188232,
+    "duplicates": 0.0095598697662353516,
+    "protein_replicate": 0.31252312660217285,
+    "normalisation_ruv": 0.29040431976318359,
+    "correlation": 0.28278565406799316,
+    "da": 0.47426271438598633
+  },
+  "workflow_type": "LFQ",
+  "design_state": "protein_s4_initial",
+  "da": {
+    "contrasts": ["groupKO-groupWT"],
+    "table_hashes": {
+      "groupKO-groupWT": {
+        "da_proteins_long": "8f8b12622b7a2d00eb7d737b1f8aaa175317a0a222d31d02e89f9392ea8bfd7d",
+        "da_proteins_wide": "d7f3a0d8696ce0185e48b09e37d00cca9e0c2946f3f19196bc2e47f7fbd3476b",
+        "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+      }
+    },
+    "rows": {
+      "groupKO-groupWT": 4
+    }
+  },
+  "seconds": 6.5773847103118896,
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.h6QeDJ/library/MultiScholaR",
+    "source_commit": null,
+    "version": "0.5.0"
+  }
+}

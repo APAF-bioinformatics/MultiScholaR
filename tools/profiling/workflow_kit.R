@@ -92,8 +92,9 @@ kitBindings <- function(path) {
     raw <- jsonlite::read_json(path, simplifyVector = FALSE)
     stopifnot(identical(raw$schema, 1L), is.list(raw$harness), is.list(raw$builds), is.list(raw$corpora),
         is.list(raw$journey), is.character(raw$harness$protocol_sha256))
+    # KIT-021: the harness block itself is kept (the protein route's step map hash is read from it).
     list(root = raw$harness$root, protocol_sha256 = raw$harness$protocol_sha256,
-        step_map_sha256 = raw$harness$step_map_sha256, files = raw$harness$files,
+        step_map_sha256 = raw$harness$step_map_sha256, files = raw$harness$files, harness = raw$harness,
         builds = raw$builds, outcomes = raw$outcomes, control = raw$control,
         corpora = raw$corpora, journey = raw$journey, lifecycle = raw$lifecycle,
         operation_lifecycle = raw$operation_lifecycle, tickets = raw$tickets,

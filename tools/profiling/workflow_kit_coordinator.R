@@ -46,7 +46,7 @@ files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_drive
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R",
     "docs/qa/workflow-execution/kit/bindings.json", "docs/qa/workflow-execution/kit/protocol.md",
-    "docs/qa/workflow-execution/kit/kit-001/step-map.json",
+    "docs/qa/workflow-execution/kit/kit-001/step-map.json", "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json",
     # The operation-member vehicle: the installed adapters test (CORE's, byte-identical) and its inputs.
     "tests/testthat/test-workflow-execution-adapters.R", "tests/testthat/helper-workflow-checkpoint-fixtures.R",
     "tests/testthat/helper-workflow-bulk-rollup.R", "tests/testdata/workflow-execution/qualification.json",

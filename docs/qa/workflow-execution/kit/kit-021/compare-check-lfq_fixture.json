@@ -1,0 +1,48 @@
+{
+  "corpus": "lfq_fixture",
+  "corpus_sha256": "ad2ba7383d9703f14986e520617f9cccf0c79a923f03f6f65b030f72265dcacb",
+  "rows": [
+    {
+      "contrast": "groupKO-groupWT",
+      "table": "da_proteins_long",
+      "owner": "8f8b12622b7a2d00eb7d737b1f8aaa175317a0a222d31d02e89f9392ea8bfd7d",
+      "control": "8f8b12622b7a2d00eb7d737b1f8aaa175317a0a222d31d02e89f9392ea8bfd7d",
+      "equal": true
+    },
+    {
+      "contrast": "groupKO-groupWT",
+      "table": "da_proteins_wide",
+      "owner": "d7f3a0d8696ce0185e48b09e37d00cca9e0c2946f3f19196bc2e47f7fbd3476b",
+      "control": "d7f3a0d8696ce0185e48b09e37d00cca9e0c2946f3f19196bc2e47f7fbd3476b",
+      "equal": true
+    },
+    {
+      "contrast": "groupKO-groupWT",
+      "table": "contrasts_results_table",
+      "owner": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0",
+      "control": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0",
+      "equal": true
+    }
+  ],
+  "equal": 3,
+  "total": 3,
+  "owner_rows": {
+    "groupKO-groupWT": 4
+  },
+  "control_rows": {
+    "groupKO-groupWT": 4
+  },
+  "owner_build": "03ca18b664b2f253f087c228414002c27f858f41",
+  "control_commit": null,
+  "control_states": {
+    "protein_s4_initial": "ea1272763e891b7c2c2e407e720a691db01642bc9d7fa5d3c3416ed77b8f8e9a",
+    "protein_accession_cleaned": "ea1272763e891b7c2c2e407e720a691db01642bc9d7fa5d3c3416ed77b8f8e9a",
+    "protein_intensity_filtered": "313039fe8417b6faaf9c5e4f6342fcc1d498e5254f3e69d3d2822934126653e9",
+    "duplicates_removed": "313039fe8417b6faaf9c5e4f6342fcc1d498e5254f3e69d3d2822934126653e9",
+    "protein_replicate_filtered": "313039fe8417b6faaf9c5e4f6342fcc1d498e5254f3e69d3d2822934126653e9",
+    "normalized": "d299cda9d36c3c338d9b1095fbe7fe9a8264150308186c1eb94f5130c28cf11c",
+    "correlation_filtered": "d299cda9d36c3c338d9b1095fbe7fe9a8264150308186c1eb94f5130c28cf11c"
+  },
+  "control_ruv": null,
+  "control_seconds": 6.5774
+}
