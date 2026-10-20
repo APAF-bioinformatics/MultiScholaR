@@ -9,8 +9,8 @@ Paths for Omics Label: 'proteomics_maxquant' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit043-report-installed/maxquant/scripts/proteomics_maxquant (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit043-report-installed/maxquant/results/proteomics_maxquant (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit043-report-installed/maxquant/results_summary/proteomics_maxquant (4 items)
-  timestamp                      : 20261020_134903
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit043-report-installed/maxquant/results/proteomics_maxquant/publication_graphs/filtering_qc/20261020_134903 (0 items)
+  timestamp                      : 20261020_143154
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit043-report-installed/maxquant/results/proteomics_maxquant/publication_graphs/filtering_qc/20261020_143154 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit043-report-installed/maxquant/results/proteomics_maxquant/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit043-report-installed/maxquant/results/proteomics_maxquant/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit043-report-installed/maxquant/results/proteomics_maxquant/da_proteins (0 items)
@@ -428,8 +428,8 @@ Paths for Omics Label: 'proteomics_pd_tmt' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit043-report-installed/pd_tmt/scripts/proteomics_pd_tmt (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit043-report-installed/pd_tmt/results/proteomics_pd_tmt (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit043-report-installed/pd_tmt/results_summary/proteomics_pd_tmt (4 items)
-  timestamp                      : 20261020_134921
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit043-report-installed/pd_tmt/results/proteomics_pd_tmt/publication_graphs/filtering_qc/20261020_134921 (0 items)
+  timestamp                      : 20261020_143210
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit043-report-installed/pd_tmt/results/proteomics_pd_tmt/publication_graphs/filtering_qc/20261020_143210 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit043-report-installed/pd_tmt/results/proteomics_pd_tmt/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit043-report-installed/pd_tmt/results/proteomics_pd_tmt/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit043-report-installed/pd_tmt/results/proteomics_pd_tmt/da_proteins (0 items)
@@ -861,4 +861,4 @@ output file: TMT_report.knit.md
 
 Output created: /home/doktersmol/.cache/multischolar-kit043-report-installed/pd_tmt/results_summary/proteomics_pd_tmt/TMT_report_proteomics_pd_tmt.docx
 pd_tmt | record TMT ops 7 DA TRUE | study lines 270 truncation 0 missing values 0 record beside TRUE nondefaults recorded TRUE TRUE | renders with_record:ok without_record:ok baseline:ok control:ok | software TRUE | percentile TRUE / FALSE | qvalue TRUE / TRUE | without = baseline TRUE | without = control TRUE 
-DIANN untouched TRUE | done 38 s
+DIANN untouched TRUE | done 34 s

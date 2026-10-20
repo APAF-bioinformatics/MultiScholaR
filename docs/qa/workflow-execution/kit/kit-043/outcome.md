@@ -1,6 +1,6 @@
 # KIT-043: LFQ and TMT reports and study_parameters.txt from the record
 
-Status 2026-10-20: **completed; implemented at `a918b5bb`, audit repairs at REPAIR_COMMIT** ([AUDIT-20261020.md](AUDIT-20261020.md), [REMEDIATION-20261020.md](REMEDIATION-20261020.md)) (ticket revision 1.1); real renders of both templates on the LFQ and TMT fixture owners with and without the record; the writer and the record bundle proven on both owners; tests, check and install below.
+Status 2026-10-20: **completed; implemented at `a918b5bb`, audit repairs at `c78bd4af`** ([AUDIT-20261020.md](AUDIT-20261020.md), [REMEDIATION-20261020.md](REMEDIATION-20261020.md)) (ticket revision 1.1); real renders of both templates on the LFQ and TMT fixture owners with and without the record; the writer and the record bundle proven on both owners; tests, check and install below.
 
 ## What changed (one mechanism: the record as the source for the two remaining proteomics templates)
 
@@ -27,6 +27,7 @@ Status 2026-10-20: **completed; implemented at `a918b5bb`, audit repairs at REPA
 
 ## Check and install
 
+- Audit repairs: `R CMD check --no-manual --no-tests` at `c78bd4af` (clean worktree, same settings): 3 WARNINGs, 3 NOTEs, the baseline ([log](check-c78bd4af/r-cmd-check.log)); install `kit_043` = `core/browser-smoke.AuaIVL` (source commit `c78bd4af` verified) replaces `fFZHS8`; bindings regenerated; the render check rerun on this library ([report-check-installed.json](report-check-installed.json)).
 - `R CMD check --no-manual --no-tests` at `a918b5bb` (clean worktree, `_R_CHECK_FORCE_SUGGESTS_=false`, proof library on `R_LIBS`): 3 WARNINGs, 3 NOTEs, the baseline ([log](check-a918b5bb/r-cmd-check.log)).
 - Install `kit_043` = `core/browser-smoke.fFZHS8` (source commit `a918b5bb` verified on the installed `DESCRIPTION`); bindings regenerated; the recorded render check ran on this library. The control stays `kit_036` (no counted member).
 

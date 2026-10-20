@@ -1,0 +1,118 @@
+* using log directory ‘/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/7f1e37b6-a376-45ae-a5c8-0904bea4e8a0/scratchpad/check-c78bd4af/MultiScholaR.Rcheck’
+* using R version 4.6.1 (2026-06-24)
+* using platform: x86_64-pc-linux-gnu
+* R was compiled by
+    gcc (GCC) 16.1.1 20260430
+    GNU Fortran (GCC) 16.1.1 20260430
+* running under: CachyOS
+* using session charset: UTF-8
+* current time: 2026-10-20 03:30:33 UTC
+* using options ‘--no-tests --no-manual’
+* checking for file ‘MultiScholaR/DESCRIPTION’ ... OK
+* this is package ‘MultiScholaR’ version ‘0.5.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... INFO
+Packages suggested but not available for checking:
+  'RhpcBLASctl', 'dynamicTreeCut', 'GlimmaV2', 'GSEABase', 'MOFA2'
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  tools/profiling/perf108-extension/extension-ci-tools/.github
+These were most likely included in error. See section ‘Package
+structure’ in the ‘Writing R Extensions’ manual.
+* checking for portable file names ... NOTE
+Found the following non-portable file paths:
+  MultiScholaR/docs/qa/workflow-execution/kit/analysis-record-series/AUDIT-20261019-implementation.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-014/in-process-peptide-qc-check-attempt1-parameters.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-014/in-process-peptide-qc-check-protein_peptide-intensity.json
+  MultiScholaR/docs/qa/workflow-execution/kit/kit-038/analysis_record-rebuilt-kit020-dia-unchanged.json
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/.github/workflows/_extension_client_tests.yml
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/.github/workflows/_extension_deploy.yml
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/.github/workflows/_extension_distribution.yml
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/c_api_extensions/base.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/c_api_extensions/c_cpp.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/c_api_extensions/rust.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/makefiles/duckdb_extension.Makefile
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/scripts/append_extension_metadata.py
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/scripts/modify_distribution_matrix.py
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/portfile.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg-port-config.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg_cmake_build.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg_cmake_configure.cmake
+  MultiScholaR/tools/profiling/perf108-extension/extension-ci-tools/vcpkg_ports/vcpkg-cmake/vcpkg_cmake_install.cmake
+
+Tarballs are only required to store paths of up to 100 bytes and cannot
+store those of more than 256 bytes, with restrictions including to 100
+bytes for the final component.
+See section ‘Package structure’ in the ‘Writing R Extensions’ manual.
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘MultiScholaR’ can be installed ... OK
+* used C compiler: ‘gcc (GCC) 16.2.1 20260810’
+* checking installed package size ... INFO
+  installed size is 17.1Mb
+  sub-directories of 1Mb or more:
+    R       6.3Mb
+    shiny   8.7Mb
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking whether startup messages can be suppressed ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' import not declared from: ‘cli’
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+ruvIII_C_Varying,ProteinQuantitativeData: no visible binding for global
+  variable ‘.ruv_replicate_block’
+Undefined global functions or variables:
+  .ruv_replicate_block
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking line endings in shell scripts ... OK
+* checking line endings in C/C++/Fortran sources/headers ... OK
+* checking line endings in Makefiles ... OK
+* checking compilation flags in Makevars ... WARNING
+Non-portable flags in variable 'PKG_CFLAGS':
+  -fno-fast-math
+* checking for GNU extensions in Makefiles ... WARNING
+Found the following file(s) containing GNU extensions:
+  src/Makevars
+  tools/profiling/perf108-extension/Makefile
+Portable Makefiles do not use GNU extensions such as +=, :=, $(shell),
+$(wildcard), ifeq ... endif, .NOTPARALLEL See section ‘Writing portable
+packages’ in the ‘Writing R Extensions’ manual.
+* checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
+* checking use of PKG_*FLAGS in Makefiles ... OK
+* checking include directives in Makefiles ... OK
+* checking compiled code ... OK
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+
+Status: 3 WARNINGs, 3 NOTEs
+See
+  ‘/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/7f1e37b6-a376-45ae-a5c8-0904bea4e8a0/scratchpad/check-c78bd4af/MultiScholaR.Rcheck/00check.log’
+for details.
+
