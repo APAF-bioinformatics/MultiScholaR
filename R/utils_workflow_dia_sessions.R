@@ -960,18 +960,25 @@ adoptDIANativeSession <- function(imported, workflow_data, session, source_dir, 
     view
 }
 
-#' Ingest a supported old DIA envelope into a fresh native owner after validation.
+#' Ingest a supported old proteomics envelope (`filtered_session_data`) into a fresh native owner after validation.
+#' KIT-042: every workflow type the owner serves (`DIA`, `LFQ`, `TMT`) is adopted; a session from the retired
+#' in-memory limpa route is refused by name.
 #' @param value Decoded legacy session; its one-off full read remains explicit.
 #' @param workflow_data,session Existing GUI owners.
 #' @param source_dir Existing project storage directory.
 #' @param experiment_paths Optional destination paths for current table/metadata files.
-#' @return TRUE when adopted, FALSE for an unchanged non-native workflow.
+#' @return TRUE when adopted, FALSE for an unchanged non-native workflow (another omics type, or not Linux).
 #' @noRd
 ingestDIANativeLegacySession <- function(value, workflow_data, session, source_dir,
     experiment_paths = NULL) {
     enabled <- isDIANativeDefaultEnabled() || isDIANativeSession(workflow_data$state_manager)
-    if (!enabled || !identical(Sys.info()[["sysname"]], "Linux") ||
-        !identical(value$workflow_type, "DIA") || isTRUE(value$use_limpa) || isTRUE(value$limpa_applied)) return(FALSE)
+    workflow_type <- value$workflow_type
+    if (!enabled || !identical(Sys.info()[["sysname"]], "Linux") || !is.character(workflow_type) ||
+        length(workflow_type) != 1L || !workflow_type %in% names(workflowRoutesByType)) return(FALSE)
+    if (isTRUE(value$use_limpa) || isTRUE(value$limpa_applied) || !is.null(value$limpa_dpc_quant_results)) {
+        cli::cli_abort("sessions from the retired in-memory limpa route cannot be adopted; rerun on the DIA with limpa workflow",
+            class = "workflow_session_unsupported")
+    }
     records <- value$r6_complete_states
     history <- value$r6_state_history
     current <- value$r6_current_state_name
@@ -992,7 +999,12 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     validateProtDaFilteredSession(value, source_dir)
     root <- tempfile(".dia-native-legacy-", tmpdir = source_dir)
     if (!dir.create(root, mode = "0700")) cli::cli_abort("cannot stage legacy import", class = "saved_entity_write")
-    store <- newWorkflowEntityStore(root, "DIA-IQ-native", "DIA", max_cache_bytes = 0)
+    # The store label follows the import's (KIT-020): the DIA-NN IQ owner, or the session's recorded format;
+    # a session without a recorded format is labelled by its type.
+    label <- if (identical(workflow_type, "DIA")) "DIA-IQ-native" else
+        workflowNativeStoreLabel(if (is.character(value$data_format) && length(value$data_format) == 1L &&
+            nzchar(value$data_format)) value$data_format else tolower(workflow_type))
+    store <- newWorkflowEntityStore(root, label, workflow_type, max_cache_bytes = 0)
     manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
     adopted <- FALSE
     on.exit(if (!adopted) closeDIAStateAdapter(manager), add = TRUE)
@@ -1002,8 +1014,16 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     restoreDIAStateSession(manager, records, history, current)
     convertDIANativeLegacyCheckpoints(manager)
     snapshot <- manager$.context$snapshot
-    snapshot$workflow_type <- "DIA"
+    snapshot$workflow_type <- workflow_type
     snapshot$state_metadata[[current]] <- describeDIAProteinState(value$current_s4_object)
+    # KIT-042: every adopted state's provenance is `legacy`, written at ingest by the adopting build (the reopen
+    # backfill of KIT-025 then finds nothing to add).
+    for (name in setdiff(unlist(history), names(snapshot$step_provenance))) {
+        legacy <- diaStepProvenanceEntry(snapshot, list(operation = "legacy", variant = NA_character_,
+            parameter_names = character()))
+        snapshot <- legacy$snapshot
+        snapshot$step_provenance[[name]] <- legacy$entry
+    }
     publishDIAStateHead(manager$.context, snapshot)
     if (!is.null(experiment_paths)) {
         restoreDIANativeLegacyArtifacts(value, manager, experiment_paths, root)
@@ -1019,10 +1039,17 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
         metadata, "legacy-import-metadata", codec = "rds")
     manager$.context$native_extra_references <- list()
     previous <- workflow_data$state_manager
-    if (inherits(previous, "DIAStateAdapter")) closeDIAStateAdapter(previous)
+    if (inherits(previous, "DIAStateAdapter")) {
+        # KIT-042: the bus payloads the replaced owner held (the import's table references) would dangle once
+        # that store closes; the legacy envelope carries no import table, so they are released.
+        for (field in c("data_tbl", "data_cln")) {
+            if (isSavedWorkflowReference(workflow_data[[field]])) workflow_data[[field]] <- NULL
+        }
+        closeDIAStateAdapter(previous)
+    }
     previous <- NULL
     workflow_data$state_manager <- attachDIAStateSession(manager, session, workflow_data)
-    workflow_data$dia_quantification_method <- "iq"
+    if (identical(workflow_type, "DIA")) workflow_data$dia_quantification_method <- "iq"
     workflow_data$native_session_restored <- Sys.time()
     adopted <- TRUE
     TRUE
@@ -1330,9 +1357,8 @@ collectDIANativeSessionMetadata <- function(workflow_data, norm_data, input) {
     }
     config <- workflow_data$config_list
     global <- config$globalParameters
-    if (isTRUE(global$use_limpa) || isTRUE(summary$use_limpa)) {
-        cli::cli_abort("native session qualification is DIA IQ only", class = "saved_entity_scope")
-    }
+    # KIT-042: no refusal by `use_limpa` here; the limpa route is a workflow type of its own (KIT-046), and the
+    # in-memory limpa route never attaches an owner.
     extra <- list()
     for (field in c("data_tbl", "data_cln")) {
         value <- workflow_data[[field]]
@@ -1350,7 +1376,9 @@ collectDIANativeSessionMetadata <- function(workflow_data, norm_data, input) {
         ruv_mode = input$ruv_mode, ruv_applied = input$ruv_mode != "skip", ruv_k = norm_data$best_k,
         correlation_threshold = norm_data$correlation_threshold,
         output_policy = "native_first_v1",
-        workflow_type = global$workflow_type %||% summary$workflow_type %||% "DIA",
+        # KIT-042: the owner's type (the store identity, KIT-020) is authoritative; the config and the state's
+        # own record are fallbacks for stores written before the type was set at import.
+        workflow_type = context$store$identity$workflow_id %||% global$workflow_type %||% summary$workflow_type %||% "DIA",
         report_template = global$report_template %||% summary$report_template,
         use_limpa = FALSE, limpa_applied = FALSE, limpa_parameters = NULL, limpa_dpc_quant_results = NULL,
         final_protein_count = summary$proteins, final_sample_count = summary$samples)
