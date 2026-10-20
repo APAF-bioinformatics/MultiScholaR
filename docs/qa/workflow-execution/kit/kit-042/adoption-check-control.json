@@ -1,0 +1,82 @@
+{
+  "maxquant": {
+    "type": "LFQ",
+    "rds": "/home/doktersmol/.cache/multischolar-kit042-adoption-check/maxquant/rds/filtered_session_data_latest.rds",
+    "states": ["initial", "protein_s4_initial", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "normalized", "correlation_filtered"],
+    "current": "correlation_filtered",
+    "state_classes": {
+      "initial": "NULL",
+      "protein_s4_initial": "ProteinQuantitativeData",
+      "protein_intensity_filtered": "ProteinQuantitativeData",
+      "duplicates_removed": "ProteinQuantitativeData",
+      "protein_replicate_filtered": "ProteinQuantitativeData",
+      "normalized": "ProteinQuantitativeData",
+      "correlation_filtered": "ProteinQuantitativeData"
+    },
+    "state_hashes": {
+      "initial": null,
+      "protein_s4_initial": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
+      "protein_intensity_filtered": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "duplicates_removed": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "protein_replicate_filtered": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+      "normalized": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+      "correlation_filtered": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
+    },
+    "da": {
+      "rows": 4,
+      "table_hashes": {
+        "da_proteins_long": "9bfacd2ab7c43f20146a732f8b82c98787f291a81aafee56fd7e6174a143d816",
+        "da_proteins_wide": "3053e5aa0e005dfc4519096bf2807ee7ac1eca23b98333b7c230e4f2a0c3e92b",
+        "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+      }
+    },
+    "session_fields": ["r6_current_state_name", "r6_complete_states", "r6_state_history", "current_s4_object", "correlation_filtered_s4", "contrasts_tbl", "design_matrix", "config_list", "export_timestamp", "normalization_method", "ruv_mode", "ruv_applied", "ruv_k", "correlation_threshold", "workflow_type", "report_template", "use_limpa", "limpa_applied", "limpa_parameters", "limpa_dpc_quant_results", "fasta_metadata", "accession_cleanup_results", "ruv_optimization_result", "qc_params", "protein_counts", "mixed_species_analysis", "final_protein_count", "final_sample_count"],
+    "workflow_type": "LFQ",
+    "use_limpa": false
+  },
+  "pd_tmt": {
+    "type": "TMT",
+    "rds": "/home/doktersmol/.cache/multischolar-kit042-adoption-check/pd_tmt/rds/filtered_session_data_latest.rds",
+    "states": ["initial", "protein_s4_initial", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "normalized", "correlation_filtered"],
+    "current": "correlation_filtered",
+    "state_classes": {
+      "initial": "NULL",
+      "protein_s4_initial": "ProteinQuantitativeData",
+      "protein_intensity_filtered": "ProteinQuantitativeData",
+      "duplicates_removed": "ProteinQuantitativeData",
+      "protein_replicate_filtered": "ProteinQuantitativeData",
+      "normalized": "ProteinQuantitativeData",
+      "correlation_filtered": "ProteinQuantitativeData"
+    },
+    "state_hashes": {
+      "initial": null,
+      "protein_s4_initial": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214",
+      "protein_intensity_filtered": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "duplicates_removed": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "protein_replicate_filtered": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+      "normalized": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
+      "correlation_filtered": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
+    },
+    "da": {
+      "rows": 4,
+      "table_hashes": {
+        "da_proteins_long": "bfda9a07b0312313f150719a9da9670c7f4276e2127f969feb61d8c3518001ea",
+        "da_proteins_wide": "a86f26af1db2fbcde0bbad5d740f40da84c5fc21c40871e7c01b2503d0c14e80",
+        "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+      }
+    },
+    "session_fields": ["r6_current_state_name", "r6_complete_states", "r6_state_history", "current_s4_object", "correlation_filtered_s4", "contrasts_tbl", "design_matrix", "config_list", "export_timestamp", "normalization_method", "ruv_mode", "ruv_applied", "ruv_k", "correlation_threshold", "workflow_type", "report_template", "use_limpa", "limpa_applied", "limpa_parameters", "limpa_dpc_quant_results", "fasta_metadata", "accession_cleanup_results", "ruv_optimization_result", "qc_params", "protein_counts", "mixed_species_analysis", "final_protein_count", "final_sample_count"],
+    "workflow_type": "TMT",
+    "use_limpa": false
+  },
+  "limpa": {
+    "rds": "/home/doktersmol/.cache/multischolar-kit042-adoption-check/limpa/rds/filtered_session_data_latest.rds",
+    "flagged": ["use_limpa", "limpa_applied"]
+  },
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.h6QeDJ/library/MultiScholaR",
+    "source_commit": "6c9c49018f2175bc85937cef216689e06b7a41f3",
+    "binding": "kit_036"
+  },
+  "seconds": 6.6854419708251953
+}

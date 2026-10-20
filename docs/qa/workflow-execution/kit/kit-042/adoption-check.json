@@ -1,0 +1,435 @@
+{
+  "maxquant_plain": {
+    "format": "maxquant",
+    "type": "LFQ",
+    "with_owner": false,
+    "adopted": true,
+    "store_identity": {
+      "project_id": "LFQ-native",
+      "workflow_id": "LFQ"
+    },
+    "head_type": "LFQ",
+    "history": ["initial", "protein_s4_initial", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "normalized", "correlation_filtered"],
+    "current": "correlation_filtered",
+    "states": {
+      "initial": {
+        "schema": null,
+        "class": null,
+        "provenance": "import",
+        "backfilled": false,
+        "identical": true,
+        "hash": null,
+        "control_hash": null
+      },
+      "protein_s4_initial": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
+        "control_hash": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52"
+      },
+      "protein_intensity_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+        "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
+      },
+      "duplicates_removed": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+        "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
+      },
+      "protein_replicate_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+        "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
+      },
+      "normalized": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+        "control_hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
+      },
+      "correlation_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+        "control_hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
+      }
+    },
+    "all_identical": true,
+    "initial_provenance": "import",
+    "all_legacy": true,
+    "all_component": true,
+    "da_current": true,
+    "da": {
+      "ok": true,
+      "rows": 4,
+      "table_hashes": {
+        "da_proteins_long": "9bfacd2ab7c43f20146a732f8b82c98787f291a81aafee56fd7e6174a143d816",
+        "da_proteins_wide": "3053e5aa0e005dfc4519096bf2807ee7ac1eca23b98333b7c230e4f2a0c3e92b",
+        "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+      },
+      "equal_to_control": [true, true, true]
+    },
+    "export": {
+      "ok": true,
+      "archive": "filtered_session_20261020_121032_native-export-b48ea10df0491.msdia.tar",
+      "manifest_workflow": "LFQ",
+      "manifest_route": "protein",
+      "latest_fields": ["schema", "status", "request_id", "generation", "archive", "bytes", "sha256"],
+      "reopened_type": "LFQ",
+      "reopened_state": "correlation_filtered",
+      "metadata_workflow_type": "LFQ"
+    }
+  },
+  "maxquant_owner": {
+    "format": "maxquant",
+    "type": "LFQ",
+    "with_owner": true,
+    "owner_before": {
+      "schema": 1,
+      "project_id": "MAXQUANT-native",
+      "workflow_id": "LFQ",
+      "incarnation": "0497906eebbd18f4b9407d7efe26497e3078fef06a3249deea73941090b0e596"
+    },
+    "adopted": true,
+    "store_identity": {
+      "project_id": "LFQ-native",
+      "workflow_id": "LFQ"
+    },
+    "head_type": "LFQ",
+    "history": ["initial", "protein_s4_initial", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "normalized", "correlation_filtered"],
+    "current": "correlation_filtered",
+    "states": {
+      "initial": {
+        "schema": null,
+        "class": null,
+        "provenance": "import",
+        "backfilled": false,
+        "identical": true,
+        "hash": null,
+        "control_hash": null
+      },
+      "protein_s4_initial": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
+        "control_hash": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52"
+      },
+      "protein_intensity_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+        "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
+      },
+      "duplicates_removed": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+        "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
+      },
+      "protein_replicate_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
+        "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
+      },
+      "normalized": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+        "control_hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
+      },
+      "correlation_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
+        "control_hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
+      }
+    },
+    "all_identical": true,
+    "initial_provenance": "import",
+    "all_legacy": true,
+    "all_component": true,
+    "da_current": true,
+    "da": {
+      "ok": true,
+      "rows": 4,
+      "table_hashes": {
+        "da_proteins_long": "9bfacd2ab7c43f20146a732f8b82c98787f291a81aafee56fd7e6174a143d816",
+        "da_proteins_wide": "3053e5aa0e005dfc4519096bf2807ee7ac1eca23b98333b7c230e4f2a0c3e92b",
+        "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+      },
+      "equal_to_control": [true, true, true]
+    },
+    "export": {
+      "ok": true,
+      "archive": "filtered_session_20261020_121050_native-export-b48ea747f0899.msdia.tar",
+      "manifest_workflow": "LFQ",
+      "manifest_route": "protein",
+      "latest_fields": ["schema", "status", "request_id", "generation", "archive", "bytes", "sha256"],
+      "reopened_type": "LFQ",
+      "reopened_state": "correlation_filtered",
+      "metadata_workflow_type": "LFQ"
+    }
+  },
+  "pd_tmt_plain": {
+    "format": "pd_tmt",
+    "type": "TMT",
+    "with_owner": false,
+    "adopted": true,
+    "store_identity": {
+      "project_id": "TMT-native",
+      "workflow_id": "TMT"
+    },
+    "head_type": "TMT",
+    "history": ["initial", "protein_s4_initial", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "normalized", "correlation_filtered"],
+    "current": "correlation_filtered",
+    "states": {
+      "initial": {
+        "schema": null,
+        "class": null,
+        "provenance": "import",
+        "backfilled": false,
+        "identical": true,
+        "hash": null,
+        "control_hash": null
+      },
+      "protein_s4_initial": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214",
+        "control_hash": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214"
+      },
+      "protein_intensity_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+        "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
+      },
+      "duplicates_removed": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+        "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
+      },
+      "protein_replicate_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+        "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
+      },
+      "normalized": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
+        "control_hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
+      },
+      "correlation_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
+        "control_hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
+      }
+    },
+    "all_identical": true,
+    "initial_provenance": "import",
+    "all_legacy": true,
+    "all_component": true,
+    "da_current": true,
+    "da": {
+      "ok": true,
+      "rows": 4,
+      "table_hashes": {
+        "da_proteins_long": "bfda9a07b0312313f150719a9da9670c7f4276e2127f969feb61d8c3518001ea",
+        "da_proteins_wide": "a86f26af1db2fbcde0bbad5d740f40da84c5fc21c40871e7c01b2503d0c14e80",
+        "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+      },
+      "equal_to_control": [true, true, true]
+    },
+    "export": {
+      "ok": true,
+      "archive": "filtered_session_20261020_121105_native-export-b48eaaee8421.msdia.tar",
+      "manifest_workflow": "TMT",
+      "manifest_route": "protein",
+      "latest_fields": ["schema", "status", "request_id", "generation", "archive", "bytes", "sha256"],
+      "reopened_type": "TMT",
+      "reopened_state": "correlation_filtered",
+      "metadata_workflow_type": "TMT"
+    }
+  },
+  "pd_tmt_owner": {
+    "format": "pd_tmt",
+    "type": "TMT",
+    "with_owner": true,
+    "owner_before": {
+      "schema": 1,
+      "project_id": "PD_TMT-native",
+      "workflow_id": "TMT",
+      "incarnation": "a4ce074563a8138a22506e60dc88c6c7ac1131a8aba7ced685f61573c886768e"
+    },
+    "adopted": true,
+    "store_identity": {
+      "project_id": "TMT-native",
+      "workflow_id": "TMT"
+    },
+    "head_type": "TMT",
+    "history": ["initial", "protein_s4_initial", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "normalized", "correlation_filtered"],
+    "current": "correlation_filtered",
+    "states": {
+      "initial": {
+        "schema": null,
+        "class": null,
+        "provenance": "import",
+        "backfilled": false,
+        "identical": true,
+        "hash": null,
+        "control_hash": null
+      },
+      "protein_s4_initial": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214",
+        "control_hash": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214"
+      },
+      "protein_intensity_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+        "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
+      },
+      "duplicates_removed": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+        "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
+      },
+      "protein_replicate_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
+        "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
+      },
+      "normalized": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
+        "control_hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
+      },
+      "correlation_filtered": {
+        "schema": "dia.component_checkpoint.v2",
+        "class": "ProteinQuantitativeData",
+        "provenance": "legacy",
+        "backfilled": false,
+        "identical": true,
+        "hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
+        "control_hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
+      }
+    },
+    "all_identical": true,
+    "initial_provenance": "import",
+    "all_legacy": true,
+    "all_component": true,
+    "da_current": true,
+    "da": {
+      "ok": true,
+      "rows": 4,
+      "table_hashes": {
+        "da_proteins_long": "bfda9a07b0312313f150719a9da9670c7f4276e2127f969feb61d8c3518001ea",
+        "da_proteins_wide": "a86f26af1db2fbcde0bbad5d740f40da84c5fc21c40871e7c01b2503d0c14e80",
+        "contrasts_results_table": "9723b1ac8162810872dca0a2ee603be582c34032423fa707f9d4ce569eb166a0"
+      },
+      "equal_to_control": [true, true, true]
+    },
+    "export": {
+      "ok": true,
+      "archive": "filtered_session_20261020_121121_native-export-b48ead363dbf.msdia.tar",
+      "manifest_workflow": "TMT",
+      "manifest_route": "protein",
+      "latest_fields": ["schema", "status", "request_id", "generation", "archive", "bytes", "sha256"],
+      "reopened_type": "TMT",
+      "reopened_state": "correlation_filtered",
+      "metadata_workflow_type": "TMT"
+    }
+  },
+  "limpa": {
+    "refusal": "workflow_session_unsupported sessions from the retired in-memory limpa route cannot be adopted; rerun\non the DIA with limpa workflow",
+    "refused": true,
+    "owner_unchanged": true
+  },
+  "head_commit": "73b909e9673e194332fff181a3addd9afab9280b",
+  "tree_clean": true,
+  "control_commit": "6c9c49018f2175bc85937cef216689e06b7a41f3",
+  "seconds": 66.959615468978882
+}
