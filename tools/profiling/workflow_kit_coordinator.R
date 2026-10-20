@@ -299,7 +299,7 @@ tryCatch({
             journey <- bindings$journey
             journey$corpus_key <- case$corpus
             journey$stop_after <- case$stop_after
-            journey$route <- kitRouteOf(case)
+            journey$route <- helpers$kitRouteOf(case)
             # KIT-021: a corpus may override normalisation settings (the fixtures skip RUV); part of the case binding through the corpus.
             if (!is.null(corpus_spec$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, corpus_spec$normalisation)
             fault <- if (case$expect_failure) bindings$lifecycle$fault else NULL
