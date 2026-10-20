@@ -17,6 +17,7 @@
         "class": null,
         "provenance": "import",
         "backfilled": false,
+        "adopted": false,
         "identical": true,
         "hash": null,
         "control_hash": null
@@ -26,6 +27,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
         "control_hash": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52"
@@ -35,6 +37,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
         "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
@@ -44,6 +47,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
         "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
@@ -53,6 +57,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
         "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
@@ -62,6 +67,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
         "control_hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
@@ -71,6 +77,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
         "control_hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
@@ -93,7 +100,7 @@
     },
     "export": {
       "ok": true,
-      "archive": "filtered_session_20261020_121032_native-export-b48ea10df0491.msdia.tar",
+      "archive": "filtered_session_20261020_132501_native-export-debb94a8a326a.msdia.tar",
       "manifest_workflow": "LFQ",
       "manifest_route": "protein",
       "latest_fields": ["schema", "status", "request_id", "generation", "archive", "bytes", "sha256"],
@@ -110,7 +117,7 @@
       "schema": 1,
       "project_id": "MAXQUANT-native",
       "workflow_id": "LFQ",
-      "incarnation": "0497906eebbd18f4b9407d7efe26497e3078fef06a3249deea73941090b0e596"
+      "incarnation": "940264cb7a70c36a9021fcf53acc92a71bb6773df899d9ec6182c2451d1f2067"
     },
     "adopted": true,
     "store_identity": {
@@ -126,6 +133,7 @@
         "class": null,
         "provenance": "import",
         "backfilled": false,
+        "adopted": false,
         "identical": true,
         "hash": null,
         "control_hash": null
@@ -135,6 +143,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52",
         "control_hash": "0d8c22b98470704c6dfffb2570d9cf62bb3ef0f00b8889f4bbba3f3da5a28e52"
@@ -144,6 +153,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
         "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
@@ -153,6 +163,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
         "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
@@ -162,6 +173,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b",
         "control_hash": "b0f505fb3acf8fc75bac2a7776a01aab6ca836fe2d069158e5e4d27277f2fc0b"
@@ -171,6 +183,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
         "control_hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
@@ -180,6 +193,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7",
         "control_hash": "3116523b450d06ac93300bf26a4ca96a7b6bb3b18f20e621645b1fcb71a517d7"
@@ -202,7 +216,7 @@
     },
     "export": {
       "ok": true,
-      "archive": "filtered_session_20261020_121050_native-export-b48ea747f0899.msdia.tar",
+      "archive": "filtered_session_20261020_132520_native-export-debb943ae258e.msdia.tar",
       "manifest_workflow": "LFQ",
       "manifest_route": "protein",
       "latest_fields": ["schema", "status", "request_id", "generation", "archive", "bytes", "sha256"],
@@ -229,6 +243,7 @@
         "class": null,
         "provenance": "import",
         "backfilled": false,
+        "adopted": false,
         "identical": true,
         "hash": null,
         "control_hash": null
@@ -238,6 +253,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214",
         "control_hash": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214"
@@ -247,6 +263,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
         "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
@@ -256,6 +273,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
         "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
@@ -265,6 +283,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
         "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
@@ -274,6 +293,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
         "control_hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
@@ -283,6 +303,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
         "control_hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
@@ -305,7 +326,7 @@
     },
     "export": {
       "ok": true,
-      "archive": "filtered_session_20261020_121105_native-export-b48eaaee8421.msdia.tar",
+      "archive": "filtered_session_20261020_132535_native-export-debb918395b14.msdia.tar",
       "manifest_workflow": "TMT",
       "manifest_route": "protein",
       "latest_fields": ["schema", "status", "request_id", "generation", "archive", "bytes", "sha256"],
@@ -322,7 +343,7 @@
       "schema": 1,
       "project_id": "PD_TMT-native",
       "workflow_id": "TMT",
-      "incarnation": "a4ce074563a8138a22506e60dc88c6c7ac1131a8aba7ced685f61573c886768e"
+      "incarnation": "11e0b41653efeb51d7baff2f6ec5fb5dfbeff58a0cc02fe654ad6847071bc974"
     },
     "adopted": true,
     "store_identity": {
@@ -338,6 +359,7 @@
         "class": null,
         "provenance": "import",
         "backfilled": false,
+        "adopted": false,
         "identical": true,
         "hash": null,
         "control_hash": null
@@ -347,6 +369,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214",
         "control_hash": "f46c97bbba8fcb95c184e5e7a046243a1d9fdac6078200b500ba08bde02e9214"
@@ -356,6 +379,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
         "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
@@ -365,6 +389,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
         "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
@@ -374,6 +399,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1",
         "control_hash": "8c553c2a18c49e3169f9b7a8801d82e0169b3ad6fb840696449d1d13040b2db1"
@@ -383,6 +409,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
         "control_hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
@@ -392,6 +419,7 @@
         "class": "ProteinQuantitativeData",
         "provenance": "legacy",
         "backfilled": false,
+        "adopted": true,
         "identical": true,
         "hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e",
         "control_hash": "748cd89044528cf21ef10468d35158f596bcb7e78c28b563f499014d8185807e"
@@ -414,7 +442,7 @@
     },
     "export": {
       "ok": true,
-      "archive": "filtered_session_20261020_121121_native-export-b48ead363dbf.msdia.tar",
+      "archive": "filtered_session_20261020_132552_native-export-debb94f137d41.msdia.tar",
       "manifest_workflow": "TMT",
       "manifest_route": "protein",
       "latest_fields": ["schema", "status", "request_id", "generation", "archive", "bytes", "sha256"],
@@ -428,8 +456,13 @@
     "refused": true,
     "owner_unchanged": true
   },
-  "head_commit": "73b909e9673e194332fff181a3addd9afab9280b",
+  "enriched": {
+    "refusal": "workflow_session_unsupported state \"enrichment_completed\" holds a <EnrichmentResults> object; a\nsession saved after enrichment cannot be adopted (export the session from the\nNormalization tab, before enrichment)",
+    "refused": true,
+    "owner_unchanged": true
+  },
+  "head_commit": "c1189ef9527ae007296aad57dde95e66af315cbe",
   "tree_clean": true,
   "control_commit": "6c9c49018f2175bc85937cef216689e06b7a41f3",
-  "seconds": 66.959615468978882
+  "seconds": 68.901203632354736
 }

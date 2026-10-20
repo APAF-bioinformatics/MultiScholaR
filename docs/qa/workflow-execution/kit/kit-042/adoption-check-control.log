@@ -9,8 +9,8 @@ Paths for Omics Label: 'proteomics_maxquant' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit042-adoption-check/maxquant/control-project/scripts/proteomics_maxquant (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit042-adoption-check/maxquant/control-project/results/proteomics_maxquant (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit042-adoption-check/maxquant/control-project/results_summary/proteomics_maxquant (4 items)
-  timestamp                      : 20261020_121003
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit042-adoption-check/maxquant/control-project/results/proteomics_maxquant/publication_graphs/filtering_qc/20261020_121003 (0 items)
+  timestamp                      : 20261020_124839
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit042-adoption-check/maxquant/control-project/results/proteomics_maxquant/publication_graphs/filtering_qc/20261020_124839 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit042-adoption-check/maxquant/control-project/results/proteomics_maxquant/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit042-adoption-check/maxquant/control-project/results/proteomics_maxquant/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit042-adoption-check/maxquant/control-project/results/proteomics_maxquant/da_proteins (0 items)
@@ -237,8 +237,8 @@ Paths for Omics Label: 'proteomics_pd_tmt' (Type: proteomics)
   source_dir                     : /home/doktersmol/.cache/multischolar-kit042-adoption-check/pd_tmt/control-project/scripts/proteomics_pd_tmt (0 items)
   results_dir                    : /home/doktersmol/.cache/multischolar-kit042-adoption-check/pd_tmt/control-project/results/proteomics_pd_tmt (6 items)
   results_summary_dir            : /home/doktersmol/.cache/multischolar-kit042-adoption-check/pd_tmt/control-project/results_summary/proteomics_pd_tmt (4 items)
-  timestamp                      : 20261020_121006
-  time_dir                       : /home/doktersmol/.cache/multischolar-kit042-adoption-check/pd_tmt/control-project/results/proteomics_pd_tmt/publication_graphs/filtering_qc/20261020_121006 (0 items)
+  timestamp                      : 20261020_124842
+  time_dir                       : /home/doktersmol/.cache/multischolar-kit042-adoption-check/pd_tmt/control-project/results/proteomics_pd_tmt/publication_graphs/filtering_qc/20261020_124842 (0 items)
   clean_features_dir             : /home/doktersmol/.cache/multischolar-kit042-adoption-check/pd_tmt/control-project/results/proteomics_pd_tmt/clean_proteins (0 items)
   clean_proteins_dir             : /home/doktersmol/.cache/multischolar-kit042-adoption-check/pd_tmt/control-project/results/proteomics_pd_tmt/clean_proteins (0 items)
   da_output_dir                  : /home/doktersmol/.cache/multischolar-kit042-adoption-check/pd_tmt/control-project/results/proteomics_pd_tmt/da_proteins (0 items)

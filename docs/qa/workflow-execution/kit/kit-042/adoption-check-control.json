@@ -69,6 +69,10 @@
     "workflow_type": "TMT",
     "use_limpa": false
   },
+  "enriched": {
+    "rds": "/home/doktersmol/.cache/multischolar-kit042-adoption-check/enriched/rds/filtered_session_data_latest.rds",
+    "appended": "enrichment_completed"
+  },
   "limpa": {
     "rds": "/home/doktersmol/.cache/multischolar-kit042-adoption-check/limpa/rds/filtered_session_data_latest.rds",
     "flagged": ["use_limpa", "limpa_applied"]
@@ -78,5 +82,5 @@
     "source_commit": "6c9c49018f2175bc85937cef216689e06b7a41f3",
     "binding": "kit_036"
   },
-  "seconds": 6.6854419708251953
+  "seconds": 6.6638398170471191
 }
