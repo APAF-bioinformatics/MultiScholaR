@@ -49,6 +49,15 @@ tick <- function(id) { out$steps[[id]] <<- as.numeric(difftime(Sys.time(), step_
 # 1. Import on a plain WorkflowState through the import helpers the owner path also calls.
 imported <- switch(format, maxquant = importMaxQuantData(report, use_lfq = TRUE, filter_contaminants = TRUE),
     pd_tmt = importProteomeDiscovererTMTData(report), stop("format ", format))
+# The control build's MaxQuant reader keeps the flagged rows its sampled type guess misses (the reader repair of
+# KIT-021, commit 88df9314, is on the candidate build only): the rows the repaired reader drops are dropped here by
+# their MaxQuant prefixes so the kernels under comparison see the same table; the count is recorded.
+if (identical(format, "maxquant")) {
+    id_col <- names(imported$data)[[1L]]
+    flagged <- grepl("^(CON__|REV__)", imported$data[[id_col]])
+    out$control_reader_flagged_rows_dropped <- length(unique(imported$data[[id_col]][flagged]))
+    imported$data <- imported$data[!flagged, , drop = FALSE]
+}
 out$workflow_type <- applyProtImportResultToWorkflow(workflow, imported, format, fasta, sanitizeNames = TRUE,
     logInfo = function(...) NULL, showNotification = function(...) NULL)
 processProtImportFastaData(workflowData = workflow, fastaPath = fasta, organismName = "Homo sapiens", experimentPaths = paths,
@@ -127,8 +136,9 @@ object <- filterSamplesByProteinCorrelationThreshold(object, pearson_correlation
 record_state("correlation_filtered")
 tick("correlation")
 # 5. DA per contrast as the DA-contrast-output declaration's kernel calls the unchanged method (the DA tab's contrasts).
-design_groups <- unique(workflow$design_matrix$group) # as the recorder and the DA tab derive the contrasts
-contrasts <- utils::combn(paste0("group", design_groups), 2, function(x) paste0(x[1], "-", x[2]), simplify = TRUE)
+# The contrasts the design builder's save generated on the workflow (what the DA tab and the recorder run).
+stopifnot(is.data.frame(workflow$contrasts_tbl), nrow(workflow$contrasts_tbl) > 0L)
+contrasts <- as.character(workflow$contrasts_tbl$contrasts)
 out$da <- list(contrasts = contrasts, table_hashes = list(), rows = list())
 for (contrast in contrasts) {
     # The contrast as normaliseProtDaContrastsTable's full format names it (the kernel receives `full_format`).

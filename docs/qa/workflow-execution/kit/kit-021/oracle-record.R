@@ -133,7 +133,7 @@ norm_data <- new.env(parent = emptyenv())
 norm <- journey$normalisation
 if (!is.null(corpus$normalisation)) norm <- utils::modifyList(norm, corpus$normalisation)
 settings <- c(list(norm_method = norm$norm_method, ruv_mode = norm$ruv_mode), norm$ruv[setdiff(names(norm$ruv), "ruv_grouping_variable")],
-    list(ruv_percentage = 5, ruv_k = NA, color_variable = NULL, shape_variable = NULL))
+    list(ruv_percentage = 5L, ruv_k = NA, color_variable = NULL, shape_variable = NULL))
 grouping <- function() getProtNormRuvGroupingVariable(norm$ruv$ruv_grouping_variable %||% "group")
 aesthetics <- function() getProtNormPlotAesthetics(NULL, NULL)
 run("normalisation_ruv", invisible(runDIAReferenceNormalization(settings, workflow, norm_data, paths, "proteomics", label,
@@ -143,10 +143,12 @@ run("correlation", invisible(runDIAReferenceCorrelation(workflow, norm_data, pat
 run("session_export", invisible(runProtNormExportSessionWorkflow(workflow, norm_data, list(norm_method = norm$norm_method, ruv_mode = norm$ruv_mode),
     paths$source_dir, withProgressFn = function(message, value, expr) force(expr), incProgressFn = function(...) NULL, messageFn = function(...) NULL)))
 run("da", withDIAStateScope(manager, function() {
-    design_groups <- unique(workflow$design_matrix$group)
-    contrasts <- utils::combn(paste0("group", design_groups), 2, function(x) paste0(x[1], "-", x[2]), simplify = TRUE)
-    da_data <- new.env(parent = emptyenv()); da_data$current_s4_object <- getDIAStateReference(manager); da_data$contrasts_available <- contrasts
-    workflow$contrasts_tbl <- data.frame(contrasts = contrasts, stringsAsFactors = FALSE)
+    # The contrasts the DA tab finds on the workflow: the design builder's save generated them (the TMT fixture's
+    # design lists WT first, and the builder still names the contrast KO-WT; a pairwise combination of the design's
+    # groups in order would not).
+    stopifnot(is.data.frame(workflow$contrasts_tbl), nrow(workflow$contrasts_tbl) > 0L)
+    da_data <- new.env(parent = emptyenv()); da_data$current_s4_object <- getDIAStateReference(manager)
+    da_data$contrasts_available <- workflow$contrasts_tbl$contrasts
     invisible(runDIAReferenceDaAnalysis(list(formula_string = journey$da$formula, da_q_val_thresh = journey$da$q_value, treat_lfc_cutoff = journey$da$treat_lfc),
         da_data, workflow, paths, contrasts = workflow$contrasts_tbl, annotations = workflow$uniprot_dat_cln, publish = TRUE))
 }))
@@ -162,6 +164,10 @@ for (id in names(populations)) {
     new_ids <- setdiff(populations[[id]]$product_ids, seen)
     seen <- union(seen, populations[[id]]$product_ids)
     products <- fingerprints$products[intersect(new_ids, names(fingerprints$products))]
+    # Rendered assets (the interactive volcano page, the QC plot images) are display renderings whose bytes carry
+    # widget ids and device state; the KIT-005 oracles carry none and the verifier reports a member's as additional
+    # products, so the protein route's oracles leave them out too.
+    products <- products[!vapply(products, function(p) identical(p$kind, "rendered_asset"), logical(1))]
     products <- unname(products[order(vapply(products, `[[`, character(1), "sha256"))])
     names(products) <- vapply(products, function(p) paste0(p$product_type %||% p$kind, ":", substr(p$sha256, 1L, 12L)), character(1))
     populations[[id]]$fingerprint$products <- c(populations[[id]]$fingerprint$products, products)

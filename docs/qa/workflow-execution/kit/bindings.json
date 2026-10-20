@@ -6324,20 +6324,20 @@
     "021": {
       "kind": "single_journey",
       "build": "kit_021",
-      "corpus": "lfq_300",
+      "corpus": "lfq_fixture",
       "route": "protein",
       "whole_journey": true,
-      "oracles": "lfq_300",
-      "ceiling_seconds": 14400
+      "oracles": "lfq_fixture",
+      "ceiling_seconds": 1800
     },
     "021t": {
       "kind": "single_journey",
       "build": "kit_021",
-      "corpus": "tmt_300",
+      "corpus": "tmt_fixture",
       "route": "protein",
       "whole_journey": true,
-      "oracles": "tmt_300",
-      "ceiling_seconds": 14400
+      "oracles": "tmt_fixture",
+      "ceiling_seconds": 1800
     },
     "017": {
       "kind": "journey",
