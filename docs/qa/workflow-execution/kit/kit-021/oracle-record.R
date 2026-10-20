@@ -102,8 +102,13 @@ run("design", withDIAStateScope(manager, function() {
         raw$group[idx] <- group
     }
     formula <- workflow$config_list$deAnalysisParameters$formula_string %||% "~ 0 + group"
+    # The one contrast the journey's design step adds (runKitDesignActions): the design file's second group minus its
+    # first, named as the builder's add-contrast action names it (`<group1>.vs.<group2>`).
+    design_groups <- unique(design_in$group)
+    contrast_data <- data.frame(contrast_name = paste0(design_groups[[2L]], ".vs.", design_groups[[1L]]),
+        numerator = design_groups[[2L]], denominator = design_groups[[1L]], stringsAsFactors = FALSE)
     results <- buildProtDesignSaveResultsPayload(designMatrix = raw, currentRemovedSamples = character(0),
-        dataCln = workflow$data_cln, contrastData = NULL, configList = workflow$config_list, formulaString = formula)
+        dataCln = workflow$data_cln, contrastData = contrast_data, configList = workflow$config_list, formulaString = formula)
     results$data_reference <- saveDIAOwnedValue(results$data_cln, "design-assigned")
     results["data_cln"] <- list(NULL)
     hydrateProtDesignBuilderResults(results, workflow)

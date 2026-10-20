@@ -938,242 +938,242 @@
     "lfq_fixture_import": {
       "step": "import",
       "state": "initial",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "2e7a89d62e33279065dc75ca6330091cd1594f71f2b66998fd66437f0aef56e2",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "2dbbd5c04c546538c5fbf634833fe008335d1606828e0c441751c3431790ef72",
       "rows": null,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "lfq_fixture_design": {
       "step": "design",
       "state": "protein_s4_initial",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "ee4050c9e5ab18a48be8bb72dd7932cbbeaa318235565901842130c816827e2d",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "64b295f04bfbb503d914effdeb8b4e700d9dc1b08f5856082d0075e67f25e30a",
       "rows": 5,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "lfq_fixture_accession": {
       "step": "accession",
       "state": "protein_accession_cleaned",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "cb801e2f11b403a929a14b9b2b31f800df17665d0a29a11462e21ec821e26ae1",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "a30250355d0af19bcb948011e707f65f005b86e5a2c0db4809f990af66d5f94f",
       "rows": 5,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "lfq_fixture_protein_intensity": {
       "step": "protein_intensity",
       "state": "protein_intensity_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "896a0074bc2659cc8c5bb6158f54aeb549facf282961af5f956ecc09717cf4dc",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "c5e55cfa9870436e25b347ea7105639d9b80d2709b4e050fec2e7a05d38f7362",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "lfq_fixture_duplicates": {
       "step": "duplicates",
       "state": "duplicates_removed",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "cc3add0ebcafe50168303c57522bb5ff413c112312c6d676b5a79b441025d053",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "b9fbe3f4677e40932f896aadf610f1cb9460660f12d28f13736af62e498b506c",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "lfq_fixture_protein_replicate": {
       "step": "protein_replicate",
       "state": "protein_replicate_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "057a151ad6efb6dde371457d05b211f8e6a52dd0b934250f4f4e1adf203aea8f",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "0a2b19b52120528c4b92288db649d73b459de49fb1c9311e3280fb56fe8a4c44",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "lfq_fixture_normalisation_ruv": {
       "step": "normalisation_ruv",
       "state": "normalized",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "65cdad8e7c6bebb766f1810d950a04f1695e811b0cc008c8367dd7e943239110",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "50216c034c90e216b03ae16343bf3336604a4f8478d7dc730c293e8668b1753f",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "lfq_fixture_correlation": {
       "step": "correlation",
       "state": "correlation_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "f1239e68ef0a33c1f3a557855bb00407afe73c09f5bef595eb23ffb769441848",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "231604ad5c3f191d3e7400ac0239731db2430cf8bb2bfab148399ba93209cbcf",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "lfq_fixture_session_export": {
       "step": "session_export",
       "state": "correlation_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "f1239e68ef0a33c1f3a557855bb00407afe73c09f5bef595eb23ffb769441848",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "231604ad5c3f191d3e7400ac0239731db2430cf8bb2bfab148399ba93209cbcf",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "lfq_fixture_da": {
       "step": "da",
       "state": "correlation_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-16f86b76377999/.workflow-entities",
-      "head_sha256": "c0b3ceb175b1f0ebb91b107f9e903b0f5cb153481ec16e9909200689af5eba08",
-      "entity_id": "936dff8a0fa49a90caf7ddb9ae1509bced5d92450f794346c158bc26cee38a43",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1aaa8843846005/.workflow-entities",
+      "head_sha256": "cb747bdf5572eed5accebfb1ee988e392a2b7b2a33ecddff6acbc86f04b5247c",
+      "entity_id": "1ec32bcd81fb360ff11c5228f34483509b339655cd4114006039c0e6f16614c9",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:31:53+1100"
+      "recorded_at": "2026-10-21T08:16:55+1100"
     },
     "tmt_fixture_import": {
       "step": "import",
       "state": "initial",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "edc467fd03d5fc3d4509a181ad9e568b43d3ca2ae7a510feb37bf48df1897b2b",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "37bf819648b7b079ed8fd6d8a4bba98bd41667ce2c89f1239bd97e9be44eef0c",
       "rows": null,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     },
     "tmt_fixture_design": {
       "step": "design",
       "state": "protein_s4_initial",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "6d6d5ddb0464f2e8a292c12acf8395e79106d890ca033c57b56e314c398052b8",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "273d5c646034a1a19668de687310f5b95db9658b67395a94da0e6c574d76370c",
       "rows": 5,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     },
     "tmt_fixture_accession": {
       "step": "accession",
       "state": "protein_accession_cleaned",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "edb6cf3cbf477390e3cdfba89c7f349fd14cc2a0b8180f6ab396e0b6d217448b",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "bf1b67762982b2235cacd5d9e80ccb985974cdad0d18d0b65c064402deb57b44",
       "rows": 5,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     },
     "tmt_fixture_protein_intensity": {
       "step": "protein_intensity",
       "state": "protein_intensity_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "b789c25ca06c38c65aa59a39ed25c28a18c3eb70b7890411d59c654b77392e00",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "af08d1a49e20b796aa497ccfe574676320e3b7b31d6e27a0ae76c888cdfeeb6d",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     },
     "tmt_fixture_duplicates": {
       "step": "duplicates",
       "state": "duplicates_removed",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "ec8cbbc1c5a61086440f82af8d87650a3cade462476e3317024d5b5a13fd309b",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "41535ed7a32a413d335c79e5e2a6030b673eb60c266c0d5b86fc0f2723f2c5b9",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     },
     "tmt_fixture_protein_replicate": {
       "step": "protein_replicate",
       "state": "protein_replicate_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "24c43eeee43af44322f5fe9c6a2bafd1f7f92139fb3e65927cad7d427a975480",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "076b804d4362943c38a3a8d2c260103042115a9ab8e14e98eeaf2176f608ca57",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     },
     "tmt_fixture_normalisation_ruv": {
       "step": "normalisation_ruv",
       "state": "normalized",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "06676b9b88942bb9aaa749b0949015e3ced07456f7d6d08bf933c135eaf40c47",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "1eabbed6a0607552e2c58bc0ddda00d334e0ee01b97f39715ac3f39df9b30bc0",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     },
     "tmt_fixture_correlation": {
       "step": "correlation",
       "state": "correlation_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "479e02777dd4754fd48ad4f875f6c6351da92d50e4b15bfa2ccdf6d118369ffe",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "79ca03b788b75372dd935192df116ca1ba9ee4bd2eb8c55f684d0af6379d58bb",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     },
     "tmt_fixture_session_export": {
       "step": "session_export",
       "state": "correlation_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "479e02777dd4754fd48ad4f875f6c6351da92d50e4b15bfa2ccdf6d118369ffe",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "79ca03b788b75372dd935192df116ca1ba9ee4bd2eb8c55f684d0af6379d58bb",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     },
     "tmt_fixture_da": {
       "step": "da",
       "state": "correlation_filtered",
-      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-171a92227b00d8/.workflow-entities",
-      "head_sha256": "3f175feba60311eee333a036b32a86114e80a4db49e64df1c08fb563545372e7",
-      "entity_id": "7bbfc11e66f2b778311f16681fe15b2cbd6e97dbe2c24a9f20c767891d8ff800",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1ab98652093002/.workflow-entities",
+      "head_sha256": "15463ddfe0688b1aa4ae9032c5e320662cb759108fc0de713666cb02588b8d20",
+      "entity_id": "0e5df5c109e67d2428eda88e7f434f996f9262907809ed2dcd040da8b502c303",
       "rows": 4,
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T05:33:07+1100"
+      "recorded_at": "2026-10-21T08:17:33+1100"
     }
   },
   "oracles": {
@@ -4940,12 +4940,12 @@
         "normalization_science": {
           "kind": "scientific_product",
           "product_type": "dia-normalization-ruv",
-          "sha256": "55dc6e4ba69dd75454cdec2d65f5d693603037e80368b1d9a9bb7eeebbb8f82a"
+          "sha256": "353c6f8fae018f53196b23801ca3df18c2e6d985a4f4c4b638dfcc9ee9af87e5"
         },
-        "dia-normalization-ruv:55dc6e4ba69d": {
+        "dia-normalization-ruv:353c6f8fae01": {
           "kind": "scientific_product",
           "product_type": "dia-normalization-ruv",
-          "sha256": "55dc6e4ba69dd75454cdec2d65f5d693603037e80368b1d9a9bb7eeebbb8f82a"
+          "sha256": "353c6f8fae018f53196b23801ca3df18c2e6d985a4f4c4b638dfcc9ee9af87e5"
         }
       },
       "summary_sha256": "3b6a866e51e2fe557250c9a4e23673838f25279848f4074743d741535ed40162"
@@ -5098,11 +5098,6 @@
           "kind": "scientific_product",
           "product_type": "dia_contrast_results",
           "sha256": "2dc77a2a879041757551638ca3450b4b24441cd857348bcf059964ae22c1f707"
-        },
-        "rendered_asset:6dc778c7f038": {
-          "kind": "rendered_asset",
-          "product_type": null,
-          "sha256": "6dc778c7f038e9719477bd5bf051f75b2f4ecac4cea357d89bbe143162d3d86b"
         }
       },
       "summary_sha256": "12c66f05daadfb2bc53524a6ec9a28e7e19ee2fffc73a9282363cb7b0a699132"
@@ -5316,12 +5311,12 @@
         "normalization_science": {
           "kind": "scientific_product",
           "product_type": "dia-normalization-ruv",
-          "sha256": "a130284087cb0b3fa912510abd7612620a6b945dc6f87da151515cb6f5ec2230"
+          "sha256": "0978bcfae27018539b2ab8c435d2aa97a8f7cee375e233c660d65fdde88371d2"
         },
-        "dia-normalization-ruv:a130284087cb": {
+        "dia-normalization-ruv:0978bcfae270": {
           "kind": "scientific_product",
           "product_type": "dia-normalization-ruv",
-          "sha256": "a130284087cb0b3fa912510abd7612620a6b945dc6f87da151515cb6f5ec2230"
+          "sha256": "0978bcfae27018539b2ab8c435d2aa97a8f7cee375e233c660d65fdde88371d2"
         }
       },
       "summary_sha256": "ca18ef885706b471792856cac2d64869a9d63c7eff8e3151a1b2bdcbcfecf96d"
@@ -5380,7 +5375,7 @@
           "sha256": "47edb4e838765e85497ed19ea0c41e6066271b603fdd159e8ac066cb7f1bf641"
         }
       },
-      "summary_sha256": "a17e40bbe30da27fa8469988bf9082e619927f0fbd39b77496363a81fc458274"
+      "summary_sha256": "99b56bdd5800f98e14ed5bd4abe76bd102fa392f5b5a50db0899bbe6dc04a741"
     },
     "tmt_fixture_session_export": {
       "class": "ProteinQuantitativeData",
@@ -5420,7 +5415,7 @@
         }
       },
       "products": [],
-      "summary_sha256": "a17e40bbe30da27fa8469988bf9082e619927f0fbd39b77496363a81fc458274"
+      "summary_sha256": "99b56bdd5800f98e14ed5bd4abe76bd102fa392f5b5a50db0899bbe6dc04a741"
     },
     "tmt_fixture_da": {
       "class": "ProteinQuantitativeData",
@@ -5460,28 +5455,23 @@
         }
       },
       "products": {
-        "dia-contrast-references:2eb12769c146": {
-          "kind": "scientific_product",
-          "product_type": "dia-contrast-references",
-          "sha256": "2eb12769c1467188c717ff73e32c98f3e7033a46a209798be9754c4a275c46cc"
-        },
-        "dia_contrast_results:b22c8945d413": {
+        "dia_contrast_results:2dc77a2a8790": {
           "kind": "scientific_product",
           "product_type": "dia_contrast_results",
-          "sha256": "b22c8945d41364274b10b49aa6b60c1fd0f85338cf27d55c3ac5d9921ee597dc"
+          "sha256": "2dc77a2a879041757551638ca3450b4b24441cd857348bcf059964ae22c1f707"
         },
         "da_fit:b76d5020d4bf": {
           "kind": "da_fit",
           "product_type": null,
           "sha256": "b76d5020d4bfbccb90ac4ea5d17455a6828ea7d616b2a846b162d5b32c6fea69"
         },
-        "rendered_asset:db0577377866": {
-          "kind": "rendered_asset",
-          "product_type": null,
-          "sha256": "db05773778662fd8398930e24dd72d4a25c9a334149cb6b956ac0ab899171ca9"
+        "dia-contrast-references:beaccdd73789": {
+          "kind": "scientific_product",
+          "product_type": "dia-contrast-references",
+          "sha256": "beaccdd7378946dc021f69ad408a6305b177afe60043a800b2136e08b8cec896"
         }
       },
-      "summary_sha256": "a17e40bbe30da27fa8469988bf9082e619927f0fbd39b77496363a81fc458274"
+      "summary_sha256": "99b56bdd5800f98e14ed5bd4abe76bd102fa392f5b5a50db0899bbe6dc04a741"
     }
   },
   "corpora": {
