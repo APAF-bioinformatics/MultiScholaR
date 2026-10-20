@@ -63,7 +63,8 @@ writeKitLfqCorpus <- function(directory, recipe = kitProteinRecipe("lfq")) {
     intensities <- as.data.frame(values); names(intensities) <- paste0("LFQ.intensity.", samples)
     table <- cbind(table, intensities)
     table$Potential.contaminant <- ""; table$Reverse <- ""
-    # Flagged rows the reader drops (contaminants and decoys), appended as MaxQuant lists them.
+    # Flagged rows the reader drops (contaminants and decoys), interleaved among the protein groups as MaxQuant lists
+    # them (a table whose first rows carry no flag makes the reader's column-type guess fail on the later "+" marks).
     if (recipe$flagged_rows > 0L) {
         flagged <- table[seq_len(recipe$flagged_rows), ]
         flagged$Protein.IDs <- flagged$Majority.protein.IDs <- paste0("CON__", flagged$Protein.IDs)
@@ -72,6 +73,12 @@ writeKitLfqCorpus <- function(directory, recipe = kitProteinRecipe("lfq")) {
         decoys$Protein.IDs <- decoys$Majority.protein.IDs <- paste0("REV__", decoys$Protein.IDs)
         decoys$Reverse <- "+"
         table <- rbind(table, flagged, decoys)
+        table <- withr::with_seed(recipe$seed + 1L, table[sample.int(nrow(table)), , drop = FALSE])
+        # One contaminant and one decoy lead the table: the reader types the two flag columns from the first 100 rows
+        # (vroom's guess), and a flag column whose first mark comes later is read as logical, its marks lost (KIT-021 finding).
+        lead <- c(which(table$Potential.contaminant == "+")[[1L]], which(table$Reverse == "+")[[1L]])
+        table <- table[c(lead, setdiff(seq_len(nrow(table)), lead)), , drop = FALSE]
+        rownames(table) <- NULL
     }
     report <- file.path(directory, "proteinGroups.txt")
     utils::write.table(table, report, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
@@ -79,7 +86,7 @@ writeKitLfqCorpus <- function(directory, recipe = kitProteinRecipe("lfq")) {
     utils::write.table(design, file.path(directory, "design.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
     kitWriteFasta(file.path(directory, "proteins.fasta"), ids, genes)
     kitWriteManifest(directory, recipe, file.path(directory, c("proteinGroups.txt", "design.tsv", "proteins.fasta")), nrow(table), n,
-        notes = sprintf("%d protein groups + %d contaminant and %d decoy rows (dropped by the reader); %.0f%% missing written as 0; %d%% of proteins differential (KO vs WT)",
+        notes = sprintf("%d protein groups + %d contaminant and %d decoy rows interleaved, one of each leading the table (dropped by the reader); %.0f%% missing written as 0; %d%% of proteins differential (KO vs WT)",
             p, recipe$flagged_rows, recipe$flagged_rows, 100 * recipe$missing_fraction, round(100 * recipe$differential_fraction)))
 }
 

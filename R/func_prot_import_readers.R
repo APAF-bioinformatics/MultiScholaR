@@ -235,7 +235,14 @@ importFragPipeData <- function(filepath, use_maxlfq = TRUE) {
 #' @return List with data, data_type, and column_mapping
 #' @export
 importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = TRUE) {
-  data <- vroom::vroom(filepath, delim = "\t", show_col_types = FALSE)
+  # The flag columns are typed explicitly: vroom guesses a column's type from a sample of rows across the file,
+  # and a sparse "+" column whose sample carries no mark is read as logical with every mark lost, so the rows it
+  # flags are kept (reproduced by the KIT-021 corpus check: 50 decoys among 8,100 groups survived the import).
+  header <- names(vroom::vroom(filepath, delim = "\t", n_max = 0L, show_col_types = FALSE))
+  flags <- intersect(c("Potential.contaminant", "Reverse"), header)
+  col_types <- do.call(vroom::cols, c(list(.default = vroom::col_guess()),
+    stats::setNames(rep(list(vroom::col_character()), length(flags)), flags)))
+  data <- vroom::vroom(filepath, delim = "\t", show_col_types = FALSE, col_types = col_types)
   
   # Filter contaminants and reverse hits if requested
   if (filter_contaminants) {

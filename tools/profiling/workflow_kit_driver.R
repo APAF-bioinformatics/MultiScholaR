@@ -208,8 +208,11 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
                     for (name in names(journey$normalisation$ruv)) {
                         h$checkpointSetInput(driver, paste0(norm_prefix, name), journey$normalisation$ruv[[name]])
                     }
-                    kitClickAndWaitText(h, driver, paste0(norm_prefix, "run_normalization"),
-                        ".shiny-notification", "Normalization and RUV correction completed!")
+                    # The module's completion text names the RUV mode (buildProtNormCompletionNotification): the fixture
+                    # corpora skip RUV (KIT-021); the 300-sample corpora and the DIA route run it.
+                    kitClickAndWaitText(h, driver, paste0(norm_prefix, "run_normalization"), ".shiny-notification",
+                        if (identical(journey$normalisation$ruv_mode, "skip")) "Normalization completed (RUV skipped)!" else
+                            "Normalization and RUV correction completed!")
                 },
                 correlation = {
                     h$checkpointSetInput(driver, paste0(norm_prefix, "norm_qc_tabs"), "Correlation Filtering")

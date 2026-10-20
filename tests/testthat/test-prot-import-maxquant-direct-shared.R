@@ -88,3 +88,32 @@ test_that("importMaxQuantData reports malformed proteinGroups exports clearly", 
     fixed = TRUE
   )
 })
+
+test_that("importMaxQuantData drops sparse contaminant and reverse marks that a sampled type guess would miss", {
+  # KIT-021 corpus check: vroom types a column from a sample of rows across the file; a "+" column with a few
+  # marks among thousands of rows was read as logical with every mark lost, so decoys and contaminants survived.
+  path <- withr::local_tempfile(fileext = ".txt")
+  n <- 5000L
+  table <- data.frame(
+    Protein.IDs = sprintf("P%05d", seq_len(n)),
+    Gene.names = sprintf("G%d", seq_len(n)),
+    LFQ.intensity.WT_1 = seq_len(n) + 0.5,
+    LFQ.intensity.KO_1 = seq_len(n) + 1.5,
+    Potential.contaminant = "",
+    Reverse = "",
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  table$Potential.contaminant[[1234L]] <- "+"
+  table$Reverse[[4321L]] <- "+"
+  table$Protein.IDs[[1234L]] <- "CON__P01234"
+  table$Protein.IDs[[4321L]] <- "REV__P04321"
+  utils::write.table(table, path, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
+
+  imported <- importMaxQuantData(path, use_lfq = TRUE, filter_contaminants = TRUE)
+  ids <- unique(imported$data$Protein.Ids)
+  expect_length(ids, n - 2L)
+  expect_false(any(grepl("^CON__|^REV__", ids)))
+  kept <- importMaxQuantData(path, use_lfq = TRUE, filter_contaminants = FALSE)
+  expect_length(unique(kept$data$Protein.Ids), n)
+})
