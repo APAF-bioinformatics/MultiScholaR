@@ -125,7 +125,7 @@ protein_step <- function(operation, parameters, step_name) withDIAStateScope(man
     invisible(publishDIAProteinProgress(result, step_name, "proteomics", label, updateProteinFiltering))
 })
 run("accession", protein_step("protein_accession_cleanup", list(delimiter = ";", aggregation_method = "mean"), "10_protein_accession_cleaned"))
-run("protein_intensity", protein_step("protein_intensity_filter", list(strict_mode = FALSE, min_reps_per_group = 2L, min_groups = 2L, proteins_intensity_cutoff_percentile = 1), "11_protein_intensity_filtered"))
+run("protein_intensity", protein_step("protein_intensity_filter", list(strict_mode = FALSE, min_reps_per_group = 2L, min_groups = 2L, proteins_intensity_cutoff_percentile = 1L), "11_protein_intensity_filtered"))
 run("duplicates", protein_step("protein_duplicate_removal", list(aggregation_method = "mean"), "12_duplicates_removed"))
 run("protein_replicate", protein_step("protein_replicate_filter", list(grouping_variable = "group", parallel_cores = 4L), "13_protein_replicate_filtered"))
 # 4. Normalisation and RUV, correlation, as the reference entry points run them with the journey's bound settings.
