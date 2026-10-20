@@ -190,7 +190,10 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
                 # (KIT-021) there is no peptide stage, so the QC page is opened here too.
                 if (id == steps[[match("protein", vapply(steps, `[[`, "", "kind"))]]$id) {
                     h$checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "qc")
-                    h$checkpointSetInput(driver, "proteomics_workflow-quality_control-qc_tabs_lfq", "Protein QC")
+                    # The QC page's tabset is `qc_tabs_lfq` (Peptide QC, Protein QC) on the DIA route and `qc_tabs_tmt`
+                    # (Protein QC alone, the design having committed protein_s4_initial) on LFQ/TMT (mod_prot_qc.R).
+                    tabset <- if (identical(kitRouteOf(journey), "protein")) "qc_tabs_tmt" else "qc_tabs_lfq"
+                    h$checkpointSetInput(driver, paste0("proteomics_workflow-quality_control-", tabset), "Protein QC")
                 }
                 action <- protein_actions[[id]]
                 runKitQcAction(h, driver, protein_prefix, "protein_filter_tabs", action$tab, action$action,
