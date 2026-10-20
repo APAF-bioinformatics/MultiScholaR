@@ -358,6 +358,35 @@ test_that("KIT-033: the report takes the record's values and names the defaults 
     expect_identical(workflowRecordReportParameters(file.path(dirname(path), "absent.json"), params, study), params)
 })
 
+test_that("KIT-043: the LFQ/TMT templates' variables take the protein intensity filter and the DA settings from the record", {
+    record <- list(steps = list(list(operation = "protein_intensity_filter", parameters = list(
+        list(name = "proteins_intensity_cutoff_percentile", value = encodeWorkflowRecordValue(2)),
+        list(name = "min_reps_per_group", value = encodeWorkflowRecordValue(2L)),
+        list(name = "min_groups", value = encodeWorkflowRecordValue(2L))))),
+        analyses = list(differential_abundance = list(parameters = list(
+            list(name = "qvalue", value = encodeWorkflowRecordValue(0.1)), list(name = "lfc", value = encodeWorkflowRecordValue(0.5))))),
+        software = list(version = "0.5.0", sha = "abc123", build = "def456", r_version = "R 4.6.1", blas = "openblas"))
+    path <- withr::local_tempfile(fileext = ".json")
+    jsonlite::write_json(record, path, auto_unbox = TRUE, digits = I(17), null = "null", na = "null")
+    # The LFQ template's extracted parameters: template defaults for the filter and the DA settings.
+    params <- list(proteins_intensity_cutoff_percentile = 1, groupwise_percentage_cutoff = 60, max_groups_percentage_cutoff = 60,
+        ui_de_q_value_threshold = 0.05, ui_de_log_fold_change_cutoff = 0, s4_de_q_val_thresh = 0.05)
+    study <- list(`Workflow Parameters` = list(`Parameters from Final S4 Object` = list(
+        removeRowsWithMissingValuesPercent = list(groupwise_percentage_cutoff = "60"))))
+    overlaid <- workflowRecordReportParameters(path, params, study)
+    expect_identical(overlaid$proteins_intensity_cutoff_percentile, 2)
+    expect_identical(overlaid$min_reps_per_group, 2L)
+    expect_identical(overlaid$ui_de_q_value_threshold, 0.1)
+    expect_identical(overlaid$ui_de_log_fold_change_cutoff, 0.5)
+    expect_identical(overlaid$s4_de_q_val_thresh, 0.1)
+    expect_identical(overlaid$software_version, "0.5.0")
+    expect_identical(overlaid$source_commit, "abc123")
+    expect_true(isTRUE(overlaid$record_present))
+    # The cross-group cutoff is neither recorded nor in the file: the methods text names the default it shows.
+    expect_true(grepl("max_groups_percentage_cutoff = 60", overlaid$record_defaults_note, fixed = TRUE))
+    expect_false(grepl("groupwise_percentage_cutoff|proteins_intensity_cutoff_percentile|ui_de_", overlaid$record_defaults_note))
+})
+
 test_that("KIT-038: fixed constants are listed for every registered step, a legacy step alone dumps its arguments", {
     fixture <- analysisRecordFixture(withr::local_tempdir())
     manager <- fixture$manager

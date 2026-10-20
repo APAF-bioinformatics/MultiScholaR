@@ -918,6 +918,10 @@ AnalyzeSamples <- function(design_matrix, study_params) {
     numbers <- CalculateSampleCounts(group_summary)
     numbers <- CalculatePatientMetrics(numbers, group_summary)
     params_extracted <- ExtractStudyParametersTMT(study_params)
+    # KIT-043 (as KIT-033 for DIA-NN): the analysis record, when it sits beside study_parameters.txt, supplies the
+    # values it carries; the variables it does not carry keep the report's defaults, named in the methods text.
+    params_extracted <- MultiScholaR:::workflowRecordReportParameters(file.path(report_source_dir, "analysis_record.json"),
+      params_extracted, study_params)
     
     # Combine base counts/metrics with extracted params
     final_numbers <- c(numbers, params_extracted)
@@ -1019,7 +1023,9 @@ Main <- function() {
   report_content <- list(
     content = list(
       sample_details = FormatSampleDetails(analysis_results$numbers),
-      method_details = FormatMethodDetailsTMT(analysis_results$numbers),
+      method_details = paste0(FormatMethodDetailsTMT(analysis_results$numbers),
+        if (is.character(analysis_results$numbers$record_defaults_note) && !is.na(analysis_results$numbers$record_defaults_note))
+          analysis_results$numbers$record_defaults_note else ""),
       results        = FormatResults(correlation_data, ruv_applied = analysis_results$numbers$ruv_applied %||% TRUE),
       comments       = FormatComments(),
       opinions       = FormatOpinions(correlation_data),
@@ -1064,10 +1070,17 @@ results_data <- tryCatch({
 
 # Version Information
 
-Repository: `r results_data$numbers$repository`
-Branch: `r results_data$numbers$branch`
-Commit: `r results_data$numbers$commit`
-Git Timestamp: `r results_data$numbers$git_timestamp`
+```{r version_information, echo=FALSE, results="asis"}
+# KIT-043 (as KIT-039 for DIA-NN): the software the analysis record names; the git fields of study_parameters.txt otherwise.
+if (isTRUE(results_data$numbers$record_present)) {
+  cat(sprintf("MultiScholaR version: %s  \nSource commit: %s  \nBuild: %s  \nR: %s  \nBLAS: %s  \n",
+    results_data$numbers$software_version, results_data$numbers$source_commit, results_data$numbers$build,
+    results_data$numbers$r_version, results_data$numbers$blas))
+} else {
+  cat(sprintf("Repository: %s  \nBranch: %s  \nCommit: %s  \nGit Timestamp: %s  \n",
+    results_data$numbers$repository, results_data$numbers$branch, results_data$numbers$commit, results_data$numbers$git_timestamp))
+}
+```
 
 ```{r QC_metrics, echo=FALSE, warning=FALSE, fig.cap="Figure 1: QC metrics across normalisation stages"}
 # Use NEW path variable
