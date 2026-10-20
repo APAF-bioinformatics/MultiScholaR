@@ -655,6 +655,8 @@ diaStepProvenanceEntry <- function(snapshot, provenance, timestamp = Sys.time())
     if (length(provenance$values)) entry$values <- provenance$values
     if (length(provenance$preceded_by)) entry$preceded_by <- provenance$preceded_by
     if (isTRUE(provenance$backfilled)) entry$backfilled <- TRUE
+    # KIT-042 audit F-01: an entry written at ingest for a state the adopting build did not run.
+    if (isTRUE(provenance$adopted)) entry$adopted <- TRUE
     list(snapshot = snapshot, entry = entry)
 }
 

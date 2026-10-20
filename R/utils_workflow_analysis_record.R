@@ -228,7 +228,8 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         if (identical(operation, "legacy")) {
             stamped <- if (inherits(record$timestamp, "POSIXt")) format(record$timestamp, "%Y-%m-%dT%H:%M:%OS3%z") else NA_character_
             entry_time <- suppressWarnings(as.POSIXct(committed_at, format = "%Y-%m-%dT%H:%M:%OS%z"))
-            backfilled <- isTRUE(provenance$backfilled) || inherits(record$timestamp, "POSIXt") && !is.na(entry_time) &&
+            # KIT-042 audit F-01: an `adopted` entry (written at ingest) is treated as a backfill: the step's software is unknown.
+            backfilled <- isTRUE(provenance$backfilled) || isTRUE(provenance$adopted) || inherits(record$timestamp, "POSIXt") && !is.na(entry_time) &&
                 abs(as.numeric(difftime(entry_time, record$timestamp, units = "secs"))) > 60
             if (!is.na(stamped)) committed_at <- stamped
             if (backfilled) { software <- NULL; provenance$source_commit <- NA_character_; provenance$defaults_sha256 <- NA_character_ }

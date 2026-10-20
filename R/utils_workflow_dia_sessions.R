@@ -734,8 +734,12 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
         # default until the import sets it): the type must match, and an owner the import attached (a `-native`
         # label) accepts only its own format (audit F-09); for DIA-NN only the IQ method.
         identity <- manager$.context$store$identity
+        # An owner adopted from a session that recorded no format is labelled by its type (`<TYPE>-native`, KIT-042)
+        # and accepts any format of that type (audit F-04).
+        typed_label <- identical(identity$project_id, paste0(workflow_type, "-native"))
         if (is.na(workflow_type) || !identical(identity$workflow_id, workflow_type) ||
-            (endsWith(identity$project_id, "-native") && !identical(identity$project_id, workflowNativeStoreLabel(format))) ||
+            (endsWith(identity$project_id, "-native") && !typed_label &&
+                !identical(identity$project_id, workflowNativeStoreLabel(format))) ||
             (identical(format, "diann") && !identical(method, "iq"))) {
             cli::cli_abort("reset the project before changing the route of an on-disk session", class = "saved_entity_scope")
         }
@@ -987,7 +991,15 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
         !all(unlist(history) %in% names(records))) {
         cli::cli_abort("legacy DIA session history is incomplete", class = "saved_entity_corrupt")
     }
-    for (record in records) {
+    for (name in names(records)) {
+        record <- records[[name]]
+        # KIT-042 audit F-02: a state of another class (the in-memory enrichment step saves `EnrichmentResults`)
+        # is refused by name; adoption carries peptide and protein states only.
+        if (is.list(record) && isS4(record$data) && !methods::is(record$data, "PeptideQuantitativeData") &&
+            !methods::is(record$data, "ProteinQuantitativeData")) {
+            cli::cli_abort("state {.val {name}} holds a {.cls {class(record$data)[1]}} object; a session saved after enrichment cannot be adopted (export the session from the Normalization tab, before enrichment)",
+                class = "workflow_session_unsupported")
+        }
         if (!is.list(record) || isSavedWorkflowReference(record$data) ||
             !is.null(record$data) && !methods::is(record$data, "PeptideQuantitativeData") &&
                 !methods::is(record$data, "ProteinQuantitativeData")) {
@@ -1003,7 +1015,7 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     # a session without a recorded format is labelled by its type.
     label <- if (identical(workflow_type, "DIA")) "DIA-IQ-native" else
         workflowNativeStoreLabel(if (is.character(value$data_format) && length(value$data_format) == 1L &&
-            nzchar(value$data_format)) value$data_format else tolower(workflow_type))
+            nzchar(value$data_format)) value$data_format else workflow_type)
     store <- newWorkflowEntityStore(root, label, workflow_type, max_cache_bytes = 0)
     manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
     adopted <- FALSE
@@ -1016,11 +1028,12 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     snapshot <- manager$.context$snapshot
     snapshot$workflow_type <- workflow_type
     snapshot$state_metadata[[current]] <- describeDIAProteinState(value$current_s4_object)
-    # KIT-042: every adopted state's provenance is `legacy`, written at ingest by the adopting build (the reopen
-    # backfill of KIT-025 then finds nothing to add).
+    # KIT-042: every adopted state's provenance is `legacy`, written at ingest and marked `adopted` (audit F-01: the
+    # record treats it as a backfill, since the adopting build did not run the step); the reopen backfill of KIT-025
+    # then finds nothing to add.
     for (name in setdiff(unlist(history), names(snapshot$step_provenance))) {
         legacy <- diaStepProvenanceEntry(snapshot, list(operation = "legacy", variant = NA_character_,
-            parameter_names = character()))
+            parameter_names = character(), adopted = TRUE))
         snapshot <- legacy$snapshot
         snapshot$step_provenance[[name]] <- legacy$entry
     }
@@ -1042,7 +1055,7 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     if (inherits(previous, "DIAStateAdapter")) {
         # KIT-042: the bus payloads the replaced owner held (the import's table references) would dangle once
         # that store closes; the legacy envelope carries no import table, so they are released.
-        for (field in c("data_tbl", "data_cln")) {
+        for (field in c("data_tbl", "data_cln", "ruv_normalised_for_da_analysis_obj")) {
             if (isSavedWorkflowReference(workflow_data[[field]])) workflow_data[[field]] <- NULL
         }
         closeDIAStateAdapter(previous)

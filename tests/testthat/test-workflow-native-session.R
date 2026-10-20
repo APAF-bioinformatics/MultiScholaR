@@ -431,6 +431,13 @@ test_that("native legacy import validates and persists before replacing the GUI 
     for (state in workflow$state_manager$getHistory())
         expect_true(isSavedWorkflowReference(getDIAStateReference(workflow$state_manager, state)))
     expect_identical(workflow$state_manager$getState(), fixture$final)
+    # KIT-042: the adopted states' provenance is written at ingest, marked `adopted` (the record reads it as a backfill).
+    for (state in setdiff(workflow$state_manager$getHistory(), "initial")) {
+        entry <- workflow$state_manager$.context$snapshot$step_provenance[[state]]
+        expect_identical(entry$operation, "legacy")
+        expect_true(isTRUE(entry$adopted))
+    }
+    expect_identical(workflow$state_manager$.context$snapshot$step_provenance$initial$operation, "import")
     expect_identical(workflow$state_manager$revertToState("raw_data_s4"), fixture$raw)
     expect_identical(workflow$state_manager$.context$full_reads, 0L)
     expect_false(file.exists(file.path(paths$protein_qc_dir, "normalised_results_cln_with_replicates.RDS")))
@@ -457,7 +464,10 @@ test_that("KIT-042: an LFQ legacy session adopts into a typed owner with legacy 
     memory$design_matrix <- data.frame(Run = c("WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3"),
         group = rep(c("WT", "KO"), each = 3L), replicates = rep(1:3, 2L), stringsAsFactors = FALSE)
     expect_identical(buildProtDesignStateCheckpoint(memory, "LFQ", "Import"), "protein_s4_initial")
-    final <- memory$state_manager$getState("protein_s4_initial")
+    initial_s4 <- memory$state_manager$getState("protein_s4_initial")
+    # A different object for the second state (the first protein dropped), so hydration is proven on two objects.
+    final <- initial_s4
+    final@protein_quant_table <- final@protein_quant_table[-1L, , drop = FALSE]
     memory$state_manager$saveState("correlation_filtered", final, list(min_pearson_correlation_threshold = 0.5), "correlation")
     contrasts <- data.frame(contrasts = "groupKO-groupWT", friendly_names = "KO_vs_WT", stringsAsFactors = FALSE)
     legacy <- list(r6_complete_states = memory$state_manager$states, r6_state_history = memory$state_manager$getHistory(),
@@ -476,13 +486,23 @@ test_that("KIT-042: an LFQ legacy session adopts into a typed owner with legacy 
     expect_identical(manager$.context$store$identity$workflow_id, "LFQ")
     expect_identical(manager$workflow_type, "LFQ")
     expect_null(workflow$dia_quantification_method)
-    for (state in c("protein_s4_initial", "correlation_filtered")) {
+    expected_objects <- list(protein_s4_initial = initial_s4, correlation_filtered = final)
+    for (state in names(expected_objects)) {
         record <- readDIAStateMetadata(manager, getDIAStateReference(manager, state))$data
         expect_identical(record$class, "ProteinQuantitativeData")
-        expect_identical(manager$getState(state), final)
+        expect_identical(manager$getState(state), expected_objects[[state]])
         entry <- manager$.context$snapshot$step_provenance[[state]]
         expect_identical(entry$operation, "legacy")
+        expect_true(isTRUE(entry$adopted))
         expect_null(entry$backfilled)
+    }
+    # The record reads an adopted entry as a backfill: no software attributed to the legacy step (audit F-01).
+    analysis <- buildWorkflowAnalysisRecord(manager)
+    legacy_steps <- Filter(function(step) identical(step$operation, "legacy"), analysis$steps)
+    expect_length(legacy_steps, 2L)
+    for (step in legacy_steps) {
+        expect_true(is.na(step$software$sha))
+        expect_true(is.na(step$defaults_sha256))
     }
     expect_identical(manager$.context$snapshot$step_provenance$initial$operation, "import")
     # The native export of the adopted owner carries the type and reopens with it (item 2).
@@ -498,18 +518,66 @@ test_that("KIT-042: an LFQ legacy session adopts into a typed owner with legacy 
     manifest <- jsonlite::read_json(file.path(staging, "manifest.json"))
     expect_identical(manifest$workflow, "LFQ")
     latest <- jsonlite::read_json(result$publication$latest_path)
+    expect_identical(latest$archive, basename(result$publication$archive_path))
     reopened <- openDIANativeSession(result$publication$archive_path, withr::local_tempdir())
     withr::defer(closeDIAStateAdapter(reopened$manager))
     expect_identical(reopened$manager$workflow_type, "LFQ")
-    # The retired in-memory limpa route is refused by name, and the bus is untouched.
+    # The retired in-memory limpa route is refused by name; no new staging directory is left behind (the one
+    # present is the adopted owner's root from the successful ingest above).
+    staged <- function() list.files(paths$source_dir, pattern = "^[.]dia-native-legacy-", all.files = TRUE)
+    before <- staged()
     flagged <- legacy; flagged$use_limpa <- TRUE; flagged$limpa_applied <- TRUE
     plain <- new.env(parent = emptyenv()); plain$state_manager <- WorkflowState$new(audit_enabled = FALSE)
-    original <- plain$state_manager
     expect_error(ingestDIANativeLegacySession(flagged, plain, session, paths$source_dir, paths), class = "workflow_session_unsupported")
-    expect_identical(plain$state_manager, original)
+    expect_false(inherits(plain$state_manager, "DIAStateAdapter"))
+    expect_identical(staged(), before)
+    # A session saved after enrichment (a state of another class) is refused by name (audit F-02).
+    enriched <- legacy
+    enriched$r6_complete_states$enrichment_completed <- list(timestamp = Sys.time(), data = methods::new("EnrichmentResults"),
+        config = list(), description = "enrichment")
+    enriched$r6_state_history <- c(enriched$r6_state_history, "enrichment_completed")
+    expect_error(ingestDIANativeLegacySession(enriched, plain, session, paths$source_dir, paths),
+        class = "workflow_session_unsupported", regexp = "enrichment_completed")
     # Another omics type is not adopted (unchanged).
     other <- legacy; other$workflow_type <- "metabolomics_standard"
     expect_false(ingestDIANativeLegacySession(other, plain, session, paths$source_dir, paths))
+})
+
+test_that("KIT-042: a TMT session without a recorded format adopts as a type-labelled owner that accepts its type's imports", {
+    paths <- makeDIANativeGuiPaths(withr::local_tempdir())
+    session <- makeDIANativeFixtureSession()
+    fixture <- testthat::test_path("..", "testdata", "e2e", "prot_tmt")
+    memory <- new.env(parent = emptyenv())
+    memory$state_manager <- WorkflowState$new(audit_enabled = FALSE)
+    memory$config_list <- list(globalParameters = list(workflow_type = "TMT"))
+    imported <- importProteomeDiscovererTMTData(file.path(fixture, "pd_tmt_peptides.tsv"))
+    applyProtImportResultToWorkflow(memory, imported, "pd_tmt", file.path(fixture, "proteins.fasta"),
+        logInfo = function(...) NULL, showNotification = function(...) NULL)
+    runs <- as.character(unique(memory$data_cln[[imported$column_mapping$run_col]]))
+    memory$design_matrix <- data.frame(Run = runs, group = ifelse(grepl("WT", runs), "WT", "KO"), stringsAsFactors = FALSE)
+    memory$design_matrix$replicates <- stats::ave(seq_along(runs), memory$design_matrix$group, FUN = seq_along)
+    expect_identical(buildProtDesignStateCheckpoint(memory, "TMT", "Import"), "protein_s4_initial")
+    final <- memory$state_manager$getState("protein_s4_initial")
+    memory$state_manager$saveState("correlation_filtered", final, list(min_pearson_correlation_threshold = 0.5), "correlation")
+    # The in-memory collector's shape: no `data_format` field (the real control-build session).
+    legacy <- list(r6_complete_states = memory$state_manager$states, r6_state_history = memory$state_manager$getHistory(),
+        r6_current_state_name = "correlation_filtered", current_s4_object = final, correlation_filtered_s4 = final,
+        contrasts_tbl = data.frame(contrasts = "groupKO-groupWT", stringsAsFactors = FALSE), design_matrix = memory$design_matrix,
+        config_list = memory$config_list, export_timestamp = Sys.time(), normalization_method = "cyclicloess", ruv_mode = "skip",
+        ruv_applied = FALSE, ruv_k = NA, correlation_threshold = 0.5, workflow_type = "TMT", use_limpa = FALSE, limpa_applied = FALSE,
+        final_protein_count = length(unique(final@protein_quant_table[[final@protein_id_column]])), final_sample_count = length(runs))
+    workflow <- new.env(parent = emptyenv())
+    workflow$state_manager <- WorkflowState$new(audit_enabled = FALSE)
+    expect_true(ingestDIANativeLegacySession(legacy, workflow, session, paths$source_dir, paths))
+    manager <- workflow$state_manager
+    withr::defer(closeDIAStateAdapter(manager))
+    expect_identical(manager$.context$store$identity$project_id, "TMT-native")
+    expect_identical(manager$.context$store$identity$workflow_id, "TMT")
+    expect_identical(manager$workflow_type, "TMT")
+    expect_identical(manager$getState("correlation_filtered"), final)
+    # The type-labelled owner accepts an import of its type and refuses another type (audit F-04).
+    expect_identical(initializeDIANativeImport(workflow, paths, session, "pd_tmt", "iq"), manager)
+    expect_error(initializeDIANativeImport(workflow, paths, session, "maxquant", "iq"), class = "saved_entity_scope")
 })
 
 test_that("the design checkpoint on the DIA default commits a reference state through newDIAPeptideCheckpoint (KIT-018)", {

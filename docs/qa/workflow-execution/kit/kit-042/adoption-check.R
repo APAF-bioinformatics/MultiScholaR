@@ -104,6 +104,15 @@ if (phase == "control") {
     }
     # The retired in-memory limpa route: the MaxQuant session flagged as that route (no limpa workbook is run here;
     # the refusal keys on the flags the in-memory collector wrote for that route).
+    # A session saved after enrichment (audit F-02): the MaxQuant session with an `EnrichmentResults` state appended,
+    # the class the in-memory enrichment step saves.
+    enriched <- readRDS(results$maxquant$rds)
+    enriched$r6_complete_states$enrichment_completed <- list(timestamp = Sys.time(), data = methods::new("EnrichmentResults"),
+        config = list(), description = "enrichment", audit_metadata = list(provenance_status = "legacy_or_not_applicable"))
+    enriched$r6_state_history <- c(enriched$r6_state_history, "enrichment_completed")
+    dir.create(file.path(work, "enriched", "rds"), recursive = TRUE)
+    saveRDS(enriched, file.path(work, "enriched", "rds", "filtered_session_data_latest.rds"))
+    results$enriched <- list(rds = file.path(work, "enriched", "rds", "filtered_session_data_latest.rds"), appended = "enrichment_completed")
     limpa <- readRDS(results$maxquant$rds)
     limpa$use_limpa <- TRUE; limpa$limpa_applied <- TRUE
     dir.create(file.path(work, "limpa", "rds"), recursive = TRUE)
@@ -189,13 +198,14 @@ run_adoption <- function(name, case, with_owner) {
         original <- expected$r6_complete_states[[state]]$data
         provenance <- snapshot$step_provenance[[state]]
         list(schema = record$schema, class = record$class, provenance = provenance$operation, backfilled = isTRUE(provenance$backfilled),
+            adopted = isTRUE(provenance$adopted),
             identical = identical(restored, original),
             hash = if (isS4(restored)) table_hash(restored@protein_quant_table) else NA_character_, control_hash = control[[name]]$state_hashes[[state]])
     })
     out$all_identical <- all(vapply(out$states, function(s) isTRUE(s$identical), logical(1)))
     # The `initial` placeholder keeps the owner's own `import` entry; every adopted scientific state is `legacy`.
     out$initial_provenance <- out$states$initial$provenance
-    out$all_legacy <- all(vapply(out$states[setdiff(names(out$states), "initial")], function(s) identical(s$provenance, "legacy") && !s$backfilled, logical(1)))
+    out$all_legacy <- all(vapply(out$states[setdiff(names(out$states), "initial")], function(s) identical(s$provenance, "legacy") && !s$backfilled && s$adopted, logical(1)))
     out$all_component <- all(vapply(out$states[setdiff(names(out$states), "initial")], function(s) identical(s$schema, "dia.component_checkpoint.v2"), logical(1)))
     out$da_current <- shiny::isolate(isSavedWorkflowReference(da_data$current_s4_object))
     # DA on the adopted owner through the reference entry point; the tables hashed as the control's were.
@@ -251,6 +261,13 @@ refusal <- tryCatch({ ingestDIANativeLegacySession(limpa_value, workflow, fake_s
     error = function(e) paste(class(e)[1], conditionMessage(e)))
 results$limpa <- list(refusal = refusal, refused = grepl("^workflow_session_unsupported", refusal), owner_unchanged = !inherits(workflow$state_manager, "DIAStateAdapter"))
 cat("limpa |", refusal, "\n")
+# The session saved after enrichment is refused by name (audit F-02).
+enriched_value <- readRDS(control$enriched$rds)
+refusal <- tryCatch({ ingestDIANativeLegacySession(enriched_value, workflow, fake_session(), paths$source_dir, paths); "adopted" },
+    error = function(e) paste(class(e)[1], conditionMessage(e)))
+results$enriched <- list(refusal = refusal, refused = grepl("^workflow_session_unsupported", refusal) && grepl("enrichment_completed", refusal),
+    owner_unchanged = !inherits(workflow$state_manager, "DIAStateAdapter"))
+cat("enriched |", refusal, "\n")
 results$head_commit <- system2("git", c("rev-parse", "HEAD"), stdout = TRUE)
 results$tree_clean <- length(system2("git", c("status", "--porcelain", "--", "R", "tests", "DESCRIPTION", "NAMESPACE"), stdout = TRUE)) == 0L
 results$control_commit <- control$library$source_commit
