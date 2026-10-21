@@ -245,7 +245,7 @@ ExtractStudyParametersNew <- function(study_params) {
     commit = git_info$"Commit",
     git_timestamp = git_info$"Git Timestamp",
     
-    # RUV Auto-optimization Results
+    # RUV Auto-optimisation Results
     best_percentage = sub("%$", "", ruv_results$"Best percentage" %||% NA_character_), # the file writes "10.0%"; the sentence appends its own %
     best_k = ruv_results$"Best k value",
     separation_score = ruv_results$"Separation score",
@@ -386,7 +386,7 @@ FormatMethodDetails <- function(numbers) {
     "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
     "negative control proteins, which are proteins with little or no changes in ",
     "protein abundances between different samples. For this study, an automatic ",
-    "optimization process was run, which identified that using {best_pct_val}% of ",
+    "optimisation process was run, which identified that using {best_pct_val}% of ",
     "features as empirical negative controls ({num_neg_ctrl_val} proteins) ",
     "provided the best separation of biological groups. Based on this, ",
     "{best_k_val} unwanted components were selected for removal."
@@ -398,7 +398,8 @@ METHOD DETAILS
 Data analyses were performed with MultiScholaR; the software version and build are listed under 'Software and build'. 
 SOP reference: [to be completed by the analyst].  
 
-Data import, filtering and quantification
+**Data import, filtering and quantification**
+
 Precursor-level identifications and quantities were imported from the DIA-NN main report 
 (one row per precursor and run). Low-confidence peptide identifications were removed 
 using q-value and proteotypic peptide filtering, retaining only peptides with a 
@@ -437,7 +438,8 @@ METHOD DETAILS
 Data analyses were performed with MultiScholaR; the software version and build are listed under 'Software and build'. 
 SOP reference: [to be completed by the analyst].  
 
-Data import, filtering and normalization
+**Data import, filtering and normalisation**
+
 Precursor-level identifications and quantities were imported from the DIA-NN main report 
 (one row per precursor and run). Peptide and protein quantification was then performed using a series of filtering and 
 aggregation steps to ensure high-confidence identifications and accurate 
@@ -480,13 +482,14 @@ these are missing values. Proteins with {missing_vals_cutoff} percent or
 more of the samples with missing values or values below the 
 {intensity_cutoff_pct}st percentile of intensity values were 
 discarded from the analysis. The data matrix was then log (base 2) transformed and 
-between-sample normalization were performed using the 
+between-sample normalisation were performed using the 
 '{norm_method}' method from the 'limma' R package 
 (Ritchie et al., 2015).
 
 {ruv_text}
 
-Technical Replicate Averaging
+**Technical replicate averaging**
+
 For samples with technical replicates (repeated LC-MS measurements of the same 
 biological sample), protein abundances were averaged across replicates to reduce 
 technical variance while preserving biological variance. This averaging ensures 
@@ -494,7 +497,7 @@ that the degrees of freedom in subsequent differential abundance models properly
 reflect the number of independent biological samples rather than technical 
 measurements, leading to appropriate statistical inference (Oberg et al., 2008).
 
-At each stage of the data normalization, the samples were checked for batch effects 
+At each stage of the data normalisation, the samples were checked for batch effects 
 using principal component analysis (PCA) plot, density boxplots, relative 
 log-expression (RLE) plots and the distribution of the Pearson correlation between 
 replicate samples within groups.
@@ -698,14 +701,14 @@ following parameters:
 
 {enrichment_tool_text}
 
-Key findings from the GO enrichment analysis are summarized below for each 
+Key findings from the GO enrichment analysis are summarised below for each 
 comparison:
 
 Biological Process:
 • Upregulated processes included cellular stress response, metabolic regulation, 
   and protein folding pathways
 • Downregulated processes were primarily related to cell adhesion, cytoskeletal 
-  organization, and vesicular transport
+  organisation, and vesicular transport
 
 Molecular Function:
 • Proteins with binding functions (particularly nucleotide and protein binding) 
@@ -748,14 +751,14 @@ Analysis Parameters:
 • STRING API version 12.0 was queried with values/ranks enrichment method
 • FDR threshold of {q_val_cutoff_val} was applied for significance
 
-Enrichment Categories Analyzed:
+Enrichment Categories Analysed:
 • Gene Ontology (Biological Process, Molecular Function, Cellular Component)
 • Pathway databases (KEGG, Reactome, WikiPathways)
 • Protein interaction networks (STRING clusters)
 • Protein domain annotations (InterPro, Pfam, SMART)
 
 Results are presented in Figures showing the top 5 most significantly enriched 
-terms per category. Terms are colored by statistical significance (-log10(FDR)) 
+terms per category. Terms are coloured by statistical significance (-log10(FDR)) 
 with point size indicating the number of proteins mapped to each category. 
 Complete enrichment results with all significant terms are provided in the 
 supplementary file 'all_enrichment_results.tsv' within the pathway_enrichment 
@@ -1024,7 +1027,7 @@ if(dir.exists(stringdb_plots_dir)) {
 ```
 
 ```{r STRING DB Caption, echo=FALSE, results='asis'}
-cat("*Figure 4: STRING DB functional enrichment analysis showing enriched categories organized by: (a) Gene Ontology terms, (b) Pathways (KEGG, Reactome, WikiPathways, STRING clusters), (c) Protein domains (InterPro, Pfam, SMART), and (d) Other functional categories.*\n\n")
+cat("*Figure 4: STRING DB functional enrichment analysis showing enriched categories organised by: (a) Gene Ontology terms, (b) Pathways (KEGG, Reactome, WikiPathways, STRING clusters), (c) Protein domains (InterPro, Pfam, SMART), and (d) Other functional categories.*\n\n")
 ```
 
 # Software and build

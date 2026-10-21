@@ -280,7 +280,7 @@ ExtractStudyParametersNew <- function(study_params) {
       !is.null(ruv_results$"Best k value")
     },
     
-    # RUV Auto-optimization Results (only populated when RUV was applied)
+    # RUV Auto-optimisation Results (only populated when RUV was applied)
     best_percentage = sub("%$", "", ruv_results$"Best percentage" %||% NA_character_), # the file writes "10.0%"; the sentence appends its own %
     best_k = ruv_results$"Best k value",
     separation_score = ruv_results$"Separation score",
@@ -481,7 +481,7 @@ FormatMethodDetails <- function(numbers) {
   
   # Generate protein count text BEFORE glue block
   qc_count_text <- if(!is.null(numbers$protein_count_qc) && !is.na(numbers$protein_count_qc)) {
-    paste0(" After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalization.")
+    paste0(" After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalisation.")
   } else {
     ""
   }
@@ -531,13 +531,13 @@ FormatMethodDetails <- function(numbers) {
       "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
       "negative control proteins, which are proteins with little or no changes in ",
       "protein abundances between different samples. For this study, an automatic ",
-      "optimization process was run, which identified that using {best_pct_val}% of ",
+      "optimisation process was run, which identified that using {best_pct_val}% of ",
       "features as empirical negative controls ({num_neg_ctrl_val} proteins) ",
       "provided the best separation of biological groups. Based on this, ",
       "{best_k_val} unwanted components were selected for removal."
     )
   } else {
-    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential abundance analysis."
+    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalised data for differential abundance analysis."
   }
   
   # NEW: Generate mixed species FASTA text BEFORE glue block
@@ -574,7 +574,8 @@ METHOD DETAILS
 Data analyses were performed with MultiScholaR; the software version and build are listed under 'Software and build'. 
 SOP reference: [to be completed by the analyst].  
 
-Data import, filtering and normalization
+**Data import, filtering and normalisation**
+
 Precursor-level identifications and quantities were imported from the DIA-NN main report 
 (one row per precursor and run). Peptide and protein quantification was then performed using a series of filtering and 
 aggregation steps to ensure high-confidence identifications and accurate 
@@ -594,7 +595,8 @@ percentile of intensity values. Proteins were required to have a minimum of
 {min_peptidoforms} peptides, which could include different 
 modifications of the same sequence, to be considered for further analysis.
 
-Sample Quality Control and Filtering
+**Sample quality control and filtering**
+
 Samples with poor performance, indicated by an unusually low number of identified 
 peptides, were identified and removed to ensure data quality and reliable downstream 
 analysis. Such samples may be compromised due to issues in sample preparation, 
@@ -609,10 +611,11 @@ Peptides appearing in only one replicate across all groups were also excluded to
 maintain measurement reproducibility. Protein-level quantification was performed using 
 the IQ algorithm, implementing the maxLFQ algorithm to generate protein abundance 
 values. Peptide intensities were aggregated into protein-level quantification without 
-normalization at this stage, resulting in a protein quantification matrix with 
+normalisation at this stage, resulting in a protein quantification matrix with 
 log2-transformed intensity values for each protein across all samples.
 
-FASTA Reference and Protein Accession Cleanup
+**FASTA reference and protein accession cleanup**
+
 {fasta_text}
 
 {accession_cleanup_text}{mixed_species_text}{qc_count_text}
@@ -623,13 +626,13 @@ value patterns and intensity thresholds to ensure robust statistical analysis.
 Intensities below the {intensity_cutoff_pct}{intensity_cutoff_suffix} percentile of all 
 intensities in the table were treated as missing. Within each experimental group a protein 
 failed if {missing_vals_cutoff}% or more of its values were missing; {cross_groups_text} 
-The data matrix was then log (base 2) transformed and between-sample normalization 
+The data matrix was then log (base 2) transformed and between-sample normalisation 
 were performed using the '{norm_method}' method from the 'limma' R package 
 (Ritchie et al., 2015).
 
 {ruv_text}{ruv_count_text}
 
-At each stage of the data normalization, the samples were checked for batch effects 
+At each stage of the data normalisation, the samples were checked for batch effects 
 using principal component analysis (PCA) plot, density boxplots, relative 
 log-expression (RLE) plots and the distribution of the Pearson correlation between 
 replicate samples within groups.
@@ -805,7 +808,7 @@ following parameters:
 
 {enrichment_tool_text}
 
-Key findings from the GO enrichment analysis are summarized below for each 
+Key findings from the GO enrichment analysis are summarised below for each 
 comparison:
 
 Biological Process:
@@ -925,7 +928,7 @@ FormatDESummaryTable <- function(filepath) {
       dplyr::pull(text) %>%
       paste(collapse = " ")
       
-    return(paste("The number of significant differentially expressed proteins is summarized in Figure 2.", summary_text))
+    return(paste("The number of significant differentially expressed proteins is summarised in Figure 2.", summary_text))
   }, error = function(e) {
     return(paste("Error reading DE summary table:", e$message))
   })
@@ -958,7 +961,7 @@ Main <- function() {
   ruv_corr_path <- file.path(report_publication_tables_dir, "ruv_normalised_results.RDS")
   norm_corr_path <- file.path(report_publication_tables_dir, "normalised_results.RDS")
   
-  # Try RUV filename first, then fall back to normalized filename
+  # Try RUV filename first, then fall back to normalised filename
   corr_path <- if (file.exists(ruv_corr_path)) {
     ruv_corr_path
   } else if (file.exists(norm_corr_path)) {

@@ -272,7 +272,7 @@ ExtractStudyParametersLFQ <- function(study_params) {
       !is.null(ruv_results$"Best k value")
     },
     
-    # RUV Auto-optimization Results (only populated when RUV was applied)
+    # RUV Auto-optimisation Results (only populated when RUV was applied)
     best_percentage = sub("%$", "", ruv_results$"Best percentage" %||% NA_character_), # the file writes "10.0%"; the sentence appends its own %
     best_k = ruv_results$"Best k value",
     separation_score = ruv_results$"Separation score",
@@ -289,7 +289,7 @@ ExtractStudyParametersLFQ <- function(study_params) {
     # Protein accession cleanup parameters
     accession_delimiter = s4_accession$delim %||% ";",
     
-    # Normalization method
+    # Normalisation method
     normalisation_method = s4_norm$method %||% s4_norm$normalisation_method %||% "cyclicloess",
     
     # RUV parameters (FIXED: explicit NULL check)
@@ -462,7 +462,7 @@ FormatMethodDetailsLFQ <- function(numbers) {
   
   # Generate protein count text BEFORE glue block
   qc_count_text <- if(!is.null(numbers$protein_count_qc) && !is.na(numbers$protein_count_qc)) {
-    paste0(" After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalization.")
+    paste0(" After quality control filtering, ", numbers$protein_count_qc, " proteins remained for normalisation.")
   } else {
     ""
   }
@@ -493,13 +493,13 @@ FormatMethodDetailsLFQ <- function(numbers) {
       "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
       "negative control proteins, which are proteins with little or no changes in ",
       "protein abundances between different samples. For this study, an automatic ",
-      "optimization process was run, which identified that using {best_pct_val}% of ",
+      "optimisation process was run, which identified that using {best_pct_val}% of ",
       "features as empirical negative controls ({num_neg_ctrl_val} proteins) ",
       "provided the best separation of biological groups. Based on this, ",
       "{best_k_val} unwanted components were selected for removal."
     )
   } else {
-    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential abundance analysis."
+    "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalised data for differential abundance analysis."
   }
   
   # KIT-055: the import paragraph names the format the project imported (params$workflow_name is the import format).
@@ -550,14 +550,17 @@ METHOD DETAILS
 Data analyses were performed with MultiScholaR; the software version and build are listed under 'Software and build'. 
 SOP reference: [to be completed by the analyst].  
 
-Data Import and Protein Quantification
+**Data import and protein quantification**
+
 {import_text}
 
-Protein Quality Control and Filtering
+**Protein quality control and filtering**
+
 Protein identifications were filtered to ensure high-confidence quantification 
 and reliable downstream statistical analysis. 
 
-FASTA Reference and Protein Accession Cleanup
+**FASTA reference and protein accession cleanup**
+
 {fasta_text}
 
 {accession_cleanup_text} Duplicate protein entries were removed to prevent redundancy in quantification.{mixed_species_text}
@@ -570,19 +573,20 @@ Proteins appearing in only one replicate across all groups were also excluded
 to ensure measurement reproducibility and reliable quantification across biological 
 replicates.{qc_count_text}
 
-Normalization and Batch Effect Correction
+**Normalisation and batch effect correction**
+
 Using the protein intensity matrix, zero values were replaced with NA to denote 
 missing values. The data matrix was log (base 2) transformed and between-sample 
-normalization was performed using the '{norm_method}' method from the 'limma' 
-R package (Ritchie et al., 2015). This normalization approach adjusts for 
+normalisation was performed using the '{norm_method}' method from the 'limma' 
+R package (Ritchie et al., 2015). This normalisation approach adjusts for 
 systematic technical variation while preserving biological differences.
 
 {ruv_text}{ruv_count_text}
 
-At each stage of the data normalization, the samples were checked for batch effects 
+At each stage of the data normalisation, the samples were checked for batch effects 
 using principal component analysis (PCA) plots, density boxplots, relative 
 log-expression (RLE) plots, and the distribution of Pearson correlation between 
-replicate samples within groups. These quality control visualizations allow 
+replicate samples within groups. These quality control visualisations allow 
 assessment of technical variation removal while ensuring biological signal is 
 retained.
 
@@ -757,7 +761,7 @@ following parameters:
 
 {enrichment_tool_text}
 
-Key findings from the GO enrichment analysis are summarized below for each 
+Key findings from the GO enrichment analysis are summarised below for each 
 comparison:
 
 Biological Process:
@@ -878,7 +882,7 @@ FormatDESummaryTable <- function(filepath) {
       dplyr::pull(text) %>%
       paste(collapse = " ")
       
-    return(paste("The number of significant differentially expressed proteins is summarized in Figure 2.", summary_text))
+    return(paste("The number of significant differentially expressed proteins is summarised in Figure 2.", summary_text))
   }, error = function(e) {
     return(paste("Error reading DE summary table:", e$message))
   })
@@ -911,7 +915,7 @@ Main <- function() {
   ruv_corr_path <- file.path(report_publication_tables_dir, "ruv_normalised_results.RDS")
   norm_corr_path <- file.path(report_publication_tables_dir, "normalised_results.RDS")
   
-  # Try RUV filename first, then fall back to normalized filename
+  # Try RUV filename first, then fall back to normalised filename
   corr_path <- if (file.exists(ruv_corr_path)) {
     ruv_corr_path
   } else if (file.exists(norm_corr_path)) {
