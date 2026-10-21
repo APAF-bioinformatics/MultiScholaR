@@ -519,3 +519,24 @@ test_that("proteomics peptide imputation module preserves revert error behavior"
     logical(1)
   )))
 })
+
+test_that("KIT-049: the skipped imputation output keeps missing values for IQ and records the skip", {
+  object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+  raw <- object@raw_quantity_column
+  object@args$peptideMissingValueImputation <- list(imputed_value_column = "Peptide.Imputed")
+  skipped <- peptideMissingValueImputationSkipped(object, 0.5, NULL)
+  expect_identical(skipped@peptide_data$Peptide.Imputed, object@peptide_data[[raw]])
+  expect_false(any(skipped@peptide_data$is_imputed))
+  expect_identical(nrow(skipped@peptide_data), nrow(object@peptide_data))
+  section <- skipped@args$peptideMissingValueImputation
+  expect_true(section$skip)
+  expect_identical(section$imputation_summary$status, "skipped")
+  expect_identical(section$imputation_summary$skip_reason, "user_skip")
+  expect_identical(section$imputation_summary$imputed_rows, 0L)
+  expect_identical(section$imputation_summary$input_rows, nrow(object@peptide_data))
+  expect_equal(section$proportion_missing_values, 0.5)
+  # The worker validator accepts the declared skip as a logical scalar only.
+  expect_silent(validateWorkflowPeptideImputationParameters(list(proportion_missing_values = 0.5, skip = TRUE), NULL))
+  expect_error(validateWorkflowPeptideImputationParameters(list(proportion_missing_values = 0.5, skip = "yes"), NULL), "skip must be TRUE or FALSE")
+  expect_error(validateWorkflowPeptideImputationParameters(list(proportion_missing_values = 0.5, skipp = TRUE), NULL), "unknown parameter")
+})

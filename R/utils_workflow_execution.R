@@ -2090,10 +2090,13 @@ validateWorkflowSampleFilterParameters <- function(parameters, policy, resolved 
 #' The imputation's proportion threshold and optional design exclusion column (KIT-009).
 #' @noRd
 validateWorkflowPeptideImputationParameters <- function(parameters, policy, resolved = TRUE) {
-    allowed <- c("proportion_missing_values", "exclusion_column")
+    allowed <- c("proportion_missing_values", "exclusion_column", "skip")
     if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
         any(!names(parameters) %in% allowed)) || resolved && !"proportion_missing_values" %in% names(parameters))
         cli::cli_abort("imputation parameters required or unknown parameter supplied")
+    # KIT-049: the declared skip is a logical scalar.
+    if (!is.null(parameters$skip) && (!is.logical(parameters$skip) || length(parameters$skip) != 1L || is.na(parameters$skip)))
+        cli::cli_abort("skip must be TRUE or FALSE")
     p <- parameters$proportion_missing_values
     if ((resolved || !is.null(p)) && (!is.numeric(p) || length(p) != 1L || !is.finite(p) || p < 0 || p > 1))
         cli::cli_abort("proportion of missing values must lie in [0, 1]")

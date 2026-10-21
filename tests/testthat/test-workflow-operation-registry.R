@@ -26,7 +26,11 @@ test_that("the registry carries the built-in operations with every fact the exec
     expect_identical(imputation$variants, c("grouped", "partitioned"))
     expect_identical(imputation$default_variant, "partitioned")
     expect_identical(imputation$declaration$unit, "feature_group")
-    expect_identical(imputation$declaration$parameters, c("proportion_missing_values", "exclusion_column"))
+    # KIT-049: the declared skip (default FALSE) beside the two imputation parameters, with a defaults mapping and a label.
+    expect_identical(imputation$declaration$parameters, c("proportion_missing_values", "exclusion_column", "skip"))
+    expect_identical(imputation$parameters, c("proportion_missing_values", "exclusion_column", "skip"))
+    expect_identical(workflowOperationDefaults$peptide_imputation$skip, list(section = "peptideMissingValueImputation", key = "skip"))
+    expect_identical(workflowParameterLabels$peptide_imputation$skip, "Skip replicate-mean imputation")
     expect_identical(workflowQualificationVariant(list(mode = "gui"), "peptide_imputation"), "partitioned")
     expect_error(validateWorkflowPeptideImputationParameters(list(proportion_missing_values = 1.5), list()), "proportion")
     expect_error(validateWorkflowPeptideImputationParameters(list(exclusion_column = "x"), list()), "required")

@@ -380,13 +380,19 @@ computeDIAReferencePeptideGroups <- function(manager, reference, section, parame
         args$peptidoforms_per_protein_cutoff <- parameters$num_peptidoforms_per_protein_thresh
     }
     updates <- parameters
+    skip <- FALSE
     if (section == "peptideMissingValueImputation") {
+        # KIT-049: an explicit skip never reaches the kernel's arguments; it is recorded only when TRUE, so the
+        # default path's arguments, configuration and identity are what they were.
+        skip <- isTRUE(parameters$skip)
+        parameters$skip <- NULL
         exclusion <- parameters$exclusion_column
         exclusion <- if (!length(exclusion) || is.na(exclusion[[1L]]) ||
             !nzchar(trimws(as.character(exclusion[[1L]])))) NULL else trimws(as.character(exclusion[[1L]]))
         parameters["exclusion_column"] <- list(exclusion)
         updates <- parameters
         if (is.null(exclusion)) updates$exclusion_column <- NULL
+        if (skip) updates$skip <- TRUE
     }
     args[names(updates)] <- updates
     object@args[[section]] <- args
@@ -482,9 +488,14 @@ computeDIAReferencePeptideGroups <- function(manager, reference, section, parame
             result_args$support_table <<- result$support_table
             result_args$removal_ledger <<- result$removal_ledger
             result_args$filter_summary <<- result$summary
+        } else if (skip) {
+            object <<- peptideMissingValueImputationSkipped(object, parameters$proportion_missing_values, parameters$exclusion_column)
+            result_args <<- object@args[[section]]
         } else {
             object <<- do.call(get(section, mode = "function"), c(list(theObject = object), parameters))
             result_args <<- object@args[[section]]
+        }
+        if (section != "peptideIntensityFiltering") {
             result <- list(data = object@peptide_data, support_table = result_args$support_table,
                 removal_ledger = result_args$removal_ledger,
                 summary = result_args$filter_summary %||% result_args$imputation_summary)
@@ -586,7 +597,7 @@ computeDIAReferencePeptideGroups <- function(manager, reference, section, parame
         execution <- c(execution, partition[c("batches", "batch_sizes", "groups", "admission")])
     }
     identity <- newSavedWorkflowScientificIdentity(source$entity_id,
-        checkpoint$components$design_matrix$entity_id, digest::digest(list(section, parameters), algo = "sha256"),
+        checkpoint$components$design_matrix$entity_id, digest::digest(c(list(section, parameters), if (skip) list(skip = TRUE)), algo = "sha256"),
         "complete-declared-groups", context$software)
     references <- list()
     for (field in names(restoration)) {
@@ -682,7 +693,44 @@ computeDIAReferencePeptideGroups <- function(manager, reference, section, parame
     list(checkpoint = checkpoint, reference = references$data, summary = summary,
         dependencies = checkpoint$dependencies, counts = counts, execution = execution,
         state_name = state_name, description = description,
-        config = c(parameters, list(filter_summary = summary)), section = section)
+        config = c(parameters, if (skip) list(skip = TRUE, skipped = TRUE), list(filter_summary = summary)), section = section)
+}
+
+#' The imputation step's skipped output (KIT-049): the shape the kernel itself produces when a design declares no
+#' technical replicates (`func_pept_s4_missingness.R`), produced here for an explicit user skip without changing
+#' the kernel: `imputed_value_column` equals the raw quantity, `is_imputed` is FALSE on every row, no support
+#' table, the summary `skipped` with reason `user_skip`, the section arguments recorded as the kernel records them.
+#' @param theObject `PeptideQuantitativeData`.
+#' @param proportion_missing_values,exclusion_column The declared parameters, recorded for provenance.
+#' @return The object with the skipped output and its section arguments.
+#' @noRd
+peptideMissingValueImputationSkipped <- function(theObject, proportion_missing_values = NULL, exclusion_column = NULL) {
+    section <- theObject@args$peptideMissingValueImputation
+    if (!is.list(section)) section <- list()
+    imputed_value_column <- section$imputed_value_column %||% "Peptide.Imputed"
+    proportion_missing_values <- proportion_missing_values %||% section$proportion_missing_values %||% 0.5
+    exclusion_column <- if (!length(exclusion_column) || is.na(exclusion_column[[1L]]) ||
+        !nzchar(trimws(as.character(exclusion_column[[1L]])))) NULL else trimws(as.character(exclusion_column[[1L]]))
+    data <- theObject@peptide_data
+    data[[imputed_value_column]] <- data[[theObject@raw_quantity_column]]
+    data$is_imputed <- rep(FALSE, nrow(data))
+    section$imputed_value_column <- imputed_value_column
+    section$proportion_missing_values <- as.numeric(proportion_missing_values)
+    section$core_utilisation <- section$core_utilisation %||% NA
+    section$exclusion_column <- exclusion_column
+    section$hek_string <- section$hek_string %||% NULL
+    section$quantity_column <- theObject@raw_quantity_column
+    section$support_table <- data.frame()
+    section$skip <- TRUE
+    section$imputation_summary <- list(status = "skipped", skip_reason = "user_skip",
+        quantity_column = theObject@raw_quantity_column, imputed_value_column = imputed_value_column,
+        eligibility_denominator = "distinct_design_runs_in_technical_replicate_group",
+        maximum_missing_fraction = as.numeric(proportion_missing_values), eligibility_operator = "<=",
+        exclusion_source = if (is.null(exclusion_column)) "none" else paste0("design_column:", exclusion_column),
+        input_rows = nrow(theObject@peptide_data), output_rows = nrow(data), imputed_rows = 0L)
+    theObject@args$peptideMissingValueImputation <- section
+    theObject@peptide_data <- data
+    cleanDesignMatrixPeptide(theObject)
 }
 
 #' Commit a peptide table and its bounded progress without reading the assay.
@@ -821,9 +869,13 @@ buildDIAReferencePeptideHandoff <- function(checkpoint, section, parameters, pro
         audit <- .peptideImputationAuditSummary(checkpoint, parameters$proportion_missing_values, parameters$exclusion_column)
         config <- list(proportion_missing_values = parameters$proportion_missing_values,
             exclusion_column = parameters$exclusion_column, imputation_summary = audit)
+        # KIT-049: the user's skip travels in the config (`skipped`, which the record lifts into outcomes) and names itself.
+        if (isTRUE(parameters$skip)) config <- c(config, list(skip = TRUE, skipped = TRUE))
         qc <- c(config, list(timestamp = stamp))
         skipped <- identical(audit$status, "skipped")
-        if (skipped) description <- paste("Skipped technical-replicate imputation:", audit$skip_reason)
+        if (skipped) description <- if (identical(audit$skip_reason, "user_skip"))
+            "Missing value imputation skipped by user (missing values kept for IQ)" else
+            paste("Skipped technical-replicate imputation:", audit$skip_reason)
         lines <- c(sprintf("Eligibility: missing fraction %s %.1f\n", audit$eligibility_operator, parameters$proportion_missing_values),
             sprintf("Denominator: %s\n", audit$eligibility_denominator), sprintf("Quantity column: %s\n", audit$quantity_column),
             sprintf("Exclusion source: %s\n", audit$exclusion_source))
@@ -1360,9 +1412,11 @@ diaPeptideImputationOperation <- function() {
     newWorkflowOperation(name = "peptide_imputation", input_class = "PeptideQuantitativeData",
         fields = "design_matrix", unit = "feature_group",
         kernel = function(object, parameters, store) computeDIAReferencePeptideGroups(store$manager, store$source,
-            "peptideMissingValueImputation", parameters[c("proportion_missing_values", "exclusion_column")],
+            "peptideMissingValueImputation", parameters[intersect(c("proportion_missing_values", "exclusion_column", "skip"), names(parameters))],
             worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "partitioned"),
-        output_class = "PeptideQuantitativeData", parameters = c("proportion_missing_values", "exclusion_column"),
+        # KIT-049: `skip` (default FALSE) commits the kernel's own skipped output (`Peptide.Imputed` equals the raw
+        # quantity, `is_imputed` FALSE) so IQ reads the column it requires; recorded only when TRUE.
+        output_class = "PeptideQuantitativeData", parameters = c("proportion_missing_values", "exclusion_column", "skip"),
         product_type = "dia.peptide_imputation_result",
         global_statistics = c(source_row_order =
             "the output keeps the input's source ordinals and the design order for generated rows, assigned by the writer once over the whole output"),

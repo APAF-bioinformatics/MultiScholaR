@@ -234,7 +234,8 @@ workflowOperationDefaults <- local({
             inclusion_list = key("filterMinNumPeptidesPerSample", "inclusion_list")),
         peptide_imputation = list(
             proportion_missing_values = key("peptideMissingValueImputation", "proportion_missing_values"),
-            exclusion_column = key("peptideMissingValueImputation", "exclusion_column")),
+            exclusion_column = key("peptideMissingValueImputation", "exclusion_column"),
+            skip = key("peptideMissingValueImputation", "skip")),
         peptide_qvalue_filter = list(
             qvalue_threshold = key("srlQvalueProteotypicPeptideClean", "qvalue_threshold"),
             global_qvalue_threshold = key("srlQvalueProteotypicPeptideClean", "global_qvalue_threshold"),
@@ -287,7 +288,7 @@ workflowParameterLabels <- local({
         minimum_peptides_per_sample = list(peptides_per_sample_cutoff = "Minimum peptides per sample",
             inclusion_list = "Samples kept regardless of the cutoff"),
         peptide_imputation = list(proportion_missing_values = "Maximum proportion of missing values imputed within a replicate group",
-            exclusion_column = "Column excluded from imputation"),
+            exclusion_column = "Column excluded from imputation", skip = "Skip replicate-mean imputation"),
         peptide_qvalue_filter = list(qvalue_threshold = "Run-level q-value threshold",
             global_qvalue_threshold = "Global precursor q-value threshold", global_pg_qvalue_threshold = "Global protein-group q-value threshold",
             proteotypic_only = "Keep proteotypic peptides only", confidence_provenance_mode = "Source of the confidence columns"),
@@ -389,7 +390,7 @@ registerBuiltinWorkflowOperations <- function() {
     # stood before KIT-009 (the control arm of the measurement), `partitioned` the production variant.
     registerWorkflowOperation(list(name = "peptide_imputation", input = "peptide", input_class = "PeptideQuantitativeData",
         compute = "peptide", handler = "computeWorkflowPeptideImputationAction", validate = "validateWorkflowPeptideImputationParameters",
-        resolve = NULL, parameter_limit = 65536, parameters = c("proportion_missing_values", "exclusion_column"),
+        resolve = NULL, parameter_limit = 65536, parameters = c("proportion_missing_values", "exclusion_column", "skip"),
         completion = "peptide", publication = "peptide", step_label = "8_imputed", omic_type = "proteomics",
         variants = c("grouped", "partitioned"), default_variant = "partitioned", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaPeptideImputationOperation()))
