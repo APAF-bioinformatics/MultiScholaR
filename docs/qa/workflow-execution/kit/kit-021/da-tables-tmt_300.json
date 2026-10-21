@@ -1,0 +1,35 @@
+{
+  "corpus": "tmt_300",
+  "corpus_sha256": "1f8162b6826284eabc4048940d9fa3b46003a8be7116d0be0533f8a8ffaf448f",
+  "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_300/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1c65f42daf0bc7",
+  "head_sha256": "acdf445547f446e5ba3d691c65b138f41ab80e3f74e1b04bb815019aba05e579",
+  "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
+  "contrasts": [
+    {
+      "contrasts": "groupKO-groupWT",
+      "friendly_names": "KO_vs_WT",
+      "full_format": "KO_vs_WT=groupKO-groupWT"
+    }
+  ],
+  "model": {
+    "group_id": "group",
+    "technical_replicate_id": "tech_rep_group",
+    "block_reason": "no_duplicates",
+    "uses_duplicate_correlation": false,
+    "consensus_correlation": null
+  },
+  "table_hashes": {
+    "groupKO-groupWT": {
+      "da_proteins_long": "0213d58d2c691614e9eabe851c4e459d21e5e0022ffc0eb3d549861dd23c4db2",
+      "da_proteins_wide": "176d6c268a64386f3cad63299dff09090a755b144a66a6e76c434af937c51c03",
+      "contrasts_results_table": "d1fe7ebe5abe1c5d5b2161619d51acd75c5966e818a1db83f96cb2c22a7c376f"
+    }
+  },
+  "rows": {
+    "groupKO-groupWT": 7922
+  },
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.l7OM2e/library/MultiScholaR",
+    "source_commit": "88df93148eeef1521933daf9baf4bd567f168c5c"
+  }
+}
