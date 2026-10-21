@@ -304,6 +304,15 @@
       "install_member": "browser-smoke.hFdLww",
       "source_commit": "1b0d5641146d7a8caf58ac6555b0e9308093e724",
       "runtime_patch_bytes": 0
+    },
+    "kit_041": {
+      "ticket": "KIT-041",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.iCbta4/library",
+      "build": "0e5b7e9cd49e52013b4522630959f9898e999344ab978bbbcb9a0d3f23b3a31a",
+      "exact_sum": "89422fa6007202f029321a7bf57892122ecbfd1ad10d51381826c4ba811a101b",
+      "install_member": "browser-smoke.iCbta4",
+      "source_commit": "158ba9260764845dcecb1aaaa32623eac05b3fb5",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -7099,7 +7108,7 @@
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
     "protocol_sha256": "10b830f85a03df4641a60fd6a12b650b9c98115cb62c068f947cb2fdfe1ac20c",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
-    "step_map_sha256": "e78e92bdfcd5b1ba9b509224e7184a739881384b1dac9ba37b59d9d546f42eac",
+    "step_map_sha256": "4fb7ca885a4f7dbc05f00e467e509eed8f51e837d3dad958882f4f2177872b82",
     "step_map_protein": "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json",
     "step_map_protein_sha256": "9b58ddbfca35454c28a12c79f81651029ee9484384919d1f7d416b63f6953498",
     "core_pinned_unchanged": true,
