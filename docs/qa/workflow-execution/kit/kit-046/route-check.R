@@ -132,7 +132,7 @@ dia_with_limpa_config$config_list <- list(globalParameters = list(workflow_type 
 out$template_dia_with_limpa_section <- resolveProtSummaryReportTemplate(dia_with_limpa_config, catFn = function(...) NULL)$templateFilename
 limpa_type <- new.env(parent = emptyenv()); limpa_type$config_list <- list(globalParameters = list(workflow_type = "DIA_LIMPA"))
 out$template_dia_limpa_type <- resolveProtSummaryReportTemplate(limpa_type, catFn = function(...) NULL)$templateFilename
-out$route_map <- as.list(workflowRoutesByType)
+out$route_map <- as.list(api("workflowRoutesByType"))
 out$checkpoint_route_refuses_type <- inherits(tryCatch(validateDIAPeptideCheckpointRoute(list(workflow_type = "DIA_LIMPA")), error = function(e) e), "saved_entity_unsupported")
 out$import_ui <- list(dia_route_choices = regmatches(readLines(file.path(repo, "R/mod_prot_import_ui.R")), regexpr('"[^"]*" = "DIA(_LIMPA)?"', readLines(file.path(repo, "R/mod_prot_import_ui.R")))),
     quantification_radio_sites = length(grep("dia_quantification_method", list.files(file.path(repo, "R"), full.names = TRUE) |> lapply(readLines) |> unlist(), fixed = TRUE)))

@@ -1,0 +1,110 @@
+{
+  "schema": "kit.route_check.v1",
+  "ticket": "KIT-046",
+  "label": "installed",
+  "date": "2026-10-21",
+  "head_commit": "f63e0c59279da6011ef5187fa0a80a42a7e768a3",
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.2M9Eyi/library/MultiScholaR",
+    "source_commit": "f63e0c59279da6011ef5187fa0a80a42a7e768a3"
+  },
+  "limpa_installed": true,
+  "DIA": {
+    "route": "DIA",
+    "owner_attached": true,
+    "store_identity": {
+      "project_id": "DIA-IQ-native",
+      "workflow_id": "DIA"
+    },
+    "manager_type_after_init": "DIA",
+    "applied_type": "DIA",
+    "manager_type_after_import": "DIA",
+    "design_state": "raw_data_s4",
+    "history": ["initial", "raw_data_s4", "qvalue_filtered", "precursor_rollup"],
+    "rows": {
+      "raw_data_s4": 320872,
+      "qvalue_filtered": 320872,
+      "precursor_rollup": 303000
+    },
+    "components": {
+      "raw_data_s4": {
+        "peptide_data": "0050bf2251c9b6597864258f45d6047296727e730cd1a4922fb6d753873776f7",
+        "design_matrix": "d14deffcd0478f19a7c650f5f024d5988383a720529d9471a987cbd98514a0d0"
+      },
+      "qvalue_filtered": {
+        "peptide_data": "573c8c626305ac8d5e472667d149ac19d30016583eaeb450561a225e367c91ae",
+        "design_matrix": "4803ca2635ec9372c111ee2bc2d47831b78fa88b366ce140ea8bbccc59352e93"
+      },
+      "precursor_rollup": {
+        "peptide_data": "c2aedbc8ca1ef9fa6e7929c4c1f4162072d5c1247f2e0f825c6664735b5c8b78",
+        "design_matrix": "4803ca2635ec9372c111ee2bc2d47831b78fa88b366ce140ea8bbccc59352e93"
+      }
+    },
+    "summary_sha256": {
+      "raw_data_s4": "72b3dec71986e3f2c6bb08d07c683bdaffb2f68754313157975ae449cad34107",
+      "qvalue_filtered": "c1c63a5acce10d356cffda65943df8a9aaa22ba8139947bb39e9176bff927b4a",
+      "precursor_rollup": "018c6f78819c9593caeb35a39da94983c66e07515887ff5917c3c2a3d5dea406"
+    },
+    "manifest_route": "iq"
+  },
+  "DIA_LIMPA": {
+    "route": "DIA_LIMPA",
+    "owner_attached": true,
+    "store_identity": {
+      "project_id": "DIA-LIMPA-native",
+      "workflow_id": "DIA_LIMPA"
+    },
+    "manager_type_after_init": "DIA_LIMPA",
+    "applied_type": "DIA_LIMPA",
+    "manager_type_after_import": "DIA_LIMPA",
+    "design_state": "raw_data_s4",
+    "history": ["initial", "raw_data_s4", "qvalue_filtered", "precursor_rollup"],
+    "rows": {
+      "raw_data_s4": 320872,
+      "qvalue_filtered": 320872,
+      "precursor_rollup": 303000
+    },
+    "components": {
+      "raw_data_s4": {
+        "peptide_data": "0050bf2251c9b6597864258f45d6047296727e730cd1a4922fb6d753873776f7",
+        "design_matrix": "d14deffcd0478f19a7c650f5f024d5988383a720529d9471a987cbd98514a0d0"
+      },
+      "qvalue_filtered": {
+        "peptide_data": "573c8c626305ac8d5e472667d149ac19d30016583eaeb450561a225e367c91ae",
+        "design_matrix": "4803ca2635ec9372c111ee2bc2d47831b78fa88b366ce140ea8bbccc59352e93"
+      },
+      "precursor_rollup": {
+        "peptide_data": "c2aedbc8ca1ef9fa6e7929c4c1f4162072d5c1247f2e0f825c6664735b5c8b78",
+        "design_matrix": "4803ca2635ec9372c111ee2bc2d47831b78fa88b366ce140ea8bbccc59352e93"
+      }
+    },
+    "summary_sha256": {
+      "raw_data_s4": "3bc88edf5511c399ece5b03b51e4265405971b5b15b7fc2ee234350eef9b4aa7",
+      "qvalue_filtered": "f902a4b932ab07036d4e2b959ceab55936177841d6911c72a07af91acd11f269",
+      "precursor_rollup": "5f82202132225e9f8dd5ea9e41e8b9d46e562b746da9f149de868d6e3f1acc3a"
+    },
+    "manifest_route": "limpa"
+  },
+  "routes_equal": {
+    "raw_data_s4": true,
+    "qvalue_filtered": true,
+    "precursor_rollup": true,
+    "rows_equal": true
+  },
+  "legacy_limpa_refused": true,
+  "legacy_limpa_message": "sessions from the retired in-memory limpa route cannot be adopted; rerun\non the DIA with limpa workflow",
+  "template_dia_with_limpa_section": "DIANN_report.rmd",
+  "template_dia_limpa_type": "DIANN_limpa_report.rmd",
+  "route_map": {
+    "DIA": "iq",
+    "DIA_LIMPA": "limpa",
+    "LFQ": "protein",
+    "TMT": "protein"
+  },
+  "checkpoint_route_refuses_type": true,
+  "import_ui": {
+    "dia_route_choices": ["\"DIA, iq MaxLFQ (optional replicate-mean imputation)\" = \"DIA\"", "\"DIA with imputation leveraging limpa (Li et al. 2025)\" = \"DIA_LIMPA\""],
+    "quantification_radio_sites": 0
+  },
+  "seconds": 52.5178
+}
