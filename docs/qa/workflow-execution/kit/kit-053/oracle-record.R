@@ -138,7 +138,8 @@ run("dpc_quant", withDIAStateScope(manager, function() invisible(publish_protein
 # normalisation, the RUV covariates); the DIA journey's own defaults (cyclic loess, RUV-III correction) never apply here.
 norm <- journey$normalisation
 norm$norm_method <- "none"; norm$ruv_mode <- "covariates"
-ticket_norm <- bindings$tickets[["053"]]$normalisation
+# The ticket's binding applies to the corpus it binds (none on the screen corpus, cyclic loess on the full corpus).
+ticket_norm <- if (identical(bindings$tickets[["053"]]$corpus, corpus_key)) bindings$tickets[["053"]]$normalisation
 if (!is.null(ticket_norm)) norm <- utils::modifyList(norm, ticket_norm)
 run("protein_normalisation_limpa", withDIAStateScope(manager, function() invisible(publish_protein(runDIAReferenceProteinNormalisation(workflow,
     list(norm_method = norm$norm_method)), "10_protein_normalised"))))
