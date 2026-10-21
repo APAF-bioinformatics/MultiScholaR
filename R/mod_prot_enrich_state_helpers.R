@@ -160,6 +160,7 @@ propagateProtEnrichUiParams <- function(currentS4Object,
 updateProtEnrichStateManagerUiParams <- function(workflowData,
                                                  storedUiParams,
                                                  currentDataStates = c(
+                                                   "ruv_covariates",
                                                    "correlation_filtered",
                                                    "ruv_corrected",
                                                    "protein_replicate_filtered"

@@ -353,6 +353,7 @@ registerProtEnrichSelectedTabObserver <- function(selectedTabFn,
       if (!is.null(workflowData$state_manager)) {
         currentState <- workflowData$state_manager$current_state
         validStatesForEnrichment <- c(
+          "ruv_covariates",
           "correlation_filtered",
           "normalized",
           "ruv_corrected",

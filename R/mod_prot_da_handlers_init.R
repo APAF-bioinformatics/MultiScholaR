@@ -20,7 +20,7 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
             current_state <- workflow_data$state_manager$current_state
 
             # Define valid states where this tab can be active
-            valid_states_for_de_tab <- c("normalized", "ruv_corrected", "correlation_filtered")
+            valid_states_for_de_tab <- c("ruv_covariates", "normalized", "ruv_corrected", "correlation_filtered")
 
             cat(sprintf("   DA TAB Step: Current state = '%s'\n", current_state))
             cat(sprintf("   DA TAB Step: Valid states for DE = %s\n", paste(valid_states_for_de_tab, collapse = ", ")))
@@ -198,7 +198,7 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
 
         # Should be getting the correlation-filtered protein object (final state before DE)
         # Also accept normalized or ruv_corrected states
-        if (current_state %in% c("normalized", "ruv_corrected", "correlation_filtered")) {
+        if (current_state %in% c("ruv_covariates", "normalized", "ruv_corrected", "correlation_filtered")) {
           cat(sprintf("   DA TAB Step: State is valid for DE analysis (%s state found)\n", current_state))
           current_s4 <- readDIAStateGuiMetadata(workflow_data$state_manager, current_state)
 
@@ -291,7 +291,7 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
             cat("   DA TAB Step: S4 object is NULL\n")
           }
         } else {
-          cat(sprintf("   DA TAB Step: State '%s' not valid for DA analysis (expecting: normalized, ruv_corrected, or correlation_filtered)\n", current_state))
+          cat(sprintf("   DA TAB Step: State '%s' not valid for DA analysis (expecting: ruv_covariates, normalized, ruv_corrected, or correlation_filtered)\n", current_state))
         }
       } else {
         cat("   DA TAB Step: workflow_data$state_manager is NULL\n")

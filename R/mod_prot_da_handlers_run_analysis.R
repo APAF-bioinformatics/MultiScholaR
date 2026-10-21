@@ -236,7 +236,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
               tryCatch(
                 {
                   # Find the current data state and update it
-                  current_data_states <- c("correlation_filtered", "normalized", "ruv_corrected", "protein_replicate_filtered")
+                  current_data_states <- c("ruv_covariates", "correlation_filtered", "normalized", "ruv_corrected", "protein_replicate_filtered")
                   available_states <- workflow_data$state_manager$getHistory()
                   current_data_state <- purrr::detect(current_data_states, ~ .x %in% available_states)
 

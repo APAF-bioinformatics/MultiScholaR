@@ -11,6 +11,7 @@ resolveProtSummaryFinalS4State <- function(workflowData,
   }
 
   dataStates <- c(
+    "ruv_covariates",
     "correlation_filtered",
     "ruv_corrected",
     "protein_replicate_filtered",
