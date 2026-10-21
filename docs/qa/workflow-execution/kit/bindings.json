@@ -268,6 +268,15 @@
       "install_member": "browser-smoke.l7OM2e",
       "source_commit": "88df93148eeef1521933daf9baf4bd567f168c5c",
       "runtime_patch_bytes": 0
+    },
+    "kit_054": {
+      "ticket": "KIT-054",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.elSszS/library",
+      "build": "5bc8c27ce3343d162200618330be08391768a032caa9f5bd9465896739a8ad1b",
+      "exact_sum": "3856b10efb9827f2f9ccd9dfc3039e5014ab18355ab14aeb94c73217831c7227",
+      "install_member": "browser-smoke.elSszS",
+      "source_commit": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -1174,6 +1183,126 @@
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
       "recorded_at": "2026-10-21T08:17:33+1100"
+    },
+    "kc_lfq_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "1f19aa7fb0d34ddf9e82e3cec48a535b196dd1cf90699a1a2cb598d451607a9f",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "kc_lfq_design": {
+      "step": "design",
+      "state": "protein_s4_initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "67ef328a5cdc51fa7d5e8f9152f8383747b7c379a32a3077e235f40b1b5105f3",
+      "rows": 1455,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "kc_lfq_accession": {
+      "step": "accession",
+      "state": "protein_accession_cleaned",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "a04e4d01b48ef991b3101d422762479db60ce6d05d0bd6f7439bffa87ee0ff23",
+      "rows": 1455,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "kc_lfq_protein_intensity": {
+      "step": "protein_intensity",
+      "state": "protein_intensity_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "597bab955a8ea2ac6d4cb962cf0f035e2017760c20a5157a6bbfa1ea59e38b34",
+      "rows": 390,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "kc_lfq_duplicates": {
+      "step": "duplicates",
+      "state": "duplicates_removed",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "168800220ccd11961c039a8603969203443e303a5fc45c806d8e579e76b30dd5",
+      "rows": 390,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "kc_lfq_protein_replicate": {
+      "step": "protein_replicate",
+      "state": "protein_replicate_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "aec755a451967247e18b0b70d0831519434f57a3f1d836c0c1ba095461429649",
+      "rows": 390,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "kc_lfq_normalisation_ruv": {
+      "step": "normalisation_ruv",
+      "state": "ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "2a2d2ff1b77f948534ea18fcd6e5b408b97621d1a95ded09eb761877f249255e",
+      "rows": 384,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "kc_lfq_correlation": {
+      "step": "correlation",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "40dab29651c85a9fea81034a15312e084d8c3a795dbd6d01535db394b47d47ed",
+      "rows": 384,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "kc_lfq_session_export": {
+      "step": "session_export",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "40dab29651c85a9fea81034a15312e084d8c3a795dbd6d01535db394b47d47ed",
+      "rows": 384,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "kc_lfq_da": {
+      "step": "da",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/kc_lfq/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2dcab63a6c2b5b/.workflow-entities",
+      "head_sha256": "283a033784674b58f518ab7dba932a9b019ecab4ba2d9efdc7d082e9d52d6052",
+      "entity_id": "0c0712ffbd23e6f995241f213c54389bb93cbc27d5e73e6330e7733c161538a6",
+      "rows": 384,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+      "recorded_at": "2026-10-21T14:26:37+1100"
     }
   },
   "oracles": {
@@ -5462,6 +5591,491 @@
         }
       },
       "summary_sha256": "99b56bdd5800f98e14ed5bd4abe76bd102fa392f5b5a50db0899bbe6dc04a741"
+    },
+    "kc_lfq_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "kc_lfq_design": {
+      "class": "ProteinQuantitativeData",
+      "rows": 1455,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 7,
+            "sha256": "6dc2d01943aaa4640857b9bbfa9ae672bdeda72d1f4d64603351e2d6538ceca4"
+          },
+          "sha256": "5148045545288923c5da9cc7625e21f96cf899327beab3c4444c7728158a0774"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 9,
+            "sha256": "e3ec5bfe9f434def1d7e482ccaad468afb3c3780a77231ec45ee774e4d8d4ef1"
+          },
+          "sha256": "edc91a9308ef46f8780ad25da414fb4e62ed24d0a69d2fb3f890fad5a5655010"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 1,
+            "sha256": "f787a696f3d4a8750a4c2b50c514a22dcaeac8c2ddf462053ea6517d2a85c67e"
+          },
+          "sha256": "8c5147d08f65c524dfed930e75365298ecd1b1d2849d84adb882c97e25ee501f"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "14686722d538d6ac58c500f9a3a70e0d28506b80e93e9ada29bef9a37dde4774"
+    },
+    "kc_lfq_accession": {
+      "class": "ProteinQuantitativeData",
+      "rows": 1455,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 7,
+            "sha256": "6dc2d01943aaa4640857b9bbfa9ae672bdeda72d1f4d64603351e2d6538ceca4"
+          },
+          "sha256": "098173b0a8fabee96c25301bdbd93a420d018c282ca0b07e532ce757a09da217"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 9,
+            "sha256": "e3ec5bfe9f434def1d7e482ccaad468afb3c3780a77231ec45ee774e4d8d4ef1"
+          },
+          "sha256": "edc91a9308ef46f8780ad25da414fb4e62ed24d0a69d2fb3f890fad5a5655010"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 2,
+            "sha256": "d0ea7ffeaa55edad9def515cc06623a347674a4be60be2e3eb31d26939d45966"
+          },
+          "sha256": "7b092197341cdd641953df1595b65a777948df23d2f9f164ff07a7a003a6f3f9"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 54855,
+          "columns": {
+            "n": 14,
+            "sha256": "4cbc1d57d9905304283d9cd271d37bba01fb3468c4623bb94f161dc237b262dc"
+          },
+          "sha256": "79afb4521f178dd537c181671147c8c764d6b62da38e1d147360dec683d0622c"
+        }
+      },
+      "products": [],
+      "summary_sha256": "8e87f8f7eb5c45c97c32b3f61432ae356ee56544138db3309ade4c1db69c744b",
+      "fasta_sha256": "1f3b520e4078f6e5addde6f4d2b8e7307e61ed2be8b71f6af0ad0b2099285caa",
+      "fasta_matches_input": true
+    },
+    "kc_lfq_protein_intensity": {
+      "class": "ProteinQuantitativeData",
+      "rows": 390,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 390,
+          "columns": {
+            "n": 7,
+            "sha256": "6dc2d01943aaa4640857b9bbfa9ae672bdeda72d1f4d64603351e2d6538ceca4"
+          },
+          "sha256": "557ce6417e32b82b2dcd494479932ff9662a840cccb3d9db955712cee5f0f64c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 9,
+            "sha256": "e3ec5bfe9f434def1d7e482ccaad468afb3c3780a77231ec45ee774e4d8d4ef1"
+          },
+          "sha256": "73ed206b0ca1ebffefaf16ba3c69f0c2bb4931d9453efaceb2af348e2b0f02bd"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 2,
+            "sha256": "d0ea7ffeaa55edad9def515cc06623a347674a4be60be2e3eb31d26939d45966"
+          },
+          "sha256": "7b092197341cdd641953df1595b65a777948df23d2f9f164ff07a7a003a6f3f9"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 54855,
+          "columns": {
+            "n": 14,
+            "sha256": "4cbc1d57d9905304283d9cd271d37bba01fb3468c4623bb94f161dc237b262dc"
+          },
+          "sha256": "79afb4521f178dd537c181671147c8c764d6b62da38e1d147360dec683d0622c"
+        }
+      },
+      "products": [],
+      "summary_sha256": "a7a9a6ed83b2fd875f039899a493d3c973b3a4e6c50cf6566bd3d0596f3d1351"
+    },
+    "kc_lfq_duplicates": {
+      "class": "ProteinQuantitativeData",
+      "rows": 390,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 390,
+          "columns": {
+            "n": 7,
+            "sha256": "6dc2d01943aaa4640857b9bbfa9ae672bdeda72d1f4d64603351e2d6538ceca4"
+          },
+          "sha256": "557ce6417e32b82b2dcd494479932ff9662a840cccb3d9db955712cee5f0f64c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 9,
+            "sha256": "e3ec5bfe9f434def1d7e482ccaad468afb3c3780a77231ec45ee774e4d8d4ef1"
+          },
+          "sha256": "73ed206b0ca1ebffefaf16ba3c69f0c2bb4931d9453efaceb2af348e2b0f02bd"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 2,
+            "sha256": "d0ea7ffeaa55edad9def515cc06623a347674a4be60be2e3eb31d26939d45966"
+          },
+          "sha256": "7b092197341cdd641953df1595b65a777948df23d2f9f164ff07a7a003a6f3f9"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 54855,
+          "columns": {
+            "n": 14,
+            "sha256": "4cbc1d57d9905304283d9cd271d37bba01fb3468c4623bb94f161dc237b262dc"
+          },
+          "sha256": "79afb4521f178dd537c181671147c8c764d6b62da38e1d147360dec683d0622c"
+        }
+      },
+      "products": [],
+      "summary_sha256": "76c71d822b775dcbd5c1d05cdb7be46a2cab34cdb4270d98bb208a32ff7633a7"
+    },
+    "kc_lfq_protein_replicate": {
+      "class": "ProteinQuantitativeData",
+      "rows": 390,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 390,
+          "columns": {
+            "n": 7,
+            "sha256": "6dc2d01943aaa4640857b9bbfa9ae672bdeda72d1f4d64603351e2d6538ceca4"
+          },
+          "sha256": "557ce6417e32b82b2dcd494479932ff9662a840cccb3d9db955712cee5f0f64c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 9,
+            "sha256": "e3ec5bfe9f434def1d7e482ccaad468afb3c3780a77231ec45ee774e4d8d4ef1"
+          },
+          "sha256": "73ed206b0ca1ebffefaf16ba3c69f0c2bb4931d9453efaceb2af348e2b0f02bd"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 2,
+            "sha256": "d0ea7ffeaa55edad9def515cc06623a347674a4be60be2e3eb31d26939d45966"
+          },
+          "sha256": "7b092197341cdd641953df1595b65a777948df23d2f9f164ff07a7a003a6f3f9"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 54855,
+          "columns": {
+            "n": 14,
+            "sha256": "4cbc1d57d9905304283d9cd271d37bba01fb3468c4623bb94f161dc237b262dc"
+          },
+          "sha256": "79afb4521f178dd537c181671147c8c764d6b62da38e1d147360dec683d0622c"
+        }
+      },
+      "products": [],
+      "summary_sha256": "6b29a95181d32ec2508825fa3a23de72a57655c1e5340c08df6e510f1da708c0"
+    },
+    "kc_lfq_normalisation_ruv": {
+      "class": "ProteinQuantitativeData",
+      "rows": 384,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 384,
+          "columns": {
+            "n": 7,
+            "sha256": "6dc2d01943aaa4640857b9bbfa9ae672bdeda72d1f4d64603351e2d6538ceca4"
+          },
+          "sha256": "02deb76df8ae30fac468380fc7069616c84ff559e3ad80710a52d0f62db83a29"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 9,
+            "sha256": "e3ec5bfe9f434def1d7e482ccaad468afb3c3780a77231ec45ee774e4d8d4ef1"
+          },
+          "sha256": "73ed206b0ca1ebffefaf16ba3c69f0c2bb4931d9453efaceb2af348e2b0f02bd"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 2,
+            "sha256": "d0ea7ffeaa55edad9def515cc06623a347674a4be60be2e3eb31d26939d45966"
+          },
+          "sha256": "7b092197341cdd641953df1595b65a777948df23d2f9f164ff07a7a003a6f3f9"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 54855,
+          "columns": {
+            "n": 14,
+            "sha256": "4cbc1d57d9905304283d9cd271d37bba01fb3468c4623bb94f161dc237b262dc"
+          },
+          "sha256": "79afb4521f178dd537c181671147c8c764d6b62da38e1d147360dec683d0622c"
+        }
+      },
+      "products": {
+        "normalization_science": {
+          "kind": "scientific_product",
+          "product_type": "dia-normalization-ruv",
+          "sha256": "aa93d83bb5cae5f2b04337066f82c68b5cc23f88533f95d3bbaaa81f3d6de01a"
+        },
+        "dia-normalization-ruv:aa93d83bb5ca": {
+          "kind": "scientific_product",
+          "product_type": "dia-normalization-ruv",
+          "sha256": "aa93d83bb5cae5f2b04337066f82c68b5cc23f88533f95d3bbaaa81f3d6de01a"
+        }
+      },
+      "summary_sha256": "c23e91edb1bc988076d828fa29dc04c673bb14e179c8e162c944e91c39b1a555"
+    },
+    "kc_lfq_correlation": {
+      "class": "ProteinQuantitativeData",
+      "rows": 384,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 384,
+          "columns": {
+            "n": 7,
+            "sha256": "6dc2d01943aaa4640857b9bbfa9ae672bdeda72d1f4d64603351e2d6538ceca4"
+          },
+          "sha256": "02deb76df8ae30fac468380fc7069616c84ff559e3ad80710a52d0f62db83a29"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 9,
+            "sha256": "e3ec5bfe9f434def1d7e482ccaad468afb3c3780a77231ec45ee774e4d8d4ef1"
+          },
+          "sha256": "73ed206b0ca1ebffefaf16ba3c69f0c2bb4931d9453efaceb2af348e2b0f02bd"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 2,
+            "sha256": "d0ea7ffeaa55edad9def515cc06623a347674a4be60be2e3eb31d26939d45966"
+          },
+          "sha256": "7b092197341cdd641953df1595b65a777948df23d2f9f164ff07a7a003a6f3f9"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 54855,
+          "columns": {
+            "n": 14,
+            "sha256": "4cbc1d57d9905304283d9cd271d37bba01fb3468c4623bb94f161dc237b262dc"
+          },
+          "sha256": "79afb4521f178dd537c181671147c8c764d6b62da38e1d147360dec683d0622c"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 4,
+            "sha256": "2850a1d16a40a772eca8ab5b4a635aa4364768b5bebb695bb01782b10dc7a243"
+          },
+          "sha256": "c86633895111364d7a461dce2f399e34534303a4d978d0cd91ae95f752a6b986"
+        }
+      },
+      "products": {
+        "dia_normalization_pca:78483187fa5a": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_pca",
+          "sha256": "78483187fa5a7b00a62ae01956a614f46f9ea75b5324de28eaff21ea9281995e"
+        },
+        "dia-pearson-selection:9429c39fa6ed": {
+          "kind": "scientific_product",
+          "product_type": "dia-pearson-selection",
+          "sha256": "9429c39fa6ed73cc99e8f8920776c37e8de0535e3cfc506c9560c753d68515d8"
+        },
+        "dia-pearson-pairs:d50938344145": {
+          "kind": "scientific_product",
+          "product_type": "dia-pearson-pairs",
+          "sha256": "d509383441453eb62bba90a4ab52946baf518657c18a2e7cb464d00f603c22f7"
+        }
+      },
+      "summary_sha256": "523bb051fe02e0acfd2f106f106c65e210a44b6832d931d9a51e13bed1544124"
+    },
+    "kc_lfq_session_export": {
+      "class": "ProteinQuantitativeData",
+      "rows": 384,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 384,
+          "columns": {
+            "n": 7,
+            "sha256": "6dc2d01943aaa4640857b9bbfa9ae672bdeda72d1f4d64603351e2d6538ceca4"
+          },
+          "sha256": "02deb76df8ae30fac468380fc7069616c84ff559e3ad80710a52d0f62db83a29"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 9,
+            "sha256": "e3ec5bfe9f434def1d7e482ccaad468afb3c3780a77231ec45ee774e4d8d4ef1"
+          },
+          "sha256": "73ed206b0ca1ebffefaf16ba3c69f0c2bb4931d9453efaceb2af348e2b0f02bd"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 2,
+            "sha256": "d0ea7ffeaa55edad9def515cc06623a347674a4be60be2e3eb31d26939d45966"
+          },
+          "sha256": "7b092197341cdd641953df1595b65a777948df23d2f9f164ff07a7a003a6f3f9"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 54855,
+          "columns": {
+            "n": 14,
+            "sha256": "4cbc1d57d9905304283d9cd271d37bba01fb3468c4623bb94f161dc237b262dc"
+          },
+          "sha256": "79afb4521f178dd537c181671147c8c764d6b62da38e1d147360dec683d0622c"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 4,
+            "sha256": "2850a1d16a40a772eca8ab5b4a635aa4364768b5bebb695bb01782b10dc7a243"
+          },
+          "sha256": "c86633895111364d7a461dce2f399e34534303a4d978d0cd91ae95f752a6b986"
+        }
+      },
+      "products": [],
+      "summary_sha256": "523bb051fe02e0acfd2f106f106c65e210a44b6832d931d9a51e13bed1544124"
+    },
+    "kc_lfq_da": {
+      "class": "ProteinQuantitativeData",
+      "rows": 384,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 384,
+          "columns": {
+            "n": 7,
+            "sha256": "6dc2d01943aaa4640857b9bbfa9ae672bdeda72d1f4d64603351e2d6538ceca4"
+          },
+          "sha256": "02deb76df8ae30fac468380fc7069616c84ff559e3ad80710a52d0f62db83a29"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 9,
+            "sha256": "e3ec5bfe9f434def1d7e482ccaad468afb3c3780a77231ec45ee774e4d8d4ef1"
+          },
+          "sha256": "73ed206b0ca1ebffefaf16ba3c69f0c2bb4931d9453efaceb2af348e2b0f02bd"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 1455,
+          "columns": {
+            "n": 2,
+            "sha256": "d0ea7ffeaa55edad9def515cc06623a347674a4be60be2e3eb31d26939d45966"
+          },
+          "sha256": "7b092197341cdd641953df1595b65a777948df23d2f9f164ff07a7a003a6f3f9"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 54855,
+          "columns": {
+            "n": 14,
+            "sha256": "4cbc1d57d9905304283d9cd271d37bba01fb3468c4623bb94f161dc237b262dc"
+          },
+          "sha256": "79afb4521f178dd537c181671147c8c764d6b62da38e1d147360dec683d0622c"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 6,
+          "columns": {
+            "n": 4,
+            "sha256": "2850a1d16a40a772eca8ab5b4a635aa4364768b5bebb695bb01782b10dc7a243"
+          },
+          "sha256": "c86633895111364d7a461dce2f399e34534303a4d978d0cd91ae95f752a6b986"
+        }
+      },
+      "products": {
+        "dia_contrast_results:0c3c671c194f": {
+          "kind": "scientific_product",
+          "product_type": "dia_contrast_results",
+          "sha256": "0c3c671c194f7f2ae69ced4ecc66a6b130afe8680d76d4f19a10f527c92b0b57"
+        },
+        "da_fit:45f61de593d9": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "45f61de593d9aafe09c57da6ac9e682d51e27dc51bafc44a6fb1a86e256a257d"
+        },
+        "dia-contrast-references:b92642b4cd35": {
+          "kind": "scientific_product",
+          "product_type": "dia-contrast-references",
+          "sha256": "b92642b4cd35efde2cd23bd9fa33e7083c71a842a86a0e59f1bb208d2169a183"
+        }
+      },
+      "summary_sha256": "523bb051fe02e0acfd2f106f106c65e210a44b6832d931d9a51e13bed1544124"
     }
   },
   "corpora": {
@@ -5900,7 +6514,9 @@
           "sha256": "1400b0a35720ec648d9fcb8176452d47a6527cd7b52df529ef1a799a147ef0eb"
         }
       },
-      "generator": "tools/profiling/kit_protein_corpus.R"
+      "generator": "tools/profiling/kit_protein_corpus.R",
+      "fasta_file": "proteins.fasta",
+      "design_file": "design.tsv"
     },
     "tmt_300": {
       "profile": "tmt",
@@ -5944,7 +6560,9 @@
           "sha256": "1400b0a35720ec648d9fcb8176452d47a6527cd7b52df529ef1a799a147ef0eb"
         }
       },
-      "generator": "tools/profiling/kit_protein_corpus.R"
+      "generator": "tools/profiling/kit_protein_corpus.R",
+      "fasta_file": "proteins.fasta",
+      "design_file": "design.tsv"
     },
     "lfq_fixture": {
       "profile": "lfq_fixture",
@@ -5985,7 +6603,9 @@
       "generator": "tools/profiling/kit_protein_corpus.R",
       "normalisation": {
         "ruv_mode": "skip"
-      }
+      },
+      "fasta_file": "proteins.fasta",
+      "design_file": "design.tsv"
     },
     "tmt_fixture": {
       "profile": "tmt_fixture",
@@ -6026,7 +6646,79 @@
       "generator": "tools/profiling/kit_protein_corpus.R",
       "normalisation": {
         "ruv_mode": "skip"
-      }
+      },
+      "fasta_file": "proteins.fasta",
+      "design_file": "design.tsv"
+    },
+    "kc_lfq": {
+      "profile": null,
+      "synthetic": false,
+      "samples": 6,
+      "rows": 1455,
+      "recipe": null,
+      "directory": "/home/doktersmol/Projects/APAF/Projects/KC/MaxQuent - 12 Oct 2026",
+      "expected_retained_samples": null,
+      "report_file": "combined/txt/proteinGroups.txt",
+      "format": "maxquant",
+      "route": "protein",
+      "notes": "user-supplied dataset; bound by hash; never copied into the repository; counts only",
+      "files": {
+        "combined/txt/proteinGroups.txt": {
+          "path": "/home/doktersmol/Projects/APAF/Projects/KC/MaxQuent - 12 Oct 2026/combined/txt/proteinGroups.txt",
+          "bytes": 1709541,
+          "sha256": "bdac8df5b894612a531535fdf95a70f1a425b8b532e5e59c473646dbcbc73446"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/Projects/KC/MaxQuent - 12 Oct 2026/design.tsv",
+          "bytes": 144,
+          "sha256": "1ed6fc2fbc7e8bcc205c102abc5e763768d4ced0fb15376e8112fe4aec0fc00c"
+        },
+        "uniprotkb_proteome_UP000000589_2026_10_12.fasta": {
+          "path": "/home/doktersmol/Projects/APAF/Projects/KC/MaxQuent - 12 Oct 2026/uniprotkb_proteome_UP000000589_2026_10_12.fasta",
+          "bytes": 29422750,
+          "sha256": "1f3b520e4078f6e5addde6f4d2b8e7307e61ed2be8b71f6af0ad0b2099285caa"
+        }
+      },
+      "sensitive": true,
+      "kind": "maxquant_real",
+      "fasta_file": "uniprotkb_proteome_UP000000589_2026_10_12.fasta",
+      "design_file": "design.tsv",
+      "design_groups": 2
+    },
+    "kc_lfq_dotted": {
+      "profile": null,
+      "synthetic": false,
+      "samples": 6,
+      "rows": 1455,
+      "recipe": null,
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/kc-lfq-dotted",
+      "expected_retained_samples": null,
+      "report_file": "proteinGroups.txt",
+      "format": "maxquant",
+      "route": "protein",
+      "notes": "header-renamed copy of the user's MaxQuant export for the legacy lane (dotted column names; rows the original bytes); never copied into the repository",
+      "files": {
+        "proteinGroups.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/kc-lfq-dotted/proteinGroups.txt",
+          "bytes": 1709540,
+          "sha256": "3f82b788bdd0b29d84dab82b588add06f292025fc9bf9304daa6e18d9c6c96cb"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/kc-lfq-dotted/design.tsv",
+          "bytes": 144,
+          "sha256": "1ed6fc2fbc7e8bcc205c102abc5e763768d4ced0fb15376e8112fe4aec0fc00c"
+        },
+        "proteins.fasta": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/kc-lfq-dotted/proteins.fasta",
+          "bytes": 29422750,
+          "sha256": "1f3b520e4078f6e5addde6f4d2b8e7307e61ed2be8b71f6af0ad0b2099285caa"
+        }
+      },
+      "sensitive": true,
+      "kind": "maxquant_real_dotted",
+      "fasta_file": "proteins.fasta",
+      "design_file": "design.tsv",
+      "design_groups": 2
     }
   },
   "journey": {
@@ -6319,6 +7011,31 @@
       "oracles": "tmt_300",
       "ceiling_seconds": 14400
     },
+    "054": {
+      "kind": "single_journey",
+      "build": "kit_054",
+      "corpus": "kc_lfq",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "kc_lfq",
+      "ceiling_seconds": 14400
+    },
+    "054l": {
+      "kind": "single_journey",
+      "build": "kit_036",
+      "corpus": "kc_lfq_dotted",
+      "route": "protein",
+      "whole_journey": true,
+      "ceiling_seconds": 14400
+    },
+    "054m": {
+      "kind": "single_journey",
+      "build": "kit_036",
+      "corpus": "tmt_300",
+      "route": "protein",
+      "whole_journey": true,
+      "ceiling_seconds": 14400
+    },
     "017": {
       "kind": "journey",
       "control": "kit_018",
@@ -6366,7 +7083,7 @@
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "8b5bda04d43eb7f28285377d916eb6522d97d520780099b888858f1c7ccdd8ed",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "74e61ee6eaf98e6133c8ab3891e21acdb060ebd4ae17a8fa23b264553c9236f7",
-      "tests/testthat/test-workflow-kit-harness.R": "26d5324024221f83628caffb91c5188ef58d5e80cf6289d43a6b2b923d7a9fad",
+      "tests/testthat/test-workflow-kit-harness.R": "412eea10780a9661ba8d9bc1cd962715a15bbd77a78e52fe795633bc7efa7c6e",
       "tests/testthat/test-workflow-execution-adapters.R": "d315a2847fd76dfb0733b286e4ca3aca1724bfff12400c2e99182320917a6548",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

@@ -425,6 +425,15 @@ b$tickets[["054m"]] <- list(kind = "single_journey", build = "kit_036", corpus =
 # KIT-021 oracles (protocol v1.5 item 1): per-step fingerprints of an in-process run of the bound build on each protein
 # corpus, recorded read-only by docs/qa/workflow-execution/kit/kit-021/oracle-record.R into oracles-<corpus>.rds; bound
 # under <corpus>_<step> as the KIT-005 oracles are bound under journey_<step>. KIT-054's real corpus records into kit-054/.
+# KIT-054 data handling rule: a sensitive corpus's fingerprints must not carry its tables' column names (the sample
+# names); each column list becomes its length and sha256. The verifier judges components by their sha256 only.
+redact_columns <- function(value) {
+    if (is.list(value)) {
+        if (is.character(value$columns)) value$columns <- list(n = length(value$columns), sha256 = digest::digest(value$columns, algo = "sha256"))
+        return(lapply(value, redact_columns))
+    }
+    value
+}
 oracle_dirs <- c(stats::setNames(rep("kit-021", length(protein_corpora)), names(protein_corpora)), kc_lfq = "kit-054")
 for (key in names(oracle_dirs)) {
     if (is.null(b$corpora[[key]])) next
@@ -437,7 +446,7 @@ for (key in names(oracle_dirs)) {
         b$populations[[paste0(key, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
             head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
             oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at)
-        b$oracles[[paste0(key, "_", step)]] <- population$fingerprint
+        b$oracles[[paste0(key, "_", step)]] <- if (isTRUE(b$corpora[[key]]$sensitive)) redact_columns(population$fingerprint) else population$fingerprint
     }
 }
 

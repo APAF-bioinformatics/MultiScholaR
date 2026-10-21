@@ -1,0 +1,55 @@
+{
+  "corpus": "kc_lfq",
+  "control_corpus": "kc_lfq_dotted",
+  "corpus_sha256": "bdac8df5b894612a531535fdf95a70f1a425b8b532e5e59c473646dbcbc73446",
+  "control_corpus_sha256": "3f82b788bdd0b29d84dab82b588add06f292025fc9bf9304daa6e18d9c6c96cb",
+  "rows": [
+    {
+      "contrast": "groupF-groupE",
+      "table": "da_proteins_long",
+      "owner": "fd18214c844003ab918bf21cde11c9c347e96e76f56d099b419bdf7f19de08f7",
+      "control": "fd18214c844003ab918bf21cde11c9c347e96e76f56d099b419bdf7f19de08f7",
+      "equal": true
+    },
+    {
+      "contrast": "groupF-groupE",
+      "table": "da_proteins_wide",
+      "owner": "ebc3535a6352fc7a59dbaadb3215c5fe6015cf7ad2f9ba179fffbd5240cd5ee9",
+      "control": "ebc3535a6352fc7a59dbaadb3215c5fe6015cf7ad2f9ba179fffbd5240cd5ee9",
+      "equal": true
+    },
+    {
+      "contrast": "groupF-groupE",
+      "table": "contrasts_results_table",
+      "owner": "a94a98aba338963bceba141017be4c07578a6433600bafe9ac9b017a3d1ba076",
+      "control": "a94a98aba338963bceba141017be4c07578a6433600bafe9ac9b017a3d1ba076",
+      "equal": true
+    }
+  ],
+  "equal": 3,
+  "total": 3,
+  "owner_rows": {
+    "groupF-groupE": 384
+  },
+  "control_rows": {
+    "groupF-groupE": 384
+  },
+  "owner_build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
+  "control_commit": null,
+  "control_states": {
+    "protein_s4_initial": "a95355c18e7104a1366ee633b620ba7b821f0f8cec65c2b1a2e943f803d5f5d9",
+    "protein_accession_cleaned": "b49e081f66e866da5fb5c9d8deb40fe07076c4b85974cbdb2823281217c2a795",
+    "protein_intensity_filtered": "88b1cf3c01c84fabefa81fd784d2eed1e01effebe7290021a47fd815860d86c0",
+    "duplicates_removed": "88b1cf3c01c84fabefa81fd784d2eed1e01effebe7290021a47fd815860d86c0",
+    "protein_replicate_filtered": "88b1cf3c01c84fabefa81fd784d2eed1e01effebe7290021a47fd815860d86c0",
+    "normalized": "6174524f4c706970f6dcd012b4aebf8488276bfa571dfbbf0622fb841a68863d",
+    "ruv_corrected": "b0d24644aa73b1bbf877568785ed13050db0fa833060dc3804a609f8188a6887",
+    "correlation_filtered": "b0d24644aa73b1bbf877568785ed13050db0fa833060dc3804a609f8188a6887"
+  },
+  "control_ruv": {
+    "k": 3,
+    "percentage": 3,
+    "controls": 390
+  },
+  "control_seconds": 48.3456
+}

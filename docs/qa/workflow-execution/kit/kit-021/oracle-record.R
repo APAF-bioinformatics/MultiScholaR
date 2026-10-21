@@ -179,6 +179,16 @@ for (id in names(populations)) {
     names(products) <- vapply(products, function(p) paste0(p$product_type %||% p$kind, ":", substr(p$sha256, 1L, 12L)), character(1))
     populations[[id]]$fingerprint$products <- c(populations[[id]]$fingerprint$products, products)
 }
+# KIT-054 data handling rule: a sensitive corpus's fingerprints must not carry its tables' column names (the sample
+# names); each column list becomes its length and sha256. The verifier judges components by their sha256 only.
+redact_columns <- function(value) {
+    if (is.list(value)) {
+        if (is.character(value$columns)) value$columns <- list(n = length(value$columns), sha256 = digest::digest(value$columns, algo = "sha256"))
+        return(lapply(value, redact_columns))
+    }
+    value
+}
+if (isTRUE(corpus$sensitive)) populations <- redact_columns(populations)
 recorded <- list(schema = "kit.oracle_record.v1", corpus = corpus_key, corpus_sha256 = corpus$files[[1L]]$sha256, route = "protein",
     build = utils::packageDescription("MultiScholaR")$`Config/MultiScholaR/SourceCommit` %||% NA_character_, library = find.package("MultiScholaR"),
     store = store_dir, head_sha256 = head$head_sha256, history = head$history, populations = populations,
