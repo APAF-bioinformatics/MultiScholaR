@@ -294,7 +294,9 @@ tryCatch({
             corpus_spec <- bindings$corpora[[case$corpus]]
             # KIT-021: a corpus names its report file and import format (the DIA corpora: report.tsv, diann).
             corpus <- list(report = corpus_spec$files[[corpus_spec$report_file %||% "report.tsv"]]$path,
-                fasta = corpus_spec$files[["proteins.fasta"]]$path, design = corpus_spec$files[["design.tsv"]]$path,
+                # KIT-054: a real corpus names its FASTA and design in the binding (the synthetic ones use the defaults).
+                fasta = corpus_spec$files[[corpus_spec$fasta_file %||% "proteins.fasta"]]$path,
+                design = corpus_spec$files[[corpus_spec$design_file %||% "design.tsv"]]$path,
                 format = corpus_spec$format %||% "diann")
             journey <- bindings$journey
             journey$corpus_key <- case$corpus

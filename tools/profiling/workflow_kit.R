@@ -366,13 +366,16 @@ kitSingleJourneyDecision <- function(receipt, cases, bindings) {
     failing <- kitIneligible(item, seconds, "journey")
     status <- op$phase_status
     if (is.null(failing) && !(all(steps %in% names(status)) && all(unlist(status[steps]) == "complete"))) failing <- "phase_timing"
-    if (is.null(failing) && !isTRUE(op$populations_complete)) failing <- "populations_incomplete"
+    # KIT-054: a protein-route single member bound without oracles is the legacy in-memory lane (a build that attaches
+    # no owner: no store, no populations); it records completion and measures only, and its exactness is not judged.
+    in_memory <- is.null(case$oracles) && !identical(kitRouteOf(case), "DIA")
+    if (is.null(failing) && !in_memory && !isTRUE(op$populations_complete)) failing <- "populations_incomplete"
     inexact <- identical(failing, "verifier_accepted") &&
         grepl("oracle mismatch", item$verifier_completion$reason %||% "", fixed = TRUE)
     if (inexact) failing <- "oracle_mismatch"
     list(status = if (is.null(failing)) "accepted" else if (inexact) "rejected" else "invalid",
         rule = "exactness_and_completion", failing_rule = failing, ticket = ticket, stop_after = case$stop_after,
-        steps = steps, member = list(role = "single", exact = is.null(failing),
+        steps = steps, member = list(role = "single", exact = if (in_memory) NA else is.null(failing), in_memory = in_memory,
             outcome = op$status, peak_bytes = op$peak_bytes, peak_anon_bytes = op$sampled_anon_bytes,
             resident_end_bytes = op$resident_end_bytes, elapsed_seconds = op$elapsed_seconds,
             phase_peak_anon_bytes = op$phase_peak_anon_bytes[steps], phase_seconds = op$phase_seconds[steps],

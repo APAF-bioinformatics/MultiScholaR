@@ -1087,4 +1087,36 @@ test_that("KIT-054: the real-data keys bind a whole-journey single member with o
     expect_identical(h$kitCases(b, "kit-journey-054m")[[1L]]$corpus, "full")
     for (stage in c("kit-journey-054", "kit-journey-054l", "kit-journey-054m")) expect_identical(h$kitMemberSeconds(stage, b), 14400L)
     expect_identical(h$kitSelectorStage("kit:journey-054m:candidate:1"), list(stage = "kit-journey-054m", id = "candidate-1"))
+    # The legacy lane's decision: complete with measures, no populations (no store), exactness not judged.
+    protein <- h$kitStepIds("protein")
+    legacy_cases <- h$kitCases(b, "kit-journey-054l")
+    receipt <- kitSyntheticReceipt(legacy_cases, h, edit = function(r) {
+        op <- r$cases[["candidate-1"]]$operation
+        op$status <- "complete"; op$populations_complete <- FALSE
+        op$phase_status <- stats::setNames(as.list(rep("complete", length(protein))), protein)
+        op$phase_peak_anon_bytes <- stats::setNames(as.list(rep(2e9, length(protein))), protein)
+        op$phase_seconds <- stats::setNames(as.list(rep(10, length(protein))), protein)
+        op$sampled_anon_bytes <- 2e9; op$resident_end_bytes <- 1.5e9
+        r$cases[["candidate-1"]]$operation <- op
+        r$cases[["candidate-1"]]$verifier_completion <- list(accepted = TRUE)
+        r
+    })
+    decision <- h$kitSingleJourneyDecision(receipt, legacy_cases, b)
+    expect_identical(decision$status, "accepted")
+    expect_true(decision$member$in_memory)
+    expect_true(is.na(decision$member$exact))
+    # The new lane still requires its populations.
+    new_cases <- h$kitCases(b, "kit-journey-054")
+    receipt2 <- kitSyntheticReceipt(new_cases, h, edit = function(r) {
+        op <- r$cases[["candidate-1"]]$operation
+        op$status <- "complete"; op$populations_complete <- FALSE
+        op$phase_status <- stats::setNames(as.list(rep("complete", length(protein))), protein)
+        op$phase_peak_anon_bytes <- stats::setNames(as.list(rep(2e9, length(protein))), protein)
+        op$phase_seconds <- stats::setNames(as.list(rep(10, length(protein))), protein)
+        op$sampled_anon_bytes <- 2e9; op$resident_end_bytes <- 1.5e9
+        r$cases[["candidate-1"]]$operation <- op
+        r$cases[["candidate-1"]]$verifier_completion <- list(accepted = TRUE)
+        r
+    })
+    expect_identical(h$kitSingleJourneyDecision(receipt2, new_cases, b)$failing_rule, "populations_incomplete")
 })
