@@ -1,0 +1,40 @@
+{
+  "schema": "kit.lane_compare.v1",
+  "ticket": "KIT-054",
+  "label": "tmt_300",
+  "date": "2026-10-21",
+  "new_lane": {
+    "stage": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-021t",
+    "status": "complete",
+    "decision": "accepted",
+    "files": 288,
+    "elapsed_seconds": 8831.75,
+    "store": true
+  },
+  "legacy_lane": {
+    "stage": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-054m",
+    "status": "complete",
+    "decision": "accepted",
+    "files": 52,
+    "elapsed_seconds": 7697.13,
+    "store": false
+  },
+  "common_files": 49,
+  "equal_common": 34,
+  "differing_common": 15,
+  "only_new_lane": 155,
+  "only_legacy_lane": 3,
+  "differing_paths": ["dia_baseline_smoke/results/proteomics/protein_qc/post_norm_correlation.png", "dia_baseline_smoke/results/proteomics/protein_qc/post_norm_pca.png", "dia_baseline_smoke/results/proteomics/protein_qc/post_norm_rle.png", "dia_baseline_smoke/results/proteomics/protein_qc/pre_norm_correlation.png", "dia_baseline_smoke/results/proteomics/protein_qc/pre_norm_pca.png", "dia_baseline_smoke/results/proteomics/protein_qc/pre_norm_rle.png", "dia_baseline_smoke/results/proteomics/protein_qc/proteomics_composite_QC_figure.png", "dia_baseline_smoke/results/proteomics/protein_qc/ruv_corrected_cancor.png", "dia_baseline_smoke/results/proteomics/protein_qc/ruv_corrected_correlation.png", "dia_baseline_smoke/results/proteomics/protein_qc/ruv_corrected_pca.png", "dia_baseline_smoke/results/proteomics/protein_qc/ruv_corrected_rle.png", "dia_baseline_smoke/results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png", "dia_baseline_smoke/scripts/proteomics/config.ini", "dia_baseline_smoke/scripts/proteomics/qc_params.RDS", "dia_baseline_smoke/scripts/proteomics/ruv_optimization_results.RDS"],
+  "only_new_lane_by_directory": {
+    "dia_baseline_smoke/results/proteomics/": 75,
+    "dia_baseline_smoke/scripts/proteomics/": 80
+  },
+  "only_legacy_lane_by_directory": {
+    "dia_baseline_smoke/results/proteomics/": 1,
+    "dia_baseline_smoke/scripts/proteomics/": 2
+  },
+  "differing_by_directory": {
+    "dia_baseline_smoke/results/proteomics/": 12,
+    "dia_baseline_smoke/scripts/proteomics/": 3
+  }
+}
