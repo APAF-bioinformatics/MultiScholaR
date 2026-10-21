@@ -363,6 +363,8 @@ Collate:
     'mod_prot_qc_protein_cleanup.R'
     'mod_prot_qc_protein_dedup.R'
     'mod_prot_qc_protein_dpc_quant.R'
+    'mod_prot_qc_protein_normalisation.R'
+    'mod_prot_qc_protein_peptide_count.R'
     'mod_prot_qc_protein_intensity.R'
     'mod_prot_qc_protein_replicate.R'
     'mod_prot_qc_protein_rollup.R'

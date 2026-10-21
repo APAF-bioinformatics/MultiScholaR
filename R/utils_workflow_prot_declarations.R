@@ -731,3 +731,141 @@ runDIAReferenceProteinDpcQuant <- function(workflow, parameters) {
         values = value$config[c("engine", "dpc_slope", "chunk")])
     finishDIAReferenceProteinStep(workflow, value)
 }
+
+# ---------------------------------------------------------------------------------------------------------------
+# The DIA_LIMPA protein stage (KIT-041): the limpa script's chunks 17b and 18 as declarations on the owner (the
+# correlation steps are the shared `pearson-pairs`/`pearson-selection`; the RUV-III factors as covariates are the
+# in-process `protein_ruv_covariates` declaration in utils_workflow_dia_products.R).
+
+#' The between-sample normalisation of the quantified protein matrix as a declaration (chunk 17b): whole matrix
+#' (every normaliser other than `none` uses all columns), the unchanged protein `normaliseBetweenSamples` once;
+#' `none` (the script's choice and the shipped default) commits the kernel's unchanged output with `skipped = TRUE`.
+#' @noRd
+diaProteinBetweenSampleNormalisationOperation <- function() {
+    newWorkflowOperation(name = "protein_between_sample_normalisation", input_class = "ProteinQuantitativeData",
+        fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
+        kernel = function(object, parameters, store) computeDIAReferenceProteinNormalisation(store$manager, store$source,
+            parameters["norm_method"], worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "whole"),
+        output_class = "ProteinQuantitativeData", parameters = "norm_method",
+        product_type = "dia.protein_between_sample_normalisation_result")
+}
+
+#' The minimum-peptide-evidence filter on the quantified protein object as a declaration (chunk 18): unit row
+#' (each protein kept by its own peptide and peptidoform counts), the unchanged protein
+#' `filterMinNumPeptidesPerProtein` once, placed whole.
+#' @noRd
+diaProteinPeptideCountFilterOperation <- function() {
+    newWorkflowOperation(name = "protein_peptide_count_filter", input_class = "ProteinQuantitativeData",
+        fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "row",
+        kernel = function(object, parameters, store) computeDIAReferenceProteinPeptideCountFilter(store$manager, store$source,
+            parameters[c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh")],
+            worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "whole"),
+        output_class = "ProteinQuantitativeData", parameters = c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh"),
+        product_type = "dia.protein_peptide_count_filter_result",
+        merge = c(protein_quant_table = "concatenate", design_matrix = "design", protein_id_table = "concatenate"))
+}
+
+#' @noRd
+computeDIAReferenceProteinNormalisation <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
+    variant = "whole", now_fn = Sys.time) {
+    if (!identical(variant, "whole")) cli::cli_abort("unsupported protein normalisation variant", class = "workflow_execution_unsupported")
+    method <- parameters$norm_method %||% "none"
+    object <- readDIAReferenceProteinObject(manager, reference)
+    proteins_before <- nrow(object@protein_quant_table)
+    # The kernel records its arguments under the calling name (the DIA normalisation declaration calls it through
+    # the same alias).
+    normaliseBetweenSamplesFn <- normaliseBetweenSamples
+    normalised <- normaliseBetweenSamplesFn(object, normalisation_method = method)
+    object <- NULL
+    protein_count <- nrow(normalised@protein_quant_table)
+    samples <- nrow(normalised@design_matrix)
+    checkpoint <- checkpointDIAReferenceProteinObject(manager, reference, normalised)
+    normalised <- NULL
+    skipped <- identical(method, "none")
+    config <- list(norm_method = method, normalisation_method = method, skipped = skipped,
+        proteins = protein_count, samples = samples,
+        outcomes = list(norm_method = method, proteins = protein_count, samples = samples))
+    text <- paste(
+        if (skipped) "Between-Sample Normalisation Skipped (none)\n" else "Between-Sample Normalisation Applied Successfully\n",
+        "================================================\n",
+        sprintf("Proteins remaining: %d\n", protein_count), sprintf("Samples: %d\n", samples),
+        sprintf("Method: %s\n", method),
+        if (skipped) "The quantified log2 matrix is carried unchanged (the limpa script's choice).\n" else "",
+        "State saved as: 'protein_normalised'\n")
+    list(checkpoint = checkpoint, reference = checkpoint$components$protein_quant_table,
+        state_name = "protein_normalised",
+        description = if (skipped) "Between-sample normalisation skipped (none): the quantified matrix carried unchanged" else
+            sprintf("Between-sample normalisation applied (%s)", method),
+        config = config, section = "limpaProteinNormalisation", protein_count = protein_count,
+        execution = list(variant = variant, worker_cap = worker_cap, rows = protein_count, samples = samples, skipped = skipped),
+        text = text, field = "normalisedS4", qc_name = "protein_normalisation",
+        qc = c(config[setdiff(names(config), "outcomes")], list(timestamp = now_fn())))
+}
+
+#' @noRd
+computeDIAReferenceProteinPeptideCountFilter <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
+    variant = "whole", now_fn = Sys.time) {
+    if (!identical(variant, "whole")) cli::cli_abort("unsupported peptide count filter variant", class = "workflow_execution_unsupported")
+    peptides <- parameters$num_peptides_per_protein_thresh
+    forms <- parameters$num_peptidoforms_per_protein_thresh
+    object <- readDIAReferenceProteinObject(manager, reference)
+    if (is.null(object@args$limpa_dpc_quant_results$peptide_counts_per_protein))
+        cli::cli_abort("the peptide count filter needs the DPC quantification's peptide counts", class = "workflow_execution_invalid")
+    proteins_before <- nrow(object@protein_quant_table)
+    filterMinNumPeptidesPerProteinFn <- filterMinNumPeptidesPerProtein
+    filtered <- suppressMessages(filterMinNumPeptidesPerProteinFn(object,
+        num_peptides_per_protein_thresh = peptides, num_peptidoforms_per_protein_thresh = forms, verbose = FALSE))
+    object <- NULL
+    protein_count <- nrow(filtered@protein_quant_table)
+    elist_rows <- nrow(filtered@args$limpa_dpc_quant_results$quantified_elist)
+    checkpoint <- checkpointDIAReferenceProteinObject(manager, reference, filtered)
+    filtered <- NULL
+    config <- list(num_peptides_per_protein_thresh = peptides, num_peptidoforms_per_protein_thresh = forms,
+        peptides_per_protein_cutoff = peptides, peptidoforms_per_protein_cutoff = forms,
+        proteins_before = proteins_before, proteins_after = protein_count, quantified_elist_rows = elist_rows,
+        outcomes = list(proteins_before = proteins_before, proteins_after = protein_count,
+            proteins_removed = proteins_before - protein_count))
+    text <- paste(
+        "Peptide Count Filter Applied Successfully\n",
+        "=========================================\n",
+        sprintf("Proteins remaining: %d (removed %d)\n", protein_count, proteins_before - protein_count),
+        sprintf("Min unique peptides per protein: %d\n", as.integer(peptides)),
+        sprintf("Min peptidoforms per protein: %d\n", as.integer(forms)),
+        sprintf("Quantified EList rows: %s\n", if (is.null(elist_rows)) "n/a" else elist_rows),
+        "State saved as: 'peptide_count_filtered'\n")
+    list(checkpoint = checkpoint, reference = checkpoint$components$protein_quant_table,
+        state_name = "peptide_count_filtered",
+        description = "Applied minimum peptide evidence filter on the quantified protein object",
+        config = config, section = "filterMinNumPeptidesPerProtein", protein_count = protein_count,
+        execution = list(variant = variant, worker_cap = worker_cap, rows = protein_count, removed = proteins_before - protein_count),
+        text = text, field = "filteredS4", qc_name = "peptide_count_filter",
+        qc = c(config[setdiff(names(config), "outcomes")], list(timestamp = now_fn())))
+}
+
+#' @noRd
+runDIAReferenceProteinNormalisation <- function(workflow, parameters) {
+    manager <- workflow$state_manager
+    pending <- if (identical(manager$current_state, "protein_normalised")) resumeDIAProteinAction(workflow, "protein_normalised") else NULL
+    if (!is.null(pending)) return(pending)
+    assertDIAExportReady(manager)
+    entry <- workflowActionSpec("protein_between_sample_normalisation")
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    value <- computeDIAReferenceProteinNormalisation(manager, getDIAStateReference(manager), parameters, variant = entry$default_variant)
+    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
+        values = value$config["norm_method"])
+    finishDIAReferenceProteinStep(workflow, value)
+}
+
+#' @noRd
+runDIAReferenceProteinPeptideCountFilter <- function(workflow, parameters) {
+    manager <- workflow$state_manager
+    pending <- if (identical(manager$current_state, "peptide_count_filtered")) resumeDIAProteinAction(workflow, "peptide_count_filtered") else NULL
+    if (!is.null(pending)) return(pending)
+    assertDIAExportReady(manager)
+    entry <- workflowActionSpec("protein_peptide_count_filter")
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    value <- computeDIAReferenceProteinPeptideCountFilter(manager, getDIAStateReference(manager), parameters, variant = entry$default_variant)
+    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
+        values = value$config[c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh")])
+    finishDIAReferenceProteinStep(workflow, value)
+}

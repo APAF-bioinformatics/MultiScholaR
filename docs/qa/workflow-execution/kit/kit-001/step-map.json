@@ -841,6 +841,112 @@
       "notes": [
         "KIT-047: unit recorded under the afk authorisation (decision record 2026-10-21). Determinism on the kit host (kit-047/dpc-check-*.json): limpa bit-identical across runs; fastlimpadpc's dpcQuant bit-identical across runs and across RAYON_NUM_THREADS settings given a fit, its dpc fit not bit-identical between two runs under the host-default thread pool (identical with RAYON_NUM_THREADS=1); the shipped default engine is therefore limpa (the ticket's rule)."
       ]
+    },
+    {
+      "id": "protein_normalisation_limpa",
+      "label": "Between-Sample Normalisation (DIA_LIMPA)",
+      "route": "DIA_LIMPA",
+      "unit": "whole_matrix",
+      "in_journey": false,
+      "module": "R/mod_prot_qc_protein_normalisation.R: observeEvent(apply_protein_normalisation) -> runProteinNormalisationApplyObserver -> runProteinNormalisationStep; owner path runDIAReferenceProteinNormalisation -> computeDIAReferenceProteinNormalisation; declared by diaProteinBetweenSampleNormalisationOperation (registered protein_between_sample_normalisation, whole, protein completion)",
+      "kernel": "normaliseBetweenSamples, ProteinQuantitativeData method (R/func_prot_s4_norm_methods.R:48-106): cyclic loess / quantile / scale over every sample's whole column, or none",
+      "evidence": [
+        "R/func_prot_s4_norm_methods.R:77-86: limma's cyclic loess, quantile and median-absolute-value normalisers fit every column against the others (a dataset-wide statistic)",
+        "R/func_prot_s4_norm_methods.R:87-89: `none` returns the matrix unchanged (non-finite values set to NA), then cleanDesignMatrix"
+      ],
+      "reads_outside_assay": [
+        "design_matrix (cleanDesignMatrix)"
+      ],
+      "writes": [
+        "protein_quant_table (normalised or unchanged)",
+        "args$normaliseBetweenSamplesFn (normalisation_method; the alias the declaration calls through, as the DIA normalisation declaration does)"
+      ],
+      "global_statistics": [
+        {
+          "name": "between_sample_normalisation",
+          "why": "every normaliser other than none uses all columns"
+        }
+      ],
+      "merge": null,
+      "holders": [
+        "R/utils_workflow_prot_declarations.R computeDIAReferenceProteinNormalisation -> finishDIAReferenceProteinStep (state protein_normalised)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "KIT-041: unit recorded under the afk authorisation of 2026-10-21 (decision record); the shipped default is none ([limpaProteinNormalisation] method), the script's choice; with none the step commits the kernel's unchanged output with config$skipped = TRUE."
+      ]
+    },
+    {
+      "id": "peptide_count",
+      "label": "Peptide Count Filter (DIA_LIMPA)",
+      "route": "DIA_LIMPA",
+      "unit": "row",
+      "in_journey": false,
+      "module": "R/mod_prot_qc_protein_peptide_count.R: observeEvent(apply_peptide_count) -> runProteinPeptideCountApplyObserver -> runProteinPeptideCountStep; owner path runDIAReferenceProteinPeptideCountFilter -> computeDIAReferenceProteinPeptideCountFilter; declared by diaProteinPeptideCountFilterOperation (registered protein_peptide_count_filter, whole, protein completion)",
+      "kernel": "filterMinNumPeptidesPerProtein, ProteinQuantitativeData method (R/func_prot_s4_qc_filter_methods.R:691-726)",
+      "evidence": [
+        "R/func_prot_s4_qc_filter_methods.R:700-706: each protein is kept by its own peptide_count and peptidoform_count from limpa_dpc_quant_results$peptide_counts_per_protein; no statistic across proteins",
+        "R/func_prot_s4_qc_filter_methods.R:721-725: the quantified EList is subset to the same rows"
+      ],
+      "reads_outside_assay": [
+        "args$limpa_dpc_quant_results$peptide_counts_per_protein (the DPC step's per-protein counts)"
+      ],
+      "writes": [
+        "protein_quant_table (rows)",
+        "args$limpa_dpc_quant_results$quantified_elist (rows; the owned entry is re-saved)"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "holders": [
+        "R/utils_workflow_prot_declarations.R computeDIAReferenceProteinPeptideCountFilter -> finishDIAReferenceProteinStep (state peptide_count_filtered)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "KIT-041: unit recorded under the afk authorisation (decision record); placed whole (the kernel is row-wise; a partitioned variant is not declared)."
+      ]
+    },
+    {
+      "id": "ruv_covariates",
+      "label": "RUV-III Factors as Covariates (DIA_LIMPA)",
+      "route": "DIA_LIMPA",
+      "unit": "whole_matrix",
+      "in_journey": false,
+      "module": "R/mod_prot_norm_*: on DIA_LIMPA the correlation sub-step's observer runs runDIAReferenceRuvCovariates after the correlation filter when ruv_mode = covariates (R/mod_prot_norm_workflow_helpers.R runProtNormApplyCorrelationObserver); declared by diaRuvCovariatesOperation (registered protein_ruv_covariates, in process, whole)",
+      "kernel": "findBestNegCtrlPercentageCapped (R/func_prot_norm_optimization_helpers.R; the script's optimiser: getNegCtrlProtAnova, ruvCancorFromInput, calculateSeparationScore, calculateCompositeScore, calculateAdaptiveMaxK) then computeRuvCovariates (ruv::RUVIII with the replicate matrix of resolveProtRuvReplicateBlocks; W = Y[, ctl] %*% t(ac) %*% solve(ac %*% t(ac)))",
+      "evidence": [
+        "the negative-control ANOVA ranks every protein over every sample (func_prot_s4_norm_controls.R); the canonical correlation uses the whole sample-by-protein matrix (NIPALS over all when values are missing)",
+        "ruv::RUVIII estimates the factors from every sample and every control; W is a function of the whole control block",
+        "the adjusted matrix t(newY) is a product (QC plots), never a state"
+      ],
+      "reads_outside_assay": [
+        "design_matrix (group, technical replicate block, the RUV grouping variable)"
+      ],
+      "writes": [
+        "design_matrix (W1..Wk appended)",
+        "args$ruvCovariates (k, percentage, control_count, replicate_structure, block_reason)",
+        "products: optimisation table, cancor plot, adjusted matrix"
+      ],
+      "global_statistics": [
+        {
+          "name": "negative_control_sweep",
+          "why": "percentage, k and controls chosen over the whole matrix"
+        },
+        {
+          "name": "ruv_factors",
+          "why": "W estimated from every sample and control"
+        }
+      ],
+      "merge": null,
+      "holders": [
+        "R/utils_workflow_dia_products.R runDIAReferenceRuvCovariates -> commitDIAReferenceState (state ruv_covariates)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "KIT-041: unit recorded under the afk authorisation (decision record), which also records the replicate-structure rule (KIT-035's: the technical block when declared, else the grouping variable; the script used group)."
+      ]
     }
   ],
   "science_notes_for_the_user": [
@@ -872,6 +978,11 @@
       "date": "2026-10-21",
       "ticket": "KIT-047",
       "change": "three DIA_LIMPA rows added (peptide_log2 row, peptide_accession feature group, dpc_quant whole matrix); units recorded under the afk authorisation, confirmation row in the plan's decision record"
+    },
+    {
+      "date": "2026-10-21",
+      "ticket": "KIT-041",
+      "change": "three DIA_LIMPA rows added (protein_normalisation_limpa whole matrix, peptide_count row, ruv_covariates whole matrix); units recorded under the afk authorisation, confirmation row in the plan's decision record"
     }
   ]
 }

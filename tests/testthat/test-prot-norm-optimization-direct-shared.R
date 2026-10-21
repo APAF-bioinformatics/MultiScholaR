@@ -472,3 +472,64 @@ test_that("best_k in return value is always a scalar integer", {
   expect_identical(length(result$best_k), 1L)
   expect_true(is.integer(result$best_k))
 })
+
+# ---- KIT-041: the limpa script's optimiser in the package, and the RUV-III factors as covariates ----------
+
+test_that("findBestNegCtrlPercentageCapped reproduces the vendored script optimiser (percentage, k, controls, trace) (KIT-041)", {
+  skip_if_not_installed("mixOmics")
+  skip_if_not_installed("limpa")
+  vendored <- new.env(parent = globalenv())
+  sys.source(testthat::test_path("..", "..", "docs", "qa", "workflow-execution", "kit", "limpa-workflow", "findBestNegCtrlPercentageCustom.R"), vendored)
+  # The DPC-quantified small fixture (a complete log2 matrix, the object the route hands the sweep).
+  rolled <- rollUpPrecursorToPeptide(makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small")), core_utilisation = NA)
+  object <- suppressMessages(proteinMissingValueImputationLimpa(log2TransformPeptideMatrix(calcPeptideMatrix(rolled)),
+    dpc_slope = 0.8, verbose = FALSE, chunk = 1000, engine = "limpa"))
+  script <- suppressMessages(suppressWarnings(vendored$findBestNegCtrlPercentageCustom(object, percentage_range = seq(1, 30, by = 1),
+    num_components_to_impute = 5, ruv_grouping_variable = "group", ruv_fdr_method = "BH", ruv_qval_cutoff = 0.05,
+    separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, verbose = FALSE)))
+  capped <- suppressMessages(suppressWarnings(findBestNegCtrlPercentageCapped(object, verbose = FALSE)))
+  expect_identical(capped$best_percentage, script$best_percentage)
+  expect_identical(as.integer(capped$best_k), as.integer(script$best_k))
+  expect_identical(capped$best_control_genes_index, script$best_control_genes_index)
+  expect_equal(capped$best_separation_score, script$best_separation_score)
+  columns <- c("percentage", "separation_score", "best_k", "composite_score", "num_controls", "valid_plot")
+  expect_equal(as.data.frame(capped$optimization_results[columns]), as.data.frame(script$optimization_results[columns]), ignore_attr = TRUE)
+  expect_identical(nrow(capped$optimization_results), 30L)
+  expect_true(is.integer(capped$best_k) && length(capped$best_k) == 1L)
+  expect_identical(capped$max_acceptable_k, calculateAdaptiveMaxK(ncol(object@protein_quant_table) - 1L))
+  # The script's own result names two fields that are NULL in its return (best_composite_score, best_cancor_plot);
+  # the package result carries them.
+  expect_null(script$best_composite_score)
+  expect_true(is.finite(capped$best_composite_score))
+  expect_true(inherits(capped$best_cancor_plot, "ggplot") || is.list(capped$best_cancor_plot))
+})
+
+test_that("computeRuvCovariates appends W1..Wk from RUV-III with the design's replicate structure and leaves the matrix for QC only (KIT-041)", {
+  object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+  # A complete matrix (RUV-III takes no missing values): row means fill the gaps of the fixture.
+  table <- as.data.frame(object@protein_quant_table)
+  rownames(table) <- NULL
+  samples <- as.character(object@design_matrix[[object@sample_id]])
+  values <- as.matrix(table[, samples])
+  for (i in seq_len(nrow(values))) values[i, is.na(values[i, ])] <- mean(values[i, ], na.rm = TRUE)
+  table[, samples] <- values
+  object@protein_quant_table <- table
+  controls <- seq_len(nrow(table)) %% 3 == 0
+  result <- computeRuvCovariates(object, k = 2L, controls = controls, ruv_grouping_variable = "group")
+  expect_identical(colnames(result$W), c("W1", "W2"))
+  expect_identical(rownames(result$W), samples)
+  expect_identical(dim(result$adjusted), c(nrow(table), length(samples)))
+  expect_identical(result$k, 2L)
+  expect_true(result$replicate_structure %in% c("technical_replicates", "group"))
+  expect_true(all(is.finite(result$W)))
+  # The W columns reproduce the script's formula from the same RUV-III fit.
+  Y <- t(values)
+  blocks <- resolveProtRuvReplicateBlocks(object@design_matrix, object@sample_id, object@group_id, object@technical_replicate_id, "group")
+  M <- getRuvIIIReplicateMatrixHelper(blocks$design, !!rlang::sym(object@sample_id), .ruv_replicate_block)[samples, , drop = FALSE]
+  fit <- ruv::RUVIII(Y = Y, M = M, ctl = controls, k = 2L, return.info = TRUE)
+  ac <- fit$fullalpha[1:2, controls, drop = FALSE]
+  expect_equal(unname(result$W), unname(Y[, controls] %*% t(ac) %*% solve(ac %*% t(ac))), tolerance = 1e-10)
+  expect_equal(unname(result$adjusted), unname(t(fit$newY)), tolerance = 1e-10)
+  expect_error(computeRuvCovariates(object, k = 2L, controls = controls[-1], ruv_grouping_variable = "group"))
+  expect_error(computeRuvCovariates(object, k = 50L, controls = controls, ruv_grouping_variable = "group"))
+})

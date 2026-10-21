@@ -2438,6 +2438,46 @@ computeWorkflowProteinDpcQuantAction <- function(manager, request, variant) {
         worker_cap = request$worker_cap, variant = variant)
 }
 
+#' KIT-041: the DIA_LIMPA protein stage's handlers and validators.
+#' @noRd
+computeWorkflowProteinNormalisationAction <- function(manager, request, variant) {
+    computeDIAReferenceProteinNormalisation(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+computeWorkflowProteinPeptideCountAction <- function(manager, request, variant) {
+    computeDIAReferenceProteinPeptideCountFilter(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+validateWorkflowProteinNormalisationParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- "norm_method"
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !setequal(names(parameters), allowed))
+        cli::cli_abort("protein normalisation parameters required or unknown parameter supplied")
+    method <- parameters$norm_method
+    if ((resolved || !is.null(method)) && (!is.character(method) || length(method) != 1L ||
+        !method %in% c("none", "cyclicloess", "quantile", "scale")))
+        cli::cli_abort("normalisation method must be none, cyclicloess, quantile or scale")
+    invisible(NULL)
+}
+
+#' @noRd
+validateWorkflowProteinPeptideCountParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh")
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !setequal(names(parameters), allowed))
+        cli::cli_abort("peptide count filter parameters required or unknown parameter supplied")
+    for (name in allowed) {
+        value <- parameters[[name]]
+        if ((resolved || !is.null(value)) && (!is.numeric(value) || length(value) != 1L || !is.finite(value) || value < 0 || value != trunc(value)))
+            cli::cli_abort("peptide count thresholds must be non-negative whole numbers")
+    }
+    invisible(NULL)
+}
+
 #' @noRd
 computeWorkflowProteinIntensityAction <- function(manager, request, variant) {
     computeDIAReferenceProteinIntensityFilter(manager, request$input_references$state, request$parameters,

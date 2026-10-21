@@ -2967,7 +2967,7 @@ test_that("registerProtNormServerObservers wires the observer shell through help
         getRuvGroupingVariableFn = getRuvGroupingVariableFn
       )
     },
-    runApplyCorrelationObserverFn = function(input, output, workflowData, normData, experimentPaths, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn, checkMemoryUsageFn) {
+    runApplyCorrelationObserverFn = function(input, output, workflowData, normData, experimentPaths, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn, checkMemoryUsageFn, generateRuvCorrectedQcFn = NULL) {
       calls$apply <<- list(
         input = input,
         output = output,
@@ -2981,7 +2981,7 @@ test_that("registerProtNormServerObservers wires the observer shell through help
         checkMemoryUsageFn = checkMemoryUsageFn
       )
     },
-    runSkipCorrelationObserverFn = function(output, workflowData, normData, experimentPaths, omicType, experimentLabel, getPlotAestheticsFn, checkMemoryUsageFn) {
+    runSkipCorrelationObserverFn = function(output, workflowData, normData, experimentPaths, omicType, experimentLabel, getPlotAestheticsFn, checkMemoryUsageFn, input = NULL, getRuvGroupingVariableFn = NULL, generateRuvCorrectedQcFn = NULL) {
       calls$skip <<- list(
         output = output,
         workflowData = workflowData,

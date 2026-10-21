@@ -23,7 +23,8 @@ registerProtNormServerObservers <- function(
   runResetObserverFn = runProtNormResetObserver,
   runExportObserverFn = runProtNormExportObserver,
   observeFn = shiny::observe,
-  observeEventFn = shiny::observeEvent
+  observeEventFn = shiny::observeEvent,
+  updateRadioButtonsFn = shiny::updateRadioButtons
 ) {
   observeFn({
     updateDesignDrivenChoicesFn(session, workflowData$design_matrix)
@@ -64,6 +65,17 @@ registerProtNormServerObservers <- function(
     )
   })
 
+  # KIT-041: on the DIA_LIMPA route the RUV-III factors are covariates computed after the correlation filter (the
+  # limpa script's order); the tab's RUV mode offers `covariates` or `skip`, set here once the type is known.
+  observeFn({
+    workflowData$state_update_trigger
+    manager <- workflowData$state_manager
+    if (identical(tryCatch(manager$workflow_type, error = function(e) NULL), "DIA_LIMPA") &&
+        !identical(shiny::isolate(input$ruv_mode), "covariates") && !identical(shiny::isolate(input$ruv_mode), "skip")) {
+      updateRadioButtonsFn(session, "ruv_mode", choices = protNormRuvModeChoices("DIA_LIMPA"), selected = "covariates")
+    }
+  })
+
   observeEventFn(input$apply_correlation_filter, {
     runApplyCorrelationObserverFn(
       input = input,
@@ -75,7 +87,8 @@ registerProtNormServerObservers <- function(
       experimentLabel = experimentLabel,
       getRuvGroupingVariableFn = getRuvGroupingVariableFn,
       getPlotAestheticsFn = getPlotAestheticsFn,
-      checkMemoryUsageFn = checkMemoryUsageFn
+      checkMemoryUsageFn = checkMemoryUsageFn,
+      generateRuvCorrectedQcFn = generateRuvCorrectedQcFn
     )
   })
 
@@ -88,7 +101,10 @@ registerProtNormServerObservers <- function(
       omicType = omicType,
       experimentLabel = experimentLabel,
       getPlotAestheticsFn = getPlotAestheticsFn,
-      checkMemoryUsageFn = checkMemoryUsageFn
+      checkMemoryUsageFn = checkMemoryUsageFn,
+      input = input,
+      getRuvGroupingVariableFn = getRuvGroupingVariableFn,
+      generateRuvCorrectedQcFn = generateRuvCorrectedQcFn
     )
   })
 

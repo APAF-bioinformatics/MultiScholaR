@@ -1,0 +1,361 @@
+{
+  "schema": "kit.protein_stage_check.v1",
+  "ticket": "KIT-041",
+  "label": "tree",
+  "date": "2026-10-21",
+  "head_commit": "b7c165c2256ea8029f049dd058c4ce49d4388b3f",
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR",
+    "source_commit": null
+  },
+  "engine": "limpa",
+  "rayon_num_threads": "<host default>",
+  "host_threads": 16,
+  "installed": {
+    "limpa": true,
+    "fastlimpadpc": true
+  },
+  "versions": {
+    "limpa": "1.4.2",
+    "fastlimpadpc": "0.1.0",
+    "fastlimpadpc_pinned_sha": "d4f9cc1dcfeb0183c15bd08872dbe5cf3c2b09a2",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "cargo": "cargo 1.96.0 (30a34c682 2026-05-25)"
+  },
+  "cpu": {
+    "model": "AMD Ryzen AI 7 350 w/ Radeon 860M",
+    "n_flags": 166,
+    "simd": ["sse4_2", "avx", "avx2", "fma", "avx512f", "avx512bw", "avx512vl", "avx_vnni", "avx512_bf16"],
+    "sha256": "a8b7bbb73e85e057ad7628830fb3bbd1cdda02ca4e577e2a07389bb22100e4ec"
+  },
+  "owner_text": {
+    "log2": "Log2 Peptide Matrix Calculated Successfully\n ===========================================\n Proteins remaining: 2500\n Peptides (matrix rows): 60000\n Samples (matrix columns): 8\n Quantity column: Peptide.Normalised\n Values <= 0 set to NA: 0\n Missing cells after transformation: 177000\n State saved as: 'log2_matrix'\n",
+    "accession": "Peptide Accession Cleanup Applied Successfully\n ==============================================\n Proteins remaining: 2500\n Protein groups before / after: 2500 / 2500\n Peptide rows before / after: 303000 / 303000\n Delimiter: ;\nAggregation method: mean\nFASTA accession column: uniprot_acc\n State saved as: 'peptide_accession_cleaned'\n",
+    "dpc": "Limpa DPC Quantification Completed Successfully\n ===============================================\n Proteins quantified: 2500\n Samples: 8\n Peptides used: 60000\n Engine: limpa 1.4.2\n DPC intercept / slope: 0.2636 / 0.0122 (nearly random missing)\n Missing values in peptides: 36.9%; in proteins: 0.0%\n Active protein key: Protein.Group\n S4 Class: ProteinQuantitativeData\n State saved as: 'protein_dpc_quant'\n"
+  },
+  "history": ["initial", "raw_data_s4", "qvalue_filtered", "precursor_rollup", "log2_matrix", "peptide_accession_cleaned", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", "ruv_covariates"],
+  "limpa_figures": ["limpa_composite.png", "limpa_dpc_curve.png", "limpa_intensity_distribution.png", "limpa_missing_comparison.png", "limpa_summary.png"],
+  "ruv": {
+    "best_percentage": 4,
+    "best_k": 1,
+    "best_separation_score": 0.954942966979854,
+    "best_composite_score": 0.954942966979854,
+    "max_acceptable_k": 2,
+    "sample_size": 8,
+    "replicate_structure": "group",
+    "block_reason": "no_duplicates"
+  },
+  "control_count": 100,
+  "published_files": ["ruv_adjusted_protein_matrix.tsv", "ruv_corrected_correlation.png", "ruv_corrected_density.png", "ruv_corrected_pca.png", "ruv_corrected_rle.png", "ruv_covariates_cancor.png", "ruv_covariates_design.tsv", "ruv_covariates_optimization.tsv"],
+  "owner": {
+    "protein_normalised": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "design": "244365eef8f99cd11df7baa6d0b12d007712abcbf1487e876066ab1b7df0dbf6",
+      "design_columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+      "proteins": 2500,
+      "samples": 8,
+      "elist_E": "93fedbb9b15ab91c431fa84fad2e9d3111db92bda2d887ffe0d7fe049f79ca76",
+      "elist_columns": ["calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"]
+    },
+    "peptide_count_filtered": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "design": "244365eef8f99cd11df7baa6d0b12d007712abcbf1487e876066ab1b7df0dbf6",
+      "design_columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+      "proteins": 2500,
+      "samples": 8,
+      "elist_E": "2c049baae284ad13f20613c14c9a45d6df3e0e26dfc778205faf08c67cbf125f",
+      "elist_columns": ["calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"]
+    },
+    "correlation_filtered": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "design": "244365eef8f99cd11df7baa6d0b12d007712abcbf1487e876066ab1b7df0dbf6",
+      "design_columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+      "proteins": 2500,
+      "samples": 8,
+      "elist_E": "2c049baae284ad13f20613c14c9a45d6df3e0e26dfc778205faf08c67cbf125f",
+      "elist_columns": ["calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"]
+    },
+    "ruv_covariates": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "design": "d025212d46b54ad3bf5e5ec81163bf3d411aac967db23290f8be5721f029ac2f",
+      "design_columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W1"],
+      "proteins": 2500,
+      "samples": 8,
+      "elist_E": "2c049baae284ad13f20613c14c9a45d6df3e0e26dfc778205faf08c67cbf125f",
+      "elist_columns": ["calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"]
+    }
+  },
+  "memory": {
+    "protein_normalised": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "design": "244365eef8f99cd11df7baa6d0b12d007712abcbf1487e876066ab1b7df0dbf6",
+      "design_columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+      "proteins": 2500,
+      "samples": 8,
+      "elist_E": "93fedbb9b15ab91c431fa84fad2e9d3111db92bda2d887ffe0d7fe049f79ca76",
+      "elist_columns": ["calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"]
+    },
+    "peptide_count_filtered": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "design": "244365eef8f99cd11df7baa6d0b12d007712abcbf1487e876066ab1b7df0dbf6",
+      "design_columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+      "proteins": 2500,
+      "samples": 8,
+      "elist_E": "2c049baae284ad13f20613c14c9a45d6df3e0e26dfc778205faf08c67cbf125f",
+      "elist_columns": ["calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"]
+    },
+    "correlation_filtered": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "design": "244365eef8f99cd11df7baa6d0b12d007712abcbf1487e876066ab1b7df0dbf6",
+      "design_columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+      "proteins": 2500,
+      "samples": 8,
+      "elist_E": "2c049baae284ad13f20613c14c9a45d6df3e0e26dfc778205faf08c67cbf125f",
+      "elist_columns": ["calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"]
+    },
+    "ruv_covariates": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "design": "d025212d46b54ad3bf5e5ec81163bf3d411aac967db23290f8be5721f029ac2f",
+      "design_columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W1"],
+      "proteins": 2500,
+      "samples": 8,
+      "elist_E": "2c049baae284ad13f20613c14c9a45d6df3e0e26dfc778205faf08c67cbf125f",
+      "elist_columns": ["calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"]
+    }
+  },
+  "exact": {
+    "normalised_table": true,
+    "normalised_design": true,
+    "peptide_count_table": true,
+    "peptide_count_elist": true,
+    "correlation_table": true,
+    "correlation_design": true,
+    "correlation_elist": true,
+    "covariates_table": true,
+    "covariates_design": true,
+    "covariates_design_columns": true
+  },
+  "w_columns": "W1",
+  "matrix_equals_correlation": true,
+  "elist_in_step_with_design": true,
+  "sweep_memory": {
+    "best_percentage": 4,
+    "best_k": 1,
+    "controls": 100,
+    "composite": 0.954942966979854
+  },
+  "script_vs_capped": {
+    "percentage": true,
+    "k": true,
+    "controls": true,
+    "trace": true,
+    "script": {
+      "percentage": 4,
+      "k": 1
+    },
+    "script_commit": "4aa97fc3b85e897ee457052682d8bba2a7afbbc4"
+  },
+  "sizes": {
+    "raw_data_s4": {
+      "inline_args_bytes": 29304,
+      "owned_entry": false,
+      "owned_entity": null,
+      "owned_file_bytes": null
+    },
+    "qvalue_filtered": {
+      "inline_args_bytes": 34208,
+      "owned_entry": false,
+      "owned_entity": null,
+      "owned_file_bytes": null
+    },
+    "precursor_rollup": {
+      "inline_args_bytes": 37240,
+      "owned_entry": false,
+      "owned_entity": null,
+      "owned_file_bytes": null
+    },
+    "log2_matrix": {
+      "inline_args_bytes": 37688,
+      "owned_entry": false,
+      "owned_entity": null,
+      "owned_file_bytes": null
+    },
+    "peptide_accession_cleaned": {
+      "inline_args_bytes": 38680,
+      "owned_entry": false,
+      "owned_entity": null,
+      "owned_file_bytes": null
+    },
+    "protein_dpc_quant": {
+      "inline_args_bytes": 44688,
+      "owned_entry": true,
+      "owned_entity": "12c871b3baf1",
+      "owned_file_bytes": 7850491
+    },
+    "protein_normalised": {
+      "inline_args_bytes": 45200,
+      "owned_entry": true,
+      "owned_entity": "12c871b3baf1",
+      "owned_file_bytes": 7850491
+    },
+    "peptide_count_filtered": {
+      "inline_args_bytes": 45984,
+      "owned_entry": true,
+      "owned_entity": "41a0e4c26381",
+      "owned_file_bytes": 7030479
+    },
+    "correlation_filtered": {
+      "inline_args_bytes": 46536,
+      "owned_entry": true,
+      "owned_entity": "41a0e4c26381",
+      "owned_file_bytes": 7030479
+    },
+    "ruv_covariates": {
+      "inline_args_bytes": 46304,
+      "owned_entry": true,
+      "owned_entity": "41a0e4c26381",
+      "owned_file_bytes": 7030479
+    }
+  },
+  "record": {
+    "steps": {
+      "protein_normalised": {
+        "operation": "protein_between_sample_normalisation",
+        "variant": "whole",
+        "outcomes": {
+          "rows": 2500,
+          "columns": 9,
+          "norm_method": "none",
+          "proteins": 2500,
+          "samples": 8,
+          "skipped": true
+        },
+        "parameters": [
+          {
+            "name": "norm_method",
+            "provenance": "default",
+            "value": "none"
+          }
+        ]
+      },
+      "peptide_count_filtered": {
+        "operation": "protein_peptide_count_filter",
+        "variant": "whole",
+        "outcomes": {
+          "rows": 2500,
+          "columns": 9,
+          "proteins_before": 2500,
+          "proteins_after": 2500,
+          "proteins_removed": 0
+        },
+        "parameters": [
+          {
+            "name": "num_peptides_per_protein_thresh",
+            "provenance": "default",
+            "value": 1
+          },
+          {
+            "name": "num_peptidoforms_per_protein_thresh",
+            "provenance": "default",
+            "value": 2
+          }
+        ]
+      },
+      "correlation_filtered": {
+        "operation": "pearson-selection",
+        "variant": "whole",
+        "outcomes": {
+          "rows": 2500,
+          "columns": 9
+        },
+        "parameters": [
+          {
+            "name": "pairs",
+            "provenance": "input",
+            "value": "dfed751f136d8f2a80dadf58aad8998f6b1ef864c0e1542e7ee0ba0f7ef0eda8"
+          },
+          {
+            "name": "threshold",
+            "provenance": "no_shipped_default",
+            "value": 0.5
+          }
+        ]
+      },
+      "ruv_covariates": {
+        "operation": "protein_ruv_covariates",
+        "variant": "whole",
+        "outcomes": {
+          "rows": 2500,
+          "columns": 9,
+          "k": 1,
+          "percentage_as_neg_ctrl": 4,
+          "control_count": 100,
+          "separation_score": 0.954942966979854,
+          "composite_score": 0.954942966979854,
+          "replicate_structure": "group",
+          "block_reason": "no_duplicates"
+        },
+        "parameters": [
+          {
+            "name": "percentage_min",
+            "provenance": "default",
+            "value": 1
+          },
+          {
+            "name": "percentage_max",
+            "provenance": "default",
+            "value": 30
+          },
+          {
+            "name": "num_components_to_impute",
+            "provenance": "default",
+            "value": 5
+          },
+          {
+            "name": "ruv_grouping_variable",
+            "provenance": "default",
+            "value": "group"
+          },
+          {
+            "name": "ruv_qval_cutoff",
+            "provenance": "default",
+            "value": 0.05
+          },
+          {
+            "name": "ruv_fdr_method",
+            "provenance": "default",
+            "value": "BH"
+          },
+          {
+            "name": "separation_metric",
+            "provenance": "default",
+            "value": "max_difference"
+          },
+          {
+            "name": "k_penalty_weight",
+            "provenance": "default",
+            "value": 0.5
+          },
+          {
+            "name": "adaptive_k_penalty",
+            "provenance": "default",
+            "value": true
+          }
+        ]
+      }
+    },
+    "valid": true
+  },
+  "timings": {
+    "log2_owner": 7.03398656845093,
+    "accession_owner": 27.7619178295135,
+    "dpc_owner": 28.0877439975739,
+    "normalisation_owner": 2.44390082359314,
+    "peptide_count_owner": 1.88223123550415,
+    "correlation_owner": 7.71206283569336,
+    "ruv_covariates_owner": 46.5751430988312,
+    "memory_chain": 38.4396588802338,
+    "vendored_script": 38.1662585735321
+  },
+  "seconds": 243.873184680939
+}

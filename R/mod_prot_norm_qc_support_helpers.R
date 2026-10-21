@@ -31,10 +31,10 @@ buildProtNormRuvOptimizationSummary <- function(ruvOptimizationResult, ruvMode, 
     return("Run normalization to see RUV optimization results")
   }
 
-  if (ruvMode == "automatic") {
+  if (ruvMode %in% c("automatic", "covariates")) { # KIT-041: the DIA_LIMPA covariates sweep shares the summary
     return(sprintf(
       paste(
-        "Automatic RUV Optimization Results:\n\n* Best percentage: %.1f%%\n* Best k value: %d\n* Separation score: %.4f\n* Composite score: %.4f\n* Control genes: %d\n* RUV grouping variable: %s\n* Separation metric: %s\n* K penalty weight: %.1f\n* Adaptive penalty: %s\n* Sample size: %s",
+        paste0(if (ruvMode == "covariates") "RUV-III Covariates (negative-control sweep):" else "Automatic RUV Optimization Results:", "\n\n* Best percentage: %.1f%%\n* Best k value: %d\n* Separation score: %.4f\n* Composite score: %.4f\n* Control genes: %d\n* RUV grouping variable: %s\n* Separation metric: %s\n* K penalty weight: %.1f\n* Adaptive penalty: %s\n* Sample size: %s"),
         collapse = ""
       ),
       ruvOptimizationResult$best_percentage,

@@ -53,7 +53,10 @@ workflowSectionOperations <- c(srlQvalueProteotypicPeptideClean = "peptide_qvalu
 #' the DPC quantification are the route's alone.
 #' @noRd
 workflowSectionOperationsByType <- list(DIA_LIMPA = c(log2TransformPeptideMatrix = "peptide_log2_matrix",
-    chooseBestProteinAccession = "peptide_accession_cleanup", limpaDpcQuant = "protein_dpc_quant"))
+    chooseBestProteinAccession = "peptide_accession_cleanup", limpaDpcQuant = "protein_dpc_quant",
+    # KIT-041: the route's protein stage (the peptide-count section is the DIA peptide-level filter's on that route).
+    limpaProteinNormalisation = "protein_between_sample_normalisation", filterMinNumPeptidesPerProtein = "protein_peptide_count_filter",
+    ruvCovariates = "protein_ruv_covariates"))
 
 #' @param workflow_type The owner's workflow type; a route's own map is consulted before the shared one.
 #' @noRd
@@ -280,6 +283,16 @@ workflowOperationDefaults <- local({
             seqinr_accession_column = key("chooseBestProteinAccession", "seqinr_accession_column"), fasta_sha256 = "input"),
         protein_dpc_quant = list(engine = key("limpaDpcQuant", "engine"), dpc_slope = key("limpaDpcQuant", "dpc_slope"),
             chunk = key("limpaDpcQuant", "chunk")),
+        # KIT-041: the DIA_LIMPA protein stage.
+        protein_between_sample_normalisation = list(norm_method = key("limpaProteinNormalisation", "method")),
+        protein_peptide_count_filter = list(
+            num_peptides_per_protein_thresh = key("filterMinNumPeptidesPerProtein", "peptides_per_protein_cutoff"),
+            num_peptidoforms_per_protein_thresh = key("filterMinNumPeptidesPerProtein", "peptidoforms_per_protein_cutoff")),
+        protein_ruv_covariates = list(percentage_min = key("ruvCovariates", "percentage_min"), percentage_max = key("ruvCovariates", "percentage_max"),
+            num_components_to_impute = key("ruvCovariates", "num_components_to_impute"), ruv_grouping_variable = key("ruvCovariates", "ruv_grouping_variable"),
+            ruv_qval_cutoff = key("ruvCovariates", "ruv_qval_cutoff"), ruv_fdr_method = key("ruvCovariates", "ruv_fdr_method"),
+            separation_metric = key("ruvCovariates", "separation_metric"), k_penalty_weight = key("ruvCovariates", "k_penalty_weight"),
+            adaptive_k_penalty = key("ruvCovariates", "adaptive_k_penalty")),
         protein_intensity_filter = list(strict_mode = "no_shipped_default", min_reps_per_group = "no_shipped_default",
             min_groups = "no_shipped_default",
             proteins_intensity_cutoff_percentile = key("removeRowsWithMissingValuesPercent", "proteins_intensity_cutoff_percentile")),
@@ -330,6 +343,13 @@ workflowParameterLabels <- local({
             seqinr_accession_column = "FASTA accession column matched", fasta_sha256 = "FASTA database (sha256)"),
         protein_dpc_quant = list(engine = "DPC engine (limpa or fastlimpadpc)", dpc_slope = "DPC slope assumed when the fit fails",
             chunk = "Proteins per quantification chunk"),
+        protein_between_sample_normalisation = list(norm_method = "Between-sample normalisation of the quantified matrix"),
+        protein_peptide_count_filter = list(num_peptides_per_protein_thresh = "Minimum unique peptides per protein",
+            num_peptidoforms_per_protein_thresh = "Minimum peptidoforms per protein"),
+        protein_ruv_covariates = list(percentage_min = "Negative-control percentage sweep, minimum", percentage_max = "Negative-control percentage sweep, maximum",
+            num_components_to_impute = "NIPALS components for the canonical-correlation input", ruv_grouping_variable = "RUV grouping variable",
+            ruv_qval_cutoff = "Negative-control q-value cutoff", ruv_fdr_method = "Negative-control FDR method",
+            separation_metric = "Separation metric for choosing k", k_penalty_weight = "Penalty weight on k", adaptive_k_penalty = "Adaptive maximum k"),
         protein_intensity_filter = list(strict_mode = "Strict mode (all groups must pass)",
             min_reps_per_group = "Minimum replicates per group above the cutoff", min_groups = "Minimum groups passing",
             proteins_intensity_cutoff_percentile = "Protein intensity cutoff percentile"),
@@ -511,6 +531,19 @@ registerBuiltinWorkflowOperations <- function() {
         completion = "protein", publication = "protein", step_label = "9_protein_dpc_quant", omic_type = "proteomics",
         variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaProteinDpcQuantOperation()))
+    # KIT-041: the DIA_LIMPA protein stage (chunks 17b and 18), each placed whole on the protein role.
+    registerWorkflowOperation(list(name = "protein_between_sample_normalisation", input = "checkpoint", input_class = "ProteinQuantitativeData",
+        compute = "protein", handler = "computeWorkflowProteinNormalisationAction", validate = "validateWorkflowProteinNormalisationParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = "norm_method",
+        completion = "protein", publication = "protein", step_label = "10_protein_normalised", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaProteinBetweenSampleNormalisationOperation()))
+    registerWorkflowOperation(list(name = "protein_peptide_count_filter", input = "checkpoint", input_class = "ProteinQuantitativeData",
+        compute = "protein", handler = "computeWorkflowProteinPeptideCountAction", validate = "validateWorkflowProteinPeptideCountParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh"),
+        completion = "protein", publication = "protein", step_label = "11_peptide_count_filtered", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaProteinPeptideCountFilterOperation()))
     # KIT-019: the DA publication phase (the annotated exports, the static volcano and NumSig figures and the
     # interactive Glimma pages) as a worker operation on the accepted DA manifest; the DA kernel (limma) stays in
     # process. Completion records nothing new (the manifest is already committed); publication moves the worker's
@@ -523,7 +556,7 @@ registerBuiltinWorkflowOperations <- function() {
     # KIT-024: the whole-matrix declarations that run in process only (KIT-004, KIT-016) are registered too, so the
     # registry is the one place an operation is named (KIT-007); a dispatch of one to the worker is refused.
     for (declaration in list(diaNormalizationOperation(), diaPearsonPairsOperation(), diaPearsonSelectionOperation(),
-        diaContrastOperation(), diaEnrichmentOperation())) {
+        diaContrastOperation(), diaEnrichmentOperation(), diaRuvCovariatesOperation())) {
         registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
             compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
             parameter_limit = 65536, parameters = declaration$parameters %||% character(),

@@ -625,8 +625,179 @@ diaPearsonSelectionOperation <- function() {
             filterSamplesFn <- filterSamplesByProteinCorrelationThreshold
             filtered <- filterSamplesFn(object, pearson_correlation_per_pair = parameters$correlations,
                 min_pearson_correlation_threshold = parameters$threshold)
+            # KIT-041: on the DIA_LIMPA route the Limpa results travel with the object; a dropped sample leaves the
+            # quantified EList (and its standard errors) as well as the matrix, so the EList the DA branch fits
+            # matches the design. A DIA route object carries no such entry and is untouched.
+            filtered <- subsetLimpaResultsToSamples(filtered)
             store$checkpoint(filtered, "pearson-filtered-science")
         })
+}
+
+#' Keep the Limpa results' sample columns in step with the design (KIT-041): the quantified EList, its standard
+#' errors and observation counts are subset to the design's samples when a sample was dropped.
+#' @noRd
+subsetLimpaResultsToSamples <- function(object) {
+    results <- object@args$limpa_dpc_quant_results
+    if (!is.list(results) || is.null(results$quantified_elist)) return(object)
+    samples <- as.character(object@design_matrix[[object@sample_id]])
+    present <- colnames(results$quantified_elist$E)
+    if (is.null(present) || setequal(present, samples)) return(object)
+    keep <- intersect(present, samples)
+    results$quantified_elist <- results$quantified_elist[, keep]
+    for (field in c("standard_errors", "n_observations", "y_peptide_for_dpc")) {
+        value <- results[[field]]
+        if (is.matrix(value) && !is.null(colnames(value)) && all(keep %in% colnames(value)))
+            results[[field]] <- value[, keep, drop = FALSE]
+    }
+    object@args$limpa_dpc_quant_results <- results
+    object
+}
+
+#' RUV-III factors as covariates (KIT-041, the limpa script's chunk 19b) as a whole-matrix declaration run in
+#' process: the script's negative-control sweep (`findBestNegCtrlPercentageCapped`), then `computeRuvCovariates`
+#' (RUV-III with the design's replicate structure, the W factors); the output state carries the quantified matrix
+#' unchanged and the design with `W1..Wk` appended; the optimisation table, the cancor plot and the RUV-adjusted
+#' matrix (a component checkpoint, never a state) are the product.
+#' @noRd
+diaRuvCovariatesOperation <- function() {
+    newWorkflowOperation("protein_ruv_covariates", "ProteinQuantitativeData",
+        fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
+        output_class = "ProteinQuantitativeData", product_type = "dia-ruv-covariates",
+        parameters = c("percentage_min", "percentage_max", "num_components_to_impute", "ruv_grouping_variable",
+            "ruv_qval_cutoff", "ruv_fdr_method", "separation_metric", "k_penalty_weight", "adaptive_k_penalty"),
+        kernel = function(object, parameters, store) {
+            findBestNegCtrlPercentageCappedFn <- findBestNegCtrlPercentageCapped
+            sweep <- suppressMessages(findBestNegCtrlPercentageCappedFn(object,
+                percentage_range = seq(parameters$percentage_min, parameters$percentage_max, by = 1),
+                num_components_to_impute = parameters$num_components_to_impute,
+                ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_qval_cutoff = parameters$ruv_qval_cutoff,
+                ruv_fdr_method = parameters$ruv_fdr_method, separation_metric = parameters$separation_metric,
+                k_penalty_weight = parameters$k_penalty_weight, adaptive_k_penalty = isTRUE(parameters$adaptive_k_penalty),
+                verbose = FALSE))
+            computeRuvCovariatesFn <- computeRuvCovariates
+            factors <- computeRuvCovariatesFn(object, sweep$best_k, sweep$best_control_genes_index, parameters$ruv_grouping_variable)
+            with_w <- object
+            samples <- as.character(with_w@design_matrix[[with_w@sample_id]])
+            for (i in seq_len(factors$k)) with_w@design_matrix[[paste0("W", i)]] <- unname(factors$W[samples, i])
+            control_count <- sum(sweep$best_control_genes_index, na.rm = TRUE)
+            with_w@args$ruvCovariates <- list(k = factors$k, percentage_as_neg_ctrl = sweep$best_percentage,
+                control_count = control_count, replicate_structure = factors$replicate_structure,
+                block_reason = factors$block_reason, blocks = factors$blocks,
+                ruv_grouping_variable = parameters$ruv_grouping_variable, separation_score = sweep$best_separation_score,
+                composite_score = sweep$best_composite_score, max_acceptable_k = sweep$max_acceptable_k)
+            covariates_reference <- store$checkpoint(with_w, "ruv-covariates-science")
+            adjusted <- object
+            adjusted_table <- as.data.frame(factors$adjusted)
+            adjusted_table[[adjusted@protein_id_column]] <- rownames(factors$adjusted)
+            rownames(adjusted_table) <- NULL
+            adjusted@protein_quant_table <- adjusted_table[, colnames(object@protein_quant_table), drop = FALSE]
+            adjusted_reference <- store$checkpoint(adjusted, "ruv-adjusted-science", from = covariates_reference)
+            cancor_plot <- if (!is.null(sweep$best_cancor_plot)) ggplot2::ggplotGrob(stripProtNormQcPlotOwners(sweep$best_cancor_plot)) else NULL
+            ruv_result <- list(best_percentage = sweep$best_percentage, best_k = factors$k,
+                best_control_genes_index = sweep$best_control_genes_index, best_separation_score = sweep$best_separation_score,
+                best_composite_score = sweep$best_composite_score, optimization_results = sweep$optimization_results,
+                best_cancor_plot = cancor_plot, max_acceptable_k = sweep$max_acceptable_k, sample_size = sweep$sample_size,
+                separation_metric_used = parameters$separation_metric, k_penalty_weight = parameters$k_penalty_weight,
+                adaptive_k_penalty_used = isTRUE(parameters$adaptive_k_penalty),
+                ruv_mode = "covariates", replicate_structure = factors$replicate_structure, block_reason = factors$block_reason)
+            object <- with_w <- adjusted <- NULL
+            list(covariates = covariates_reference, adjusted = adjusted_reference, ruv_result = ruv_result,
+                W = factors$W, best_k = factors$k, percentage = sweep$best_percentage, controls = sweep$best_control_genes_index,
+                control_count = control_count, replicate_structure = factors$replicate_structure,
+                block_reason = factors$block_reason, blocks = factors$blocks,
+                parameters = parameters[c("percentage_min", "percentage_max", "num_components_to_impute", "ruv_grouping_variable",
+                    "ruv_qval_cutoff", "ruv_fdr_method", "separation_metric", "k_penalty_weight", "adaptive_k_penalty")])
+        })
+}
+
+#' The `[ruvCovariates]` parameters of a project (KIT-041): the project's configuration section when present, else
+#' the shipped defaults; `ruv_grouping_variable` from the tab's selection when given.
+#' @noRd
+resolveDIARuvCovariatesParameters <- function(config_list, grouping = NULL) {
+    section <- config_list$ruvCovariates %||% list()
+    shipped <- readWorkflowShippedDefaults()$ruvCovariates %||% list()
+    pick <- function(name, default) {
+        value <- section[[name]] %||% shipped[[name]] %||% default
+        value
+    }
+    numeric <- function(name, default) as.numeric(pick(name, default))
+    list(percentage_min = numeric("percentage_min", 1), percentage_max = numeric("percentage_max", 30),
+        num_components_to_impute = numeric("num_components_to_impute", 5),
+        ruv_grouping_variable = grouping %||% as.character(pick("ruv_grouping_variable", "group")),
+        ruv_qval_cutoff = numeric("ruv_qval_cutoff", 0.05), ruv_fdr_method = as.character(pick("ruv_fdr_method", "BH")),
+        separation_metric = as.character(pick("separation_metric", "max_difference")),
+        k_penalty_weight = numeric("k_penalty_weight", 0.5),
+        adaptive_k_penalty = tolower(as.character(pick("adaptive_k_penalty", "true"))) %in% c("true", "1", "yes"))
+}
+
+#' Run or reuse the RUV-covariates declaration on the DIA_LIMPA route and publish its outputs (KIT-041): after
+#' the correlation filter, the state `ruv_covariates` (label `13_ruv_covariates`) commits the quantified matrix
+#' unchanged with the W design; the adjusted matrix's QC plots, the cancor plot, the optimisation table and the
+#' W design are published as the step's files.
+#' @param settings `ruv_mode` (`covariates`), `color_variable`, `shape_variable`.
+#' @param workflow,norm_data,paths Existing GUI owners and publication paths.
+#' @param ruv_qc The module's RUV-corrected QC callback (takes a reference).
+#' @param grouping Function returning the RUV grouping variable.
+#' @return The accepted `ruv_covariates` reference.
+#' @noRd
+runDIAReferenceRuvCovariates <- function(settings, workflow, norm_data, paths, omic_type, experiment_label, ruv_qc, grouping) {
+    prior_plot <- ggplot2::get_last_plot()
+    on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
+    manager <- workflow$state_manager
+    withDIAStateScope(manager, function() {
+        assertDIAExportReady(manager, allow_action = "ruv-covariates")
+        source <- norm_data$correlation_filtered_obj %||% getDIAStateReference(manager)
+        if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
+        parameters <- resolveDIARuvCovariatesParameters(workflow$config_list, grouping())
+        run <- runSavedOperation(manager, diaRuvCovariatesOperation(), source, parameters)
+        saved <- run$value
+        product <- run$reference
+        norm_data$ruv_optimization_result <- saved$ruv_result
+        workflow$ruv_optimization_result <- saved$ruv_result
+        norm_data$ruv_optimization_table <- saveDIADisplayTable(manager, saved$ruv_result$optimization_results)
+        norm_data$best_k <- saved$best_k
+        norm_data$control_genes_index <- saved$controls
+        final <- readDIAStateMetadata(manager, saved$covariates)$data
+        final$products$ruv_covariates_science <- product
+        config <- list(ruv_mode = "covariates", ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage,
+            control_count = saved$control_count, separation_score = saved$ruv_result$best_separation_score,
+            composite_score = saved$ruv_result$best_composite_score, max_acceptable_k = saved$ruv_result$max_acceptable_k,
+            replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, replicate_blocks = saved$blocks,
+            ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_applied = TRUE,
+            outcomes = list(k = saved$best_k, percentage_as_neg_ctrl = saved$percentage, control_count = saved$control_count,
+                separation_score = saved$ruv_result$best_separation_score, composite_score = saved$ruv_result$best_composite_score,
+                replicate_structure = saved$replicate_structure, block_reason = saved$block_reason))
+        previous <- if (identical(manager$current_state, "ruv_covariates")) readDIAStateMetadata(manager) else NULL
+        if (is.null(previous) || !identical(previous$data$products$ruv_covariates_science, product)) {
+            commitDIAReferenceState(manager, "ruv_covariates", final, config,
+                sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
+        }
+        accepted <- getDIAStateReference(manager)
+        norm_data$ruv_normalized_obj <- accepted
+        norm_data$correlation_filtered_obj <- accepted
+        workflow$ruv_normalised_for_da_analysis_obj <- accepted
+        display <- publishDIAActionOutputs(manager, accepted, "ruv-covariates", paths[c("source_dir", "protein_qc_dir")],
+            function(staged) {
+                norm_data$publication_paths <- staged
+                on.exit({ norm_data$publication_paths <- NULL }, add = TRUE)
+                writeDIADesignTable(manager, final$components$design_matrix,
+                    file.path(staged$protein_qc_dir, "ruv_covariates_design.tsv"), vroom::vroom_write)
+                adjusted_spec <- readDIAStateMetadata(manager, saved$adjusted)$data
+                writeDIADesignTable(manager, adjusted_spec$components$protein_quant_table,
+                    file.path(staged$protein_qc_dir, "ruv_adjusted_protein_matrix.tsv"), vroom::vroom_write)
+                vroom::vroom_write(saved$ruv_result$optimization_results, file.path(staged$protein_qc_dir, "ruv_covariates_optimization.tsv"))
+                saveRDS(saved$ruv_result[setdiff(names(saved$ruv_result), "best_cancor_plot")],
+                    file.path(staged$source_dir, "ruv_covariates_optimization_results.RDS"))
+                if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
+                    file.path(staged$protein_qc_dir, "ruv_covariates_cancor.png"),
+                    saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
+                ruv_qc(saved$adjusted)
+                list(completed = TRUE, qc_paths = norm_data$qc_plot_paths)
+            }, identity = list(product = product$entity_id, color = settings$color_variable,
+                shape = settings$shape_variable, output_schema = 1L))
+        norm_data$ruv_covariates_complete <- TRUE
+        accepted
+    })
 }
 
 #' Apply, skip or reapply Pearson filtering from the original saved population.
@@ -673,7 +844,9 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, threshold,
                 directories <- stats::setNames(list(list(time_dir = staged$time_dir,
                     publication_graphs_dir = paths$publication_graphs_dir)),
                     paste(omic_type, experiment_label, sep = "_"))
-                filtering_plot <- updateProteinFiltering(summary, "12_correlation_filtered",
+                # KIT-041: the DIA_LIMPA route labels the correlation step as the limpa script does.
+                step_label <- if (identical(manager$workflow_type, "DIA_LIMPA")) "12_samplecorr_filtered" else "12_correlation_filtered"
+                filtering_plot <- updateProteinFiltering(summary, step_label,
                     omic_type, experiment_label, overwrite = TRUE, return_grid = TRUE, project_dirs = directories)
                 plot <- resolveDIAReferenceQcPlot(final, aesthetics(), "pca", buildProtNormQcPlotProduct,
                     plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)

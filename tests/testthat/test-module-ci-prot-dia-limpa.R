@@ -84,3 +84,50 @@ test_that("the in-memory apply steps save the route's states: log2 matrix, pepti
   expect_identical(saved[[3L]]$s4_data_object@args$limpaDpcQuant$engine_version, "9.9.9")
   expect_identical(workflow$qc_params$protein_qc$dpc_quant$slope_interpretation, "strong intensity-dependent missing")
 })
+
+test_that("the DIA_LIMPA protein-stage tabs carry their inputs and the in-memory apply steps save the route's states (KIT-041)", {
+  protein <- getProtQcProteinModuleSpecs("DIA_LIMPA")
+  expect_identical(vapply(protein, `[[`, character(1), "id"), c("dpc_quant", "normalisation", "peptide_count"))
+  expect_true(all(vapply(protein, function(spec) is.null(spec$placeholder), logical(1))))
+  for (spec in protein) expect_true(exists(spec$uiFn, mode = "function") && exists(spec$serverFn, mode = "function"), info = spec$id)
+  norm <- limpa_tab_inputs(mod_prot_qc_protein_normalisation_ui("x"))
+  expect_true(all(c('id="x-norm_method"', 'id="x-apply_protein_normalisation"', 'id="x-protein_normalisation_results"') %in% norm))
+  count <- limpa_tab_inputs(mod_prot_qc_protein_peptide_count_ui("x"))
+  expect_true(all(c('id="x-num_peptides_per_protein_thresh"', 'id="x-num_peptidoforms_per_protein_thresh"', 'id="x-apply_peptide_count"') %in% count))
+  expect_identical(unname(unlist(protNormRuvModeChoices("DIA_LIMPA"))), c("covariates", "skip"))
+  expect_identical(unname(unlist(protNormRuvModeChoices("DIA"))), c("automatic", "manual", "skip"))
+  expect_match(buildProtNormCompletionNotification("covariates"), "covariates", fixed = TRUE)
+  summary <- buildProtNormRuvOptimizationSummary(list(best_percentage = 5, best_k = 2L, best_separation_score = 0.4, best_composite_score = 0.3,
+    best_control_genes_index = c(TRUE, TRUE, FALSE), separation_metric_used = "max_difference", k_penalty_weight = 0.5,
+    adaptive_k_penalty_used = TRUE, sample_size = 8L), "covariates", "group")
+  expect_match(summary, "RUV-III Covariates", fixed = TRUE)
+
+  now <- as.POSIXct("2026-10-21 00:00:00", tz = "UTC")
+  no_log <- function(...) invisible(NULL)
+  loadNamespace("limma")
+  ids <- c("P_A", "P_B", "P_C")
+  samples <- c("A1", "A2", "B1", "B2")
+  E <- matrix(seq_len(12) + 20, nrow = 3, dimnames = list(ids, samples))
+  table <- data.frame(Protein.Ids = ids, as.data.frame(E, check.names = FALSE), check.names = FALSE, stringsAsFactors = FALSE)
+  rownames(table) <- NULL
+  design <- module_ci_prot_protein_design(samples)
+  object <- ProteinQuantitativeData(protein_quant_table = table, protein_id_column = "Protein.Ids",
+    protein_id_table = data.frame(Protein.Ids = ids, stringsAsFactors = FALSE), design_matrix = design,
+    sample_id = "Run", group_id = "group", technical_replicate_id = "replicates",
+    args = list(limpa_dpc_quant_results = list(quantified_elist = methods::new("EList", list(E = E, genes = data.frame(protein.id = ids))),
+      peptide_counts_per_protein = data.frame(Protein.Ids = ids, peptide_count = c(3L, 1L, 2L), peptidoform_count = c(4L, 1L, 2L)))))
+  workflow <- module_ci_prot_protein_workflow(object, initial_name = "protein_dpc_quant")
+  workflow$config_list <- list(globalParameters = list(workflow_type = "DIA_LIMPA"))
+
+  normalised <- runProteinNormalisationStep(workflow, normMethod = "none", logInfoFn = no_log, nowFn = function() now)
+  expect_match(normalised$resultText, "State saved as: 'protein_normalised'", fixed = TRUE)
+  expect_identical(workflow$state_manager$getHistory(), "protein_normalised")
+  expect_true(workflow$qc_params$protein_qc$protein_normalisation$skipped)
+  expect_equal(as.data.frame(normalised$normalisedS4@protein_quant_table), table, ignore_attr = TRUE)
+
+  filtered <- runProteinPeptideCountStep(workflow, minPeptides = 1, minPeptidoforms = 2, logInfoFn = no_log, nowFn = function() now)
+  expect_match(filtered$resultText, "Proteins remaining: 2 (removed 1)", fixed = TRUE)
+  expect_identical(filtered$filteredS4@protein_quant_table$Protein.Ids, c("P_A", "P_C"))
+  expect_identical(workflow$state_manager$getHistory(), c("protein_normalised", "peptide_count_filtered"))
+  expect_identical(workflow$qc_params$protein_qc$peptide_count_filter$proteins_after, 2L)
+})

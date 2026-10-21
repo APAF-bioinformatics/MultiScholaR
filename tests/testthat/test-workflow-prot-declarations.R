@@ -437,3 +437,110 @@ test_that("the DPC quantification declaration reproduces the in-memory kernel, s
         expect_true(all(c("limpa", engine) %in% listed))
     })
 })
+
+# ---- KIT-041: the DIA_LIMPA protein stage -----------------------------------------------------------
+
+test_that("the DIA_LIMPA protein-stage declarations are registered with the units of the step map (KIT-041)", {
+    expect_identical(diaProteinBetweenSampleNormalisationOperation()$unit, "whole_matrix")
+    expect_identical(diaProteinPeptideCountFilterOperation()$unit, "row")
+    expect_identical(diaRuvCovariatesOperation()$unit, "whole_matrix")
+    expect_identical(diaRuvCovariatesOperation()$output_class, "ProteinQuantitativeData")
+    for (name in c("protein_between_sample_normalisation", "protein_peptide_count_filter")) {
+        entry <- workflowActionSpec(name)
+        expect_identical(entry$variants, "whole", info = name)
+        expect_identical(entry$compute, "protein", info = name)
+        expect_identical(entry$completion, "protein", info = name)
+        expect_true(is.function(get(entry$handler, mode = "function")), info = name)
+        expect_true(all(entry$parameters %in% names(workflowOperationDefaults[[name]])), info = name)
+        expect_true(all(entry$parameters %in% names(workflowParameterLabels[[name]])), info = name)
+    }
+    covariates <- workflowActionSpec("protein_ruv_covariates")
+    expect_identical(covariates$compute, "in_process")
+    expect_true(all(covariates$parameters %in% names(workflowOperationDefaults$protein_ruv_covariates)))
+    expect_identical(workflowOperationForSection("ruvCovariates", "DIA_LIMPA"), "protein_ruv_covariates")
+    expect_identical(workflowOperationForSection("filterMinNumPeptidesPerProtein", "DIA_LIMPA"), "protein_peptide_count_filter")
+    expect_identical(workflowOperationForSection("filterMinNumPeptidesPerProtein"), "peptide_protein_evidence_filter")
+    expect_error(validateWorkflowActionParameters("protein_between_sample_normalisation", list(norm_method = "vsn"), workflowExecutionPolicy(FALSE)))
+    expect_error(validateWorkflowActionParameters("protein_peptide_count_filter", list(num_peptides_per_protein_thresh = 1.5, num_peptidoforms_per_protein_thresh = 2), workflowExecutionPolicy(FALSE)))
+    defaults <- resolveDIARuvCovariatesParameters(list(), "group")
+    expect_identical(defaults$percentage_max, 30)
+    expect_identical(defaults$ruv_fdr_method, "BH")
+    expect_true(defaults$adaptive_k_penalty)
+    expect_identical(resolveDIARuvCovariatesParameters(list(ruvCovariates = list(percentage_max = "12", adaptive_k_penalty = "false")), "batch")$percentage_max, 12)
+    expect_false(resolveDIARuvCovariatesParameters(list(ruvCovariates = list(adaptive_k_penalty = "false")), "batch")$adaptive_k_penalty)
+})
+
+test_that("the protein-stage declarations reproduce the in-memory kernels and the RUV covariates state carries W on the DPC fixture (KIT-041)", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    rolled <- rolledPeptideFixture()
+    logged <- log2TransformPeptideMatrix(calcPeptideMatrix(rolled))
+    quantified <- suppressMessages(proteinMissingValueImputationLimpa(logged, dpc_slope = 0.8, verbose = FALSE, chunk = 1000, engine = "limpa"))
+    manager <- proteinDeclarationFixtureManager(quantified, withr::local_tempdir(), "protein_dpc_quant")
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$setWorkflowType("DIA_LIMPA")
+    workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list()), config_list = list()))
+    # In memory: the same kernels in the script's order.
+    normaliseBetweenSamplesFn <- normaliseBetweenSamples
+    expected_norm <- normaliseBetweenSamplesFn(quantified, normalisation_method = "none")
+    filterMinNumPeptidesPerProteinFn <- filterMinNumPeptidesPerProtein
+    expected_filtered <- suppressMessages(filterMinNumPeptidesPerProteinFn(expected_norm, num_peptides_per_protein_thresh = 1, num_peptidoforms_per_protein_thresh = 2, verbose = FALSE))
+    withDIAStateScope(manager, function() {
+        v1 <- computeDIAReferenceProteinNormalisation(manager, getDIAStateReference(manager), list(norm_method = "none"))
+        expect_identical(v1$state_name, "protein_normalised")
+        expect_true(v1$config$skipped)
+        setDIAStepProvenance(manager, "protein_between_sample_normalisation", "whole", "norm_method", NULL, values = list(norm_method = "none"))
+        finishDIAReferenceProteinStep(workflow, v1, publish = FALSE)
+        expect_identical(manager$current_state, "protein_normalised")
+        v2 <- computeDIAReferenceProteinPeptideCountFilter(manager, getDIAStateReference(manager),
+            list(num_peptides_per_protein_thresh = 1, num_peptidoforms_per_protein_thresh = 2))
+        expect_identical(v2$state_name, "peptide_count_filtered")
+        expect_identical(v2$config$proteins_after, nrow(expected_filtered@protein_quant_table))
+        setDIAStepProvenance(manager, "protein_peptide_count_filter", "whole", c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh"), NULL, values = v2$config[1:2])
+        finishDIAReferenceProteinStep(workflow, v2, publish = FALSE)
+        expect_identical(manager$current_state, "peptide_count_filtered")
+        expect_true(isSavedWorkflowReference(readDIAStateMetadata(manager)$data$slots$args$limpa_dpc_quant_results))
+    })
+    declared_norm <- manager$getState("protein_normalised")
+    expect_equal(as.data.frame(declared_norm@protein_quant_table), as.data.frame(expected_norm@protein_quant_table), ignore_attr = TRUE)
+    declared_filtered <- manager$getState("peptide_count_filtered")
+    expect_equal(as.data.frame(declared_filtered@protein_quant_table), as.data.frame(expected_filtered@protein_quant_table), ignore_attr = TRUE)
+    expect_equal(declared_filtered@args$limpa_dpc_quant_results$quantified_elist$E, expected_filtered@args$limpa_dpc_quant_results$quantified_elist$E)
+    # The correlation step (shared declarations) then the RUV covariates on the owner, against the kernels in memory.
+    withDIAStateScope(manager, function() {
+        source <- getDIAStateReference(manager)
+        pairs <- runSavedOperation(manager, diaPearsonPairsOperation(), source, list(group = "group", tech_rep_remove_regex = "pool"))
+        selection <- runSavedOperation(manager, diaPearsonSelectionOperation(), source,
+            list(pairs = pairs$reference$entity_id, threshold = 0.5, correlations = pairs$value), dependencies = list(pairs$reference))
+        spec <- readDIAStateMetadata(manager, selection$value)$data
+        commitDIAReferenceState(manager, "correlation_filtered", spec, list(min_pearson_correlation_threshold = 0.5), "correlation")
+        correlated <- readDIAExecutionComponents(manager)
+        expect_setequal(colnames(correlated@args$limpa_dpc_quant_results$quantified_elist$E), as.character(correlated@design_matrix[[correlated@sample_id]]))
+        parameters <- resolveDIARuvCovariatesParameters(list(), "group")
+        run <- suppressMessages(suppressWarnings(runSavedOperation(manager, diaRuvCovariatesOperation(), getDIAStateReference(manager), parameters)))
+        value <- run$value
+        expect_identical(colnames(value$W), paste0("W", seq_len(value$best_k)))
+        final <- readDIAStateMetadata(manager, value$covariates)$data
+        final$products$ruv_covariates_science <- run$reference
+        commitDIAReferenceState(manager, "ruv_covariates", final, list(ruv_k = value$best_k, replicate_structure = value$replicate_structure,
+            outcomes = list(k = value$best_k, replicate_structure = value$replicate_structure)), "covariates")
+        covariates <- readDIAExecutionComponents(manager)
+        expect_identical(setdiff(names(covariates@design_matrix), names(correlated@design_matrix)), paste0("W", seq_len(value$best_k)))
+        expect_equal(as.data.frame(covariates@protein_quant_table), as.data.frame(correlated@protein_quant_table), ignore_attr = TRUE)
+        # In memory on the hydrated correlation state: identical sweep and W.
+        expected <- suppressMessages(suppressWarnings(findBestNegCtrlPercentageCapped(correlated, verbose = FALSE)))
+        expect_identical(expected$best_percentage, value$percentage)
+        expect_identical(expected$best_k, value$best_k)
+        factors <- computeRuvCovariates(correlated, expected$best_k, expected$best_control_genes_index, "group")
+        for (i in seq_len(value$best_k)) expect_equal(covariates@design_matrix[[paste0("W", i)]], unname(factors$W[as.character(covariates@design_matrix[[covariates@sample_id]]), i]), tolerance = 1e-12)
+        adjusted <- readDIAExecutionComponents(manager, value$adjusted)
+        expect_equal(unname(as.matrix(adjusted@protein_quant_table[, rownames(factors$W)])), unname(factors$adjusted), tolerance = 1e-10)
+        expect_false("ruv_adjusted" %in% manager$getHistory())
+        record <- buildWorkflowAnalysisRecord(manager)
+        step <- Filter(function(s) identical(s$state, "ruv_covariates"), record$steps)[[1L]]
+        expect_identical(step$operation, "protein_ruv_covariates")
+        expect_identical(step$outcomes$replicate_structure, value$replicate_structure)
+        expect_setequal(vapply(step$parameters, `[[`, character(1), "name"), diaRuvCovariatesOperation()$parameters)
+        expect_true(validateWorkflowAnalysisRecord(record)$valid)
+    })
+})

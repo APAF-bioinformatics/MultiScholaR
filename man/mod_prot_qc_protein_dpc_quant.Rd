@@ -21,8 +21,8 @@ mod_prot_qc_protein_dpc_quant_server(
 }
 \description{
 The DIA_LIMPA route's DPC imputation and protein quantification (KIT-047, the limpa script's
-chunk 17): the peptide method of \code{proteinMissingValueImputationLimpa} on the declared engine (\code{fastlimpadpc}
-by default when installed, \code{limpa} selectable) produces the protein object; its Limpa results travel with the
+chunk 17): the peptide method of \code{proteinMissingValueImputationLimpa} on the declared engine (\code{limpa} by
+default, \code{fastlimpadpc} selectable) produces the protein object; its Limpa results travel with the
 state as an owned value. On an on-disk owner the step runs the registered \code{protein_dpc_quant} declaration
 (managed worker or in process).
 }

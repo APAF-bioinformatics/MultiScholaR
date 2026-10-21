@@ -995,3 +995,145 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     sample_size              = sample_size
   )
 }
+
+# ----------------------------------------------------------------------------
+# KIT-041: the limpa script's protein-level RUV optimiser and the RUV-III factors as covariates
+# ----------------------------------------------------------------------------
+#' The limpa script's negative-control percentage optimiser (`findBestNegCtrlPercentageCustom`, vendored at
+#' `docs/qa/workflow-execution/kit/limpa-workflow/`), brought into the package with its behaviour kept exactly.
+#' It differs from `findBestNegCtrlPercentage` in five ways: the canonical-correlation curve is capped at
+#' `min(max_acceptable_k, n_controls - 1)` before scoring; `best_k` is the K at the maximum of the all-minus-control
+#' canonical correlation on the capped curve (not `findBestKElbow`); the percentage range is 1-30 by default;
+#' the FDR method is `BH` by default; and no percentage is skipped for exceeding its complete controls (the script
+#' had no such rule). The winner is the first maximum of the composite score in percentage order (`which.max`).
+#' @param normalised_protein_matrix_obj A `ProteinQuantitativeData` object (a complete log2 matrix on this route).
+#' @param percentage_range,num_components_to_impute,ruv_grouping_variable,ruv_qval_cutoff,ruv_fdr_method,separation_metric,k_penalty_weight,max_acceptable_k,adaptive_k_penalty,verbose As the script.
+#' @return `list(best_percentage, best_k, best_control_genes_index, best_separation_score, best_composite_score,
+#'   optimization_results, best_cancor_plot, max_acceptable_k, sample_size)`; `optimization_results` has one row
+#'   per tested percentage (`percentage`, `separation_score`, `best_k`, `composite_score`, `num_controls`,
+#'   `valid_plot`, `error_reason`).
+#' @export
+findBestNegCtrlPercentageCapped <- function(normalised_protein_matrix_obj,
+                                            percentage_range = seq(1, 30, by = 1),
+                                            num_components_to_impute = 5,
+                                            ruv_grouping_variable = "group",
+                                            ruv_qval_cutoff = 0.05,
+                                            ruv_fdr_method = "BH",
+                                            separation_metric = "max_difference",
+                                            k_penalty_weight = 0.5,
+                                            max_acceptable_k = 3,
+                                            adaptive_k_penalty = TRUE,
+                                            verbose = TRUE) {
+  if (!inherits(normalised_protein_matrix_obj, "ProteinQuantitativeData")) {
+    stop("normalised_protein_matrix_obj must be a ProteinQuantitativeData object")
+  }
+  if (!ruv_grouping_variable %in% colnames(normalised_protein_matrix_obj@design_matrix)) {
+    stop(paste0("The 'ruv_grouping_variable = ", ruv_grouping_variable, "' is not a column in the design matrix."))
+  }
+  sample_size <- ncol(normalised_protein_matrix_obj@protein_quant_table) - 1L
+  if (adaptive_k_penalty) {
+    max_acceptable_k <- calculateAdaptiveMaxK(sample_size)
+  }
+  # The canonical-correlation input does not depend on the control set (KIT-005): prepared once for the sweep;
+  # `ruvCancor` on the same object computes the same matrix per percentage (the script's call).
+  cancor_input <- prepareRuvCancorInput(normalised_protein_matrix_obj, num_components_to_impute)
+
+  process_percentage <- function(current_percentage, index) {
+    if (verbose && index %% 5 == 0) {
+      log_info("Testing percentage {index}/{length(percentage_range)}: {current_percentage}%")
+    }
+    tryCatch({
+      control_genes_index <- getNegCtrlProtAnova(
+        normalised_protein_matrix_obj,
+        ruv_grouping_variable = ruv_grouping_variable,
+        percentage_as_neg_ctrl = current_percentage,
+        ruv_qval_cutoff = ruv_qval_cutoff,
+        ruv_fdr_method = ruv_fdr_method
+      )
+      num_controls <- sum(control_genes_index, na.rm = TRUE)
+      if (num_controls < 5) {
+        return(list(percentage = current_percentage, separation_score = NA_real_, best_k = NA_real_,
+                    composite_score = NA_real_, num_controls = num_controls, valid_plot = FALSE,
+                    error_reason = "fewer than 5 control proteins", control_genes_index = NULL, cancor_plot = NULL))
+      }
+      cancorplot <- ruvCancorFromInput(cancor_input, normalised_protein_matrix_obj, control_genes_index, ruv_grouping_variable)
+      # Capping K to be strictly less than num_controls AND at most max_acceptable_k (the script's rule).
+      limit_k <- min(max_acceptable_k, num_controls - 1)
+      cancorplot$data <- cancorplot$data |> dplyr::filter(K <= limit_k)
+      separation_score <- calculateSeparationScore(cancorplot, separation_metric)
+      controls_idx <- which(cancorplot$data$featureset == "Control")
+      all_idx <- which(cancorplot$data$featureset == "All")
+      difference_between_all_ctrl <- cancorplot$data$cc[all_idx] - cancorplot$data$cc[controls_idx]
+      max_difference <- max(difference_between_all_ctrl, na.rm = TRUE)
+      best_idx <- which(difference_between_all_ctrl == max_difference)[1]
+      best_k <- (cancorplot$data$K[controls_idx])[best_idx]
+      composite_score <- calculateCompositeScore(separation_score, best_k, k_penalty_weight, max_acceptable_k)
+      list(percentage = current_percentage, separation_score = separation_score, best_k = best_k,
+           composite_score = composite_score, num_controls = num_controls, valid_plot = TRUE, error_reason = "",
+           control_genes_index = control_genes_index, cancor_plot = cancorplot)
+    }, error = function(e) {
+      if (verbose) log_warn(paste0("Error at ", current_percentage, "%: ", e$message))
+      list(percentage = current_percentage, separation_score = NA_real_, best_k = NA_real_,
+           composite_score = NA_real_, num_controls = NA_integer_, valid_plot = FALSE,
+           error_reason = e$message, control_genes_index = NULL, cancor_plot = NULL)
+    })
+  }
+
+  all_results <- purrr::imap(percentage_range, process_percentage)
+  results <- purrr::map_dfr(all_results, ~ data.frame(percentage = .x$percentage,
+      separation_score = .x$separation_score, best_k = .x$best_k, composite_score = .x$composite_score,
+      num_controls = .x$num_controls, valid_plot = .x$valid_plot, error_reason = .x$error_reason,
+      stringsAsFactors = FALSE))
+  valid_results <- all_results[!is.na(purrr::map_dbl(all_results, "composite_score"))]
+  if (length(valid_results) == 0) {
+    stop("No valid percentage found. Please check your data and parameters.")
+  }
+  best_index <- which.max(purrr::map_dbl(valid_results, "composite_score"))
+  best_result <- valid_results[[best_index]]
+  list(best_percentage = best_result$percentage, best_k = as.integer(best_result$best_k),
+       best_control_genes_index = best_result$control_genes_index,
+       best_separation_score = best_result$separation_score, best_composite_score = best_result$composite_score,
+       optimization_results = results, best_cancor_plot = best_result$cancor_plot,
+       max_acceptable_k = max_acceptable_k, sample_size = sample_size)
+}
+
+#' RUV-III factors as covariates (KIT-041, the limpa script's chunk 19b): `ruv::RUVIII` on the sample-by-protein
+#' matrix with the replicate matrix of the design's replicate structure (KIT-035's rule: the declared technical
+#' replicate block when the design has one, else the RUV grouping variable), the W factors
+#' `Y[, ctl] %*% t(ac) %*% solve(ac %*% t(ac))` (`ac` the first `k` rows of `fullalpha` on the controls) named
+#' `W1..Wk`, and the RUV-adjusted matrix (`t(newY)`) for QC plots only. The quantified matrix is not changed.
+#' @param theObject A `ProteinQuantitativeData` object (a complete matrix).
+#' @param k Number of unwanted factors (a positive whole number).
+#' @param controls Logical vector over the protein rows naming the negative controls.
+#' @param ruv_grouping_variable Design column used when the design declares no technical replicates.
+#' @return `list(W, adjusted, alpha, k, controls, replicate_structure, block_reason, blocks)`: `W` a sample-by-k
+#'   matrix with the design's sample order, `adjusted` the protein-by-sample adjusted matrix.
+#' @export
+computeRuvCovariates <- function(theObject, k, controls, ruv_grouping_variable = "group") {
+  if (!inherits(theObject, "ProteinQuantitativeData")) stop("theObject must be a ProteinQuantitativeData object")
+  k <- validateProtNormRuvK(k, "k")
+  design_matrix <- theObject@design_matrix
+  sample_id <- theObject@sample_id
+  sample_ids <- as.character(design_matrix[[sample_id]])
+  matrix <- theObject@protein_quant_table |>
+    column_to_rownames(theObject@protein_id_column) |>
+    as.matrix()
+  if (!all(sample_ids %in% colnames(matrix))) stop("the design names samples absent from the protein table")
+  if (!is.logical(controls) || length(controls) != nrow(matrix)) stop("controls must be a logical vector over the protein rows")
+  if (sum(controls, na.rm = TRUE) <= k) stop(sprintf("RUV-III needs more than %d control proteins for %d factors", k, k))
+  Y <- t(matrix[, sample_ids, drop = FALSE])
+  replicate_blocks <- resolveProtRuvReplicateBlocks(design_matrix, sample_id, theObject@group_id,
+    theObject@technical_replicate_id, ruv_grouping_variable)
+  block <- resolveProtTechnicalReplicateBlock(design_matrix, theObject@group_id, theObject@technical_replicate_id)
+  M <- getRuvIIIReplicateMatrixHelper(replicate_blocks$design, !!sym(sample_id), .ruv_replicate_block)
+  M <- M[sample_ids, , drop = FALSE]
+  ruv_res <- ruv::RUVIII(Y = Y, M = M, ctl = controls, k = k, return.info = TRUE)
+  alpha <- ruv_res$fullalpha[seq_len(k), , drop = FALSE]
+  ac <- alpha[, controls, drop = FALSE]
+  W <- Y[, controls, drop = FALSE] %*% t(ac) %*% solve(ac %*% t(ac))
+  colnames(W) <- paste0("W", seq_len(k))
+  rownames(W) <- sample_ids
+  adjusted <- t(ruv_res$newY)
+  list(W = W, adjusted = adjusted, alpha = alpha, k = k, controls = controls,
+       replicate_structure = replicate_blocks$structure, block_reason = block$reason, blocks = replicate_blocks$blocks)
+}
