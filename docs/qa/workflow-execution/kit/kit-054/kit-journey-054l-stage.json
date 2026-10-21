@@ -1,0 +1,75 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-054",
+  "stage": "kit-journey-054l",
+  "date": "2026-10-21",
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "steps": ["import", "design", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation", "session_export", "da"],
+    "stop_after": null,
+    "promotion_authorized": false
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "kc_lfq_dotted",
+    "build": "ff5f79fb61ec9eb0b9a4b8c3003739eceb82e337c56df604a1915731da57cf0f",
+    "status": "complete",
+    "exact": null,
+    "elapsed_seconds": 318.959999999963,
+    "peak_bytes": 4153700352,
+    "peak_anon_bytes": 3861356544,
+    "resident_end_bytes": 2832195584,
+    "phase_seconds": {
+      "import": 15.859999999986,
+      "design": 182.540000000037,
+      "accession": 4.09999999997672,
+      "protein_intensity": 5.3399999999674,
+      "duplicates": 2.30000000004657,
+      "protein_replicate": 7.11999999999534,
+      "normalisation_ruv": 44.7199999999721,
+      "correlation": 5.61000000010245,
+      "session_export": 11.7800000000279,
+      "da": 7.14000000001397
+    },
+    "phase_peak_anon_bytes": {
+      "import": 2186223616,
+      "design": 2421534720,
+      "accession": 2352766976,
+      "protein_intensity": 2352943104,
+      "duplicates": 2352943104,
+      "protein_replicate": 3861356544,
+      "normalisation_ruv": 3248648192,
+      "correlation": 2831175680,
+      "session_export": 2831175680,
+      "da": 2832183296
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "accession": "complete",
+      "protein_intensity": "complete",
+      "duplicates": "complete",
+      "protein_replicate": "complete",
+      "normalisation_ruv": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete"
+    },
+    "max_sample_interval": 0.0699999999487773,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": 52
+  }
+}
