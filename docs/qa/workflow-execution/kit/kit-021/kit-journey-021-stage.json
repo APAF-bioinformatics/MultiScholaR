@@ -1,0 +1,126 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-021",
+  "stage": "kit-journey-021",
+  "date": "2026-10-21",
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "steps": ["import", "design", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation", "session_export", "da"],
+    "stop_after": null,
+    "promotion_authorized": false
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "lfq_300",
+    "build": "46adf68b8ee9d9b835aca97a2f9a5cf108a4401fab6202b77429fe9e1ed99ac9",
+    "status": "complete",
+    "exact": true,
+    "elapsed_seconds": 2993.60999999999,
+    "peak_bytes": 4298215424,
+    "peak_anon_bytes": 3854237696,
+    "resident_end_bytes": 2805121024,
+    "phase_seconds": {
+      "import": 14.2600000000093,
+      "design": 551.969999999972,
+      "accession": 229.199999999953,
+      "protein_intensity": 19.0300000000279,
+      "duplicates": 31.6599999999162,
+      "protein_replicate": 12.140000000014,
+      "normalisation_ruv": 1820.62,
+      "correlation": 33.9200000000419,
+      "session_export": 7.40000000002328,
+      "da": 174.989999999991
+    },
+    "phase_peak_anon_bytes": {
+      "import": 1213124608,
+      "design": 1490735104,
+      "accession": 3486773248,
+      "protein_intensity": 2361475072,
+      "duplicates": 2685763584,
+      "protein_replicate": 2817593344,
+      "normalisation_ruv": 2695208960,
+      "correlation": 2019475456,
+      "session_export": 1818976256,
+      "da": 3854237696
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "accession": "complete",
+      "protein_intensity": "complete",
+      "duplicates": "complete",
+      "protein_replicate": "complete",
+      "normalisation_ruv": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete"
+    },
+    "max_sample_interval": 0.0700000000651926,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": "in-process lfq_300_<step> fingerprints (protocol v1.5)",
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "c84ed1dd6b720c164e873720e85c5ff96a7be9b1c608b5f9865b27e8a3e946b2",
+        "rows": null
+      },
+      "design": {
+        "state": "protein_s4_initial",
+        "entity_id": "7cb80cf5ce7435485abd39c6e584b9bf4996527b839d252329131d9d5f9048d0",
+        "rows": 8000
+      },
+      "accession": {
+        "state": "protein_accession_cleaned",
+        "entity_id": "c3f0b7ad44ceaad90e49d51ca0c89697f1c9661a4fb97d39c6ec9ce9141385de",
+        "rows": 8000
+      },
+      "protein_intensity": {
+        "state": "protein_intensity_filtered",
+        "entity_id": "a4c47ea92fd74baf4a8909148e9b6f1a11667732557d5decea0c420e0b0babd2",
+        "rows": 8000
+      },
+      "duplicates": {
+        "state": "duplicates_removed",
+        "entity_id": "d021c05da2a55ebee8596b243058ca660d995c089cbf79cab078d209f7cc0b1e",
+        "rows": 8000
+      },
+      "protein_replicate": {
+        "state": "protein_replicate_filtered",
+        "entity_id": "ac234d45cf369cafb7b511e88ea6c8e9375e1d0766b66cc398fceea0576fb228",
+        "rows": 8000
+      },
+      "normalisation_ruv": {
+        "state": "ruv_corrected",
+        "entity_id": "d1e57ae7dd158e92e9343d7fb69126164a6eb0ab735f67130bd56acf4b6e66e8",
+        "rows": 8000
+      },
+      "correlation": {
+        "state": "correlation_filtered",
+        "entity_id": "d69ce705658553a790e5fc55987f3ae3486d6c115de69fceabeff362fc9b64fd",
+        "rows": 8000
+      },
+      "session_export": {
+        "state": "correlation_filtered",
+        "entity_id": "d69ce705658553a790e5fc55987f3ae3486d6c115de69fceabeff362fc9b64fd",
+        "rows": 8000
+      },
+      "da": {
+        "state": "correlation_filtered",
+        "entity_id": "3fd81424272297505dc600ef7a256561245a4536beb21f230f13a84c042fb82e",
+        "rows": 8000
+      }
+    },
+    "oracle_mismatches": [],
+    "canonical_form_differences": [],
+    "files": 285
+  }
+}
