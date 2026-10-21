@@ -1,0 +1,60 @@
+{
+  "schema": "kit.skip_check.v1",
+  "ticket": "KIT-049",
+  "label": "installed",
+  "date": "2026-10-21",
+  "head_commit": "c07494e81326a840c11f8ce908a5d0c53edcc612",
+  "origin": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-028/candidate-1",
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.4oKgSd/library/MultiScholaR",
+    "source_commit": "c07494e81326a840c11f8ce908a5d0c53edcc612"
+  },
+  "default": {
+    "seconds": 193.54665017128,
+    "states": ["initial", "raw_data_s4", "qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"],
+    "mismatches": [],
+    "replayed": ["peptide_qvalue_filter qvalue_filtered", "peptide_protein_evidence_filter protein_peptide_filtered", "precursor_rollup precursor_rollup", "peptide_intensity_filter intensity_filtered", "minimum_peptides_per_sample sample_filtered", "peptide_replicate_filter replicate_filtered", "peptide_imputation imputed", "protein_iq_rollup protein_s4_created", "protein_accession_cleanup protein_accession_cleaned", "protein_intensity_filter protein_intensity_filtered", "protein_duplicate_removal duplicates_removed", "protein_replicate_filter protein_replicate_filtered", "normalization-ruv ruv_corrected", "pearson-selection correlation_filtered", "DA-contrast-output correlation_filtered"]
+  },
+  "skip": {
+    "seconds": 182.782429695129,
+    "mismatched_states": ["imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"],
+    "before_identical": true,
+    "at_differs": true,
+    "after_all_differ": true,
+    "replayed": ["peptide_qvalue_filter qvalue_filtered", "peptide_protein_evidence_filter protein_peptide_filtered", "precursor_rollup precursor_rollup", "peptide_intensity_filter intensity_filtered", "minimum_peptides_per_sample sample_filtered", "peptide_replicate_filter replicate_filtered", "peptide_imputation imputed", "protein_iq_rollup protein_s4_created", "protein_accession_cleanup protein_accession_cleaned", "protein_intensity_filter protein_intensity_filtered", "protein_duplicate_removal duplicates_removed", "protein_replicate_filter protein_replicate_filtered", "normalization-ruv ruv_corrected", "pearson-selection correlation_filtered", "DA-contrast-output correlation_filtered"],
+    "da_replayed": true,
+    "replay_rows": 224359,
+    "origin_rows": 279240
+  },
+  "skip_state": {
+    "rows": 224359,
+    "raw_column": "Peptide.RawQuantity",
+    "imputed_column": "Peptide.Imputed",
+    "imputed_equals_raw": true,
+    "raw_missing": 16306,
+    "imputed_missing": 16306,
+    "is_imputed_any": false,
+    "args_skip": true,
+    "summary_status": "skipped",
+    "summary_reason": "user_skip",
+    "config_skip": true,
+    "config_skipped": true,
+    "description": "Missing value imputation skipped by user (missing values kept for IQ)",
+    "head_state": "correlation_filtered",
+    "history": ["initial", "raw_data_s4", "qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"]
+  },
+  "skip_record": {
+    "parameters": ["proportion_missing_values default", "exclusion_column not_set", "skip user_set"],
+    "skip_present": true,
+    "skip_value": true,
+    "skip_provenance": "user_set",
+    "outcomes": {
+      "rows": 224359,
+      "columns": 13,
+      "skipped": true
+    },
+    "da_present": true,
+    "valid": true
+  },
+  "total_seconds": 380.931952953339
+}
