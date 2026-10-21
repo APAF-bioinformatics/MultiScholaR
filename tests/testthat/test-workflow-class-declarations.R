@@ -282,3 +282,57 @@ test_that("enrichment input and result classes round-trip", {
     expect_identical(restored@enrichment_summaries, enrichment@enrichment_summaries)
     expect_identical(restored@enrichment_plotly, list())
 })
+
+# ---- KIT-047: a declared args entry stored out of line as one owned value ------------------------
+
+test_that("a declared owned args entry is saved out of line, reattached on hydrate and reused when unchanged (KIT-047)", {
+    protein <- workflowClassDeclaration("ProteinQuantitativeData")
+    expect_identical(protein$args_as_owned, "limpa_dpc_quant_results")
+    expect_identical(workflowClassDeclaration("PeptideQuantitativeData")$args_as_owned, character())
+    broken <- protein
+    broken$args_as_owned <- c("a", "a")
+    expect_error(validateWorkflowClassDeclaration(broken), class = "workflow_class_undeclared")
+    broken$args_as_owned <- 1
+    expect_error(validateWorkflowClassDeclaration(broken), class = "workflow_class_undeclared")
+
+    recipe <- readWorkflowCheckpointRecipe("small")
+    object <- makeWorkflowCheckpointProtein(recipe)
+    # A synthetic entry of about 20 MiB, above the checkpoint's inline cap (8 MiB) and the field spill (64 KiB).
+    entry <- list(big = seq_len(2.7e6) + 0.5, tag = "synthetic", nested = list(a = 1L, b = "x"))
+    expect_gt(as.numeric(object.size(entry)), 20 * 1024^2)
+    object@args$limpa_dpc_quant_results <- entry
+    manager <- newDeclarationTestManager("owned-args")
+    manager$saveState("protein_dpc_quant", object, list(), "owned")
+    record <- readDIAStateMetadata(manager)
+    stored <- record$data$slots$args$limpa_dpc_quant_results
+    expect_true(isSavedWorkflowReference(stored))
+    expect_lt(as.numeric(object.size(record$data$slots)), 1024^2)
+    expect_false("limpa_dpc_quant_results" %in% names(record$data$support))
+    expect_true(stored$entity_id %in% vapply(record$data$dependencies, `[[`, character(1), "entity_id"))
+    # Hydrated for a kernel: the entry is the value again; a projected read keeps the reference.
+    hydrated <- readDIAExecutionComponents(manager)
+    expect_identical(hydrated@args$limpa_dpc_quant_results, entry)
+    expect_identical(manager$getState()@args$limpa_dpc_quant_results, entry)
+    projected <- readDIAExecutionComponents(manager, fields = "design_matrix")
+    expect_true(isSavedWorkflowReference(projected@args$limpa_dpc_quant_results))
+    # A later state of the same object (the shared protein steps) reuses the owned value; a changed entry is saved anew.
+    again <- checkpointDIAExecutionResult(manager, inheritDIAExecutionSource(hydrated, manager, getDIAStateReference(manager)))
+    expect_identical(again$slots$args$limpa_dpc_quant_results$entity_id, stored$entity_id)
+    from_projection <- checkpointDIAExecutionResult(manager, inheritDIAExecutionSource(projected, manager, getDIAStateReference(manager)))
+    expect_identical(from_projection$slots$args$limpa_dpc_quant_results$entity_id, stored$entity_id)
+    changed <- hydrated
+    changed@args$limpa_dpc_quant_results$tag <- "changed"
+    renewed <- checkpointDIAExecutionResult(manager, inheritDIAExecutionSource(changed, manager, getDIAStateReference(manager)))
+    expect_true(isSavedWorkflowReference(renewed$slots$args$limpa_dpc_quant_results))
+    expect_false(identical(renewed$slots$args$limpa_dpc_quant_results$entity_id, stored$entity_id))
+    commitDIAReferenceState(manager, "later", renewed, list(), "changed entry")
+    expect_identical(manager$getState()@args$limpa_dpc_quant_results$tag, "changed")
+    # An object without the entry (every DIA route state) checkpoints as before: no reference in its args.
+    plain <- makeWorkflowCheckpointProtein(recipe)
+    manager2 <- newDeclarationTestManager("no-owned-args")
+    manager2$saveState("protein_replicate_filtered", plain, list(), "plain")
+    args <- readDIAStateMetadata(manager2)$data$slots$args
+    expect_false("limpa_dpc_quant_results" %in% names(args))
+    expect_false(any(vapply(args, isSavedWorkflowReference, logical(1))))
+    expect_equal(manager2$getState(), plain, tolerance = 1e-12)
+})

@@ -11,7 +11,19 @@
 
 workflowSoftwareIdentity <- function() {
     # Constant per process (KIT-025 audit PH-04): computed once, 155 package reads otherwise at every commit.
-    if (!is.null(.workflowSoftwareIdentityCache$value)) return(.workflowSoftwareIdentityCache$value)
+    # KIT-047: a namespace loaded after the first commit (an engine a later step loads) is added by name, so the
+    # record's software block names every package the session ran; nothing already listed is re-read.
+    if (!is.null(.workflowSoftwareIdentityCache$value)) {
+        cached <- .workflowSoftwareIdentityCache$value
+        added <- setdiff(loadedNamespaces(), names(cached$packages))
+        if (length(added)) {
+            versions <- vapply(sort(added), function(name) tryCatch(as.character(utils::packageVersion(name)),
+                error = function(error) NA_character_), character(1))
+            cached$packages <- c(cached$packages, versions)[sort(c(names(cached$packages), names(versions)))]
+            .workflowSoftwareIdentityCache$value <- cached
+        }
+        return(cached)
+    }
     description <- utils::packageDescription("MultiScholaR")
     field <- function(name) {
         value <- description[[name]]

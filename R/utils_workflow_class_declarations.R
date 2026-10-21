@@ -15,11 +15,15 @@
 #'   producing the bounded state metadata).
 #' @noRd
 workflowClassDeclarations <- function() {
+    # KIT-047: `args_as_owned` names the entries of the `args` slot a checkpoint stores out of line as one owned
+    # value each (a saved reference in `slots$args`, the value reattached on hydrate); the entry is absent from
+    # every state that never carried it, so a class with no such entry checkpoints exactly as before.
     declare <- function(class, kind, assay, layout, design, tables, roles, lists = character(),
-                        matrices = character(), nested = character(), opaque = character(), describe = NULL) {
+                        matrices = character(), nested = character(), opaque = character(), describe = NULL,
+                        args_as_owned = character()) {
         list(class = class, version = 1L, kind = kind, assay = assay, layout = layout, design = design,
             tables = tables, lists = lists, matrices = matrices, nested = nested, opaque = opaque,
-            roles = roles, describe = describe)
+            roles = roles, describe = describe, args_as_owned = args_as_owned)
     }
     plots <- c("num_sig_diff_exp_bar_plot", "volcano_plot", "interactive_volcano_plot", "p_value_dist_plot")
     list(
@@ -29,7 +33,7 @@ workflowClassDeclarations <- function() {
         ProteinQuantitativeData = declare("ProteinQuantitativeData", "assay", "protein_quant_table", "wide", "design_matrix",
             tables = c("protein_quant_table", "design_matrix", "protein_id_table"),
             roles = c("protein_id_column", "sample_id", "group_id", "technical_replicate_id"),
-            describe = describeDIAProteinState),
+            describe = describeDIAProteinState, args_as_owned = "limpa_dpc_quant_results"),
         LipidomicsAssayData = declare("LipidomicsAssayData", "assay", "lipid_data", "wide", "design_matrix",
             tables = "design_matrix", lists = "lipid_data",
             roles = c("lipid_id_column", "annotation_id_column", "sample_id", "group_id", "technical_replicate_id")),
@@ -107,7 +111,10 @@ validateWorkflowClassDeclaration <- function(declaration) {
             scalar(declaration$layout) && declaration$design %in% declaration$tables &&
             (declaration$assay %in% declaration$tables || declaration$assay %in% declaration$lists))) &&
         (is.null(declaration$design) || declaration$design %in% declaration$tables) &&
-        (is.null(declaration$describe) || is.function(declaration$describe))
+        (is.null(declaration$describe) || is.function(declaration$describe)) &&
+        (is.null(declaration$args_as_owned) || (is.character(declaration$args_as_owned) &&
+            !anyDuplicated(declaration$args_as_owned) && all(nzchar(declaration$args_as_owned)) &&
+            (!length(declaration$args_as_owned) || "args" %in% slots)))
     if (!isTRUE(valid)) {
         cli::cli_abort("workflow declaration for {.cls {declaration$class}} is invalid",
             class = "workflow_class_undeclared")

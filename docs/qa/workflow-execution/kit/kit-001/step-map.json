@@ -730,6 +730,117 @@
       "notes": [
         "The g:Profiler path depends on a remote database version; exactness across time is not guaranteed offline."
       ]
+    },
+    {
+      "id": "peptide_log2",
+      "label": "Log2 Matrix (DIA_LIMPA)",
+      "route": "DIA_LIMPA",
+      "unit": "row",
+      "in_journey": false,
+      "module": "R/mod_prot_qc_peptide_log2.R: observeEvent(apply_log2_matrix) -> runPeptideLog2ApplyObserver -> runPeptideLog2ApplyStep; owner path runDIAReferencePeptideLog2Matrix (R/utils_workflow_prot_declarations.R) -> computeDIAReferencePeptideLog2Matrix; declared by diaPeptideLog2MatrixOperation (registered peptide_log2_matrix, whole)",
+      "kernel": "calcPeptideMatrix (R/func_pept_s4_core.R:374-420) then log2TransformPeptideMatrix (R/func_pept_s4_norm_methods.R:98-150)",
+      "evidence": [
+        "R/func_pept_s4_core.R:383, 407: the matrix is a pivot of each feature's own (feature, sample, norm quantity) rows; no cross-feature statistic",
+        "R/func_pept_s4_norm_methods.R:115-116: cell-wise, values <= 0 become NA, then log2; :145 is_logged_data set TRUE",
+        "the long table is updated from the matrix by the feature-key map (norm_methods.R:120-140), row by row"
+      ],
+      "reads_outside_assay": [],
+      "writes": [
+        "peptide_matrix (log2)",
+        "peptide_data (norm quantity column replaced by the log2 value)",
+        "is_logged_data"
+      ],
+      "global_statistics": [],
+      "merge": {
+        "design_matrix": "design",
+        "peptide_data": "concatenate"
+      },
+      "holders": [
+        "R/utils_workflow_prot_declarations.R computeDIAReferencePeptideLog2Matrix -> finishDIAReferencePeptideStep (state log2_matrix)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "KIT-047: the unit was determined from the code under the afk authorisation of 2026-10-21 and recorded in the plan's decision record for the user's confirmation; the step is placed whole (variant `whole`)."
+      ]
+    },
+    {
+      "id": "peptide_accession",
+      "label": "Peptide Accession Cleanup (DIA_LIMPA)",
+      "route": "DIA_LIMPA",
+      "unit": "feature_group",
+      "grouping": "protein_id_column (the protein group)",
+      "in_journey": false,
+      "module": "R/mod_prot_qc_peptide_accession.R: observeEvent(apply_peptide_accession) -> runPeptideAccessionApplyObserver -> runPeptideAccessionApplyStep; owner path runDIAReferencePeptideAccessionCleanup -> computeDIAReferencePeptideAccessionCleanup; declared by diaPeptideAccessionCleanupOperation (registered peptide_accession_cleanup, whole)",
+      "kernel": "chooseBestProteinAccession, PeptideQuantitativeData method (R/func_pept_s4_accession_methods.R:2-125) -> chooseBestProteinAccessionHelper (R/func_prot_annotation_accession_ranking_helpers.R:18-160); calcPeptideMatrix at the end (:121)",
+      "evidence": [
+        "R/func_pept_s4_accession_methods.R:54-59: one best accession per protein group from the FASTA table (group_id = protein_id_column); the ranking reads only the group's accessions and the FASTA metadata",
+        "R/func_pept_s4_accession_methods.R:80-100: duplicate peptides aggregated within (sample, protein group, peptide sequence) by the declared method; no statistic across groups",
+        "R/func_prot_annotation_accession_ranking_helpers.R:60-120: the join and ranking are per accession and per group"
+      ],
+      "reads_outside_assay": [
+        "the FASTA table (seqinr_obj; stored into args$chooseBestProteinAccession by updateParamInObject, accession_methods.R:37, and spilled to the support ledger above 64 KiB)"
+      ],
+      "writes": [
+        "peptide_data (accession column resolved, duplicate peptides aggregated)",
+        "peptide_matrix (recalculated)",
+        "args$chooseBestProteinAccession (delim, seqinr_obj, seqinr_accession_column, aggregation_method)"
+      ],
+      "global_statistics": [],
+      "merge": {
+        "design_matrix": "design",
+        "peptide_data": "concatenate"
+      },
+      "holders": [
+        "R/utils_workflow_prot_declarations.R computeDIAReferencePeptideAccessionCleanup -> finishDIAReferencePeptideStep (state peptide_accession_cleaned)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "KIT-047: unit recorded under the afk authorisation (decision record 2026-10-21); the GUI's FASTA table carries database_id, renamed to the declared accession column (shipped default uniprot_acc); the script used cleaned_acc from its own FASTA table, which the ranking helper derives in either case (ranking_helpers.R:74-76, 207)."
+      ]
+    },
+    {
+      "id": "dpc_quant",
+      "label": "DPC Quantification (DIA_LIMPA)",
+      "route": "DIA_LIMPA",
+      "unit": "whole_matrix",
+      "in_journey": false,
+      "module": "R/mod_prot_qc_protein_dpc_quant.R: observeEvent(apply_dpc_quant) -> runProteinDpcQuantApplyObserver -> runProteinDpcQuantStep; owner path runDIAReferenceProteinDpcQuant -> computeDIAReferenceProteinDpcQuant; declared by diaProteinDpcQuantOperation (registered protein_dpc_quant, whole, protein completion)",
+      "kernel": "proteinMissingValueImputationLimpa, PeptideQuantitativeData method (R/func_prot_s4_missingness.R:312-660): engine dpc at :443, engine dpcQuant at :535/:543 (engine limpa by default, fastlimpadpc selectable; resolveLimpaDpcEngine)",
+      "evidence": [
+        "R/func_prot_s4_missingness.R:443: the detection probability curve is fitted on the whole peptide matrix (every peptide, every sample)",
+        "R/func_prot_s4_missingness.R:535-549: dpcQuant estimates the hyperparameters (limpa::dpcQuantHyperparam, fastlimpadpc R/wrappers.R:249) over every protein before quantifying each protein from its own peptides",
+        "R/func_prot_s4_missingness.R:386-390: peptides with no observation are dropped before the fit (a row rule inside the whole placement)"
+      ],
+      "reads_outside_assay": [
+        "design_matrix (carried to the protein object)"
+      ],
+      "writes": [
+        "new ProteinQuantitativeData: protein_quant_table (log2, complete), protein_id_table, design_matrix",
+        "args$limpa_dpc_quant_results (the DPC fit, the quantified EList with standard errors, y_peptide_for_dpc, peptide counts per protein; stored as the class's owned args entry, KIT-047)",
+        "args$limpaDpcQuant (engine, engine_version, dpc_slope, chunk, limpa_version)",
+        "limpa_*.png QC figures (publishDIAProteinTables)"
+      ],
+      "global_statistics": [
+        {
+          "name": "dpc_fit",
+          "why": "the DPC intercept and slope fitted over every peptide and sample; recorded in the step's outcomes"
+        },
+        {
+          "name": "dpc_hyperparameters",
+          "why": "sigma, prior mean/sd/logFC estimated over every protein by dpcQuantHyperparam"
+        }
+      ],
+      "merge": null,
+      "holders": [
+        "R/utils_workflow_prot_declarations.R computeDIAReferenceProteinDpcQuant -> finishDIAReferenceProteinStep (state protein_dpc_quant)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "KIT-047: unit recorded under the afk authorisation (decision record 2026-10-21). Determinism on the kit host (kit-047/dpc-check-*.json): limpa bit-identical across runs; fastlimpadpc's dpcQuant bit-identical across runs and across RAYON_NUM_THREADS settings given a fit, its dpc fit not bit-identical between two runs under the host-default thread pool (identical with RAYON_NUM_THREADS=1); the shipped default engine is therefore limpa (the ticket's rule)."
+      ]
     }
   ],
   "science_notes_for_the_user": [
@@ -754,6 +865,13 @@
       "ticket": "KIT-009/KIT-014",
       "step": "sample",
       "defect": "runDIAReferencePeptideGroups merges only sum_fields and copies other summary fields from the first group (qc_rollup.R:344-347, 391-396); non-additive provenance fields must be recomputed globally."
+    }
+  ],
+  "revisions": [
+    {
+      "date": "2026-10-21",
+      "ticket": "KIT-047",
+      "change": "three DIA_LIMPA rows added (peptide_log2 row, peptide_accession feature group, dpc_quant whole matrix); units recorded under the afk authorisation, confirmation row in the plan's decision record"
     }
   ]
 }

@@ -883,8 +883,10 @@ The `generateLimpaQCPlots` function then produces a set of diagnostic plots to a
 ```{r 14 Limpa imputation and protein rollup}
 
 # Limpa DPC Imputation
+# KIT-047: the workbook names its engine; `fastlimpadpc` (the GUI's default when installed) is selectable here too.
 protein_ruv_normalised_imputed_obj <- proteinMissingValueImputationLimpa(
-  peptide_annot_cln_obj)
+  peptide_annot_cln_obj,
+  engine = "limpa")
 
 limpa_qc_plots <- generateLimpaQCPlots(protein_ruv_normalised_imputed_obj, verbose = TRUE)
 print(limpa_qc_plots)

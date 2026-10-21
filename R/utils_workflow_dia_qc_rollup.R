@@ -886,6 +886,29 @@ buildDIAReferencePeptideHandoff <- function(checkpoint, section, parameters, pro
             sprintf("Max proportion missing: %.1f\n", parameters$proportion_missing_values), paste(lines, collapse = ""),
             "State saved as: 'imputed'\n", "\nReady for peptide-to-protein rollup step.")
         name <- "imputation"
+    } else if (section == "log2TransformPeptideMatrix") {
+        # KIT-047: the DIA_LIMPA log2 matrix; the compute's config is the step's record.
+        config <- parameters
+        qc <- c(config[setdiff(names(config), "outcomes")], list(timestamp = stamp))
+        text <- paste("Log2 Peptide Matrix Calculated Successfully\n", "===========================================\n",
+            sprintf("Proteins remaining: %d\n", proteins), sprintf("Peptides (matrix rows): %d\n", config$peptides),
+            sprintf("Samples (matrix columns): %d\n", config$samples), sprintf("Quantity column: %s\n", config$quantity_column),
+            sprintf("Values <= 0 set to NA: %d\n", config$nonpositive_set_to_na),
+            sprintf("Missing cells after transformation: %d\n", config$missing_after), "State saved as: 'log2_matrix'\n")
+        name <- "log2_matrix"
+    } else if (section == "chooseBestProteinAccession") {
+        # KIT-047: the DIA_LIMPA peptide-level accession cleanup.
+        config <- parameters
+        qc <- c(config[setdiff(names(config), "outcomes")], list(timestamp = stamp))
+        applied <- isTRUE(config$cleanup_applied)
+        text <- paste(if (applied) "Peptide Accession Cleanup Applied Successfully\n" else "Peptide Accession Cleanup Skipped\n",
+            "==============================================\n", sprintf("Proteins remaining: %d\n", proteins),
+            sprintf("Protein groups before / after: %d / %d\n", config$protein_groups_before, config$protein_groups_after),
+            sprintf("Peptide rows before / after: %d / %d\n", config$peptide_rows_before, config$peptide_rows_after),
+            if (applied) sprintf("Delimiter: %s\nAggregation method: %s\nFASTA accession column: %s\n", config$delimiter,
+                config$aggregation_method, config$seqinr_accession_column) else "Reason: No FASTA data available for cleanup\n",
+            "State saved as: 'peptide_accession_cleaned'\n")
+        name <- "peptide_accession_cleanup"
     } else {
         summary <- args$rollup_summary
         config <- list(rollup_summary = summary)
@@ -1023,14 +1046,22 @@ completeDIAProteinAction <- function(workflow, value, publish = FALSE) {
 #' @noRd
 publishDIAProteinTables <- function(manager, result) {
     state <- manager$current_state
-    if (!state %in% c("protein_s4_created", "protein_accession_cleaned", "protein_replicate_filtered"))
+    if (!state %in% c("protein_s4_created", "protein_accession_cleaned", "protein_replicate_filtered", "protein_dpc_quant"))
         return(invisible(NULL))
     record <- readDIAStateMetadata(manager, result$stateReference)
     paths <- manager$.context$experiment_paths
     destinations <- if (state == "protein_s4_created") paths[c("protein_qc_dir", "peptide_qc_dir")] else
-        if (state == "protein_accession_cleaned") paths["source_dir"] else paths[c("protein_qc_dir", "source_dir")]
+        if (state == "protein_accession_cleaned") paths["source_dir"] else
+        if (state == "protein_dpc_quant") paths["protein_qc_dir"] else paths[c("protein_qc_dir", "source_dir")]
     publishDIAActionOutputs(manager, result$stateReference, "protein-qc", destinations, function(staged) {
-        if (state == "protein_s4_created") {
+        if (state == "protein_dpc_quant") {
+            # KIT-047: the limpa QC figures rendered from the hydrated state (its owned results entry reattached).
+            object <- readDIAExecutionComponents(manager, result$stateReference)
+            generateLimpaQCPlotsFn <- generateLimpaQCPlots
+            suppressMessages(generateLimpaQCPlotsFn(object, save_plots = TRUE, save_dir = staged$protein_qc_dir,
+                plot_prefix = "limpa", verbose = FALSE))
+            object <- NULL
+        } else if (state == "protein_s4_created") {
             files <- list(iq_output_file = file.path(staged$protein_qc_dir, "iq_output_file.txt"),
                 peptide_input_file = file.path(staged$peptide_qc_dir, "peptide_values_imputed.tsv"))
             for (field in names(files)) if (!file.copy(record$config[[field]], files[[field]], overwrite = TRUE))

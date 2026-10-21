@@ -68,11 +68,11 @@ getProtQcProteinCommonModuleSpecs <- function() {
 }
 
 getProtQcProteinModuleSpecs <- function(workflowType = NULL) {
-  # KIT-046: the DIA_LIMPA route's protein stage (the script's checkpoints): DPC quantification (KIT-047), the
+  # KIT-046: the DIA_LIMPA route's protein stage (the script's checkpoints): DPC quantification (KIT-047's module), the
   # optional between-sample normalisation and the peptide-count filter (KIT-041); placeholders fix the ids here.
   if (identical(workflowType, "DIA_LIMPA")) {
     return(list(
-      list(id = "dpc_quant", title = "DPC Quantification", uiFn = "mod_prot_qc_protein_dpc_quant_ui", serverFn = "mod_prot_qc_protein_dpc_quant_server", needsExperimentPaths = TRUE, placeholder = "KIT-047"),
+      list(id = "dpc_quant", title = "DPC Quantification", uiFn = "mod_prot_qc_protein_dpc_quant_ui", serverFn = "mod_prot_qc_protein_dpc_quant_server", needsExperimentPaths = TRUE),
       list(id = "normalisation", title = "Between-Sample Normalisation", uiFn = "mod_prot_qc_protein_normalisation_ui", serverFn = "mod_prot_qc_protein_normalisation_server", needsExperimentPaths = TRUE, placeholder = "KIT-041"),
       list(id = "peptide_count", title = "Peptide Count Filter", uiFn = "mod_prot_qc_protein_peptide_count_ui", serverFn = "mod_prot_qc_protein_peptide_count_server", needsExperimentPaths = TRUE, placeholder = "KIT-041")
     ))

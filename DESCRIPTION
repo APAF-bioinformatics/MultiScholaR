@@ -27,7 +27,9 @@ Encoding: UTF-8
 NeedsCompilation: yes
 SystemRequirements: GNU coreutils sync (file-specific fsync, for experimental
     saved-entity storage on Linux); GNU tar, bash and GNU coreutils dd/sha256sum
-    (bounded streaming I/O for experimental native DIA archives on Linux)
+    (bounded streaming I/O for experimental native DIA archives on Linux);
+    Cargo and rustc (>= 1.65) only for the optional fastlimpadpc engine of
+    the DIA with limpa workflow (Suggests)
 Depends: R (>= 4.1.0)
 Roxygen: list(markdown = TRUE)
 Collate: 
@@ -354,10 +356,13 @@ Collate:
     'mod_prot_qc_peptide_qvalue.R'
     'mod_prot_qc_peptide_replicate.R'
     'mod_prot_qc_peptide_rollup.R'
+    'mod_prot_qc_peptide_log2.R'
+    'mod_prot_qc_peptide_accession.R'
     'mod_prot_qc_peptide_sample.R'
     'mod_prot_qc_protein.R'
     'mod_prot_qc_protein_cleanup.R'
     'mod_prot_qc_protein_dedup.R'
+    'mod_prot_qc_protein_dpc_quant.R'
     'mod_prot_qc_protein_intensity.R'
     'mod_prot_qc_protein_replicate.R'
     'mod_prot_qc_protein_rollup.R'
@@ -425,6 +430,7 @@ Suggests:
     GSEABase,
     KEGGREST,
     limpa,
+    fastlimpadpc,
     mixOmics,
     MOFA2,
     progress,
@@ -532,5 +538,6 @@ Imports:
 Remotes:
     cran/RUVIIIC,
     APAF-bioinformatics/GlimmaV2,
-    APAF-bioinformatics/fast_duckdb/fastduckdb@d78511504fbdb89fbf34bc26b22b3ff1524b0555
+    APAF-bioinformatics/fast_duckdb/fastduckdb@d78511504fbdb89fbf34bc26b22b3ff1524b0555,
+    APAF-bioinformatics/fast_limpa_dpc@d4f9cc1dcfeb0183c15bd08872dbe5cf3c2b09a2
 Config/roxygen2/version: 8.0.0

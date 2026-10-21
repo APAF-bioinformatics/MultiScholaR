@@ -431,10 +431,12 @@ test_that("limpa DPC-Quant receives Protein.Group from the feature map without p
   )
   environment(protein_method) <- protein_method_env
 
+  # KIT-047: the engine is named (the fake limpa namespace); the default would be fastlimpadpc where installed.
   quantified <- protein_method(
     peptide_object,
     dpc_slope = 0.8,
-    verbose = FALSE
+    verbose = FALSE,
+    engine = "limpa"
   )
 
   expect_identical(captured$genes$protein.id, c("GROUP%ONE", "GROUP_TWO"))
@@ -443,4 +445,37 @@ test_that("limpa DPC-Quant receives Protein.Group from the feature map without p
   expect_identical(quantified@protein_quant_table$Protein.Group, c("GROUP%ONE", "GROUP_TWO"))
   expect_true(all(c("Protein.Group", "Protein.Ids") %in% names(quantified@protein_id_table)))
   expect_identical(unique(quantified@protein_id_table$Protein.Ids), "P_SHARED")
+})
+
+test_that("the DPC engine of the peptide method is resolved by name and refused when absent (KIT-047)", {
+  both <- function(package) package %in% c("fastlimpadpc", "limpa")
+  limpa_only <- function(package) package == "limpa"
+  expect_identical(resolveLimpaDpcEngine(NULL, available = both), "limpa")
+  expect_identical(resolveLimpaDpcEngine(NULL, available = limpa_only), "limpa")
+  expect_error(resolveLimpaDpcEngine(NULL, available = function(package) package == "fastlimpadpc"), class = "workflow_engine_unavailable")
+  expect_identical(resolveLimpaDpcEngine("limpa", available = both), "limpa")
+  expect_identical(resolveLimpaDpcEngine("fastlimpadpc", available = both), "fastlimpadpc")
+  expect_error(resolveLimpaDpcEngine("fastlimpadpc", available = limpa_only), class = "workflow_engine_unavailable")
+  expect_error(resolveLimpaDpcEngine("rust", available = both), class = "workflow_engine_invalid")
+  expect_error(resolveLimpaDpcEngine(c("limpa", "limpa"), available = both), class = "workflow_engine_invalid")
+})
+
+test_that("the peptide method records the engine it ran on in its results list (KIT-047)", {
+  localFakeLimpa()
+  options(
+    multischolar.fake_limpa.dpc = function(y) list(dpc = c(0.2, 0.8), y = y),
+    multischolar.fake_limpa.dpcQuant = function(y, protein.id, dpc = NULL, dpc.slope = NULL, verbose, chunk) {
+      protein_ids <- unique(y$genes[[protein.id]])
+      E <- matrix(seq_len(length(protein_ids) * ncol(y$E)), nrow = length(protein_ids),
+        dimnames = list(protein_ids, colnames(y$E)))
+      list(E = E, genes = data.frame(protein.id = protein_ids, stringsAsFactors = FALSE),
+        other = list(standard.error = E * 0, n.observations = E * 0 + 1L))
+    }
+  )
+  peptide_object <- calcPeptideMatrix(newPeptideLimpaObject())
+  quantified <- proteinMissingValueImputationLimpa(peptide_object, dpc_slope = 0.8, verbose = FALSE, engine = "limpa")
+  results <- quantified@args$limpa_dpc_quant_results
+  expect_identical(results$engine, "limpa")
+  expect_identical(results$engine_version, "0.0.1")
+  expect_identical(results$quantification_method, "limpa_dpc_quant")
 })

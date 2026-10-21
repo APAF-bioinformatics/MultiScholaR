@@ -27,14 +27,14 @@ NULL
 
 getProtQcPeptideModuleSpecs <- function(workflowType = "DIA") {
   # KIT-046: the DIA_LIMPA route's peptide stage (the script's checkpoints): the Q-value filter and the precursor
-  # rollup are the shared declarations; the log2 matrix and the peptide-level accession cleanup are KIT-047's modules
-  # (their ids and tabs are fixed here as placeholders).
+  # rollup are the shared declarations; the log2 matrix and the peptide-level accession cleanup are KIT-047's
+  # declarations and modules.
   if (identical(workflowType, "DIA_LIMPA")) {
     return(list(
       list(id = "qvalue_filter", title = "Q-Value Filter", uiFn = "mod_prot_qc_peptide_qvalue_ui", serverFn = "mod_prot_qc_peptide_qvalue_server"),
       list(id = "rollup", title = "Precursor Rollup", uiFn = "mod_prot_qc_peptide_rollup_ui", serverFn = "mod_prot_qc_peptide_rollup_server"),
-      list(id = "log2_matrix", title = "Log2 Matrix", uiFn = "mod_prot_qc_peptide_log2_ui", serverFn = "mod_prot_qc_peptide_log2_server", placeholder = "KIT-047"),
-      list(id = "accession_cleanup", title = "Peptide Accession Cleanup", uiFn = "mod_prot_qc_peptide_accession_ui", serverFn = "mod_prot_qc_peptide_accession_server", placeholder = "KIT-047")
+      list(id = "log2_matrix", title = "Log2 Matrix", uiFn = "mod_prot_qc_peptide_log2_ui", serverFn = "mod_prot_qc_peptide_log2_server"),
+      list(id = "accession_cleanup", title = "Peptide Accession Cleanup", uiFn = "mod_prot_qc_peptide_accession_ui", serverFn = "mod_prot_qc_peptide_accession_server")
     ))
   }
   list(

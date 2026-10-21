@@ -307,3 +307,133 @@ test_that("the controller's publication phase publishes every protein state's fi
     expect_error(completeDIAProteinAction(list2env(list(state_manager = m5)), list(state_name = "x")), class = "workflow_execution_invalid")
     expect_true(any(grepl("remove_proteins_with_only_one_rep[.]tsv$", publish("protein_replicate_filter", m5, v5))))
 })
+
+# ---- KIT-047: the DIA_LIMPA peptide stage ----------------------------------------------------------
+
+rolledPeptideFixture <- function() {
+    precursor <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
+    rollUpPrecursorToPeptide(precursor, core_utilisation = NA)
+}
+
+test_that("the DIA_LIMPA peptide-stage declarations are registered with the units of the step map and run whole (KIT-047)", {
+    expect_identical(diaPeptideLog2MatrixOperation()$unit, "row")
+    expect_identical(diaPeptideLog2MatrixOperation()$fixed, list(nonpositive_to_na = TRUE))
+    expect_identical(diaPeptideAccessionCleanupOperation()$unit, "feature_group")
+    expect_identical(diaProteinDpcQuantOperation()$unit, "whole_matrix")
+    expect_null(diaProteinDpcQuantOperation()$merge)
+    expect_identical(diaProteinDpcQuantOperation()$output_class, "ProteinQuantitativeData")
+    expect_identical(diaProteinDpcQuantOperation()$parameters, c("engine", "dpc_slope", "chunk"))
+    roles <- list(peptide_log2_matrix = "peptide", peptide_accession_cleanup = "peptide", protein_dpc_quant = "protein")
+    for (name in names(roles)) {
+        entry <- workflowActionSpec(name)
+        expect_identical(entry$variants, "whole", info = name)
+        expect_identical(entry$input, "peptide", info = name)
+        expect_identical(entry$compute, roles[[name]], info = name)
+        expect_identical(entry$completion, roles[[name]], info = name)
+        expect_true(is.function(get(entry$handler, mode = "function")), info = name)
+        expect_true(is.function(get(entry$validate, mode = "function")), info = name)
+        expect_true(all(entry$parameters %in% names(workflowOperationDefaults[[name]])), info = name)
+        expect_true(all(entry$parameters %in% names(workflowParameterLabels[[name]])), info = name)
+    }
+    expect_identical(workflowActionSpec("protein_dpc_quant")$step_label, "9_protein_dpc_quant")
+    expect_error(validateWorkflowActionParameters("peptide_log2_matrix", list(x = 1), workflowExecutionPolicy(FALSE)))
+    expect_error(validateWorkflowActionParameters("protein_dpc_quant", list(engine = "rust", dpc_slope = 0.8, chunk = 1000), workflowExecutionPolicy(FALSE)))
+    expect_error(validateWorkflowActionParameters("protein_dpc_quant", list(engine = "limpa", dpc_slope = -1, chunk = 1000), workflowExecutionPolicy(FALSE)))
+    expect_error(validateWorkflowActionParameters("peptide_accession_cleanup", list(delimiter = ";", aggregation_method = "max"), workflowExecutionPolicy(FALSE)))
+    expect_silent(validateWorkflowActionParameters("protein_dpc_quant", list(engine = "limpa", dpc_slope = 0.8, chunk = 1000), workflowExecutionPolicy(FALSE)))
+})
+
+test_that("the log2 matrix and peptide accession declarations reproduce the in-memory kernels on the rolled fixture and finish as peptide steps (KIT-047)", {
+    rolled <- rolledPeptideFixture()
+    manager <- proteinDeclarationFixtureManager(rolled, withr::local_tempdir(), "precursor_rollup")
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$setWorkflowType("DIA_LIMPA")
+    expected <- log2TransformPeptideMatrix(calcPeptideMatrix(rolled))
+    workflow <- list2env(list(state_manager = manager, qc_params = list(peptide_qc = list())))
+    withDIAStateScope(manager, function() {
+        value <- computeDIAReferencePeptideLog2Matrix(manager, getDIAStateReference(manager), list())
+        expect_identical(value$state_name, "log2_matrix")
+        expect_identical(value$section, "log2TransformPeptideMatrix")
+        expect_identical(value$config$peptides, nrow(expected@peptide_matrix))
+        expect_identical(value$config$outcomes$nonpositive_set_to_na, 0L)
+        # The same input on the owner refuses a second transformation (the kernel would warn and return unchanged).
+        setDIAStepProvenance(manager, "peptide_log2_matrix", "whole", character(), list(nonpositive_to_na = TRUE))
+        finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description, value$config, value$section, NULL)
+        expect_identical(manager$current_state, "log2_matrix")
+        expect_identical(manager$.context$snapshot$step_provenance$log2_matrix$operation, "peptide_log2_matrix")
+        expect_identical(workflow$qc_params$peptide_qc$log2_matrix$peptides, nrow(expected@peptide_matrix))
+        expect_error(computeDIAReferencePeptideLog2Matrix(manager, getDIAStateReference(manager), list()), class = "workflow_execution_invalid")
+    })
+    declared <- manager$getState("log2_matrix")
+    expect_true(declared@is_logged_data)
+    expect_equal(declared@peptide_matrix, expected@peptide_matrix, tolerance = 1e-12)
+    expect_equal(as.data.frame(declared@peptide_data)[[declared@norm_quantity_column]],
+        as.data.frame(expected@peptide_data)[[expected@norm_quantity_column]], tolerance = 1e-12)
+    # The peptide accession cleanup without a FASTA table records a skip (as the protein cleanup does) and names
+    # the route's own declaration through the section map.
+    withDIAStateScope(manager, function() {
+        value <- computeDIAReferencePeptideAccessionCleanup(manager, getDIAStateReference(manager),
+            list(delimiter = ";", aggregation_method = "mean"))
+        expect_identical(value$state_name, "peptide_accession_cleaned")
+        expect_false(value$config$cleanup_applied)
+        expect_identical(value$config$seqinr_accession_column, "uniprot_acc")
+        finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description, value$config, value$section, NULL)
+        expect_identical(manager$current_state, "peptide_accession_cleaned")
+        expect_identical(manager$.context$snapshot$step_provenance$peptide_accession_cleaned$operation, "peptide_accession_cleanup")
+    })
+    expect_equal(manager$getState("peptide_accession_cleaned")@peptide_matrix, expected@peptide_matrix, tolerance = 1e-12)
+})
+
+test_that("the DPC quantification declaration reproduces the in-memory kernel, stores its results as the owned entry and records the engine (KIT-047)", {
+    skip_if_not_installed("limpa")
+    engine <- resolveLimpaDpcEngine()
+    expect_identical(engine, "limpa")
+    rolled <- rolledPeptideFixture()
+    logged <- log2TransformPeptideMatrix(calcPeptideMatrix(rolled))
+    manager <- proteinDeclarationFixtureManager(logged, withr::local_tempdir(), "log2_matrix")
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$setWorkflowType("DIA_LIMPA")
+    parameters <- list(engine = engine, dpc_slope = 0.8, chunk = 1000)
+    expected <- suppressMessages(proteinMissingValueImputationLimpa(logged, dpc_slope = 0.8, verbose = FALSE, chunk = 1000, engine = engine))
+    workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list())))
+    withDIAStateScope(manager, function() {
+        value <- suppressMessages(runProjected(manager, diaProteinDpcQuantOperation(), getDIAStateReference(manager), parameters))
+        expect_identical(value$state_name, "protein_dpc_quant")
+        expect_identical(value$section, "limpaDpcQuant")
+        expect_identical(value$field, "quantifiedS4")
+        expect_identical(value$config$engine, engine)
+        expect_identical(value$config$engine_version, as.character(utils::packageVersion(engine)))
+        expect_identical(value$config$outcomes$proteins_quantified, nrow(expected@protein_quant_table))
+        expect_true(isSavedWorkflowReference(value$checkpoint$slots$args$limpa_dpc_quant_results))
+        setDIAStepProvenance(manager, "protein_dpc_quant", "whole", c("engine", "dpc_slope", "chunk"), NULL, values = parameters)
+        finishDIAReferenceProteinStep(workflow, value, publish = FALSE)
+        expect_identical(manager$current_state, "protein_dpc_quant")
+        expect_identical(workflow$qc_params$protein_qc$dpc_quant$engine, engine)
+    })
+    declared <- manager$getState("protein_dpc_quant")
+    expect_s4_class(declared, "ProteinQuantitativeData")
+    expect_equal(as.data.frame(declared@protein_quant_table), as.data.frame(expected@protein_quant_table), ignore_attr = TRUE)
+    results <- declared@args$limpa_dpc_quant_results
+    expect_equal(results$quantified_elist$E, expected@args$limpa_dpc_quant_results$quantified_elist$E)
+    expect_equal(results$standard_errors, expected@args$limpa_dpc_quant_results$standard_errors)
+    expect_identical(results$engine, engine)
+    expect_identical(declared@args$limpaDpcQuant$engine, engine)
+    # The readers of the results list run on the hydrated object unchanged.
+    withDIAStateScope(manager, function() {
+        hydrated <- readDIAExecutionComponents(manager)
+        expect_identical(names(hydrated@args$limpa_dpc_quant_results), names(results))
+        filtered <- suppressMessages(filterMinNumPeptidesPerProtein(hydrated, peptides_per_protein_cutoff = 1L, peptidoforms_per_protein_cutoff = 2L))
+        expect_s4_class(filtered, "ProteinQuantitativeData")
+        expect_lte(nrow(filtered@protein_quant_table), nrow(declared@protein_quant_table))
+        record <- buildWorkflowAnalysisRecord(manager)
+        step <- Filter(function(s) identical(s$state, "protein_dpc_quant"), record$steps)[[1L]]
+        expect_identical(step$operation, "protein_dpc_quant")
+        expect_identical(step$outcomes$engine, engine)
+        expect_identical(step$outcomes$limpa_version, as.character(utils::packageVersion("limpa")))
+        expect_identical(step$outcomes$proteins_quantified, nrow(expected@protein_quant_table))
+        names_recorded <- vapply(step$parameters, `[[`, character(1), "name")
+        expect_setequal(names_recorded, c("engine", "dpc_slope", "chunk"))
+        listed <- vapply(record$software$packages, `[[`, character(1), "name")
+        expect_true(all(c("limpa", engine) %in% listed))
+    })
+})

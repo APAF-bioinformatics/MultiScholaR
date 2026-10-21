@@ -448,3 +448,286 @@ diaProteinDuplicateRemovalOperation <- function() {
         product_type = "dia.protein_duplicate_removal_result",
         merge = c(protein_quant_table = "concatenate", counts = "sum"))
 }
+
+# ---------------------------------------------------------------------------------------------------------------
+# The DIA_LIMPA peptide stage (KIT-047): the limpa script's chunks 13, 16 and 17 as declarations on the owner. Each
+# compute-only entry point hydrates the saved peptide state, runs the unchanged kernel once and returns the contract
+# the shared finishing steps consume (`finishDIAReferencePeptideStep` for the two peptide outputs,
+# `finishDIAReferenceProteinStep` for the DPC quantification); the GUI runs the same entry point in process, the
+# managed worker from a frozen request.
+
+#' The log2 peptide matrix as a declaration (chunk 13): unit row (`calcPeptideMatrix` pivots each feature's own rows;
+#' `log2TransformPeptideMatrix` maps each cell, values <= 0 to NA), placed whole. No parameters; the kernel's constant
+#' is fixed.
+#' @noRd
+diaPeptideLog2MatrixOperation <- function() {
+    newWorkflowOperation(name = "peptide_log2_matrix", input_class = "PeptideQuantitativeData",
+        fields = c("peptide_data", "design_matrix"), unit = "row",
+        kernel = function(object, parameters, store) computeDIAReferencePeptideLog2Matrix(store$manager, store$source,
+            parameters, worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "whole"),
+        output_class = "PeptideQuantitativeData", parameters = character(), fixed = list(nonpositive_to_na = TRUE),
+        product_type = "dia.peptide_log2_matrix_result",
+        merge = c(design_matrix = "design", peptide_data = "concatenate"))
+}
+
+#' The peptide-level accession cleanup as a declaration (chunk 16): unit feature group by the protein group (the
+#' kernel resolves one accession per group and aggregates duplicate peptides within it), placed whole.
+#' @noRd
+diaPeptideAccessionCleanupOperation <- function() {
+    newWorkflowOperation(name = "peptide_accession_cleanup", input_class = "PeptideQuantitativeData",
+        fields = c("peptide_data", "design_matrix"), unit = "feature_group",
+        kernel = function(object, parameters, store) computeDIAReferencePeptideAccessionCleanup(store$manager, store$source,
+            parameters[c("delimiter", "aggregation_method", "seqinr_accession_column", "fasta_table", "fasta_sha256")],
+            worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "whole",
+            seqinr = parameters$seqinr, fasta_metadata = parameters$fasta_metadata),
+        output_class = "PeptideQuantitativeData",
+        parameters = c("delimiter", "aggregation_method", "seqinr_accession_column", "fasta_sha256"),
+        product_type = "dia.peptide_accession_cleanup_result",
+        merge = c(design_matrix = "design", peptide_data = "concatenate"))
+}
+
+#' The DPC imputation and quantification as a declaration (chunk 17): whole matrix (the detection probability curve
+#' is fitted over every peptide and sample; the hyperparameters over every protein), the unchanged peptide method of
+#' `proteinMissingValueImputationLimpa` once with the declared engine.
+#' @noRd
+diaProteinDpcQuantOperation <- function() {
+    newWorkflowOperation(name = "protein_dpc_quant", input_class = "PeptideQuantitativeData",
+        fields = c("peptide_data", "design_matrix", "peptide_matrix"), unit = "whole_matrix",
+        kernel = function(object, parameters, store) computeDIAReferenceProteinDpcQuant(store$manager, store$source,
+            parameters[c("engine", "dpc_slope", "chunk")], worker_cap = parameters$worker_cap %||% 12 * 1024^3,
+            variant = parameters$variant %||% "whole"),
+        output_class = "ProteinQuantitativeData", parameters = c("engine", "dpc_slope", "chunk"),
+        product_type = "dia.protein_dpc_quant_result")
+}
+
+#' Checkpoint a kernel's peptide object as a peptide step's output, inheriting the saved input as its source.
+#' @param loaded The slots the kernel rewrote (the writer keeps the stored component of any other slot).
+#' @noRd
+checkpointDIAReferencePeptideObject <- function(manager, reference, object, loaded) {
+    attr(object, "dia_component_source") <- reference
+    attr(object, "dia_execution_fields") <- loaded
+    checkpoint <- checkpointDIAExecutionResult(manager, object)
+    checkpoint$dependencies <- collectDIANativeReferences(list(reference, checkpoint$dependencies,
+        checkpoint$components, checkpoint$support, checkpoint$products))
+    checkpoint
+}
+
+#' @noRd
+readDIAReferencePeptideObject <- function(manager, reference, fields = c("peptide_data", "design_matrix")) {
+    before <- readDIAStateMetadata(manager, reference)
+    if (!identical(before$data$class, "PeptideQuantitativeData"))
+        cli::cli_abort("a peptide state is required", class = "workflow_execution_unsupported")
+    readDIAExecutionComponents(manager, reference, fields = fields)
+}
+
+#' Log2 peptide matrix on a saved peptide state (chunk 13): `calcPeptideMatrix` then `log2TransformPeptideMatrix`.
+#' @return Compute-only peptide contract (`checkpoint`, `state_name`, `description`, `config`, `section`, `counts`).
+#' @noRd
+computeDIAReferencePeptideLog2Matrix <- function(manager, reference, parameters = list(), worker_cap = 12 * 1024^3,
+    variant = "whole") {
+    if (!identical(variant, "whole")) cli::cli_abort("unsupported log2 matrix variant", class = "workflow_execution_unsupported")
+    object <- readDIAReferencePeptideObject(manager, reference)
+    if (isTRUE(object@is_logged_data))
+        cli::cli_abort("the peptide state is already log2 transformed", class = "workflow_execution_invalid")
+    calcPeptideMatrixFn <- calcPeptideMatrix
+    log2TransformPeptideMatrixFn <- log2TransformPeptideMatrix
+    object <- calcPeptideMatrixFn(object)
+    nonpositive <- sum(object@peptide_matrix <= 0, na.rm = TRUE)
+    missing_before <- sum(is.na(object@peptide_matrix))
+    transformed <- log2TransformPeptideMatrixFn(object)
+    object <- NULL
+    peptides <- nrow(transformed@peptide_matrix)
+    samples <- ncol(transformed@peptide_matrix)
+    missing_after <- sum(is.na(transformed@peptide_matrix))
+    quantity <- transformed@norm_quantity_column
+    checkpoint <- checkpointDIAReferencePeptideObject(manager, reference, transformed,
+        c("peptide_data", "design_matrix", "peptide_matrix"))
+    transformed <- NULL
+    config <- list(peptides = peptides, samples = samples, quantity_column = quantity, nonpositive_set_to_na = nonpositive,
+        missing_before = missing_before, missing_after = missing_after,
+        outcomes = list(peptides = peptides, samples = samples, nonpositive_set_to_na = nonpositive,
+            missing_cells = missing_after))
+    list(checkpoint = checkpoint, state_name = "log2_matrix",
+        description = "Peptide matrix calculated and log2 transformed (values <= 0 set to NA)",
+        config = config, section = "log2TransformPeptideMatrix", counts = NULL,
+        execution = list(variant = variant, worker_cap = worker_cap, rows = peptides, samples = samples))
+}
+
+#' The FASTA table a peptide accession cleanup joins (as the protein cleanup resolves it: the bound path or the
+#' owner's source directory), with the accession column the step names (the GUI's table carries `database_id`).
+#' @noRd
+resolveDIAPeptideAccessionFasta <- function(manager, parameters, seqinr, fasta_metadata) {
+    if (is.null(seqinr)) {
+        path <- parameters$fasta_table %||% file.path(manager$.context$experiment_paths$source_dir %||% "", "aa_seq_tbl_final.RDS")
+        if (is.character(path) && length(path) == 1L && nzchar(path) && file.exists(path)) seqinr <- readRDS(path)
+        metadata_path <- file.path(dirname(path), "fasta_metadata.RDS")
+        if (is.null(fasta_metadata) && file.exists(metadata_path)) fasta_metadata <- readRDS(metadata_path)
+    }
+    column <- parameters$seqinr_accession_column %||% "uniprot_acc"
+    if (!is.null(seqinr) && !column %in% names(seqinr)) {
+        if (!"database_id" %in% names(seqinr))
+            cli::cli_abort("the FASTA table carries neither {.val {column}} nor {.val database_id}", class = "workflow_execution_invalid")
+        seqinr <- dplyr::rename(seqinr, !!column := "database_id")
+    }
+    list(seqinr = seqinr, fasta_metadata = fasta_metadata, column = column)
+}
+
+#' Peptide-level accession cleanup on a saved peptide state (chunk 16): the peptide `chooseBestProteinAccession`
+#' (one accession per protein group from the FASTA metadata, duplicate peptides aggregated, the matrix recalculated).
+#' Without a FASTA table the step records a skip, as the protein cleanup does.
+#' @noRd
+computeDIAReferencePeptideAccessionCleanup <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
+    variant = "whole", seqinr = NULL, fasta_metadata = NULL, now_fn = Sys.time) {
+    if (!identical(variant, "whole")) cli::cli_abort("unsupported peptide accession cleanup variant", class = "workflow_execution_unsupported")
+    delimiter <- parameters$delimiter
+    aggregation <- parameters$aggregation_method
+    fasta_sha256 <- parameters$fasta_sha256 %||% manager$.context$snapshot$file_dependencies$fasta$sha256 %||% NA_character_
+    fasta <- resolveDIAPeptideAccessionFasta(manager, parameters, seqinr, fasta_metadata)
+    object <- readDIAReferencePeptideObject(manager, reference)
+    key <- object@protein_id_column
+    groups_before <- length(unique(object@peptide_data[[key]]))
+    rows_before <- nrow(object@peptide_data)
+    chooseBestProteinAccessionFn <- chooseBestProteinAccession
+    if (!is.null(fasta$seqinr)) {
+        cleaned <- chooseBestProteinAccessionFn(theObject = object, delim = delimiter, seqinr_obj = fasta$seqinr,
+            seqinr_accession_column = fasta$column, aggregation_method = aggregation)
+        applied <- TRUE
+        loaded <- c("peptide_data", "design_matrix", "peptide_matrix")
+    } else {
+        cleaned <- object
+        applied <- FALSE
+        loaded <- c("peptide_data", "design_matrix")
+    }
+    object <- NULL
+    groups_after <- length(unique(cleaned@peptide_data[[key]]))
+    rows_after <- nrow(cleaned@peptide_data)
+    checkpoint <- checkpointDIAReferencePeptideObject(manager, reference, cleaned, loaded)
+    cleaned <- NULL
+    config <- list(delimiter = delimiter, aggregation_method = aggregation, seqinr_accession_column = fasta$column,
+        cleanup_applied = applied, active_protein_key = key, fasta_sha256 = fasta_sha256,
+        protein_groups_before = groups_before, protein_groups_after = groups_after,
+        peptide_rows_before = rows_before, peptide_rows_after = rows_after,
+        had_full_metadata = if (!is.null(fasta$fasta_metadata)) isTRUE(fasta$fasta_metadata$has_protein_evidence) &&
+            isTRUE(fasta$fasta_metadata$has_gene_names) else FALSE,
+        outcomes = list(cleanup_applied = applied, protein_groups_before = groups_before, protein_groups_after = groups_after,
+            peptide_rows_aggregated = rows_before - rows_after))
+    list(checkpoint = checkpoint, state_name = "peptide_accession_cleaned",
+        description = if (applied) "Applied peptide-level protein accession cleanup" else
+            "Skipped peptide-level accession cleanup (no FASTA data)",
+        config = config, section = "chooseBestProteinAccession", counts = NULL,
+        execution = list(variant = variant, worker_cap = worker_cap, rows = rows_after, cleanup_applied = applied),
+        accession_cleanup_results = c(config[c("cleanup_applied", "aggregation_method", "active_protein_key",
+            "had_full_metadata")], list(delimiter_used = delimiter, timestamp = now_fn())))
+}
+
+#' DPC imputation and protein quantification on a saved log2 peptide state (chunk 17): the peptide method of
+#' `proteinMissingValueImputationLimpa` with the declared engine; the results list it attaches to the protein
+#' object's `args` is stored as the class's owned entry (`args_as_owned`).
+#' @param parameters `engine` (`fastlimpadpc` or `limpa`), `dpc_slope`, `chunk`.
+#' @return Compute-only protein contract.
+#' @noRd
+computeDIAReferenceProteinDpcQuant <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
+    variant = "whole", now_fn = Sys.time) {
+    if (!identical(variant, "whole")) cli::cli_abort("unsupported DPC quantification variant", class = "workflow_execution_unsupported")
+    engine <- resolveLimpaDpcEngine(parameters$engine)
+    dpc_slope <- parameters$dpc_slope %||% 0.8
+    chunk <- parameters$chunk %||% 1000
+    object <- readDIAReferencePeptideObject(manager, reference, fields = c("peptide_data", "design_matrix", "peptide_matrix"))
+    if (!length(object@peptide_matrix))
+        cli::cli_abort("DPC quantification needs the log2 peptide matrix state", class = "workflow_execution_invalid")
+    if (!isTRUE(object@is_logged_data))
+        cli::cli_abort("DPC quantification needs a log2 transformed peptide state", class = "workflow_execution_invalid")
+    peptides <- nrow(object@peptide_matrix)
+    proteinMissingValueImputationLimpaFn <- proteinMissingValueImputationLimpa
+    quantified <- proteinMissingValueImputationLimpaFn(object, dpc_slope = dpc_slope, verbose = FALSE, chunk = chunk,
+        engine = engine)
+    object <- NULL
+    results <- quantified@args$limpa_dpc_quant_results
+    engine_version <- as.character(utils::packageVersion(engine))
+    quantified@args$limpaDpcQuant <- list(engine = engine, engine_version = engine_version, dpc_slope = dpc_slope,
+        chunk = chunk, limpa_version = as.character(utils::packageVersion("limpa")))
+    checkpoint <- checkpointDIAReferenceProteinObject(manager, reference, quantified)
+    protein_count <- length(unique(quantified@protein_quant_table[[quantified@protein_id_column]]))
+    samples <- nrow(quantified@design_matrix)
+    key <- quantified@protein_id_column
+    quantified <- NULL
+    dpc <- unname(as.numeric(results$dpc_parameters_used))
+    config <- list(engine = engine, engine_version = engine_version, dpc_slope = dpc_slope, chunk = chunk,
+        dpc_intercept = dpc[[1L]], dpc_slope_realised = dpc[[2L]], slope_interpretation = results$slope_interpretation,
+        proteins_quantified = results$total_proteins_quantified, peptides_used = results$total_peptides_used,
+        missing_percentage_peptides = results$missing_percentage_peptides,
+        missing_percentage_proteins = results$missing_percentage_proteins, protein_id_column = key,
+        outcomes = list(engine = engine, engine_version = engine_version, limpa_version = as.character(utils::packageVersion("limpa")), dpc_intercept = dpc[[1L]],
+            dpc_slope = dpc[[2L]], slope_interpretation = results$slope_interpretation,
+            proteins_quantified = results$total_proteins_quantified, peptides_used = results$total_peptides_used,
+            missing_percentage_peptides = results$missing_percentage_peptides))
+    results <- NULL
+    text <- paste(
+        "Limpa DPC Quantification Completed Successfully\n",
+        "===============================================\n",
+        sprintf("Proteins quantified: %d\n", protein_count),
+        sprintf("Samples: %d\n", samples),
+        sprintf("Peptides used: %d\n", peptides),
+        sprintf("Engine: %s %s\n", engine, engine_version),
+        sprintf("DPC intercept / slope: %.4f / %.4f (%s)\n", config$dpc_intercept, config$dpc_slope_realised, config$slope_interpretation),
+        sprintf("Missing values in peptides: %.1f%%; in proteins: %.1f%%\n", config$missing_percentage_peptides, config$missing_percentage_proteins),
+        sprintf("Active protein key: %s\n", key),
+        "S4 Class: ProteinQuantitativeData\n",
+        "State saved as: 'protein_dpc_quant'\n")
+    list(checkpoint = checkpoint, reference = checkpoint$components$protein_quant_table,
+        state_name = "protein_dpc_quant",
+        description = "Limpa DPC imputation and protein quantification completed (ProteinQuantitativeData created)",
+        config = config, section = "limpaDpcQuant", protein_count = protein_count,
+        execution = list(variant = variant, worker_cap = worker_cap, rows = protein_count, samples = samples, peptides = peptides),
+        text = text, field = "quantifiedS4", qc_name = "dpc_quant",
+        qc = c(config[setdiff(names(config), "outcomes")], list(timestamp = now_fn())))
+}
+
+#' The in-process entry points of the three steps (the GUI without a managed application, the kit's checks): the
+#' registered declaration, the provenance it names, the shared finishing step.
+#' @noRd
+runDIAReferencePeptideLog2Matrix <- function(workflow) {
+    manager <- workflow$state_manager
+    before <- readDIAStateMetadata(manager)
+    pending <- if (identical(manager$current_state, "log2_matrix")) resumeDIAQvalueOutput(manager, before) else NULL
+    if (!is.null(pending)) return(pending)
+    assertDIAExportReady(manager)
+    entry <- workflowActionSpec("peptide_log2_matrix")
+    value <- computeDIAReferencePeptideLog2Matrix(manager, getDIAStateReference(manager), list(), variant = entry$default_variant)
+    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed)
+    finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description, value$config,
+        value$section, value$counts)
+}
+
+#' @noRd
+runDIAReferencePeptideAccessionCleanup <- function(workflow, parameters) {
+    manager <- workflow$state_manager
+    before <- readDIAStateMetadata(manager)
+    pending <- if (identical(manager$current_state, "peptide_accession_cleaned")) resumeDIAQvalueOutput(manager, before) else NULL
+    if (!is.null(pending)) return(pending)
+    assertDIAExportReady(manager)
+    entry <- workflowActionSpec("peptide_accession_cleanup")
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    value <- computeDIAReferencePeptideAccessionCleanup(manager, getDIAStateReference(manager), parameters,
+        variant = entry$default_variant, seqinr = shiny::isolate(workflow$aa_seq_tbl_final),
+        fasta_metadata = shiny::isolate(workflow$fasta_metadata))
+    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
+        values = c(parameters, list(fasta_sha256 = value$config$fasta_sha256, seqinr_accession_column = value$config$seqinr_accession_column)))
+    workflow$accession_cleanup_results <- value$accession_cleanup_results
+    finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description, value$config,
+        value$section, value$counts)
+}
+
+#' @noRd
+runDIAReferenceProteinDpcQuant <- function(workflow, parameters) {
+    manager <- workflow$state_manager
+    pending <- if (identical(manager$current_state, "protein_dpc_quant")) resumeDIAProteinAction(workflow, "protein_dpc_quant") else NULL
+    if (!is.null(pending)) return(pending)
+    assertDIAExportReady(manager)
+    entry <- workflowActionSpec("protein_dpc_quant")
+    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+    value <- computeDIAReferenceProteinDpcQuant(manager, getDIAStateReference(manager), parameters, variant = entry$default_variant)
+    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
+        values = value$config[c("engine", "dpc_slope", "chunk")])
+    finishDIAReferenceProteinStep(workflow, value)
+}

@@ -2220,6 +2220,50 @@ validateWorkflowProteinAccessionParameters <- function(parameters, policy, resol
     invisible(NULL)
 }
 
+#' The DIA_LIMPA peptide stage's parameters (KIT-047): the log2 matrix declares none; the peptide accession cleanup
+#' takes the protein cleanup's strings plus the FASTA accession column; the DPC quantification its engine, slope and chunk.
+#' @noRd
+validateWorkflowPeptideLog2Parameters <- function(parameters, policy, resolved = TRUE) {
+    if (length(parameters)) cli::cli_abort("the log2 matrix step takes no parameters")
+    invisible(NULL)
+}
+
+#' @noRd
+validateWorkflowPeptideAccessionParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("delimiter", "aggregation_method", "seqinr_accession_column", "fasta_table", "fasta_sha256")
+    required <- allowed[1:2]
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !all(required %in% names(parameters)))
+        cli::cli_abort("peptide accession cleanup parameters required or unknown parameter supplied")
+    for (name in allowed) {
+        value <- parameters[[name]]
+        if ((resolved && name %in% required || !is.null(value)) &&
+            (!is.character(value) || length(value) != 1L || is.na(value) || !nzchar(value)))
+            cli::cli_abort("peptide accession cleanup parameters must be single strings")
+    }
+    if (!is.null(parameters$aggregation_method) && !parameters$aggregation_method %in% c("sum", "mean", "median"))
+        cli::cli_abort("aggregation method must be sum, mean or median")
+    invisible(NULL)
+}
+
+#' @noRd
+validateWorkflowProteinDpcQuantParameters <- function(parameters, policy, resolved = TRUE) {
+    allowed <- c("engine", "dpc_slope", "chunk")
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) ||
+        any(!names(parameters) %in% allowed)) || resolved && !setequal(names(parameters), allowed))
+        cli::cli_abort("DPC quantification parameters required or unknown parameter supplied")
+    engine <- parameters$engine
+    if ((resolved || !is.null(engine)) && (!is.character(engine) || length(engine) != 1L || !engine %in% c("fastlimpadpc", "limpa")))
+        cli::cli_abort("DPC engine must be fastlimpadpc or limpa")
+    slope <- parameters$dpc_slope
+    if ((resolved || !is.null(slope)) && (!is.numeric(slope) || length(slope) != 1L || !is.finite(slope) || slope <= 0))
+        cli::cli_abort("DPC slope must be a positive number")
+    chunk <- parameters$chunk
+    if ((resolved || !is.null(chunk)) && (!is.numeric(chunk) || length(chunk) != 1L || !is.finite(chunk) || chunk < 1 || chunk != trunc(chunk)))
+        cli::cli_abort("DPC chunk must be a positive whole number")
+    invisible(NULL)
+}
+
 #' The protein intensity filter's strict flag, replicate and group minimums and percentile (KIT-015).
 #' @noRd
 validateWorkflowProteinIntensityParameters <- function(parameters, policy, resolved = TRUE) {
@@ -2368,6 +2412,29 @@ computeWorkflowProteinAccessionAction <- function(manager, request, variant) {
     paths <- workflowRequestExperimentPaths(request)
     if (!is.null(paths)) manager$.context$experiment_paths <- paths
     computeDIAReferenceAccessionCleanup(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
+#' KIT-047: the DIA_LIMPA peptide stage's handlers; the accession cleanup reads the FASTA table as the protein one does.
+#' @noRd
+computeWorkflowPeptideLog2Action <- function(manager, request, variant) {
+    computeDIAReferencePeptideLog2Matrix(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+computeWorkflowPeptideAccessionAction <- function(manager, request, variant) {
+    paths <- workflowRequestExperimentPaths(request)
+    if (!is.null(paths)) manager$.context$experiment_paths <- paths
+    computeDIAReferencePeptideAccessionCleanup(manager, request$input_references$state, request$parameters,
+        worker_cap = request$worker_cap, variant = variant)
+}
+
+#' @noRd
+computeWorkflowProteinDpcQuantAction <- function(manager, request, variant) {
+    paths <- workflowRequestExperimentPaths(request)
+    if (!is.null(paths)) manager$.context$experiment_paths <- paths
+    computeDIAReferenceProteinDpcQuant(manager, request$input_references$state, request$parameters,
         worker_cap = request$worker_cap, variant = variant)
 }
 

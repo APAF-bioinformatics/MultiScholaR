@@ -1,0 +1,294 @@
+{
+  "schema": "kit.dpc_check.v1",
+  "ticket": "KIT-047",
+  "label": "tree",
+  "date": "2026-10-21",
+  "head_commit": "c0b7a927c40fba40499c074efd0141e38578bbda",
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR",
+    "source_commit": null
+  },
+  "engine": "limpa",
+  "rayon_num_threads": "<host default>",
+  "host_threads": 16,
+  "installed": {
+    "limpa": true,
+    "fastlimpadpc": true
+  },
+  "versions": {
+    "limpa": "1.4.2",
+    "fastlimpadpc": "0.1.0",
+    "fastlimpadpc_pinned_sha": "d4f9cc1dcfeb0183c15bd08872dbe5cf3c2b09a2",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "cargo": "cargo 1.96.0 (30a34c682 2026-05-25)"
+  },
+  "cpu": {
+    "model": "AMD Ryzen AI 7 350 w/ Radeon 860M",
+    "n_flags": 166,
+    "simd": ["sse4_2", "avx", "avx2", "fma", "avx512f", "avx512bw", "avx512vl", "avx_vnni", "avx512_bf16"],
+    "sha256": "a8b7bbb73e85e057ad7628830fb3bbd1cdda02ca4e577e2a07389bb22100e4ec"
+  },
+  "owner_text": {
+    "log2": "Log2 Peptide Matrix Calculated Successfully\n ===========================================\n Proteins remaining: 2500\n Peptides (matrix rows): 60000\n Samples (matrix columns): 8\n Quantity column: Peptide.Normalised\n Values <= 0 set to NA: 0\n Missing cells after transformation: 177000\n State saved as: 'log2_matrix'\n",
+    "accession": "Peptide Accession Cleanup Applied Successfully\n ==============================================\n Proteins remaining: 2500\n Protein groups before / after: 2500 / 2500\n Peptide rows before / after: 303000 / 303000\n Delimiter: ;\nAggregation method: mean\nFASTA accession column: uniprot_acc\n State saved as: 'peptide_accession_cleaned'\n",
+    "dpc": "Limpa DPC Quantification Completed Successfully\n ===============================================\n Proteins quantified: 2500\n Samples: 8\n Peptides used: 60000\n Engine: limpa 1.4.2\n DPC intercept / slope: 0.2636 / 0.0122 (nearly random missing)\n Missing values in peptides: 36.9%; in proteins: 0.0%\n Active protein key: Protein.Group\n S4 Class: ProteinQuantitativeData\n State saved as: 'protein_dpc_quant'\n"
+  },
+  "history": ["initial", "raw_data_s4", "qvalue_filtered", "precursor_rollup", "log2_matrix", "peptide_accession_cleaned", "protein_dpc_quant"],
+  "limpa_figures": ["limpa_composite.png", "limpa_dpc_curve.png", "limpa_intensity_distribution.png", "limpa_missing_comparison.png", "limpa_summary.png"],
+  "owner": {
+    "log2_matrix": {
+      "peptide_data": "f70f1b13cdc7566292b05482a7ea09b64a349aa9be9e3df471d0184e4c3799f5",
+      "peptide_matrix": "055eb174e36de0fee72feccf16d592dadfba7f5f451997a77d75084ba7c7be2f",
+      "quantity": "6a36375bb1f86fc5f4fb44e81bd54e71f25a1b3ae4854ce06b40b8265302263b",
+      "is_logged": true,
+      "rows": 303000,
+      "matrix_dim": [60000, 8],
+      "protein_groups": 2500
+    },
+    "peptide_accession_cleaned": {
+      "peptide_data": "3d7d6b6d854498a1e9d777ed219d66e82f42cfee6ad788d00c0ff44f79199091",
+      "peptide_matrix": "055eb174e36de0fee72feccf16d592dadfba7f5f451997a77d75084ba7c7be2f",
+      "quantity": "6a36375bb1f86fc5f4fb44e81bd54e71f25a1b3ae4854ce06b40b8265302263b",
+      "is_logged": true,
+      "rows": 303000,
+      "matrix_dim": [60000, 8],
+      "protein_groups": 2500
+    },
+    "protein_dpc_quant": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "E": "93fedbb9b15ab91c431fa84fad2e9d3111db92bda2d887ffe0d7fe049f79ca76",
+      "standard_error": "00b17cc29fec9ddd1cc3389f29a87a228461e46a4578dc5b9b0c0d09ceca1e70",
+      "design": "244365eef8f99cd11df7baa6d0b12d007712abcbf1487e876066ab1b7df0dbf6",
+      "proteins": 2500,
+      "samples": 8,
+      "dpc": [0.263595854915329, 0.0122478700143891],
+      "interpretation": "nearly random missing",
+      "engine": "limpa",
+      "engine_version": "1.4.2",
+      "peptides_used": 60000
+    }
+  },
+  "memory": {
+    "log2_matrix": {
+      "peptide_data": "f70f1b13cdc7566292b05482a7ea09b64a349aa9be9e3df471d0184e4c3799f5",
+      "peptide_matrix": "055eb174e36de0fee72feccf16d592dadfba7f5f451997a77d75084ba7c7be2f",
+      "quantity": "6a36375bb1f86fc5f4fb44e81bd54e71f25a1b3ae4854ce06b40b8265302263b",
+      "rows": 303000
+    },
+    "peptide_accession_cleaned": {
+      "peptide_data": "3d7d6b6d854498a1e9d777ed219d66e82f42cfee6ad788d00c0ff44f79199091",
+      "peptide_matrix": "055eb174e36de0fee72feccf16d592dadfba7f5f451997a77d75084ba7c7be2f",
+      "quantity": "6a36375bb1f86fc5f4fb44e81bd54e71f25a1b3ae4854ce06b40b8265302263b",
+      "rows": 303000
+    },
+    "protein_dpc_quant": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "E": "93fedbb9b15ab91c431fa84fad2e9d3111db92bda2d887ffe0d7fe049f79ca76",
+      "standard_error": "00b17cc29fec9ddd1cc3389f29a87a228461e46a4578dc5b9b0c0d09ceca1e70",
+      "proteins": 2500,
+      "dpc": [0.263595854915329, 0.0122478700143891]
+    },
+    "protein_dpc_quant_again": {
+      "protein_quant_table": "990f2affa5972502afd4421cb8a4fe9030c7be2d18a01ab52a56359c7d609777",
+      "E": "93fedbb9b15ab91c431fa84fad2e9d3111db92bda2d887ffe0d7fe049f79ca76",
+      "standard_error": "00b17cc29fec9ddd1cc3389f29a87a228461e46a4578dc5b9b0c0d09ceca1e70",
+      "proteins": 2500,
+      "dpc": [0.263595854915329, 0.0122478700143891]
+    }
+  },
+  "exact": {
+    "log2_peptide_data": true,
+    "log2_peptide_matrix": true,
+    "accession_peptide_data": true,
+    "accession_peptide_matrix": true,
+    "dpc_protein_quant_table": true,
+    "dpc_E": true,
+    "dpc_standard_error": true
+  },
+  "determinism_in_process": {
+    "E": true,
+    "standard_error": true,
+    "dpc_fit": true
+  },
+  "determinism_parts": {
+    "dpc_fit_identical": true,
+    "dpc_fit": [0.263595854915329, 0.0122478700143891],
+    "dpc_fit_abs_diff": [0, 0],
+    "quant_given_fit_E_identical": true,
+    "quant_given_fit_SE_identical": true,
+    "quant_given_fit_E_sha256": "93fedbb9b15ab91c431fa84fad2e9d3111db92bda2d887ffe0d7fe049f79ca76",
+    "quant_given_fit_SE_sha256": "00b17cc29fec9ddd1cc3389f29a87a228461e46a4578dc5b9b0c0d09ceca1e70"
+  },
+  "alignment": {
+    "engine": "limpa",
+    "reference": "fastlimpadpc",
+    "proteins_engine": 2500,
+    "proteins_reference": 2500,
+    "proteins_common": 2500,
+    "max_abs_dE": 0.277744221621365,
+    "median_abs_dE": 0.000357517712131994,
+    "max_abs_dSE": 0.00102593022171571,
+    "median_abs_dSE": 2.0201715597773e-05,
+    "dpc_engine": [0.263595854915329, 0.0122478700143891],
+    "dpc_reference": [0.39227272869669, 0.0064973966186787],
+    "dpc_abs_diff": [0.128676873781361, 0.00575047339571038]
+  },
+  "readers": {
+    "filter_min_peptides_proteins": 2500,
+    "limpa_qc_plots": ["dpc_curve", "missing_comparison", "intensity_distribution", "summary"]
+  },
+  "record": {
+    "dpc": {
+      "operation": "protein_dpc_quant",
+      "variant": "whole",
+      "outcomes": {
+        "rows": 2500,
+        "columns": 9,
+        "engine": "limpa",
+        "engine_version": "1.4.2",
+        "limpa_version": "1.4.2",
+        "dpc_intercept": 0.263595854915329,
+        "dpc_slope": 0.0122478700143891,
+        "slope_interpretation": "nearly random missing",
+        "proteins_quantified": 2500,
+        "peptides_used": 60000,
+        "missing_percentage_peptides": 36.9
+      },
+      "parameters": [
+        {
+          "name": "engine",
+          "provenance": "default",
+          "value": "limpa"
+        },
+        {
+          "name": "dpc_slope",
+          "provenance": "default",
+          "value": 0.8
+        },
+        {
+          "name": "chunk",
+          "provenance": "default",
+          "value": 1000
+        }
+      ]
+    },
+    "accession": {
+      "operation": "peptide_accession_cleanup",
+      "parameters": [
+        {
+          "name": "delimiter",
+          "provenance": "default"
+        },
+        {
+          "name": "aggregation_method",
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "seqinr_accession_column",
+          "provenance": "default"
+        },
+        {
+          "name": "fasta_sha256",
+          "provenance": "input"
+        }
+      ]
+    },
+    "log2": {
+      "operation": "peptide_log2_matrix",
+      "fixed": null
+    },
+    "software_packages": {
+      "limpa": "1.4.2",
+      "fastlimpadpc": "0.1.0",
+      "limma": "3.68.4"
+    },
+    "valid": true
+  },
+  "fingerprints": {
+    "log2_matrix": {
+      "components": {
+        "peptide_data": "553769c5a0b67ccc584207c373814d24f99c60f03f64b8c6e3725a357ffdd574",
+        "design_matrix": "4803ca2635ec9372c111ee2bc2d47831b78fa88b366ce140ea8bbccc59352e93",
+        "peptide_matrix": "cf1172214e3eb737394ab21c8bcd478e5bb046ab6af2f383bb672889e0a8b830"
+      },
+      "summary_sha256": "524ef056b7448fc2a56d6898484defa7cda6bfa894e68d02f4dd19354c3c237f",
+      "rows": 303000
+    },
+    "peptide_accession_cleaned": {
+      "components": {
+        "peptide_data": "0cde8020850b8602c4c005c1a906cb5646a432c485b6a232f11bf0bb4c268567",
+        "design_matrix": "4803ca2635ec9372c111ee2bc2d47831b78fa88b366ce140ea8bbccc59352e93",
+        "peptide_matrix": "cf1172214e3eb737394ab21c8bcd478e5bb046ab6af2f383bb672889e0a8b830"
+      },
+      "summary_sha256": "e3ea1e0c97ffccbdb9c1b68d87dab6957d2a89e00592a31a268b336de19c0750",
+      "rows": 303000
+    },
+    "protein_dpc_quant": {
+      "components": {
+        "design_matrix": "4803ca2635ec9372c111ee2bc2d47831b78fa88b366ce140ea8bbccc59352e93",
+        "protein_quant_table": "de301358459393b4b6ead54bb064bc66ed806d402660b733df13ffa4c50321fe",
+        "protein_id_table": "f6582c07a6ee97c24ae82405df95e6e345b41f6e5a0190e26e3afc95027aa2fe"
+      },
+      "summary_sha256": "e4df76f4abdb0945491e1d923117f6602cf903a9295df0d2d7daba17afd4cc86",
+      "rows": 2500
+    }
+  },
+  "sizes": {
+    "raw_data_s4": {
+      "class": "PeptideQuantitativeData",
+      "inline_args_bytes": 26600,
+      "record_bytes": 44976,
+      "support_sections": null,
+      "owned_entry": false
+    },
+    "qvalue_filtered": {
+      "class": "PeptideQuantitativeData",
+      "inline_args_bytes": 31504,
+      "record_bytes": 119080,
+      "support_sections": "srlQvalueProteotypicPeptideClean",
+      "owned_entry": false
+    },
+    "precursor_rollup": {
+      "class": "PeptideQuantitativeData",
+      "inline_args_bytes": 34536,
+      "record_bytes": 163800,
+      "support_sections": "srlQvalueProteotypicPeptideClean",
+      "owned_entry": false
+    },
+    "log2_matrix": {
+      "class": "PeptideQuantitativeData",
+      "inline_args_bytes": 34984,
+      "record_bytes": 236056,
+      "support_sections": ["srlQvalueProteotypicPeptideClean", ".arguments"],
+      "owned_entry": false
+    },
+    "peptide_accession_cleaned": {
+      "class": "PeptideQuantitativeData",
+      "inline_args_bytes": 35976,
+      "record_bytes": 285728,
+      "support_sections": ["srlQvalueProteotypicPeptideClean", ".arguments", "chooseBestProteinAccessionFn"],
+      "owned_entry": false,
+      "fasta_table_support_bytes": 355352
+    },
+    "protein_dpc_quant": {
+      "class": "ProteinQuantitativeData",
+      "inline_args_bytes": 41984,
+      "record_bytes": 320984,
+      "support_sections": ["srlQvalueProteotypicPeptideClean", ".arguments", "chooseBestProteinAccessionFn"],
+      "owned_entry": true,
+      "owned_file_bytes": 7850491,
+      "fasta_table_support_bytes": 355352
+    }
+  },
+  "timings": {
+    "log2_owner": 5.94728851318359,
+    "accession_owner": 22.6414296627045,
+    "dpc_owner": 22.4676995277405,
+    "log2_memory": 1.63779997825623,
+    "accession_memory": 18.2468829154968,
+    "dpc_memory": 19.0513949394226,
+    "dpc_memory_again": 19.0779857635498,
+    "dpc_memory_fastlimpadpc": 0.955106258392334
+  },
+  "seconds": 186.812557697296
+}

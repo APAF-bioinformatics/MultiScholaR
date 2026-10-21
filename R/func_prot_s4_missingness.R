@@ -317,11 +317,16 @@ setMethod(
                         dpc_slope = 0.8,
                         quantified_protein_column = NULL,
                         verbose = TRUE,
-                        chunk = 1000) {
+                        chunk = 1000,
+                        engine = NULL) {
     # Load required packages
     if (!requireNamespace("limpa", quietly = TRUE)) {
       stop("limpa package is required but not installed. Please install it using: BiocManager::install('limpa')")
     }
+    # KIT-047: the DPC fit and the quantification run on the declared engine (`limpa` by default, `fastlimpadpc`
+    # selectable); the two calls below are the method's only engine calls, resolved by name.
+    engine <- resolveLimpaDpcEngine(engine)
+    engine_fn <- function(name) get(name, envir = asNamespace(engine), mode = "function")
 
     # Parameter validation and defaults
     quantified_protein_column <- if (is.null(quantified_protein_column)) {
@@ -435,7 +440,7 @@ setMethod(
       tryCatch(
         {
           # Estimate DPC using the peptide data
-          dpcfit <- limpa::dpc(y_peptide)
+          dpcfit <- engine_fn("dpc")(y_peptide)
           dpc_params <- dpcfit # Use the full DPC object
 
           # Interpret the slope
@@ -527,7 +532,7 @@ setMethod(
 
         # Apply dpcQuant
         if (!is.null(dpc_params)) {
-          protein_quant_result <- limpa::dpcQuant(
+          protein_quant_result <- engine_fn("dpcQuant")(
             y = y_elist,
             protein.id = "protein.id",
             dpc = dpc_params,
@@ -535,7 +540,7 @@ setMethod(
             chunk = chunk
           )
         } else {
-          protein_quant_result <- limpa::dpcQuant(
+          protein_quant_result <- engine_fn("dpcQuant")(
             y = y_elist,
             protein.id = "protein.id",
             dpc.slope = dpc_slope,
@@ -551,9 +556,17 @@ setMethod(
           log_info("No missing values in protein quantification: {!any(is.na(protein_quant_result$E))}")
         }
 
-        # Extract quantified protein matrix
+        # Extract quantified protein matrix. KIT-047: limpa 1.4.x no longer returns the protein id as a `genes`
+        # column (its `genes` carries NPrec and PropObs); the ids are the row names of `E` on every engine, so they
+        # are taken from `genes$protein.id` when present and from the row names otherwise (a reproduced defect: the
+        # protein object otherwise carried row numbers as its ids).
         protein_matrix <- protein_quant_result$E
-        rownames(protein_matrix) <- protein_quant_result$genes$protein.id
+        quantified_ids <- protein_quant_result$genes$protein.id
+        if (is.null(quantified_ids)) quantified_ids <- rownames(protein_quant_result$E)
+        if (is.null(quantified_ids) || length(quantified_ids) != nrow(protein_matrix)) {
+          stop("DPC-Quant returned no protein identifiers for its quantified matrix", call. = FALSE)
+        }
+        rownames(protein_matrix) <- quantified_ids
         colnames(protein_matrix) <- colnames(y_peptide)
 
         # Extract standard errors and observation counts
@@ -637,6 +650,8 @@ setMethod(
           missing_percentage_peptides = round(100 * mean(is.na(y_peptide)), 1),
           missing_percentage_proteins = 0, # DPC-Quant produces complete protein data
           quantification_method = "limpa_dpc_quant",
+          engine = engine,
+          engine_version = as.character(utils::packageVersion(engine)),
           total_proteins_quantified = nrow(protein_matrix),
           total_peptides_used = nrow(y_peptide),
           dpc_method = "limpa_dpc_quant" # Identify the method type
@@ -658,3 +673,26 @@ setMethod(
     )
   }
 )
+
+
+#' The DPC engine of the peptide `proteinMissingValueImputationLimpa` method (KIT-047): `limpa` (the reference) by
+#' default; `fastlimpadpc` selectable, honoured when its namespace is installed and refused with
+#' `workflow_engine_unavailable` otherwise. Both engines expose `dpc` and `dpcQuant` with the same arguments. The
+#' default is limpa by the ticket's determinism rule: on this host fastlimpadpc's DPC fit is not bit-identical
+#' between two runs under the host-default Rayon thread pool (its quantification is, given a fit), so it cannot be
+#' the default (KIT-047 outcome).
+#' @param engine NULL (the default), `"fastlimpadpc"` or `"limpa"`.
+#' @param available Function(package) saying whether a namespace is installed (a seam for tests).
+#' @return The engine name.
+#' @noRd
+resolveLimpaDpcEngine <- function(engine = NULL, available = function(package) requireNamespace(package, quietly = TRUE)) {
+  engines <- c("fastlimpadpc", "limpa")
+  if (is.null(engine)) engine <- "limpa"
+  if (!is.character(engine) || length(engine) != 1L || is.na(engine) || !engine %in% engines) {
+    cli::cli_abort("DPC engine must be one of {.val {engines}}", class = "workflow_engine_invalid")
+  }
+  if (!isTRUE(available(engine))) {
+    cli::cli_abort("DPC engine {.val {engine}} is not installed", class = "workflow_engine_unavailable")
+  }
+  engine
+}

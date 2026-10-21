@@ -412,7 +412,42 @@ rebuildDIACheckpointObject <- function(context, spec, fields = TRUE, columns = l
             slots[[field]] <- resolveDIAStateValue(context, component)
         }
     }
+    # KIT-047: a declared owned args entry is reattached whenever the assay is hydrated (a kernel is about to run
+    # or the whole object is wanted); a projected read keeps the reference, which the checkpoint writer keeps as is.
+    for (section in declaration$args_as_owned %||% character()) {
+        reference <- slots$args[[section]]
+        if (!isSavedWorkflowReference(reference)) next
+        if (!(everything || (!is.null(declaration$assay) && wanted(declaration$assay)))) next
+        slots$args[[section]] <- resolveDIAStateValue(context, reference)
+    }
     do.call(methods::new, c(list(Class = spec$class), slots))
+}
+
+#' Content digest of an owned args entry (KIT-047): a re-checkpoint of a hydrated object reuses the saved value
+#' when the entry is unchanged, so the shared protein steps after the DPC quantification write it once.
+#' @noRd
+workflowOwnedArgsDigest <- function(value) digest::digest(value, algo = "xxhash64")
+
+#' Store the declared owned args entries of an object out of line (KIT-047): each present entry is saved as one
+#' owned value and replaced by its reference in `slots$args`; an entry equal to the source state's saved value
+#' keeps that reference. The references are returned for the checkpoint's dependency roots.
+#' @noRd
+checkpointDIAOwnedArgs <- function(context, declaration, slots, previous) {
+    owned <- list()
+    for (section in declaration$args_as_owned %||% character()) {
+        value <- slots$args[[section]]
+        if (is.null(value)) next
+        if (isSavedWorkflowReference(value)) { owned[[section]] <- value; next }
+        before <- previous$slots$args[[section]]
+        if (isSavedWorkflowReference(before) &&
+            identical(workflowOwnedArgsDigest(resolveDIAStateValue(context, before)), workflowOwnedArgsDigest(value))) {
+            owned[[section]] <- before
+        } else {
+            owned[[section]] <- saveDIAStateValue(context, value, paste0("owned_args:", section), codec = "rds")
+        }
+        slots$args[[section]] <- owned[[section]]
+    }
+    list(slots = slots, owned = owned)
 }
 
 #' Persist a scientific result as reusable components and bounded metadata.
@@ -428,6 +463,12 @@ checkpointDIAExecutionResult <- function(manager, object) {
     previous <- if (isSavedWorkflowReference(source)) readDIAStateMetadata(manager, source)$data else NULL
     slots <- stats::setNames(lapply(methods::slotNames(object),
         \(field) methods::slot(object, field)), methods::slotNames(object))
+    owned <- list()
+    if (length(declaration$args_as_owned) && is.list(slots$args)) {
+        stored <- checkpointDIAOwnedArgs(context, declaration, slots, previous)
+        slots <- stored$slots
+        owned <- stored$owned
+    }
     rememberDIAWorkers(context, slots$args)
     slots$args <- prepareDIAStateRecord(list(data = NULL, config = slots$args))$config
     components <- previous$components %||% list()
@@ -480,6 +521,7 @@ checkpointDIAExecutionResult <- function(manager, object) {
     }
     for (section in names(slots$args)) {
         values <- slots$args[[section]]
+        if (section %in% names(owned)) next
         if (is.data.frame(values) && ncol(values) > 0L) {
             support$.arguments[[section]] <- saveDIATableComponent(context, values)
             slots$args[section] <- list(NULL)
@@ -501,7 +543,7 @@ checkpointDIAExecutionResult <- function(manager, object) {
         declaration = workflowDeclarationField(declaration),
         slots = slots, components = components, support = support,
         products = previous$products %||% list(),
-        dependencies = collectDIANativeReferences(list(source, previous$dependencies, previous$components,
+        dependencies = collectDIANativeReferences(list(source, owned, previous$dependencies, previous$components,
             previous$support, previous$products)),
         dimensions = workflowAssayDimensions(object, declaration),
         metadata = if (is.function(declaration$describe)) declaration$describe(object) else NULL)
@@ -625,7 +667,8 @@ clearDIAStepProvenance <- function(manager) {
 #' @noRd
 setDIAStepProvenanceForSection <- function(manager, section) {
     if (!inherits(manager, "DIAStateAdapter") || !is.null(manager$.context$pending_provenance)) return(invisible(NULL))
-    operation <- workflowOperationForSection(section)
+    # KIT-047: a section shared by two routes (the accession cleanup) names the route's own declaration.
+    operation <- workflowOperationForSection(section, manager$workflow_type)
     if (!length(operation)) return(invisible(NULL))
     entry <- workflowActionSpec(operation)
     setDIAStepProvenance(manager, operation, entry$default_variant %||% NA_character_, entry$parameters, entry$declaration$fixed)
@@ -641,10 +684,16 @@ takeDIAStepProvenance <- function(context) {
 #' @noRd
 diaStepProvenanceEntry <- function(snapshot, provenance, timestamp = Sys.time()) {
     software <- workflowSoftwareIdentity()
-    if (is.null(snapshot$software_environments[[software$build]]))
+    environment <- snapshot$software_environments[[software$build]]
+    if (is.null(environment)) {
         snapshot$software_environments[[software$build]] <- software[intersect(c("version", "source_commit", "r_version",
             "platform", "packages", "blas", "lapack", "omp_threads", "blas_threads", "duckdb_threads", "os_release", "locale"),
             names(software))]
+    } else if (length(setdiff(names(software$packages), names(environment$packages)))) {
+        # KIT-047: packages loaded by a later step (the DPC engine) join the build's package list; nothing else changes.
+        environment$packages <- software$packages
+        snapshot$software_environments[[software$build]] <- environment
+    }
     defaults <- system.file("config", "config.ini", package = "MultiScholaR")
     entry <- list(operation = provenance$operation, variant = provenance$variant,
         parameter_names = as.character(provenance$parameter_names), build = software$build,

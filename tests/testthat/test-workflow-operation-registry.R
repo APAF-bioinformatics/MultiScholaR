@@ -3,10 +3,10 @@
 test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
     expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "minimum_peptides_per_sample",
-        "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_imputation", "peptide_intensity_filter",
-        "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter", "precursor_rollup",
-        "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup",
-        "protein_replicate_filter", "wfx_fixture"))
+        "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_accession_cleanup", "peptide_imputation",
+        "peptide_intensity_filter", "peptide_log2_matrix", "peptide_protein_evidence_filter", "peptide_qvalue_filter",
+        "peptide_replicate_filter", "precursor_rollup", "protein_accession_cleanup", "protein_dpc_quant",
+        "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup", "protein_replicate_filter", "wfx_fixture"))
     # KIT-010: the protein replicate filter as an operation on the row unit with the protein completion and publication.
     replicate <- workflowActionSpec("protein_replicate_filter")
     expect_identical(replicate$input, "checkpoint")
@@ -89,7 +89,8 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         "minimum_peptides_per_sample", "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_imputation",
         "peptide_intensity_filter", "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter",
         "precursor_rollup", "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter",
-        "protein_iq_rollup", "protein_replicate_filter", "wfx_fixture")))
+        "protein_iq_rollup", "protein_replicate_filter", "wfx_fixture",
+        "peptide_log2_matrix", "peptide_accession_cleanup", "protein_dpc_quant")))
 })
 
 test_that("a fresh R process resolves the same registry from the operation name alone", {
@@ -213,8 +214,16 @@ test_that("every registered worker step's section maps to its operation, and the
     registerBuiltinWorkflowOperations()
     workers <- Filter(function(name) !identical(workflowOperationEntry(name)$compute, "in_process") && name != "wfx_fixture" &&
         name != "da_publication", workflowOperationNames())
-    expect_setequal(unname(workflowSectionOperations), workers)
+    # KIT-047: the DIA_LIMPA route's own sections (a section shared with the DIA route names the route's declaration).
+    expect_setequal(unname(workflowAllSectionOperations()), workers)
     expect_identical(workflowOperationForSection("rollUpPrecursorToPeptide"), "precursor_rollup")
+    expect_identical(workflowOperationForSection("chooseBestProteinAccession"), "protein_accession_cleanup")
+    expect_identical(workflowOperationForSection("chooseBestProteinAccession", "DIA"), "protein_accession_cleanup")
+    expect_identical(workflowOperationForSection("chooseBestProteinAccession", "DIA_LIMPA"), "peptide_accession_cleanup")
+    expect_identical(workflowOperationForSection("limpaDpcQuant", "DIA_LIMPA"), "protein_dpc_quant")
+    expect_identical(workflowOperationForSection("log2TransformPeptideMatrix", "DIA_LIMPA"), "peptide_log2_matrix")
+    expect_length(workflowOperationForSection("limpaDpcQuant"), 0L)
+    expect_false(anyDuplicated(unname(workflowAllSectionOperations())) > 0L)
     expect_length(workflowOperationForSection("not a section"), 0L)
     expect_null(workflowOperationForSection(NULL))
 })

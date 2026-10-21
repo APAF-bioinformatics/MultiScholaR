@@ -171,7 +171,8 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     shipped <- readWorkflowShippedDefaults()
     defaults_path <- system.file("config", "config.ini", package = "MultiScholaR")
     installed_defaults <- if (nzchar(defaults_path)) digest::digest(file = defaults_path, algo = "sha256") else NA_character_
-    sections <- stats::setNames(names(workflowSectionOperations), unname(workflowSectionOperations))
+    all_sections <- workflowAllSectionOperations() # KIT-047: the routes' own sections beside the shared map
+    sections <- stats::setNames(names(all_sections), unname(all_sections))
     records <- lapply(stats::setNames(history, history), function(state) {
         reference <- snapshot$states[[state]]
         if (is.null(reference)) return(NULL)

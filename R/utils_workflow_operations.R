@@ -48,11 +48,28 @@ workflowSectionOperations <- c(srlQvalueProteotypicPeptideClean = "peptide_qvalu
     removeRowsWithMissingValuesPercent = "protein_intensity_filter", resolveProteinDuplicateRows = "protein_duplicate_removal",
     removeProteinsWithOnlyOneReplicate = "protein_replicate_filter")
 
+#' The sections a route's own declarations record (KIT-047, B-23): on `DIA_LIMPA` the accession cleanup runs at the
+#' peptide level and its section names the route's declaration, not the DIA protein cleanup; the log2 matrix and
+#' the DPC quantification are the route's alone.
 #' @noRd
-workflowOperationForSection <- function(section) {
+workflowSectionOperationsByType <- list(DIA_LIMPA = c(log2TransformPeptideMatrix = "peptide_log2_matrix",
+    chooseBestProteinAccession = "peptide_accession_cleanup", limpaDpcQuant = "protein_dpc_quant"))
+
+#' @param workflow_type The owner's workflow type; a route's own map is consulted before the shared one.
+#' @noRd
+workflowOperationForSection <- function(section, workflow_type = NULL) {
     if (!is.character(section) || length(section) != 1L || is.na(section)) return(NULL)
+    typed <- if (is.character(workflow_type) && length(workflow_type) == 1L && !is.na(workflow_type))
+        workflowSectionOperationsByType[[workflow_type]] else NULL
+    if (!is.null(typed) && section %in% names(typed)) return(unname(typed[section]))
     unname(workflowSectionOperations[section])[!is.na(workflowSectionOperations[section])]
 }
+
+#' Every section-to-operation pair, the shared map and the routes' own (operation names are unique, so the
+#' reverse map the analysis record reads is unambiguous).
+#' @noRd
+workflowAllSectionOperations <- function() c(workflowSectionOperations,
+    do.call(c, unname(workflowSectionOperationsByType)))
 
 #' Check an operation declaration against the class registry.
 #' @return The declaration, unchanged.
@@ -256,6 +273,13 @@ workflowOperationDefaults <- local({
         protein_iq_rollup = list(),
         protein_accession_cleanup = list(delimiter = key("chooseBestProteinAccession", "delim"),
             aggregation_method = "no_shipped_default", fasta_sha256 = "input"),
+        # KIT-047: the DIA_LIMPA peptide stage.
+        peptide_log2_matrix = list(),
+        peptide_accession_cleanup = list(delimiter = key("chooseBestProteinAccession", "delim"),
+            aggregation_method = "no_shipped_default",
+            seqinr_accession_column = key("chooseBestProteinAccession", "seqinr_accession_column"), fasta_sha256 = "input"),
+        protein_dpc_quant = list(engine = key("limpaDpcQuant", "engine"), dpc_slope = key("limpaDpcQuant", "dpc_slope"),
+            chunk = key("limpaDpcQuant", "chunk")),
         protein_intensity_filter = list(strict_mode = "no_shipped_default", min_reps_per_group = "no_shipped_default",
             min_groups = "no_shipped_default",
             proteins_intensity_cutoff_percentile = key("removeRowsWithMissingValuesPercent", "proteins_intensity_cutoff_percentile")),
@@ -301,6 +325,11 @@ workflowParameterLabels <- local({
         protein_iq_rollup = list(),
         protein_accession_cleanup = list(delimiter = "Protein group delimiter", aggregation_method = "Aggregation of duplicate accessions",
             fasta_sha256 = "FASTA database (sha256)"),
+        peptide_log2_matrix = list(),
+        peptide_accession_cleanup = list(delimiter = "Protein group delimiter", aggregation_method = "Aggregation of duplicate peptides",
+            seqinr_accession_column = "FASTA accession column matched", fasta_sha256 = "FASTA database (sha256)"),
+        protein_dpc_quant = list(engine = "DPC engine (limpa or fastlimpadpc)", dpc_slope = "DPC slope assumed when the fit fails",
+            chunk = "Proteins per quantification chunk"),
         protein_intensity_filter = list(strict_mode = "Strict mode (all groups must pass)",
             min_reps_per_group = "Minimum replicates per group above the cutoff", min_groups = "Minimum groups passing",
             proteins_intensity_cutoff_percentile = "Protein intensity cutoff percentile"),
@@ -460,6 +489,28 @@ registerBuiltinWorkflowOperations <- function() {
         completion = "protein", publication = "protein", step_label = "13_protein_replicate_filtered", omic_type = "proteomics",
         variants = c("whole", "rows"), default_variant = "rows", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaProteinReplicateFilterOperation()))
+    # KIT-047: the DIA_LIMPA peptide stage (the limpa script's chunks 13, 16 and 17): the log2 peptide matrix and the
+    # peptide-level accession cleanup on the peptide completion role, the DPC quantification (peptide in, protein out)
+    # on the protein role; each placed whole.
+    registerWorkflowOperation(list(name = "peptide_log2_matrix", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "peptide", handler = "computeWorkflowPeptideLog2Action", validate = "validateWorkflowPeptideLog2Parameters",
+        resolve = NULL, parameter_limit = 65536, parameters = character(),
+        completion = "peptide", publication = "peptide", step_label = "4_log2_matrix", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaPeptideLog2MatrixOperation()))
+    registerWorkflowOperation(list(name = "peptide_accession_cleanup", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "peptide", handler = "computeWorkflowPeptideAccessionAction", validate = "validateWorkflowPeptideAccessionParameters",
+        resolve = NULL, parameter_limit = 65536,
+        parameters = c("delimiter", "aggregation_method", "seqinr_accession_column", "fasta_sha256"),
+        completion = "peptide", publication = "peptide", step_label = "7_annotation_cleanup", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaPeptideAccessionCleanupOperation()))
+    registerWorkflowOperation(list(name = "protein_dpc_quant", input = "peptide", input_class = "PeptideQuantitativeData",
+        compute = "protein", handler = "computeWorkflowProteinDpcQuantAction", validate = "validateWorkflowProteinDpcQuantParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = c("engine", "dpc_slope", "chunk"),
+        completion = "protein", publication = "protein", step_label = "9_protein_dpc_quant", omic_type = "proteomics",
+        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        inclusion_absence = FALSE, declaration = diaProteinDpcQuantOperation()))
     # KIT-019: the DA publication phase (the annotated exports, the static volcano and NumSig figures and the
     # interactive Glimma pages) as a worker operation on the accepted DA manifest; the DA kernel (limma) stays in
     # process. Completion records nothing new (the manifest is already committed); publication moves the worker's
