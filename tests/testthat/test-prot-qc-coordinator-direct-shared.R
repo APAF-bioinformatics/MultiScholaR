@@ -115,7 +115,7 @@ test_that("proteomics QC coordinator preserves the TMT existing-S4 routing path"
   testthat::local_mocked_bindings(
     mod_prot_qc_protein_ui = function(id, workflow_type) paste("protein-ui", id, workflow_type, sep = "::"),
     mod_prot_qc_protein_s4_ui = function(id) paste("protein-s4-ui", id, sep = "::"),
-    mod_prot_qc_peptide_ui = function(id) paste("peptide-ui", id, sep = "::"),
+    mod_prot_qc_peptide_ui = function(id, workflowType = "DIA") paste("peptide-ui", id, sep = "::"),
     mod_prot_qc_protein_server = function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
       captured$calls[[length(captured$calls) + 1L]] <<- list(
         fn = "protein_server",
@@ -205,7 +205,7 @@ test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path"
   testthat::local_mocked_bindings(
     mod_prot_qc_protein_ui = function(id, workflow_type) paste("protein-ui", id, workflow_type, sep = "::"),
     mod_prot_qc_protein_s4_ui = function(id) paste("protein-s4-ui", id, sep = "::"),
-    mod_prot_qc_peptide_ui = function(id) paste("peptide-ui", id, sep = "::"),
+    mod_prot_qc_peptide_ui = function(id, workflowType = "DIA") paste("peptide-ui", id, sep = "::"),
     mod_prot_qc_protein_server = function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
       captured$calls[[length(captured$calls) + 1L]] <<- list(fn = "protein_server", id = id)
       invisible(NULL)
@@ -262,7 +262,7 @@ test_that("proteomics QC coordinator preserves the DIA peptide-plus-protein rout
   testthat::local_mocked_bindings(
     mod_prot_qc_protein_ui = function(id, workflow_type) paste("protein-ui", id, workflow_type, sep = "::"),
     mod_prot_qc_protein_s4_ui = function(id) paste("protein-s4-ui", id, sep = "::"),
-    mod_prot_qc_peptide_ui = function(id) paste("peptide-ui", id, sep = "::"),
+    mod_prot_qc_peptide_ui = function(id, workflowType = "DIA") paste("peptide-ui", id, sep = "::"),
     mod_prot_qc_protein_server = function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
       captured$calls[[length(captured$calls) + 1L]] <<- list(fn = "protein_server", id = id)
       invisible(NULL)
