@@ -177,7 +177,7 @@ withDIAStateScope(manager, function() {
     y <- dpc_obj@args$limpa_dpc_quant_results$y_peptide_for_dpc
     engine_fn <- function(name) get(name, envir = asNamespace(engine), mode = "function")
     fit1 <- engine_fn("dpc")(y); fit2 <- engine_fn("dpc")(y)
-    ids <- .ensurePeptideFeatureKeyMap(acc_obj)@args$peptide_feature_key_map
+    ids <- api(".ensurePeptideFeatureKeyMap")(acc_obj)@args$peptide_feature_key_map
     ids <- ids$active_protein_id[match(rownames(y), ids$feature_key)]
     elist <- list(E = y, genes = data.frame(protein.id = ids, peptide.id = rownames(y), stringsAsFactors = FALSE)); class(elist) <- "EList"
     q1 <- engine_fn("dpcQuant")(y = elist, protein.id = "protein.id", dpc = fit1$dpc, verbose = FALSE, chunk = 1000)

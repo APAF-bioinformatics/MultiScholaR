@@ -62,6 +62,13 @@ if [[ "${1:-}" == "install" ]]; then
         cat("Config/MultiScholaR/SourceCommit: ", sha, "\n", sep = "", file = file.path(lib, "DESCRIPTION"), append = TRUE)
         stopifnot(identical(unname(read.dcf(file.path(lib, "DESCRIPTION"), fields = "Config/MultiScholaR/SourceCommit")[1L, 1L]), sha))
     ' "$run/library/MultiScholaR" "$sha"
+    # KIT-047: the install writes a thin overlay (the package and the exact-sum artifacts); a package the previous
+    # kit library carries beyond those (the DPC engines limpa and fastlimpadpc, KIT-047) is carried into the new
+    # overlay unchanged, so every later build's library resolves the same engines.
+    for extra in "$2"/*/; do
+        name="$(basename "$extra")"
+        [[ -d "$run/library/$name" ]] || cp -a "$extra" "$run/library/$name"
+    done
     echo "INSTALLED $run $sha"
     exit 0
 fi

@@ -289,6 +289,9 @@ preservePeptideNaValuesHelper <- function(peptide_obj, protein_obj) {
 #'   Default is "Protein.Quantified.Limpa"
 #' @param verbose Whether to print progress messages. Default is TRUE
 #' @param chunk When verbose=TRUE, how often to output progress information (default: 1000)
+#' @param engine The DPC engine (KIT-047): NULL for the default (`limpa`), `"limpa"` (the reference) or
+#'   `"fastlimpadpc"` (the Rust engine, honoured when installed); the engine and its version are recorded in
+#'   the results list
 #'
 #' @details
 #' The DPC-Quant method represents missing values probabilistically using the Detection

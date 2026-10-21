@@ -29,6 +29,10 @@ Default is "Protein.Quantified.Limpa"}
 \item{verbose}{Whether to print progress messages. Default is TRUE}
 
 \item{chunk}{When verbose=TRUE, how often to output progress information (default: 1000)}
+
+\item{engine}{The DPC engine (KIT-047): NULL for the default (\code{limpa}), \code{"limpa"} (the reference) or
+\code{"fastlimpadpc"} (the Rust engine, honoured when installed); the engine and its version are recorded in
+the results list}
 }
 \value{
 ProteinQuantitativeData object with quantified protein values and metadata
