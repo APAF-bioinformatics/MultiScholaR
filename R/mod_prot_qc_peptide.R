@@ -22,6 +22,7 @@
 #'
 #' @name mod_prot_qc_peptide
 #' @param id,workflow_data,experiment_paths,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
+#' @param workflowType The workflow type whose peptide step list the UI renders (`DIA` or `DIA_LIMPA`, KIT-046).
 NULL
 
 getProtQcPeptideModuleSpecs <- function(workflowType = "DIA") {

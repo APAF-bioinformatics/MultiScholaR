@@ -6,7 +6,7 @@
 \alias{mod_prot_qc_peptide_server}
 \title{Peptide QC Orchestrator Module}
 \usage{
-mod_prot_qc_peptide_ui(id)
+mod_prot_qc_peptide_ui(id, workflowType = "DIA")
 
 mod_prot_qc_peptide_server(
   id,
@@ -18,6 +18,8 @@ mod_prot_qc_peptide_server(
 }
 \arguments{
 \item{id, workflow_data, experiment_paths, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{workflowType}{The workflow type whose peptide step list the UI renders (\code{DIA} or \code{DIA_LIMPA}, KIT-046).}
 }
 \description{
 Server orchestrator for the peptide-level quality control workflow.
