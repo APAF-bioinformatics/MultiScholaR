@@ -112,7 +112,24 @@ for (key in names(protein_corpora)) {
     # A five-protein fixture cannot carry the automatic RUV sweep (no valid negative-control percentage): its
     # lifecycle members and oracle run the normalisation with RUV skipped; the 300-sample corpora keep the journey's settings.
     if (grepl("_fixture$", key)) b$corpora[[key]]$normalisation <- list(ruv_mode = "skip")
+    b$corpora[[key]]$fasta_file <- "proteins.fasta"; b$corpora[[key]]$design_file <- "design.tsv"
 }
+# KIT-054: the user's real MaxQuant export (sensitive: bound by path and sha256 from its own directory, never copied into
+# the repository; the manifest carries hashes and counts only, written by kit-054/bind-real-corpus.R) and, for the
+# legacy lane on kit_036 (whose reader knows only the dotted column names), the header-renamed copy under the proof root
+# (kit-054/dotted-copy.R). Both are skipped when absent so the bindings regenerate on any machine.
+bind_real <- function(key, directory) {
+    manifest_path <- file.path(directory, "manifest.json")
+    if (!file.exists(manifest_path)) return(invisible(NULL))
+    manifest <- jsonlite::read_json(manifest_path)
+    files <- c(manifest$report_file, manifest$design_file, manifest$fasta_file)
+    b$corpora[[key]] <<- bind_corpus(directory, manifest, files = files, format = manifest$format, route = "protein")
+    b$corpora[[key]]$synthetic <<- FALSE; b$corpora[[key]]$sensitive <<- TRUE; b$corpora[[key]]$kind <<- manifest$kind
+    b$corpora[[key]]$fasta_file <<- manifest$fasta_file; b$corpora[[key]]$design_file <<- manifest$design_file
+    b$corpora[[key]]$design_groups <<- manifest$design_groups; b$corpora[[key]]$notes <<- manifest$note
+}
+bind_real("kc_lfq", Sys.getenv("KIT_054_LFQ_DIR", "/home/doktersmol/Projects/APAF/Projects/KC/MaxQuent - 12 Oct 2026"))
+bind_real("kc_lfq_dotted", file.path(proof, "kit/corpus/kc-lfq-dotted"))
 # Journey: frozen settings (audit A13/A14). GUI defaults except the sample-filter cutoff, which is the
 # corpus's designed cutoff; the ruv_pearson profile of runCheckpointNormalizationActions; DA as runCheckpointDaActions.
 b$journey <- list(
@@ -394,11 +411,24 @@ if (!is.null(b$builds$kit_021)) {
     b$tickets[["021t"]] <- list(kind = "single_journey", build = "kit_021", corpus = corpus_021t, route = "protein", whole_journey = TRUE,
         oracles = corpus_021t, ceiling_seconds = if (identical(corpus_021t, "tmt_300")) 14400L else 1800L)
 }
+# KIT-054: the real-data members (3 single journeys): the new lane on the reader-repaired build with in-process oracles
+# on the real corpus; the legacy in-memory lane on kit_036 on the header-renamed copy and on the synthetic tmt_300
+# (no oracles: the harness's in-memory branch, completion and measures only).
+if (!is.null(b$builds$kit_054) && !is.null(b$corpora$kc_lfq))
+    b$tickets[["054"]] <- list(kind = "single_journey", build = "kit_054", corpus = "kc_lfq", route = "protein", whole_journey = TRUE,
+        oracles = "kc_lfq", ceiling_seconds = 14400L)
+if (!is.null(b$corpora$kc_lfq_dotted))
+    b$tickets[["054l"]] <- list(kind = "single_journey", build = "kit_036", corpus = "kc_lfq_dotted", route = "protein", whole_journey = TRUE,
+        ceiling_seconds = 14400L)
+b$tickets[["054m"]] <- list(kind = "single_journey", build = "kit_036", corpus = "tmt_300", route = "protein", whole_journey = TRUE,
+    ceiling_seconds = 14400L)
 # KIT-021 oracles (protocol v1.5 item 1): per-step fingerprints of an in-process run of the bound build on each protein
 # corpus, recorded read-only by docs/qa/workflow-execution/kit/kit-021/oracle-record.R into oracles-<corpus>.rds; bound
-# under <corpus>_<step> as the KIT-005 oracles are bound under journey_<step>.
-for (key in names(protein_corpora)) {
-    oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-021", paste0("oracles-", key, ".rds"))
+# under <corpus>_<step> as the KIT-005 oracles are bound under journey_<step>. KIT-054's real corpus records into kit-054/.
+oracle_dirs <- c(stats::setNames(rep("kit-021", length(protein_corpora)), names(protein_corpora)), kc_lfq = "kit-054")
+for (key in names(oracle_dirs)) {
+    if (is.null(b$corpora[[key]])) next
+    oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit", oracle_dirs[[key]], paste0("oracles-", key, ".rds"))
     if (!file.exists(oracle_file)) next
     recorded <- readRDS(oracle_file)
     stopifnot(identical(recorded$corpus, key), identical(recorded$corpus_sha256, b$corpora[[key]]$files[[1L]]$sha256))

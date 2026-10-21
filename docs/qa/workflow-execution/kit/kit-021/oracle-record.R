@@ -20,7 +20,9 @@ bindings <- jsonlite::read_json(file.path(repo, "docs/qa/workflow-execution/kit/
 corpus <- bindings$corpora[[corpus_key]]
 if (is.null(corpus)) stop("corpus ", corpus_key, " is not bound")
 for (name in names(corpus$files)) stopifnot(identical(digest::digest(file = corpus$files[[name]]$path, algo = "sha256"), corpus$files[[name]]$sha256))
-report <- corpus$files[[corpus$report_file]]$path; fasta <- corpus$files[["proteins.fasta"]]$path; design_path <- corpus$files[["design.tsv"]]$path
+report <- corpus$files[[corpus$report_file]]$path
+fasta <- corpus$files[[corpus$fasta_file %||% "proteins.fasta"]]$path; design_path <- corpus$files[[corpus$design_file %||% "design.tsv"]]$path
+stopifnot(file.exists(report), file.exists(fasta), file.exists(design_path))
 format <- corpus$format
 journey <- bindings$journey
 label <- journey$experiment_label

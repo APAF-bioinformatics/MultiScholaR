@@ -1057,3 +1057,34 @@ test_that("KIT-029: the analysis record bundle leaves the project file fingerpri
     with <- h$kitFingerprintFiles(project)
     expect_identical(with[c("path", "bytes", "sha256", "method")], without[c("path", "bytes", "sha256", "method")])
 })
+
+test_that("KIT-054: the real-data keys bind a whole-journey single member with oracles on the new lane and without oracles on the legacy lane", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$builds$kit_054 <- list(library = "/lib/r", build = strrep("r", 64), exact_sum = "sum-r")
+    b$corpora$kc_lfq <- b$corpora$full
+    b$corpora$kc_lfq$report_file <- "proteinGroups.txt"; b$corpora$kc_lfq$format <- "maxquant"; b$corpora$kc_lfq$route <- "protein"
+    b$corpora$kc_lfq$synthetic <- FALSE; b$corpora$kc_lfq$sensitive <- TRUE
+    b$corpora$kc_lfq_dotted <- b$corpora$kc_lfq
+    b$harness$step_map_protein_sha256 <- strrep("m", 64)
+    b$tickets[["054"]] <- list(kind = "single_journey", build = "kit_054", corpus = "kc_lfq", route = "protein", whole_journey = TRUE,
+        oracles = "kc_lfq", ceiling_seconds = 14400L)
+    b$tickets[["054l"]] <- list(kind = "single_journey", build = "core_018", corpus = "kc_lfq_dotted", route = "protein", whole_journey = TRUE,
+        ceiling_seconds = 14400L)
+    b$tickets[["054m"]] <- list(kind = "single_journey", build = "core_018", corpus = "full", route = "protein", whole_journey = TRUE,
+        ceiling_seconds = 14400L)
+    new <- h$kitCases(b, "kit-journey-054")[[1L]]
+    expect_identical(new$selector, "kit:journey-054:candidate:1")
+    expect_identical(new$oracles, "kc_lfq")
+    expect_identical(new$route, "protein")
+    expect_false(new$record)
+    legacy <- h$kitCases(b, "kit-journey-054l")[[1L]]
+    expect_identical(legacy$selector, "kit:journey-054l:candidate:1")
+    expect_null(legacy$oracles)
+    expect_null(legacy$stop_after)
+    expect_identical(legacy$corpus, "kc_lfq_dotted")
+    expect_false(identical(legacy$binding, new$binding))
+    expect_identical(h$kitCases(b, "kit-journey-054m")[[1L]]$corpus, "full")
+    for (stage in c("kit-journey-054", "kit-journey-054l", "kit-journey-054m")) expect_identical(h$kitMemberSeconds(stage, b), 14400L)
+    expect_identical(h$kitSelectorStage("kit:journey-054m:candidate:1"), list(stage = "kit-journey-054m", id = "candidate-1"))
+})
