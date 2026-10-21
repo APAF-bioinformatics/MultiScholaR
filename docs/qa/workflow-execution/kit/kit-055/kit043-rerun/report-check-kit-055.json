@@ -1,0 +1,146 @@
+{
+  "schema": "kit.report_check.v1",
+  "ticket": "KIT-043",
+  "label": "kit-055",
+  "date": "2026-10-21",
+  "pandoc": "3.11",
+  "non_defaults": {
+    "proteins_intensity_cutoff_percentile": 2,
+    "da_qvalue": 0.10000000000000001
+  },
+  "maxquant": {
+    "format": "maxquant",
+    "type": "LFQ",
+    "template": "LFQ_report.rmd",
+    "study": {
+      "lines": 270,
+      "truncation_marks": 0,
+      "record_section": true,
+      "values_missing": [],
+      "record_beside": true,
+      "da_qvalue_recorded": true,
+      "intensity_recorded": true
+    },
+    "record": {
+      "workflow": "LFQ",
+      "software": {
+        "version": "0.5.0",
+        "sha": "acc2ea856a81b86bdcf0d3b963715a3f4071e1ec",
+        "build": "626436030c150ae5c31f955b52a1468c9df293a5ae63732d805b8bbe98709609"
+      },
+      "operations": ["import", "design_builder", "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "normalization-ruv", "pearson-selection"],
+      "da": true
+    },
+    "renders": {
+      "with_record": {
+        "1": null,
+        "seconds": 0.65483570098876953
+      },
+      "without_record": {
+        "1": null,
+        "seconds": 0.31798624992370605
+      },
+      "baseline": {
+        "1": null,
+        "seconds": 0.34265947341918945
+      },
+      "control": {
+        "1": null,
+        "seconds": 0.32647800445556641
+      }
+    },
+    "version_with_record": [],
+    "version_without_record": [],
+    "with_record_names_software": false,
+    "with_record_prints_percentile": false,
+    "without_record_prints_default_percentile": false,
+    "without_record_prints_recorded_percentile": false,
+    "with_record_prints_qvalue": true,
+    "without_record_prints_default_qvalue": true,
+    "defaults_note": [],
+    "without_record_equals_baseline": false,
+    "first_difference_baseline": {
+      "position": 68,
+      "a": " LFQ Proteomics Analysis for maxquant - report - created on <time> Your_fancy_self <time> Sample Details SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological samples with no technical replicates. • Sampl",
+      "b": " LFQ Proteomics Analysis for maxquant - report - created on <time> Prepared with MultiScholaR; analyst: [to be completed] <time> Sample Details SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological sample"
+    },
+    "without_record_equals_control": false,
+    "first_difference_control": {
+      "position": 68,
+      "a": " LFQ Proteomics Analysis for maxquant - report - created on <time> Your_fancy_self <time> Sample Details SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological samples with no technical replicates. • Sampl",
+      "b": " LFQ Proteomics Analysis for maxquant - report - created on <time> Prepared with MultiScholaR; analyst: [to be completed] <time> Sample Details SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological sample"
+    }
+  },
+  "pd_tmt": {
+    "format": "pd_tmt",
+    "type": "TMT",
+    "template": "TMT_report.rmd",
+    "study": {
+      "lines": 270,
+      "truncation_marks": 0,
+      "record_section": true,
+      "values_missing": [],
+      "record_beside": true,
+      "da_qvalue_recorded": true,
+      "intensity_recorded": true
+    },
+    "record": {
+      "workflow": "TMT",
+      "software": {
+        "version": "0.5.0",
+        "sha": "acc2ea856a81b86bdcf0d3b963715a3f4071e1ec",
+        "build": "626436030c150ae5c31f955b52a1468c9df293a5ae63732d805b8bbe98709609"
+      },
+      "operations": ["import", "design_builder", "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "normalization-ruv", "pearson-selection"],
+      "da": true
+    },
+    "renders": {
+      "with_record": {
+        "1": null,
+        "seconds": 0.34009218215942383
+      },
+      "without_record": {
+        "1": null,
+        "seconds": 0.3041841983795166
+      },
+      "baseline": {
+        "1": null,
+        "seconds": 0.32908868789672852
+      },
+      "control": {
+        "1": null,
+        "seconds": 0.30962872505187988
+      }
+    },
+    "version_with_record": [],
+    "version_without_record": [],
+    "with_record_names_software": false,
+    "with_record_prints_percentile": false,
+    "without_record_prints_default_percentile": false,
+    "without_record_prints_recorded_percentile": false,
+    "with_record_prints_qvalue": true,
+    "without_record_prints_default_qvalue": true,
+    "defaults_note": [],
+    "without_record_equals_baseline": false,
+    "first_difference_baseline": {
+      "position": 66,
+      "a": " TMT Proteomics Analysis for pd_tmt - report - created on <time> Your_fancy_self <time> Sample Details SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological samples with no technical replicates. • Sampl",
+      "b": " TMT Proteomics Analysis for pd_tmt - report - created on <time> Prepared with MultiScholaR; analyst: [to be completed] <time> Sample Details SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological sample"
+    },
+    "without_record_equals_control": false,
+    "first_difference_control": {
+      "position": 66,
+      "a": " TMT Proteomics Analysis for pd_tmt - report - created on <time> Your_fancy_self <time> Sample Details SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological samples with no technical replicates. • Sampl",
+      "b": " TMT Proteomics Analysis for pd_tmt - report - created on <time> Prepared with MultiScholaR; analyst: [to be completed] <time> Sample Details SAMPLE DETAILS There are 6 samples in total which consists of: • 6 biological sample"
+    }
+  },
+  "diann_untouched": false,
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.Po9hwP/library/MultiScholaR",
+    "installed": true,
+    "source_commit": "acc2ea856a81b86bdcf0d3b963715a3f4071e1ec"
+  },
+  "head_commit": "1ec37cdd353d6a66c6f006437fa1b84e5dc4e8a6",
+  "tree_clean": true,
+  "seconds": 32.312249898910522
+}
