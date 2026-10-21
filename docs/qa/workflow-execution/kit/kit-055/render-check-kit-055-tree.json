@@ -1,0 +1,121 @@
+{
+  "LFQ": {
+    "template": "LFQ_report.rmd",
+    "stage": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-021.fixture-lifecycle",
+    "renders": {
+      "without_enrichment": {
+        "1": null,
+        "media": 3
+      },
+      "with_enrichment": {
+        "1": null,
+        "media": 4
+      }
+    },
+    "checks": {
+      "canned_sentences": [],
+      "placeholders": [],
+      "printed_warnings": false,
+      "numsig_de_name": false,
+      "figure2_caption": true,
+      "media_without_enrichment": 3,
+      "enrichment_not_run_sentence": true,
+      "enrichment_methods_absent": true,
+      "enrichment_methods_present_with_plots": true,
+      "not_run_sentence_absent_with_plots": true,
+      "import_format_named": true,
+      "da_file_name": true,
+      "old_de_file_name": false,
+      "consensus_clusters": false,
+      "analyst_field": true,
+      "software_block_last": true,
+      "section_order": ["Sample Details", "Method Details", "Software and build", "Results", "Differential Abundance Analysis", "Analyst interpretation", "GO Enrichment Analysis", "Software and build"],
+      "version_commit_printed": true,
+      "qvalue_sentence": true,
+      "percentile_sentence": "below the 1st percentile"
+    }
+  },
+  "TMT": {
+    "template": "TMT_report.rmd",
+    "stage": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-021t.fixture-lifecycle",
+    "renders": {
+      "without_enrichment": {
+        "1": null,
+        "media": 3
+      },
+      "with_enrichment": {
+        "1": null,
+        "media": 4
+      }
+    },
+    "checks": {
+      "canned_sentences": [],
+      "placeholders": [],
+      "printed_warnings": false,
+      "numsig_de_name": false,
+      "figure2_caption": true,
+      "media_without_enrichment": 3,
+      "enrichment_not_run_sentence": true,
+      "enrichment_methods_absent": true,
+      "enrichment_methods_present_with_plots": true,
+      "not_run_sentence_absent_with_plots": true,
+      "import_format_named": true,
+      "da_file_name": true,
+      "old_de_file_name": false,
+      "consensus_clusters": false,
+      "analyst_field": true,
+      "software_block_last": true,
+      "section_order": ["Sample Details", "Method Details", "Software and build", "Results", "Differential Abundance Analysis", "Analyst interpretation", "GO Enrichment Analysis", "Software and build"],
+      "version_commit_printed": true,
+      "qvalue_sentence": true,
+      "percentile_sentence": "below the 1st percentile"
+    }
+  },
+  "DIANN": {
+    "template": "DIANN_report.rmd",
+    "stage": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-036-screen-lifecycle",
+    "renders": {
+      "without_enrichment": {
+        "1": null,
+        "media": 3
+      },
+      "with_enrichment": {
+        "1": null,
+        "media": 4
+      }
+    },
+    "checks": {
+      "canned_sentences": [],
+      "placeholders": [],
+      "printed_warnings": false,
+      "numsig_de_name": false,
+      "figure2_caption": true,
+      "media_without_enrichment": 3,
+      "enrichment_not_run_sentence": true,
+      "enrichment_methods_absent": true,
+      "enrichment_methods_present_with_plots": true,
+      "not_run_sentence_absent_with_plots": true,
+      "import_format_named": true,
+      "da_file_name": true,
+      "old_de_file_name": false,
+      "consensus_clusters": false,
+      "analyst_field": true,
+      "software_block_last": true,
+      "section_order": ["Sample Details", "Method Details", "Software and build", "Results", "Differential Abundance Analysis", "Analyst interpretation", "GO Enrichment Analysis", "Software and build"],
+      "version_commit_printed": true,
+      "qvalue_sentence": true,
+      "percentile_sentence": "below the 1st percentile"
+    }
+  },
+  "template_sha256": {
+    "DIANN_limpa_report.rmd": "4c409be52bc31bda1714e6dfdb14bed5fbec58e91e30639063f12b426714d722",
+    "DIANN_report.rmd": "426f2ec47bc7bac7cecab23e7f69db988a361b59fad9f6c93ee2aa87497db0d7",
+    "LFQ_report.rmd": "005938eb37e3e671041b115db7cd5b6d743f75ea6d86cd69aee7ad1e9a6943df",
+    "TMT_report.rmd": "a528904cf2b56512e2780d5a20b69c68a7fd354d064aacca414f281c1f4fce9b"
+  },
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.elSszS/library/MultiScholaR",
+    "source_commit": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff"
+  },
+  "head_commit": "64464fec175569ce8c235e9f021786ce9727b71f"
+}

@@ -1,6 +1,6 @@
 ---
 title: "`r paste('LFQ Proteomics Analysis for', params$workflow_name, '- report - created on', params$timestamp)`"
-author: "Your_fancy_self"
+author: "Prepared with MultiScholaR; analyst: [to be completed]"
 date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output:
   word_document:
@@ -380,10 +380,7 @@ SAMPLE DETAILS
 
 There are {total_samples_val} samples in total which consists of:  
 • {tech_rep_text}  
-• Sample identification (eg client #, sample name, Salesforce ID etc)
-• Sample conditions upon receipt  
-• Comments about any noncompliance with sample conditions or suitability for 
-  testing including client instruction to proceed/not proceed with work  ",
+• Sample identification, conditions upon receipt and any non-compliance notes: [to be completed by the analyst]  ",
     .trim = FALSE
   )
 }
@@ -477,12 +474,15 @@ FormatMethodDetailsLFQ <- function(numbers) {
     ""
   }
   
-  # Generate cross-group filtering text BEFORE glue block
+  # Generate cross-group filtering text BEFORE glue block (KIT-055: one rule, stated once)
   cross_groups_text <- if(max_groups_cutoff == 0) {
-    "Additionally, proteins were required to pass this threshold in all experimental groups, ensuring comprehensive coverage across all conditions."
+    "a protein was retained only if it passed in every experimental group."
   } else {
-    paste0("Additionally, proteins were excluded if they failed this threshold in more than ", max_groups_cutoff, "% of experimental groups.")
+    paste0("a protein was retained if it failed in at most ", max_groups_cutoff, "% of the experimental groups.")
   }
+  ordinal_suffix <- function(n) { n <- suppressWarnings(as.integer(round(as.numeric(n)))); if (is.na(n)) return("th")
+    if (n %% 100 %in% 11:13) "th" else switch(as.character(n %% 10), "1" = "st", "2" = "nd", "3" = "rd", "th") }
+  intensity_cutoff_suffix <- ordinal_suffix(intensity_cutoff_pct)
   
   # Generate RUV text conditionally based on whether RUV was applied
   ruv_applied_val <- numbers$ruv_applied %||% TRUE  # Default to TRUE for backwards compatibility
@@ -502,6 +502,20 @@ FormatMethodDetailsLFQ <- function(numbers) {
     "RUV-III batch correction was not applied due to dataset constraints. The analysis proceeded directly with normalized data for differential abundance analysis."
   }
   
+  # KIT-055: the import paragraph names the format the project imported (params$workflow_name is the import format).
+  import_format <- tolower(as.character(params$workflow_name %||% "unknown"))
+  import_text <- switch(import_format,
+    maxquant = paste0("Protein-group quantification was imported from the MaxQuant proteinGroups export. ",
+      "The LFQ intensity columns were used: MaxQuant's label-free quantification normalises peptide intensities across ",
+      "samples and reports one LFQ intensity per protein group and sample; a zero LFQ intensity denotes a missing value. ",
+      "Rows flagged as potential contaminants or reverse (decoy) hits were removed at import."),
+    fragpipe = paste0("Protein-level quantification was imported from the FragPipe combined protein export. The MaxLFQ ",
+      "intensity columns were used, which normalise peptide intensities across samples and report one intensity per ",
+      "protein and sample; a zero intensity denotes a missing value."),
+    spectronaut = paste0("Protein-level quantification was imported from the Spectronaut protein report; one quantity per ",
+      "protein group and sample was used, with missing values kept as missing."),
+    paste0("Protein-level label-free quantification was imported from the '", import_format,
+      "' export, one quantity per protein and sample, with missing values kept as missing."))
   # NEW: Generate mixed species FASTA text BEFORE glue block
   mixed_species_text <- ""
   if (!is.null(numbers$mixed_species_enabled) && 
@@ -533,20 +547,11 @@ FormatMethodDetailsLFQ <- function(numbers) {
   glue::glue("
 METHOD DETAILS  
 
-Data analyses were performed based on SOP xxx.
-• SOP number(s) and name(s)  
-• Brief summary of method(s):  
+Data analyses were performed with MultiScholaR; the software version and build are listed under 'Software and build'. 
+SOP reference: [to be completed by the analyst].  
 
 Data Import and Protein Quantification
-Protein-level quantification data was imported from FragPipe or MaxQuant workflow 
-output. The data contains label-free quantification (LFQ) values for identified 
-proteins across all samples. LFQ-based quantification provides relative abundance 
-measurements through intensity-based algorithms (such as MaxLFQ for FragPipe or 
-LFQ intensities for MaxQuant), which normalize protein abundances across samples 
-without the use of isobaric tags. For FragPipe workflows, the MaxLFQ algorithm 
-provides protein-level quantification by normalizing peptide intensities across 
-samples. For MaxQuant workflows, LFQ intensities are calculated from peptide-level 
-data and provide normalized protein abundances across all samples.
+{import_text}
 
 Protein Quality Control and Filtering
 Protein identifications were filtered to ensure high-confidence quantification 
@@ -557,14 +562,9 @@ FASTA Reference and Protein Accession Cleanup
 
 {accession_cleanup_text} Duplicate protein entries were removed to prevent redundancy in quantification.{mixed_species_text}
 
-Proteins were then filtered based on missing value patterns across experimental 
-groups to retain only those with sufficient coverage for robust statistical 
-testing. Proteins were excluded if they had {groupwise_cutoff}% or more missing 
-values or values below the {intensity_cutoff_pct}st percentile of intensity values 
-within any individual experimental group. {cross_groups_text} 
-Additionally, proteins with intensity values below the {intensity_cutoff_pct}st 
-percentile across all samples were excluded from further analysis as likely noise 
-or background signal.
+Proteins were then filtered on missing values within experimental groups. Intensities below the 
+{intensity_cutoff_pct}{intensity_cutoff_suffix} percentile of all intensities in the table were treated as missing. 
+Within each group a protein failed if {groupwise_cutoff}% or more of its values were missing; {cross_groups_text}
 
 Proteins appearing in only one replicate across all groups were also excluded 
 to ensure measurement reproducibility and reliable quantification across biological 
@@ -586,151 +586,65 @@ replicate samples within groups. These quality control visualizations allow
 assessment of technical variation removal while ensuring biological signal is 
 retained.
 
-• Comments on test specific conditions information (e.g. temperature), where 
-  relevant  
-• Comments on deviations, modifications, additions, or exclusions to the method(s) 
-  including the acceptance from the client to proceed with them  
-• Critical reagent details where relevant; comments on laboratory materials used 
-  past their expiry date including the acceptance from the client to proceed with 
-  them  ",
+Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].  ",
 .trim = FALSE)
 }
 ```
 
 ```{r Result Section, echo=FALSE}
 # UPDATED: Results function - focuses on correlation data (conditional on RUV status, same for TMT and LFQ)
-FormatResults <- function(correlation_data, 
+FormatResults <- function(correlation_data,
                          figures_dir = file.path(results_dir, "protein_qc"),
                          ruv_applied = TRUE) {
-  
+  # KIT-055: the text describes what Figure 1 contains; it makes no claim about what this dataset's panels show.
+  # Interpretation belongs to the analyst (see "Analyst interpretation").
   if (isTRUE(ruv_applied)) {
-    # 3-column layout when RUV was applied
     glue::glue("
 Quality Control  
 
-Quality Control Analysis  
-Figure 1 shows the QC metrics across three stages of data processing:  
-• Log2 normalisation (leftmost column, a, d, g, j)  
-• Cyclic loess normalisation (centre column, b, e, h, k)  
-• RUVIII-C normalisation (rightmost column, c, f, i, l)  
+Figure 1 shows four quality-control views at three stages of processing: after log2 transformation
+(left column: panels a, d, g, j), after between-sample normalisation (centre column: b, e, h, k) and
+after RUVIII-C correction (right column: c, f, i, l).  
+• Principal component analysis (panels a-c): samples plotted on the first two principal components,
+  coloured by experimental group.  
+• Density plots (panels d-f): the distribution of protein intensities per sample.  
+• Relative log expression (panels g-i): per-sample deviations from the protein-wise median.  
+• Pearson correlation (panels j-l): the distribution of between-sample correlations within groups.  
 
-Principal Component Analysis  
-The PCA plots (Figures 1a-c) demonstrate the effectiveness of batch effect removal:  
-• Initial log2 data showed notable batch effects  
-• After cyclic loess normalization, batch effects remained in PC1 but were reduced 
-  in PC2  
-• Post RUVIII-C and cyclic loess normalization, batches merged effectively, 
-  suggesting successful removal of unwanted variations  
-
-Density Boxplots
-The density boxplots (Figures 1d-f) show the distribution of the PC1 and PC2 values 
-for each group.
-• The density boxplots show that the distribution of the PC1 and PC2 values for 
-  each group are similar.
-• Successive rounds of normalisation have reduced the variability in the PC1 and 
-  PC2 values for each group.
-
-Relative Log Expression  
-The RLE plots (Figures 1g-i) show progressive improvement in data quality:  
-• Smaller interquartile ranges (IQR) after normalization indicate reduced technical 
-  variation  
-• Final normalized data shows consistent median values near zero, suggesting 
-  successful bias removal  
-
-Pearson Correlation
-• The Pearson correlation matrix (Figures 1j-l) shows that the correlation between 
-  biological samples was high and consistent across all normalisation methods ",
+Whether technical variation was reduced and biological signal retained is assessed from these panels
+by the analyst; this report draws no automated conclusion from them. ",
 .trim = FALSE)
   } else {
-    # 2-column layout when RUV was skipped
     glue::glue("
 Quality Control  
 
-Quality Control Analysis  
-Figure 1 shows the QC metrics across two stages of data processing:  
-• Log2 normalisation (leftmost column, a, c, e, g)  
-• Cyclic loess normalisation (rightmost column, b, d, f, h)  
+Figure 1 shows four quality-control views at two stages of processing: after log2 transformation
+(left column: panels a, c, e, g) and after between-sample normalisation (right column: b, d, f, h).
+RUV-III correction was not applied to this dataset.  
+• Principal component analysis (panels a-b): samples plotted on the first two principal components,
+  coloured by experimental group.  
+• Density plots (panels c-d): the distribution of protein intensities per sample.  
+• Relative log expression (panels e-f): per-sample deviations from the protein-wise median.  
+• Pearson correlation (panels g-h): the distribution of between-sample correlations within groups.  
 
-Note: RUV-III batch correction was not applied for this dataset.
-
-Principal Component Analysis  
-The PCA plots (Figures 1a-b) show the data distribution:  
-• Initial log2 data baseline  
-• After cyclic loess normalization, technical variation was reduced  
-
-Density Boxplots
-The density boxplots (Figures 1c-d) show the distribution of the PC1 and PC2 values 
-for each group.
-• The density boxplots show that the distribution of the PC1 and PC2 values for 
-  each group are similar after normalization.
-
-Relative Log Expression  
-The RLE plots (Figures 1e-f) show improvement in data quality after normalization:  
-• Smaller interquartile ranges (IQR) after normalization indicate reduced technical 
-  variation  
-• Normalized data shows more consistent median values near zero  
-
-Pearson Correlation
-• The Pearson correlation matrix (Figures 1g-h) shows that the correlation between 
-  biological samples was high and consistent across normalization methods ",
+Whether technical variation was reduced and biological signal retained is assessed from these panels
+by the analyst; this report draws no automated conclusion from them. ",
 .trim = FALSE)
   }
 }
 ```
 
-```{r Comment Section, echo=FALSE}
-# UNCHANGED: Comments function
-FormatComments <- function() {
+```{r Analyst Interpretation Section, echo=FALSE}
+# KIT-055: the former Comments and Opinions sections printed fixed sentences ("all samples passed initial QC
+# criteria", "technical reproducibility meets industry standards") as if they were findings. Interpretation is the
+# analyst's; the section is an explicitly marked field until it is written.
+FormatAnalystInterpretation <- function() {
   glue::glue("
-COMMENTS  
+ANALYST INTERPRETATION  
 
-Quality Control  
-• All samples passed initial QC criteria  
-• Normalization successfully reduced technical variation  
-• Batch effects were substantially mitigated, though not completely eliminated  
-
-Technical Performance  
-• High technical reproducibility achieved for majority of proteins  
-• Correlation metrics indicate reliable quantification  
-• Sample processing met quality standards  
-
-Limitations  
-• Residual batch effects present but within acceptable ranges  
-• Technical variation adequately controlled through normalization steps  ",
-.trim = FALSE)
-}
-```
-
-```{r Opinions/Interpretations Section, echo=FALSE}
-# UNCHANGED: Opinions function
-FormatOpinions <- function(correlation_data) {
-  # Default value
-  high_corr_proteins <- "N/A"
-  
-  # Try to calculate if possible
-  tryCatch({
-    if (!is.null(correlation_data) && !is.null(correlation_data$protein_data)) {
-      high_corr_proteins <- sum(correlation_data$protein_data$pearson >= 0.8, 
-                               na.rm = TRUE)
-    }
-  }, error = function(e) {
-    # Keep the default value
-  })
-  
-  glue::glue("
-OPINIONS AND INTERPRETATION  
-
-Data Quality Assessment  
-• The dataset demonstrates robust technical quality  
-• Normalization strategy effectively reduced systematic biases  
-
-Recommendations  
-1. Proceed with downstream analysis using normalized dataset  
-
-Technical Validation  
-• Quality metrics support the reliability of the data  
-• Technical reproducibility meets industry standards  
-• Dataset is suitable for biological interpretation  ",
+[To be completed by the analyst: quality-control assessment from Figure 1, technical performance,
+limitations of this dataset, and recommendations for downstream analysis. Nothing in this section is
+generated automatically.]  ",
 .trim = FALSE)
 }
 ```
@@ -768,9 +682,8 @@ FormatDEDetails <- function(numbers) {
 DIFFERENTIAL ABUNDANCE ANALYSIS
 
 Differential abundance analysis of proteins was performed using the adjusted 
-abundance matrix for comparing each pair of consensus clusters. The 'limma' R 
-package (Ritchie et al., 2015) was used. A linear model for comparing each pair 
-of time points was fitted using the formula '{formula_string_val}' with the 
+abundance matrix for the comparisons defined in the contrast table. The 'limma' R 
+package (Ritchie et al., 2015) was used. A linear model was fitted using the formula '{formula_string_val}' with the 
 'lmFit' function, and p-values were calculated using the 'eBayes' function. 
 {trend_robust_text} The false discovery rate correction was applied to the 
 moderated p-values by calculating the q-values (Storey, 2002). 
@@ -779,8 +692,8 @@ with q-values less than {ui_q_val_thresh}.
 
 Volcano plots of differentially expressed proteins across all groups are shown 
 in Figure 3, with a threshold of q-value < {ui_q_val_thresh} and no log fold-change 
-threshold. Full details of all proteins are provided in the the Supplementary
-results table, DE_proteins_results.xlsx within the Publication_tables folder.",
+threshold. Full details of all proteins are provided in the supplementary results
+table DA_results_{params$omic_type}.xlsx within the Publication_tables folder.",
 .trim = FALSE)
 }
 ```
@@ -1019,7 +932,8 @@ Main <- function() {
   })
   
   # NEW: Get DE summary text
-  de_summary_path <- file.path(report_publication_tables_dir, paste0("de_", params$omic_type, "_num_sig_de_molecules.tab"))
+  de_summary_path <- file.path(report_publication_tables_dir, paste0("da_", params$omic_type, "_num_sig_da_molecules.tab")) # KIT-055: the name the copy writes
+  if (!file.exists(de_summary_path)) de_summary_path <- file.path(report_publication_tables_dir, paste0("de_", params$omic_type, "_num_sig_de_molecules.tab"))
   de_summary_text <- FormatDESummaryTable(de_summary_path)
   
   # Generate text sections using UPDATED Format* functions for LFQ
@@ -1030,8 +944,7 @@ Main <- function() {
         if (is.character(analysis_results$numbers$record_defaults_note) && !is.na(analysis_results$numbers$record_defaults_note))
           analysis_results$numbers$record_defaults_note else ""),
       results        = FormatResults(correlation_data, ruv_applied = analysis_results$numbers$ruv_applied %||% TRUE),
-      comments       = FormatComments(),
-      opinions       = FormatOpinions(correlation_data),
+      interpretation = FormatAnalystInterpretation(),
       de_details     = FormatDEDetails(analysis_results$numbers),
       de_summary     = de_summary_text,
       go_enrichment  = FormatGOEnrichment(analysis_results$numbers)
@@ -1050,8 +963,7 @@ results_data <- tryCatch({
     sample_details = paste("Error running Main function:", e$message), 
     method_details = "", 
     results = "", 
-    comments = "", 
-    opinions = "", 
+    interpretation = "", 
     de_details = "", 
     de_summary = "",
     go_enrichment = ""
@@ -1071,27 +983,13 @@ results_data <- tryCatch({
 
 `r results_data$content$results`
 
-# Version Information
-
-```{r version_information, echo=FALSE, results="asis"}
-# KIT-043 (as KIT-039 for DIA-NN): the software the analysis record names; the git fields of study_parameters.txt otherwise.
-if (isTRUE(results_data$numbers$record_present)) {
-  cat(sprintf("MultiScholaR version: %s  \nSource commit: %s  \nBuild: %s  \nR: %s  \nBLAS: %s  \n",
-    results_data$numbers$software_version, results_data$numbers$source_commit, results_data$numbers$build,
-    results_data$numbers$r_version, results_data$numbers$blas))
-} else {
-  cat(sprintf("Repository: %s  \nBranch: %s  \nCommit: %s  \nGit Timestamp: %s  \n",
-    results_data$numbers$repository, results_data$numbers$branch, results_data$numbers$commit, results_data$numbers$git_timestamp))
-}
-```
-
 ```{r QC_metrics, echo=FALSE, warning=FALSE, fig.cap="Figure 1: QC metrics across normalisation stages"}
 # Use NEW path variable
 composite_qc_fig_path <- file.path(report_qc_figures_dir, paste0(params$omic_type, "_composite_QC_figure.png"))
 if(file.exists(composite_qc_fig_path)) {
   knitr::include_graphics(composite_qc_fig_path)
 } else {
-  cat(glue::glue("Warning: Composite QC figure not found at {composite_qc_fig_path}\\n"))
+  message(glue::glue("Warning: Composite QC figure not found at {composite_qc_fig_path}\\n"))
 }
 ```
 
@@ -1102,7 +1000,7 @@ if(file.exists(composite_qc_fig_path)) {
 `r results_data$content$de_summary`
 
 ```{r NumSigDE_Plot, echo=FALSE, out.width="100%", fig.align='center'}
-num_sig_dir <- file.path(report_publication_figures_dir, "NumSigDeMolecules")
+num_sig_dir <- file.path(report_publication_figures_dir, "NumSigDaMolecules")
 if(dir.exists(num_sig_dir)) {
   all_sig_files <- list.files(num_sig_dir, pattern = "\\.png$", full.names = TRUE)
   # Prefer the "with_not_significant" version if it exists
@@ -1114,10 +1012,10 @@ if(dir.exists(num_sig_dir)) {
   if(length(sig_plot_file) > 0) {
     knitr::include_graphics(sig_plot_file[1])
   } else {
-    cat(glue::glue("Warning: No NumSigDA Plot images found in {num_sig_dir}\n"))
+    message(glue::glue("Warning: No NumSigDA Plot images found in {num_sig_dir}\n"))
   }
 } else {
-  cat(glue::glue("Warning: NumSigDeMolecules directory not found at {num_sig_dir}\n"))
+  message(glue::glue("Warning: NumSigDaMolecules directory not found at {num_sig_dir}\n"))
 }
 ```
 
@@ -1134,30 +1032,38 @@ if(dir.exists(volcano_plots_dir)) {
   if(length(volcano_plot_files) > 0) {
     knitr::include_graphics(volcano_plot_files)
   } else {
-    cat(glue::glue("Warning: No Volcano Plot images (.png, .jpg, .jpeg) found in {volcano_plots_dir} (after grep filtering). Raw count: {length(all_volcano_files)}\\n"))
+    message(glue::glue("Warning: No Volcano Plot images (.png, .jpg, .jpeg) found in {volcano_plots_dir} (after grep filtering). Raw count: {length(all_volcano_files)}\\n"))
   }
 } else {
-  cat(glue::glue("Warning: Volcano Plots directory not found at {volcano_plots_dir}\\n"))
+  message(glue::glue("Warning: Volcano Plots directory not found at {volcano_plots_dir}\\n"))
 }
 ```
 
 ```{r Volcano Plot Caption, echo=FALSE, results='asis'}
-cat("*Figure 3: Volcano plots of differentially expressed proteins in alphabetical order.*\n\n")
+cat("*Figure 3: Volcano plots of differentially expressed proteins one per comparison.*\n\n")
 ```
 
-# Comments
+# Analyst interpretation
 
-`r results_data$content$comments`
+`r results_data$content$interpretation`
 
-# Opinions and Interpretation
+```{r enrichment_presence, echo=FALSE, results='asis'}
+# KIT-055: the enrichment section renders only when an enrichment analysis produced outputs for this project.
+enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
+pathway_dir <- tryCatch(current_project_paths$pathway_dir, error = function(e) NULL)
+enrichment_ran <- length(list.files(enrichment_plots_dir, pattern = "[.](png|jpg|jpeg)$", ignore.case = TRUE)) > 0 ||
+  (!is.null(pathway_dir) && dir.exists(pathway_dir) && length(list.files(pathway_dir, recursive = TRUE)) > 0)
+cat("# GO Enrichment Analysis
 
-`r results_data$content$opinions`
+")
+if (enrichment_ran) cat(results_data$content$go_enrichment, "
 
-# GO Enrichment Analysis
+") else cat("No enrichment analysis was run for this project.
 
-`r results_data$content$go_enrichment`
+")
+```
 
-```{r GO Enrichment Plots, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
+```{r GO Enrichment Plots, echo=FALSE, eval=enrichment_ran, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
 # Use NEW path variable and grep method
 enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
 if(dir.exists(enrichment_plots_dir)) {
@@ -1166,15 +1072,27 @@ if(dir.exists(enrichment_plots_dir)) {
   if(length(enrichment_plot_files) > 0) {
     knitr::include_graphics(enrichment_plot_files)
   } else {
-     cat(glue::glue("Warning: No Enrichment Plot images (.png, .jpg, .jpeg) found in {enrichment_plots_dir} (after grep filtering). Raw count: {length(all_enrichment_files)}\\n"))
+     message(glue::glue("Warning: No Enrichment Plot images (.png, .jpg, .jpeg) found in {enrichment_plots_dir} (after grep filtering). Raw count: {length(all_enrichment_files)}\\n"))
   }
 } else {
-  cat(glue::glue("Warning: Enrichment Plots directory not found at {enrichment_plots_dir}\\n"))
+  message(glue::glue("Warning: Enrichment Plots directory not found at {enrichment_plots_dir}\\n"))
 }
 ```
 
-```{r Go Enrichment Caption, echo=FALSE, results='asis'}
+```{r Go Enrichment Caption, echo=FALSE, eval=enrichment_ran, results='asis'}
 cat("*Figure 4: GO enrichment analysis showing pathways enriched in differentially expressed proteins. Plots are ordered alphabetically by comparison and direction.*\n\n")
 ```
 
+# Software and build
 
+```{r version_information, echo=FALSE, results="asis"}
+# KIT-043 (as KIT-039 for DIA-NN): the software the analysis record names; the git fields of study_parameters.txt otherwise.
+if (isTRUE(results_data$numbers$record_present)) {
+  cat(sprintf("MultiScholaR version: %s  \nSource commit: %s  \nBuild: %s  \nR: %s  \nBLAS: %s  \n",
+    results_data$numbers$software_version, results_data$numbers$source_commit, results_data$numbers$build,
+    results_data$numbers$r_version, results_data$numbers$blas))
+} else {
+  cat(sprintf("Repository: %s  \nBranch: %s  \nCommit: %s  \nGit Timestamp: %s  \n",
+    results_data$numbers$repository, results_data$numbers$branch, results_data$numbers$commit, results_data$numbers$git_timestamp))
+}
+```
