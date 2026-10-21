@@ -15,7 +15,8 @@ table_hash <- function(table) {
     rownames(table) <- NULL
     digest::digest(lapply(table, function(column) if (is.numeric(column)) signif(column, 12) else as.character(column)), algo = "sha256")
 }
-recorded <- readRDS(file.path(repo, "docs/qa/workflow-execution/kit/kit-021", paste0("oracles-", corpus_key, ".rds")))
+# KIT-054: the evidence directory (oracles in, tables out) may be another ticket's (KIT_CHECK_DIR).
+recorded <- readRDS(file.path(repo, Sys.getenv("KIT_CHECK_DIR", "docs/qa/workflow-execution/kit/kit-021"), paste0("oracles-", corpus_key, ".rds")))
 root <- recorded$store
 if (identical(basename(root), ".workflow-entities")) root <- dirname(root)
 stopifnot(dir.exists(root), file.exists(file.path(root, ".workflow-entities", "store.json")))
@@ -35,6 +36,6 @@ out <- api("withDIAStateScope")(manager, function() {
         build = recorded$build, contrasts = manifest$contrasts, model = manifest$model, table_hashes = tables, rows = rows)
 })
 out$library <- list(path = find.package("MultiScholaR"), source_commit = utils::packageDescription("MultiScholaR")$`Config/MultiScholaR/SourceCommit` %||% NA_character_)
-jsonlite::write_json(out, file.path(repo, "docs/qa/workflow-execution/kit/kit-021", paste0("da-tables-", corpus_key, ".json")),
+jsonlite::write_json(out, file.path(repo, Sys.getenv("KIT_CHECK_DIR", "docs/qa/workflow-execution/kit/kit-021"), paste0("da-tables-", corpus_key, ".json")),
     auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = I(17))
 cat("da tables", corpus_key, "| contrasts", paste(names(out$table_hashes), collapse = ","), "| rows", paste(unlist(out$rows), collapse = ","), "\n")
