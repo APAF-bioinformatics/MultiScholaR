@@ -117,3 +117,41 @@ test_that("importMaxQuantData drops sparse contaminant and reverse marks that a 
   kept <- importMaxQuantData(path, use_lfq = TRUE, filter_contaminants = FALSE)
   expect_length(unique(kept$data$Protein.Ids), n)
 })
+
+test_that("importMaxQuantData reads genuine MaxQuant output with spaced column names as it reads the dotted fixtures", {
+  # KIT-054: a real proteinGroups.txt names its columns "LFQ intensity <experiment>", "Potential contaminant",
+  # "Majority protein IDs"; the package's fixtures carry the dotted form. Both must give the same long table.
+  dotted <- withr::local_tempfile(fileext = ".txt")
+  spaced <- withr::local_tempfile(fileext = ".txt")
+  n <- 300L
+  table <- data.frame(
+    Protein.IDs = sprintf("P%05d", seq_len(n)),
+    Majority.protein.IDs = sprintf("P%05d", seq_len(n)),
+    Gene.names = sprintf("G%d", seq_len(n)),
+    LFQ.intensity.EA2_S1 = seq_len(n) + 0.5,
+    LFQ.intensity.FB1_S2 = seq_len(n) + 1.5,
+    Potential.contaminant = "",
+    Reverse = "",
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  table$Potential.contaminant[[7L]] <- "+"
+  table$Reverse[[9L]] <- "+"
+  utils::write.table(table, dotted, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
+  real <- table
+  names(real) <- c("Protein IDs", "Majority protein IDs", "Gene names", "LFQ intensity EA2_S1", "LFQ intensity FB1_S2",
+    "Potential contaminant", "Reverse")
+  utils::write.table(real, spaced, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
+
+  from_dotted <- importMaxQuantData(dotted, use_lfq = TRUE, filter_contaminants = TRUE)
+  from_spaced <- importMaxQuantData(spaced, use_lfq = TRUE, filter_contaminants = TRUE)
+  expect_identical(as.data.frame(from_spaced$data), as.data.frame(from_dotted$data))
+  expect_identical(from_spaced$column_mapping, from_dotted$column_mapping)
+  expect_identical(from_spaced$data_type, from_dotted$data_type)
+  expect_equal(length(unique(from_spaced$data$Protein.Ids)), n - 2L)
+  expect_setequal(unique(from_spaced$data$Run), c("EA2_S1", "FB1_S2"))
+  expect_identical(
+    normaliseMaxQuantColumnNames(c("LFQ intensity A B", "Intensity A B", "Potential contaminant", "Reverse", "Other col")),
+    c("LFQ.intensity.A B", "Intensity.A B", "Potential.contaminant", "Reverse", "Other col")
+  )
+})

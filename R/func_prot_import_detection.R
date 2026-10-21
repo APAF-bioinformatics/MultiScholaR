@@ -80,7 +80,8 @@ detectProteomicsFormat <- function(headers, filename, preview_lines = NULL) {
   maxquant_markers <- c("proteins", "majority.protein.ids", "protein.names",
                        "gene.names", "peptide.counts", "unique.peptides",
                        "intensity", "lfq.intensity", "ms.ms.count")
-  maxquant_found <- sum(maxquant_markers %in% headers_lower)
+  # Genuine MaxQuant output carries spaced names ("Majority protein IDs"); the markers are dotted (KIT-054).
+  maxquant_found <- sum(maxquant_markers %in% unique(c(headers_lower, gsub(" ", ".", headers_lower, fixed = TRUE))))
   maxquant_score <- maxquant_found / length(maxquant_markers)
   if (grepl("proteingroups", filename_lower)) maxquant_score <- maxquant_score + 0.3
   

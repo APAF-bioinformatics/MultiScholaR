@@ -227,6 +227,26 @@ importFragPipeData <- function(filepath, use_maxlfq = TRUE) {
 # ----------------------------------------------------------------------------
 # importMaxQuantData
 # ----------------------------------------------------------------------------
+#' Map MaxQuant's spaced column names to the dotted names the reader handles
+#'
+#' @param names Column names as read from a proteinGroups export.
+#' @return The names with the known MaxQuant names in dotted form; other names unchanged.
+#' @noRd
+normaliseMaxQuantColumnNames <- function(names) {
+  fixed <- c("Protein IDs", "Majority protein IDs", "Protein names", "Gene names", "Potential contaminant",
+    "Only identified by site", "Peptide counts (all)", "Peptide counts (razor+unique)", "Peptide counts (unique)",
+    "Unique peptides", "MS/MS count")
+  out <- names
+  at <- out %in% fixed
+  out[at] <- gsub(" ", ".", out[at], fixed = TRUE)
+  prefixes <- c("LFQ intensity ", "Intensity ", "iBAQ ", "MS/MS count ", "Unique peptides ", "Peptides ")
+  for (prefix in prefixes) {
+    at <- startsWith(out, prefix)
+    out[at] <- paste0(gsub(" ", ".", trimws(prefix), fixed = TRUE), ".", substring(out[at], nchar(prefix) + 1L))
+  }
+  out
+}
+
 #' Import MaxQuant Data
 #' 
 #' @param filepath Path to MaxQuant proteinGroups.txt file
@@ -239,10 +259,15 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
   # and a sparse "+" column whose sample carries no mark is read as logical with every mark lost, so the rows it
   # flags are kept (reproduced by the KIT-021 corpus check: 50 decoys among 8,100 groups survived the import).
   header <- names(vroom::vroom(filepath, delim = "\t", n_max = 0L, show_col_types = FALSE))
-  flags <- intersect(c("Potential.contaminant", "Reverse"), header)
+  flags <- intersect(c("Potential.contaminant", "Reverse", "Potential contaminant"), header)
   col_types <- do.call(vroom::cols, c(list(.default = vroom::col_guess()),
     stats::setNames(rep(list(vroom::col_character()), length(flags)), flags)))
   data <- vroom::vroom(filepath, delim = "\t", show_col_types = FALSE, col_types = col_types)
+  # Genuine MaxQuant output writes its column names with spaces ("LFQ intensity <experiment>", "Potential
+  # contaminant", "Majority protein IDs"); the reader's tests and fixtures carry the dotted form R's readers once
+  # produced. The known MaxQuant names are mapped to the dotted form (the experiment part of an intensity column is
+  # left as it is), so a real proteinGroups.txt reads as the fixtures do (KIT-054 finding).
+  names(data) <- normaliseMaxQuantColumnNames(names(data))
   
   # Filter contaminants and reverse hits if requested
   if (filter_contaminants) {
