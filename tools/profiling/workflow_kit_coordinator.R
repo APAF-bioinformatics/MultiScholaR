@@ -304,6 +304,8 @@ tryCatch({
             journey$route <- helpers$kitRouteOf(case)
             # KIT-021: a corpus may override normalisation settings (the fixtures skip RUV); part of the case binding through the corpus.
             if (!is.null(corpus_spec$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, corpus_spec$normalisation)
+            # KIT-053: a ticket may bind its route's normalisation settings (the limpa route's RUV mode); part of the case binding.
+            if (!is.null(case$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, case$normalisation)
             fault <- if (case$expect_failure) bindings$lifecycle$fault else NULL
             # The browser driver runs in its own process per member (correction 3), outside the slice.
             saveRDS(list(schema = 1L, application_root = application_root, corpus = corpus, journey = journey, fault = fault,

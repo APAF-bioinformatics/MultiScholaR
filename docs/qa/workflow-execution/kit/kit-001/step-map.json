@@ -947,6 +947,42 @@
       "notes": [
         "KIT-041: unit recorded under the afk authorisation (decision record), which also records the replicate-structure rule (KIT-035's: the technical block when declared, else the grouping variable; the script used group)."
       ]
+    },
+    {
+      "id": "da_limpa",
+      "label": "Differential abundance (DIA_LIMPA)",
+      "route": "DIA_LIMPA",
+      "unit": "whole_matrix",
+      "in_journey": false,
+      "module": "R/mod_prot_da_handlers_run_analysis.R: da_server_run_analysis_handler (reference: runDIAReferenceDaAnalysis, R/utils_workflow_dia_da.R) with the contrast declaration diaContrastOperation(route = limpa)",
+      "kernel": "differentialAbundanceAnalysis -> differentialAbundanceAnalysisHelper (R/func_prot_da_model_methods.R): the dpcDE branch when the object carries the quantified EList: limpa::dpcDE(elist, model.matrix(formula + W1..Wk), plot = FALSE, block = KIT-035's resolved block) -> convertDpcDAToStandardFormat (R/func_prot_limpa_da_helpers.R:17; contrasts.fit, eBayes, topTable, qvalue)",
+      "evidence": [
+        "limpa::dpcDE fits every protein against the whole design with imputation weights from every sample (voomaLmFitWithImputation); duplicateCorrelation over all proteins when a block is given",
+        "the W covariates come from the ruv_covariates state's design (whole matrix)",
+        "no TREAT step on this branch (the converter uses eBayes/topTable); treat_lfc_cutoff recorded as not applied"
+      ],
+      "reads_outside_assay": [
+        "design_matrix (the formula's factors and W1..Wk)",
+        "args$limpa_dpc_quant_results$quantified_elist (the owned entry, reattached on hydrate)"
+      ],
+      "writes": [
+        "DA contrast products (da_proteins_long/wide, contrasts_results_table, significant_rows, norm_counts) per contrast; the manifest's model (dpcDE, formula_used, k, block_reason, treat_applied)"
+      ],
+      "global_statistics": [
+        {
+          "name": "dpcDE_fit",
+          "why": "one linear model fit over every protein and sample with the DPC imputation weights"
+        }
+      ],
+      "merge": null,
+      "holders": [
+        "R/utils_workflow_dia_da.R runDIAReferenceDaAnalysis (the manifest on the head; no state commit)"
+      ],
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "KIT-053: unit recorded under the afk authorisation (decision record 2026-10-21)."
+      ]
     }
   ],
   "science_notes_for_the_user": [
@@ -983,6 +1019,11 @@
       "date": "2026-10-21",
       "ticket": "KIT-041",
       "change": "three DIA_LIMPA rows added (protein_normalisation_limpa whole matrix, peptide_count row, ruv_covariates whole matrix); units recorded under the afk authorisation, confirmation row in the plan's decision record"
+    },
+    {
+      "date": "2026-10-21",
+      "ticket": "KIT-053",
+      "change": "da_limpa row added (whole matrix; dpcDE with the W covariates and the resolved block); the route step map step-map-limpa.json is the route's rows plus the shared steps, hashed in the bindings"
     }
   ]
 }

@@ -12,7 +12,25 @@
 kitJourneySteps <- function(route = "DIA") {
     step <- function(id, label, state, kind, module, action) list(id = id, label = label,
         state = state, kind = kind, module = module, action = action)
-    stopifnot(is.character(route), length(route) == 1L, route %in% c("DIA", "protein"))
+    stopifnot(is.character(route), length(route) == 1L, route %in% c("DIA", "protein", "DIA_LIMPA"))
+    # KIT-053: the DIA with limpa route (KIT-046/047/041): the shared import, design, Q-value filter and precursor
+    # rollup, then the route's own peptide stage (log2 matrix, peptide accession cleanup, DPC quantification), its
+    # protein stage (between-sample normalisation, peptide count filter), the shared correlation filter, the RUV-III
+    # factors as covariates (the tab's own action after the filter), the session export and the DA (dpcDE).
+    if (identical(route, "DIA_LIMPA")) return(list(
+        step("import", "Import", "initial", "store", "mod_prot_import", "prot-import-process"),
+        step("design", "Design", "raw_data_s4", "store", "mod_prot_design", "builder save_results"),
+        step("qvalue", "Q-Value Filter", "qvalue_filtered", "peptide", "mod_prot_qc_peptide_qvalue", "qvalue_filter-apply_qvalue_filter"),
+        step("rollup", "Precursor Rollup", "precursor_rollup", "peptide", "mod_prot_qc_peptide_rollup", "rollup-apply_rollup"),
+        step("peptide_log2", "Log2 Matrix", "log2_matrix", "peptide", "mod_prot_qc_peptide_log2", "log2_matrix-apply_log2_matrix"),
+        step("peptide_accession", "Peptide Accession Cleanup", "peptide_accession_cleaned", "peptide", "mod_prot_qc_peptide_accession", "accession_cleanup-apply_peptide_accession"),
+        step("dpc_quant", "DPC Quantification", "protein_dpc_quant", "protein", "mod_prot_qc_protein_dpc_quant", "dpc_quant-apply_dpc_quant"),
+        step("protein_normalisation_limpa", "Between-Sample Normalisation", "protein_normalised", "protein", "mod_prot_qc_protein_normalisation", "normalisation-apply_protein_normalisation"),
+        step("peptide_count", "Peptide Count Filter", "peptide_count_filtered", "protein", "mod_prot_qc_protein_peptide_count", "peptide_count-apply_peptide_count"),
+        step("correlation", "Correlation Filtering", "correlation_filtered", "normalisation", "mod_prot_norm", "apply_correlation_filter"),
+        step("ruv_covariates", "RUV-III Covariates", "ruv_covariates", "normalisation", "mod_prot_norm", "apply_ruv_covariates"),
+        step("session_export", "Filtered session export", NULL, "store", "mod_prot_norm", "export_filtered_session"),
+        step("da", "Differential abundance", "ruv_covariates", "da", "mod_prot_da", "run_da_analysis")))
     # KIT-021: the protein-level route (LFQ and TMT imports, KIT-020): no peptide stage and no IQ rollup; the design
     # commits `protein_s4_initial`; the protein QC, normalisation, export and DA steps are the DIA route's.
     if (identical(route, "protein")) return(list(
@@ -125,7 +143,7 @@ kitCases <- function(bindings, stage) {
         build
     }
     journey_case <- function(id, role, rep, build_key, corpus_key, fault, selector, record = TRUE, stop_after = NULL,
-        route = "DIA", oracles = NULL) {
+        route = "DIA", oracles = NULL, normalisation = NULL) {
         build <- build_of(build_key)
         corpus <- bindings$corpora[[corpus_key]]
         if (is.null(corpus)) stop("corpus ", corpus_key, " is not bound")
@@ -135,16 +153,19 @@ kitCases <- function(bindings, stage) {
         # KIT-021: a protein-route member is judged against the in-process oracles bound under `oracles` (protocol v1.5),
         # recorded in the route's step map; the DIA route keeps the KIT-005 oracles and the DIA step map.
         if (identical(route, "protein") && is.null(bindings$harness$step_map_protein_sha256)) stop("the protein step map is not bound")
+        if (identical(route, "DIA_LIMPA") && is.null(bindings$harness$step_map_limpa_sha256)) stop("the limpa step map is not bound")
         list(id = id, kind = "journey", role = role, control = role == "control", rep = rep, fault = fault,
             corpus = corpus_key, record = record, stop_after = stop_after, route = route, oracles = oracles,
             library = build$library, expected_build = build$build,
             exact_sum = build$exact_sum, expect_failure = fault != "none",
             binding = digest::digest(c(list(corpus = corpus$files, build = build, stage = stage, rep = rep, record = record,
                 journey = bindings$journey[setdiff(names(bindings$journey), "pair")], protocol = bindings$protocol_sha256,
-                step_map = if (identical(route, "protein")) bindings$harness$step_map_protein_sha256 else bindings$step_map_sha256),
+                step_map = switch(route, protein = bindings$harness$step_map_protein_sha256,
+                    DIA_LIMPA = bindings$harness$step_map_limpa_sha256, bindings$step_map_sha256)),
                 if (!is.null(stop_after)) list(stop_after = stop_after),
-                if (!identical(route, "DIA")) list(route = route, oracles = oracles)), algo = "sha256"),
-            selector = selector)
+                if (!identical(route, "DIA")) list(route = route, oracles = oracles),
+                if (!is.null(normalisation)) list(normalisation = normalisation)), algo = "sha256"),
+            selector = selector, normalisation = normalisation)
     }
     operation_case <- function(id, role, rep, build_key, operation, population_key, fault, selector,
         variant = NULL, oracle = NULL, parameters = NULL) {
@@ -219,9 +240,10 @@ kitCases <- function(bindings, stage) {
             if (is.null(spec$build)) stop("KIT-", ticket, " single journey binds no build or stop_after")
             if (is.null(spec$stop_after) && !identical(spec$whole_journey, TRUE)) stop("KIT-", ticket, " single journey binds no build or stop_after")
             # The case id is the one its selector maps back to (KIT-018 pre-execution audit PE-01; KIT-008 correction 1).
+            # KIT-053: a ticket may bind the normalisation tab's settings for its route (the limpa route's RUV mode).
             return(list(journey_case("candidate-1", "candidate", 1L, spec$build, spec$corpus %||% "full", "none",
                 paste0("kit:journey-", ticket, ":candidate:1"), record = FALSE, stop_after = spec$stop_after,
-                route = spec$route %||% "DIA", oracles = spec$oracles)))
+                route = spec$route %||% "DIA", oracles = spec$oracles, normalisation = spec$normalisation)))
         }
         if (is.null(spec) || !identical(spec$kind, "journey")) stop("KIT-", ticket, " has no bound journey pair")
         record <- isTRUE(spec$record)

@@ -357,6 +357,46 @@ setMethod(
     message(paste("   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with", length(contrast_strings_to_use), "contrasts"))
     message(paste("   differentialAbundanceAnalysisHelper: protein_quant_matrix dims =", nrow(protein_quant_matrix), "x", ncol(protein_quant_matrix)))
 
+    # KIT-053: the DIA_LIMPA route's DA. An object carrying the quantified EList (the DPC quantification's results,
+    # reattached from its owned value) is fitted with limpa's dpcDE on the EList, the design built from the user's
+    # formula plus the RUV covariates present in the design (`W1..Wk`, the limpa script's chunk 22), and KIT-035's
+    # resolved technical-replicate block passed through (`dpcDE` forwards it to `voomaLmFitWithImputation`, which
+    # runs duplicateCorrelation itself). The converter has no TREAT step: `treat_lfc_cutoff` is recorded as not
+    # applied on this branch. Every other object takes the limma path exactly as before.
+    limpa_results <- theObject@args$limpa_dpc_quant_results
+    use_dpc_de <- is.list(limpa_results) && !is.null(limpa_results$quantified_elist) && requireNamespace("limpa", quietly = TRUE)
+    da_model <- list(model = "limma", formula_used = formula_string, w_terms = character(), k = 0L,
+      treat_applied = isTRUE(is.finite(as.double(treat_lfc_cutoff)) && as.double(treat_lfc_cutoff) > 0),
+      treat_lfc_cutoff_requested = as.double(treat_lfc_cutoff))
+    if (use_dpc_de) {
+      message("   differentialAbundanceAnalysisHelper: quantified EList present; fitting limpa::dpcDE (KIT-053)")
+      w_terms <- grep("^W[0-9]+$", names(theObject@design_matrix), value = TRUE)
+      formula_used <- if (length(w_terms)) paste(formula_string, "+", paste(w_terms, collapse = " + ")) else formula_string
+      design_for_dpcde <- model.matrix(as.formula(formula_used), theObject@design_matrix)
+      samples_in_model <- rownames(design_for_dpcde)
+      elist <- limpa_results$quantified_elist
+      if (!all(samples_in_model %in% colnames(elist$E))) stop("The quantified EList does not carry every sample of the design.", call. = FALSE)
+      elist <- elist[, samples_in_model]
+      replicate <- resolveProtTechnicalReplicateBlock(theObject@design_matrix[samples_in_model, , drop = FALSE],
+        theObject@group_id, theObject@technical_replicate_id)
+      block <- if (isTRUE(replicate$technical)) replicate$block else NULL
+      dpcDEFn <- limpa::dpcDE
+      dpc_fit <- dpcDEFn(elist, design_for_dpcde, plot = FALSE, block = block)
+      contrasts_results <- convertDpcDAToStandardFormat(dpc_fit = dpc_fit, contrast_strings = contrast_strings_to_use,
+        design_matrix = design_for_dpcde, eBayes_trend = as.logical(eBayes_trend), eBayes_robust = as.logical(eBayes_robust))
+      # The converter names the protein and the comparison as columns; the shared path below adds both from the
+      # row names, as it does for the limma tables.
+      contrasts_results$results <- lapply(contrasts_results$results, function(table) {
+        rownames(table) <- table$uniprot_acc
+        table$uniprot_acc <- NULL
+        table$comparison <- NULL
+        table$log_intensity <- NULL # derived from AveExpr by the significance step, as for the limma tables
+        table
+      })
+      da_model <- list(model = "dpcDE", formula_used = formula_used, w_terms = w_terms, k = length(w_terms),
+        block_reason = replicate$reason, uses_duplicate_correlation = isTRUE(replicate$technical),
+        treat_applied = FALSE, treat_lfc_cutoff_requested = as.double(treat_lfc_cutoff))
+    } else {
     contrasts_results <- runTestsContrasts(protein_quant_matrix,
       contrast_strings = contrast_strings_to_use,
       design_matrix = theObject@design_matrix,
@@ -367,6 +407,7 @@ setMethod(
       eBayes_trend = as.logical(eBayes_trend),
       eBayes_robust = as.logical(eBayes_robust)
     )
+    }
 
     message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!")
 
@@ -412,6 +453,7 @@ setMethod(
 
     return_list$contrasts_results <- contrasts_results
     return_list$contrasts_results_table <- contrasts_results_table
+    return_list$da_model <- da_model # KIT-053: the model that ran (limma or dpcDE) and the formula it used
 
     # Extract qvalue warnings if present
     if (!is.null(contrasts_results$qvalue_warnings) && length(contrasts_results$qvalue_warnings) > 0) {

@@ -269,10 +269,18 @@ readDIAContrastOutput <- function(result, fields = c("da_proteins_long", "num_si
 #' projected object; tables become components and display values derived products, assembled into
 #' the existing `dia.contrast_reference.v1` record saved under the existing identity and factors.
 #' @noRd
-diaContrastOperation <- function() {
+#' The route factor of the DA identities (KIT-053): `limpa` on the `DIA_LIMPA` type, `iq` otherwise (the constant
+#' every DIA, LFQ and TMT identity carried before).
+#' @noRd
+diaActiveRoute <- function(manager = getDIAActiveManager()) {
+    type <- tryCatch(manager$workflow_type, error = function(e) NULL)
+    if (identical(type, "DIA_LIMPA")) "limpa" else "iq"
+}
+
+diaContrastOperation <- function(route = "iq") {
     newWorkflowOperation("DA-contrast-output", "ProteinQuantitativeData",
         fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
-        product_type = "dia-contrast-references", factors = list(route = "iq", layer = "contrast_references"),
+        product_type = "dia-contrast-references", factors = list(route = route, layer = "contrast_references"),
         parameters = c("formula", "qvalue", "lfc", "weights", "contrast", "annotations"),
         kernel = function(object, parameters, store) {
             single <- data.frame(contrasts = parameters$contrast, stringsAsFactors = FALSE)
@@ -308,6 +316,7 @@ diaContrastOperation <- function() {
             }
             accepted$columns <- names(result$da_proteins_long)
             accepted$rows <- nrow(result$da_proteins_long)
+            accepted$model <- result$da_model # KIT-053: limma or dpcDE, the formula used, the W terms, the block
             accepted
         })
 }
@@ -374,7 +383,7 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
         context$da_reference_execution <- TRUE
         context$da_source_reference <- source
         on.exit({ context$da_reference_execution <- FALSE; context$da_source_reference <- NULL }, add = TRUE)
-        operation <- diaContrastOperation()
+        operation <- diaContrastOperation(diaActiveRoute(manager))
         for (i in seq_len(nrow(contrasts))) {
             name <- contrasts$contrasts[[i]]
             run <- runSavedOperation(manager, operation, source, c(manifest$parameters,
@@ -391,9 +400,14 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
         snapshot <- context$snapshot
         # KIT-035: the model that ran, from the base fit's recorded factors (provenance; not part of any identity).
         fit_factors <- manager$.context$da_base_fit_reference$metadata$factors
-        manifest$model <- list(group_id = fit_factors$group_id, technical_replicate_id = fit_factors$technical_replicate_id,
-            block_reason = fit_factors$block_reason, uses_duplicate_correlation = fit_factors$uses_duplicate_correlation,
-            consensus_correlation = fit_factors$consensus_correlation)
+        # KIT-053: the kernel's own account of the model (limma or dpcDE with the W terms) first; the limma base fit's
+        # factors beside it (NULL on the dpcDE branch, which fits no saved base fit).
+        kernel_model <- manifest$results[[1L]]$model %||% list(model = "limma")
+        manifest$model <- c(kernel_model, list(route = diaActiveRoute(manager),
+            group_id = fit_factors$group_id, technical_replicate_id = fit_factors$technical_replicate_id,
+            block_reason = kernel_model$block_reason %||% fit_factors$block_reason,
+            uses_duplicate_correlation = kernel_model$uses_duplicate_correlation %||% fit_factors$uses_duplicate_correlation,
+            consensus_correlation = fit_factors$consensus_correlation))
         manifest_reference <- saveDIAStateValue(context, manifest, "da-result-references", codec = "rds")
         snapshot$da_results <- manifest_reference
         snapshot$da_dependencies[[manifest_reference$entity_id]] <- collectDIANativeReferences(
@@ -780,7 +794,7 @@ saveWorkflowDiaBaseFit <- function(store, base_fit_artifact, request_id, identit
         base_fit_artifact$feature_ids, base_fit_artifact$sample_ids,
         base_fit_artifact$design_columns)
     saveWorkflowConsumerEntity(store, envelope, request_id, identity, "da_fit",
-        factors = list(route = "iq", layer = "base_fit",
+        factors = list(route = diaActiveRoute(), layer = "base_fit",
             uses_duplicate_correlation = base_fit_artifact$uses_duplicate_correlation,
             consensus_correlation = base_fit_artifact$consensus_correlation,
             # KIT-035: which model ran and why (provenance for the analysis record).
@@ -799,7 +813,7 @@ resolveWorkflowDiaBaseFit <- function(store, identity,
     block_reason = if (isTRUE(uses_duplicate_correlation)) "technical_replicates" else "no_duplicates") {
     # KIT-035: the saved factors carry the model's provenance, so an exact resolve names it too.
     resolveSavedWorkflowEntity(store, "da_fit", identity,
-        factors = list(route = "iq", layer = "base_fit",
+        factors = list(route = diaActiveRoute(), layer = "base_fit",
             uses_duplicate_correlation = uses_duplicate_correlation,
             consensus_correlation = consensus_correlation,
             group_id = group_id, technical_replicate_id = technical_replicate_id, block_reason = block_reason))
@@ -817,10 +831,10 @@ saveWorkflowDiaResult <- function(store, result, request_id, identity) {
         cli::cli_abort("invalid DIA result artifact", class = "saved_entity_invalid")
     }
     envelope <- newSavedWorkflowScientificProduct(result, "dia_contrast_results",
-        provenance = list(route = "iq", full_population = TRUE,
+        provenance = list(route = diaActiveRoute(), full_population = TRUE,
             contrasts = names(result$results)))
     saveWorkflowConsumerEntity(store, envelope, request_id, identity,
-        "scientific_product", factors = list(route = "iq", layer = "full_results"))
+        "scientific_product", factors = list(route = diaActiveRoute(), layer = "full_results"))
 }
 
 #' Resolve one exact complete DA result without statistical computation.
@@ -830,7 +844,7 @@ saveWorkflowDiaResult <- function(store, result, request_id, identity) {
 #' @noRd
 resolveWorkflowDiaResult <- function(store, identity) {
     resolveSavedWorkflowEntity(store, "scientific_product", identity,
-        factors = list(route = "iq", layer = "full_results"))
+        factors = list(route = diaActiveRoute(), layer = "full_results"))
 }
 
 #' Return one deterministic page from already adjusted full-population statistics.

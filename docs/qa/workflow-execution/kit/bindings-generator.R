@@ -422,6 +422,33 @@ if (!is.null(b$corpora$kc_lfq_dotted))
         ceiling_seconds = 14400L)
 b$tickets[["054m"]] <- list(kind = "single_journey", build = "kit_036", corpus = "tmt_300", route = "protein", whole_journey = TRUE,
     ceiling_seconds = 14400L)
+# KIT-053: the DIA_LIMPA single journey member (protocol v1.5: the whole journey of the route; exactness against the
+# route's in-process oracles recorded on the same build and corpus by kit-053/oracle-record.R; completion and the peaks
+# recorded, no ratio, no control). `KIT_053_CORPUS=screen` binds the screen corpus for the lifecycle run (not counted,
+# ceiling 1,800 s); the counted member runs on the 300-sample DIA-NN corpus (`full`, ceiling 14,400 s). The route's
+# normalisation tab settings are bound with the ticket (no between-sample normalisation at the tab; RUV covariates).
+if (!is.null(b$builds$kit_053)) {
+    corpus_053 <- Sys.getenv("KIT_053_CORPUS", "full"); stopifnot(corpus_053 %in% c("full", "screen"))
+    b$tickets[["053"]] <- list(kind = "single_journey", build = "kit_053", corpus = corpus_053, route = "DIA_LIMPA", whole_journey = TRUE,
+        oracles = paste0("limpa_", corpus_053), ceiling_seconds = if (identical(corpus_053, "full")) 14400L else 1800L,
+        normalisation = list(norm_method = "none", ruv_mode = "covariates", correlation_threshold = 0.5))
+}
+# KIT-053 oracles: the route's per-step fingerprints on the screen and full DIA-NN corpora (the same corpora as the DIA
+# route), recorded by kit-053/oracle-record.R into oracles-limpa_<corpus>.rds and bound under limpa_<corpus>_<step>.
+for (key in c("screen", "full")) {
+    if (is.null(b$corpora[[key]])) next
+    oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-053", paste0("oracles-limpa_", key, ".rds"))
+    if (!file.exists(oracle_file)) next
+    recorded <- readRDS(oracle_file)
+    stopifnot(identical(recorded$corpus, key), identical(recorded$route, "DIA_LIMPA"), identical(recorded$corpus_sha256, b$corpora[[key]]$files[[1L]]$sha256))
+    for (step in names(recorded$populations)) {
+        population <- recorded$populations[[step]]
+        b$populations[[paste0("limpa_", key, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+            head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+            oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at, route = "DIA_LIMPA")
+        b$oracles[[paste0("limpa_", key, "_", step)]] <- population$fingerprint
+    }
+}
 # KIT-021 oracles (protocol v1.5 item 1): per-step fingerprints of an in-process run of the bound build on each protein
 # corpus, recorded read-only by docs/qa/workflow-execution/kit/kit-021/oracle-record.R into oracles-<corpus>.rds; bound
 # under <corpus>_<step> as the KIT-005 oracles are bound under journey_<step>. KIT-054's real corpus records into kit-054/.
@@ -562,6 +589,9 @@ b$harness <- list(root = file.path(proof, "kit/runtime"),
     # KIT-021 (protocol v1.5 item 5): the protein route's own step map.
     step_map_protein = "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json",
     step_map_protein_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json")),
+    # KIT-053: the DIA_LIMPA route's step map (the route's rows and the shared steps), part of the route's case binding.
+    step_map_limpa = "docs/qa/workflow-execution/kit/kit-001/step-map-limpa.json",
+    step_map_limpa_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-limpa.json")),
     core_pinned_unchanged = TRUE,
     files = as.list(stats::setNames(vapply(file.path(repo, files), hash, character(1), USE.NAMES = FALSE), files)))
 jsonlite::write_json(b, path, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)

@@ -1120,3 +1120,58 @@ test_that("KIT-054: the real-data keys bind a whole-journey single member with o
     })
     expect_identical(h$kitSingleJourneyDecision(receipt2, new_cases, b)$failing_rule, "populations_incomplete")
 })
+
+test_that("KIT-053: the DIA_LIMPA route's step list, its single journey member with the route's step map, oracles and normalisation settings", {
+    h <- kitHarness()
+    limpa <- h$kitStepIds("DIA_LIMPA")
+    expect_identical(limpa, c("import", "design", "qvalue", "rollup", "peptide_log2", "peptide_accession", "dpc_quant",
+        "protein_normalisation_limpa", "peptide_count", "correlation", "ruv_covariates", "session_export", "da"))
+    steps <- h$kitJourneySteps("DIA_LIMPA")
+    expect_identical(steps[[7]]$state, "protein_dpc_quant")
+    expect_identical(steps[[11]]$state, "ruv_covariates")
+    expect_identical(steps[[11]]$action, "apply_ruv_covariates")
+    expect_identical(steps[[13]]$state, "ruv_covariates")
+    expect_identical(h$kitStepIds("DIA"), h$kitStepIds())
+    b <- kitSyntheticBindings()
+    b$builds$kit_053 <- list(library = "/lib/l", build = strrep("l", 64), exact_sum = "sum-l")
+    b$harness$step_map_limpa_sha256 <- strrep("q", 64)
+    b$tickets[["053"]] <- list(kind = "single_journey", build = "kit_053", corpus = "full", route = "DIA_LIMPA", whole_journey = TRUE,
+        oracles = "limpa_full", ceiling_seconds = 14400L, normalisation = list(norm_method = "none", ruv_mode = "covariates", correlation_threshold = 0.5))
+    cases <- h$kitCases(b, "kit-journey-053")
+    expect_length(cases, 1L)
+    case <- cases[[1L]]
+    expect_identical(case$route, "DIA_LIMPA")
+    expect_identical(case$oracles, "limpa_full")
+    expect_identical(case$normalisation$ruv_mode, "covariates")
+    expect_identical(case$selector, "kit:journey-053:candidate:1")
+    expect_identical(h$kitSelectorStage("kit:journey-053:candidate:1"), list(stage = "kit-journey-053", id = "candidate-1"))
+    expect_identical(h$kitMemberSeconds("kit-journey-053", b), 14400L)
+    # The route's step map and its normalisation settings are part of the binding; without the map the case refuses.
+    other <- b; other$harness$step_map_limpa_sha256 <- strrep("r", 64)
+    expect_false(identical(h$kitCases(other, "kit-journey-053")[[1L]]$binding, case$binding))
+    other <- b; other$tickets[["053"]]$normalisation$ruv_mode <- "skip"
+    expect_false(identical(h$kitCases(other, "kit-journey-053")[[1L]]$binding, case$binding))
+    none <- b; none$harness$step_map_limpa_sha256 <- NULL
+    expect_error(h$kitCases(none, "kit-journey-053"), "limpa step map")
+    # The oracles are looked up under the route prefix for the route's steps; the decision takes the whole step list.
+    b$oracles$limpa_full_dpc_quant <- list(class = "ProteinQuantitativeData", components = list(protein_quant_table = "x"))
+    oracles <- h$kitOracleJourneyPopulations(b, "DIA_LIMPA", "limpa_full")
+    expect_identical(names(oracles), limpa)
+    expect_identical(oracles$dpc_quant$fingerprint$class, "ProteinQuantitativeData")
+    receipt <- kitSyntheticReceipt(cases, h, edit = function(r) {
+        op <- r$cases[["candidate-1"]]$operation
+        op$status <- "complete"; op$populations_complete <- TRUE
+        op$phase_status <- stats::setNames(as.list(rep("complete", length(limpa))), limpa)
+        op$phase_peak_anon_bytes <- stats::setNames(as.list(rep(2e9, length(limpa))), limpa)
+        op$phase_seconds <- stats::setNames(as.list(rep(10, length(limpa))), limpa)
+        op$sampled_anon_bytes <- 2e9; op$resident_end_bytes <- 1.5e9
+        r$cases[["candidate-1"]]$operation <- op
+        r$cases[["candidate-1"]]$verifier_completion <- list(accepted = TRUE)
+        r
+    })
+    decision <- h$kitSingleJourneyDecision(receipt, cases, b)
+    expect_identical(decision$status, "accepted")
+    expect_identical(decision$steps, limpa)
+    expect_true(decision$member$exact)
+    expect_false(decision$member$in_memory)
+})

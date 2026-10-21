@@ -503,18 +503,36 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                         "Post-normalization complete: RUV-III correction and missing value cleanup completed")
                 normalization_final <<- saved$final
             } else if (identical(operation, "pearson-selection")) {
-                # As `runDIAReferenceCorrelation` commits: pairs, then selection, on the normalisation's final checkpoint.
+                # As `runDIAReferenceCorrelation` commits: pairs, then selection, on the normalisation's final checkpoint
+                # (KIT-053: on the DIA_LIMPA route there is no normalisation checkpoint; the source is the head state).
                 previous <- Filter(function(p) identical(p$operation, "pearson-pairs"), step$preceded_by %||% list())
-                if (!length(previous) || is.null(normalization_final))
+                correlation_source <- normalization_final %||% getDIAStateReference(manager)
+                if (!length(previous) || is.null(correlation_source))
                     cli::cli_abort("step {.val {step$state}} cannot be replayed without its pairs and normalisation", class = "workflow_replay_unsupported")
                 pairs_parameters <- workflowReplayParameters(previous[[1L]]$parameters, workflowOperationEntry("pearson-pairs")$parameters)
-                pairs <- runSavedOperation(manager, diaPearsonPairsOperation(), normalization_final, pairs_parameters)
-                selection <- runSavedOperation(manager, diaPearsonSelectionOperation(), normalization_final,
+                pairs <- runSavedOperation(manager, diaPearsonPairsOperation(), correlation_source, pairs_parameters)
+                selection <- runSavedOperation(manager, diaPearsonSelectionOperation(), correlation_source,
                     list(pairs = pairs$reference$entity_id, threshold = parameters$threshold, correlations = pairs$value),
                     dependencies = list(pairs$reference))
                 spec <- readDIAStateMetadata(manager, selection$value)$data
                 commitDIAReferenceState(manager, "correlation_filtered", spec,
                     list(min_pearson_correlation_threshold = parameters$threshold), "Applied final sample correlation filter (chunk 28)")
+            } else if (identical(operation, "protein_ruv_covariates")) {
+                # KIT-053: as `runDIAReferenceRuvCovariates` commits on the DIA_LIMPA route.
+                run <- runSavedOperation(manager, diaRuvCovariatesOperation(), getDIAStateReference(manager), parameters)
+                saved <- run$value
+                final <- readDIAStateMetadata(manager, saved$covariates)$data
+                final$products$ruv_covariates_science <- run$reference
+                config <- list(ruv_mode = "covariates", ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage,
+                    control_count = saved$control_count, separation_score = saved$ruv_result$best_separation_score,
+                    composite_score = saved$ruv_result$best_composite_score, max_acceptable_k = saved$ruv_result$max_acceptable_k,
+                    replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, replicate_blocks = saved$blocks,
+                    ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_applied = TRUE,
+                    outcomes = list(k = saved$best_k, percentage_as_neg_ctrl = saved$percentage, control_count = saved$control_count,
+                        separation_score = saved$ruv_result$best_separation_score, composite_score = saved$ruv_result$best_composite_score,
+                        replicate_structure = saved$replicate_structure, block_reason = saved$block_reason))
+                commitDIAReferenceState(manager, "ruv_covariates", final, config,
+                    sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
             } else {
                 cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}", class = "workflow_replay_unsupported")
             }
@@ -693,7 +711,26 @@ workflowRecordReportSources <- list(
         file = c("removeRowsWithMissingValuesPercent", "proteins_intensity_cutoff_percentile")),
     groupwise_percentage_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "groupwise_percentage_cutoff")),
     ui_de_q_value_threshold = list(record = c("DA", "qvalue"), file = c("deAnalysisParameters", "de_q_val_thresh")),
-    ui_de_log_fold_change_cutoff = list(record = c("DA", "lfc"), file = c("deAnalysisParameters", "treat_lfc_cutoff")))
+    ui_de_log_fold_change_cutoff = list(record = c("DA", "lfc"), file = c("deAnalysisParameters", "treat_lfc_cutoff")),
+    # KIT-053: the DIA_LIMPA route's values the limpa template prints from the record: the DPC quantification, the
+    # between-sample normalisation, the peptide-count filter, the RUV covariates and the DA model.
+    dpc_engine = list(record = c("outcomes", "protein_dpc_quant", "engine")),
+    dpc_engine_version = list(record = c("outcomes", "protein_dpc_quant", "engine_version")),
+    dpc_intercept = list(record = c("outcomes", "protein_dpc_quant", "dpc_intercept")),
+    dpc_slope = list(record = c("outcomes", "protein_dpc_quant", "dpc_slope")),
+    dpc_interpretation = list(record = c("outcomes", "protein_dpc_quant", "slope_interpretation")),
+    dpc_proteins_quantified = list(record = c("outcomes", "protein_dpc_quant", "proteins_quantified")),
+    limpa_norm_method = list(record = c("outcomes", "protein_between_sample_normalisation", "norm_method")),
+    limpa_min_peptides_per_protein = list(record = c("protein_peptide_count_filter", "num_peptides_per_protein_thresh")),
+    limpa_min_peptidoforms_per_protein = list(record = c("protein_peptide_count_filter", "num_peptidoforms_per_protein_thresh")),
+    ruvcov_k = list(record = c("outcomes", "protein_ruv_covariates", "k")),
+    ruvcov_percentage = list(record = c("outcomes", "protein_ruv_covariates", "percentage_as_neg_ctrl")),
+    ruvcov_control_count = list(record = c("outcomes", "protein_ruv_covariates", "control_count")),
+    ruvcov_replicate_structure = list(record = c("outcomes", "protein_ruv_covariates", "replicate_structure")),
+    da_model = list(record = c("model", "model")),
+    da_formula_used = list(record = c("model", "formula_used")),
+    da_k = list(record = c("model", "k")),
+    da_block_reason = list(record = c("model", "block_reason")))
 
 #' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
 #' returned unchanged. With one, every report variable the record carries takes the record's value, and the
@@ -724,10 +761,12 @@ workflowRecordReportParameters <- function(record_path, params, study_params = l
     for (variable in names(workflowRecordReportSources)) {
         source <- workflowRecordReportSources[[variable]]
         kind <- if (is.null(source$record)) "file" else if (identical(source$record[[1L]], "software")) "software" else
-            if (identical(source$record[[1L]], "outcomes")) "outcomes" else "parameter"
+            if (identical(source$record[[1L]], "outcomes")) "outcomes" else
+            if (identical(source$record[[1L]], "model")) "model" else "parameter"
         value <- switch(kind,
             software = record$software[[source$record[[2L]]]],
             outcomes = from_outcomes(source$record[[2L]], source$record[[3L]]),
+            model = record$analyses$differential_abundance$model[[source$record[[2L]]]], # KIT-053: the DA model that ran
             parameter = from_record(source$record[[1L]], source$record[[2L]]),
             NULL)
         if (!is.null(value) && is.atomic(value) && length(value) == 1L && !is.na(value)) {
@@ -735,9 +774,9 @@ workflowRecordReportParameters <- function(record_path, params, study_params = l
             # A parameter keeps the type the report's parser gave it (KIT-033); a software field or an outcome is
             # taken as the record has it, because the parser's value for those is often a parse artefact (a
             # logical TRUE for "Best k value" on the real journey) that would coerce the number away.
-            params[[variable]] <- if (kind %in% c("software", "outcomes")) value else
+            params[[variable]] <- if (kind %in% c("software", "outcomes", "model")) value else
                 if (is.logical(current)) as.logical(value) else if (is.numeric(current)) as.numeric(value) else value
-        } else if (kind %in% c("software", "outcomes")) {
+        } else if (kind %in% c("software", "outcomes", "model")) {
             # A record without the field (written before KIT-038) leaves the report's own value, or "not recorded".
             if (is.null(params[[variable]])) params[[variable]] <- "not recorded"
         } else if (!is.null(source$file) && is.null(file_params[[source$file[[1L]]]][[source$file[[2L]]]]) && !is.null(params[[variable]])) {

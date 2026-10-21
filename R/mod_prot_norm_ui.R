@@ -464,7 +464,9 @@ mod_prot_norm_ui <- function(id) {
                 shiny::br(),
                 
                 shiny::h5("Filter Results"),
-                shiny::verbatimTextOutput(ns("correlation_filter_summary"))
+                shiny::verbatimTextOutput(ns("correlation_filter_summary")),
+                # KIT-053: the DIA_LIMPA route's RUV covariates action, rendered on that route only.
+                shiny::uiOutput(ns("ruv_covariates_panel"))
               )
             ),
             shiny::column(8,

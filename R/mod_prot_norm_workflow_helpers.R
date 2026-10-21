@@ -380,27 +380,50 @@ runDIAReferenceLimpaNormalisationPassThrough <- function(settings, workflow, nor
   })
 }
 
-#' Run the RUV covariates after the correlation step on the DIA_LIMPA route (KIT-041), when the tab's RUV mode asks for them.
+#' The RUV-covariates action of the normalisation tab on the DIA_LIMPA route (KIT-041/053): after the correlation
+#' sub-step (applied or skipped), the `apply_ruv_covariates` button runs the `protein_ruv_covariates` declaration
+#' through `runDIAReferenceRuvCovariates` (or records a skip when the tab's RUV mode is `skip`) and writes the
+#' tab's `ruv_covariates_summary`.
 #' @noRd
-runProtNormRuvCovariatesAfterCorrelation <- function(input, workflowData, normData, experimentPaths, omicType, experimentLabel,
-                                                     generateRuvCorrectedQcFn, getRuvGroupingVariableFn,
-                                                     showNotificationFn = shiny::showNotification, messageFn = message) {
+runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normData, experimentPaths, omicType, experimentLabel,
+                                             generateRuvCorrectedQcFn, getRuvGroupingVariableFn,
+                                             renderTextFn = shiny::renderText,
+                                             showNotificationFn = shiny::showNotification, messageFn = message) {
   manager <- workflowData$state_manager
   if (!identical(tryCatch(manager$workflow_type, error = function(e) NULL), "DIA_LIMPA")) return(invisible(NULL))
-  mode <- input$ruv_mode %||% "covariates"
-  if (identical(mode, "skip")) {
-    messageFn("*** RUV covariates skipped by the user (DIA with limpa) ***")
-    return(invisible(NULL))
-  }
-  settings <- list(ruv_mode = "covariates", color_variable = input$color_variable, shape_variable = input$shape_variable)
-  accepted <- runDIAReferenceRuvCovariates(settings, workflowData, normData, experimentPaths, omicType, experimentLabel,
-    generateRuvCorrectedQcFn, getRuvGroupingVariableFn)
-  updateProtNormRuvAuditTrail(ruvK = normData$best_k, controlGenesIndex = normData$control_genes_index,
-    percentageAsNegCtrl = normData$ruv_optimization_result$best_percentage, modeLabel = "covariates",
-    workflowData = workflowData, messageFn = messageFn)
-  showNotificationFn(sprintf("RUV-III factors appended as covariates (k = %s). Ready for differential expression analysis.",
-    normData$best_k), type = "message", duration = 10)
-  invisible(accepted)
+  tryCatch({
+    if (!isTRUE(normData$correlation_filtering_complete)) stop("apply or skip the correlation filter first")
+    mode <- input$ruv_mode %||% "covariates"
+    if (identical(mode, "skip")) {
+      messageFn("*** RUV covariates skipped by the user (DIA with limpa) ***")
+      normData$ruv_covariates_complete <- TRUE
+      text <- "RUV-III covariates skipped by the user; the DA model carries no W terms."
+      output$ruv_covariates_summary <- renderTextFn(text)
+      showNotificationFn("RUV-III covariates skipped. Ready for differential expression analysis.", type = "message", duration = 10)
+      return(invisible(NULL))
+    }
+    settings <- list(ruv_mode = "covariates", color_variable = input$color_variable, shape_variable = input$shape_variable)
+    accepted <- runDIAReferenceRuvCovariates(settings, workflowData, normData, experimentPaths, omicType, experimentLabel,
+      generateRuvCorrectedQcFn, getRuvGroupingVariableFn)
+    updateProtNormRuvAuditTrail(ruvK = normData$best_k, controlGenesIndex = normData$control_genes_index,
+      percentageAsNegCtrl = normData$ruv_optimization_result$best_percentage, modeLabel = "covariates",
+      workflowData = workflowData, messageFn = messageFn)
+    result <- normData$ruv_optimization_result
+    text <- paste0("RUV-III covariates appended to the design: k = ", normData$best_k, " (W", if (normData$best_k > 1) paste0("1..W", normData$best_k) else "1",
+      "); negative controls ", result$best_percentage, "% (", sum(normData$control_genes_index, na.rm = TRUE), " proteins); replicate structure ",
+      result$replicate_structure, ". The quantified matrix is unchanged; the adjusted matrix is shown in the RUV-corrected QC plots only.\n",
+      "State saved as: 'ruv_covariates'")
+    output$ruv_covariates_summary <- renderTextFn(text)
+    showNotificationFn(sprintf("RUV-III factors appended as covariates (k = %s). Ready for differential expression analysis.",
+      normData$best_k), type = "message", duration = 10)
+    invisible(accepted)
+  }, error = function(e) {
+    message <- paste("Error computing the RUV-III covariates:", e$message)
+    messageFn(message)
+    output$ruv_covariates_summary <- renderTextFn(message)
+    showNotificationFn(message, type = "error", duration = 10)
+    invisible(NULL)
+  })
 }
 
 buildProtNormCompletionNotification <- function(ruvMode) {
@@ -767,9 +790,8 @@ runProtNormApplyCorrelationObserver <- function(
         completionMessage = "Correlation workflow completed",
         messagePrefix = "Correlation"
       )
-      # KIT-041: the DIA_LIMPA route's RUV-III factors as covariates, after the filter (the script's order).
-      if (!is.null(generateRuvCorrectedQcFn)) runProtNormRuvCovariatesAfterCorrelation(input, workflowData, normData,
-        experimentPaths, omicType, experimentLabel, generateRuvCorrectedQcFn, getRuvGroupingVariableFn, messageFn = messageFn)
+      # KIT-041/053: on the DIA_LIMPA route the RUV-III covariates are the tab's own action after the filter
+      # (`apply_ruv_covariates`), the script's order; nothing runs here.
       final
     }), error = function(e) handleCorrelationErrorFn(error = e,
         logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
@@ -856,10 +878,7 @@ runProtNormSkipCorrelationObserver <- function(
         completionMessage = "Correlation workflow completed",
         messagePrefix = "Correlation"
       )
-      # KIT-041: the DIA_LIMPA route's RUV-III factors as covariates follow the (skipped) filter.
-      if (!is.null(generateRuvCorrectedQcFn) && !is.null(input) && !is.null(getRuvGroupingVariableFn))
-        runProtNormRuvCovariatesAfterCorrelation(input, workflowData, normData, experimentPaths, omicType, experimentLabel,
-          generateRuvCorrectedQcFn, getRuvGroupingVariableFn, messageFn = messageFn)
+      # KIT-041/053: the RUV-III covariates follow the (skipped) filter through the tab's own action.
       final
     }), error = function(e) handleCorrelationErrorFn(error = e,
         logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))

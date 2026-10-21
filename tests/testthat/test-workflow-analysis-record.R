@@ -548,3 +548,93 @@ test_that("KIT-039: the record tables carry the step sentence and a label for ev
     expect_true("build" %in% tables$software$field)
     expect_true("BLAS" %in% tables$software$field)
 })
+
+test_that("a DIA_LIMPA record names the dpcDE model and replays its protein stage, covariates and DA from the record (KIT-053)", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    root <- withr::local_tempdir()
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "limpa-record", "DIA"), WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    manager$setWorkflowType("DIA_LIMPA")
+    rolled <- rollUpPrecursorToPeptide(makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small")), core_utilisation = NA)
+    quantified <- suppressMessages(proteinMissingValueImputationLimpa(log2TransformPeptideMatrix(calcPeptideMatrix(rolled)),
+        dpc_slope = 0.8, verbose = FALSE, chunk = 1000, engine = "limpa"))
+    # The record's preconditions are the import and design states; this fixture store starts at the DPC state, so the
+    # DPC state stands in for the design precondition (the replay checks the states it holds, not their names).
+    setDIAStepProvenance(manager, "design_builder")
+    manager$saveState("protein_dpc_quant", quantified, list(), "fixture")
+    paths <- list(source_dir = file.path(root, "src"), protein_qc_dir = file.path(root, "pqc"), da_output_dir = file.path(root, "da"),
+        publication_graphs_dir = file.path(root, "pub"), time_dir = file.path(root, "time"))
+    for (p in paths) dir.create(p, recursive = TRUE, showWarnings = FALSE)
+    manager$.context$experiment_paths <- paths
+    workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list()), config_list = list()))
+    contrasts <- data.frame(contrasts = "treated.vs.control", full_format = "treated.vs.control=grouptreated-groupcontrol",
+        friendly_names = "treated.vs.control", stringsAsFactors = FALSE)
+    withDIAStateScope(manager, function() {
+        v1 <- computeDIAReferenceProteinNormalisation(manager, getDIAStateReference(manager), list(norm_method = "none"))
+        setDIAStepProvenance(manager, "protein_between_sample_normalisation", "whole", "norm_method", NULL, values = list(norm_method = "none"))
+        finishDIAReferenceProteinStep(workflow, v1, publish = FALSE)
+        v2 <- computeDIAReferenceProteinPeptideCountFilter(manager, getDIAStateReference(manager),
+            list(num_peptides_per_protein_thresh = 1, num_peptidoforms_per_protein_thresh = 2))
+        setDIAStepProvenance(manager, "protein_peptide_count_filter", "whole", c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh"), NULL, values = v2$config[1:2])
+        finishDIAReferenceProteinStep(workflow, v2, publish = FALSE)
+        source <- getDIAStateReference(manager)
+        pairs <- runSavedOperation(manager, diaPearsonPairsOperation(), source, list(group = "group", tech_rep_remove_regex = "pool"))
+        selection <- runSavedOperation(manager, diaPearsonSelectionOperation(), source,
+            list(pairs = pairs$reference$entity_id, threshold = 0.5, correlations = pairs$value), dependencies = list(pairs$reference))
+        commitDIAReferenceState(manager, "correlation_filtered", readDIAStateMetadata(manager, selection$value)$data,
+            list(min_pearson_correlation_threshold = 0.5), "correlation")
+        parameters <- resolveDIARuvCovariatesParameters(list(), "group")
+        run <- suppressMessages(suppressWarnings(runSavedOperation(manager, diaRuvCovariatesOperation(), getDIAStateReference(manager), parameters)))
+        final <- readDIAStateMetadata(manager, run$value$covariates)$data
+        final$products$ruv_covariates_science <- run$reference
+        saved <- run$value
+        # The configuration the route's runner (and the replay) commits, so the state summaries compare like for like.
+        commitDIAReferenceState(manager, "ruv_covariates", final, list(ruv_mode = "covariates", ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage,
+            control_count = saved$control_count, separation_score = saved$ruv_result$best_separation_score,
+            composite_score = saved$ruv_result$best_composite_score, max_acceptable_k = saved$ruv_result$max_acceptable_k,
+            replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, replicate_blocks = saved$blocks,
+            ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_applied = TRUE,
+            outcomes = list(k = saved$best_k, percentage_as_neg_ctrl = saved$percentage, control_count = saved$control_count,
+                separation_score = saved$ruv_result$best_separation_score, composite_score = saved$ruv_result$best_composite_score,
+                replicate_structure = saved$replicate_structure, block_reason = saved$block_reason)),
+            sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
+        da_data <- new.env(parent = emptyenv()); da_data$current_s4_object <- getDIAStateReference(manager); da_data$contrasts_available <- contrasts$contrasts
+        workflow$contrasts_tbl <- contrasts
+        manifest <- suppressMessages(suppressWarnings(runDIAReferenceDaAnalysis(list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0),
+            da_data, workflow, paths, contrasts = contrasts, publish = FALSE)))
+        expect_identical(manifest$model$model, "dpcDE")
+        expect_identical(manifest$model$route, "limpa")
+        expect_identical(manifest$model$formula_used, paste("~ 0 + group +", paste(paste0("W", seq_len(run$value$best_k)), collapse = " + ")))
+        expect_identical(manifest$model$k, run$value$best_k)
+        expect_false(manifest$model$treat_applied)
+    })
+    json <- file.path(root, "analysis_record.json")
+    writeWorkflowAnalysisRecord(manager, json)
+    record <- jsonlite::read_json(json, simplifyVector = FALSE)
+    expect_true(validateWorkflowAnalysisRecord(record)$valid)
+    expect_identical(record$workflow, "DIA_LIMPA")
+    expect_identical(record$analyses$differential_abundance$model$model, "dpcDE")
+    expect_identical(vapply(record$steps, function(s) s$operation, ""), c("import", "design_builder", "protein_between_sample_normalisation",
+        "protein_peptide_count_filter", "pearson-selection", "protein_ruv_covariates"))
+    overlay <- workflowRecordReportParameters(json, list(s4_formula_string = "~ 0 + group"), list())
+    expect_identical(overlay$da_model, "dpcDE")
+    expect_identical(overlay$limpa_norm_method, "none")
+    ruv_step <- Filter(function(s) identical(s$state, "ruv_covariates"), record$steps)[[1L]]
+    expect_identical(overlay$ruvcov_k, ruv_step$outcomes$k)
+    expect_identical(overlay$limpa_min_peptides_per_protein, 1)
+    # Replay from the DPC state on a copy of the store: every later state hash-identical, the DA refitted.
+    origin <- file.path(root, ".workflow-entities")
+    copy <- withr::local_tempdir()
+    stopifnot(system2("cp", c("-a", file.path(root, "."), copy)) == 0L)
+    h <- new.env(parent = globalenv())
+    sys.source(file.path(testthat::test_path("..", ".."), "tools", "profiling", "workflow_kit.R"), h)
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    prepared <- h$kitPrepareReplayProject(copy, c("initial", "protein_dpc_quant"), api)
+    scratch <- withr::local_tempdir()
+    replay <- h$kitReplayJourney(record, prepared, root, list(), paths, scratch, api)
+    expect_true(all(c("protein_normalised", "peptide_count_filtered", "correlation_filtered", "ruv_covariates") %in% replay$states))
+    expect_identical(as.character(replay$mismatches), character())
+    expect_true(any(vapply(replay$per_step, function(x) identical(x$operation, "DA-contrast-output"), logical(1))))
+})

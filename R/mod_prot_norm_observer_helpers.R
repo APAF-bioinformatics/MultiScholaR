@@ -24,7 +24,9 @@ registerProtNormServerObservers <- function(
   runExportObserverFn = runProtNormExportObserver,
   observeFn = shiny::observe,
   observeEventFn = shiny::observeEvent,
-  updateRadioButtonsFn = shiny::updateRadioButtons
+  updateRadioButtonsFn = shiny::updateRadioButtons,
+  renderUIFn = shiny::renderUI,
+  runRuvCovariatesObserverFn = runProtNormRuvCovariatesObserver
 ) {
   observeFn({
     updateDesignDrivenChoicesFn(session, workflowData$design_matrix)
@@ -74,6 +76,35 @@ registerProtNormServerObservers <- function(
         !identical(shiny::isolate(input$ruv_mode), "covariates") && !identical(shiny::isolate(input$ruv_mode), "skip")) {
       updateRadioButtonsFn(session, "ruv_mode", choices = protNormRuvModeChoices("DIA_LIMPA"), selected = "covariates")
     }
+  })
+
+  # KIT-053: the RUV covariates panel exists on the DIA_LIMPA route only (rendered once the type is known).
+  output$ruv_covariates_panel <- renderUIFn({
+    workflowData$state_update_trigger
+    manager <- workflowData$state_manager
+    if (!identical(tryCatch(manager$workflow_type, error = function(e) NULL), "DIA_LIMPA")) return(NULL)
+    ns <- session$ns
+    shiny::tagList(
+      shiny::br(),
+      shiny::h5("RUV-III Factors as Covariates (DIA with limpa)"),
+      shiny::helpText("After the correlation filter: the negative-control sweep chooses k and the controls; the W factors are appended to the design for the DA model; the quantified matrix is not corrected."),
+      shiny::actionButton(ns("apply_ruv_covariates"), "Compute RUV-III Covariates", class = "btn-primary", width = "100%", icon = shiny::icon("play")),
+      shiny::br(), shiny::br(),
+      shiny::verbatimTextOutput(ns("ruv_covariates_summary")))
+  })
+
+  observeEventFn(input$apply_ruv_covariates, {
+    runRuvCovariatesObserverFn(
+      input = input,
+      output = output,
+      workflowData = workflowData,
+      normData = normData,
+      experimentPaths = experimentPaths,
+      omicType = omicType,
+      experimentLabel = experimentLabel,
+      generateRuvCorrectedQcFn = generateRuvCorrectedQcFn,
+      getRuvGroupingVariableFn = getRuvGroupingVariableFn
+    )
   })
 
   observeEventFn(input$apply_correlation_filter, {

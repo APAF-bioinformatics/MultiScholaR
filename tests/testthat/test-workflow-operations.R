@@ -233,3 +233,14 @@ test_that("the three DIA declarations run in a fresh R session with no Shiny ses
     expect_identical(result$outcome$open_resources, 0L)
     expect_identical(result$outcome$full_s4_reads, 0L)
 })
+
+test_that("the DA contrast declaration and identities carry the route factor of the workflow type (KIT-053)", {
+    expect_identical(diaContrastOperation()$factors$route, "iq")
+    expect_identical(diaContrastOperation("limpa")$factors$route, "limpa")
+    expect_identical(diaContrastOperation("limpa")$name, "DA-contrast-output")
+    dia <- WorkflowState$new(audit_enabled = FALSE); dia$setWorkflowType("DIA")
+    limpa <- WorkflowState$new(audit_enabled = FALSE); limpa$setWorkflowType("DIA_LIMPA")
+    expect_identical(diaActiveRoute(dia), "iq")
+    expect_identical(diaActiveRoute(limpa), "limpa")
+    expect_identical(diaActiveRoute(list()), "iq")
+})

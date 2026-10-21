@@ -352,6 +352,35 @@ FormatMethodDetails <- function(numbers) {
   proportion_pct_text <- paste0(prop_samples_cutoff * 100, "%")
   proteotypic_text <- if (isTRUE(proteotypic_pep_only)) 'only those that are proteotypic' else 'including non-proteotypic peptides'
 
+  # KIT-053: the DIA with limpa workflow (the analysis record names its DPC quantification): the route's own
+  # method text replaces the passages written for the DIA (IQ) workflow: no peptide intensity, sample or replicate
+  # filters, the peptide-level accession cleanup, the DPC quantification on the named engine, the peptide-count
+  # filter on the quantified proteins, no protein missing-value filter, the between-sample normalisation as run
+  # (none by default) and RUV-III factors as covariates of the model, not a correction of the matrix.
+  recorded <- function(value) !is.null(value) && !identical(value, "not recorded") && !all(is.na(value))
+  limpa_route <- isTRUE(numbers$record_present) && recorded(numbers$dpc_engine)
+  if (limpa_route) {
+    dpc_engine <- numbers$dpc_engine
+    dpc_engine_version <- if (recorded(numbers$dpc_engine_version)) numbers$dpc_engine_version else ""
+    dpc_engine_version_text <- if (nzchar(dpc_engine_version)) paste0(" (version ", dpc_engine_version, ")") else ""
+    dpc_band <- if (recorded(numbers$dpc_interpretation)) numbers$dpc_interpretation else "not recorded"
+    dpc_fit <- if (recorded(numbers$dpc_intercept) && recorded(numbers$dpc_slope))
+      sprintf(" (fitted intercept %.3f, slope %.3f: %s)", as.numeric(numbers$dpc_intercept), as.numeric(numbers$dpc_slope), dpc_band) else ""
+    limpa_norm <- if (recorded(numbers$limpa_norm_method)) numbers$limpa_norm_method else "none"
+    limpa_norm_text <- if (identical(limpa_norm, "none"))
+      "No between-sample normalisation was applied to the quantified log2 matrix (the limpa workflow's default)." else
+      glue::glue("The quantified log2 matrix was normalised between samples with the '{limpa_norm}' method from the 'limma' R package (Ritchie et al., 2015).")
+    min_pep <- if (recorded(numbers$limpa_min_peptides_per_protein)) numbers$limpa_min_peptides_per_protein else 1
+    min_forms <- if (recorded(numbers$limpa_min_peptidoforms_per_protein)) numbers$limpa_min_peptidoforms_per_protein else 2
+    ruv_text <- if (recorded(numbers$ruvcov_k)) glue::glue(
+      "To account for unwanted variation, RUV-III (Molania et al., 2019) was fitted on the quantified protein matrix ",
+      "using a set of endogenous negative control proteins chosen by a negative-control sweep ({numbers$ruvcov_percentage}% of ",
+      "proteins, {numbers$ruvcov_control_count} controls; replicate structure: {numbers$ruvcov_replicate_structure}). ",
+      "The {numbers$ruvcov_k} estimated factor(s) of unwanted variation (W) were appended to the design as covariates of the ",
+      "differential abundance model; the protein matrix itself was not corrected (the RUV-adjusted matrix is used for ",
+      "quality-control plots only).") else
+      "RUV-III was not run on this dataset (no covariates of unwanted variation were added to the model)."
+  } else {
   ruv_text <- glue::glue(
     "To remove batch effects from biological data, the remove unwanted variation ",
     "(RUVIII-C) method was used. The method relies on having a set of endogenous ",
@@ -362,6 +391,45 @@ FormatMethodDetails <- function(numbers) {
     "provided the best separation of biological groups. Based on this, ",
     "{best_k_val} unwanted components were selected for removal."
   )
+  }
+  if (limpa_route) return(glue::glue("
+METHOD DETAILS  
+
+Data analyses were performed with MultiScholaR; the software version and build are listed under 'Software and build'. 
+SOP reference: [to be completed by the analyst].  
+
+Data import, filtering and quantification
+Precursor-level identifications and quantities were imported from the DIA-NN main report 
+(one row per precursor and run). Low-confidence peptide identifications were removed 
+using q-value and proteotypic peptide filtering, retaining only peptides with a 
+q-value threshold of {qvalue_thresh} and {proteotypic_text}. Precursor ion intensities were then 
+aggregated into peptide-level quantification values, combining all charge states 
+of the same peptide sequence while keeping different modified peptides 
+(peptidoforms) as separate entries. The peptide quantities were arranged as a 
+peptide-by-sample matrix and log2 transformed (values at or below zero treated as 
+missing); one protein accession was chosen per protein group from the FASTA 
+metadata and duplicate peptides of a resolved group were aggregated.
+
+Protein-level quantification was performed with the limpa package's Detection 
+Probability Curve method, DPC-Quant (Li et al., 2025), on the '{dpc_engine}' engine{dpc_engine_version_text}. 
+Unlike roll-up approaches that first aggregate peptides to proteins and then impute 
+missing values, DPC-Quant quantifies proteins and handles missing values in one 
+statistical model: a detection probability curve fitted on the peptide matrix{dpc_fit} 
+relates peptide intensity to the probability of detection, and maximum posterior 
+estimates with standard errors are returned for every protein in every sample. 
+Proteins were required to have at least {min_pep} unique peptide(s) and {min_forms} 
+peptidoform(s) to be considered for further analysis. No protein-level missing-value 
+filter applies: the quantified matrix is complete. {limpa_norm_text}
+
+{ruv_text}
+
+At each stage, the samples were checked for batch effects using principal component 
+analysis (PCA) plots, density boxplots, relative log-expression (RLE) plots and the 
+distribution of the Pearson correlation between replicate samples within groups; 
+samples whose correlation with their group fell below the configured threshold were removed.
+
+Test conditions, deviations from the method and critical reagent details: [to be completed by the analyst].  ",
+.trim = FALSE))
 
   glue::glue("
 METHOD DETAILS  
@@ -395,7 +463,7 @@ were also excluded to maintain measurement reproducibility.
 
 Protein-level quantification was performed using the LIMPA (Linear Model-based 
 Imputation for Proteomics Analysis) package with the Detection Probability Curve 
-(DPC-Quant) method (Zhang & Kuster, 2019). Unlike traditional roll-up approaches 
+(DPC-Quant) method (Li et al., 2025). Unlike traditional roll-up approaches 
 that first aggregate peptides to proteins and then impute missing values, DPC-Quant 
 simultaneously performs protein quantification and handles missing values through a 
 unified statistical model. The method models the intensity-dependent nature of 
@@ -519,6 +587,36 @@ FormatDEDetails <- function(numbers) {
     paste("A", paste(trend_robust, collapse = " and "), "empirical Bayes analysis was performed.")
   } else {
     "A standard empirical Bayes analysis was performed."
+  }
+
+  # KIT-053: the DIA with limpa workflow's DA model from the analysis record (dpcDE on the quantified EList with
+  # the RUV covariates in the model; no TREAT step on that branch).
+  da_model_recorded <- !is.null(numbers$da_model) && !identical(numbers$da_model, "not recorded") && !all(is.na(numbers$da_model))
+  if (da_model_recorded && identical(numbers$da_model, "dpcDE")) {
+    formula_used <- if (!is.null(numbers$da_formula_used) && !identical(numbers$da_formula_used, "not recorded")) numbers$da_formula_used else formula_string_val
+    k_text <- if (!is.null(numbers$da_k) && !identical(numbers$da_k, "not recorded") && as.numeric(numbers$da_k) > 0)
+      glue::glue(" The {numbers$da_k} RUV-III factor(s) of unwanted variation (W) entered the model as covariates.") else ""
+    block_text <- if (identical(numbers$da_block_reason, "technical_replicates"))
+      " Technical replicates were modelled as a block through limma's duplicateCorrelation." else ""
+    return(glue::glue("
+DIFFERENTIAL ABUNDANCE ANALYSIS
+
+Differential abundance analysis of proteins was performed on the DPC-quantified 
+protein abundances for the comparisons defined in the contrast table. The limpa R 
+package's 'dpcDE' function (Li et al., 2025) fitted a linear model using the formula 
+'{formula_used}', weighting each observation by the uncertainty of its DPC-Quant estimate 
+(imputed values down-weighted), with the 'limma' R package (Ritchie et al., 2015) 
+underneath.{k_text}{block_text} Contrasts were applied with 'contrasts.fit' and p-values 
+were calculated using the 'eBayes' function. {trend_robust_text} The false discovery rate 
+correction was applied to the moderated p-values by calculating the q-values (Storey, 2002). 
+No log-fold-change threshold (TREAT) applies on this model. Significant differentially 
+expressed proteins were defined as those with q-values less than {ui_q_val_thresh}.
+
+Volcano plots of differentially expressed proteins across all groups are shown 
+in Figure 2, with a threshold of q-value < {ui_q_val_thresh} and no log fold-change 
+threshold. Full details of all proteins are provided in the supplementary results
+table DA_results_{params$omic_type}.xlsx within the Publication_tables folder.",
+.trim = FALSE))
   }
   
   glue::glue("

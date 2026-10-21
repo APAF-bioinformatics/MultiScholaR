@@ -23,6 +23,7 @@ Status 2026-10-21: **completed** (ticket revision 1.1). Implemented at `158ba926
 - The `[ruvCovariates]` parameters are read from the project's configuration (shipped defaults when absent) and the tab's RUV grouping variable; the tab exposes no further inputs for them (bounded; the DIA tab's automatic-mode inputs are its own).
 - The vendored script's result names two fields that are NULL in its return (`best_composite_score`, `best_cancor_plot`, a naming slip in the script); the package result carries them; the comparison is on percentage, k, controls, separation score and the trace.
 - `assertDIAExportReady`'s list of QC-pending states does not name the route's new states; their pending publication is handled by `resumeDIAProteinAction` as for every protein step.
+- **Found by KIT-053 (2026-10-21)**: on limpa 1.4.x the quantified EList carries no `genes$protein.id`, so `filterMinNumPeptidesPerProtein` subset the owned EList to 0 rows on both paths of this ticket's screen check; the "peptide-count EList" and the "correlation EList" comparisons above were therefore equal on empty ELists. The matrix, table and design comparisons (the owner's states against the kernels in memory, the W design, the optimiser trace) do not read the EList and stand. KIT-053 repairs the filter (ids from the row names of `E` when the column is absent) and its screen check repeats the comparison on the populated EList.
 
 ## Rollback
 

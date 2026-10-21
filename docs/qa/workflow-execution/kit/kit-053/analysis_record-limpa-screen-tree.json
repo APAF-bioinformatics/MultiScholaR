@@ -1,0 +1,1783 @@
+{
+  "schema": "multischolar.analysis_record.v1",
+  "generated_at": "2026-10-21T21:00:03.783+1100",
+  "workflow": "DIA_LIMPA",
+  "store_identity": {
+    "project_id": "DIA-LIMPA-native",
+    "workflow_id": "DIA_LIMPA"
+  },
+  "software": {
+    "package": "MultiScholaR",
+    "version": "0.5.0",
+    "sha": null,
+    "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "platform": "x86_64-pc-linux-gnu",
+    "blas": "/usr/lib/libblas.so.3.12.0",
+    "lapack": null,
+    "omp_threads": null,
+    "blas_threads": null,
+    "duckdb_threads": {
+      "rollup": 8,
+      "codec_read": 2,
+      "codec_bulk": 8
+    },
+    "os_release": "7.2.9-2-cachyos; CachyOS",
+    "locale": "en_GB.UTF-8",
+    "packages": [
+      {
+        "name": "ade4",
+        "version": "1.7.24"
+      },
+      {
+        "name": "arrow",
+        "version": "24.0.0"
+      },
+      {
+        "name": "assertthat",
+        "version": "0.2.1"
+      },
+      {
+        "name": "attempt",
+        "version": "0.3.1"
+      },
+      {
+        "name": "backports",
+        "version": "1.5.1"
+      },
+      {
+        "name": "base",
+        "version": "4.6.1"
+      },
+      {
+        "name": "BiocParallel",
+        "version": "1.46.0"
+      },
+      {
+        "name": "bit",
+        "version": "4.6.0"
+      },
+      {
+        "name": "bit64",
+        "version": "4.8.2"
+      },
+      {
+        "name": "brio",
+        "version": "1.1.5"
+      },
+      {
+        "name": "cachem",
+        "version": "1.1.0"
+      },
+      {
+        "name": "cellranger",
+        "version": "1.1.0"
+      },
+      {
+        "name": "checkmate",
+        "version": "2.3.4"
+      },
+      {
+        "name": "chromote",
+        "version": "0.5.1"
+      },
+      {
+        "name": "cli",
+        "version": "3.6.6"
+      },
+      {
+        "name": "codetools",
+        "version": "0.2.20"
+      },
+      {
+        "name": "compiler",
+        "version": "4.6.1"
+      },
+      {
+        "name": "config",
+        "version": "0.3.2"
+      },
+      {
+        "name": "configr",
+        "version": "0.3.5"
+      },
+      {
+        "name": "corpcor",
+        "version": "1.6.10"
+      },
+      {
+        "name": "cowplot",
+        "version": "1.2.0"
+      },
+      {
+        "name": "crayon",
+        "version": "1.5.3"
+      },
+      {
+        "name": "data.table",
+        "version": "1.18.4"
+      },
+      {
+        "name": "datasets",
+        "version": "4.6.1"
+      },
+      {
+        "name": "DBI",
+        "version": "1.3.0"
+      },
+      {
+        "name": "desc",
+        "version": "1.4.3"
+      },
+      {
+        "name": "devtools",
+        "version": "2.5.2"
+      },
+      {
+        "name": "digest",
+        "version": "0.6.39"
+      },
+      {
+        "name": "dplyr",
+        "version": "1.2.1"
+      },
+      {
+        "name": "DT",
+        "version": "0.34.0"
+      },
+      {
+        "name": "duckdb",
+        "version": "1.5.5"
+      },
+      {
+        "name": "ellipse",
+        "version": "0.5.0"
+      },
+      {
+        "name": "ellipsis",
+        "version": "0.3.3"
+      },
+      {
+        "name": "evaluate",
+        "version": "1.0.5"
+      },
+      {
+        "name": "farver",
+        "version": "2.1.2"
+      },
+      {
+        "name": "fastduckdb",
+        "version": "0.2.0"
+      },
+      {
+        "name": "fastmap",
+        "version": "1.2.0"
+      },
+      {
+        "name": "filelock",
+        "version": "1.0.3"
+      },
+      {
+        "name": "forcats",
+        "version": "1.0.1"
+      },
+      {
+        "name": "fs",
+        "version": "2.1.0"
+      },
+      {
+        "name": "furrr",
+        "version": "0.4.0"
+      },
+      {
+        "name": "future",
+        "version": "1.70.0"
+      },
+      {
+        "name": "generics",
+        "version": "0.1.4"
+      },
+      {
+        "name": "ggnewscale",
+        "version": "0.5.2"
+      },
+      {
+        "name": "ggplot2",
+        "version": "4.0.3"
+      },
+      {
+        "name": "ggplotify",
+        "version": "0.1.3"
+      },
+      {
+        "name": "ggrepel",
+        "version": "0.9.8"
+      },
+      {
+        "name": "gh",
+        "version": "1.6.0"
+      },
+      {
+        "name": "globals",
+        "version": "0.19.1"
+      },
+      {
+        "name": "glue",
+        "version": "1.8.1"
+      },
+      {
+        "name": "golem",
+        "version": "1.0.1"
+      },
+      {
+        "name": "graphics",
+        "version": "4.6.1"
+      },
+      {
+        "name": "grDevices",
+        "version": "4.6.1"
+      },
+      {
+        "name": "grid",
+        "version": "4.6.1"
+      },
+      {
+        "name": "gridExtra",
+        "version": "2.3.1"
+      },
+      {
+        "name": "gridGraphics",
+        "version": "0.5.1"
+      },
+      {
+        "name": "gtable",
+        "version": "0.3.6"
+      },
+      {
+        "name": "gtools",
+        "version": "3.9.5"
+      },
+      {
+        "name": "here",
+        "version": "1.0.2"
+      },
+      {
+        "name": "hms",
+        "version": "1.1.4"
+      },
+      {
+        "name": "htmltools",
+        "version": "0.5.9"
+      },
+      {
+        "name": "htmlwidgets",
+        "version": "1.6.4"
+      },
+      {
+        "name": "httpuv",
+        "version": "1.6.17"
+      },
+      {
+        "name": "httr",
+        "version": "1.4.8"
+      },
+      {
+        "name": "igraph",
+        "version": "2.3.3"
+      },
+      {
+        "name": "ini",
+        "version": "0.3.1"
+      },
+      {
+        "name": "iq",
+        "version": "2.0.1"
+      },
+      {
+        "name": "janitor",
+        "version": "2.2.1"
+      },
+      {
+        "name": "jsonlite",
+        "version": "2.0.0"
+      },
+      {
+        "name": "knitr",
+        "version": "1.51"
+      },
+      {
+        "name": "labeling",
+        "version": "0.4.3"
+      },
+      {
+        "name": "later",
+        "version": "1.4.8"
+      },
+      {
+        "name": "lattice",
+        "version": "0.22.9"
+      },
+      {
+        "name": "lazyeval",
+        "version": "0.2.3"
+      },
+      {
+        "name": "lifecycle",
+        "version": "1.0.5"
+      },
+      {
+        "name": "limma",
+        "version": "3.68.4"
+      },
+      {
+        "name": "limpa",
+        "version": "1.4.2"
+      },
+      {
+        "name": "listenv",
+        "version": "1.0.0"
+      },
+      {
+        "name": "logger",
+        "version": "0.4.2"
+      },
+      {
+        "name": "logging",
+        "version": "0.10.111"
+      },
+      {
+        "name": "lubridate",
+        "version": "1.9.5"
+      },
+      {
+        "name": "magick",
+        "version": "2.9.1"
+      },
+      {
+        "name": "magrittr",
+        "version": "2.0.5"
+      },
+      {
+        "name": "MASS",
+        "version": "7.3.65"
+      },
+      {
+        "name": "Matrix",
+        "version": "1.7.5"
+      },
+      {
+        "name": "matrixStats",
+        "version": "1.5.0"
+      },
+      {
+        "name": "memoise",
+        "version": "2.0.1"
+      },
+      {
+        "name": "methods",
+        "version": "4.6.1"
+      },
+      {
+        "name": "mime",
+        "version": "0.13"
+      },
+      {
+        "name": "mixOmics",
+        "version": "6.36.0"
+      },
+      {
+        "name": "multidplyr",
+        "version": "0.1.4"
+      },
+      {
+        "name": "MultiScholaR",
+        "version": "0.5.0"
+      },
+      {
+        "name": "nanoarrow",
+        "version": "0.9.0"
+      },
+      {
+        "name": "openxlsx",
+        "version": "4.2.8.1"
+      },
+      {
+        "name": "optparse",
+        "version": "1.8.2"
+      },
+      {
+        "name": "otel",
+        "version": "0.2.0"
+      },
+      {
+        "name": "pacman",
+        "version": "0.5.1"
+      },
+      {
+        "name": "parallel",
+        "version": "4.6.1"
+      },
+      {
+        "name": "parallelly",
+        "version": "1.48.0"
+      },
+      {
+        "name": "patchwork",
+        "version": "1.3.2"
+      },
+      {
+        "name": "pillar",
+        "version": "1.11.1"
+      },
+      {
+        "name": "pkgbuild",
+        "version": "1.4.8"
+      },
+      {
+        "name": "pkgconfig",
+        "version": "2.0.3"
+      },
+      {
+        "name": "pkgload",
+        "version": "1.5.3"
+      },
+      {
+        "name": "plotly",
+        "version": "4.12.0"
+      },
+      {
+        "name": "plyr",
+        "version": "1.8.9"
+      },
+      {
+        "name": "png",
+        "version": "0.1.9"
+      },
+      {
+        "name": "prettyunits",
+        "version": "1.2.0"
+      },
+      {
+        "name": "processx",
+        "version": "3.9.0"
+      },
+      {
+        "name": "progress",
+        "version": "1.2.3"
+      },
+      {
+        "name": "promises",
+        "version": "1.5.0"
+      },
+      {
+        "name": "ps",
+        "version": "1.9.3"
+      },
+      {
+        "name": "purrr",
+        "version": "1.2.2"
+      },
+      {
+        "name": "qs2",
+        "version": "0.2.2"
+      },
+      {
+        "name": "qvalue",
+        "version": "2.44.0"
+      },
+      {
+        "name": "R6",
+        "version": "2.6.1"
+      },
+      {
+        "name": "ragg",
+        "version": "1.5.2"
+      },
+      {
+        "name": "rappdirs",
+        "version": "0.3.4"
+      },
+      {
+        "name": "rARPACK",
+        "version": "0.11.0"
+      },
+      {
+        "name": "RColorBrewer",
+        "version": "1.1.3"
+      },
+      {
+        "name": "Rcpp",
+        "version": "1.1.2"
+      },
+      {
+        "name": "RcppParallel",
+        "version": "5.1.11.2"
+      },
+      {
+        "name": "RcppTOML",
+        "version": "0.2.3"
+      },
+      {
+        "name": "readr",
+        "version": "2.2.0"
+      },
+      {
+        "name": "readxl",
+        "version": "1.5.0"
+      },
+      {
+        "name": "reshape2",
+        "version": "1.4.5"
+      },
+      {
+        "name": "rlang",
+        "version": "1.3.0"
+      },
+      {
+        "name": "rmarkdown",
+        "version": "2.31"
+      },
+      {
+        "name": "rprojroot",
+        "version": "2.1.1"
+      },
+      {
+        "name": "RSpectra",
+        "version": "0.16.2"
+      },
+      {
+        "name": "rstudioapi",
+        "version": "0.19.0"
+      },
+      {
+        "name": "ruv",
+        "version": "0.9.7.1"
+      },
+      {
+        "name": "RUVIIIC",
+        "version": "1.0.19"
+      },
+      {
+        "name": "rvest",
+        "version": "1.0.5"
+      },
+      {
+        "name": "S7",
+        "version": "0.2.2"
+      },
+      {
+        "name": "scales",
+        "version": "1.4.0"
+      },
+      {
+        "name": "seqinr",
+        "version": "4.2.44"
+      },
+      {
+        "name": "sessioninfo",
+        "version": "1.2.4"
+      },
+      {
+        "name": "shiny",
+        "version": "1.14.0"
+      },
+      {
+        "name": "shinydashboard",
+        "version": "0.7.3"
+      },
+      {
+        "name": "shinyFiles",
+        "version": "0.9.3"
+      },
+      {
+        "name": "shinyjqui",
+        "version": "0.4.1"
+      },
+      {
+        "name": "shinyjs",
+        "version": "2.1.1"
+      },
+      {
+        "name": "snakecase",
+        "version": "0.11.1"
+      },
+      {
+        "name": "splines",
+        "version": "4.6.1"
+      },
+      {
+        "name": "statmod",
+        "version": "1.5.2"
+      },
+      {
+        "name": "stats",
+        "version": "4.6.1"
+      },
+      {
+        "name": "stringfish",
+        "version": "0.19.0"
+      },
+      {
+        "name": "stringi",
+        "version": "1.8.7"
+      },
+      {
+        "name": "stringr",
+        "version": "1.6.0"
+      },
+      {
+        "name": "systemfonts",
+        "version": "1.3.2"
+      },
+      {
+        "name": "testthat",
+        "version": "3.3.2"
+      },
+      {
+        "name": "textshaping",
+        "version": "1.0.5"
+      },
+      {
+        "name": "tibble",
+        "version": "3.3.1"
+      },
+      {
+        "name": "tictoc",
+        "version": "1.2.1"
+      },
+      {
+        "name": "tidyr",
+        "version": "1.3.2"
+      },
+      {
+        "name": "tidyselect",
+        "version": "1.2.1"
+      },
+      {
+        "name": "timechange",
+        "version": "0.4.0"
+      },
+      {
+        "name": "tools",
+        "version": "4.6.1"
+      },
+      {
+        "name": "tzdb",
+        "version": "0.5.0"
+      },
+      {
+        "name": "usethis",
+        "version": "3.2.1"
+      },
+      {
+        "name": "utils",
+        "version": "4.6.1"
+      },
+      {
+        "name": "vctrs",
+        "version": "0.7.3"
+      },
+      {
+        "name": "viridis",
+        "version": "0.6.5"
+      },
+      {
+        "name": "viridisLite",
+        "version": "0.4.3"
+      },
+      {
+        "name": "vroom",
+        "version": "1.7.1"
+      },
+      {
+        "name": "websocket",
+        "version": "1.4.4"
+      },
+      {
+        "name": "withr",
+        "version": "3.0.3"
+      },
+      {
+        "name": "writexl",
+        "version": "1.5.4"
+      },
+      {
+        "name": "xfun",
+        "version": "0.60"
+      },
+      {
+        "name": "xml2",
+        "version": "1.6.0"
+      },
+      {
+        "name": "xtable",
+        "version": "1.8.8"
+      },
+      {
+        "name": "yaml",
+        "version": "2.3.12"
+      },
+      {
+        "name": "yulab.utils",
+        "version": "0.2.4"
+      },
+      {
+        "name": "zip",
+        "version": "3.0.0"
+      }
+    ]
+  },
+  "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+  "defaults_changed": false,
+  "inputs": [
+    {
+      "role": "diann_report",
+      "basename": "report.tsv",
+      "bytes": 67134786,
+      "sha256": "87a99e83d1545ba8aabac0ff8b9db2caddb30902842ce08ab6230ac6ff91f196",
+      "entity_id": null
+    },
+    {
+      "role": "fasta",
+      "basename": "proteins.fasta",
+      "bytes": 665427,
+      "sha256": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+      "entity_id": null
+    }
+  ],
+  "design": {
+    "entity_id": "e249164ebc739ec51b4203297b82f18ad84fdd324f2e772a0c2f3dbc026a3bc0",
+    "sample_id": "Run",
+    "group_id": "group",
+    "technical_replicate_id": "tech_rep_group",
+    "rows": [
+      {
+        "Run": "calibration_run_001",
+        "group": "control",
+        "factor1": "control",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 1,
+        "tech_reps": null,
+        "tech_rep_group": "control_1",
+        "W1": -18.919524189941928
+      },
+      {
+        "Run": "calibration_run_002",
+        "group": "treated",
+        "factor1": "treated",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 1,
+        "tech_reps": null,
+        "tech_rep_group": "treated_1",
+        "W1": -18.146541545533271
+      },
+      {
+        "Run": "calibration_run_003",
+        "group": "contrast",
+        "factor1": "contrast",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 1,
+        "tech_reps": null,
+        "tech_rep_group": "contrast_1",
+        "W1": -18.13038690913271
+      },
+      {
+        "Run": "calibration_run_004",
+        "group": "control",
+        "factor1": "control",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 2,
+        "tech_reps": null,
+        "tech_rep_group": "control_2",
+        "W1": -17.635644036729261
+      },
+      {
+        "Run": "calibration_run_005",
+        "group": "treated",
+        "factor1": "treated",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 2,
+        "tech_reps": null,
+        "tech_rep_group": "treated_2",
+        "W1": -17.987051967285488
+      },
+      {
+        "Run": "calibration_run_006",
+        "group": "contrast",
+        "factor1": "contrast",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 2,
+        "tech_reps": null,
+        "tech_rep_group": "contrast_2",
+        "W1": -18.020660923378376
+      },
+      {
+        "Run": "calibration_run_007",
+        "group": "control",
+        "factor1": "control",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 3,
+        "tech_reps": null,
+        "tech_rep_group": "control_3",
+        "W1": -17.771932093854481
+      },
+      {
+        "Run": "calibration_run_008",
+        "group": "treated",
+        "factor1": "treated",
+        "factor2": "",
+        "factor3": null,
+        "batch": null,
+        "replicates": 3,
+        "tech_reps": null,
+        "tech_rep_group": "treated_3",
+        "W1": -17.952407079371195
+      }
+    ]
+  },
+  "steps": [
+    {
+      "order": 1,
+      "state": "initial",
+      "operation": "import",
+      "variant": null,
+      "preceded_by": [],
+      "step_label": "initial",
+      "committed_at": "2026-10-21T20:56:58.480+1100",
+      "seed": null,
+      "result_entity_id": "d809538ec140d30874d6e7f7263d07223b65156793938324f6009972827cbe8b",
+      "input_entity_ids": [],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": null,
+        "columns": null
+      },
+      "outcomes": {
+        "rows": null,
+        "columns": null
+      },
+      "description": "Initial empty state",
+      "parameters": [],
+      "products": [],
+      "stored_as_object": false
+    },
+    {
+      "order": 2,
+      "state": "raw_data_s4",
+      "operation": "design_builder",
+      "variant": null,
+      "preceded_by": [],
+      "step_label": "raw_data_s4",
+      "committed_at": "2026-10-21T20:57:05.893+1100",
+      "seed": null,
+      "result_entity_id": "0211554e791c02c470e80847aa0cbd8d2e66db48bccb43cef1b3ee63ee7570d4",
+      "input_entity_ids": [
+        "d809538ec140d30874d6e7f7263d07223b65156793938324f6009972827cbe8b"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 320872,
+        "columns": 15
+      },
+      "outcomes": {
+        "rows": 320872,
+        "columns": 15
+      },
+      "description": "Initial Peptide S4 object created after design matrix.",
+      "parameters": [
+        {
+          "name": "sample_id",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "Run",
+            "length": 1
+          },
+          "provenance": "unknown"
+        },
+        {
+          "name": "group_id",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "group",
+            "length": 1
+          },
+          "provenance": "unknown"
+        },
+        {
+          "name": "technical_replicate_id",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "tech_rep_group",
+            "length": 1
+          },
+          "provenance": "unknown"
+        }
+      ],
+      "products": [],
+      "stored_as_object": false
+    },
+    {
+      "order": 3,
+      "state": "qvalue_filtered",
+      "operation": "peptide_qvalue_filter",
+      "variant": "streamed",
+      "preceded_by": [],
+      "step_label": "2_qval_filtered",
+      "committed_at": "2026-10-21T20:57:16.019+1100",
+      "seed": null,
+      "result_entity_id": "24617fc8a4d74e199f82a36919dda48cf6265b978395fe78969e80cc5e6a3ef8",
+      "input_entity_ids": [
+        "0211554e791c02c470e80847aa0cbd8d2e66db48bccb43cef1b3ee63ee7570d4"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 320872,
+        "columns": 22
+      },
+      "outcomes": {
+        "rows": 320872,
+        "columns": 22
+      },
+      "description": "Applied Q-value and proteotypic peptide filter",
+      "parameters": [
+        {
+          "name": "qvalue_threshold",
+          "source": "args",
+          "value": {
+            "type": "double",
+            "value": 0.01,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "global_qvalue_threshold",
+          "source": "args",
+          "value": {
+            "type": "double",
+            "value": 0.01,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "global_pg_qvalue_threshold",
+          "source": "args",
+          "value": {
+            "type": "double",
+            "value": 0.01,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "proteotypic_only",
+          "source": "config",
+          "value": {
+            "type": "logical",
+            "value": true,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "confidence_provenance_mode",
+          "source": "args",
+          "value": {
+            "type": "character",
+            "value": "diann_main_report",
+            "length": 1
+          },
+          "provenance": "default"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "e509ab24e1c4aeb2ba7ebd3136fad850ef2555aad010133e5da7c4dd3a4bb90a",
+          "kind": "scientific_product",
+          "product_type": "qvalue-progress",
+          "identity_sha256": "dbc701f80d3ee9715bdb62aa70f8ea3599911bbfc60dc5963a7e0c0ac5fc095e"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 4,
+      "state": "precursor_rollup",
+      "operation": "precursor_rollup",
+      "variant": "p14",
+      "preceded_by": [],
+      "step_label": "4_precursor_rollup",
+      "committed_at": "2026-10-21T20:57:24.387+1100",
+      "seed": null,
+      "result_entity_id": "a87b0535bf1bb4980adaf1775d73c260f6aecde7f735749a6eb2043b68dcf190",
+      "input_entity_ids": [
+        "24617fc8a4d74e199f82a36919dda48cf6265b978395fe78969e80cc5e6a3ef8"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 303000,
+        "columns": 9
+      },
+      "outcomes": {
+        "rows": 303000,
+        "columns": 9
+      },
+      "description": "Applied precursor to peptide rollup",
+      "parameters": [
+        {
+          "name": "backend",
+          "source": "fixed",
+          "value": {
+            "type": "character",
+            "value": "P14",
+            "length": 1
+          },
+          "provenance": "fixed"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "e509ab24e1c4aeb2ba7ebd3136fad850ef2555aad010133e5da7c4dd3a4bb90a",
+          "kind": "scientific_product",
+          "product_type": "qvalue-progress",
+          "identity_sha256": "dbc701f80d3ee9715bdb62aa70f8ea3599911bbfc60dc5963a7e0c0ac5fc095e"
+        },
+        {
+          "entity_id": "d9095ec486bbda0838999c85954dc990928bf902b0a367c813e9a61b349b16c3",
+          "kind": "scientific_product",
+          "product_type": "precursor_rollup-progress",
+          "identity_sha256": "a9e1d2d75dbe9b0541a38fb3a88e0dc2bed7ec8330c28b2ce9f94b72b64fa038"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 5,
+      "state": "log2_matrix",
+      "operation": "peptide_log2_matrix",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "4_log2_matrix",
+      "committed_at": "2026-10-21T20:57:34.557+1100",
+      "seed": null,
+      "result_entity_id": "9a97425ee9d1f13d8c1a979dbaf8a07c94504ceb945bd197eeec26a4282d7212",
+      "input_entity_ids": [
+        "a87b0535bf1bb4980adaf1775d73c260f6aecde7f735749a6eb2043b68dcf190"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 303000,
+        "columns": 9
+      },
+      "outcomes": {
+        "rows": 303000,
+        "columns": 9,
+        "peptides": 60000,
+        "samples": 8,
+        "nonpositive_set_to_na": 0,
+        "missing_cells": 177000
+      },
+      "description": "Peptide matrix calculated and log2 transformed (values <= 0 set to NA)",
+      "parameters": [
+        {
+          "name": "nonpositive_to_na",
+          "source": "fixed",
+          "value": {
+            "type": "logical",
+            "value": true,
+            "length": 1
+          },
+          "provenance": "fixed"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "e509ab24e1c4aeb2ba7ebd3136fad850ef2555aad010133e5da7c4dd3a4bb90a",
+          "kind": "scientific_product",
+          "product_type": "qvalue-progress",
+          "identity_sha256": "dbc701f80d3ee9715bdb62aa70f8ea3599911bbfc60dc5963a7e0c0ac5fc095e"
+        },
+        {
+          "entity_id": "4e84cdd5d54b61574d6d1e3306ede569994dafe500c5244ecdfc287570458998",
+          "kind": "scientific_product",
+          "product_type": "log2_matrix-progress",
+          "identity_sha256": "6c94bf743a219cfa879bcf10b26bfd70a840a66b2d419058a8cb17db0868f24a"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 6,
+      "state": "peptide_accession_cleaned",
+      "operation": "peptide_accession_cleanup",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "7_annotation_cleanup",
+      "committed_at": "2026-10-21T20:58:02.069+1100",
+      "seed": null,
+      "result_entity_id": "e5ab52fc6f1669e12eade4b848b189aa32fc185c15d49733ff1a928bfb43f5be",
+      "input_entity_ids": [
+        "9a97425ee9d1f13d8c1a979dbaf8a07c94504ceb945bd197eeec26a4282d7212"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 303000,
+        "columns": 9
+      },
+      "outcomes": {
+        "rows": 303000,
+        "columns": 9,
+        "cleanup_applied": true,
+        "protein_groups_before": 2500,
+        "protein_groups_after": 2500,
+        "peptide_rows_aggregated": 0
+      },
+      "description": "Applied peptide-level protein accession cleanup",
+      "parameters": [
+        {
+          "name": "delimiter",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": ";",
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "aggregation_method",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "mean",
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "seqinr_accession_column",
+          "source": "args",
+          "value": {
+            "type": "character",
+            "value": "uniprot_acc",
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "fasta_sha256",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+            "length": 1
+          },
+          "provenance": "input"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "e509ab24e1c4aeb2ba7ebd3136fad850ef2555aad010133e5da7c4dd3a4bb90a",
+          "kind": "scientific_product",
+          "product_type": "qvalue-progress",
+          "identity_sha256": "dbc701f80d3ee9715bdb62aa70f8ea3599911bbfc60dc5963a7e0c0ac5fc095e"
+        },
+        {
+          "entity_id": "cee9711f7d04095715966626a9bd088b9c4af973416c575700cf26a63964cbb2",
+          "kind": "scientific_product",
+          "product_type": "peptide_accession_cleaned-progress",
+          "identity_sha256": "8ef86459a0e2a284f40469e40d05a2b242b3980cf3832587f7bb0e3e6fb9071a"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 7,
+      "state": "protein_dpc_quant",
+      "operation": "protein_dpc_quant",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "9_protein_dpc_quant",
+      "committed_at": "2026-10-21T20:58:28.985+1100",
+      "seed": null,
+      "result_entity_id": "9633198643498b2b454cca6d3921aad2f71c7e4dbe63c88087a471c69a7a9a6b",
+      "input_entity_ids": [
+        "e5ab52fc6f1669e12eade4b848b189aa32fc185c15d49733ff1a928bfb43f5be"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 2500,
+        "columns": 9
+      },
+      "outcomes": {
+        "rows": 2500,
+        "columns": 9,
+        "engine": "limpa",
+        "engine_version": "1.4.2",
+        "limpa_version": "1.4.2",
+        "dpc_intercept": 0.2635958549153295,
+        "dpc_slope": 0.012247870014389079,
+        "slope_interpretation": "nearly random missing",
+        "proteins_quantified": 2500,
+        "peptides_used": 60000,
+        "missing_percentage_peptides": 36.899999999999999
+      },
+      "description": "Limpa DPC imputation and protein quantification completed (ProteinQuantitativeData created)",
+      "parameters": [
+        {
+          "name": "engine",
+          "source": "args",
+          "value": {
+            "type": "character",
+            "value": "limpa",
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "dpc_slope",
+          "source": "args",
+          "value": {
+            "type": "double",
+            "value": 0.80000000000000004,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "chunk",
+          "source": "args",
+          "value": {
+            "type": "double",
+            "value": 1000,
+            "length": 1
+          },
+          "provenance": "default"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "e509ab24e1c4aeb2ba7ebd3136fad850ef2555aad010133e5da7c4dd3a4bb90a",
+          "kind": "scientific_product",
+          "product_type": "qvalue-progress",
+          "identity_sha256": "dbc701f80d3ee9715bdb62aa70f8ea3599911bbfc60dc5963a7e0c0ac5fc095e"
+        },
+        {
+          "entity_id": "cee9711f7d04095715966626a9bd088b9c4af973416c575700cf26a63964cbb2",
+          "kind": "scientific_product",
+          "product_type": "peptide_accession_cleaned-progress",
+          "identity_sha256": "8ef86459a0e2a284f40469e40d05a2b242b3980cf3832587f7bb0e3e6fb9071a"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 8,
+      "state": "protein_normalised",
+      "operation": "protein_between_sample_normalisation",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "10_protein_normalised",
+      "committed_at": "2026-10-21T20:58:36.731+1100",
+      "seed": null,
+      "result_entity_id": "83ba3a63bbfdef81cab3ea45ea8ad3b81e1452883f4ece7f0fde6354bce8b984",
+      "input_entity_ids": [
+        "9633198643498b2b454cca6d3921aad2f71c7e4dbe63c88087a471c69a7a9a6b"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 2500,
+        "columns": 9
+      },
+      "outcomes": {
+        "rows": 2500,
+        "columns": 9,
+        "norm_method": "none",
+        "proteins": 2500,
+        "samples": 8,
+        "skipped": true
+      },
+      "description": "Between-sample normalisation skipped (none): the quantified matrix carried unchanged",
+      "parameters": [
+        {
+          "name": "norm_method",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "none",
+            "length": 1
+          },
+          "provenance": "default"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "e509ab24e1c4aeb2ba7ebd3136fad850ef2555aad010133e5da7c4dd3a4bb90a",
+          "kind": "scientific_product",
+          "product_type": "qvalue-progress",
+          "identity_sha256": "dbc701f80d3ee9715bdb62aa70f8ea3599911bbfc60dc5963a7e0c0ac5fc095e"
+        },
+        {
+          "entity_id": "cee9711f7d04095715966626a9bd088b9c4af973416c575700cf26a63964cbb2",
+          "kind": "scientific_product",
+          "product_type": "peptide_accession_cleaned-progress",
+          "identity_sha256": "8ef86459a0e2a284f40469e40d05a2b242b3980cf3832587f7bb0e3e6fb9071a"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 9,
+      "state": "peptide_count_filtered",
+      "operation": "protein_peptide_count_filter",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "11_peptide_count_filtered",
+      "committed_at": "2026-10-21T20:58:42.339+1100",
+      "seed": null,
+      "result_entity_id": "68b21468f57ec5410fcc32d8d4fc09d840d4a54a82d8932bf2ce321e7e1ade84",
+      "input_entity_ids": [
+        "83ba3a63bbfdef81cab3ea45ea8ad3b81e1452883f4ece7f0fde6354bce8b984"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 2500,
+        "columns": 9
+      },
+      "outcomes": {
+        "rows": 2500,
+        "columns": 9,
+        "proteins_before": 2500,
+        "proteins_after": 2500,
+        "proteins_removed": 0
+      },
+      "description": "Applied minimum peptide evidence filter on the quantified protein object",
+      "parameters": [
+        {
+          "name": "num_peptides_per_protein_thresh",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 1,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "num_peptidoforms_per_protein_thresh",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 2,
+            "length": 1
+          },
+          "provenance": "default"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "e509ab24e1c4aeb2ba7ebd3136fad850ef2555aad010133e5da7c4dd3a4bb90a",
+          "kind": "scientific_product",
+          "product_type": "qvalue-progress",
+          "identity_sha256": "dbc701f80d3ee9715bdb62aa70f8ea3599911bbfc60dc5963a7e0c0ac5fc095e"
+        },
+        {
+          "entity_id": "cee9711f7d04095715966626a9bd088b9c4af973416c575700cf26a63964cbb2",
+          "kind": "scientific_product",
+          "product_type": "peptide_accession_cleaned-progress",
+          "identity_sha256": "8ef86459a0e2a284f40469e40d05a2b242b3980cf3832587f7bb0e3e6fb9071a"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 10,
+      "state": "correlation_filtered",
+      "operation": "pearson-selection",
+      "variant": "whole",
+      "preceded_by": [
+        {
+          "operation": "pearson-pairs",
+          "variant": "whole",
+          "parameters": [
+            {
+              "name": "group",
+              "source": "provenance",
+              "value": {
+                "type": "character",
+                "value": "group",
+                "length": 1
+              },
+              "provenance": "no_shipped_default"
+            },
+            {
+              "name": "tech_rep_remove_regex",
+              "source": "provenance",
+              "value": {
+                "type": "character",
+                "value": "pool",
+                "length": 1
+              },
+              "provenance": "default"
+            }
+          ]
+        }
+      ],
+      "step_label": "correlation_filtered",
+      "committed_at": "2026-10-21T20:58:49.073+1100",
+      "seed": null,
+      "result_entity_id": "bc6079efb826cabc8064356a64fd85ae735cb0ff9f8fe4c19decac7f150197e3",
+      "input_entity_ids": [
+        "68b21468f57ec5410fcc32d8d4fc09d840d4a54a82d8932bf2ce321e7e1ade84"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 2500,
+        "columns": 9
+      },
+      "outcomes": {
+        "rows": 2500,
+        "columns": 9
+      },
+      "description": "Applied final sample correlation filter (chunk 28)",
+      "parameters": [
+        {
+          "name": "pairs",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "3fa7e7b41051e8bbf4b2f13b145ca5c0d7a1622d54b3da6d7c006adf6368017e",
+            "length": 1
+          },
+          "provenance": "input"
+        },
+        {
+          "name": "threshold",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 0.5,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "e509ab24e1c4aeb2ba7ebd3136fad850ef2555aad010133e5da7c4dd3a4bb90a",
+          "kind": "scientific_product",
+          "product_type": "qvalue-progress",
+          "identity_sha256": "dbc701f80d3ee9715bdb62aa70f8ea3599911bbfc60dc5963a7e0c0ac5fc095e"
+        },
+        {
+          "entity_id": "cee9711f7d04095715966626a9bd088b9c4af973416c575700cf26a63964cbb2",
+          "kind": "scientific_product",
+          "product_type": "peptide_accession_cleaned-progress",
+          "identity_sha256": "8ef86459a0e2a284f40469e40d05a2b242b3980cf3832587f7bb0e3e6fb9071a"
+        }
+      ],
+      "stored_as_object": false
+    },
+    {
+      "order": 11,
+      "state": "ruv_covariates",
+      "operation": "protein_ruv_covariates",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "ruv_covariates",
+      "committed_at": "2026-10-21T20:59:30.984+1100",
+      "seed": null,
+      "result_entity_id": "6eada3ebd5e844a24b79b63e08afed3b6b57a5252b3db5a18a35213c5a7381d2",
+      "input_entity_ids": [
+        "6eada3ebd5e844a24b79b63e08afed3b6b57a5252b3db5a18a35213c5a7381d2"
+      ],
+      "software": {
+        "version": "0.5.0",
+        "sha": null,
+        "build": "6b0b96fd797b43f69f91e3e62dc12b58b6691d3b74db4d2f4583875250f80b66"
+      },
+      "defaults_sha256": "d50fdb82bbdd1d8e5a8e36fa88acb84333b79af20b7bcbcb5949270877643b34",
+      "dimensions": {
+        "rows": 2500,
+        "columns": 9
+      },
+      "outcomes": {
+        "rows": 2500,
+        "columns": 9,
+        "k": 1,
+        "percentage_as_neg_ctrl": 4,
+        "control_count": 100,
+        "separation_score": 0.95494296697985404,
+        "composite_score": 0.95494296697985404,
+        "replicate_structure": "group",
+        "block_reason": "no_duplicates"
+      },
+      "description": "RUV-III factors appended to the design as covariates (W1..W1); the quantified matrix unchanged",
+      "parameters": [
+        {
+          "name": "percentage_min",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 1,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "percentage_max",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 30,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "num_components_to_impute",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 5,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "ruv_grouping_variable",
+          "source": "args",
+          "value": {
+            "type": "character",
+            "value": "group",
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "ruv_qval_cutoff",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 0.050000000000000003,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "ruv_fdr_method",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "BH",
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "separation_metric",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "max_difference",
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "k_penalty_weight",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 0.5,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "adaptive_k_penalty",
+          "source": "provenance",
+          "value": {
+            "type": "logical",
+            "value": true,
+            "length": 1
+          },
+          "provenance": "default"
+        }
+      ],
+      "products": [
+        {
+          "entity_id": "e509ab24e1c4aeb2ba7ebd3136fad850ef2555aad010133e5da7c4dd3a4bb90a",
+          "kind": "scientific_product",
+          "product_type": "qvalue-progress",
+          "identity_sha256": "dbc701f80d3ee9715bdb62aa70f8ea3599911bbfc60dc5963a7e0c0ac5fc095e"
+        },
+        {
+          "entity_id": "cee9711f7d04095715966626a9bd088b9c4af973416c575700cf26a63964cbb2",
+          "kind": "scientific_product",
+          "product_type": "peptide_accession_cleaned-progress",
+          "identity_sha256": "8ef86459a0e2a284f40469e40d05a2b242b3980cf3832587f7bb0e3e6fb9071a"
+        },
+        {
+          "entity_id": "729369fc5b422ee1c8aceef4d8a881caa83d094cfed84053ce282b1b1949f5f3",
+          "kind": "scientific_product",
+          "product_type": "97c3f625f006c07a63d4f06c7d13b8d31dd415967a7c925f20b46bd20ab1edec",
+          "identity_sha256": "612662abdf6164ac3972e926af74bbdaddb2831c69311fa4da8cf57f5f1be90e"
+        }
+      ],
+      "stored_as_object": false
+    }
+  ],
+  "analyses": {
+    "differential_abundance": {
+      "operation": "DA-contrast-output",
+      "source_state": "ruv_covariates",
+      "source_entity_id": "6eada3ebd5e844a24b79b63e08afed3b6b57a5252b3db5a18a35213c5a7381d2",
+      "parameters": [
+        {
+          "name": "formula",
+          "source": "manifest",
+          "value": {
+            "type": "character",
+            "value": "~ 0 + group",
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "qvalue",
+          "source": "manifest",
+          "value": {
+            "type": "double",
+            "value": 0.050000000000000003,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "lfc",
+          "source": "manifest",
+          "value": {
+            "type": "integer",
+            "value": 0,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "weights",
+          "source": "manifest",
+          "value": {
+            "type": "logical",
+            "value": null,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        }
+      ],
+      "contrasts": [
+        {
+          "contrasts": "grouptreated-groupcontrol",
+          "friendly_names": "treated_vs_control",
+          "full_format": "treated_vs_control=grouptreated-groupcontrol"
+        }
+      ],
+      "model": {
+        "model": "dpcDE",
+        "formula_used": "~ 0 + group + W1",
+        "w_terms": "W1",
+        "k": 1,
+        "block_reason": "no_duplicates",
+        "uses_duplicate_correlation": false,
+        "treat_applied": false,
+        "treat_lfc_cutoff_requested": 0,
+        "route": "limpa",
+        "group_id": null,
+        "technical_replicate_id": null,
+        "block_reason.1": "no_duplicates",
+        "uses_duplicate_correlation.1": false,
+        "consensus_correlation": null
+      },
+      "results": [
+        {
+          "contrast": "grouptreated-groupcontrol",
+          "entity_id": "a0cf644731ce4a7c2fd355a2afa04070a3d2f0bc34ffaf566f0c4d75f51c83d9",
+          "rows": 2500
+        }
+      ]
+    }
+  },
+  "external_resources": [],
+  "limits": {
+    "external_resources": "services queried inside a worker process are not recorded (KIT-026); the list covers queries made by the controlling process",
+    "legacy_steps": "a step committed before step provenance was recorded is `legacy` and lists its arguments without provenance"
+  }
+}

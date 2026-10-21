@@ -53,6 +53,7 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
 
   # Extract results for each contrast
   results_list <- list()
+  qvalue_warnings <- list()
 
   for (i in seq_along(contrast_strings)) {
     contrast_name <- names(contrast_strings)[i]
@@ -80,16 +81,11 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
       stop("P.Value column not found in topTable results for dpcDE.")
     }
 
-    contrast_results <- contrast_results |>
-      dplyr::mutate(
-        # Ensure the qvalue library is used for fdr_qvalue, consistent with runTestsContrasts
-        fdr_qvalue = qvalue::qvalue(P.Value)$qvalues,
-        # Keep the BH adjustment in its own column for full compatibility
-        fdr_value_bh_adjustment = adj.P.Val
-      ) |>
-      dplyr::rename(
-        raw_pvalue = P.Value
-      ) |>
+    # KIT-053: the q-values through the limma path's own adjustment (`adjustProtDaResultTable`: qvalue(), BH when
+    # qvalue() cannot estimate pi0, as on a small protein set), so both DA branches record the same fallback.
+    adjusted <- adjustProtDaResultTable(contrast_results, "raw_pvalue", "fdr_qvalue", "fdr_value_bh_adjustment")
+    if (isTRUE(adjusted$qvalue_failed)) qvalue_warnings[[contrast_strings[i]]] <- TRUE
+    contrast_results <- adjusted$table |>
       dplyr::mutate(
         comparison = contrast_name,
         uniprot_acc = rownames(contrast_results),
@@ -119,7 +115,8 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
   return_object <- list(
     results = results_list, # Return the list of data frames
     fit.eb = eb_fit,
-    dpc_method_used = TRUE
+    dpc_method_used = TRUE,
+    qvalue_warnings = qvalue_warnings
   )
 
   cat("   convertDpcDAToStandardFormat: Conversion completed successfully\n")

@@ -654,3 +654,62 @@ test_that("the DA base model takes its block from the declared technical replica
   expect_identical(run(missing)$block_reason, "missing_values")
   expect_identical(calls$dc, 2L)
 })
+
+test_that("the DA helper fits limpa's dpcDE with the W covariates and the resolved block when the object carries the quantified EList (KIT-053)", {
+  skip_if_not_installed("limpa")
+  skip_if_not_installed("limma")
+  ids <- sprintf("P%02d", 1:30)
+  samples <- paste0("S", 1:8)
+  set.seed(53)
+  E <- matrix(rnorm(240, 20, 1), 30, 8, dimnames = list(ids, samples))
+  E[1:5, 5:8] <- E[1:5, 5:8] + 2
+  nobs <- matrix(2L, 30, 8, dimnames = dimnames(E)); nobs[sample(240, 20)] <- 0L
+  elist <- methods::new("EList", list(E = E, genes = data.frame(NPrec = rep(2L, 30L), PropObs = rep(1, 30L), row.names = ids),
+    other = list(standard.error = matrix(0.2, 30, 8, dimnames = dimnames(E)), n.observations = nobs)))
+  design <- data.frame(Run = samples, group = rep(c("control", "treated"), each = 4L), replicates = rep(c(1L, 1L, 2L, 2L), 2L),
+    W1 = seq(-0.5, 0.5, length.out = 8), stringsAsFactors = FALSE)
+  table <- data.frame(Protein.Ids = ids, as.data.frame(E, check.names = FALSE), check.names = FALSE, stringsAsFactors = FALSE)
+  rownames(table) <- NULL
+  object <- ProteinQuantitativeData(protein_quant_table = table, protein_id_column = "Protein.Ids",
+    protein_id_table = data.frame(Protein.Ids = ids, stringsAsFactors = FALSE), design_matrix = design,
+    sample_id = "Run", group_id = "group", technical_replicate_id = "replicates",
+    args = list(limpa_dpc_quant_results = list(quantified_elist = elist, standard_errors = elist$other$standard.error)))
+  captured <- new.env(parent = emptyenv())
+  fake_dpcDE <- function(y, design, plot = TRUE, ...) {
+    dots <- list(...)
+    captured$block <- dots$block
+    captured$design <- design
+    captured$rows <- nrow(y)
+    limma::lmFit(y$E, design)
+  }
+  testthat::local_mocked_bindings(dpcDE = fake_dpcDE, .package = "limpa")
+  result <- suppressMessages(differentialAbundanceAnalysis(object,
+    contrasts_tbl = data.frame(contrasts = "treated_vs_control=grouptreated-groupcontrol", stringsAsFactors = FALSE),
+    formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0.5, eBayes_trend = FALSE, eBayes_robust = FALSE,
+    args_row_id = "Protein.Ids", qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue"))
+  # The branch ran: the formula gained the W term, the block reached dpcDE (the fixture declares technical replicates:
+  # two runs share group and replicate number), TREAT was not applied, and the model is named.
+  expect_identical(result$da_model$model, "dpcDE")
+  expect_identical(result$da_model$formula_used, "~ 0 + group + W1")
+  expect_identical(result$da_model$w_terms, "W1")
+  expect_identical(result$da_model$k, 1L)
+  expect_false(result$da_model$treat_applied)
+  expect_identical(result$da_model$treat_lfc_cutoff_requested, 0.5)
+  expect_identical(result$da_model$block_reason, "technical_replicates")
+  expect_identical(captured$block, paste(design$group, design$replicates, sep = "_"))
+  expect_identical(colnames(captured$design), c("groupcontrol", "grouptreated", "W1"))
+  expect_identical(captured$rows, 30L)
+  expect_identical(nrow(result$da_proteins_long), 30L)
+  expect_true(all(c("Protein.Ids", "comparison", "raw_pvalue", "fdr_qvalue") %in% names(result$da_proteins_long)))
+  expect_setequal(result$da_proteins_long$Protein.Ids, ids)
+  expect_true(all(c("Protein.Ids", "comparison", "logFC", "raw_pvalue", "fdr_qvalue", "fdr_value_bh_adjustment") %in% names(result$contrasts_results_table)))
+  # Without the EList the same call takes the limma path and names it.
+  plain <- object; plain@args$limpa_dpc_quant_results <- NULL
+  limma_result <- suppressMessages(differentialAbundanceAnalysis(plain,
+    contrasts_tbl = data.frame(contrasts = "treated_vs_control=grouptreated-groupcontrol", stringsAsFactors = FALSE),
+    formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0, eBayes_trend = FALSE, eBayes_robust = FALSE,
+    args_row_id = "Protein.Ids", qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue"))
+  expect_identical(limma_result$da_model$model, "limma")
+  expect_identical(limma_result$da_model$formula_used, "~ 0 + group")
+  expect_identical(limma_result$da_model$k, 0L)
+})

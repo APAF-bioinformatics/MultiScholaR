@@ -3034,5 +3034,5 @@ test_that("registerProtNormServerObservers wires the observer shell through help
   expect_equal(calls$reset$ruvMode, "manual")
   expect_equal(calls$reset$groupingVariable, "group")
   expect_equal(calls$export$normData, "norm_data")
-  expect_length(calls$events, 7)
+  expect_length(calls$events, 8) # KIT-053: the DIA_LIMPA route's apply_ruv_covariates observer joins the seven
 })

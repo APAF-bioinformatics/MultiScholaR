@@ -719,11 +719,20 @@ setMethod(
     # Update the main data table
     theObject@protein_quant_table <- filtered_protein_table
 
-    # Also filter the EList for consistency
+    # Also filter the EList for consistency. KIT-053: limpa 1.4.x returns the quantified EList without a
+    # `genes$protein.id` column (KIT-047 found the same for the quantification), so the protein ids are the row
+    # names of `E` when the column is absent; before this repair the EList was emptied on that version.
     if (!is.null(theObject@args$limpa_dpc_quant_results$quantified_elist)) {
       original_elist <- theObject@args$limpa_dpc_quant_results$quantified_elist
-      indices_to_keep <- which(original_elist$genes$protein.id %in% protein_ids_to_keep)
+      elist_ids <- original_elist$genes$protein.id
+      if (is.null(elist_ids)) elist_ids <- rownames(original_elist$E)
+      indices_to_keep <- which(elist_ids %in% protein_ids_to_keep)
       theObject@args$limpa_dpc_quant_results$quantified_elist <- original_elist[indices_to_keep, ]
+      for (field in c("standard_errors", "n_observations")) {
+        value <- theObject@args$limpa_dpc_quant_results[[field]]
+        if (is.matrix(value) && nrow(value) == length(elist_ids))
+          theObject@args$limpa_dpc_quant_results[[field]] <- value[indices_to_keep, , drop = FALSE]
+      }
     }
 
     return(theObject)

@@ -157,9 +157,20 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
     norm_prefix <- "proteomics_workflow-normalization-"
     peptide_actions <- stats::setNames(h$checkpointPeptideActions(),
         c("qvalue", "protein_peptide", "rollup", "intensity", "sample", "replicate", "imputation"))
+    # KIT-053: the DIA_LIMPA route's own tabs (KIT-047, KIT-041) beside the shared ones.
+    peptide_actions$peptide_log2 <- list(tab = "Log2 Matrix", action = "log2_matrix-apply_log2_matrix",
+        result = "log2_matrix-log2_results", state = "log2_matrix")
+    peptide_actions$peptide_accession <- list(tab = "Peptide Accession Cleanup", action = "accession_cleanup-apply_peptide_accession",
+        result = "accession_cleanup-peptide_accession_results", state = "peptide_accession_cleaned")
     protein_actions <- list(
         iq = list(tab = "IQ Protein Rollup", action = "rollup-apply_iq_rollup",
             result = "rollup-iq_rollup_results", state = "protein_s4_created"),
+        dpc_quant = list(tab = "DPC Quantification", action = "dpc_quant-apply_dpc_quant",
+            result = "dpc_quant-dpc_quant_results", state = "protein_dpc_quant"),
+        protein_normalisation_limpa = list(tab = "Between-Sample Normalisation", action = "normalisation-apply_protein_normalisation",
+            result = "normalisation-protein_normalisation_results", state = "protein_normalised"),
+        peptide_count = list(tab = "Peptide Count Filter", action = "peptide_count-apply_peptide_count",
+            result = "peptide_count-peptide_count_results", state = "peptide_count_filtered"),
         accession = list(tab = "Accession Cleanup", action = "cleanup-apply_accession_cleanup",
             result = "cleanup-accession_cleanup_results", state = "protein_accession_cleaned"),
         protein_intensity = list(tab = "Protein Intensity Filter", action = "intensity_filter-apply_protein_intensity_filter",
@@ -172,7 +183,10 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
         id <- step$id
         switch(step$kind,
             store = switch(id,
-                import = h$runCheckpointImportActions(driver, project_parent, corpus),
+                # KIT-053: the limpa route is chosen at the entry point before the import (the pinned import action
+                # knows no route; the kit's own import sets the radio and then runs the same actions).
+                import = if (identical(kitRouteOf(journey), "DIA_LIMPA")) runKitLimpaImportActions(h, driver, project_parent, corpus) else
+                    h$runCheckpointImportActions(driver, project_parent, corpus),
                 design = runKitDesignActions(h, driver, corpus$design),
                 session_export = kitClickAndWaitText(h, driver, paste0(norm_prefix, "export_filtered_session"),
                     ".shiny-notification", "Filtered session data exported successfully!")),
@@ -201,6 +215,12 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
                 if (id == "protein_replicate") h$waitCheckpointStepComplete(driver, "QC", timeout = h$checkpointWaitBudget())
             },
             normalisation = switch(id,
+                ruv_covariates = {
+                    # KIT-053: the DIA_LIMPA route's RUV covariates, the tab's own action after the correlation filter.
+                    h$checkpointSetInput(driver, paste0(norm_prefix, "norm_qc_tabs"), "Correlation Filtering")
+                    h$checkpointClickAndWaitText(driver, paste0(norm_prefix, "apply_ruv_covariates"),
+                        paste0("#", norm_prefix, "ruv_covariates_summary"), "State saved as: 'ruv_covariates'")
+                },
                 normalisation_ruv = {
                     h$checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "normalization")
                     h$checkpointSetInput(driver, paste0(norm_prefix, "norm_method"), journey$normalisation$norm_method)
@@ -215,6 +235,14 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
                             "Normalization and RUV correction completed!")
                 },
                 correlation = {
+                    if (identical(kitRouteOf(journey), "DIA_LIMPA")) {
+                        # KIT-053: the route's normalisation button is a pass-through (its normalisation is a protein QC
+                        # step); it designates the correlation input and completes before the filter runs.
+                        h$checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "normalization")
+                        h$checkpointSetInput(driver, paste0(norm_prefix, "ruv_mode"), journey$normalisation$ruv_mode %||% "covariates")
+                        kitClickAndWaitText(h, driver, paste0(norm_prefix, "run_normalization"), ".shiny-notification",
+                            "Normalisation stage ready (DIA with limpa)")
+                    }
                     h$checkpointSetInput(driver, paste0(norm_prefix, "norm_qc_tabs"), "Correlation Filtering")
                     h$checkpointSetInput(driver, paste0(norm_prefix, "min_pearson_correlation_threshold"),
                         journey$normalisation$correlation_threshold)
@@ -405,4 +433,36 @@ runKitMember <- function(h, member_dir, application_root, library_path, corpus, 
     }
     saveRDS(record, file.path(member_dir, "journey-result.rds"), compress = FALSE, version = 3)
     record
+}
+
+
+#' The limpa route's import (KIT-053): the pinned import actions (`runCheckpointImportActions`) with the DIA-NN route
+#' radio set to `DIA_LIMPA` before the import runs; the pinned helper is not edited.
+#' @noRd
+runKitLimpaImportActions <- function(h, driver, run_dir, inputs) {
+    h$checkpointClickControl(driver, "tile-proteomics")
+    h$checkpointClickControl(driver, "btn-start-analysis")
+    driver$set_inputs(experiment_label = "dia_baseline_smoke", project_dir = run_dir)
+    h$checkpointClickControl(driver, "btn-confirm-setup")
+    h$checkpointWaitForJs(driver, "document.querySelector('[data-testid=\"prot-tab-setup\"]') !== null",
+        timeout = h$checkpointWaitBudget())
+    roots <- shinyFiles::getVolumes()()
+    for (field in c("report", "fasta")) {
+        input_name <- if (field == "report") "search_results" else "fasta_file"
+        id <- paste0("proteomics_workflow-setup_import-", input_name)
+        selection <- h$checkpointFileSelection(inputs[[field]], roots)
+        h$checkpointWaitForJs(driver, sprintf("document.getElementById(%s) !== null",
+            jsonlite::toJSON(id, auto_unbox = TRUE)), timeout = h$checkpointWaitBudget(control = TRUE))
+        driver$get_js(sprintf("Shiny.setInputValue(%s,%s,{priority:'event'});true",
+            jsonlite::toJSON(id, auto_unbox = TRUE),
+            jsonlite::toJSON(selection, auto_unbox = TRUE)))
+        h$checkpointWaitForIdle(driver, timeout = h$checkpointWaitBudget())
+    }
+    args <- list(inputs$format %||% "diann")
+    names(args) <- "proteomics_workflow-setup_import-format_override"
+    do.call(driver$set_inputs, args)
+    h$checkpointSetInput(driver, "proteomics_workflow-setup_import-dia_route", "DIA_LIMPA")
+    h$checkpointClickControl(driver, "prot-import-process")
+    h$waitCheckpointStepComplete(driver, "Import", timeout = h$checkpointWaitBudget())
+    invisible(NULL)
 }
