@@ -1210,8 +1210,7 @@ e2e_complete_lipid_design_from_manifest <- function(
 
 e2e_run_prot_dia_qc <- function(
     driver,
-    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT,
-    rollup_method = "iq"
+    timeout = .E2E_BROWSER_DEFAULT_TIMEOUT
 ) {
   qc <- function(input) e2e_input_id("proteomics", "qc", input)
 
@@ -1267,14 +1266,6 @@ e2e_run_prot_dia_qc <- function(
   e2e_set_input_and_idle(driver, qc("qc_tabs_lfq"), "Protein QC", timeout = timeout)
   for (step in protein_steps) {
     e2e_set_input_and_idle(driver, qc("protein_qc-protein_filter_tabs"), step$tab, timeout = timeout)
-    if (identical(step$action, "protein_qc-rollup-apply_iq_rollup")) {
-      e2e_set_input_and_idle(
-        driver,
-        qc("protein_qc-rollup-rollup_method"),
-        rollup_method,
-        timeout = timeout
-      )
-    }
     if (is.function(step$configure)) {
       step$configure()
     }
@@ -1291,7 +1282,9 @@ e2e_run_prot_dia_qc <- function(
 }
 
 e2e_run_prot_dia_limpa_qc <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
-  e2e_run_prot_dia_qc(driver, timeout = timeout, rollup_method = "limpa")
+  # KIT-046: the limpa route is the DIA_LIMPA workflow type chosen at import (`dia_route`); its QC steps are
+  # declared by KIT-047 and KIT-041, so there is no browser path to drive yet.
+  testthat::skip("DIA_LIMPA route: the peptide and protein stages are declared in KIT-047 and KIT-041")
 }
 
 e2e_run_prot_normalization_export <- function(

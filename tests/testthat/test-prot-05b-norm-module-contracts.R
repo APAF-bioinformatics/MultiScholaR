@@ -2305,7 +2305,7 @@ test_that("collectProtNormExportSessionData builds the export payload with count
   expect_equal(session_data$final_sample_count, 2)
 })
 
-test_that("collectProtNormExportSessionData carries limpa metadata into filtered-session exports", {
+test_that("collectProtNormExportSessionData carries the DIA_LIMPA type and its DPC results into filtered-session exports (KIT-046)", {
   if (!methods::isClass("MockProtNormExportData")) {
     methods::setClass(
       "MockProtNormExportData",
@@ -2329,7 +2329,7 @@ test_that("collectProtNormExportSessionData carries limpa metadata into filtered
     protein_id_column = "Protein.Ids",
     args = list(
       globalParameters = list(
-        workflow_type = "DIA",
+        workflow_type = "DIA_LIMPA",
         use_limpa = TRUE,
         report_template = "DIANN_limpa_report.rmd"
       ),
@@ -2346,7 +2346,7 @@ test_that("collectProtNormExportSessionData carries limpa metadata into filtered
   workflow_data$contrasts_tbl <- data.frame(friendly_names = "KO vs WT", stringsAsFactors = FALSE)
   workflow_data$design_matrix <- data.frame(group = c("WT", "KO"), stringsAsFactors = FALSE)
   workflow_data$config_list <- list(globalParameters = list(
-    workflow_type = "DIA",
+    workflow_type = "DIA_LIMPA",
     use_limpa = TRUE,
     report_template = "DIANN_limpa_report.rmd"
   ))
@@ -2363,11 +2363,12 @@ test_that("collectProtNormExportSessionData carries limpa metadata into filtered
     messageFn = function(...) NULL
   )
 
-  expect_identical(session_data$workflow_type, "DIA")
+  expect_identical(session_data$workflow_type, "DIA_LIMPA")
   expect_identical(session_data$report_template, "DIANN_limpa_report.rmd")
   expect_true(session_data$limpa_applied)
   expect_true(session_data$use_limpa)
-  expect_identical(session_data$limpa_parameters, limpa_parameters)
+  # KIT-046: the DPC parameters are recorded on the head (KIT-047), not read from the object's arguments.
+  expect_null(session_data$limpa_parameters)
   expect_identical(session_data$limpa_dpc_quant_results, limpa_results)
 
   summary_text <- buildProtNormExportSummaryContent(
@@ -2386,9 +2387,8 @@ test_that("collectProtNormExportSessionData carries limpa metadata into filtered
     sourceDir = export_dir,
     messageFn = function(...) NULL
   )
-  expect_true(file.exists(file.path(export_dir, "limpa_parameters.RDS")))
+  expect_false(file.exists(file.path(export_dir, "limpa_parameters.RDS")))
   expect_true(file.exists(file.path(export_dir, "limpa_dpc_quant_results.RDS")))
-  expect_identical(readRDS(file.path(export_dir, "limpa_parameters.RDS")), limpa_parameters)
   expect_identical(readRDS(file.path(export_dir, "limpa_dpc_quant_results.RDS")), limpa_results)
 })
 

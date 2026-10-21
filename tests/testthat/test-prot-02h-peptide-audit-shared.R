@@ -387,7 +387,23 @@ test_that("protein-rollup audit retains Protein.Group as the active identity", {
     technical_replicate_id = "replicate_group",
     args = list()
   )
-  protein <- buildProtTestModeLimpaProteinObject(peptide)
+  # KIT-046: the test-mode limpa object builder is gone; the protein object is built from the peptide lineage directly.
+  quantity <- peptide@norm_quantity_column
+  wide <- peptide_data |>
+    dplyr::group_by(Protein.Group, Run) |>
+    dplyr::summarise(value = sum(.data[[quantity]], na.rm = TRUE), .groups = "drop") |>
+    tidyr::pivot_wider(names_from = Run, values_from = value) |>
+    as.data.frame(check.names = FALSE)
+  protein <- ProteinQuantitativeData(
+    protein_quant_table = wide,
+    protein_id_column = "Protein.Group",
+    protein_id_table = .proteinIdTableFromPeptideLineage(peptide, wide$Protein.Group),
+    design_matrix = peptide@design_matrix,
+    sample_id = peptide@sample_id,
+    group_id = peptide@group_id,
+    technical_replicate_id = peptide@technical_replicate_id,
+    args = list()
+  )
   expect_identical(protein@protein_id_column, "Protein.Group")
 
   audited <- .emitPeptideQcAuditRecord(

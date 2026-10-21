@@ -136,7 +136,7 @@ test_that("peptide checkpoints preserve resident history, relocation and failed-
 })
 
 test_that("checkpoint route, metadata and pending-export guards reject unsupported work", {
-    expect_error(validateDIAPeptideCheckpointRoute(list(dia_quantification_method = "limpa")),
+    expect_error(validateDIAPeptideCheckpointRoute(list(workflow_type = "DIA_LIMPA")),
         class = "saved_entity_unsupported")
     expect_error(validateDIAPeptideCheckpointRoute(list(config_list = list(
         globalParameters = list(use_limpa = TRUE)))), class = "saved_entity_unsupported")

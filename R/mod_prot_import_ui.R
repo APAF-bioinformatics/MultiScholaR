@@ -60,11 +60,12 @@ mod_prot_import_ui <- function(id) {
                                   "Proteome Discoverer TMT" = "pd_tmt"),
                         selected = "auto",
                         inline = TRUE),
-            # KIT-049: the DIA-NN route named at the entry point; the limpa route becomes its own workflow (KIT-046).
-            shiny::radioButtons(ns("dia_quantification_method"),
+            # KIT-049/KIT-046: the two DIA-NN workflows named at the entry point; the choice is the workflow type.
+            shiny::radioButtons(ns("dia_route"),
                         "DIA-NN workflow (choose before import):",
-                        choices = c("DIA, iq MaxLFQ (optional replicate-mean imputation)" = "iq"),
-                        selected = "iq", inline = TRUE),
+                        choices = c("DIA, iq MaxLFQ (optional replicate-mean imputation)" = "DIA",
+                                    "DIA with imputation leveraging limpa (Li et al. 2025)" = "DIA_LIMPA"),
+                        selected = "DIA", inline = FALSE),
             shiny::helpText("Native DIA-IQ sessions keep this route fixed until a new project/import. Other formats are unchanged."),
             
             shiny::h4("Step 2: Import FASTA File"),

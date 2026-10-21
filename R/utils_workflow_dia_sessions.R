@@ -685,9 +685,11 @@ isDIANativeDefaultEnabled <- function() TRUE
 #' @param data_type The reader's `data_type` (`protein` or `peptide`) when known; NULL before the file is read.
 #' @return One of `DIA`, `TMT`, `LFQ` or NA.
 #' @noRd
-workflowTypeForImportFormat <- function(format, data_type = NULL) {
+workflowTypeForImportFormat <- function(format, data_type = NULL, dia_route = "DIA") {
     if (!is.character(format) || length(format) != 1L) return(NA_character_)
-    type <- switch(format, diann = "DIA", pd_tmt = "TMT", maxquant = , fragpipe = , spectronaut = "LFQ", NA_character_)
+    # KIT-046: a DIA-NN import is one of two workflow types, chosen at the entry point.
+    type <- switch(format, diann = if (identical(dia_route, "DIA_LIMPA")) "DIA_LIMPA" else "DIA",
+        pd_tmt = "TMT", maxquant = , fragpipe = , spectronaut = "LFQ", NA_character_)
     if (is.na(type) || is.null(data_type)) return(type)
     expected <- if (identical(format, "diann")) "peptide" else "protein"
     if (identical(data_type, expected)) type else NA_character_
@@ -696,7 +698,7 @@ workflowTypeForImportFormat <- function(format, data_type = NULL) {
 #' The native session manifest's `route` for each workflow type (KIT-020): the DIA route is `iq`; the
 #' protein-level types have no quantification route and are `protein`.
 #' @noRd
-workflowRoutesByType <- c(DIA = "iq", LFQ = "protein", TMT = "protein")
+workflowRoutesByType <- c(DIA = "iq", DIA_LIMPA = "limpa", LFQ = "protein", TMT = "protein")
 
 #' The manifest route of a workflow type.
 #' @param type One of `names(workflowRoutesByType)`.
@@ -713,8 +715,18 @@ workflowRouteForType <- function(type) {
 #' @param format Detected import format.
 #' @return The store's project id.
 #' @noRd
-workflowNativeStoreLabel <- function(format) {
-    if (identical(format, "diann")) "DIA-IQ-native" else paste0(toupper(format), "-native")
+workflowNativeStoreLabel <- function(format, workflow_type = NULL) {
+    if (identical(format, "diann")) (if (identical(workflow_type, "DIA_LIMPA")) "DIA-LIMPA-native" else "DIA-IQ-native") else
+        paste0(toupper(format), "-native")
+}
+
+#' The DIA-NN route chosen at the entry point, as a workflow type (KIT-046). The import module passes `DIA` or
+#' `DIA_LIMPA`; the older `iq`/`limpa` spellings of the retired quantification radio read as the same two.
+#' @noRd
+workflowDiaRouteType <- function(method) {
+    if (!is.character(method) || length(method) != 1L || is.na(method)) return("DIA")
+    switch(method, iq = , DIA = "DIA", limpa = , DIA_LIMPA = "DIA_LIMPA",
+        cli::cli_abort("unknown DIA-NN route {.val {method}}", class = "saved_entity_scope"))
 }
 
 #' Select the on-disk owner before import or configuration creates heavy values.
@@ -728,7 +740,12 @@ workflowNativeStoreLabel <- function(format) {
 #' @noRd
 initializeDIANativeImport <- function(workflow_data, paths, session, format, method = "iq", data_type = NULL) {
     manager <- workflow_data$state_manager
-    workflow_type <- workflowTypeForImportFormat(format, data_type)
+    route <- workflowDiaRouteType(method)
+    workflow_type <- workflowTypeForImportFormat(format, data_type, route)
+    # KIT-046: a DIA-NN import's type is the chosen route, set on the manager before the import on every platform
+    # (the in-memory manager too), so the import applies the type the user chose.
+    if (identical(format, "diann") && !is.na(workflow_type) && !inherits(manager, "DIAStateAdapter"))
+        manager$setWorkflowType(workflow_type)
     if (inherits(manager, "DIAStateAdapter")) {
         # KIT-020: an owner serves one route, fixed by its store's identity (the manager's own type is the fresh
         # default until the import sets it): the type must match, and an owner the import attached (a `-native`
@@ -739,20 +756,17 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
         typed_label <- identical(identity$project_id, paste0(workflow_type, "-native"))
         if (is.na(workflow_type) || !identical(identity$workflow_id, workflow_type) ||
             (endsWith(identity$project_id, "-native") && !typed_label &&
-                !identical(identity$project_id, workflowNativeStoreLabel(format))) ||
-            (identical(format, "diann") && !identical(method, "iq"))) {
+                !identical(identity$project_id, workflowNativeStoreLabel(format, workflow_type)))) {
             cli::cli_abort("reset the project before changing the route of an on-disk session", class = "saved_entity_scope")
         }
-        if (identical(format, "diann")) workflow_data$dia_quantification_method <- method
         return(invisible(manager))
     }
     if (!isDIANativeDefaultEnabled() || !identical(Sys.info()[["sysname"]], "Linux") || is.na(workflow_type))
         return(invisible(manager))
-    if (identical(format, "diann")) {
-        workflow_data$dia_quantification_method <- method
-        if (identical(method, "limpa")) return(invisible(manager))
-        if (!identical(method, "iq")) cli::cli_abort("reset the project before activating native DIA-IQ", class = "saved_entity_scope")
-    }
+    # KIT-046: the limpa route needs the limpa package whichever engine runs (fastlimpadpc imports it and provides no dpcDE).
+    if (identical(workflow_type, "DIA_LIMPA") && !requireNamespace("limpa", quietly = TRUE))
+        cli::cli_abort("DIA with limpa needs the limpa package; fastlimpadpc is the default engine when installed",
+            class = "workflow_engine_unavailable")
     if (!identical(manager$current_state, "initial") || length(manager$getHistory()) != 1L) {
         cli::cli_abort("reset the project before activating an on-disk session", class = "saved_entity_scope")
     }
@@ -774,7 +788,7 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
     if (!dir.create(state_root, mode = "0700")) {
         cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
     }
-    store <- newWorkflowEntityStore(state_root, workflowNativeStoreLabel(format), workflow_type, max_cache_bytes = 0)
+    store <- newWorkflowEntityStore(state_root, workflowNativeStoreLabel(format, workflow_type), workflow_type, max_cache_bytes = 0)
     manager <- newDIAStateAdapter(store, manager)
     manager$.context$sql_rollup <- TRUE
     manager$.context$session_format <- "native_v1"
@@ -954,7 +968,6 @@ adoptDIANativeSession <- function(imported, workflow_data, session, source_dir, 
     for (field in c("aa_seq_tbl_final", "uniprot_dat_cln", "data_format", "data_type", "column_mapping")) {
         workflow_data[[field]] <- imported$metadata[[field]]
     }
-    workflow_data$dia_quantification_method <- "iq"
     workflow_data$native_session_restored <- Sys.time()
     adopted <- TRUE
     # The replaced private folder goes once the swap is complete (KIT-013 item 5).
@@ -1062,7 +1075,6 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     }
     previous <- NULL
     workflow_data$state_manager <- attachDIAStateSession(manager, session, workflow_data)
-    if (identical(workflow_type, "DIA")) workflow_data$dia_quantification_method <- "iq"
     workflow_data$native_session_restored <- Sys.time()
     adopted <- TRUE
     TRUE
@@ -1393,7 +1405,10 @@ collectDIANativeSessionMetadata <- function(workflow_data, norm_data, input) {
         # own record are fallbacks for stores written before the type was set at import.
         workflow_type = context$store$identity$workflow_id %||% global$workflow_type %||% summary$workflow_type %||% "DIA",
         report_template = global$report_template %||% summary$report_template,
-        use_limpa = FALSE, limpa_applied = FALSE, limpa_parameters = NULL, limpa_dpc_quant_results = NULL,
+        # KIT-046 (KIT-042 audit F-08): the export's limpa flag follows the owner's type, nothing else.
+        use_limpa = identical(context$store$identity$workflow_id %||% global$workflow_type %||% summary$workflow_type %||% "DIA", "DIA_LIMPA"),
+        limpa_applied = identical(context$store$identity$workflow_id %||% global$workflow_type %||% summary$workflow_type %||% "DIA", "DIA_LIMPA"),
+        limpa_parameters = NULL, limpa_dpc_quant_results = NULL,
         final_protein_count = summary$proteins, final_sample_count = summary$samples)
     for (field in c("fasta_metadata", "accession_cleanup_results", "ruv_optimization_result",
         "qc_params", "protein_counts", "mixed_species_analysis", "aa_seq_tbl_final", "uniprot_dat_cln",
@@ -1531,9 +1546,9 @@ isDIAPeptideCheckpoint <- function(manager) {
 #' @return NULL invisibly.
 #' @noRd
 validateDIAPeptideCheckpointRoute <- function(metadata) {
-    method <- metadata$dia_quantification_method
+    # KIT-046: the archive's workflow type names its route; the retired quantification field is not read.
     global <- metadata$config_list$globalParameters
-    if ((!is.null(method) && !identical(method, "iq")) || isTRUE(global$use_limpa) ||
+    if (!identical(metadata$workflow_type %||% "DIA", "DIA") || isTRUE(global$use_limpa) ||
         isTRUE(metadata$use_limpa) || isTRUE(metadata$limpa_applied) ||
         !is.null(metadata$limpa_parameters) || !is.null(metadata$limpa_dpc_quant_results)) {
         cli::cli_abort("peptide checkpoint archives support the DIA IQ route only",
@@ -1622,8 +1637,7 @@ saveDIAPeptideCheckpoint <- function(workflow_data, session, paths) {
     # permits metadata records; keep the later-stage collector/DA contract intact.
     metadata <- list(workflow_type = "DIA", checkpoint_kind = "peptide-qc",
         r6_current_state_name = manager$current_state, r6_state_history = manager$getHistory(),
-        export_timestamp = Sys.time(), peptide_design = design_reader(), ruv_mode = "skip",
-        dia_quantification_method = "iq")
+        export_timestamp = Sys.time(), peptide_design = design_reader(), ruv_mode = "skip")
     for (field in c("config_list", "design_matrix", "contrasts_tbl", "qc_params",
         "aa_seq_tbl_final", "uniprot_dat_cln", "data_format", "data_type", "column_mapping",
         "fasta_metadata", "accession_cleanup_results")) metadata[field] <- list(workflow_data[[field]])
@@ -1696,7 +1710,7 @@ openDIAPeptideCheckpoint <- function(path, workflow_data, session, paths) {
     fields <- c("state_manager", "data_tbl", "data_cln", "config_list", "design_matrix",
         "contrasts_tbl", "qc_params", "aa_seq_tbl_final", "uniprot_dat_cln", "data_format",
         "data_type", "column_mapping", "fasta_metadata", "accession_cleanup_results",
-        "dia_quantification_method", "native_session_restored", "state_update_trigger")
+        "native_session_restored", "state_update_trigger")
     previous_values <- stats::setNames(lapply(fields, function(field) workflow_data[[field]]), fields)
     previous_session_owner <- session$userData$dia_capacity_manager
     restored_files <- character()
@@ -1720,7 +1734,6 @@ openDIAPeptideCheckpoint <- function(path, workflow_data, session, paths) {
         "aa_seq_tbl_final", "uniprot_dat_cln", "data_format", "data_type", "column_mapping",
         "fasta_metadata", "accession_cleanup_results")) workflow_data[[field]] <- metadata[[field]]
     workflowExecutionBoundary("peptide_checkpoint_after_metadata")
-    workflow_data$dia_quantification_method <- "iq"
     workflow_data$native_session_restored <- Sys.time()
     workflow_data$state_update_trigger <- Sys.time()
     adopted <- TRUE

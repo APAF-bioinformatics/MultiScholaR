@@ -97,7 +97,9 @@ resolveProtSummaryExpectedTemplate <- function(workflowType,
   }
   workflowType <- tolower(as.character(workflowType))
 
-  if (isTRUE(limpaRequested)) {
+  # KIT-046: the limpa report belongs to the DIA_LIMPA workflow type (`limpaRequested` is kept for callers that
+  # already resolved the type to that flag).
+  if (workflowType == "dia_limpa" || isTRUE(limpaRequested)) {
     return("DIANN_limpa_report.rmd")
   }
 
@@ -133,6 +135,7 @@ resolveProtSummaryTemplateSelection <- function(workflowType,
     tmt_pd = "TMT_report.rmd",
     lfq = "LFQ_report.rmd",
     dia = if (isTRUE(limpaRequested)) "DIANN_limpa_report.rmd" else "DIANN_report.rmd",
+    dia_limpa = "DIANN_limpa_report.rmd",
     expectedTemplate
   )
 
@@ -168,7 +171,6 @@ resolveProtSummaryReportTemplate <- function(workflowData,
       !is.null(workflowData$config_list$globalParameters)) {
     workflowTypeDetected <- workflowData$config_list$globalParameters$workflow_type
     reportTemplateRequested <- workflowData$config_list$globalParameters$report_template
-    limpaRequested <- isTRUE(workflowData$config_list$globalParameters$use_limpa)
     if (!is.null(reportTemplateRequested) && nzchar(reportTemplateRequested)) {
       reportTemplateRequested <- basename(reportTemplateRequested)
       catFn(sprintf(
@@ -208,12 +210,6 @@ resolveProtSummaryReportTemplate <- function(workflowData,
       summaryArgs$globalParameters$report_template,
       error = function(e) NULL
     )
-    useLimpaFromS4 <- tryCatch(
-      isTRUE(summaryArgs$globalParameters$use_limpa) ||
-        !is.null(summaryArgs$limpa_dpc_quant_results) ||
-        !is.null(summaryArgs$proteinMissingValueImputationLimpa),
-      error = function(e) FALSE
-    )
 
     if ((is.null(reportTemplateRequested) || !nzchar(reportTemplateRequested)) &&
         !is.null(reportTemplateFromS4) &&
@@ -226,9 +222,6 @@ resolveProtSummaryReportTemplate <- function(workflowData,
         reportTemplateRequested
       ))
     }
-    limpaRequested <- isTRUE(limpaRequested) ||
-      isTRUE(useLimpaFromS4)
-
     if (!is.null(workflowTypeFromS4) && nzchar(workflowTypeFromS4)) {
       workflowTypeDetected <- workflowTypeFromS4
       catFn(sprintf(
@@ -248,6 +241,8 @@ resolveProtSummaryReportTemplate <- function(workflowData,
       logPrefix
     ))
   }
+  # KIT-046: the limpa report follows the workflow type alone (never a flag or the presence of limpa arguments).
+  limpaRequested <- identical(toupper(as.character(workflowTypeDetected)), "DIA_LIMPA")
 
   templateSelection <- resolveProtSummaryTemplateSelection(
     workflowType = workflowTypeDetected,

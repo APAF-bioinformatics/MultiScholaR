@@ -178,7 +178,7 @@ WorkflowState <- R6::R6Class("WorkflowState",
     setWorkflowType = function(type) {
       allowed_types <- c(
         # Proteomics workflows
-        "LFQ", "TMT", "DIA"
+        "LFQ", "TMT", "DIA", "DIA_LIMPA" # KIT-046: DIA with imputation leveraging limpa
         # Metabolomics workflows
         , "metabolomics_standard"
         # Lipidomics workflows

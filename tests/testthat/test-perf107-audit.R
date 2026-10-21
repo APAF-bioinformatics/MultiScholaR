@@ -537,7 +537,7 @@ checkManagedProteinModule <- function(spec) {
 
 test_that("the KIT-015 protein QC modules take the managed worker under a managed application and the in-process declaration otherwise", {
     specs <- list(
-        list(server = mod_prot_qc_protein_rollup_server, apply = "apply_iq_rollup", inputs = list(rollup_method = "iq"),
+        list(server = mod_prot_qc_protein_rollup_server, apply = "apply_iq_rollup", inputs = list(),
             operation = "protein_iq_rollup", in_process = "runProteinIqRollupApplyObserver", outputs = "updateProteinIqRollupOutputs",
             text = "iq_rollup_results", plot = "iqRollupPlot", expected = list()),
         list(server = mod_prot_qc_protein_cleanup_server, apply = "apply_accession_cleanup",

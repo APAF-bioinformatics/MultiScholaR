@@ -24,7 +24,18 @@
 #' @param id,workflow_data,experiment_paths,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
-getProtQcPeptideModuleSpecs <- function() {
+getProtQcPeptideModuleSpecs <- function(workflowType = "DIA") {
+  # KIT-046: the DIA_LIMPA route's peptide stage (the script's checkpoints): the Q-value filter and the precursor
+  # rollup are the shared declarations; the log2 matrix and the peptide-level accession cleanup are KIT-047's modules
+  # (their ids and tabs are fixed here as placeholders).
+  if (identical(workflowType, "DIA_LIMPA")) {
+    return(list(
+      list(id = "qvalue_filter", title = "Q-Value Filter", uiFn = "mod_prot_qc_peptide_qvalue_ui", serverFn = "mod_prot_qc_peptide_qvalue_server"),
+      list(id = "rollup", title = "Precursor Rollup", uiFn = "mod_prot_qc_peptide_rollup_ui", serverFn = "mod_prot_qc_peptide_rollup_server"),
+      list(id = "log2_matrix", title = "Log2 Matrix", uiFn = "mod_prot_qc_peptide_log2_ui", serverFn = "mod_prot_qc_peptide_log2_server", placeholder = "KIT-047"),
+      list(id = "accession_cleanup", title = "Peptide Accession Cleanup", uiFn = "mod_prot_qc_peptide_accession_ui", serverFn = "mod_prot_qc_peptide_accession_server", placeholder = "KIT-047")
+    ))
+  }
   list(
     list(
       id = "qvalue_filter",
@@ -74,6 +85,8 @@ getProtQcPeptideModuleSpecs <- function() {
 buildProtQcPeptideTab <- function(moduleSpec, ns) {
   if (exists(moduleSpec$uiFn)) {
     get(moduleSpec$uiFn)(ns(moduleSpec$id))
+  } else if (!is.null(moduleSpec$placeholder)) {
+    shiny::tabPanel(moduleSpec$title, shiny::p(sprintf("%s: declared in %s.", moduleSpec$title, moduleSpec$placeholder)))
   } else {
     shiny::tabPanel(moduleSpec$title, "Module not loaded")
   }
@@ -91,10 +104,10 @@ runProtQcPeptideSubmodule <- function(moduleSpec, workflow_data, omic_type, expe
 #' @rdname mod_prot_qc_peptide
 #' @export
 #' @importFrom shiny NS tagList tabsetPanel tabPanel
-mod_prot_qc_peptide_ui <- function(id) {
+mod_prot_qc_peptide_ui <- function(id, workflowType = "DIA") {
   ns <- shiny::NS(id)
 
-  tabList <- lapply(getProtQcPeptideModuleSpecs(), buildProtQcPeptideTab, ns = ns)
+  tabList <- lapply(getProtQcPeptideModuleSpecs(workflowType), buildProtQcPeptideTab, ns = ns)
   do.call(shiny::tabsetPanel, c(list(id = ns("peptide_filter_tabs")), tabList))
 }
 
@@ -112,10 +125,10 @@ mod_prot_qc_peptide_server <- function(id, workflow_data, experiment_paths, omic
     
     # Conditional execution for DIA workflows which require peptide processing
     # Note: LFQ is now a protein-level workflow (like TMT) and bypasses peptide QC
-    if (workflow_type == "DIA") {
-      logger::log_info("Running DIA peptide processing sub-modules.")
+    if (workflow_type %in% c("DIA", "DIA_LIMPA")) { # KIT-046: both DIA-NN routes are peptide-level
+      logger::log_info(paste("Running", workflow_type, "peptide processing sub-modules."))
 
-      for (moduleSpec in getProtQcPeptideModuleSpecs()) {
+      for (moduleSpec in getProtQcPeptideModuleSpecs(workflow_type)) {
         runProtQcPeptideSubmodule(
           moduleSpec = moduleSpec,
           workflow_data = workflow_data,

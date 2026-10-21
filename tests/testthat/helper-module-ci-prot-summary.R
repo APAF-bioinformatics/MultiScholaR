@@ -5,7 +5,7 @@ module_ci_prot_summary_branch_config <- function(branch = "DIA",
   branch <- match.arg(branch, c("DIA", "DIA_limpa", "TMT", "MaxQuant_LFQ", "FragPipe_LFQ"))
   workflow_type <- switch(branch,
     DIA = "DIA",
-    DIA_limpa = "DIA",
+    DIA_limpa = "DIA_LIMPA", # KIT-046: the limpa report belongs to the DIA_LIMPA workflow type
     TMT = "TMT_PD",
     MaxQuant_LFQ = "LFQ",
     FragPipe_LFQ = "LFQ"

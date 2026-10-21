@@ -141,7 +141,7 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
         shiny::tabsetPanel(
           id = ns("qc_tabs_lfq"),
           # Using mod_prot_qc_peptide_ui and mod_prot_qc_protein_ui
-          shiny::tabPanel("Peptide QC", mod_prot_qc_peptide_ui(ns("peptide_qc"))),
+          shiny::tabPanel("Peptide QC", mod_prot_qc_peptide_ui(ns("peptide_qc"), workflowType = workflow_type)),
           shiny::tabPanel("Protein QC", mod_prot_qc_protein_ui(ns("protein_qc"), workflow_type = workflow_type))
         )
       }
@@ -162,7 +162,7 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
       logger::log_info(paste("Main QC Applet: Routing for workflow type:", workflow_type))
       message(sprintf("   DEBUG66: Isolated workflow_type = %s", workflow_type))
       
-      if (workflow_type == "DIA") {
+      if (workflow_type %in% c("DIA", "DIA_LIMPA")) { # KIT-046: both DIA-NN routes are peptide-level
         message(sprintf("   DEBUG66: %s workflow - calling peptide and protein servers", workflow_type))
         # The peptide applet orchestrator will handle all peptide-level steps
         # Using mod_prot_qc_peptide_server

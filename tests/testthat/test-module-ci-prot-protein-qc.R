@@ -59,56 +59,7 @@ test_that("MCI-007.2 DIA rollup matrix preserves IQ/limpa metadata and peptide-c
   expect_match(iq_result$resultText, "Algorithm: MaxLFQ", fixed = TRUE)
   module_ci_prot_assert_protein_alignment(iq_result$proteinObj)
 
-  limpa_workflow <- module_ci_prot_protein_workflow(peptide_s4, initial_name = "imputed")
-  limpa_result <- runProteinLimpaRollupApplyStep(
-    limpa_workflow,
-    experimentPaths = dirs,
-    requireNamespaceFn = function(...) FALSE,
-    isTestModeFn = function() TRUE,
-    captureCheckpointFn = function(...) invisible(NULL),
-    logInfoFn = function(...) invisible(NULL)
-  )
-
-  expect_s4_class(limpa_result$proteinObj, "ProteinQuantitativeData")
-  expect_true(limpa_result$proteinObj@args$globalParameters$use_limpa)
-  expect_identical(
-    limpa_result$proteinObj@args$globalParameters$report_template,
-    "DIANN_limpa_report.rmd"
-  )
-  expect_identical(
-    limpa_workflow$state_manager$saved()[[1L]]$config_object$rollup_method,
-    "limpa_dpc_quant"
-  )
-  expect_match(limpa_result$resultText, "DIANN_limpa_report.rmd", fixed = TRUE)
-
-  production_workflow <- module_ci_prot_protein_workflow(peptide_s4, initial_name = "imputed")
-  expect_error(
-    runProteinLimpaRollupApplyStep(
-      production_workflow,
-      experimentPaths = dirs,
-      requireNamespaceFn = function(...) FALSE,
-      isTestModeFn = function() FALSE,
-      captureCheckpointFn = function(...) invisible(NULL),
-      logInfoFn = function(...) invisible(NULL)
-    ),
-    "limpa package is required",
-    fixed = TRUE
-  )
-  expect_identical(production_workflow$state_manager$getHistory(), character(0))
-
-  count_args <- limpa_result$proteinObj@args$limpa_dpc_quant_results$peptide_counts_per_protein
-  limpa_result$proteinObj@args$limpa_dpc_quant_results$peptide_counts_per_protein <- count_args |>
-    dplyr::mutate(
-      peptide_count = ifelse(Protein.Ids == "P_SINGLE", 1L, peptide_count),
-      peptidoform_count = ifelse(Protein.Ids == "P_SINGLE", 1L, peptidoform_count)
-    )
-  guarded <- filterMinNumPeptidesPerProtein(
-    limpa_result$proteinObj,
-    num_peptides_per_protein_thresh = 2,
-    num_peptidoforms_per_protein_thresh = 2,
-    verbose = FALSE
-  )
-  expect_false("P_SINGLE" %in% guarded@protein_quant_table$Protein.Ids)
+  # KIT-046: the in-memory limpa rollup is gone from the DIA route; the limpa route is the DIA_LIMPA workflow type (KIT-047 declares its quantification).
 })
 
 test_that("MCI-007.3 accession cleanup covers delimiters, contaminants, isoforms, duplicates, and missing genes", {

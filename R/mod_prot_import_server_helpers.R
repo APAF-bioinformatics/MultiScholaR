@@ -286,7 +286,7 @@ registerProtImportObservers <- function(
     runProcessingSafelyFn(
       runProcessing = function() {
         initializeDIANativeImport(workflowData, experimentPaths, session, format,
-          input$dia_quantification_method %||% "iq",
+          input$dia_route %||% "DIA",
           data_type = if (identical(format, "spectronaut")) {
             if (identical(input$spectronaut_quantity %||% "pg", "pg")) "protein" else "peptide"
           })

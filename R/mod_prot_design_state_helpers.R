@@ -8,7 +8,7 @@ buildProtDesignStateCheckpoint <- function(
     dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
   logger::log_info("Created tech_rep_group column for proper technical replicate identification")
 
-  if (workflowType == "DIA" && usesDIAReferenceStates(workflowData$state_manager)) {
+  if (workflowType %in% c("DIA", "DIA_LIMPA") && usesDIAReferenceStates(workflowData$state_manager)) { # KIT-046: both DIA-NN routes are peptide-level
     checkpoint <- newDIAPeptideCheckpoint(workflowData$state_manager, workflowData$data_cln,
       workflowData$design_matrix, workflowData$config_list)
     # KIT-025; KIT-038: the design step declares the three design roles it binds, with their values.
@@ -21,7 +21,7 @@ buildProtDesignStateCheckpoint <- function(
     return("raw_data_s4")
   }
 
-  if (workflowType == "DIA") {
+  if (workflowType %in% c("DIA", "DIA_LIMPA")) {
     s4Object <- PeptideQuantitativeDataDiann(
       peptide_data = getDIAOwnedPayload(workflowData, "data_cln"),
       design_matrix = workflowData$design_matrix,

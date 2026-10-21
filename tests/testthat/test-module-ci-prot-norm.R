@@ -377,14 +377,15 @@ test_that("MCI-008.4 QC plot generation covers pre, post, RUV, composite, and de
 })
 
 test_that("MCI-008.5 filtered-session export preserves R6, params, filenames, counts, and DA-ready state", {
+  # KIT-046: the limpa summary follows the workflow type (DIA_LIMPA), not a flag.
   object <- module_ci_prot_norm_object(args = module_ci_prot_norm_args(
-    workflow_type = "DIA",
+    workflow_type = "DIA_LIMPA",
     report_template = "DIANN_limpa_report.rmd",
     use_limpa = TRUE
   ))
   workflow <- module_ci_prot_norm_workflow(
     current_object = object,
-    workflow_type = "DIA",
+    workflow_type = "DIA_LIMPA",
     report_template = "DIANN_limpa_report.rmd",
     use_limpa = TRUE
   )
@@ -401,7 +402,7 @@ test_that("MCI-008.5 filtered-session export preserves R6, params, filenames, co
   expect_identical(session_data$r6_current_state_name, "correlation_filtered")
   expect_setequal(names(session_data$r6_complete_states), c("protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"))
   expect_identical(session_data$r6_state_history, c("protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"))
-  expect_identical(session_data$workflow_type, "DIA")
+  expect_identical(session_data$workflow_type, "DIA_LIMPA")
   expect_identical(session_data$report_template, "DIANN_limpa_report.rmd")
   expect_true(session_data$limpa_applied)
   expect_identical(session_data$normalization_method, "quantile")
@@ -506,7 +507,7 @@ test_that("MCI-008.6 DA reload smoke consumes every exported normalization sessi
     manual = module_ci_prot_norm_export_variant(ruv_mode = "manual", workflow_type = "TMT", norm_method = "scale"),
     automatic_limpa = module_ci_prot_norm_export_variant(
       ruv_mode = "automatic",
-      workflow_type = "DIA",
+      workflow_type = "DIA_LIMPA",
       report_template = "DIANN_limpa_report.rmd",
       use_limpa = TRUE,
       norm_method = "quantile"

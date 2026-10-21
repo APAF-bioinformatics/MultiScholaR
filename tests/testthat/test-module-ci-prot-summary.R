@@ -232,9 +232,9 @@ test_that("MCI-011.5 session-state export preserves workflow metadata and parame
   expect_true(file.exists(export_path))
   loaded <- readRDS(export_path)
   expect_equal(loaded$omic_type, "proteomics")
-  expect_equal(loaded$workflow_type, "DIA")
+  expect_equal(loaded$workflow_type, "DIA_LIMPA") # KIT-046: the limpa branch is the DIA_LIMPA workflow type
   expect_equal(loaded$report_template, "DIANN_limpa_report.rmd")
-  expect_equal(loaded$parameter_payload$globalParameters$workflow_type, "DIA")
+  expect_equal(loaded$parameter_payload$globalParameters$workflow_type, "DIA_LIMPA")
   expect_equal(loaded$parameter_payload$da_ui_params$q_cutoff, 0.01)
   expect_equal(loaded$parameter_payload$enrichment_ui_params$database_source, "gprofiler2")
   expect_equal(loaded$parameter_payload$ruv_optimization_result$best_k, 2L)

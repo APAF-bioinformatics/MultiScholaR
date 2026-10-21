@@ -1218,9 +1218,9 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
         if (is.null(entry$field)) value else value[[entry$field]]
     })
     adapter$setWorkflowType <- function(type) {
-        # KIT-020: the on-disk owner serves the DIA-NN route and the protein-level LFQ and TMT routes.
-        if (!is.character(type) || length(type) != 1L || !type %in% c("DIA", "LFQ", "TMT")) {
-            cli::cli_abort("the on-disk session serves the DIA, LFQ and TMT workflow types", class = "saved_entity_scope")
+        # KIT-020: the on-disk owner serves the DIA-NN routes (KIT-046: DIA and DIA_LIMPA) and the protein-level LFQ and TMT routes.
+        if (!is.character(type) || length(type) != 1L || !type %in% c("DIA", "DIA_LIMPA", "LFQ", "TMT")) {
+            cli::cli_abort("the on-disk session serves the DIA, DIA_LIMPA, LFQ and TMT workflow types", class = "saved_entity_scope")
         }
         adapter$workflow_type <- type
     }
@@ -1313,8 +1313,8 @@ describeDIAProteinState <- function(object) {
     list(proteins = length(unique(table[[methods::slot(object, "protein_id_column")]])),
         samples = nrow(methods::slot(object, "design_matrix")),
         workflow_type = text(global$workflow_type), report_template = text(global$report_template),
-        use_limpa = isTRUE(global$use_limpa) || !is.null(args$proteinMissingValueImputationLimpa) ||
-            !is.null(args$limpa_dpc_quant_results))
+        # KIT-046: the limpa route is a workflow type; neither a flag nor the presence of limpa arguments names it.
+        use_limpa = identical(text(global$workflow_type), "DIA_LIMPA"))
 }
 
 #' Run one action/export with a scoped decode map, released even on failure.

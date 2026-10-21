@@ -70,11 +70,10 @@ collectProtNormExportSessionData <- function(
     report_template <- current_global_params$report_template
   }
   limpa_dpc_quant_results <- current_args$limpa_dpc_quant_results
-  limpa_parameters <- current_args$proteinMissingValueImputationLimpa
-  limpa_applied <- isTRUE(config_global_params$use_limpa) ||
-    isTRUE(current_global_params$use_limpa) ||
-    !is.null(limpa_dpc_quant_results) ||
-    !is.null(limpa_parameters)
+  # KIT-046: the limpa summary follows the workflow type; a limpa configuration section or argument on a DIA
+  # object does not flip the route. The DPC parameters are recorded on the head by KIT-047, not read from args here.
+  limpa_parameters <- NULL
+  limpa_applied <- identical(workflow_type, "DIA_LIMPA")
 
   session_data <- list(
     r6_current_state_name = current_state_name,

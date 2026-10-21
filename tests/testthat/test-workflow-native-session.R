@@ -639,14 +639,29 @@ test_that("native import is the DIA-NN/IQ default and does not migrate Limpa; th
     expect_identical(sp$state_manager$.context$store$identity$workflow_id, "LFQ")
     expect_true(is.na(workflowTypeForImportFormat("diann", "protein")))
     expect_identical(workflowTypeForImportFormat("diann", "peptide"), "DIA")
-    initializeDIANativeImport(workflow, paths, session, "diann", "limpa")
-    expect_identical(workflow$state_manager, original)
+    # KIT-046: the limpa route is the DIA_LIMPA workflow type with its own owner (store DIA-LIMPA-native/DIA_LIMPA);
+    # without the limpa package the import refuses by name; an owner never changes route.
+    expect_identical(workflowTypeForImportFormat("diann", "peptide", "DIA_LIMPA"), "DIA_LIMPA")
+    expect_identical(workflowRouteForType("DIA_LIMPA"), "limpa")
+    limpa_wf <- new.env(parent = emptyenv()); limpa_wf$state_manager <- WorkflowState$new(audit_enabled = FALSE)
+    if (requireNamespace("limpa", quietly = TRUE)) {
+        initializeDIANativeImport(limpa_wf, paths, session, "diann", "DIA_LIMPA")
+        withr::defer(closeDIAStateAdapter(limpa_wf$state_manager))
+        expect_true(isDIANativeSession(limpa_wf$state_manager))
+        expect_identical(limpa_wf$state_manager$.context$store$identity$project_id, "DIA-LIMPA-native")
+        expect_identical(limpa_wf$state_manager$.context$store$identity$workflow_id, "DIA_LIMPA")
+        expect_identical(limpa_wf$state_manager$workflow_type, "DIA_LIMPA")
+        expect_error(initializeDIANativeImport(limpa_wf, paths, session, "diann", "DIA"), class = "saved_entity_scope")
+    } else {
+        expect_error(initializeDIANativeImport(limpa_wf, paths, session, "diann", "DIA_LIMPA"), class = "workflow_engine_unavailable")
+    }
     initializeDIANativeImport(workflow, paths, session, "diann", "iq")
     withr::defer(closeDIAStateAdapter(workflow$state_manager))
     expect_true(isDIANativeSession(workflow$state_manager))
     expect_identical(workflow$state_manager$.context$experiment_paths, paths)
-    expect_error(initializeDIANativeImport(workflow, paths, session, "diann", "limpa"),
+    expect_error(initializeDIANativeImport(workflow, paths, session, "diann", "DIA_LIMPA"),
         class = "saved_entity_scope")
+    expect_identical(workflow$state_manager$workflow_type, "DIA")
     expect_identical(workflow$state_manager$.context$store$max_cache_bytes, 0)
 })
 

@@ -221,7 +221,10 @@ applyProtImportResultToWorkflow <- function(
 
   workflowData$data_cln <- workflowData$data_tbl
 
-  workflowType <- workflowTypeForImportFormat(format)
+  # KIT-046: a DIA-NN import keeps the route type the entry point set on the manager (`DIA` or `DIA_LIMPA`;
+  # on an owner it is the store's identity); every other format's type follows the format.
+  manager_type <- tryCatch(workflowData$state_manager$workflow_type, error = function(e) NULL)
+  workflowType <- if (identical(format, "diann") && identical(manager_type, "DIA_LIMPA")) "DIA_LIMPA" else workflowTypeForImportFormat(format)
   if (is.na(workflowType)) workflowType <- "LFQ"
   workflowData$state_manager$setWorkflowType(workflowType)
   workflowData$fasta_file_path <- fastaPath
