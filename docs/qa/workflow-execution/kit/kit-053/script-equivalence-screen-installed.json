@@ -1,0 +1,54 @@
+{
+  "schema": "kit.script_equivalence.v1",
+  "ticket": "KIT-053",
+  "corpus": "screen",
+  "label": "installed",
+  "date": "2026-10-21",
+  "head_commit": "a02b6d5e304d2e7e162c7a4cf456f8af0a4a584e",
+  "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-152257973ff73/.workflow-entities",
+  "store_build": "a02b6d5e304d2e7e162c7a4cf456f8af0a4a584e",
+  "script": {
+    "repository": "APAF-bioinformatics/e_35036_MorpheusTex_GarryNunn_20260329_b",
+    "commit": "4aa97fc3b85e897ee457052682d8bba2a7afbbc4",
+    "file": "scripts/proteomics_isoseq/DIA_workflow_limpa_isoseq_tissue.Rmd",
+    "chunks": "11-22 with package functions; findBestNegCtrlPercentageCustom vendored"
+  },
+  "engine": "limpa",
+  "route_dpc_engine": "limpa",
+  "replicate_structure": {
+    "route": "group",
+    "script": "group",
+    "coincide": true
+  },
+  "seconds_script_chain": 83.6800348758698,
+  "script_chain": {
+    "dpc": [0.263595854915329, 0.0122478700143891],
+    "proteins": 2500,
+    "samples": 8,
+    "best_percentage": 4,
+    "best_k": 1,
+    "controls": 100,
+    "da_model": "dpcDE",
+    "formula_used": "~ 0 + group + W1"
+  },
+  "compare": {
+    "owner_rows": 2500,
+    "memory_rows": 2500,
+    "id_column": "Protein.Group",
+    "key_columns": ["Protein.Group", "comparison", "log2FC", "raw_pvalue", "fdr_qvalue"],
+    "long_key_sha_owner": "97d07bc0ddafa561d78c6fed6d2234209f497a55681242f64074c1387003e9e1",
+    "long_key_sha_memory": "97d07bc0ddafa561d78c6fed6d2234209f497a55681242f64074c1387003e9e1",
+    "wide_sha_owner": "df955744f6dab49c0c3569f5154ee883c88291a7c3187015d5bc0b8401ffb376",
+    "wide_sha_memory": "df955744f6dab49c0c3569f5154ee883c88291a7c3187015d5bc0b8401ffb376",
+    "route_model": {
+      "model": "dpcDE",
+      "formula_used": "~ 0 + group + W1",
+      "k": 1,
+      "block_reason": "no_duplicates",
+      "route": "limpa"
+    },
+    "long_identical": true,
+    "wide_identical": true
+  },
+  "seconds": 85.7352228164673
+}
