@@ -426,12 +426,19 @@ b$tickets[["054m"]] <- list(kind = "single_journey", build = "kit_036", corpus =
 # route's in-process oracles recorded on the same build and corpus by kit-053/oracle-record.R; completion and the peaks
 # recorded, no ratio, no control). `KIT_053_CORPUS=screen` binds the screen corpus for the lifecycle run (not counted,
 # ceiling 1,800 s); the counted member runs on the 300-sample DIA-NN corpus (`full`, ceiling 14,400 s). The route's
-# normalisation tab settings are bound with the ticket (no between-sample normalisation at the tab; RUV covariates).
+# normalisation tab settings are bound with the ticket: RUV covariates on both corpora; no between-sample normalisation
+# on the screen corpus (the route's shipped default, the script's choice), cyclic loess on the full corpus. On the full
+# synthetic corpus every sample of the `contrast` group carries a global offset (about 0.19 log2), so with `none` the
+# group ANOVA is significant for every protein and the script's optimiser finds no control set at any percentage
+# (kit-053/ruv-sweep-full-none.json, a valid unfavourable result kept); the route's optional between-sample
+# normalisation step removes the offset and the sweep then finds its control sets (the DIA route's journey on the
+# same corpus also normalises before its sweep). Kernels, engine and the counted claim are unchanged by the binding.
 if (!is.null(b$builds$kit_053)) {
     corpus_053 <- Sys.getenv("KIT_053_CORPUS", "full"); stopifnot(corpus_053 %in% c("full", "screen"))
     b$tickets[["053"]] <- list(kind = "single_journey", build = "kit_053", corpus = corpus_053, route = "DIA_LIMPA", whole_journey = TRUE,
         oracles = paste0("limpa_", corpus_053), ceiling_seconds = if (identical(corpus_053, "full")) 14400L else 1800L,
-        normalisation = list(norm_method = "none", ruv_mode = "covariates", correlation_threshold = 0.5))
+        normalisation = list(norm_method = if (identical(corpus_053, "full")) "cyclicloess" else "none", ruv_mode = "covariates",
+            correlation_threshold = 0.5))
 }
 # KIT-053 oracles: the route's per-step fingerprints on the screen and full DIA-NN corpora (the same corpora as the DIA
 # route), recorded by kit-053/oracle-record.R into oracles-limpa_<corpus>.rds and bound under limpa_<corpus>_<step>.

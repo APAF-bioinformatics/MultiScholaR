@@ -547,7 +547,9 @@ computeDIAReferencePeptideLog2Matrix <- function(manager, reference, parameters 
         missing_before = missing_before, missing_after = missing_after,
         outcomes = list(peptides = peptides, samples = samples, nonpositive_set_to_na = nonpositive,
             missing_cells = missing_after))
-    list(checkpoint = checkpoint, state_name = "log2_matrix",
+    # The saved peptide reference beside the checkpoint: the controller accepts a worker's result only with it (the
+    # DIA peptide steps' convention; KIT-053's lifecycle run found the worker path refusing the result without it).
+    list(checkpoint = checkpoint, reference = checkpoint$components$peptide_data, state_name = "log2_matrix",
         description = "Peptide matrix calculated and log2 transformed (values <= 0 set to NA)",
         config = config, section = "log2TransformPeptideMatrix", counts = NULL,
         execution = list(variant = variant, worker_cap = worker_cap, rows = peptides, samples = samples))
@@ -611,7 +613,7 @@ computeDIAReferencePeptideAccessionCleanup <- function(manager, reference, param
             isTRUE(fasta$fasta_metadata$has_gene_names) else FALSE,
         outcomes = list(cleanup_applied = applied, protein_groups_before = groups_before, protein_groups_after = groups_after,
             peptide_rows_aggregated = rows_before - rows_after))
-    list(checkpoint = checkpoint, state_name = "peptide_accession_cleaned",
+    list(checkpoint = checkpoint, reference = checkpoint$components$peptide_data, state_name = "peptide_accession_cleaned",
         description = if (applied) "Applied peptide-level protein accession cleanup" else
             "Skipped peptide-level accession cleanup (no FASTA data)",
         config = config, section = "chooseBestProteinAccession", counts = NULL,

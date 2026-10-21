@@ -152,6 +152,12 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
     # Everything the GUI writes lands under the member's project parent; that is the project root.
     project <- function() project_parent
     settings <- journey$settings
+    if (identical(kitRouteOf(journey), "DIA_LIMPA")) {
+        # KIT-053: the route's between-sample normalisation step takes the bound tab setting (the ticket's case binding:
+        # none on the screen corpus, cyclic loess on the full corpus) through the module's own select before its apply.
+        settings$protein_normalisation_limpa <- utils::modifyList(settings$protein_normalisation_limpa %||% list(),
+            list("normalisation-norm_method" = journey$normalisation$norm_method %||% "none"))
+    }
     peptide_prefix <- "proteomics_workflow-quality_control-peptide_qc-"
     protein_prefix <- "proteomics_workflow-quality_control-protein_qc-"
     norm_prefix <- "proteomics_workflow-normalization-"

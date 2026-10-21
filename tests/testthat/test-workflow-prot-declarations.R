@@ -353,6 +353,9 @@ test_that("the log2 matrix and peptide accession declarations reproduce the in-m
     withDIAStateScope(manager, function() {
         value <- computeDIAReferencePeptideLog2Matrix(manager, getDIAStateReference(manager), list())
         expect_identical(value$state_name, "log2_matrix")
+        # The worker path (KIT-053's lifecycle run): the controller accepts the result only with the saved peptide reference.
+        expect_true(isSavedWorkflowReference(value$reference))
+        expect_identical(value$reference, value$checkpoint$components$peptide_data)
         expect_identical(value$section, "log2TransformPeptideMatrix")
         expect_identical(value$config$peptides, nrow(expected@peptide_matrix))
         expect_identical(value$config$outcomes$nonpositive_set_to_na, 0L)
@@ -375,6 +378,8 @@ test_that("the log2 matrix and peptide accession declarations reproduce the in-m
         value <- computeDIAReferencePeptideAccessionCleanup(manager, getDIAStateReference(manager),
             list(delimiter = ";", aggregation_method = "mean"))
         expect_identical(value$state_name, "peptide_accession_cleaned")
+        expect_true(isSavedWorkflowReference(value$reference))
+        expect_identical(value$reference, value$checkpoint$components$peptide_data)
         expect_false(value$config$cleanup_applied)
         expect_identical(value$config$seqinr_accession_column, "uniprot_acc")
         finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description, value$config, value$section, NULL)
