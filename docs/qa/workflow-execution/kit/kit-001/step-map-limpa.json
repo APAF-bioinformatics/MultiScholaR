@@ -439,7 +439,7 @@
     },
     {
       "id": "ruv_covariates",
-      "label": "RUV-III Factors as Covariates (DIA_LIMPA)",
+      "label": "RUV-III Factors as Covariates, or RUV-III Correction (DIA_LIMPA)",
       "route": "DIA_LIMPA",
       "unit": "whole_matrix",
       "in_journey": false,
@@ -456,7 +456,8 @@
       "writes": [
         "design_matrix (W1..Wk appended)",
         "args$ruvCovariates (k, percentage, control_count, replicate_structure, block_reason)",
-        "products: optimisation table, cancor plot, adjusted matrix"
+        "products: optimisation table, cancor plot, adjusted matrix",
+        "KIT-056, ruv_mode = correction: protein_quant_table (the RUV-III adjusted matrix t(newY)); args$limpa_dpc_quant_results$quantified_elist$E (adjusted to the same matrix; standard_errors, n_observations and y_peptide_for_dpc untouched); no W columns on the design; args$ruvCovariates$ruv_mode"
       ],
       "global_statistics": [
         {
@@ -470,12 +471,15 @@
       ],
       "merge": null,
       "holders": [
-        "R/utils_workflow_dia_products.R runDIAReferenceRuvCovariates -> commitDIAReferenceState (state ruv_covariates)"
+        "R/utils_workflow_dia_products.R runDIAReferenceRuvCovariates -> commitDIAReferenceState (state ruv_covariates)",
+        "KIT-056: runDIAReferenceRuvCovariates -> commitDIAReferenceState (state ruv_corrected when ruv_mode = correction)"
       ],
       "mode": "in_process",
       "flag": null,
       "notes": [
-        "KIT-041: unit recorded under the afk authorisation (decision record), which also records the replicate-structure rule (KIT-035's: the technical block when declared, else the grouping variable; the script used group)."
+        "KIT-041: unit recorded under the afk authorisation (decision record), which also records the replicate-structure rule (KIT-035's: the technical block when declared, else the grouping variable; the script used group).",
+        "KIT-056 (2026-10-22): ruv_mode is a declared parameter (covariates, the default and the script's method; correction, the DIA route's form) on one RUV-III fit: the same replicate rule, sweep, k and controls; the mode changes only where the unwanted variation is accounted for. Unit unchanged (whole matrix): the user's confirmation row of 2026-10-22 covers the correction mode's rewrite of the owned EList's E.",
+        "KIT-056: declaring ruv_mode enters the saved-product identity; dia-ruv-covariates products saved before it miss once."
       ]
     },
     {
