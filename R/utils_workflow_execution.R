@@ -1576,7 +1576,7 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
         if (!job$monitor_borrowed) {
             workflowLaunchService(app$config, job$monitor_unit, "monitor", monitor_path,
                 digest::digest(file = monitor_path, algo = "sha256"), binds = app$config$controller_unit,
-                deadline = app$config$policy$deadline + 60L)
+                deadline = workflowActionWorkerDeadline(job$request$operation, app$config$policy) + 60L)
         }
         TRUE
     }, workflow_execution_unsupported = function(error) {
@@ -1645,7 +1645,8 @@ pollWorkflowAction <- function(owner) {
         launched <- tryCatch({
             workflowLaunchService(app$config, job$worker_unit, "worker", job$worker_request,
                 digest::digest(file = job$worker_request, algo = "sha256"), cap = cap,
-                binds = c(app$config$controller_unit, job$monitor_unit), deadline = app$config$policy$deadline)
+                binds = c(app$config$controller_unit, job$monitor_unit),
+                deadline = workflowActionWorkerDeadline(job$request$operation, app$config$policy))
             TRUE
         }, workflow_execution_unsupported = function(error) {
             job$error <- substr(conditionMessage(error), 1L, 1024L)
@@ -2798,6 +2799,16 @@ workflowFixtureOperation <- "wfx_fixture"
 #' @return The registry entry: input role and class, handler names, limits, labels and variants.
 #' @noRd
 workflowActionSpec <- function(operation) workflowOperationEntry(operation)
+
+#' The hard runtime of one managed action's worker: the registry entry's own `worker_deadline` when it names one
+#' (KIT-053: the DPC quantification), else the application policy's deadline.
+#' @param operation Registered operation identifier.
+#' @param policy The application's execution policy (`workflowExecutionPolicy`).
+#' @return Seconds, an integer.
+#' @noRd
+workflowActionWorkerDeadline <- function(operation, policy) {
+    as.integer(workflowActionSpec(operation)$worker_deadline %||% policy$deadline)
+}
 
 #' Validate the registered scientific role without collecting assay data.
 #' @param operation,manager,input_references Existing operation, owner and descriptors.

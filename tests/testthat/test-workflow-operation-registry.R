@@ -255,3 +255,23 @@ test_that("every declared parameter of every registered operation has a defaults
         }
     }
 })
+
+test_that("a worker step may name its own deadline within the journey ceiling; the DPC quantification does (KIT-053)", {
+  policy <- list(deadline = 1800L)
+  expect_identical(workflowActionSpec("protein_dpc_quant")$worker_deadline, 10800L)
+  expect_identical(workflowActionWorkerDeadline("protein_dpc_quant", policy), 10800L)
+  # Every other registered worker step keeps the policy's deadline.
+  others <- setdiff(Filter(function(name) !identical(workflowActionSpec(name)$compute, "in_process"), workflowOperationNames()),
+    "protein_dpc_quant")
+  for (name in others) {
+    expect_null(workflowActionSpec(name)$worker_deadline, info = name)
+    expect_identical(workflowActionWorkerDeadline(name, policy), 1800L, info = name)
+  }
+  entry <- workflowActionSpec("protein_dpc_quant")
+  for (bad in list(30L, 20000L, NA_integer_, "3600", c(600L, 900L))) {
+    entry$worker_deadline <- bad
+    expect_error(validateWorkflowOperationEntry(entry), class = "workflow_operation_invalid")
+  }
+  entry$worker_deadline <- 14400L
+  expect_identical(validateWorkflowOperationEntry(entry)$worker_deadline, 14400L)
+})

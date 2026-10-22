@@ -228,7 +228,11 @@ validateWorkflowOperationEntry <- function(entry) {
         is.character(entry$variants) &&
         (is.null(entry$default_variant) || (scalar(entry$default_variant) && entry$default_variant %in% entry$variants)) &&
         flag(entry$diagnostic_only) && flag(entry$inclusion_absence) &&
-        (is.null(entry$declaration) || is.list(entry$declaration))
+        (is.null(entry$declaration) || is.list(entry$declaration)) &&
+        # KIT-053: a worker step whose kernel needs longer than the policy's worker deadline names its own,
+        # within the journey ceiling (60 s to 4 h); every other step keeps the policy's.
+        (is.null(entry$worker_deadline) || (is.numeric(entry$worker_deadline) && length(entry$worker_deadline) == 1L &&
+            is.finite(entry$worker_deadline) && entry$worker_deadline >= 60 && entry$worker_deadline <= 14400))
     if (!isTRUE(valid)) cli::cli_abort("workflow operation registry entry is invalid", class = "workflow_operation_invalid")
     if (!is.null(entry$declaration)) {
         validateWorkflowOperation(entry$declaration)
@@ -530,6 +534,10 @@ registerBuiltinWorkflowOperations <- function() {
         resolve = NULL, parameter_limit = 65536, parameters = c("engine", "dpc_slope", "chunk"),
         completion = "protein", publication = "protein", step_label = "9_protein_dpc_quant", omic_type = "proteomics",
         variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        # KIT-053: limpa's DPC fit and quantification on a 300-sample corpus take 5,000-6,300 s single-threaded
+        # (in process on the kit host), beyond the policy's 1,800 s worker deadline; the counted member's worker
+        # was stopped there. Three hours: about twice the measured time, inside the journey ceiling.
+        worker_deadline = 10800L,
         inclusion_absence = FALSE, declaration = diaProteinDpcQuantOperation()))
     # KIT-041: the DIA_LIMPA protein stage (chunks 17b and 18), each placed whole on the protein role.
     registerWorkflowOperation(list(name = "protein_between_sample_normalisation", input = "checkpoint", input_class = "ProteinQuantitativeData",
