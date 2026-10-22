@@ -36,7 +36,9 @@ diaGuiProteinKey <- function(value) {
 invalidateDIAVisibleResults <- function(da_data, workflow) {
     manager <- workflow$state_manager
     if (!usesDIAReferenceStates(manager)) return(invisible(NULL))
-    valid_state <- manager$current_state %in% c("normalized", "ruv_corrected", "correlation_filtered")
+    # KIT-053: the DIA_LIMPA route's final state is ruv_covariates; without it here the state-update observer that
+    # fires after the DA cleared the accepted results and the status text the browser acknowledges never held.
+    valid_state <- manager$current_state %in% c("ruv_covariates", "normalized", "ruv_corrected", "correlation_filtered")
     result <- da_data$da_results_list
     changed <- !valid_state
     if (!changed && isDIAResultManifest(result)) {

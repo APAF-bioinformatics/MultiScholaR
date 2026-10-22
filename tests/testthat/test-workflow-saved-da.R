@@ -388,3 +388,19 @@ test_that("Limpa identity includes uncertainty support and forbids projection", 
     expect_identical(after$payload_reads, before$payload_reads)
     expect_false(savedWorkflowEntityCapabilities(reference)$column_projection)
 })
+
+test_that("invalidateDIAVisibleResults keeps accepted results on every DA-ready state, the DIA_LIMPA route's ruv_covariates included (KIT-053)", {
+  fake_manager <- function(state) structure(list2env(list(current_state = state,
+    .context = list(reference_states = TRUE))), class = "DIAStateAdapter")
+  outcome <- function(state) {
+    da_data <- list2env(list(da_results_list = list(kept = TRUE), analysis_complete = TRUE,
+      current_s4_object = list(object = TRUE)))
+    workflow <- list2env(list(state_manager = fake_manager(state), da_analysis_results_list = list(kept = TRUE)))
+    invalidateDIAVisibleResults(da_data, workflow)
+    list(complete = da_data$analysis_complete, results = !is.null(da_data$da_results_list), object = !is.null(da_data$current_s4_object))
+  }
+  for (state in c("ruv_covariates", "correlation_filtered", "ruv_corrected", "normalized")) {
+    expect_identical(outcome(state), list(complete = TRUE, results = TRUE, object = TRUE), info = state)
+  }
+  expect_identical(outcome("peptide_count_filtered"), list(complete = FALSE, results = FALSE, object = FALSE))
+})
