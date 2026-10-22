@@ -55,7 +55,8 @@ if (length(store_root) == 1L) {
         sink_log(copyToResultsSummary(omic_type = "proteomics", experiment_label = label, contrasts_tbl = contrasts, design_matrix = design, force = TRUE))
         cat("publication copy done\n")
         template <- paste0(workflow_type, "_report.rmd")
-        template_source <- system.file("reports", "proteomics", template, package = "MultiScholaR")
+        # KIT054_TEMPLATE_DIR names a template directory to render from (the tree's inst/reports/proteomics) instead of the library's.
+        template_source <- file.path(Sys.getenv("KIT054_TEMPLATE_DIR", system.file("reports", "proteomics", package = "MultiScholaR")), template)
         stopifnot(nzchar(template_source))
         file.copy(template_source, file.path(source_dir, template), overwrite = TRUE)
         t0 <- Sys.time()

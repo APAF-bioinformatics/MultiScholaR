@@ -302,7 +302,8 @@ generateProtNormCompositeFromFiles <- function(
           patchwork::wrap_plots(label_plots, ncol = ncol),
           patchwork::wrap_plots(image_plots, ncol = ncol)
         ))
-        height_values <- c(height_values, 0.1, 1)
+        # The single RUV control plot takes a shorter row than the three-panel rows.
+        height_values <- c(height_values, 0.1, if (row_name == "cancor") 0.75 else 1)
 
         messageFn(sprintf("   [generateCompositeFromFiles] Added row: %s", row_name))
       } else {

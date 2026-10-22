@@ -1033,7 +1033,7 @@ results_data <- tryCatch({
 
 `r results_data$content$results`
 
-```{r QC_metrics, echo=FALSE, warning=FALSE, fig.cap="Figure 1: QC metrics across normalisation stages"}
+```{r QC_metrics, echo=FALSE, warning=FALSE, out.height="8.5in", fig.align="center", fig.cap="Figure 1: QC metrics across normalisation stages"}
 # Use NEW path variable
 composite_qc_fig_path <- file.path(report_qc_figures_dir, paste0(params$omic_type, "_composite_QC_figure.png"))
 if(file.exists(composite_qc_fig_path)) {

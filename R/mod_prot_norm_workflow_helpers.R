@@ -247,14 +247,15 @@ resolveProtNormCompositeFigureInputs <- function(ruvMode, qcDir) {
       "pre_norm_density.png", "post_norm_density.png", "ruv_corrected_density.png",
       "pre_norm_rle.png", "post_norm_rle.png", "ruv_corrected_rle.png",
       "pre_norm_correlation.png", "post_norm_correlation.png", "ruv_corrected_correlation.png",
-      NA, NA, "ruv_corrected_cancor.png"
+      # The RUV control plot stands alone on its row: centred (the middle column), not under the RUV column.
+      NA, "ruv_corrected_cancor.png", NA
     )
     row_labels <- list(
       pca = c("a)", "b)", "c)"),
       density = c("d)", "e)", "f)"),
       rle = c("g)", "h)", "i)"),
       correlation = c("j)", "k)", "l)"),
-      cancor = c("", "", "m)")
+      cancor = c("", "m)", "")
     )
     column_labels <- c("Pre-Normalisation", "Post-Normalisation", "RUV-Corrected")
   }
