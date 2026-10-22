@@ -109,6 +109,31 @@ run("design", withDIAStateScope(manager, function() {
         raw$factor1[idx] <- group; raw$factor2[idx] <- ""; raw$factor3[idx] <- NA_character_
         raw$replicates[idx] <- seq.int(1L, length.out = length(selected)); raw$group[idx] <- group
     }
+    # The driver's technical-replicate actions (runKitDesignActions, manual mode), as the builder applies them
+    # (mod_prot_design_builder_action_helpers.R, assign_tech_reps): for each group and each replicate value of the
+    # corpus design with more than one sample, those samples take that biological replicate number and technical
+    # replicates 1..n in the order selected; the group's later replicate numbers shift down by the number consolidated.
+    # Without this the recorder's design differed from the GUI's (KIT-053 lifecycle attempt 4: every design_matrix
+    # mismatched, the RUV and DA blocks resolved differently).
+    if ("replicates" %in% names(design_in)) {
+        for (group in unique(design_in$group)) for (replicate in unique(design_in$replicates[design_in$group == group])) {
+            samples <- design_in$sample[design_in$group == group & design_in$replicates == replicate]
+            if (length(samples) < 2L) next
+            selected <- which(raw$Run %in% samples)
+            original <- unique(raw$replicates[selected])
+            consolidated <- length(original) - 1L
+            highest <- max(original, na.rm = TRUE)
+            adjust <- which(raw$group == group & !is.na(raw$group) & raw$replicates > highest & !raw$Run %in% samples)
+            if (length(adjust)) raw$replicates[adjust] <- raw$replicates[adjust] - consolidated
+            raw$replicates[selected] <- as.integer(replicate)
+            raw$tech_reps[selected] <- stats::setNames(seq_along(samples), samples)[raw$Run[selected]]
+        }
+        # The GUI's saved design carries names on `Run` (equal to its values) whenever technical replicates were
+        # assigned (observed on kit-journey-028's and kit-journey-053 attempt 4's raw_data_s4; absent on
+        # kit-journey-021's design without technical replicates); the attribute holds no data, but the table
+        # fingerprint serialises it. Mirrored here as observed; the GUI line that attaches it is not yet located.
+        if (any(!is.na(raw$tech_reps))) names(raw$Run) <- raw$Run
+    }
     design_groups <- unique(design_in$group)
     contrast_data <- data.frame(contrast_name = paste0(design_groups[[2L]], ".vs.", design_groups[[1L]]),
         numerator = design_groups[[2L]], denominator = design_groups[[1L]], stringsAsFactors = FALSE)

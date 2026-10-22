@@ -4,8 +4,8 @@
   "corpus": "screen",
   "label": "installed",
   "date": "2026-10-22",
-  "head_commit": "71bb7af33357e53545cca29b2256a3492f56de23",
-  "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-20544962976423/.workflow-entities",
+  "head_commit": "a51ff7a321178adccd417541e7578b2d88c04a25",
+  "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2374b87419ecfd/.workflow-entities",
   "store_build": "71bb7af33357e53545cca29b2256a3492f56de23",
   "script": {
     "repository": "APAF-bioinformatics/e_35036_MorpheusTex_GarryNunn_20260329_b",
@@ -20,7 +20,7 @@
     "script": "group",
     "coincide": true
   },
-  "seconds_script_chain": 82.7585458755493,
+  "seconds_script_chain": 70.101763010025,
   "script_chain": {
     "dpc": [0.263595854915329, 0.0122478700143891],
     "proteins": 2500,
@@ -44,11 +44,11 @@
       "model": "dpcDE",
       "formula_used": "~ 0 + group + W1",
       "k": 1,
-      "block_reason": "no_duplicates",
+      "block_reason": "spanned_by_design",
       "route": "limpa"
     },
     "long_identical": true,
     "wide_identical": true
   },
-  "seconds": 84.9411518573761
+  "seconds": 71.7620897293091
 }

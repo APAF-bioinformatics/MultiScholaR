@@ -1,6 +1,6 @@
 {
   "schema": "multischolar.analysis_record.v1",
-  "generated_at": "2026-10-22T14:05:34.613+1100",
+  "generated_at": "2026-10-22T16:42:25.379+1100",
   "workflow": "DIA_LIMPA",
   "store_identity": {
     "project_id": "DIA-LIMPA-native",
@@ -658,7 +658,7 @@
     }
   ],
   "design": {
-    "entity_id": "8c7b8f713cdac6d5795631e5faba8235a777c827878cab5316aaf8ceda275143",
+    "entity_id": "45452973e7cf231699cc90c7e66108030a48d5798c5011eff32aa81084726141",
     "sample_id": "Run",
     "group_id": "group",
     "technical_replicate_id": "tech_rep_group",
@@ -671,7 +671,7 @@
         "factor3": null,
         "batch": null,
         "replicates": 1,
-        "tech_reps": null,
+        "tech_reps": 1,
         "tech_rep_group": "control_1",
         "W1": -18.919524189941928
       },
@@ -683,7 +683,7 @@
         "factor3": null,
         "batch": null,
         "replicates": 1,
-        "tech_reps": null,
+        "tech_reps": 1,
         "tech_rep_group": "treated_1",
         "W1": -18.146541545533271
       },
@@ -695,7 +695,7 @@
         "factor3": null,
         "batch": null,
         "replicates": 1,
-        "tech_reps": null,
+        "tech_reps": 1,
         "tech_rep_group": "contrast_1",
         "W1": -18.13038690913271
       },
@@ -706,9 +706,9 @@
         "factor2": "",
         "factor3": null,
         "batch": null,
-        "replicates": 2,
-        "tech_reps": null,
-        "tech_rep_group": "control_2",
+        "replicates": 1,
+        "tech_reps": 2,
+        "tech_rep_group": "control_1",
         "W1": -17.635644036729261
       },
       {
@@ -718,9 +718,9 @@
         "factor2": "",
         "factor3": null,
         "batch": null,
-        "replicates": 2,
-        "tech_reps": null,
-        "tech_rep_group": "treated_2",
+        "replicates": 1,
+        "tech_reps": 2,
+        "tech_rep_group": "treated_1",
         "W1": -17.987051967285488
       },
       {
@@ -730,9 +730,9 @@
         "factor2": "",
         "factor3": null,
         "batch": null,
-        "replicates": 2,
-        "tech_reps": null,
-        "tech_rep_group": "contrast_2",
+        "replicates": 1,
+        "tech_reps": 2,
+        "tech_rep_group": "contrast_1",
         "W1": -18.020660923378376
       },
       {
@@ -742,9 +742,9 @@
         "factor2": "",
         "factor3": null,
         "batch": null,
-        "replicates": 3,
-        "tech_reps": null,
-        "tech_rep_group": "control_3",
+        "replicates": 1,
+        "tech_reps": 3,
+        "tech_rep_group": "control_1",
         "W1": -17.771932093854481
       },
       {
@@ -754,9 +754,9 @@
         "factor2": "",
         "factor3": null,
         "batch": null,
-        "replicates": 3,
-        "tech_reps": null,
-        "tech_rep_group": "treated_3",
+        "replicates": 1,
+        "tech_reps": 3,
+        "tech_rep_group": "treated_1",
         "W1": -17.952407079371195
       }
     ]
@@ -769,9 +769,9 @@
       "variant": null,
       "preceded_by": [],
       "step_label": "initial",
-      "committed_at": "2026-10-22T14:02:11.899+1100",
+      "committed_at": "2026-10-22T16:38:59.321+1100",
       "seed": null,
-      "result_entity_id": "0ce0e5da9f3b421b85f0344149b43f65776d9f934376b6af4e66ee621e236bd9",
+      "result_entity_id": "9bf3643bad319bf547ab1b4a4d7335e1f31b0c5bf4f7cc456ddf60303fb08d4b",
       "input_entity_ids": [],
       "software": {
         "version": "0.5.0",
@@ -799,11 +799,11 @@
       "variant": null,
       "preceded_by": [],
       "step_label": "raw_data_s4",
-      "committed_at": "2026-10-22T14:02:20.024+1100",
+      "committed_at": "2026-10-22T16:39:05.128+1100",
       "seed": null,
-      "result_entity_id": "1951ed1c365b33e09665e45bc2cca3659267cf190139b63c4b0b3d5808bce864",
+      "result_entity_id": "4b628f50a9a44849ec74d037850bfd46ac5c7d88d65b44a67b57bfa441d0f7db",
       "input_entity_ids": [
-        "0ce0e5da9f3b421b85f0344149b43f65776d9f934376b6af4e66ee621e236bd9"
+        "9bf3643bad319bf547ab1b4a4d7335e1f31b0c5bf4f7cc456ddf60303fb08d4b"
       ],
       "software": {
         "version": "0.5.0",
@@ -862,11 +862,11 @@
       "variant": "streamed",
       "preceded_by": [],
       "step_label": "2_qval_filtered",
-      "committed_at": "2026-10-22T14:02:31.830+1100",
+      "committed_at": "2026-10-22T16:39:13.904+1100",
       "seed": null,
-      "result_entity_id": "a4c753fdf9c8b2f2af7413ff2260bfe31cbde7f669e76ac61cb648c1fa356e5d",
+      "result_entity_id": "8e0b93b809f66a7a55b3ef57849600ae3e449099c4924282899937e8bb11c018",
       "input_entity_ids": [
-        "1951ed1c365b33e09665e45bc2cca3659267cf190139b63c4b0b3d5808bce864"
+        "4b628f50a9a44849ec74d037850bfd46ac5c7d88d65b44a67b57bfa441d0f7db"
       ],
       "software": {
         "version": "0.5.0",
@@ -937,10 +937,10 @@
       ],
       "products": [
         {
-          "entity_id": "ceceb7ae39960b0c48fab313e595c0ceedbb783165df52edcf401e80ca681355",
+          "entity_id": "9f451a6063140e71468555fe43431ca585256dea3f6349176c511e1cea445fca",
           "kind": "scientific_product",
           "product_type": "qvalue-progress",
-          "identity_sha256": "eec3a17dc21bb7cb6d901f544037ce92bcf141c1788fe49fd1b66ef209482510"
+          "identity_sha256": "111a71adaac56a3841f2573749d3179a366a0335839b612a39989072037db426"
         }
       ],
       "stored_as_object": false
@@ -952,11 +952,11 @@
       "variant": "p14",
       "preceded_by": [],
       "step_label": "4_precursor_rollup",
-      "committed_at": "2026-10-22T14:02:40.907+1100",
+      "committed_at": "2026-10-22T16:39:20.603+1100",
       "seed": null,
-      "result_entity_id": "89372254212e937d9e66a6396737771a5bf5cc110af66a78bae1a0fbaa906fbf",
+      "result_entity_id": "1e5d59ccc9015056444d4920d59a5fd94d0d0830d9becdc9e12e616f5681bedf",
       "input_entity_ids": [
-        "a4c753fdf9c8b2f2af7413ff2260bfe31cbde7f669e76ac61cb648c1fa356e5d"
+        "8e0b93b809f66a7a55b3ef57849600ae3e449099c4924282899937e8bb11c018"
       ],
       "software": {
         "version": "0.5.0",
@@ -987,16 +987,16 @@
       ],
       "products": [
         {
-          "entity_id": "ceceb7ae39960b0c48fab313e595c0ceedbb783165df52edcf401e80ca681355",
+          "entity_id": "9f451a6063140e71468555fe43431ca585256dea3f6349176c511e1cea445fca",
           "kind": "scientific_product",
           "product_type": "qvalue-progress",
-          "identity_sha256": "eec3a17dc21bb7cb6d901f544037ce92bcf141c1788fe49fd1b66ef209482510"
+          "identity_sha256": "111a71adaac56a3841f2573749d3179a366a0335839b612a39989072037db426"
         },
         {
-          "entity_id": "648776c0c46370219ea461f137639bc78ddefe5ef9861c53d9cead2faf99759a",
+          "entity_id": "4efcc39d2d3433c81a3ecb442ffc0eb40e0cbc35c1c7e15bb332ce6c8643891b",
           "kind": "scientific_product",
           "product_type": "precursor_rollup-progress",
-          "identity_sha256": "76a97448235afc386d46be23e28ffa3cc8b66889b84d32202809d7f993d77543"
+          "identity_sha256": "b3d97a817dad6fca2e3d7dada6a095098ade1ee927fe115c7c99dcaf2d863f16"
         }
       ],
       "stored_as_object": false
@@ -1008,11 +1008,11 @@
       "variant": "whole",
       "preceded_by": [],
       "step_label": "4_log2_matrix",
-      "committed_at": "2026-10-22T14:02:52.736+1100",
+      "committed_at": "2026-10-22T16:39:29.164+1100",
       "seed": null,
-      "result_entity_id": "929d86319192d815a0da973510a7760586df90344e38b58b267d748b0e8b5412",
+      "result_entity_id": "d37c33dcdb54200c3050745ebb059fa68a73408ad67d0cad6cb5ba4e4b8aa643",
       "input_entity_ids": [
-        "89372254212e937d9e66a6396737771a5bf5cc110af66a78bae1a0fbaa906fbf"
+        "1e5d59ccc9015056444d4920d59a5fd94d0d0830d9becdc9e12e616f5681bedf"
       ],
       "software": {
         "version": "0.5.0",
@@ -1047,16 +1047,16 @@
       ],
       "products": [
         {
-          "entity_id": "ceceb7ae39960b0c48fab313e595c0ceedbb783165df52edcf401e80ca681355",
+          "entity_id": "9f451a6063140e71468555fe43431ca585256dea3f6349176c511e1cea445fca",
           "kind": "scientific_product",
           "product_type": "qvalue-progress",
-          "identity_sha256": "eec3a17dc21bb7cb6d901f544037ce92bcf141c1788fe49fd1b66ef209482510"
+          "identity_sha256": "111a71adaac56a3841f2573749d3179a366a0335839b612a39989072037db426"
         },
         {
-          "entity_id": "9296142a43c6725352536152a73411efc80f1839fc18739c6104ad4559e76560",
+          "entity_id": "dc4745712de0b2b5bfd3547770904bc98f31da3f2a661e070aa726650302f07e",
           "kind": "scientific_product",
           "product_type": "log2_matrix-progress",
-          "identity_sha256": "4e9ebc8220ecc64d254a81ffd5e5549c108e0cabfd5dc46d4981826712a55de8"
+          "identity_sha256": "1d1def89961df25c0d82947e5d7b5943e89b76d578332c4773a4fc7dbe4a131d"
         }
       ],
       "stored_as_object": false
@@ -1068,11 +1068,11 @@
       "variant": "whole",
       "preceded_by": [],
       "step_label": "7_annotation_cleanup",
-      "committed_at": "2026-10-22T14:03:23.499+1100",
+      "committed_at": "2026-10-22T16:39:53.834+1100",
       "seed": null,
-      "result_entity_id": "8c3be50f5ca2e9fb8df4ab36c9e8cc9ccd9afb2c1f00076c185c5695584887c4",
+      "result_entity_id": "9a7e73345138f29182ca212ae003935d3d13f856ce99e61fcef2d65e03bae7b4",
       "input_entity_ids": [
-        "929d86319192d815a0da973510a7760586df90344e38b58b267d748b0e8b5412"
+        "d37c33dcdb54200c3050745ebb059fa68a73408ad67d0cad6cb5ba4e4b8aa643"
       ],
       "software": {
         "version": "0.5.0",
@@ -1137,16 +1137,16 @@
       ],
       "products": [
         {
-          "entity_id": "ceceb7ae39960b0c48fab313e595c0ceedbb783165df52edcf401e80ca681355",
+          "entity_id": "9f451a6063140e71468555fe43431ca585256dea3f6349176c511e1cea445fca",
           "kind": "scientific_product",
           "product_type": "qvalue-progress",
-          "identity_sha256": "eec3a17dc21bb7cb6d901f544037ce92bcf141c1788fe49fd1b66ef209482510"
+          "identity_sha256": "111a71adaac56a3841f2573749d3179a366a0335839b612a39989072037db426"
         },
         {
-          "entity_id": "ab1ac5045be7aa3f6fadb65eae24b3183da2e3b2057476972de47d74e0ed0a1a",
+          "entity_id": "823a5413c0c532bf1402b7abc5b172c5e32d1a93246765c8c008135307c8b6e6",
           "kind": "scientific_product",
           "product_type": "peptide_accession_cleaned-progress",
-          "identity_sha256": "f339e49de23099bd69bf579db2f152f16bdcca28dfaf0313717fd39eb761e090"
+          "identity_sha256": "95fe3fa255ff97d76784707e90a728766e72ef0d5195c6b2688fe75e84c0be39"
         }
       ],
       "stored_as_object": false
@@ -1158,11 +1158,11 @@
       "variant": "whole",
       "preceded_by": [],
       "step_label": "9_protein_dpc_quant",
-      "committed_at": "2026-10-22T14:03:52.964+1100",
+      "committed_at": "2026-10-22T16:40:17.988+1100",
       "seed": null,
-      "result_entity_id": "75bf7faffd2747bbc202d914690ee1db357ef917ee6d4e24fcd6c1c9aef29c66",
+      "result_entity_id": "e14a7db0fe7b8b9e5ee2a057242f3bbb863c440df07328e0f74c92fa95dd13aa",
       "input_entity_ids": [
-        "8c3be50f5ca2e9fb8df4ab36c9e8cc9ccd9afb2c1f00076c185c5695584887c4"
+        "9a7e73345138f29182ca212ae003935d3d13f856ce99e61fcef2d65e03bae7b4"
       ],
       "software": {
         "version": "0.5.0",
@@ -1222,16 +1222,16 @@
       ],
       "products": [
         {
-          "entity_id": "ceceb7ae39960b0c48fab313e595c0ceedbb783165df52edcf401e80ca681355",
+          "entity_id": "9f451a6063140e71468555fe43431ca585256dea3f6349176c511e1cea445fca",
           "kind": "scientific_product",
           "product_type": "qvalue-progress",
-          "identity_sha256": "eec3a17dc21bb7cb6d901f544037ce92bcf141c1788fe49fd1b66ef209482510"
+          "identity_sha256": "111a71adaac56a3841f2573749d3179a366a0335839b612a39989072037db426"
         },
         {
-          "entity_id": "ab1ac5045be7aa3f6fadb65eae24b3183da2e3b2057476972de47d74e0ed0a1a",
+          "entity_id": "823a5413c0c532bf1402b7abc5b172c5e32d1a93246765c8c008135307c8b6e6",
           "kind": "scientific_product",
           "product_type": "peptide_accession_cleaned-progress",
-          "identity_sha256": "f339e49de23099bd69bf579db2f152f16bdcca28dfaf0313717fd39eb761e090"
+          "identity_sha256": "95fe3fa255ff97d76784707e90a728766e72ef0d5195c6b2688fe75e84c0be39"
         }
       ],
       "stored_as_object": false
@@ -1243,11 +1243,11 @@
       "variant": "whole",
       "preceded_by": [],
       "step_label": "10_protein_normalised",
-      "committed_at": "2026-10-22T14:04:01.329+1100",
+      "committed_at": "2026-10-22T16:40:24.720+1100",
       "seed": null,
-      "result_entity_id": "bc39ef22d5615cc63299ede265241b41eb6a78f3a6633f9cf81e0590a8d59cf2",
+      "result_entity_id": "9bba07d8da217438327800154c283767de9bb0b635bfdfb2932d5142e94021be",
       "input_entity_ids": [
-        "75bf7faffd2747bbc202d914690ee1db357ef917ee6d4e24fcd6c1c9aef29c66"
+        "e14a7db0fe7b8b9e5ee2a057242f3bbb863c440df07328e0f74c92fa95dd13aa"
       ],
       "software": {
         "version": "0.5.0",
@@ -1282,16 +1282,16 @@
       ],
       "products": [
         {
-          "entity_id": "ceceb7ae39960b0c48fab313e595c0ceedbb783165df52edcf401e80ca681355",
+          "entity_id": "9f451a6063140e71468555fe43431ca585256dea3f6349176c511e1cea445fca",
           "kind": "scientific_product",
           "product_type": "qvalue-progress",
-          "identity_sha256": "eec3a17dc21bb7cb6d901f544037ce92bcf141c1788fe49fd1b66ef209482510"
+          "identity_sha256": "111a71adaac56a3841f2573749d3179a366a0335839b612a39989072037db426"
         },
         {
-          "entity_id": "ab1ac5045be7aa3f6fadb65eae24b3183da2e3b2057476972de47d74e0ed0a1a",
+          "entity_id": "823a5413c0c532bf1402b7abc5b172c5e32d1a93246765c8c008135307c8b6e6",
           "kind": "scientific_product",
           "product_type": "peptide_accession_cleaned-progress",
-          "identity_sha256": "f339e49de23099bd69bf579db2f152f16bdcca28dfaf0313717fd39eb761e090"
+          "identity_sha256": "95fe3fa255ff97d76784707e90a728766e72ef0d5195c6b2688fe75e84c0be39"
         }
       ],
       "stored_as_object": false
@@ -1303,11 +1303,11 @@
       "variant": "whole",
       "preceded_by": [],
       "step_label": "11_peptide_count_filtered",
-      "committed_at": "2026-10-22T14:04:07.571+1100",
+      "committed_at": "2026-10-22T16:40:29.616+1100",
       "seed": null,
-      "result_entity_id": "f46f4bb8b38d25bb844788d1283bef02bcaccc6d666d306700d24e81fbef23b8",
+      "result_entity_id": "40a3dc81eb980276b2634cb067a341435c376b80a073ddd35ea0d2a88083759b",
       "input_entity_ids": [
-        "bc39ef22d5615cc63299ede265241b41eb6a78f3a6633f9cf81e0590a8d59cf2"
+        "9bba07d8da217438327800154c283767de9bb0b635bfdfb2932d5142e94021be"
       ],
       "software": {
         "version": "0.5.0",
@@ -1351,16 +1351,16 @@
       ],
       "products": [
         {
-          "entity_id": "ceceb7ae39960b0c48fab313e595c0ceedbb783165df52edcf401e80ca681355",
+          "entity_id": "9f451a6063140e71468555fe43431ca585256dea3f6349176c511e1cea445fca",
           "kind": "scientific_product",
           "product_type": "qvalue-progress",
-          "identity_sha256": "eec3a17dc21bb7cb6d901f544037ce92bcf141c1788fe49fd1b66ef209482510"
+          "identity_sha256": "111a71adaac56a3841f2573749d3179a366a0335839b612a39989072037db426"
         },
         {
-          "entity_id": "ab1ac5045be7aa3f6fadb65eae24b3183da2e3b2057476972de47d74e0ed0a1a",
+          "entity_id": "823a5413c0c532bf1402b7abc5b172c5e32d1a93246765c8c008135307c8b6e6",
           "kind": "scientific_product",
           "product_type": "peptide_accession_cleaned-progress",
-          "identity_sha256": "f339e49de23099bd69bf579db2f152f16bdcca28dfaf0313717fd39eb761e090"
+          "identity_sha256": "95fe3fa255ff97d76784707e90a728766e72ef0d5195c6b2688fe75e84c0be39"
         }
       ],
       "stored_as_object": false
@@ -1399,11 +1399,11 @@
         }
       ],
       "step_label": "correlation_filtered",
-      "committed_at": "2026-10-22T14:04:14.647+1100",
+      "committed_at": "2026-10-22T16:40:35.554+1100",
       "seed": null,
-      "result_entity_id": "fee7888c098d4adaa6ea150701ed90ae2bf7714b569a7260430e4542c48c609b",
+      "result_entity_id": "d1dd0c85d8436520a37b9f377b23dc9cd7329666aa5511953b09a7deb21e957b",
       "input_entity_ids": [
-        "f46f4bb8b38d25bb844788d1283bef02bcaccc6d666d306700d24e81fbef23b8"
+        "40a3dc81eb980276b2634cb067a341435c376b80a073ddd35ea0d2a88083759b"
       ],
       "software": {
         "version": "0.5.0",
@@ -1426,7 +1426,7 @@
           "source": "provenance",
           "value": {
             "type": "character",
-            "value": "b9ca56c818113fc8cc68f41b11ae4e0165e29644d0a4255e1e832bbb16c8a114",
+            "value": "0797e7393c375396f60c684a07024bf8ed168c01a5acd3c2917e723ea1a38c5f",
             "length": 1
           },
           "provenance": "input"
@@ -1444,16 +1444,16 @@
       ],
       "products": [
         {
-          "entity_id": "ceceb7ae39960b0c48fab313e595c0ceedbb783165df52edcf401e80ca681355",
+          "entity_id": "9f451a6063140e71468555fe43431ca585256dea3f6349176c511e1cea445fca",
           "kind": "scientific_product",
           "product_type": "qvalue-progress",
-          "identity_sha256": "eec3a17dc21bb7cb6d901f544037ce92bcf141c1788fe49fd1b66ef209482510"
+          "identity_sha256": "111a71adaac56a3841f2573749d3179a366a0335839b612a39989072037db426"
         },
         {
-          "entity_id": "ab1ac5045be7aa3f6fadb65eae24b3183da2e3b2057476972de47d74e0ed0a1a",
+          "entity_id": "823a5413c0c532bf1402b7abc5b172c5e32d1a93246765c8c008135307c8b6e6",
           "kind": "scientific_product",
           "product_type": "peptide_accession_cleaned-progress",
-          "identity_sha256": "f339e49de23099bd69bf579db2f152f16bdcca28dfaf0313717fd39eb761e090"
+          "identity_sha256": "95fe3fa255ff97d76784707e90a728766e72ef0d5195c6b2688fe75e84c0be39"
         }
       ],
       "stored_as_object": false
@@ -1465,11 +1465,11 @@
       "variant": "whole",
       "preceded_by": [],
       "step_label": "ruv_covariates",
-      "committed_at": "2026-10-22T14:04:59.540+1100",
+      "committed_at": "2026-10-22T16:41:12.897+1100",
       "seed": null,
-      "result_entity_id": "859956eee7ecc9963f5cb6298273977561c944c0327c25b75508e52fbab558f6",
+      "result_entity_id": "f531a0b43c5b04cb85778844585aae86141dd3e3fbd8d872f31c048d4fb7c966",
       "input_entity_ids": [
-        "859956eee7ecc9963f5cb6298273977561c944c0327c25b75508e52fbab558f6"
+        "f531a0b43c5b04cb85778844585aae86141dd3e3fbd8d872f31c048d4fb7c966"
       ],
       "software": {
         "version": "0.5.0",
@@ -1490,7 +1490,7 @@
         "separation_score": 0.95494296697985404,
         "composite_score": 0.95494296697985404,
         "replicate_structure": "group",
-        "block_reason": "no_duplicates"
+        "block_reason": "spanned_by_design"
       },
       "description": "RUV-III factors appended to the design as covariates (W1..W1); the quantified matrix unchanged",
       "parameters": [
@@ -1587,22 +1587,22 @@
       ],
       "products": [
         {
-          "entity_id": "ceceb7ae39960b0c48fab313e595c0ceedbb783165df52edcf401e80ca681355",
+          "entity_id": "9f451a6063140e71468555fe43431ca585256dea3f6349176c511e1cea445fca",
           "kind": "scientific_product",
           "product_type": "qvalue-progress",
-          "identity_sha256": "eec3a17dc21bb7cb6d901f544037ce92bcf141c1788fe49fd1b66ef209482510"
+          "identity_sha256": "111a71adaac56a3841f2573749d3179a366a0335839b612a39989072037db426"
         },
         {
-          "entity_id": "ab1ac5045be7aa3f6fadb65eae24b3183da2e3b2057476972de47d74e0ed0a1a",
+          "entity_id": "823a5413c0c532bf1402b7abc5b172c5e32d1a93246765c8c008135307c8b6e6",
           "kind": "scientific_product",
           "product_type": "peptide_accession_cleaned-progress",
-          "identity_sha256": "f339e49de23099bd69bf579db2f152f16bdcca28dfaf0313717fd39eb761e090"
+          "identity_sha256": "95fe3fa255ff97d76784707e90a728766e72ef0d5195c6b2688fe75e84c0be39"
         },
         {
-          "entity_id": "37cc8dd9daaa75d2364f2610804badcfd62f5c2668b07e248cd0141803ae5ab6",
+          "entity_id": "c1a2f90ec0951dc739741530ef7e5fcc82fc8904c115b082c5e4edc566483cd9",
           "kind": "scientific_product",
           "product_type": "97c3f625f006c07a63d4f06c7d13b8d31dd415967a7c925f20b46bd20ab1edec",
-          "identity_sha256": "08ed71aa382d0a3a4d570a67226ab9042e9deed1bdae212892f5d2e1771fec76"
+          "identity_sha256": "5f3dfedf1f83a2333ae8f09196d5705914a2159497343aa53eeff466edf61518"
         }
       ],
       "stored_as_object": false
@@ -1612,7 +1612,7 @@
     "differential_abundance": {
       "operation": "DA-contrast-output",
       "source_state": "ruv_covariates",
-      "source_entity_id": "859956eee7ecc9963f5cb6298273977561c944c0327c25b75508e52fbab558f6",
+      "source_entity_id": "f531a0b43c5b04cb85778844585aae86141dd3e3fbd8d872f31c048d4fb7c966",
       "parameters": [
         {
           "name": "formula",
@@ -1667,21 +1667,21 @@
         "formula_used": "~ 0 + group + W1",
         "w_terms": "W1",
         "k": 1,
-        "block_reason": "no_duplicates",
+        "block_reason": "spanned_by_design",
         "uses_duplicate_correlation": false,
         "treat_applied": false,
         "treat_lfc_cutoff_requested": 0,
         "route": "limpa",
         "group_id": null,
         "technical_replicate_id": null,
-        "block_reason.1": "no_duplicates",
+        "block_reason.1": "spanned_by_design",
         "uses_duplicate_correlation.1": false,
         "consensus_correlation": null
       },
       "results": [
         {
           "contrast": "grouptreated-groupcontrol",
-          "entity_id": "a54b8241757c8a8476f0e5df8cb4f82e741c889d32ad35622f02aab85d9f2744",
+          "entity_id": "1a62982ad274621f608664fc35e990a7815ea640e86fa4cd1f274fca2848bdef",
           "rows": 2500
         }
       ]
