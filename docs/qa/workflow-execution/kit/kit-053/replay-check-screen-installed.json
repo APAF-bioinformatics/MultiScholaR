@@ -5,12 +5,12 @@
   "corpus": "screen",
   "label": "installed",
   "date": "2026-10-22",
-  "head_commit": "b6e63908019c4fde902656b3b9da583130fed981",
-  "origin": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1d55b9446b5847/.workflow-entities",
-  "origin_build": "b6e63908019c4fde902656b3b9da583130fed981",
+  "head_commit": "71bb7af33357e53545cca29b2256a3492f56de23",
+  "origin": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-20544962976423/.workflow-entities",
+  "origin_build": "71bb7af33357e53545cca29b2256a3492f56de23",
   "library": {
-    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.bZNsnI/library/MultiScholaR",
-    "source_commit": "b6e63908019c4fde902656b3b9da583130fed981"
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.4RHntR/library/MultiScholaR",
+    "source_commit": "71bb7af33357e53545cca29b2256a3492f56de23"
   },
   "record": {
     "workflow": "DIA_LIMPA",
@@ -26,10 +26,10 @@
     }
   },
   "replay": {
-    "seconds": 162.089974403381,
+    "seconds": 159.065777778625,
     "states": ["initial", "raw_data_s4", "qvalue_filtered", "precursor_rollup", "log2_matrix", "peptide_accession_cleaned", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", "ruv_covariates"],
     "mismatches": [],
     "replayed": ["peptide_qvalue_filter qvalue_filtered", "precursor_rollup precursor_rollup", "peptide_log2_matrix log2_matrix", "peptide_accession_cleanup peptide_accession_cleaned", "protein_dpc_quant protein_dpc_quant", "protein_between_sample_normalisation protein_normalised", "protein_peptide_count_filter peptide_count_filtered", "pearson-selection correlation_filtered", "protein_ruv_covariates ruv_covariates", "DA-contrast-output ruv_covariates"]
   },
-  "seconds": 163.423768520355
+  "seconds": 160.289041996002
 }
