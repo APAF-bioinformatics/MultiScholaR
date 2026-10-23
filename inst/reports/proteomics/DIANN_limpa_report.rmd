@@ -41,13 +41,29 @@ library(stringr)
 if (!exists("project_dirs", envir = .GlobalEnv) || !is.list(project_dirs)) {
   stop("Global object 'project_dirs' not found or is not a list. Run MultiScholaR::setupDirectories() first.")
 }
-# Construct the key for the current omic type and experiment label
-current_omic_key <- paste0(params$omic_type, "_", params$experiment_label)
-if (!current_omic_key %in% names(project_dirs)) {
-  stop(glue::glue("Key '{current_omic_key}' (from params$omic_type='{params$omic_type}' & params$experiment_label='{params$experiment_label}') not found in global 'project_dirs'. Ensure setupDirectories() was run correctly."))
+# Use the getProjectPaths helper function which handles key fallback
+# This works with both RMarkdown format (omic_type_label) and Shiny format (omic_type)
+# (KIT-053: as the DIA-NN, LFQ and TMT templates do; the strict omic_type_label key failed under the GUI's
+# Shiny-format project_dirs and outside a session.)
+if (!exists("getProjectPaths", mode = "function")) {
+  stop("getProjectPaths function not found. Ensure MultiScholaR package is loaded.")
 }
-# Get the list of paths for the current context
-current_project_paths <- project_dirs[[current_omic_key]]
+
+current_project_paths <- tryCatch({
+  getProjectPaths(
+    omic_type = params$omic_type,
+    experiment_label = params$experiment_label,
+    project_dirs_object_name = "project_dirs",
+    env = .GlobalEnv
+  )
+}, error = function(e) {
+  stop(glue::glue("Failed to get project paths for omic_type='{params$omic_type}', experiment_label='{params$experiment_label}': {e$message}"))
+})
+
+# Verify we got valid paths
+if (is.null(current_project_paths) || !is.list(current_project_paths)) {
+  stop("getProjectPaths returned NULL or invalid data. Check project_dirs setup.")
+}
 
 # Define commonly used paths for this report for convenience
 report_source_dir             <- current_project_paths$source_dir
@@ -509,7 +525,8 @@ Test conditions, deviations from the method and critical reagent details: [to be
 
 ```{r Result Section, echo=FALSE}
 # Results function - focuses on correlation data
-FormatResults <- function(correlation_data, figures_dir = file.path(results_dir, "protein_qc"), ruv_applied = TRUE) {
+FormatResults <- function(correlation_data, figures_dir = file.path(results_dir, "protein_qc"), ruv_applied = TRUE,
+                          ruv_column = "after RUVIII-C correction") {
   # KIT-055: the text describes what Figure 1 contains; it makes no claim about what this dataset's panels show.
   # Interpretation belongs to the analyst (see "Analyst interpretation").
   if (isTRUE(ruv_applied)) {
@@ -518,7 +535,7 @@ Quality Control
 
 Figure 1 shows four quality-control views at three stages of processing: after log2 transformation
 (left column: panels a, d, g, j), after between-sample normalisation (centre column: b, e, h, k) and
-after RUVIII-C correction (right column: c, f, i, l).  
+{ruv_column} (right column: c, f, i, l).  
 • Principal component analysis (panels a-c): samples plotted on the first two principal components,
   coloured by experimental group.  
 • Density plots (panels d-f): the distribution of protein intensities per sample.  
@@ -891,7 +908,12 @@ Main <- function() {
       method_details = paste0(FormatMethodDetails(analysis_results$numbers),
         if (is.character(analysis_results$numbers$record_defaults_note) && !is.na(analysis_results$numbers$record_defaults_note))
           analysis_results$numbers$record_defaults_note else ""),
-      results        = FormatResults(correlation_data),
+      # KIT-053: on the DIA with limpa route the right-hand column is the RUV-III-adjusted matrix drawn for quality
+      # control; the analysis carried the factors as covariates (no corrected matrix entered the model).
+      results        = FormatResults(correlation_data, ruv_column = if (!is.null(analysis_results$numbers$dpc_engine) &&
+        !identical(analysis_results$numbers$dpc_engine, "not recorded") && !all(is.na(analysis_results$numbers$dpc_engine)))
+        "for the RUV-III-adjusted matrix (drawn for quality control only; the differential abundance model carried the RUV-III factors as covariates)" else
+        "after RUVIII-C correction"),
       interpretation = FormatAnalystInterpretation(),
       de_details     = FormatDEDetails(analysis_results$numbers),
       go_enrichment  = FormatGOEnrichment(analysis_results$numbers),
@@ -1005,11 +1027,15 @@ if(dir.exists(enrichment_plots_dir)) {
 cat("*Figure 3: GO enrichment analysis showing pathways enriched in differentially expressed proteins. Plots are ordered alphabetically by comparison and direction.*\n\n")
 ```
 
-# STRING DB Functional Enrichment Analysis
+```{r stringdb_presence, echo=FALSE, results='asis'}
+# KIT-053: the STRING section renders only when a STRING enrichment produced outputs for this project (KIT-055's
+# rule for the GO section; this template's extra STRING section was not covered and stated a query that never ran).
+stringdb_plots_dir <- file.path(current_project_paths$pathway_dir %||% "", "string_db")
+stringdb_ran <- dir.exists(stringdb_plots_dir) && length(list.files(stringdb_plots_dir, recursive = TRUE)) > 0
+if (stringdb_ran) cat("# STRING DB Functional Enrichment Analysis\n\n", results_data$content$stringdb_enrichment, "\n\n")
+```
 
-`r results_data$content$stringdb_enrichment`
-
-```{r STRING DB Enrichment Plots, echo=FALSE, out.width="100%", fig.align='center'}
+```{r STRING DB Enrichment Plots, echo=FALSE, eval=stringdb_ran, out.width="100%", fig.align='center'}
 # Use pathway_dir for STRING DB results
 stringdb_plots_dir <- file.path(current_project_paths$pathway_dir, "string_db")
 if(dir.exists(stringdb_plots_dir)) {
@@ -1026,7 +1052,7 @@ if(dir.exists(stringdb_plots_dir)) {
 }
 ```
 
-```{r STRING DB Caption, echo=FALSE, results='asis'}
+```{r STRING DB Caption, echo=FALSE, eval=stringdb_ran, results='asis'}
 cat("*Figure 4: STRING DB functional enrichment analysis showing enriched categories organised by: (a) Gene Ontology terms, (b) Pathways (KEGG, Reactome, WikiPathways, STRING clusters), (c) Protein domains (InterPro, Pfam, SMART), and (d) Other functional categories.*\n\n")
 ```
 

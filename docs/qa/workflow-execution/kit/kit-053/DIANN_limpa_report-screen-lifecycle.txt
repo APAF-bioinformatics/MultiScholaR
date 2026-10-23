@@ -1,0 +1,139 @@
+Sample Details
+
+SAMPLE DETAILS
+
+There are 8 samples in total which consists of:
+• 8 biological samples with no technical replicates.
+• Sample identification, conditions upon receipt and any non-compliance
+notes: [to be completed by the analyst]
+
+Method Details
+
+METHOD DETAILS
+
+Data analyses were performed with MultiScholaR; the software version and
+build are listed under ‘Software and build’. SOP reference: [to be
+completed by the analyst].
+
+Data import, filtering and quantification
+
+Precursor-level identifications and quantities were imported from the
+DIA-NN main report (one row per precursor and run). Low-confidence
+peptide identifications were removed using q-value and proteotypic
+peptide filtering, retaining only peptides with a q-value threshold of
+0.01 and only those that are proteotypic. Precursor ion intensities were
+then aggregated into peptide-level quantification values, combining all
+charge states of the same peptide sequence while keeping different
+modified peptides (peptidoforms) as separate entries. The peptide
+quantities were arranged as a peptide-by-sample matrix and log2
+transformed (values at or below zero treated as missing); one protein
+accession was chosen per protein group from the FASTA metadata and
+duplicate peptides of a resolved group were aggregated.
+
+Protein-level quantification was performed with the limpa package’s
+Detection Probability Curve method, DPC-Quant (Li et al., 2025), on the
+‘limpa’ engine (version 1.4.2). Unlike roll-up approaches that first
+aggregate peptides to proteins and then impute missing values, DPC-Quant
+quantifies proteins and handles missing values in one statistical model:
+a detection probability curve fitted on the peptide matrix (fitted
+intercept 0.264, slope 0.012: nearly random missing) relates peptide
+intensity to the probability of detection, and maximum posterior
+estimates with standard errors are returned for every protein in every
+sample. Proteins were required to have at least 1 unique peptide(s) and
+2 peptidoform(s) to be considered for further analysis. No protein-level
+missing-value filter applies: the quantified matrix is complete. No
+between-sample normalisation was applied to the quantified log2 matrix
+(the limpa workflow’s default).
+
+To account for unwanted variation, RUV-III (Molania et al., 2019) was
+fitted on the quantified protein matrix using a set of endogenous
+negative control proteins chosen by a negative-control sweep (4% of
+proteins, 100 controls; replicate structure: group). The 1 estimated
+factor(s) of unwanted variation (W) were appended to the design as
+covariates of the differential abundance model; the protein matrix
+itself was not corrected (the RUV-adjusted matrix is used for
+quality-control plots only).
+
+At each stage, the samples were checked for batch effects using
+principal component analysis (PCA) plots, density boxplots, relative
+log-expression (RLE) plots and the distribution of the Pearson
+correlation between replicate samples within groups; samples whose
+correlation with their group fell below the configured threshold were
+removed.
+
+Test conditions, deviations from the method and critical reagent
+details: [to be completed by the analyst].
+
+Results
+
+Quality Control
+
+Figure 1 shows four quality-control views at three stages of processing:
+after log2 transformation (left column: panels a, d, g, j), after
+between-sample normalisation (centre column: b, e, h, k) and for the
+RUV-III-adjusted matrix (drawn for quality control only; the
+differential abundance model carried the RUV-III factors as covariates)
+(right column: c, f, i, l).
+• Principal component analysis (panels a-c): samples plotted on the
+first two principal components, coloured by experimental group.
+• Density plots (panels d-f): the distribution of protein intensities
+per sample.
+• Relative log expression (panels g-i): per-sample deviations from the
+protein-wise median.
+• Pearson correlation (panels j-l): the distribution of between-sample
+correlations within groups.
+
+Whether technical variation was reduced and biological signal retained
+is assessed from these panels by the analyst; this report draws no
+automated conclusion from them.
+
+Differential Abundance Analysis
+
+DIFFERENTIAL ABUNDANCE ANALYSIS
+
+Differential abundance analysis of proteins was performed on the
+DPC-quantified protein abundances for the comparisons defined in the
+contrast table. The limpa R package’s ‘dpcDE’ function (Li et al., 2025)
+fitted a linear model using the formula ‘~ 0 + group + W1’, weighting
+each observation by the uncertainty of its DPC-Quant estimate (imputed
+values down-weighted), with the ‘limma’ R package (Ritchie et al., 2015)
+underneath. The 1 RUV-III factor(s) of unwanted variation (W) entered
+the model as covariates. Contrasts were applied with ‘contrasts.fit’ and
+p-values were calculated using the ‘eBayes’ function. A trended and
+robust empirical Bayes analysis was performed. The false discovery rate
+correction was applied to the moderated p-values by calculating the
+q-values (Storey, 2002). No log-fold-change threshold (TREAT) applies on
+this model. Significant differentially expressed proteins were defined
+as those with q-values less than 0.05.
+
+Volcano plots of differentially expressed proteins across all groups are
+shown in Figure 2, with a threshold of q-value < 0.05 and no log
+fold-change threshold. Full details of all proteins are provided in the
+supplementary results table DA_results_proteomics.xlsx within the
+Publication_tables folder.
+
+[]
+
+Figure 2: Volcano plots of differentially expressed proteins one per
+comparison.
+
+Analyst interpretation
+
+ANALYST INTERPRETATION
+
+[To be completed by the analyst: quality-control assessment from Figure
+1, technical performance, limitations of this dataset, and
+recommendations for downstream analysis. Nothing in this section is
+generated automatically.]
+
+GO Enrichment Analysis
+
+No enrichment analysis was run for this project.
+
+Software and build
+
+MultiScholaR version: 0.5.0
+Source commit: 81a69944b832d2aed460a96ad381dd5b1ff4dc25
+Build: fc6d8f66a7104c5bfe2ddd469c748c87c3368a6f9800919ea8d0f1a962fcff83
+R: R version 4.6.1 (2026-06-24)
+BLAS: /usr/lib/libblas.so.3.12.0

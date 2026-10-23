@@ -1,0 +1,36 @@
+{
+  "schema": "kit.dia_da_unchanged.v1",
+  "ticket": "KIT-053",
+  "label": "BTcMbt",
+  "date": "2026-10-23",
+  "head_commit": "5ea667982e01e463f177bad4889d620a2588833c",
+  "origin": "kit-journey-028/candidate-1 (copy)",
+  "parameters": {
+    "formula": "~ 0 + group",
+    "qvalue": 0.05,
+    "lfc": 0
+  },
+  "tables": 3,
+  "identical": true,
+  "model_before": {
+    "group_id": "group",
+    "technical_replicate_id": "tech_rep_group",
+    "block_reason": "spanned_by_design",
+    "uses_duplicate_correlation": false,
+    "consensus_correlation": "NA"
+  },
+  "model_after": {
+    "model": "limma",
+    "formula_used": "~ 0 + group",
+    "w_terms": [],
+    "k": 0,
+    "treat_applied": false,
+    "treat_lfc_cutoff_requested": 0,
+    "route": "iq",
+    "group_id": "group",
+    "technical_replicate_id": "tech_rep_group",
+    "block_reason": "spanned_by_design",
+    "uses_duplicate_correlation": false,
+    "consensus_correlation": "NA"
+  }
+}
