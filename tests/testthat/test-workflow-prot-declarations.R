@@ -315,7 +315,7 @@ rolledPeptideFixture <- function() {
     rollUpPrecursorToPeptide(precursor, core_utilisation = NA)
 }
 
-test_that("the DIA_LIMPA peptide-stage declarations are registered with the units of the step map and run whole (KIT-047)", {
+test_that("the DIA_LIMPA peptide-stage declarations are registered with the units of the step map and their variants (KIT-047, KIT-057)", {
     expect_identical(diaPeptideLog2MatrixOperation()$unit, "row")
     expect_identical(diaPeptideLog2MatrixOperation()$fixed, list(nonpositive_to_na = TRUE))
     expect_identical(diaPeptideAccessionCleanupOperation()$unit, "feature_group")
@@ -324,9 +324,13 @@ test_that("the DIA_LIMPA peptide-stage declarations are registered with the unit
     expect_identical(diaProteinDpcQuantOperation()$output_class, "ProteinQuantitativeData")
     expect_identical(diaProteinDpcQuantOperation()$parameters, c("engine", "dpc_slope", "chunk"))
     roles <- list(peptide_log2_matrix = "peptide", peptide_accession_cleanup = "peptide", protein_dpc_quant = "protein")
+    # KIT-057: the production variants on the kit's mechanisms; `whole` kept as the control arm of each.
+    variants <- list(peptide_log2_matrix = c("whole", "streamed"), peptide_accession_cleanup = c("whole", "partitioned"),
+        protein_dpc_quant = "whole")
     for (name in names(roles)) {
         entry <- workflowActionSpec(name)
-        expect_identical(entry$variants, "whole", info = name)
+        expect_identical(entry$variants, variants[[name]], info = name)
+        expect_identical(entry$default_variant, utils::tail(variants[[name]], 1L), info = name)
         expect_identical(entry$input, "peptide", info = name)
         expect_identical(entry$compute, roles[[name]], info = name)
         expect_identical(entry$completion, roles[[name]], info = name)
@@ -547,5 +551,57 @@ test_that("the protein-stage declarations reproduce the in-memory kernels and th
         expect_identical(step$outcomes$replicate_structure, value$replicate_structure)
         expect_setequal(vapply(step$parameters, `[[`, character(1), "name"), diaRuvCovariatesOperation()$parameters)
         expect_true(validateWorkflowAnalysisRecord(record)$valid)
+    })
+})
+
+test_that("the streamed log2 and the partitioned accession cleanup equal the whole variants on the rolled fixture (KIT-057)", {
+    rolled <- rolledPeptideFixture()
+    manager <- proteinDeclarationFixtureManager(rolled, withr::local_tempdir(), "precursor_rollup")
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$setWorkflowType("DIA_LIMPA")
+    table_of <- function(reference) { table <- as.data.frame(materializeDIATable(manager$.context, reference)); rownames(table) <- NULL; table }
+    matrix_of <- function(reference) { value <- hydrateSavedWorkflowEntity(manager$.context$store, reference); if (is.list(value) && !is.null(value$value)) value$value else value }
+    same_output <- function(a, b) {
+        expect_identical(a$state_name, b$state_name)
+        expect_identical(a$config, b$config)
+        expect_identical(matrix_of(a$checkpoint$components$peptide_matrix), matrix_of(b$checkpoint$components$peptide_matrix))
+        expect_identical(table_of(a$checkpoint$components$peptide_data), table_of(b$checkpoint$components$peptide_data))
+        expect_identical(table_of(a$checkpoint$components$design_matrix), table_of(b$checkpoint$components$design_matrix))
+        expect_identical(a$checkpoint$slots$args, b$checkpoint$slots$args)
+        expect_identical(a$checkpoint$slots[setdiff(names(a$checkpoint$slots), "args")], b$checkpoint$slots[setdiff(names(b$checkpoint$slots), "args")])
+    }
+    workflow <- list2env(list(state_manager = manager, qc_params = list(peptide_qc = list())))
+    withDIAStateScope(manager, function() {
+        source <- getDIAStateReference(manager)
+        whole <- computeDIAReferencePeptideLog2Matrix(manager, source, list(), variant = "whole")
+        streamed <- computeDIAReferencePeptideLog2Matrix(manager, source, list(), variant = "streamed")
+        expect_identical(streamed$execution$variant, "streamed")
+        expect_true(streamed$execution$batches >= 1L)
+        expect_true(is.list(streamed$execution$admission))
+        same_output(whole, streamed)
+        expect_error(computeDIAReferencePeptideLog2Matrix(manager, source, list(), variant = "other"), class = "workflow_execution_unsupported")
+        setDIAStepProvenance(manager, "peptide_log2_matrix", "streamed", character(), list(nonpositive_to_na = TRUE))
+        finishDIAReferencePeptideStep(workflow, streamed$checkpoint, streamed$state_name, streamed$description, streamed$config, streamed$section, NULL)
+        expect_identical(manager$current_state, "log2_matrix")
+    })
+    # A FASTA table over the fixture's candidate accessions, so the cleanup applies (the helper defaults the
+    # annotation columns it does not find).
+    accessions <- unique(unlist(strsplit(as.character(rolled@peptide_data$Protein.Ids), ";", fixed = TRUE)))
+    fasta <- data.frame(uniprot_acc = accessions, gene_name = paste0("G_", accessions), seq_length = seq_along(accessions) + 100L,
+        annotation_score = rep(3, length(accessions)), description = paste(accessions, "fixture protein"),
+        stringsAsFactors = FALSE)
+    withDIAStateScope(manager, function() {
+        source <- getDIAStateReference(manager)
+        parameters <- list(delimiter = ";", aggregation_method = "mean")
+        sink(tempfile()); on.exit(sink())
+        whole <- computeDIAReferencePeptideAccessionCleanup(manager, source, parameters, variant = "whole", seqinr = fasta,
+            now_fn = function() as.POSIXct("2026-10-23", tz = "UTC"))
+        partitioned <- computeDIAReferencePeptideAccessionCleanup(manager, source, parameters, variant = "partitioned", seqinr = fasta,
+            now_fn = function() as.POSIXct("2026-10-23", tz = "UTC"))
+        expect_true(whole$config$cleanup_applied)
+        expect_identical(partitioned$execution$variant, "partitioned")
+        expect_true(partitioned$execution$batches >= 1L)
+        same_output(whole, partitioned)
+        expect_identical(whole$accession_cleanup_results, partitioned$accession_cleanup_results)
     })
 })

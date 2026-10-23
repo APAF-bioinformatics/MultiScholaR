@@ -520,14 +520,14 @@ registerBuiltinWorkflowOperations <- function() {
         compute = "peptide", handler = "computeWorkflowPeptideLog2Action", validate = "validateWorkflowPeptideLog2Parameters",
         resolve = NULL, parameter_limit = 65536, parameters = character(),
         completion = "peptide", publication = "peptide", step_label = "4_log2_matrix", omic_type = "proteomics",
-        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        variants = c("whole", "streamed"), default_variant = "streamed", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaPeptideLog2MatrixOperation()))
     registerWorkflowOperation(list(name = "peptide_accession_cleanup", input = "peptide", input_class = "PeptideQuantitativeData",
         compute = "peptide", handler = "computeWorkflowPeptideAccessionAction", validate = "validateWorkflowPeptideAccessionParameters",
         resolve = NULL, parameter_limit = 65536,
         parameters = c("delimiter", "aggregation_method", "seqinr_accession_column", "fasta_sha256"),
         completion = "peptide", publication = "peptide", step_label = "7_annotation_cleanup", omic_type = "proteomics",
-        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        variants = c("whole", "partitioned"), default_variant = "partitioned", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaPeptideAccessionCleanupOperation()))
     registerWorkflowOperation(list(name = "protein_dpc_quant", input = "peptide", input_class = "PeptideQuantitativeData",
         compute = "protein", handler = "computeWorkflowProteinDpcQuantAction", validate = "validateWorkflowProteinDpcQuantParameters",

@@ -1,0 +1,122 @@
+{
+  "schema": "kit.variant_check.v1",
+  "ticket": "KIT-057",
+  "step": "peptide_log2",
+  "label": "tree",
+  "date": "2026-10-23",
+  "head_commit": "89eff1a9f9886da320c05e9391bbbe3b643967f9",
+  "source_state": "precursor_rollup",
+  "results": {
+    "whole": {
+      "seconds": 6.7,
+      "process_hwm_gib": 0.96,
+      "hwm_before_gib": 0.63,
+      "state_name": "log2_matrix",
+      "config": {
+        "peptides": 60000,
+        "samples": 8,
+        "quantity_column": "Peptide.Normalised",
+        "nonpositive_set_to_na": 0,
+        "missing_before": 177000,
+        "missing_after": 177000,
+        "outcomes": {
+          "peptides": 60000,
+          "samples": 8,
+          "nonpositive_set_to_na": 0,
+          "missing_cells": 177000
+        }
+      },
+      "execution": {
+        "variant": "whole",
+        "worker_cap": 12884901888,
+        "rows": 60000,
+        "samples": 8
+      },
+      "tables": {
+        "peptide_data": {
+          "rows": 303000,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "Protein.Ids"],
+          "sha256": "553769c5a0b67ccc584207c373814d24f99c60f03f64b8c6e3725a357ffdd574"
+        },
+        "design_matrix": {
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        }
+      },
+      "matrix": {
+        "dim": [60000, 8],
+        "sha256": "cf1172214e3eb737394ab21c8bcd478e5bb046ab6af2f383bb672889e0a8b830",
+        "row_head": ["SYN_calibration_P00001%MAAAAAAK", "SYN_calibration_P00001%MANAAAAK", "SYN_calibration_P00001%MCACAAAK"],
+        "col_head": ["calibration_run_001", "calibration_run_002", "calibration_run_003"]
+      }
+    },
+    "streamed": {
+      "seconds": 12.2,
+      "process_hwm_gib": 1.16,
+      "hwm_before_gib": 0.99,
+      "state_name": "log2_matrix",
+      "config": {
+        "peptides": 60000,
+        "samples": 8,
+        "quantity_column": "Peptide.Normalised",
+        "nonpositive_set_to_na": 0,
+        "missing_before": 177000,
+        "missing_after": 177000,
+        "outcomes": {
+          "peptides": 60000,
+          "samples": 8,
+          "nonpositive_set_to_na": 0,
+          "missing_cells": 177000
+        }
+      },
+      "execution": {
+        "variant": "streamed",
+        "worker_cap": 12884901888,
+        "rows": 60000,
+        "samples": 8,
+        "batches": 31,
+        "groups": 2500,
+        "admission": {
+          "estimated_bytes": 1432694376,
+          "worker_cap": 12884901888,
+          "batch_rows": 10000,
+          "largest_group_rows": 3064,
+          "row_bytes": 44,
+          "working_bytes_per_row": 2048,
+          "overhead_bytes": 1411774376,
+          "policy": "log2-feature-group-batches-v1",
+          "limitation": "admission estimate; kernel cgroup guard remains authoritative"
+        }
+      },
+      "tables": {
+        "peptide_data": {
+          "rows": 303000,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "Protein.Ids"],
+          "sha256": "553769c5a0b67ccc584207c373814d24f99c60f03f64b8c6e3725a357ffdd574"
+        },
+        "design_matrix": {
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        }
+      },
+      "matrix": {
+        "dim": [60000, 8],
+        "sha256": "cf1172214e3eb737394ab21c8bcd478e5bb046ab6af2f383bb672889e0a8b830",
+        "row_head": ["SYN_calibration_P00001%MAAAAAAK", "SYN_calibration_P00001%MANAAAAK", "SYN_calibration_P00001%MCACAAAK"],
+        "col_head": ["calibration_run_001", "calibration_run_002", "calibration_run_003"]
+      }
+    }
+  },
+  "comparisons": {
+    "matrix_identical": true,
+    "matrix_dimnames_identical": true,
+    "peptide_data_identical": true,
+    "design_identical": true,
+    "config_identical": true,
+    "args_identical": true,
+    "slots_identical": true,
+    "state_identical": true
+  }
+}

@@ -464,7 +464,7 @@ diaPeptideLog2MatrixOperation <- function() {
     newWorkflowOperation(name = "peptide_log2_matrix", input_class = "PeptideQuantitativeData",
         fields = c("peptide_data", "design_matrix"), unit = "row",
         kernel = function(object, parameters, store) computeDIAReferencePeptideLog2Matrix(store$manager, store$source,
-            parameters, worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "whole"),
+            parameters, worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "streamed"),
         output_class = "PeptideQuantitativeData", parameters = character(), fixed = list(nonpositive_to_na = TRUE),
         product_type = "dia.peptide_log2_matrix_result",
         merge = c(design_matrix = "design", peptide_data = "concatenate"))
@@ -478,7 +478,7 @@ diaPeptideAccessionCleanupOperation <- function() {
         fields = c("peptide_data", "design_matrix"), unit = "feature_group",
         kernel = function(object, parameters, store) computeDIAReferencePeptideAccessionCleanup(store$manager, store$source,
             parameters[c("delimiter", "aggregation_method", "seqinr_accession_column", "fasta_table", "fasta_sha256")],
-            worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "whole",
+            worker_cap = parameters$worker_cap %||% 12 * 1024^3, variant = parameters$variant %||% "partitioned",
             seqinr = parameters$seqinr, fasta_metadata = parameters$fasta_metadata),
         output_class = "PeptideQuantitativeData",
         parameters = c("delimiter", "aggregation_method", "seqinr_accession_column", "fasta_sha256"),
@@ -524,8 +524,10 @@ readDIAReferencePeptideObject <- function(manager, reference, fields = c("peptid
 #' @return Compute-only peptide contract (`checkpoint`, `state_name`, `description`, `config`, `section`, `counts`).
 #' @noRd
 computeDIAReferencePeptideLog2Matrix <- function(manager, reference, parameters = list(), worker_cap = 12 * 1024^3,
-    variant = "whole") {
-    if (!identical(variant, "whole")) cli::cli_abort("unsupported log2 matrix variant", class = "workflow_execution_unsupported")
+    variant = "streamed") {
+    if (!is.character(variant) || length(variant) != 1L || !variant %in% c("whole", "streamed"))
+        cli::cli_abort("unsupported log2 matrix variant", class = "workflow_execution_unsupported")
+    if (identical(variant, "streamed")) return(computeDIAReferencePeptideLog2MatrixStreamed(manager, reference, worker_cap))
     object <- readDIAReferencePeptideObject(manager, reference)
     if (isTRUE(object@is_logged_data))
         cli::cli_abort("the peptide state is already log2 transformed", class = "workflow_execution_invalid")
@@ -555,6 +557,150 @@ computeDIAReferencePeptideLog2Matrix <- function(manager, reference, parameters 
         execution = list(variant = variant, worker_cap = worker_cap, rows = peptides, samples = samples))
 }
 
+#' The log2 matrix on the kit's feature-group partitioner (KIT-057, audit F-01): the row unit realised. The whole
+#' variant hydrates the long peptide table (5.5 million rows on the 300-sample corpus) and pivots it in one
+#' `pivot_wider` (worker peak 4.09 GiB for a 142 MiB matrix). Here the table stays on disk: one pass over the
+#' identity columns gives the feature-key map and the sample order exactly as the kernel builds them on the whole
+#' table (the map from the distinct protein/peptide pairs in first-appearance order; `pivot_wider`'s columns in the
+#' samples' first-appearance order); then batches of whole protein groups run the unchanged kernels
+#' (`calcPeptideMatrix`, `log2TransformPeptideMatrix`) and their rows are placed into the matrix by name while the
+#' kernel's updated quantity column streams through the bounded table writer as a change map over the source rows.
+#' The design is cleaned once at the end as the whole kernel does. Admission as the partitioner records it.
+#' @return The whole variant's compute-only contract (the checkpoint's `peptide_data` is the streamed table).
+#' @noRd
+computeDIAReferencePeptideLog2MatrixStreamed <- function(manager, reference, worker_cap = 12 * 1024^3) {
+    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) || worker_cap <= 0)
+        cli::cli_abort("invalid admitted worker capacity", class = "workflow_execution_unsupported")
+    context <- manager$.context
+    before <- readDIAStateMetadata(manager, reference)
+    if (!identical(before$data$class, "PeptideQuantitativeData"))
+        cli::cli_abort("a peptide state is required", class = "workflow_execution_unsupported")
+    object <- readDIAReferencePeptideObject(manager, reference, fields = "design_matrix")
+    if (isTRUE(object@is_logged_data))
+        cli::cli_abort("the peptide state is already log2 transformed", class = "workflow_execution_invalid")
+    source <- before$data$components$peptide_data
+    scope <- newWorkflowTableReadScope(context$store, source)
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    con <- scope$connection
+    engine_bytes <- min(1e9, floor(worker_cap / 8))
+    DBI::dbExecute(con, paste0("SET memory_limit = '", floor(engine_bytes / 1048576), "MB'"))
+    DBI::dbExecute(con, "SET threads = 2")
+    if (any(c(".dia_source_order", ".dia_design_order", ".dia_feature_order") %in% scope$metadata$columns))
+        cli::cli_abort("reserved DIA grouping columns are present", class = "saved_entity_invalid")
+    protein <- object@protein_id_column
+    peptide <- object@peptide_sequence_column
+    sample <- object@sample_id
+    quantity <- object@norm_quantity_column
+    identity_columns <- intersect(unique(c(protein, peptide, sample, "Protein.Ids")), scope$metadata$columns)
+    if (!all(c(protein, peptide, sample, quantity) %in% scope$metadata$columns))
+        cli::cli_abort("the peptide table lacks the log2 step's columns", class = "saved_entity_invalid")
+    # Prelude (one pass over the identity columns): the distinct identities in first-appearance order, as the
+    # kernel's feature-key map and pivot see them on the whole table.
+    identities <- NULL
+    samples <- character()
+    streamWorkflowTableRows(scope, identity_columns, function(page, offset, row_names) {
+        if (!nrow(page)) return(invisible(NULL))
+        rows <- page[identity_columns]
+        for (name in identity_columns) rows[[name]] <- as.character(rows[[name]])
+        rows <- rows[!duplicated(rows[c(protein, peptide)]), , drop = FALSE]
+        identities <<- if (is.null(identities)) rows else {
+            joined <- rbind(identities, rows)
+            joined[!duplicated(joined[c(protein, peptide)]), , drop = FALSE]
+        }
+        samples <<- unique(c(samples, as.character(page[[sample]])))
+        invisible(NULL)
+    })
+    if (is.null(identities) || !nrow(identities)) cli::cli_abort("the peptide table is empty", class = "saved_entity_invalid")
+    rownames(identities) <- NULL
+    # The kernel's own map and provenance on the distinct identities (the same functions the whole kernel calls on
+    # the whole table; they read the two identity columns and `Protein.Ids` only).
+    proxy <- object
+    proxy@peptide_data <- identities
+    proxy <- .ensurePeptideFeatureKeyMap(proxy)
+    feature_map <- proxy@args$peptide_feature_key_map
+    object@args <- proxy@args
+    matrix_rows <- feature_map$feature_key
+    assembled <- matrix(NA_real_, nrow = length(matrix_rows), ncol = length(samples),
+        dimnames = list(matrix_rows, samples))
+    offset <- 0L
+    nonpositive <- 0L
+    na_rows <- 0L
+    kernel <- function(part, index) {
+        positions <- attr(part, "workflow_source_order") %||% integer()
+        attr(part, "workflow_source_order") <- NULL
+        batch <- proxy
+        batch@peptide_data <- part
+        batch <- calcPeptideMatrix(batch)
+        raw <- batch@peptide_matrix
+        batch <- log2TransformPeptideMatrix(batch)
+        list(raw = raw, logged = batch@peptide_matrix, data = batch@peptide_data, positions = positions, part = part)
+    }
+    consume <- function(result, index) {
+        raw <- result$raw
+        nonpositive <<- nonpositive + sum(raw <= 0, na.rm = TRUE)
+        # The whole raw matrix's NA cells: every absent feature/sample combination plus the observed rows whose
+        # quantity is NA; a batch's own matrix sees only its samples, so the count is closed at the end.
+        na_rows <<- na_rows + sum(is.na(suppressWarnings(as.numeric(result$part[[quantity]]))))
+        logged <- result$logged
+        assembled[rownames(logged), colnames(logged)] <<- logged
+        # The kernel's updated quantity column for the batch's source rows: the change map over the source.
+        part <- result$part
+        updated <- result$data
+        key <- paste(as.character(part[[protein]]), as.character(part[[peptide]]), as.character(part[[sample]]), sep = "\r")
+        updated_key <- paste(as.character(updated[[protein]]), as.character(updated[[peptide]]), as.character(updated[[sample]]), sep = "\r")
+        values <- updated[[quantity]][match(key, updated_key)]
+        changes <- data.frame(.dia_source_order = as.double(result$positions), stringsAsFactors = FALSE)
+        changes[[quantity]] <- values
+        changes <- changes[order(changes$.dia_source_order), , drop = FALSE]
+        for (start in seq.int(1L, max(1L, nrow(changes)), by = 10000L)) {
+            at <- if (nrow(changes)) seq.int(start, min(nrow(changes), start + 9999L)) else integer()
+            offset <<- appendWorkflowTableBatch(scope, "dia_log2_data", changes[at, , drop = FALSE], offset,
+                key_column = ".dia_source_order")
+        }
+        result <- raw <- logged <- part <- updated <- changes <- NULL
+        invisible(NULL)
+    }
+    partition <- partitionByFeatureGroup(scope, c(protein, peptide, sample, quantity), protein, kernel, consume, worker_cap,
+        working_bytes_per_row = diaPeptideGroupWorkingBytes,
+        overhead_bytes = engine_bytes + as.numeric(object.size(assembled)) + 268435456 + 2 * 67108864,
+        policy = "log2-feature-group-batches-v1")
+    if (offset != scope$metadata$rows) cli::cli_abort("the log2 change map does not cover the source", class = "saved_entity_corrupt")
+    identity <- newSavedWorkflowScientificIdentity(source$entity_id, before$data$components$design_matrix$entity_id,
+        digest::digest(list("log2TransformPeptideMatrix", quantity), algo = "sha256"), "complete-declared-groups", context$software)
+    map_path <- finishWorkflowTableBatch(scope, "dia_log2_data", identity)
+    metadata <- scope$metadata
+    streamed <- saveWorkflowTable(scope$store, NULL, basename(tempfile("dia-data-")), identity, metadata$key_column,
+        metadata = metadata, write_fn = function(destination, restoration) writeWorkflowTableChanges(scope,
+            map_path, NULL, restoration, destination, source_column = ".dia_source_order"))
+    # The object as the whole kernel leaves it: the log2 matrix, the flag, the design cleaned to the table's samples.
+    object@peptide_matrix <- assembled
+    object@is_logged_data <- TRUE
+    object@peptide_data <- object@peptide_data[0, , drop = FALSE]
+    # `cleanDesignMatrixPeptide` reads the table's distinct samples in first-appearance order: the prelude's list.
+    sample_proxy <- object
+    sample_proxy@peptide_data <- stats::setNames(data.frame(samples, stringsAsFactors = FALSE), sample)
+    object@design_matrix <- cleanDesignMatrixPeptide(sample_proxy)@design_matrix
+    sample_proxy <- NULL
+    peptides <- nrow(assembled)
+    missing_before <- length(assembled) - metadata$rows + na_rows
+    missing_after <- sum(is.na(assembled))
+    checkpoint <- checkpointDIAReferencePeptideObject(manager, reference, object, c("design_matrix", "peptide_matrix"))
+    checkpoint$components$peptide_data <- streamed
+    checkpoint$dependencies <- collectDIANativeReferences(list(reference, checkpoint$dependencies, checkpoint$components,
+        checkpoint$support, checkpoint$products, partition$dependencies))
+    checkpoint$dimensions <- list(rows = metadata$rows, columns = metadata$columns)
+    assembled <- NULL
+    config <- list(peptides = peptides, samples = length(samples), quantity_column = quantity, nonpositive_set_to_na = nonpositive,
+        missing_before = missing_before, missing_after = missing_after,
+        outcomes = list(peptides = peptides, samples = length(samples), nonpositive_set_to_na = nonpositive,
+            missing_cells = missing_after))
+    list(checkpoint = checkpoint, reference = checkpoint$components$peptide_data, state_name = "log2_matrix",
+        description = "Peptide matrix calculated and log2 transformed (values <= 0 set to NA)",
+        config = config, section = "log2TransformPeptideMatrix", counts = NULL,
+        execution = c(list(variant = "streamed", worker_cap = worker_cap, rows = peptides, samples = length(samples)),
+            partition[c("batches", "batch_sizes", "groups", "admission")]))
+}
+
 #' The FASTA table a peptide accession cleanup joins (as the protein cleanup resolves it: the bound path or the
 #' owner's source directory), with the accession column the step names (the GUI's table carries `database_id`).
 #' @noRd
@@ -579,8 +725,11 @@ resolveDIAPeptideAccessionFasta <- function(manager, parameters, seqinr, fasta_m
 #' Without a FASTA table the step records a skip, as the protein cleanup does.
 #' @noRd
 computeDIAReferencePeptideAccessionCleanup <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
-    variant = "whole", seqinr = NULL, fasta_metadata = NULL, now_fn = Sys.time) {
-    if (!identical(variant, "whole")) cli::cli_abort("unsupported peptide accession cleanup variant", class = "workflow_execution_unsupported")
+    variant = "partitioned", seqinr = NULL, fasta_metadata = NULL, now_fn = Sys.time) {
+    if (!is.character(variant) || length(variant) != 1L || !variant %in% c("whole", "partitioned"))
+        cli::cli_abort("unsupported peptide accession cleanup variant", class = "workflow_execution_unsupported")
+    if (identical(variant, "partitioned")) return(computeDIAReferencePeptideAccessionCleanupPartitioned(manager, reference,
+        parameters, worker_cap, seqinr, fasta_metadata, now_fn))
     delimiter <- parameters$delimiter
     aggregation <- parameters$aggregation_method
     fasta_sha256 <- parameters$fasta_sha256 %||% manager$.context$snapshot$file_dependencies$fasta$sha256 %||% NA_character_
@@ -618,6 +767,196 @@ computeDIAReferencePeptideAccessionCleanup <- function(manager, reference, param
             "Skipped peptide-level accession cleanup (no FASTA data)",
         config = config, section = "chooseBestProteinAccession", counts = NULL,
         execution = list(variant = variant, worker_cap = worker_cap, rows = rows_after, cleanup_applied = applied),
+        accession_cleanup_results = c(config[c("cleanup_applied", "aggregation_method", "active_protein_key",
+            "had_full_metadata")], list(delimiter_used = delimiter, timestamp = now_fn())))
+}
+
+#' The peptide accession cleanup on the kit's feature-group partitioner (KIT-057, audit F-02): the feature-group unit
+#' realised. The method keeps the DIA-NN group key and replaces only the `Protein.Ids` annotation, and its
+#' duplicate aggregation groups by (sample, group, sequence), so no row ever leaves its protein group: batches of
+#' whole groups run the unchanged method (`chooseBestProteinAccession`: the helper on the batch's groups gives the
+#' same mapping as on the whole table, which depends on each group's candidate list and the FASTA scores only;
+#' the aggregation per group; the matrix per batch) while the aggregated rows stream through the bounded table
+#' writer and are saved in the whole method's row order (sorted by sample, group and sequence, as `summarise`
+#' orders its keys), and the matrix rows are placed by name in the whole pivot's order (features in their first
+#' appearance in that sorted table; samples sorted). The feature-key map and the accession provenance are the
+#' kernel's own functions on the distinct identities in that order. Admission as the partitioner records it.
+#' @return The whole variant's compute-only contract.
+#' @noRd
+computeDIAReferencePeptideAccessionCleanupPartitioned <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
+    seqinr = NULL, fasta_metadata = NULL, now_fn = Sys.time) {
+    if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) || worker_cap <= 0)
+        cli::cli_abort("invalid admitted worker capacity", class = "workflow_execution_unsupported")
+    delimiter <- parameters$delimiter
+    aggregation <- parameters$aggregation_method
+    fasta_sha256 <- parameters$fasta_sha256 %||% manager$.context$snapshot$file_dependencies$fasta$sha256 %||% NA_character_
+    fasta <- resolveDIAPeptideAccessionFasta(manager, parameters, seqinr, fasta_metadata)
+    if (is.null(fasta$seqinr)) {
+        # No FASTA table: the whole variant records a skip on the unchanged object; the same here.
+        return(computeDIAReferencePeptideAccessionCleanup(manager, reference, parameters, worker_cap, variant = "whole",
+            seqinr = seqinr, fasta_metadata = fasta_metadata, now_fn = now_fn))
+    }
+    context <- manager$.context
+    before <- readDIAStateMetadata(manager, reference)
+    if (!identical(before$data$class, "PeptideQuantitativeData"))
+        cli::cli_abort("a peptide state is required", class = "workflow_execution_unsupported")
+    object <- readDIAReferencePeptideObject(manager, reference, fields = "design_matrix")
+    source <- before$data$components$peptide_data
+    scope <- newWorkflowTableReadScope(context$store, source)
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    con <- scope$connection
+    engine_bytes <- min(1e9, floor(worker_cap / 8))
+    DBI::dbExecute(con, paste0("SET memory_limit = '", floor(engine_bytes / 1048576), "MB'"))
+    DBI::dbExecute(con, "SET threads = 2")
+    if (any(c(".dia_source_order", ".dia_design_order", ".dia_feature_order") %in% scope$metadata$columns))
+        cli::cli_abort("reserved DIA grouping columns are present", class = "saved_entity_invalid")
+    key <- object@protein_id_column
+    peptide <- object@peptide_sequence_column
+    sample <- object@sample_id
+    accession <- "Protein.Ids"
+    columns <- scope$metadata$columns
+    if (!all(c(key, peptide, sample, accession, object@raw_quantity_column, object@norm_quantity_column) %in% columns))
+        cli::cli_abort("the peptide table lacks the accession cleanup's columns", class = "saved_entity_invalid")
+    # Prelude (one pass over the identity columns): the distinct features with the first sample each appears in, the
+    # distinct group/candidate pairs (the helper's input) and the samples.
+    features <- NULL
+    candidates <- NULL
+    samples <- character()
+    streamWorkflowTableRows(scope, c(key, peptide, sample, accession), function(page, offset, row_names) {
+        if (!nrow(page)) return(invisible(NULL))
+        f <- data.frame(group = as.character(page[[key]]), sequence = as.character(page[[peptide]]),
+            sample = as.character(page[[sample]]), stringsAsFactors = FALSE)
+        f <- f[!duplicated(f), , drop = FALSE]
+        features <<- if (is.null(features)) f else { joined <- rbind(features, f); joined[!duplicated(joined), , drop = FALSE] }
+        c2 <- data.frame(group = as.character(page[[key]]), candidates = as.character(page[[accession]]), stringsAsFactors = FALSE)
+        c2 <- c2[!duplicated(c2), , drop = FALSE]
+        candidates <<- if (is.null(candidates)) c2 else { joined <- rbind(candidates, c2); joined[!duplicated(joined), , drop = FALSE] }
+        samples <<- unique(c(samples, f$sample))
+        invisible(NULL)
+    })
+    if (is.null(features) || !nrow(features)) cli::cli_abort("the peptide table is empty", class = "saved_entity_invalid")
+    rows_before <- scope$metadata$rows
+    groups_before <- length(unique(features$group))
+    # The whole method's output order: `summarise` sorts its keys (sample, group, sequence) in the C locale.
+    sample_order <- stats::setNames(seq_along(samples), samples[order(samples, method = "radix")])
+    features$sample_rank <- sample_order[features$sample]
+    first_sample <- stats::aggregate(sample_rank ~ group + sequence, data = features, FUN = min)
+    # The matrix's rows: each feature's first appearance in the sorted table (sample block, then group, sequence).
+    first_sample <- first_sample[order(first_sample$sample_rank, first_sample$group, first_sample$sequence, method = "radix"), , drop = FALSE]
+    # The table's rows: the plain key order (sample, group, sequence); the feature rank is the (group, sequence) rank.
+    key_rank <- order(first_sample$group, first_sample$sequence, method = "radix")
+    feature_order <- stats::setNames(integer(nrow(first_sample)), paste(first_sample$group, first_sample$sequence, sep = "\r"))
+    feature_order[key_rank] <- seq_along(key_rank)
+    features <- NULL
+    # The mapping once, on the distinct group/candidate pairs, as the method computes it row by row.
+    mapping_input <- stats::setNames(candidates, c(key, accession))
+    mapping <- chooseBestProteinAccessionHelper(input_tbl = mapping_input, acc_detail_tab = fasta$seqinr,
+        accessions_column = !!rlang::sym(accession), row_id_column = fasta$column, group_id = !!rlang::sym(key), delim = delimiter)
+    mapped <- stats::setNames(as.character(mapping[[fasta$column]]), as.character(mapping[[key]]))
+    # The kernel's feature-key map and provenance on the distinct identities in the output's order: the identities
+    # carry the new annotation, as the aggregated table does.
+    identities <- data.frame(first_sample$group, first_sample$sequence, stringsAsFactors = FALSE)
+    names(identities) <- c(key, peptide)
+    identities[[accession]] <- unname(mapped[identities[[key]]])
+    proxy <- object
+    proxy@peptide_data <- identities
+    proxy <- .ensurePeptideFeatureKeyMap(proxy)
+    feature_map <- proxy@args$peptide_feature_key_map
+    object@args <- proxy@args
+    sorted_samples <- names(sample_order)
+    assembled <- matrix(NA_real_, nrow = nrow(feature_map), ncol = length(sorted_samples),
+        dimnames = list(feature_map$feature_key, sorted_samples))
+    offset <- 0L
+    restoration <- NULL
+    method_args <- NULL
+    kernel <- function(part, index) {
+        attr(part, "workflow_source_order") <- NULL
+        batch <- object
+        batch@peptide_data <- part
+        # Called through the same alias as the whole variant: the method records its parameters under the caller's name.
+        chooseBestProteinAccessionFn <- chooseBestProteinAccession
+        cleaned <- chooseBestProteinAccessionFn(theObject = batch, delim = delimiter, seqinr_obj = fasta$seqinr,
+            seqinr_accession_column = fasta$column, aggregation_method = aggregation)
+        list(data = cleaned@peptide_data, matrix = cleaned@peptide_matrix, args = cleaned@args)
+    }
+    consume <- function(result, index) {
+        m <- result$matrix
+        assembled[rownames(m), colnames(m)] <<- m
+        # The method's recorded parameters (the same every batch): carried onto the object as the whole variant's are.
+        method_args <<- result$args[["chooseBestProteinAccessionFn"]]
+        table <- result$data # the method's tibble, kept as it is: the saved table's class is part of its metadata
+        table$.dia_design_order <- unname(sample_order[as.character(table[[sample]])])
+        table$.dia_feature_order <- unname(feature_order[paste(as.character(table[[key]]), as.character(table[[peptide]]), sep = "\r")])
+        if (anyNA(table$.dia_design_order) || anyNA(table$.dia_feature_order))
+            cli::cli_abort("an aggregated row has no place in the output order", class = "saved_entity_corrupt")
+        if (is.null(restoration)) restoration <<- workflowSavedTableMetadata(table, ".rownames", 3L)
+        for (start in seq.int(1L, max(1L, nrow(table)), by = 10000L)) {
+            at <- if (nrow(table)) seq.int(start, min(nrow(table), start + 9999L)) else integer()
+            offset <<- appendWorkflowTableBatch(scope, "dia_accession_data", table[at, , drop = FALSE], offset, key_column = ".rownames")
+        }
+        result <- m <- table <- NULL
+        invisible(NULL)
+    }
+    partition <- partitionByFeatureGroup(scope, columns, key, kernel, consume, worker_cap,
+        working_bytes_per_row = diaPeptideGroupWorkingBytes,
+        overhead_bytes = engine_bytes + as.numeric(object.size(assembled)) + 268435456 + 2 * 67108864,
+        policy = "accession-feature-group-batches-v1")
+    rows_after <- offset
+    identity <- newSavedWorkflowScientificIdentity(source$entity_id, before$data$components$design_matrix$entity_id,
+        digest::digest(list("chooseBestProteinAccession", delimiter, aggregation, fasta$column, fasta_sha256), algo = "sha256"),
+        "complete-declared-groups", context$software)
+    path <- finishWorkflowTableBatch(scope, "dia_accession_data", identity)
+    internal <- c(".dia_design_order", ".dia_feature_order")
+    metadata <- restoration
+    metadata$rows <- rows_after
+    output_columns <- setdiff(metadata$columns, internal)
+    metadata$columns <- output_columns
+    metadata$column_metadata <- metadata$column_metadata[output_columns]
+    metadata$name_columns <- metadata$name_columns[intersect(names(metadata$name_columns), output_columns)]
+    metadata$schema <- 3L
+    metadata$codec <- "parquet_duckdb_v3"
+    order_columns <- c(internal, ".multischolar_order")
+    source_scope <- newWorkflowTableReadScope(context$store, path, reader = "arrow", metadata_only = TRUE)
+    ordering <- saveWorkflowOrderIndex(source_scope, order_columns)
+    releaseWorkflowTableReadScope(source_scope)
+    streamed <- saveWorkflowTable(context$store, NULL, basename(tempfile("dia-data-")), identity, metadata$key_column,
+        metadata = metadata, write_fn = function(destination, restoration) {
+            cursor <- openWorkflowOrderedRows(context$store, path, output_columns, order_columns)
+            on.exit(cursor$close(), add = TRUE)
+            writer <- openWorkflowTableWriter(destination, restoration, context$store$progress)
+            on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+            repeat {
+                data <- cursor$next_batch()
+                if (is.null(data)) break
+                appendWorkflowTableWriter(writer, completeWorkflowTableBatch(data, restoration))
+            }
+            if (is.null(writer$output)) appendWorkflowTableWriter(writer,
+                completeWorkflowTableBatch(readSavedWorkflowTablePrototype(scope), restoration))
+            finishWorkflowTableWriter(writer)
+        })
+    object@peptide_matrix <- assembled
+    object@peptide_data <- object@peptide_data[0, , drop = FALSE]
+    if (!is.null(method_args)) object@args[["chooseBestProteinAccessionFn"]] <- method_args
+    checkpoint <- checkpointDIAReferencePeptideObject(manager, reference, object, c("design_matrix", "peptide_matrix"))
+    checkpoint$components$peptide_data <- streamed
+    checkpoint$dependencies <- collectDIANativeReferences(list(reference, checkpoint$dependencies, checkpoint$components,
+        checkpoint$support, checkpoint$products, partition$dependencies, ordering$reference))
+    checkpoint$dimensions <- list(rows = rows_after, columns = output_columns)
+    assembled <- NULL
+    groups_after <- length(unique(first_sample$group))
+    config <- list(delimiter = delimiter, aggregation_method = aggregation, seqinr_accession_column = fasta$column,
+        cleanup_applied = TRUE, active_protein_key = key, fasta_sha256 = fasta_sha256,
+        protein_groups_before = groups_before, protein_groups_after = groups_after,
+        peptide_rows_before = rows_before, peptide_rows_after = rows_after,
+        had_full_metadata = if (!is.null(fasta$fasta_metadata)) isTRUE(fasta$fasta_metadata$has_protein_evidence) &&
+            isTRUE(fasta$fasta_metadata$has_gene_names) else FALSE,
+        outcomes = list(cleanup_applied = TRUE, protein_groups_before = groups_before, protein_groups_after = groups_after,
+            peptide_rows_aggregated = rows_before - rows_after))
+    list(checkpoint = checkpoint, reference = checkpoint$components$peptide_data, state_name = "peptide_accession_cleaned",
+        description = "Applied peptide-level protein accession cleanup",
+        config = config, section = "chooseBestProteinAccession", counts = NULL,
+        execution = c(list(variant = "partitioned", worker_cap = worker_cap, rows = rows_after, cleanup_applied = TRUE),
+            partition[c("batches", "batch_sizes", "groups", "admission")]),
         accession_cleanup_results = c(config[c("cleanup_applied", "aggregation_method", "active_protein_key",
             "had_full_metadata")], list(delimiter_used = delimiter, timestamp = now_fn())))
 }

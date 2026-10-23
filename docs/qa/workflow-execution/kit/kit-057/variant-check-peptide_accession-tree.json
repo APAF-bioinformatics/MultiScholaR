@@ -1,0 +1,132 @@
+{
+  "schema": "kit.variant_check.v1",
+  "ticket": "KIT-057",
+  "step": "peptide_accession",
+  "label": "tree",
+  "date": "2026-10-23",
+  "head_commit": "89eff1a9f9886da320c05e9391bbbe3b643967f9",
+  "source_state": "log2_matrix",
+  "results": {
+    "whole": {
+      "seconds": 30.8,
+      "process_hwm_gib": 1.28,
+      "hwm_before_gib": 0.63,
+      "state_name": "peptide_accession_cleaned",
+      "config": {
+        "delimiter": ";",
+        "aggregation_method": "mean",
+        "seqinr_accession_column": "uniprot_acc",
+        "cleanup_applied": true,
+        "active_protein_key": "Protein.Group",
+        "fasta_sha256": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+        "protein_groups_before": 2500,
+        "protein_groups_after": 2500,
+        "peptide_rows_before": 303000,
+        "peptide_rows_after": 303000,
+        "had_full_metadata": false,
+        "outcomes": {
+          "cleanup_applied": true,
+          "protein_groups_before": 2500,
+          "protein_groups_after": 2500,
+          "peptide_rows_aggregated": 0
+        }
+      },
+      "execution": {
+        "variant": "whole",
+        "worker_cap": 12884901888,
+        "rows": 303000,
+        "cleanup_applied": true
+      },
+      "tables": {
+        "peptide_data": {
+          "rows": 303000,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "Protein.Ids"],
+          "sha256": "0cde8020850b8602c4c005c1a906cb5646a432c485b6a232f11bf0bb4c268567"
+        },
+        "design_matrix": {
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        }
+      },
+      "matrix": {
+        "dim": [60000, 8],
+        "sha256": "cf1172214e3eb737394ab21c8bcd478e5bb046ab6af2f383bb672889e0a8b830",
+        "row_head": ["SYN_calibration_P00001%MAAAAAAK", "SYN_calibration_P00001%MANAAAAK", "SYN_calibration_P00001%MCACAAAK"],
+        "col_head": ["calibration_run_001", "calibration_run_002", "calibration_run_003"]
+      }
+    },
+    "partitioned": {
+      "seconds": 42.8,
+      "process_hwm_gib": 1.44,
+      "hwm_before_gib": 1.31,
+      "state_name": "peptide_accession_cleaned",
+      "config": {
+        "delimiter": ";",
+        "aggregation_method": "mean",
+        "seqinr_accession_column": "uniprot_acc",
+        "cleanup_applied": true,
+        "active_protein_key": "Protein.Group",
+        "fasta_sha256": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+        "protein_groups_before": 2500,
+        "protein_groups_after": 2500,
+        "peptide_rows_before": 303000,
+        "peptide_rows_after": 303000,
+        "had_full_metadata": false,
+        "outcomes": {
+          "cleanup_applied": true,
+          "protein_groups_before": 2500,
+          "protein_groups_after": 2500,
+          "peptide_rows_aggregated": 0
+        }
+      },
+      "execution": {
+        "variant": "partitioned",
+        "worker_cap": 12884901888,
+        "rows": 303000,
+        "cleanup_applied": true,
+        "batches": 31,
+        "groups": 2500,
+        "admission": {
+          "estimated_bytes": 1432974376,
+          "worker_cap": 12884901888,
+          "batch_rows": 10000,
+          "largest_group_rows": 3064,
+          "row_bytes": 72,
+          "working_bytes_per_row": 2048,
+          "overhead_bytes": 1411774376,
+          "policy": "accession-feature-group-batches-v1",
+          "limitation": "admission estimate; kernel cgroup guard remains authoritative"
+        }
+      },
+      "tables": {
+        "peptide_data": {
+          "rows": 303000,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "Protein.Ids"],
+          "sha256": "0cde8020850b8602c4c005c1a906cb5646a432c485b6a232f11bf0bb4c268567"
+        },
+        "design_matrix": {
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        }
+      },
+      "matrix": {
+        "dim": [60000, 8],
+        "sha256": "cf1172214e3eb737394ab21c8bcd478e5bb046ab6af2f383bb672889e0a8b830",
+        "row_head": ["SYN_calibration_P00001%MAAAAAAK", "SYN_calibration_P00001%MANAAAAK", "SYN_calibration_P00001%MCACAAAK"],
+        "col_head": ["calibration_run_001", "calibration_run_002", "calibration_run_003"]
+      }
+    }
+  },
+  "comparisons": {
+    "matrix_identical": true,
+    "matrix_dimnames_identical": true,
+    "peptide_data_identical": true,
+    "design_identical": true,
+    "config_identical": true,
+    "args_identical": true,
+    "slots_identical": true,
+    "state_identical": true
+  }
+}
