@@ -1,0 +1,20 @@
+{
+  "schema": "kit.route_enrichment_check.v1",
+  "ticket": "KIT-053",
+  "label": "hpvhkD",
+  "date": "2026-10-23",
+  "head_commit": "db46e1bc0bc4635658fbfb020a3ff2872604008a",
+  "workflow_type": "DIA_LIMPA",
+  "route": "limpa",
+  "da_model": "dpcDE",
+  "service": "gprofiler2:gprofiler2_test_double",
+  "product_saved": true,
+  "head_resources_added": 1,
+  "head_resource": {
+    "service": "gprofiler2",
+    "release": "gprofiler2_test_double",
+    "release_kind": "database_version"
+  },
+  "record_resources": 1,
+  "record_valid": true
+}
