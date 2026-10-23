@@ -121,7 +121,7 @@ run("design", withDIAStateScope(manager, function() {
             if (length(samples) < 2L) next
             selected <- which(raw$Run %in% samples)
             original <- unique(raw$replicates[selected])
-            consolidated <- length(original) - 1L
+            consolidated <- length(original) - 1 # a double, as the builder computes it: the shift below makes `replicates` double whenever a later sample is renumbered (the full corpus; not the screen corpus)
             highest <- max(original, na.rm = TRUE)
             adjust <- which(raw$group == group & !is.na(raw$group) & raw$replicates > highest & !raw$Run %in% samples)
             if (length(adjust)) raw$replicates[adjust] <- raw$replicates[adjust] - consolidated
