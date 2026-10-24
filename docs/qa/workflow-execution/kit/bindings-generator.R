@@ -461,8 +461,8 @@ if (!is.null(b$builds$kit_053) && !is.null(b$builds$kit_057)) {
 # 1,812 s / 5.81 GiB (the three peptide workers 2.22 / 2.39 / 3.97 GiB). The ticket's absolute 5.7 GiB bound (the DIA
 # route's journey peak on this corpus) is missed by 0.11 GiB at the DPC step; the user's call closes the ticket.
 if (!is.null(b$builds$kit_057)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-057", outcome = "candidate", build = "kit_057",
-    note = "DIA_LIMPA peptide stage on the kit's mechanisms (streamed log2, partitioned accession cleanup) and the fastlimpadpc engine (user decision 2026-10-24, one Rayon thread pinned); counted pair accepted by the pair rule against kit_053 (journey 11.46 -> 5.81 GiB, 6,658 -> 1,812 s, exact); 0.11 GiB above the DIA route's 5.7 GiB at the DPC step")
- (the same corpora as the DIA
+    note = "DIA_LIMPA peptide stage on the kit's mechanisms (streamed log2, partitioned accession cleanup) and the fastlimpadpc engine (user decision 2026-10-24, one Rayon thread pinned); counted pair accepted by the pair rule against kit_053 (journey 11.46 -> 5.81 GiB, 6,658 -> 1,812 s, exact); 0.11 GiB above the DIA route's 5.7 GiB at the DPC step; the bounded DPC worker added 2026-10-25 at the user's request (re-measured by the pass-4 pair)")
+# KIT-053 oracles: the route's per-step fingerprints on the screen and full DIA-NN corpora (the same corpora as the DIA
 # route), recorded by kit-053/oracle-record.R into oracles-limpa_<corpus>.rds and bound under limpa_<corpus>_<step>.
 # KIT-057: the same recorder on the kit_057 build (the production variants and the fastlimpadpc engine, the user's
 # decision of 2026-10-24) into kit-057/oracles-limpa_<corpus>.rds, bound under limpa57_<corpus>_<step> (the pair's
