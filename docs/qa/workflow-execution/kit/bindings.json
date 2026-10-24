@@ -10989,15 +10989,15 @@
       "control": "kit_053",
       "candidate": "kit_057",
       "record": false,
-      "corpus": "screen",
+      "corpus": "full",
       "route": "DIA_LIMPA",
       "oracles": {
-        "control": "limpa_screen",
-        "candidate": "limpa57_screen"
+        "control": "limpa_full",
+        "candidate": "limpa57_full"
       },
-      "ceiling_seconds": 1800,
+      "ceiling_seconds": 14400,
       "normalisation": {
-        "norm_method": "none",
+        "norm_method": "cyclicloess",
         "ruv_mode": "covariates",
         "correlation_threshold": 0.5
       }

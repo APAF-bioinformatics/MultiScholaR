@@ -35,6 +35,10 @@ The user's direction of 2026-10-19 named fastlimpadpc for the limpa route; KIT-0
 
 Recorded in process by the KIT-053 recorder (the production variants, the fastlimpadpc engine) into `kit-057/oracles-limpa_<corpus>.rds`, bound under `limpa57_<corpus>_<step>` as the pair's candidate oracles. Against KIT-053's records (limpa, the whole variants): on both corpora every component through `peptide_accession` is identical (the full corpus's 5.5-million-row tables included), so the streamed and partitioned variants are exact on the full corpus through the recorder as well; the components differ from `dpc_quant` onward by the engine, as decided; and every state's `summary` differs for one reason only, checked on the full corpus: the shipped config key `limpaDpcQuant.engine` (`limpa` → `fastlimpadpc`) carried in each state's `args` and `config` (no other key differs).
 
+## Screen lifecycle pair (2026-10-24, `kit-journey-057-screen-lifecycle-stage.json`; not counted)
+
+Control `kit_053` (limpa, whole variants): complete, 13 states, 269 s, peak 2.04 GiB, verified exact against KIT-053's screen oracles (0 mismatches). Candidate `kit_057` (fastlimpadpc, production variants): complete, 13 states, 223 s, peak 2.02 GiB, verified exact against kit-057's screen oracles (0 mismatches). The GUI path runs the production variants and the new engine end to end. The pair rule's verdict on this corpus (`rejected`, `step_not_worse`, whole ratio 0.99) is reported, not counted: the screen journey's peaks are the application's, the lifecycle run proves completion and exactness only (KIT-017's rule).
+
 ## Counted pair: declaration (runs only on the user's go)
 
 - Purpose: the ticket's acceptance on the full corpus through the GUI path: the candidate exact against its oracles, its journey peak and every worker's peak no higher than the control's, and its journey peak ≤ 5.7 GiB (the DIA route's on this corpus).
