@@ -1,0 +1,35 @@
+{
+  "schema": "kit.replay_check.v1",
+  "ticket": "KIT-053",
+  "route": "DIA_LIMPA",
+  "corpus": "screen",
+  "label": "installed",
+  "date": "2026-10-24",
+  "head_commit": "35501b7dff5fac076d0641493c854f7a68999a65",
+  "origin": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-2cc9206897ea/.workflow-entities",
+  "origin_build": "bdc3e8157776e4b40c1c337a44cdd988719e1acf",
+  "library": {
+    "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.AGcD7t/library/MultiScholaR",
+    "source_commit": "bdc3e8157776e4b40c1c337a44cdd988719e1acf"
+  },
+  "record": {
+    "workflow": "DIA_LIMPA",
+    "operations": ["import", "design_builder", "peptide_qvalue_filter", "precursor_rollup", "peptide_log2_matrix", "peptide_accession_cleanup", "protein_dpc_quant", "protein_between_sample_normalisation", "protein_peptide_count_filter", "pearson-selection", "protein_ruv_covariates"],
+    "states": ["initial", "raw_data_s4", "qvalue_filtered", "precursor_rollup", "log2_matrix", "peptide_accession_cleaned", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", "ruv_covariates"],
+    "valid": true,
+    "da_model": {
+      "model": "dpcDE",
+      "formula_used": "~ 0 + group + W1",
+      "k": 1,
+      "block_reason": "spanned_by_design",
+      "route": "limpa"
+    }
+  },
+  "replay": {
+    "seconds": 117.368196249008,
+    "states": ["initial", "raw_data_s4", "qvalue_filtered", "precursor_rollup", "log2_matrix", "peptide_accession_cleaned", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", "ruv_covariates"],
+    "mismatches": [],
+    "replayed": ["peptide_qvalue_filter qvalue_filtered", "precursor_rollup precursor_rollup", "peptide_log2_matrix log2_matrix", "peptide_accession_cleanup peptide_accession_cleaned", "protein_dpc_quant protein_dpc_quant", "protein_between_sample_normalisation protein_normalised", "protein_peptide_count_filter peptide_count_filtered", "pearson-selection correlation_filtered", "protein_ruv_covariates ruv_covariates", "DA-contrast-output ruv_covariates"]
+  },
+  "seconds": 118.354352235794
+}

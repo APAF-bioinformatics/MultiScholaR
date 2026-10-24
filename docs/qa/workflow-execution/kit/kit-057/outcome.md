@@ -1,6 +1,6 @@
 # KIT-057: DIA_LIMPA peptide stage on the kit's memory mechanisms
 
-Status 2026-10-24: **in progress**. Audit: [AUDIT-20261023-limpa-path.md](AUDIT-20261023-limpa-path.md) (findings F-01..F-06, published before repair). Control build `kit_053` = `core/browser-smoke.BTcMbt` (the KIT-053 counted member: journey peak 11.42 GiB anonymous on the 300-sample corpus; the DIA route's 5.7 GiB).
+Status 2026-10-24: **counted pair run and accepted by the kit's rule; closure awaiting the user's call on the 5.7 GiB bound (see "Counted pair: result")**. Audit: [AUDIT-20261023-limpa-path.md](AUDIT-20261023-limpa-path.md) (findings F-01..F-06, published before repair). Control build `kit_053` = `core/browser-smoke.BTcMbt` (the KIT-053 counted member: journey peak 11.42 GiB anonymous on the 300-sample corpus; the DIA route's 5.7 GiB).
 
 ## Repairs
 
@@ -48,11 +48,22 @@ Control `kit_053` (limpa, whole variants): complete, 13 states, 269 s, peak 2.04
 - Ceiling 14,400 s per member; the driver's browser budget 7,200 s per member (CORE-pinned; the control used 6,922 s under KIT-053). One attempt; one correction rerun for a demonstrated instrumentation failure only. Expected host time about 2 h (control) + 0.5 h (candidate).
 - Terminal outcomes: accepted (exact, within the rule and the 5.7 GiB); rejected (exact, above a bound: the step named); invalid (not exact, or a member incomplete: the cause named, no retry without a diagnosis).
 
+## Counted pair: result (2026-10-24, stage `kit-journey-057`, [kit-journey-057-stage.json](kit-journey-057-stage.json))
+
+| Member | Build | Status | Exact | Elapsed | Journey peak (anon) | Resident end | Worker peaks of the three peptide steps (log2 / accession / DPC) |
+|---|---|---|---|---|---|---|---|
+| control-1 | `kit_053` (`BTcMbt`, limpa, whole variants) | complete, 13 states | 0 mismatches (KIT-053's full oracles) | 6,658 s | **11.46 GiB** | 3.03 GiB | 4.14 / 9.01 / 7.84 GiB (68 / 396 / 5,369 s) |
+| candidate-1 | `kit_057` (`AGcD7t`, fastlimpadpc, production variants) | complete, 13 states | 0 mismatches (kit-057's full oracles) | **1,812 s** | **5.81 GiB** | 2.48 GiB | **2.22 / 2.39 / 3.97 GiB** (166 / 579 / 222 s) |
+
+Decision by the kit's pair rule (`whole_slice_anon`): **accepted**; whole-slice ratio 0.507, resident-end ratio 0.818, every guarded step not worse (the candidate's step peaks: import 2.89, design 3.34, qvalue 4.27, rollup 5.22, log2 3.50, accession 3.76, dpc_quant 5.81, normalisation 3.03, count 3.01, correlation 2.32, RUV 2.32, export 1.76, DA 3.14 GiB). No ratio promoted.
+
+Against the ticket's acceptance criteria: the three worker targets are met (log2 2.22 ≤ 3.07; accession 2.39 ≤ 3.78; DPC 3.97 ≤ 4.0 GiB); the candidate is exact and its journey peak is below the control's; **the absolute bound (≤ 5.7 GiB, the DIA route's journey peak on this corpus) is missed by 0.11 GiB**: the candidate peaks at 5.81 GiB during the DPC step (the application's resident set beside the 3.97 GiB worker). The next step down is the DPC worker's hydration (it carries the 320 MiB peptide table into a 3.97 GiB worker for the kernel's per-protein row count), a kernel contract change outside this ticket. The journey now fits the driver's browser budget with room (1,812 of 7,200 s). The decision on the 0.11 GiB (accept and record, or a follow-up ticket) is the user's.
+
 ## Open
 
 - Journey time against the driver's 7,200 s browser budget (CORE-pinned): the KIT-053 journey used 6,922 s; the two variants add about 420 s (log2 +148 s, accession +296 s) on the standalone measurements, so the candidate's journey is expected near the budget unless the DPC step (5,565 s) comes down; reported, not judged.
-- F-03: the user's decision (above).
-- The counted control/candidate pair: with limpa its outcome on the journey peak is predictable (the DPC step); whether to spend the pair (about 4 h of host time) is part of the decision.
+- F-03: decided (fastlimpadpc); the 0.11 GiB above the DIA route's journey peak at the DPC step (above).
+- Closure checks on `kit_057` (`AGcD7t`): the DIA route unchanged (KIT-028 replay: 16 states, 0 mismatches, 143 s; the edited-replay check as expected); the checkpoint full suite 30,887 pass, 0 fail, 0 error, 140 skips (`kit057-full-suite`); the limpa route's replay check on the new build ([replay-check-screen-installed.json](replay-check-screen-installed.json), the KIT-053 check reading kit-057's record): 11 states, 0 mismatches, the DA replayed (dpcDE, ~ 0 + group + W1), 117 s.
 
 ## Incident
 

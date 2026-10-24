@@ -15,7 +15,9 @@ h <- new.env(parent = globalenv())
 sys.source(file.path(repo, "tools/profiling/workflow_kit.R"), h)
 b <- jsonlite::read_json(file.path(repo, "docs/qa/workflow-execution/kit/bindings.json"))
 ns <- asNamespace("MultiScholaR"); api <- function(name) get(name, ns)
-recorded <- readRDS(file.path(repo, "docs/qa/workflow-execution/kit/kit-053", paste0("oracles-limpa_", corpus_key, ".rds")))
+# KIT-057: another ticket's oracle record and output directory under `KIT_LIMPA_TICKET_DIR` (default kit-053).
+ticket_dir <- Sys.getenv("KIT_LIMPA_TICKET_DIR", "kit-053")
+recorded <- readRDS(file.path(repo, "docs/qa/workflow-execution/kit", ticket_dir, paste0("oracles-limpa_", corpus_key, ".rds")))
 stopifnot(identical(recorded$route, "DIA_LIMPA"), dir.exists(recorded$store))
 origin_root <- dirname(recorded$store)
 # The project root is the directory holding the experiment folder (`dia_baseline_smoke/...`), whatever the depth of
@@ -67,10 +69,10 @@ t0 <- Sys.time()
 result <- h$kitReplayJourney(analysis, root, origin_copy_root, inputs, project_paths(project), scratch, api)
 out$replay <- list(seconds = as.numeric(difftime(Sys.time(), t0, units = "secs")), states = result$states, mismatches = result$mismatches,
     replayed = vapply(result$per_step, function(x) paste(x$operation, x$state), ""))
-file.copy(json, file.path(repo, "docs/qa/workflow-execution/kit/kit-053", paste0("analysis_record-limpa-", corpus_key, "-", label, ".json")), overwrite = TRUE)
+file.copy(json, file.path(repo, "docs/qa/workflow-execution/kit", ticket_dir, paste0("analysis_record-limpa-", corpus_key, "-", label, ".json")), overwrite = TRUE)
 cat("RECORD:", out$record$workflow, "| ops", paste(operations, collapse = ","), "| valid", out$record$valid, "| DA model", paste(unlist(out$record$da_model), collapse = "/"), "\n")
 cat("REPLAY:", length(result$states), "states,", length(result$mismatches), "mismatches", if (length(result$mismatches)) paste0("(", paste(result$mismatches, collapse = ", "), ")") else "",
     "| DA replayed", any(grepl("^DA-contrast-output", out$replay$replayed)), "|", round(out$replay$seconds), "s\n")
 out$seconds <- as.numeric(difftime(Sys.time(), started, units = "secs"))
-jsonlite::write_json(out, file.path(repo, "docs/qa/workflow-execution/kit/kit-053", paste0("replay-check-", corpus_key, "-", label, ".json")), auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA)
+jsonlite::write_json(out, file.path(repo, "docs/qa/workflow-execution/kit", ticket_dir, paste0("replay-check-", corpus_key, "-", label, ".json")), auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA)
 cat("TOTAL", round(out$seconds), "s\n")
