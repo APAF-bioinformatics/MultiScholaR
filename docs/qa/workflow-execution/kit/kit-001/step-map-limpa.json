@@ -266,8 +266,8 @@
       "label": "Log2 Matrix (DIA_LIMPA)",
       "route": "DIA_LIMPA",
       "unit": "row",
-      "in_journey": false,
-      "module": "R/mod_prot_qc_peptide_log2.R: observeEvent(apply_log2_matrix) -> runPeptideLog2ApplyObserver -> runPeptideLog2ApplyStep; owner path runDIAReferencePeptideLog2Matrix (R/utils_workflow_prot_declarations.R) -> computeDIAReferencePeptideLog2Matrix; declared by diaPeptideLog2MatrixOperation (registered peptide_log2_matrix, whole)",
+      "in_journey": true,
+      "module": "R/mod_prot_qc_peptide_log2.R: observeEvent(apply_log2_matrix) -> runPeptideLog2ApplyObserver -> runPeptideLog2ApplyStep; owner path runDIAReferencePeptideLog2Matrix (R/utils_workflow_prot_declarations.R) -> computeDIAReferencePeptideLog2Matrix; declared by diaPeptideLog2MatrixOperation (registered peptide_log2_matrix, variants whole | streamed, default streamed)",
       "kernel": "calcPeptideMatrix (R/func_pept_s4_core.R:374-420) then log2TransformPeptideMatrix (R/func_pept_s4_norm_methods.R:98-150)",
       "evidence": [
         "R/func_pept_s4_core.R:383, 407: the matrix is a pivot of each feature's own (feature, sample, norm quantity) rows; no cross-feature statistic",
@@ -291,8 +291,11 @@
       "mode": "in_process",
       "flag": null,
       "notes": [
-        "KIT-047: the unit was determined from the code under the afk authorisation of 2026-10-21 and recorded in the plan's decision record for the user's confirmation; the step is placed whole (variant `whole`)."
-      ]
+        "KIT-047: the unit was determined from the code under the afk authorisation of 2026-10-21 and recorded in the plan's decision record for the user's confirmation; the step is placed whole (variant `whole`).",
+        "KIT-057: production variant `streamed` (default), exact against `whole` on the screen and 300-sample corpora (kit-057/variant-check-peptide_log2-*.json); the 300-sample worker 4.84 -> 2.10 GiB. Unit unchanged (row); the user's confirmation of the KIT-047 unit row is still outstanding (afk decisions)."
+      ],
+      "variant": "streamed",
+      "mechanism": "KIT-057: the streamed row pattern on the feature-group partitioner (partitionByFeatureGroup by protein group): a prelude over the identity columns builds the feature-key map and the sample order as the kernel builds them on the whole table; calcPeptideMatrix then log2TransformPeptideMatrix on each batch of whole protein groups; the matrix rows placed by feature key; the updated quantity column streamed as a change map over the source rows (writeWorkflowTableChanges); whole kept as the control arm"
     },
     {
       "id": "peptide_accession",
@@ -300,8 +303,8 @@
       "route": "DIA_LIMPA",
       "unit": "feature_group",
       "grouping": "protein_id_column (the protein group)",
-      "in_journey": false,
-      "module": "R/mod_prot_qc_peptide_accession.R: observeEvent(apply_peptide_accession) -> runPeptideAccessionApplyObserver -> runPeptideAccessionApplyStep; owner path runDIAReferencePeptideAccessionCleanup -> computeDIAReferencePeptideAccessionCleanup; declared by diaPeptideAccessionCleanupOperation (registered peptide_accession_cleanup, whole)",
+      "in_journey": true,
+      "module": "R/mod_prot_qc_peptide_accession.R: observeEvent(apply_peptide_accession) -> runPeptideAccessionApplyObserver -> runPeptideAccessionApplyStep; owner path runDIAReferencePeptideAccessionCleanup -> computeDIAReferencePeptideAccessionCleanup; declared by diaPeptideAccessionCleanupOperation (registered peptide_accession_cleanup, variants whole | partitioned, default partitioned)",
       "kernel": "chooseBestProteinAccession, PeptideQuantitativeData method (R/func_pept_s4_accession_methods.R:2-125) -> chooseBestProteinAccessionHelper (R/func_prot_annotation_accession_ranking_helpers.R:18-160); calcPeptideMatrix at the end (:121)",
       "evidence": [
         "R/func_pept_s4_accession_methods.R:54-59: one best accession per protein group from the FASTA table (group_id = protein_id_column); the ranking reads only the group's accessions and the FASTA metadata",
@@ -327,15 +330,18 @@
       "mode": "in_process",
       "flag": null,
       "notes": [
-        "KIT-047: unit recorded under the afk authorisation (decision record 2026-10-21); the GUI's FASTA table carries database_id, renamed to the declared accession column (shipped default uniprot_acc); the script used cleaned_acc from its own FASTA table, which the ranking helper derives in either case (ranking_helpers.R:74-76, 207)."
-      ]
+        "KIT-047: unit recorded under the afk authorisation (decision record 2026-10-21); the GUI's FASTA table carries database_id, renamed to the declared accession column (shipped default uniprot_acc); the script used cleaned_acc from its own FASTA table, which the ranking helper derives in either case (ranking_helpers.R:74-76, 207).",
+        "KIT-057: production variant `partitioned` (default), exact against `whole` on both corpora (kit-057/variant-check-peptide_accession-*.json); the 300-sample worker 10.54 -> 2.38 GiB, 384 -> 680 s. Unit unchanged (feature group); the user's confirmation of the KIT-047 unit row is still outstanding (afk decisions)."
+      ],
+      "variant": "partitioned",
+      "mechanism": "KIT-057: one pass on the feature-group partitioner by the DIA-NN protein group (the method keeps the group key and replaces only Protein.Ids; its aggregation groups by sample, group and sequence): a prelude over the identity columns computes the helper's mapping once on the distinct group/candidate pairs and records each feature's first sample; the unchanged method per batch of whole groups; the aggregated rows saved in the method's sorted order through the order index; the matrix rows placed in the whole pivot's order; whole kept as the control arm"
     },
     {
       "id": "dpc_quant",
       "label": "DPC Quantification (DIA_LIMPA)",
       "route": "DIA_LIMPA",
       "unit": "whole_matrix",
-      "in_journey": false,
+      "in_journey": true,
       "module": "R/mod_prot_qc_protein_dpc_quant.R: observeEvent(apply_dpc_quant) -> runProteinDpcQuantApplyObserver -> runProteinDpcQuantStep; owner path runDIAReferenceProteinDpcQuant -> computeDIAReferenceProteinDpcQuant; declared by diaProteinDpcQuantOperation (registered protein_dpc_quant, whole, protein completion)",
       "kernel": "proteinMissingValueImputationLimpa, PeptideQuantitativeData method (R/func_prot_s4_missingness.R:312-660): engine dpc at :443, engine dpcQuant at :535/:543 (engine limpa by default, fastlimpadpc selectable; resolveLimpaDpcEngine)",
       "evidence": [
@@ -377,7 +383,7 @@
       "label": "Between-Sample Normalisation (DIA_LIMPA)",
       "route": "DIA_LIMPA",
       "unit": "whole_matrix",
-      "in_journey": false,
+      "in_journey": true,
       "module": "R/mod_prot_qc_protein_normalisation.R: observeEvent(apply_protein_normalisation) -> runProteinNormalisationApplyObserver -> runProteinNormalisationStep; owner path runDIAReferenceProteinNormalisation -> computeDIAReferenceProteinNormalisation; declared by diaProteinBetweenSampleNormalisationOperation (registered protein_between_sample_normalisation, whole, protein completion)",
       "kernel": "normaliseBetweenSamples, ProteinQuantitativeData method (R/func_prot_s4_norm_methods.R:48-106): cyclic loess / quantile / scale over every sample's whole column, or none",
       "evidence": [
@@ -412,7 +418,7 @@
       "label": "Peptide Count Filter (DIA_LIMPA)",
       "route": "DIA_LIMPA",
       "unit": "row",
-      "in_journey": false,
+      "in_journey": true,
       "module": "R/mod_prot_qc_protein_peptide_count.R: observeEvent(apply_peptide_count) -> runProteinPeptideCountApplyObserver -> runProteinPeptideCountStep; owner path runDIAReferenceProteinPeptideCountFilter -> computeDIAReferenceProteinPeptideCountFilter; declared by diaProteinPeptideCountFilterOperation (registered protein_peptide_count_filter, whole, protein completion)",
       "kernel": "filterMinNumPeptidesPerProtein, ProteinQuantitativeData method (R/func_prot_s4_qc_filter_methods.R:691-726)",
       "evidence": [
@@ -442,7 +448,7 @@
       "label": "RUV-III Factors as Covariates, or RUV-III Correction (DIA_LIMPA)",
       "route": "DIA_LIMPA",
       "unit": "whole_matrix",
-      "in_journey": false,
+      "in_journey": true,
       "module": "R/mod_prot_norm_*: on DIA_LIMPA the correlation sub-step's observer runs runDIAReferenceRuvCovariates after the correlation filter when ruv_mode = covariates (R/mod_prot_norm_workflow_helpers.R runProtNormApplyCorrelationObserver); declared by diaRuvCovariatesOperation (registered protein_ruv_covariates, in process, whole)",
       "kernel": "findBestNegCtrlPercentageCapped (R/func_prot_norm_optimization_helpers.R; the script's optimiser: getNegCtrlProtAnova, ruvCancorFromInput, calculateSeparationScore, calculateCompositeScore, calculateAdaptiveMaxK) then computeRuvCovariates (ruv::RUVIII with the replicate matrix of resolveProtRuvReplicateBlocks; W = Y[, ctl] %*% t(ac) %*% solve(ac %*% t(ac)))",
       "evidence": [
@@ -487,7 +493,7 @@
       "label": "Differential abundance (DIA_LIMPA)",
       "route": "DIA_LIMPA",
       "unit": "whole_matrix",
-      "in_journey": false,
+      "in_journey": true,
       "module": "R/mod_prot_da_handlers_run_analysis.R: da_server_run_analysis_handler (reference: runDIAReferenceDaAnalysis, R/utils_workflow_dia_da.R) with the contrast declaration diaContrastOperation(route = limpa)",
       "kernel": "differentialAbundanceAnalysis -> differentialAbundanceAnalysisHelper (R/func_prot_da_model_methods.R): the dpcDE branch when the object carries the quantified EList: limpa::dpcDE(elist, model.matrix(formula + W1..Wk), plot = FALSE, block = KIT-035's resolved block) -> convertDpcDAToStandardFormat (R/func_prot_limpa_da_helpers.R:17; contrasts.fit, eBayes, topTable, qvalue)",
       "evidence": [

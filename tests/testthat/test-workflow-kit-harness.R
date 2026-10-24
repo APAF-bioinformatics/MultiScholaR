@@ -1175,3 +1175,33 @@ test_that("KIT-053: the DIA_LIMPA route's step list, its single journey member w
     expect_true(decision$member$exact)
     expect_false(decision$member$in_memory)
 })
+
+test_that("KIT-057: a journey pair binds its route, oracles and normalisation settings for both members", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$builds$kit_053 <- list(library = "/lib/l", build = strrep("l", 64), exact_sum = "sum-l")
+    b$builds$kit_057 <- list(library = "/lib/m", build = strrep("m", 64), exact_sum = "sum-m")
+    b$harness$step_map_limpa_sha256 <- strrep("q", 64)
+    b$tickets[["057"]] <- list(kind = "journey", control = "kit_053", candidate = "kit_057", record = FALSE, corpus = "full",
+        route = "DIA_LIMPA", oracles = "limpa_full", normalisation = list(norm_method = "cyclicloess", ruv_mode = "covariates", correlation_threshold = 0.5))
+    cases <- h$kitCases(b, "kit-journey-057")
+    expect_length(cases, 2L)
+    expect_identical(vapply(cases, `[[`, character(1), "selector"), c("kit:journey-057:control:1", "kit:journey-057:candidate:1"))
+    for (case in cases) {
+        expect_identical(case$route, "DIA_LIMPA")
+        expect_identical(case$oracles, "limpa_full")
+        expect_identical(case$normalisation$norm_method, "cyclicloess")
+        expect_false(case$record)
+    }
+    expect_identical(cases[[1L]]$library, "/lib/l")
+    expect_identical(cases[[2L]]$library, "/lib/m")
+    # The binding carries the route's settings; a pair without them (the DIA pairs) is unchanged in shape.
+    other <- b; other$tickets[["057"]]$normalisation$norm_method <- "none"
+    expect_false(identical(h$kitCases(other, "kit-journey-057")[[2L]]$binding, cases[[2L]]$binding))
+    none <- b; none$harness$step_map_limpa_sha256 <- NULL
+    expect_error(h$kitCases(none, "kit-journey-057"), "limpa step map")
+    dia <- b; dia$tickets[["057"]] <- list(kind = "journey", control = "kit_053", candidate = "kit_057", record = FALSE)
+    plain <- h$kitCases(dia, "kit-journey-057")
+    expect_identical(plain[[1L]]$route, "DIA")
+    expect_null(plain[[1L]]$oracles)
+})

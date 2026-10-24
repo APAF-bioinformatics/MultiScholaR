@@ -440,6 +440,21 @@ if (!is.null(b$builds$kit_053)) {
         normalisation = list(norm_method = if (identical(corpus_053, "full")) "cyclicloess" else "none", ruv_mode = "covariates",
             correlation_threshold = 0.5))
 }
+# KIT-057: the DIA_LIMPA control/candidate pair (the audit of 2026-10-23: the route's three KIT-047 peptide steps ran
+# only whole-matrix workers; the counted KIT-053 member peaked at 11.42 GiB against the DIA route's 5.7 GiB on the same
+# corpus). Control `kit_053` (the whole variants, the KIT-053 counted build), candidate `kit_057` (the production
+# variants: streamed log2 matrix, partitioned accession cleanup); the same corpus, oracles and normalisation settings
+# as KIT-053's member (the variants are execution bookkeeping: exact against `whole`, so the route's fingerprints are
+# the same); the kit's pair rule (whole-slice peak with the per-step guard), no ratio promoted; the candidate's journey
+# peak must also be no higher than the DIA route's 5.7 GiB on this corpus (the ticket's acceptance, judged in the
+# outcome). `KIT_057_CORPUS=screen` binds the screen corpus for the pair's lifecycle run (not counted).
+if (!is.null(b$builds$kit_053) && !is.null(b$builds$kit_057)) {
+    corpus_057 <- Sys.getenv("KIT_057_CORPUS", "full"); stopifnot(corpus_057 %in% c("full", "screen"))
+    b$tickets[["057"]] <- list(kind = "journey", control = "kit_053", candidate = "kit_057", record = FALSE, corpus = corpus_057,
+        route = "DIA_LIMPA", oracles = paste0("limpa_", corpus_057), ceiling_seconds = if (identical(corpus_057, "full")) 14400L else 1800L,
+        normalisation = list(norm_method = if (identical(corpus_057, "full")) "cyclicloess" else "none", ruv_mode = "covariates",
+            correlation_threshold = 0.5))
+}
 # KIT-053 oracles: the route's per-step fingerprints on the screen and full DIA-NN corpora (the same corpora as the DIA
 # route), recorded by kit-053/oracle-record.R into oracles-limpa_<corpus>.rds and bound under limpa_<corpus>_<step>.
 for (key in c("screen", "full")) {

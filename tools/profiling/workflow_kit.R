@@ -250,9 +250,13 @@ kitCases <- function(bindings, stage) {
         # The counted pair binds the full corpus; a bound `corpus = "screen"` is the pair's lifecycle run on the
         # screen corpus (KIT-017: both members self-verified, the chain observed through completion; not counted).
         corpus <- spec$corpus %||% "full"
+        # KIT-057: a pair may bind its route, its in-process oracles and the normalisation tab's settings as a single
+        # journey member does (the DIA_LIMPA control/candidate pair); both members take the same binding.
         return(list(
-            journey_case("control-1", "control", 1L, spec$control, corpus, "none", paste0("kit:journey-", ticket, ":control:1"), record = record),
-            journey_case("candidate-1", "candidate", 1L, spec$candidate, corpus, "none", paste0("kit:journey-", ticket, ":candidate:1"), record = record)))
+            journey_case("control-1", "control", 1L, spec$control, corpus, "none", paste0("kit:journey-", ticket, ":control:1"), record = record,
+                route = spec$route %||% "DIA", oracles = spec$oracles, normalisation = spec$normalisation),
+            journey_case("candidate-1", "candidate", 1L, spec$candidate, corpus, "none", paste0("kit:journey-", ticket, ":candidate:1"), record = record,
+                route = spec$route %||% "DIA", oracles = spec$oracles, normalisation = spec$normalisation)))
     }
     if (grepl("^kit-gui-0[0-9]{2}$", stage)) {
         # A ticket's `gui`-mode managed member (KIT-008): one journey on the bound corpus and build, launched

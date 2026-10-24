@@ -819,19 +819,21 @@ computeDIAReferencePeptideAccessionCleanupPartitioned <- function(manager, refer
         cli::cli_abort("the peptide table lacks the accession cleanup's columns", class = "saved_entity_invalid")
     # Prelude (one pass over the identity columns): the distinct features with the first sample each appears in, the
     # distinct group/candidate pairs (the helper's input) and the samples.
+    # Per feature (group, sequence) only its smallest sample in the C-locale order is kept: each page is reduced to
+    # one row per feature before it meets the running table (one row per feature, never the table's rows).
     features <- NULL
     candidates <- NULL
     samples <- character()
+    reduce <- function(f) { f <- f[order(f$sample, method = "radix"), , drop = FALSE]; f[!duplicated(f[c("group", "sequence")]), , drop = FALSE] }
     streamWorkflowTableRows(scope, c(key, peptide, sample, accession), function(page, offset, row_names) {
         if (!nrow(page)) return(invisible(NULL))
-        f <- data.frame(group = as.character(page[[key]]), sequence = as.character(page[[peptide]]),
-            sample = as.character(page[[sample]]), stringsAsFactors = FALSE)
-        f <- f[!duplicated(f), , drop = FALSE]
-        features <<- if (is.null(features)) f else { joined <- rbind(features, f); joined[!duplicated(joined), , drop = FALSE] }
+        f <- reduce(data.frame(group = as.character(page[[key]]), sequence = as.character(page[[peptide]]),
+            sample = as.character(page[[sample]]), stringsAsFactors = FALSE))
+        features <<- if (is.null(features)) f else reduce(rbind(features, f))
         c2 <- data.frame(group = as.character(page[[key]]), candidates = as.character(page[[accession]]), stringsAsFactors = FALSE)
         c2 <- c2[!duplicated(c2), , drop = FALSE]
         candidates <<- if (is.null(candidates)) c2 else { joined <- rbind(candidates, c2); joined[!duplicated(joined), , drop = FALSE] }
-        samples <<- unique(c(samples, f$sample))
+        samples <<- unique(c(samples, as.character(page[[sample]])))
         invisible(NULL)
     })
     if (is.null(features) || !nrow(features)) cli::cli_abort("the peptide table is empty", class = "saved_entity_invalid")
@@ -839,8 +841,8 @@ computeDIAReferencePeptideAccessionCleanupPartitioned <- function(manager, refer
     groups_before <- length(unique(features$group))
     # The whole method's output order: `summarise` sorts its keys (sample, group, sequence) in the C locale.
     sample_order <- stats::setNames(seq_along(samples), samples[order(samples, method = "radix")])
-    features$sample_rank <- sample_order[features$sample]
-    first_sample <- stats::aggregate(sample_rank ~ group + sequence, data = features, FUN = min)
+    first_sample <- data.frame(group = features$group, sequence = features$sequence, sample_rank = unname(sample_order[features$sample]),
+        stringsAsFactors = FALSE)
     # The matrix's rows: each feature's first appearance in the sorted table (sample block, then group, sequence).
     first_sample <- first_sample[order(first_sample$sample_rank, first_sample$group, first_sample$sequence, method = "radix"), , drop = FALSE]
     # The table's rows: the plain key order (sample, group, sequence); the feature rank is the (group, sequence) rank.
