@@ -11,7 +11,8 @@
   quantified_protein_column = NULL,
   verbose = TRUE,
   chunk = 1000,
-  engine = NULL
+  engine = NULL,
+  peptide_summary = NULL
 )
 }
 \arguments{
@@ -30,7 +31,7 @@ Default is "Protein.Quantified.Limpa"}
 
 \item{chunk}{When verbose=TRUE, how often to output progress information (default: 1000)}
 
-\item{engine}{The DPC engine (KIT-047): NULL for the default (\code{limpa}), \code{"limpa"} (the reference) or
+\item{engine}{The DPC engine (KIT-047): NULL for the default (\code{fastlimpadpc} where installed, else \code{limpa}; KIT-057), \code{"limpa"} (the reference) or
 \code{"fastlimpadpc"} (the Rust engine, honoured when installed); the engine and its version are recorded in
 the results list}
 }
@@ -53,6 +54,10 @@ values. Unlike simple imputation, this method provides:
 \item No missing values in final protein summaries
 \item Proper handling of peptides with sparse observations
 }
+
+\item{peptide_summary}{Optional data frame of the kernel's per-protein counts (the protein id column, \code{peptide_count},
+\code{peptidoform_count}), supplied by a caller that does not hold the long peptide table (KIT-057's bounded worker);
+NULL computes them from \code{peptide_data}.}
 
 The process follows these steps:
 \enumerate{

@@ -289,9 +289,12 @@ preservePeptideNaValuesHelper <- function(peptide_obj, protein_obj) {
 #'   Default is "Protein.Quantified.Limpa"
 #' @param verbose Whether to print progress messages. Default is TRUE
 #' @param chunk When verbose=TRUE, how often to output progress information (default: 1000)
-#' @param engine The DPC engine (KIT-047): NULL for the default (`limpa`), `"limpa"` (the reference) or
+#' @param engine The DPC engine (KIT-047): NULL for the default (`fastlimpadpc` where installed, else `limpa`; KIT-057), `"limpa"` (the reference) or
 #'   `"fastlimpadpc"` (the Rust engine, honoured when installed); the engine and its version are recorded in
 #'   the results list
+#' @param peptide_summary Optional data frame of the kernel's per-protein counts (the protein id column, `peptide_count`,
+#'   `peptidoform_count`), supplied by a caller that does not hold the long peptide table (KIT-057's bounded worker);
+#'   NULL computes them from `peptide_data`.
 #'
 #' @details
 #' The DPC-Quant method represents missing values probabilistically using the Detection
