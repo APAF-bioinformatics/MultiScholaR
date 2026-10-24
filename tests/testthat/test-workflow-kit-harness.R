@@ -1176,6 +1176,18 @@ test_that("KIT-053: the DIA_LIMPA route's step list, its single journey member w
     expect_false(decision$member$in_memory)
 })
 
+test_that("KIT-057: the limpa route's RUV covariates product is an operation identity product across builds", {
+    h <- kitHarness()
+    pattern <- h$kitOperationIdentityProducts
+    expect_true(all(grepl(pattern, c("dia-ruv-covariates:006bd48ece37", "ruv_covariates_science", "dia-pearson-selection:493ebf534ed2", "dia-normalization-ruv:0123456789ab"))))
+    expect_false(any(grepl(pattern, c("qvalue_progress", "qc_progress", "dia_normalization_pca:479b0c17354b", "ruv_covariates_science_x"))))
+    fp <- function(sha) list(components = list(), support = list(), products = list(ruv_covariates_science = list(kind = "scientific_product", sha256 = sha),
+        qc_progress = list(kind = "value", sha256 = "same")), summary_sha256 = "s", rows = 1L)
+    a <- list(ruv = list(fingerprint = fp("a"))); b <- list(ruv = list(fingerprint = fp("b")))
+    expect_length(h$kitReproduceMismatches(a, b), 1L)
+    expect_length(h$kitReproduceMismatches(a, b, ignore_products = pattern), 0L)
+})
+
 test_that("KIT-057: a journey pair binds its route, oracles and normalisation settings for both members", {
     h <- kitHarness()
     b <- kitSyntheticBindings()

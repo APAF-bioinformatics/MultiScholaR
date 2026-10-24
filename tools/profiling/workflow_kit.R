@@ -642,7 +642,9 @@ kitOperationLifecycleDecision <- function(receipt, cases, bindings) {
 #' construction while the states they reference are identical. A cross-build check reports them
 #' (`kitOperationIdentityProducts`) and judges everything else.
 #' @noRd
-kitOperationIdentityProducts <- "^dia-(normalization-ruv|pearson-pairs|pearson-selection|contrast-references):[0-9a-f]{12}$"
+# KIT-057: the DIA_LIMPA route's RUV covariates product (KIT-041, `dia-ruv-covariates`) is one of them, and the state
+# also carries it under the fixed name `ruv_covariates_science`; both are reported, not judged, across builds.
+kitOperationIdentityProducts <- "^(dia-(normalization-ruv|ruv-covariates|pearson-pairs|pearson-selection|contrast-references):[0-9a-f]{12}|ruv_covariates_science)$"
 
 kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL) {
     mismatches <- character()
