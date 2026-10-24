@@ -533,7 +533,8 @@ registerBuiltinWorkflowOperations <- function() {
         compute = "protein", handler = "computeWorkflowProteinDpcQuantAction", validate = "validateWorkflowProteinDpcQuantParameters",
         resolve = NULL, parameter_limit = 65536, parameters = c("engine", "dpc_slope", "chunk"),
         completion = "protein", publication = "protein", step_label = "9_protein_dpc_quant", omic_type = "proteomics",
-        variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+        # KIT-057: `bounded` hydrates the matrix and the design and streams the identity columns; `whole` the control arm.
+        variants = c("whole", "bounded"), default_variant = "bounded", diagnostic_only = FALSE,
         # KIT-053 gave this step its own 10,800 s worker deadline for limpa's fit and quantification (5,000-6,300 s
         # on a 300-sample corpus). KIT-057 (user decision 2026-10-24): the shipped engine is fastlimpadpc, whose whole
         # kernel on the same corpus takes 168 s at 3.69 GiB, so the step keeps the policy's deadline; the per-step

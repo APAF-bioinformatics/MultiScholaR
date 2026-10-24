@@ -480,5 +480,17 @@ test_that("the peptide method records the engine it ran on in its results list (
   expect_identical(results$engine, "limpa")
   expect_identical(results$engine_version, "0.0.1")
   expect_true(is.na(results$engine_threads))
+  # KIT-057: the per-protein counts may be supplied; the kernel then needs the identities only, and the result is
+  # the same. A malformed summary is refused.
+  counts <- results$peptide_counts_per_protein
+  protein <- peptide_object@protein_id_column; sequence <- peptide_object@peptide_sequence_column
+  identities <- peptide_object@peptide_data[!duplicated(peptide_object@peptide_data[c(protein, sequence)]), , drop = FALSE]
+  expect_true(nrow(identities) < nrow(peptide_object@peptide_data))
+  trimmed <- peptide_object; trimmed@peptide_data <- identities
+  supplied <- proteinMissingValueImputationLimpa(trimmed, dpc_slope = 0.8, verbose = FALSE, engine = "limpa", peptide_summary = counts)
+  expect_identical(supplied@args$limpa_dpc_quant_results$peptide_counts_per_protein, counts)
+  expect_identical(supplied@protein_quant_table, quantified@protein_quant_table)
+  expect_identical(supplied@args$limpa_dpc_quant_results$quantified_elist$E, results$quantified_elist$E)
+  expect_error(proteinMissingValueImputationLimpa(trimmed, dpc_slope = 0.8, verbose = FALSE, engine = "limpa", peptide_summary = counts[, 1:2]), "peptide_summary")
   expect_identical(results$quantification_method, "limpa_dpc_quant")
 })

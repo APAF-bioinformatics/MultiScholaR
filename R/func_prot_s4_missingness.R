@@ -321,7 +321,8 @@ setMethod(
                         quantified_protein_column = NULL,
                         verbose = TRUE,
                         chunk = 1000,
-                        engine = NULL) {
+                        engine = NULL,
+                        peptide_summary = NULL) {
     # Load required packages
     if (!requireNamespace("limpa", quietly = TRUE)) {
       stop("limpa package is required but not installed. Please install it using: BiocManager::install('limpa')")
@@ -492,13 +493,20 @@ setMethod(
 
     # Calculate peptide and peptidoform counts per protein for future filtering
     # This ensures we carry this critical info to the protein level
-    peptide_summary <- peptide_data |>
-      dplyr::group_by(!!sym(protein_id_column)) |>
-      dplyr::summarise(
-        peptide_count = dplyr::n_distinct(!!sym(peptide_sequence_column)),
-        peptidoform_count = dplyr::n(), # Total peptidoforms is just the number of rows per protein
-        .groups = "drop"
-      )
+    # KIT-057: a caller that does not hold the long table (the bounded worker: the matrix and the distinct identities)
+    # supplies these counts, computed by the same grouping over the table's rows; the shape is checked, not recomputed.
+    if (is.null(peptide_summary)) {
+      peptide_summary <- peptide_data |>
+        dplyr::group_by(!!sym(protein_id_column)) |>
+        dplyr::summarise(
+          peptide_count = dplyr::n_distinct(!!sym(peptide_sequence_column)),
+          peptidoform_count = dplyr::n(), # Total peptidoforms is just the number of rows per protein
+          .groups = "drop"
+        )
+    } else if (!is.data.frame(peptide_summary) ||
+      !identical(names(peptide_summary), c(protein_id_column, "peptide_count", "peptidoform_count"))) {
+      stop("peptide_summary must be a data frame with the protein id column, peptide_count and peptidoform_count", call. = FALSE)
+    }
 
     if (verbose) {
       unique_proteins <- nrow(peptide_summary)

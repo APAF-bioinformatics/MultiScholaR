@@ -971,22 +971,100 @@ computeDIAReferencePeptideAccessionCleanupPartitioned <- function(manager, refer
 #' @param parameters `engine` (`fastlimpadpc` or `limpa`), `dpc_slope`, `chunk`.
 #' @return Compute-only protein contract.
 #' @noRd
+#' KIT-057: one streamed pass over the peptide table's identity columns for the bounded DPC worker: the distinct
+#' (protein, sequence) identities in first-appearance order with `Protein.Ids` (the kernel's feature-key map and
+#' accession provenance are rebuilt from them exactly as from the whole table) and the kernel's per-protein counts
+#' (`peptide_count = n_distinct(sequence)`, `peptidoform_count` = the rows per protein), computed by the kernel's own
+#' grouping over one row per distinct pair carrying its row count.
+#' @return List `identities` (data frame), `summary` (the kernel's `peptide_summary`), `rows` (table rows).
+#' @noRd
+streamDIAPeptideIdentitySummary <- function(manager, reference, object, worker_cap = 12 * 1024^3) {
+    before <- readDIAStateMetadata(manager, reference)
+    source <- before$data$components$peptide_data
+    scope <- newWorkflowTableReadScope(manager$.context$store, source)
+    on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+    con <- scope$connection
+    engine_bytes <- min(1e9, floor(worker_cap / 8))
+    DBI::dbExecute(con, paste0("SET memory_limit = '", floor(engine_bytes / 1048576), "MB'"))
+    DBI::dbExecute(con, "SET threads = 2")
+    protein <- object@protein_id_column
+    peptide <- object@peptide_sequence_column
+    if (!all(c(protein, peptide) %in% scope$metadata$columns))
+        cli::cli_abort("the peptide table lacks the DPC step's identity columns", class = "saved_entity_invalid")
+    identity_columns <- intersect(unique(c(protein, peptide, "Protein.Ids")), scope$metadata$columns)
+    identities <- NULL
+    proteins <- character()
+    sequences <- character()
+    counts <- integer()
+    rows <- 0L
+    streamWorkflowTableRows(scope, identity_columns, function(page, offset, row_names) {
+        if (!nrow(page)) return(invisible(NULL))
+        rows <<- rows + nrow(page)
+        page_protein <- as.character(page[[protein]])
+        page_sequence <- as.character(page[[peptide]])
+        key <- paste(page_protein, page_sequence, sep = "\r")
+        first <- !duplicated(key)
+        n <- tabulate(match(key, key[first]), sum(first))
+        index <- match(key[first], paste(proteins, sequences, sep = "\r"))
+        new <- is.na(index)
+        counts[index[!new]] <<- counts[index[!new]] + n[!new]
+        if (any(new)) {
+            proteins <<- c(proteins, page_protein[first][new])
+            sequences <<- c(sequences, page_sequence[first][new])
+            counts <<- c(counts, n[new])
+        }
+        rows_page <- page[identity_columns]
+        for (name in identity_columns) rows_page[[name]] <- as.character(rows_page[[name]])
+        rows_page <- rows_page[!duplicated(rows_page[c(protein, peptide)]), , drop = FALSE]
+        identities <<- if (is.null(identities)) rows_page else {
+            joined <- rbind(identities, rows_page)
+            joined[!duplicated(joined[c(protein, peptide)]), , drop = FALSE]
+        }
+        invisible(NULL)
+    })
+    if (is.null(identities) || !nrow(identities)) cli::cli_abort("the peptide table is empty", class = "saved_entity_invalid")
+    rownames(identities) <- NULL
+    pairs <- stats::setNames(list(proteins, sequences, counts), c(protein, peptide, "n_rows"))
+    pairs <- tibble::as_tibble(pairs)
+    summary <- pairs |>
+        dplyr::group_by(!!rlang::sym(protein)) |>
+        dplyr::summarise(peptide_count = dplyr::n_distinct(!!rlang::sym(peptide)), peptidoform_count = sum(n_rows), .groups = "drop")
+    list(identities = identities, summary = summary, rows = rows)
+}
+
 computeDIAReferenceProteinDpcQuant <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
-    variant = "whole", now_fn = Sys.time) {
-    if (!identical(variant, "whole")) cli::cli_abort("unsupported DPC quantification variant", class = "workflow_execution_unsupported")
+    variant = "bounded", now_fn = Sys.time) {
+    if (!variant %in% c("whole", "bounded")) cli::cli_abort("unsupported DPC quantification variant", class = "workflow_execution_unsupported")
     engine <- resolveLimpaDpcEngine(parameters$engine)
     dpc_slope <- parameters$dpc_slope %||% 0.8
     chunk <- parameters$chunk %||% 1000
-    object <- readDIAReferencePeptideObject(manager, reference, fields = c("peptide_data", "design_matrix", "peptide_matrix"))
+    # KIT-057 `bounded` (user request 2026-10-25): the worker hydrates the matrix and the design only. The kernel reads
+    # the long table for two things, the feature-key map and provenance (rebuilt by `.ensurePeptideFeatureKeyMap` from
+    # the distinct identities, as the streamed log2 and partitioned accession preludes do) and the per-protein counts
+    # (`n_distinct(sequence)` and the rows per protein), which a streamed pass over the identity columns computes and
+    # hands to the kernel as `peptide_summary`. `whole` hydrates the table and lets the kernel compute both.
+    fields <- if (identical(variant, "bounded")) c("design_matrix", "peptide_matrix") else c("peptide_data", "design_matrix", "peptide_matrix")
+    object <- readDIAReferencePeptideObject(manager, reference, fields = fields)
     if (!length(object@peptide_matrix))
         cli::cli_abort("DPC quantification needs the log2 peptide matrix state", class = "workflow_execution_invalid")
     if (!isTRUE(object@is_logged_data))
         cli::cli_abort("DPC quantification needs a log2 transformed peptide state", class = "workflow_execution_invalid")
     peptides <- nrow(object@peptide_matrix)
+    peptide_summary <- NULL
+    execution <- list(variant = variant, worker_cap = worker_cap)
+    if (identical(variant, "bounded")) {
+        prelude <- streamDIAPeptideIdentitySummary(manager, reference, object, worker_cap)
+        object@peptide_data <- prelude$identities
+        peptide_summary <- prelude$summary
+        execution <- c(execution, list(table_rows = prelude$rows, identities = nrow(prelude$identities),
+            proteins_counted = nrow(prelude$summary)))
+        prelude <- NULL
+    }
     proteinMissingValueImputationLimpaFn <- proteinMissingValueImputationLimpa
     quantified <- proteinMissingValueImputationLimpaFn(object, dpc_slope = dpc_slope, verbose = FALSE, chunk = chunk,
-        engine = engine)
+        engine = engine, peptide_summary = peptide_summary)
     object <- NULL
+    peptide_summary <- NULL
     results <- quantified@args$limpa_dpc_quant_results
     engine_version <- as.character(utils::packageVersion(engine))
     quantified@args$limpaDpcQuant <- list(engine = engine, engine_version = engine_version, dpc_slope = dpc_slope,
@@ -1023,7 +1101,7 @@ computeDIAReferenceProteinDpcQuant <- function(manager, reference, parameters, w
         state_name = "protein_dpc_quant",
         description = "Limpa DPC imputation and protein quantification completed (ProteinQuantitativeData created)",
         config = config, section = "limpaDpcQuant", protein_count = protein_count,
-        execution = list(variant = variant, worker_cap = worker_cap, rows = protein_count, samples = samples, peptides = peptides),
+        execution = c(execution, list(rows = protein_count, samples = samples, peptides = peptides)),
         text = text, field = "quantifiedS4", qc_name = "dpc_quant",
         qc = c(config[setdiff(names(config), "outcomes")], list(timestamp = now_fn())))
 }

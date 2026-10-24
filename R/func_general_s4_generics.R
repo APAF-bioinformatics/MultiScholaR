@@ -53,7 +53,8 @@ setGeneric(name="proteinMissingValueImputationLimpa"
                           quantified_protein_column = NULL,
                           verbose = TRUE,
                           chunk = 1000,
-                          engine = NULL) {
+                          engine = NULL,
+                          peptide_summary = NULL) {
              standardGeneric("proteinMissingValueImputationLimpa")
            }
            , signature=c("theObject"))

@@ -326,7 +326,7 @@ test_that("the DIA_LIMPA peptide-stage declarations are registered with the unit
     roles <- list(peptide_log2_matrix = "peptide", peptide_accession_cleanup = "peptide", protein_dpc_quant = "protein")
     # KIT-057: the production variants on the kit's mechanisms; `whole` kept as the control arm of each.
     variants <- list(peptide_log2_matrix = c("whole", "streamed"), peptide_accession_cleanup = c("whole", "partitioned"),
-        protein_dpc_quant = "whole")
+        protein_dpc_quant = c("whole", "bounded"))
     for (name in names(roles)) {
         entry <- workflowActionSpec(name)
         expect_identical(entry$variants, variants[[name]], info = name)
@@ -604,5 +604,33 @@ test_that("the streamed log2 and the partitioned accession cleanup equal the who
         expect_true(partitioned$execution$batches >= 1L)
         same_output(whole, partitioned)
         expect_identical(whole$accession_cleanup_results, partitioned$accession_cleanup_results)
+        setDIAStepProvenance(manager, "peptide_accession_cleanup", "partitioned", names(parameters), NULL, values = parameters)
+        finishDIAReferencePeptideStep(workflow, partitioned$checkpoint, partitioned$state_name, partitioned$description, partitioned$config, partitioned$section, NULL)
+        expect_identical(manager$current_state, "peptide_accession_cleaned")
+    })
+    # KIT-057 (user request 2026-10-25): the bounded DPC worker (matrix, design and a streamed identity pass) equals
+    # the whole worker (the long table hydrated) in every saved component, slot and owned value.
+    skip_if_not_installed("limpa")
+    owned_of <- function(args) { if (isSavedWorkflowReference(args$limpa_dpc_quant_results)) args$limpa_dpc_quant_results <- hydrateSavedWorkflowEntity(manager$.context$store, args$limpa_dpc_quant_results); args }
+    withDIAStateScope(manager, function() {
+        source <- getDIAStateReference(manager)
+        parameters <- list(engine = resolveLimpaDpcEngine(), dpc_slope = 0.8, chunk = 1000)
+        whole <- suppressMessages(computeDIAReferenceProteinDpcQuant(manager, source, parameters, variant = "whole",
+            now_fn = function() as.POSIXct("2026-10-25", tz = "UTC")))
+        bounded <- suppressMessages(computeDIAReferenceProteinDpcQuant(manager, source, parameters, variant = "bounded",
+            now_fn = function() as.POSIXct("2026-10-25", tz = "UTC")))
+        expect_identical(bounded$execution$variant, "bounded")
+        expect_true(bounded$execution$table_rows > bounded$execution$identities)
+        expect_identical(whole$state_name, bounded$state_name)
+        expect_identical(whole$config, bounded$config)
+        for (component in names(whole$checkpoint$components))
+            expect_identical(table_of(whole$checkpoint$components[[component]]), table_of(bounded$checkpoint$components[[component]]), info = component)
+        expect_identical(names(whole$checkpoint$support), names(bounded$checkpoint$support))
+        for (section in names(whole$checkpoint$support)) for (field in names(whole$checkpoint$support[[section]]))
+            expect_identical(table_of(whole$checkpoint$support[[section]][[field]]), table_of(bounded$checkpoint$support[[section]][[field]]), info = paste(section, field))
+        expect_identical(owned_of(whole$checkpoint$slots$args), owned_of(bounded$checkpoint$slots$args))
+        expect_identical(whole$checkpoint$slots[setdiff(names(whole$checkpoint$slots), "args")], bounded$checkpoint$slots[setdiff(names(bounded$checkpoint$slots), "args")])
+        expect_identical(whole$checkpoint$dimensions, bounded$checkpoint$dimensions)
+        expect_error(computeDIAReferenceProteinDpcQuant(manager, source, parameters, variant = "other"), class = "workflow_execution_unsupported")
     })
 })
