@@ -34,6 +34,9 @@ Default is "Protein.Quantified.Limpa"}
 \item{engine}{The DPC engine (KIT-047): NULL for the default (\code{fastlimpadpc} where installed, else \code{limpa}; KIT-057), \code{"limpa"} (the reference) or
 \code{"fastlimpadpc"} (the Rust engine, honoured when installed); the engine and its version are recorded in
 the results list}
+\item{peptide_summary}{Optional data frame of the kernel's per-protein counts (the protein id column, \code{peptide_count},
+\code{peptidoform_count}), supplied by a caller that does not hold the long peptide table (KIT-057's bounded worker);
+NULL computes them from \code{peptide_data}.}
 }
 \value{
 ProteinQuantitativeData object with quantified protein values and metadata
@@ -54,10 +57,6 @@ values. Unlike simple imputation, this method provides:
 \item No missing values in final protein summaries
 \item Proper handling of peptides with sparse observations
 }
-
-\item{peptide_summary}{Optional data frame of the kernel's per-protein counts (the protein id column, \code{peptide_count},
-\code{peptidoform_count}), supplied by a caller that does not hold the long peptide table (KIT-057's bounded worker);
-NULL computes them from \code{peptide_data}.}
 
 The process follows these steps:
 \enumerate{
