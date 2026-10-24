@@ -28,7 +28,7 @@ test_that("the three DIA_LIMPA tabs are the route's QC specs and carry the input
   expect_true(all(c('id="x-dpc_slope"', 'id="x-chunk"', 'id="x-apply_dpc_quant"', 'id="x-dpc_quant_results"') %in% dpc))
   if (requireNamespace("limpa", quietly = TRUE)) expect_true('id="x-engine"' %in% dpc)
   # The engine choices follow the installed namespaces, the shipped default first.
-  expect_identical(unname(limpaDpcEngineChoices(available = function(p) p %in% c("fastlimpadpc", "limpa"))), c("limpa", "fastlimpadpc"))
+  expect_identical(unname(limpaDpcEngineChoices(available = function(p) p %in% c("fastlimpadpc", "limpa"))), c("fastlimpadpc", "limpa"))
   expect_identical(unname(limpaDpcEngineChoices(available = function(p) p == "limpa")), "limpa")
   expect_length(limpaDpcEngineChoices(available = function(p) FALSE), 0L)
 })

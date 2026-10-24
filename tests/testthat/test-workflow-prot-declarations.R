@@ -396,7 +396,8 @@ test_that("the log2 matrix and peptide accession declarations reproduce the in-m
 test_that("the DPC quantification declaration reproduces the in-memory kernel, stores its results as the owned entry and records the engine (KIT-047)", {
     skip_if_not_installed("limpa")
     engine <- resolveLimpaDpcEngine()
-    expect_identical(engine, "limpa")
+    # KIT-057 (user decision 2026-10-24): fastlimpadpc where installed, limpa otherwise.
+    expect_identical(engine, if (requireNamespace("fastlimpadpc", quietly = TRUE)) "fastlimpadpc" else "limpa")
     rolled <- rolledPeptideFixture()
     logged <- log2TransformPeptideMatrix(calcPeptideMatrix(rolled))
     manager <- proteinDeclarationFixtureManager(logged, withr::local_tempdir(), "log2_matrix")

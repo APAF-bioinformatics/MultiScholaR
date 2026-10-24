@@ -326,10 +326,14 @@ setMethod(
     if (!requireNamespace("limpa", quietly = TRUE)) {
       stop("limpa package is required but not installed. Please install it using: BiocManager::install('limpa')")
     }
-    # KIT-047: the DPC fit and the quantification run on the declared engine (`limpa` by default, `fastlimpadpc`
-    # selectable); the two calls below are the method's only engine calls, resolved by name.
+    # KIT-047: the DPC fit and the quantification run on the declared engine (`fastlimpadpc` by default where
+    # installed, `limpa` the reference); the two calls below are the method's only engine calls, resolved by name.
     engine <- resolveLimpaDpcEngine(engine)
     engine_fn <- function(name) get(name, envir = asNamespace(engine), mode = "function")
+    # KIT-057: fastlimpadpc's fit is bit-identical across runs on one Rayon thread only; the pool is built on the
+    # engine's first call in this process, so the pin must precede it. An explicit setting is respected and recorded.
+    if (identical(engine, "fastlimpadpc") && !nzchar(Sys.getenv("RAYON_NUM_THREADS"))) Sys.setenv(RAYON_NUM_THREADS = "1")
+    engine_threads <- if (identical(engine, "fastlimpadpc")) Sys.getenv("RAYON_NUM_THREADS") else NA_character_
 
     # Parameter validation and defaults
     quantified_protein_column <- if (is.null(quantified_protein_column)) {
@@ -655,6 +659,7 @@ setMethod(
           quantification_method = "limpa_dpc_quant",
           engine = engine,
           engine_version = as.character(utils::packageVersion(engine)),
+          engine_threads = engine_threads,
           total_proteins_quantified = nrow(protein_matrix),
           total_peptides_used = nrow(y_peptide),
           dpc_method = "limpa_dpc_quant" # Identify the method type
@@ -678,19 +683,21 @@ setMethod(
 )
 
 
-#' The DPC engine of the peptide `proteinMissingValueImputationLimpa` method (KIT-047): `limpa` (the reference) by
-#' default; `fastlimpadpc` selectable, honoured when its namespace is installed and refused with
-#' `workflow_engine_unavailable` otherwise. Both engines expose `dpc` and `dpcQuant` with the same arguments. The
-#' default is limpa by the ticket's determinism rule: on this host fastlimpadpc's DPC fit is not bit-identical
-#' between two runs under the host-default Rayon thread pool (its quantification is, given a fit), so it cannot be
-#' the default (KIT-047 outcome).
+#' The DPC engine of the peptide `proteinMissingValueImputationLimpa` method (KIT-047): `fastlimpadpc` by default
+#' where its namespace is installed, else `limpa` (the reference); either selectable by name, refused with
+#' `workflow_engine_unavailable` when absent. Both engines expose `dpc` and `dpcQuant` with the same arguments.
+#' KIT-047 shipped limpa as the default because fastlimpadpc's DPC fit was not bit-identical between two runs under
+#' the host-default Rayon thread pool; the user confirmed fastlimpadpc as the route's engine on 2026-10-24 (KIT-057:
+#' limpa's per-protein fit peaks above 6 GiB on a 300-sample corpus, fastlimpadpc at 1.2 GiB), and the method pins
+#' the fit to one Rayon thread (`RAYON_NUM_THREADS=1` unless already set), under which the fit is bit-identical
+#' across runs (KIT-047 `dpc-check-tree-fast1.json`).
 #' @param engine NULL (the default), `"fastlimpadpc"` or `"limpa"`.
 #' @param available Function(package) saying whether a namespace is installed (a seam for tests).
 #' @return The engine name.
 #' @noRd
 resolveLimpaDpcEngine <- function(engine = NULL, available = function(package) requireNamespace(package, quietly = TRUE)) {
   engines <- c("fastlimpadpc", "limpa")
-  if (is.null(engine)) engine <- "limpa"
+  if (is.null(engine)) engine <- if (isTRUE(available("fastlimpadpc"))) "fastlimpadpc" else "limpa"
   if (!is.character(engine) || length(engine) != 1L || is.na(engine) || !engine %in% engines) {
     cli::cli_abort("DPC engine must be one of {.val {engines}}", class = "workflow_engine_invalid")
   }

@@ -17,8 +17,8 @@
 #' @title DPC Quantification Module (DIA with limpa)
 #'
 #' @description The DIA_LIMPA route's DPC imputation and protein quantification (KIT-047, the limpa script's
-#' chunk 17): the peptide method of `proteinMissingValueImputationLimpa` on the declared engine (`limpa` by
-#' default, `fastlimpadpc` selectable) produces the protein object; its Limpa results travel with the
+#' chunk 17): the peptide method of `proteinMissingValueImputationLimpa` on the declared engine (`fastlimpadpc` by
+#' default where installed, `limpa` the reference) produces the protein object; its Limpa results travel with the
 #' state as an owned value. On an on-disk owner the step runs the registered `protein_dpc_quant` declaration
 #' (managed worker or in process).
 #'
@@ -26,10 +26,11 @@
 #' @param id,workflow_data,experiment_paths,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
-#' The engines the DPC tab offers (KIT-047): the installed ones, the shipped default (limpa) first.
+#' The engines the DPC tab offers (KIT-047): the installed ones, the shipped default first (fastlimpadpc since
+#' KIT-057, the user's decision of 2026-10-24; limpa the reference).
 #' @noRd
 limpaDpcEngineChoices <- function(available = function(package) requireNamespace(package, quietly = TRUE)) {
-  choices <- c("limpa (reference, default)" = "limpa", "fastlimpadpc (Rust)" = "fastlimpadpc")
+  choices <- c("fastlimpadpc (Rust, default)" = "fastlimpadpc", "limpa (reference)" = "limpa")
   choices[vapply(choices, function(engine) isTRUE(available(engine)), logical(1))]
 }
 

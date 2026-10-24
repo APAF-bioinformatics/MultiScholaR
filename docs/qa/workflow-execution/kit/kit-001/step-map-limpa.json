@@ -343,7 +343,7 @@
       "unit": "whole_matrix",
       "in_journey": true,
       "module": "R/mod_prot_qc_protein_dpc_quant.R: observeEvent(apply_dpc_quant) -> runProteinDpcQuantApplyObserver -> runProteinDpcQuantStep; owner path runDIAReferenceProteinDpcQuant -> computeDIAReferenceProteinDpcQuant; declared by diaProteinDpcQuantOperation (registered protein_dpc_quant, whole, protein completion)",
-      "kernel": "proteinMissingValueImputationLimpa, PeptideQuantitativeData method (R/func_prot_s4_missingness.R:312-660): engine dpc at :443, engine dpcQuant at :535/:543 (engine limpa by default, fastlimpadpc selectable; resolveLimpaDpcEngine)",
+      "kernel": "proteinMissingValueImputationLimpa, PeptideQuantitativeData method (R/func_prot_s4_missingness.R:312-660): engine dpc at :443, engine dpcQuant at :535/:543 (engine fastlimpadpc by default where installed since KIT-057, limpa the reference; resolveLimpaDpcEngine)",
       "evidence": [
         "R/func_prot_s4_missingness.R:443: the detection probability curve is fitted on the whole peptide matrix (every peptide, every sample)",
         "R/func_prot_s4_missingness.R:535-549: dpcQuant estimates the hyperparameters (limpa::dpcQuantHyperparam, fastlimpadpc R/wrappers.R:249) over every protein before quantifying each protein from its own peptides",
@@ -375,8 +375,11 @@
       "mode": "in_process",
       "flag": null,
       "notes": [
-        "KIT-047: unit recorded under the afk authorisation (decision record 2026-10-21). Determinism on the kit host (kit-047/dpc-check-*.json): limpa bit-identical across runs; fastlimpadpc's dpcQuant bit-identical across runs and across RAYON_NUM_THREADS settings given a fit, its dpc fit not bit-identical between two runs under the host-default thread pool (identical with RAYON_NUM_THREADS=1); the shipped default engine is therefore limpa (the ticket's rule)."
-      ]
+        "KIT-047: unit recorded under the afk authorisation (decision record 2026-10-21). Determinism on the kit host (kit-047/dpc-check-*.json): limpa bit-identical across runs; fastlimpadpc's dpcQuant bit-identical across runs and across RAYON_NUM_THREADS settings given a fit, its dpc fit not bit-identical between two runs under the host-default thread pool (identical with RAYON_NUM_THREADS=1); the shipped default engine is therefore limpa (the ticket's rule).",
+        "KIT-057 (user decision 2026-10-24, \"confirm the switch\"): the shipped default engine is fastlimpadpc where installed, with RAYON_NUM_THREADS=1 pinned by the kernel before the engine's first call (bit-identical fits across runs on one thread, KIT-047 dpc-check-tree-fast1.json); limpa selectable. The limpa-versus-fastlimpadpc difference is characterised, not asserted equal (KIT-047: max abs dE 0.28 log2, median 0.0004 on the screen corpus). Exactness on the route is each production variant against its own whole run on the shipped engine."
+      ],
+      "variant": "whole",
+      "mechanism": "KIT-057: no kit mechanism bounds this step (measured 2026-10-24: limpa's per-protein fit peaks at 5.62 GiB on two proteins of 904 peptide rows and 6.58 GiB on 200 proteins whatever the hydration; the chunk is not the lever; a hydration trim is not exact without a kernel change since the kernel's per-protein row count comes from the long table). The user's decision of 2026-10-24: the route's engine is fastlimpadpc (24 s, 1.22 GiB on the same 200 proteins), the default where installed, pinned to one Rayon thread by the kernel; limpa stays selectable as the reference. The unit stays whole matrix; the variant stays whole."
     },
     {
       "id": "protein_normalisation_limpa",

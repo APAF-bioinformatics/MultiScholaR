@@ -451,24 +451,29 @@ if (!is.null(b$builds$kit_053)) {
 if (!is.null(b$builds$kit_053) && !is.null(b$builds$kit_057)) {
     corpus_057 <- Sys.getenv("KIT_057_CORPUS", "full"); stopifnot(corpus_057 %in% c("full", "screen"))
     b$tickets[["057"]] <- list(kind = "journey", control = "kit_053", candidate = "kit_057", record = FALSE, corpus = corpus_057,
-        route = "DIA_LIMPA", oracles = paste0("limpa_", corpus_057), ceiling_seconds = if (identical(corpus_057, "full")) 14400L else 1800L,
+        route = "DIA_LIMPA", oracles = list(control = paste0("limpa_", corpus_057), candidate = paste0("limpa57_", corpus_057)),
+        ceiling_seconds = if (identical(corpus_057, "full")) 14400L else 1800L,
         normalisation = list(norm_method = if (identical(corpus_057, "full")) "cyclicloess" else "none", ruv_mode = "covariates",
             correlation_threshold = 0.5))
 }
 # KIT-053 oracles: the route's per-step fingerprints on the screen and full DIA-NN corpora (the same corpora as the DIA
 # route), recorded by kit-053/oracle-record.R into oracles-limpa_<corpus>.rds and bound under limpa_<corpus>_<step>.
-for (key in c("screen", "full")) {
+# KIT-057: the same recorder on the kit_057 build (the production variants and the fastlimpadpc engine, the user's
+# decision of 2026-10-24) into kit-057/oracles-limpa_<corpus>.rds, bound under limpa57_<corpus>_<step> (the pair's
+# candidate oracles; the control keeps KIT-053's).
+for (ticket_dir in c(`limpa` = "kit-053", `limpa57` = "kit-057")) for (key in c("screen", "full")) {
+    prefix <- names(which(c(`limpa` = "kit-053", `limpa57` = "kit-057") == ticket_dir))
     if (is.null(b$corpora[[key]])) next
-    oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-053", paste0("oracles-limpa_", key, ".rds"))
+    oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit", ticket_dir, paste0("oracles-limpa_", key, ".rds"))
     if (!file.exists(oracle_file)) next
     recorded <- readRDS(oracle_file)
     stopifnot(identical(recorded$corpus, key), identical(recorded$route, "DIA_LIMPA"), identical(recorded$corpus_sha256, b$corpora[[key]]$files[[1L]]$sha256))
     for (step in names(recorded$populations)) {
         population <- recorded$populations[[step]]
-        b$populations[[paste0("limpa_", key, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+        b$populations[[paste0(prefix, "_", key, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
             head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
             oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at, route = "DIA_LIMPA")
-        b$oracles[[paste0("limpa_", key, "_", step)]] <- population$fingerprint
+        b$oracles[[paste0(prefix, "_", key, "_", step)]] <- population$fingerprint
     }
 }
 # KIT-021 oracles (protocol v1.5 item 1): per-step fingerprints of an in-process run of the bound build on each protein

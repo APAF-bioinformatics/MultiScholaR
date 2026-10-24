@@ -1200,6 +1200,12 @@ test_that("KIT-057: a journey pair binds its route, oracles and normalisation se
     expect_false(identical(h$kitCases(other, "kit-journey-057")[[2L]]$binding, cases[[2L]]$binding))
     none <- b; none$harness$step_map_limpa_sha256 <- NULL
     expect_error(h$kitCases(none, "kit-journey-057"), "limpa step map")
+    # Oracles by role: the candidate's fingerprints recorded on its own build (a different shipped engine).
+    byrole <- b; byrole$tickets[["057"]]$oracles <- list(control = "limpa_full", candidate = "limpa57_full")
+    pair <- h$kitCases(byrole, "kit-journey-057")
+    expect_identical(pair[[1L]]$oracles, "limpa_full")
+    expect_identical(pair[[2L]]$oracles, "limpa57_full")
+    expect_false(identical(pair[[2L]]$binding, cases[[2L]]$binding))
     dia <- b; dia$tickets[["057"]] <- list(kind = "journey", control = "kit_053", candidate = "kit_057", record = FALSE)
     plain <- h$kitCases(dia, "kit-journey-057")
     expect_identical(plain[[1L]]$route, "DIA")

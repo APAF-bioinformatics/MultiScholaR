@@ -450,9 +450,11 @@ test_that("limpa DPC-Quant receives Protein.Group from the feature map without p
 test_that("the DPC engine of the peptide method is resolved by name and refused when absent (KIT-047)", {
   both <- function(package) package %in% c("fastlimpadpc", "limpa")
   limpa_only <- function(package) package == "limpa"
-  expect_identical(resolveLimpaDpcEngine(NULL, available = both), "limpa")
+  # KIT-057 (user decision 2026-10-24): fastlimpadpc is the default where installed; limpa otherwise.
+  expect_identical(resolveLimpaDpcEngine(NULL, available = both), "fastlimpadpc")
   expect_identical(resolveLimpaDpcEngine(NULL, available = limpa_only), "limpa")
-  expect_error(resolveLimpaDpcEngine(NULL, available = function(package) package == "fastlimpadpc"), class = "workflow_engine_unavailable")
+  expect_identical(resolveLimpaDpcEngine(NULL, available = function(package) package == "fastlimpadpc"), "fastlimpadpc")
+  expect_error(resolveLimpaDpcEngine("limpa", available = function(package) package == "fastlimpadpc"), class = "workflow_engine_unavailable")
   expect_identical(resolveLimpaDpcEngine("limpa", available = both), "limpa")
   expect_identical(resolveLimpaDpcEngine("fastlimpadpc", available = both), "fastlimpadpc")
   expect_error(resolveLimpaDpcEngine("fastlimpadpc", available = limpa_only), class = "workflow_engine_unavailable")
@@ -477,5 +479,6 @@ test_that("the peptide method records the engine it ran on in its results list (
   results <- quantified@args$limpa_dpc_quant_results
   expect_identical(results$engine, "limpa")
   expect_identical(results$engine_version, "0.0.1")
+  expect_true(is.na(results$engine_threads))
   expect_identical(results$quantification_method, "limpa_dpc_quant")
 })

@@ -256,13 +256,14 @@ test_that("every declared parameter of every registered operation has a defaults
     }
 })
 
-test_that("a worker step may name its own deadline within the journey ceiling; the DPC quantification does (KIT-053)", {
+test_that("a worker step may name its own deadline within the journey ceiling; none does since KIT-057 (the DPC step did under KIT-053)", {
   policy <- list(deadline = 1800L)
-  expect_identical(workflowActionSpec("protein_dpc_quant")$worker_deadline, 10800L)
-  expect_identical(workflowActionWorkerDeadline("protein_dpc_quant", policy), 10800L)
-  # Every other registered worker step keeps the policy's deadline.
-  others <- setdiff(Filter(function(name) !identical(workflowActionSpec(name)$compute, "in_process"), workflowOperationNames()),
-    "protein_dpc_quant")
+  # KIT-057 (user decision 2026-10-24): the DPC step runs on fastlimpadpc (168 s on the 300-sample corpus) and keeps
+  # the policy's deadline; the entry it carried under KIT-053 (10,800 s for limpa) is gone.
+  expect_null(workflowActionSpec("protein_dpc_quant")$worker_deadline)
+  expect_identical(workflowActionWorkerDeadline("protein_dpc_quant", policy), 1800L)
+  # Every registered worker step keeps the policy's deadline.
+  others <- Filter(function(name) !identical(workflowActionSpec(name)$compute, "in_process"), workflowOperationNames())
   for (name in others) {
     expect_null(workflowActionSpec(name)$worker_deadline, info = name)
     expect_identical(workflowActionWorkerDeadline(name, policy), 1800L, info = name)

@@ -534,10 +534,10 @@ registerBuiltinWorkflowOperations <- function() {
         resolve = NULL, parameter_limit = 65536, parameters = c("engine", "dpc_slope", "chunk"),
         completion = "protein", publication = "protein", step_label = "9_protein_dpc_quant", omic_type = "proteomics",
         variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
-        # KIT-053: limpa's DPC fit and quantification on a 300-sample corpus take 5,000-6,300 s single-threaded
-        # (in process on the kit host), beyond the policy's 1,800 s worker deadline; the counted member's worker
-        # was stopped there. Three hours: about twice the measured time, inside the journey ceiling.
-        worker_deadline = 10800L,
+        # KIT-053 gave this step its own 10,800 s worker deadline for limpa's fit and quantification (5,000-6,300 s
+        # on a 300-sample corpus). KIT-057 (user decision 2026-10-24): the shipped engine is fastlimpadpc, whose whole
+        # kernel on the same corpus takes 168 s at 3.69 GiB, so the step keeps the policy's deadline; the per-step
+        # `worker_deadline` entry remains available to the registry (validated 60-14,400 s) for a step that needs it.
         inclusion_absence = FALSE, declaration = diaProteinDpcQuantOperation()))
     # KIT-041: the DIA_LIMPA protein stage (chunks 17b and 18), each placed whole on the protein role.
     registerWorkflowOperation(list(name = "protein_between_sample_normalisation", input = "checkpoint", input_class = "ProteinQuantitativeData",
