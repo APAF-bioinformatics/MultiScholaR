@@ -688,7 +688,7 @@ computeDIAReferencePeptideLog2MatrixStreamed <- function(manager, reference, wor
     checkpoint$components$peptide_data <- streamed
     checkpoint$dependencies <- collectDIANativeReferences(list(reference, checkpoint$dependencies, checkpoint$components,
         checkpoint$support, checkpoint$products, partition$dependencies))
-    checkpoint$dimensions <- list(rows = metadata$rows, columns = metadata$columns)
+    checkpoint$dimensions <- list(rows = metadata$rows, columns = metadata$columns, samples = nrow(object@design_matrix))
     assembled <- NULL
     config <- list(peptides = peptides, samples = length(samples), quantity_column = quantity, nonpositive_set_to_na = nonpositive,
         missing_before = missing_before, missing_after = missing_after,
@@ -857,7 +857,9 @@ computeDIAReferencePeptideAccessionCleanupPartitioned <- function(manager, refer
     mapped <- stats::setNames(as.character(mapping[[fasta$column]]), as.character(mapping[[key]]))
     # The kernel's feature-key map and provenance on the distinct identities in the output's order: the identities
     # carry the new annotation, as the aggregated table does.
-    identities <- data.frame(first_sample$group, first_sample$sequence, stringsAsFactors = FALSE)
+    # A tibble, as the kernel's table is: its provenance (the distinct group/accession pairs) then carries the whole
+    # variant's class and no row names (the screen oracle comparison of 2026-10-24 found both differing).
+    identities <- tibble::tibble(first_sample$group, first_sample$sequence, .name_repair = "minimal")
     names(identities) <- c(key, peptide)
     identities[[accession]] <- unname(mapped[identities[[key]]])
     proxy <- object
@@ -943,7 +945,7 @@ computeDIAReferencePeptideAccessionCleanupPartitioned <- function(manager, refer
     checkpoint$components$peptide_data <- streamed
     checkpoint$dependencies <- collectDIANativeReferences(list(reference, checkpoint$dependencies, checkpoint$components,
         checkpoint$support, checkpoint$products, partition$dependencies, ordering$reference))
-    checkpoint$dimensions <- list(rows = rows_after, columns = output_columns)
+    checkpoint$dimensions <- list(rows = rows_after, columns = output_columns, samples = nrow(object@design_matrix))
     assembled <- NULL
     groups_after <- length(unique(first_sample$group))
     config <- list(delimiter = delimiter, aggregation_method = aggregation, seqinr_accession_column = fasta$column,
