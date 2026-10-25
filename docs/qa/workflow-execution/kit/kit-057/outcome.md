@@ -1,6 +1,6 @@
 # KIT-057: DIA_LIMPA peptide stage on the kit's memory mechanisms
 
-Status 2026-10-24: **counted pair run and accepted by the kit's rule; closure awaiting the user's call on the 5.7 GiB bound (see "Counted pair: result")**. Audit: [AUDIT-20261023-limpa-path.md](AUDIT-20261023-limpa-path.md) (findings F-01..F-06, published before repair). Control build `kit_053` = `core/browser-smoke.BTcMbt` (the KIT-053 counted member: journey peak 11.42 GiB anonymous on the 300-sample corpus; the DIA route's 5.7 GiB).
+Status 2026-10-25: **two counted pairs run (the engine switch, then the bounded DPC worker); every ticket criterion met on the second; the kit's pair rule accepted the first and rejected the second on its per-step guard over unchanged shared steps (see "Counted pair 2"); closure awaiting the user's reading of that verdict**. Audit: [AUDIT-20261023-limpa-path.md](AUDIT-20261023-limpa-path.md) (findings F-01..F-06, published before repair). Control build `kit_053` = `core/browser-smoke.BTcMbt` (the KIT-053 counted member: journey peak 11.42 GiB anonymous on the 300-sample corpus; the DIA route's 5.7 GiB).
 
 ## Repairs
 
@@ -63,10 +63,24 @@ Decision by the kit's pair rule (`whole_slice_anon`): **accepted**; whole-slice 
 
 Against the ticket's acceptance criteria: the three worker targets are met (log2 2.22 ≤ 3.07; accession 2.39 ≤ 3.78; DPC 3.97 ≤ 4.0 GiB); the candidate is exact and its journey peak is below the control's; **the absolute bound (≤ 5.7 GiB, the DIA route's journey peak on this corpus) is missed by 0.11 GiB**: the candidate peaks at 5.81 GiB during the DPC step (the application's resident set beside the 3.97 GiB worker). The next step down is the DPC worker's hydration (it carries the 320 MiB peptide table into a 3.97 GiB worker for the kernel's per-protein row count), a kernel contract change outside this ticket. The journey now fits the driver's browser budget with room (1,812 of 7,200 s). The decision on the 0.11 GiB (accept and record, or a follow-up ticket) is the user's.
 
+## Counted pair 2: the bounded DPC worker (2026-10-25, stage `kit-journey-057`, [kit-journey-057-stage.json](kit-journey-057-stage.json); the engine pair's stage archived as `kit-journey-057.counted1-engine`, its summary kept as the first result above)
+
+Screen lifecycle pair first ([kit-journey-057-screen-lifecycle-bounded-stage.json](kit-journey-057-screen-lifecycle-bounded-stage.json)): both members complete, 13 states, 0 mismatches (control 305 s / 2.03 GiB; candidate 230 s / 2.01 GiB).
+
+| Member | Build | Status | Exact | Elapsed | Journey peak (anon) | Resident end | Worker peaks log2 / accession / DPC |
+|---|---|---|---|---|---|---|---|
+| control-1 | `kit_053` (`BTcMbt`, limpa, whole variants) | complete, 13 states | 0 mismatches | 7,021 s | 10.72 GiB | 2.47 GiB | 4.23 / 8.95 / 8.42 GiB |
+| candidate-1 | `kit_057` (`gUk83B`, fastlimpadpc, production variants, bounded DPC worker) | complete, 13 states | 0 mismatches | **1,858 s** | **5.35 GiB** | 2.74 GiB | **2.22 / 2.37 / 2.08 GiB** (173 / 596 / 238 s) |
+
+The candidate's journey peak is now the shared precursor rollup step (5.35 GiB: the application beside the 3.66 GiB rollup worker, the DIA route's own peak step); the three limpa peptide steps sit at 3.87 / 4.07 / 4.14 GiB member peaks. **Every ticket criterion is met**: exact; the three workers under their targets; the journey peak below the control's and below the DIA route's 5.7 GiB.
+
+**The kit's pair rule says `rejected`, failing rule `step_not_worse`** (whole-slice ratio 0.499, resident-end ratio 1.106). The guard requires every guarded step's member peak at or below 1.02 × the control's; the candidate's shared, unchanged steps read 5 to 14 % above the control's this time (qvalue 4.47 vs 4.22, rollup 5.35 vs 5.03, normalisation 3.34 vs 2.94, peptide count 3.29 vs 2.97, correlation 2.74 vs 2.23, RUV 2.65 vs 2.40, export 2.05 vs 1.72, DA 3.58 vs 3.02 GiB), while their workers are equal (q-value worker 1.88 vs 1.80, rollup worker 3.66 vs 3.57 GiB). The difference is the application process's resident set, about 0.3 GiB higher in this candidate run than in this control run (resident end 2.74 vs 2.47 GiB); the first pair showed the opposite sign on the same steps with the same code (candidate 4.27 vs control 4.85 at q-value). The steps the ticket changed are 35 to 75 % below the control's. This is a valid unfavourable verdict under the frozen rule and is not retried; the rule's guard was set for workers' steps (KIT-011) and reads the application's run-to-run variance on steps neither build changed. The reading of that verdict for closure is the user's; the ticket's own criteria and the science are not in question.
+
 ## Open
 
 - Journey time against the driver's 7,200 s browser budget (CORE-pinned): the KIT-053 journey used 6,922 s; the two variants add about 420 s (log2 +148 s, accession +296 s) on the standalone measurements, so the candidate's journey is expected near the budget unless the DPC step (5,565 s) comes down; reported, not judged.
-- F-03: decided (fastlimpadpc); the 0.11 GiB above the DIA route's journey peak at the DPC step (above).
+- The kit rule's `step_not_worse` verdict on counted pair 2 (above): the user's reading.
+- The final install from the documentation-fix commit (the one R CMD check warning above baseline at d4f0fbc8 was the undocumented kernel argument, fixed at 4fd1eb36).
 - Closure checks on `kit_057` (`AGcD7t`): the DIA route unchanged (KIT-028 replay: 16 states, 0 mismatches, 143 s; the edited-replay check as expected); the checkpoint full suite 30,887 pass, 0 fail, 0 error, 140 skips (`kit057-full-suite`); the limpa route's replay check on the new build ([replay-check-screen-installed.json](replay-check-screen-installed.json), the KIT-053 check reading kit-057's record): 11 states, 0 mismatches, the DA replayed (dpcDE, ~ 0 + group + W1), 117 s.
 
 ## Incident
