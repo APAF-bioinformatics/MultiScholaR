@@ -80,7 +80,7 @@ The candidate's journey peak is now the shared precursor rollup step (5.35 GiB: 
 
 - Journey time against the driver's 7,200 s browser budget (CORE-pinned): the KIT-053 journey used 6,922 s; the two variants add about 420 s (log2 +148 s, accession +296 s) on the standalone measurements, so the candidate's journey is expected near the budget unless the DPC step (5,565 s) comes down; reported, not judged.
 - The kit rule's `step_not_worse` verdict on counted pair 2 (above): the user's reading.
-- The final install from the documentation-fix commit (the one R CMD check warning above baseline at d4f0fbc8 was the undocumented kernel argument, fixed at 4fd1eb36).
+- Final install: `core/browser-smoke.1Nrzlk` from 77cbd2c6 (the code of gUk83B plus the documentation fix and the kit tooling change); `R CMD check` at 77cbd2c6: 3 WARNINGs, 3 NOTEs, the baseline (the 4th warning at d4f0fbc8 was the undocumented kernel argument). Installs of this ticket: AJNh4Q (9a799daf, superseded), AGcD7t (bdc3e815, the engine pair's candidate), gUk83B (d4f0fbc8, the bounded worker pair's candidate), 1Nrzlk (final).
 - Closure checks on `kit_057` (`AGcD7t`): the DIA route unchanged (KIT-028 replay: 16 states, 0 mismatches, 143 s; the edited-replay check as expected); the checkpoint full suite 30,887 pass, 0 fail, 0 error, 140 skips (`kit057-full-suite`); the limpa route's replay check on the new build ([replay-check-screen-installed.json](replay-check-screen-installed.json), the KIT-053 check reading kit-057's record): 11 states, 0 mismatches, the DA replayed (dpcDE, ~ 0 + group + W1), 117 s.
 
 ## Incident
