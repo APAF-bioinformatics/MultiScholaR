@@ -1,6 +1,6 @@
 # KIT-057: DIA_LIMPA peptide stage on the kit's memory mechanisms
 
-Status 2026-10-25: **two counted pairs run (the engine switch, then the bounded DPC worker); every ticket criterion met on the second; the kit's pair rule accepted the first and rejected the second on its per-step guard over unchanged shared steps (see "Counted pair 2"); closure awaiting the user's reading of that verdict**. Audit: [AUDIT-20261023-limpa-path.md](AUDIT-20261023-limpa-path.md) (findings F-01..F-06, published before repair). Control build `kit_053` = `core/browser-smoke.BTcMbt` (the KIT-053 counted member: journey peak 11.42 GiB anonymous on the 300-sample corpus; the DIA route's 5.7 GiB).
+Status 2026-10-25: **completed** (the user, 2026-10-25: "close it", on the ticket's own criteria, all met on counted pair 2; the kit pair rule's `step_not_worse` verdict on that pair stands recorded as a valid unfavourable result on the unchanged shared steps, see "Counted pair 2"). Final build `kit_057` = `core/browser-smoke.1Nrzlk` (77cbd2c6). Hands KIT-056 the route with bounded workers and the fastlimpadpc engine; KIT-044 the three variants to cover with its fallbacks; KIT-050 the route's cost on a non-synthetic corpus. Audit: [AUDIT-20261023-limpa-path.md](AUDIT-20261023-limpa-path.md) (findings F-01..F-06, published before repair). Control build `kit_053` = `core/browser-smoke.BTcMbt` (the KIT-053 counted member: journey peak 11.42 GiB anonymous on the 300-sample corpus; the DIA route's 5.7 GiB).
 
 ## Repairs
 
