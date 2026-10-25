@@ -1,0 +1,79 @@
+{
+  "schema": "kit.mode_check.v1",
+  "ticket": "KIT-056",
+  "label": "installed",
+  "date": "2026-10-25",
+  "head_commit": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+  "a_same_sweep": {
+    "k": {
+      "covariates": 1,
+      "correction": 1,
+      "identical": true
+    },
+    "percentage": {
+      "covariates": 2,
+      "correction": 2,
+      "identical": true
+    },
+    "control_count": {
+      "covariates": 50,
+      "correction": 50,
+      "identical": true
+    },
+    "modes": {
+      "covariates": "covariates",
+      "correction": "correction"
+    },
+    "w_in_design": {
+      "covariates": "W1",
+      "correction": []
+    }
+  },
+  "b_correction_matrix": {
+    "sweep_k": 1,
+    "state_equals_computeRuvCovariates": true,
+    "state_equals_ruv_RUVIII_newY": true,
+    "max_abs_delta_vs_RUVIIIC": 6.60000054608645e-10,
+    "owned_E_equals_state_matrix": true,
+    "standard_errors_identical_to_source": true,
+    "n_observations_identical_to_source": true,
+    "owned_entity_changed": true
+  },
+  "c_da_direct": {
+    "formula": "~ 0 + group",
+    "model": "dpcDE",
+    "ruv_mode": "correction",
+    "k": 0,
+    "contrasts": [
+      "treated_vs_control=grouptreated-groupcontrol"
+    ],
+    "long_rows": 2500,
+    "long_columns": ["Protein.Group", "fdr_qvalue", "raw_pvalue", "log2FC", "comparison", "numerator", "denominator", "log2norm.calibration_run_002.treated", "log2norm.calibration_run_005.treated", "log2norm.calibration_run_008.treated", "log2norm.calibration_run_001.control", "log2norm.calibration_run_004.control", "log2norm.calibration_run_007.control", "raw.calibration_run_002.treated", "raw.calibration_run_005.treated", "raw.calibration_run_008.treated", "raw.calibration_run_001.control", "raw.calibration_run_004.control", "raw.calibration_run_007.control", "Protein.Ids"],
+    "note": "the runner's long table is compared with a direct dpcDE -> convertDpcDAToStandardFormat on the same contrasts",
+    "columns_used": {
+      "protein": "Protein.Group",
+      "p": "raw_pvalue",
+      "q": "fdr_qvalue"
+    },
+    "eBayes": {
+      "trend": true,
+      "robust": true
+    },
+    "direct_columns": ["uniprot_acc", "comparison", "logFC", "log_intensity", "raw_pvalue", "fdr_qvalue", "fdr_value_bh_adjustment", "protein.id", "NPeptides", "PropObs", "AveExpr", "t", "B"],
+    "sample_keys": {
+      "runner": ["SYN_calibration_P01392 treated_vs_control", "SYN_calibration_P02489 treated_vs_control"],
+      "direct": ["SYN_calibration_P00001 treated_vs_control=grouptreated-groupcontrol", "SYN_calibration_P00002 treated_vs_control=grouptreated-groupcontrol"]
+    },
+    "matched": 2500,
+    "max_abs_dlogFC": 0,
+    "max_abs_dp": 0
+  },
+  "d_modes_compared": {
+    "rows": [2500, 2500],
+    "matched": 2500,
+    "max_abs_dlogFC": 0.042314307423144,
+    "max_abs_dp": 0.669357503555355,
+    "significant": [0, 0, 0],
+    "formula": ["~ 0 + group + W1", "~ 0 + group"]
+  }
+}

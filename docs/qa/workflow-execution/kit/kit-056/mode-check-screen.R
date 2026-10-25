@@ -50,23 +50,36 @@ out$b_correction_matrix$owned_entity_changed <- !identical(owned_id(B, "ruv_corr
 manifest_of <- function(x) api("withDIAStateScope")(x$m, function() api("resolveDIAStateValue")(x$m$.context, x$m$.context$snapshot$da_results))
 table_of <- function(x, ref) api("withDIAStateScope")(x$m, function() as.data.frame(api("materializeDIATable")(x$m$.context, ref)))
 mb <- manifest_of(B); ma <- manifest_of(A)
-long_b <- table_of(B, mb$tables$da_proteins_long %||% mb$da_proteins_long); long_a <- table_of(A, ma$tables$da_proteins_long %||% ma$da_proteins_long)
+long_of <- function(x, manifest) do.call(rbind, lapply(manifest$results, function(r) table_of(x, r$tables$da_proteins_long)))
+long_b <- long_of(B, mb); long_a <- long_of(A, ma)
 design <- model.matrix(as.formula(mb$model$formula_used), corr@design_matrix); rownames(design) <- samples
 replicate <- api("resolveProtTechnicalReplicateBlock")(corr@design_matrix, corr@group_id, corr@technical_replicate_id)
 elist <- corr@args$limpa_dpc_quant_results$quantified_elist[, samples]
 fit <- limpa::dpcDE(elist, design, plot = FALSE, block = if (isTRUE(replicate$technical)) replicate$block else NULL)
-contrast <- mb$contrasts %||% ma$contrasts
+contrast <- as.list(mb$contrasts$full_format %||% mb$contrasts$contrasts)
 out$c_da_direct <- list(formula = mb$model$formula_used, model = mb$model$model, ruv_mode = mb$model$ruv_mode, k = mb$model$k, contrasts = contrast,
-    long_rows = nrow(long_b), note = "the runner's long table is compared with a direct dpcDE -> convertDpcDAToStandardFormat on the same contrasts")
-direct_da <- tryCatch({ r <- convertDpcDAToStandardFormat(dpc_fit = fit, contrast_strings = unlist(contrast), design_matrix = design, eBayes_trend = FALSE, eBayes_robust = FALSE); r }, error = function(e) list(error = conditionMessage(e)))
+    long_rows = nrow(long_b), long_columns = names(long_b), note = "the runner's long table is compared with a direct dpcDE -> convertDpcDAToStandardFormat on the same contrasts")
+protein_col <- if (key %in% names(long_b)) key else intersect(c("Protein.Ids", "uniprot_acc", "protein_id", mb$protein_id_column), names(long_b))[1]
+p_col <- intersect(c("raw_pvalue", "P.Value", "p_value", "pvalue"), names(long_b))[1]; q_col <- intersect(c("fdr_qvalue", "adj.P.Val", "q_value", "qvalue"), names(long_b))[1]
+lfc_col <- intersect(c("log2FC", "logFC"), names(long_b))[1]
+out$c_da_direct$columns_used <- list(protein = protein_col, p = p_col, q = q_col)
+# The runner's eBayes settings (the DIA DA runner fixes trend and robust to TRUE; the manifest's parameters when recorded).
+trend <- isTRUE(mb$parameters$eBayes_trend %||% TRUE); robust <- isTRUE(mb$parameters$eBayes_robust %||% TRUE)
+out$c_da_direct$eBayes <- list(trend = trend, robust = robust)
+direct_da <- tryCatch({ r <- convertDpcDAToStandardFormat(dpc_fit = fit, contrast_strings = unlist(contrast), design_matrix = design, eBayes_trend = trend, eBayes_robust = robust); r }, error = function(e) list(error = conditionMessage(e)))
 if (is.null(direct_da$error)) { d <- do.call(rbind, lapply(names(direct_da$results), function(nm) { t <- direct_da$results[[nm]]; t$comparison <- nm; t }))
-    key_b <- paste(long_b[[key]], long_b$comparison); key_d <- paste(d$uniprot_acc %||% d[[key]], d$comparison); m <- match(key_b, key_d)
-    out$c_da_direct$matched <- sum(!is.na(m)); out$c_da_direct$max_abs_dlogFC <- max(abs(long_b$logFC - d$logFC[m]), na.rm = TRUE); out$c_da_direct$max_abs_dp <- max(abs(long_b$raw_pvalue - (d$P.Value %||% d$raw_pvalue)[m]), na.rm = TRUE) } else out$c_da_direct$error <- direct_da$error
+    out$c_da_direct$direct_columns <- names(d)
+    d_protein <- as.character(d$uniprot_acc %||% d[[protein_col]] %||% rownames(d)); d_comp <- as.character(d$comparison)
+    key_b <- paste(long_b[[protein_col]], long_b$comparison); key_d <- paste(d_protein, d_comp); m <- match(key_b, key_d)
+    if (all(is.na(m)) && length(unique(long_b$comparison)) == 1L) m <- match(as.character(long_b[[protein_col]]), d_protein)
+    out$c_da_direct$sample_keys <- list(runner = head(key_b, 2), direct = head(key_d, 2))
+    d_p <- d$raw_pvalue %||% d$P.Value %||% d$p_value; d_lfc <- d$logFC %||% d$log2FC
+    out$c_da_direct$matched <- sum(!is.na(m)); out$c_da_direct$max_abs_dlogFC <- max(abs(long_b[[lfc_col]] - d_lfc[m]), na.rm = TRUE); out$c_da_direct$max_abs_dp <- if (is.null(d_p)) NA_real_ else max(abs(long_b[[p_col]] - d_p[m]), na.rm = TRUE) } else out$c_da_direct$error <- direct_da$error
 # (d) covariates vs correction DA (descriptive)
-ka <- paste(long_a[[key]], long_a$comparison); kb <- paste(long_b[[key]], long_b$comparison); m <- match(kb, ka)
-sig <- function(t) paste(t[[key]], t$comparison)[t$fdr_qvalue < 0.05]
-out$d_modes_compared <- list(rows = c(covariates = nrow(long_a), correction = nrow(long_b)), max_abs_dlogFC = max(abs(long_b$logFC - long_a$logFC[m]), na.rm = TRUE),
-    max_abs_dp = max(abs(long_b$raw_pvalue - long_a$raw_pvalue[m]), na.rm = TRUE), significant = c(covariates = length(sig(long_a)), correction = length(sig(long_b)), common = length(intersect(sig(long_a), sig(long_b)))),
+ka <- paste(long_a[[protein_col]], long_a$comparison); kb <- paste(long_b[[protein_col]], long_b$comparison); m <- match(kb, ka)
+sig <- function(t) paste(t[[protein_col]], t$comparison)[!is.na(t[[q_col]]) & t[[q_col]] < 0.05]
+out$d_modes_compared <- list(rows = c(covariates = nrow(long_a), correction = nrow(long_b)), matched = sum(!is.na(m)), max_abs_dlogFC = max(abs(long_b[[lfc_col]] - long_a[[lfc_col]][m]), na.rm = TRUE),
+    max_abs_dp = max(abs(long_b[[p_col]] - long_a[[p_col]][m]), na.rm = TRUE), significant = c(covariates = length(sig(long_a)), correction = length(sig(long_b)), common = length(intersect(sig(long_a), sig(long_b)))),
     formula = c(covariates = ma$model$formula_used, correction = mb$model$formula_used))
 jsonlite::write_json(out, file.path("docs/qa/workflow-execution/kit/kit-056", paste0("mode-check-screen-", label, ".json")), auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null", na = "null")
 cat("MODE CHECK", label, "| same sweep", out$a_same_sweep$k$identical && out$a_same_sweep$percentage$identical, "| matrix == RUVIII newY", out$b_correction_matrix$state_equals_ruv_RUVIII_newY,

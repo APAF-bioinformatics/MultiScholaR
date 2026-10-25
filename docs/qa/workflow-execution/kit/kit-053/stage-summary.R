@@ -3,13 +3,16 @@
 args <- commandArgs(TRUE)
 stage <- args[[1L]]
 label <- if (length(args) > 1L) args[[2L]] else "kit-journey-053"
+# KIT-056: another ticket's single journey member writes under its own directory and ticket id (`KIT_LIMPA_TICKET_DIR`).
+ticket_dir <- Sys.getenv("KIT_LIMPA_TICKET_DIR", "kit-053")
+ticket_id <- paste0("KIT-", sub("^kit-", "", ticket_dir))
 decision <- readRDS(file.path(stage, "decision.rds"))
 receipt <- readRDS(file.path(stage, "stage.rds"))
 item <- receipt$cases[["candidate-1"]]
 op <- item$operation
 verification <- readRDS(file.path(stage, "candidate-1", "verification.rds"))
 m <- decision$member
-summary <- list(schema = "kit.stage_summary.v1", ticket = "KIT-053", stage = label, date = format(Sys.Date()),
+summary <- list(schema = "kit.stage_summary.v1", ticket = ticket_id, stage = label, date = format(Sys.Date()),
     decision = list(status = decision$status, rule = decision$rule, failing_rule = decision$failing_rule,
         steps = decision$steps, stop_after = decision$stop_after, promotion_authorized = decision$promotion_authorized),
     member = list(id = "candidate-1", corpus = op$member$corpus, build = op$config$build, status = op$status, exact = m$exact,
@@ -20,6 +23,6 @@ summary <- list(schema = "kit.stage_summary.v1", ticket = "KIT-053", stage = lab
     verification = list(accepted = item$verifier_completion$accepted, status = verification$status, oracle = verification$oracle,
         populations = verification$populations, oracle_mismatches = verification$oracle_mismatches,
         canonical_form_differences = verification$canonical_form_differences, files = verification$files))
-jsonlite::write_json(summary, file.path("docs/qa/workflow-execution/kit/kit-053", paste0(label, "-stage.json")),
+jsonlite::write_json(summary, file.path("docs/qa/workflow-execution/kit", ticket_dir, paste0(label, "-stage.json")),
     auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null")
 cat("written", label, decision$status, "\n")

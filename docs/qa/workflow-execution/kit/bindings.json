@@ -331,6 +331,15 @@
       "install_member": "browser-smoke.gUk83B",
       "source_commit": "d4f0fbc82e6f05648ff79d41bb4ba524cc4f3586",
       "runtime_patch_bytes": 0
+    },
+    "kit_056": {
+      "ticket": "KIT-056",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.qITMLl/library",
+      "build": "a4152e9951ed16d9b87b3decc049a29c45e9160723e463342eda1f5b8fab95cc",
+      "exact_sum": "93b191bdcb9139b1291f7880f4aaf03a19d123963ca45a048bb2bdfdfd14bbc2",
+      "install_member": "browser-smoke.qITMLl",
+      "source_commit": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -392,7 +401,7 @@
       "ticket": "KIT-057",
       "outcome": "candidate",
       "build": "kit_057",
-      "note": "DIA_LIMPA peptide stage on the kit's mechanisms (streamed log2, partitioned accession cleanup) and the fastlimpadpc engine (user decision 2026-10-24, one Rayon thread pinned); counted pair accepted by the pair rule against kit_053 (journey 11.46 -> 5.81 GiB, 6,658 -> 1,812 s, exact); 0.11 GiB above the DIA route's 5.7 GiB at the DPC step; the bounded DPC worker added 2026-10-25 at the user's request (re-measured by the pass-4 pair)"
+      "note": "DIA_LIMPA peptide stage on the kit's mechanisms (streamed log2, partitioned accession cleanup) and the fastlimpadpc engine (user decision 2026-10-24, one Rayon thread pinned); counted pair accepted by the pair rule against kit_053 (journey 11.46 -> 5.81 GiB, 6,658 -> 1,812 s, exact); 0.11 GiB above the DIA route's 5.7 GiB at the DPC step; the bounded DPC worker added 2026-10-25 at the user's request: counted pair 2 exact, journey 10.72 -> 5.35 GiB, 7,021 -> 1,858 s, workers 2.22 / 2.37 / 2.08 GiB, the pair rule's step_not_worse verdict on unchanged shared steps recorded; closed by the user on the ticket's criteria 2026-10-25; final install 1Nrzlk"
     },
     {
       "ticket": "KIT-019",
@@ -1438,6 +1447,175 @@
       "oracle_source": "in-process (protocol v1.5)",
       "build": "d4f0fbc82e6f05648ff79d41bb4ba524cc4f3586",
       "recorded_at": "2026-10-25T10:18:40+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "ddd608c58b7c73fd5268ffabae2043dcd202eaf7dfd7976e8364b5abc0ac5c81",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_design": {
+      "step": "design",
+      "state": "raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "1e08de7e915be8c4f7d08648dc04b9e913c6f41d1311d1e82e53cde60574b174",
+      "rows": 320872,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_qvalue": {
+      "step": "qvalue",
+      "state": "qvalue_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "e7b7d667b88bd6adb6ca772d526221c976fe10365e59a2be974699fd16a34bab",
+      "rows": 320872,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_rollup": {
+      "step": "rollup",
+      "state": "precursor_rollup",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "b4b1d8f2bd71545aa3f06f83080e15ed7906b69ffd7dbc35693f4e1df83f56fb",
+      "rows": 303000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_peptide_log2": {
+      "step": "peptide_log2",
+      "state": "log2_matrix",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "47c4d42353f7ae78249fa7c743ceaaeb934617acf1ea1a68c2dc4343a082465d",
+      "rows": 303000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_peptide_accession": {
+      "step": "peptide_accession",
+      "state": "peptide_accession_cleaned",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "afa5e520a24530b6de2ea97c150fecd47c6547801ef0d24ce94a4b67e4a8c9bb",
+      "rows": 303000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_dpc_quant": {
+      "step": "dpc_quant",
+      "state": "protein_dpc_quant",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "fdefa7d30a5f266e67e6f4f1b3240c98a590b094538feb7186c8d9f95d95018e",
+      "rows": 2500,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_protein_normalisation_limpa": {
+      "step": "protein_normalisation_limpa",
+      "state": "protein_normalised",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "ac7b00410fa60bce805cbf92268fb74b2079fc6aea8e676d9bdabc689945e217",
+      "rows": 2500,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_peptide_count": {
+      "step": "peptide_count",
+      "state": "peptide_count_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "b9c146dc1216aebf522cb81ab67ae6618cbf59022c40a01cf5dbee20ec0ded87",
+      "rows": 2500,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_correlation": {
+      "step": "correlation",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "f04bbfc6c2220490296401171bebd81c6b4e304d1c3220f71319b3bf67c9e9f1",
+      "rows": 2500,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_ruv_covariates": {
+      "step": "ruv_covariates",
+      "state": "ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "83642e91f54aa758ec42e208c3d9da964f9ec9b55e5b5bbf6acefca73a376009",
+      "rows": 2500,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_session_export": {
+      "step": "session_export",
+      "state": "ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "83642e91f54aa758ec42e208c3d9da964f9ec9b55e5b5bbf6acefca73a376009",
+      "rows": 2500,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
+      "route": "DIA_LIMPA"
+    },
+    "limpa_corr_screen_da": {
+      "step": "da",
+      "state": "ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/limpa_screen-corr056/project/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-1142676d5b7ab8/.workflow-entities",
+      "head_sha256": "c6e01fca9d392dc0a2f08525d7bd09c0c46ddae4ede89bc5f82828a8d5a51c92",
+      "entity_id": "80f7fce4f5f1920ccfbc8216df4148e87714a57829b08c4d967dad35f23f91b7",
+      "rows": 2500,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "recorded_at": "2026-10-25T15:47:10+1100",
       "route": "DIA_LIMPA"
     },
     "lfq_300_import": {
@@ -8008,6 +8186,807 @@
       },
       "summary_sha256": "85e3f85880e36e1dae60ea136176819c33f391ad0d17cdda196cfd03989416fb"
     },
+    "limpa_corr_screen_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "limpa_corr_screen_design": {
+      "class": "PeptideQuantitativeData",
+      "rows": 320872,
+      "components": {
+        "peptide_data": {
+          "kind": "result_table",
+          "product_type": null,
+          "sha256": "0050bf2251c9b6597864258f45d6047296727e730cd1a4922fb6d753873776f7"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "043d165db56807abfe3f33554d001f73b2884b765ccfecdc68581c059baa4bc0"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "6949f44c6acf2cd6cee7b0b30cdee3f7f0922ddf2b415414cd72422f06d6efc8"
+    },
+    "limpa_corr_screen_qvalue": {
+      "class": "PeptideQuantitativeData",
+      "rows": 320872,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 320872,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "Precursor.Charge", "Precursor.Quantity", "Precursor.Normalised", "Q.Value", "Global.Q.Value", "Global.PG.Q.Value", "Proteotypic", "is_decoy", "is_contaminant", "contaminant_manifest_partial_match", "exclude_from_biological_analysis", "exclusion_reason", "classification_source", "identification_peptide_count", "identification_peptidoform_count"],
+          "sha256": "573c8c626305ac8d5e472667d149ac19d30016583eaeb450561a225e367c91ae"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        }
+      },
+      "summary_sha256": "c57b950381fd9f67a3618f4b49491bc7d8dc545dcd60369d6d31471c6d89af25"
+    },
+    "limpa_corr_screen_rollup": {
+      "class": "PeptideQuantitativeData",
+      "rows": 303000,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 303000,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "Protein.Ids"],
+          "sha256": "c2aedbc8ca1ef9fa6e7929c4c1f4162072d5c1247f2e0f825c6664735b5c8b78"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-precursor_rollup-progress",
+          "sha256": "24ab1f3bb796b46e1a1fe76dd84a793e6567c8e8bad4cbe0273bb2f7adeea848"
+        }
+      },
+      "summary_sha256": "f2ab9431844e3fd00af6c9369d0ef7b5385692d0c86f0b50393c66733a69c924"
+    },
+    "limpa_corr_screen_peptide_log2": {
+      "class": "PeptideQuantitativeData",
+      "rows": 303000,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 303000,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "Protein.Ids"],
+          "sha256": "553769c5a0b67ccc584207c373814d24f99c60f03f64b8c6e3725a357ffdd574"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        },
+        "peptide_matrix": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "cf1172214e3eb737394ab21c8bcd478e5bb046ab6af2f383bb672889e0a8b830"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "5bef78203d6789aa76d95f2c157faedcd0d0cdb82458f89213400547f35c91f4"
+        },
+        ".arguments/peptide_feature_key_map": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["feature_key", "active_protein_id", "peptide_sequence"],
+          "sha256": "c9168b93d2664ec25777187b18ef6c034d4f7304c0bfa8941d07160c4c43df8f"
+        },
+        ".arguments/protein_accession_provenance": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "9f38d66eb118e3b6c52ad73db90ba8465f1c59e0921c670bec7231789341adda"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-log2_matrix-progress",
+          "sha256": "e5aa4dad42d182a6c73678fa62f27d5c31d32927414fc1418258e4db558f8420"
+        }
+      },
+      "summary_sha256": "a889df21cd5755bafdabc611327598b0c58a3b43b599749f7cc2c21a25772eb6"
+    },
+    "limpa_corr_screen_peptide_accession": {
+      "class": "PeptideQuantitativeData",
+      "rows": 303000,
+      "components": {
+        "peptide_data": {
+          "kind": "table",
+          "rows": 303000,
+          "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "Protein.Ids"],
+          "sha256": "0cde8020850b8602c4c005c1a906cb5646a432c485b6a232f11bf0bb4c268567"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        },
+        "peptide_matrix": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "cf1172214e3eb737394ab21c8bcd478e5bb046ab6af2f383bb672889e0a8b830"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "5bef78203d6789aa76d95f2c157faedcd0d0cdb82458f89213400547f35c91f4"
+        },
+        ".arguments/peptide_feature_key_map": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["feature_key", "active_protein_id", "peptide_sequence"],
+          "sha256": "c9168b93d2664ec25777187b18ef6c034d4f7304c0bfa8941d07160c4c43df8f"
+        },
+        ".arguments/protein_accession_provenance": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "574ecf7cc09a8b4575618242407dfcabfc318f9fd4109c5cd1715c66bf7bf0c0"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-peptide_accession_cleaned-progress",
+          "sha256": "ce0530d5f31e5725ae17213dfeb6345375725971d67b54e20c8734a467d5eec2"
+        }
+      },
+      "summary_sha256": "09d60be35411d7c6c849c8de9e067aba827e59c22dded2e9ed06a0d815dd1690",
+      "fasta_sha256": "75e46926e5cbeccf585f882899b844d7b05b9e2ac1d63e4b4b6db486f0ca0c82",
+      "fasta_matches_input": true
+    },
+    "limpa_corr_screen_dpc_quant": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"],
+          "sha256": "3d33f5ebad449701a211d226ca093bef0eb4ccf46360023efb212475ab9e8a1e"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "f6582c07a6ee97c24ae82405df95e6e345b41f6e5a0190e26e3afc95027aa2fe"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "5bef78203d6789aa76d95f2c157faedcd0d0cdb82458f89213400547f35c91f4"
+        },
+        ".arguments/peptide_feature_key_map": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["feature_key", "active_protein_id", "peptide_sequence"],
+          "sha256": "c9168b93d2664ec25777187b18ef6c034d4f7304c0bfa8941d07160c4c43df8f"
+        },
+        ".arguments/protein_accession_provenance": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "574ecf7cc09a8b4575618242407dfcabfc318f9fd4109c5cd1715c66bf7bf0c0"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-peptide_accession_cleaned-progress",
+          "sha256": "ce0530d5f31e5725ae17213dfeb6345375725971d67b54e20c8734a467d5eec2"
+        }
+      },
+      "summary_sha256": "a6f53f50f68f0a1abe036e56cafe3c24f5c0ed9489fe7cf55919ce5e185e5ab6"
+    },
+    "limpa_corr_screen_protein_normalisation_limpa": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"],
+          "sha256": "3d33f5ebad449701a211d226ca093bef0eb4ccf46360023efb212475ab9e8a1e"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "f6582c07a6ee97c24ae82405df95e6e345b41f6e5a0190e26e3afc95027aa2fe"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "5bef78203d6789aa76d95f2c157faedcd0d0cdb82458f89213400547f35c91f4"
+        },
+        ".arguments/peptide_feature_key_map": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["feature_key", "active_protein_id", "peptide_sequence"],
+          "sha256": "c9168b93d2664ec25777187b18ef6c034d4f7304c0bfa8941d07160c4c43df8f"
+        },
+        ".arguments/protein_accession_provenance": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "574ecf7cc09a8b4575618242407dfcabfc318f9fd4109c5cd1715c66bf7bf0c0"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-peptide_accession_cleaned-progress",
+          "sha256": "ce0530d5f31e5725ae17213dfeb6345375725971d67b54e20c8734a467d5eec2"
+        }
+      },
+      "summary_sha256": "92ce7cb11edfe89bd9e9b505ee54d29e877fea3dc623ef4aaa11c8854f79527f"
+    },
+    "limpa_corr_screen_peptide_count": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"],
+          "sha256": "3d33f5ebad449701a211d226ca093bef0eb4ccf46360023efb212475ab9e8a1e"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "f6582c07a6ee97c24ae82405df95e6e345b41f6e5a0190e26e3afc95027aa2fe"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "5bef78203d6789aa76d95f2c157faedcd0d0cdb82458f89213400547f35c91f4"
+        },
+        ".arguments/peptide_feature_key_map": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["feature_key", "active_protein_id", "peptide_sequence"],
+          "sha256": "c9168b93d2664ec25777187b18ef6c034d4f7304c0bfa8941d07160c4c43df8f"
+        },
+        ".arguments/protein_accession_provenance": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "574ecf7cc09a8b4575618242407dfcabfc318f9fd4109c5cd1715c66bf7bf0c0"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-peptide_accession_cleaned-progress",
+          "sha256": "ce0530d5f31e5725ae17213dfeb6345375725971d67b54e20c8734a467d5eec2"
+        }
+      },
+      "summary_sha256": "cf8812745db44dc3079532e1e6241ba66dd6790f7c3f14ef8db23a8155b5893c"
+    },
+    "limpa_corr_screen_correlation": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"],
+          "sha256": "3d33f5ebad449701a211d226ca093bef0eb4ccf46360023efb212475ab9e8a1e"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "f6582c07a6ee97c24ae82405df95e6e345b41f6e5a0190e26e3afc95027aa2fe"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "5bef78203d6789aa76d95f2c157faedcd0d0cdb82458f89213400547f35c91f4"
+        },
+        ".arguments/peptide_feature_key_map": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["feature_key", "active_protein_id", "peptide_sequence"],
+          "sha256": "c9168b93d2664ec25777187b18ef6c034d4f7304c0bfa8941d07160c4c43df8f"
+        },
+        ".arguments/protein_accession_provenance": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "574ecf7cc09a8b4575618242407dfcabfc318f9fd4109c5cd1715c66bf7bf0c0"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 7,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "f229d8f5527afedd66c6ee63b833cf7305864cf6dd4f60eb6384cf6774018280"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-peptide_accession_cleaned-progress",
+          "sha256": "ce0530d5f31e5725ae17213dfeb6345375725971d67b54e20c8734a467d5eec2"
+        },
+        "dia_normalization_pca:2f44fb05d4a2": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_pca",
+          "sha256": "2f44fb05d4a2e3fcf26be26b3917e92486d165a650c6fae287c3e3483ef77e17"
+        },
+        "dia-pearson-selection:993995f35b25": {
+          "kind": "scientific_product",
+          "product_type": "dia-pearson-selection",
+          "sha256": "993995f35b254a2fc7752b050a142a10338ac6d2f217dbd58acf6910b530424c"
+        },
+        "dia-pearson-pairs:f0ef714864b1": {
+          "kind": "scientific_product",
+          "product_type": "dia-pearson-pairs",
+          "sha256": "f0ef714864b14b678abf5faeacc85908e498eac1c6bac8aa05d06875b915d532"
+        }
+      },
+      "summary_sha256": "647ac09288984feb3f6c56a27e9c126e22fd7f1fb31588b4a3a8f1da8f285400"
+    },
+    "limpa_corr_screen_ruv_covariates": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"],
+          "sha256": "b0090ac3c8884145adbe81568e233ea933f7af37a96f763af333c3763b761019"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "f6582c07a6ee97c24ae82405df95e6e345b41f6e5a0190e26e3afc95027aa2fe"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "5bef78203d6789aa76d95f2c157faedcd0d0cdb82458f89213400547f35c91f4"
+        },
+        ".arguments/peptide_feature_key_map": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["feature_key", "active_protein_id", "peptide_sequence"],
+          "sha256": "c9168b93d2664ec25777187b18ef6c034d4f7304c0bfa8941d07160c4c43df8f"
+        },
+        ".arguments/protein_accession_provenance": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "574ecf7cc09a8b4575618242407dfcabfc318f9fd4109c5cd1715c66bf7bf0c0"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 7,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "f229d8f5527afedd66c6ee63b833cf7305864cf6dd4f60eb6384cf6774018280"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-peptide_accession_cleaned-progress",
+          "sha256": "ce0530d5f31e5725ae17213dfeb6345375725971d67b54e20c8734a467d5eec2"
+        },
+        "ruv_covariates_science": {
+          "kind": "scientific_product",
+          "product_type": "dia-ruv-covariates",
+          "sha256": "489f903f87bdb5481c98319ce08ddea6f273f090759d1e0ab192877cce2b87de"
+        },
+        "dia_normalization_pca:479b0c17354b": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_pca",
+          "sha256": "479b0c17354b18a79162d7354c97a15941301ecae4564652e86d79ef8506e1b0"
+        },
+        "dia-ruv-covariates:489f903f87bd": {
+          "kind": "scientific_product",
+          "product_type": "dia-ruv-covariates",
+          "sha256": "489f903f87bdb5481c98319ce08ddea6f273f090759d1e0ab192877cce2b87de"
+        },
+        "dia_normalization_density:58c133946135": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_density",
+          "sha256": "58c133946135637a57aae7eb044cf23f17bbe5ef2c03ce647308de9721e276b5"
+        },
+        "dia_normalization_rle:730bf3692cb7": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_rle",
+          "sha256": "730bf3692cb7b02caa0d8a4a522fd72eabf99f3f278efb1d67d9fea0dc91a84f"
+        },
+        "dia_normalization_correlation:b94339c057d3": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_correlation",
+          "sha256": "b94339c057d3f870df42f122eca90f57f879346fb3c3cbe1822c91aa49f52c85"
+        }
+      },
+      "summary_sha256": "5ca47fa5a63a56ea2b89a05d51e51223928a3c6d208f12902f32a5d771e1ae72"
+    },
+    "limpa_corr_screen_session_export": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"],
+          "sha256": "b0090ac3c8884145adbe81568e233ea933f7af37a96f763af333c3763b761019"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "f6582c07a6ee97c24ae82405df95e6e345b41f6e5a0190e26e3afc95027aa2fe"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "5bef78203d6789aa76d95f2c157faedcd0d0cdb82458f89213400547f35c91f4"
+        },
+        ".arguments/peptide_feature_key_map": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["feature_key", "active_protein_id", "peptide_sequence"],
+          "sha256": "c9168b93d2664ec25777187b18ef6c034d4f7304c0bfa8941d07160c4c43df8f"
+        },
+        ".arguments/protein_accession_provenance": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "574ecf7cc09a8b4575618242407dfcabfc318f9fd4109c5cd1715c66bf7bf0c0"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 7,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "f229d8f5527afedd66c6ee63b833cf7305864cf6dd4f60eb6384cf6774018280"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-peptide_accession_cleaned-progress",
+          "sha256": "ce0530d5f31e5725ae17213dfeb6345375725971d67b54e20c8734a467d5eec2"
+        },
+        "ruv_covariates_science": {
+          "kind": "scientific_product",
+          "product_type": "dia-ruv-covariates",
+          "sha256": "489f903f87bdb5481c98319ce08ddea6f273f090759d1e0ab192877cce2b87de"
+        }
+      },
+      "summary_sha256": "5ca47fa5a63a56ea2b89a05d51e51223928a3c6d208f12902f32a5d771e1ae72"
+    },
+    "limpa_corr_screen_da": {
+      "class": "ProteinQuantitativeData",
+      "rows": 2500,
+      "components": {
+        "design_matrix": {
+          "kind": "table",
+          "rows": 8,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "83b9e7486b4de24cd5205074d840f404584a775071192d1d4257d2d213916d6e"
+        },
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "calibration_run_001", "calibration_run_002", "calibration_run_003", "calibration_run_004", "calibration_run_005", "calibration_run_006", "calibration_run_007", "calibration_run_008"],
+          "sha256": "b0090ac3c8884145adbe81568e233ea933f7af37a96f763af333c3763b761019"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "f6582c07a6ee97c24ae82405df95e6e345b41f6e5a0190e26e3afc95027aa2fe"
+        }
+      },
+      "support": {
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_ledger": {
+          "kind": "table",
+          "rows": 0,
+          "columns": [".source_row_id", "Run", "Precursor.Id", "Protein.Group", "Protein.Ids", "Stripped.Sequence", "Modified.Sequence", "is_decoy", "is_contaminant", "exclusion_reason", "classification_source"],
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "srlQvalueProteotypicPeptideClean/biological_exclusion_summary": {
+          "kind": "table",
+          "rows": 1,
+          "columns": ["input_rows", "decoy_rows", "contaminant_rows", "partial_manifest_group_rows", "excluded_rows", "biological_rows", "manifest_accessions", "classification_status"],
+          "sha256": "5bef78203d6789aa76d95f2c157faedcd0d0cdb82458f89213400547f35c91f4"
+        },
+        ".arguments/peptide_feature_key_map": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["feature_key", "active_protein_id", "peptide_sequence"],
+          "sha256": "c9168b93d2664ec25777187b18ef6c034d4f7304c0bfa8941d07160c4c43df8f"
+        },
+        ".arguments/protein_accession_provenance": {
+          "kind": "table",
+          "rows": 2500,
+          "columns": ["Protein.Group", "Protein.Ids"],
+          "sha256": "574ecf7cc09a8b4575618242407dfcabfc318f9fd4109c5cd1715c66bf7bf0c0"
+        },
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 2727,
+          "columns": ["accession", "protein_id", "protein", "ncbi_refseq", "attributes", "annotation_score", "seq", "seq_length", "description", "uniprot_acc"],
+          "sha256": "d9b5e2de642f3f29dbe775bfc2e7983e0a9d74ae44566042f51b5d947a0aceda"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 7,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "f229d8f5527afedd66c6ee63b833cf7305864cf6dd4f60eb6384cf6774018280"
+        }
+      },
+      "products": {
+        "qvalue_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-qvalue-progress",
+          "sha256": "1915daed88e37d3a98232e5a89815bd4c6025d44bd4719073d22b1752114afb6"
+        },
+        "qc_progress": {
+          "kind": "scientific_product",
+          "product_type": "dia-peptide_accession_cleaned-progress",
+          "sha256": "ce0530d5f31e5725ae17213dfeb6345375725971d67b54e20c8734a467d5eec2"
+        },
+        "ruv_covariates_science": {
+          "kind": "scientific_product",
+          "product_type": "dia-ruv-covariates",
+          "sha256": "489f903f87bdb5481c98319ce08ddea6f273f090759d1e0ab192877cce2b87de"
+        },
+        "dia-contrast-references:7adf2f0c964b": {
+          "kind": "scientific_product",
+          "product_type": "dia-contrast-references",
+          "sha256": "7adf2f0c964b77fe92494f8d41bf802d857b104c7fae5e9a2bda5c2231b51864"
+        }
+      },
+      "summary_sha256": "5ca47fa5a63a56ea2b89a05d51e51223928a3c6d208f12902f32a5d771e1ae72"
+    },
     "lfq_300_import": {
       "class": null,
       "rows": "NA",
@@ -10990,6 +11969,21 @@
         "correlation_threshold": 0.5
       }
     },
+    "056": {
+      "kind": "single_journey",
+      "build": "kit_056",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa_corr_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "lifecycle",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "correction",
+        "correlation_threshold": 0.5
+      }
+    },
     "057": {
       "kind": "journey",
       "control": "kit_053",
@@ -11051,13 +12045,13 @@
     "step_map_limpa_sha256": "8ab69ff18a239f63e99535e9b533d611e2c9fdbf7007d5e698f9f8e507c6fc9a",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "813a8bd6029714e83969bdb70698c6585cf92a477e8081e907a7f954e8bd92d3",
-      "tools/profiling/workflow_kit_driver.R": "7b126d7a49ec3168632b83d5e809f3771a15374f298dc0a8759de0aebf7b69e2",
+      "tools/profiling/workflow_kit.R": "359b5d7a6f55d9722832c6a661598824a557ec76b842cd6734c8d3fb4bfc37b1",
+      "tools/profiling/workflow_kit_driver.R": "ec2a09c468e798c8c856e16307366df987f0d078ed77479cde7a686bf2989765",
       "tools/profiling/workflow_kit_coordinator.R": "d594d8568ee3efbeea98cace1669841a12627290bd49a90c959142ad71cf43b8",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "d9ff636fc681e9f1a3dc910e09bcedd157b754901e0f2798038f15b6fb47cb37",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "74e61ee6eaf98e6133c8ab3891e21acdb060ebd4ae17a8fa23b264553c9236f7",
-      "tests/testthat/test-workflow-kit-harness.R": "863b4fa258c7405c2f969d5fc5f5fc16afa2b96a9306c552740b26c34b85c055",
+      "tests/testthat/test-workflow-kit-harness.R": "00eb5c5de4c4898335ab8ae2ed1d5dbeca6a42647c388d5971a33e9dab2b5b65",
       "tests/testthat/test-workflow-execution-adapters.R": "d315a2847fd76dfb0733b286e4ca3aca1724bfff12400c2e99182320917a6548",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",
