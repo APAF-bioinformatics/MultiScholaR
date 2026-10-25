@@ -81,7 +81,7 @@ test_that("logical table bindings export their physical dependency and restore a
 })
 
 test_that("native export streams keep named file caches bounded and propagate I/O failures", {
-    skip_if_not(identical(Sys.info()[["sysname"]], "Linux"))
+    skip_if_not(workflowOwnerCapable()) # KIT-044
     receipt <- Sys.getenv("MULTISCHOLAR_DIA008_RECEIPT")
     skip_if(!nzchar(receipt), "disk-backed guarded proof root required for cache residency")
     disk_root <- dirname(receipt)
@@ -133,7 +133,7 @@ test_that("native export streams keep named file caches bounded and propagate I/
 })
 
 test_that("native archives restore complete references without hydrating history", {
-    skip_if_not(identical(Sys.info()[["sysname"]], "Linux"))
+    skip_if_not(workflowOwnerCapable()) # KIT-044
     root <- withr::local_tempdir()
     output <- withr::local_tempdir()
     restored_root <- withr::local_tempdir()
@@ -1132,7 +1132,7 @@ test_that("KIT-013 audit PX-01: a QC-time configuration update does not fire the
 })
 
 test_that("KIT-026: the head records inputs by role and external resources, and both survive export and open", {
-    skip_if_not(identical(Sys.info()[["sysname"]], "Linux"))
+    skip_if_not(workflowOwnerCapable()) # KIT-044
     root <- withr::local_tempdir()
     output <- withr::local_tempdir()
     restored_root <- withr::local_tempdir()
@@ -1274,4 +1274,44 @@ test_that("KIT-020: a MaxQuant import on an owner records its inputs and metadat
     withr::defer(closeDIAStateAdapter(reopened$manager))
     expect_identical(reopened$manager$workflow_type, "LFQ")
     expect_identical(reopened$manager$current_state, "protein_s4_initial")
+})
+
+
+test_that("KIT-044: native archives round-trip between the GNU tar path and the R fallback with equal member hashes", {
+    skip_if_not(workflowOwnerCapable())
+    skip_if_not(nzchar(Sys.which("tar")) && nzchar(Sys.which("bash")), "the GNU path is needed on one side of the comparison")
+    no_tools <- c(MULTISCHOLAR_DISABLE_TOOLS = "bash,dd,sha256sum,sync,tar,cp")
+    round_trip <- function(export_env, open_env) {
+        root <- withr::local_tempdir(); output <- withr::local_tempdir(); restored_root <- withr::local_tempdir()
+        fixture <- makeDIANativeSessionFixture(root)
+        manager <- fixture$manager
+        source_file <- file.path(root, "input.tsv"); writeLines(c("id\tvalue", "P1\t3"), source_file)
+        result <- withr::with_envvar(export_env, runDIANativeSessionExport(manager, fixture$metadata, output,
+            dependencies = list(input = list(source = source_file, destination = "inputs/input.tsv"))))
+        expect_identical(result$publication$status, "complete")
+        archive <- result$publication$archive_path
+        closeDIAStateAdapter(manager)
+        unpacked <- withr::local_tempdir()
+        utils::untar(archive, files = "manifest.json", exdir = unpacked, tar = "internal")
+        manifest <- jsonlite::read_json(file.path(unpacked, "manifest.json"), simplifyVector = FALSE)
+        # The R header reader lists what GNU tar lists (names and sizes), whichever wrote the archive.
+        entries <- readDIANativeTarEntriesR(archive)
+        expect_setequal(names(entries), c("manifest.json", names(manifest$files)))
+        listed <- inspectDIANativeArchive(archive, withr::local_tempdir())
+        expect_identical(entries[names(listed)], listed)
+        # The member hashes are the archive's contract under either writer: every member's bytes hash to the
+        # manifest's value (the opener checks the same; checked here directly on the extracted files too).
+        utils::untar(archive, exdir = unpacked, tar = "internal")
+        for (member in names(manifest$files))
+            expect_identical(digest::digest(file = file.path(unpacked, member), algo = "sha256"), manifest$files[[member]]$sha256, info = member)
+        imported <- withr::with_envvar(open_env, openDIANativeSession(archive, restored_root))
+        withr::defer(closeDIAStateAdapter(imported$manager))
+        expect_identical(imported$metadata, fixture$metadata)
+        expect_identical(imported$manager$getState(), fixture$final)
+        expect_identical(imported$manager$.context$capabilities, withr::with_envvar(open_env, workflowCapabilityContracts()))
+        invisible(length(manifest$files))
+    }
+    expect_gt(round_trip(character(), no_tools), 2L)   # written by GNU tar, read by the fallback
+    expect_gt(round_trip(no_tools, character()), 2L)   # written by the fallback, read by GNU tar
+    expect_gt(withr::with_envvar(no_tools, round_trip(character(), character())), 2L) # the fallback alone
 })

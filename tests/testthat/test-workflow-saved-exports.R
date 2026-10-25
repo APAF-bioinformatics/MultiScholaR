@@ -1,5 +1,4 @@
-testthat::skip_if_not(identical(Sys.info()[["sysname"]], "Linux"),
-    "durable saved export is Linux-qualified only")
+testthat::skip_if_not(workflowOwnerCapable(), "the saved-entity storage packages are required") # KIT-044: a capability, not a platform
 
 makeSavedExportProtein <- function(revision = 0L) {
     object <- methods::new("ProteinQuantitativeData",

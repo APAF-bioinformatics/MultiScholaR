@@ -677,3 +677,71 @@ test_that("missing platform counters refuse with a classed, named reason", {
     # A kernel older than 6.12 rejects the write that resets the peak.
     expect_error(openWorkflowPeakWindow(application), "6.12", class = "workflow_execution_unsupported")
 })
+
+
+test_that("KIT-044: the GNU tool probe is memoised, honours MULTISCHOLAR_DISABLE_TOOLS and reports the owner's contracts", {
+    workflowToolReset()
+    withr::defer(workflowToolReset())
+    expect_error(workflowToolPath("perl"), class = "saved_entity_invalid")
+    for (name in c("bash", "dd", "sha256sum", "sync", "tar", "cp")) expect_true(is.character(workflowToolPath(name)))
+    present <- workflowToolAvailable("sha256sum")
+    expect_identical(workflowToolAvailable("sha256sum"), present)
+    withr::with_envvar(c(MULTISCHOLAR_DISABLE_TOOLS = "sha256sum, tar"), {
+        expect_false(workflowToolAvailable("sha256sum"))
+        expect_false(workflowToolAvailable("tar"))
+        expect_identical(workflowToolAvailable("bash"), nzchar(Sys.which("bash")))
+        contracts <- workflowCapabilityContracts()
+        expect_identical(contracts$value_hash_mode, "in_memory")
+        expect_identical(contracts$file_hash_mode, "digest_file")
+        expect_identical(contracts$archive_format, "ustar_internal")
+    })
+    expect_identical(workflowToolAvailable("sha256sum"), present)
+    contracts <- workflowCapabilityContracts()
+    expect_setequal(names(contracts), c("value_hash_mode", "file_hash_mode", "durability", "archive_format", "snapshot_copy", "cache_release"))
+    withr::with_envvar(c(MULTISCHOLAR_DISABLE_TOOLS = "sync"), expect_identical(workflowCapabilityContracts()$durability, "not guaranteed"))
+    expect_true(is.logical(workflowOwnerCapable()))
+    # The adapter records the contracts it was created under.
+    root <- withr::local_tempdir()
+    store <- newWorkflowEntityStore(root, "kit044", "DIA")
+    manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    expect_identical(manager$.context$capabilities, workflowCapabilityContracts())
+})
+
+test_that("KIT-044: the value and file hashes and the flushes give the same results without the GNU tools", {
+    skip_if_not(workflowOwnerCapable())
+    skip_if_not(nzchar(Sys.which("bash")) && nzchar(Sys.which("sha256sum")), "the GNU path is needed on one side of the comparison")
+    root <- withr::local_tempdir()
+    store <- newWorkflowEntityStore(root, "kit044-hash", "DIA")
+    manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    values <- list(list(value = c(1.5, NA, 3), names = NULL), list(value = c("a", "b", NA), names = c("x", "y", "z")),
+        list(value = seq_len(100000L), names = NULL), list(value = rnorm(250000), names = NULL))
+    gnu <- vapply(values, hashWorkflowSerializedValue, character(1), store = store)
+    without <- withr::with_envvar(c(MULTISCHOLAR_DISABLE_TOOLS = "bash,dd,sha256sum"),
+        vapply(values, hashWorkflowSerializedValue, character(1), store = store))
+    expect_identical(without, gnu)
+    expect_true(all(grepl("^[a-f0-9]{64}$", gnu)))
+    # A table component saved either way has the same content identity.
+    table <- data.frame(id = sprintf("P%05d", 1:5000), value = rnorm(5000), stringsAsFactors = FALSE)
+    with_tools <- saveDIATableComponent(manager$.context, table)
+    without_tools <- withr::with_envvar(c(MULTISCHOLAR_DISABLE_TOOLS = "bash,dd,sha256sum"), saveDIATableComponent(manager$.context, table))
+    expect_identical(without_tools$entity_id, with_tools$entity_id)
+    # The file hash over 4 MiB: the streamed GNU path and digest(file =) agree.
+    big <- file.path(root, "big.bin"); writeBin(as.raw(sample(0:255, 5 * 1024^2, replace = TRUE)), big)
+    log <- file.path(root, "hash.log")
+    streamed <- hashWorkflowFile(big, log)
+    plain <- withr::with_envvar(c(MULTISCHOLAR_DISABLE_TOOLS = "sync"), hashWorkflowFile(big, log))
+    expect_identical(plain, streamed)
+    expect_identical(plain, digest::digest(file = big, algo = "sha256"))
+    # The flushes are no-ops without sync, after the same path validation.
+    withr::with_envvar(c(MULTISCHOLAR_DISABLE_TOOLS = "sync"), {
+        dir.create(file.path(root, "s2"))
+        store2 <- newWorkflowEntityStore(file.path(root, "s2"), "kit044-sync", "DIA")
+        expect_identical(savedWorkflowSyncCommand(store2), "")
+        expect_true(syncSavedWorkflowPaths(store2, store2$directory))
+        expect_error(syncSavedWorkflowPaths(store2, root), class = "saved_entity_path")
+        expect_true(syncWorkflowExportPaths(big, root))
+        expect_error(syncWorkflowExportPaths(big, file.path(root, "s2")), class = "saved_entity_path")
+    })
+})

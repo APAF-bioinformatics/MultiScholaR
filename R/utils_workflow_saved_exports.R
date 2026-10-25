@@ -404,9 +404,7 @@ workflowExportPaths <- function(output_dir, request_id) {
 #' @return TRUE invisibly.
 #' @noRd
 syncWorkflowExportPaths <- function(paths, root) {
-    command <- unname(Sys.which("sync"))
-    if (!identical(Sys.info()[["sysname"]], "Linux") || !nzchar(command) ||
-        !length(paths) || any(!file.exists(paths) & !dir.exists(paths))) {
+    if (!length(paths) || any(!file.exists(paths) & !dir.exists(paths))) {
         cli::cli_abort("durable export sync is unavailable", class = "saved_entity_unsupported")
     }
     root <- normalizePath(root, mustWork = TRUE)
@@ -414,6 +412,8 @@ syncWorkflowExportPaths <- function(paths, root) {
     if (!all(paths == root | startsWith(paths, paste0(root, "/")))) {
         cli::cli_abort("export sync path escapes destination", class = "saved_entity_path")
     }
+    command <- workflowToolPath("sync")
+    if (!nzchar(command)) return(invisible(TRUE)) # KIT-044: no sync; durability "not guaranteed"
     if (!identical(system2(command, c("--", shQuote(paths))), 0L)) {
         cli::cli_abort("durable export sync failed", class = "saved_entity_write")
     }

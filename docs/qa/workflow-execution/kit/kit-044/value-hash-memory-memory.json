@@ -1,0 +1,48 @@
+{
+  "mode": "memory",
+  "contracts": {
+    "value_hash_mode": "in_memory",
+    "file_hash_mode": "digest_file",
+    "durability": "fsync",
+    "archive_format": "ustar_internal",
+    "snapshot_copy": "file_copy",
+    "cache_release": "none"
+  },
+  "rows": 5521570,
+  "columns": ["Run", "Protein.Group", "Stripped.Sequence", "Peptide.RawQuantity", "Peptide.Normalised", "peptidoform_count", "identification_peptide_count", "identification_peptidoform_count", "Protein.Ids"],
+  "base_hwm_gib": 0.650833129882812,
+  "hashes": {
+    "Run": "10d50c9813a9e02c170fb04628751456e7a337ef928eab1881c02287decd5caf",
+    "Protein.Group": "6c24223dc2d0c88641729564e3773f24fdaa7d2901ea54aea85f833ad334baee",
+    "Stripped.Sequence": "fe21922e19d2120bde611ed9643e55f1f0ce597c408e6a439402b88fe486e251",
+    "Peptide.RawQuantity": "5ae308725dd08c0b265d733a8daba651b3b570222cae451f2ae33e00666d1565",
+    "Peptide.Normalised": "1a0010b6b895536151626b1b8c6f014cbb94f82652f8203e567b96012c821027",
+    "peptidoform_count": "ae2c8803c1d13efc59bb3350108dadcb90b0eecfa8bcaa35a0dd172d3569fab1",
+    "identification_peptide_count": "6f68275b4736d59f6131869cb42cfa54a609e0545269055bda8352314f06fc39",
+    "identification_peptidoform_count": "a6bb29fcf51a053611a573b8bc1a034f4a424f547e3bb4f3ce47d1a7840d63ee",
+    "Protein.Ids": "6c24223dc2d0c88641729564e3773f24fdaa7d2901ea54aea85f833ad334baee"
+  },
+  "seconds": {
+    "Run": 1.21804404258728,
+    "Protein.Group": 0.90315842628479,
+    "Stripped.Sequence": 0.590532064437866,
+    "Peptide.RawQuantity": 0.223886251449585,
+    "Peptide.Normalised": 0.217178583145142,
+    "peptidoform_count": 0.109649896621704,
+    "identification_peptide_count": 0.103644609451294,
+    "identification_peptidoform_count": 0.110096216201782,
+    "Protein.Ids": 0.879932403564453
+  },
+  "hwm_after_gib": {
+    "Run": 1.09162139892578,
+    "Protein.Group": 1.3584098815918,
+    "Stripped.Sequence": 1.3584098815918,
+    "Peptide.RawQuantity": 1.3584098815918,
+    "Peptide.Normalised": 1.3584098815918,
+    "peptidoform_count": 1.3584098815918,
+    "identification_peptide_count": 1.3584098815918,
+    "identification_peptidoform_count": 1.3584098815918,
+    "Protein.Ids": 1.42287445068359
+  },
+  "hwm_gib": 1.42287445068359
+}

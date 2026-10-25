@@ -1,17 +1,116 @@
 # Native DIA sessions reuse committed checkpoint files; they never serialize history.
 
+#' KIT-044: the R fallback for the three GNU tar uses of the native session (`--version`, `--create` from
+#' `--directory`/`--files-from` pairs into `output_path`, `--extract` into `--directory`). Creation stages the
+#' members under one directory (copies) and writes an uncompressed ustar archive with
+#' `utils::tar(tar = "internal")` (long names through the GNU extension, files up to 8 GiB); extraction uses
+#' `utils::untar(tar = "internal")` into the caller's fresh private directory after `inspectDIANativeArchive` has
+#' refused anything but regular files. Listing is `readDIANativeTarEntriesR`.
+#' @noRd
+runDIANativeTarR <- function(arguments, log_path, output_path = NULL) {
+    mode <- arguments[[1L]]
+    if (identical(mode, "--version")) return("tar (R internal ustar fallback, KIT-044)")
+    if (identical(mode, "--create")) {
+        if (is.null(output_path)) cli::cli_abort("native archive creation needs an output path", class = "saved_entity_invalid")
+        directories <- arguments[which(arguments == "--directory") + 1L]
+        lists <- arguments[which(arguments == "--files-from") + 1L]
+        if (!length(directories) || length(directories) != length(lists))
+            cli::cli_abort("native archive creation arguments are invalid", class = "saved_entity_invalid")
+        read_members <- function(path) {
+            raw <- readBin(path, "raw", file.size(path))
+            parts <- split(raw, cumsum(raw == as.raw(0)) - (raw == as.raw(0)))
+            members <- vapply(parts, function(x) rawToChar(x[x != as.raw(0)]), character(1), USE.NAMES = FALSE)
+            members[nzchar(members)]
+        }
+        staging <- tempfile("archive-stage-", tmpdir = dirname(output_path))
+        if (!dir.create(staging, mode = "0700")) cli::cli_abort("cannot stage the native archive", class = "saved_entity_write")
+        on.exit(unlink(staging, recursive = TRUE), add = TRUE)
+        members <- character()
+        for (i in seq_along(directories)) for (member in read_members(lists[[i]])) {
+            source <- file.path(directories[[i]], member)
+            target <- file.path(staging, member)
+            if (!file.exists(source) || isTRUE(file.info(source)$isdir)) cli::cli_abort("native archive member is missing", class = "saved_entity_missing")
+            if (!dir.exists(dirname(target)) && !dir.create(dirname(target), recursive = TRUE)) cli::cli_abort("cannot stage the native archive", class = "saved_entity_write")
+            # Copies, not hard links: a link changes the source's status time and the packaging identity check
+            # (`workflowTableFileIdentity`) would read it as a change.
+            if (!isTRUE(file.copy(source, target, overwrite = FALSE, copy.date = FALSE)))
+                cli::cli_abort("cannot stage the native archive member", class = "saved_entity_write")
+            members <- c(members, member)
+        }
+        previous <- setwd(staging)
+        on.exit(setwd(previous), add = TRUE)
+        status <- utils::tar(output_path, files = members, compression = "none", tar = "internal")
+        if (!identical(as.integer(status), 0L) && !is.null(status) && !isTRUE(status == 0)) cli::cli_abort("native archive creation failed", class = "saved_entity_write")
+        return(character())
+    }
+    if (identical(mode, "--extract")) {
+        archive <- arguments[which(arguments == "--file") + 1L]
+        directory <- arguments[which(arguments == "--directory") + 1L]
+        if (length(archive) != 1L || length(directory) != 1L) cli::cli_abort("native archive extraction arguments are invalid", class = "saved_entity_invalid")
+        status <- utils::untar(archive, exdir = directory, tar = "internal")
+        if (!identical(as.integer(status), 0L)) cli::cli_abort("native archive extraction failed", class = "saved_entity_write")
+        return(character())
+    }
+    cli::cli_abort("unsupported native archive operation without GNU tar", class = "saved_entity_unsupported")
+}
+
+#' KIT-044: the archive's entries read from its headers in R (ustar and the GNU long-name and pax extensions): names
+#' and sizes of regular files; any other entry type is refused as the GNU listing path refuses it.
+#' @return Named numeric sizes.
+#' @noRd
+readDIANativeTarEntriesR <- function(path) {
+    con <- file(path, "rb")
+    on.exit(close(con), add = TRUE)
+    text <- function(bytes) rawToChar(bytes[bytes != as.raw(0)])
+    octal <- function(bytes) {
+        if (length(bytes) && bytes[[1L]] >= as.raw(0x80)) cli::cli_abort("unsupported native archive size encoding", class = "saved_entity_path")
+        value <- strtoi(trimws(text(bytes)), base = 8L)
+        if (is.na(value)) cli::cli_abort("unsupported native archive entry size", class = "saved_entity_path")
+        value
+    }
+    entries <- list(); long_name <- NULL; pax <- list()
+    repeat {
+        header <- readBin(con, "raw", 512L)
+        if (length(header) < 512L || all(header == as.raw(0))) break
+        name <- text(header[1:100]); size <- octal(header[125:136]); type <- if (header[[157L]] == as.raw(0)) "0" else rawToChar(header[157L])
+        magic <- text(header[258:263]); prefix <- text(header[346:500])
+        if (startsWith(magic, "ustar") && nzchar(prefix)) name <- paste0(prefix, "/", name)
+        blocks <- ceiling(size / 512)
+        if (type %in% c("L", "x", "g")) {
+            data <- readBin(con, "raw", blocks * 512L)
+            payload <- data[seq_len(size)]
+            if (type == "L") long_name <- text(payload)
+            if (type == "x") for (record in strsplit(rawToChar(payload), "\n", fixed = TRUE)[[1L]]) {
+                fields <- regmatches(record, regexec("^[0-9]+ ([^=]+)=(.*)$", record))[[1L]]
+                if (length(fields) == 3L) pax[[fields[[2L]]]] <- fields[[3L]]
+            }
+            next
+        }
+        if (!is.null(long_name)) { name <- long_name; long_name <- NULL }
+        if (!is.null(pax$path)) name <- pax$path
+        if (!is.null(pax$size)) { size <- as.numeric(pax$size); blocks <- ceiling(size / 512) }
+        pax <- list()
+        if (!identical(type, "0")) cli::cli_abort("unsupported native archive entry type", class = "saved_entity_path")
+        entries[[length(entries) + 1L]] <- list(name = name, size = size)
+        if (blocks > 0) seek(con, blocks * 512L, origin = "current")
+    }
+    if (!length(entries)) cli::cli_abort("unsupported native archive entry type", class = "saved_entity_path")
+    stats::setNames(vapply(entries, `[[`, numeric(1), "size"), vapply(entries, `[[`, character(1), "name"))
+}
+
 #' Run a bounded native-export I/O pipeline, preserving every process failure.
 #' @param commands List of argument vectors; paths are quoted, never shell code.
 #' @param log_path Request-owned diagnostic file.
 #' @return Small command output (a SHA-256 line or no output).
 #' @noRd
 runDIANativeIO <- function(commands, log_path) {
-    shell <- unname(Sys.which("bash"))
-    if (!identical(Sys.info()[["sysname"]], "Linux") || !nzchar(shell)) {
-        cli::cli_abort("native export I/O requires bash on Linux", class = "saved_entity_unsupported")
+    # KIT-044: a capability, not a platform test; every caller selects an R fallback when bash or a tool is absent.
+    shell <- workflowToolPath("bash")
+    if (!nzchar(shell)) {
+        cli::cli_abort("native export I/O requires bash", class = "saved_entity_unsupported")
     }
     pipeline <- vapply(commands, \(arguments) {
-        command <- unname(Sys.which(arguments[[1L]]))
+        command <- if (arguments[[1L]] %in% c("dd", "sha256sum", "sync", "tar", "cp")) workflowToolPath(arguments[[1L]]) else unname(Sys.which(arguments[[1L]]))
         if (!nzchar(command)) {
             cli::cli_abort("native export I/O command is unavailable", class = "saved_entity_unsupported")
         }
@@ -46,8 +145,13 @@ snapshotWorkflowFile <- function(source, destination, log_path) {
     }
     # GNU cp falls back to a regular copy; a reflink is independent of subsequent
     # source writes, unlike a hard link. Existing publication hash checks remain.
-    runDIANativeIO(list(c("cp", "--reflink=auto", "--no-clobber", "--",
-        source, destination)), log_path)
+    # KIT-044: without GNU cp (or bash) R copies the bytes (`file.copy`, never overwriting); the same checks follow.
+    if (workflowToolsAvailable(c("bash", "cp"))) {
+        runDIANativeIO(list(c("cp", "--reflink=auto", "--no-clobber", "--",
+            source, destination)), log_path)
+    } else if (!isTRUE(file.copy(source, destination, overwrite = FALSE, copy.date = FALSE))) {
+        cli::cli_abort("snapshot copy failed", class = "saved_entity_write")
+    }
     if (!identical(before, workflowTableFileIdentity(source))) {
         cli::cli_abort("snapshot source changed", class = "saved_entity_corrupt")
     }
@@ -76,6 +180,8 @@ releaseWorkflowFileCache <- function(paths, log_path) {
             cli::cli_abort("invalid native cache-release file", class = "saved_entity_path")
         }
         if (info$size < 4194304) next
+        # KIT-044: cache release is advice; without GNU dd (or bash) nothing is done (contract `cache_release = none`).
+        if (!workflowToolsAvailable(c("bash", "dd"))) next
         runDIANativeIO(list(c("dd", paste0("if=", path), "iflag=nocache", "count=0",
             "status=none")), log_path)
     }
@@ -89,14 +195,11 @@ releaseWorkflowFileCache <- function(paths, log_path) {
 #' @return Command output, bounded by the existing metadata ceiling.
 #' @noRd
 runDIANativeTar <- function(arguments, log_path, output_path = NULL) {
-    command <- unname(Sys.which("tar"))
-    if (!identical(Sys.info()[["sysname"]], "Linux") || !nzchar(command)) {
-        cli::cli_abort("native DIA archives require GNU tar on Linux", class = "saved_entity_unsupported")
-    }
-    version <- system2(command, "--version", stdout = TRUE, stderr = TRUE)
-    if (!is.null(attr(version, "status")) || !any(grepl("GNU tar", version, fixed = TRUE))) {
-        cli::cli_abort("native DIA archives require GNU tar", class = "saved_entity_unsupported")
-    }
+    # KIT-044: GNU tar (with bash and dd for the streamed write) where present; otherwise R's internal tar under the
+    # `ustar_internal` contract (`runDIANativeTarR`): the member hashes in the manifest are the archive's contract, the
+    # archive bytes are not reproducible under either writer.
+    if (!workflowToolsAvailable(c("bash", "dd", "tar"))) return(runDIANativeTarR(arguments, log_path, output_path))
+    command <- workflowToolPath("tar")
     if (!is.null(output_path)) {
         # Synchronous 4 MiB writes make pages clean before dd advises eviction.
         # This is an uncompressed byte stream: the native PAX format is unchanged.
@@ -142,20 +245,27 @@ inspectDIANativeArchive <- function(path, directory) {
     if (!file.exists(path) || isTRUE(info$isdir) || is.na(info$size) || info$size < 1024) {
         cli::cli_abort("native archive is missing or incomplete", class = "saved_entity_missing")
     }
-    lines <- runDIANativeTar(c("--list", "--verbose", "--full-time", "--numeric-owner",
-        "--quoting-style=escape", "--force-local", "--file", path),
-        file.path(directory, "archive-list.log"))
-    # Only ordinary files are supported: links, devices and directories are not
-    # emitted by our writer and cannot be smuggled into a project on import.
-    pattern <- paste0("^-[rwxStTs-]{9}[[:space:]]+[0-9]+/[0-9]+[[:space:]]+",
-        "([0-9]+)[[:space:]]+[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]+",
-        "[0-9:.]+[[:space:]]+(.+)$")
-    matches <- regmatches(lines, regexec(pattern, lines))
-    if (!length(matches) || any(lengths(matches) != 3L)) {
-        cli::cli_abort("unsupported native archive entry type", class = "saved_entity_path")
+    if (workflowToolsAvailable(c("bash", "dd", "tar"))) {
+        lines <- runDIANativeTar(c("--list", "--verbose", "--full-time", "--numeric-owner",
+            "--quoting-style=escape", "--force-local", "--file", path),
+            file.path(directory, "archive-list.log"))
+        # Only ordinary files are supported: links, devices and directories are not
+        # emitted by our writer and cannot be smuggled into a project on import.
+        pattern <- paste0("^-[rwxStTs-]{9}[[:space:]]+[0-9]+/[0-9]+[[:space:]]+",
+            "([0-9]+)[[:space:]]+[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]+",
+            "[0-9:.]+[[:space:]]+(.+)$")
+        matches <- regmatches(lines, regexec(pattern, lines))
+        if (!length(matches) || any(lengths(matches) != 3L)) {
+            cli::cli_abort("unsupported native archive entry type", class = "saved_entity_path")
+        }
+        names <- vapply(matches, `[[`, character(1), 3L)
+        sizes <- as.numeric(vapply(matches, `[[`, character(1), 2L))
+    } else {
+        # KIT-044: the same contract from the headers read in R (regular files only).
+        entries <- readDIANativeTarEntriesR(path)
+        names <- names(entries)
+        sizes <- unname(entries)
     }
-    names <- vapply(matches, `[[`, character(1), 3L)
-    sizes <- as.numeric(vapply(matches, `[[`, character(1), 2L))
     checkDIANativeMemberNames(names)
     if (any(!is.finite(sizes) | sizes < 0) || sum(sizes) > info$size ||
         !all(c("manifest.json", "session-references.rds", ".workflow-entities/store.json",
@@ -761,7 +871,8 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
         }
         return(invisible(manager))
     }
-    if (!isDIANativeDefaultEnabled() || !identical(Sys.info()[["sysname"]], "Linux") || is.na(workflow_type))
+    # KIT-044: the owner attaches wherever its packages are present (a capability, not a platform identity).
+    if (!isDIANativeDefaultEnabled() || !workflowOwnerCapable() || is.na(workflow_type))
         return(invisible(manager))
     # KIT-046: the limpa route needs the limpa package whichever engine runs (fastlimpadpc imports it and provides no dpcDE).
     if (identical(workflow_type, "DIA_LIMPA") && !requireNamespace("limpa", quietly = TRUE))
@@ -775,13 +886,17 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
         cli::cli_abort("native DIA requires qs2, DuckDB and Arrow before import", class = "saved_entity_unsupported")
     }
     root <- normalizePath(paths$source_dir, mustWork = TRUE)
-    runDIANativeTar("--version", tempfile("native-preflight-", tmpdir = root))
-    for (command in c("dd", "sha256sum")) {
-        version <- runDIANativeIO(list(c(command, "--version")),
-            tempfile("native-io-preflight-", tmpdir = root))
-        if (!length(version) || !grepl(paste0("^", command,
-            " \\((GNU )?coreutils\\) "), version[[1L]])) {
-            cli::cli_abort("native export requires GNU coreutils", class = "saved_entity_unsupported")
+    # KIT-044: the GNU preflight runs where the tools are present; otherwise the fallbacks' contracts apply
+    # (`workflowCapabilityContracts()`, recorded on the owner's context), and nothing is required of the host.
+    if (workflowToolsAvailable(c("bash", "dd", "sha256sum", "tar"))) {
+        runDIANativeTar("--version", tempfile("native-preflight-", tmpdir = root))
+        for (command in c("dd", "sha256sum")) {
+            version <- runDIANativeIO(list(c(command, "--version")),
+                tempfile("native-io-preflight-", tmpdir = root))
+            if (!length(version) || !grepl(paste0("^", command,
+                " \\((GNU )?coreutils\\) "), version[[1L]])) {
+                cli::cli_abort("native export requires GNU coreutils", class = "saved_entity_unsupported")
+            }
         }
     }
     state_root <- tempfile(".dia-native-", tmpdir = root)
@@ -990,7 +1105,7 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     experiment_paths = NULL) {
     enabled <- isDIANativeDefaultEnabled() || isDIANativeSession(workflow_data$state_manager)
     workflow_type <- value$workflow_type
-    if (!enabled || !identical(Sys.info()[["sysname"]], "Linux") || !is.character(workflow_type) ||
+    if (!enabled || !workflowOwnerCapable() || !is.character(workflow_type) || # KIT-044: a capability gate
         length(workflow_type) != 1L || !workflow_type %in% names(workflowRoutesByType)) return(FALSE)
     if (isTRUE(value$use_limpa) || isTRUE(value$limpa_applied) || !is.null(value$limpa_dpc_quant_results)) {
         cli::cli_abort("sessions from the retired in-memory limpa route cannot be adopted; rerun on the DIA with limpa workflow",

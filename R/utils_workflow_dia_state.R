@@ -785,9 +785,11 @@ commitDIAReferenceState <- function(manager, state_name, checkpoint, config, des
 #' @noRd
 hashWorkflowSerializedValue <- function(value, store) {
     checkWorkflowEntityStore(store)
-    commands <- Sys.which(c("bash", "dd", "sha256sum"))
-    if (!identical(Sys.info()[["sysname"]], "Linux") || any(!nzchar(commands)))
-        cli::cli_abort("bounded serialized hashing is unavailable", class = "saved_entity_unsupported")
+    # KIT-044: without bash, dd and sha256sum the same bytes are hashed in memory (digest's serializeVersion 2 identity,
+    # the 14-byte header skipped): the same hex, at the cost of the whole serialized column resident.
+    if (!workflowToolsAvailable(c("bash", "dd", "sha256sum")))
+        return(digest::digest(value, algo = "sha256", serializeVersion = 2L))
+    commands <- c(bash = workflowToolPath("bash"), dd = workflowToolPath("dd"), sha256sum = workflowToolPath("sha256sum"))
     checkSavedEntityPath(store, ".pending")
     # Managed workers use request-owned TMPDIR so controller cleanup also
     # removes a partial hash after an uncatchable worker/process-group stop.
@@ -831,9 +833,7 @@ saveDIATableComponent <- function(context, table, backend = "arrow", consume = N
     column_hashes <- vapply(table, function(value) {
         element_names <- names(value)
         if (!is.null(attributes(value))) attributes(value) <- NULL
-        if (identical(Sys.info()[["sysname"]], "Linux"))
-            hashWorkflowSerializedValue(list(value = value, names = element_names), context$store) else
-            digest::digest(list(value = value, names = element_names), algo = "sha256", serializeVersion = 2L)
+        hashWorkflowSerializedValue(list(value = value, names = element_names), context$store)
     }, character(1))
     content <- digest::digest(list(metadata = metadata, columns = column_hashes,
         row_names = if (isTRUE(metadata$automatic_row_names)) NULL else rownames(table)),
@@ -1134,6 +1134,7 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
     context <- new.env(parent = emptyenv())
     context$store <- store
     context$native <- native
+    context$capabilities <- workflowCapabilityContracts() # KIT-044: the contracts this owner runs under
     context$head_path <- file.path(store$directory, "dia-state-head.rds")
     context$head <- NULL
     context$working <- new.env(parent = emptyenv())

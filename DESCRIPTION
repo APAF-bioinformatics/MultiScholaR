@@ -25,9 +25,9 @@ Description: A comprehensive R package providing an end-to-end graphical user in
 License: LGPL (>= 3) + file LICENSE
 Encoding: UTF-8
 NeedsCompilation: yes
-SystemRequirements: GNU coreutils sync (file-specific fsync, for experimental
-    saved-entity storage on Linux); GNU tar, bash and GNU coreutils dd/sha256sum
-    (bounded streaming I/O for experimental native DIA archives on Linux);
+SystemRequirements: optional GNU coreutils sync, dd, sha256sum and cp, bash and
+    GNU tar (bounded streaming hashes, file-specific fsync and pax archives for the
+    saved-entity storage where present; R fallbacks with declared contracts otherwise);
     Cargo and rustc (>= 1.65) only for the optional fastlimpadpc engine of
     the DIA with limpa workflow (Suggests)
 Depends: R (>= 4.1.0)

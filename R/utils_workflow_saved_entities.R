@@ -660,21 +660,65 @@ savedWorkflowEntityCapabilities <- function(reference, reader = "duckdb") {
         lookup_without_computation = TRUE)
 }
 
-#' Resolve file-specific durable flushing for the qualified Linux storage path.
+#' KIT-044: the capability probe for the GNU tools the owner uses. Where a tool is present (by name on the PATH and,
+#' for the coreutils and tar, by its `--version` banner) every path is unchanged; where it is absent an R fallback
+#' with a declared contract runs (`workflowCapabilityContracts`). Attaching the owner is a capability, not a platform
+#' identity. `MULTISCHOLAR_DISABLE_TOOLS` (a comma-separated list of names) hides tools for tests and recorded runs.
+#' Lookups are memoised per process (`workflowToolReset` clears them).
+#' @param name One of bash, dd, sha256sum, sync, tar, cp.
+#' @return The absolute path, or "" when the tool is absent or not the GNU implementation.
+#' @noRd
+.workflowToolCache <- new.env(parent = emptyenv())
+workflowToolReset <- function() invisible(rm(list = ls(.workflowToolCache, all.names = TRUE), envir = .workflowToolCache))
+workflowToolPath <- function(name) {
+    tools <- c("bash", "dd", "sha256sum", "sync", "tar", "cp")
+    if (!is.character(name) || length(name) != 1L || !name %in% tools) cli::cli_abort("unknown workflow tool", class = "saved_entity_invalid")
+    disabled <- trimws(strsplit(Sys.getenv("MULTISCHOLAR_DISABLE_TOOLS"), ",", fixed = TRUE)[[1L]])
+    if (name %in% disabled) return("")
+    if (exists(name, envir = .workflowToolCache, inherits = FALSE)) return(get(name, envir = .workflowToolCache))
+    path <- unname(Sys.which(name))
+    banner <- function(marker) {
+        if (!nzchar(path)) return(FALSE)
+        version <- suppressWarnings(tryCatch(system2(path, "--version", stdout = TRUE, stderr = TRUE), error = function(e) character()))
+        is.null(attr(version, "status")) && any(grepl(marker, version, fixed = TRUE))
+    }
+    # The coreutils banner reads "dd (coreutils) 9.12" or "sync (GNU coreutils) 9.12" by build; both are GNU.
+    present <- switch(name, bash = nzchar(path), tar = banner("GNU tar"), banner("coreutils)"))
+    value <- if (isTRUE(present)) path else ""
+    assign(name, value, envir = .workflowToolCache)
+    value
+}
+workflowToolAvailable <- function(name) nzchar(workflowToolPath(name))
+workflowToolsAvailable <- function(names) all(vapply(names, workflowToolAvailable, logical(1)))
+
+#' The contracts the owner runs under on this host (KIT-044), recorded on the owner's context and in the outcome.
+#' @return Named list: `value_hash_mode` (gnu_stream | in_memory), `file_hash_mode` (gnu_stream | digest_file),
+#'   `durability` (fsync | not guaranteed), `archive_format` (gnu_pax | ustar_internal), `snapshot_copy`
+#'   (cp_reflink | file_copy), `cache_release` (dd_nocache | none).
+#' @noRd
+workflowCapabilityContracts <- function() list(
+    value_hash_mode = if (workflowToolsAvailable(c("bash", "dd", "sha256sum"))) "gnu_stream" else "in_memory",
+    file_hash_mode = if (workflowToolsAvailable(c("bash", "dd", "sha256sum", "sync"))) "gnu_stream" else "digest_file",
+    durability = if (workflowToolAvailable("sync")) "fsync" else "not guaranteed",
+    archive_format = if (workflowToolsAvailable(c("bash", "dd", "tar"))) "gnu_pax" else "ustar_internal",
+    snapshot_copy = if (workflowToolsAvailable(c("bash", "cp"))) "cp_reflink" else "file_copy",
+    cache_release = if (workflowToolsAvailable(c("bash", "dd"))) "dd_nocache" else "none")
+
+#' Whether the state owner can attach on this host (KIT-044): the storage packages present. The GNU tools are not
+#' required; their absence selects the fallbacks.
+#' @noRd
+workflowOwnerCapable <- function() requireNamespace("qs2", quietly = TRUE) && requireNamespace("duckdb", quietly = TRUE) &&
+    requireNamespace("arrow", quietly = TRUE)
+
+#' Resolve file-specific durable flushing (GNU sync) or its absence.
 #' @param store Store handle; caches only the validated executable path.
-#' @return Absolute GNU sync command, never a filesystem-wide invocation.
+#' @return Absolute GNU sync command, or "" when sync is unavailable (KIT-044: the flush is then a no-op and the
+#'   owner's durability contract is "not guaranteed").
 #' @noRd
 savedWorkflowSyncCommand <- function(store) {
     checkWorkflowEntityStore(store)
     if (!is.null(store$sync_command)) return(store$sync_command)
-    command <- unname(Sys.which("sync"))
-    if (!identical(Sys.info()[["sysname"]], "Linux") || !nzchar(command)) {
-        cli::cli_abort("durable saved-entity storage requires GNU sync on Linux", class = "saved_entity_unsupported")
-    }
-    version <- system2(command, "--version", stdout = TRUE, stderr = TRUE)
-    if (!is.null(attr(version, "status")) || !any(grepl("GNU coreutils", version, fixed = TRUE))) {
-        cli::cli_abort("file-specific GNU sync is unavailable", class = "saved_entity_unsupported")
-    }
+    command <- workflowToolPath("sync")
     store$sync_command <- command
     command
 }
@@ -694,6 +738,7 @@ syncSavedWorkflowPaths <- function(store, paths) {
     allowed <- paths == store$directory | paths == dirname(store$directory) |
         startsWith(paths, paste0(store$directory, "/"))
     if (!all(allowed)) cli::cli_abort("flush target escapes project", class = "saved_entity_path")
+    if (!nzchar(command)) return(invisible(TRUE)) # KIT-044: no sync; durability "not guaranteed" (R has no fsync on a path)
     status <- system2(command, c("--", shQuote(paths)))
     if (!identical(status, 0L)) cli::cli_abort("durable flush failed", class = "saved_entity_write")
     invisible(TRUE)
@@ -1480,7 +1525,8 @@ snapshotWorkflowMemory <- function() {
 #' @noRd
 hashWorkflowFile <- function(path, log_path = NULL) {
     identity <- workflowTableFileIdentity(path)
-    hash <- if (is.null(log_path) || identity$size < 4194304) {
+    # KIT-044: the streamed GNU path when its tools are present; `digest(file =)` for every size otherwise (same hex).
+    hash <- if (is.null(log_path) || identity$size < 4194304 || !workflowToolsAvailable(c("bash", "dd", "sha256sum", "sync"))) {
         digest::digest(file = path, algo = "sha256")
     } else {
         runDIANativeIO(list(c("sync", "--", path)), log_path)
