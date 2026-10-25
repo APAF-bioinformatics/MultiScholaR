@@ -9,10 +9,12 @@
 #' `state` is the state-manager name the step leaves current (NULL for store-only steps);
 #' `on_disk_from` is the first step after which the adopted store holds the state.
 #' @noRd
-kitJourneySteps <- function(route = "DIA") {
+kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
     step <- function(id, label, state, kind, module, action) list(id = id, label = label,
         state = state, kind = kind, module = module, action = action)
     stopifnot(is.character(route), length(route) == 1L, route %in% c("DIA", "protein", "DIA_LIMPA"))
+    # KIT-056: on the DIA_LIMPA route the RUV step's state follows the bound mode (`ruv_corrected` for correction).
+    limpa_ruv_state <- if (identical(route, "DIA_LIMPA") && identical(ruv_mode, "correction")) "ruv_corrected" else "ruv_covariates"
     # KIT-053: the DIA with limpa route (KIT-046/047/041): the shared import, design, Q-value filter and precursor
     # rollup, then the route's own peptide stage (log2 matrix, peptide accession cleanup, DPC quantification), its
     # protein stage (between-sample normalisation, peptide count filter), the shared correlation filter, the RUV-III
@@ -28,9 +30,9 @@ kitJourneySteps <- function(route = "DIA") {
         step("protein_normalisation_limpa", "Between-Sample Normalisation", "protein_normalised", "protein", "mod_prot_qc_protein_normalisation", "normalisation-apply_protein_normalisation"),
         step("peptide_count", "Peptide Count Filter", "peptide_count_filtered", "protein", "mod_prot_qc_protein_peptide_count", "peptide_count-apply_peptide_count"),
         step("correlation", "Correlation Filtering", "correlation_filtered", "normalisation", "mod_prot_norm", "apply_correlation_filter"),
-        step("ruv_covariates", "RUV-III Covariates", "ruv_covariates", "normalisation", "mod_prot_norm", "apply_ruv_covariates"),
+        step("ruv_covariates", "RUV-III Covariates", limpa_ruv_state, "normalisation", "mod_prot_norm", "apply_ruv_covariates"),
         step("session_export", "Filtered session export", NULL, "store", "mod_prot_norm", "export_filtered_session"),
-        step("da", "Differential abundance", "ruv_covariates", "da", "mod_prot_da", "run_da_analysis")))
+        step("da", "Differential abundance", limpa_ruv_state, "da", "mod_prot_da", "run_da_analysis")))
     # KIT-021: the protein-level route (LFQ and TMT imports, KIT-020): no peptide stage and no IQ rollup; the design
     # commits `protein_s4_initial`; the protein QC, normalisation, export and DA steps are the DIA route's.
     if (identical(route, "protein")) return(list(

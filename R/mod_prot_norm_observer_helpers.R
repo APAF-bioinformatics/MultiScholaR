@@ -73,7 +73,7 @@ registerProtNormServerObservers <- function(
     workflowData$state_update_trigger
     manager <- workflowData$state_manager
     if (identical(tryCatch(manager$workflow_type, error = function(e) NULL), "DIA_LIMPA") &&
-        !identical(shiny::isolate(input$ruv_mode), "covariates") && !identical(shiny::isolate(input$ruv_mode), "skip")) {
+        !(shiny::isolate(input$ruv_mode) %||% "") %in% c("covariates", "correction", "skip")) { # KIT-056: correction
       updateRadioButtonsFn(session, "ruv_mode", choices = protNormRuvModeChoices("DIA_LIMPA"), selected = "covariates")
     }
   })
@@ -87,7 +87,7 @@ registerProtNormServerObservers <- function(
     shiny::tagList(
       shiny::br(),
       shiny::h5("RUV-III Factors as Covariates (DIA with limpa)"),
-      shiny::helpText("After the correlation filter: the negative-control sweep chooses k and the controls; the W factors are appended to the design for the DA model; the quantified matrix is not corrected."),
+      shiny::helpText("After the correlation filter the negative-control sweep chooses k and the controls. Covariates: the W factors are appended to the design for the DA model and the quantified matrix is not corrected. Correction: the quantified matrix and the DPC EList are corrected (Y - W alpha) and the DA model carries no W terms."),
       shiny::actionButton(ns("apply_ruv_covariates"), "Compute RUV-III Covariates", class = "btn-primary", width = "100%", icon = shiny::icon("play")),
       shiny::br(), shiny::br(),
       shiny::verbatimTextOutput(ns("ruv_covariates_summary")))

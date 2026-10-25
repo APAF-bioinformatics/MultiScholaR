@@ -712,4 +712,26 @@ test_that("the DA helper fits limpa's dpcDE with the W covariates and the resolv
   expect_identical(limma_result$da_model$model, "limma")
   expect_identical(limma_result$da_model$formula_used, "~ 0 + group")
   expect_identical(limma_result$da_model$k, 0L)
+  expect_identical(result$da_model$ruv_mode, "covariates")
+  expect_identical(limma_result$da_model$ruv_mode, "none")
+  # KIT-056: a corrected object (the mode declared, no W terms) fits the plain formula on the corrected EList and is
+  # named; a corrected object whose design still carries W terms is refused (a double correction).
+  corrected <- object
+  corrected@design_matrix$W1 <- NULL
+  corrected@args$ruvCovariates <- list(k = 1L, ruv_mode = "correction")
+  corrected_result <- suppressMessages(differentialAbundanceAnalysis(corrected,
+    contrasts_tbl = data.frame(contrasts = "treated_vs_control=grouptreated-groupcontrol", stringsAsFactors = FALSE),
+    formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0.5, eBayes_trend = FALSE, eBayes_robust = FALSE,
+    args_row_id = "Protein.Ids", qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue"))
+  expect_identical(corrected_result$da_model$model, "dpcDE")
+  expect_identical(corrected_result$da_model$formula_used, "~ 0 + group")
+  expect_identical(corrected_result$da_model$ruv_mode, "correction")
+  expect_identical(corrected_result$da_model$k, 0L)
+  expect_identical(colnames(captured$design), c("groupcontrol", "grouptreated"))
+  double <- object
+  double@args$ruvCovariates <- list(k = 1L, ruv_mode = "correction")
+  expect_error(suppressMessages(differentialAbundanceAnalysis(double,
+    contrasts_tbl = data.frame(contrasts = "treated_vs_control=grouptreated-groupcontrol", stringsAsFactors = FALSE),
+    formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0.5, eBayes_trend = FALSE, eBayes_robust = FALSE,
+    args_row_id = "Protein.Ids", qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue")), "double correction")
 })

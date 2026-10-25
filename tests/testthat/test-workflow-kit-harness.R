@@ -1131,6 +1131,13 @@ test_that("KIT-053: the DIA_LIMPA route's step list, its single journey member w
     expect_identical(steps[[11]]$state, "ruv_covariates")
     expect_identical(steps[[11]]$action, "apply_ruv_covariates")
     expect_identical(steps[[13]]$state, "ruv_covariates")
+    # KIT-056: the correction mode's states on the route; the DIA route ignores the argument.
+    corrected <- h$kitJourneySteps("DIA_LIMPA", "correction")
+    expect_identical(corrected[[11]]$state, "ruv_corrected")
+    expect_identical(corrected[[13]]$state, "ruv_corrected")
+    expect_identical(corrected[[11]]$action, "apply_ruv_covariates")
+    expect_identical(vapply(corrected, `[[`, "", "id"), limpa)
+    expect_identical(h$kitJourneySteps("DIA", "correction"), h$kitJourneySteps("DIA"))
     expect_identical(h$kitStepIds("DIA"), h$kitStepIds())
     b <- kitSyntheticBindings()
     b$builds$kit_053 <- list(library = "/lib/l", build = strrep("l", 64), exact_sum = "sum-l")
@@ -1153,6 +1160,14 @@ test_that("KIT-053: the DIA_LIMPA route's step list, its single journey member w
     expect_false(identical(h$kitCases(other, "kit-journey-053")[[1L]]$binding, case$binding))
     none <- b; none$harness$step_map_limpa_sha256 <- NULL
     expect_error(h$kitCases(none, "kit-journey-053"), "limpa step map")
+    # KIT-056: the correction-mode lifecycle member binds the mode and its own oracle prefix.
+    b$builds$kit_056 <- list(library = "/lib/c", build = strrep("c", 64), exact_sum = "sum-c")
+    b$tickets[["056"]] <- list(kind = "single_journey", build = "kit_056", corpus = "screen", route = "DIA_LIMPA", whole_journey = TRUE,
+        oracles = "limpa_corr_screen", ceiling_seconds = 1800L, normalisation = list(norm_method = "none", ruv_mode = "correction", correlation_threshold = 0.5))
+    corr_case <- h$kitCases(b, "kit-journey-056")[[1L]]
+    expect_identical(corr_case$normalisation$ruv_mode, "correction")
+    expect_identical(corr_case$oracles, "limpa_corr_screen")
+    expect_identical(h$kitMemberSeconds("kit-journey-056", b), 1800L)
     # The oracles are looked up under the route prefix for the route's steps; the decision takes the whole step list.
     b$oracles$limpa_full_dpc_quant <- list(class = "ProteinQuantitativeData", components = list(protein_quant_table = "x"))
     oracles <- h$kitOracleJourneyPopulations(b, "DIA_LIMPA", "limpa_full")

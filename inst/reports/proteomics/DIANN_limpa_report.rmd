@@ -392,9 +392,9 @@ FormatMethodDetails <- function(numbers) {
       "To account for unwanted variation, RUV-III (Molania et al., 2019) was fitted on the quantified protein matrix ",
       "using a set of endogenous negative control proteins chosen by a negative-control sweep ({numbers$ruvcov_percentage}% of ",
       "proteins, {numbers$ruvcov_control_count} controls; replicate structure: {numbers$ruvcov_replicate_structure}). ",
-      "The {numbers$ruvcov_k} estimated factor(s) of unwanted variation (W) were appended to the design as covariates of the ",
-      "differential abundance model; the protein matrix itself was not corrected (the RUV-adjusted matrix is used for ",
-      "quality-control plots only).") else
+      if (identical(numbers$ruvcov_mode, "correction"))
+        "The quantified log2 matrix was corrected by RUV-III with the {numbers$ruvcov_k} estimated factor(s) of unwanted variation (Y - W alpha) and the corrected matrix was carried into the differential abundance model; the DPC standard errors and observation counts were kept as quantified; no W terms entered the model." else
+        "The {numbers$ruvcov_k} estimated factor(s) of unwanted variation (W) were appended to the design as covariates of the differential abundance model; the protein matrix itself was not corrected (the RUV-adjusted matrix is used for quality-control plots only).") else
       "RUV-III was not run on this dataset (no covariates of unwanted variation were added to the model)."
   } else {
   ruv_text <- glue::glue(
@@ -614,7 +614,9 @@ FormatDEDetails <- function(numbers) {
   da_model_recorded <- !is.null(numbers$da_model) && !identical(numbers$da_model, "not recorded") && !all(is.na(numbers$da_model))
   if (da_model_recorded && identical(numbers$da_model, "dpcDE")) {
     formula_used <- if (!is.null(numbers$da_formula_used) && !identical(numbers$da_formula_used, "not recorded")) numbers$da_formula_used else formula_string_val
-    k_text <- if (!is.null(numbers$da_k) && !identical(numbers$da_k, "not recorded") && as.numeric(numbers$da_k) > 0)
+    k_text <- if (identical(numbers$da_ruv_mode, "correction"))
+      glue::glue(" dpcDE was fitted on the RUV-III-corrected matrix ({numbers$ruvcov_k} factor(s) removed) with the DPC standard errors; no W terms entered the model.") else
+      if (!is.null(numbers$da_k) && !identical(numbers$da_k, "not recorded") && as.numeric(numbers$da_k) > 0)
       glue::glue(" The {numbers$da_k} RUV-III factor(s) of unwanted variation (W) entered the model as covariates.") else ""
     block_text <- if (identical(numbers$da_block_reason, "technical_replicates"))
       " Technical replicates were modelled as a block through limma's duplicateCorrelation." else ""

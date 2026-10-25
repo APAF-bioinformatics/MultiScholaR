@@ -276,3 +276,9 @@ test_that("a worker step may name its own deadline within the journey ceiling; n
   entry$worker_deadline <- 14400L
   expect_identical(validateWorkflowOperationEntry(entry)$worker_deadline, 14400L)
 })
+
+test_that("the RUV covariates step's ruv_mode is the tab's choice with no shipped default and a label (KIT-056)", {
+  expect_identical(workflowOperationDefaults$protein_ruv_covariates$ruv_mode, "no_shipped_default")
+  expect_true(nzchar(workflowParameterLabels$protein_ruv_covariates$ruv_mode))
+  expect_true("ruv_mode" %in% workflowActionSpec("protein_ruv_covariates")$parameters)
+})

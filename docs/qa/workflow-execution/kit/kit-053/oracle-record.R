@@ -25,7 +25,8 @@ for (name in names(corpus$files)) stopifnot(identical(digest::digest(file = corp
 report <- corpus$files[[corpus$report_file]]$path; fasta <- corpus$files[["proteins.fasta"]]$path; design_path <- corpus$files[["design.tsv"]]$path
 journey <- bindings$journey
 label_dir <- journey$experiment_label
-work <- file.path(bindings$harness$root, "oracles", paste0("limpa_", corpus_key)); unlink(work, recursive = TRUE); dir.create(work, recursive = TRUE)
+# KIT-056: `KIT_LIMPA_WORK_SUFFIX` keeps a second record's store apart (the correction mode beside the covariates mode).
+work <- file.path(bindings$harness$root, "oracles", paste0("limpa_", corpus_key, Sys.getenv("KIT_LIMPA_WORK_SUFFIX"))); unlink(work, recursive = TRUE); dir.create(work, recursive = TRUE)
 Sys.setenv(MULTISCHOLAR_TEST_MODE = "true")
 fake_session <- function() {
     session <- new.env(parent = emptyenv()); session$userData <- new.env(parent = emptyenv())
@@ -164,8 +165,14 @@ run("dpc_quant", withDIAStateScope(manager, function() invisible(publish_protein
 norm <- journey$normalisation
 norm$norm_method <- "none"; norm$ruv_mode <- "covariates"
 # The ticket's binding applies to the corpus it binds (none on the screen corpus, cyclic loess on the full corpus).
-ticket_norm <- if (identical(bindings$tickets[["053"]]$corpus, corpus_key)) bindings$tickets[["053"]]$normalisation
+# KIT-056: `KIT_LIMPA_TICKET` names the ticket whose binding applies (default 053; 056 binds ruv_mode = correction).
+limpa_ticket <- Sys.getenv("KIT_LIMPA_TICKET", "053")
+ticket_norm <- if (identical(bindings$tickets[[limpa_ticket]]$corpus, corpus_key)) bindings$tickets[[limpa_ticket]]$normalisation
 if (!is.null(ticket_norm)) norm <- utils::modifyList(norm, ticket_norm)
+# KIT-056: `KIT_LIMPA_RUV_MODE` overrides the mode (the tree's correction-mode record before the ticket's build is bound).
+if (nzchar(Sys.getenv("KIT_LIMPA_RUV_MODE"))) norm$ruv_mode <- Sys.getenv("KIT_LIMPA_RUV_MODE")
+stopifnot(norm$ruv_mode %in% c("covariates", "correction"))
+steps <- harness$kitJourneySteps("DIA_LIMPA", norm$ruv_mode)
 run("protein_normalisation_limpa", withDIAStateScope(manager, function() invisible(publish_protein(runDIAReferenceProteinNormalisation(workflow,
     list(norm_method = norm$norm_method)), "10_protein_normalised"))))
 run("peptide_count", withDIAStateScope(manager, function() invisible(publish_protein(runDIAReferenceProteinPeptideCountFilter(workflow,
@@ -178,13 +185,13 @@ ruv_qc <- function(reference) {
     norm_data$qc_plot_paths <- generateProtNormRuvCorrectedQcArtifacts(ruvCorrectedS4 = reference,
         qcDir = norm_data$publication_paths$protein_qc_dir %||% paths$protein_qc_dir, aesthetics = aesthetics(), qcPlotPaths = norm_data$qc_plot_paths)
 }
-invisible(runDIAReferenceLimpaNormalisationPassThrough(list(ruv_mode = "covariates"), workflow, norm_data, function(reference) NULL))
+invisible(runDIAReferenceLimpaNormalisationPassThrough(list(ruv_mode = norm$ruv_mode), workflow, norm_data, function(reference) NULL))
 run("correlation", invisible(runDIAReferenceCorrelation(workflow, norm_data, paths, norm$correlation_threshold, FALSE, "proteomics", label_dir, grouping, aesthetics)))
 norm_data$correlation_filtering_complete <- TRUE
-run("ruv_covariates", invisible(runDIAReferenceRuvCovariates(list(ruv_mode = "covariates", color_variable = NULL, shape_variable = NULL),
+run("ruv_covariates", invisible(runDIAReferenceRuvCovariates(list(ruv_mode = norm$ruv_mode, color_variable = NULL, shape_variable = NULL),
     workflow, norm_data, paths, "proteomics", label_dir, ruv_qc, grouping)))
 # 5. The native session export (no state) and the DA on the head with the design builder's contrasts (dpcDE on the route).
-run("session_export", invisible(runProtNormExportSessionWorkflow(workflow, norm_data, list(norm_method = norm$norm_method %||% "none", ruv_mode = "covariates"),
+run("session_export", invisible(runProtNormExportSessionWorkflow(workflow, norm_data, list(norm_method = norm$norm_method %||% "none", ruv_mode = norm$ruv_mode),
     paths$source_dir, withProgressFn = function(message, value, expr) force(expr), incProgressFn = function(...) NULL, messageFn = function(...) NULL)))
 run("da", withDIAStateScope(manager, function() {
     stopifnot(is.data.frame(workflow$contrasts_tbl), nrow(workflow$contrasts_tbl) > 0L)

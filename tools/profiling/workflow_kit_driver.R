@@ -140,7 +140,7 @@ kitSnapshotAfterStep <- function(project, api) {
 #' @return Journey record: populations per step, files, final head, status.
 #' @noRd
 runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, application_root, events, api) {
-    steps <- kitJourneySteps(kitRouteOf(journey))
+    steps <- kitJourneySteps(kitRouteOf(journey), journey$normalisation$ruv_mode %||% "covariates")
     # KIT-018: a single journey member runs import through `journey$stop_after` only.
     if (!is.null(journey$stop_after)) {
         last <- match(journey$stop_after, vapply(steps, `[[`, character(1), "id"))
@@ -223,9 +223,13 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
             normalisation = switch(id,
                 ruv_covariates = {
                     # KIT-053: the DIA_LIMPA route's RUV covariates, the tab's own action after the correlation filter.
+                    # KIT-056: the bound mode is set on the tab's radio first; the state follows it.
+                    limpa_ruv_mode <- journey$normalisation$ruv_mode %||% "covariates"
+                    if (!identical(limpa_ruv_mode, "covariates")) h$checkpointSetInput(driver, paste0(norm_prefix, "ruv_mode"), limpa_ruv_mode)
                     h$checkpointSetInput(driver, paste0(norm_prefix, "norm_qc_tabs"), "Correlation Filtering")
                     h$checkpointClickAndWaitText(driver, paste0(norm_prefix, "apply_ruv_covariates"),
-                        paste0("#", norm_prefix, "ruv_covariates_summary"), "State saved as: 'ruv_covariates'")
+                        paste0("#", norm_prefix, "ruv_covariates_summary"),
+                        sprintf("State saved as: '%s'", steps[[match(id, vapply(steps, `[[`, "", "id"))]]$state))
                 },
                 normalisation_ruv = {
                     h$checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "normalization")

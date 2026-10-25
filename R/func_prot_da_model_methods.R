@@ -365,12 +365,20 @@ setMethod(
     # applied on this branch. Every other object takes the limma path exactly as before.
     limpa_results <- theObject@args$limpa_dpc_quant_results
     use_dpc_de <- is.list(limpa_results) && !is.null(limpa_results$quantified_elist) && requireNamespace("limpa", quietly = TRUE)
+    # KIT-056: the RUV mode the normalisation step declared on the object (`covariates`, the W terms in the design;
+    # `correction`, the matrix and the owned EList already corrected, no W terms); absent on older states and on the
+    # limma path, where the W terms alone say.
+    ruv_mode_declared <- theObject@args$ruvCovariates$ruv_mode
     da_model <- list(model = "limma", formula_used = formula_string, w_terms = character(), k = 0L,
+      ruv_mode = ruv_mode_declared %||% "none",
       treat_applied = isTRUE(is.finite(as.double(treat_lfc_cutoff)) && as.double(treat_lfc_cutoff) > 0),
       treat_lfc_cutoff_requested = as.double(treat_lfc_cutoff))
     if (use_dpc_de) {
       message("   differentialAbundanceAnalysisHelper: quantified EList present; fitting limpa::dpcDE (KIT-053)")
       w_terms <- grep("^W[0-9]+$", names(theObject@design_matrix), value = TRUE)
+      ruv_mode <- ruv_mode_declared %||% (if (length(w_terms)) "covariates" else "none")
+      if (identical(ruv_mode, "correction") && length(w_terms))
+        stop("The quantified matrix was corrected by RUV-III and the design carries W columns; refusing a double correction.", call. = FALSE)
       formula_used <- if (length(w_terms)) paste(formula_string, "+", paste(w_terms, collapse = " + ")) else formula_string
       design_for_dpcde <- model.matrix(as.formula(formula_used), theObject@design_matrix)
       samples_in_model <- rownames(design_for_dpcde)
@@ -393,7 +401,7 @@ setMethod(
         table$log_intensity <- NULL # derived from AveExpr by the significance step, as for the limma tables
         table
       })
-      da_model <- list(model = "dpcDE", formula_used = formula_used, w_terms = w_terms, k = length(w_terms),
+      da_model <- list(model = "dpcDE", formula_used = formula_used, w_terms = w_terms, k = length(w_terms), ruv_mode = ruv_mode,
         block_reason = replicate$reason, uses_duplicate_correlation = isTRUE(replicate$technical),
         treat_applied = FALSE, treat_lfc_cutoff_requested = as.double(treat_lfc_cutoff))
     } else {

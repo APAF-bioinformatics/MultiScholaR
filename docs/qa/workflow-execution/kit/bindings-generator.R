@@ -440,6 +440,12 @@ if (!is.null(b$builds$kit_053)) {
         normalisation = list(norm_method = if (identical(corpus_053, "full")) "cyclicloess" else "none", ruv_mode = "covariates",
             correlation_threshold = 0.5))
 }
+# KIT-056: the RUV correction mode on the DIA_LIMPA route (user decisions 2026-10-22: no counted member; the screen
+# lifecycle member through the driver with `ruv_mode = correction`, judged against the route's oracles recorded in
+# process with that mode on the same build, `limpa_corr_screen_<step>`).
+if (!is.null(b$builds$kit_056)) b$tickets[["056"]] <- list(kind = "single_journey", build = "kit_056", corpus = "screen", route = "DIA_LIMPA",
+    whole_journey = TRUE, oracles = "limpa_corr_screen", ceiling_seconds = 1800L, purpose = "lifecycle",
+    normalisation = list(norm_method = "none", ruv_mode = "correction", correlation_threshold = 0.5))
 # KIT-057: the DIA_LIMPA control/candidate pair (the audit of 2026-10-23: the route's three KIT-047 peptide steps ran
 # only whole-matrix workers; the counted KIT-053 member peaked at 11.42 GiB against the DIA route's 5.7 GiB on the same
 # corpus). Control `kit_053` (the whole variants, the KIT-053 counted build), candidate `kit_057` (the production
@@ -467,8 +473,9 @@ if (!is.null(b$builds$kit_057)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ti
 # KIT-057: the same recorder on the kit_057 build (the production variants and the fastlimpadpc engine, the user's
 # decision of 2026-10-24) into kit-057/oracles-limpa_<corpus>.rds, bound under limpa57_<corpus>_<step> (the pair's
 # candidate oracles; the control keeps KIT-053's).
-for (ticket_dir in c(`limpa` = "kit-053", `limpa57` = "kit-057")) for (key in c("screen", "full")) {
-    prefix <- names(which(c(`limpa` = "kit-053", `limpa57` = "kit-057") == ticket_dir))
+limpa_oracle_dirs <- c(`limpa` = "kit-053", `limpa57` = "kit-057", `limpa_corr` = "kit-056") # KIT-056: the correction-mode record
+for (ticket_dir in limpa_oracle_dirs) for (key in c("screen", "full")) {
+    prefix <- names(which(limpa_oracle_dirs == ticket_dir))
     if (is.null(b$corpora[[key]])) next
     oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit", ticket_dir, paste0("oracles-limpa_", key, ".rds"))
     if (!file.exists(oracle_file)) next

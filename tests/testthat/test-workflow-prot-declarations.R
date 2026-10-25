@@ -472,6 +472,11 @@ test_that("the DIA_LIMPA protein-stage declarations are registered with the unit
     expect_identical(workflowOperationForSection("filterMinNumPeptidesPerProtein"), "peptide_protein_evidence_filter")
     expect_error(validateWorkflowActionParameters("protein_between_sample_normalisation", list(norm_method = "vsn"), workflowExecutionPolicy(FALSE)))
     expect_error(validateWorkflowActionParameters("protein_peptide_count_filter", list(num_peptides_per_protein_thresh = 1.5, num_peptidoforms_per_protein_thresh = 2), workflowExecutionPolicy(FALSE)))
+    # KIT-056: the RUV mode is a declared parameter; covariates by default, correction selectable, nothing else.
+    expect_true("ruv_mode" %in% diaRuvCovariatesOperation()$parameters)
+    expect_identical(resolveDIARuvCovariatesParameters(list(), "group")$ruv_mode, "covariates")
+    expect_identical(resolveDIARuvCovariatesParameters(list(), "group", "correction")$ruv_mode, "correction")
+    expect_error(resolveDIARuvCovariatesParameters(list(), "group", "adjust"), class = "workflow_execution_invalid")
     defaults <- resolveDIARuvCovariatesParameters(list(), "group")
     expect_identical(defaults$percentage_max, 30)
     expect_identical(defaults$ruv_fdr_method, "BH")
@@ -527,8 +532,11 @@ test_that("the protein-stage declarations reproduce the in-memory kernels and th
         correlated <- readDIAExecutionComponents(manager)
         expect_setequal(colnames(correlated@args$limpa_dpc_quant_results$quantified_elist$E), as.character(correlated@design_matrix[[correlated@sample_id]]))
         parameters <- resolveDIARuvCovariatesParameters(list(), "group")
-        run <- suppressMessages(suppressWarnings(runSavedOperation(manager, diaRuvCovariatesOperation(), getDIAStateReference(manager), parameters)))
+        correlation_reference <- getDIAStateReference(manager)
+        run <- suppressMessages(suppressWarnings(runSavedOperation(manager, diaRuvCovariatesOperation(), correlation_reference, parameters)))
         value <- run$value
+        expect_identical(value$ruv_mode, "covariates")
+        expect_identical(value$final, value$covariates)
         expect_identical(colnames(value$W), paste0("W", seq_len(value$best_k)))
         final <- readDIAStateMetadata(manager, value$covariates)$data
         final$products$ruv_covariates_science <- run$reference
@@ -552,6 +560,36 @@ test_that("the protein-stage declarations reproduce the in-memory kernels and th
         expect_identical(step$outcomes$replicate_structure, value$replicate_structure)
         expect_setequal(vapply(step$parameters, `[[`, character(1), "name"), diaRuvCovariatesOperation()$parameters)
         expect_true(validateWorkflowAnalysisRecord(record)$valid)
+        expect_identical(step$outcomes$ruv_mode %||% covariates@args$ruvCovariates$ruv_mode, "covariates")
+        # KIT-056: the correction mode on the same correlation state: the same sweep, k and controls; the state's
+        # protein table and the owned EList's E are the adjusted matrix; the design carries no W terms; the DPC
+        # standard errors and observation counts are the source's; the owned value is a new entity.
+        corrected_run <- suppressMessages(suppressWarnings(runSavedOperation(manager, diaRuvCovariatesOperation(), correlation_reference,
+            resolveDIARuvCovariatesParameters(list(), "group", "correction"))))
+        corrected_value <- corrected_run$value
+        expect_identical(corrected_value$ruv_mode, "correction")
+        expect_identical(corrected_value$percentage, value$percentage)
+        expect_identical(corrected_value$best_k, value$best_k)
+        expect_identical(corrected_value$controls, value$controls)
+        expect_equal(corrected_value$W, value$W, tolerance = 1e-12)
+        expect_false(identical(corrected_value$final, corrected_value$covariates))
+        corrected <- readDIAExecutionComponents(manager, corrected_value$final)
+        expect_false(any(grepl("^W[0-9]+$", names(corrected@design_matrix))))
+        expect_equal(as.data.frame(corrected@design_matrix), as.data.frame(correlated@design_matrix), ignore_attr = TRUE)
+        expect_equal(unname(as.matrix(corrected@protein_quant_table[, rownames(factors$W)])), unname(factors$adjusted), tolerance = 1e-10)
+        corrected_results <- corrected@args$limpa_dpc_quant_results
+        source_results <- correlated@args$limpa_dpc_quant_results
+        expect_equal(corrected_results$quantified_elist$E, factors$adjusted[rownames(corrected_results$quantified_elist$E), colnames(corrected_results$quantified_elist$E)], tolerance = 1e-12)
+        expect_identical(corrected_results$standard_errors, source_results$standard_errors)
+        expect_identical(corrected_results$n_observations, source_results$n_observations)
+        expect_identical(corrected_results$quantified_elist$other$standard.error, source_results$quantified_elist$other$standard.error)
+        expect_identical(corrected@args$ruvCovariates$ruv_mode, "correction")
+        expect_identical(corrected@args$ruvCovariates$k, value$best_k)
+        corrected_spec <- readDIAStateMetadata(manager, corrected_value$final)$data
+        source_spec <- readDIAStateMetadata(manager, correlation_reference)$data
+        expect_false(identical(corrected_spec$slots$args$limpa_dpc_quant_results, source_spec$slots$args$limpa_dpc_quant_results))
+        # The products of the two modes are distinct saved operations (the mode is part of the identity).
+        expect_false(identical(corrected_run$reference$entity_id, run$reference$entity_id))
     })
 })
 

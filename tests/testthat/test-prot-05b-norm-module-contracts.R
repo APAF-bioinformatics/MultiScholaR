@@ -1360,6 +1360,7 @@ test_that("buildProtNormCompletionNotification returns mode-specific text", {
     "Normalization and RUV correction completed",
     fixed = TRUE
   )
+  expect_match(buildProtNormCompletionNotification("correction"), "RUV-III correction", fixed = TRUE) # KIT-056
 })
 
 test_that("handleProtNormNormalizationError logs and notifies consistently", {

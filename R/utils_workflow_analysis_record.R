@@ -518,20 +518,24 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 commitDIAReferenceState(manager, "correlation_filtered", spec,
                     list(min_pearson_correlation_threshold = parameters$threshold), "Applied final sample correlation filter (chunk 28)")
             } else if (identical(operation, "protein_ruv_covariates")) {
-                # KIT-053: as `runDIAReferenceRuvCovariates` commits on the DIA_LIMPA route.
+                # KIT-053: as `runDIAReferenceRuvCovariates` commits on the DIA_LIMPA route. KIT-056: the mode is a
+                # declared parameter; records written before it carry none and replay as covariates.
+                parameters$ruv_mode <- parameters$ruv_mode %||% "covariates"
                 run <- runSavedOperation(manager, diaRuvCovariatesOperation(), getDIAStateReference(manager), parameters)
                 saved <- run$value
-                final <- readDIAStateMetadata(manager, saved$covariates)$data
+                correction <- identical(saved$ruv_mode %||% "covariates", "correction")
+                final <- readDIAStateMetadata(manager, saved$final %||% saved$covariates)$data
                 final$products$ruv_covariates_science <- run$reference
-                config <- list(ruv_mode = "covariates", ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage,
+                config <- list(ruv_mode = saved$ruv_mode %||% "covariates", ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage,
                     control_count = saved$control_count, separation_score = saved$ruv_result$best_separation_score,
                     composite_score = saved$ruv_result$best_composite_score, max_acceptable_k = saved$ruv_result$max_acceptable_k,
                     replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, replicate_blocks = saved$blocks,
                     ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_applied = TRUE,
                     outcomes = list(k = saved$best_k, percentage_as_neg_ctrl = saved$percentage, control_count = saved$control_count,
                         separation_score = saved$ruv_result$best_separation_score, composite_score = saved$ruv_result$best_composite_score,
-                        replicate_structure = saved$replicate_structure, block_reason = saved$block_reason))
-                commitDIAReferenceState(manager, "ruv_covariates", final, config,
+                        replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, ruv_mode = saved$ruv_mode %||% "covariates"))
+                commitDIAReferenceState(manager, if (correction) "ruv_corrected" else "ruv_covariates", final, config, if (correction)
+                    sprintf("RUV-III correction applied to the quantified matrix and the DPC EList (k = %d; Y - W alpha); no W terms in the design", saved$best_k) else
                     sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
             } else {
                 cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}", class = "workflow_replay_unsupported")
@@ -727,6 +731,8 @@ workflowRecordReportSources <- list(
     ruvcov_percentage = list(record = c("outcomes", "protein_ruv_covariates", "percentage_as_neg_ctrl")),
     ruvcov_control_count = list(record = c("outcomes", "protein_ruv_covariates", "control_count")),
     ruvcov_replicate_structure = list(record = c("outcomes", "protein_ruv_covariates", "replicate_structure")),
+    ruvcov_mode = list(record = c("outcomes", "protein_ruv_covariates", "ruv_mode")),
+    da_ruv_mode = list(record = c("model", "ruv_mode")),
     da_model = list(record = c("model", "model")),
     da_formula_used = list(record = c("model", "formula_used")),
     da_k = list(record = c("model", "k")),

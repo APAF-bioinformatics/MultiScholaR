@@ -351,7 +351,8 @@ finalizeProtNormWorkflowState <- function(
 #' @noRd
 protNormRuvModeChoices <- function(workflowType = NULL) {
   if (identical(workflowType, "DIA_LIMPA")) {
-    return(list("RUV-III factors as covariates (recommended)" = "covariates", "Skip RUV" = "skip"))
+    # KIT-056: the DIA route's form as a second mode; the same fit, k and controls, the matrix corrected instead.
+    return(list("RUV-III factors as covariates (recommended)" = "covariates", "RUV-III correction of the quantified matrix" = "correction", "Skip RUV" = "skip"))
   }
   list("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual", "Skip RUV (troublesome datasets)" = "skip")
 }
@@ -403,20 +404,23 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
       showNotificationFn("RUV-III covariates skipped. Ready for differential expression analysis.", type = "message", duration = 10)
       return(invisible(NULL))
     }
-    settings <- list(ruv_mode = "covariates", color_variable = input$color_variable, shape_variable = input$shape_variable)
+    if (!mode %in% c("covariates", "correction")) stop("the RUV mode must be covariates, correction or skip")
+    settings <- list(ruv_mode = mode, color_variable = input$color_variable, shape_variable = input$shape_variable)
     accepted <- runDIAReferenceRuvCovariates(settings, workflowData, normData, experimentPaths, omicType, experimentLabel,
       generateRuvCorrectedQcFn, getRuvGroupingVariableFn)
     updateProtNormRuvAuditTrail(ruvK = normData$best_k, controlGenesIndex = normData$control_genes_index,
-      percentageAsNegCtrl = normData$ruv_optimization_result$best_percentage, modeLabel = "covariates",
+      percentageAsNegCtrl = normData$ruv_optimization_result$best_percentage, modeLabel = mode,
       workflowData = workflowData, messageFn = messageFn)
     result <- normData$ruv_optimization_result
-    text <- paste0("RUV-III covariates appended to the design: k = ", normData$best_k, " (W", if (normData$best_k > 1) paste0("1..W", normData$best_k) else "1",
-      "); negative controls ", result$best_percentage, "% (", sum(normData$control_genes_index, na.rm = TRUE), " proteins); replicate structure ",
-      result$replicate_structure, ". The quantified matrix is unchanged; the adjusted matrix is shown in the RUV-corrected QC plots only.\n",
+    controls <- paste0("negative controls ", result$best_percentage, "% (", sum(normData$control_genes_index, na.rm = TRUE), " proteins); replicate structure ", result$replicate_structure)
+    text <- if (identical(mode, "correction")) paste0("RUV-III correction applied to the quantified matrix: k = ", normData$best_k, "; ", controls,
+      ". The corrected matrix and the DPC EList carry Y - W alpha; the DPC standard errors are kept as quantified; no W terms enter the DA model.\n",
+      "State saved as: 'ruv_corrected'") else paste0("RUV-III covariates appended to the design: k = ", normData$best_k, " (W", if (normData$best_k > 1) paste0("1..W", normData$best_k) else "1",
+      "); ", controls, ". The quantified matrix is unchanged; the adjusted matrix is shown in the RUV-corrected QC plots only.\n",
       "State saved as: 'ruv_covariates'")
     output$ruv_covariates_summary <- renderTextFn(text)
-    showNotificationFn(sprintf("RUV-III factors appended as covariates (k = %s). Ready for differential expression analysis.",
-      normData$best_k), type = "message", duration = 10)
+    showNotificationFn(if (identical(mode, "correction")) sprintf("RUV-III correction applied (k = %s). Ready for differential expression analysis.", normData$best_k) else
+      sprintf("RUV-III factors appended as covariates (k = %s). Ready for differential expression analysis.", normData$best_k), type = "message", duration = 10)
     invisible(accepted)
   }, error = function(e) {
     message <- paste("Error computing the RUV-III covariates:", e$message)
@@ -430,6 +434,9 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
 buildProtNormCompletionNotification <- function(ruvMode) {
   if (ruvMode == "covariates") {
     return("Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III covariates are computed after it.")
+  }
+  if (ruvMode == "correction") { # KIT-056
+    return("Normalisation stage ready (DIA with limpa). Apply or skip the correlation filter; the RUV-III correction of the quantified matrix runs after it.")
   }
   if (ruvMode == "skip") {
     return("Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.")

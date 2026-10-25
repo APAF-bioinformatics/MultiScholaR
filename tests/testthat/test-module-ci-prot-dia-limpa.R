@@ -94,9 +94,12 @@ test_that("the DIA_LIMPA protein-stage tabs carry their inputs and the in-memory
   expect_true(all(c('id="x-norm_method"', 'id="x-apply_protein_normalisation"', 'id="x-protein_normalisation_results"') %in% norm))
   count <- limpa_tab_inputs(mod_prot_qc_protein_peptide_count_ui("x"))
   expect_true(all(c('id="x-num_peptides_per_protein_thresh"', 'id="x-num_peptidoforms_per_protein_thresh"', 'id="x-apply_peptide_count"') %in% count))
-  expect_identical(unname(unlist(protNormRuvModeChoices("DIA_LIMPA"))), c("covariates", "skip"))
+  expect_identical(unname(unlist(protNormRuvModeChoices("DIA_LIMPA"))), c("covariates", "correction", "skip")) # KIT-056
   expect_identical(unname(unlist(protNormRuvModeChoices("DIA"))), c("automatic", "manual", "skip"))
   expect_match(buildProtNormCompletionNotification("covariates"), "covariates", fixed = TRUE)
+  expect_match(buildProtNormCompletionNotification("correction"), "correction", fixed = TRUE)
+  expect_match(buildProtNormRuvOptimizationSummary(list(best_percentage = 5, best_k = 2L, best_control_genes_index = c(TRUE, FALSE),
+    separation_metric_used = "max_difference"), "correction", "group"), "RUV-III Correction", fixed = TRUE)
   summary <- buildProtNormRuvOptimizationSummary(list(best_percentage = 5, best_k = 2L, best_separation_score = 0.4, best_composite_score = 0.3,
     best_control_genes_index = c(TRUE, TRUE, FALSE), separation_metric_used = "max_difference", k_penalty_weight = 0.5,
     adaptive_k_penalty_used = TRUE, sample_size = 8L), "covariates", "group")
@@ -130,4 +133,28 @@ test_that("the DIA_LIMPA protein-stage tabs carry their inputs and the in-memory
   expect_identical(filtered$filteredS4@protein_quant_table$Protein.Ids, c("P_A", "P_C"))
   expect_identical(workflow$state_manager$getHistory(), c("protein_normalised", "peptide_count_filtered"))
   expect_identical(workflow$qc_params$protein_qc$peptide_count_filter$proteins_after, 2L)
+})
+
+test_that("the RUV covariates observer passes the tab's mode to the route's runner and names the saved state (KIT-056)", {
+  captured <- new.env(parent = emptyenv())
+  fake_runner <- function(settings, workflowData, normData, experimentPaths, omicType, experimentLabel, ruv_qc, grouping) {
+    captured$settings <- settings
+    normData$best_k <- 1L; normData$control_genes_index <- c(TRUE, FALSE, TRUE)
+    normData$ruv_optimization_result <- list(best_percentage = 5, replicate_structure = "group")
+    "accepted"
+  }
+  testthat::local_mocked_bindings(runDIAReferenceRuvCovariates = fake_runner, updateProtNormRuvAuditTrail = function(...) invisible(NULL))
+  manager <- list(workflow_type = "DIA_LIMPA")
+  workflow <- list2env(list(state_manager = manager))
+  for (mode in c("correction", "covariates")) {
+    norm_data <- list2env(list(correlation_filtering_complete = TRUE))
+    rendered <- new.env(parent = emptyenv()); notes <- character()
+    out <- list2env(list())
+    runProtNormRuvCovariatesObserver(list(ruv_mode = mode, color_variable = NULL, shape_variable = NULL), out, workflow, norm_data, list(), "proteomics", "x",
+      function(reference) NULL, function() "group", renderTextFn = function(text) { rendered$text <- text; text },
+      showNotificationFn = function(message, ...) notes <<- c(notes, message), messageFn = function(...) NULL)
+    expect_identical(captured$settings$ruv_mode, mode)
+    expect_match(rendered$text, sprintf("State saved as: '%s'", if (mode == "correction") "ruv_corrected" else "ruv_covariates"), fixed = TRUE)
+    expect_match(notes[[1L]], if (mode == "correction") "correction applied" else "appended as covariates", fixed = TRUE)
+  }
 })
