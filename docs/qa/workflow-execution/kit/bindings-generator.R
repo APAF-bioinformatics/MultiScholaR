@@ -440,6 +440,9 @@ if (!is.null(b$builds$kit_053)) {
         normalisation = list(norm_method = if (identical(corpus_053, "full")) "cyclicloess" else "none", ruv_mode = "covariates",
             correlation_threshold = 0.5))
 }
+# KIT-044 (2026-10-26): the capability fallback for the GNU tools; no counted member; one install recorded.
+if (!is.null(b$builds$kit_044)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-044", outcome = "recorded", build = "kit_044",
+    note = "workflowToolPath probes bash/dd/sha256sum/sync/tar/cp and workflowCapabilityContracts() names the owner's contracts; without the tools the value hash is in memory (same hex), the file hash digest(file =), the flushes no-ops (durability not guaranteed), the archive utils::tar/untar with an R header reader, the snapshot file.copy; the attach gates test the packages; screen journeys of both routes exact without the tools; no counted member, control unchanged")
 # KIT-056: the RUV correction mode on the DIA_LIMPA route (user decisions 2026-10-22: no counted member; the screen
 # lifecycle member through the driver with `ruv_mode = correction`, judged against the route's oracles recorded in
 # process with that mode on the same build, `limpa_corr_screen_<step>`).
