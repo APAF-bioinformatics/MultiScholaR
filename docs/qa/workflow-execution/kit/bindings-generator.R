@@ -443,6 +443,9 @@ if (!is.null(b$builds$kit_053)) {
 # KIT-044 (2026-10-26): the capability fallback for the GNU tools; no counted member; one install recorded.
 if (!is.null(b$builds$kit_044)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-044", outcome = "recorded", build = "kit_044",
     note = "workflowToolPath probes bash/dd/sha256sum/sync/tar/cp and workflowCapabilityContracts() names the owner's contracts; without the tools the value hash is in memory (same hex), the file hash digest(file =), the flushes no-ops (durability not guaranteed), the archive utils::tar/untar with an R header reader, the snapshot file.copy; the attach gates test the packages; screen journeys of both routes exact without the tools; no counted member, control unchanged")
+# KIT-048 (2026-10-26): the in-memory proteomics path retired; closed by the user on the ticket's criteria.
+if (!is.null(b$builds$kit_048)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-048", outcome = "recorded", build = "kit_048",
+    note = "the owner is attached from session start and bound at import; every usesDIAReferenceStates module branch deleted; four screen GUI journeys exact; the counted DIA member on the 300-sample corpus complete (18 states, 2,927 s, 5.96 GiB anonymous) with every component identical to the KIT-005 oracles and the harness decision invalid on the state-summary rule (the shipped configuration gained keys since the control's build); the summary rule is carried to KIT-050")
 # KIT-048: the in-memory proteomics path retired; the four screen journeys through the GUI on the kit_048 build
 # (recorded, not counted): the DIA route as the lifecycle member (`kit-lifecycle-complete` on `lifecycle$build`),
 # DIA_LIMPA against the screen record re-recorded on this build (KIT-057's record of d4f0fbc8 predates KIT-056: its
