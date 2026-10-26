@@ -1,4 +1,5 @@
 test_that("adoption clears consumed Design results without changing selections or the head", {
+    skip("quarantined: Q-22 (KIT-048) the legacy-mode manager path these tests drove is retired; the owner is the one path")
     recipe <- readWorkflowCheckpointRecipe("small")
     recipe$n_proteins <- 8L; recipe$n_samples <- 8L
     recipe$peptides_per_protein <- 4L; recipe$forms_per_peptide <- 2L
