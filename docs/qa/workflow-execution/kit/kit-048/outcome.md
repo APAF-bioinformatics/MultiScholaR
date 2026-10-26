@@ -27,6 +27,15 @@ Status 2026-10-26: **in progress**. Base build `kit_044` = `core/browser-smoke.q
 - The DA session validation accepts a saved reference or the `ProteinQuantitativeData` S4 a legacy RDS session carries (the KIT-042 ingest), as before; my first cut refused the S4 and the legacy adoption tests caught it.
 - The server tests stub the session-owner creation point (`createDIASessionOwner`) in place of `WorkflowState$new`.
 
+## What the GUI journeys found (2026-10-26)
+
+The in-process checks (the module tests, the recorders, the replay) passed before the GUI journeys ran; the four screen journeys through the driver then failed at the first QC step on every route, for two defects the in-process paths cannot see:
+
+1. **A store's identity is part of every descriptor it issues.** The first form of the owner-from-session-start rewrote the placeholder store's identity at import (the marker, the handle, the head). The placeholder's `initial` state kept the pending owner in its descriptor; the first managed worker reopened the store and refused it (`descriptor belongs to another store`). The binding now creates the bound store at import exactly as the import used to, attaches it in the placeholder's place, and removes the placeholder (`bindDIASessionOwnerType`); the test asserts the bound owner, the removed placeholder and a reopen.
+2. **The Q-value compute used the module's in-memory step as its template.** `computeDIAReferenceQvalue` (KIT-014) runs the existing R method on a zero-row prototype through a private in-memory `WorkflowState` to obtain parameter resolution, validation and the output schema; it did that by calling the module's apply step, whose in-memory body this ticket deleted, so the worker recursed into the reference runner with no store (`invalid saved-entity handle`). The kernel sequence is kept as `runPeptideQvalueTemplateStep` beside the compute (a move from the module, not a rewrite); the module's step stays the reference call. No other compute leaned on a module step.
+
+The LFQ and TMT GUI journeys completed all ten states on the fixed build; their verification against KIT-021's fixture oracles mismatched every state's summary and one identity product only: the shipped configuration gained keys since KIT-021 recorded those oracles (`peptideMissingValueImputation.skip`, `limpaDpcQuant`, `limpaProteinNormalisation`, `ruvCovariates`), carried in every state's `args` and `config`; the components are identical. The fixture oracles are re-recorded on the final build for the verdict.
+
 ## Evidence
 
 (filled as the checks run)
