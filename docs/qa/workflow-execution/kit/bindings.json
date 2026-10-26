@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-25",
+  "created": "2026-10-26",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -339,6 +339,15 @@
       "exact_sum": "93b191bdcb9139b1291f7880f4aaf03a19d123963ca45a048bb2bdfdfd14bbc2",
       "install_member": "browser-smoke.qITMLl",
       "source_commit": "cbe64d7fc2abfdf1feb6acb4eea98f0c1f683973",
+      "runtime_patch_bytes": 0
+    },
+    "kit_048": {
+      "ticket": "KIT-048",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.cKqu75/library",
+      "build": "94281742660d16408440f4f9fe0ba07b458c6132f1ff4a74053df1579aec19ab",
+      "exact_sum": "44e5d0aa78ac3ad3ff6daae5e302ee615fe661702605b9dabe5a6a6409cfaad4",
+      "install_member": "browser-smoke.cKqu75",
+      "source_commit": "3a44c1bd16b1dc020cfb516fd3361844aada02fd",
       "runtime_patch_bytes": 0
     }
   },
@@ -11692,7 +11701,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-25",
+        "date": "2026-10-26",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -11969,6 +11978,41 @@
         "correlation_threshold": 0.5
       }
     },
+    "048m": {
+      "kind": "single_journey",
+      "build": "kit_048",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa57_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "lifecycle",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "048l": {
+      "kind": "single_journey",
+      "build": "kit_048",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "lifecycle"
+    },
+    "048t": {
+      "kind": "single_journey",
+      "build": "kit_048",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "lifecycle"
+    },
     "056": {
       "kind": "single_journey",
       "build": "kit_056",
@@ -12027,7 +12071,7 @@
       "failed_step": "sample",
       "mechanism": "application-guard-inject.rds written after the intensity filter (the first post-rollup step) completes; the application monitor stops the slice (injected_guard_stop); the sample-filter step fails on disconnection; the head must equal the intensity-filter snapshot"
     },
-    "build": "kit_011"
+    "build": "kit_048"
   },
   "harness": {
     "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime",
