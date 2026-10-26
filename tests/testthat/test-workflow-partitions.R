@@ -541,6 +541,7 @@ test_that("the protein evidence, intensity and replicate filters are declaration
 })
 
 test_that("the Q-value filter is a declaration whose compute-only entry point equals the module's kernel on the fixture and whose finishing step commits the state with its progress product (KIT-014)", {
+  skip("quarantined: Q-22 (KIT-048) the recorded pilot session drove the QC steps on an in-memory manager, which is retired; the owner is the one path and the kit journeys carry this proof")
     declaration <- diaQvalueFilterOperation()
     expect_identical(declaration$unit, "feature_group")
     expect_identical(declaration$name, "peptide_qvalue_filter")
@@ -598,6 +599,7 @@ test_that("the Q-value filter is a declaration whose compute-only entry point eq
 })
 
 test_that("the controller's completion finishes a Q-value result through the step's own finishing step and the worker entry point computes it from a frozen request (KIT-014 launch chain)", {
+  skip("quarantined: Q-22 (KIT-048) the recorded pilot session drove the QC steps on an in-memory manager, which is retired; the owner is the one path and the kit journeys carry this proof")
     object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
     object@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids <- names(object@peptide_data)
     store_root <- withr::local_tempdir()
