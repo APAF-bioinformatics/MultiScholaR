@@ -884,25 +884,35 @@ isDIASessionOwnerPending <- function(manager) {
     inherits(manager, "DIAStateAdapter") && identical(manager$.context$store$identity$workflow_id, "PENDING")
 }
 
-#' KIT-048: bind an import's format and workflow type to a pending owner: the store marker is rewritten with the
-#' identity the import-time creation used to give (`workflowNativeStoreLabel(format, type)` / the type), the
-#' store's and the head's identity follow, and the manager's type is set. The `initial` state stays.
+#' KIT-048: bind an import's format and workflow type to the session's pending owner. A store's identity is part of
+#' every descriptor it issues (the placeholder's `initial` state included), so the identity cannot be rewritten in
+#' place: the bound store is created as the import-time creation used to create it (the label from
+#' `workflowNativeStoreLabel(format, type)`, the type, a fresh `initial` state), attached to the session in the
+#' placeholder's place, and the placeholder's store is closed and removed. The modules only ever see an owner.
+#' @return The bound owner (a new `DIAStateAdapter`), also assigned to `workflow_data$state_manager`.
 #' @noRd
-bindDIASessionOwnerType <- function(manager, format, workflow_type) {
+bindDIASessionOwnerType <- function(manager, format, workflow_type, workflow_data, session, paths) {
     if (!isDIASessionOwnerPending(manager)) cli::cli_abort("the owner is already bound to a route", class = "saved_entity_scope")
     if (!identical(manager$current_state, "initial") || length(manager$getHistory()) != 1L) {
         cli::cli_abort("reset the project before activating an on-disk session", class = "saved_entity_scope")
     }
-    store <- manager$.context$store
-    identity <- store$identity
-    identity$project_id <- workflowNativeStoreLabel(format, workflow_type)
-    identity$workflow_id <- workflow_type
-    marker <- file.path(store$directory, "store.json")
-    jsonlite::write_json(identity, marker, auto_unbox = TRUE)
-    store$identity <- readSavedStoreIdentity(marker)
-    manager$.context$snapshot$identity <- store$identity
-    manager$setWorkflowType(workflow_type)
-    invisible(manager)
+    root <- normalizePath(paths$source_dir, mustWork = TRUE)
+    state_root <- tempfile(".dia-native-", tmpdir = root)
+    if (!dir.create(state_root, mode = "0700")) {
+        cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
+    }
+    store <- newWorkflowEntityStore(state_root, workflowNativeStoreLabel(format, workflow_type), workflow_type, max_cache_bytes = 0)
+    bound <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    bound$.context$sql_rollup <- TRUE
+    bound$.context$session_format <- "native_v1"
+    bound$.context$reference_states <- TRUE
+    bound$.context$experiment_paths <- paths
+    bound$setWorkflowType(workflow_type)
+    placeholder_root <- dirname(manager$.context$store$directory)
+    workflow_data$state_manager <- attachDIAStateSession(bound, session, workflow_data)
+    closeDIAStateAdapter(manager)
+    unlink(placeholder_root, recursive = TRUE)
+    invisible(workflow_data$state_manager)
 }
 
 initializeDIANativeImport <- function(workflow_data, paths, session, format, method = "iq", data_type = NULL) {
@@ -915,8 +925,7 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
         if (identical(workflow_type, "DIA_LIMPA") && !requireNamespace("limpa", quietly = TRUE))
             cli::cli_abort("DIA with limpa needs the limpa package; fastlimpadpc is the default engine when installed",
                 class = "workflow_engine_unavailable")
-        manager$.context$experiment_paths <- paths
-        return(invisible(bindDIASessionOwnerType(manager, format, workflow_type)))
+        return(invisible(bindDIASessionOwnerType(manager, format, workflow_type, workflow_data, session, paths)))
     }
     # KIT-046: a DIA-NN import's type is the chosen route, set on the manager before the import on every platform
     # (the in-memory manager too), so the import applies the type the user chose.

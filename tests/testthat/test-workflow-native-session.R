@@ -1339,15 +1339,23 @@ test_that("KIT-048: the proteomics session's owner exists from session start wit
     expect_identical(manager$.context$experiment_paths$source_dir, source_dir)
     expect_identical(session$userData$dia_capacity_manager, manager)
     workflow$state_manager <- manager
-    # The import binds the format and type: the store marker, the store, the head and the manager agree.
+    placeholder_root <- dirname(manager$.context$store$directory)
+    # The import binds the format and type: a bound store replaces the placeholder (a store's identity is part of
+    # every descriptor it issues, so it is not rewritten in place); the session and the bus hold the bound owner.
     bound <- initializeDIANativeImport(workflow, list(source_dir = source_dir), session, "maxquant", data_type = "protein")
-    expect_identical(bound, manager)
-    expect_false(isDIASessionOwnerPending(manager))
+    expect_false(identical(bound, manager))
+    expect_identical(workflow$state_manager, bound)
+    expect_identical(session$userData$dia_capacity_manager, bound)
+    expect_false(isDIASessionOwnerPending(bound))
+    expect_false(dir.exists(placeholder_root))
+    manager <- bound
     expect_identical(manager$.context$store$identity$workflow_id, "LFQ")
     expect_identical(manager$.context$store$identity$project_id, workflowNativeStoreLabel("maxquant", "LFQ"))
     expect_identical(jsonlite::read_json(file.path(manager$.context$store$directory, "store.json"))$workflow_id, "LFQ")
     expect_identical(manager$.context$snapshot$identity, manager$.context$store$identity)
     expect_identical(manager$workflow_type, "LFQ")
+    expect_true(manager$.context$reference_states)
+    expect_identical(manager$.context$experiment_paths$source_dir, source_dir)
     expect_identical(unlist(manager$getHistory()), "initial")
     # A second import of another route is refused, as it was for an import-created owner.
     expect_error(initializeDIANativeImport(workflow, list(source_dir = source_dir), session, "diann", method = "iq"), class = "saved_entity_scope")
