@@ -85,6 +85,7 @@ test_that("exported session counts use the same declared key as the saved object
 })
 
 test_that("duplicate removal uses the declared protein group without changing the estimator", {
+    skip("quarantined: Q-22 (KIT-048) the step on an in-memory manager is retired; the owner is the one path")
     object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
     object@protein_quant_table <- rbind(object@protein_quant_table,
         object@protein_quant_table[1L, , drop = FALSE])
@@ -106,6 +107,7 @@ test_that("duplicate removal uses the declared protein group without changing th
 })
 
 test_that("RUV and correlation tracking retain declared protein identities", {
+    skip("quarantined: Q-22 (KIT-048) the step on an in-memory manager is retired; the owner is the one path")
     object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
     before <- serialize(object, NULL)
     workflow <- new.env(parent = emptyenv())

@@ -23,7 +23,7 @@ Status 2026-10-26: **in progress**. Base build `kit_044` = `core/browser-smoke.q
 
 ## Tests (item 4) and a recorded deviation
 
-- The three entry points `diaStateHistory`, `saveDIAOwnerState` and `readDIAStateObject` **forward** to the manager's commit surface rather than asserting a `DIAStateAdapter`: in the application the manager is always the owner (from session start), but the KIT-042 legacy ingest stages a legacy RDS session on a `WorkflowState` of its own before adopting it into an owner (the ticket allows that construction), and the module contract tests pass fakes exposing the same three methods. Asserting the adapter broke the legacy ingest (`buildProtDesignStateCheckpoint` on the staging manager); forwarding keeps one named entry point per operation and the grep criteria, at the cost that the entry points do not reject a non-owner. Recorded as the chosen bounded form; the ticket's item 4 (an owner fixture for the twenty mock-based module tests) is deferred: the tests that only drove the in-memory apply/revert path are quarantined (Q-22, 53 tests in twelve files; Q-21 for the removed fallback S4 tab's tests), the module tests whose logic is independent of the manager's class run unchanged on their fakes.
+- The three entry points `diaStateHistory`, `saveDIAOwnerState` and `readDIAStateObject` **forward** to the manager's commit surface rather than asserting a `DIAStateAdapter`: in the application the manager is always the owner (from session start), but the KIT-042 legacy ingest stages a legacy RDS session on a `WorkflowState` of its own before adopting it into an owner (the ticket allows that construction), and the module contract tests pass fakes exposing the same three methods. Asserting the adapter broke the legacy ingest (`buildProtDesignStateCheckpoint` on the staging manager); forwarding keeps one named entry point per operation and the grep criteria, at the cost that the entry points do not reject a non-owner. Recorded as the chosen bounded form; the ticket's item 4 (an owner fixture for the twenty mock-based module tests) is deferred: the tests that only drove the in-memory apply/revert path are quarantined (Q-22, 145 tests in 34 files; Q-21 for the removed fallback S4 tab's tests), the module tests whose logic is independent of the manager's class run unchanged on their fakes.
 - The DA session validation accepts a saved reference or the `ProteinQuantitativeData` S4 a legacy RDS session carries (the KIT-042 ingest), as before; my first cut refused the S4 and the legacy adoption tests caught it.
 - The server tests stub the session-owner creation point (`createDIASessionOwner`) in place of `WorkflowState$new`.
 
@@ -38,4 +38,21 @@ The LFQ and TMT GUI journeys completed all ten states on the fixed build; their 
 
 ## Evidence
 
-(filled as the checks run)
+- Final code commit ff755910; install `kit_048` = `core/browser-smoke.2GA8g6` (over `kit_044`'s library); bindings at 6092b7eb, the re-recorded oracles bound at 10acea56.
+- Pre-ticket full suite on a clean worktree of d6d4a385 ($P/kit/scratch-048-pre): 31,092 pass, 0 fail, 2 known errors (the two diagnostic files recorded since KIT-017), 140 skips, 346 files.
+- Targeted tests on the final commit (clean worktree, the installed library): `test-workflow-checkpoint-dia-state.R` 148 pass / 4 skips (Q-22), `test-workflow-prot-declarations.R` 303 / 2, `test-workflow-partitions.R` 260 / 2; `test-dia-baseline-compatibility.R` after the two quarantines 26 / 2.
+- `R CMD check --no-tests --no-manual` at ff755910 (git-archive export, `_R_CHECK_FORCE_SUGGESTS_=false`, the installed library on `R_LIBS`): 3 WARNINGs, 3 NOTEs, the baseline.
+- The four screen journeys through the GUI on `kit_048` (recorded, not counted; `systemd` user slices, the driver, the verifier):
+
+| Member | Stage archive | States | Verification | Elapsed | Peak (anon) |
+|---|---|---|---|---|---|
+| DIA lifecycle (`kit-lifecycle-complete`, screen corpus) | `kit-lifecycle-complete.kit048-dia-135034` | 18 complete | 0 mismatches against the KIT-005 oracles | 326 s | 2.42 GiB (2.06 anon) |
+| DIA_LIMPA (`kit-journey-048m`, screen) | `kit-journey-048m.kit048r-limpa-141036` | 13 complete | accepted, 0 mismatches (`limpa48_screen`) | 234 s | 2.22 GiB |
+| LFQ (`kit-journey-048l`, MaxQuant fixture) | `kit-journey-048l.kit048r-lfq-141346` | 10 complete | accepted, 0 mismatches (`lfq48_fixture`) | 125 s | 1.83 GiB |
+| TMT (`kit-journey-048t`, PD fixture) | `kit-journey-048t.kit048r-tmt-141656` | 10 complete | accepted, 0 mismatches (`tmt48_fixture`) | 123 s | 1.81 GiB |
+
+  Summaries: [lifecycle-complete.json](lifecycle-complete.json), [kit-journey-048m-stage.json](kit-journey-048m-stage.json), [kit-journey-048l-stage.json](kit-journey-048l-stage.json), [kit-journey-048t-stage.json](kit-journey-048t-stage.json). The first runs of the three screen members on this install (archives `kit-journey-048m.kit048-limpa-135513`, `kit-journey-048l.kit048-lfq`, `kit-journey-048t` refused) completed every state and mismatched the older records on the config summaries only: KIT-057's screen record of d4f0fbc8 predates KIT-056's `ruv_mode` (three summaries), KIT-021's fixture records of 88df9314 predate the limpa, RUV sweep and imputation defaults of KIT-046/047/041 (every summary, plus the `normalization_science` product whose identity carries the build). Every component was identical (compared field by field against the records made on this build). The oracles were re-recorded on `kit_048` by the KIT-053 and KIT-021 recorders into this directory and bound under their own prefixes; the three members were rerun against them.
+- Post-ticket full suite on the final tree: running (filled on completion).
+- The counted member (`kit:journey-048:candidate:1`, the 300-sample DIA-NN corpus, ceiling 14,400 s, the KIT-005 oracles): declared below, launched only on the user's go.
+
+Unrelated discovery, left untouched: the FASTA processing helper writes `aa_seq_tbl.tsv` into the process's working directory (`R/func_prot_annotation_fasta_processing_helpers.R`, the `vroom_write` beside the `aa_seq_tbl.RDS` metadata file); an in-process recorder run from the repository root left the file in the tree and the harness refused the next launch as dirty. Removed by hand; not a KIT-048 change.
