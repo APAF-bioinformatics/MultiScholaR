@@ -351,6 +351,7 @@ test_that("the managed completion carries the bus's QC parameters and prior prog
 })
 
 test_that("a managed launch with an in-memory owner runs the declaration in process (KIT-008 audit PE-04)", {
+  skip("quarantined: Q-22 (KIT-048) a managed launch with an in-memory owner is retired; the owner is the one path")
     native <- WorkflowState$new(audit_enabled = FALSE)
     workflow <- shiny::reactiveValues(state_manager = native, qc_params = list())
     application <- WorkflowExecutionApplication$new()

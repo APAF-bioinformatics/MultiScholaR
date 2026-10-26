@@ -443,6 +443,20 @@ if (!is.null(b$builds$kit_053)) {
 # KIT-044 (2026-10-26): the capability fallback for the GNU tools; no counted member; one install recorded.
 if (!is.null(b$builds$kit_044)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ticket = "KIT-044", outcome = "recorded", build = "kit_044",
     note = "workflowToolPath probes bash/dd/sha256sum/sync/tar/cp and workflowCapabilityContracts() names the owner's contracts; without the tools the value hash is in memory (same hex), the file hash digest(file =), the flushes no-ops (durability not guaranteed), the archive utils::tar/untar with an R header reader, the snapshot file.copy; the attach gates test the packages; screen journeys of both routes exact without the tools; no counted member, control unchanged")
+# KIT-048: the in-memory proteomics path retired; the four screen journeys through the GUI on the kit_048 build
+# (recorded, not counted): the DIA route as the lifecycle member (`kit-lifecycle-complete` on `lifecycle$build`),
+# DIA_LIMPA against KIT-057's screen record (the same science on this build), LFQ and TMT on the fixture corpora
+# against KIT-021's fixture oracles. `KIT_048_LIFECYCLE=1` points the lifecycle member at kit_048.
+if (!is.null(b$builds$kit_048)) {
+    if (identical(Sys.getenv("KIT_048_LIFECYCLE"), "1")) b$lifecycle <- utils::modifyList(b$lifecycle %||% list(), list(build = "kit_048"))
+    b$tickets[["048m"]] <- list(kind = "single_journey", build = "kit_048", corpus = "screen", route = "DIA_LIMPA", whole_journey = TRUE,
+        oracles = "limpa57_screen", ceiling_seconds = 1800L, purpose = "lifecycle",
+        normalisation = list(norm_method = "none", ruv_mode = "covariates", correlation_threshold = 0.5))
+    if (!is.null(b$corpora$lfq_fixture)) b$tickets[["048l"]] <- list(kind = "single_journey", build = "kit_048", corpus = "lfq_fixture", route = "protein",
+        whole_journey = TRUE, oracles = "lfq_fixture", ceiling_seconds = 1800L, purpose = "lifecycle")
+    if (!is.null(b$corpora$tmt_fixture)) b$tickets[["048t"]] <- list(kind = "single_journey", build = "kit_048", corpus = "tmt_fixture", route = "protein",
+        whole_journey = TRUE, oracles = "tmt_fixture", ceiling_seconds = 1800L, purpose = "lifecycle")
+}
 # KIT-056: the RUV correction mode on the DIA_LIMPA route (user decisions 2026-10-22: no counted member; the screen
 # lifecycle member through the driver with `ruv_mode = correction`, judged against the route's oracles recorded in
 # process with that mode on the same build, `limpa_corr_screen_<step>`).

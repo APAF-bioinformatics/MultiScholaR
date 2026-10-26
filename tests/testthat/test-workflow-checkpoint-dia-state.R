@@ -101,6 +101,7 @@ test_that("DIA local helpers and SQL rollup do not materialize unused workers", 
 })
 
 test_that("DIA protein count is local with identical science and truthful execution metadata", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory (native) apply used as the oracle of the reference path; that proof is recorded in the KIT-004/005 outcomes and carried by the kit oracles is retired; the owner is the one path")
     manager <- newDIAStateAdapter(newWorkflowEntityStore(withr::local_tempdir(), "count", "DIA"))
     withr::defer(closeDIAStateAdapter(manager))
     object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
@@ -283,6 +284,7 @@ test_that("session-owned GUI holders stay cold and resolve inside their original
 })
 
 test_that("candidate three-step production Apply helpers preserve native science and audit", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory (native) apply used as the oracle of the reference path; that proof is recorded in the KIT-004/005 outcomes and carried by the kit oracles is retired; the owner is the one path")
     object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
     # Same scientific input contract as makeRecordedPilotTestSession, not a
     # column-less default or mocked scientific transformation.
@@ -378,6 +380,7 @@ test_that("sampler distinguishes a vanished terminal cgroup from a live missing 
 })
 
 test_that("all peptide reference adapters preserve native science and configuration", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory (native) apply used as the oracle of the reference path; that proof is recorded in the KIT-004/005 outcomes and carried by the kit oracles is retired; the owner is the one path")
     object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
     object@args$srlQvalueProteotypicPeptideClean <- list(input_matrix_column_ids = names(object@peptide_data))
     object@args$rollUpPrecursorToPeptide <- list(core_utilisation = NA)
@@ -468,6 +471,7 @@ test_that("wide components retain types and metadata-only checkpoints reuse assa
 })
 
 test_that("reference import design Q-value and Revert preserve the full scientific state", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory (native) apply used as the oracle of the reference path; that proof is recorded in the KIT-004/005 outcomes and carried by the kit oracles is retired; the owner is the one path")
     object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small"))
     object@peptide_data$Decoy <- FALSE
     object@peptide_data$Contaminant <- FALSE

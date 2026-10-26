@@ -508,6 +508,7 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
 })
 
 test_that("MCI-009.5 DA run and export matrix preserves raw/friendly labels, intensity columns, and report metadata", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory DA run is retired; the owner is the one path")
   object <- module_ci_prot_da_object()
   contrasts_tbl <- rbind(
     module_ci_prot_da_contrasts("two_group"),

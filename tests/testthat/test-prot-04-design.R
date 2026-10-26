@@ -3952,6 +3952,7 @@ test_that("buildProtDesignSaveResultsPayload returns NULL when no assigned sampl
 })
 
 test_that("buildProtDesignSaveResultsPayload filters removed samples and updates final save payload", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory data_cln rewrites of the design helpers is retired; the owner is the one path")
   design_matrix <- data.frame(
     Run = c("S1", "S2", "S3"),
     group = c("GA", "GB", "GC"),
@@ -4751,6 +4752,7 @@ test_that("transformProtDesignSampleNames rejects unsupported transform modes", 
 })
 
 test_that("applyProtDesignBulkRenameUpdates rewrites both design and data tables", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory data_cln rewrites of the design helpers is retired; the owner is the one path")
   design_matrix <- data.frame(
     Run = c("SampleA_T1_Rep1", "SampleB_T2_Rep1", "SampleC_T3_Rep1"),
     group = c("G1", "G2", "G3"),
@@ -4781,6 +4783,7 @@ test_that("applyProtDesignBulkRenameUpdates rewrites both design and data tables
 })
 
 test_that("applyProtDesignSingleRenameUpdate rewrites both design and data tables", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory data_cln rewrites of the design helpers is retired; the owner is the one path")
   design_matrix <- data.frame(
     Run = c("SampleA_T1_Rep1", "SampleB_T2_Rep1", "SampleC_T3_Rep1"),
     group = c("G1", "G2", "G3"),

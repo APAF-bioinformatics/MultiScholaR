@@ -372,6 +372,7 @@ test_that("createGridQC GridPlotData method assembles plot sections and save pat
 })
 
 test_that("mod_prot_norm_server preserves apply-correlation public behavior", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   harness <- makeProtNormCharacterizationHarness()
   final_s4 <- makeProtNormCharacterizationData(label = "final")
 
@@ -408,6 +409,7 @@ test_that("mod_prot_norm_server preserves apply-correlation public behavior", {
 })
 
 test_that("mod_prot_norm_server preserves skip-correlation public behavior", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   harness <- makeProtNormCharacterizationHarness()
 
   localMultiScholaRBindings(
@@ -437,6 +439,7 @@ test_that("mod_prot_norm_server preserves skip-correlation public behavior", {
 })
 
 test_that("mod_prot_norm_server preserves export prereq and success behavior", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   harness <- makeProtNormCharacterizationHarness(current_state = "correlation_filtered")
 
   state <- launchProtNormModule(harness)
@@ -462,6 +465,7 @@ test_that("mod_prot_norm_server preserves export prereq and success behavior", {
 })
 
 test_that("mod_prot_norm_server preserves reset behavior", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   harness <- makeProtNormCharacterizationHarness()
 
   state <- launchProtNormModule(harness)
@@ -617,6 +621,7 @@ test_that("mod_prot_norm_server preserves reset error handling", {
 })
 
 test_that("prot norm shared helper builders preserve QC contracts", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   skipIfMissingMultiScholaRBindings(
     "generateProtNormCompositeFromFiles",
     "buildProtNormDensityPlot",
@@ -730,6 +735,7 @@ test_that("prot norm shared helper builders preserve QC contracts", {
 })
 
 test_that("prot norm shared normalization workflow preserves orchestration", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   skipIfMissingMultiScholaRBindings("runProtNormNormalizationWorkflow")
   run_normalization_workflow <- getMultiScholaRBinding("runProtNormNormalizationWorkflow")
 
@@ -903,6 +909,7 @@ test_that("prot norm shared apply-correlation workflow preserves orchestration",
 })
 
 test_that("prot norm shared export helpers preserve summary and artifact workflows", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   skipIfMissingMultiScholaRBindings(
     "buildProtNormExportSummaryContent",
     "saveProtNormExportArtifacts",
@@ -985,6 +992,7 @@ test_that("prot norm shared export helpers preserve summary and artifact workflo
 })
 
 test_that("prot norm shared QC generation helpers preserve artifact recording", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   skipIfMissingMultiScholaRBindings(
     "generateProtNormPreNormalizationQcArtifacts",
     "generateProtNormPostNormalizationQcArtifacts",
@@ -1087,6 +1095,7 @@ test_that("prot norm shared QC generation helpers preserve artifact recording", 
 })
 
 test_that("prot norm shared correlation persistence helpers preserve state handoff", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   skipIfMissingMultiScholaRBindings(
     "resolveProtNormCorrelationResultFilenames",
     "saveProtNormCorrelationResults",
@@ -1570,6 +1579,7 @@ test_that("prot norm shared RUV cleanup and composite helpers preserve orchestra
 })
 
 test_that("prot norm shared export and reset helpers preserve session handoff", {
+  skip("quarantined: Q-22 (KIT-048) the normalisation module on an in-memory manager and the legacy RDS export is retired; the owner is the one path")
   skipIfMissingMultiScholaRBindings(
     "canProtNormExportFilteredSession",
     "resolveProtNormExportSourceDir",

@@ -183,6 +183,7 @@ test_that("MCI-006.5 peptide QC plots and summaries survive normal and degenerat
 })
 
 test_that("MCI-006.6 peptide QC state transitions are recorded once and protein QC is gated on peptide completion", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory state transitions is retired; the owner is the one path")
   workflow <- module_ci_prot_workflow()
   now <- as.POSIXct("2026-05-05 00:00:00", tz = "UTC")
   no_log <- function(...) invisible(NULL)

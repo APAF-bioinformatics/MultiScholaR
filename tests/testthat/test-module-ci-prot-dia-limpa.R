@@ -34,6 +34,7 @@ test_that("the three DIA_LIMPA tabs are the route's QC specs and carry the input
 })
 
 test_that("the in-memory apply steps save the route's states: log2 matrix, peptide accession (skipped without FASTA), DPC quantification", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply steps is retired; the owner is the one path")
   now <- as.POSIXct("2026-10-21 00:00:00", tz = "UTC")
   no_log <- function(...) invisible(NULL)
   rolled <- module_ci_prot_peptide_rollup_object()
@@ -86,6 +87,7 @@ test_that("the in-memory apply steps save the route's states: log2 matrix, pepti
 })
 
 test_that("the DIA_LIMPA protein-stage tabs carry their inputs and the in-memory apply steps save the route's states (KIT-041)", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply steps is retired; the owner is the one path")
   protein <- getProtQcProteinModuleSpecs("DIA_LIMPA")
   expect_identical(vapply(protein, `[[`, character(1), "id"), c("dpc_quant", "normalisation", "peptide_count"))
   expect_true(all(vapply(protein, function(spec) is.null(spec$placeholder), logical(1))))

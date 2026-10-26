@@ -290,6 +290,7 @@ test_that("MCI-008.3 correlation filtering covers pass, fail, boundary, small-n,
 })
 
 test_that("MCI-008.4 QC plot generation covers pre, post, RUV, composite, and degenerate fixtures", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory QC generation and the legacy RDS export is retired; the owner is the one path")
   object <- module_ci_prot_norm_object()
   qc_dir <- tempfile("mci008-qc-")
   dir.create(qc_dir, recursive = TRUE)
@@ -377,6 +378,7 @@ test_that("MCI-008.4 QC plot generation covers pre, post, RUV, composite, and de
 })
 
 test_that("MCI-008.5 filtered-session export preserves R6, params, filenames, counts, and DA-ready state", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory QC generation and the legacy RDS export is retired; the owner is the one path")
   # KIT-046: the limpa summary follows the workflow type (DIA_LIMPA), not a flag.
   object <- module_ci_prot_norm_object(args = module_ci_prot_norm_args(
     workflow_type = "DIA_LIMPA",

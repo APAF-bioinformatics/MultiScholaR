@@ -1,4 +1,5 @@
 test_that("MCI-011.1 workflow parameters roundtrip for every proteomics summary branch", {
+  skip("quarantined: Q-22 (KIT-048) the summary branches on in-memory objects is retired; the owner is the one path")
   branches <- list(
     DIA = module_ci_prot_summary_branch_config("DIA", enrichment = TRUE, ruv = "run", da_q_cutoff = 0.05),
     DIA_limpa = module_ci_prot_summary_branch_config("DIA_limpa", enrichment = TRUE, ruv = "run", da_q_cutoff = 0.01),

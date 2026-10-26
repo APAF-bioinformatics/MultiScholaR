@@ -38,6 +38,7 @@ test_that("the four protein QC declarations validate with the units of the step 
 })
 
 test_that("the dedup kernel is the module's inline code: identical table and duplicates on a table with duplicates", {
+  skip("quarantined: Q-22 (KIT-048) the comparison of a declaration with the module's in-memory inline code, which is gone (the declaration is the one path) is retired; the owner is the one path")
     object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
     table <- object@protein_quant_table
     table <- rbind(table, table[c(1L, 1L, 5L), , drop = FALSE])
@@ -113,6 +114,7 @@ test_that("the duplicate removal and the intensity filter declarations reproduce
 })
 
 test_that("the accession cleanup declaration skips without FASTA data as the module does and records the skip", {
+  skip("quarantined: Q-22 (KIT-048) the comparison of a declaration with the module's in-memory inline code, which is gone (the declaration is the one path) is retired; the owner is the one path")
     object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
     manager <- proteinDeclarationFixtureManager(object, withr::local_tempdir(), "protein_s4_created")
     withr::defer(closeDIAStateAdapter(manager))

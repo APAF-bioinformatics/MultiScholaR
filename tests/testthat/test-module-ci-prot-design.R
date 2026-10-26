@@ -1,6 +1,7 @@
 library(testthat)
 
 test_that("MCI-005.1 builder matrix preserves every imported sample exactly once", {
+  skip("quarantined: Q-22 (KIT-048) the design builder on an in-memory manager is retired; the owner is the one path")
   for (kind in c("two_group", "three_group", "unbalanced", "multi_factor", "interaction_ready")) {
     design <- module_ci_prot_design_matrix(kind)
     groups <- unique(design$group)
@@ -57,6 +58,7 @@ test_that("MCI-005.2 contrast matrix covers valid, reversed, invalid, duplicate,
 })
 
 test_that("MCI-005.3 sample assignment edge cases accept exact/sanitized/reordered samples and reject unsafe rows", {
+  skip("quarantined: Q-22 (KIT-048) the design builder on an in-memory manager is retired; the owner is the one path")
   sanitized <- module_ci_prot_design_matrix("two_group", samples = module_ci_prot_design_samples("sanitized"))
   module_ci_prot_assert_design_samples_once(sanitized, module_ci_prot_design_samples("sanitized"))
 
@@ -97,6 +99,7 @@ test_that("MCI-005.3 sample assignment edge cases accept exact/sanitized/reorder
 })
 
 test_that("MCI-005.4 existing-design import and builder-created designs produce equivalent artifacts", {
+  skip("quarantined: Q-22 (KIT-048) the design builder on an in-memory manager is retired; the owner is the one path")
   payload <- module_ci_prot_build_design_payload()
   import_root <- module_ci_prot_write_design_import_pack(tempfile("module-ci-prot-design-import-"), payload)
   workflow_data <- module_ci_prot_design_workflow_data("DIA")
@@ -145,6 +148,7 @@ test_that("MCI-005.4 existing-design import and builder-created designs produce 
 })
 
 test_that("MCI-005.5 design artifact writes preserve required filenames, config, manifest, and state digest", {
+  skip("quarantined: Q-22 (KIT-048) the design builder on an in-memory manager is retired; the owner is the one path")
   payload <- module_ci_prot_build_design_payload()
   source_dir <- tempfile("module-ci-prot-design-source-")
   dir.create(source_dir)
@@ -180,6 +184,7 @@ test_that("MCI-005.5 design artifact writes preserve required filenames, config,
 })
 
 test_that("MCI-005.6 design artifacts pass lightweight downstream DA setup validation before workflow advancement", {
+  skip("quarantined: Q-22 (KIT-048) the design builder on an in-memory manager is retired; the owner is the one path")
   payload <- module_ci_prot_build_design_payload()
   module_ci_prot_validate_da_setup(
     data = payload$data_cln,

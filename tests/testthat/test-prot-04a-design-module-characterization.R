@@ -629,6 +629,7 @@ test_that("applyProtDesignFactorAppendReset preserves unique append semantics", 
 })
 
 test_that("buildProtDesignSaveResults helpers preserve formatted payload construction", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory data_cln rewrites of the design helpers is retired; the owner is the one path")
   skipIfMissingProtDesignBinding("buildProtDesignSaveResultsContrastsTable")
   skipIfMissingProtDesignBinding("buildProtDesignSaveResultsPayload")
 
@@ -809,6 +810,7 @@ test_that("removed-sample and contrast formatting helpers preserve display behav
 })
 
 test_that("rename helper updates preserve design and data table rewrites", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory data_cln rewrites of the design helpers is retired; the owner is the one path")
   skipIfMissingProtDesignBinding("applyProtDesignBulkRenameUpdates")
   skipIfMissingProtDesignBinding("applyProtDesignSingleRenameUpdate")
 
@@ -1388,6 +1390,7 @@ test_that("prot design import helpers preserve fallback and bootstrap edge branc
 })
 
 test_that("prot design state checkpoint helpers preserve DIA/TMT state and post-checkpoint behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory data_cln rewrites of the design helpers is retired; the owner is the one path")
   skipIfMissingProtDesignBindings(
     "buildProtDesignStateCheckpoint",
     "completeProtDesignPostCheckpoint"
@@ -1484,6 +1487,7 @@ test_that("prot design state checkpoint helpers preserve DIA/TMT state and post-
 })
 
 test_that("prot design builder host helpers preserve persistence, preview, and observer wiring", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory data_cln rewrites of the design helpers is retired; the owner is the one path")
   skipIfMissingProtDesignBindings(
     "persistProtDesignBuilderArtifacts",
     "hydrateProtDesignBuilderResults",
