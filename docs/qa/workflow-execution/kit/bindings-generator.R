@@ -445,17 +445,35 @@ if (!is.null(b$builds$kit_044)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ti
     note = "workflowToolPath probes bash/dd/sha256sum/sync/tar/cp and workflowCapabilityContracts() names the owner's contracts; without the tools the value hash is in memory (same hex), the file hash digest(file =), the flushes no-ops (durability not guaranteed), the archive utils::tar/untar with an R header reader, the snapshot file.copy; the attach gates test the packages; screen journeys of both routes exact without the tools; no counted member, control unchanged")
 # KIT-048: the in-memory proteomics path retired; the four screen journeys through the GUI on the kit_048 build
 # (recorded, not counted): the DIA route as the lifecycle member (`kit-lifecycle-complete` on `lifecycle$build`),
-# DIA_LIMPA against KIT-057's screen record (the same science on this build), LFQ and TMT on the fixture corpora
-# against KIT-021's fixture oracles. `KIT_048_LIFECYCLE=1` points the lifecycle member at kit_048.
+# DIA_LIMPA against the screen record re-recorded on this build (KIT-057's record of d4f0fbc8 predates KIT-056: its
+# ruv_covariates, export and DA summaries lack `ruv_mode`; every component identical), LFQ and TMT on the fixture corpora
+# against the fixture oracles re-recorded on the kit_048 build by kit-021/oracle-record.R into kit-048/ (bound under
+# lfq48_fixture_<step> / tmt48_fixture_<step>; the 2026-10-26 run against KIT-021's oracles of 88df9314 mismatched on
+# the config summaries only: the config defaults gained the limpa, RUV sweep and imputation keys of KIT-046/047/041,
+# every component identical). `KIT_048_LIFECYCLE=1` points the lifecycle member at kit_048.
 if (!is.null(b$builds$kit_048)) {
     if (identical(Sys.getenv("KIT_048_LIFECYCLE"), "1")) b$lifecycle <- utils::modifyList(b$lifecycle %||% list(), list(build = "kit_048"))
     b$tickets[["048m"]] <- list(kind = "single_journey", build = "kit_048", corpus = "screen", route = "DIA_LIMPA", whole_journey = TRUE,
-        oracles = "limpa57_screen", ceiling_seconds = 1800L, purpose = "lifecycle",
+        oracles = "limpa48_screen", ceiling_seconds = 1800L, purpose = "lifecycle",
         normalisation = list(norm_method = "none", ruv_mode = "covariates", correlation_threshold = 0.5))
     if (!is.null(b$corpora$lfq_fixture)) b$tickets[["048l"]] <- list(kind = "single_journey", build = "kit_048", corpus = "lfq_fixture", route = "protein",
-        whole_journey = TRUE, oracles = "lfq_fixture", ceiling_seconds = 1800L, purpose = "lifecycle")
+        whole_journey = TRUE, oracles = "lfq48_fixture", ceiling_seconds = 1800L, purpose = "lifecycle")
     if (!is.null(b$corpora$tmt_fixture)) b$tickets[["048t"]] <- list(kind = "single_journey", build = "kit_048", corpus = "tmt_fixture", route = "protein",
-        whole_journey = TRUE, oracles = "tmt_fixture", ceiling_seconds = 1800L, purpose = "lifecycle")
+        whole_journey = TRUE, oracles = "tmt48_fixture", ceiling_seconds = 1800L, purpose = "lifecycle")
+    for (key in c("lfq_fixture", "tmt_fixture")) {
+        oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-048", paste0("oracles-", key, ".rds"))
+        if (is.null(b$corpora[[key]]) || !file.exists(oracle_file)) next
+        recorded <- readRDS(oracle_file)
+        stopifnot(identical(recorded$corpus, key), identical(recorded$corpus_sha256, b$corpora[[key]]$files[[1L]]$sha256))
+        prefix <- sub("_fixture$", "48_fixture", key)
+        for (step in names(recorded$populations)) {
+            population <- recorded$populations[[step]]
+            b$populations[[paste0(prefix, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+                head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+                oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at)
+            b$oracles[[paste0(prefix, "_", step)]] <- population$fingerprint
+        }
+    }
 }
 # KIT-056: the RUV correction mode on the DIA_LIMPA route (user decisions 2026-10-22: no counted member; the screen
 # lifecycle member through the driver with `ruv_mode = correction`, judged against the route's oracles recorded in
@@ -490,7 +508,8 @@ if (!is.null(b$builds$kit_057)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ti
 # KIT-057: the same recorder on the kit_057 build (the production variants and the fastlimpadpc engine, the user's
 # decision of 2026-10-24) into kit-057/oracles-limpa_<corpus>.rds, bound under limpa57_<corpus>_<step> (the pair's
 # candidate oracles; the control keeps KIT-053's).
-limpa_oracle_dirs <- c(`limpa` = "kit-053", `limpa57` = "kit-057", `limpa_corr` = "kit-056") # KIT-056: the correction-mode record
+limpa_oracle_dirs <- c(`limpa` = "kit-053", `limpa57` = "kit-057", `limpa_corr` = "kit-056", # KIT-056: the correction-mode record
+    `limpa48` = "kit-048") # KIT-048: the covariates-mode screen record on the kit_048 build (KIT-057's predates KIT-056's ruv_mode fields)
 for (ticket_dir in limpa_oracle_dirs) for (key in c("screen", "full")) {
     prefix <- names(which(limpa_oracle_dirs == ticket_dir))
     if (is.null(b$corpora[[key]])) next
