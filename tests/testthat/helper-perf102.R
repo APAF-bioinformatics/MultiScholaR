@@ -9,9 +9,10 @@ perf102Code <- function(science = FALSE) {
     # KIT-007 moved the operation facts into the registry (utils_workflow_operations.R); the sourced copy of the
     # execution file gets a minimal spec, as it already gets a stubbed validator in the tests.
     code$workflowActionSpec <- utils::getFromNamespace("workflowActionSpec", "MultiScholaR")
-    if (science) for (name in c("newWorkflowEntityStore", "newDIAStateAdapter",
-        "closeDIAStateAdapter", "WorkflowState", "getDIAStateReference",
-        "materializeDIATable", "hasMutableWorkflowEntityOwner",
+    # KIT-045: the execution file calls the workflow names; the DIA names stay for the tests' direct calls.
+    if (science) for (name in c("newWorkflowEntityStore", "newDIAStateAdapter", "newWorkflowStateOwner",
+        "closeDIAStateAdapter", "closeWorkflowStateOwner", "WorkflowState", "getDIAStateReference", "getWorkflowStateReference",
+        "materializeDIATable", "materializeWorkflowTable", "hasMutableWorkflowEntityOwner",
         "workflowExportPaths", "writeWorkflowExportJournal"))
         code[[name]] <- get(name, envir = parent, inherits = TRUE)
     code

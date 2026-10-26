@@ -95,7 +95,7 @@ test_that("action refusal releases actual counters and locks before ownership tr
     code$workflowHostAvailable <- function() 2
     code$workflowCgroupAccounting <- function(...) list()
     code$validateSavedWorkflowReference <- function(...) invisible(NULL)
-    code$getDIAStateReference <- function(...) reference
+    code$getDIAStateReference <- code$getWorkflowStateReference <- function(...) reference # KIT-045: both names
     code$workflowExecutionHead <- function(...) reference
     code$workflowExecutionBuildIdentity <- function(...) strrep("b", 64)
     code$workflowExportPaths <- function(directory, id) {

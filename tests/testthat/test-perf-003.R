@@ -119,7 +119,7 @@ test_that("registered sample parameters preserve native precedence without assay
     before <- digest::digest(object, algo = "sha256")
     # The seam supplies real native prototypes, proving that no payload field is requested.
     fields <- NULL
-    code$readDIAExecutionComponents <- function(manager, reference, fields) {
+    code$readDIAExecutionComponents <- code$readWorkflowExecutionComponents <- function(manager, reference, fields) { # KIT-045: both names
         stopifnot(identical(fields, character()))
         prototype <- object
         prototype@peptide_data <- prototype@peptide_data[0, , drop = FALSE]
@@ -165,7 +165,7 @@ test_that("finite input and completion handlers preserve controller-only ownersh
         dimensions = list(columns = c("Run", "Protein", "Peptide")))
     code$isSavedWorkflowReference <- function(x) identical(x, "owned-reference")
     code$isDIAComponentCheckpoint <- function(x) is.list(x) && !is.null(x$components)
-    code$readDIAStateMetadata <- function(...) list(data = record)
+    code$readDIAStateMetadata <- code$readWorkflowStateMetadata <- function(...) list(data = record) # KIT-045: both names
     expect_null(code$validateWorkflowActionInput("minimum_peptides_per_sample", NULL, list(state = "owned-reference")))
     record$slots$sample_id <- "missing"
     expect_error(code$validateWorkflowActionInput("minimum_peptides_per_sample", NULL,
