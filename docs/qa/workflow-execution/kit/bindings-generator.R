@@ -453,6 +453,10 @@ if (!is.null(b$builds$kit_044)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ti
 # every component identical). `KIT_048_LIFECYCLE=1` points the lifecycle member at kit_048.
 if (!is.null(b$builds$kit_048)) {
     if (identical(Sys.getenv("KIT_048_LIFECYCLE"), "1")) b$lifecycle <- utils::modifyList(b$lifecycle %||% list(), list(build = "kit_048"))
+    # The counted member (the ticket's experiment budget): the DIA route's whole journey on the 300-sample corpus against
+    # the KIT-005 journey oracles (no `oracles` prefix), ceiling 14,400 s; completion, exactness and the peaks, no ratio.
+    b$tickets[["048"]] <- list(kind = "single_journey", build = "kit_048", corpus = "full", route = "DIA", whole_journey = TRUE,
+        ceiling_seconds = 14400L, purpose = "counted")
     b$tickets[["048m"]] <- list(kind = "single_journey", build = "kit_048", corpus = "screen", route = "DIA_LIMPA", whole_journey = TRUE,
         oracles = "limpa48_screen", ceiling_seconds = 1800L, purpose = "lifecycle",
         normalisation = list(norm_method = "none", ruv_mode = "covariates", correlation_threshold = 0.5))

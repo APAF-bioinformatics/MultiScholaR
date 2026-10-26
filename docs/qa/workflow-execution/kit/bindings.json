@@ -13930,6 +13930,15 @@
         "correlation_threshold": 0.5
       }
     },
+    "048": {
+      "kind": "single_journey",
+      "build": "kit_048",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "counted"
+    },
     "048m": {
       "kind": "single_journey",
       "build": "kit_048",
