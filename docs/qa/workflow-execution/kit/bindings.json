@@ -349,6 +349,15 @@
       "install_member": "browser-smoke.2GA8g6",
       "source_commit": "ff75591068d97b6164d82c045fc53a080094ce3e",
       "runtime_patch_bytes": 0
+    },
+    "kit_045": {
+      "ticket": "KIT-045",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.JGgjxW/library",
+      "build": "fd9446b2976e273ad98e00630b142a3f7de160fb0a83de9d878b305d23df2751",
+      "exact_sum": "6564a4bf67926b196476093de26edf92661772dd39d520b6c1e848a950e32102",
+      "install_member": "browser-smoke.JGgjxW",
+      "source_commit": "78a73347e0f548f2400f9c03d963f1adbf05f59c",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -405,6 +414,12 @@
       "outcome": "control",
       "build": "kit_018",
       "note": "design default verified, reports from the accepted normalisation product, RUV and enrichment tables as paged display tables, legacy adoption verified; accepted as one single journey member (stage kit-journey-018, 2026-10-14): import and design exact, 225 s, 3.16 GiB anonymous peak; the control for KIT-019 onward"
+    },
+    {
+      "ticket": "KIT-045",
+      "outcome": "recorded",
+      "build": "kit_045",
+      "note": "newWorkflowStateOwner, getWorkflowActiveOwner, commitWorkflowReferenceState and the other 22 primitives are the primary names (the kit files call them); every DIA name is an alias with one body; class c(WorkflowStateOwner, DIAStateAdapter, environment); the KIT-028 replay exact before and after; the FASTA helper no longer writes aa_seq_tbl.tsv into the working directory (carried from KIT-048)"
     },
     {
       "ticket": "KIT-048",

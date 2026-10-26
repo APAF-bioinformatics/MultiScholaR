@@ -1,0 +1,31 @@
+# KIT-045: kit naming, omic-agnostic workflow names for the storage, owner and display primitives
+
+Status 2026-10-26: **in progress**. Code 78a73347. Base build `kit_048` = `core/browser-smoke.2GA8g6`. No counted member.
+
+## Mechanism (one): names
+
+- The 25 primitives of the ticket's table are defined under their `workflow` names in `R/utils_workflow_dia_state.R` (20) and `R/utils_workflow_dia_products.R` (5); directly below each definition the DIA name is the alias `oldName <- newName` with a `@noRd` roxygen block (`@param`/`@return` by reference to the primary). The move was mechanical: the definition line renamed, the alias appended after the function's last line (located by the parser's source references), nothing inside any body changed. `savedReactiveVal` is now the primary definition and `newDIASavedReactiveVal` its alias (the direction reversed, as the ticket asks).
+- The owner's class vector is `c("WorkflowStateOwner", "DIAStateAdapter", "environment")`; every `inherits(x, "DIAStateAdapter")` holds unchanged (the six test files that fake the owner with that string alone were not touched).
+- The four kit files (`utils_workflow_operations.R`, `utils_workflow_analysis_record.R`, `utils_workflow_prot_declarations.R`, `utils_workflow_execution.R`) and the kit README call the workflow names (90 call sites switched by a word-boundary substitution of the 25 names in those five files only). The proteomics modules, the `utils_workflow_dia_*` internals, `tools/profiling/workflow_kit.R`, the CORE-pinned files and the tests keep the DIA names through the aliases.
+- No file renamed; `DESCRIPTION` Collate and `NAMESPACE` unchanged (none of the 25 is exported); on-disk ids, `dia_*` attributes, condition classes, environment variables and runner selectors untouched.
+
+## Carried items
+
+- **From KIT-048 (the FASTA helper).** `processFastaFile`'s non-standard branch no longer writes `aa_seq_tbl.tsv` into the process's working directory; the table is saved as the metadata RDS (`fasta_meta_file`) and returned, as before. The shared FASTA test now asserts that the fixture directory holds the FASTA and the RDS only; its earlier line asserting the stray file's presence is inverted.
+- **From KIT-042 (F-09).** `workflow_session_unsupported` stays as it is: a one-member condition class raised by the legacy-session ingest, beside the `saved_entity_*`, `workflow_execution_*` and `workflow_replay_*` families. Decision: keep and document (here); folding it into a family would rename a condition class that KIT-042's tests and the kit's replay check name, for no behavioural gain.
+
+## Deviations recorded
+
+- The ticket allows test edits in `test-workflow-checkpoint-dia-state.R` only. Two further test files needed a line each because they mock a primitive by name to steer the execution layer, which now calls the workflow name: `test-workflow-operation-registry.R` (one mock renamed to `readWorkflowStateMetadata`) and `test-perf107-audit.R` (thirteen mocks of `usesDIAReferenceStates`, `getDIAStateReference`, `withDIAStateScope` and `readDIAStateMetadata` gain a twin under the workflow name beside the DIA one, because the same tests also drive module code that calls the alias). A mock on an alias cannot reach callers of the primary; that is a property of aliases, not of this change, and is recorded here for stage 3's test authors. The FASTA test change is the carried item's own check.
+
+## Acceptance evidence
+
+- Both names callable with one body: `test-workflow-checkpoint-dia-state.R` asserts `identical(body(old), body(new))` for all 25 pairs and the class vector (174 pass, 4 Q-22 skips).
+- The four kit files and the README contain no call to any of the 25 DIA names: the word-boundary grep over the five files counts 0 for each (the grep itself is the acceptance command; run on 78a73347).
+- Every alias block carries `@noRd`, `@param` and `@return` (25 blocks: 20 in `dia_state.R`, 5 in `dia_products.R`; `grep -c "^#' DIA name of"`).
+- New-name collision scan before the change: none of the 25 workflow names existed in `R/`, `tests/`, `tools/` or the kit scripts (`saveWorkflowTableComponent`, a different function, is why the owned-table primitive is `saveWorkflowOwnedTable`).
+- Targeted tests on the tree (installed `kit_048` library on `R_LIBS`, all at the checkpoint baseline after the two mock edits): `test-workflow-checkpoint-dia-state.R` 174/4, `test-prot-fasta-processing-direct-shared.R` 30/0, `test-workflow-operation-registry.R` 454/0, `test-workflow-analysis-record.R` 239/0, `test-workflow-prot-declarations.R` 303/2, `test-workflow-execution.R` 93/10, `test-workflow-kit-harness.R` 435/0, `test-perf107-audit.R` 191/1, `test-workflow-saved-qc.R` 120/0, `test-workflow-saved-da.R` 116/0, `test-workflow-saved-exports.R` 276/4, `test-workflow-native-session.R` 725/2, `test-general-filemgmt-report-helpers-shared.R` 84/1, `test-workflow-gui-memory-lifetimes.R` 80/11, `test-workflow-partitions.R` 260/2 (pass/skip).
+- KIT-028 replay (`kit-028/replay-check.R`, in process, the screen origin): before the change on a clean worktree of ee7806a9, **exact, 16 states, 0 mismatches, 153 s** ([replay-check-kit045-before.json](replay-check-kit045-before.json), [analysis_record-origin-kit045-before.json](analysis_record-origin-kit045-before.json)); after the change on 78a73347: **exact, 16 states, 0 mismatches, 176 s** ([replay-check-kit045-after.json](replay-check-kit045-after.json), [analysis_record-origin-kit045-after.json](analysis_record-origin-kit045-after.json)); the state fingerprints do not depend on the names.
+- `R CMD check --no-tests --no-manual` at 78a73347 (git-archive export, `_R_CHECK_FORCE_SUGGESTS_=false`): 3 WARNINGs, 3 NOTEs, the baseline.
+- Install `kit_045` = `core/browser-smoke.JGgjxW` (78a73347) (over `kit_048`'s library); the bindings generator run with `kit_045` bound accepted the CORE-pinned files unchanged (their hashes are checked on every run; `tools/profiling/` has no change in this ticket).
+- `NAMESPACE`: no diff. The full suite is next run at the stage-2 closure checkpoint (this ticket closes stage 2): SUITE.
