@@ -133,14 +133,14 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
             class = "workflow_operation_parameters")
     }
     # KIT-025: the state the wrapper commits after this operation carries the declaration's provenance.
-    setDIAStepProvenance(manager, declaration$name, parameters$variant %||% "whole", declaration$parameters, declaration$fixed,
+    setWorkflowStepProvenance(manager, declaration$name, parameters$variant %||% "whole", declaration$parameters, declaration$fixed,
         values = parameters)
     spec <- readComponentMetadata(manager, source)$data
     if (!identical(spec$class, declaration$input_class)) {
         cli::cli_abort("operation {.val {declaration$name}} expects {.cls {declaration$input_class}}, the source is {.cls {spec$class}}",
             class = "workflow_operation_input")
     }
-    identity <- diaComponentScientificIdentity(manager, source, declaration$name, parameters[declaration$parameters])
+    identity <- workflowComponentScientificIdentity(manager, source, declaration$name, parameters[declaration$parameters])
     hit <- resolveSavedWorkflowEntity(manager$.context$store, "scientific_product", identity, factors = declaration$factors)
     if (identical(hit$status, "hit")) {
         return(list(status = "hit", value = hit$value$value, reference = hit$reference))
@@ -150,7 +150,7 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
     reference <- saveWorkflowConsumerEntity(manager$.context$store,
         newSavedWorkflowScientificProduct(value, declaration$product_type),
         basename(tempfile(paste0(declaration$name, "-"))), identity, "scientific_product", factors = declaration$factors)
-    rootDIAProduct(manager, reference, c(list(source), dependencies, store$created()))
+    rootWorkflowProduct(manager, reference, c(list(source), dependencies, store$created()))
     list(status = "computed", value = value, reference = reference)
 }
 
@@ -161,7 +161,7 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
 #' @noRd
 runProjected <- function(manager, declaration, source, parameters, store = NULL) {
     if (is.null(store)) store <- newWorkflowOperationStore(manager, declaration, source, NULL)
-    object <- readDIAExecutionComponents(manager, source, fields = declaration$fields, columns = declaration$columns)
+    object <- readWorkflowExecutionComponents(manager, source, fields = declaration$fields, columns = declaration$columns)
     declaration$kernel(object, parameters, store)
 }
 
@@ -182,10 +182,10 @@ newWorkflowOperationStore <- function(manager, declaration, source, identity) {
                 cli::cli_abort("operation {.val {declaration$name}} may only checkpoint {.cls {declaration$output_class}}",
                     class = "workflow_operation_output")
             }
-            value <- inheritDIAExecutionSource(value, manager, from %||% source)
-            remember(saveDIAOwnedValue(value, label, manager))
+            value <- inheritWorkflowExecutionSource(value, manager, from %||% source)
+            remember(saveWorkflowOwnedValue(value, label, manager))
         },
-        table = function(table) remember(saveDIATableComponent(manager$.context, table)),
+        table = function(table) remember(saveWorkflowOwnedTable(manager$.context, table)),
         product = function(value, name, product_type) {
             if (is.null(identity)) {
                 cli::cli_abort("derived products need the operation identity", class = "workflow_operation_output")

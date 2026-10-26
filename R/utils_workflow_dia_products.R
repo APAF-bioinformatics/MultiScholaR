@@ -209,7 +209,7 @@ saveWorkflowDiaQcAsset <- function(store, asset, request_id, render_identity) {
 #' @param reference Accepted existing-store product descriptor.
 #' @return Descriptor invisibly, without hydrating its source components.
 #' @noRd
-rootDIAProduct <- function(manager, reference, dependencies = list()) {
+rootWorkflowProduct <- function(manager, reference, dependencies = list()) {
     snapshot <- manager$.context$snapshot
     snapshot$products[[reference$entity_id]] <- reference
     roots <- collectDIANativeReferences(dependencies)
@@ -225,12 +225,18 @@ rootDIAProduct <- function(manager, reference, dependencies = list()) {
     invisible(reference)
 }
 
+#' DIA name of `rootWorkflowProduct` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `rootWorkflowProduct`.
+#' @return What `rootWorkflowProduct` returns.
+#' @noRd
+rootDIAProduct <- rootWorkflowProduct
+
 #' Identify science using immutable component identities and ordered input roles.
 #' @param manager,reference Current owner and source checkpoint.
 #' @param operation,parameters Explicit producer and population-affecting parameters.
 #' @return Existing store scientific identity, without any assay read.
 #' @noRd
-diaComponentScientificIdentity <- function(manager, reference, operation, parameters) {
+workflowComponentScientificIdentity <- function(manager, reference, operation, parameters) {
     spec <- readDIAStateMetadata(manager, reference)$data
     assay <- spec$components$protein_quant_table %||% spec$components$peptide_data
     scientific_slots <- spec$slots
@@ -246,6 +252,12 @@ diaComponentScientificIdentity <- function(manager, reference, operation, parame
             "protein_id_column", "sample_id", "group_id", "technical_replicate_id")]), algo = "sha256"),
         manager$.context$software)
 }
+
+#' DIA name of `workflowComponentScientificIdentity` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `workflowComponentScientificIdentity`.
+#' @return What `workflowComponentScientificIdentity` returns.
+#' @noRd
+diaComponentScientificIdentity <- workflowComponentScientificIdentity
 
 #' Resolve one normalization display product before assembling any matrix.
 #' @param reference Input checkpoint descriptor.
@@ -357,7 +369,7 @@ diaNormalizationOperation <- function() {
 #' @param table Data frame; NULL or zero rows save nothing.
 #' @return Table reference, or NULL.
 #' @noRd
-saveDIADisplayTable <- function(manager, table) {
+saveWorkflowDisplayTable <- function(manager, table) {
     if (!is.data.frame(table) || !nrow(table) || !ncol(table)) return(NULL)
     # Only atomic columns are displayable and saveable (a g:Profiler result carries list columns such as
     # `parents`); the module's download handlers keep the full frame.
@@ -367,6 +379,12 @@ saveDIADisplayTable <- function(manager, table) {
     saveDIATableComponent(manager$.context, table)
 }
 
+#' DIA name of `saveWorkflowDisplayTable` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `saveWorkflowDisplayTable`.
+#' @return What `saveWorkflowDisplayTable` returns.
+#' @noRd
+saveDIADisplayTable <- saveWorkflowDisplayTable
+
 #' Read one page of a saved display table (KIT-018), optionally restricted to the rows whose `filter$column`
 #' equals `filter$value` (the column is scanned in 10,000-row reads; the selected rows are read by ordinal).
 #' @param reference Table reference from `saveDIADisplayTable`.
@@ -375,7 +393,7 @@ saveDIADisplayTable <- function(manager, table) {
 #' @param offset,limit Page position and size (at most 10,000 rows per read).
 #' @return `list(data, rows)`: the page and the matching row count.
 #' @noRd
-readDIADisplayTablePage <- function(reference, columns = NULL, filter = NULL, offset = 0L, limit = 1000L,
+readWorkflowDisplayTablePage <- function(reference, columns = NULL, filter = NULL, offset = 0L, limit = 1000L,
     manager = getDIAActiveManager()) {
     # KIT-017 screen run: the widget's page requests are served by Shiny's request handler, which carries no
     # reactive domain and no open scope, so a render resolves the owner once and the pager passes it here.
@@ -403,6 +421,12 @@ readDIADisplayTablePage <- function(reference, columns = NULL, filter = NULL, of
     list(data = page, rows = length(selected))
 }
 
+#' DIA name of `readWorkflowDisplayTablePage` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `readWorkflowDisplayTablePage`.
+#' @return What `readWorkflowDisplayTablePage` returns.
+#' @noRd
+readDIADisplayTablePage <- readWorkflowDisplayTablePage
+
 #' A server-side page filter for the table widget over a saved table (KIT-024): the widget asks for a page
 #' (`start`, `length`, `draw`) and the store serves it through `read_page(offset, limit)`; ordering and searching
 #' are not applied (the renders disable them), so the row count is the table's. Without an installed pager
@@ -410,7 +434,7 @@ readDIADisplayTablePage <- function(reference, columns = NULL, filter = NULL, of
 #' @param pager Environment with `read` (`function(offset, limit)` returning a data frame) and `rows`.
 #' @return `function(data, params)` for `DT::renderDT(funcFilter = )`.
 #' @noRd
-diaDisplayTableFilter <- function(pager) {
+workflowDisplayTableFilter <- function(pager) {
     default_filter <- utils::getFromNamespace("dataTablesFilter", "DT")
     # The widget reads each row as an array, so the page is unnamed the way the widget's own filter unnames it
     # (KIT-017 screen run: a named page serialised as objects and the widget's error dialog blocked the browser).
@@ -433,6 +457,12 @@ diaDisplayTableFilter <- function(pager) {
             DT_rows_all = seq_len(rows), DT_rows_current = seq.int(start + 1L, length.out = nrow(page)))
     }
 }
+
+#' DIA name of `workflowDisplayTableFilter` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `workflowDisplayTableFilter`.
+#' @return What `workflowDisplayTableFilter` returns.
+#' @noRd
+diaDisplayTableFilter <- workflowDisplayTableFilter
 
 #' The table widget options the paged renders share (KIT-024): server-side pages, no client ordering or search
 #' (the store serves rows in source order), a visible row count.

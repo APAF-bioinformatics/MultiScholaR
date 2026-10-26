@@ -128,6 +128,7 @@ test_that("Apply retries pending publication without dispatching science again",
     testthat::local_mocked_bindings(
         # KIT-008: the dispatch rule is the managed application on the session, not a qualification.
         workflowSessionApplication = function(...) application,
+        usesWorkflowReferenceStates = function(...) TRUE, # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         usesDIAReferenceStates = function(...) TRUE,
         beginWorkflowGUIAction = function(...) list2env(list(id = "gui-one", closed = FALSE)),
         finishWorkflowGUIAction = function(reservation, status, ...) {
@@ -135,11 +136,13 @@ test_that("Apply retries pending publication without dispatching science again",
             reservation$closed <- TRUE
             list()
         },
+        getWorkflowStateReference = function(...) reference, # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         getDIAStateReference = function(...) reference,
         runWorkflowAction = function(...) { dispatches <<- dispatches + 1L; "worker-one" },
         pollWorkflowAction = function(...) list(status = "publication_pending"),
         resumeWorkflowAction = function(...) { retries <<- retries + 1L; list(state_reference = reference) },
         readManagedPeptideResult = function(...) list(resultText = "accepted\n", stateReference = reference),
+        withWorkflowStateScope = function(manager, operation) operation(), # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         withDIAStateScope = function(manager, operation) operation(),
         updatePeptideSampleOutputs = function(output, samplePlot, ...) {
             output$sample_results <- shiny::renderText("accepted")
@@ -268,6 +271,7 @@ test_that("the precursor rollup takes the managed worker under a managed applica
     managed <- application
     testthat::local_mocked_bindings(
         workflowSessionApplication = function(...) managed,
+        usesWorkflowReferenceStates = function(...) TRUE, # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         usesDIAReferenceStates = function(...) TRUE,
         beginWorkflowGUIAction = function(application, manager, operation, publication) {
             expect_identical(operation, "precursor_rollup")
@@ -275,6 +279,7 @@ test_that("the precursor rollup takes the managed worker under a managed applica
             list2env(list(id = "gui-rollup", closed = FALSE))
         },
         finishWorkflowGUIAction = function(reservation, status, ...) { reservation$closed <- TRUE; list() },
+        getWorkflowStateReference = function(...) reference, # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         getDIAStateReference = function(...) reference,
         runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
             dispatched[[length(dispatched) + 1L]] <<- list(operation = operation, parameters = parameters,
@@ -284,6 +289,7 @@ test_that("the precursor rollup takes the managed worker under a managed applica
         pollWorkflowAction = function(...) list(status = "complete"),
         resumeWorkflowAction = function(...) list(state_reference = reference),
         readManagedPeptideResult = function(...) list(resultText = "rolled\n", stateReference = reference),
+        withWorkflowStateScope = function(manager, operation) operation(), # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         withDIAStateScope = function(manager, operation) operation(),
         updatePeptideRollupOutputs = function(output, rollupPlot, ...) {
             output$rollup_results <- shiny::renderText("rolled")
@@ -338,6 +344,7 @@ test_that("the managed completion carries the bus's QC parameters and prior prog
     expect_null(bare$filtering_progress)
     # The result reader merges the step's entry into the bus instead of replacing the bus.
     testthat::local_mocked_bindings(
+        readWorkflowStateMetadata = function(...) list(data = list(products = list(qc_progress = "product"))), # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         readDIAStateMetadata = function(...) list(data = list(products = list(qc_progress = "product"))),
         hydrateSavedWorkflowEntity = function(...) list(value = list(resultText = "ok", qcParams = list(peptide_qc = list(
             qvalue = list(threshold = 0.01), protein_peptide = list(min = 2), sample_filter = list(cutoff = 100))))),
@@ -391,6 +398,7 @@ checkManagedPeptideModule <- function(spec) {
     managed <- application
     mocks <- list(
         workflowSessionApplication = function(...) managed,
+        usesWorkflowReferenceStates = function(...) TRUE, # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         usesDIAReferenceStates = function(...) TRUE,
         beginWorkflowGUIAction = function(application, manager, operation, publication) {
             expect_identical(operation, spec$operation)
@@ -398,6 +406,7 @@ checkManagedPeptideModule <- function(spec) {
             list2env(list(id = paste0("gui-", spec$operation), closed = FALSE))
         },
         finishWorkflowGUIAction = function(reservation, status, ...) { reservation$closed <- TRUE; list() },
+        getWorkflowStateReference = function(...) reference, # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         getDIAStateReference = function(...) reference,
         runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
             dispatched[[length(dispatched) + 1L]] <<- list(operation = operation, parameters = parameters, context = completion_context)
@@ -406,6 +415,7 @@ checkManagedPeptideModule <- function(spec) {
         pollWorkflowAction = function(...) list(status = "complete"),
         resumeWorkflowAction = function(...) list(state_reference = reference),
         readManagedPeptideResult = function(...) list(resultText = "done\n", stateReference = reference),
+        withWorkflowStateScope = function(manager, operation) operation(), # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         withDIAStateScope = function(manager, operation) operation())
     mocks[[spec$outputs]] <- function(output, ...) {
         arguments <- list(...)
@@ -486,6 +496,7 @@ checkManagedProteinModule <- function(spec) {
     managed <- application
     mocks <- list(
         workflowSessionApplication = function(...) managed,
+        usesWorkflowReferenceStates = function(...) TRUE, # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         usesDIAReferenceStates = function(...) TRUE,
         isDIANativeSession = function(...) FALSE,
         beginWorkflowGUIAction = function(application, manager, operation, publication) {
@@ -495,6 +506,7 @@ checkManagedProteinModule <- function(spec) {
             list2env(list(id = paste0("gui-", spec$operation), closed = FALSE))
         },
         finishWorkflowGUIAction = function(reservation, status, ...) { reservation$closed <- TRUE; list() },
+        getWorkflowStateReference = function(...) reference, # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         getDIAStateReference = function(...) reference,
         runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
             dispatched[[length(dispatched) + 1L]] <<- list(operation = operation, parameters = parameters)
@@ -503,6 +515,7 @@ checkManagedProteinModule <- function(spec) {
         pollWorkflowAction = function(...) list(status = "complete"),
         resumeWorkflowAction = function(...) list(state_reference = reference),
         readManagedProteinResult = function(...) list(resultText = "done\n", stateReference = reference),
+        withWorkflowStateScope = function(manager, operation) operation(), # KIT-045: the execution layer calls the workflow name; the modules keep the DIA alias
         withDIAStateScope = function(manager, operation) operation())
     mocks[[spec$outputs]] <- function(output, ...) {
         arguments <- list(...)

@@ -75,6 +75,24 @@ test_that("DIA adapter scopes complete records and preserves native defaults", {
     saveRDS(ordinary, path)
     expect_identical(readRDS(path)$getState(), object)
     expect_false(inherits(ordinary, "DIAStateAdapter"))
+    # KIT-045: the owner's class vector leads with the omic-agnostic name; the DIA name stays for every inherits test,
+    # and each of the 25 storage primitives is callable under its workflow name and its DIA alias with one body.
+    expect_identical(class(manager), c("WorkflowStateOwner", "DIAStateAdapter", "environment"))
+    aliases <- c(newDIAStateAdapter = "newWorkflowStateOwner", closeDIAStateAdapter = "closeWorkflowStateOwner",
+        withDIAStateScope = "withWorkflowStateScope", getDIAActiveManager = "getWorkflowActiveOwner",
+        usesDIAReferenceStates = "usesWorkflowReferenceStates", getDIAStateReference = "getWorkflowStateReference",
+        selectDIAStateReference = "selectWorkflowStateReference", readDIAStateMetadata = "readWorkflowStateMetadata",
+        resolveDIAStateValue = "resolveWorkflowStateValue", materializeDIATable = "materializeWorkflowTable",
+        commitDIAReferenceState = "commitWorkflowReferenceState", publishDIAStateHead = "publishWorkflowStateHead",
+        setDIAStepProvenance = "setWorkflowStepProvenance", setDIAStepProvenanceForSection = "setWorkflowStepProvenanceForSection",
+        readDIAExecutionComponents = "readWorkflowExecutionComponents", checkpointDIAExecutionResult = "checkpointWorkflowExecutionResult",
+        inheritDIAExecutionSource = "inheritWorkflowExecutionSource", saveDIAOwnedValue = "saveWorkflowOwnedValue",
+        saveDIATableComponent = "saveWorkflowOwnedTable", saveDIADisplayTable = "saveWorkflowDisplayTable",
+        readDIADisplayTablePage = "readWorkflowDisplayTablePage", diaDisplayTableFilter = "workflowDisplayTableFilter",
+        rootDIAProduct = "rootWorkflowProduct", diaComponentScientificIdentity = "workflowComponentScientificIdentity",
+        newDIASavedReactiveVal = "savedReactiveVal")
+    ns <- asNamespace("MultiScholaR")
+    for (old in names(aliases)) expect_identical(body(get(old, ns)), body(get(aliases[[old]], ns)), info = old)
     # KIT-020: the owner serves DIA, LFQ and TMT; other types are refused.
     expect_error(manager$setWorkflowType("metabolomics_standard"), class = "saved_entity_scope")
 })

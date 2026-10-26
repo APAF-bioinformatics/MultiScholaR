@@ -176,10 +176,10 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     records <- lapply(stats::setNames(history, history), function(state) {
         reference <- snapshot$states[[state]]
         if (is.null(reference)) return(NULL)
-        tryCatch(readDIAStateMetadata(manager, reference), saved_entity_unsupported = function(e) {
+        tryCatch(readWorkflowStateMetadata(manager, reference), saved_entity_unsupported = function(e) {
             # The `initial` placeholder is a small record with no data; a state stored as a whole legacy object is
             # not hydrated here and is listed without its arguments.
-            if (identical(state, "initial")) resolveDIAStateValue(context, reference) else list(legacy_object = TRUE)
+            if (identical(state, "initial")) resolveWorkflowStateValue(context, reference) else list(legacy_object = TRUE)
         })
     })
     steps <- list()
@@ -260,7 +260,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     last <- if (length(history)) records[[history[[length(history)]]]] else NULL
     design <- NULL
     if (!is.null(last$data$components$design_matrix)) {
-        rows <- materializeDIATable(context, last$data$components$design_matrix)
+        rows <- materializeWorkflowTable(context, last$data$components$design_matrix)
         slots <- last$data$slots
         design <- list(entity_id = last$data$components$design_matrix$entity_id, sample_id = slots$sample_id %||% NA_character_,
             group_id = slots$group_id %||% NA_character_, technical_replicate_id = slots$technical_replicate_id %||% NA_character_,
@@ -269,7 +269,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     # KIT-027 audit PH-02: the DA step commits no state of its own; its settings are the accepted result manifest's.
     analyses <- list()
     if (isSavedWorkflowReference(snapshot$da_results)) {
-        manifest <- resolveDIAStateValue(context, snapshot$da_results)
+        manifest <- resolveWorkflowStateValue(context, snapshot$da_results)
         da_entry <- tryCatch(workflowOperationEntry("DA-contrast-output"), error = function(e) NULL)
         source_state <- names(snapshot$states)[vapply(snapshot$states, function(reference)
             identical(reference$entity_id, manifest$source$entity_id), logical(1))]
@@ -431,8 +431,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         }
     }
     identity <- readSavedStoreIdentity(file.path(project_root, ".workflow-entities", "store.json"))
-    manager <- newDIAStateAdapter(newWorkflowEntityStore(project_root, identity$project_id, identity$workflow_id), reopen = TRUE)
-    on.exit(closeDIAStateAdapter(manager), add = TRUE)
+    manager <- newWorkflowStateOwner(newWorkflowEntityStore(project_root, identity$project_id, identity$workflow_id), reopen = TRUE)
+    on.exit(closeWorkflowStateOwner(manager), add = TRUE)
     manager$.context$session_format <- "native_v1"
     manager$.context$reference_states <- TRUE
     manager$.context$experiment_paths <- paths
@@ -460,15 +460,15 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             class = "workflow_replay_unsupported")
         parameters <- workflowReplayParameters(step$parameters, entry$parameters)
         variant <- if (is.null(step$variant) || is.na(step$variant)) entry$default_variant else step$variant
-        withDIAStateScope(manager, function() {
+        withWorkflowStateScope(manager, function() {
             if (entry$compute %in% c("peptide", "protein")) {
                 directory <- file.path(scratch, "requests", step$state)
                 dir.create(directory, recursive = TRUE, showWarnings = FALSE)
-                request <- list(operation = operation, input_references = list(state = getDIAStateReference(manager)),
+                request <- list(operation = operation, input_references = list(state = getWorkflowStateReference(manager)),
                     parameters = parameters, worker_cap = worker_cap, directory = directory)
                 value <- get(entry$handler, mode = "function")(manager, request, variant)
                 value$operation <- operation
-                setDIAStepProvenance(manager, operation, variant, entry$parameters, entry$declaration$fixed, values = parameters)
+                setWorkflowStepProvenance(manager, operation, variant, entry$parameters, entry$declaration$fixed, values = parameters)
                 # The controller's completion (`completeWorkflowAction`) on the replay's one workflow owner.
                 workflow$filtering_progress <- progress$filtering_progress
                 if (entry$completion == "protein") completeDIAProteinAction(workflow, value)
@@ -479,7 +479,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 if (entry$completion == "peptide") {
                     # The GUI's display advances the session's filtering progress with the step's summary; the next
                     # step's progress product records it as prior progress.
-                    record_now <- readDIAStateMetadata(manager)
+                    record_now <- readWorkflowStateMetadata(manager)
                     product <- hydrateSavedWorkflowEntity(manager$.context$store, workflowPeptideProgressProduct(record_now$data))$value
                     grDevices::pdf(NULL)
                     device <- grDevices::dev.cur()
@@ -490,15 +490,15 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 }
             } else if (identical(operation, "normalization-ruv")) {
                 # As `runDIAReferenceNormalization` commits: the operation's final checkpoint with its product.
-                run <- runSavedOperation(manager, diaNormalizationOperation(), getDIAStateReference(manager), parameters)
+                run <- runSavedOperation(manager, diaNormalizationOperation(), getWorkflowStateReference(manager), parameters)
                 saved <- run$value
                 skipped <- identical(parameters$ruv_mode, "skip")
-                final <- readDIAStateMetadata(manager, saved$final)$data
+                final <- readWorkflowStateMetadata(manager, saved$final)$data
                 config <- list(norm_method = parameters$norm_method, ruv_mode = parameters$ruv_mode,
                     ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage)
                 if (skipped) config$ruv_applied <- FALSE
                 final$products$normalization_science <- run$reference
-                commitDIAReferenceState(manager, if (skipped) "normalized" else "ruv_corrected", final, config,
+                commitWorkflowReferenceState(manager, if (skipped) "normalized" else "ruv_corrected", final, config,
                     if (skipped) "Post-normalization complete: RUV-III skipped by user" else
                         "Post-normalization complete: RUV-III correction and missing value cleanup completed")
                 normalization_final <<- saved$final
@@ -506,7 +506,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 # As `runDIAReferenceCorrelation` commits: pairs, then selection, on the normalisation's final checkpoint
                 # (KIT-053: on the DIA_LIMPA route there is no normalisation checkpoint; the source is the head state).
                 previous <- Filter(function(p) identical(p$operation, "pearson-pairs"), step$preceded_by %||% list())
-                correlation_source <- normalization_final %||% getDIAStateReference(manager)
+                correlation_source <- normalization_final %||% getWorkflowStateReference(manager)
                 if (!length(previous) || is.null(correlation_source))
                     cli::cli_abort("step {.val {step$state}} cannot be replayed without its pairs and normalisation", class = "workflow_replay_unsupported")
                 pairs_parameters <- workflowReplayParameters(previous[[1L]]$parameters, workflowOperationEntry("pearson-pairs")$parameters)
@@ -514,17 +514,17 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 selection <- runSavedOperation(manager, diaPearsonSelectionOperation(), correlation_source,
                     list(pairs = pairs$reference$entity_id, threshold = parameters$threshold, correlations = pairs$value),
                     dependencies = list(pairs$reference))
-                spec <- readDIAStateMetadata(manager, selection$value)$data
-                commitDIAReferenceState(manager, "correlation_filtered", spec,
+                spec <- readWorkflowStateMetadata(manager, selection$value)$data
+                commitWorkflowReferenceState(manager, "correlation_filtered", spec,
                     list(min_pearson_correlation_threshold = parameters$threshold), "Applied final sample correlation filter (chunk 28)")
             } else if (identical(operation, "protein_ruv_covariates")) {
                 # KIT-053: as `runDIAReferenceRuvCovariates` commits on the DIA_LIMPA route. KIT-056: the mode is a
                 # declared parameter; records written before it carry none and replay as covariates.
                 parameters$ruv_mode <- parameters$ruv_mode %||% "covariates"
-                run <- runSavedOperation(manager, diaRuvCovariatesOperation(), getDIAStateReference(manager), parameters)
+                run <- runSavedOperation(manager, diaRuvCovariatesOperation(), getWorkflowStateReference(manager), parameters)
                 saved <- run$value
                 correction <- identical(saved$ruv_mode %||% "covariates", "correction")
-                final <- readDIAStateMetadata(manager, saved$final %||% saved$covariates)$data
+                final <- readWorkflowStateMetadata(manager, saved$final %||% saved$covariates)$data
                 final$products$ruv_covariates_science <- run$reference
                 config <- list(ruv_mode = saved$ruv_mode %||% "covariates", ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage,
                     control_count = saved$control_count, separation_score = saved$ruv_result$best_separation_score,
@@ -534,7 +534,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                     outcomes = list(k = saved$best_k, percentage_as_neg_ctrl = saved$percentage, control_count = saved$control_count,
                         separation_score = saved$ruv_result$best_separation_score, composite_score = saved$ruv_result$best_composite_score,
                         replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, ruv_mode = saved$ruv_mode %||% "covariates"))
-                commitDIAReferenceState(manager, if (correction) "ruv_corrected" else "ruv_covariates", final, config, if (correction)
+                commitWorkflowReferenceState(manager, if (correction) "ruv_corrected" else "ruv_covariates", final, config, if (correction)
                     sprintf("RUV-III correction applied to the quantified matrix and the DPC EList (k = %d; Y - W alpha); no W terms in the design", saved$best_k) else
                     sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
             } else {
@@ -551,7 +551,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         for (parameter in da$parameters) settings[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
         contrasts <- do.call(rbind, lapply(da$contrasts, function(row) as.data.frame(lapply(row, unlist), stringsAsFactors = FALSE)))
         da_data <- new.env(parent = emptyenv())
-        da_data$current_s4_object <- getDIAStateReference(manager)
+        da_data$current_s4_object <- getWorkflowStateReference(manager)
         da_data$contrasts_available <- contrasts$contrasts
         da_workflow <- new.env(parent = emptyenv())
         da_workflow$state_manager <- manager

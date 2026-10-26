@@ -68,7 +68,7 @@ saveDIAStateValue <- function(context, value, label, codec = "qs2") {
 #' @param snapshot References, topology and bounded metadata; never scientific values.
 #' @return NULL invisibly; earlier durable heads remain recoverable on failure.
 #' @noRd
-publishDIAStateHead <- function(context, snapshot) {
+publishWorkflowStateHead <- function(context, snapshot) {
     lease <- acquireWorkflowMutationLease(context$store)
     on.exit(if (!is.null(lease)) filelock::unlock(lease), add = TRUE)
     current <- workflowExecutionHead(context$store)
@@ -93,12 +93,18 @@ publishDIAStateHead <- function(context, snapshot) {
     invisible(NULL)
 }
 
+#' DIA name of `publishWorkflowStateHead` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `publishWorkflowStateHead`.
+#' @return What `publishWorkflowStateHead` returns.
+#' @noRd
+publishDIAStateHead <- publishWorkflowStateHead
+
 #' Resolve one record, sharing only within an explicitly owned action scope.
 #' @param context Private adapter owner.
 #' @param reference Immutable descriptor.
 #' @return Complete record; missing/corrupt payloads are errors.
 #' @noRd
-resolveDIAStateValue <- function(context, reference) {
+resolveWorkflowStateValue <- function(context, reference) {
     checkWorkflowEntityStore(context$store)
     key <- reference$entity_id
     if (context$scope_depth > 0L && exists(key, context$working, inherits = FALSE)) {
@@ -110,6 +116,12 @@ resolveDIAStateValue <- function(context, reference) {
     if (context$scope_depth > 0L) assign(key, value, context$working)
     value
 }
+
+#' DIA name of `resolveWorkflowStateValue` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `resolveWorkflowStateValue`.
+#' @return What `resolveWorkflowStateValue` returns.
+#' @noRd
+resolveDIAStateValue <- resolveWorkflowStateValue
 
 #' Release pages of one consumed native-session checkpoint, never the file.
 #' @param context Current owner with a durably saved or validated/decoded record.
@@ -136,9 +148,15 @@ getDIACurrentReference <- function(manager) {
 #' @param manager Session-owned state adapter.
 #' @return TRUE only after explicit native DIA activation.
 #' @noRd
-usesDIAReferenceStates <- function(manager) {
+usesWorkflowReferenceStates <- function(manager) {
     inherits(manager, "DIAStateAdapter") && isTRUE(manager$.context$reference_states)
 }
+
+#' DIA name of `usesWorkflowReferenceStates` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `usesWorkflowReferenceStates`.
+#' @return What `usesWorkflowReferenceStates` returns.
+#' @noRd
+usesDIAReferenceStates <- usesWorkflowReferenceStates
 # KIT-048: no proteomics module calls `usesDIAReferenceStates` any more (the in-memory path is retired; the owner is
 # attached from session start); the harness and the stage-3 code read it.
 
@@ -174,11 +192,17 @@ readDIAStateObject <- function(manager, state_name = NULL) {
 #' @param state_name Existing state name; NULL selects the current state.
 #' @return Immutable descriptor or NULL.
 #' @noRd
-getDIAStateReference <- function(manager, state_name = NULL) {
+getWorkflowStateReference <- function(manager, state_name = NULL) {
     if (!inherits(manager, "DIAStateAdapter")) return(NULL)
     if (is.null(state_name)) state_name <- manager$current_state
     manager$.context$snapshot$states[[state_name]]
 }
+
+#' DIA name of `getWorkflowStateReference` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `getWorkflowStateReference`.
+#' @return What `getWorkflowStateReference` returns.
+#' @noRd
+getDIAStateReference <- getWorkflowStateReference
 
 #' Recognize supported reference-backed checkpoint generations.
 #' @param value Decoded bounded checkpoint specification.
@@ -194,10 +218,16 @@ isDIAComponentCheckpoint <- function(value) {
 #' @param reference Immutable state descriptor.
 #' @return Record containing component descriptors, never an assay.
 #' @noRd
-readDIAStateMetadata <- function(manager, reference = NULL) {
+readWorkflowStateMetadata <- function(manager, reference = NULL) {
     record <- readComponentMetadata(manager, reference, classes = c("PeptideQuantitativeData", "ProteinQuantitativeData"))
     record
 }
+
+#' DIA name of `readWorkflowStateMetadata` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `readWorkflowStateMetadata`.
+#' @return What `readWorkflowStateMetadata` returns.
+#' @noRd
+readDIAStateMetadata <- readWorkflowStateMetadata
 
 #' Read a component checkpoint's bounded record for any declared class (KIT-002).
 #' @param manager Session owner.
@@ -241,7 +271,7 @@ readComponentMetadata <- function(manager, reference = NULL, classes = NULL) {
 #'   one existing bounded read batch can overlap this allocation.
 #' @return Original data frame; intermediate batches are released on each iteration.
 #' @noRd
-materializeDIATable <- function(context, reference, selected_columns = NULL,
+materializeWorkflowTable <- function(context, reference, selected_columns = NULL,
     scope = NULL, relation = NULL, filter_column = NULL, filter_value = NULL,
     max_bytes = 268435456) {
     if (is.null(scope)) {
@@ -352,6 +382,12 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
     columns
 }
 
+#' DIA name of `materializeWorkflowTable` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `materializeWorkflowTable`.
+#' @return What `materializeWorkflowTable` returns.
+#' @noRd
+materializeDIATable <- materializeWorkflowTable
+
 #' Open only declared components for an existing R scientific kernel.
 #' @param manager Current session owner.
 #' @param reference Immutable component checkpoint; defaults to the selected state.
@@ -363,7 +399,7 @@ materializeDIATable <- function(context, reference, selected_columns = NULL,
 #'   schema but must request every table a kernel computes on; the checkpoint
 #'   writer keeps the stored component for any slot that was not loaded.
 #' @noRd
-readDIAExecutionComponents <- function(manager, reference = NULL,
+readWorkflowExecutionComponents <- function(manager, reference = NULL,
     fields = c("protein_quant_table", "design_matrix", "protein_id_table"), columns = list()) {
     if (is.null(reference)) reference <- getDIAStateReference(manager)
     record <- readComponentMetadata(manager, reference)
@@ -373,6 +409,12 @@ readDIAExecutionComponents <- function(manager, reference = NULL,
     attr(object, "dia_execution_fields") <- intersect(fields, names(spec$components))
     object
 }
+
+#' DIA name of `readWorkflowExecutionComponents` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `readWorkflowExecutionComponents`.
+#' @return What `readWorkflowExecutionComponents` returns.
+#' @noRd
+readDIAExecutionComponents <- readWorkflowExecutionComponents
 
 #' Rebuild a declared object from a component checkpoint, hydrating only the requested fields.
 #' @param context Current owner.
@@ -484,7 +526,7 @@ checkpointDIAOwnedArgs <- function(context, declaration, slots, previous) {
 #' @param object Already-owned scientific result, never obtained via compatibility hydration.
 #' @return Component checkpoint specification for the existing state-head commit.
 #' @noRd
-checkpointDIAExecutionResult <- function(manager, object) {
+checkpointWorkflowExecutionResult <- function(manager, object) {
     # An undeclared class is refused before any component is written.
     declaration <- workflowClassDeclaration(object)
     context <- manager$.context
@@ -578,6 +620,12 @@ checkpointDIAExecutionResult <- function(manager, object) {
         metadata = if (is.function(declaration$describe)) declaration$describe(object) else NULL)
 }
 
+#' DIA name of `checkpointWorkflowExecutionResult` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `checkpointWorkflowExecutionResult`.
+#' @return What `checkpointWorkflowExecutionResult` returns.
+#' @noRd
+checkpointDIAExecutionResult <- checkpointWorkflowExecutionResult
+
 #' Resolve a protein scientific view while leaving public getState compatible.
 #' @param manager Current owner.
 #' @param state_name Optional state name.
@@ -594,12 +642,18 @@ readDIAProteinScience <- function(manager, state_name = NULL) {
 #' @param manager,source Owning session and immutable input checkpoint.
 #' @return The transient result with component provenance, never a hydrated predecessor.
 #' @noRd
-inheritDIAExecutionSource <- function(object, manager, source) {
+inheritWorkflowExecutionSource <- function(object, manager, source) {
     if (!usesDIAReferenceStates(manager)) return(object)
     attr(object, "dia_component_source") <- source
     attr(object, "dia_execution_fields") <- c("protein_quant_table", "design_matrix", "protein_id_table")
     object
 }
+
+#' DIA name of `inheritWorkflowExecutionSource` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `inheritWorkflowExecutionSource`.
+#' @return What `inheritWorkflowExecutionSource` returns.
+#' @noRd
+inheritDIAExecutionSource <- inheritWorkflowExecutionSource
 
 #' Reconstruct a complete legacy record only at a compatibility boundary.
 #' @param context Current owner.
@@ -653,7 +707,7 @@ materializeDIAStateRecord <- function(context, reference) {
 #' @param values Named list of the declared parameters' values as the operation received them (KIT-027 audit
 #'   PH-01: a step's config does not always record them under the declared names); bounded by
 #'   `boundDIAProvenanceValues`.
-setDIAStepProvenance <- function(manager, operation, variant = NA_character_, parameter_names = character(), fixed = NULL,
+setWorkflowStepProvenance <- function(manager, operation, variant = NA_character_, parameter_names = character(), fixed = NULL,
     values = NULL) {
     if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
     previous <- manager$.context$pending_provenance
@@ -666,6 +720,12 @@ setDIAStepProvenance <- function(manager, operation, variant = NA_character_, pa
     manager$.context$pending_provenance <- pending
     invisible(NULL)
 }
+
+#' DIA name of `setWorkflowStepProvenance` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `setWorkflowStepProvenance`.
+#' @return What `setWorkflowStepProvenance` returns.
+#' @noRd
+setDIAStepProvenance <- setWorkflowStepProvenance
 
 #' Keep the declared parameters' values that are small plain values (atomic vectors and lists of them, at most
 #' 64 KiB each); a table, a saved reference or a larger value is recorded by class and size only.
@@ -694,7 +754,7 @@ clearDIAStepProvenance <- function(manager) {
 #' Name a registered step's provenance from the section its compute recorded, unless an operation already set
 #' it (the worker completion carries the request's variant): the in-process finishing steps (KIT-025 audit PH-02).
 #' @noRd
-setDIAStepProvenanceForSection <- function(manager, section) {
+setWorkflowStepProvenanceForSection <- function(manager, section) {
     if (!inherits(manager, "DIAStateAdapter") || !is.null(manager$.context$pending_provenance)) return(invisible(NULL))
     # KIT-047: a section shared by two routes (the accession cleanup) names the route's own declaration.
     operation <- workflowOperationForSection(section, manager$workflow_type)
@@ -702,6 +762,12 @@ setDIAStepProvenanceForSection <- function(manager, section) {
     entry <- workflowActionSpec(operation)
     setDIAStepProvenance(manager, operation, entry$default_variant %||% NA_character_, entry$parameters, entry$declaration$fixed)
 }
+
+#' DIA name of `setWorkflowStepProvenanceForSection` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `setWorkflowStepProvenanceForSection`.
+#' @return What `setWorkflowStepProvenanceForSection` returns.
+#' @noRd
+setDIAStepProvenanceForSection <- setWorkflowStepProvenanceForSection
 
 #' @noRd
 takeDIAStepProvenance <- function(context) {
@@ -757,7 +823,7 @@ truncateDIAStepProvenance <- function(snapshot) {
     snapshot
 }
 
-commitDIAReferenceState <- function(manager, state_name, checkpoint, config, description,
+commitWorkflowReferenceState <- function(manager, state_name, checkpoint, config, description,
     timestamp = Sys.time()) {
     assertWorkflowController()
     checkSavedEntityString(state_name, "state_name")
@@ -807,6 +873,12 @@ commitDIAReferenceState <- function(manager, state_name, checkpoint, config, des
     reference
 }
 
+#' DIA name of `commitWorkflowReferenceState` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `commitWorkflowReferenceState`.
+#' @return What `commitWorkflowReferenceState` returns.
+#' @noRd
+commitDIAReferenceState <- commitWorkflowReferenceState
+
 #' Hash the existing version-2 serialized value through a bounded Linux pipe.
 #' @param value Exact value previously supplied to digest with serializeVersion=2.
 #' @param store Existing entity owner for private scratch output.
@@ -854,7 +926,7 @@ hashWorkflowSerializedValue <- function(value, store) {
 #' @param consume Optional producer summary callback for each bounded output batch.
 #' @return Table descriptor, never a second resident table owner.
 #' @noRd
-saveDIATableComponent <- function(context, table, backend = "arrow", consume = NULL) {
+saveWorkflowOwnedTable <- function(context, table, backend = "arrow", consume = NULL) {
     table <- prepareDIAParserTable(table)
     metadata <- workflowSavedTableMetadata(table, ".rownames", 3L)
     # Equivalent attribute orders and ALTREP representations have the same
@@ -884,6 +956,12 @@ saveDIATableComponent <- function(context, table, backend = "arrow", consume = N
     context$writes <- context$writes + 1L
     reference
 }
+
+#' DIA name of `saveWorkflowOwnedTable` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `saveWorkflowOwnedTable`.
+#' @return What `saveWorkflowOwnedTable` returns.
+#' @noRd
+saveDIATableComponent <- saveWorkflowOwnedTable
 
 #' Apply existing design renames, selection and numeric conversion to saved rows.
 #' @param manager,reference Current owner and immutable assay table.
@@ -1060,7 +1138,7 @@ newDIAPeptideCheckpoint <- function(manager, reference, design, args) {
 #' @param state_name Existing state name.
 #' @return Selected descriptor, or the ordinary legacy result on other routes.
 #' @noRd
-selectDIAStateReference <- function(manager, state_name) {
+selectWorkflowStateReference <- function(manager, state_name) {
     if (!usesDIAReferenceStates(manager)) cli::cli_abort("the proteomics state owner is required", class = "saved_entity_scope") # KIT-048
     reference <- getDIAStateReference(manager, state_name)
     if (is.null(reference)) cli::cli_abort("state does not exist", class = "saved_entity_missing")
@@ -1073,6 +1151,12 @@ selectDIAStateReference <- function(manager, state_name) {
     publishDIAStateHead(manager$.context, snapshot)
     reference
 }
+
+#' DIA name of `selectWorkflowStateReference` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `selectWorkflowStateReference`.
+#' @return What `selectWorkflowStateReference` returns.
+#' @noRd
+selectDIAStateReference <- selectWorkflowStateReference
 
 #' Release a consumed predecessor after its successor is durably current.
 #' @param manager Existing native or experimental state manager.
@@ -1154,7 +1238,7 @@ replaceDIAStates <- function(context, records, topology = NULL) {
 #' @param reopen Read this store's previously accepted private head when TRUE.
 #' @return Internal state facade; complete legacy exports, not this environment, are portable.
 #' @noRd
-newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
+newWorkflowStateOwner <- function(store, native = NULL, reopen = FALSE) {
     checkWorkflowEntityStore(store)
     if (store$max_cache_bytes != 0 || !is.logical(reopen) || length(reopen) != 1L || is.na(reopen)) {
         cli::cli_abort("invalid DIA state adapter policy", class = "saved_entity_invalid")
@@ -1240,7 +1324,7 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
     }
     native$states <- native$audit_records <- list()
     adapter <- new.env(parent = emptyenv())
-    class(adapter) <- c("DIAStateAdapter", "environment")
+    class(adapter) <- c("WorkflowStateOwner", "DIAStateAdapter", "environment")
     adapter$.context <- context
     makeActiveBinding("states", function(value) {
         if (missing(value)) return(materializeDIAStates(context))
@@ -1305,6 +1389,12 @@ newDIAStateAdapter <- function(store, native = NULL, reopen = FALSE) {
     }
     adapter
 }
+
+#' DIA name of `newWorkflowStateOwner` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `newWorkflowStateOwner`.
+#' @return What `newWorkflowStateOwner` returns.
+#' @noRd
+newDIAStateAdapter <- newWorkflowStateOwner
 
 #' Bind one scalar/topology field without capturing an assay-bearing call frame.
 #' @param adapter,context Facade and private owner.
@@ -1401,7 +1491,7 @@ describeDIAProteinState <- function(object) {
 #' @param operation Zero-argument existing action.
 #' @return The operation's original result.
 #' @noRd
-withDIAStateScope <- function(manager, operation) {
+withWorkflowStateScope <- function(manager, operation) {
     if (!inherits(manager, "DIAStateAdapter")) return(operation())
     context <- manager$.context
     checkWorkflowEntityStore(context$store)
@@ -1427,6 +1517,12 @@ withDIAStateScope <- function(manager, operation) {
     completed <- TRUE
     if (result$visible) result$value else invisible(result$value)
 }
+
+#' DIA name of `withWorkflowStateScope` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `withWorkflowStateScope`.
+#' @return What `withWorkflowStateScope` returns.
+#' @noRd
+withDIAStateScope <- withWorkflowStateScope
 
 #' Read one legacy record without materializing the complete history.
 #' @param manager Native or experimental state manager.
@@ -1470,7 +1566,7 @@ diaStateOwnership <- function(manager) {
 #' @param manager Experimental state manager.
 #' @return NULL invisibly.
 #' @noRd
-closeDIAStateAdapter <- function(manager) {
+closeWorkflowStateOwner <- function(manager) {
     if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
     context <- manager$.context
     for (cancel in context$callbacks) if (is.function(cancel)) cancel()
@@ -1493,10 +1589,16 @@ closeDIAStateAdapter <- function(manager) {
     invisible(NULL)
 }
 
+#' DIA name of `closeWorkflowStateOwner` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `closeWorkflowStateOwner`.
+#' @return What `closeWorkflowStateOwner` returns.
+#' @noRd
+closeDIAStateAdapter <- closeWorkflowStateOwner
+
 #' Find only this Shiny session's explicitly enabled experimental manager.
 #' @return Internal manager or NULL; never a global live handle.
 #' @noRd
-getDIAActiveManager <- function() {
+getWorkflowActiveOwner <- function() {
     # KIT-022: the innermost `withDIAStateScope` owner first (kit code, workers and scripts), then the Shiny
     # session's owner (the modules), so kit-level readers need no session.
     stack <- .diaActiveScope$stack
@@ -1506,6 +1608,12 @@ getDIAActiveManager <- function() {
     manager <- session$userData$dia_capacity_manager
     if (inherits(manager, "DIAStateAdapter")) manager else NULL
 }
+
+#' DIA name of `getWorkflowActiveOwner` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `getWorkflowActiveOwner`.
+#' @return What `getWorkflowActiveOwner` returns.
+#' @noRd
+getDIAActiveManager <- getWorkflowActiveOwner
 
 #' The stack of owners of the open `withDIAStateScope` calls in this process (KIT-022).
 #' @noRd
@@ -1604,7 +1712,7 @@ rememberDIAWorkers <- function(context, config) {
 #' @param manager Session manager; NULL preserves the native value outside a trial.
 #' @return Private descriptor, or the untouched value on the native path.
 #' @noRd
-saveDIAOwnedValue <- function(value, label, manager = NULL) {
+saveWorkflowOwnedValue <- function(value, label, manager = NULL) {
     if (is.null(manager)) manager <- getDIAActiveManager()
     if (!inherits(manager, "DIAStateAdapter")) return(value)
     if (is.null(value)) {
@@ -1655,6 +1763,12 @@ saveDIAOwnedValue <- function(value, label, manager = NULL) {
     record <- prepareDIAStateRecord(list(data = value, config = NULL, description = label))
     saveDIAStateValue(manager$.context, record, paste0("owner:", label))
 }
+
+#' DIA name of `saveWorkflowOwnedValue` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `saveWorkflowOwnedValue`.
+#' @return What `saveWorkflowOwnedValue` returns.
+#' @noRd
+saveDIAOwnedValue <- saveWorkflowOwnedValue
 
 #' Resolve a private owner reference without altering the caller's stored value.
 #' @param value Native value or saved reference.
@@ -1727,7 +1841,7 @@ releaseDIAReplacedOwner <- function(manager, previous, reference) {
 #' @param snapshot_field Optional existing-session dependency root for native restore.
 #' @return Function whose getter returns the original payload.
 #' @noRd
-newDIASavedReactiveVal <- function(value, label, reactiveValFn = shiny::reactiveVal,
+savedReactiveVal <- function(value, label, reactiveValFn = shiny::reactiveVal,
     snapshot_field = NULL) {
     manager <- getDIAActiveManager()
     reference <- reactiveValFn(saveDIAOwnedValue(value, label, manager))
@@ -1752,11 +1866,11 @@ newDIASavedReactiveVal <- function(value, label, reactiveValFn = shiny::reactive
     result
 }
 
-#' Omic-agnostic name of the saved reactive value (KIT-011): a reactive holding a saved reference
-#' whose getter resolves the payload through the active state owner. `newDIASavedReactiveVal` stays
-#' as the DIA module's name for it.
+#' DIA name of `savedReactiveVal` (KIT-045): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `savedReactiveVal`.
+#' @return What `savedReactiveVal` returns.
 #' @noRd
-savedReactiveVal <- newDIASavedReactiveVal
+newDIASavedReactiveVal <- savedReactiveVal
 
 #' Read an internal reactive reference without hydrating its payload.
 #' @param value Existing getter with optional private reference accessor.

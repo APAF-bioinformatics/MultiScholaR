@@ -1,0 +1,119 @@
+{
+  "schema": "kit.replay_check.v1",
+  "ticket": "KIT-028",
+  "label": "kit045-before",
+  "date": "2026-10-26",
+  "head_commit": "c1cb8ae1d278066df1bdf8fb42b3a9ca79c9cad7",
+  "origin": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-028/candidate-1",
+  "states": [
+    {
+      "state": "initial",
+      "operation": "import",
+      "role": "precondition"
+    },
+    {
+      "state": "raw_data_s4",
+      "operation": "design_builder",
+      "role": "precondition"
+    },
+    {
+      "state": "qvalue_filtered",
+      "operation": "peptide_qvalue_filter",
+      "role": "replayed"
+    },
+    {
+      "state": "protein_peptide_filtered",
+      "operation": "peptide_protein_evidence_filter",
+      "role": "replayed"
+    },
+    {
+      "state": "precursor_rollup",
+      "operation": "precursor_rollup",
+      "role": "replayed"
+    },
+    {
+      "state": "intensity_filtered",
+      "operation": "peptide_intensity_filter",
+      "role": "replayed"
+    },
+    {
+      "state": "sample_filtered",
+      "operation": "minimum_peptides_per_sample",
+      "role": "replayed"
+    },
+    {
+      "state": "replicate_filtered",
+      "operation": "peptide_replicate_filter",
+      "role": "replayed"
+    },
+    {
+      "state": "imputed",
+      "operation": "peptide_imputation",
+      "role": "replayed"
+    },
+    {
+      "state": "protein_s4_created",
+      "operation": "protein_iq_rollup",
+      "role": "replayed"
+    },
+    {
+      "state": "protein_accession_cleaned",
+      "operation": "protein_accession_cleanup",
+      "role": "replayed"
+    },
+    {
+      "state": "protein_intensity_filtered",
+      "operation": "protein_intensity_filter",
+      "role": "replayed"
+    },
+    {
+      "state": "duplicates_removed",
+      "operation": "protein_duplicate_removal",
+      "role": "replayed"
+    },
+    {
+      "state": "protein_replicate_filtered",
+      "operation": "protein_replicate_filter",
+      "role": "replayed"
+    },
+    {
+      "state": "ruv_corrected",
+      "operation": "normalization-ruv",
+      "role": "replayed"
+    },
+    {
+      "state": "correlation_filtered",
+      "operation": "pearson-selection",
+      "role": "replayed"
+    }
+  ],
+  "exact": {
+    "seconds": 153.091210842133,
+    "states": ["initial", "raw_data_s4", "qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"],
+    "mismatches": [],
+    "replayed_steps": ["qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered", "correlation_filtered"]
+  },
+  "edited_parameter": {
+    "state": "protein_peptide_filtered",
+    "name": "num_peptides_per_protein_thresh",
+    "from": 1,
+    "to": 16
+  },
+  "edited_expected_rows": 281343,
+  "edited": {
+    "seconds": 148.1168384552,
+    "mismatched_states": ["protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"],
+    "before_identical": true,
+    "at_differs": true,
+    "after_all_differ": true,
+    "replay_rows": 281343,
+    "origin_rows": 320872,
+    "rows_equal_expected": true
+  },
+  "inputs_refused": true,
+  "inputs_message": "replay input \"fasta\" does not match the record's sha256",
+  "legacy_refused": true,
+  "legacy_message": "step \"qvalue_filtered\" cannot be replayed: operation \"legacy\"",
+  "total_seconds": 308.654749393463,
+  "within_ceiling": true
+}

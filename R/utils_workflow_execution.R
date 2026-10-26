@@ -303,7 +303,7 @@ recoverWorkflowHeadAcceptance <- function(owner) {
     current <- workflowExecutionHead(context$store)
     if (!is.null(current)) {
         context$head <- current
-        context$snapshot <- resolveDIAStateValue(context, current)
+        context$snapshot <- resolveWorkflowStateValue(context, current)
     }
     if (!journal$status %in% c("science_committed", "publication_pending", "complete")) {
         journal$status <- "controller_lost"
@@ -570,7 +570,7 @@ workflowPeptideProgressProduct <- function(record) {
 #' @return The display handoff (`stateReference`, text, summary, `qcParams`) without assay hydration.
 #' @noRd
 readManagedPeptideResult <- function(manager, result, workflow_data) {
-    record <- readDIAStateMetadata(manager, result$state_reference)
+    record <- readWorkflowStateMetadata(manager, result$state_reference)
     product <- workflowPeptideProgressProduct(record$data)
     envelope <- hydrateSavedWorkflowEntity(manager$.context$store, product)
     checkSavedWorkflowConsumerPayload("scientific_product", envelope)
@@ -619,14 +619,14 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         invisible(NULL)
     }
     deliver_action <- function(action, result) {
-        plot_grid <- withDIAStateScope(workflow_data$state_manager, function() deliver(result))
+        plot_grid <- withWorkflowStateScope(workflow_data$state_manager, function() deliver(result))
         content_id <- digest::digest(list(result$resultText,
             result$stateReference$entity_id %||% workflow_data$state_manager$current_state, ui$step_label), algo = "sha256")
         action$result <- result
         action$plot_grid <- plot_grid
         action$content_id <- content_id
         action$accepted_manager <- workflow_data$state_manager
-        action$accepted_reference <- getDIAStateReference(workflow_data$state_manager)
+        action$accepted_reference <- getWorkflowStateReference(workflow_data$state_manager)
         # Match renderText's output conversion exactly, including its treatment of a final newline.
         action$expected_text <- paste(utils::capture.output(cat(result$resultText)), collapse = "\n")
         if (is.function(ui$plot_identity)) ui$plot_identity(content_id)
@@ -665,7 +665,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         shiny::showNotification(working, id = ui$notification, duration = NULL)
         tryCatch({
             manager <- workflow_data$state_manager
-            if (!inherits(manager, "DIAStateAdapter") || !usesDIAReferenceStates(manager))
+            if (!inherits(manager, "DIAStateAdapter") || !usesWorkflowReferenceStates(manager))
                 stop("the managed worker needs the on-disk state owner (DIA-NN import on Linux)")
             pending <- shiny::isolate(pending_publication())
             if (!is.null(pending)) {
@@ -684,7 +684,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
             if (is.null(owner)) owner <- newWorkflowExecutionController(manager, application)
             action$owner <- owner
             action$phase <- "running"
-            action$worker_request_id <- runWorkflowAction(operation, list(state = getDIAStateReference(manager)),
+            action$worker_request_id <- runWorkflowAction(operation, list(state = getWorkflowStateReference(manager)),
                 parameters, owner, reservation = action$reservation,
                 completion_context = workflowManagedCompletionContext(operation, workflow_data))
             managed_action(action)
@@ -715,7 +715,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         action <- managed_action()
         if (is.null(action) || !identical(action$phase, "awaiting_browser")) return()
         if (!identical(workflow_data$state_manager, action$accepted_manager) ||
-            !identical(getDIAStateReference(workflow_data$state_manager), action$accepted_reference)) {
+            !identical(getWorkflowStateReference(workflow_data$state_manager), action$accepted_reference)) {
             fail(action, simpleError("result was superseded"), "stale")
             return()
         }
@@ -735,7 +735,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
             !is.numeric(acknowledgement$stable_ms) || length(acknowledgement$stable_ms) != 1L ||
             !is.finite(acknowledgement$stable_ms) || acknowledgement$stable_ms < 200) return()
         if (!identical(workflow_data$state_manager, action$accepted_manager) ||
-            !identical(getDIAStateReference(workflow_data$state_manager), action$accepted_reference)) {
+            !identical(getWorkflowStateReference(workflow_data$state_manager), action$accepted_reference)) {
             fail(action, simpleError("result was superseded"), "stale")
             return()
         }
@@ -791,7 +791,7 @@ beginWorkflowGUIAction <- function(application, manager, operation, publication)
     id <- paste0("gui-", substr(digest::digest(list(Sys.time(), tempfile(),
         application$config$stem), algo = "sha256"), 1L, 32L))
     capture <- if (inherits(manager, "DIAStateAdapter")) {
-        reference <- getDIAStateReference(manager)
+        reference <- getWorkflowStateReference(manager)
         list(owner = manager$.context$store$identity, head = reference$entity_id,
             history = as.character(unlist(manager$getHistory())),
             current_state = manager$current_state)
@@ -1419,8 +1419,8 @@ computeWorkflowFixture <- function(request) {
     writeWorkflowExecutionMessage(file.path(request$directory, "worker-started.rds"),
         list(schema = 1L, mode = mode, pid = Sys.getpid()))
     if (mode == "forbidden_commit") {
-        manager <- newDIAStateAdapter(store, reopen = TRUE)
-        commitDIAReferenceState(manager, "forbidden", record$data, record$config, "worker must refuse")
+        manager <- newWorkflowStateOwner(store, reopen = TRUE)
+        commitWorkflowReferenceState(manager, "forbidden", record$data, record$config, "worker must refuse")
     }
     if (mode == "fail") stop("intentional bounded worker failure")
     if (mode == "sleep") Sys.sleep(request$parameters$seconds)
@@ -1520,7 +1520,7 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     job$existing_entities <- list.files(file.path(store$directory, "entities"))
     job$existing_pending <- list.files(file.path(store$directory, ".pending"), all.files = TRUE, no.. = TRUE)
     validateSavedWorkflowReference(store, input_references$state, payload = FALSE)
-    if (!identical(input_references$state, getDIAStateReference(owner$manager)))
+    if (!identical(input_references$state, getWorkflowStateReference(owner$manager)))
         cli::cli_abort("action input is not the selected immutable checkpoint", class = "workflow_execution_stale")
     validateWorkflowActionInput(operation, owner$manager, input_references)
     parameters <- resolveWorkflowActionParameters(operation, owner$manager,
@@ -1715,7 +1715,7 @@ acceptWorkflowActionResult <- function(owner, message) {
         return(list(status = if (journal$status == "complete") "duplicate" else "publication_pending",
             result = result, delivery_current = is.null(job) &&
                 identical(owner$control$generation, journal$delivery_generation) &&
-                identical(getDIAStateReference(owner$manager), result$state_reference)))
+                identical(getWorkflowStateReference(owner$manager), result$state_reference)))
     }
     store <- owner$manager$.context$store
     token <- job$request$token
@@ -1757,7 +1757,7 @@ publishWorkflowFixtureResult <- function(owner, paths) {
     if (!file.exists(result_path) || !identical(digest::digest(file = result_path, algo = "sha256"), journal$result_sha256))
         cli::cli_abort("accepted result receipt differs")
     result <- readRDS(result_path)
-    if (!identical(getDIAStateReference(owner$manager), result$state_reference))
+    if (!identical(getWorkflowStateReference(owner$manager), result$state_reference))
         cli::cli_abort("publication belongs to a superseded state", class = "workflow_execution_stale")
     publication <- workflowActionSpec(result$operation %||% workflowFixtureOperation)$publication
     if (publication %in% c("peptide", "protein", "da")) {
@@ -1802,7 +1802,7 @@ resumeWorkflowAction <- function(owner, request_id) {
     path <- file.path(paths$request_dir, "accepted-result.rds")
     if (!identical(digest::digest(file = path, algo = "sha256"), journal$result_sha256)) cli::cli_abort("result changed")
     result <- readRDS(path)
-    if (!identical(getDIAStateReference(owner$manager), result$state_reference))
+    if (!identical(getWorkflowStateReference(owner$manager), result$state_reference))
         cli::cli_abort("publication state was superseded", class = "workflow_execution_stale")
     journal$delivery_generation <- owner$control$generation
     writeWorkflowExportJournal(paths, journal)
@@ -2008,9 +2008,9 @@ workflowControllerFaultMain <- function(application) {
     if (!startsWith(project, paste0(config$root, "/"))) stop("fault project escapes owned application")
     identity <- readSavedStoreIdentity(file.path(project, ".workflow-entities", "store.json"))
     store <- newWorkflowEntityStore(project, identity$project_id, identity$workflow_id)
-    manager <- newDIAStateAdapter(store, reopen = TRUE)
+    manager <- newWorkflowStateOwner(store, reopen = TRUE)
     owner <- newWorkflowExecutionController(manager, application)
-    on.exit(closeDIAStateAdapter(manager))
+    on.exit(closeWorkflowStateOwner(manager))
     testthat::local_mocked_bindings(diaStateBoundary = function(stage) {
         if (identical(stage, config$fault_stage)) {
             writeWorkflowExecutionMessage(config$fault_marker, list(stage = stage,
@@ -2019,7 +2019,7 @@ workflowControllerFaultMain <- function(application) {
             stop("fault controller was not killed by the test")
         }
     }, .package = "MultiScholaR")
-    runWorkflowAction(workflowFixtureOperation, list(state = getDIAStateReference(manager)), list(mode = "identity"), owner)
+    runWorkflowAction(workflowFixtureOperation, list(state = getWorkflowStateReference(manager)), list(mode = "identity"), owner)
     repeat {
         value <- pollWorkflowAction(owner)
         if (!value$status %in% c("admitting", "running")) stop("fault boundary was not reached")
@@ -2343,8 +2343,8 @@ computeWorkflowPeptideAction <- function(request) {
     store <- newWorkflowEntityStore(request$project_root, request$owner$project_id, request$owner$workflow_id)
     on.exit(closeWorkflowEntityStore(store))
     if (!identical(store$identity, request$owner)) cli::cli_abort("project incarnation changed")
-    manager <- newDIAStateAdapter(store, reopen = TRUE)
-    on.exit(closeDIAStateAdapter(manager), add = TRUE, after = FALSE)
+    manager <- newWorkflowStateOwner(store, reopen = TRUE)
+    on.exit(closeWorkflowStateOwner(manager), add = TRUE, after = FALSE)
     validateWorkflowActionParameters(request$operation, request$parameters, request$config$policy)
     validateWorkflowActionInput(request$operation, manager, request$input_references)
     variant <- workflowQualificationVariant(request$config, request$operation)
@@ -2516,19 +2516,19 @@ validateWorkflowDaPublicationParameters <- function(parameters, policy, resolved
 computeWorkflowDaPublicationAction <- function(manager, request, variant) {
     paths <- workflowRequestExperimentPaths(request)
     if (!is.null(paths)) manager$.context$experiment_paths <- paths
-    head <- getDIAStateReference(manager)
+    head <- getWorkflowStateReference(manager)
     if (!identical(head$entity_id, request$input_references$state$entity_id))
         cli::cli_abort("DA publication input is not the head state", class = "workflow_execution_stale")
     manifest_reference <- manager$.context$snapshot$da_results
     if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
-    manifest <- resolveDIAStateValue(manager$.context, manifest_reference)
+    manifest <- resolveWorkflowStateValue(manager$.context, manifest_reference)
     # KIT-022: the manifest's source is the head (the DA step commits its arguments before the contrasts).
-    head_record <- readDIAStateMetadata(manager, head)$data
+    head_record <- readWorkflowStateMetadata(manager, head)$data
     if (!isDIAResultManifest(manifest) || !identical(manifest$source$entity_id, head$entity_id))
         cli::cli_abort("DA manifest does not belong to the head state", class = "workflow_execution_stale")
     # As the in-process path: no annotation table means an empty one.
     annotations <- if (!is.null(request$parameters$annotations))
-        materializeDIATable(manager$.context, request$parameters$annotations) else data.frame()
+        materializeWorkflowTable(manager$.context, request$parameters$annotations) else data.frame()
     root <- file.path(request$directory, "da-publication")
     staged <- stats::setNames(lapply(c("da_output_dir", "publication_graphs_dir"), function(role) {
         path <- file.path(root, role)
@@ -2536,7 +2536,7 @@ computeWorkflowDaPublicationAction <- function(manager, request, variant) {
         path
     }), c("da_output_dir", "publication_graphs_dir"))
     # KIT-022: the state scope names its owner for the publication kernels' readers; no session is needed.
-    withDIAStateScope(manager, function()
+    withWorkflowStateScope(manager, function()
         produceDIADaPublication(manager, manifest, annotations, manifest$parameters$qvalue, staged, save_assets = FALSE))
     files <- list.files(root, recursive = TRUE)
     list(checkpoint = head_record, reference = head, state_reference = head,
@@ -2549,11 +2549,11 @@ computeWorkflowDaPublicationAction <- function(manager, request, variant) {
 #' @noRd
 completeDIADaPublication <- function(workflow, value) {
     manager <- workflow$state_manager
-    head <- getDIAStateReference(manager)
+    head <- getWorkflowStateReference(manager)
     if (!identical(head$entity_id, value$reference$entity_id))
         cli::cli_abort("DA publication result belongs to a superseded head", class = "workflow_execution_stale")
     context <- manager$.context
-    publishDIAStateHead(context, context$snapshot)
+    publishWorkflowStateHead(context, context$snapshot)
     list(stateReference = head, manifest_reference = value$manifest_reference)
 }
 
@@ -2577,7 +2577,7 @@ publishWorkflowDaResult <- function(owner, paths, result) {
     manager$.context$experiment_paths <- experiment_paths
     manifest_reference <- manager$.context$snapshot$da_results
     if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
-    manifest <- resolveDIAStateValue(manager$.context, manifest_reference)
+    manifest <- resolveWorkflowStateValue(manager$.context, manifest_reference)
     staged_root <- file.path(paths$request_dir, "da-publication")
     workflowExecutionBoundary("publication")
     publishDIAActionOutputs(manager, reference, "da", experiment_paths[c("da_output_dir", "publication_graphs_dir")],
@@ -2602,7 +2602,7 @@ publishWorkflowDaResult <- function(owner, paths, result) {
 readManagedDaResult <- function(manager, result, workflow_data) {
     manifest_reference <- manager$.context$snapshot$da_results
     if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
-    manifest <- resolveDIAStateValue(manager$.context, manifest_reference)
+    manifest <- resolveWorkflowStateValue(manager$.context, manifest_reference)
     list(stateReference = result$state_reference, manifest = manifest,
         resultText = diaDaStatusText(nrow(manifest$contrasts)))
 }
@@ -2671,7 +2671,7 @@ workflowQualificationVariant <- function(config, operation) {
 publishWorkflowPeptideResult <- function(owner, paths, result) {
     manager <- owner$manager
     entry <- workflowActionSpec(result$operation)
-    record <- readDIAStateMetadata(manager, result$state_reference)
+    record <- readWorkflowStateMetadata(manager, result$state_reference)
     envelope <- hydrateSavedWorkflowEntity(manager$.context$store, workflowPeptideProgressProduct(record$data))
     checkSavedWorkflowConsumerPayload("scientific_product", envelope)
     product <- envelope$value
@@ -2819,7 +2819,7 @@ validateWorkflowActionInput <- function(operation, manager, input_references) {
     if (!is.list(input_references) || !identical(names(input_references), "state") ||
         !isSavedWorkflowReference(input_references$state))
         cli::cli_abort("unsupported input reference", class = "workflow_execution_invalid")
-    record <- readDIAStateMetadata(manager, input_references$state)$data
+    record <- readWorkflowStateMetadata(manager, input_references$state)$data
     if (!isDIAComponentCheckpoint(record))
         cli::cli_abort("component checkpoint required", class = "workflow_execution_unsupported")
     if (spec$input == "peptide") {
@@ -2854,7 +2854,7 @@ resolveWorkflowActionParameters <- function(operation, manager, reference, param
 #' The sample filter's native resolver: the real method's parameter precedence on empty tables.
 #' @noRd
 resolveWorkflowSampleFilterParameters <- function(manager, reference, parameters) {
-    prototype <- readDIAExecutionComponents(manager, reference, fields = character())
+    prototype <- readWorkflowExecutionComponents(manager, reference, fields = character())
     # Invoke the real method's parameter resolver and call stack with empty tables.
     # Do not mirror its precedence or hydrate the scientific assay.
     arguments <- c(list(theObject = prototype, core_utilisation = NA), parameters)
@@ -2873,10 +2873,10 @@ completeWorkflowAction <- function(owner, operation, value, context = NULL, vari
         class = "workflow_execution_busy")
     entry <- workflowActionSpec(operation)
     # KIT-025: the state this completion commits is the registered operation's, under the request's variant.
-    setDIAStepProvenance(owner$manager, operation, variant %||% entry$default_variant %||% NA_character_,
+    setWorkflowStepProvenance(owner$manager, operation, variant %||% entry$default_variant %||% NA_character_,
         entry$parameters, entry$declaration$fixed, values = values)
     if (entry$completion == "fixture")
-        return(commitDIAReferenceState(owner$manager, value$state_name, value$checkpoint,
+        return(commitWorkflowReferenceState(owner$manager, value$state_name, value$checkpoint,
             value$config, "guarded fixture computation"))
     workflow <- newWorkflowCompletionWorkflow(owner$manager, context)
     if (entry$completion == "protein") return(completeDIAProteinAction(workflow, value))

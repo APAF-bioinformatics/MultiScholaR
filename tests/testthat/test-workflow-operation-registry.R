@@ -85,7 +85,7 @@ test_that("unregistered or malformed operations refuse with the execution layer'
     testthat::with_mocked_bindings(
         expect_error(validateWorkflowActionInput("precursor_rollup", NULL, list(state = "owned")), class = "workflow_execution_unsupported"),
         isSavedWorkflowReference = function(x) identical(x, "owned"), isDIAComponentCheckpoint = function(x) TRUE,
-        readDIAStateMetadata = function(...) list(data = record))
+        readWorkflowStateMetadata = function(...) list(data = record)) # KIT-045: the execution layer calls the workflow name
     expect_identical(sort(workflowOperationNames()), sort(c("DA-contrast-output", "da_publication", "enrichment",
         "minimum_peptides_per_sample", "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_imputation",
         "peptide_intensity_filter", "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter",

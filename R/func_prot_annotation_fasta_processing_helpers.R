@@ -248,13 +248,8 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
     message("Writing results...")
     flush.console()
 
-    vroom::vroom_write(aa_seq_tbl_final,
-                       file = "aa_seq_tbl.tsv",
-                       delim = "\t",
-                       na = "",
-                       quote = "none",
-                       progress = FALSE)
-
+    # KIT-045 (carried from KIT-048): the table is saved as the metadata RDS and returned; the former
+    # `aa_seq_tbl.tsv` copy in the process's working directory had no reader and is no longer written.
     saveRDS(aa_seq_tbl_final, fasta_meta_file)
     
     # Return list with data and metadata

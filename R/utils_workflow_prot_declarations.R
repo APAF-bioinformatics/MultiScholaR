@@ -8,7 +8,7 @@
 #' Hydrate a saved protein state for a whole-placement kernel.
 #' @noRd
 readDIAReferenceProteinObject <- function(manager, reference) {
-    object <- readDIAExecutionComponents(manager, reference)
+    object <- readWorkflowExecutionComponents(manager, reference)
     if (!methods::is(object, "ProteinQuantitativeData"))
         cli::cli_abort("a protein state is required", class = "workflow_execution_unsupported")
     object
@@ -17,8 +17,8 @@ readDIAReferenceProteinObject <- function(manager, reference) {
 #' Checkpoint a kernel's protein object as the step's output, inheriting the saved input as its source.
 #' @noRd
 checkpointDIAReferenceProteinObject <- function(manager, reference, object) {
-    object <- inheritDIAExecutionSource(object, manager, reference)
-    checkpoint <- checkpointDIAExecutionResult(manager, object)
+    object <- inheritWorkflowExecutionSource(object, manager, reference)
+    checkpoint <- checkpointWorkflowExecutionResult(manager, object)
     checkpoint$dependencies <- collectDIANativeReferences(list(reference, checkpoint$dependencies,
         checkpoint$components, checkpoint$support, checkpoint$products))
     checkpoint
@@ -57,10 +57,10 @@ computeDIAReferenceIQRollup <- function(manager, reference, parameters = list(),
     if (!is.character(paths$peptide_qc_dir) || !is.character(paths$protein_qc_dir))
         cli::cli_abort("IQ working directories required", class = "workflow_execution_invalid")
     for (path in unlist(paths)) dir.create(path, showWarnings = FALSE, recursive = TRUE)
-    before <- readDIAStateMetadata(manager, reference)
+    before <- readWorkflowStateMetadata(manager, reference)
     if (!identical(before$data$class, "PeptideQuantitativeData"))
         cli::cli_abort("IQ rollup needs a peptide state", class = "workflow_execution_unsupported")
-    peptideS4 <- readDIAExecutionComponents(manager, reference, fields = "design_matrix")
+    peptideS4 <- readWorkflowExecutionComponents(manager, reference, fields = "design_matrix")
     proteinColumn <- peptideS4@protein_id_column
     peptideColumn <- peptideS4@peptide_sequence_column
     sampleColumn <- peptideS4@sample_id
@@ -213,7 +213,7 @@ computeDIAReferenceAccessionCleanup <- function(manager, reference, parameters, 
 computeDIAReferenceProteinIntensityFilter <- function(manager, reference, parameters, worker_cap = 12 * 1024^3,
     variant = "whole", now_fn = Sys.time) {
     if (!identical(variant, "whole")) cli::cli_abort("unsupported protein intensity filter variant", class = "workflow_execution_unsupported")
-    before <- readDIAStateMetadata(manager, reference)
+    before <- readWorkflowStateMetadata(manager, reference)
     strict <- isTRUE(parameters$strict_mode)
     percentile <- parameters$proteins_intensity_cutoff_percentile
     object <- readDIAReferenceProteinObject(manager, reference)
@@ -341,9 +341,9 @@ computeDIAReferenceProteinDuplicateRemoval <- function(manager, reference, param
 #' @noRd
 finishDIAReferenceProteinStep <- function(workflow, value, publish = TRUE) {
     manager <- workflow$state_manager
-    setDIAStepProvenanceForSection(manager, value$section) # KIT-025: the in-process path names its operation
-    commitDIAReferenceState(manager, value$state_name, value$checkpoint, value$config, value$description)
-    object <- readDIAExecutionComponents(manager)
+    setWorkflowStepProvenanceForSection(manager, value$section) # KIT-025: the in-process path names its operation
+    commitWorkflowReferenceState(manager, value$state_name, value$checkpoint, value$config, value$description)
+    object <- readWorkflowExecutionComponents(manager)
     if (!is.null(value$qc_name)) {
         qc_params <- shiny::isolate(workflow$qc_params) %||% list()
         if (is.null(qc_params$protein_qc)) qc_params$protein_qc <- list()
@@ -506,7 +506,7 @@ diaProteinDpcQuantOperation <- function() {
 checkpointDIAReferencePeptideObject <- function(manager, reference, object, loaded) {
     attr(object, "dia_component_source") <- reference
     attr(object, "dia_execution_fields") <- loaded
-    checkpoint <- checkpointDIAExecutionResult(manager, object)
+    checkpoint <- checkpointWorkflowExecutionResult(manager, object)
     checkpoint$dependencies <- collectDIANativeReferences(list(reference, checkpoint$dependencies,
         checkpoint$components, checkpoint$support, checkpoint$products))
     checkpoint
@@ -514,10 +514,10 @@ checkpointDIAReferencePeptideObject <- function(manager, reference, object, load
 
 #' @noRd
 readDIAReferencePeptideObject <- function(manager, reference, fields = c("peptide_data", "design_matrix")) {
-    before <- readDIAStateMetadata(manager, reference)
+    before <- readWorkflowStateMetadata(manager, reference)
     if (!identical(before$data$class, "PeptideQuantitativeData"))
         cli::cli_abort("a peptide state is required", class = "workflow_execution_unsupported")
-    readDIAExecutionComponents(manager, reference, fields = fields)
+    readWorkflowExecutionComponents(manager, reference, fields = fields)
 }
 
 #' Log2 peptide matrix on a saved peptide state (chunk 13): `calcPeptideMatrix` then `log2TransformPeptideMatrix`.
@@ -572,7 +572,7 @@ computeDIAReferencePeptideLog2MatrixStreamed <- function(manager, reference, wor
     if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) || worker_cap <= 0)
         cli::cli_abort("invalid admitted worker capacity", class = "workflow_execution_unsupported")
     context <- manager$.context
-    before <- readDIAStateMetadata(manager, reference)
+    before <- readWorkflowStateMetadata(manager, reference)
     if (!identical(before$data$class, "PeptideQuantitativeData"))
         cli::cli_abort("a peptide state is required", class = "workflow_execution_unsupported")
     object <- readDIAReferencePeptideObject(manager, reference, fields = "design_matrix")
@@ -797,7 +797,7 @@ computeDIAReferencePeptideAccessionCleanupPartitioned <- function(manager, refer
             seqinr = seqinr, fasta_metadata = fasta_metadata, now_fn = now_fn))
     }
     context <- manager$.context
-    before <- readDIAStateMetadata(manager, reference)
+    before <- readWorkflowStateMetadata(manager, reference)
     if (!identical(before$data$class, "PeptideQuantitativeData"))
         cli::cli_abort("a peptide state is required", class = "workflow_execution_unsupported")
     object <- readDIAReferencePeptideObject(manager, reference, fields = "design_matrix")
@@ -979,7 +979,7 @@ computeDIAReferencePeptideAccessionCleanupPartitioned <- function(manager, refer
 #' @return List `identities` (data frame), `summary` (the kernel's `peptide_summary`), `rows` (table rows).
 #' @noRd
 streamDIAPeptideIdentitySummary <- function(manager, reference, object, worker_cap = 12 * 1024^3) {
-    before <- readDIAStateMetadata(manager, reference)
+    before <- readWorkflowStateMetadata(manager, reference)
     source <- before$data$components$peptide_data
     scope <- newWorkflowTableReadScope(manager$.context$store, source)
     on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
@@ -1111,13 +1111,13 @@ computeDIAReferenceProteinDpcQuant <- function(manager, reference, parameters, w
 #' @noRd
 runDIAReferencePeptideLog2Matrix <- function(workflow) {
     manager <- workflow$state_manager
-    before <- readDIAStateMetadata(manager)
+    before <- readWorkflowStateMetadata(manager)
     pending <- if (identical(manager$current_state, "log2_matrix")) resumeDIAQvalueOutput(manager, before) else NULL
     if (!is.null(pending)) return(pending)
     assertDIAExportReady(manager)
     entry <- workflowActionSpec("peptide_log2_matrix")
-    value <- computeDIAReferencePeptideLog2Matrix(manager, getDIAStateReference(manager), list(), variant = entry$default_variant)
-    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed)
+    value <- computeDIAReferencePeptideLog2Matrix(manager, getWorkflowStateReference(manager), list(), variant = entry$default_variant)
+    setWorkflowStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed)
     finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description, value$config,
         value$section, value$counts)
 }
@@ -1125,16 +1125,16 @@ runDIAReferencePeptideLog2Matrix <- function(workflow) {
 #' @noRd
 runDIAReferencePeptideAccessionCleanup <- function(workflow, parameters) {
     manager <- workflow$state_manager
-    before <- readDIAStateMetadata(manager)
+    before <- readWorkflowStateMetadata(manager)
     pending <- if (identical(manager$current_state, "peptide_accession_cleaned")) resumeDIAQvalueOutput(manager, before) else NULL
     if (!is.null(pending)) return(pending)
     assertDIAExportReady(manager)
     entry <- workflowActionSpec("peptide_accession_cleanup")
     validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
-    value <- computeDIAReferencePeptideAccessionCleanup(manager, getDIAStateReference(manager), parameters,
+    value <- computeDIAReferencePeptideAccessionCleanup(manager, getWorkflowStateReference(manager), parameters,
         variant = entry$default_variant, seqinr = shiny::isolate(workflow$aa_seq_tbl_final),
         fasta_metadata = shiny::isolate(workflow$fasta_metadata))
-    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
+    setWorkflowStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
         values = c(parameters, list(fasta_sha256 = value$config$fasta_sha256, seqinr_accession_column = value$config$seqinr_accession_column)))
     workflow$accession_cleanup_results <- value$accession_cleanup_results
     finishDIAReferencePeptideStep(workflow, value$checkpoint, value$state_name, value$description, value$config,
@@ -1149,8 +1149,8 @@ runDIAReferenceProteinDpcQuant <- function(workflow, parameters) {
     assertDIAExportReady(manager)
     entry <- workflowActionSpec("protein_dpc_quant")
     validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
-    value <- computeDIAReferenceProteinDpcQuant(manager, getDIAStateReference(manager), parameters, variant = entry$default_variant)
-    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
+    value <- computeDIAReferenceProteinDpcQuant(manager, getWorkflowStateReference(manager), parameters, variant = entry$default_variant)
+    setWorkflowStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
         values = value$config[c("engine", "dpc_slope", "chunk")])
     finishDIAReferenceProteinStep(workflow, value)
 }
@@ -1273,8 +1273,8 @@ runDIAReferenceProteinNormalisation <- function(workflow, parameters) {
     assertDIAExportReady(manager)
     entry <- workflowActionSpec("protein_between_sample_normalisation")
     validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
-    value <- computeDIAReferenceProteinNormalisation(manager, getDIAStateReference(manager), parameters, variant = entry$default_variant)
-    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
+    value <- computeDIAReferenceProteinNormalisation(manager, getWorkflowStateReference(manager), parameters, variant = entry$default_variant)
+    setWorkflowStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
         values = value$config["norm_method"])
     finishDIAReferenceProteinStep(workflow, value)
 }
@@ -1287,8 +1287,8 @@ runDIAReferenceProteinPeptideCountFilter <- function(workflow, parameters) {
     assertDIAExportReady(manager)
     entry <- workflowActionSpec("protein_peptide_count_filter")
     validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
-    value <- computeDIAReferenceProteinPeptideCountFilter(manager, getDIAStateReference(manager), parameters, variant = entry$default_variant)
-    setDIAStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
+    value <- computeDIAReferenceProteinPeptideCountFilter(manager, getWorkflowStateReference(manager), parameters, variant = entry$default_variant)
+    setWorkflowStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
         values = value$config[c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh")])
     finishDIAReferenceProteinStep(workflow, value)
 }

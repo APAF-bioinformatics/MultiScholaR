@@ -109,6 +109,8 @@ test_that("processFastaFile preserves non-standard FASTA parsing and external ma
   )
 
   expect_named(result, c("aa_seq_tbl_final", "fasta_metadata"))
+  # KIT-045: the non-standard branch writes the metadata RDS only; nothing lands in the working directory.
+  expect_setequal(list.files(fixture_dir), c("nonstandard.fasta", "nonstandard_meta.rds"))
   expect_identical(result$fasta_metadata$fasta_format, "non_standard")
   expect_identical(result$fasta_metadata$num_sequences, 2L)
   expect_false(result$fasta_metadata$has_protein_evidence)
@@ -117,7 +119,7 @@ test_that("processFastaFile preserves non-standard FASTA parsing and external ma
   expect_identical(result$aa_seq_tbl_final$protein_id, c("LT1", "LT2"))
   expect_identical(result$aa_seq_tbl_final$protein, c("Protein alpha", "Protein beta"))
   expect_identical(result$aa_seq_tbl_final$database_id, c("UPI000001", "UPARC_B"))
-  expect_true(file.exists(file.path(fixture_dir, "aa_seq_tbl.tsv")))
+  expect_false(file.exists(file.path(fixture_dir, "aa_seq_tbl.tsv"))) # KIT-045: the working-directory copy is gone
   expect_true(file.exists(meta_path))
 
   saved <- readRDS(meta_path)
